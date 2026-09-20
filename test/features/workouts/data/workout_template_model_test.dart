@@ -130,6 +130,7 @@ void main() {
       'actual_load_kg': null,
       'actual_rpe': null,
       'actual_rir': null,
+      'completed_at': status == 'pending' ? null : '2026-09-20T18:05:00Z',
     };
 
     final execution = WorkoutExecutionModel.fromJson({
@@ -155,6 +156,18 @@ void main() {
     expect(execution.resolvedSetCount, 2);
     expect(execution.currentSet?.id, 'set-2');
     expect(execution.currentSet?.status, WorkoutSetStatus.pending);
+    expect(
+      execution.sets.first.canBeCorrectedAt(
+        DateTime.parse('2026-09-21T18:04:59Z'),
+      ),
+      isTrue,
+    );
+    expect(
+      execution.sets.first.canBeCorrectedAt(
+        DateTime.parse('2026-09-21T18:05:01Z'),
+      ),
+      isFalse,
+    );
   });
 
   test('interpreta una ejecución abandonada y conserva su motivo', () {

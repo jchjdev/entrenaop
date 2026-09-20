@@ -33,6 +33,28 @@ void main() {
     });
   });
 
+  test('envía una corrección con su motivo auditable', () async {
+    const correction = WorkoutSetCorrectionInput(
+      resultId: 'result-1',
+      reason: 'Anoté mal las repeticiones.',
+      actualReps: 10,
+      actualLoadKg: 20,
+    );
+
+    await repository.correctSet(correction);
+
+    expect(dataSource.correctedValues, {
+      'p_result_id': 'result-1',
+      'p_reason': 'Anoté mal las repeticiones.',
+      'p_actual_reps': 10,
+      'p_actual_duration_seconds': null,
+      'p_actual_distance_meters': null,
+      'p_actual_load_kg': 20,
+      'p_actual_rpe': null,
+      'p_actual_rir': null,
+    });
+  });
+
   test('envía el identificador de la serie omitida', () async {
     await repository.skipSet('result-2');
 
@@ -67,6 +89,7 @@ void main() {
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Map<String, dynamic>? completedValues;
+  Map<String, dynamic>? correctedValues;
   String? skippedResultId;
   String? abandonedExecutionId;
   String? abandonmentReason;
@@ -83,6 +106,11 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   @override
   Future<void> completeSet(Map<String, dynamic> values) async {
     completedValues = values;
+  }
+
+  @override
+  Future<void> correctSet(Map<String, dynamic> values) async {
+    correctedValues = values;
   }
 
   @override

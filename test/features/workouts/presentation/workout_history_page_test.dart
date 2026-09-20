@@ -46,6 +46,7 @@ void main() {
     final cubit = WorkoutHistoryDetailCubit(
       executionId: 'execution-1',
       getExecution: GetWorkoutExecutionUseCase(repository),
+      correctSet: CorrectWorkoutSetUseCase(repository),
     );
     await cubit.load();
     addTearDown(cubit.close);
@@ -109,6 +110,9 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<void> completeSet(WorkoutSetResultInput result) async {}
+
+  @override
+  Future<void> correctSet(WorkoutSetCorrectionInput correction) async {}
 
   @override
   Future<void> finishExecution(

@@ -113,6 +113,11 @@ tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 comprueba que el resultado incluya la métrica principal prescrita y que solo el
 propietario pueda resolver una serie pendiente de su sesión activa.
 
+Una serie completada puede corregirse durante las 24 horas siguientes, con un
+máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
+auditoría los valores anteriores y posteriores; Flutter no dispone de permisos
+para modificar directamente el resultado ni su registro de correcciones.
+
 Salir de la pantalla mantiene la ejecución en curso y permite recuperarla. El
 abandono es una transición terminal distinta que conserva las series resueltas,
 deja las pendientes sin falsearlas como omitidas y registra un motivo

@@ -69,6 +69,9 @@ físicas conservan un historial separado dentro de la misma área para no mezcla
 pruebas de acceso con entrenamientos cotidianos.
 Al completar una sesión se registra el esfuerzo global y una nota opcional de
 sensaciones, que permanece visible en el resumen y el historial.
+Los errores de registro pueden corregirse desde el detalle durante 24 horas y
+con un máximo de tres cambios por serie. Cada cambio exige motivo y queda
+auditado en PostgreSQL.
 Todavía falta guardar resultados sin conexión y sincronizarlos de forma
 idempotente cuando vuelva la red.
 

@@ -28,6 +28,7 @@ void main() {
     final cubit = WorkoutHistoryDetailCubit(
       executionId: 'execution-1',
       getExecution: GetWorkoutExecutionUseCase(repository),
+      correctSet: CorrectWorkoutSetUseCase(repository),
     );
 
     await cubit.load();
@@ -76,6 +77,9 @@ class _FakeWorkoutRepository implements WorkoutRepository {
 
   @override
   Future<void> completeSet(WorkoutSetResultInput result) async {}
+
+  @override
+  Future<void> correctSet(WorkoutSetCorrectionInput correction) async {}
 
   @override
   Future<void> finishExecution(

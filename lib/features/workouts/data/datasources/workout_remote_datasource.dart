@@ -9,6 +9,8 @@ abstract class WorkoutRemoteDataSource {
 
   Future<void> completeSet(Map<String, dynamic> values);
 
+  Future<void> correctSet(Map<String, dynamic> values);
+
   Future<void> skipSet(String resultId);
 
   Future<void> finishExecution(

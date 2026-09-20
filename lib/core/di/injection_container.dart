@@ -177,6 +177,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
+  sl.registerLazySingleton(() => CorrectWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
@@ -198,9 +199,11 @@ Future<void> initDependencies() async {
   );
   sl.registerFactory(() => WorkoutHistoryCubit(getHistory: sl())..load());
   sl.registerFactoryParam<WorkoutHistoryDetailCubit, String, void>(
-    (executionId, _) =>
-        WorkoutHistoryDetailCubit(executionId: executionId, getExecution: sl())
-          ..load(),
+    (executionId, _) => WorkoutHistoryDetailCubit(
+      executionId: executionId,
+      getExecution: sl(),
+      correctSet: sl(),
+    )..load(),
   );
 
   // --- Dashboard ---

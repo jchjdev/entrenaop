@@ -16,7 +16,15 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         title: const Text('Detalle de la sesión'),
       ),
-      body: BlocBuilder<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
+      body: BlocConsumer<WorkoutHistoryDetailCubit, WorkoutHistoryDetailState>(
+        listener: (context, state) {
+          final message = state.correctionMessage;
+          if (message != null) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          }
+        },
         builder: (context, state) => switch (state.status) {
           WorkoutHistoryDetailStatus.initial ||
           WorkoutHistoryDetailStatus.loading => const Center(
@@ -28,6 +36,7 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
           ),
           WorkoutHistoryDetailStatus.loaded => _DetailContent(
             execution: state.execution!,
+            isCorrecting: state.isCorrecting,
           ),
         },
       ),
@@ -36,9 +45,10 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
 }
 
 class _DetailContent extends StatelessWidget {
-  const _DetailContent({required this.execution});
+  const _DetailContent({required this.execution, required this.isCorrecting});
 
   final WorkoutExecution execution;
+  final bool isCorrecting;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +113,10 @@ class _DetailContent extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
-                ...groups.map(_ExerciseResultCard.new),
+                ...groups.map(
+                  (group) =>
+                      _ExerciseResultCard(group, isCorrecting: isCorrecting),
+                ),
               ],
             ),
           ),
@@ -185,9 +198,10 @@ class _SummaryMetric extends StatelessWidget {
 }
 
 class _ExerciseResultCard extends StatelessWidget {
-  const _ExerciseResultCard(this.group);
+  const _ExerciseResultCard(this.group, {required this.isCorrecting});
 
   final _ExerciseGroup group;
+  final bool isCorrecting;
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +228,9 @@ class _ExerciseResultCard extends StatelessWidget {
               style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 14),
-            ...group.sets.map(_SetResultRow.new),
+            ...group.sets.map(
+              (set) => _SetResultRow(set, isCorrecting: isCorrecting),
+            ),
           ],
         ),
       ),
@@ -223,9 +239,10 @@ class _ExerciseResultCard extends StatelessWidget {
 }
 
 class _SetResultRow extends StatelessWidget {
-  const _SetResultRow(this.set);
+  const _SetResultRow(this.set, {required this.isCorrecting});
 
   final WorkoutExecutionSet set;
+  final bool isCorrecting;
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +277,223 @@ class _SetResultRow extends StatelessWidget {
               ],
             ),
           ),
+          if (set.canBeCorrectedAt(DateTime.now()))
+            IconButton(
+              tooltip: 'Corregir resultado',
+              onPressed: isCorrecting
+                  ? null
+                  : () => _requestCorrection(context),
+              icon: isCorrecting
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.edit_outlined),
+            ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _requestCorrection(BuildContext context) async {
+    final correction = await showDialog<WorkoutSetCorrectionInput>(
+      context: context,
+      builder: (_) => _CorrectionDialog(set: set),
+    );
+    if (correction != null && context.mounted) {
+      await context.read<WorkoutHistoryDetailCubit>().correct(correction);
+    }
+  }
+}
+
+class _CorrectionDialog extends StatefulWidget {
+  const _CorrectionDialog({required this.set});
+
+  final WorkoutExecutionSet set;
+
+  @override
+  State<_CorrectionDialog> createState() => _CorrectionDialogState();
+}
+
+class _CorrectionDialogState extends State<_CorrectionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _reps;
+  late final TextEditingController _duration;
+  late final TextEditingController _distance;
+  late final TextEditingController _load;
+  late final TextEditingController _reason;
+  late double _rpe;
+  late double _rir;
+
+  WorkoutExecutionSet get set => widget.set;
+
+  @override
+  void initState() {
+    super.initState();
+    _reps = TextEditingController(text: _integer(set.actualReps));
+    _duration = TextEditingController(
+      text: _integer(set.actualDurationSeconds),
+    );
+    _distance = TextEditingController(
+      text: _nullableNumber(set.actualDistanceMeters),
+    );
+    _load = TextEditingController(text: _nullableNumber(set.actualLoadKg));
+    _reason = TextEditingController();
+    _rpe = (set.actualRpe ?? set.targetRpe ?? 7).clamp(1, 10).toDouble();
+    _rir = (set.actualRir ?? set.targetRir ?? 2).clamp(0, 10).toDouble();
+  }
+
+  @override
+  void dispose() {
+    _reps.dispose();
+    _duration.dispose();
+    _distance.dispose();
+    _load.dispose();
+    _reason.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pop(
+      context,
+      WorkoutSetCorrectionInput(
+        resultId: set.id,
+        reason: _reason.text.trim(),
+        actualReps: set.targetReps == null
+            ? null
+            : _parseDecimal(_reps.text)!.toInt(),
+        actualDurationSeconds: set.targetDurationSeconds == null
+            ? null
+            : _parseDecimal(_duration.text)!.toInt(),
+        actualDistanceMeters: set.targetDistanceMeters == null
+            ? null
+            : _parseDecimal(_distance.text),
+        actualLoadKg: set.targetLoadKg == null
+            ? null
+            : _parseDecimal(_load.text),
+        actualRpe: set.targetRpe == null && set.actualRpe == null ? null : _rpe,
+        actualRir: set.targetRir == null && set.actualRir == null ? null : _rir,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Corregir · ${set.exerciseName}'),
+      content: SizedBox(
+        width: 440,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Disponible durante 24 horas y con un máximo de tres cambios por serie.',
+                ),
+                const SizedBox(height: 16),
+                if (set.targetReps != null)
+                  _CorrectionField(
+                    controller: _reps,
+                    label: 'Repeticiones realizadas',
+                    decimal: false,
+                  ),
+                if (set.targetDurationSeconds != null)
+                  _CorrectionField(
+                    controller: _duration,
+                    label: 'Segundos realizados',
+                    decimal: false,
+                  ),
+                if (set.targetDistanceMeters != null)
+                  _CorrectionField(
+                    controller: _distance,
+                    label: 'Metros realizados',
+                  ),
+                if (set.targetLoadKg != null)
+                  _CorrectionField(
+                    controller: _load,
+                    label: 'Carga utilizada (kg)',
+                  ),
+                if (set.targetRpe != null || set.actualRpe != null) ...[
+                  Text('RPE real · ${_number(_rpe)}'),
+                  Slider(
+                    value: _rpe,
+                    min: 1,
+                    max: 10,
+                    divisions: 18,
+                    onChanged: (value) => setState(() => _rpe = value),
+                  ),
+                ],
+                if (set.targetRir != null || set.actualRir != null) ...[
+                  Text('RIR real · ${_number(_rir)}'),
+                  Slider(
+                    value: _rir,
+                    min: 0,
+                    max: 10,
+                    divisions: 20,
+                    onChanged: (value) => setState(() => _rir = value),
+                  ),
+                ],
+                TextFormField(
+                  controller: _reason,
+                  maxLength: 300,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Motivo de la corrección',
+                    hintText: 'Por ejemplo: anoté 8, pero fueron 10.',
+                  ),
+                  validator: (value) {
+                    final length = value?.trim().length ?? 0;
+                    return length < 3 ? 'Explica brevemente el cambio' : null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(onPressed: _save, child: const Text('Guardar corrección')),
+      ],
+    );
+  }
+}
+
+class _CorrectionField extends StatelessWidget {
+  const _CorrectionField({
+    required this.controller,
+    required this.label,
+    this.decimal = true,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final bool decimal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+        decoration: InputDecoration(labelText: label),
+        validator: (value) {
+          final parsed = _parseDecimal(value ?? '');
+          if (parsed == null) return 'Introduce un número válido';
+          if (parsed < 0) return 'El valor no puede ser negativo';
+          if (!decimal && parsed != parsed.roundToDouble()) {
+            return 'Introduce un número entero';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -369,5 +602,12 @@ String _compactDuration(Duration duration) {
 
 String _number(double value) =>
     value == value.roundToDouble() ? '${value.toInt()}' : '$value';
+
+String _integer(int? value) => value?.toString() ?? '';
+
+String _nullableNumber(double? value) => value == null ? '' : _number(value);
+
+double? _parseDecimal(String value) =>
+    double.tryParse(value.trim().replaceAll(',', '.'));
 
 final _dateFormat = DateFormat('dd/MM/yyyy · HH:mm');

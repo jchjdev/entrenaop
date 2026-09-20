@@ -38,7 +38,8 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       actual_distance_meters,
       actual_load_kg,
       actual_rpe,
-      actual_rir
+      actual_rir,
+      completed_at
     )
   ''';
 
@@ -120,6 +121,10 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   @override
   Future<void> completeSet(Map<String, dynamic> values) =>
       supabaseClient.rpc('complete_workout_set', params: values);
+
+  @override
+  Future<void> correctSet(Map<String, dynamic> values) =>
+      supabaseClient.rpc('correct_workout_set_result', params: values);
 
   @override
   Future<void> skipSet(String resultId) =>

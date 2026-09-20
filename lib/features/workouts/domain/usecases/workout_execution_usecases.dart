@@ -36,6 +36,15 @@ class CompleteWorkoutSetUseCase {
       _repository.completeSet(result);
 }
 
+class CorrectWorkoutSetUseCase {
+  const CorrectWorkoutSetUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<void> call(WorkoutSetCorrectionInput correction) =>
+      _repository.correctSet(correction);
+}
+
 class SkipWorkoutSetUseCase {
   const SkipWorkoutSetUseCase(this._repository);
 

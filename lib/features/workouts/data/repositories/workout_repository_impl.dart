@@ -46,6 +46,20 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<void> correctSet(WorkoutSetCorrectionInput correction) {
+    return remoteDataSource.correctSet({
+      'p_result_id': correction.resultId,
+      'p_reason': correction.reason,
+      'p_actual_reps': correction.actualReps,
+      'p_actual_duration_seconds': correction.actualDurationSeconds,
+      'p_actual_distance_meters': correction.actualDistanceMeters,
+      'p_actual_load_kg': correction.actualLoadKg,
+      'p_actual_rpe': correction.actualRpe,
+      'p_actual_rir': correction.actualRir,
+    });
+  }
+
+  @override
   Future<void> skipSet(String resultId) => remoteDataSource.skipSet(resultId);
 
   @override

@@ -49,6 +49,7 @@ class WorkoutExecutionModel {
       actualLoadKg: _doubleOrNull(json['actual_load_kg']),
       actualRpe: _doubleOrNull(json['actual_rpe']),
       actualRir: _doubleOrNull(json['actual_rir']),
+      completedAt: _dateOrNull(json['completed_at']),
     );
   }
 

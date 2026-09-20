@@ -25,12 +25,22 @@ class WorkoutHistoryDetailState extends Equatable {
     this.status = WorkoutHistoryDetailStatus.initial,
     this.execution,
     this.errorMessage,
+    this.isCorrecting = false,
+    this.correctionMessage,
   });
 
   final WorkoutHistoryDetailStatus status;
   final WorkoutExecution? execution;
   final String? errorMessage;
+  final bool isCorrecting;
+  final String? correctionMessage;
 
   @override
-  List<Object?> get props => [status, execution, errorMessage];
+  List<Object?> get props => [
+    status,
+    execution,
+    errorMessage,
+    isCorrecting,
+    correctionMessage,
+  ];
 }

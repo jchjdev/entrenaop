@@ -101,6 +101,44 @@ class WorkoutSetResultInput extends Equatable {
   ];
 }
 
+/// Corrección explícita de una serie ya guardada.
+///
+/// El motivo acompaña al cambio para que el servidor pueda conservar una
+/// auditoría y limitar las correcciones sin confiar en la interfaz.
+class WorkoutSetCorrectionInput extends Equatable {
+  const WorkoutSetCorrectionInput({
+    required this.resultId,
+    required this.reason,
+    this.actualReps,
+    this.actualDurationSeconds,
+    this.actualDistanceMeters,
+    this.actualLoadKg,
+    this.actualRpe,
+    this.actualRir,
+  });
+
+  final String resultId;
+  final String reason;
+  final int? actualReps;
+  final int? actualDurationSeconds;
+  final double? actualDistanceMeters;
+  final double? actualLoadKg;
+  final double? actualRpe;
+  final double? actualRir;
+
+  @override
+  List<Object?> get props => [
+    resultId,
+    reason,
+    actualReps,
+    actualDurationSeconds,
+    actualDistanceMeters,
+    actualLoadKg,
+    actualRpe,
+    actualRir,
+  ];
+}
+
 class WorkoutExecutionSet extends Equatable {
   const WorkoutExecutionSet({
     required this.id,
@@ -124,6 +162,7 @@ class WorkoutExecutionSet extends Equatable {
     this.actualLoadKg,
     this.actualRpe,
     this.actualRir,
+    this.completedAt,
   });
 
   final String id;
@@ -147,6 +186,14 @@ class WorkoutExecutionSet extends Equatable {
   final double? actualLoadKg;
   final double? actualRpe;
   final double? actualRir;
+  final DateTime? completedAt;
+
+  bool canBeCorrectedAt(DateTime now) {
+    final savedAt = completedAt;
+    return status == WorkoutSetStatus.completed &&
+        savedAt != null &&
+        !now.isAfter(savedAt.add(const Duration(hours: 24)));
+  }
 
   @override
   List<Object?> get props => [
@@ -171,5 +218,6 @@ class WorkoutExecutionSet extends Equatable {
     actualLoadKg,
     actualRpe,
     actualRir,
+    completedAt,
   ];
 }

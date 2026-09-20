@@ -12,6 +12,8 @@ abstract class WorkoutRepository {
 
   Future<void> completeSet(WorkoutSetResultInput result);
 
+  Future<void> correctSet(WorkoutSetCorrectionInput correction);
+
   Future<void> skipSet(String resultId);
 
   Future<void> finishExecution(

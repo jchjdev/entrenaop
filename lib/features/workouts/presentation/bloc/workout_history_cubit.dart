@@ -35,11 +35,14 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
   WorkoutHistoryDetailCubit({
     required this.executionId,
     required GetWorkoutExecutionUseCase getExecution,
+    required CorrectWorkoutSetUseCase correctSet,
   }) : _getExecution = getExecution,
+       _correctSet = correctSet,
        super(const WorkoutHistoryDetailState());
 
   final String executionId;
   final GetWorkoutExecutionUseCase _getExecution;
+  final CorrectWorkoutSetUseCase _correctSet;
 
   Future<void> load() async {
     emit(
@@ -70,6 +73,39 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
         const WorkoutHistoryDetailState(
           status: WorkoutHistoryDetailStatus.failure,
           errorMessage: 'No hemos podido abrir esta sesión.',
+        ),
+      );
+    }
+  }
+
+  Future<void> correct(WorkoutSetCorrectionInput correction) async {
+    final execution = state.execution;
+    if (execution == null || state.isCorrecting) return;
+    emit(
+      WorkoutHistoryDetailState(
+        status: WorkoutHistoryDetailStatus.loaded,
+        execution: execution,
+        isCorrecting: true,
+      ),
+    );
+    try {
+      await _correctSet(correction);
+      final updated = await _getExecution(executionId);
+      if (updated == null) throw StateError('Execution disappeared');
+      emit(
+        WorkoutHistoryDetailState(
+          status: WorkoutHistoryDetailStatus.loaded,
+          execution: updated,
+          correctionMessage: 'Serie corregida y cambio registrado.',
+        ),
+      );
+    } catch (_) {
+      emit(
+        WorkoutHistoryDetailState(
+          status: WorkoutHistoryDetailStatus.loaded,
+          execution: execution,
+          correctionMessage:
+              'No hemos podido corregirla. El plazo o el límite pueden haber finalizado.',
         ),
       );
     }
