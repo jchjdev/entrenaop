@@ -107,6 +107,10 @@ resultados mediante funciones autenticadas y no puede insertar ejecuciones
 arbitrarias. Esta copia constituye el primer límite histórico entre una
 plantilla editable y el entrenamiento que realmente se realizó.
 
+La copia de ejecución incluye también la descripción y la URL de vídeo del
+ejercicio. La sesión activa muestra siempre la explicación y carga el vídeo
+solo cuando el usuario lo solicita, evitando consumo innecesario de datos.
+
 Cada serie conserva por separado objetivo y resultado real (repeticiones,
 tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 `skipped`, por lo que nunca se contabiliza como una serie completada. PostgreSQL

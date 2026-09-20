@@ -6,6 +6,7 @@ import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_cou
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:video_player/video_player.dart';
 
 class ActiveWorkoutPage extends StatelessWidget {
   const ActiveWorkoutPage({required this.timerStore, super.key});
@@ -378,6 +379,11 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                 'Serie ${set.setOrder + 1}',
                 style: const TextStyle(color: Colors.white60, fontSize: 17),
               ),
+              if (set.exerciseDescription != null ||
+                  set.exerciseVideoUrl != null) ...[
+                const SizedBox(height: 18),
+                _ExerciseGuidance(set: set),
+              ],
               const SizedBox(height: 28),
               Text(
                 _target(set),
@@ -479,6 +485,122 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExerciseGuidance extends StatefulWidget {
+  const _ExerciseGuidance({required this.set});
+
+  final WorkoutExecutionSet set;
+
+  @override
+  State<_ExerciseGuidance> createState() => _ExerciseGuidanceState();
+}
+
+class _ExerciseGuidanceState extends State<_ExerciseGuidance> {
+  VideoPlayerController? _controller;
+  bool _loading = false;
+  String? _error;
+
+  Future<void> _openVideo() async {
+    final url = widget.set.exerciseVideoUrl;
+    if (url == null || _loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      await controller.initialize();
+      await controller.setLooping(true);
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() {
+        _controller = controller;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'No hemos podido cargar el vídeo.';
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.set.exerciseDescription case final description?)
+              Text(description, style: const TextStyle(height: 1.4)),
+            if (widget.set.exerciseVideoUrl != null) ...[
+              if (widget.set.exerciseDescription != null)
+                const SizedBox(height: 12),
+              if (controller == null)
+                OutlinedButton.icon(
+                  onPressed: _loading ? null : _openVideo,
+                  icon: _loading
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.play_circle_outline_rounded),
+                  label: Text(
+                    _loading ? 'Cargando demostración…' : 'Ver demostración',
+                  ),
+                )
+              else ...[
+                AspectRatio(
+                  aspectRatio: controller.value.aspectRatio,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: VideoPlayer(controller),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  tooltip: controller.value.isPlaying ? 'Pausar' : 'Reproducir',
+                  onPressed: () {
+                    setState(() {
+                      controller.value.isPlaying
+                          ? controller.pause()
+                          : controller.play();
+                    });
+                  },
+                  icon: Icon(
+                    controller.value.isPlaying
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
+                  ),
+                ),
+              ],
+              if (_error case final error?) ...[
+                const SizedBox(height: 8),
+                Text(error, style: const TextStyle(color: Colors.redAccent)),
+              ],
+            ],
+          ],
         ),
       ),
     );

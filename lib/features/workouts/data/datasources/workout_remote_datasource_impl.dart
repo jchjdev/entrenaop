@@ -24,6 +24,8 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       item_order,
       exercise_id,
       exercise_name,
+      exercise_description,
+      exercise_video_url,
       set_order,
       target_reps,
       target_duration_seconds,

@@ -115,6 +115,8 @@ void main() {
       'item_order': 0,
       'exercise_id': 'exercise-1',
       'exercise_name': 'Flexiones',
+      'exercise_description': 'Mantén el cuerpo alineado.',
+      'exercise_video_url': 'https://example.com/flexiones.mp4',
       'set_order': order,
       'target_reps': 8,
       'target_duration_seconds': null,
@@ -156,6 +158,14 @@ void main() {
     expect(execution.resolvedSetCount, 2);
     expect(execution.currentSet?.id, 'set-2');
     expect(execution.currentSet?.status, WorkoutSetStatus.pending);
+    expect(
+      execution.sets.first.exerciseDescription,
+      'Mantén el cuerpo alineado.',
+    );
+    expect(
+      execution.sets.first.exerciseVideoUrl,
+      'https://example.com/flexiones.mp4',
+    );
     expect(
       execution.sets.first.canBeCorrectedAt(
         DateTime.parse('2026-09-21T18:04:59Z'),

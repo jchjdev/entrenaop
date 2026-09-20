@@ -72,6 +72,8 @@ sensaciones, que permanece visible en el resumen y el historial.
 Los errores de registro pueden corregirse desde el detalle durante 24 horas y
 con un máximo de tres cambios por serie. Cada cambio exige motivo y queda
 auditado en PostgreSQL.
+Durante la ejecución se muestra la descripción técnica del ejercicio y, cuando
+el catálogo dispone de él, un vídeo opcional cargado bajo demanda.
 Todavía falta guardar resultados sin conexión y sincronizarlos de forma
 idempotente cuando vuelva la red.
 

@@ -34,6 +34,8 @@ class WorkoutExecutionModel {
       itemOrder: json['item_order'] as int,
       exerciseId: json['exercise_id'] as String,
       exerciseName: json['exercise_name'] as String,
+      exerciseDescription: json['exercise_description'] as String?,
+      exerciseVideoUrl: json['exercise_video_url'] as String?,
       setOrder: json['set_order'] as int,
       targetReps: json['target_reps'] as int?,
       targetDurationSeconds: json['target_duration_seconds'] as int?,

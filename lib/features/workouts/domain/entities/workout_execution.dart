@@ -151,6 +151,8 @@ class WorkoutExecutionSet extends Equatable {
     required this.restAfterSeconds,
     required this.status,
     this.targetReps,
+    this.exerciseDescription,
+    this.exerciseVideoUrl,
     this.targetDurationSeconds,
     this.targetDistanceMeters,
     this.targetLoadKg,
@@ -171,6 +173,8 @@ class WorkoutExecutionSet extends Equatable {
   final int itemOrder;
   final String exerciseId;
   final String exerciseName;
+  final String? exerciseDescription;
+  final String? exerciseVideoUrl;
   final int setOrder;
   final int? targetReps;
   final int? targetDurationSeconds;
@@ -203,6 +207,8 @@ class WorkoutExecutionSet extends Equatable {
     itemOrder,
     exerciseId,
     exerciseName,
+    exerciseDescription,
+    exerciseVideoUrl,
     setOrder,
     targetReps,
     targetDurationSeconds,
