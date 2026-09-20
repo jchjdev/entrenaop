@@ -49,8 +49,15 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   Future<void> skipSet(String resultId) => remoteDataSource.skipSet(resultId);
 
   @override
-  Future<void> finishExecution(String executionId, int finalRpe) =>
-      remoteDataSource.finishExecution(executionId, finalRpe);
+  Future<void> finishExecution(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+  }) => remoteDataSource.finishExecution(
+    executionId,
+    finalRpe: finalRpe,
+    notes: notes,
+  );
 
   @override
   Future<void> abandonExecution(

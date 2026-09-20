@@ -49,8 +49,15 @@ class FinishWorkoutExecutionUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(String executionId, int finalRpe) =>
-      _repository.finishExecution(executionId, finalRpe);
+  Future<void> call(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+  }) => _repository.finishExecution(
+    executionId,
+    finalRpe: finalRpe,
+    notes: notes,
+  );
 }
 
 class AbandonWorkoutExecutionUseCase {

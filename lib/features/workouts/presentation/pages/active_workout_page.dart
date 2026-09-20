@@ -72,6 +72,13 @@ class _ActiveContent extends StatefulWidget {
 
 class _ActiveContentState extends State<_ActiveContent> {
   double _finalRpe = 7;
+  final _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,11 +141,14 @@ class _ActiveContentState extends State<_ActiveContent> {
                     else
                       _FinishCard(
                         rpe: _finalRpe,
+                        notesController: _notesController,
                         saving: saving,
                         onChanged: (value) => setState(() => _finalRpe = value),
-                        onFinish: () => context
-                            .read<ActiveWorkoutCubit>()
-                            .finish(_finalRpe.round()),
+                        onFinish: () =>
+                            context.read<ActiveWorkoutCubit>().finish(
+                              finalRpe: _finalRpe.round(),
+                              notes: _notesController.text,
+                            ),
                       ),
                     if (state.status == ActiveWorkoutStatus.failure &&
                         state.errorMessage != null) ...[
@@ -545,12 +555,14 @@ class _RestCard extends StatelessWidget {
 class _FinishCard extends StatelessWidget {
   const _FinishCard({
     required this.rpe,
+    required this.notesController,
     required this.saving,
     required this.onChanged,
     required this.onFinish,
   });
 
   final double rpe;
+  final TextEditingController notesController;
   final bool saving;
   final ValueChanged<double> onChanged;
   final VoidCallback onFinish;
@@ -587,6 +599,22 @@ class _FinishCard extends StatelessWidget {
               divisions: 9,
               onChanged: onChanged,
             ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: notesController,
+              enabled: !saving,
+              maxLines: 4,
+              maxLength: 500,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: '¿Cómo te has sentido? (opcional)',
+                hintText:
+                    'Técnica, molestias, energía o cualquier detalle útil.',
+                alignLabelWithHint: true,
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
             FilledButton(
               onPressed: saving ? null : onFinish,
               child: Text(saving ? 'Guardando…' : 'Finalizar sesión'),
@@ -628,6 +656,14 @@ class _Completed extends StatelessWidget {
               ' · RPE ${execution.finalRpe ?? '-'}',
               style: const TextStyle(color: Colors.white60),
             ),
+            if (execution.notes case final notes?) ...[
+              const SizedBox(height: 14),
+              Text(
+                '“$notes”',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ],
             const SizedBox(height: 22),
             FilledButton(
               onPressed: () => context.go('/plan'),

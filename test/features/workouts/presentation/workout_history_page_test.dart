@@ -111,7 +111,11 @@ class _Repository implements WorkoutRepository {
   Future<void> completeSet(WorkoutSetResultInput result) async {}
 
   @override
-  Future<void> finishExecution(String executionId, int finalRpe) async {}
+  Future<void> finishExecution(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+  }) async {}
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String id) async => null;

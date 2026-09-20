@@ -126,11 +126,18 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       supabaseClient.rpc('skip_workout_set', params: {'p_result_id': resultId});
 
   @override
-  Future<void> finishExecution(String executionId, int finalRpe) =>
-      supabaseClient.rpc(
-        'finish_workout_execution',
-        params: {'p_execution_id': executionId, 'p_final_rpe': finalRpe},
-      );
+  Future<void> finishExecution(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+  }) => supabaseClient.rpc(
+    'finish_workout_execution',
+    params: {
+      'p_execution_id': executionId,
+      'p_final_rpe': finalRpe,
+      'p_notes': notes,
+    },
+  );
 
   @override
   Future<void> abandonExecution(String executionId, String reason) =>

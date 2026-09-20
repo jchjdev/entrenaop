@@ -177,7 +177,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
   }
 
-  Future<void> finish(int finalRpe) async {
+  Future<void> finish({required int finalRpe, String? notes}) async {
     final execution = state.execution;
     if (execution == null || execution.currentSet != null) return;
     emit(
@@ -187,7 +187,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ),
     );
     try {
-      await _finishExecution(executionId, finalRpe);
+      await _finishExecution(executionId, finalRpe: finalRpe, notes: notes);
       final updated = await _getExecution(executionId);
       emit(
         ActiveWorkoutState(

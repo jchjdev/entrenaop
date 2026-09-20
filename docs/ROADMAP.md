@@ -67,6 +67,8 @@ Las sesiones completadas y abandonadas ya aparecen en Evolución, donde puede
 consultarse el objetivo y el resultado real de cada serie. Las evaluaciones
 físicas conservan un historial separado dentro de la misma área para no mezclar
 pruebas de acceso con entrenamientos cotidianos.
+Al completar una sesión se registra el esfuerzo global y una nota opcional de
+sensaciones, que permanece visible en el resumen y el historial.
 Todavía falta guardar resultados sin conexión y sincronizarlos de forma
 idempotente cuando vuelva la red.
 

@@ -39,6 +39,18 @@ void main() {
     expect(dataSource.skippedResultId, 'result-2');
   });
 
+  test('envía el esfuerzo y las sensaciones al finalizar', () async {
+    await repository.finishExecution(
+      'execution-1',
+      finalRpe: 8,
+      notes: 'Buena técnica, algo fatigado al final.',
+    );
+
+    expect(dataSource.finishedExecutionId, 'execution-1');
+    expect(dataSource.finalRpe, 8);
+    expect(dataSource.finalNotes, 'Buena técnica, algo fatigado al final.');
+  });
+
   test(
     'traduce el motivo de abandono al valor estable de base de datos',
     () async {
@@ -58,6 +70,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   String? skippedResultId;
   String? abandonedExecutionId;
   String? abandonmentReason;
+  String? finishedExecutionId;
+  int? finalRpe;
+  String? finalNotes;
 
   @override
   Future<void> abandonExecution(String executionId, String reason) async {
@@ -76,7 +91,15 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   }
 
   @override
-  Future<void> finishExecution(String executionId, int finalRpe) async {}
+  Future<void> finishExecution(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+  }) async {
+    finishedExecutionId = executionId;
+    this.finalRpe = finalRpe;
+    finalNotes = notes;
+  }
 
   @override
   Future<Map<String, dynamic>?> getExecution(String executionId) async => null;

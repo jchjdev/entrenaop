@@ -67,6 +67,20 @@ class _DetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SummaryCard(execution: execution),
+                if (execution.notes case final notes?) ...[
+                  const SizedBox(height: 12),
+                  Card(
+                    color: const Color(0xFF171717),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.notes_rounded,
+                        color: Color(0xFFFFA06F),
+                      ),
+                      title: const Text('Sensaciones de la sesión'),
+                      subtitle: Text(notes),
+                    ),
+                  ),
+                ],
                 if (abandoned && execution.abandonmentReason != null) ...[
                   const SizedBox(height: 12),
                   Card(
