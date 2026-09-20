@@ -7,7 +7,9 @@ import 'package:entrenaop/features/auth/presentation/pages/login_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/initial_assessment_page.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -62,6 +64,13 @@ class AppRouter {
           builder: (context, state) => BlocProvider(
             create: (_) => sl<PhysicalAssessmentCubit>(),
             child: const InitialAssessmentPage(),
+          ),
+        ),
+        GoRoute(
+          path: '/assessment/history',
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
+            child: const PhysicalAssessmentHistoryPage(),
           ),
         ),
       ],

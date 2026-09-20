@@ -49,7 +49,7 @@ género del usuario.
 Se ha elegido como primer recorrido al aspirante a tropa y marinería que prepara
 las pruebas de ingreso. La aplicación permite seleccionar el baremo H/M,
 introducir las cuatro marcas, obtener un informe con el mínimo y el margen de
-cada prueba y guardar el intento en el historial.
+cada prueba, guardar el intento y consultar el historial propio.
 
 La persistencia separa la cabecera de la evaluación de sus cuatro marcas. El
 cliente envía las mediciones originales a la función
@@ -62,6 +62,12 @@ Las políticas RLS limitan el historial al propietario y a los administradores.
 La vista `physical_assessment_results` reconstruye cada resultado desde la marca
 y el baremo versionado, conservando el criterio que se usó en ese momento.
 
-El siguiente bloque funcional será mostrar el historial y su evolución. La
-evaluación periódica y otros accesos se incorporarán como catálogos posteriores
-sin alterar esta primera vertical.
+El historial agrupa correctamente las cuatro filas de la vista en una única
+evaluación y compara los dos últimos intentos. La diferencia favorable mantiene
+el mismo significado en todas las pruebas: positiva es mejora, aunque para
+carrera y agilidad se obtenga reduciendo el tiempo.
+
+El siguiente bloque funcional partirá de estos datos para orientar el objetivo
+del usuario y preparar una primera recomendación explicable. La evaluación
+periódica y otros accesos se incorporarán como catálogos posteriores sin alterar
+esta primera vertical.

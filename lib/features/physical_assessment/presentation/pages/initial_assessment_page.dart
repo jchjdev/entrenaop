@@ -2,6 +2,7 @@ import 'package:entrenaop/features/physical_assessment/domain/catalogs/armed_for
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_state.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -288,7 +289,7 @@ class _AssessmentForm extends StatelessWidget {
     final standard = standards.singleWhere(
       (candidate) => candidate.test.id == testId,
     );
-    return 'Mínimo: ${_formatValue(standard.threshold, standard.test)}';
+    return 'Mínimo: ${formatAssessmentValue(standard.threshold, standard.test)}';
   }
 }
 
@@ -482,6 +483,14 @@ class _AssessmentReportView extends StatelessWidget {
                 }),
               ),
               const SizedBox(height: 10),
+              if (status == PhysicalAssessmentStatus.saved) ...[
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/assessment/history'),
+                  icon: const Icon(Icons.timeline_rounded),
+                  label: const Text('Ver mi evolución'),
+                ),
+                const SizedBox(height: 10),
+              ],
               FilledButton.icon(
                 onPressed: () =>
                     context.read<PhysicalAssessmentCubit>().editAgain(),
@@ -543,10 +552,10 @@ class _ResultCard extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 5),
           child: Text(
-            'Tu marca: ${_formatValue(result.mark.value, test)} · '
-            'Mínimo: ${_formatValue(result.standard.threshold, test)} · '
+            'Tu marca: ${formatAssessmentValue(result.mark.value, test)} · '
+            'Mínimo: ${formatAssessmentValue(result.standard.threshold, test)} · '
             '${result.passed ? 'Margen' : 'Diferencia'}: '
-            '${favorableDifference >= 0 ? '+' : '-'}${_formatDifference(favorableDifference.abs(), test.unit)}',
+            '${favorableDifference >= 0 ? '+' : '-'}${formatAssessmentDifference(favorableDifference.abs(), test.unit)}',
             style: const TextStyle(color: Colors.white60),
           ),
         ),
@@ -561,25 +570,4 @@ class _ResultCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatValue(int value, PhysicalTestDefinition test) {
-  if (test.unit == MarkUnit.repetitions) return '$value rep';
-  if (test.id == ArmedForces2026TroopCatalog.run2000m.id) {
-    final totalSeconds = value ~/ 1000;
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  final seconds = value / 1000;
-  final decimals = value % 1000 == 0 ? 0 : 1;
-  return '${seconds.toStringAsFixed(decimals).replaceAll('.', ',')} s';
-}
-
-String _formatDifference(int value, MarkUnit unit) {
-  if (unit == MarkUnit.repetitions) return '$value rep';
-  final seconds = value / 1000;
-  final decimals = value % 1000 == 0 ? 0 : 1;
-  return '${seconds.toStringAsFixed(decimals).replaceAll('.', ',')} s';
 }

@@ -103,3 +103,46 @@ class AssessmentReport extends Equatable {
   @override
   List<Object> get props => [catalogVersion, category, milestone, results];
 }
+
+class PhysicalAssessmentHistoryEntry extends Equatable {
+  const PhysicalAssessmentHistoryEntry({
+    required this.id,
+    required this.completedAt,
+    required this.report,
+  });
+
+  final String id;
+  final DateTime completedAt;
+  final AssessmentReport report;
+
+  @override
+  List<Object> get props => [id, completedAt, report];
+}
+
+class AssessmentProgress extends Equatable {
+  const AssessmentProgress({
+    required this.test,
+    required this.previousValue,
+    required this.currentValue,
+    required this.favorableDifference,
+  });
+
+  final PhysicalTestDefinition test;
+  final int previousValue;
+  final int currentValue;
+
+  // Un valor positivo siempre representa mejora, aunque en las pruebas
+  // cronometradas mejorar signifique reducir el tiempo.
+  final int favorableDifference;
+
+  bool get improved => favorableDifference > 0;
+  bool get unchanged => favorableDifference == 0;
+
+  @override
+  List<Object> get props => [
+    test,
+    previousValue,
+    currentValue,
+    favorableDifference,
+  ];
+}

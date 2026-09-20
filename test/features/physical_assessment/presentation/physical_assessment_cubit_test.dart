@@ -78,6 +78,9 @@ class _FakePhysicalAssessmentRepository
   AssessmentReport? savedReport;
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistory() async => const [];
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,

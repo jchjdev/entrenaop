@@ -124,6 +124,12 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 18),
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/assessment/history'),
+                    icon: const Icon(Icons.timeline_rounded),
+                    label: const Text('Ver mi evolución'),
+                  ),
+                  const SizedBox(height: 18),
                   const Row(
                     children: [
                       Expanded(

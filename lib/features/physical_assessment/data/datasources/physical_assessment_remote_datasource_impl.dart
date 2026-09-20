@@ -1,5 +1,6 @@
 import 'package:entrenaop/core/errors/exceptions.dart';
 import 'package:entrenaop/features/physical_assessment/data/datasources/physical_assessment_remote_datasource.dart';
+import 'package:entrenaop/features/physical_assessment/data/models/physical_assessment_history_model.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -8,6 +9,23 @@ class PhysicalAssessmentRemoteDataSourceImpl
   const PhysicalAssessmentRemoteDataSourceImpl({required this.supabaseClient});
 
   final SupabaseClient supabaseClient;
+
+  @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistory() async {
+    try {
+      final response = await supabaseClient
+          .from('physical_assessment_results')
+          .select()
+          .order('completed_at', ascending: false)
+          .order('test_id');
+
+      return PhysicalAssessmentHistoryModel.fromRows(
+        List<Map<String, dynamic>>.from(response),
+      );
+    } catch (error) {
+      throw ServerException(error.toString());
+    }
+  }
 
   @override
   Future<String> saveAssessment(
