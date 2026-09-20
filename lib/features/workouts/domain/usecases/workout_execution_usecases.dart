@@ -19,6 +19,14 @@ class GetWorkoutExecutionUseCase {
       _repository.getExecution(executionId);
 }
 
+class GetWorkoutHistoryUseCase {
+  const GetWorkoutHistoryUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<List<WorkoutExecution>> call() => _repository.getExecutionHistory();
+}
+
 class CompleteWorkoutSetUseCase {
   const CompleteWorkoutSetUseCase(this._repository);
 

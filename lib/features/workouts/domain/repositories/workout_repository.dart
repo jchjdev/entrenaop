@@ -8,6 +8,8 @@ abstract class WorkoutRepository {
 
   Future<WorkoutExecution?> getExecution(String executionId);
 
+  Future<List<WorkoutExecution>> getExecutionHistory();
+
   Future<void> completeSet(WorkoutSetResultInput result);
 
   Future<void> skipSet(String resultId);

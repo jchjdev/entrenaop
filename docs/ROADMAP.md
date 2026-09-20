@@ -63,6 +63,10 @@ resultado real o la omisión de cada serie. Las series por duración incluyen un
 cuenta atrás que puede pausarse, reanudarse y restaurarse al volver a la sesión.
 Salir conserva la sesión activa, mientras que el abandono definitivo registra
 el motivo sin convertir automáticamente las series restantes en omitidas.
+Las sesiones completadas y abandonadas ya aparecen en Evolución, donde puede
+consultarse el objetivo y el resultado real de cada serie. Las evaluaciones
+físicas conservan un historial separado dentro de la misma área para no mezclar
+pruebas de acceso con entrenamientos cotidianos.
 Todavía falta guardar resultados sin conexión y sincronizarlos de forma
 idempotente cuando vuelva la red.
 

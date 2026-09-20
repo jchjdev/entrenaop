@@ -27,6 +27,12 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<List<WorkoutExecution>> getExecutionHistory() async {
+    final rows = await remoteDataSource.getExecutionHistory();
+    return rows.map(WorkoutExecutionModel.fromJson).toList(growable: false);
+  }
+
+  @override
   Future<void> completeSet(WorkoutSetResultInput result) {
     return remoteDataSource.completeSet({
       'p_result_id': result.resultId,

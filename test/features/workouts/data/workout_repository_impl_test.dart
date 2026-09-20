@@ -82,6 +82,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getExecution(String executionId) async => null;
 
   @override
+  Future<List<Map<String, dynamic>>> getExecutionHistory() async => const [];
+
+  @override
   Future<Map<String, dynamic>?> getTemplateById(String id) async => null;
 
   @override

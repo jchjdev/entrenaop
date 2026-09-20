@@ -485,7 +485,8 @@ class _AssessmentReportView extends StatelessWidget {
               const SizedBox(height: 10),
               if (status == PhysicalAssessmentStatus.saved) ...[
                 OutlinedButton.icon(
-                  onPressed: () => context.push('/assessment/history'),
+                  onPressed: () =>
+                      context.push('/assessment/history/physical'),
                   icon: const Icon(Icons.timeline_rounded),
                   label: const Text('Ver mi evolución'),
                 ),

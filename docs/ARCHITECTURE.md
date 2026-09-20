@@ -195,6 +195,12 @@ Inicio, Mi plan, Evolución y Perfil. `AppShell` representa esos destinos como
 `NavigationBar` en móvil y `NavigationRail` en pantallas amplias. La evaluación
 inicial queda fuera del contenedor porque es un flujo concentrado y temporal.
 
+Evolución es una sección, no un sinónimo de valoración física. Su raíz muestra
+por ahora el historial de sesiones terminadas y ofrece acceso al historial de
+evaluaciones físicas mediante una ruta anidada. Esta jerarquía permite añadir
+más adelante resumen de progreso, marcas y comparación con baremos sin cambiar
+la navegación principal ni mezclar datos de distinta naturaleza.
+
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.
 

@@ -19,7 +19,10 @@ import 'package:entrenaop/features/training_plan/presentation/pages/training_pla
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_history_detail_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_history_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -127,9 +130,27 @@ class AppRouter {
                 GoRoute(
                   path: '/assessment/history',
                   builder: (context, state) => BlocProvider(
-                    create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
-                    child: const PhysicalAssessmentHistoryPage(),
+                    create: (_) => sl<WorkoutHistoryCubit>(),
+                    child: const WorkoutHistoryPage(),
                   ),
+                  routes: [
+                    GoRoute(
+                      path: 'physical',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
+                        child: const PhysicalAssessmentHistoryPage(),
+                      ),
+                    ),
+                    GoRoute(
+                      path: 'workouts/:executionId',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<WorkoutHistoryDetailCubit>(
+                          param1: state.pathParameters['executionId']!,
+                        ),
+                        child: const WorkoutHistoryDetailPage(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

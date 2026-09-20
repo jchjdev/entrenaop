@@ -313,7 +313,7 @@ class _AssessmentCard extends StatelessWidget {
                 '${focusName == null ? '' : '\nFoco matemático: $focusName'}',
       actionLabel: completed ? 'Ver evolución' : 'Comenzar',
       onPressed: () => completed
-          ? context.go('/assessment/history')
+          ? context.go('/assessment/history/physical')
           : context.push('/assessment/initial'),
     );
   }

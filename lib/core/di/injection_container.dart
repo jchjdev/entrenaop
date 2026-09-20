@@ -51,6 +51,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -174,6 +175,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetStarterWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
@@ -193,6 +195,12 @@ Future<void> initDependencies() async {
       abandonExecution: sl(),
       timerStore: sl(),
     )..load(),
+  );
+  sl.registerFactory(() => WorkoutHistoryCubit(getHistory: sl())..load());
+  sl.registerFactoryParam<WorkoutHistoryDetailCubit, String, void>(
+    (executionId, _) =>
+        WorkoutHistoryDetailCubit(executionId: executionId, getExecution: sl())
+          ..load(),
   );
 
   // --- Dashboard ---
