@@ -8,6 +8,8 @@ import 'package:entrenaop/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/watch_current_user_usecase.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:entrenaop/features/dashboard/domain/usecases/get_preparation_overview_usecase.dart';
+import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
 import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_datasource.dart';
 import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_datasource_impl.dart';
 import 'package:entrenaop/features/exercises/data/repositories/exercise_repository_impl.dart';
@@ -130,4 +132,14 @@ Future<void> initDependencies() async {
     () => TrainingPreferencesRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerFactory(() => TrainingPreferencesCubit(repository: sl())..load());
+
+  // --- Dashboard ---
+
+  sl.registerLazySingleton(
+    () => GetPreparationOverviewUseCase(
+      assessmentRepository: sl(),
+      preferencesRepository: sl(),
+    ),
+  );
+  sl.registerFactory(() => DashboardCubit(getOverview: sl())..load());
 }

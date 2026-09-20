@@ -165,6 +165,12 @@ inicial queda fuera del contenedor porque es un flujo concentrado y temporal.
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.
 
+El panel de Inicio compone datos de evaluación y preferencias mediante un caso
+de uso propio. Su estado siguiente solo puede ser completar evaluación,
+completar disponibilidad, solicitar revisión profesional o esperar reglas
+deportivas validadas. No calcula un porcentaje de progreso ni presenta una
+prescripción que el dominio todavía no pueda justificar.
+
 ## Verificación
 
 Después de cambios materiales se ejecutarán análisis estático y pruebas

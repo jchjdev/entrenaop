@@ -6,6 +6,7 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/login_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
@@ -70,7 +71,10 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/home',
-                  builder: (context, state) => const HomePage(),
+                  builder: (context, state) => BlocProvider(
+                    create: (_) => sl<DashboardCubit>(),
+                    child: const HomePage(),
+                  ),
                 ),
               ],
             ),
