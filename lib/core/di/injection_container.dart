@@ -46,8 +46,10 @@ import 'package:entrenaop/features/workouts/data/datasources/workout_remote_data
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource_impl.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_timer_store.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -64,6 +66,9 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<WorkoutTimerStore>(
     () => SharedPreferencesWorkoutTimerStore(sharedPreferences),
+  );
+  sl.registerLazySingleton<WorkoutCueService>(
+    () => SharedPreferencesWorkoutCueService(sharedPreferences),
   );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -195,6 +200,7 @@ Future<void> initDependencies() async {
       finishExecution: sl(),
       abandonExecution: sl(),
       timerStore: sl(),
+      cueService: sl(),
     )..load(),
   );
   sl.registerFactory(() => WorkoutHistoryCubit(getHistory: sl())..load());

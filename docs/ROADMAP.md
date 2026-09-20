@@ -74,6 +74,9 @@ con un máximo de tres cambios por serie. Cada cambio exige motivo y queda
 auditado en PostgreSQL.
 Durante la ejecución se muestra la descripción técnica del ejercicio y, cuando
 el catálogo dispone de él, un vídeo opcional cargado bajo demanda.
+Los temporizadores emiten avisos al preparar, comenzar y terminar el trabajo y
+al finalizar un descanso. Sonido y respuesta háptica se configuran de forma
+independiente y la preferencia queda guardada en el dispositivo.
 Todavía falta guardar resultados sin conexión y sincronizarlos de forma
 idempotente cuando vuelva la red.
 

@@ -9,6 +9,9 @@ void main() {
   ) async {
     var elapsed = -1;
     var now = Duration.zero;
+    var preparationTicks = 0;
+    var starts = 0;
+    var finishes = 0;
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData.dark(),
@@ -16,6 +19,9 @@ void main() {
           body: WorkoutSetCountdown(
             targetSeconds: 3,
             onElapsedChanged: (value) => elapsed = value,
+            onPreparationTick: () => preparationTicks++,
+            onStarted: () => starts++,
+            onFinished: () => finishes++,
             clock: () => now,
           ),
         ),
@@ -29,9 +35,12 @@ void main() {
     expect(find.text('Prepárate…'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
     expect(elapsed, 0);
+    expect(preparationTicks, 1);
 
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('0:03'), findsOneWidget);
+    expect(preparationTicks, 3);
+    expect(starts, 1);
 
     now += const Duration(seconds: 1);
     await tester.pump(const Duration(milliseconds: 200));
@@ -51,6 +60,7 @@ void main() {
     expect(find.text('0:00'), findsOneWidget);
     expect(find.text('Tiempo completado'), findsOneWidget);
     expect(elapsed, 3);
+    expect(finishes, 1);
   });
 
   testWidgets('restaura un temporizador activo usando el tiempo transcurrido', (

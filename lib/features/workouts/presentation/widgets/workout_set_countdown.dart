@@ -17,6 +17,9 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.wallClock,
     this.timerStore,
     this.timerId,
+    this.onPreparationTick,
+    this.onStarted,
+    this.onFinished,
     super.key,
   }) : assert(targetSeconds > 0),
        assert(preparationSeconds >= 0),
@@ -33,6 +36,9 @@ class WorkoutSetCountdown extends StatefulWidget {
   final DateTime Function()? wallClock;
   final WorkoutTimerStore? timerStore;
   final String? timerId;
+  final VoidCallback? onPreparationTick;
+  final VoidCallback? onStarted;
+  final VoidCallback? onFinished;
 
   @override
   State<WorkoutSetCountdown> createState() => _WorkoutSetCountdownState();
@@ -101,6 +107,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
 
     _isPreparing = true;
     _preparationRemaining = widget.preparationSeconds;
+    widget.onPreparationTick?.call();
     _persist(WorkoutTimerPhase.preparing);
     _runPreparationTicker();
     setState(() {});
@@ -111,6 +118,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_preparationRemaining > 1) {
         setState(() => _preparationRemaining--);
+        widget.onPreparationTick?.call();
         return;
       }
       timer.cancel();
@@ -120,8 +128,9 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     });
   }
 
-  void _startExerciseTimer({bool persist = true}) {
+  void _startExerciseTimer({bool persist = true, bool notify = true}) {
     _runStartedAt = _now;
+    if (notify) widget.onStarted?.call();
     if (persist) _persist(WorkoutTimerPhase.running);
     _ticker?.cancel();
     _ticker = Timer.periodic(
@@ -145,6 +154,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _runStartedAt = null;
       _ticker?.cancel();
       _clearPersistedTimer();
+      widget.onFinished?.call();
     }
     if (mounted) setState(() {});
   }
@@ -230,7 +240,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       return;
     }
     if (running) {
-      _startExerciseTimer();
+      _startExerciseTimer(notify: false);
     }
   }
 

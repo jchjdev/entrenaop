@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 
@@ -15,12 +16,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required FinishWorkoutExecutionUseCase finishExecution,
     required AbandonWorkoutExecutionUseCase abandonExecution,
     required WorkoutTimerStore timerStore,
+    required WorkoutCueService cueService,
   }) : _getExecution = getExecution,
        _completeSet = completeSet,
        _skipSet = skipSet,
        _finishExecution = finishExecution,
        _abandonExecution = abandonExecution,
        _timerStore = timerStore,
+       _cueService = cueService,
        super(const ActiveWorkoutState());
 
   final String executionId;
@@ -30,6 +33,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final FinishWorkoutExecutionUseCase _finishExecution;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
   final WorkoutTimerStore _timerStore;
+  final WorkoutCueService _cueService;
   Timer? _restTimer;
 
   Future<void> load() async {
@@ -148,6 +152,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final remaining = state.restSecondsRemaining - 1;
       if (remaining <= 0) {
         timer.cancel();
+        unawaited(_cueService.signal(WorkoutCue.restFinished));
         emit(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,

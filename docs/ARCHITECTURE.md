@@ -196,6 +196,11 @@ instantánea se elimina al completar, omitir o abandonar la serie. Esto no
 equivale todavía a sincronización offline de resultados: esa capacidad exigirá
 una cola idempotente y resolución explícita de errores.
 
+Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
+locales, sin introducir permisos ni dependencias nativas adicionales. Los
+eventos del temporizador no contienen reglas de negocio y pueden silenciarse de
+forma independiente desde la sesión activa.
+
 ## Navegación y presentación
 
 `go_router` gestiona las rutas. El área autenticada usa

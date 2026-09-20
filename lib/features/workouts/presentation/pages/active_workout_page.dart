@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
@@ -9,9 +12,14 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 class ActiveWorkoutPage extends StatelessWidget {
-  const ActiveWorkoutPage({required this.timerStore, super.key});
+  const ActiveWorkoutPage({
+    required this.timerStore,
+    required this.cueService,
+    super.key,
+  });
 
   final WorkoutTimerStore timerStore;
+  final WorkoutCueService cueService;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +40,7 @@ class ActiveWorkoutPage extends StatelessWidget {
             _ => 'Sesión en curso',
           }),
         ),
+        actions: [_CueSettingsButton(cueService: cueService)],
       ),
       body: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
         builder: (context, state) {
@@ -54,18 +63,94 @@ class ActiveWorkoutPage extends StatelessWidget {
               execution.status == WorkoutExecutionStatus.abandoned) {
             return _Abandoned(execution: execution);
           }
-          return _ActiveContent(state: state, timerStore: timerStore);
+          return _ActiveContent(
+            state: state,
+            timerStore: timerStore,
+            cueService: cueService,
+          );
         },
       ),
     );
   }
 }
 
+class _CueSettingsButton extends StatelessWidget {
+  const _CueSettingsButton({required this.cueService});
+
+  final WorkoutCueService cueService;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Avisos del temporizador',
+      icon: const Icon(Icons.notifications_active_outlined),
+      onPressed: () => _showSettings(context),
+    );
+  }
+
+  Future<void> _showSettings(BuildContext context) async {
+    var sound = cueService.preferences.soundEnabled;
+    var haptics = cueService.preferences.hapticsEnabled;
+    final selected = await showDialog<WorkoutCuePreferences>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Avisos del temporizador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: sound,
+                title: const Text('Sonido'),
+                subtitle: const Text('Preparación, inicio, final y descanso.'),
+                onChanged: (value) => setDialogState(() => sound = value),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: haptics,
+                title: const Text('Vibración'),
+                subtitle: const Text(
+                  'Se aplicará cuando el dispositivo sea compatible.',
+                ),
+                onChanged: (value) => setDialogState(() => haptics = value),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                WorkoutCuePreferences(
+                  soundEnabled: sound,
+                  hapticsEnabled: haptics,
+                ),
+              ),
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (selected == null) return;
+    await cueService.savePreferences(selected);
+  }
+}
+
 class _ActiveContent extends StatefulWidget {
-  const _ActiveContent({required this.state, required this.timerStore});
+  const _ActiveContent({
+    required this.state,
+    required this.timerStore,
+    required this.cueService,
+  });
 
   final ActiveWorkoutState state;
   final WorkoutTimerStore timerStore;
+  final WorkoutCueService cueService;
 
   @override
   State<_ActiveContent> createState() => _ActiveContentState();
@@ -131,6 +216,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                         set: current,
                         executionId: execution.id,
                         timerStore: widget.timerStore,
+                        cueService: widget.cueService,
                         saving: saving,
                         onComplete: context
                             .read<ActiveWorkoutCubit>()
@@ -246,6 +332,7 @@ class _CurrentSetCard extends StatefulWidget {
     required this.set,
     required this.executionId,
     required this.timerStore,
+    required this.cueService,
     required this.saving,
     required this.onComplete,
     required this.onSkip,
@@ -254,6 +341,7 @@ class _CurrentSetCard extends StatefulWidget {
   final WorkoutExecutionSet set;
   final String executionId;
   final WorkoutTimerStore timerStore;
+  final WorkoutCueService cueService;
   final bool saving;
   final ValueChanged<WorkoutSetResultInput> onComplete;
   final VoidCallback onSkip;
@@ -412,6 +500,15 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   onElapsedChanged: (elapsed) {
                     _durationController.text = elapsed.toString();
                   },
+                  onPreparationTick: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.preparationTick),
+                  ),
+                  onStarted: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.workStarted),
+                  ),
+                  onFinished: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.workFinished),
+                  ),
                 ),
               ],
               const SizedBox(height: 24),
