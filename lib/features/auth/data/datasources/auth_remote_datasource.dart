@@ -6,6 +6,14 @@ abstract class AuthRemoteDataSource {
   /// Lanza [ServerException] si las credenciales son incorrectas.
   Future<UserModel> signIn({required String email, required String password});
 
+  /// Crea una cuenta. Devuelve null cuando Supabase exige confirmar el correo
+  /// antes de crear una sesión autenticada.
+  Future<UserModel?> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+  });
+
   /// Cierra la sesión del usuario actual.
   Future<void> signOut();
 

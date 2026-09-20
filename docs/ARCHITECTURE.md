@@ -1,0 +1,160 @@
+# Arquitectura de EntrenaOP
+
+## Estado observado
+
+Instantánea comprobada en el repositorio el 19 de septiembre de 2026:
+
+- Proyecto Flutter con destinos Android, iOS, web y Windows.
+- Restricción de Dart en `pubspec.yaml`: `>=3.5.0 <4.0.0`.
+- Dependencias declaradas para Bloc/Cubit, Equatable, `go_router`, GetIt,
+  Supabase, vídeo, preferencias y utilidades.
+- Estructura por funcionalidades con capas `domain`, `data` y `presentation` en
+  autenticación y ejercicios.
+- Autenticación, router y contenedor de dependencias presentes.
+- La funcionalidad de ejercicios ya contiene entidad, contrato, casos de uso,
+  modelo, datasource, repositorio y Cubit; cualquier documento que la describa
+  como pendiente está desactualizado.
+- Las rutas visibles actualmente son `/` y `/home`.
+- La URL y la clave anónima de Supabase están acopladas en `main.dart`; deben
+  separarse por entorno en un trabajo posterior.
+- El catálogo remoto de Supabase ya está auditado. La línea base reconstruida y
+  la primera migración de seguridad se encuentran en `supabase/migrations/`;
+  todavía no se han aplicado a producción.
+- El esquema heredado contiene cinco tablas de producto. Su campo
+  `profiles.role` permanece temporalmente por compatibilidad, pero la migración
+  crea `admin_permissions` como autoridad administrativa independiente y
+  retira al cliente la capacidad de modificar `role`.
+
+Esta sección es una instantánea, no sustituye una auditoría completa.
+
+## Clean Architecture aplicada a EntrenaOP
+
+Clean Architecture se utilizará para proteger las reglas del producto y hacer
+posible su evolución, no como una plantilla que obligue a crear el mismo número
+de archivos para cualquier operación.
+
+Los criterios son:
+
+- Organización principal por funcionalidad, con alta cohesión dentro de cada
+  módulo.
+- El dominio de entrenamiento, baremos y progresión no dependerá de Flutter,
+  Supabase ni detalles de interfaz.
+- Las dependencias apuntarán hacia las reglas de negocio. La presentación y la
+  persistencia adaptarán sus datos al dominio, no al revés.
+- Se introducirán contratos en fronteras reales: base de datos, almacenamiento,
+  compras, salud, notificaciones o servicios externos.
+- Un caso de uso tendrá sentido cuando exprese una acción u orquestación del
+  producto; no se añadirá una clase que solo reenvíe una llamada por cumplir una
+  estructura.
+- Los estados de Bloc/Cubit representarán estados relevantes de la experiencia,
+  incluyendo carga, éxito, vacío, error y recuperación cuando corresponda.
+- Las reglas críticas se probarán sin widgets ni red. Las integraciones se
+  cubrirán con pruebas en sus fronteras.
+
+La escalabilidad buscada consiste en poder añadir oposiciones, formatos de
+sesión, entrenadores, derechos comerciales y organizaciones sin reescribir el
+núcleo ni reinterpretar el historial. No consiste en construir hoy módulos que
+todavía no tienen un caso de uso definido.
+
+## Organización objetivo
+
+La organización modular por funcionalidades es el punto de partida:
+
+```text
+lib/
+  core/
+    di/
+    errors/
+    router/
+    theme/
+    utils/
+  features/
+    auth/
+      domain/
+      data/
+      presentation/
+    exercises/
+    training/
+    oppositions/
+    clients/
+    chat/
+```
+
+Los nombres y módulos futuros no se crearán hasta que su caso de uso lo exija.
+La dependencia general debe orientarse hacia el dominio, sin impedir soluciones
+más sencillas cuando una abstracción no aporte valor.
+
+## Modelo de entrenamiento
+
+No debe modelarse cada formato con columnas aisladas en una única tabla rígida.
+El diseño tendrá que expresar una jerarquía versionada, por ejemplo:
+planificación → sesión → bloques → ejercicios/intervalos → prescripción, junto a
+un registro separado del resultado realizado. La forma definitiva se decidirá
+tras concretar los casos de PAEF/PAFA.
+
+Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
+el que se evaluaron.
+
+## Identidad, acceso y negocio
+
+- Supabase Auth representa la identidad.
+- El perfil contiene datos personales de la aplicación.
+- Los permisos administrativos se modelan por separado.
+- La suscripción y sus derechos se derivan de una fuente fiable y no pueden ser
+  autoasignados desde Flutter.
+- El seguimiento se representa como servicio/relación entre entrenador y
+  cliente, con ciclo de vida propio.
+- RLS debe autorizar cada operación según el recurso; el acceso no se reduce a
+  “cada usuario solo ve sus filas”.
+- Las operaciones sensibles pueden requerir funciones o backend de confianza.
+- Un usuario podrá actuar como deportista y entrenador al mismo tiempo.
+- La futura pertenencia a una academia se representará como membresía de una
+  organización, no como un nuevo valor excluyente de `role`.
+- Los derechos comerciales tendrán vigencia y fuente verificable; no se
+  inferirán de la interfaz que esté viendo el usuario.
+
+Conceptualmente se mantendrán separados:
+
+```text
+identidad
+├── perfil personal
+├── permisos administrativos
+├── derechos comerciales
+├── relaciones entrenador-cliente
+└── membresías de organización (futuro)
+```
+
+## Datos y algoritmo
+
+- Flutter valida entrada y ofrece feedback temprano.
+- PostgreSQL conserva la integridad mediante constraints, relaciones y tipos.
+- Los eventos o resultados históricos deben ser inmutables o estar versionados
+  cuando su modificación altere decisiones pasadas.
+- Cada recomendación relevante del algoritmo debe guardar versión, entradas,
+  salida, razones y cualquier anulación manual.
+- La primera versión será determinista antes de estudiar técnicas menos
+  explicables.
+
+## Sesión activa y funcionamiento sin conexión
+
+La sesión activa es una frontera de fiabilidad. Su estado en curso debe poder
+persistirse localmente, restaurarse después de cerrar la aplicación o perder la
+conexión y sincronizarse sin duplicar resultados. El diseño definitivo se hará
+con una vertical real antes de generalizarlo a todos los formatos.
+
+El servidor seguirá siendo la autoridad para permisos, derechos comerciales,
+asignaciones y datos consolidados. El soporte local no debe convertirse en una
+forma de eludir reglas de negocio o seguridad.
+
+## Navegación y presentación
+
+`go_router` es el router previsto. `go` sustituye la ubicación, `push` apila un
+flujo temporal y `pop` vuelve; se elegirá según la experiencia de usuario. Las
+rutas anidadas y la estructura responsive se introducirán cuando existan los
+destinos reales.
+
+## Verificación
+
+Después de cambios materiales se ejecutarán análisis estático y pruebas
+relevantes. Tienen prioridad las pruebas de dominio, progresión, permisos,
+versionado, persistencia de sesión y regresiones observadas.

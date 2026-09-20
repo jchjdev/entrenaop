@@ -30,19 +30,50 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .eq('id', user.id)
           .single();
 
-      print('Profile data: $profile');
-      print('User email: ${user.email}');
       try {
         final model = UserModel.fromJson({
           ...profile,
           'email': user.email ?? '',
         });
-        print('Model created: ${model.id}');
         return model;
       } catch (e) {
-        print('fromJson error: $e');
         throw ServerException(e.toString());
       }
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel?> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+  }) async {
+    try {
+      final response = await supabaseClient.auth.signUp(
+        email: email,
+        password: password,
+        data: {'full_name': fullName},
+      );
+      final user = response.user;
+      if (user == null) {
+        throw const ServerException('No se ha podido crear la cuenta.');
+      }
+
+      if (response.session == null) return null;
+
+      final profile = await supabaseClient
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
+
+      return UserModel.fromJson({...profile, 'email': user.email ?? email});
     } on AuthException catch (e) {
       throw ServerException(e.message);
     } on ServerException {
@@ -75,10 +106,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .eq('id', user.id)
           .single();
 
-      return UserModel.fromJson({
-        ...profile,
-        'email': user.email ?? '',
-      });
+      return UserModel.fromJson({...profile, 'email': user.email ?? ''});
     } on AuthException catch (e) {
       throw ServerException(e.message);
     } catch (e) {

@@ -10,7 +10,7 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
 
   @override
   Future<void> createExercise(ExerciseEntity exercise) async {
-    return await remoteDataSource.createExercise(exercise as ExerciseModel);
+    return remoteDataSource.createExercise(ExerciseModel.fromEntity(exercise));
   }
 
   @override
@@ -30,13 +30,14 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
 
   @override
   Future<List<ExerciseEntity>> getExercisesByMuscleGroup(
-      String muscleGroup) async {
+    String muscleGroup,
+  ) async {
     return await remoteDataSource.getExercisesByMuscleGroup(muscleGroup);
   }
 
   @override
   Future<void> updateExercise(ExerciseEntity exercise) async {
-    return await remoteDataSource.updateExercise(exercise as ExerciseModel);
+    return remoteDataSource.updateExercise(ExerciseModel.fromEntity(exercise));
   }
 
   // Implement the methods and properties defined in ExerciseRepository

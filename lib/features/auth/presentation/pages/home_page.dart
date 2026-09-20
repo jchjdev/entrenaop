@@ -20,8 +20,9 @@ class HomePage extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 24),
             ),
             ElevatedButton(
-                onPressed: () => context.read<AuthCubit>().signOut(),
-                child: const Text('Cerrar sesión'))
+              onPressed: () => context.read<AuthCubit>().signOut(),
+              child: const Text('Cerrar sesión'),
+            ),
           ],
         ),
       ),

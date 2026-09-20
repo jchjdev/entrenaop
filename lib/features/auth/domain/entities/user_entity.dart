@@ -8,13 +8,14 @@ class UserEntity extends Equatable {
   final String? avatarUrl;
   final DateTime createdAt;
 
-  const UserEntity(
-      {required this.id,
-      this.fullName,
-      required this.email,
-      required this.role,
-      this.avatarUrl,
-      required this.createdAt});
+  const UserEntity({
+    required this.id,
+    this.fullName,
+    required this.email,
+    required this.role,
+    this.avatarUrl,
+    required this.createdAt,
+  });
 
   @override
   // TODO: implement props

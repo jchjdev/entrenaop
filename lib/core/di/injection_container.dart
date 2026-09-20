@@ -5,6 +5,7 @@ import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart
 import 'package:entrenaop/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_out_usecase.dart';
+import 'package:entrenaop/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_datasource.dart';
 import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_datasource_impl.dart';
@@ -34,28 +35,32 @@ Future<void> initDependencies() async {
   );
 
   sl.registerLazySingleton(() => SignInUseCase(sl()));
+  sl.registerLazySingleton(() => SignUpUseCase(sl()));
   sl.registerLazySingleton(() => SignOutUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
 
-  sl.registerFactory(() => AuthCubit(
-        signInUseCase: sl(),
-        signOutUseCase: sl(),
-        getCurrentUserUseCase: sl(),
-      ));
+  sl.registerFactory(
+    () => AuthCubit(
+      signInUseCase: sl(),
+      signUpUseCase: sl(),
+      signOutUseCase: sl(),
+      getCurrentUserUseCase: sl(),
+    ),
+  );
 
   // --- Exercises ---
 
-// El datasource habla con Supabase — recibe el cliente ya registrado
+  // El datasource habla con Supabase — recibe el cliente ya registrado
   sl.registerLazySingleton<ExerciseRemoteDataSource>(
     () => ExerciseRemoteDataSourceImpl(supabaseClient: sl()),
   );
 
-// El repositorio recibe el datasource
+  // El repositorio recibe el datasource
   sl.registerLazySingleton<ExerciseRepository>(
     () => ExerciseRepositoryImpl(remoteDataSource: sl()),
   );
 
-// Use cases — cada uno recibe el repositorio
+  // Use cases — cada uno recibe el repositorio
   sl.registerLazySingleton(() => GetExercisesUseCase(sl()));
   sl.registerLazySingleton(() => GetExercisesByMuscleGroupUseCase(sl()));
   sl.registerLazySingleton(() => GetExerciseByIdUseCase(sl()));
@@ -63,9 +68,11 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => UpdateExerciseUseCase(sl()));
   sl.registerLazySingleton(() => DeleteExerciseUseCase(sl()));
 
-// El cubit se registra como Factory — nueva instancia cada vez que se necesita
-  sl.registerFactory(() => ExercisesCubit(
-        getExercisesUseCase: sl(),
-        getExercisesByMuscleGroupUseCase: sl(),
-      ));
+  // El cubit se registra como Factory — nueva instancia cada vez que se necesita
+  sl.registerFactory(
+    () => ExercisesCubit(
+      getExercisesUseCase: sl(),
+      getExercisesByMuscleGroupUseCase: sl(),
+    ),
+  );
 }

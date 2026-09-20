@@ -15,6 +15,22 @@ class ExerciseModel extends ExerciseEntity {
     required super.createdBy,
   });
 
+  factory ExerciseModel.fromEntity(ExerciseEntity entity) {
+    return ExerciseModel(
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      videoUrl: entity.videoUrl,
+      thumbnailUrl: entity.thumbnailUrl,
+      muscleGroups: entity.muscleGroups,
+      equipment: entity.equipment,
+      difficulty: entity.difficulty,
+      exerciseType: entity.exerciseType,
+      isPublic: entity.isPublic,
+      createdBy: entity.createdBy,
+    );
+  }
+
   factory ExerciseModel.fromJson(Map<String, dynamic> json) {
     return ExerciseModel(
       id: json['id'],

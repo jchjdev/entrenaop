@@ -11,8 +11,10 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   @override
   Future<List<ExerciseModel>> getExercises() async {
     try {
-      final response =
-          await supabaseClient.from('exercises').select().eq('is_public', true);
+      final response = await supabaseClient
+          .from('exercises')
+          .select()
+          .eq('is_public', true);
       return (response as List)
           .map((json) => ExerciseModel.fromJson(json))
           .toList();
@@ -23,7 +25,8 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
 
   @override
   Future<List<ExerciseModel>> getExercisesByMuscleGroup(
-      String muscleGroup) async {
+    String muscleGroup,
+  ) async {
     try {
       final response = await supabaseClient
           .from('exercises')
@@ -41,8 +44,12 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   @override
   Future<ExerciseModel?> getExerciseById(String id) async {
     try {
-      final response =
-          await supabaseClient.from('exercises').select().eq('id', id).single();
+      final response = await supabaseClient
+          .from('exercises')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
+      if (response == null) return null;
       return ExerciseModel.fromJson(response);
     } catch (e) {
       throw ServerException(e.toString());

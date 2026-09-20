@@ -47,14 +47,9 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          context.go('/home');
-        } else if (state is AuthError) {
+        if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         }
       },
@@ -144,8 +139,9 @@ class _LoginPageState extends State<LoginPage>
                                     Text(
                                       'Entrena. Supera. Aprueba.',
                                       style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.45),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.45,
+                                        ),
                                         fontSize: 14,
                                         letterSpacing: 0.5,
                                       ),
@@ -243,11 +239,9 @@ class _LoginPageState extends State<LoginPage>
                                       ? null
                                       : () {
                                           context.read<AuthCubit>().signIn(
-                                                email: _emailController.text
-                                                    .trim(),
-                                                password:
-                                                    _passwordController.text,
-                                              );
+                                            email: _emailController.text.trim(),
+                                            password: _passwordController.text,
+                                          );
                                         },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFE65100),
@@ -287,13 +281,14 @@ class _LoginPageState extends State<LoginPage>
                                     Text(
                                       '¿No tienes cuenta? ',
                                       style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.45),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.45,
+                                        ),
                                         fontSize: 14,
                                       ),
                                     ),
                                     GestureDetector(
-                                      onTap: () {},
+                                      onTap: () => context.push('/sign-up'),
                                       child: const Text(
                                         'Regístrate',
                                         style: TextStyle(
@@ -365,8 +360,10 @@ class _LoginPageState extends State<LoginPage>
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE65100), width: 1.5),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }

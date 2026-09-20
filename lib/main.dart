@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
@@ -7,27 +10,50 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppConfig.validate();
 
   await Supabase.initialize(
-    url: 'https://izzsttrrgrowktfjssqv.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6enN0dHJyZ3Jvd2t0Zmpzc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMjYzNTksImV4cCI6MjA5MzkwMjM1OX0.Q84u4AogvIta5rRwe3m-sbZo_yLlkIkD9udnbUEXaoc',
+    url: AppConfig.supabaseUrl,
+    publishableKey: AppConfig.supabasePublishableKey,
   );
 
   await initDependencies();
 
-  runApp(const EntrenaOpApp());
+  final authCubit = sl<AuthCubit>();
+  unawaited(authCubit.checkCurrentUser());
+
+  runApp(EntrenaOpApp(authCubit: authCubit));
 }
 
-class EntrenaOpApp extends StatelessWidget {
-  const EntrenaOpApp({super.key});
+class EntrenaOpApp extends StatefulWidget {
+  final AuthCubit authCubit;
+
+  const EntrenaOpApp({super.key, required this.authCubit});
+
+  @override
+  State<EntrenaOpApp> createState() => _EntrenaOpAppState();
+}
+
+class _EntrenaOpAppState extends State<EntrenaOpApp> {
+  late final AppRouter _appRouter;
+
+  @override
+  void initState() {
+    super.initState();
+    _appRouter = AppRouter(widget.authCubit);
+  }
+
+  @override
+  void dispose() {
+    _appRouter.dispose();
+    unawaited(widget.authCubit.close());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = sl<AuthCubit>();
-
     return BlocProvider.value(
-      value: authCubit,
+      value: widget.authCubit,
       child: MaterialApp.router(
         title: 'EntrenaOP',
         debugShowCheckedModeBanner: false,
@@ -38,7 +64,7 @@ class EntrenaOpApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        routerConfig: createRouter(authCubit),
+        routerConfig: _appRouter.config,
       ),
     );
   }
