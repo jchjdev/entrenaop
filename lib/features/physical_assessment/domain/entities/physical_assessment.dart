@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+// Representa las columnas H/M del baremo oficial, no la identidad de género
+// almacenada en el perfil de la persona.
 enum AssessmentCategory { men, women }
 
 enum AssessmentMilestone { entry, endOfGeneralMilitaryTraining, endOfTraining }
@@ -78,4 +80,26 @@ class AssessmentResult extends Equatable {
 
   @override
   List<Object> get props => [passed, mark, standard];
+}
+
+class AssessmentReport extends Equatable {
+  AssessmentReport({
+    required this.catalogVersion,
+    required this.category,
+    required this.milestone,
+    required List<AssessmentResult> results,
+  }) : assert(results.isNotEmpty),
+       results = List.unmodifiable(results);
+
+  final String catalogVersion;
+  final AssessmentCategory category;
+  final AssessmentMilestone milestone;
+  final List<AssessmentResult> results;
+
+  bool get passedOverall => results.every((result) => result.passed);
+
+  int get passedTests => results.where((result) => result.passed).length;
+
+  @override
+  List<Object> get props => [catalogVersion, category, milestone, results];
 }

@@ -22,6 +22,10 @@ histórica.
   ejecutable.
 - Explicar antes de aplicar una decisión que cambie materialmente la
   arquitectura, el modelo de datos, la seguridad o un criterio acordado.
+- Escribir los mensajes de commit en castellano.
+- Añadir comentarios en castellano cuando aclaren reglas de negocio,
+  conversiones, seguridad o decisiones no evidentes. Evitar comentarios que
+  solo repitan literalmente lo que ya expresa el código.
 
 ## Reglas del repositorio
 

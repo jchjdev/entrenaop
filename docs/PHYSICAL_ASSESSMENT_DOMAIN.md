@@ -44,9 +44,14 @@ género del usuario.
 - Los baremos de evaluación periódica de la nueva orden entran en vigor el 1 de
   enero de 2027. Se implementarán como otro catálogo, no mezclados con ingreso.
 
-## Siguiente decisión de producto
+## Estado de la primera vertical
 
-Antes de persistir objetivos y marcas hay que decidir con Javier qué recorrido
-se validará primero: aspirante a tropa y marinería, militar profesional que
-prepara evaluación periódica, o ambos con uno claramente prioritario. El modelo
-ya permite añadir catálogos posteriores sin alterar esta primera vertical.
+Se ha elegido como primer recorrido al aspirante a tropa y marinería que prepara
+las pruebas de ingreso. La aplicación ya permite seleccionar el baremo H/M,
+introducir las cuatro marcas y obtener un informe local con el mínimo y el
+margen de cada prueba.
+
+El siguiente bloque será persistir el intento y sus cuatro marcas con la versión
+del catálogo utilizada. Esa migración se diseñará con RLS antes de conectar la
+interfaz a Supabase. La evaluación periódica y otros accesos se incorporarán
+como catálogos posteriores sin alterar esta primera vertical.

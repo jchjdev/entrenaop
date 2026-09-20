@@ -18,6 +18,9 @@ import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_by_mu
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/update_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/presentation/bloc/exercises_cubit.dart';
+import 'package:entrenaop/features/physical_assessment/domain/services/assessment_evaluator.dart';
+import 'package:entrenaop/features/physical_assessment/domain/usecases/evaluate_initial_assessment_usecase.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -74,5 +77,13 @@ Future<void> initDependencies() async {
       getExercisesUseCase: sl(),
       getExercisesByMuscleGroupUseCase: sl(),
     ),
+  );
+
+  // --- Physical assessment ---
+
+  sl.registerLazySingleton(() => const AssessmentEvaluator());
+  sl.registerLazySingleton(() => EvaluateInitialAssessmentUseCase(sl()));
+  sl.registerFactory(
+    () => PhysicalAssessmentCubit(evaluateInitialAssessment: sl()),
   );
 }
