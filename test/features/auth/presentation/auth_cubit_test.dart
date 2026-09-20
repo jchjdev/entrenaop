@@ -5,6 +5,7 @@ import 'package:entrenaop/features/auth/domain/usecases/get_current_user_usecase
 import 'package:entrenaop/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:entrenaop/features/auth/domain/usecases/sign_up_usecase.dart';
+import 'package:entrenaop/features/auth/domain/usecases/watch_current_user_usecase.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,6 +92,17 @@ void main() {
       await cubit.close();
     });
   });
+
+  test('reacciona cuando Supabase invalida una sesión existente', () async {
+    final repository = _FakeAuthRepository(
+      authChanges: Stream<UserEntity?>.value(null),
+    );
+    final cubit = _createCubit(repository)..watchAuthState();
+
+    await expectLater(cubit.stream, emits(AuthUnauthenticated()));
+
+    await cubit.close();
+  });
 }
 
 AuthCubit _createCubit(AuthRepository repository) {
@@ -99,14 +111,20 @@ AuthCubit _createCubit(AuthRepository repository) {
     signUpUseCase: SignUpUseCase(repository),
     signOutUseCase: SignOutUseCase(repository),
     getCurrentUserUseCase: GetCurrentUserUseCase(repository),
+    watchCurrentUserUseCase: WatchCurrentUserUseCase(repository),
   );
 }
 
 class _FakeAuthRepository implements AuthRepository {
   final UserEntity? currentUser;
   final SignUpOutcome? signUpOutcome;
+  final Stream<UserEntity?> authChanges;
 
-  _FakeAuthRepository({this.currentUser, this.signUpOutcome});
+  _FakeAuthRepository({
+    this.currentUser,
+    this.signUpOutcome,
+    this.authChanges = const Stream.empty(),
+  });
 
   @override
   Future<UserEntity?> getCurrentUser() async => currentUser;
@@ -130,4 +148,7 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {}
+
+  @override
+  Stream<UserEntity?> watchCurrentUser() => authChanges;
 }

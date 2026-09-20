@@ -42,4 +42,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signOut() async {
     return await remoteDataSource.signOut();
   }
+
+  @override
+  Stream<UserEntity?> watchCurrentUser() {
+    return remoteDataSource.watchCurrentUser();
+  }
 }

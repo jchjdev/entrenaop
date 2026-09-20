@@ -113,4 +113,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.toString());
     }
   }
+
+  @override
+  Stream<UserModel?> watchCurrentUser() {
+    return supabaseClient.auth.onAuthStateChange.asyncMap((authState) async {
+      final user = authState.session?.user;
+      if (user == null) return null;
+
+      try {
+        final profile = await supabaseClient
+            .from('profiles')
+            .select()
+            .eq('id', user.id)
+            .single();
+        return UserModel.fromJson({...profile, 'email': user.email ?? ''});
+      } on AuthException catch (error) {
+        throw ServerException(error.message);
+      } catch (error) {
+        throw ServerException(error.toString());
+      }
+    });
+  }
 }

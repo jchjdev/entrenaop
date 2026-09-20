@@ -19,4 +19,8 @@ abstract class AuthRemoteDataSource {
 
   /// Devuelve el [UserModel] del usuario autenticado, o null si no hay sesión activa.
   Future<UserModel?> getCurrentUser();
+
+  /// Emite el usuario vigente cuando Supabase crea, renueva o elimina la
+  /// sesión. Un valor null significa que la sesión ha dejado de ser válida.
+  Stream<UserModel?> watchCurrentUser();
 }
