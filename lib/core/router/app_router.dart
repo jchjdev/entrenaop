@@ -18,6 +18,8 @@ import 'package:entrenaop/features/preparation_goal/presentation/pages/preparati
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -104,6 +106,17 @@ class AppRouter {
                         create: (_) => sl<WorkoutPreviewCubit>(),
                         child: const WorkoutPreviewPage(),
                       ),
+                      routes: [
+                        GoRoute(
+                          path: 'active/:executionId',
+                          builder: (context, state) => BlocProvider(
+                            create: (_) => sl<ActiveWorkoutCubit>(
+                              param1: state.pathParameters['executionId']!,
+                            ),
+                            child: const ActiveWorkoutPage(),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

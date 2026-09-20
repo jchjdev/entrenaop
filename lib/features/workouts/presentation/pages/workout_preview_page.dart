@@ -21,7 +21,13 @@ class WorkoutPreviewPage extends StatelessWidget {
         ),
         title: const Text('Vista de la sesión'),
       ),
-      body: BlocBuilder<WorkoutPreviewCubit, WorkoutPreviewState>(
+      body: BlocConsumer<WorkoutPreviewCubit, WorkoutPreviewState>(
+        listener: (context, state) {
+          final executionId = state.executionId;
+          if (executionId != null) {
+            context.push('/plan/starter-session/active/$executionId');
+          }
+        },
         builder: (context, state) => switch (state.status) {
           WorkoutPreviewStatus.initial || WorkoutPreviewStatus.loading =>
             const Center(child: CircularProgressIndicator()),
@@ -29,7 +35,7 @@ class WorkoutPreviewPage extends StatelessWidget {
             icon: Icons.fitness_center_outlined,
             text: 'La sesión todavía no está disponible.',
           ),
-          WorkoutPreviewStatus.failure => _Message(
+          WorkoutPreviewStatus.failure when state.workout == null => _Message(
             icon: Icons.cloud_off_outlined,
             text: state.errorMessage ?? 'No hemos podido cargar la sesión.',
             action: FilledButton(
@@ -37,8 +43,12 @@ class WorkoutPreviewPage extends StatelessWidget {
               child: const Text('Reintentar'),
             ),
           ),
-          WorkoutPreviewStatus.ready => _WorkoutContent(
+          WorkoutPreviewStatus.ready ||
+          WorkoutPreviewStatus.starting ||
+          WorkoutPreviewStatus.failure => _WorkoutContent(
             workout: state.workout!,
+            starting: state.status == WorkoutPreviewStatus.starting,
+            errorMessage: state.errorMessage,
           ),
         },
       ),
@@ -47,9 +57,15 @@ class WorkoutPreviewPage extends StatelessWidget {
 }
 
 class _WorkoutContent extends StatelessWidget {
-  const _WorkoutContent({required this.workout});
+  const _WorkoutContent({
+    required this.workout,
+    required this.starting,
+    this.errorMessage,
+  });
 
   final WorkoutTemplate workout;
+  final bool starting;
+  final String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -71,12 +87,27 @@ class _WorkoutContent extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                     const SizedBox(height: 6),
+                    if (errorMessage case final message?) ...[
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.redAccent),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     FilledButton.icon(
-                      // La siguiente vertical conectará esta acción con una
-                      // ejecución persistente y recuperable de la sesión.
-                      onPressed: null,
-                      icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Ejecución guiada · siguiente paso'),
+                      onPressed: starting
+                          ? null
+                          : context.read<WorkoutPreviewCubit>().start,
+                      icon: starting
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.play_arrow_rounded),
+                      label: Text(
+                        starting ? 'Preparando sesión…' : 'Empezar sesión',
+                      ),
                     ),
                     const SizedBox(height: 10),
                     const Text(

@@ -1,4 +1,6 @@
 import 'package:entrenaop/features/workouts/data/models/workout_template_model.dart';
+import 'package:entrenaop/features/workouts/data/models/workout_execution_model.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -99,5 +101,55 @@ void main() {
       }),
       throwsFormatException,
     );
+  });
+
+  test('ordena una ejecución y localiza la siguiente serie pendiente', () {
+    Map<String, dynamic> result({
+      required String id,
+      required int order,
+      required String status,
+    }) => {
+      'id': id,
+      'block_order': 0,
+      'block_name': 'Principal',
+      'item_order': 0,
+      'exercise_id': 'exercise-1',
+      'exercise_name': 'Flexiones',
+      'set_order': order,
+      'target_reps': 8,
+      'target_duration_seconds': null,
+      'target_distance_meters': null,
+      'target_load_kg': null,
+      'target_rpe': null,
+      'target_rir': 3,
+      'rest_after_seconds': 60,
+      'status': status,
+      'actual_reps': status == 'completed' ? 8 : null,
+      'actual_duration_seconds': null,
+      'actual_distance_meters': null,
+      'actual_load_kg': null,
+      'actual_rpe': null,
+      'actual_rir': null,
+    };
+
+    final execution = WorkoutExecutionModel.fromJson({
+      'id': 'execution-1',
+      'template_id': 'template-1',
+      'template_name': 'Fuerza base',
+      'template_version': 1,
+      'status': 'in_progress',
+      'started_at': '2026-09-20T18:00:00Z',
+      'completed_at': null,
+      'final_rpe': null,
+      'notes': null,
+      'workout_execution_sets': [
+        result(id: 'set-2', order: 1, status: 'pending'),
+        result(id: 'set-1', order: 0, status: 'completed'),
+      ],
+    });
+
+    expect(execution.completedSetCount, 1);
+    expect(execution.currentSet?.id, 'set-2');
+    expect(execution.currentSet?.status, WorkoutSetStatus.pending);
   });
 }

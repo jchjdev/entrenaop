@@ -57,9 +57,9 @@ Esta vertical incluirá:
   pruebas/simulacros.
 
 El primer incremento del motor utiliza una plantilla pública mínima almacenada
-en Supabase. Su objetivo es validar la lectura completa de bloques, ejercicios,
-series y descansos antes de implementar la ejecución persistente y sus
-resultados.
+en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
+progreso, temporizar descansos y conservar la prescripción usada; todavía falta
+registrar modificaciones manuales, pausas, abandono y funcionamiento sin red.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.

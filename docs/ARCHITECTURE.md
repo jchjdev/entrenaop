@@ -101,6 +101,12 @@ puede prescribir repeticiones, duración o distancia, además de carga, RPE/RIR 
 descanso. Las tablas heredadas `routines`, `routine_exercises` y `session_logs`
 se conservan temporalmente, pero no son el núcleo del nuevo recorrido.
 
+Al comenzar una sesión, `workout_executions` y `workout_execution_sets` copian
+la identidad y la prescripción vigente de cada serie. El cliente registra los
+resultados mediante funciones autenticadas y no puede insertar ejecuciones
+arbitrarias. Esta copia constituye el primer límite histórico entre una
+plantilla editable y el entrenamiento que realmente se realizó.
+
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
 el que se evaluaron.
 

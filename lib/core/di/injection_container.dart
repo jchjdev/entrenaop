@@ -47,6 +47,8 @@ import 'package:entrenaop/features/workouts/data/datasources/workout_remote_data
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
+import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -163,8 +165,22 @@ Future<void> initDependencies() async {
     () => WorkoutRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerLazySingleton(() => GetStarterWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
+  sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerFactory(
-    () => WorkoutPreviewCubit(getStarterWorkout: sl())..load(),
+    () =>
+        WorkoutPreviewCubit(getStarterWorkout: sl(), startExecution: sl())
+          ..load(),
+  );
+  sl.registerFactoryParam<ActiveWorkoutCubit, String, void>(
+    (executionId, _) => ActiveWorkoutCubit(
+      executionId: executionId,
+      getExecution: sl(),
+      completeSet: sl(),
+      finishExecution: sl(),
+    )..load(),
   );
 
   // --- Dashboard ---
