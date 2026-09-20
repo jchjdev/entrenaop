@@ -86,13 +86,13 @@ class _ActiveContentState extends State<_ActiveContent> {
                     LinearProgressIndicator(
                       value: execution.sets.isEmpty
                           ? 0
-                          : execution.completedSetCount / execution.sets.length,
+                          : execution.resolvedSetCount / execution.sets.length,
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     const SizedBox(height: 7),
                     Text(
-                      '${execution.completedSetCount} de ${execution.sets.length} series completadas',
+                      _progressLabel(execution),
                       style: const TextStyle(color: Colors.white60),
                     ),
                     const SizedBox(height: 22),
@@ -103,11 +103,15 @@ class _ActiveContentState extends State<_ActiveContent> {
                       )
                     else if (current != null)
                       _CurrentSetCard(
+                        key: ValueKey(current.id),
                         set: current,
                         saving: saving,
                         onComplete: context
                             .read<ActiveWorkoutCubit>()
                             .completeCurrentSet,
+                        onSkip: context
+                            .read<ActiveWorkoutCubit>()
+                            .skipCurrentSet,
                       )
                     else
                       _FinishCard(
@@ -138,16 +142,108 @@ class _ActiveContentState extends State<_ActiveContent> {
   }
 }
 
-class _CurrentSetCard extends StatelessWidget {
+class _CurrentSetCard extends StatefulWidget {
   const _CurrentSetCard({
+    super.key,
     required this.set,
     required this.saving,
     required this.onComplete,
+    required this.onSkip,
   });
 
   final WorkoutExecutionSet set;
   final bool saving;
-  final VoidCallback onComplete;
+  final ValueChanged<WorkoutSetResultInput> onComplete;
+  final VoidCallback onSkip;
+
+  @override
+  State<_CurrentSetCard> createState() => _CurrentSetCardState();
+}
+
+class _CurrentSetCardState extends State<_CurrentSetCard> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _repsController;
+  late final TextEditingController _durationController;
+  late final TextEditingController _distanceController;
+  late final TextEditingController _loadController;
+  late double _actualRpe;
+  late double _actualRir;
+
+  WorkoutExecutionSet get set => widget.set;
+
+  @override
+  void initState() {
+    super.initState();
+    // El objetivo sirve como valor inicial, pero el usuario confirma o corrige
+    // el resultado real antes de enviarlo.
+    _repsController = TextEditingController(text: _integer(set.targetReps));
+    _durationController = TextEditingController(
+      text: _integer(set.targetDurationSeconds),
+    );
+    _distanceController = TextEditingController(
+      text: _nullableNumber(set.targetDistanceMeters),
+    );
+    _loadController = TextEditingController(
+      text: _nullableNumber(set.targetLoadKg),
+    );
+    _actualRpe = (set.targetRpe ?? 7).clamp(1, 10).toDouble();
+    _actualRir = (set.targetRir ?? 2).clamp(0, 10).toDouble();
+  }
+
+  @override
+  void dispose() {
+    _repsController.dispose();
+    _durationController.dispose();
+    _distanceController.dispose();
+    _loadController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    widget.onComplete(
+      WorkoutSetResultInput(
+        resultId: set.id,
+        actualReps: set.targetReps == null
+            ? null
+            : _parseDecimal(_repsController.text)!.toInt(),
+        actualDurationSeconds: set.targetDurationSeconds == null
+            ? null
+            : _parseDecimal(_durationController.text)!.toInt(),
+        actualDistanceMeters: set.targetDistanceMeters == null
+            ? null
+            : _parseDecimal(_distanceController.text),
+        actualLoadKg: set.targetLoadKg == null
+            ? null
+            : _parseDecimal(_loadController.text),
+        actualRpe: set.targetRpe == null ? null : _actualRpe,
+        actualRir: set.targetRir == null ? null : _actualRir,
+      ),
+    );
+  }
+
+  Future<void> _confirmSkip() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Saltar esta serie?'),
+        content: const Text(
+          'Quedará registrada como omitida y no contará como completada.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Saltar serie'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) widget.onSkip();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,58 +251,155 @@ class _CurrentSetCard extends StatelessWidget {
       color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              set.blockName.toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFFFF8A50),
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              set.exerciseName,
-              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Serie ${set.setOrder + 1}',
-              style: const TextStyle(color: Colors.white60, fontSize: 17),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              _target(set),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFFFFA06F),
-              ),
-            ),
-            if (set.targetRir case final rir?) ...[
-              const SizedBox(height: 7),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               Text(
-                'Objetivo: RIR ${_number(rir)}',
+                set.blockName.toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFFFF8A50),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                set.exerciseName,
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Serie ${set.setOrder + 1}',
+                style: const TextStyle(color: Colors.white60, fontSize: 17),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                _target(set),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white60),
+                style: const TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFFFA06F),
+                ),
+              ),
+              if (set.targetRir case final rir?) ...[
+                const SizedBox(height: 7),
+                Text(
+                  'Objetivo: RIR ${_number(rir)}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white60),
+                ),
+              ],
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              const Text(
+                '¿Qué has hecho realmente?',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 14),
+              if (set.targetReps != null)
+                _ResultField(
+                  controller: _repsController,
+                  label: 'Repeticiones realizadas',
+                  decimal: false,
+                ),
+              if (set.targetDurationSeconds != null)
+                _ResultField(
+                  controller: _durationController,
+                  label: 'Segundos realizados',
+                  decimal: false,
+                ),
+              if (set.targetDistanceMeters != null)
+                _ResultField(
+                  controller: _distanceController,
+                  label: 'Metros realizados',
+                ),
+              if (set.targetLoadKg != null)
+                _ResultField(
+                  controller: _loadController,
+                  label: 'Carga utilizada (kg)',
+                ),
+              if (set.targetRpe != null) ...[
+                Text('RPE real · ${_number(_actualRpe)}'),
+                Slider(
+                  value: _actualRpe,
+                  min: 1,
+                  max: 10,
+                  divisions: 18,
+                  onChanged: widget.saving
+                      ? null
+                      : (value) => setState(() => _actualRpe = value),
+                ),
+              ],
+              if (set.targetRir != null) ...[
+                Text('RIR real · ${_number(_actualRir)}'),
+                Slider(
+                  value: _actualRir,
+                  min: 0,
+                  max: 10,
+                  divisions: 20,
+                  onChanged: widget.saving
+                      ? null
+                      : (value) => setState(() => _actualRir = value),
+                ),
+              ],
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: widget.saving ? null : _save,
+                icon: widget.saving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_rounded),
+                label: Text(widget.saving ? 'Guardando…' : 'Guardar serie'),
+              ),
+              TextButton(
+                onPressed: widget.saving ? null : _confirmSkip,
+                child: const Text('No he podido hacerla · Saltar serie'),
               ),
             ],
-            const SizedBox(height: 28),
-            FilledButton.icon(
-              onPressed: saving ? null : onComplete,
-              icon: saving
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.check_rounded),
-              label: Text(saving ? 'Guardando…' : 'Serie completada'),
-            ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResultField extends StatelessWidget {
+  const _ResultField({
+    required this.controller,
+    required this.label,
+    this.decimal = true,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final bool decimal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+        decoration: InputDecoration(labelText: label),
+        validator: (value) {
+          final parsed = _parseDecimal(value ?? '');
+          if (parsed == null) return 'Introduce un número válido';
+          if (parsed < 0) return 'El valor no puede ser negativo';
+          if (!decimal && parsed != parsed.roundToDouble()) {
+            return 'Introduce un número entero';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -327,7 +520,9 @@ class _Completed extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${execution.sets.length} series registradas · RPE ${execution.finalRpe ?? '-'}',
+              '${execution.completedSetCount} completadas'
+              '${execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
+              ' · RPE ${execution.finalRpe ?? '-'}',
               style: const TextStyle(color: Colors.white60),
             ),
             const SizedBox(height: 22),
@@ -382,3 +577,20 @@ String _clock(int seconds) {
 
 String _number(double value) =>
     value == value.roundToDouble() ? value.toInt().toString() : '$value';
+
+String _integer(int? value) => value?.toString() ?? '';
+
+String _nullableNumber(double? value) => value == null ? '' : _number(value);
+
+double? _parseDecimal(String value) =>
+    double.tryParse(value.trim().replaceAll(',', '.'));
+
+String _progressLabel(WorkoutExecution execution) {
+  final completed = execution.completedSetCount;
+  final skipped = execution.skippedSetCount;
+  if (skipped == 0) {
+    return '$completed de ${execution.sets.length} series completadas';
+  }
+  return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
+      '($completed completadas, $skipped omitidas)';
+}

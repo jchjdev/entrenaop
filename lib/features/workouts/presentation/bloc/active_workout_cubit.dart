@@ -10,15 +10,18 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this.executionId,
     required GetWorkoutExecutionUseCase getExecution,
     required CompleteWorkoutSetUseCase completeSet,
+    required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
   }) : _getExecution = getExecution,
        _completeSet = completeSet,
+       _skipSet = skipSet,
        _finishExecution = finishExecution,
        super(const ActiveWorkoutState());
 
   final String executionId;
   final GetWorkoutExecutionUseCase _getExecution;
   final CompleteWorkoutSetUseCase _completeSet;
+  final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
   Timer? _restTimer;
 
@@ -53,7 +56,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
-  Future<void> completeCurrentSet() async {
+  Future<void> completeCurrentSet(WorkoutSetResultInput result) async {
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
@@ -65,7 +68,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ),
     );
     try {
-      await _completeSet(currentSet);
+      await _completeSet(result);
       final updated = await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
       if (updated.currentSet == null || currentSet.restAfterSeconds == 0) {
@@ -84,6 +87,38 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           status: ActiveWorkoutStatus.failure,
           execution: execution,
           errorMessage: 'No hemos podido guardar la serie.',
+        ),
+      );
+    }
+  }
+
+  Future<void> skipCurrentSet() async {
+    final execution = state.execution;
+    final currentSet = execution?.currentSet;
+    if (execution == null || currentSet == null) return;
+
+    emit(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.saving,
+        execution: execution,
+      ),
+    );
+    try {
+      await _skipSet(currentSet.id);
+      final updated = await _getExecution(executionId);
+      if (updated == null) throw StateError('Execution disappeared');
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.ready,
+          execution: updated,
+        ),
+      );
+    } catch (_) {
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.failure,
+          execution: execution,
+          errorMessage: 'No hemos podido saltar la serie.',
         ),
       );
     }

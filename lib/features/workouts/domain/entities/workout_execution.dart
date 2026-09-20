@@ -39,6 +39,13 @@ class WorkoutExecution extends Equatable {
   int get completedSetCount =>
       sets.where((set) => set.status == WorkoutSetStatus.completed).length;
 
+  int get skippedSetCount =>
+      sets.where((set) => set.status == WorkoutSetStatus.skipped).length;
+
+  /// Una serie queda resuelta tanto si se completa como si se omite.
+  /// Usamos este dato para el progreso sin confundir ambos resultados.
+  int get resolvedSetCount => completedSetCount + skippedSetCount;
+
   @override
   List<Object?> get props => [
     id,
@@ -51,6 +58,41 @@ class WorkoutExecution extends Equatable {
     finalRpe,
     notes,
     sets,
+  ];
+}
+
+/// Resultado real introducido por el deportista al terminar una serie.
+///
+/// Se mantiene separado de [WorkoutExecutionSet] para no reutilizar por error
+/// la prescripcion como si fuera el resultado ejecutado.
+class WorkoutSetResultInput extends Equatable {
+  const WorkoutSetResultInput({
+    required this.resultId,
+    this.actualReps,
+    this.actualDurationSeconds,
+    this.actualDistanceMeters,
+    this.actualLoadKg,
+    this.actualRpe,
+    this.actualRir,
+  });
+
+  final String resultId;
+  final int? actualReps;
+  final int? actualDurationSeconds;
+  final double? actualDistanceMeters;
+  final double? actualLoadKg;
+  final double? actualRpe;
+  final double? actualRir;
+
+  @override
+  List<Object?> get props => [
+    resultId,
+    actualReps,
+    actualDurationSeconds,
+    actualDistanceMeters,
+    actualLoadKg,
+    actualRpe,
+    actualRir,
   ];
 }
 

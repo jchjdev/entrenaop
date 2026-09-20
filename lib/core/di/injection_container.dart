@@ -168,6 +168,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
+  sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerFactory(
     () =>
@@ -179,6 +180,7 @@ Future<void> initDependencies() async {
       executionId: executionId,
       getExecution: sl(),
       completeSet: sl(),
+      skipSet: sl(),
       finishExecution: sl(),
     )..load(),
   );

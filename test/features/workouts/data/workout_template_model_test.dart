@@ -143,12 +143,15 @@ void main() {
       'final_rpe': null,
       'notes': null,
       'workout_execution_sets': [
+        result(id: 'set-3', order: 2, status: 'skipped'),
         result(id: 'set-2', order: 1, status: 'pending'),
         result(id: 'set-1', order: 0, status: 'completed'),
       ],
     });
 
     expect(execution.completedSetCount, 1);
+    expect(execution.skippedSetCount, 1);
+    expect(execution.resolvedSetCount, 2);
     expect(execution.currentSet?.id, 'set-2');
     expect(execution.currentSet?.status, WorkoutSetStatus.pending);
   });

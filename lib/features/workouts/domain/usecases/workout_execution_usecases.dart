@@ -24,7 +24,16 @@ class CompleteWorkoutSetUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(WorkoutExecutionSet set) => _repository.completeSet(set);
+  Future<void> call(WorkoutSetResultInput result) =>
+      _repository.completeSet(result);
+}
+
+class SkipWorkoutSetUseCase {
+  const SkipWorkoutSetUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<void> call(String resultId) => _repository.skipSet(resultId);
 }
 
 class FinishWorkoutExecutionUseCase {

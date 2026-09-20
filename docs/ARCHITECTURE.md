@@ -107,6 +107,12 @@ resultados mediante funciones autenticadas y no puede insertar ejecuciones
 arbitrarias. Esta copia constituye el primer límite histórico entre una
 plantilla editable y el entrenamiento que realmente se realizó.
 
+Cada serie conserva por separado objetivo y resultado real (repeticiones,
+tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
+`skipped`, por lo que nunca se contabiliza como una serie completada. PostgreSQL
+comprueba que el resultado incluya la métrica principal prescrita y que solo el
+propietario pueda resolver una serie pendiente de su sesión activa.
+
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
 el que se evaluaron.
 

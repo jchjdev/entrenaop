@@ -27,17 +27,20 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
-  Future<void> completeSet(WorkoutExecutionSet set) {
+  Future<void> completeSet(WorkoutSetResultInput result) {
     return remoteDataSource.completeSet({
-      'p_result_id': set.id,
-      'p_actual_reps': set.targetReps,
-      'p_actual_duration_seconds': set.targetDurationSeconds,
-      'p_actual_distance_meters': set.targetDistanceMeters,
-      'p_actual_load_kg': set.targetLoadKg,
-      'p_actual_rpe': set.targetRpe,
-      'p_actual_rir': set.targetRir,
+      'p_result_id': result.resultId,
+      'p_actual_reps': result.actualReps,
+      'p_actual_duration_seconds': result.actualDurationSeconds,
+      'p_actual_distance_meters': result.actualDistanceMeters,
+      'p_actual_load_kg': result.actualLoadKg,
+      'p_actual_rpe': result.actualRpe,
+      'p_actual_rir': result.actualRir,
     });
   }
+
+  @override
+  Future<void> skipSet(String resultId) => remoteDataSource.skipSet(resultId);
 
   @override
   Future<void> finishExecution(String executionId, int finalRpe) =>
