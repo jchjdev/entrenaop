@@ -26,6 +26,15 @@ void main() {
     ]);
     expect(entries.first.report.category, AssessmentCategory.men);
     expect(entries.first.report.passedOverall, isTrue);
+    expect(
+      entries.first.recommendation,
+      const AssessmentFocusRecommendation(
+        algorithmVersion: 'assessment_focus_v1',
+        focusTestId: 'upper_body_push_ups_2_min',
+        relativeMarginBps: -4444,
+        reason: AssessmentFocusReason.belowMinimum,
+      ),
+    );
   });
 }
 
@@ -51,5 +60,9 @@ Map<String, dynamic> _row({
     'value': value,
     'threshold': threshold,
     'passed': true,
+    'recommendation_algorithm_version': 'assessment_focus_v1',
+    'recommendation_focus_test_id': 'upper_body_push_ups_2_min',
+    'recommendation_relative_margin_bps': -4444,
+    'recommendation_reason': 'below_minimum',
   };
 }

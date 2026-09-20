@@ -34,6 +34,7 @@ abstract final class PhysicalAssessmentHistoryModel {
     return PhysicalAssessmentHistoryEntry(
       id: header['assessment_id'] as String,
       completedAt: DateTime.parse(header['completed_at'] as String).toLocal(),
+      recommendation: _recommendationFromRow(header),
       report: AssessmentReport(
         catalogVersion: header['catalog_version'] as String,
         category: _categoryFromDatabase(header['category'] as String),
@@ -99,6 +100,27 @@ abstract final class PhysicalAssessmentHistoryModel {
         'lower' => BetterDirection.lower,
         _ => throw FormatException('Dirección desconocida: $value'),
       };
+
+  static AssessmentFocusRecommendation? _recommendationFromRow(
+    Map<String, dynamic> row,
+  ) {
+    final algorithmVersion = row['recommendation_algorithm_version'] as String?;
+    if (algorithmVersion == null) return null;
+
+    return AssessmentFocusRecommendation(
+      algorithmVersion: algorithmVersion,
+      focusTestId: row['recommendation_focus_test_id'] as String,
+      relativeMarginBps: (row['recommendation_relative_margin_bps'] as num)
+          .toInt(),
+      reason: switch (row['recommendation_reason'] as String) {
+        'below_minimum' => AssessmentFocusReason.belowMinimum,
+        'smallest_safety_margin' => AssessmentFocusReason.smallestSafetyMargin,
+        final value => throw FormatException(
+          'Motivo de recomendación desconocido: $value',
+        ),
+      },
+    );
+  }
 
   static int _testOrder(String testId) => switch (testId) {
     'upper_body_push_ups_2_min' => 0,

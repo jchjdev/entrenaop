@@ -33,6 +33,7 @@ void main() {
 
     expect(find.text('Mi evolución'), findsOneWidget);
     expect(find.text('Ya tienes tu primera referencia'), findsOneWidget);
+    expect(find.text('Foco recomendado'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
@@ -51,6 +52,12 @@ class _Repository implements PhysicalAssessmentRepository {
       PhysicalAssessmentHistoryEntry(
         id: 'assessment-1',
         completedAt: DateTime(2026, 9, 20, 8, 12),
+        recommendation: const AssessmentFocusRecommendation(
+          algorithmVersion: 'assessment_focus_v1',
+          focusTestId: 'upper_body_push_ups_2_min',
+          relativeMarginBps: -1200,
+          reason: AssessmentFocusReason.belowMinimum,
+        ),
         report: AssessmentReport(
           catalogVersion: 'catalog-v1',
           category: AssessmentCategory.men,

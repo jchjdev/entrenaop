@@ -109,14 +109,40 @@ class PhysicalAssessmentHistoryEntry extends Equatable {
     required this.id,
     required this.completedAt,
     required this.report,
+    this.recommendation,
   });
 
   final String id;
   final DateTime completedAt;
   final AssessmentReport report;
+  final AssessmentFocusRecommendation? recommendation;
 
   @override
-  List<Object> get props => [id, completedAt, report];
+  List<Object?> get props => [id, completedAt, report, recommendation];
+}
+
+enum AssessmentFocusReason { belowMinimum, smallestSafetyMargin }
+
+class AssessmentFocusRecommendation extends Equatable {
+  const AssessmentFocusRecommendation({
+    required this.algorithmVersion,
+    required this.focusTestId,
+    required this.relativeMarginBps,
+    required this.reason,
+  });
+
+  final String algorithmVersion;
+  final String focusTestId;
+  final int relativeMarginBps;
+  final AssessmentFocusReason reason;
+
+  @override
+  List<Object> get props => [
+    algorithmVersion,
+    focusTestId,
+    relativeMarginBps,
+    reason,
+  ];
 }
 
 class AssessmentProgress extends Equatable {

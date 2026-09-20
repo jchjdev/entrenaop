@@ -65,6 +65,14 @@ class _LoadedHistory extends StatelessWidget {
                     assessmentCount: state.entries.length,
                     progress: state.progress,
                   ),
+                  if (state.entries.first.recommendation
+                      case final recommendation?) ...[
+                    const SizedBox(height: 14),
+                    _RecommendationCard(
+                      recommendation: recommendation,
+                      report: state.entries.first.report,
+                    ),
+                  ],
                   const SizedBox(height: 22),
                   const Text(
                     'Evaluaciones guardadas',
@@ -81,6 +89,73 @@ class _LoadedHistory extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecommendationCard extends StatelessWidget {
+  const _RecommendationCard({
+    required this.recommendation,
+    required this.report,
+  });
+
+  final AssessmentFocusRecommendation recommendation;
+  final AssessmentReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final focus = report.results.singleWhere(
+      (result) => result.mark.testId == recommendation.focusTestId,
+    );
+    final percentage = (recommendation.relativeMarginBps.abs() / 100)
+        .toStringAsFixed(1)
+        .replaceAll('.', ',');
+    final below = recommendation.reason == AssessmentFocusReason.belowMinimum;
+
+    return Card(
+      color: const Color(0xFF171717),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.flag_outlined, color: Color(0xFFFF8A50)),
+                SizedBox(width: 10),
+                Text(
+                  'Foco recomendado',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              focus.standard.test.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              below
+                  ? 'Es la prueba con mayor distancia relativa al mínimo: $percentage % por debajo. El primer objetivo será alcanzar el baremo sin descuidar las demás.'
+                  : 'Es la prueba con menor margen de seguridad: $percentage %. El siguiente objetivo será ampliar ese colchón sin perder el resto de marcas.',
+              style: const TextStyle(color: Colors.white70, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Criterio ${recommendation.algorithmVersion}',
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -67,7 +67,11 @@ evaluación y compara los dos últimos intentos. La diferencia favorable mantien
 el mismo significado en todas las pruebas: positiva es mejora, aunque para
 carrera y agilidad se obtenga reduciendo el tiempo.
 
-El siguiente bloque funcional partirá de estos datos para orientar el objetivo
-del usuario y preparar una primera recomendación explicable. La evaluación
-periódica y otros accesos se incorporarán como catálogos posteriores sin alterar
-esta primera vertical.
+La recomendación `assessment_focus_v1` prioriza el mayor déficit porcentual
+respecto al mínimo. Cuando las cuatro pruebas están superadas, prioriza la de
+menor margen relativo. PostgreSQL guarda la versión, prueba elegida, margen y
+razón junto a la evaluación; una versión futura no reescribirá esta decisión.
+
+El siguiente bloque funcional convertirá este foco en una prescripción sencilla
+y explicable. La evaluación periódica y otros accesos se incorporarán como
+catálogos posteriores sin alterar esta primera vertical.
