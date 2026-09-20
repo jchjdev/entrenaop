@@ -14,9 +14,11 @@ Instantánea comprobada en el repositorio el 19 de septiembre de 2026:
 - La funcionalidad de ejercicios ya contiene entidad, contrato, casos de uso,
   modelo, datasource, repositorio y Cubit; cualquier documento que la describa
   como pendiente está desactualizado.
-- Las rutas visibles actualmente son `/` y `/home`.
-- La URL y la clave anónima de Supabase están acopladas en `main.dart`; deben
-  separarse por entorno en un trabajo posterior.
+- La navegación autenticada dispone de un contenedor persistente con las áreas
+  Inicio, Mi plan, Evolución y Perfil. En móvil utiliza una barra inferior y en
+  pantallas amplias una navegación lateral.
+- La URL y la clave pública de Supabase se inyectan por entorno. El desarrollo
+  apunta a un proyecto aislado y no modifica producción.
 - El catálogo remoto de Supabase ya está auditado. La línea base reconstruida y
   la primera migración de seguridad se encuentran en `supabase/migrations/`;
   todavía no se han aplicado a producción.
@@ -65,6 +67,7 @@ lib/
   core/
     di/
     errors/
+    navigation/
     router/
     theme/
     utils/
@@ -148,10 +151,14 @@ forma de eludir reglas de negocio o seguridad.
 
 ## Navegación y presentación
 
-`go_router` es el router previsto. `go` sustituye la ubicación, `push` apila un
-flujo temporal y `pop` vuelve; se elegirá según la experiencia de usuario. Las
-rutas anidadas y la estructura responsive se introducirán cuando existan los
-destinos reales.
+`go_router` gestiona las rutas. El área autenticada usa
+`StatefulShellRoute.indexedStack` para conservar el estado independiente de
+Inicio, Mi plan, Evolución y Perfil. `AppShell` representa esos destinos como
+`NavigationBar` en móvil y `NavigationRail` en pantallas amplias. La evaluación
+inicial queda fuera del contenedor porque es un flujo concentrado y temporal.
+
+`go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
+elige cada operación según la experiencia de usuario.
 
 ## Verificación
 

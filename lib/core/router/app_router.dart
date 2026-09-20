@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:entrenaop/core/navigation/app_shell.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
@@ -10,6 +11,8 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/initial_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
+import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -58,19 +61,52 @@ class AppRouter {
           path: '/sign-up',
           builder: (context, state) => const SignUpPage(),
         ),
-        GoRoute(path: '/home', builder: (context, state) => const HomePage()),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              AppShell(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  builder: (context, state) => const HomePage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/plan',
+                  builder: (context, state) => const TrainingPlanPage(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/assessment/history',
+                  builder: (context, state) => BlocProvider(
+                    create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
+                    child: const PhysicalAssessmentHistoryPage(),
+                  ),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/profile',
+                  builder: (context, state) => const ProfilePage(),
+                ),
+              ],
+            ),
+          ],
+        ),
         GoRoute(
           path: '/assessment/initial',
           builder: (context, state) => BlocProvider(
             create: (_) => sl<PhysicalAssessmentCubit>(),
             child: const InitialAssessmentPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/assessment/history',
-          builder: (context, state) => BlocProvider(
-            create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
-            child: const PhysicalAssessmentHistoryPage(),
           ),
         ),
       ],
