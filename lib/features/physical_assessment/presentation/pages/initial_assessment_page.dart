@@ -59,7 +59,21 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PhysicalAssessmentCubit, PhysicalAssessmentState>(
+    return BlocConsumer<PhysicalAssessmentCubit, PhysicalAssessmentState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+      listener: (context, state) {
+        if (state.status == PhysicalAssessmentStatus.saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Evaluación guardada en tu historial.'),
+            ),
+          );
+        } else if (state.status == PhysicalAssessmentStatus.failure) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+        }
+      },
       builder: (context, state) {
         final report = state.report;
         return Scaffold(
@@ -82,7 +96,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
                     agilityController: _agilityController,
                     onEvaluate: _evaluate,
                   )
-                : _AssessmentReportView(report: report),
+                : _AssessmentReportView(report: report, status: state.status),
           ),
         );
       },
@@ -384,9 +398,10 @@ class _MarkFieldCard extends StatelessWidget {
 }
 
 class _AssessmentReportView extends StatelessWidget {
-  const _AssessmentReportView({required this.report});
+  const _AssessmentReportView({required this.report, required this.status});
 
   final AssessmentReport report;
+  final PhysicalAssessmentStatus status;
 
   @override
   Widget build(BuildContext context) {
@@ -441,6 +456,33 @@ class _AssessmentReportView extends StatelessWidget {
               ...report.results.map(_ResultCard.new),
               const SizedBox(height: 8),
               FilledButton.icon(
+                onPressed:
+                    status == PhysicalAssessmentStatus.saving ||
+                        status == PhysicalAssessmentStatus.saved
+                    ? null
+                    : () => context.read<PhysicalAssessmentCubit>().save(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFE65100),
+                ),
+                icon: status == PhysicalAssessmentStatus.saving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        status == PhysicalAssessmentStatus.saved
+                            ? Icons.cloud_done_outlined
+                            : Icons.cloud_upload_outlined,
+                      ),
+                label: Text(switch (status) {
+                  PhysicalAssessmentStatus.saving => 'Guardando...',
+                  PhysicalAssessmentStatus.saved => 'Guardada en mi historial',
+                  PhysicalAssessmentStatus.failure => 'Reintentar guardado',
+                  _ => 'Guardar en mi historial',
+                }),
+              ),
+              const SizedBox(height: 10),
+              FilledButton.icon(
                 onPressed: () =>
                     context.read<PhysicalAssessmentCubit>().editAgain(),
                 icon: const Icon(Icons.edit_outlined),
@@ -454,7 +496,7 @@ class _AssessmentReportView extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                'Baremo ${report.catalogVersion}. Esta primera versión evalúa localmente; el guardado del historial será el siguiente bloque.',
+                'Baremo ${report.catalogVersion}. El servidor conserva las marcas originales y valida de nuevo el catálogo antes de guardarlas.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white38, fontSize: 12),
               ),

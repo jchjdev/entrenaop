@@ -19,7 +19,12 @@ import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_useca
 import 'package:entrenaop/features/exercises/domain/usecases/update_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/presentation/bloc/exercises_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/domain/services/assessment_evaluator.dart';
+import 'package:entrenaop/features/physical_assessment/data/datasources/physical_assessment_remote_datasource.dart';
+import 'package:entrenaop/features/physical_assessment/data/datasources/physical_assessment_remote_datasource_impl.dart';
+import 'package:entrenaop/features/physical_assessment/data/repositories/physical_assessment_repository_impl.dart';
+import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/usecases/evaluate_initial_assessment_usecase.dart';
+import 'package:entrenaop/features/physical_assessment/domain/usecases/save_physical_assessment_usecase.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -83,7 +88,17 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton(() => const AssessmentEvaluator());
   sl.registerLazySingleton(() => EvaluateInitialAssessmentUseCase(sl()));
+  sl.registerLazySingleton<PhysicalAssessmentRemoteDataSource>(
+    () => PhysicalAssessmentRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  sl.registerLazySingleton<PhysicalAssessmentRepository>(
+    () => PhysicalAssessmentRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => SavePhysicalAssessmentUseCase(sl()));
   sl.registerFactory(
-    () => PhysicalAssessmentCubit(evaluateInitialAssessment: sl()),
+    () => PhysicalAssessmentCubit(
+      evaluateInitialAssessment: sl(),
+      savePhysicalAssessment: sl(),
+    ),
   );
 }

@@ -1,6 +1,6 @@
 # Dominio de evaluación física
 
-Revisión inicial: 19 de septiembre de 2026.
+Última revisión: 20 de septiembre de 2026.
 
 ## Decisión vigente
 
@@ -47,11 +47,21 @@ género del usuario.
 ## Estado de la primera vertical
 
 Se ha elegido como primer recorrido al aspirante a tropa y marinería que prepara
-las pruebas de ingreso. La aplicación ya permite seleccionar el baremo H/M,
-introducir las cuatro marcas y obtener un informe local con el mínimo y el
-margen de cada prueba.
+las pruebas de ingreso. La aplicación permite seleccionar el baremo H/M,
+introducir las cuatro marcas, obtener un informe con el mínimo y el margen de
+cada prueba y guardar el intento en el historial.
 
-El siguiente bloque será persistir el intento y sus cuatro marcas con la versión
-del catálogo utilizada. Esa migración se diseñará con RLS antes de conectar la
-interfaz a Supabase. La evaluación periódica y otros accesos se incorporarán
-como catálogos posteriores sin alterar esta primera vertical.
+La persistencia separa la cabecera de la evaluación de sus cuatro marcas. El
+cliente envía las mediciones originales a la función
+`record_physical_assessment`; PostgreSQL comprueba de nuevo la sesión, versión,
+categoría, hito, número de pruebas, identificadores y valores antes de insertar
+todo en una única transacción. La interfaz no puede concederse a sí misma un
+resultado apto.
+
+Las políticas RLS limitan el historial al propietario y a los administradores.
+La vista `physical_assessment_results` reconstruye cada resultado desde la marca
+y el baremo versionado, conservando el criterio que se usó en ese momento.
+
+El siguiente bloque funcional será mostrar el historial y su evolución. La
+evaluación periódica y otros accesos se incorporarán como catálogos posteriores
+sin alterar esta primera vertical.
