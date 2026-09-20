@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 
@@ -13,11 +14,13 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
     required AbandonWorkoutExecutionUseCase abandonExecution,
+    required WorkoutTimerStore timerStore,
   }) : _getExecution = getExecution,
        _completeSet = completeSet,
        _skipSet = skipSet,
        _finishExecution = finishExecution,
        _abandonExecution = abandonExecution,
+       _timerStore = timerStore,
        super(const ActiveWorkoutState());
 
   final String executionId;
@@ -26,6 +29,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
+  final WorkoutTimerStore _timerStore;
   Timer? _restTimer;
 
   Future<void> load() async {
@@ -74,6 +78,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     try {
       await _completeSet(result);
+      await _timerStore.clear(_timerId(currentSet.id));
       final updated = await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
       if (updated.currentSet == null || currentSet.restAfterSeconds == 0) {
@@ -110,6 +115,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     try {
       await _skipSet(currentSet.id);
+      await _timerStore.clear(_timerId(currentSet.id));
       final updated = await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
       emit(
@@ -215,6 +221,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     try {
       await _abandonExecution(executionId, reason);
+      final currentSet = execution.currentSet;
+      if (currentSet != null) {
+        await _timerStore.clear(_timerId(currentSet.id));
+      }
       final updated = await _getExecution(executionId);
       emit(
         ActiveWorkoutState(
@@ -232,6 +242,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       );
     }
   }
+
+  String _timerId(String resultId) => '$executionId:$resultId';
 
   @override
   Future<void> close() async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:flutter/material.dart';
 
 /// Cuenta atras para las series cuya prescripcion se expresa en segundos.
@@ -13,9 +14,13 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.preparationSeconds = 3,
     this.enabled = true,
     this.clock,
+    this.wallClock,
+    this.timerStore,
+    this.timerId,
     super.key,
   }) : assert(targetSeconds > 0),
-       assert(preparationSeconds >= 0);
+       assert(preparationSeconds >= 0),
+       assert((timerStore == null) == (timerId == null));
 
   final int targetSeconds;
   final ValueChanged<int> onElapsedChanged;
@@ -25,6 +30,9 @@ class WorkoutSetCountdown extends StatefulWidget {
   /// Fuente de tiempo inyectable para comprobar el temporizador sin esperas
   /// reales. En la aplicación se usa un [Stopwatch] monotónico interno.
   final Duration Function()? clock;
+  final DateTime Function()? wallClock;
+  final WorkoutTimerStore? timerStore;
+  final String? timerId;
 
   @override
   State<WorkoutSetCountdown> createState() => _WorkoutSetCountdownState();
@@ -39,8 +47,10 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
   bool _hasStarted = false;
   bool _isPreparing = false;
   int _preparationRemaining = 0;
+  late bool _isRestoring;
 
   Duration get _now => widget.clock?.call() ?? _clock.elapsed;
+  DateTime get _wallNow => (widget.wallClock?.call() ?? DateTime.now()).toUtc();
   bool get _isRunning => _runStartedAt != null;
   bool get _isFinished => _elapsedSeconds >= widget.targetSeconds;
   int get _remainingSeconds =>
@@ -50,6 +60,8 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
   void initState() {
     super.initState();
     _clock.start();
+    _isRestoring = widget.timerStore != null;
+    if (_isRestoring) unawaited(_restore());
   }
 
   @override
@@ -62,9 +74,14 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
   void _toggle() {
     if (_isRunning) {
       _synchronise();
+      if (_isFinished) {
+        if (mounted) setState(() {});
+        return;
+      }
       _elapsedBeforeRun = _currentElapsed;
       _runStartedAt = null;
       _ticker?.cancel();
+      _persist(WorkoutTimerPhase.paused);
       setState(() {});
       return;
     }
@@ -84,6 +101,12 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
 
     _isPreparing = true;
     _preparationRemaining = widget.preparationSeconds;
+    _persist(WorkoutTimerPhase.preparing);
+    _runPreparationTicker();
+    setState(() {});
+  }
+
+  void _runPreparationTicker() {
     _ticker?.cancel();
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_preparationRemaining > 1) {
@@ -95,11 +118,11 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _preparationRemaining = 0;
       _startExerciseTimer();
     });
-    setState(() {});
   }
 
-  void _startExerciseTimer() {
+  void _startExerciseTimer({bool persist = true}) {
     _runStartedAt = _now;
+    if (persist) _persist(WorkoutTimerPhase.running);
     _ticker?.cancel();
     _ticker = Timer.periodic(
       const Duration(milliseconds: 200),
@@ -121,6 +144,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _elapsedBeforeRun = Duration(seconds: widget.targetSeconds);
       _runStartedAt = null;
       _ticker?.cancel();
+      _clearPersistedTimer();
     }
     if (mounted) setState(() {});
   }
@@ -133,6 +157,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     _hasStarted = false;
     _isPreparing = false;
     _preparationRemaining = 0;
+    _clearPersistedTimer();
     // Al reiniciar recuperamos el objetivo como resultado propuesto. Asi el
     // usuario todavia puede registrar una medicion hecha con otro reloj.
     if (notify) widget.onElapsedChanged(widget.targetSeconds);
@@ -145,8 +170,103 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     return _elapsedBeforeRun + (_now - startedAt);
   }
 
+  Future<void> _restore() async {
+    final store = widget.timerStore!;
+    final timerId = widget.timerId!;
+    final snapshot = await store.read(timerId);
+    if (!mounted) return;
+
+    if (snapshot == null ||
+        snapshot.targetSeconds != widget.targetSeconds ||
+        snapshot.preparationSeconds != widget.preparationSeconds) {
+      if (snapshot != null) await store.clear(timerId);
+      if (mounted) setState(() => _isRestoring = false);
+      return;
+    }
+
+    _hasStarted = true;
+    switch (snapshot.phase) {
+      case WorkoutTimerPhase.preparing:
+        final preparationEndsAt = snapshot.phaseStartedAt.add(
+          Duration(seconds: snapshot.preparationSeconds),
+        );
+        if (_wallNow.isBefore(preparationEndsAt)) {
+          final remainingMilliseconds = preparationEndsAt
+              .difference(_wallNow)
+              .inMilliseconds;
+          _isPreparing = true;
+          _preparationRemaining = (remainingMilliseconds / 1000).ceil();
+          widget.onElapsedChanged(0);
+          _runPreparationTicker();
+        } else {
+          _restoreExercise(
+            _wallNow.difference(preparationEndsAt),
+            running: true,
+          );
+        }
+      case WorkoutTimerPhase.running:
+        final elapsed =
+            snapshot.elapsedBeforeRun +
+            _nonNegative(_wallNow.difference(snapshot.phaseStartedAt));
+        _restoreExercise(elapsed, running: true);
+      case WorkoutTimerPhase.paused:
+        _restoreExercise(snapshot.elapsedBeforeRun, running: false);
+    }
+
+    if (mounted) setState(() => _isRestoring = false);
+  }
+
+  void _restoreExercise(Duration elapsed, {required bool running}) {
+    final maximum = Duration(seconds: widget.targetSeconds);
+    final restored = elapsed > maximum ? maximum : elapsed;
+    _elapsedBeforeRun = restored;
+    _elapsedSeconds = (restored.inMilliseconds ~/ 1000).clamp(
+      0,
+      widget.targetSeconds,
+    );
+    widget.onElapsedChanged(_elapsedSeconds);
+    if (_elapsedSeconds >= widget.targetSeconds) {
+      _clearPersistedTimer();
+      return;
+    }
+    if (running) {
+      _startExerciseTimer();
+    }
+  }
+
+  void _persist(WorkoutTimerPhase phase) {
+    final store = widget.timerStore;
+    final timerId = widget.timerId;
+    if (store == null || timerId == null) return;
+    unawaited(
+      store.write(
+        timerId,
+        WorkoutTimerSnapshot(
+          phase: phase,
+          targetSeconds: widget.targetSeconds,
+          preparationSeconds: widget.preparationSeconds,
+          phaseStartedAt: _wallNow,
+          elapsedBeforeRun: _elapsedBeforeRun,
+        ),
+      ),
+    );
+  }
+
+  void _clearPersistedTimer() {
+    final store = widget.timerStore;
+    final timerId = widget.timerId;
+    if (store == null || timerId == null) return;
+    unawaited(store.clear(timerId));
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isRestoring) {
+      return const SizedBox(
+        height: 180,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
     final actionLabel = switch ((
       _isPreparing,
       _isRunning,
@@ -239,6 +359,9 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     );
   }
 }
+
+Duration _nonNegative(Duration value) =>
+    value.isNegative ? Duration.zero : value;
 
 String _formatClock(int seconds) {
   final minutes = seconds ~/ 60;

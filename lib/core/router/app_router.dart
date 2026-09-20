@@ -113,7 +113,7 @@ class AppRouter {
                             create: (_) => sl<ActiveWorkoutCubit>(
                               param1: state.pathParameters['executionId']!,
                             ),
-                            child: const ActiveWorkoutPage(),
+                            child: ActiveWorkoutPage(timerStore: sl()),
                           ),
                         ),
                       ],

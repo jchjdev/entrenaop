@@ -45,18 +45,25 @@ import 'package:entrenaop/features/training_plan/presentation/bloc/training_pref
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource_impl.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<WorkoutTimerStore>(
+    () => SharedPreferencesWorkoutTimerStore(sharedPreferences),
+  );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(supabaseClient: sl()),
@@ -184,6 +191,7 @@ Future<void> initDependencies() async {
       skipSet: sl(),
       finishExecution: sl(),
       abandonExecution: sl(),
+      timerStore: sl(),
     )..load(),
   );
 

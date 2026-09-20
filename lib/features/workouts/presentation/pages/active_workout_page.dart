@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
@@ -7,7 +8,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class ActiveWorkoutPage extends StatelessWidget {
-  const ActiveWorkoutPage({super.key});
+  const ActiveWorkoutPage({required this.timerStore, super.key});
+
+  final WorkoutTimerStore timerStore;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class ActiveWorkoutPage extends StatelessWidget {
               execution.status == WorkoutExecutionStatus.abandoned) {
             return _Abandoned(execution: execution);
           }
-          return _ActiveContent(state: state);
+          return _ActiveContent(state: state, timerStore: timerStore);
         },
       ),
     );
@@ -58,9 +61,10 @@ class ActiveWorkoutPage extends StatelessWidget {
 }
 
 class _ActiveContent extends StatefulWidget {
-  const _ActiveContent({required this.state});
+  const _ActiveContent({required this.state, required this.timerStore});
 
   final ActiveWorkoutState state;
+  final WorkoutTimerStore timerStore;
 
   @override
   State<_ActiveContent> createState() => _ActiveContentState();
@@ -117,6 +121,8 @@ class _ActiveContentState extends State<_ActiveContent> {
                       _CurrentSetCard(
                         key: ValueKey(current.id),
                         set: current,
+                        executionId: execution.id,
+                        timerStore: widget.timerStore,
                         saving: saving,
                         onComplete: context
                             .read<ActiveWorkoutCubit>()
@@ -227,12 +233,16 @@ class _CurrentSetCard extends StatefulWidget {
   const _CurrentSetCard({
     super.key,
     required this.set,
+    required this.executionId,
+    required this.timerStore,
     required this.saving,
     required this.onComplete,
     required this.onSkip,
   });
 
   final WorkoutExecutionSet set;
+  final String executionId;
+  final WorkoutTimerStore timerStore;
   final bool saving;
   final ValueChanged<WorkoutSetResultInput> onComplete;
   final VoidCallback onSkip;
@@ -380,6 +390,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                 const SizedBox(height: 22),
                 WorkoutSetCountdown(
                   targetSeconds: seconds,
+                  timerId: '${widget.executionId}:${set.id}',
+                  timerStore: widget.timerStore,
                   enabled: !widget.saving,
                   onElapsedChanged: (elapsed) {
                     _durationController.text = elapsed.toString();

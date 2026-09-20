@@ -180,6 +180,13 @@ El servidor seguirá siendo la autoridad para permisos, derechos comerciales,
 asignaciones y datos consolidados. El soporte local no debe convertirse en una
 forma de eludir reglas de negocio o seguridad.
 
+Los temporizadores de series usan una instantánea local con fase, instante de
+inicio y tiempo acumulado. Así pueden reconstruirse después de salir de la
+pantalla o reiniciar la aplicación sin escribir continuamente en Supabase. La
+instantánea se elimina al completar, omitir o abandonar la serie. Esto no
+equivale todavía a sincronización offline de resultados: esa capacidad exigirá
+una cola idempotente y resolución explícita de errores.
+
 ## Navegación y presentación
 
 `go_router` gestiona las rutas. El área autenticada usa

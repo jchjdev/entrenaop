@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -51,4 +52,59 @@ void main() {
     expect(find.text('Tiempo completado'), findsOneWidget);
     expect(elapsed, 3);
   });
+
+  testWidgets('restaura un temporizador activo usando el tiempo transcurrido', (
+    tester,
+  ) async {
+    final now = DateTime.utc(2026, 9, 20, 20);
+    final store = _MemoryTimerStore(
+      WorkoutTimerSnapshot(
+        phase: WorkoutTimerPhase.running,
+        targetSeconds: 20,
+        preparationSeconds: 3,
+        phaseStartedAt: now.subtract(const Duration(seconds: 5)),
+        elapsedBeforeRun: const Duration(seconds: 2),
+      ),
+    );
+    var elapsed = -1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 20,
+            timerId: 'execution:set',
+            timerStore: store,
+            wallClock: () => now,
+            clock: () => Duration.zero,
+            onElapsedChanged: (value) => elapsed = value,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('0:13'), findsOneWidget);
+    expect(find.text('Realizado: 7 s'), findsOneWidget);
+    expect(find.text('Pausar'), findsOneWidget);
+    expect(elapsed, 7);
+  });
+}
+
+class _MemoryTimerStore implements WorkoutTimerStore {
+  _MemoryTimerStore(this.snapshot);
+
+  WorkoutTimerSnapshot? snapshot;
+
+  @override
+  Future<void> clear(String timerId) async => snapshot = null;
+
+  @override
+  Future<WorkoutTimerSnapshot?> read(String timerId) async => snapshot;
+
+  @override
+  Future<void> write(String timerId, WorkoutTimerSnapshot snapshot) async {
+    this.snapshot = snapshot;
+  }
 }

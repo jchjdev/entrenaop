@@ -60,10 +60,11 @@ El primer incremento del motor utiliza una plantilla pública mínima almacenada
 en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
 progreso, temporizar descansos, conservar la prescripción usada y registrar el
 resultado real o la omisión de cada serie. Las series por duración incluyen una
-cuenta atrás que puede pausarse y reanudarse; todavía faltan la restauración de
-temporizadores al salir y el funcionamiento sin red. Salir conserva la sesión
-activa, mientras que el abandono definitivo registra el motivo sin convertir
-automáticamente las series restantes en omitidas.
+cuenta atrás que puede pausarse, reanudarse y restaurarse al volver a la sesión.
+Salir conserva la sesión activa, mientras que el abandono definitivo registra
+el motivo sin convertir automáticamente las series restantes en omitidas.
+Todavía falta guardar resultados sin conexión y sincronizarlos de forma
+idempotente cuando vuelva la red.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.
