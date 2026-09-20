@@ -113,6 +113,11 @@ tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 comprueba que el resultado incluya la métrica principal prescrita y que solo el
 propietario pueda resolver una serie pendiente de su sesión activa.
 
+Salir de la pantalla mantiene la ejecución en curso y permite recuperarla. El
+abandono es una transición terminal distinta que conserva las series resueltas,
+deja las pendientes sin falsearlas como omitidas y registra un motivo
+estructurado. Esta diferencia será una entrada auditable para la adaptación.
+
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
 el que se evaluaron.
 

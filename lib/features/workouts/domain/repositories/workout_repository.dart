@@ -13,4 +13,9 @@ abstract class WorkoutRepository {
   Future<void> skipSet(String resultId);
 
   Future<void> finishExecution(String executionId, int finalRpe);
+
+  Future<void> abandonExecution(
+    String executionId,
+    WorkoutAbandonmentReason reason,
+  );
 }

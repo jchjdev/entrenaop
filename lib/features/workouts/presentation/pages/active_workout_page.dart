@@ -16,11 +16,18 @@ class ActiveWorkoutPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          tooltip: 'Volver',
+          tooltip: 'Pausar y salir',
           onPressed: context.pop,
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: const Text('Sesión en curso'),
+        title: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
+          buildWhen: (previous, current) => previous.status != current.status,
+          builder: (context, state) => Text(switch (state.status) {
+            ActiveWorkoutStatus.completed => 'Sesión completada',
+            ActiveWorkoutStatus.abandoned => 'Sesión cerrada',
+            _ => 'Sesión en curso',
+          }),
+        ),
       ),
       body: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
         builder: (context, state) {
@@ -38,6 +45,10 @@ class ActiveWorkoutPage extends StatelessWidget {
           if (state.status == ActiveWorkoutStatus.completed ||
               execution.status == WorkoutExecutionStatus.completed) {
             return _Completed(execution: execution);
+          }
+          if (state.status == ActiveWorkoutStatus.abandoned ||
+              execution.status == WorkoutExecutionStatus.abandoned) {
+            return _Abandoned(execution: execution);
           }
           return _ActiveContent(state: state);
         },
@@ -132,6 +143,22 @@ class _ActiveContentState extends State<_ActiveContent> {
                         style: const TextStyle(color: Colors.redAccent),
                       ),
                     ],
+                    if (current != null ||
+                        state.status == ActiveWorkoutStatus.resting) ...[
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Puedes salir y continuar después: el progreso guardado no se pierde.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                      TextButton.icon(
+                        onPressed: saving ? null : _requestAbandonment,
+                        icon: const Icon(Icons.flag_outlined),
+                        label: const Text(
+                          'Abandonar la sesión definitivamente',
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -140,6 +167,59 @@ class _ActiveContentState extends State<_ActiveContent> {
         ),
       ),
     );
+  }
+
+  Future<void> _requestAbandonment() async {
+    final reason = await showDialog<WorkoutAbandonmentReason>(
+      context: context,
+      builder: (dialogContext) {
+        WorkoutAbandonmentReason? selected;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Abandonar sesión'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'La sesión se cerrará, pero conservaremos todo lo que ya has realizado. ¿Cuál es el motivo?',
+                ),
+                const SizedBox(height: 18),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: WorkoutAbandonmentReason.values
+                      .map(
+                        (reason) => ChoiceChip(
+                          label: Text(_abandonmentReasonLabel(reason)),
+                          selected: selected == reason,
+                          onSelected: (_) {
+                            setDialogState(() => selected = reason);
+                          },
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Seguir entrenando'),
+              ),
+              FilledButton(
+                onPressed: selected == null
+                    ? null
+                    : () => Navigator.pop(dialogContext, selected),
+                child: const Text('Confirmar abandono'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (reason == null || !mounted) return;
+    await context.read<ActiveWorkoutCubit>().abandon(reason);
   }
 }
 
@@ -548,6 +628,51 @@ class _Completed extends StatelessWidget {
   }
 }
 
+class _Abandoned extends StatelessWidget {
+  const _Abandoned({required this.execution});
+
+  final WorkoutExecution execution;
+
+  @override
+  Widget build(BuildContext context) {
+    final reason = execution.abandonmentReason;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.flag_outlined, size: 68, color: Color(0xFFFFA06F)),
+            const SizedBox(height: 16),
+            const Text(
+              'Sesión cerrada',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${execution.completedSetCount} '
+              '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'
+              '${reason == null ? '' : ' · ${_abandonmentReasonLabel(reason)}'}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white60),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Lo realizado se conserva para tu historial.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 22),
+            FilledButton(
+              onPressed: () => context.go('/plan'),
+              child: const Text('Volver a Mi plan'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _Failure extends StatelessWidget {
   const _Failure({required this.message, required this.onRetry});
 
@@ -605,3 +730,11 @@ String _progressLabel(WorkoutExecution execution) {
   return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
       '($completed completadas, $skipped omitidas)';
 }
+
+String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
+    switch (reason) {
+      WorkoutAbandonmentReason.lackOfTime => 'Falta de tiempo',
+      WorkoutAbandonmentReason.tooDifficult => 'Demasiada dificultad',
+      WorkoutAbandonmentReason.discomfort => 'Molestias',
+      WorkoutAbandonmentReason.other => 'Otro motivo',
+    };

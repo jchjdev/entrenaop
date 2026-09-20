@@ -142,6 +142,7 @@ void main() {
       'completed_at': null,
       'final_rpe': null,
       'notes': null,
+      'abandonment_reason': null,
       'workout_execution_sets': [
         result(id: 'set-3', order: 2, status: 'skipped'),
         result(id: 'set-2', order: 1, status: 'pending'),
@@ -154,5 +155,24 @@ void main() {
     expect(execution.resolvedSetCount, 2);
     expect(execution.currentSet?.id, 'set-2');
     expect(execution.currentSet?.status, WorkoutSetStatus.pending);
+  });
+
+  test('interpreta una ejecución abandonada y conserva su motivo', () {
+    final execution = WorkoutExecutionModel.fromJson({
+      'id': 'execution-2',
+      'template_id': 'template-1',
+      'template_name': 'Fuerza base',
+      'template_version': 1,
+      'status': 'abandoned',
+      'started_at': '2026-09-20T18:00:00Z',
+      'completed_at': '2026-09-20T18:10:00Z',
+      'final_rpe': null,
+      'notes': null,
+      'abandonment_reason': 'lack_of_time',
+      'workout_execution_sets': const <Map<String, dynamic>>[],
+    });
+
+    expect(execution.status, WorkoutExecutionStatus.abandoned);
+    expect(execution.abandonmentReason, WorkoutAbandonmentReason.lackOfTime);
   });
 }

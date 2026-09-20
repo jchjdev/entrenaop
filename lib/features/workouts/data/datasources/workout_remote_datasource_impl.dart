@@ -72,6 +72,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
           completed_at,
           final_rpe,
           notes,
+          abandonment_reason,
           workout_execution_sets (
             id,
             block_order,
@@ -113,5 +114,12 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       supabaseClient.rpc(
         'finish_workout_execution',
         params: {'p_execution_id': executionId, 'p_final_rpe': finalRpe},
+      );
+
+  @override
+  Future<void> abandonExecution(String executionId, String reason) =>
+      supabaseClient.rpc(
+        'abandon_workout_execution',
+        params: {'p_execution_id': executionId, 'p_reason': reason},
       );
 }

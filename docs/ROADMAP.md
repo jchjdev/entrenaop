@@ -61,7 +61,9 @@ en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
 progreso, temporizar descansos, conservar la prescripción usada y registrar el
 resultado real o la omisión de cada serie. Las series por duración incluyen una
 cuenta atrás que puede pausarse y reanudarse; todavía faltan la restauración de
-temporizadores al salir, el abandono y el funcionamiento sin red.
+temporizadores al salir y el funcionamiento sin red. Salir conserva la sesión
+activa, mientras que el abandono definitivo registra el motivo sin convertir
+automáticamente las series restantes en omitidas.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.

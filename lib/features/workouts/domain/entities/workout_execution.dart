@@ -4,6 +4,8 @@ enum WorkoutExecutionStatus { inProgress, completed, abandoned }
 
 enum WorkoutSetStatus { pending, completed, skipped }
 
+enum WorkoutAbandonmentReason { lackOfTime, tooDifficult, discomfort, other }
+
 class WorkoutExecution extends Equatable {
   const WorkoutExecution({
     required this.id,
@@ -16,6 +18,7 @@ class WorkoutExecution extends Equatable {
     this.completedAt,
     this.finalRpe,
     this.notes,
+    this.abandonmentReason,
   });
 
   final String id;
@@ -27,6 +30,7 @@ class WorkoutExecution extends Equatable {
   final DateTime? completedAt;
   final int? finalRpe;
   final String? notes;
+  final WorkoutAbandonmentReason? abandonmentReason;
   final List<WorkoutExecutionSet> sets;
 
   WorkoutExecutionSet? get currentSet {
@@ -57,6 +61,7 @@ class WorkoutExecution extends Equatable {
     completedAt,
     finalRpe,
     notes,
+    abandonmentReason,
     sets,
   ];
 }

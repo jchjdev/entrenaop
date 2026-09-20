@@ -12,10 +12,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required CompleteWorkoutSetUseCase completeSet,
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
+    required AbandonWorkoutExecutionUseCase abandonExecution,
   }) : _getExecution = getExecution,
        _completeSet = completeSet,
        _skipSet = skipSet,
        _finishExecution = finishExecution,
+       _abandonExecution = abandonExecution,
        super(const ActiveWorkoutState());
 
   final String executionId;
@@ -23,6 +25,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final CompleteWorkoutSetUseCase _completeSet;
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
+  final AbandonWorkoutExecutionUseCase _abandonExecution;
   Timer? _restTimer;
 
   Future<void> load() async {
@@ -40,9 +43,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       }
       emit(
         ActiveWorkoutState(
-          status: execution.status == WorkoutExecutionStatus.completed
-              ? ActiveWorkoutStatus.completed
-              : ActiveWorkoutStatus.ready,
+          status: switch (execution.status) {
+            WorkoutExecutionStatus.completed => ActiveWorkoutStatus.completed,
+            WorkoutExecutionStatus.abandoned => ActiveWorkoutStatus.abandoned,
+            WorkoutExecutionStatus.inProgress => ActiveWorkoutStatus.ready,
+          },
           execution: execution,
         ),
       );
@@ -190,6 +195,39 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           status: ActiveWorkoutStatus.failure,
           execution: execution,
           errorMessage: 'No hemos podido finalizar la sesión.',
+        ),
+      );
+    }
+  }
+
+  Future<void> abandon(WorkoutAbandonmentReason reason) async {
+    final execution = state.execution;
+    if (execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress) {
+      return;
+    }
+    _restTimer?.cancel();
+    emit(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.saving,
+        execution: execution,
+      ),
+    );
+    try {
+      await _abandonExecution(executionId, reason);
+      final updated = await _getExecution(executionId);
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.abandoned,
+          execution: updated ?? execution,
+        ),
+      );
+    } catch (_) {
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.failure,
+          execution: execution,
+          errorMessage: 'No hemos podido abandonar la sesión.',
         ),
       );
     }

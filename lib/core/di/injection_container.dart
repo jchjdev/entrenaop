@@ -170,6 +170,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
   sl.registerFactory(
     () =>
         WorkoutPreviewCubit(getStarterWorkout: sl(), startExecution: sl())
@@ -182,6 +183,7 @@ Future<void> initDependencies() async {
       completeSet: sl(),
       skipSet: sl(),
       finishExecution: sl(),
+      abandonExecution: sl(),
     )..load(),
   );
 

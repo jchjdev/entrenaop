@@ -8,6 +8,7 @@ enum ActiveWorkoutStatus {
   saving,
   resting,
   completed,
+  abandoned,
   failure,
 }
 

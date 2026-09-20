@@ -21,6 +21,7 @@ class WorkoutExecutionModel {
       completedAt: _dateOrNull(json['completed_at']),
       finalRpe: json['final_rpe'] as int?,
       notes: json['notes'] as String?,
+      abandonmentReason: _abandonmentReason(json['abandonment_reason']),
       sets: sets,
     );
   }
@@ -76,6 +77,16 @@ class WorkoutExecutionModel {
     'skipped' => WorkoutSetStatus.skipped,
     _ => throw FormatException('Estado de serie desconocido: $value'),
   };
+
+  static WorkoutAbandonmentReason? _abandonmentReason(Object? value) =>
+      switch (value) {
+        null => null,
+        'lack_of_time' => WorkoutAbandonmentReason.lackOfTime,
+        'too_difficult' => WorkoutAbandonmentReason.tooDifficult,
+        'discomfort' => WorkoutAbandonmentReason.discomfort,
+        'other' => WorkoutAbandonmentReason.other,
+        _ => throw FormatException('Motivo de abandono desconocido: $value'),
+      };
 
   static DateTime? _dateOrNull(Object? value) =>
       value == null ? null : DateTime.parse(value as String);

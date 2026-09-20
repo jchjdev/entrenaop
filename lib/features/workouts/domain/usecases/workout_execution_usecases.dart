@@ -44,3 +44,12 @@ class FinishWorkoutExecutionUseCase {
   Future<void> call(String executionId, int finalRpe) =>
       _repository.finishExecution(executionId, finalRpe);
 }
+
+class AbandonWorkoutExecutionUseCase {
+  const AbandonWorkoutExecutionUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<void> call(String executionId, WorkoutAbandonmentReason reason) =>
+      _repository.abandonExecution(executionId, reason);
+}

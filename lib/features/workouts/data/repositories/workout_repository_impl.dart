@@ -45,4 +45,17 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   @override
   Future<void> finishExecution(String executionId, int finalRpe) =>
       remoteDataSource.finishExecution(executionId, finalRpe);
+
+  @override
+  Future<void> abandonExecution(
+    String executionId,
+    WorkoutAbandonmentReason reason,
+  ) => remoteDataSource.abandonExecution(executionId, _reasonValue(reason));
 }
+
+String _reasonValue(WorkoutAbandonmentReason reason) => switch (reason) {
+  WorkoutAbandonmentReason.lackOfTime => 'lack_of_time',
+  WorkoutAbandonmentReason.tooDifficult => 'too_difficult',
+  WorkoutAbandonmentReason.discomfort => 'discomfort',
+  WorkoutAbandonmentReason.other => 'other',
+};

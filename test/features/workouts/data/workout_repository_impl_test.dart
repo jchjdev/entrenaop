@@ -38,11 +38,32 @@ void main() {
 
     expect(dataSource.skippedResultId, 'result-2');
   });
+
+  test(
+    'traduce el motivo de abandono al valor estable de base de datos',
+    () async {
+      await repository.abandonExecution(
+        'execution-2',
+        WorkoutAbandonmentReason.discomfort,
+      );
+
+      expect(dataSource.abandonedExecutionId, 'execution-2');
+      expect(dataSource.abandonmentReason, 'discomfort');
+    },
+  );
 }
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Map<String, dynamic>? completedValues;
   String? skippedResultId;
+  String? abandonedExecutionId;
+  String? abandonmentReason;
+
+  @override
+  Future<void> abandonExecution(String executionId, String reason) async {
+    abandonedExecutionId = executionId;
+    abandonmentReason = reason;
+  }
 
   @override
   Future<void> completeSet(Map<String, dynamic> values) async {
