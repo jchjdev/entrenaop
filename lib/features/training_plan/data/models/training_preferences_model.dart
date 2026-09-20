@@ -4,11 +4,9 @@ class TrainingPreferencesModel {
   const TrainingPreferencesModel._();
 
   static TrainingPreferences fromJson(Map<String, dynamic> json) {
-    final targetDate = json['target_date'] as String?;
     return TrainingPreferences(
       availableDaysPerWeek: json['available_days_per_week'] as int,
       sessionDurationMinutes: json['session_duration_minutes'] as int,
-      targetDate: targetDate == null ? null : DateTime.parse(targetDate),
       experience: _experienceFromDatabase(json['experience_level'] as String),
       equipment: (json['equipment'] as List<dynamic>)
           .cast<String>()
@@ -26,7 +24,6 @@ class TrainingPreferencesModel {
       'user_id': userId,
       'available_days_per_week': preferences.availableDaysPerWeek,
       'session_duration_minutes': preferences.sessionDurationMinutes,
-      'target_date': preferences.targetDate?.toIso8601String().split('T').first,
       'experience_level': preferences.experience.databaseValue,
       'equipment': preferences.equipment
           .map((item) => item.databaseValue)

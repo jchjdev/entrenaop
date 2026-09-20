@@ -7,7 +7,6 @@ void main() {
     final preferences = TrainingPreferences(
       availableDaysPerWeek: 4,
       sessionDurationMinutes: 60,
-      targetDate: DateTime(2027, 5, 18),
       experience: TrainingExperience.consistent,
       equipment: const {
         TrainingEquipment.pullUpBar,
@@ -19,7 +18,7 @@ void main() {
     final json = TrainingPreferencesModel.toJson(preferences, userId: 'user-1');
     final restored = TrainingPreferencesModel.fromJson(json);
 
-    expect(json['target_date'], '2027-05-18');
+    expect(json.containsKey('target_date'), isFalse);
     expect(json['experience_level'], 'consistent');
     expect(restored, preferences);
   });
@@ -29,7 +28,6 @@ void main() {
       () => TrainingPreferencesModel.fromJson({
         'available_days_per_week': 3,
         'session_duration_minutes': 45,
-        'target_date': null,
         'experience_level': 'expert',
         'equipment': <String>['none'],
         'requires_professional_review': false,

@@ -4,6 +4,7 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.d
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -116,6 +117,8 @@ class _DashboardContent extends StatelessWidget {
                   const SizedBox(height: 24),
                   _NextStepCard(nextStep: overview.nextStep),
                   const SizedBox(height: 16),
+                  _GoalCard(goal: overview.goal),
+                  const SizedBox(height: 12),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final assessmentCard = _AssessmentCard(
@@ -163,6 +166,14 @@ class _NextStepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (:icon, :title, :description, :action, :route) = switch (nextStep) {
+      PreparationNextStep.preparationGoal => (
+        icon: Icons.flag_outlined,
+        title: 'Define qué pruebas estás preparando',
+        description:
+            'El objetivo conecta el programa que preparas con su catálogo oficial y tu fecha prevista.',
+        action: 'Configurar objetivo',
+        route: '/plan/goal',
+      ),
       PreparationNextStep.physicalAssessment => (
         icon: Icons.monitor_heart_outlined,
         title: 'Haz tu evaluación inicial',
@@ -229,12 +240,52 @@ class _NextStepCard extends StatelessWidget {
             ),
             FilledButton(
               onPressed: () =>
-                  nextStep == PreparationNextStep.physicalAssessment
+                  nextStep == PreparationNextStep.physicalAssessment ||
+                      nextStep == PreparationNextStep.preparationGoal
                   ? context.push(route)
                   : context.go(route),
               child: Text(action),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  const _GoalCard({required this.goal});
+
+  final PreparationGoal? goal;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = goal;
+    final date = data?.targetDate;
+    return Card(
+      color: const Color(0xFF151515),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+        leading: const Icon(
+          Icons.military_tech_outlined,
+          color: Color(0xFFFF8A50),
+        ),
+        title: Text(
+          data == null
+              ? 'Objetivo sin configurar'
+              : 'Ingreso · Tropa y marinería',
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        subtitle: data == null
+            ? const Text('Selecciona el programa que estás preparando.')
+            : Text(
+                date == null
+                    ? 'Fecha aún no indicada'
+                    : 'Fecha prevista · ${_formatDate(date)}',
+              ),
+        trailing: TextButton(
+          onPressed: () => context.push('/plan/goal'),
+          child: Text(data == null ? 'Configurar' : 'Editar'),
         ),
       ),
     );
@@ -421,6 +472,11 @@ String? _focusTestName(PhysicalAssessmentHistoryEntry entry) {
     if (result.mark.testId == focusId) return result.standard.test.name;
   }
   return null;
+}
+
+String _formatDate(DateTime date) {
+  String twoDigits(int value) => value.toString().padLeft(2, '0');
+  return '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
 }
 
 extension on TrainingEquipment {

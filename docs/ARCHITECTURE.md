@@ -131,9 +131,12 @@ identidad
 
 - Flutter valida entrada y ofrece feedback temprano.
 - PostgreSQL conserva la integridad mediante constraints, relaciones y tipos.
-- `training_preferences` guarda disponibilidad, duración, fecha objetivo,
-  continuidad y material. La señal de revisión profesional bloquea una futura
-  planificación automática sin almacenar diagnósticos ni texto médico.
+- `training_preferences` guarda disponibilidad, duración, continuidad y
+  material. La señal de revisión profesional bloquea una futura planificación
+  automática sin almacenar diagnósticos ni texto médico.
+- `preparation_programs` identifica recorridos estables, tanto de acceso como
+  de evaluación interna. Sus baremos viven en catálogos versionados separados.
+  `preparation_goals` guarda el programa activo y su fecha objetivo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan
   una rutina hasta que las reglas deportivas estén validadas y versionadas.
 - Los eventos o resultados históricos deben ser inmutables o estar versionados

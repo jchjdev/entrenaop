@@ -4,12 +4,18 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.d
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final assessment = _assessment();
+  const goal = PreparationGoal(
+    id: 'goal-1',
+    programId: PreparationProgramIds.armedForcesTroopEntry,
+  );
   const preferences = TrainingPreferences(
     availableDaysPerWeek: 3,
     sessionDurationMinutes: 60,
@@ -19,8 +25,22 @@ void main() {
   );
 
   group('siguiente paso', () {
-    test('solicita primero la evaluación física', () {
-      const overview = PreparationOverview(assessments: [], preferences: null);
+    test('solicita primero el objetivo de preparación', () {
+      const overview = PreparationOverview(
+        assessments: [],
+        preferences: null,
+        goal: null,
+      );
+
+      expect(overview.nextStep, PreparationNextStep.preparationGoal);
+    });
+
+    test('solicita la evaluación física después del objetivo', () {
+      const overview = PreparationOverview(
+        assessments: [],
+        preferences: null,
+        goal: goal,
+      );
 
       expect(overview.nextStep, PreparationNextStep.physicalAssessment);
     });
@@ -29,6 +49,7 @@ void main() {
       final overview = PreparationOverview(
         assessments: [assessment],
         preferences: null,
+        goal: goal,
       );
 
       expect(overview.nextStep, PreparationNextStep.trainingPreferences);
@@ -44,6 +65,7 @@ void main() {
           equipment: {TrainingEquipment.none},
           requiresProfessionalReview: true,
         ),
+        goal: goal,
       );
 
       expect(overview.nextStep, PreparationNextStep.professionalReview);
@@ -53,6 +75,7 @@ void main() {
       final overview = PreparationOverview(
         assessments: [assessment],
         preferences: preferences,
+        goal: goal,
       );
 
       expect(overview.nextStep, PreparationNextStep.awaitingValidatedPlan);
@@ -66,6 +89,7 @@ void main() {
       getOverview: GetPreparationOverviewUseCase(
         assessmentRepository: assessmentRepository,
         preferencesRepository: preferencesRepository,
+        goalRepository: const _GoalRepository(goal),
       ),
     );
     addTearDown(cubit.close);
@@ -75,6 +99,7 @@ void main() {
     expect(cubit.state.status, DashboardStatus.loaded);
     expect(cubit.state.overview?.latestAssessment, assessment);
     expect(cubit.state.overview?.preferences, preferences);
+    expect(cubit.state.overview?.goal, goal);
   });
 
   test('el cubit conserva un error recuperable si falla la carga', () async {
@@ -82,6 +107,7 @@ void main() {
       getOverview: GetPreparationOverviewUseCase(
         assessmentRepository: _AssessmentRepository(const [], fail: true),
         preferencesRepository: _PreferencesRepository(null),
+        goalRepository: const _GoalRepository(null),
       ),
     );
     addTearDown(cubit.close);
@@ -160,6 +186,20 @@ class _PreferencesRepository implements TrainingPreferencesRepository {
 
   @override
   Future<void> save(TrainingPreferences preferences) {
+    throw UnimplementedError();
+  }
+}
+
+class _GoalRepository implements PreparationGoalRepository {
+  const _GoalRepository(this.goal);
+
+  final PreparationGoal? goal;
+
+  @override
+  Future<PreparationGoal?> getActive() async => goal;
+
+  @override
+  Future<PreparationGoal> save(PreparationGoal goal) {
     throw UnimplementedError();
   }
 }

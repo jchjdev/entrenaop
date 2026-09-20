@@ -3,7 +3,7 @@ import 'package:entrenaop/features/training_plan/presentation/bloc/training_pref
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class TrainingPlanPage extends StatefulWidget {
   const TrainingPlanPage({super.key});
@@ -15,7 +15,6 @@ class TrainingPlanPage extends StatefulWidget {
 class _TrainingPlanPageState extends State<TrainingPlanPage> {
   int _days = 3;
   int _duration = 60;
-  DateTime? _targetDate;
   TrainingExperience _experience = TrainingExperience.starting;
   Set<TrainingEquipment> _equipment = {TrainingEquipment.none};
   bool _requiresProfessionalReview = false;
@@ -27,24 +26,9 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
     if (preferences == null) return;
     _days = preferences.availableDaysPerWeek;
     _duration = preferences.sessionDurationMinutes;
-    _targetDate = preferences.targetDate;
     _experience = preferences.experience;
     _equipment = {...preferences.equipment};
     _requiresProfessionalReview = preferences.requiresProfessionalReview;
-  }
-
-  Future<void> _chooseTargetDate() async {
-    final now = DateUtils.dateOnly(DateTime.now());
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _targetDate?.isAfter(now) == true
-          ? _targetDate!
-          : now.add(const Duration(days: 90)),
-      firstDate: now,
-      lastDate: DateTime(now.year + 10),
-      helpText: 'Fecha de tu objetivo',
-    );
-    if (date != null) setState(() => _targetDate = date);
   }
 
   void _toggleEquipment(TrainingEquipment item, bool selected) {
@@ -64,7 +48,6 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
       TrainingPreferences(
         availableDaysPerWeek: _days,
         sessionDurationMinutes: _duration,
-        targetDate: _targetDate,
         experience: _experience,
         equipment: _equipment,
         requiresProfessionalReview: _requiresProfessionalReview,
@@ -111,6 +94,26 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const _IntroductionCard(),
+                      const SizedBox(height: 12),
+                      Card(
+                        color: const Color(0xFF141414),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+                          leading: const Icon(
+                            Icons.flag_outlined,
+                            color: Color(0xFFFF8A50),
+                          ),
+                          title: const Text('Objetivo de preparación'),
+                          subtitle: const Text(
+                            'Programa de preparación y fecha prevista.',
+                          ),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => context.push('/plan/goal'),
+                        ),
+                      ),
                       const SizedBox(height: 18),
                       _QuestionCard(
                         title: '¿Cuántos días puedes entrenar cada semana?',
@@ -155,36 +158,6 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
                                 ),
                               )
                               .toList(growable: false),
-                        ),
-                      ),
-                      _QuestionCard(
-                        title: '¿Tienes una fecha objetivo?',
-                        subtitle: 'Es opcional y podrás cambiarla después.',
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _chooseTargetDate,
-                                icon: const Icon(Icons.calendar_month_outlined),
-                                label: Text(
-                                  _targetDate == null
-                                      ? 'Elegir fecha'
-                                      : DateFormat(
-                                          'dd/MM/yyyy',
-                                        ).format(_targetDate!),
-                                ),
-                              ),
-                            ),
-                            if (_targetDate != null) ...[
-                              const SizedBox(width: 8),
-                              IconButton(
-                                tooltip: 'Quitar fecha',
-                                onPressed: () =>
-                                    setState(() => _targetDate = null),
-                                icon: const Icon(Icons.close_rounded),
-                              ),
-                            ],
-                          ],
                         ),
                       ),
                       _QuestionCard(

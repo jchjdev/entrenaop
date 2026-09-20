@@ -11,12 +11,10 @@ class TrainingPreferences extends Equatable {
     required this.experience,
     required this.equipment,
     required this.requiresProfessionalReview,
-    this.targetDate,
   });
 
   final int availableDaysPerWeek;
   final int sessionDurationMinutes;
-  final DateTime? targetDate;
   final TrainingExperience experience;
   final Set<TrainingEquipment> equipment;
   final bool requiresProfessionalReview;
@@ -25,7 +23,6 @@ class TrainingPreferences extends Equatable {
   List<Object?> get props => [
     availableDaysPerWeek,
     sessionDurationMinutes,
-    targetDate,
     experience,
     equipment,
     requiresProfessionalReview,

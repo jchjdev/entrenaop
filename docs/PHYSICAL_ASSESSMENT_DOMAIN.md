@@ -4,11 +4,15 @@
 
 ## Decisión vigente
 
-EntrenaOP no modelará `PAEF` o `PAFA` como si fueran una única oposición fija.
-Son denominaciones históricas o específicas de determinados ejércitos. La
-[Orden DEF/15/2026](https://www.boe.es/eli/es/o/2026/01/13/def15) establece un
-régimen unificado y separa, entre otros contextos, ingreso, formación, egreso y
-evaluación periódica.
+EntrenaOP no modelará `PAEF` o `PAFA` como si fueran una oposición. Son pruebas
+internas con reglas propias, tramos de edad, puntuaciones y cálculo agregado;
+se incorporarán cuando sus baremos oficiales estén disponibles. Los accesos a
+Tropa y Marinería, Suboficiales y Oficiales también serán programas distintos,
+aunque compartan parte de la normativa o de las pruebas.
+
+La [Orden DEF/15/2026](https://www.boe.es/eli/es/o/2026/01/13/def15) establece
+un régimen unificado y separa, entre otros contextos, ingreso, formación,
+egreso y evaluación periódica.
 
 Cada catálogo tendrá un identificador de versión, fuente oficial y fecha de
 vigencia. Una marca guardada conservará la versión del baremo con la que fue
@@ -72,6 +76,6 @@ respecto al mínimo. Cuando las cuatro pruebas están superadas, prioriza la de
 menor margen relativo. PostgreSQL guarda la versión, prueba elegida, margen y
 razón junto a la evaluación; una versión futura no reescribirá esta decisión.
 
-El siguiente bloque funcional convertirá este foco en una prescripción sencilla
-y explicable. La evaluación periódica y otros accesos se incorporarán como
-catálogos posteriores sin alterar esta primera vertical.
+La prescripción se aplaza hasta validar sus reglas deportivas. La evaluación
+periódica y otros accesos se incorporarán como programas y catálogos posteriores
+sin alterar esta primera vertical.

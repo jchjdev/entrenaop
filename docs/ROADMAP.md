@@ -23,6 +23,9 @@ Antes de diseñar las tablas definitivas se trabajará con ejemplos reales para
 definir:
 
 - Pruebas, convocatorias, categorías y baremos versionados.
+- Diferencia entre programas de acceso y evaluaciones internas.
+- Tramos de edad, tablas de puntos y cálculo total para PAEF/PAFA cuando se
+  disponga de sus fuentes oficiales.
 - Datos que se prescriben y resultados que se registran.
 - Fuerza, carrera, circuitos, superseries, AMRAP, EMOM, Tabata e isométricos.
 - Reglas ante sesiones completadas, fallidas, omitidas o con molestias.
@@ -50,7 +53,8 @@ Esta vertical incluirá:
 - Modelo de entrenamiento capaz de expresar los formatos necesarios.
 - Pantalla de sesión activa.
 - Registro detallado de resultados y feedback.
-- Base inicial de PAEF/PAFA, baremos versionados y pruebas/simulacros.
+- Base inicial de ingreso a Tropa y Marinería, baremos versionados y
+  pruebas/simulacros.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.

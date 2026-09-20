@@ -17,9 +17,11 @@ El ciclo principal del producto es:
 > Evaluación inicial → plan semanal → entrenamiento guiado → registro real →
 > adaptación → simulacro.
 
-El primer módulo de oposición que se desarrollará en profundidad será
-PAEF/PAFA. CNP, Guardia Civil y otras oposiciones se incorporarán después; no se
-intentará resolverlas todas en el MVP.
+El primer recorrido que se desarrollará en profundidad será el ingreso a Tropa
+y Marinería. Los accesos a Suboficiales y Oficiales se incorporarán después con
+sus propios catálogos oficiales. Las pruebas internas, ascensos, PAEF y PAFA se
+modelarán como programas de evaluación distintos, no como si fueran otra
+oposición. CNP, Guardia Civil y otros cuerpos quedan fuera del MVP inicial.
 
 Lema previsto: **Entrena. Supera. Aprueba.**
 
@@ -73,7 +75,8 @@ pero todavía no son nombres definitivos.
 
 ## Primera versión validable
 
-La primera versión debe demostrar el ciclo completo con PAEF/PAFA:
+La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
+Marinería:
 
 1. Alta, acceso y perfil físico.
 2. Selección de convocatoria, categoría y fecha objetivo.

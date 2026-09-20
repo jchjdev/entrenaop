@@ -13,6 +13,8 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/pages/initial_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:flutter/material.dart';
@@ -86,6 +88,15 @@ class AppRouter {
                     create: (_) => sl<TrainingPreferencesCubit>(),
                     child: const TrainingPlanPage(),
                   ),
+                  routes: [
+                    GoRoute(
+                      path: 'goal',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<PreparationGoalCubit>(),
+                        child: const PreparationGoalPage(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

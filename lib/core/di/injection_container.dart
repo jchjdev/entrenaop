@@ -32,6 +32,11 @@ import 'package:entrenaop/features/physical_assessment/domain/usecases/get_physi
 import 'package:entrenaop/features/physical_assessment/domain/usecases/save_physical_assessment_usecase.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource.dart';
+import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource_impl.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_goal_repository_impl.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource.dart';
 import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource_impl.dart';
 import 'package:entrenaop/features/training_plan/data/repositories/training_preferences_repository_impl.dart';
@@ -133,12 +138,23 @@ Future<void> initDependencies() async {
   );
   sl.registerFactory(() => TrainingPreferencesCubit(repository: sl())..load());
 
+  // --- Preparation goal ---
+
+  sl.registerLazySingleton<PreparationGoalRemoteDataSource>(
+    () => PreparationGoalRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  sl.registerLazySingleton<PreparationGoalRepository>(
+    () => PreparationGoalRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerFactory(() => PreparationGoalCubit(repository: sl())..load());
+
   // --- Dashboard ---
 
   sl.registerLazySingleton(
     () => GetPreparationOverviewUseCase(
       assessmentRepository: sl(),
       preferencesRepository: sl(),
+      goalRepository: sl(),
     ),
   );
   sl.registerFactory(() => DashboardCubit(getOverview: sl())..load());
