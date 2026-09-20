@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+enum ExerciseOrigin { system, user }
+
 class ExerciseEntity extends Equatable {
   final String id;
   final String name;
@@ -11,7 +13,8 @@ class ExerciseEntity extends Equatable {
   final String difficulty;
   final String exerciseType;
   final bool isPublic;
-  final String createdBy;
+  final String? createdBy;
+  final ExerciseOrigin origin;
 
   const ExerciseEntity({
     required this.id,
@@ -24,7 +27,8 @@ class ExerciseEntity extends Equatable {
     required this.difficulty,
     required this.exerciseType,
     required this.isPublic,
-    required this.createdBy,
+    required this.origin,
+    this.createdBy,
   });
 
   @override
@@ -40,5 +44,6 @@ class ExerciseEntity extends Equatable {
     exerciseType,
     isPublic,
     createdBy,
+    origin,
   ];
 }

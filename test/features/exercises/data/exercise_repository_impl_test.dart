@@ -13,10 +13,31 @@ void main() {
     difficulty: 'intermedio',
     exerciseType: 'repeticiones',
     isPublic: true,
+    origin: ExerciseOrigin.user,
     createdBy: 'coach-id',
   );
 
   group('ExerciseRepositoryImpl', () {
+    test('acepta ejercicios del sistema sin propietario personal', () {
+      final model = ExerciseModel.fromJson({
+        'id': 'system-exercise-id',
+        'name': 'Plancha frontal',
+        'description': null,
+        'video_url': null,
+        'thumbnail_url': null,
+        'muscle_groups': ['core'],
+        'equipment': ['peso corporal'],
+        'difficulty': 'inicial',
+        'exercise_type': 'duración',
+        'is_public': true,
+        'created_by': null,
+        'origin': 'system',
+      });
+
+      expect(model.origin, ExerciseOrigin.system);
+      expect(model.createdBy, isNull);
+    });
+
     test('convierte una entidad de dominio antes de crearla', () async {
       final dataSource = _FakeExerciseRemoteDataSource();
       final repository = ExerciseRepositoryImpl(remoteDataSource: dataSource);

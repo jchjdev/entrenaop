@@ -56,6 +56,11 @@ Esta vertical incluirá:
 - Base inicial de ingreso a Tropa y Marinería, baremos versionados y
   pruebas/simulacros.
 
+El primer incremento del motor utiliza una plantilla pública mínima almacenada
+en Supabase. Su objetivo es validar la lectura completa de bloques, ejercicios,
+series y descansos antes de implementar la ejecución persistente y sus
+resultados.
+
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.
 

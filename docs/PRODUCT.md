@@ -86,7 +86,7 @@ Marinería:
 6. Sesión activa con temporizadores, indicaciones, vídeo y registro rápido.
 7. Resultado realizado con RPE/RIR, molestias y notas.
 8. Evolución de marcas y comparación con el baremo aplicable.
-9. Simulacro PAEF/PAFA.
+9. Simulacro de las pruebas físicas del programa.
 10. Revisión y modificación del plan por el entrenador.
 
 Primero se construirá una vertical completa con pocos ejercicios y una sesión
@@ -114,8 +114,8 @@ social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
   activa.
 - **Explora:** programas, sesiones públicas, rutinas propias y, más adelante,
   desafíos.
-- **Oposiciones:** PAEF/PAFA inicialmente; pruebas, baremos y planificación
-  adaptativa.
+- **Programas:** ingreso a Tropa inicialmente; después, otros accesos y
+  evaluaciones internas con sus pruebas, baremos y planificación adaptativa.
 - **Resultados:** marcas, evolución, comparación con baremos, historial y
   métricas de carga.
 - **Chat:** reservado al seguimiento personalizado en su fase correspondiente.

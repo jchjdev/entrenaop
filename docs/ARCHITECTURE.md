@@ -95,6 +95,12 @@ planificación → sesión → bloques → ejercicios/intervalos → prescripci�
 un registro separado del resultado realizado. La forma definitiva se decidirá
 tras concretar los casos de PAEF/PAFA.
 
+La primera parte comprobable de esa jerarquía ya se modela mediante
+`workout_templates → workout_blocks → workout_items → workout_sets`. Una serie
+puede prescribir repeticiones, duración o distancia, además de carga, RPE/RIR y
+descanso. Las tablas heredadas `routines`, `routine_exercises` y `session_logs`
+se conservan temporalmente, pero no son el núcleo del nuevo recorrido.
+
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
 el que se evaluaron.
 

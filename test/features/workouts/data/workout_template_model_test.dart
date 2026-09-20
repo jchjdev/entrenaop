@@ -1,0 +1,103 @@
+import 'package:entrenaop/features/workouts/data/models/workout_template_model.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('convierte y ordena la jerarquía completa de una plantilla', () {
+    final workout = WorkoutTemplateModel.fromJson({
+      'id': 'template-1',
+      'name': 'Fuerza base',
+      'description': 'Sesión de prueba',
+      'estimated_duration_minutes': 20,
+      'version': 1,
+      'workout_blocks': [
+        {
+          'id': 'block-2',
+          'order_index': 1,
+          'name': 'Trabajo principal',
+          'format': 'straight_sets',
+          'rounds': 1,
+          'time_cap_seconds': null,
+          'rest_after_seconds': 0,
+          'workout_items': [
+            {
+              'id': 'item-1',
+              'order_index': 0,
+              'notes': 'Mantén la técnica',
+              'exercises': {
+                'id': 'exercise-1',
+                'name': 'Flexiones',
+                'description': 'Cuerpo alineado',
+              },
+              'workout_sets': [
+                {
+                  'id': 'set-2',
+                  'order_index': 1,
+                  'target_reps': 8,
+                  'target_duration_seconds': null,
+                  'target_distance_meters': null,
+                  'target_load_kg': null,
+                  'target_rpe': null,
+                  'target_rir': 3,
+                  'rest_after_seconds': 0,
+                },
+                {
+                  'id': 'set-1',
+                  'order_index': 0,
+                  'target_reps': 8,
+                  'target_duration_seconds': null,
+                  'target_distance_meters': null,
+                  'target_load_kg': null,
+                  'target_rpe': null,
+                  'target_rir': 3,
+                  'rest_after_seconds': 60,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          'id': 'block-1',
+          'order_index': 0,
+          'name': 'Activación',
+          'format': 'warm_up',
+          'rounds': 1,
+          'time_cap_seconds': 300,
+          'rest_after_seconds': 30,
+          'workout_items': <Map<String, dynamic>>[],
+        },
+      ],
+    });
+
+    expect(workout.blocks.first.name, 'Activación');
+    expect(workout.blocks.last.format, WorkoutBlockFormat.straightSets);
+    expect(workout.blocks.last.items.single.exerciseName, 'Flexiones');
+    expect(workout.blocks.last.items.single.sets.first.id, 'set-1');
+    expect(workout.blocks.last.items.single.sets.last.targetRir, 3);
+  });
+
+  test('rechaza un formato de bloque que el motor todavía no soporta', () {
+    expect(
+      () => WorkoutTemplateModel.fromJson({
+        'id': 'template-1',
+        'name': 'Sesión inválida',
+        'description': null,
+        'estimated_duration_minutes': null,
+        'version': 1,
+        'workout_blocks': [
+          {
+            'id': 'block-1',
+            'order_index': 0,
+            'name': 'Desconocido',
+            'format': 'formato_inventado',
+            'rounds': 1,
+            'time_cap_seconds': null,
+            'rest_after_seconds': 0,
+            'workout_items': <Map<String, dynamic>>[],
+          },
+        ],
+      }),
+      throwsFormatException,
+    );
+  });
+}

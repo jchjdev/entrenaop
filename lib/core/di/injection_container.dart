@@ -42,6 +42,12 @@ import 'package:entrenaop/features/training_plan/data/datasources/training_prefe
 import 'package:entrenaop/features/training_plan/data/repositories/training_preferences_repository_impl.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
+import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
+import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource_impl.dart';
+import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
+import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -147,6 +153,19 @@ Future<void> initDependencies() async {
     () => PreparationGoalRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerFactory(() => PreparationGoalCubit(repository: sl())..load());
+
+  // --- Workout templates ---
+
+  sl.registerLazySingleton<WorkoutRemoteDataSource>(
+    () => WorkoutRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  sl.registerLazySingleton<WorkoutRepository>(
+    () => WorkoutRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => GetStarterWorkoutUseCase(sl()));
+  sl.registerFactory(
+    () => WorkoutPreviewCubit(getStarterWorkout: sl())..load(),
+  );
 
   // --- Dashboard ---
 

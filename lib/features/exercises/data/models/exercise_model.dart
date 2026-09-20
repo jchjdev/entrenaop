@@ -12,7 +12,8 @@ class ExerciseModel extends ExerciseEntity {
     required super.difficulty,
     required super.exerciseType,
     required super.isPublic,
-    required super.createdBy,
+    required super.origin,
+    super.createdBy,
   });
 
   factory ExerciseModel.fromEntity(ExerciseEntity entity) {
@@ -28,6 +29,7 @@ class ExerciseModel extends ExerciseEntity {
       exerciseType: entity.exerciseType,
       isPublic: entity.isPublic,
       createdBy: entity.createdBy,
+      origin: entity.origin,
     );
   }
 
@@ -44,6 +46,13 @@ class ExerciseModel extends ExerciseEntity {
       exerciseType: json['exercise_type'],
       isPublic: json['is_public'],
       createdBy: json['created_by'],
+      origin: switch (json['origin']) {
+        'system' => ExerciseOrigin.system,
+        'user' => ExerciseOrigin.user,
+        final value => throw FormatException(
+          'Origen de ejercicio desconocido: $value',
+        ),
+      },
     );
   }
 
@@ -60,6 +69,7 @@ class ExerciseModel extends ExerciseEntity {
       'exercise_type': exerciseType,
       'is_public': isPublic,
       'created_by': createdBy,
+      'origin': origin.name,
     };
   }
 }

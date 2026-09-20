@@ -114,6 +114,26 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
                           onTap: () => context.push('/plan/goal'),
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      Card(
+                        color: const Color(0xFF141414),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+                          leading: const Icon(
+                            Icons.fitness_center_rounded,
+                            color: Color(0xFFFF8A50),
+                          ),
+                          title: const Text('Primera sesión real'),
+                          subtitle: const Text(
+                            'Bloques, ejercicios, series y descansos cargados desde Supabase.',
+                          ),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => context.push('/plan/starter-session'),
+                        ),
+                      ),
                       const SizedBox(height: 18),
                       _QuestionCard(
                         title: '¿Cuántos días puedes entrenar cada semana?',
