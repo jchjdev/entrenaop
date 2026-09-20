@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -293,6 +294,16 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   'Objetivo: RIR ${_number(rir)}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white60),
+                ),
+              ],
+              if (set.targetDurationSeconds case final seconds?) ...[
+                const SizedBox(height: 22),
+                WorkoutSetCountdown(
+                  targetSeconds: seconds,
+                  enabled: !widget.saving,
+                  onElapsedChanged: (elapsed) {
+                    _durationController.text = elapsed.toString();
+                  },
                 ),
               ],
               const SizedBox(height: 24),

@@ -59,8 +59,9 @@ Esta vertical incluirá:
 El primer incremento del motor utiliza una plantilla pública mínima almacenada
 en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
 progreso, temporizar descansos, conservar la prescripción usada y registrar el
-resultado real o la omisión de cada serie; todavía faltan pausas temporizadas,
-abandono y funcionamiento sin red.
+resultado real o la omisión de cada serie. Las series por duración incluyen una
+cuenta atrás que puede pausarse y reanudarse; todavía faltan la restauración de
+temporizadores al salir, el abandono y el funcionamiento sin red.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.
