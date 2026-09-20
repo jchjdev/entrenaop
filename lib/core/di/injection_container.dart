@@ -30,6 +30,11 @@ import 'package:entrenaop/features/physical_assessment/domain/usecases/get_physi
 import 'package:entrenaop/features/physical_assessment/domain/usecases/save_physical_assessment_usecase.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
+import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource.dart';
+import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource_impl.dart';
+import 'package:entrenaop/features/training_plan/data/repositories/training_preferences_repository_impl.dart';
+import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
+import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -115,4 +120,14 @@ Future<void> initDependencies() async {
       progressCalculator: sl(),
     )..load(),
   );
+
+  // --- Training preferences ---
+
+  sl.registerLazySingleton<TrainingPreferencesRemoteDataSource>(
+    () => TrainingPreferencesRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  sl.registerLazySingleton<TrainingPreferencesRepository>(
+    () => TrainingPreferencesRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerFactory(() => TrainingPreferencesCubit(repository: sl())..load());
 }
