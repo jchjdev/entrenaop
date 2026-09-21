@@ -403,6 +403,13 @@ class _QuickActions extends StatelessWidget {
           child: Row(
             children: [
               _QuickActionCard(
+                icon: Icons.calendar_view_week_rounded,
+                label: 'Mi semana',
+                description: 'Organizar y comenzar sesiones',
+                onTap: () => context.push('/plan/week'),
+              ),
+              const SizedBox(width: 10),
+              _QuickActionCard(
                 icon: Icons.grid_view_rounded,
                 label: 'Biblioteca',
                 description: 'Explorar sesiones públicas',

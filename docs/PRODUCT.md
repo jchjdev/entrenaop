@@ -85,8 +85,9 @@ pero todavía no son nombres definitivos.
 
 Un usuario puede seguir varias preparaciones verificadas de forma simultánea.
 Inicio enseña solo las que ha añadido; el catálogo completo se consulta aparte.
-Las sesiones personales no dependen de una oposición concreta y una futura
-planificación podrá atender varios objetivos con una carga global coherente.
+Las sesiones personales no dependen de una oposición concreta. La agenda
+semanal ya reúne sesiones personales y de biblioteca; más adelante integrará
+las prescripciones de varias preparaciones con una carga global coherente.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:

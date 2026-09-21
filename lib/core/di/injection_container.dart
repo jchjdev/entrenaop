@@ -42,6 +42,12 @@ import 'package:entrenaop/features/training_plan/data/datasources/training_prefe
 import 'package:entrenaop/features/training_plan/data/repositories/training_preferences_repository_impl.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
+import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource.dart';
+import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource_impl.dart';
+import 'package:entrenaop/features/workout_schedule/data/repositories/workout_schedule_repository_impl.dart';
+import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource_impl.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
@@ -243,6 +249,31 @@ Future<void> initDependencies() async {
       executionId: executionId,
       getExecution: sl(),
       correctSet: sl(),
+    )..load(),
+  );
+
+  // --- Weekly workout schedule ---
+
+  sl.registerLazySingleton<WorkoutScheduleRemoteDataSource>(
+    () => WorkoutScheduleRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  sl.registerLazySingleton<WorkoutScheduleRepository>(
+    () => WorkoutScheduleRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => GetWorkoutScheduleUseCase(sl()));
+  sl.registerLazySingleton(() => ScheduleWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => RescheduleWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => CancelScheduledWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => StartScheduledWorkoutUseCase(sl()));
+  sl.registerFactory(
+    () => WorkoutScheduleCubit(
+      getSchedule: sl(),
+      scheduleWorkout: sl(),
+      rescheduleWorkout: sl(),
+      cancelWorkout: sl(),
+      startWorkout: sl(),
+      getPublicWorkouts: sl(),
+      getPersonalWorkouts: sl(),
     )..load(),
   );
 

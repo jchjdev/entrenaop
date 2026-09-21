@@ -18,6 +18,8 @@ import 'package:entrenaop/features/preparation_goal/presentation/pages/preparati
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/pages/workout_schedule_page.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
@@ -99,6 +101,27 @@ class AppRouter {
                   path: '/plan',
                   builder: (context, state) => const TrainingHubPage(),
                   routes: [
+                    GoRoute(
+                      path: 'week',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<WorkoutScheduleCubit>(),
+                        child: const WorkoutSchedulePage(),
+                      ),
+                      routes: [
+                        GoRoute(
+                          path: 'active/:executionId',
+                          builder: (context, state) => BlocProvider(
+                            create: (_) => sl<ActiveWorkoutCubit>(
+                              param1: state.pathParameters['executionId']!,
+                            ),
+                            child: ActiveWorkoutPage(
+                              timerStore: sl(),
+                              cueService: sl(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     GoRoute(
                       path: 'preferences',
                       builder: (context, state) => BlocProvider(

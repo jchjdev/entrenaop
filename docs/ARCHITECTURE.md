@@ -172,8 +172,9 @@ identidad
   fechas objetivo. Puede mantener varias activas, pero no duplicar el mismo
   programa mientras permanezca activo.
 - Las preparaciones, la planificación y las sesiones personales son conceptos
-  distintos. Una futura planificación podrá atender varios objetivos sin sumar
-  de forma ingenua planes incompatibles.
+  distintos. `scheduled_workouts` actúa como agenda global del usuario y puede
+  reunir distintas fuentes; una futura planificación adaptativa atenderá
+  varios objetivos sin sumar de forma ingenua planes incompatibles.
 - Una marca física se guarda como hecho del usuario. Solo se reutiliza como
   resultado oficial entre preparaciones cuando prueba, unidad y protocolo son
   compatibles; en otros casos puede ser contexto del algoritmo, no puntuación.
@@ -193,6 +194,10 @@ identidad
 - `workout_templates.family_id`, `version` y `previous_version_id` relacionan
   las revisiones. Editar una sesión personal crea una plantilla nueva y archiva
   la anterior; las ejecuciones conservan tanto su referencia como su snapshot.
+- Una entrada de `scheduled_workouts` fija el identificador de plantilla y una
+  instantánea visible de nombre, versión y duración. Las escrituras se realizan
+  mediante RPC y su estado se sincroniza desde la ejecución; el cliente no
+  puede adjudicarse sesiones de otro usuario.
 - Al comenzar, la ejecución copia la prescripción efectiva por serie. El
   historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan

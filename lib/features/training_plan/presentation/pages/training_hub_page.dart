@@ -35,10 +35,14 @@ class TrainingHubPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 7),
                     const Text(
-                      'Organiza tus sesiones y, más adelante, tu planificación semanal.',
+                      'Organiza tu semana, tus sesiones y la configuración de tus preparaciones.',
                       style: TextStyle(color: Colors.white60, fontSize: 16),
                     ),
                     const SizedBox(height: 22),
+                    _WeeklyScheduleCard(
+                      onOpen: () => context.push('/plan/week'),
+                    ),
+                    const SizedBox(height: 12),
                     _AvailableSessionCard(
                       onOpen: () => context.push('/plan/library'),
                     ),
@@ -48,7 +52,9 @@ class TrainingHubPage extends StatelessWidget {
                       subtitle: 'Rutinas creadas y guardadas por ti.',
                     ),
                     const SizedBox(height: 10),
-                    const _EmptySessionsCard(),
+                    _PersonalSessionsCard(
+                      onOpen: () => context.push('/plan/library'),
+                    ),
                     const SizedBox(height: 22),
                     const _SectionTitle(
                       title: 'Configuración del plan',
@@ -64,6 +70,63 @@ class TrainingHubPage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeeklyScheduleCard extends StatelessWidget {
+  const _WeeklyScheduleCard({required this.onOpen});
+
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      color: const Color(0xFF172018),
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF27452D),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.calendar_view_week_rounded,
+                  color: Color(0xFF9BE5A8),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mi semana',
+                      style: TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Programa tus sesiones y empieza la que toca hoy.',
+                      style: TextStyle(color: Colors.white60, height: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded),
+            ],
+          ),
         ),
       ),
     );
@@ -151,40 +214,47 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _EmptySessionsCard extends StatelessWidget {
-  const _EmptySessionsCard();
+class _PersonalSessionsCard extends StatelessWidget {
+  const _PersonalSessionsCard({required this.onOpen});
+
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       color: const Color(0xFF151515),
-      child: const Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Icon(
-              Icons.add_circle_outline_rounded,
-              color: Color(0xFFFF8A50),
-              size: 32,
-            ),
-            SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'El creador será el próximo bloque',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Aquí aparecerán tus rutinas para abrirlas, duplicarlas o programarlas.',
-                    style: TextStyle(color: Colors.white60, height: 1.35),
-                  ),
-                ],
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.add_circle_outline_rounded,
+                color: Color(0xFFFF8A50),
+                size: 32,
               ),
-            ),
-          ],
+              const SizedBox(width: 15),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Crear y gestionar sesiones',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Abre tus rutinas para editarlas, duplicarlas o crear una nueva.',
+                      style: TextStyle(color: Colors.white60, height: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded),
+            ],
+          ),
         ),
       ),
     );
