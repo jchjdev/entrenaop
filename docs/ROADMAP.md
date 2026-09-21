@@ -121,9 +121,18 @@ visuales sobre una secuencia convencional. El editor muestra posiciones A1/A2
 en superseries y estaciones ordenadas en circuitos; cada posición es
 independiente aunque reutilice un ejercicio del catálogo.
 
-La segunda ampliación añade intervalos personalizados de un solo ejercicio y
-Tabata canónico 8 × 20/10. Ambos reutilizan el temporizador, la pausa, la
-restauración y el historial del motor guiado.
+La segunda ampliación añade intervalos de trabajo de un solo ejercicio y
+Tabata canónico 8 × 20/10. Tabata permite elegir una secuencia de movimientos y
+la repite hasta completar sus ocho posiciones. Ambos reutilizan el
+temporizador, la pausa, la restauración y el historial del motor guiado. Este
+formato de intervalos no pretende cubrir el entrenamiento de carrera.
+
+La ampliación específica de carrera se diseñará antes de implementarse. Debe
+cubrir al menos series regulares, pirámides, fartlek y carrera continua mediante
+tramos ordenados con distancia o duración, ritmo objetivo y recuperación
+individual. El creador será especializado, pero publicará en la misma sesión,
+agenda, ejecución e historial que el resto de entrenamientos. Las decisiones de
+ritmo y progresión pertenecerán a un motor determinista y versionado.
 
 La tercera ampliación incorpora EMOM con uno o varios ejercicios alternados.
 Cada estación inicia automáticamente su minuto, conserva el tiempo restante

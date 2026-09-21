@@ -93,16 +93,33 @@ orden propios, manteniendo una entrada sencilla con un bloque principal creado
 por defecto.
 Una superserie enlaza exactamente dos posiciones A1/A2; un circuito recorre dos
 o más estaciones. Ambos permiten elegir rondas y descanso entre vueltas y se
-presentan en ese orden durante la sesión guiada. Las posiciones son
+presentan en ese orden durante la sesión guiada. En un circuito, cada estación
+puede definir además su transición hasta la siguiente. Las posiciones son
 independientes y pueden reutilizar un ejercicio del catálogo cuando la
 secuencia lo requiera.
-Los intervalos personalizados repiten un único ejercicio y permiten ajustar
-número de repeticiones y recuperación. Tabata se ofrece como protocolo cerrado de ocho
-rondas de 20 segundos de trabajo y 10 de recuperación, no como una simple
-etiqueta. EMOM alterna uno o varios ejercicios, asigna un minuto a cada uno y
+Los intervalos de trabajo repiten un único ejercicio y permiten ajustar el
+objetivo de cada esfuerzo y una recuperación común. Sirven para trabajo
+temporizado de fuerza-resistencia o acondicionamiento; no representan series
+de carrera. Tabata se ofrece como protocolo cerrado de ocho rondas de 20
+segundos de trabajo y 10 de recuperación. El usuario elige uno o varios
+movimientos y la secuencia se repite hasta completar los ocho intervalos. EMOM
+alterna uno o varios ejercicios, asigna un minuto a cada uno y
 repite la secuencia por vueltas; completar u omitir una estación conserva el
 tiempo restante hasta el siguiente minuto. AMRAP usa un único reloj global y
 registra vueltas completas, último ejercicio parcial y repeticiones parciales.
+
+La carrera tendrá un creador específico dentro de la sesión unificada. Debe
+poder expresar tramos ordenados con distancia o duración, ritmo objetivo propio
+y recuperación individual, incluida su modalidad. Una pirámide puede así
+combinar 200/400/600/800/1000 metros y regresar sin fingir que todos los tramos
+comparten ritmo o descanso. Series, fartlek y carrera continua reutilizarán ese
+modelo; el algoritmo generará prescripciones versionadas sobre él, no reglas
+ocultas en la interfaz.
+Los motores de fuerza y carrera no competirán por separado: una capa de
+planificación global coordinará la carga semanal del alumno y podrá producir
+sesiones específicas o combinadas. La forma comercial de presentar esos
+programas se decidirá después; el modelo no debe obligarnos prematuramente a
+una única estructura visible.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:

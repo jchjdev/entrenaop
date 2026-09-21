@@ -360,11 +360,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 DropdownMenuItem(
                   value: WorkoutBlockFormat.intervals,
                   enabled: block.rows.length <= 1,
-                  child: const Text('Intervalos personalizados'),
+                  child: const Text('Intervalos de trabajo'),
                 ),
                 DropdownMenuItem(
                   value: WorkoutBlockFormat.tabata,
-                  enabled: block.rows.length <= 1,
+                  enabled: block.rows.length <= 8,
                   child: const Text('Tabata · 8 × 20/10'),
                 ),
                 const DropdownMenuItem(
@@ -384,7 +384,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                       }
                     },
             ),
-            if (block.isRoundBased) ...[
+            if (block.isRoundBased ||
+                block.format == WorkoutBlockFormat.tabata) ...[
               const SizedBox(height: 12),
               if (block.format == WorkoutBlockFormat.tabata)
                 const _TabataSummary()
@@ -475,9 +476,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 WorkoutBlockFormat.circuit =>
                   'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
                 WorkoutBlockFormat.intervals =>
-                  'Repetiremos un ejercicio con una recuperación común entre intervalos.',
+                  'Harás ${block.rounds} esfuerzos del mismo ejercicio. Cada intervalo puede tener su propio objetivo y entre ambos habrá ${block.restAfterSeconds} s de recuperación. La carrera se configurará en un creador específico.',
                 WorkoutBlockFormat.tabata =>
-                  'Formato cerrado: un ejercicio, 8 intervalos de 20 segundos y 10 de recuperación.',
+                  'El tiempo es cerrado: 8 intervalos de 20 s y 10 s de recuperación. Los movimientos elegidos se repetirán en orden hasta completar los ocho.',
                 WorkoutBlockFormat.emom =>
                   'Cada ejercicio ocupa un minuto. Si añades varios, se alternarán y después comenzará una nueva vuelta.',
                 _ => '',
@@ -554,6 +555,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     enabled: !saving,
                     fixedSetCount: block.fixedSetCount,
                     fixedTarget: block.format == WorkoutBlockFormat.tabata,
+                    setItemLabel: block.setItemLabel,
+                    stationTransitionLabel:
+                        block.format == WorkoutBlockFormat.circuit &&
+                            exerciseIndex < block.rows.length - 1
+                        ? 'Transición después de E${exerciseIndex + 1}'
+                        : null,
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
                         if (index != blockIndex &&
@@ -621,13 +628,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           ),
         );
       }
+      final visibleRows = block.format == WorkoutBlockFormat.tabata
+          ? _collapseTabataPattern(rows)
+          : rows;
       return _BlockRowData(
         name: block.name,
         format: block.format,
         rounds: block.rounds,
         timeCapSeconds: block.timeCapSeconds ?? 600,
         restAfterSeconds: block.restAfterSeconds,
-        rows: rows,
+        rows: visibleRows,
       );
     }).toList();
     _didPopulateTemplate = true;
@@ -640,6 +650,18 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         ..clear()
         ..addAll(blocks);
     });
+  }
+
+  List<_ExerciseRowData> _collapseTabataPattern(List<_ExerciseRowData> rows) {
+    if (rows.length != 8) return rows;
+    for (var patternLength = 1; patternLength < rows.length; patternLength++) {
+      final repeats = rows.indexed.every(
+        (entry) =>
+            entry.$2.exercise.id == rows[entry.$1 % patternLength].exercise.id,
+      );
+      if (repeats) return rows.take(patternLength).toList(growable: true);
+    }
+    return rows;
   }
 
   int get _exerciseCount =>
@@ -663,9 +685,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     int index,
     WorkoutBlockFormat format,
   ) {
-    final acceptsOneExercise =
-        format == WorkoutBlockFormat.intervals ||
-        format == WorkoutBlockFormat.tabata;
+    final acceptsOneExercise = format == WorkoutBlockFormat.intervals;
     if (acceptsOneExercise && _blocks[index].rows.length > 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -698,12 +718,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         block.restAfterSeconds = 10;
         for (final row in block.rows) {
           row.targetType = WorkoutTargetType.duration;
-          for (final set in row.sets) {
-            set.targetValue = 20;
-            set.restSeconds = 0;
-          }
+          row.sets = [
+            row.sets.first.copy()
+              ..targetValue = 20
+              ..restSeconds = 0,
+          ];
         }
-        _syncBlockRounds(block);
       } else if (format == WorkoutBlockFormat.emom) {
         if (block.rows.isEmpty) {
           block.rounds = 5;
@@ -733,6 +753,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         block.restAfterSeconds = block.restAfterSeconds == 0
             ? (format == WorkoutBlockFormat.intervals ? 60 : 90)
             : block.restAfterSeconds;
+        if (format == WorkoutBlockFormat.circuit) {
+          for (final row in block.rows) {
+            for (final set in row.sets) {
+              set.restSeconds = 15;
+            }
+          }
+        }
         _syncBlockRounds(block);
       }
     });
@@ -826,21 +853,22 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       row.sets = [row.sets.first.copy()..restSeconds = 0];
       return;
     }
-    if (!block.isRoundBased) return;
     if (block.format == WorkoutBlockFormat.tabata) {
       row.targetType = WorkoutTargetType.duration;
-      row.sets.first
-        ..targetValue = 20
-        ..restSeconds = 0;
-    }
-    _syncBlockRounds(block);
-    if (block.format == WorkoutBlockFormat.tabata) {
-      for (final set in row.sets) {
-        set
+      row.sets = [
+        row.sets.first.copy()
           ..targetValue = 20
-          ..restSeconds = 0;
+          ..restSeconds = 0,
+      ];
+      return;
+    }
+    if (!block.isRoundBased) return;
+    if (block.format == WorkoutBlockFormat.circuit) {
+      for (final set in row.sets) {
+        set.restSeconds = 15;
       }
     }
+    _syncBlockRounds(block);
   }
 
   void _save(BuildContext context) {
@@ -935,9 +963,11 @@ class _BlockSequenceOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slotCount = block.format == WorkoutBlockFormat.superset
-        ? 2
-        : block.rows.length;
+    final slotCount = switch (block.format) {
+      WorkoutBlockFormat.superset => 2,
+      WorkoutBlockFormat.tabata => 8,
+      _ => block.rows.length,
+    };
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -976,11 +1006,9 @@ class _BlockSequenceOverview extends StatelessWidget {
                     ),
                     Expanded(
                       child: Text(
-                        index < block.rows.length
-                            ? block.rows[index].exercise.name
-                            : 'Pendiente de elegir',
+                        block.sequenceExerciseName(index),
                         style: TextStyle(
-                          color: index < block.rows.length
+                          color: block.rows.isNotEmpty
                               ? Colors.white
                               : Colors.white38,
                         ),
@@ -1017,10 +1045,12 @@ class _BlockRowData {
       format == WorkoutBlockFormat.superset ||
       format == WorkoutBlockFormat.circuit ||
       format == WorkoutBlockFormat.intervals ||
-      format == WorkoutBlockFormat.tabata ||
       format == WorkoutBlockFormat.emom;
 
-  bool get fixedSetCount => isRoundBased || format == WorkoutBlockFormat.amrap;
+  bool get fixedSetCount =>
+      isRoundBased ||
+      format == WorkoutBlockFormat.amrap ||
+      format == WorkoutBlockFormat.tabata;
 
   int get maxRounds {
     if (format != WorkoutBlockFormat.emom || rows.isEmpty) return 20;
@@ -1030,9 +1060,10 @@ class _BlockRowData {
 
   int get maxExercises => format == WorkoutBlockFormat.superset
       ? 2
-      : (format == WorkoutBlockFormat.intervals ||
-            format == WorkoutBlockFormat.tabata)
+      : format == WorkoutBlockFormat.intervals
       ? 1
+      : format == WorkoutBlockFormat.tabata
+      ? 8
       : format == WorkoutBlockFormat.emom
       ? _emomExerciseCapacity
       : 20;
@@ -1045,12 +1076,14 @@ class _BlockRowData {
   bool get showsSequenceOverview =>
       format == WorkoutBlockFormat.superset ||
       format == WorkoutBlockFormat.circuit ||
+      format == WorkoutBlockFormat.tabata ||
       format == WorkoutBlockFormat.emom ||
       format == WorkoutBlockFormat.amrap;
 
   String get sequenceTitle => switch (format) {
     WorkoutBlockFormat.superset => 'Pareja de ejercicios',
     WorkoutBlockFormat.circuit => 'Orden de las estaciones',
+    WorkoutBlockFormat.tabata => 'Secuencia de los 8 intervalos',
     WorkoutBlockFormat.emom => 'Orden de los minutos',
     WorkoutBlockFormat.amrap => 'Secuencia de cada vuelta',
     _ => 'Ejercicios del bloque',
@@ -1058,6 +1091,7 @@ class _BlockRowData {
 
   String get emptySequenceText => switch (format) {
     WorkoutBlockFormat.circuit => 'Añade al menos dos estaciones.',
+    WorkoutBlockFormat.tabata => 'Añade el primer movimiento del Tabata.',
     WorkoutBlockFormat.emom => 'Añade el movimiento del primer minuto.',
     WorkoutBlockFormat.amrap => 'Añade el primer movimiento de la vuelta.',
     _ => 'Añade el primer ejercicio.',
@@ -1068,16 +1102,17 @@ class _BlockRowData {
     WorkoutBlockFormat.superset when rows.length == 1 => 'Elegir ejercicio A2',
     WorkoutBlockFormat.superset => 'Superserie completa',
     WorkoutBlockFormat.circuit => 'Añadir estación al circuito',
+    WorkoutBlockFormat.tabata => 'Añadir movimiento al Tabata',
     WorkoutBlockFormat.emom => 'Añadir minuto al EMOM',
     WorkoutBlockFormat.amrap => 'Añadir movimiento al AMRAP',
-    WorkoutBlockFormat.intervals ||
-    WorkoutBlockFormat.tabata => 'Elegir ejercicio',
+    WorkoutBlockFormat.intervals => 'Elegir ejercicio',
     _ => 'Añadir ejercicio al bloque',
   };
 
   String positionLabel(int index) => switch (format) {
     WorkoutBlockFormat.superset => 'A${index + 1}',
     WorkoutBlockFormat.circuit => 'E${index + 1}',
+    WorkoutBlockFormat.tabata => 'I${index + 1}',
     WorkoutBlockFormat.emom => 'M${index + 1}',
     WorkoutBlockFormat.amrap => '${index + 1}.',
     _ => '${index + 1}',
@@ -1086,12 +1121,29 @@ class _BlockRowData {
   String setSectionLabel(int setCount) => switch (format) {
     WorkoutBlockFormat.superset ||
     WorkoutBlockFormat.circuit => 'Objetivo en cada ronda ($setCount)',
-    WorkoutBlockFormat.intervals ||
-    WorkoutBlockFormat.tabata => 'Intervalos ($setCount)',
+    WorkoutBlockFormat.intervals => 'Intervalos ($setCount)',
+    WorkoutBlockFormat.tabata => 'Intervalo de 20 segundos',
     WorkoutBlockFormat.emom => 'Objetivo en cada vuelta ($setCount)',
     WorkoutBlockFormat.amrap => 'Objetivo por vuelta',
     _ => 'Series ($setCount)',
   };
+
+  String get setItemLabel => switch (format) {
+    WorkoutBlockFormat.superset || WorkoutBlockFormat.circuit => 'Ronda',
+    WorkoutBlockFormat.intervals || WorkoutBlockFormat.tabata => 'Intervalo',
+    WorkoutBlockFormat.emom => 'Vuelta',
+    _ => 'Serie',
+  };
+
+  String sequenceExerciseName(int index) {
+    if (rows.isEmpty) return 'Pendiente de elegir';
+    if (format == WorkoutBlockFormat.tabata) {
+      return rows[index % rows.length].exercise.name;
+    }
+    return index < rows.length
+        ? rows[index].exercise.name
+        : 'Pendiente de elegir';
+  }
 
   WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
     name: name,
@@ -1099,7 +1151,9 @@ class _BlockRowData {
     rounds: rounds,
     restAfterSeconds: restAfterSeconds,
     timeCapSeconds: format == WorkoutBlockFormat.amrap ? timeCapSeconds : null,
-    exercises: rows.map((row) => row.toDraft()).toList(),
+    exercises: format == WorkoutBlockFormat.tabata && rows.isNotEmpty
+        ? List.generate(8, (index) => rows[index % rows.length].toDraft())
+        : rows.map((row) => row.toDraft()).toList(),
   );
 }
 
@@ -1181,6 +1235,8 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.enabled,
     required this.fixedSetCount,
     required this.fixedTarget,
+    required this.setItemLabel,
+    this.stationTransitionLabel,
     required this.moveTargets,
     required this.onMoveToBlock,
     required this.onRemove,
@@ -1195,6 +1251,8 @@ class _ExerciseEditorCard extends StatefulWidget {
   final bool enabled;
   final bool fixedSetCount;
   final bool fixedTarget;
+  final String setItemLabel;
+  final String? stationTransitionLabel;
   final List<({int index, String name})> moveTargets;
   final ValueChanged<int> onMoveToBlock;
   final VoidCallback onRemove;
@@ -1316,6 +1374,23 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                     })
                   : null,
             ),
+            if (widget.stationTransitionLabel case final label?) ...[
+              const SizedBox(height: 12),
+              _NumberField(
+                label: label,
+                initialValue: data.sets.first.restSeconds.toString(),
+                suffix: 's',
+                enabled: widget.enabled,
+                integer: true,
+                min: 0,
+                max: 3600,
+                onChanged: (value) {
+                  for (final set in data.sets) {
+                    set.restSeconds = value.round();
+                  }
+                },
+              ),
+            ],
             const SizedBox(height: 12),
             Text(
               widget.setSectionLabel,
@@ -1374,6 +1449,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   enabled: widget.enabled,
                   targetEnabled: widget.enabled && !widget.fixedTarget,
                   showRest: !widget.fixedSetCount,
+                  itemLabel: widget.setItemLabel,
                 ),
               ),
             ),
@@ -1393,6 +1469,7 @@ class _SetEditor extends StatelessWidget {
     required this.enabled,
     required this.targetEnabled,
     required this.showRest,
+    required this.itemLabel,
   });
 
   final int index;
@@ -1401,6 +1478,7 @@ class _SetEditor extends StatelessWidget {
   final bool enabled;
   final bool targetEnabled;
   final bool showRest;
+  final String itemLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -1415,7 +1493,7 @@ class _SetEditor extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Serie ${index + 1}',
+            '$itemLabel ${index + 1}',
             style: const TextStyle(
               color: Color(0xFFFF8A50),
               fontWeight: FontWeight.w800,

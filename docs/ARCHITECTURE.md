@@ -201,10 +201,12 @@ identidad
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
 - El borrador personal contiene de uno a diez bloques. Pueden ser
-  convencionales, superseries, circuitos, intervalos, Tabata o EMOM. Los formatos
-  gobernados por rondas exigen una serie por ejercicio y ronda; Supabase vuelve
-  a validar esa simetría. Intervalos admite un solo ejercicio y Tabata fija el
-  protocolo canónico de ocho rondas, 20 segundos de trabajo y 10 de pausa.
+  convencionales, superseries, circuitos, intervalos de trabajo, Tabata, EMOM o
+  AMRAP. Los formatos gobernados por rondas exigen una serie por ejercicio y
+  ronda; Supabase vuelve a validar esa simetría. Los intervalos de trabajo
+  admiten un solo ejercicio y no modelan carrera. Tabata materializa ocho
+  posiciones de 20 segundos y 10 de pausa, repitiendo la secuencia de
+  movimientos elegida cuando sea necesario.
 - EMOM representa una secuencia de estaciones de un minuto. Cada ejercicio
   ocupa un minuto y las vueltas repiten el orden completo; la duración del
   bloque es `vueltas × ejercicios` y queda limitada a sesenta minutos. Al
@@ -212,8 +214,21 @@ identidad
   siguiente minuto en vez de añadir un descanso completo.
 - `workout_execution_sets.block_format` conserva el formato ejecutado. El
   cliente ordena los bloques agrupados o temporizados por ronda y después por
-  ejercicio. El servidor copia el descanso del bloque solo a la última estación
-  de cada ronda, evitando pausas incorrectas entre ejercicios enlazados.
+  ejercicio. En circuitos, el descanso prescrito en cada estación representa
+  la transición a la siguiente; el descanso del bloque se usa al terminar la
+  ronda. Superseries conservan únicamente la pausa final de la ronda.
+- La carrera no se fuerza dentro de los intervalos de fuerza-resistencia. Su
+  futuro bloque especializado representará una lista ordenada de tramos con
+  objetivo por distancia o duración, rango de ritmo y recuperación propia
+  (pasiva, andando o trotando). El editor podrá ofrecer repeticiones y pirámides
+  como atajos, pero la prescripción se guardará expandida y versionada para que
+  el historial y el algoritmo sean auditables.
+- Especializar fuerza y carrera no crea dos planificadores aislados. Ambos
+  motores propondrán estímulos dentro de su dominio y un coordinador de carga
+  trabajará sobre la semana completa: objetivos simultáneos, fatiga,
+  disponibilidad, proximidad entre sesiones y pruebas de cada preparación. El
+  resultado seguirá siendo una prescripción versionada en la agenda común y
+  podrá ser de fuerza, carrera o combinada.
 - Duplicar una sesión copia atómicamente toda su jerarquía. Retirarla de la
   biblioteca significa archivarla, no borrar resultados históricos.
 - `workout_templates.family_id`, `version` y `previous_version_id` relacionan

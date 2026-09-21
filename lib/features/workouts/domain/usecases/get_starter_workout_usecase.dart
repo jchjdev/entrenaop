@@ -117,11 +117,16 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         'Un circuito debe contener al menos dos ejercicios.',
       );
     }
-    if ((block.format == WorkoutBlockFormat.intervals ||
-            block.format == WorkoutBlockFormat.tabata) &&
+    if (block.format == WorkoutBlockFormat.intervals &&
         block.exercises.length != 1) {
       throw const FormatException(
-        'Los intervalos y Tabata utilizan exactamente un ejercicio.',
+        'Los intervalos personalizados utilizan exactamente un ejercicio.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.tabata &&
+        block.exercises.length != 8) {
+      throw const FormatException(
+        'Tabata necesita definir sus ocho intervalos de trabajo.',
       );
     }
     if (block.format == WorkoutBlockFormat.tabata &&
@@ -178,6 +183,7 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
       }
       if (block.format != WorkoutBlockFormat.straightSets &&
           block.format != WorkoutBlockFormat.amrap &&
+          block.format != WorkoutBlockFormat.tabata &&
           exercise.sets.length != block.rounds) {
         throw const FormatException(
           'Cada ejercicio debe tener una serie por ronda.',
@@ -189,6 +195,12 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
                   WorkoutTargetType.repetitions)) {
         throw const FormatException(
           'Cada ejercicio AMRAP necesita un objetivo de repeticiones.',
+        );
+      }
+      if (block.format == WorkoutBlockFormat.tabata &&
+          exercise.sets.length != 1) {
+        throw const FormatException(
+          'Cada posición Tabata necesita un único intervalo de trabajo.',
         );
       }
       for (final set in exercise.sets) {

@@ -83,7 +83,7 @@ void main() {
       find.text('8 rondas · 20 s de trabajo · 10 s de recuperación'),
       findsOneWidget,
     );
-    expect(find.textContaining('Formato cerrado'), findsOneWidget);
+    expect(find.textContaining('El tiempo es cerrado'), findsOneWidget);
 
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();

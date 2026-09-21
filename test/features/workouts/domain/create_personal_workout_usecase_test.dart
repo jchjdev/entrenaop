@@ -273,19 +273,33 @@ CreatePersonalWorkoutInput _timedInput({
       format: format,
       rounds: rounds,
       restAfterSeconds: recoverySeconds,
-      exercises: [
-        WorkoutExerciseDraft(
-          exerciseId: 'exercise-1',
-          sets: List.generate(
-            rounds,
-            (_) => WorkoutSetDraft(
-              targetType: WorkoutTargetType.duration,
-              targetValue: workSeconds.toDouble(),
-              restAfterSeconds: 0,
-            ),
-          ),
-        ),
-      ],
+      exercises: format == WorkoutBlockFormat.tabata
+          ? List.generate(
+              8,
+              (index) => WorkoutExerciseDraft(
+                exerciseId: 'exercise-${index % 3}',
+                sets: [
+                  WorkoutSetDraft(
+                    targetType: WorkoutTargetType.duration,
+                    targetValue: workSeconds.toDouble(),
+                    restAfterSeconds: 0,
+                  ),
+                ],
+              ),
+            )
+          : [
+              WorkoutExerciseDraft(
+                exerciseId: 'exercise-1',
+                sets: List.generate(
+                  rounds,
+                  (_) => WorkoutSetDraft(
+                    targetType: WorkoutTargetType.duration,
+                    targetValue: workSeconds.toDouble(),
+                    restAfterSeconds: 0,
+                  ),
+                ),
+              ),
+            ],
     ),
   ],
 );

@@ -717,7 +717,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               const SizedBox(height: 8),
               Text(
                 set.isGrouped
-                    ? '${_executionBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}'
+                    ? _executionPositionLabel(set)
                     : 'Serie ${set.setOrder + 1}',
                 style: const TextStyle(color: Colors.white60, fontSize: 17),
               ),
@@ -1323,6 +1323,21 @@ String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
       WorkoutBlockFormat.emom => 'EMOM',
       _ => 'Serie',
     };
+
+String _executionPositionLabel(
+  WorkoutExecutionSet set,
+) => switch (set.blockFormat) {
+  WorkoutBlockFormat.superset =>
+    'A${set.itemOrder + 1} · ronda ${set.roundNumber}',
+  WorkoutBlockFormat.circuit =>
+    'Estación ${set.itemOrder + 1} · ronda ${set.roundNumber}',
+  WorkoutBlockFormat.intervals => 'Intervalo ${set.roundNumber}',
+  WorkoutBlockFormat.tabata => 'Intervalo ${set.itemOrder + 1} de 8',
+  WorkoutBlockFormat.emom =>
+    'Minuto ${set.itemOrder + 1} · vuelta ${set.roundNumber}',
+  _ =>
+    '${_executionBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}',
+};
 
 String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
     switch (reason) {
