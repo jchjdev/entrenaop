@@ -180,10 +180,10 @@ identidad
 
 ## Sesión activa y funcionamiento sin conexión
 
-La sesión activa es una frontera de fiabilidad. Su estado en curso debe poder
-persistirse localmente, restaurarse después de cerrar la aplicación o perder la
-conexión y sincronizarse sin duplicar resultados. El diseño definitivo se hará
-con una vertical real antes de generalizarlo a todos los formatos.
+La sesión activa es una frontera de fiabilidad. Los temporizadores y las
+mutaciones pendientes se persisten localmente para sobrevivir a un reinicio y
+sincronizarse al recuperar la conexión. Esta solución se ha validado en la
+sesión convencional antes de generalizarla a otros formatos.
 
 El servidor seguirá siendo la autoridad para permisos, derechos comerciales,
 asignaciones y datos consolidados. El soporte local no debe convertirse en una
@@ -192,9 +192,15 @@ forma de eludir reglas de negocio o seguridad.
 Los temporizadores de series usan una instantánea local con fase, instante de
 inicio y tiempo acumulado. Así pueden reconstruirse después de salir de la
 pantalla o reiniciar la aplicación sin escribir continuamente en Supabase. La
-instantánea se elimina al completar, omitir o abandonar la serie. Esto no
-equivale todavía a sincronización offline de resultados: esa capacidad exigirá
-una cola idempotente y resolución explícita de errores.
+instantánea se elimina al completar, omitir o abandonar la serie.
+
+Completar u omitir una serie y finalizar o abandonar una sesión pasan por una
+cola persistente. Cada mutación conserva un UUID estable y el servidor registra
+un recibo dentro de la misma transacción que el cambio. Así, un reintento tras
+una respuesta perdida no aplica dos veces la operación. Flutter muestra el
+resultado de forma optimista y avisa mientras existan cambios pendientes. Las
+validaciones y los permisos siguen ejecutándose en PostgreSQL; las correcciones
+históricas permanecen deliberadamente en línea por ser una operación auditada.
 
 Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
 locales, sin introducir permisos ni dependencias nativas adicionales. Los

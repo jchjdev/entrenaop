@@ -1,15 +1,22 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late _RecordingWorkoutRemoteDataSource dataSource;
+  late _MemoryMutationQueue mutationQueue;
   late WorkoutRepositoryImpl repository;
 
   setUp(() {
     dataSource = _RecordingWorkoutRemoteDataSource();
-    repository = WorkoutRepositoryImpl(remoteDataSource: dataSource);
+    mutationQueue = _MemoryMutationQueue();
+    repository = WorkoutRepositoryImpl(
+      remoteDataSource: dataSource,
+      mutationQueue: mutationQueue,
+    );
   });
 
   test('envía el resultado real sin sustituirlo por la prescripción', () async {
@@ -85,6 +92,27 @@ void main() {
       expect(dataSource.abandonmentReason, 'discomfort');
     },
   );
+
+  test(
+    'encola sin conexión y reintenta la misma operación una sola vez',
+    () async {
+      dataSource.failComplete = true;
+
+      final disposition = await repository.completeSet(
+        const WorkoutSetResultInput(resultId: 'result-offline', actualReps: 9),
+      );
+
+      expect(disposition, WorkoutMutationDisposition.queued);
+      expect(mutationQueue.mutations, hasLength(1));
+      final operationId = mutationQueue.mutations.single.operationId;
+
+      dataSource.failComplete = false;
+      await repository.syncPendingMutations();
+
+      expect(mutationQueue.mutations, isEmpty);
+      expect(dataSource.completedOperationIds, contains(operationId));
+    },
+  );
 }
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
@@ -96,15 +124,26 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   String? finishedExecutionId;
   int? finalRpe;
   String? finalNotes;
+  bool failComplete = false;
+  final List<String> completedOperationIds = [];
 
   @override
-  Future<void> abandonExecution(String executionId, String reason) async {
+  Future<void> abandonExecution(
+    String operationId,
+    String executionId,
+    String reason,
+  ) async {
     abandonedExecutionId = executionId;
     abandonmentReason = reason;
   }
 
   @override
-  Future<void> completeSet(Map<String, dynamic> values) async {
+  Future<void> completeSet(
+    String operationId,
+    Map<String, dynamic> values,
+  ) async {
+    completedOperationIds.add(operationId);
+    if (failComplete) throw Exception('sin conexión');
     completedValues = values;
   }
 
@@ -114,12 +153,13 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   }
 
   @override
-  Future<void> skipSet(String resultId) async {
+  Future<void> skipSet(String operationId, String resultId) async {
     skippedResultId = resultId;
   }
 
   @override
   Future<void> finishExecution(
+    String operationId,
     String executionId, {
     required int finalRpe,
     String? notes,
@@ -140,4 +180,21 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';
+}
+
+class _MemoryMutationQueue implements WorkoutMutationQueue {
+  final List<PendingWorkoutMutation> mutations = [];
+
+  @override
+  Future<void> enqueue(PendingWorkoutMutation mutation) async {
+    mutations.add(mutation);
+  }
+
+  @override
+  Future<List<PendingWorkoutMutation>> readAll() async => List.of(mutations);
+
+  @override
+  Future<void> remove(String operationId) async {
+    mutations.removeWhere((item) => item.operationId == operationId);
+  }
 }

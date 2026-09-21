@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
@@ -15,6 +16,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
     required AbandonWorkoutExecutionUseCase abandonExecution,
+    required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
     required WorkoutTimerStore timerStore,
     required WorkoutCueService cueService,
   }) : _getExecution = getExecution,
@@ -22,6 +24,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
        _skipSet = skipSet,
        _finishExecution = finishExecution,
        _abandonExecution = abandonExecution,
+       _getPendingMutationCount = getPendingMutationCount,
        _timerStore = timerStore,
        _cueService = cueService,
        super(const ActiveWorkoutState());
@@ -32,6 +35,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
+  final GetPendingWorkoutMutationCountUseCase _getPendingMutationCount;
   final WorkoutTimerStore _timerStore;
   final WorkoutCueService _cueService;
   Timer? _restTimer;
@@ -40,6 +44,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     emit(const ActiveWorkoutState(status: ActiveWorkoutStatus.loading));
     try {
       final execution = await _getExecution(executionId);
+      final pendingSyncCount = await _getPendingMutationCount();
       if (execution == null) {
         emit(
           const ActiveWorkoutState(
@@ -57,6 +62,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             WorkoutExecutionStatus.inProgress => ActiveWorkoutStatus.ready,
           },
           execution: execution,
+          pendingSyncCount: pendingSyncCount,
         ),
       );
     } catch (_) {
@@ -78,28 +84,34 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
+        pendingSyncCount: state.pendingSyncCount,
       ),
     );
     try {
-      await _completeSet(result);
+      final disposition = await _completeSet(result);
       await _timerStore.clear(_timerId(currentSet.id));
-      final updated = await _getExecution(executionId);
+      final updated = disposition == WorkoutMutationDisposition.queued
+          ? _completeLocally(execution, currentSet.id, result)
+          : await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
+      final pendingSyncCount = await _getPendingMutationCount();
       if (updated.currentSet == null || currentSet.restAfterSeconds == 0) {
         emit(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,
             execution: updated,
+            pendingSyncCount: pendingSyncCount,
           ),
         );
         return;
       }
-      _startRest(updated, currentSet.restAfterSeconds);
+      _startRest(updated, currentSet.restAfterSeconds, pendingSyncCount);
     } catch (_) {
       emit(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
+          pendingSyncCount: state.pendingSyncCount,
           errorMessage: 'No hemos podido guardar la serie.',
         ),
       );
@@ -115,17 +127,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
+        pendingSyncCount: state.pendingSyncCount,
       ),
     );
     try {
-      await _skipSet(currentSet.id);
+      final disposition = await _skipSet(currentSet.id);
       await _timerStore.clear(_timerId(currentSet.id));
-      final updated = await _getExecution(executionId);
+      final updated = disposition == WorkoutMutationDisposition.queued
+          ? _skipLocally(execution, currentSet.id)
+          : await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
+      final pendingSyncCount = await _getPendingMutationCount();
       emit(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.ready,
           execution: updated,
+          pendingSyncCount: pendingSyncCount,
         ),
       );
     } catch (_) {
@@ -133,19 +150,25 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
+          pendingSyncCount: state.pendingSyncCount,
           errorMessage: 'No hemos podido saltar la serie.',
         ),
       );
     }
   }
 
-  void _startRest(WorkoutExecution execution, int seconds) {
+  void _startRest(
+    WorkoutExecution execution,
+    int seconds,
+    int pendingSyncCount,
+  ) {
     _restTimer?.cancel();
     emit(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.resting,
         execution: execution,
         restSecondsRemaining: seconds,
+        pendingSyncCount: pendingSyncCount,
       ),
     );
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -157,6 +180,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,
             execution: state.execution,
+            pendingSyncCount: state.pendingSyncCount,
           ),
         );
       } else {
@@ -165,6 +189,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             status: ActiveWorkoutStatus.resting,
             execution: state.execution,
             restSecondsRemaining: remaining,
+            pendingSyncCount: state.pendingSyncCount,
           ),
         );
       }
@@ -178,6 +203,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.ready,
         execution: state.execution,
+        pendingSyncCount: state.pendingSyncCount,
       ),
     );
   }
@@ -189,15 +215,29 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
+        pendingSyncCount: state.pendingSyncCount,
       ),
     );
     try {
-      await _finishExecution(executionId, finalRpe: finalRpe, notes: notes);
-      final updated = await _getExecution(executionId);
+      final disposition = await _finishExecution(
+        executionId,
+        finalRpe: finalRpe,
+        notes: notes,
+      );
+      final updated = disposition == WorkoutMutationDisposition.queued
+          ? execution.copyWith(
+              status: WorkoutExecutionStatus.completed,
+              completedAt: DateTime.now().toUtc(),
+              finalRpe: finalRpe,
+              notes: notes?.trim(),
+            )
+          : await _getExecution(executionId);
+      final pendingSyncCount = await _getPendingMutationCount();
       emit(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.completed,
           execution: updated ?? execution,
+          pendingSyncCount: pendingSyncCount,
         ),
       );
     } catch (_) {
@@ -205,6 +245,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
+          pendingSyncCount: state.pendingSyncCount,
           errorMessage: 'No hemos podido finalizar la sesión.',
         ),
       );
@@ -222,19 +263,28 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
+        pendingSyncCount: state.pendingSyncCount,
       ),
     );
     try {
-      await _abandonExecution(executionId, reason);
+      final disposition = await _abandonExecution(executionId, reason);
       final currentSet = execution.currentSet;
       if (currentSet != null) {
         await _timerStore.clear(_timerId(currentSet.id));
       }
-      final updated = await _getExecution(executionId);
+      final updated = disposition == WorkoutMutationDisposition.queued
+          ? execution.copyWith(
+              status: WorkoutExecutionStatus.abandoned,
+              completedAt: DateTime.now().toUtc(),
+              abandonmentReason: reason,
+            )
+          : await _getExecution(executionId);
+      final pendingSyncCount = await _getPendingMutationCount();
       emit(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.abandoned,
           execution: updated ?? execution,
+          pendingSyncCount: pendingSyncCount,
         ),
       );
     } catch (_) {
@@ -242,6 +292,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
+          pendingSyncCount: state.pendingSyncCount,
           errorMessage: 'No hemos podido abandonar la sesión.',
         ),
       );
@@ -249,6 +300,40 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   String _timerId(String resultId) => '$executionId:$resultId';
+
+  WorkoutExecution _completeLocally(
+    WorkoutExecution execution,
+    String resultId,
+    WorkoutSetResultInput result,
+  ) => execution.copyWith(
+    sets: execution.sets
+        .map(
+          (set) => set.id == resultId
+              ? set.copyWith(
+                  status: WorkoutSetStatus.completed,
+                  actualReps: result.actualReps,
+                  actualDurationSeconds: result.actualDurationSeconds,
+                  actualDistanceMeters: result.actualDistanceMeters,
+                  actualLoadKg: result.actualLoadKg,
+                  actualRpe: result.actualRpe,
+                  actualRir: result.actualRir,
+                  completedAt: DateTime.now().toUtc(),
+                )
+              : set,
+        )
+        .toList(growable: false),
+  );
+
+  WorkoutExecution _skipLocally(WorkoutExecution execution, String resultId) =>
+      execution.copyWith(
+        sets: execution.sets
+            .map(
+              (set) => set.id == resultId
+                  ? set.copyWith(status: WorkoutSetStatus.skipped)
+                  : set,
+            )
+            .toList(growable: false),
+      );
 
   @override
   Future<void> close() async {

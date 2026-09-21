@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 
 abstract class WorkoutRepository {
   Future<WorkoutTemplate?> getTemplateById(String id);
@@ -10,20 +11,24 @@ abstract class WorkoutRepository {
 
   Future<List<WorkoutExecution>> getExecutionHistory();
 
-  Future<void> completeSet(WorkoutSetResultInput result);
+  Future<WorkoutMutationDisposition> completeSet(WorkoutSetResultInput result);
 
   Future<void> correctSet(WorkoutSetCorrectionInput correction);
 
-  Future<void> skipSet(String resultId);
+  Future<WorkoutMutationDisposition> skipSet(String resultId);
 
-  Future<void> finishExecution(
+  Future<WorkoutMutationDisposition> finishExecution(
     String executionId, {
     required int finalRpe,
     String? notes,
   });
 
-  Future<void> abandonExecution(
+  Future<WorkoutMutationDisposition> abandonExecution(
     String executionId,
     WorkoutAbandonmentReason reason,
   );
+
+  Future<int> getPendingMutationCount();
+
+  Future<void> syncPendingMutations();
 }

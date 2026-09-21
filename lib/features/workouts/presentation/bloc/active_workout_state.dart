@@ -17,12 +17,14 @@ class ActiveWorkoutState extends Equatable {
     this.status = ActiveWorkoutStatus.initial,
     this.execution,
     this.restSecondsRemaining = 0,
+    this.pendingSyncCount = 0,
     this.errorMessage,
   });
 
   final ActiveWorkoutStatus status;
   final WorkoutExecution? execution;
   final int restSecondsRemaining;
+  final int pendingSyncCount;
   final String? errorMessage;
 
   @override
@@ -30,6 +32,7 @@ class ActiveWorkoutState extends Equatable {
     status,
     execution,
     restSecondsRemaining,
+    pendingSyncCount,
     errorMessage,
   ];
 }

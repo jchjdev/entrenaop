@@ -7,17 +7,22 @@ abstract class WorkoutRemoteDataSource {
 
   Future<List<Map<String, dynamic>>> getExecutionHistory();
 
-  Future<void> completeSet(Map<String, dynamic> values);
+  Future<void> completeSet(String operationId, Map<String, dynamic> values);
 
   Future<void> correctSet(Map<String, dynamic> values);
 
-  Future<void> skipSet(String resultId);
+  Future<void> skipSet(String operationId, String resultId);
 
   Future<void> finishExecution(
+    String operationId,
     String executionId, {
     required int finalRpe,
     String? notes,
   });
 
-  Future<void> abandonExecution(String executionId, String reason);
+  Future<void> abandonExecution(
+    String operationId,
+    String executionId,
+    String reason,
+  );
 }

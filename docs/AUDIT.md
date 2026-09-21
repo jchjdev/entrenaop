@@ -175,7 +175,10 @@ resolverse antes de distribuir la aplicación.
 - El temporizador suma un segundo por evento periódico; no calcula contra una
   referencia temporal y puede desviarse al suspenderse la aplicación.
 - Una sesión en curso no se persiste ni se recupera.
-- No existe sincronización offline ni protección contra duplicados.
+- No existía sincronización offline ni protección contra duplicados. La nueva
+  vertical de sesión lo resuelve con una cola persistente y recibos
+  idempotentes en PostgreSQL; el hallazgo se conserva aquí como contexto de la
+  rama histórica auditada.
 - `requiresPremium`, `assigned_to` y `role` condensan conceptos comerciales y
   relaciones que deben tener ciclos de vida separados.
 - Se repiten casts forzados entre entidades y modelos.

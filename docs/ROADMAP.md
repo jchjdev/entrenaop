@@ -77,8 +77,10 @@ el catálogo dispone de él, un vídeo opcional cargado bajo demanda.
 Los temporizadores emiten avisos al preparar, comenzar y terminar el trabajo y
 al finalizar un descanso. Sonido y respuesta háptica se configuran de forma
 independiente y la preferencia queda guardada en el dispositivo.
-Todavía falta guardar resultados sin conexión y sincronizarlos de forma
-idempotente cuando vuelva la red.
+Los resultados pueden guardarse durante una pérdida de conexión. Una cola
+persistente conserva las operaciones, la interfaz indica cuántas quedan
+pendientes y Supabase las acepta de forma idempotente al volver la red, sin
+duplicar series aunque una respuesta se haya perdido.
 
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.

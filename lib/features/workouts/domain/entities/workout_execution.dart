@@ -50,6 +50,27 @@ class WorkoutExecution extends Equatable {
   /// Usamos este dato para el progreso sin confundir ambos resultados.
   int get resolvedSetCount => completedSetCount + skippedSetCount;
 
+  WorkoutExecution copyWith({
+    WorkoutExecutionStatus? status,
+    DateTime? completedAt,
+    int? finalRpe,
+    String? notes,
+    WorkoutAbandonmentReason? abandonmentReason,
+    List<WorkoutExecutionSet>? sets,
+  }) => WorkoutExecution(
+    id: id,
+    templateId: templateId,
+    templateName: templateName,
+    templateVersion: templateVersion,
+    status: status ?? this.status,
+    startedAt: startedAt,
+    completedAt: completedAt ?? this.completedAt,
+    finalRpe: finalRpe ?? this.finalRpe,
+    notes: notes ?? this.notes,
+    abandonmentReason: abandonmentReason ?? this.abandonmentReason,
+    sets: sets ?? this.sets,
+  );
+
   @override
   List<Object?> get props => [
     id,
@@ -198,6 +219,42 @@ class WorkoutExecutionSet extends Equatable {
         savedAt != null &&
         !now.isAfter(savedAt.add(const Duration(hours: 24)));
   }
+
+  WorkoutExecutionSet copyWith({
+    WorkoutSetStatus? status,
+    int? actualReps,
+    int? actualDurationSeconds,
+    double? actualDistanceMeters,
+    double? actualLoadKg,
+    double? actualRpe,
+    double? actualRir,
+    DateTime? completedAt,
+  }) => WorkoutExecutionSet(
+    id: id,
+    blockOrder: blockOrder,
+    blockName: blockName,
+    itemOrder: itemOrder,
+    exerciseId: exerciseId,
+    exerciseName: exerciseName,
+    exerciseDescription: exerciseDescription,
+    exerciseVideoUrl: exerciseVideoUrl,
+    setOrder: setOrder,
+    targetReps: targetReps,
+    targetDurationSeconds: targetDurationSeconds,
+    targetDistanceMeters: targetDistanceMeters,
+    targetLoadKg: targetLoadKg,
+    targetRpe: targetRpe,
+    targetRir: targetRir,
+    restAfterSeconds: restAfterSeconds,
+    status: status ?? this.status,
+    actualReps: actualReps ?? this.actualReps,
+    actualDurationSeconds: actualDurationSeconds ?? this.actualDurationSeconds,
+    actualDistanceMeters: actualDistanceMeters ?? this.actualDistanceMeters,
+    actualLoadKg: actualLoadKg ?? this.actualLoadKg,
+    actualRpe: actualRpe ?? this.actualRpe,
+    actualRir: actualRir ?? this.actualRir,
+    completedAt: completedAt ?? this.completedAt,
+  );
 
   @override
   List<Object?> get props => [

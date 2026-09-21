@@ -121,25 +121,33 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   }
 
   @override
-  Future<void> completeSet(Map<String, dynamic> values) =>
-      supabaseClient.rpc('complete_workout_set', params: values);
+  Future<void> completeSet(String operationId, Map<String, dynamic> values) =>
+      supabaseClient.rpc(
+        'complete_workout_set_idempotent',
+        params: {'p_operation_id': operationId, ...values},
+      );
 
   @override
   Future<void> correctSet(Map<String, dynamic> values) =>
       supabaseClient.rpc('correct_workout_set_result', params: values);
 
   @override
-  Future<void> skipSet(String resultId) =>
-      supabaseClient.rpc('skip_workout_set', params: {'p_result_id': resultId});
+  Future<void> skipSet(String operationId, String resultId) =>
+      supabaseClient.rpc(
+        'skip_workout_set_idempotent',
+        params: {'p_operation_id': operationId, 'p_result_id': resultId},
+      );
 
   @override
   Future<void> finishExecution(
+    String operationId,
     String executionId, {
     required int finalRpe,
     String? notes,
   }) => supabaseClient.rpc(
-    'finish_workout_execution',
+    'finish_workout_execution_idempotent',
     params: {
+      'p_operation_id': operationId,
       'p_execution_id': executionId,
       'p_final_rpe': finalRpe,
       'p_notes': notes,
@@ -147,9 +155,16 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   );
 
   @override
-  Future<void> abandonExecution(String executionId, String reason) =>
-      supabaseClient.rpc(
-        'abandon_workout_execution',
-        params: {'p_execution_id': executionId, 'p_reason': reason},
-      );
+  Future<void> abandonExecution(
+    String operationId,
+    String executionId,
+    String reason,
+  ) => supabaseClient.rpc(
+    'abandon_workout_execution_idempotent',
+    params: {
+      'p_operation_id': operationId,
+      'p_execution_id': executionId,
+      'p_reason': reason,
+    },
+  );
 }

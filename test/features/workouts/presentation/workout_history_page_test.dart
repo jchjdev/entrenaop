@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
@@ -103,29 +104,38 @@ class _Repository implements WorkoutRepository {
   Future<List<WorkoutExecution>> getExecutionHistory() async => [execution];
 
   @override
-  Future<void> abandonExecution(
+  Future<WorkoutMutationDisposition> abandonExecution(
     String executionId,
     WorkoutAbandonmentReason reason,
-  ) async {}
+  ) async => WorkoutMutationDisposition.synced;
 
   @override
-  Future<void> completeSet(WorkoutSetResultInput result) async {}
+  Future<WorkoutMutationDisposition> completeSet(
+    WorkoutSetResultInput result,
+  ) async => WorkoutMutationDisposition.synced;
 
   @override
   Future<void> correctSet(WorkoutSetCorrectionInput correction) async {}
 
   @override
-  Future<void> finishExecution(
+  Future<WorkoutMutationDisposition> finishExecution(
     String executionId, {
     required int finalRpe,
     String? notes,
-  }) async {}
+  }) async => WorkoutMutationDisposition.synced;
+
+  @override
+  Future<int> getPendingMutationCount() async => 0;
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String id) async => null;
 
   @override
-  Future<void> skipSet(String resultId) async {}
+  Future<WorkoutMutationDisposition> skipSet(String resultId) async =>
+      WorkoutMutationDisposition.synced;
+
+  @override
+  Future<void> syncPendingMutations() async {}
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';

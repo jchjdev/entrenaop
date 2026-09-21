@@ -57,11 +57,17 @@ class ActiveWorkoutPage extends StatelessWidget {
           }
           if (state.status == ActiveWorkoutStatus.completed ||
               execution.status == WorkoutExecutionStatus.completed) {
-            return _Completed(execution: execution);
+            return _Completed(
+              execution: execution,
+              pendingSyncCount: state.pendingSyncCount,
+            );
           }
           if (state.status == ActiveWorkoutStatus.abandoned ||
               execution.status == WorkoutExecutionStatus.abandoned) {
-            return _Abandoned(execution: execution);
+            return _Abandoned(
+              execution: execution,
+              pendingSyncCount: state.pendingSyncCount,
+            );
           }
           return _ActiveContent(
             state: state,
@@ -184,6 +190,10 @@ class _ActiveContentState extends State<_ActiveContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (state.pendingSyncCount > 0) ...[
+                      _PendingSyncBanner(count: state.pendingSyncCount),
+                      const SizedBox(height: 14),
+                    ],
                     Text(
                       execution.templateName,
                       style: const TextStyle(
@@ -323,6 +333,35 @@ class _ActiveContentState extends State<_ActiveContent> {
     );
     if (reason == null || !mounted) return;
     await context.read<ActiveWorkoutCubit>().abandon(reason);
+  }
+}
+
+class _PendingSyncBanner extends StatelessWidget {
+  const _PendingSyncBanner({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: const Color(0xFF3A2B16),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_upload_outlined, color: Color(0xFFFFB36B)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '$count ${count == 1 ? 'cambio guardado' : 'cambios guardados'} '
+                'en este dispositivo. Se sincronizará${count == 1 ? '' : 'n'} '
+                'cuando vuelva la conexión.',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -846,9 +885,10 @@ class _FinishCard extends StatelessWidget {
 }
 
 class _Completed extends StatelessWidget {
-  const _Completed({required this.execution});
+  const _Completed({required this.execution, required this.pendingSyncCount});
 
   final WorkoutExecution execution;
+  final int pendingSyncCount;
 
   @override
   Widget build(BuildContext context) {
@@ -858,6 +898,10 @@ class _Completed extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (pendingSyncCount > 0) ...[
+              _PendingSyncBanner(count: pendingSyncCount),
+              const SizedBox(height: 18),
+            ],
             const Icon(
               Icons.check_circle_rounded,
               size: 68,
@@ -896,9 +940,10 @@ class _Completed extends StatelessWidget {
 }
 
 class _Abandoned extends StatelessWidget {
-  const _Abandoned({required this.execution});
+  const _Abandoned({required this.execution, required this.pendingSyncCount});
 
   final WorkoutExecution execution;
+  final int pendingSyncCount;
 
   @override
   Widget build(BuildContext context) {
@@ -909,6 +954,10 @@ class _Abandoned extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (pendingSyncCount > 0) ...[
+              _PendingSyncBanner(count: pendingSyncCount),
+              const SizedBox(height: 18),
+            ],
             const Icon(Icons.flag_outlined, size: 68, color: Color(0xFFFFA06F)),
             const SizedBox(height: 16),
             const Text(

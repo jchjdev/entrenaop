@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 
 class StartWorkoutExecutionUseCase {
@@ -32,7 +33,7 @@ class CompleteWorkoutSetUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(WorkoutSetResultInput result) =>
+  Future<WorkoutMutationDisposition> call(WorkoutSetResultInput result) =>
       _repository.completeSet(result);
 }
 
@@ -50,7 +51,8 @@ class SkipWorkoutSetUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(String resultId) => _repository.skipSet(resultId);
+  Future<WorkoutMutationDisposition> call(String resultId) =>
+      _repository.skipSet(resultId);
 }
 
 class FinishWorkoutExecutionUseCase {
@@ -58,7 +60,7 @@ class FinishWorkoutExecutionUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(
+  Future<WorkoutMutationDisposition> call(
     String executionId, {
     required int finalRpe,
     String? notes,
@@ -74,6 +76,16 @@ class AbandonWorkoutExecutionUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<void> call(String executionId, WorkoutAbandonmentReason reason) =>
-      _repository.abandonExecution(executionId, reason);
+  Future<WorkoutMutationDisposition> call(
+    String executionId,
+    WorkoutAbandonmentReason reason,
+  ) => _repository.abandonExecution(executionId, reason);
+}
+
+class GetPendingWorkoutMutationCountUseCase {
+  const GetPendingWorkoutMutationCountUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<int> call() => _repository.getPendingMutationCount();
 }

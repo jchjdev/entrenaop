@@ -47,9 +47,11 @@ import 'package:entrenaop/features/workouts/data/datasources/workout_remote_data
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_mutation_queue.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -69,6 +71,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<WorkoutCueService>(
     () => SharedPreferencesWorkoutCueService(sharedPreferences),
+  );
+  sl.registerLazySingleton<WorkoutMutationQueue>(
+    () => SharedPreferencesWorkoutMutationQueue(sharedPreferences),
   );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -175,7 +180,7 @@ Future<void> initDependencies() async {
     () => WorkoutRemoteDataSourceImpl(supabaseClient: sl()),
   );
   sl.registerLazySingleton<WorkoutRepository>(
-    () => WorkoutRepositoryImpl(remoteDataSource: sl()),
+    () => WorkoutRepositoryImpl(remoteDataSource: sl(), mutationQueue: sl()),
   );
   sl.registerLazySingleton(() => GetStarterWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
@@ -186,6 +191,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => GetPendingWorkoutMutationCountUseCase(sl()));
   sl.registerFactory(
     () =>
         WorkoutPreviewCubit(getStarterWorkout: sl(), startExecution: sl())
@@ -199,6 +205,7 @@ Future<void> initDependencies() async {
       skipSet: sl(),
       finishExecution: sl(),
       abandonExecution: sl(),
+      getPendingMutationCount: sl(),
       timerStore: sl(),
       cueService: sl(),
     )..load(),
