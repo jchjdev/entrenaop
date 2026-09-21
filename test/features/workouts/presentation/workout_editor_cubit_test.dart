@@ -114,6 +114,63 @@ void main() {
     expect(find.text('Bloque 2'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('una superserie guía A1 y A2 y permite repetir catálogo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _WorkoutRepository();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createWorkout: CreatePersonalWorkoutUseCase(repository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    final formatSelector = find.byType(
+      DropdownButtonFormField<WorkoutBlockFormat>,
+    );
+    await tester.ensureVisible(formatSelector);
+    await tester.drag(find.byType(ListView), const Offset(0, -180));
+    await tester.pumpAndSettle();
+    await tester.tap(formatSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Superserie').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pendiente de elegir'), findsNWidgets(2));
+    await tester.tap(find.text('Elegir ejercicio A1'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dominadas').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elegir ejercicio A2'), findsOneWidget);
+    await tester.ensureVisible(find.text('Elegir ejercicio A2'));
+    await tester.tap(find.text('Elegir ejercicio A2'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dominadas').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('A1'), findsWidgets);
+    expect(find.text('A2'), findsWidgets);
+    expect(find.text('Superserie completa'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 const _input = CreatePersonalWorkoutInput(

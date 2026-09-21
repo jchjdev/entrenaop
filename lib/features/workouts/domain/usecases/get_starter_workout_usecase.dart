@@ -170,12 +170,6 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
       );
     }
     exerciseCount += block.exercises.length;
-    final exerciseIds = block.exercises.map((item) => item.exerciseId).toSet();
-    if (exerciseIds.length != block.exercises.length) {
-      throw const FormatException(
-        'No repitas el mismo ejercicio dentro de un bloque.',
-      );
-    }
     for (final exercise in block.exercises) {
       if (exercise.sets.isEmpty || exercise.sets.length > 20) {
         throw const FormatException(

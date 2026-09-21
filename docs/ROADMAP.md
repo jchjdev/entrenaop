@@ -117,7 +117,9 @@ e intervalos añadirán comportamiento al bloque sin sustituir el editor actual.
 La primera ampliación de formatos incorpora superseries y circuitos. Ambos
 definen rondas y descanso entre rondas; la ejecución intercala los ejercicios
 de cada vuelta y descansa únicamente al finalizar la ronda. No son etiquetas
-visuales sobre una secuencia convencional.
+visuales sobre una secuencia convencional. El editor muestra posiciones A1/A2
+en superseries y estaciones ordenadas en circuitos; cada posición es
+independiente aunque reutilice un ejercicio del catálogo.
 
 La segunda ampliación añade intervalos personalizados de un solo ejercicio y
 Tabata canónico 8 × 20/10. Ambos reutilizan el temporizador, la pausa, la

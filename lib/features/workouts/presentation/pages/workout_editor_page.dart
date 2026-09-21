@@ -519,21 +519,37 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 style: TextStyle(color: Colors.white54, height: 1.35),
               ),
             ],
+            if (block.showsSequenceOverview) ...[
+              const SizedBox(height: 14),
+              _BlockSequenceOverview(block: block),
+            ],
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed:
+                  catalog.isEmpty ||
+                      saving ||
+                      block.rows.length >= block.maxExercises ||
+                      _exerciseCount >= 40
+                  ? null
+                  : () => _chooseExercise(context, catalog, blockIndex),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(block.addExerciseLabel),
+            ),
             const SizedBox(height: 12),
             if (block.rows.isEmpty)
-              _EmptyExercises(
-                onAdd: catalog.isEmpty || saving || _exerciseCount >= 40
-                    ? null
-                    : () => _chooseExercise(context, catalog, blockIndex),
-              )
+              const _EmptyExercises()
             else
               ...List.generate(
                 block.rows.length,
                 (exerciseIndex) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ExerciseEditorCard(
-                    key: ValueKey(block.rows[exerciseIndex].exercise.id),
+                    key: ValueKey(block.rows[exerciseIndex].identity),
                     index: exerciseIndex,
+                    positionLabel: block.positionLabel(exerciseIndex),
+                    setSectionLabel: block.setSectionLabel(
+                      block.rows[exerciseIndex].sets.length,
+                    ),
                     data: block.rows[exerciseIndex],
                     enabled: !saving,
                     fixedSetCount: block.fixedSetCount,
@@ -541,12 +557,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
                         if (index != blockIndex &&
-                            target.rows.length < target.maxExercises &&
-                            !target.rows.any(
-                              (row) =>
-                                  row.exercise.id ==
-                                  block.rows[exerciseIndex].exercise.id,
-                            ))
+                            target.rows.length < target.maxExercises)
                           (index: index, name: target.name),
                     ],
                     onMoveToBlock: (targetIndex) => _moveExerciseToBlock(
@@ -573,17 +584,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   ),
                 ),
               ),
-            OutlinedButton.icon(
-              onPressed:
-                  catalog.isEmpty ||
-                      saving ||
-                      block.rows.length >= block.maxExercises ||
-                      _exerciseCount >= 40
-                  ? null
-                  : () => _chooseExercise(context, catalog, blockIndex),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Añadir ejercicio al bloque'),
-            ),
           ],
         ),
       ),
@@ -671,6 +671,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         const SnackBar(
           content: Text(
             'Deja un solo ejercicio en el bloque antes de cambiar a este formato.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (format == WorkoutBlockFormat.superset &&
+        _blocks[index].rows.length > 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Una superserie tiene dos posiciones. Quita o mueve los demás ejercicios antes de cambiar el formato.',
           ),
         ),
       );
@@ -782,17 +793,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   void _moveExerciseToBlock(int fromBlock, int exerciseIndex, int toBlock) {
     setState(() {
       final row = _blocks[fromBlock].rows.removeAt(exerciseIndex);
-      _blocks[toBlock].rows.add(row);
-      if (_blocks[toBlock].isRoundBased) {
-        if (_blocks[toBlock].format == WorkoutBlockFormat.tabata) {
-          row.targetType = WorkoutTargetType.duration;
-          for (final set in row.sets) {
-            set.targetValue = 20;
-            set.restSeconds = 0;
-          }
-        }
-        _syncBlockRounds(_blocks[toBlock]);
-      }
+      final target = _blocks[toBlock];
+      target.rows.add(row);
+      _adaptRowToBlock(row, target);
     });
   }
 
@@ -801,36 +804,41 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     List<ExerciseEntity> catalog,
     int blockIndex,
   ) async {
-    final selectedIds = _blocks[blockIndex].rows
-        .map((row) => row.exercise.id)
-        .toSet();
-    final available = catalog
-        .where((exercise) => !selectedIds.contains(exercise.id))
-        .toList();
     final selected = await showModalBottomSheet<ExerciseEntity>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (context) => _ExercisePicker(exercises: available),
+      builder: (context) => _ExercisePicker(exercises: catalog),
     );
     if (selected != null && mounted) {
-      setState(
-        () => _blocks[blockIndex].rows.add(
-          _ExerciseRowData.fromExercise(
-            selected,
-            setCount: _blocks[blockIndex].isRoundBased
-                ? _blocks[blockIndex].rounds
-                : 3,
-          ),
-        ),
-      );
-      if (_blocks[blockIndex].format == WorkoutBlockFormat.tabata) {
-        final row = _blocks[blockIndex].rows.single;
-        row.targetType = WorkoutTargetType.duration;
-        for (final set in row.sets) {
-          set.targetValue = 20;
-          set.restSeconds = 0;
-        }
+      setState(() {
+        final block = _blocks[blockIndex];
+        final row = _ExerciseRowData.fromExercise(selected);
+        block.rows.add(row);
+        _adaptRowToBlock(row, block);
+      });
+    }
+  }
+
+  void _adaptRowToBlock(_ExerciseRowData row, _BlockRowData block) {
+    if (block.format == WorkoutBlockFormat.amrap) {
+      row.targetType = WorkoutTargetType.repetitions;
+      row.sets = [row.sets.first.copy()..restSeconds = 0];
+      return;
+    }
+    if (!block.isRoundBased) return;
+    if (block.format == WorkoutBlockFormat.tabata) {
+      row.targetType = WorkoutTargetType.duration;
+      row.sets.first
+        ..targetValue = 20
+        ..restSeconds = 0;
+    }
+    _syncBlockRounds(block);
+    if (block.format == WorkoutBlockFormat.tabata) {
+      for (final set in row.sets) {
+        set
+          ..targetValue = 20
+          ..restSeconds = 0;
       }
     }
   }
@@ -920,6 +928,73 @@ class _EmomSummary extends StatelessWidget {
   }
 }
 
+class _BlockSequenceOverview extends StatelessWidget {
+  const _BlockSequenceOverview({required this.block});
+
+  final _BlockRowData block;
+
+  @override
+  Widget build(BuildContext context) {
+    final slotCount = block.format == WorkoutBlockFormat.superset
+        ? 2
+        : block.rows.length;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            block.sequenceTitle,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 9),
+          if (slotCount == 0)
+            Text(
+              block.emptySequenceText,
+              style: const TextStyle(color: Colors.white54),
+            )
+          else
+            for (var index = 0; index < slotCount; index++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 38,
+                      child: Text(
+                        block.positionLabel(index),
+                        style: const TextStyle(
+                          color: Color(0xFFFF8A50),
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        index < block.rows.length
+                            ? block.rows[index].exercise.name
+                            : 'Pendiente de elegir',
+                        style: TextStyle(
+                          color: index < block.rows.length
+                              ? Colors.white
+                              : Colors.white38,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BlockRowData {
   _BlockRowData({
     required this.name,
@@ -967,6 +1042,57 @@ class _BlockRowData {
     return capacity < 20 ? capacity : 20;
   }
 
+  bool get showsSequenceOverview =>
+      format == WorkoutBlockFormat.superset ||
+      format == WorkoutBlockFormat.circuit ||
+      format == WorkoutBlockFormat.emom ||
+      format == WorkoutBlockFormat.amrap;
+
+  String get sequenceTitle => switch (format) {
+    WorkoutBlockFormat.superset => 'Pareja de ejercicios',
+    WorkoutBlockFormat.circuit => 'Orden de las estaciones',
+    WorkoutBlockFormat.emom => 'Orden de los minutos',
+    WorkoutBlockFormat.amrap => 'Secuencia de cada vuelta',
+    _ => 'Ejercicios del bloque',
+  };
+
+  String get emptySequenceText => switch (format) {
+    WorkoutBlockFormat.circuit => 'Añade al menos dos estaciones.',
+    WorkoutBlockFormat.emom => 'Añade el movimiento del primer minuto.',
+    WorkoutBlockFormat.amrap => 'Añade el primer movimiento de la vuelta.',
+    _ => 'Añade el primer ejercicio.',
+  };
+
+  String get addExerciseLabel => switch (format) {
+    WorkoutBlockFormat.superset when rows.isEmpty => 'Elegir ejercicio A1',
+    WorkoutBlockFormat.superset when rows.length == 1 => 'Elegir ejercicio A2',
+    WorkoutBlockFormat.superset => 'Superserie completa',
+    WorkoutBlockFormat.circuit => 'Añadir estación al circuito',
+    WorkoutBlockFormat.emom => 'Añadir minuto al EMOM',
+    WorkoutBlockFormat.amrap => 'Añadir movimiento al AMRAP',
+    WorkoutBlockFormat.intervals ||
+    WorkoutBlockFormat.tabata => 'Elegir ejercicio',
+    _ => 'Añadir ejercicio al bloque',
+  };
+
+  String positionLabel(int index) => switch (format) {
+    WorkoutBlockFormat.superset => 'A${index + 1}',
+    WorkoutBlockFormat.circuit => 'E${index + 1}',
+    WorkoutBlockFormat.emom => 'M${index + 1}',
+    WorkoutBlockFormat.amrap => '${index + 1}.',
+    _ => '${index + 1}',
+  };
+
+  String setSectionLabel(int setCount) => switch (format) {
+    WorkoutBlockFormat.superset ||
+    WorkoutBlockFormat.circuit => 'Objetivo en cada ronda ($setCount)',
+    WorkoutBlockFormat.intervals ||
+    WorkoutBlockFormat.tabata => 'Intervalos ($setCount)',
+    WorkoutBlockFormat.emom => 'Objetivo en cada vuelta ($setCount)',
+    WorkoutBlockFormat.amrap => 'Objetivo por vuelta',
+    _ => 'Series ($setCount)',
+  };
+
   WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
     name: name,
     format: format,
@@ -1003,6 +1129,7 @@ class _ExerciseRowData {
     );
   }
 
+  final Object identity = Object();
   final ExerciseEntity exercise;
   WorkoutTargetType targetType;
   List<_SetRowData> sets;
@@ -1048,6 +1175,8 @@ class _ExerciseEditorCard extends StatefulWidget {
   const _ExerciseEditorCard({
     super.key,
     required this.index,
+    required this.positionLabel,
+    required this.setSectionLabel,
     required this.data,
     required this.enabled,
     required this.fixedSetCount,
@@ -1060,6 +1189,8 @@ class _ExerciseEditorCard extends StatefulWidget {
   });
 
   final int index;
+  final String positionLabel;
+  final String setSectionLabel;
   final _ExerciseRowData data;
   final bool enabled;
   final bool fixedSetCount;
@@ -1091,7 +1222,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   radius: 16,
                   backgroundColor: const Color(0x33FF8A50),
                   foregroundColor: const Color(0xFFFF8A50),
-                  child: Text('${widget.index + 1}'),
+                  child: Text(widget.positionLabel),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1186,51 +1317,49 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   : null,
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Text(
-                  widget.fixedSetCount
-                      ? 'Una serie por ronda (${data.sets.length})'
-                      : 'Series (${data.sets.length})',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: !widget.enabled || data.sets.length < 2
-                      ? null
-                      : () => setState(() {
-                          final first = data.sets.first;
-                          data.sets = List.generate(
-                            data.sets.length,
-                            (_) => first.copy(),
-                          );
-                        }),
-                  icon: const Icon(Icons.copy_all_rounded, size: 17),
-                  label: const Text('Igualar'),
-                ),
-                IconButton(
-                  tooltip: 'Quitar última serie',
-                  onPressed:
-                      !widget.enabled ||
-                          widget.fixedSetCount ||
-                          data.sets.length <= 1
-                      ? null
-                      : () => setState(data.sets.removeLast),
-                  icon: const Icon(Icons.remove_circle_outline_rounded),
-                ),
-                IconButton(
-                  tooltip: 'Añadir serie',
-                  onPressed:
-                      !widget.enabled ||
-                          widget.fixedSetCount ||
-                          data.sets.length >= 20
-                      ? null
-                      : () => setState(
-                          () => data.sets.add(data.sets.last.copy()),
-                        ),
-                  icon: const Icon(Icons.add_circle_outline_rounded),
-                ),
-              ],
+            Text(
+              widget.setSectionLabel,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (data.sets.length >= 2)
+                    TextButton.icon(
+                      onPressed: !widget.enabled
+                          ? null
+                          : () => setState(() {
+                              final first = data.sets.first;
+                              data.sets = List.generate(
+                                data.sets.length,
+                                (_) => first.copy(),
+                              );
+                            }),
+                      icon: const Icon(Icons.copy_all_rounded, size: 17),
+                      label: const Text('Igualar'),
+                    ),
+                  if (!widget.fixedSetCount) ...[
+                    IconButton(
+                      tooltip: 'Quitar última serie',
+                      onPressed: !widget.enabled || data.sets.length <= 1
+                          ? null
+                          : () => setState(data.sets.removeLast),
+                      icon: const Icon(Icons.remove_circle_outline_rounded),
+                    ),
+                    IconButton(
+                      tooltip: 'Añadir serie',
+                      onPressed: !widget.enabled || data.sets.length >= 20
+                          ? null
+                          : () => setState(
+                              () => data.sets.add(data.sets.last.copy()),
+                            ),
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                    ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: 4),
             ...List.generate(
@@ -1458,7 +1587,7 @@ class _ExercisePicker extends StatelessWidget {
                           trailing: const Icon(
                             Icons.add_circle_outline_rounded,
                           ),
-                          onTap: () => context.pop(exercise),
+                          onTap: () => Navigator.of(context).pop(exercise),
                         );
                       },
                     ),
@@ -1471,9 +1600,7 @@ class _ExercisePicker extends StatelessWidget {
 }
 
 class _EmptyExercises extends StatelessWidget {
-  const _EmptyExercises({required this.onAdd});
-
-  final VoidCallback? onAdd;
+  const _EmptyExercises();
 
   @override
   Widget build(BuildContext context) {
@@ -1486,19 +1613,13 @@ class _EmptyExercises extends StatelessWidget {
             const Icon(Icons.playlist_add_rounded, size: 42),
             const SizedBox(height: 10),
             const Text(
-              'La sesión todavía está vacía',
+              'Este bloque todavía está vacío',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 4),
             const Text(
-              'Añade ejercicios y define sus series.',
+              'Usa el botón superior para añadir su primera posición.',
               style: TextStyle(color: Colors.white60),
-            ),
-            const SizedBox(height: 14),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Primer ejercicio'),
             ),
           ],
         ),

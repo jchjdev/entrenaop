@@ -30,7 +30,7 @@ void main() {
     expect(repository.revised, _validInput());
   });
 
-  test('rechaza ejercicios repetidos antes de llamar a Supabase', () async {
+  test('permite repetir un ejercicio como dos estaciones distintas', () async {
     final exercise = _validInput().blocks.single.exercises.single;
     final input = CreatePersonalWorkoutInput(
       name: 'Sesión repetida',
@@ -39,8 +39,9 @@ void main() {
       ],
     );
 
-    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
-    expect(repository.created, isNull);
+    await useCase(input);
+
+    expect(repository.created, input);
   });
 
   test('rechaza objetivos vacíos o negativos', () async {

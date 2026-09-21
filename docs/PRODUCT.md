@@ -91,9 +91,11 @@ las prescripciones de varias preparaciones con una carga global coherente.
 El creador permite dividir una sesión en bloques convencionales con nombre y
 orden propios, manteniendo una entrada sencilla con un bloque principal creado
 por defecto.
-Una superserie enlaza exactamente dos ejercicios; un circuito recorre dos o
-más. Ambos permiten elegir rondas y descanso entre vueltas y se presentan en
-ese orden durante la sesión guiada.
+Una superserie enlaza exactamente dos posiciones A1/A2; un circuito recorre dos
+o más estaciones. Ambos permiten elegir rondas y descanso entre vueltas y se
+presentan en ese orden durante la sesión guiada. Las posiciones son
+independientes y pueden reutilizar un ejercicio del catálogo cuando la
+secuencia lo requiera.
 Los intervalos personalizados repiten un único ejercicio y permiten ajustar
 número de repeticiones y recuperación. Tabata se ofrece como protocolo cerrado de ocho
 rondas de 20 segundos de trabajo y 10 de recuperación, no como una simple

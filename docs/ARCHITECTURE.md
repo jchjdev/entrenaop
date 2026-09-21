@@ -101,6 +101,11 @@ puede prescribir repeticiones, duración o distancia, además de carga, RPE/RIR 
 descanso. Las tablas heredadas `routines`, `routine_exercises` y `session_logs`
 se conservan temporalmente, pero no son el núcleo del nuevo recorrido.
 
+Cada `workout_item` representa una posición ordenada dentro del bloque, no la
+identidad única de un ejercicio. Dos posiciones pueden referenciar el mismo
+ejercicio y mantener objetivos distintos; esto permite repetir una carrera u
+otro movimiento en diferentes estaciones de un circuito, EMOM o AMRAP.
+
 Al comenzar una sesión, `workout_executions` y `workout_execution_sets` copian
 la identidad y la prescripción vigente de cada serie. El cliente registra los
 resultados mediante funciones autenticadas y no puede insertar ejecuciones
