@@ -17,6 +17,7 @@ void main() {
       preparationSeconds: 3,
       phaseStartedAt: DateTime.utc(2026, 9, 20, 20),
       elapsedBeforeRun: const Duration(milliseconds: 12500),
+      restCanBeSkipped: false,
     );
 
     await store.write('execution:set', snapshot);

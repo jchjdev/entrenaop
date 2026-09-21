@@ -54,8 +54,8 @@ class WorkoutExerciseDraft extends Equatable {
 
 /// Agrupación editable de ejercicios dentro de una sesión personal.
 ///
-/// El formato determina tanto la validación como el orden de ejecución. Los
-/// formatos gobernados por reloj se incorporarán sobre este mismo contrato.
+/// El formato determina la validación, el orden y, cuando corresponde, el
+/// comportamiento temporal de la ejecución.
 class WorkoutBlockDraft extends Equatable {
   const WorkoutBlockDraft({
     required this.name,

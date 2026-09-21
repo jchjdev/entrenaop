@@ -10,6 +10,7 @@ class WorkoutTimerSnapshot extends Equatable {
     required this.preparationSeconds,
     required this.phaseStartedAt,
     required this.elapsedBeforeRun,
+    this.restCanBeSkipped = true,
   });
 
   final WorkoutTimerPhase phase;
@@ -17,6 +18,7 @@ class WorkoutTimerSnapshot extends Equatable {
   final int preparationSeconds;
   final DateTime phaseStartedAt;
   final Duration elapsedBeforeRun;
+  final bool restCanBeSkipped;
 
   @override
   List<Object?> get props => [
@@ -25,6 +27,7 @@ class WorkoutTimerSnapshot extends Equatable {
     preparationSeconds,
     phaseStartedAt,
     elapsedBeforeRun,
+    restCanBeSkipped,
   ];
 }
 

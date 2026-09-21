@@ -41,7 +41,8 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
                 block.format != WorkoutBlockFormat.superset &&
                 block.format != WorkoutBlockFormat.circuit &&
                 block.format != WorkoutBlockFormat.intervals &&
-                block.format != WorkoutBlockFormat.tabata,
+                block.format != WorkoutBlockFormat.tabata &&
+                block.format != WorkoutBlockFormat.emom,
           )) {
         throw StateError('Unsupported workout format');
       }

@@ -139,6 +139,77 @@ void main() {
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
     expect(repository.created, isNull);
   });
+
+  test('acepta un EMOM alternando ejercicios por minutos', () async {
+    const sets = [
+      WorkoutSetDraft(
+        targetType: WorkoutTargetType.repetitions,
+        targetValue: 8,
+        restAfterSeconds: 0,
+      ),
+      WorkoutSetDraft(
+        targetType: WorkoutTargetType.repetitions,
+        targetValue: 8,
+        restAfterSeconds: 0,
+      ),
+      WorkoutSetDraft(
+        targetType: WorkoutTargetType.repetitions,
+        targetValue: 8,
+        restAfterSeconds: 0,
+      ),
+    ];
+    const input = CreatePersonalWorkoutInput(
+      name: 'EMOM de fuerza',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Alterno',
+          format: WorkoutBlockFormat.emom,
+          rounds: 3,
+          restAfterSeconds: 60,
+          exercises: [
+            WorkoutExerciseDraft(exerciseId: 'exercise-1', sets: sets),
+            WorkoutExerciseDraft(exerciseId: 'exercise-2', sets: sets),
+          ],
+        ),
+      ],
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
+
+  test('rechaza un EMOM de más de sesenta minutos', () async {
+    final exercises = List.generate(
+      4,
+      (exercise) => WorkoutExerciseDraft(
+        exerciseId: 'exercise-$exercise',
+        sets: List.generate(
+          16,
+          (_) => const WorkoutSetDraft(
+            targetType: WorkoutTargetType.repetitions,
+            targetValue: 5,
+            restAfterSeconds: 0,
+          ),
+        ),
+      ),
+    );
+    final input = CreatePersonalWorkoutInput(
+      name: 'EMOM demasiado largo',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Principal',
+          format: WorkoutBlockFormat.emom,
+          rounds: 16,
+          restAfterSeconds: 60,
+          exercises: exercises,
+        ),
+      ],
+    );
+
+    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
+    expect(repository.created, isNull);
+  });
 }
 
 CreatePersonalWorkoutInput _timedInput({

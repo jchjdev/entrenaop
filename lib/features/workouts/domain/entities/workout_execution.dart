@@ -220,7 +220,8 @@ class WorkoutExecutionSet extends Equatable {
       blockFormat == WorkoutBlockFormat.superset ||
       blockFormat == WorkoutBlockFormat.circuit ||
       blockFormat == WorkoutBlockFormat.intervals ||
-      blockFormat == WorkoutBlockFormat.tabata;
+      blockFormat == WorkoutBlockFormat.tabata ||
+      blockFormat == WorkoutBlockFormat.emom;
 
   int get roundNumber => setOrder + 1;
 

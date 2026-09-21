@@ -190,10 +190,15 @@ identidad
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
 - El borrador personal contiene de uno a diez bloques. Pueden ser
-  convencionales, superseries, circuitos, intervalos o Tabata. Los formatos
+  convencionales, superseries, circuitos, intervalos, Tabata o EMOM. Los formatos
   gobernados por rondas exigen una serie por ejercicio y ronda; Supabase vuelve
   a validar esa simetría. Intervalos admite un solo ejercicio y Tabata fija el
   protocolo canónico de ocho rondas, 20 segundos de trabajo y 10 de pausa.
+- EMOM representa una secuencia de estaciones de un minuto. Cada ejercicio
+  ocupa un minuto y las vueltas repiten el orden completo; la duración del
+  bloque es `vueltas × ejercicios` y queda limitada a sesenta minutos. Al
+  resolver una estación, el cliente calcula el tiempo restante hasta el
+  siguiente minuto en vez de añadir un descanso completo.
 - `workout_execution_sets.block_format` conserva el formato ejecutado. El
   cliente ordena los bloques agrupados o temporizados por ronda y después por
   ejercicio. El servidor copia el descanso del bloque solo a la última estación

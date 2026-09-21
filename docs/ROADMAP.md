@@ -121,9 +121,13 @@ visuales sobre una secuencia convencional.
 
 La segunda ampliación añade intervalos de un solo ejercicio y Tabata canónico
 8 × 20/10. Ambos reutilizan el temporizador, la pausa, la restauración y el
-historial del motor guiado. EMOM y AMRAP quedan para una iteración propia: el
-primero debe conservar el reloj global de cada minuto y el segundo registrar
-vueltas y repeticiones dentro de un límite temporal.
+historial del motor guiado.
+
+La tercera ampliación incorpora EMOM con uno o varios ejercicios alternados.
+Cada estación inicia automáticamente su minuto, conserva el tiempo restante
+como pausa y restaura su reloj si se interrumpe la pantalla. El bloque no puede
+superar sesenta minutos. AMRAP queda para una iteración propia porque debe
+registrar vueltas y repeticiones dentro de un límite temporal.
 
 La agenda semanal global ya permite combinar sesiones personales y contenido
 de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada

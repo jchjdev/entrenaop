@@ -85,6 +85,18 @@ void main() {
     );
     expect(find.textContaining('Formato cerrado'), findsOneWidget);
 
+    await tester.tap(formatSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('EMOM · cada minuto').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Vueltas'), findsOneWidget);
+    expect(find.textContaining('minutos con un ejercicio'), findsOneWidget);
+    expect(
+      find.textContaining('Cada ejercicio ocupa un minuto'),
+      findsOneWidget,
+    );
+
     final addBlock = find.byKey(const ValueKey('add-workout-block'));
     await tester.ensureVisible(addBlock);
     await tester.pumpAndSettle();

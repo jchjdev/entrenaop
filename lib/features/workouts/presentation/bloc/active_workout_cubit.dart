@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
@@ -54,6 +55,28 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         );
         return;
       }
+      final restSnapshot = await _timerStore.read(_restTimerId);
+      if (execution.status == WorkoutExecutionStatus.inProgress &&
+          execution.currentSet != null &&
+          restSnapshot?.phase == WorkoutTimerPhase.running) {
+        final elapsedSinceWrite = DateTime.now().toUtc().difference(
+          restSnapshot!.phaseStartedAt,
+        );
+        final elapsed =
+            restSnapshot.elapsedBeforeRun +
+            (elapsedSinceWrite.isNegative ? Duration.zero : elapsedSinceWrite);
+        final remaining = restSnapshot.targetSeconds - elapsed.inSeconds;
+        if (remaining > 0) {
+          _startRest(
+            execution,
+            remaining,
+            pendingSyncCount,
+            canBeSkipped: restSnapshot.restCanBeSkipped,
+          );
+          return;
+        }
+      }
+      if (restSnapshot != null) await _timerStore.clear(_restTimerId);
       emit(
         ActiveWorkoutState(
           status: switch (execution.status) {
@@ -75,7 +98,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
-  Future<void> completeCurrentSet(WorkoutSetResultInput result) async {
+  Future<void> completeCurrentSet(
+    WorkoutSetResultInput result, {
+    int? restSecondsOverride,
+  }) async {
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
@@ -95,7 +121,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           : await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
       final pendingSyncCount = await _getPendingMutationCount();
-      if (updated.currentSet == null || currentSet.restAfterSeconds == 0) {
+      final restSeconds = (restSecondsOverride ?? currentSet.restAfterSeconds)
+          .clamp(0, 3600)
+          .toInt();
+      if (updated.currentSet == null || restSeconds == 0) {
+        await _timerStore.clear(_restTimerId);
         emit(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,
@@ -105,7 +135,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         );
         return;
       }
-      _startRest(updated, currentSet.restAfterSeconds, pendingSyncCount);
+      _startRest(
+        updated,
+        restSeconds,
+        pendingSyncCount,
+        canBeSkipped: currentSet.blockFormat != WorkoutBlockFormat.emom,
+      );
     } catch (_) {
       emit(
         ActiveWorkoutState(
@@ -115,10 +150,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           errorMessage: 'No hemos podido guardar la serie.',
         ),
       );
+      await _timerStore.clear(_restTimerId);
     }
   }
 
-  Future<void> skipCurrentSet() async {
+  Future<void> skipCurrentSet({int? restSecondsOverride}) async {
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
@@ -138,6 +174,17 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           : await _getExecution(executionId);
       if (updated == null) throw StateError('Execution disappeared');
       final pendingSyncCount = await _getPendingMutationCount();
+      final restSeconds = (restSecondsOverride ?? 0).clamp(0, 3600).toInt();
+      if (updated.currentSet != null && restSeconds > 0) {
+        _startRest(
+          updated,
+          restSeconds,
+          pendingSyncCount,
+          canBeSkipped: currentSet.blockFormat != WorkoutBlockFormat.emom,
+        );
+        return;
+      }
+      await _timerStore.clear(_restTimerId);
       emit(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.ready,
@@ -160,14 +207,29 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   void _startRest(
     WorkoutExecution execution,
     int seconds,
-    int pendingSyncCount,
-  ) {
+    int pendingSyncCount, {
+    bool canBeSkipped = true,
+  }) {
     _restTimer?.cancel();
+    unawaited(
+      _timerStore.write(
+        _restTimerId,
+        WorkoutTimerSnapshot(
+          phase: WorkoutTimerPhase.running,
+          targetSeconds: seconds,
+          preparationSeconds: 0,
+          phaseStartedAt: DateTime.now().toUtc(),
+          elapsedBeforeRun: Duration.zero,
+          restCanBeSkipped: canBeSkipped,
+        ),
+      ),
+    );
     emit(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.resting,
         execution: execution,
         restSecondsRemaining: seconds,
+        restCanBeSkipped: canBeSkipped,
         pendingSyncCount: pendingSyncCount,
       ),
     );
@@ -175,6 +237,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final remaining = state.restSecondsRemaining - 1;
       if (remaining <= 0) {
         timer.cancel();
+        unawaited(_timerStore.clear(_restTimerId));
         unawaited(_cueService.signal(WorkoutCue.restFinished));
         emit(
           ActiveWorkoutState(
@@ -189,6 +252,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             status: ActiveWorkoutStatus.resting,
             execution: state.execution,
             restSecondsRemaining: remaining,
+            restCanBeSkipped: state.restCanBeSkipped,
             pendingSyncCount: state.pendingSyncCount,
           ),
         );
@@ -197,8 +261,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   void skipRest() {
-    if (state.status != ActiveWorkoutStatus.resting) return;
+    if (state.status != ActiveWorkoutStatus.resting ||
+        !state.restCanBeSkipped) {
+      return;
+    }
     _restTimer?.cancel();
+    unawaited(_timerStore.clear(_restTimerId));
     emit(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.ready,
@@ -267,6 +335,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ),
     );
     try {
+      await _timerStore.clear(_restTimerId);
       final disposition = await _abandonExecution(executionId, reason);
       final currentSet = execution.currentSet;
       if (currentSet != null) {
@@ -300,6 +369,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   String _timerId(String resultId) => '$executionId:$resultId';
+
+  String get _restTimerId => '$executionId:rest';
 
   WorkoutExecution _completeLocally(
     WorkoutExecution execution,

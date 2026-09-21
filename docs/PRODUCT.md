@@ -97,7 +97,10 @@ ese orden durante la sesión guiada.
 Los intervalos repiten un único ejercicio y permiten ajustar número de
 repeticiones y recuperación. Tabata se ofrece como protocolo cerrado de ocho
 rondas de 20 segundos de trabajo y 10 de recuperación, no como una simple
-etiqueta. EMOM y AMRAP necesitarán motores de reloj y registro específicos.
+etiqueta. EMOM alterna uno o varios ejercicios, asigna un minuto a cada uno y
+repite la secuencia por vueltas; completar u omitir una estación conserva el
+tiempo restante hasta el siguiente minuto. AMRAP necesitará un motor de
+registro específico para vueltas y repeticiones dentro de un límite temporal.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:

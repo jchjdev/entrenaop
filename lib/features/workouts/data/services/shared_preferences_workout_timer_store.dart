@@ -24,6 +24,7 @@ class SharedPreferencesWorkoutTimerStore implements WorkoutTimerStore {
         elapsedBeforeRun: Duration(
           milliseconds: json['elapsed_before_run_ms'] as int,
         ),
+        restCanBeSkipped: json['rest_can_be_skipped'] as bool? ?? true,
       );
     } on Object {
       // Un dato local antiguo o corrupto nunca debe impedir abrir la sesión.
@@ -42,6 +43,7 @@ class SharedPreferencesWorkoutTimerStore implements WorkoutTimerStore {
         'preparation_seconds': snapshot.preparationSeconds,
         'phase_started_at': snapshot.phaseStartedAt.toUtc().toIso8601String(),
         'elapsed_before_run_ms': snapshot.elapsedBeforeRun.inMilliseconds,
+        'rest_can_be_skipped': snapshot.restCanBeSkipped,
       }),
     );
   }

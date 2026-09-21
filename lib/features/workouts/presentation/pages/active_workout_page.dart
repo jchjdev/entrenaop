@@ -219,6 +219,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                     if (state.status == ActiveWorkoutStatus.resting)
                       _RestCard(
                         seconds: state.restSecondsRemaining,
+                        canSkip: state.restCanBeSkipped,
                         onSkip: context.read<ActiveWorkoutCubit>().skipRest,
                       )
                     else if (current != null)
@@ -383,8 +384,9 @@ class _CurrentSetCard extends StatefulWidget {
   final WorkoutTimerStore timerStore;
   final WorkoutCueService cueService;
   final bool saving;
-  final ValueChanged<WorkoutSetResultInput> onComplete;
-  final VoidCallback onSkip;
+  final void Function(WorkoutSetResultInput result, {int? restSecondsOverride})
+  onComplete;
+  final void Function({int? restSecondsOverride}) onSkip;
 
   @override
   State<_CurrentSetCard> createState() => _CurrentSetCardState();
@@ -398,6 +400,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
   late final TextEditingController _loadController;
   late double _actualRpe;
   late double _actualRir;
+  int _emomElapsedSeconds = 0;
 
   WorkoutExecutionSet get set => widget.set;
 
@@ -449,6 +452,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
         actualRpe: set.targetRpe == null ? null : _actualRpe,
         actualRir: set.targetRir == null ? null : _actualRir,
       ),
+      restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
+          ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
+          : null,
     );
   }
 
@@ -472,7 +478,13 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
         ],
       ),
     );
-    if (confirmed == true && mounted) widget.onSkip();
+    if (confirmed == true && mounted) {
+      widget.onSkip(
+        restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
+            ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
+            : null,
+      );
+    }
   }
 
   @override
@@ -532,7 +544,32 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   style: const TextStyle(color: Colors.white60),
                 ),
               ],
-              if (set.targetDurationSeconds case final seconds?) ...[
+              if (set.blockFormat == WorkoutBlockFormat.emom) ...[
+                const SizedBox(height: 22),
+                WorkoutSetCountdown(
+                  targetSeconds: 60,
+                  preparationSeconds: set.itemOrder == 0 && set.setOrder == 0
+                      ? 3
+                      : 0,
+                  autoStart: true,
+                  title: 'RELOJ EMOM · VUELTA ${set.roundNumber}',
+                  timerId: '${widget.executionId}:${set.id}',
+                  timerStore: widget.timerStore,
+                  enabled: !widget.saving,
+                  onElapsedChanged: (elapsed) {
+                    _emomElapsedSeconds = elapsed;
+                  },
+                  onPreparationTick: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.preparationTick),
+                  ),
+                  onStarted: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.workStarted),
+                  ),
+                  onFinished: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.workFinished),
+                  ),
+                ),
+              ] else if (set.targetDurationSeconds case final seconds?) ...[
                 const SizedBox(height: 22),
                 WorkoutSetCountdown(
                   targetSeconds: seconds,
@@ -616,7 +653,13 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.check_rounded),
-                label: Text(widget.saving ? 'Guardando…' : 'Guardar serie'),
+                label: Text(
+                  widget.saving
+                      ? 'Guardando…'
+                      : set.blockFormat == WorkoutBlockFormat.emom
+                      ? 'Guardar y esperar al siguiente minuto'
+                      : 'Guardar serie',
+                ),
               ),
               TextButton(
                 onPressed: widget.saving ? null : _confirmSkip,
@@ -780,9 +823,14 @@ class _ResultField extends StatelessWidget {
 }
 
 class _RestCard extends StatelessWidget {
-  const _RestCard({required this.seconds, required this.onSkip});
+  const _RestCard({
+    required this.seconds,
+    required this.canSkip,
+    required this.onSkip,
+  });
 
   final int seconds;
+  final bool canSkip;
   final VoidCallback onSkip;
 
   @override
@@ -799,13 +847,29 @@ class _RestCard extends StatelessWidget {
               color: Color(0xFFFF8A50),
             ),
             const SizedBox(height: 12),
-            const Text('Descanso', style: TextStyle(fontSize: 20)),
+            Text(
+              canSkip ? 'Descanso' : 'Siguiente minuto',
+              style: const TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 8),
             Text(
               _clock(seconds),
               style: const TextStyle(fontSize: 58, fontWeight: FontWeight.w900),
             ),
-            TextButton(onPressed: onSkip, child: const Text('Saltar descanso')),
+            if (canSkip)
+              TextButton(
+                onPressed: onSkip,
+                child: const Text('Saltar descanso'),
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'El siguiente ejercicio comenzará al llegar a cero.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white60),
+                ),
+              ),
           ],
         ),
       ),
@@ -1056,6 +1120,7 @@ String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
       WorkoutBlockFormat.circuit => 'Circuito',
       WorkoutBlockFormat.intervals => 'Intervalo',
       WorkoutBlockFormat.tabata => 'Tabata',
+      WorkoutBlockFormat.emom => 'EMOM',
       _ => 'Serie',
     };
 

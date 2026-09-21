@@ -367,6 +367,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   enabled: block.rows.length <= 1,
                   child: const Text('Tabata · 8 × 20/10'),
                 ),
+                const DropdownMenuItem(
+                  value: WorkoutBlockFormat.emom,
+                  child: Text('EMOM · cada minuto'),
+                ),
               ],
               onChanged: saving
                   ? null
@@ -380,7 +384,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               const SizedBox(height: 12),
               if (block.format == WorkoutBlockFormat.tabata)
                 const _TabataSummary()
-              else
+              else ...[
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -395,55 +399,71 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                         enabled: !saving,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText:
-                              block.format == WorkoutBlockFormat.intervals
-                              ? 'Intervalos'
-                              : 'Rondas',
+                          labelText: switch (block.format) {
+                            WorkoutBlockFormat.intervals => 'Intervalos',
+                            WorkoutBlockFormat.emom => 'Vueltas',
+                            _ => 'Rondas',
+                          },
                           prefixIcon: const Icon(Icons.repeat_rounded),
                         ),
                         validator: (value) => _integerValidator(
                           value,
                           min: 1,
-                          max: 20,
+                          max: block.maxRounds,
                           label: 'cantidad de rondas',
                         ),
                         onChanged: (value) {
                           final rounds = int.tryParse(value);
-                          if (rounds != null && rounds >= 1 && rounds <= 20) {
+                          if (rounds != null &&
+                              rounds >= 1 &&
+                              rounds <= block.maxRounds) {
                             _changeBlockRounds(blockIndex, rounds);
                           }
                         },
                       ),
                     ),
-                    SizedBox(
-                      width: 220,
-                      child: TextFormField(
-                        key: ValueKey('rest-${block.identity}-${block.format}'),
-                        initialValue: block.restAfterSeconds.toString(),
-                        enabled: !saving,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText:
-                              block.format == WorkoutBlockFormat.intervals
-                              ? 'Recuperación'
-                              : 'Descanso entre rondas',
-                          suffixText: 's',
-                          prefixIcon: const Icon(Icons.timer_outlined),
+                    if (block.format != WorkoutBlockFormat.emom)
+                      SizedBox(
+                        width: 220,
+                        child: TextFormField(
+                          key: ValueKey(
+                            'rest-${block.identity}-${block.format}',
+                          ),
+                          initialValue: block.restAfterSeconds.toString(),
+                          enabled: !saving,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText:
+                                block.format == WorkoutBlockFormat.intervals
+                                ? 'Recuperación'
+                                : 'Descanso entre rondas',
+                            suffixText: 's',
+                            prefixIcon: const Icon(Icons.timer_outlined),
+                          ),
+                          validator: (value) => _integerValidator(
+                            value,
+                            min: 0,
+                            max: 3600,
+                            label: 'descanso',
+                          ),
+                          onChanged: (value) {
+                            final seconds = int.tryParse(value);
+                            if (seconds != null) {
+                              block.restAfterSeconds = seconds;
+                            }
+                          },
                         ),
-                        validator: (value) => _integerValidator(
-                          value,
-                          min: 0,
-                          max: 3600,
-                          label: 'descanso',
-                        ),
-                        onChanged: (value) {
-                          final seconds = int.tryParse(value);
-                          if (seconds != null) block.restAfterSeconds = seconds;
-                        },
                       ),
-                    ),
                   ],
                 ),
+                if (block.format == WorkoutBlockFormat.emom) ...[
+                  const SizedBox(height: 10),
+                  _EmomSummary(
+                    cycles: block.rounds,
+                    exerciseCount: block.rows.length,
+                  ),
+                ],
+              ],
               const SizedBox(height: 8),
               Text(switch (block.format) {
                 WorkoutBlockFormat.superset =>
@@ -454,6 +474,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   'Repetiremos un ejercicio con una recuperación común entre intervalos.',
                 WorkoutBlockFormat.tabata =>
                   'Formato cerrado: un ejercicio, 8 intervalos de 20 segundos y 10 de recuperación.',
+                WorkoutBlockFormat.emom =>
+                  'Cada ejercicio ocupa un minuto. Si añades varios, se alternarán y después comenzará una nueva vuelta.',
                 _ => '',
               }, style: const TextStyle(color: Colors.white54, height: 1.35)),
             ],
@@ -630,6 +652,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           }
         }
         _syncBlockRounds(block);
+      } else if (format == WorkoutBlockFormat.emom) {
+        if (block.rows.isEmpty) {
+          block.rounds = 5;
+        } else {
+          final capacity = 60 ~/ block.rows.length;
+          block.rounds = block.rows.first.sets.length
+              .clamp(1, capacity < 20 ? capacity : 20)
+              .toInt();
+        }
+        block.restAfterSeconds = 60;
+        _syncBlockRounds(block);
       } else {
         block.rounds = block.rows.isEmpty
             ? (format == WorkoutBlockFormat.intervals ? 6 : 3)
@@ -801,6 +834,40 @@ class _TabataSummary extends StatelessWidget {
   }
 }
 
+class _EmomSummary extends StatelessWidget {
+  const _EmomSummary({required this.cycles, required this.exerciseCount});
+
+  final int cycles;
+  final int exerciseCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = cycles * (exerciseCount == 0 ? 1 : exerciseCount);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0x1F55B9FF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0x4455B9FF)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.av_timer_rounded, color: Color(0xFF79C8FF)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              exerciseCount == 0
+                  ? '$cycles minutos con un ejercicio'
+                  : '$minutes minutos · $exerciseCount ${exerciseCount == 1 ? 'ejercicio' : 'ejercicios'} × $cycles ${cycles == 1 ? 'vuelta' : 'vueltas'}',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BlockRowData {
   _BlockRowData({
     required this.name,
@@ -821,14 +888,28 @@ class _BlockRowData {
       format == WorkoutBlockFormat.superset ||
       format == WorkoutBlockFormat.circuit ||
       format == WorkoutBlockFormat.intervals ||
-      format == WorkoutBlockFormat.tabata;
+      format == WorkoutBlockFormat.tabata ||
+      format == WorkoutBlockFormat.emom;
+
+  int get maxRounds {
+    if (format != WorkoutBlockFormat.emom || rows.isEmpty) return 20;
+    final capacity = 60 ~/ rows.length;
+    return capacity < 20 ? capacity : 20;
+  }
 
   int get maxExercises => format == WorkoutBlockFormat.superset
       ? 2
       : (format == WorkoutBlockFormat.intervals ||
             format == WorkoutBlockFormat.tabata)
       ? 1
+      : format == WorkoutBlockFormat.emom
+      ? _emomExerciseCapacity
       : 20;
+
+  int get _emomExerciseCapacity {
+    final capacity = 60 ~/ rounds;
+    return capacity < 20 ? capacity : 20;
+  }
 
   WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
     name: name,

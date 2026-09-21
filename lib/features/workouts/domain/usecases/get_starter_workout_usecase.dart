@@ -93,7 +93,8 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         block.format != WorkoutBlockFormat.superset &&
         block.format != WorkoutBlockFormat.circuit &&
         block.format != WorkoutBlockFormat.intervals &&
-        block.format != WorkoutBlockFormat.tabata) {
+        block.format != WorkoutBlockFormat.tabata &&
+        block.format != WorkoutBlockFormat.emom) {
       throw const FormatException(
         'Este formato de bloque todavía no está disponible.',
       );
@@ -126,6 +127,18 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         (block.rounds != 8 || block.restAfterSeconds != 10)) {
       throw const FormatException(
         'Tabata utiliza 8 rondas de 20 segundos y 10 de recuperación.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.emom &&
+        block.restAfterSeconds != 60) {
+      throw const FormatException(
+        'Cada estación EMOM debe ocupar exactamente un minuto.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.emom &&
+        block.rounds * block.exercises.length > 60) {
+      throw const FormatException(
+        'Un bloque EMOM no puede superar 60 minutos.',
       );
     }
     if (block.format == WorkoutBlockFormat.straightSets && block.rounds != 1) {

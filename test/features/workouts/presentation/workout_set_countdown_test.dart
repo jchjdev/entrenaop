@@ -100,6 +100,32 @@ void main() {
     expect(find.text('Pausar'), findsOneWidget);
     expect(elapsed, 7);
   });
+
+  testWidgets('puede comenzar automáticamente para encadenar minutos EMOM', (
+    tester,
+  ) async {
+    var starts = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 60,
+            preparationSeconds: 0,
+            autoStart: true,
+            title: 'RELOJ EMOM',
+            onElapsedChanged: (_) {},
+            onStarted: () => starts++,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('RELOJ EMOM'), findsOneWidget);
+    expect(find.text('Pausar'), findsOneWidget);
+    expect(starts, 1);
+  });
 }
 
 class _MemoryTimerStore implements WorkoutTimerStore {

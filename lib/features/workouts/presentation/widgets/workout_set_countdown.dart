@@ -13,6 +13,8 @@ class WorkoutSetCountdown extends StatefulWidget {
     required this.onElapsedChanged,
     this.preparationSeconds = 3,
     this.enabled = true,
+    this.autoStart = false,
+    this.title = 'TEMPORIZADOR DE LA SERIE',
     this.clock,
     this.wallClock,
     this.timerStore,
@@ -29,6 +31,8 @@ class WorkoutSetCountdown extends StatefulWidget {
   final ValueChanged<int> onElapsedChanged;
   final int preparationSeconds;
   final bool enabled;
+  final bool autoStart;
+  final String title;
 
   /// Fuente de tiempo inyectable para comprobar el temporizador sin esperas
   /// reales. En la aplicación se usa un [Stopwatch] monotónico interno.
@@ -67,7 +71,11 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     super.initState();
     _clock.start();
     _isRestoring = widget.timerStore != null;
-    if (_isRestoring) unawaited(_restore());
+    if (_isRestoring) {
+      unawaited(_restore());
+    } else if (widget.autoStart) {
+      _scheduleAutoStart();
+    }
   }
 
   @override
@@ -95,6 +103,12 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     if (_isFinished) _reset(notify: false);
     if (!_hasStarted) return _startPreparation();
     _startExerciseTimer();
+  }
+
+  void _scheduleAutoStart() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_isRestoring && !_hasStarted) _startPreparation();
+    });
   }
 
   void _startPreparation() {
@@ -191,6 +205,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
         snapshot.preparationSeconds != widget.preparationSeconds) {
       if (snapshot != null) await store.clear(timerId);
       if (mounted) setState(() => _isRestoring = false);
+      if (widget.autoStart) _scheduleAutoStart();
       return;
     }
 
@@ -300,9 +315,9 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            const Text(
-              'TEMPORIZADOR DE LA SERIE',
-              style: TextStyle(
+            Text(
+              widget.title,
+              style: const TextStyle(
                 color: Colors.white60,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
