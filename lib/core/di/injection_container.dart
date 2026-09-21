@@ -54,10 +54,12 @@ import 'package:entrenaop/features/workouts/data/repositories/workout_repository
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_mutation_queue.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -82,6 +84,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<WorkoutMutationQueue>(
     () => SharedPreferencesWorkoutMutationQueue(sharedPreferences),
+  );
+  sl.registerLazySingleton<WorkoutEditorDraftStore>(
+    () => SharedPreferencesWorkoutEditorDraftStore(sharedPreferences),
   );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -226,6 +231,7 @@ Future<void> initDependencies() async {
     (templateId, _) => WorkoutEditorCubit(
       getExercises: sl(),
       createExercise: sl(),
+      draftStore: sl(),
       createWorkout: sl(),
       getWorkoutTemplate: sl(),
       reviseWorkout: sl(),

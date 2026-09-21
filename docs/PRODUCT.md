@@ -57,6 +57,9 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
   catálogo verificado de EntrenaOP de los ejercicios privados del usuario.
 - El usuario puede crear un ejercicio propio con descripción y vídeo HTTPS
   opcional. Nunca puede publicarlo como contenido oficial desde el cliente.
+- El creador guarda automáticamente un borrador local. Una sesión nueva y cada
+  revisión mantienen espacios separados; al regresar, el usuario decide si
+  recupera o descarta los cambios sin finalizar.
 - Editar una rutina no cambia entrenamientos pasados: la interfaz guarda una
   nueva versión y conserva la anterior para el historial.
 - Historial conservado aunque el usuario deje de pagar.

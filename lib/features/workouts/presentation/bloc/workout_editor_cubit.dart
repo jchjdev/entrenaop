@@ -3,6 +3,7 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
 
@@ -10,12 +11,14 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   WorkoutEditorCubit({
     required GetExercisesUseCase getExercises,
     required CreateExerciseUseCase createExercise,
+    required WorkoutEditorDraftStore draftStore,
     required CreatePersonalWorkoutUseCase createWorkout,
     required GetWorkoutTemplateUseCase getWorkoutTemplate,
     required RevisePersonalWorkoutUseCase reviseWorkout,
     this.templateId,
   }) : _getExercises = getExercises,
        _createExercise = createExercise,
+       _draftStore = draftStore,
        _createWorkout = createWorkout,
        _getWorkoutTemplate = getWorkoutTemplate,
        _reviseWorkout = reviseWorkout,
@@ -23,10 +26,12 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
 
   final GetExercisesUseCase _getExercises;
   final CreateExerciseUseCase _createExercise;
+  final WorkoutEditorDraftStore _draftStore;
   final CreatePersonalWorkoutUseCase _createWorkout;
   final GetWorkoutTemplateUseCase _getWorkoutTemplate;
   final RevisePersonalWorkoutUseCase _reviseWorkout;
   final String? templateId;
+  String get _draftId => templateId ?? 'new';
 
   Future<ExerciseEntity> createExercise(PersonalExerciseDraft draft) async {
     final created = await _createExercise(draft);
@@ -37,6 +42,7 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
         status: WorkoutEditorStatus.ready,
         exercises: exercises,
         originalTemplate: state.originalTemplate,
+        draft: state.draft,
       ),
     );
     return created;
@@ -66,11 +72,13 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
           )) {
         throw StateError('Unsupported workout format');
       }
+      final draft = await _draftStore.read(_draftId);
       emit(
         WorkoutEditorState(
           status: WorkoutEditorStatus.ready,
           exercises: exercises,
           originalTemplate: originalTemplate,
+          draft: draft,
         ),
       );
     } catch (_) {
@@ -83,18 +91,28 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
     }
   }
 
+  Future<void> persistDraft(CreatePersonalWorkoutInput input) =>
+      _draftStore.write(
+        _draftId,
+        WorkoutEditorDraftSnapshot(input: input, savedAt: DateTime.now()),
+      );
+
+  Future<void> discardDraft() => _draftStore.clear(_draftId);
+
   Future<void> save(CreatePersonalWorkoutInput input) async {
     emit(
       WorkoutEditorState(
         status: WorkoutEditorStatus.saving,
         exercises: state.exercises,
         originalTemplate: state.originalTemplate,
+        draft: state.draft,
       ),
     );
     try {
       final savedTemplateId = templateId == null
           ? await _createWorkout(input)
           : await _reviseWorkout(templateId!, input);
+      await _draftStore.clear(_draftId);
       emit(
         WorkoutEditorState(
           status: WorkoutEditorStatus.saved,
@@ -109,6 +127,7 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
           status: WorkoutEditorStatus.ready,
           exercises: state.exercises,
           originalTemplate: state.originalTemplate,
+          draft: state.draft,
           errorMessage: error.message,
         ),
       );
@@ -118,6 +137,7 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
           status: WorkoutEditorStatus.ready,
           exercises: state.exercises,
           originalTemplate: state.originalTemplate,
+          draft: state.draft,
           errorMessage:
               'No hemos podido guardar la sesión. Inténtalo de nuevo.',
         ),

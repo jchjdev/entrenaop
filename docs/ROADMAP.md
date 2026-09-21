@@ -103,6 +103,9 @@ con descanso, carga y RIR opcionales. El guardado es privado y atómico en
 PostgreSQL. El catálogo ya permite buscar, separar contenido de EntrenaOP y
 ejercicios propios, y crear estos últimos como recursos privados con
 descripción y vídeo HTTPS opcional.
+El editor conserva además un borrador automático local por sesión. Puede
+recuperarse después de abandonar o reiniciar la aplicación y se limpia tras un
+guardado correcto, evitando escrituras continuas en el backend.
 
 La segunda iteración ya permite variar cada serie, copiar la primera al resto,
 añadir o retirar series, duplicar una sesión completa y archivarla sin perder

@@ -205,6 +205,12 @@ identidad
   e `is_public = false`; el cliente solo proporciona contenido descriptivo. El
   catálogo consulta contenido público y ejercicios propios, dejando que RLS
   descarte cualquier otro registro privado.
+- `WorkoutEditorDraftStore` persiste localmente una instantánea completa del
+  editor con espera corta entre cambios. La clave `new` separa una sesión aún
+  no creada y cada plantilla existente usa su propio identificador. Guardar la
+  sesión elimina el borrador; un dato local corrupto también se descarta sin
+  impedir abrir el creador. Esta primera versión no sincroniza borradores entre
+  dispositivos ni escribe en Supabase en cada pulsación.
 - El borrador personal contiene de uno a diez bloques. Pueden ser
   convencionales, superseries, circuitos, intervalos de trabajo, Tabata, EMOM o
   AMRAP. Los formatos gobernados por rondas exigen una serie por ejercicio y

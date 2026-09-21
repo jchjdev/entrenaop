@@ -4,6 +4,7 @@ import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_use
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
@@ -15,9 +16,15 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('carga una sesión existente y guarda una revisión', () async {
     final workoutRepository = _WorkoutRepository();
+    final draftStore = _DraftStore()
+      ..draft = WorkoutEditorDraftSnapshot(
+        input: _input,
+        savedAt: DateTime(2026, 9, 21),
+      );
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
       createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+      draftStore: draftStore,
       createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
       reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
@@ -35,6 +42,7 @@ void main() {
     expect(cubit.state.status, WorkoutEditorStatus.saved);
     expect(cubit.state.createdTemplateId, 'template-v2');
     expect(workoutRepository.revisedTemplateId, 'template-v1');
+    expect(draftStore.draft, isNull);
   });
 
   test('añade un ejercicio propio al catálogo del editor', () async {
@@ -43,6 +51,7 @@ void main() {
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(exerciseRepository),
       createExercise: CreateExerciseUseCase(exerciseRepository),
+      draftStore: _DraftStore(),
       createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
       reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
@@ -76,6 +85,7 @@ void main() {
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
       createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+      draftStore: _DraftStore(),
       createWorkout: CreatePersonalWorkoutUseCase(repository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
       reviseWorkout: RevisePersonalWorkoutUseCase(repository),
@@ -159,6 +169,7 @@ void main() {
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
       createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+      draftStore: _DraftStore(),
       createWorkout: CreatePersonalWorkoutUseCase(repository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
       reviseWorkout: RevisePersonalWorkoutUseCase(repository),
@@ -218,6 +229,7 @@ void main() {
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(exerciseRepository),
       createExercise: CreateExerciseUseCase(exerciseRepository),
+      draftStore: _DraftStore(),
       createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
       reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
@@ -287,6 +299,80 @@ void main() {
     expect(find.text('Press francés'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('recupera y vuelve a guardar automáticamente un borrador', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final exerciseRepository = _ExerciseRepository();
+    final workoutRepository = _WorkoutRepository();
+    final draftStore = _DraftStore()
+      ..draft = WorkoutEditorDraftSnapshot(
+        savedAt: DateTime(2026, 9, 21, 20, 30),
+        input: const CreatePersonalWorkoutInput(
+          name: 'Borrador recuperado',
+          estimatedDurationMinutes: 35,
+          blocks: [
+            WorkoutBlockDraft(
+              name: 'Principal',
+              exercises: [
+                WorkoutExerciseDraft(
+                  exerciseId: 'exercise-1',
+                  sets: [
+                    WorkoutSetDraft(
+                      targetType: WorkoutTargetType.repetitions,
+                      targetValue: 8,
+                      restAfterSeconds: 90,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(exerciseRepository),
+      createExercise: CreateExerciseUseCase(exerciseRepository),
+      draftStore: draftStore,
+      createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Borrador encontrado'), findsOneWidget);
+    await tester.tap(find.text('Recuperar'));
+    await tester.pumpAndSettle();
+
+    final nameField = find.byKey(const ValueKey('workout-name'));
+    expect(
+      tester.widget<TextFormField>(nameField).controller?.text,
+      'Borrador recuperado',
+    );
+
+    await tester.enterText(nameField, 'Borrador actualizado');
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+
+    expect(draftStore.draft?.input.name, 'Borrador actualizado');
+    expect(tester.takeException(), isNull);
+  });
 }
 
 const _input = CreatePersonalWorkoutInput(
@@ -344,6 +430,22 @@ class _ExerciseRepository implements ExerciseRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _DraftStore implements WorkoutEditorDraftStore {
+  WorkoutEditorDraftSnapshot? draft;
+
+  @override
+  Future<void> clear(String draftId) async => draft = null;
+
+  @override
+  Future<WorkoutEditorDraftSnapshot?> read(String draftId) async => draft;
+
+  @override
+  Future<void> write(
+    String draftId,
+    WorkoutEditorDraftSnapshot snapshot,
+  ) async => draft = snapshot;
 }
 
 class _WorkoutRepository implements WorkoutRepository {

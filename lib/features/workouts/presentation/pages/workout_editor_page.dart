@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
@@ -13,20 +15,45 @@ class WorkoutEditorPage extends StatefulWidget {
   State<WorkoutEditorPage> createState() => _WorkoutEditorPageState();
 }
 
-class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
+class _WorkoutEditorPageState extends State<WorkoutEditorPage>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController(text: '30');
   final List<_BlockRowData> _blocks = [_BlockRowData(name: 'Principal')];
-  bool _didPopulateTemplate = false;
+  bool _didInitializeEditor = false;
+  bool _suspendAutosave = true;
+  bool _allowPop = false;
+  Timer? _autosaveTimer;
+  WorkoutEditorCubit? _editorCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _nameController.addListener(_scheduleAutosave);
+    _descriptionController.addListener(_scheduleAutosave);
+    _durationController.addListener(_scheduleAutosave);
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autosaveTimer?.cancel();
     _nameController.dispose();
     _descriptionController.dispose();
     _durationController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      unawaited(_flushDraft());
+    }
   }
 
   @override
@@ -36,12 +63,14 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           previous.status != current.status ||
           previous.errorMessage != current.errorMessage,
       listener: (context, state) {
-        if (state.status == WorkoutEditorStatus.ready &&
-            state.originalTemplate != null &&
-            !_didPopulateTemplate) {
-          _populateTemplate(state.originalTemplate!, state.exercises);
-        } else if (state.status == WorkoutEditorStatus.saved) {
-          context.pop(state.createdTemplateId);
+        if (state.status == WorkoutEditorStatus.saved) {
+          _autosaveTimer?.cancel();
+          setState(() => _allowPop = true);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).pop(state.createdTemplateId);
+            }
+          });
         } else if (state.errorMessage case final message?) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -49,47 +78,210 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         }
       },
       builder: (context, state) {
+        _editorCubit = context.read<WorkoutEditorCubit>();
+        _ensureEditorInitialized(context, state);
         final saving = state.status == WorkoutEditorStatus.saving;
-        return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            leading: IconButton(
-              tooltip: 'Volver',
-              onPressed: saving ? null : context.pop,
-              icon: const Icon(Icons.close_rounded),
-            ),
-            title: Text(
-              state.originalTemplate == null ? 'Nueva sesión' : 'Editar sesión',
-            ),
-            actions: [
-              TextButton(
-                onPressed: saving ? null : () => _save(context),
-                child: saving
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Guardar'),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          body: switch (state.status) {
-            WorkoutEditorStatus.initial || WorkoutEditorStatus.loading =>
-              const Center(child: CircularProgressIndicator()),
-            WorkoutEditorStatus.failure when state.exercises.isEmpty =>
-              _LoadFailure(onRetry: context.read<WorkoutEditorCubit>().load),
-            _ => _buildForm(
-              context,
-              state.exercises,
-              saving,
-              state.originalTemplate,
-            ),
+        return PopScope(
+          canPop: _allowPop,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop && !saving) unawaited(_closeEditor(result));
           },
+          child: Scaffold(
+            backgroundColor: const Color(0xFF0A0A0A),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              leading: IconButton(
+                tooltip: 'Volver',
+                onPressed: saving ? null : _closeEditor,
+                icon: const Icon(Icons.close_rounded),
+              ),
+              title: Text(
+                state.originalTemplate == null
+                    ? 'Nueva sesión'
+                    : 'Editar sesión',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving ? null : () => _save(context),
+                  child: saving
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Guardar'),
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
+            body: switch (state.status) {
+              WorkoutEditorStatus.initial || WorkoutEditorStatus.loading =>
+                const Center(child: CircularProgressIndicator()),
+              WorkoutEditorStatus.failure when state.exercises.isEmpty =>
+                _LoadFailure(onRetry: context.read<WorkoutEditorCubit>().load),
+              _ => _buildForm(
+                context,
+                state.exercises,
+                saving,
+                state.originalTemplate,
+              ),
+            },
+          ),
         );
       },
     );
+  }
+
+  void _ensureEditorInitialized(
+    BuildContext context,
+    WorkoutEditorState state,
+  ) {
+    if (_didInitializeEditor || state.status != WorkoutEditorStatus.ready) {
+      return;
+    }
+    _didInitializeEditor = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_initializeEditor(context, state));
+    });
+  }
+
+  Future<void> _initializeEditor(
+    BuildContext context,
+    WorkoutEditorState state,
+  ) async {
+    _suspendAutosave = true;
+    final draft = state.draft;
+    var restoreDraft = false;
+    if (draft != null) {
+      restoreDraft =
+          await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Borrador encontrado'),
+              content: Text(
+                'Guardamos cambios sin finalizar el ${_draftDateText(draft.savedAt)}. ¿Quieres continuar donde lo dejaste?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Descartar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Recuperar'),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+    }
+    if (!mounted) return;
+    if (restoreDraft && draft != null) {
+      _populateDraft(draft.input, state.exercises);
+    } else {
+      if (draft != null) await _editorCubit?.discardDraft();
+      if (state.originalTemplate case final template?) {
+        _populateTemplate(template, state.exercises);
+      }
+    }
+    _draftDirty = false;
+    _suspendAutosave = false;
+  }
+
+  void _populateDraft(
+    CreatePersonalWorkoutInput input,
+    List<ExerciseEntity> catalog,
+  ) {
+    final exercisesById = {
+      for (final exercise in catalog) exercise.id: exercise,
+    };
+    final blocks = input.blocks.map((block) {
+      final rows = block.exercises
+          .map((exerciseDraft) {
+            final exercise = exercisesById[exerciseDraft.exerciseId];
+            if (exercise == null || exerciseDraft.sets.isEmpty) return null;
+            return _ExerciseRowData(
+              exercise: exercise,
+              targetType: exerciseDraft.sets.first.targetType,
+              sets: exerciseDraft.sets
+                  .map(
+                    (set) => _SetRowData(
+                      targetValue: set.targetValue,
+                      restSeconds: set.restAfterSeconds,
+                      loadKg: set.targetLoadKg,
+                      rir: set.targetRir,
+                    ),
+                  )
+                  .toList(),
+            );
+          })
+          .whereType<_ExerciseRowData>()
+          .toList();
+      return _BlockRowData(
+        name: block.name,
+        format: block.format,
+        rounds: block.rounds,
+        restAfterSeconds: block.restAfterSeconds,
+        timeCapSeconds: block.timeCapSeconds ?? 600,
+        rows: block.format == WorkoutBlockFormat.tabata
+            ? _collapseTabataPattern(rows)
+            : rows,
+      );
+    }).toList();
+    _nameController.text = input.name;
+    _descriptionController.text = input.description ?? '';
+    _durationController.text = input.estimatedDurationMinutes?.toString() ?? '';
+    setState(() {
+      _blocks
+        ..clear()
+        ..addAll(blocks.isEmpty ? [_BlockRowData(name: 'Principal')] : blocks);
+    });
+  }
+
+  bool _draftDirty = false;
+
+  void _scheduleAutosave() {
+    if (_suspendAutosave || !_didInitializeEditor || _allowPop) return;
+    _draftDirty = true;
+    _autosaveTimer?.cancel();
+    _autosaveTimer = Timer(
+      const Duration(milliseconds: 700),
+      () => unawaited(_flushDraft()),
+    );
+  }
+
+  Future<void> _flushDraft() async {
+    _autosaveTimer?.cancel();
+    if (!_draftDirty || _suspendAutosave || _allowPop) return;
+    final cubit = _editorCubit;
+    if (cubit == null) return;
+    await cubit.persistDraft(_currentDraftInput());
+    _draftDirty = false;
+  }
+
+  CreatePersonalWorkoutInput _currentDraftInput() => CreatePersonalWorkoutInput(
+    name: _nameController.text,
+    description: _descriptionController.text.trim().isEmpty
+        ? null
+        : _descriptionController.text,
+    estimatedDurationMinutes: int.tryParse(_durationController.text),
+    blocks: _blocks.map((block) => block.toDraft()).toList(),
+  );
+
+  Future<void> _closeEditor([Object? result]) async {
+    await _flushDraft();
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).pop(result);
+    });
+  }
+
+  String _draftDateText(DateTime value) {
+    final local = value.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${local.day}/${local.month} a las $hour:$minute';
   }
 
   Widget _buildForm(
@@ -122,6 +314,23 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                         : 'Guardaremos una versión nueva. Tus entrenamientos anteriores seguirán vinculados a la versión que realizaste.',
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
+                  const SizedBox(height: 7),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.cloud_done_outlined,
+                        size: 16,
+                        color: Colors.white38,
+                      ),
+                      SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Borrador automático en este dispositivo',
+                          style: TextStyle(color: Colors.white38, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
                   if (originalTemplate != null) ...[
                     const SizedBox(height: 12),
                     Container(
@@ -141,6 +350,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   ],
                   const SizedBox(height: 24),
                   TextFormField(
+                    key: const ValueKey('workout-name'),
                     controller: _nameController,
                     enabled: !saving,
                     textCapitalization: TextCapitalization.sentences,
@@ -288,7 +498,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     validator: (value) => value == null || value.trim().isEmpty
                         ? 'Ponle un nombre al bloque.'
                         : null,
-                    onChanged: (value) => block.name = value,
+                    onChanged: (value) {
+                      block.name = value;
+                      _scheduleAutosave();
+                    },
                   ),
                 ),
                 PopupMenuButton<int>(
@@ -455,6 +668,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                             final seconds = int.tryParse(value);
                             if (seconds != null) {
                               block.restAfterSeconds = seconds;
+                              _scheduleAutosave();
                             }
                           },
                         ),
@@ -510,6 +724,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     final minutes = int.tryParse(value);
                     if (minutes != null && minutes >= 1 && minutes <= 60) {
                       block.timeCapSeconds = minutes * 60;
+                      _scheduleAutosave();
                     }
                   },
                 ),
@@ -572,7 +787,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                       targetIndex,
                     ),
                     onRemove: () =>
-                        setState(() => block.rows.removeAt(exerciseIndex)),
+                        _updateEditor(() => block.rows.removeAt(exerciseIndex)),
                     onMoveUp: exerciseIndex == 0
                         ? null
                         : () => _moveExercise(
@@ -587,6 +802,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                             exerciseIndex,
                             exerciseIndex + 1,
                           ),
+                    onChanged: _scheduleAutosave,
                   ),
                 ),
               ),
@@ -639,7 +855,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         rows: visibleRows,
       );
     }).toList();
-    _didPopulateTemplate = true;
     _nameController.text = template.name;
     _descriptionController.text = template.description ?? '';
     _durationController.text =
@@ -667,13 +882,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       _blocks.fold(0, (count, block) => count + block.rows.length);
 
   void _addBlock() {
-    setState(
+    _updateEditor(
       () => _blocks.add(_BlockRowData(name: 'Bloque ${_blocks.length + 1}')),
     );
   }
 
   void _moveBlock(int from, int to) {
-    setState(() {
+    _updateEditor(() {
       final block = _blocks.removeAt(from);
       _blocks.insert(to, block);
     });
@@ -706,7 +921,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       );
       return;
     }
-    setState(() {
+    _updateEditor(() {
       final block = _blocks[index];
       block.format = format;
       if (format == WorkoutBlockFormat.straightSets) {
@@ -765,7 +980,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   void _changeBlockRounds(int index, int rounds) {
-    setState(() {
+    _updateEditor(() {
       final block = _blocks[index]..rounds = rounds;
       _syncBlockRounds(block);
     });
@@ -805,11 +1020,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       );
       if (confirmed != true || !mounted) return;
     }
-    setState(() => _blocks.removeAt(index));
+    _updateEditor(() => _blocks.removeAt(index));
   }
 
   void _moveExercise(int blockIndex, int from, int to) {
-    setState(() {
+    _updateEditor(() {
       final rows = _blocks[blockIndex].rows;
       final row = rows.removeAt(from);
       rows.insert(to, row);
@@ -817,7 +1032,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   void _moveExerciseToBlock(int fromBlock, int exerciseIndex, int toBlock) {
-    setState(() {
+    _updateEditor(() {
       final row = _blocks[fromBlock].rows.removeAt(exerciseIndex);
       final target = _blocks[toBlock];
       target.rows.add(row);
@@ -839,7 +1054,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           _ExercisePicker(exercises: catalog, editorCubit: editorCubit),
     );
     if (selected != null && mounted) {
-      setState(() {
+      _updateEditor(() {
         final block = _blocks[blockIndex];
         final row = _ExerciseRowData.fromExercise(selected);
         block.rows.add(row);
@@ -883,15 +1098,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       );
       return;
     }
-    final input = CreatePersonalWorkoutInput(
-      name: _nameController.text,
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text,
-      estimatedDurationMinutes: int.tryParse(_durationController.text),
-      blocks: _blocks.map((block) => block.toDraft()).toList(),
-    );
-    context.read<WorkoutEditorCubit>().save(input);
+    context.read<WorkoutEditorCubit>().save(_currentDraftInput());
+  }
+
+  void _updateEditor(VoidCallback update) {
+    setState(update);
+    _scheduleAutosave();
   }
 }
 
@@ -1243,6 +1455,7 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.onRemove,
     required this.onMoveUp,
     required this.onMoveDown,
+    required this.onChanged,
   });
 
   final int index;
@@ -1259,6 +1472,7 @@ class _ExerciseEditorCard extends StatefulWidget {
   final VoidCallback onRemove;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
+  final VoidCallback onChanged;
 
   @override
   State<_ExerciseEditorCard> createState() => _ExerciseEditorCardState();
@@ -1361,18 +1575,21 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                 ),
               ],
               onChanged: widget.enabled && !widget.fixedTarget
-                  ? (value) => setState(() {
-                      if (value == null) return;
-                      data.targetType = value;
-                      final defaultTarget = switch (value) {
-                        WorkoutTargetType.repetitions => 10.0,
-                        WorkoutTargetType.duration => 30.0,
-                        WorkoutTargetType.distance => 1000.0,
-                      };
-                      for (final set in data.sets) {
-                        set.targetValue = defaultTarget;
-                      }
-                    })
+                  ? (value) {
+                      setState(() {
+                        if (value == null) return;
+                        data.targetType = value;
+                        final defaultTarget = switch (value) {
+                          WorkoutTargetType.repetitions => 10.0,
+                          WorkoutTargetType.duration => 30.0,
+                          WorkoutTargetType.distance => 1000.0,
+                        };
+                        for (final set in data.sets) {
+                          set.targetValue = defaultTarget;
+                        }
+                      });
+                      widget.onChanged();
+                    }
                   : null,
             ),
             if (widget.stationTransitionLabel case final label?) ...[
@@ -1389,6 +1606,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   for (final set in data.sets) {
                     set.restSeconds = value.round();
                   }
+                  widget.onChanged();
                 },
               ),
             ],
@@ -1406,13 +1624,16 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                     TextButton.icon(
                       onPressed: !widget.enabled
                           ? null
-                          : () => setState(() {
-                              final first = data.sets.first;
-                              data.sets = List.generate(
-                                data.sets.length,
-                                (_) => first.copy(),
-                              );
-                            }),
+                          : () {
+                              setState(() {
+                                final first = data.sets.first;
+                                data.sets = List.generate(
+                                  data.sets.length,
+                                  (_) => first.copy(),
+                                );
+                              });
+                              widget.onChanged();
+                            },
                       icon: const Icon(Icons.copy_all_rounded, size: 17),
                       label: const Text('Igualar'),
                     ),
@@ -1421,16 +1642,22 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                       tooltip: 'Quitar última serie',
                       onPressed: !widget.enabled || data.sets.length <= 1
                           ? null
-                          : () => setState(data.sets.removeLast),
+                          : () {
+                              setState(data.sets.removeLast);
+                              widget.onChanged();
+                            },
                       icon: const Icon(Icons.remove_circle_outline_rounded),
                     ),
                     IconButton(
                       tooltip: 'Añadir serie',
                       onPressed: !widget.enabled || data.sets.length >= 20
                           ? null
-                          : () => setState(
-                              () => data.sets.add(data.sets.last.copy()),
-                            ),
+                          : () {
+                              setState(
+                                () => data.sets.add(data.sets.last.copy()),
+                              );
+                              widget.onChanged();
+                            },
                       icon: const Icon(Icons.add_circle_outline_rounded),
                     ),
                   ],
@@ -1451,6 +1678,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   targetEnabled: widget.enabled && !widget.fixedTarget,
                   showRest: !widget.fixedSetCount,
                   itemLabel: widget.setItemLabel,
+                  onChanged: widget.onChanged,
                 ),
               ),
             ),
@@ -1471,6 +1699,7 @@ class _SetEditor extends StatelessWidget {
     required this.targetEnabled,
     required this.showRest,
     required this.itemLabel,
+    required this.onChanged,
   });
 
   final int index;
@@ -1480,6 +1709,7 @@ class _SetEditor extends StatelessWidget {
   final bool targetEnabled;
   final bool showRest;
   final String itemLabel;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -1521,7 +1751,10 @@ class _SetEditor extends StatelessWidget {
                 integer: targetType != WorkoutTargetType.distance,
                 min: 0.01,
                 max: 100000,
-                onChanged: (value) => data.targetValue = value,
+                onChanged: (value) {
+                  data.targetValue = value;
+                  onChanged();
+                },
               ),
               _NumberField(
                 label: 'Carga',
@@ -1533,8 +1766,14 @@ class _SetEditor extends StatelessWidget {
                 optional: true,
                 min: 0,
                 max: 1000,
-                onChanged: (value) => data.loadKg = value,
-                onCleared: () => data.loadKg = null,
+                onChanged: (value) {
+                  data.loadKg = value;
+                  onChanged();
+                },
+                onCleared: () {
+                  data.loadKg = null;
+                  onChanged();
+                },
               ),
               _NumberField(
                 label: 'RIR',
@@ -1544,8 +1783,14 @@ class _SetEditor extends StatelessWidget {
                 optional: true,
                 min: 0,
                 max: 10,
-                onChanged: (value) => data.rir = value,
-                onCleared: () => data.rir = null,
+                onChanged: (value) {
+                  data.rir = value;
+                  onChanged();
+                },
+                onCleared: () {
+                  data.rir = null;
+                  onChanged();
+                },
               ),
               if (showRest)
                 _NumberField(
@@ -1556,7 +1801,10 @@ class _SetEditor extends StatelessWidget {
                   integer: true,
                   min: 0,
                   max: 3600,
-                  onChanged: (value) => data.restSeconds = value.round(),
+                  onChanged: (value) {
+                    data.restSeconds = value.round();
+                    onChanged();
+                  },
                 ),
             ],
           ),

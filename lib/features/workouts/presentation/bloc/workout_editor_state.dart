@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:equatable/equatable.dart';
 
 enum WorkoutEditorStatus { initial, loading, ready, saving, saved, failure }
@@ -9,6 +10,7 @@ class WorkoutEditorState extends Equatable {
     this.status = WorkoutEditorStatus.initial,
     this.exercises = const [],
     this.originalTemplate,
+    this.draft,
     this.createdTemplateId,
     this.errorMessage,
   });
@@ -16,6 +18,7 @@ class WorkoutEditorState extends Equatable {
   final WorkoutEditorStatus status;
   final List<ExerciseEntity> exercises;
   final WorkoutTemplate? originalTemplate;
+  final WorkoutEditorDraftSnapshot? draft;
   final String? createdTemplateId;
   final String? errorMessage;
 
@@ -24,6 +27,7 @@ class WorkoutEditorState extends Equatable {
     status,
     exercises,
     originalTemplate,
+    draft,
     createdTemplateId,
     errorMessage,
   ];
