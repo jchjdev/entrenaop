@@ -94,6 +94,10 @@ por defecto.
 Una superserie enlaza exactamente dos ejercicios; un circuito recorre dos o
 más. Ambos permiten elegir rondas y descanso entre vueltas y se presentan en
 ese orden durante la sesión guiada.
+Los intervalos repiten un único ejercicio y permiten ajustar número de
+repeticiones y recuperación. Tabata se ofrece como protocolo cerrado de ocho
+rondas de 20 segundos de trabajo y 10 de recuperación, no como una simple
+etiqueta. EMOM y AMRAP necesitarán motores de reloj y registro específicos.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:

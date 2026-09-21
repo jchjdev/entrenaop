@@ -218,7 +218,9 @@ class WorkoutExecutionSet extends Equatable {
 
   bool get isGrouped =>
       blockFormat == WorkoutBlockFormat.superset ||
-      blockFormat == WorkoutBlockFormat.circuit;
+      blockFormat == WorkoutBlockFormat.circuit ||
+      blockFormat == WorkoutBlockFormat.intervals ||
+      blockFormat == WorkoutBlockFormat.tabata;
 
   int get roundNumber => setOrder + 1;
 

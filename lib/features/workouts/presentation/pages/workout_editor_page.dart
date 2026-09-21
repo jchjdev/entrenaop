@@ -337,97 +337,125 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             ),
             const SizedBox(height: 4),
             DropdownButtonFormField<WorkoutBlockFormat>(
+              key: ValueKey('format-${block.identity}-${block.format}'),
               isExpanded: true,
               initialValue: block.format,
               decoration: const InputDecoration(
                 labelText: 'Formato del bloque',
                 prefixIcon: Icon(Icons.account_tree_outlined),
               ),
-              items: const [
-                DropdownMenuItem(
+              items: [
+                const DropdownMenuItem(
                   value: WorkoutBlockFormat.straightSets,
                   child: Text('Series convencionales'),
                 ),
-                DropdownMenuItem(
+                const DropdownMenuItem(
                   value: WorkoutBlockFormat.superset,
                   child: Text('Superserie'),
                 ),
-                DropdownMenuItem(
+                const DropdownMenuItem(
                   value: WorkoutBlockFormat.circuit,
                   child: Text('Circuito'),
+                ),
+                DropdownMenuItem(
+                  value: WorkoutBlockFormat.intervals,
+                  enabled: block.rows.length <= 1,
+                  child: const Text('Intervalos'),
+                ),
+                DropdownMenuItem(
+                  value: WorkoutBlockFormat.tabata,
+                  enabled: block.rows.length <= 1,
+                  child: const Text('Tabata · 8 × 20/10'),
                 ),
               ],
               onChanged: saving
                   ? null
                   : (format) {
                       if (format != null) {
-                        _changeBlockFormat(blockIndex, format);
+                        _changeBlockFormat(context, blockIndex, format);
                       }
                     },
             ),
-            if (block.isGrouped) ...[
+            if (block.isRoundBased) ...[
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SizedBox(
-                    width: 180,
-                    child: TextFormField(
-                      key: ValueKey('rounds-${block.identity}-${block.rounds}'),
-                      initialValue: block.rounds.toString(),
-                      enabled: !saving,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Rondas',
-                        prefixIcon: Icon(Icons.repeat_rounded),
+              if (block.format == WorkoutBlockFormat.tabata)
+                const _TabataSummary()
+              else
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: 180,
+                      child: TextFormField(
+                        key: ValueKey(
+                          'rounds-${block.identity}-${block.rounds}',
+                        ),
+                        initialValue: block.rounds.toString(),
+                        enabled: !saving,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText:
+                              block.format == WorkoutBlockFormat.intervals
+                              ? 'Intervalos'
+                              : 'Rondas',
+                          prefixIcon: const Icon(Icons.repeat_rounded),
+                        ),
+                        validator: (value) => _integerValidator(
+                          value,
+                          min: 1,
+                          max: 20,
+                          label: 'cantidad de rondas',
+                        ),
+                        onChanged: (value) {
+                          final rounds = int.tryParse(value);
+                          if (rounds != null && rounds >= 1 && rounds <= 20) {
+                            _changeBlockRounds(blockIndex, rounds);
+                          }
+                        },
                       ),
-                      validator: (value) => _integerValidator(
-                        value,
-                        min: 1,
-                        max: 20,
-                        label: 'cantidad de rondas',
-                      ),
-                      onChanged: (value) {
-                        final rounds = int.tryParse(value);
-                        if (rounds != null && rounds >= 1 && rounds <= 20) {
-                          _changeBlockRounds(blockIndex, rounds);
-                        }
-                      },
                     ),
-                  ),
-                  SizedBox(
-                    width: 220,
-                    child: TextFormField(
-                      initialValue: block.restAfterSeconds.toString(),
-                      enabled: !saving,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Descanso entre rondas',
-                        suffixText: 's',
-                        prefixIcon: Icon(Icons.timer_outlined),
+                    SizedBox(
+                      width: 220,
+                      child: TextFormField(
+                        key: ValueKey('rest-${block.identity}-${block.format}'),
+                        initialValue: block.restAfterSeconds.toString(),
+                        enabled: !saving,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText:
+                              block.format == WorkoutBlockFormat.intervals
+                              ? 'Recuperación'
+                              : 'Descanso entre rondas',
+                          suffixText: 's',
+                          prefixIcon: const Icon(Icons.timer_outlined),
+                        ),
+                        validator: (value) => _integerValidator(
+                          value,
+                          min: 0,
+                          max: 3600,
+                          label: 'descanso',
+                        ),
+                        onChanged: (value) {
+                          final seconds = int.tryParse(value);
+                          if (seconds != null) block.restAfterSeconds = seconds;
+                        },
                       ),
-                      validator: (value) => _integerValidator(
-                        value,
-                        min: 0,
-                        max: 3600,
-                        label: 'descanso',
-                      ),
-                      onChanged: (value) {
-                        final seconds = int.tryParse(value);
-                        if (seconds != null) block.restAfterSeconds = seconds;
-                      },
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               const SizedBox(height: 8),
-              Text(
-                block.format == WorkoutBlockFormat.superset
-                    ? 'Alternaremos exactamente dos ejercicios en cada ronda.'
-                    : 'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
-                style: const TextStyle(color: Colors.white54, height: 1.35),
-              ),
+              Text(switch (block.format) {
+                WorkoutBlockFormat.superset =>
+                  'Alternaremos exactamente dos ejercicios en cada ronda.',
+                WorkoutBlockFormat.circuit =>
+                  'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
+                WorkoutBlockFormat.intervals =>
+                  'Repetiremos un ejercicio con una recuperación común entre intervalos.',
+                WorkoutBlockFormat.tabata =>
+                  'Formato cerrado: un ejercicio, 8 intervalos de 20 segundos y 10 de recuperación.',
+                _ => '',
+              }, style: const TextStyle(color: Colors.white54, height: 1.35)),
             ],
             const SizedBox(height: 12),
             if (block.rows.isEmpty)
@@ -446,12 +474,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     index: exerciseIndex,
                     data: block.rows[exerciseIndex],
                     enabled: !saving,
-                    fixedSetCount: block.isGrouped,
+                    fixedSetCount: block.isRoundBased,
+                    fixedTarget: block.format == WorkoutBlockFormat.tabata,
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
                         if (index != blockIndex &&
-                            (target.format != WorkoutBlockFormat.superset ||
-                                target.rows.length < 2) &&
+                            target.rows.length < target.maxExercises &&
                             !target.rows.any(
                               (row) =>
                                   row.exercise.id ==
@@ -487,10 +515,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               onPressed:
                   catalog.isEmpty ||
                       saving ||
-                      block.rows.length >=
-                          (block.format == WorkoutBlockFormat.superset
-                              ? 2
-                              : 20) ||
+                      block.rows.length >= block.maxExercises ||
                       _exerciseCount >= 40
                   ? null
                   : () => _chooseExercise(context, catalog, blockIndex),
@@ -570,19 +595,47 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     });
   }
 
-  void _changeBlockFormat(int index, WorkoutBlockFormat format) {
+  void _changeBlockFormat(
+    BuildContext context,
+    int index,
+    WorkoutBlockFormat format,
+  ) {
+    final acceptsOneExercise =
+        format == WorkoutBlockFormat.intervals ||
+        format == WorkoutBlockFormat.tabata;
+    if (acceptsOneExercise && _blocks[index].rows.length > 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Deja un solo ejercicio en el bloque antes de cambiar a este formato.',
+          ),
+        ),
+      );
+      return;
+    }
     setState(() {
       final block = _blocks[index];
       block.format = format;
       if (format == WorkoutBlockFormat.straightSets) {
         block.rounds = 1;
         block.restAfterSeconds = 0;
+      } else if (format == WorkoutBlockFormat.tabata) {
+        block.rounds = 8;
+        block.restAfterSeconds = 10;
+        for (final row in block.rows) {
+          row.targetType = WorkoutTargetType.duration;
+          for (final set in row.sets) {
+            set.targetValue = 20;
+            set.restSeconds = 0;
+          }
+        }
+        _syncBlockRounds(block);
       } else {
         block.rounds = block.rows.isEmpty
-            ? 3
+            ? (format == WorkoutBlockFormat.intervals ? 6 : 3)
             : block.rows.first.sets.length.clamp(1, 20);
         block.restAfterSeconds = block.restAfterSeconds == 0
-            ? 90
+            ? (format == WorkoutBlockFormat.intervals ? 60 : 90)
             : block.restAfterSeconds;
         _syncBlockRounds(block);
       }
@@ -645,7 +698,14 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     setState(() {
       final row = _blocks[fromBlock].rows.removeAt(exerciseIndex);
       _blocks[toBlock].rows.add(row);
-      if (_blocks[toBlock].isGrouped) {
+      if (_blocks[toBlock].isRoundBased) {
+        if (_blocks[toBlock].format == WorkoutBlockFormat.tabata) {
+          row.targetType = WorkoutTargetType.duration;
+          for (final set in row.sets) {
+            set.targetValue = 20;
+            set.restSeconds = 0;
+          }
+        }
         _syncBlockRounds(_blocks[toBlock]);
       }
     });
@@ -673,12 +733,20 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         () => _blocks[blockIndex].rows.add(
           _ExerciseRowData.fromExercise(
             selected,
-            setCount: _blocks[blockIndex].isGrouped
+            setCount: _blocks[blockIndex].isRoundBased
                 ? _blocks[blockIndex].rounds
                 : 3,
           ),
         ),
       );
+      if (_blocks[blockIndex].format == WorkoutBlockFormat.tabata) {
+        final row = _blocks[blockIndex].rows.single;
+        row.targetType = WorkoutTargetType.duration;
+        for (final set in row.sets) {
+          set.targetValue = 20;
+          set.restSeconds = 0;
+        }
+      }
     }
   }
 
@@ -705,6 +773,34 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 }
 
+class _TabataSummary extends StatelessWidget {
+  const _TabataSummary();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0x1FFF8A50),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0x44FF8A50)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.timer_rounded, color: Color(0xFFFF8A50)),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '8 rondas · 20 s de trabajo · 10 s de recuperación',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BlockRowData {
   _BlockRowData({
     required this.name,
@@ -721,9 +817,18 @@ class _BlockRowData {
   int restAfterSeconds;
   final List<_ExerciseRowData> rows;
 
-  bool get isGrouped =>
+  bool get isRoundBased =>
       format == WorkoutBlockFormat.superset ||
-      format == WorkoutBlockFormat.circuit;
+      format == WorkoutBlockFormat.circuit ||
+      format == WorkoutBlockFormat.intervals ||
+      format == WorkoutBlockFormat.tabata;
+
+  int get maxExercises => format == WorkoutBlockFormat.superset
+      ? 2
+      : (format == WorkoutBlockFormat.intervals ||
+            format == WorkoutBlockFormat.tabata)
+      ? 1
+      : 20;
 
   WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
     name: name,
@@ -808,6 +913,7 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.data,
     required this.enabled,
     required this.fixedSetCount,
+    required this.fixedTarget,
     required this.moveTargets,
     required this.onMoveToBlock,
     required this.onRemove,
@@ -819,6 +925,7 @@ class _ExerciseEditorCard extends StatefulWidget {
   final _ExerciseRowData data;
   final bool enabled;
   final bool fixedSetCount;
+  final bool fixedTarget;
   final List<({int index, String name})> moveTargets;
   final ValueChanged<int> onMoveToBlock;
   final VoidCallback onRemove;
@@ -925,7 +1032,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   child: Text('Distancia'),
                 ),
               ],
-              onChanged: widget.enabled
+              onChanged: widget.enabled && !widget.fixedTarget
                   ? (value) => setState(() {
                       if (value == null) return;
                       data.targetType = value;
@@ -998,6 +1105,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   data: data.sets[index],
                   targetType: data.targetType,
                   enabled: widget.enabled,
+                  targetEnabled: widget.enabled && !widget.fixedTarget,
                   showRest: !widget.fixedSetCount,
                 ),
               ),
@@ -1016,6 +1124,7 @@ class _SetEditor extends StatelessWidget {
     required this.data,
     required this.targetType,
     required this.enabled,
+    required this.targetEnabled,
     required this.showRest,
   });
 
@@ -1023,6 +1132,7 @@ class _SetEditor extends StatelessWidget {
   final _SetRowData data;
   final WorkoutTargetType targetType;
   final bool enabled;
+  final bool targetEnabled;
   final bool showRest;
 
   @override
@@ -1061,7 +1171,7 @@ class _SetEditor extends StatelessWidget {
                   WorkoutTargetType.duration => 's',
                   WorkoutTargetType.distance => 'm',
                 },
-                enabled: enabled,
+                enabled: targetEnabled,
                 integer: targetType != WorkoutTargetType.distance,
                 min: 0.01,
                 max: 100000,

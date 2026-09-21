@@ -91,7 +91,9 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
     }
     if (block.format != WorkoutBlockFormat.straightSets &&
         block.format != WorkoutBlockFormat.superset &&
-        block.format != WorkoutBlockFormat.circuit) {
+        block.format != WorkoutBlockFormat.circuit &&
+        block.format != WorkoutBlockFormat.intervals &&
+        block.format != WorkoutBlockFormat.tabata) {
       throw const FormatException(
         'Este formato de bloque todavía no está disponible.',
       );
@@ -111,6 +113,19 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         block.exercises.length < 2) {
       throw const FormatException(
         'Un circuito debe contener al menos dos ejercicios.',
+      );
+    }
+    if ((block.format == WorkoutBlockFormat.intervals ||
+            block.format == WorkoutBlockFormat.tabata) &&
+        block.exercises.length != 1) {
+      throw const FormatException(
+        'Los intervalos y Tabata utilizan exactamente un ejercicio.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.tabata &&
+        (block.rounds != 8 || block.restAfterSeconds != 10)) {
+      throw const FormatException(
+        'Tabata utiliza 8 rondas de 20 segundos y 10 de recuperación.',
       );
     }
     if (block.format == WorkoutBlockFormat.straightSets && block.rounds != 1) {
@@ -161,6 +176,13 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
                 (set.targetRir! < 0 || set.targetRir! > 10))) {
           throw const FormatException(
             'Revisa la carga y el RIR de las series.',
+          );
+        }
+        if (block.format == WorkoutBlockFormat.tabata &&
+            (set.targetType != WorkoutTargetType.duration ||
+                set.targetValue != 20)) {
+          throw const FormatException(
+            'Cada intervalo Tabata debe durar 20 segundos.',
           );
         }
       }

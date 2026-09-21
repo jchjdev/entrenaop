@@ -189,13 +189,15 @@ identidad
   `create_personal_workout_template(jsonb)`. La función valida de nuevo el
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
-- El borrador personal contiene de uno a diez bloques. En esta etapa pueden ser
-  convencionales, superseries o circuitos. Los dos formatos agrupados exigen
-  una serie por ejercicio y ronda; Supabase vuelve a validar esa simetría.
+- El borrador personal contiene de uno a diez bloques. Pueden ser
+  convencionales, superseries, circuitos, intervalos o Tabata. Los formatos
+  gobernados por rondas exigen una serie por ejercicio y ronda; Supabase vuelve
+  a validar esa simetría. Intervalos admite un solo ejercicio y Tabata fija el
+  protocolo canónico de ocho rondas, 20 segundos de trabajo y 10 de pausa.
 - `workout_execution_sets.block_format` conserva el formato ejecutado. El
-  cliente ordena superseries y circuitos por ronda y después por ejercicio. El
-  servidor copia el descanso del bloque solo a la última estación de cada
-  ronda, evitando pausas incorrectas entre ejercicios enlazados.
+  cliente ordena los bloques agrupados o temporizados por ronda y después por
+  ejercicio. El servidor copia el descanso del bloque solo a la última estación
+  de cada ronda, evitando pausas incorrectas entre ejercicios enlazados.
 - Duplicar una sesión copia atómicamente toda su jerarquía. Retirarla de la
   biblioteca significa archivarla, no borrar resultados históricos.
 - `workout_templates.family_id`, `version` y `previous_version_id` relacionan

@@ -1054,6 +1054,8 @@ String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
     switch (format) {
       WorkoutBlockFormat.superset => 'Superserie',
       WorkoutBlockFormat.circuit => 'Circuito',
+      WorkoutBlockFormat.intervals => 'Intervalo',
+      WorkoutBlockFormat.tabata => 'Tabata',
       _ => 'Serie',
     };
 

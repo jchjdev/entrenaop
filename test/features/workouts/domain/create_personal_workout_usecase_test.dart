@@ -101,7 +101,77 @@ void main() {
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
     expect(repository.created, isNull);
   });
+
+  test('acepta intervalos de un ejercicio con una serie por vuelta', () async {
+    final input = _timedInput(
+      format: WorkoutBlockFormat.intervals,
+      rounds: 4,
+      workSeconds: 45,
+      recoverySeconds: 30,
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
+
+  test('acepta el protocolo Tabata canónico', () async {
+    final input = _timedInput(
+      format: WorkoutBlockFormat.tabata,
+      rounds: 8,
+      workSeconds: 20,
+      recoverySeconds: 10,
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
+
+  test('rechaza llamar Tabata a un protocolo distinto de 20/10', () async {
+    final input = _timedInput(
+      format: WorkoutBlockFormat.tabata,
+      rounds: 8,
+      workSeconds: 30,
+      recoverySeconds: 10,
+    );
+
+    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
+    expect(repository.created, isNull);
+  });
 }
+
+CreatePersonalWorkoutInput _timedInput({
+  required WorkoutBlockFormat format,
+  required int rounds,
+  required int workSeconds,
+  required int recoverySeconds,
+}) => CreatePersonalWorkoutInput(
+  name: format == WorkoutBlockFormat.tabata
+      ? 'Tabata personal'
+      : 'Intervalos personales',
+  blocks: [
+    WorkoutBlockDraft(
+      name: 'Trabajo por tiempo',
+      format: format,
+      rounds: rounds,
+      restAfterSeconds: recoverySeconds,
+      exercises: [
+        WorkoutExerciseDraft(
+          exerciseId: 'exercise-1',
+          sets: List.generate(
+            rounds,
+            (_) => WorkoutSetDraft(
+              targetType: WorkoutTargetType.duration,
+              targetValue: workSeconds.toDouble(),
+              restAfterSeconds: 0,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+);
 
 CreatePersonalWorkoutInput _validInput() => const CreatePersonalWorkoutInput(
   name: 'Fuerza personal',

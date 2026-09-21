@@ -74,6 +74,17 @@ void main() {
     expect(find.text('Rondas'), findsOneWidget);
     expect(find.textContaining('exactamente dos ejercicios'), findsOneWidget);
 
+    await tester.tap(formatSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tabata · 8 × 20/10').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('8 rondas · 20 s de trabajo · 10 s de recuperación'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Formato cerrado'), findsOneWidget);
+
     final addBlock = find.byKey(const ValueKey('add-workout-block'));
     await tester.ensureVisible(addBlock);
     await tester.pumpAndSettle();

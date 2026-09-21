@@ -119,6 +119,12 @@ definen rondas y descanso entre rondas; la ejecución intercala los ejercicios
 de cada vuelta y descansa únicamente al finalizar la ronda. No son etiquetas
 visuales sobre una secuencia convencional.
 
+La segunda ampliación añade intervalos de un solo ejercicio y Tabata canónico
+8 × 20/10. Ambos reutilizan el temporizador, la pausa, la restauración y el
+historial del motor guiado. EMOM y AMRAP quedan para una iteración propia: el
+primero debe conservar el reloj global de cada minuto y el segundo registrar
+vueltas y repeticiones dentro de un límite temporal.
+
 La agenda semanal global ya permite combinar sesiones personales y contenido
 de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada
 entrenamiento. Cada entrada conserva una instantánea del nombre, versión y
