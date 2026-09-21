@@ -225,6 +225,7 @@ Future<void> initDependencies() async {
   sl.registerFactoryParam<WorkoutEditorCubit, String, void>(
     (templateId, _) => WorkoutEditorCubit(
       getExercises: sl(),
+      createExercise: sl(),
       createWorkout: sl(),
       getWorkoutTemplate: sl(),
       reviseWorkout: sl(),

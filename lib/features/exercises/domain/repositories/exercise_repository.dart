@@ -9,7 +9,7 @@ abstract class ExerciseRepository {
   Future<ExerciseEntity?> getExerciseById(String id);
 
   //escritura
-  Future<void> createExercise(ExerciseEntity exercise);
+  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise);
   Future<void> updateExercise(ExerciseEntity exercise);
   Future<void> deleteExercise(String id);
 }

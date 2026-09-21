@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
@@ -7,21 +9,38 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_sta
 class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   WorkoutEditorCubit({
     required GetExercisesUseCase getExercises,
+    required CreateExerciseUseCase createExercise,
     required CreatePersonalWorkoutUseCase createWorkout,
     required GetWorkoutTemplateUseCase getWorkoutTemplate,
     required RevisePersonalWorkoutUseCase reviseWorkout,
     this.templateId,
   }) : _getExercises = getExercises,
+       _createExercise = createExercise,
        _createWorkout = createWorkout,
        _getWorkoutTemplate = getWorkoutTemplate,
        _reviseWorkout = reviseWorkout,
        super(const WorkoutEditorState());
 
   final GetExercisesUseCase _getExercises;
+  final CreateExerciseUseCase _createExercise;
   final CreatePersonalWorkoutUseCase _createWorkout;
   final GetWorkoutTemplateUseCase _getWorkoutTemplate;
   final RevisePersonalWorkoutUseCase _reviseWorkout;
   final String? templateId;
+
+  Future<ExerciseEntity> createExercise(PersonalExerciseDraft draft) async {
+    final created = await _createExercise(draft);
+    final exercises = [...state.exercises, created]
+      ..sort((a, b) => a.name.compareTo(b.name));
+    emit(
+      WorkoutEditorState(
+        status: WorkoutEditorStatus.ready,
+        exercises: exercises,
+        originalTemplate: state.originalTemplate,
+      ),
+    );
+    return created;
+  }
 
   Future<void> load() async {
     emit(const WorkoutEditorState(status: WorkoutEditorStatus.loading));

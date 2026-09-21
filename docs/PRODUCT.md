@@ -53,6 +53,10 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
   pública de EntrenaOP.
 - El creador mantiene una entrada rápida para series iguales, pero permite
   ajustar objetivo, carga, RIR y descanso de cada serie cuando se necesita.
+- El selector permite buscar por nombre, músculo o material y distingue el
+  catálogo verificado de EntrenaOP de los ejercicios privados del usuario.
+- El usuario puede crear un ejercicio propio con descripción y vídeo HTTPS
+  opcional. Nunca puede publicarlo como contenido oficial desde el cliente.
 - Editar una rutina no cambia entrenamientos pasados: la interfaz guarda una
   nueva versión y conserva la anterior para el historial.
 - Historial conservado aunque el usuario deje de pagar.

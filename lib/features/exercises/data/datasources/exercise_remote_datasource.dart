@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/exercises/data/models/exercise_model.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 
 abstract class ExerciseRemoteDataSource {
   Future<List<ExerciseModel>> getExercises();
@@ -6,7 +7,7 @@ abstract class ExerciseRemoteDataSource {
   Future<ExerciseModel?> getExerciseById(String id);
 
   //escritura
-  Future<void> createExercise(ExerciseModel exercise);
+  Future<ExerciseModel> createExercise(PersonalExerciseDraft exercise);
   Future<void> updateExercise(ExerciseModel exercise);
   Future<void> deleteExercise(String id);
 }

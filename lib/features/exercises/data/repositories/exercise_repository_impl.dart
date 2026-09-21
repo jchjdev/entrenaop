@@ -9,8 +9,8 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   ExerciseRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<void> createExercise(ExerciseEntity exercise) async {
-    return remoteDataSource.createExercise(ExerciseModel.fromEntity(exercise));
+  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) {
+    return remoteDataSource.createExercise(exercise);
   }
 
   @override

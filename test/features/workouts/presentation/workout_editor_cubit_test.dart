@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
@@ -16,6 +17,7 @@ void main() {
     final workoutRepository = _WorkoutRepository();
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createExercise: CreateExerciseUseCase(_ExerciseRepository()),
       createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
       reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
@@ -35,6 +37,36 @@ void main() {
     expect(workoutRepository.revisedTemplateId, 'template-v1');
   });
 
+  test('añade un ejercicio propio al catálogo del editor', () async {
+    final exerciseRepository = _ExerciseRepository();
+    final workoutRepository = _WorkoutRepository();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(exerciseRepository),
+      createExercise: CreateExerciseUseCase(exerciseRepository),
+      createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    final created = await cubit.createExercise(
+      const PersonalExerciseDraft(
+        name: 'Press francés',
+        muscleGroups: ['tríceps'],
+        equipment: ['mancuerna'],
+        difficulty: 'intermedio',
+        exerciseType: 'repeticiones',
+      ),
+    );
+
+    expect(created.name, 'Press francés');
+    expect(cubit.state.exercises.map((item) => item.name), [
+      'Dominadas',
+      'Press francés',
+    ]);
+  });
+
   testWidgets('permite configurar formatos y bloques en móvil', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -43,6 +75,7 @@ void main() {
     final repository = _WorkoutRepository();
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createExercise: CreateExerciseUseCase(_ExerciseRepository()),
       createWorkout: CreatePersonalWorkoutUseCase(repository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
       reviseWorkout: RevisePersonalWorkoutUseCase(repository),
@@ -125,6 +158,7 @@ void main() {
     final repository = _WorkoutRepository();
     final cubit = WorkoutEditorCubit(
       getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createExercise: CreateExerciseUseCase(_ExerciseRepository()),
       createWorkout: CreatePersonalWorkoutUseCase(repository),
       getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
       reviseWorkout: RevisePersonalWorkoutUseCase(repository),
@@ -171,6 +205,88 @@ void main() {
     expect(find.text('Superserie completa'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('busca y crea un ejercicio propio desde el editor', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final exerciseRepository = _ExerciseRepository();
+    final workoutRepository = _WorkoutRepository();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(exerciseRepository),
+      createExercise: CreateExerciseUseCase(exerciseRepository),
+      createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final addExercise = find.text('Añadir ejercicio al bloque');
+    await tester.ensureVisible(addExercise);
+    await tester.pumpAndSettle();
+    await tester.tap(addExercise);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buscar'), findsOneWidget);
+    expect(find.text('EntrenaOP'), findsOneWidget);
+    expect(find.text('Míos'), findsOneWidget);
+    await tester.tap(find.text('Crear ejercicio propio'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const ValueKey('personal-exercise-name')),
+      'Press francés',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('personal-exercise-muscles')),
+      'tríceps',
+    );
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('personal-exercise-name')),
+          )
+          .controller
+          ?.text,
+      'Press francés',
+    );
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('personal-exercise-muscles')),
+          )
+          .controller
+          ?.text,
+      'tríceps',
+    );
+    final createAndAdd = find.text('Crear y añadir');
+    await tester.ensureVisible(createAndAdd);
+    await tester.pumpAndSettle();
+    await tester.tap(createAndAdd);
+    await tester.pumpAndSettle();
+
+    expect(
+      cubit.state.exercises.map((item) => item.name),
+      contains('Press francés'),
+    );
+    expect(find.text('Press francés'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 const _input = CreatePersonalWorkoutInput(
@@ -209,6 +325,22 @@ class _ExerciseRepository implements ExerciseRepository {
       origin: ExerciseOrigin.system,
     ),
   ];
+
+  @override
+  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) async =>
+      ExerciseEntity(
+        id: 'exercise-personal',
+        name: exercise.name,
+        description: exercise.description,
+        videoUrl: exercise.videoUrl,
+        muscleGroups: exercise.muscleGroups,
+        equipment: exercise.equipment,
+        difficulty: exercise.difficulty,
+        exerciseType: exercise.exerciseType,
+        isPublic: false,
+        createdBy: 'user-id',
+        origin: ExerciseOrigin.user,
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

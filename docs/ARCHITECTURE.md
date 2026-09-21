@@ -200,6 +200,11 @@ identidad
   `create_personal_workout_template(jsonb)`. La función valida de nuevo el
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
+- Los ejercicios propios se crean mediante `create_personal_exercise`. La
+  función toma `auth.uid()` como propietario y fija en servidor `origin = user`
+  e `is_public = false`; el cliente solo proporciona contenido descriptivo. El
+  catálogo consulta contenido público y ejercicios propios, dejando que RLS
+  descarte cualquier otro registro privado.
 - El borrador personal contiene de uno a diez bloques. Pueden ser
   convencionales, superseries, circuitos, intervalos de trabajo, Tabata, EMOM o
   AMRAP. Los formatos gobernados por rondas exigen una serie por ejercicio y

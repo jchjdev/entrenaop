@@ -5,16 +5,23 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const exercise = ExerciseEntity(
+  const exercise = PersonalExerciseDraft(
+    name: 'Dominadas',
+    muscleGroups: ['espalda'],
+    equipment: ['barra'],
+    difficulty: 'intermedio',
+    exerciseType: 'repeticiones',
+  );
+  const existingExercise = ExerciseEntity(
     id: 'exercise-id',
     name: 'Dominadas',
     muscleGroups: ['espalda'],
     equipment: ['barra'],
     difficulty: 'intermedio',
     exerciseType: 'repeticiones',
-    isPublic: true,
+    isPublic: false,
     origin: ExerciseOrigin.user,
-    createdBy: 'coach-id',
+    createdBy: 'user-id',
   );
 
   group('ExerciseRepositoryImpl', () {
@@ -38,35 +45,46 @@ void main() {
       expect(model.createdBy, isNull);
     });
 
-    test('convierte una entidad de dominio antes de crearla', () async {
+    test('envía el borrador y devuelve el ejercicio creado', () async {
       final dataSource = _FakeExerciseRemoteDataSource();
       final repository = ExerciseRepositoryImpl(remoteDataSource: dataSource);
 
-      await repository.createExercise(exercise);
+      final created = await repository.createExercise(exercise);
 
-      expect(dataSource.created, isA<ExerciseModel>());
-      expect(dataSource.created?.props, exercise.props);
+      expect(dataSource.created, exercise);
+      expect(created.id, 'exercise-id');
     });
 
     test('convierte una entidad de dominio antes de actualizarla', () async {
       final dataSource = _FakeExerciseRemoteDataSource();
       final repository = ExerciseRepositoryImpl(remoteDataSource: dataSource);
 
-      await repository.updateExercise(exercise);
+      await repository.updateExercise(existingExercise);
 
       expect(dataSource.updated, isA<ExerciseModel>());
-      expect(dataSource.updated?.props, exercise.props);
+      expect(dataSource.updated?.props, existingExercise.props);
     });
   });
 }
 
 class _FakeExerciseRemoteDataSource implements ExerciseRemoteDataSource {
-  ExerciseModel? created;
+  PersonalExerciseDraft? created;
   ExerciseModel? updated;
 
   @override
-  Future<void> createExercise(ExerciseModel exercise) async {
+  Future<ExerciseModel> createExercise(PersonalExerciseDraft exercise) async {
     created = exercise;
+    return const ExerciseModel(
+      id: 'exercise-id',
+      name: 'Dominadas',
+      muscleGroups: ['espalda'],
+      equipment: ['barra'],
+      difficulty: 'intermedio',
+      exerciseType: 'repeticiones',
+      isPublic: false,
+      origin: ExerciseOrigin.user,
+      createdBy: 'user-id',
+    );
   }
 
   @override

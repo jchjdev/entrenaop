@@ -100,8 +100,9 @@ visibilidad y versionado distintos.
 El primer creador de sesiones personales permite ordenar ejercicios del
 catálogo y prescribir series homogéneas por repeticiones, tiempo o distancia,
 con descanso, carga y RIR opcionales. El guardado es privado y atómico en
-PostgreSQL. La edición serie a serie, los ejercicios propios y los formatos
-avanzados ampliarán este recorrido sin sustituirlo.
+PostgreSQL. El catálogo ya permite buscar, separar contenido de EntrenaOP y
+ejercicios propios, y crear estos últimos como recursos privados con
+descripción y vídeo HTTPS opcional.
 
 La segunda iteración ya permite variar cada serie, copiar la primera al resto,
 añadir o retirar series, duplicar una sesión completa y archivarla sin perder

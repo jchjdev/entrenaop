@@ -527,8 +527,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed:
-                  catalog.isEmpty ||
-                      saving ||
+                  saving ||
                       block.rows.length >= block.maxExercises ||
                       _exerciseCount >= 40
                   ? null
@@ -831,11 +830,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     List<ExerciseEntity> catalog,
     int blockIndex,
   ) async {
+    final editorCubit = context.read<WorkoutEditorCubit>();
     final selected = await showModalBottomSheet<ExerciseEntity>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (context) => _ExercisePicker(exercises: catalog),
+      builder: (_) =>
+          _ExercisePicker(exercises: catalog, editorCubit: editorCubit),
     );
     if (selected != null && mounted) {
       setState(() {
@@ -1625,30 +1626,143 @@ class _NumberField extends StatelessWidget {
   }
 }
 
-class _ExercisePicker extends StatelessWidget {
-  const _ExercisePicker({required this.exercises});
+enum _ExerciseScope { all, system, mine }
+
+class _ExercisePicker extends StatefulWidget {
+  const _ExercisePicker({required this.exercises, required this.editorCubit});
 
   final List<ExerciseEntity> exercises;
+  final WorkoutEditorCubit editorCubit;
+
+  @override
+  State<_ExercisePicker> createState() => _ExercisePickerState();
+}
+
+class _ExercisePickerState extends State<_ExercisePicker> {
+  final _searchController = TextEditingController();
+  _ExerciseScope _scope = _ExerciseScope.all;
+  bool _creating = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<ExerciseEntity> get _filteredExercises {
+    final query = _searchController.text.trim().toLowerCase();
+    return widget.exercises
+        .where((exercise) {
+          final matchesScope = switch (_scope) {
+            _ExerciseScope.all => true,
+            _ExerciseScope.system => exercise.origin == ExerciseOrigin.system,
+            _ExerciseScope.mine => exercise.origin == ExerciseOrigin.user,
+          };
+          if (!matchesScope) return false;
+          if (query.isEmpty) return true;
+          final searchable = [
+            exercise.name,
+            ...exercise.muscleGroups,
+            ...exercise.equipment,
+          ].join(' ').toLowerCase();
+          return searchable.contains(query);
+        })
+        .toList(growable: false);
+  }
+
+  Future<void> _createExercise() async {
+    final draft = await showModalBottomSheet<PersonalExerciseDraft>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => const _PersonalExerciseForm(),
+    );
+    if (draft == null || !mounted) return;
+    setState(() => _creating = true);
+    try {
+      final created = await widget.editorCubit.createExercise(draft);
+      if (mounted) Navigator.of(context).pop(created);
+    } on FormatException catch (error) {
+      if (!mounted) return;
+      setState(() => _creating = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _creating = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hemos podido crear el ejercicio.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final exercises = _filteredExercises;
     return SafeArea(
       child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.7,
+        height: MediaQuery.sizeOf(context).height * 0.82,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Text(
-                'Elige un ejercicio',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Elige un ejercicio',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: _searchController,
+                    autofocus: false,
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar',
+                      hintText: 'Nombre, músculo o material',
+                      prefixIcon: Icon(Icons.search_rounded),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Todos'),
+                        selected: _scope == _ExerciseScope.all,
+                        onSelected: (_) =>
+                            setState(() => _scope = _ExerciseScope.all),
+                      ),
+                      ChoiceChip(
+                        label: const Text('EntrenaOP'),
+                        selected: _scope == _ExerciseScope.system,
+                        onSelected: (_) =>
+                            setState(() => _scope = _ExerciseScope.system),
+                      ),
+                      ChoiceChip(
+                        label: const Text('Míos'),
+                        selected: _scope == _ExerciseScope.mine,
+                        onSelected: (_) =>
+                            setState(() => _scope = _ExerciseScope.mine),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             Expanded(
               child: exercises.isEmpty
                   ? const Center(
-                      child: Text('Ya has añadido todos los ejercicios.'),
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'No hay ejercicios que coincidan con esta búsqueda.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.only(bottom: 20),
@@ -1659,9 +1773,13 @@ class _ExercisePicker extends StatelessWidget {
                         return ListTile(
                           leading: const Icon(Icons.fitness_center_rounded),
                           title: Text(exercise.name),
-                          subtitle: exercise.muscleGroups.isEmpty
-                              ? null
-                              : Text(exercise.muscleGroups.join(' · ')),
+                          subtitle: Text(
+                            [
+                              if (exercise.origin == ExerciseOrigin.user)
+                                'Ejercicio propio',
+                              ...exercise.muscleGroups,
+                            ].join(' · '),
+                          ),
                           trailing: const Icon(
                             Icons.add_circle_outline_rounded,
                           ),
@@ -1670,12 +1788,225 @@ class _ExercisePicker extends StatelessWidget {
                       },
                     ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+              child: FilledButton.tonalIcon(
+                onPressed: _creating ? null : _createExercise,
+                icon: _creating
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.add_rounded),
+                label: Text(
+                  _creating ? 'Creando ejercicio…' : 'Crear ejercicio propio',
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+class _PersonalExerciseForm extends StatefulWidget {
+  const _PersonalExerciseForm();
+
+  @override
+  State<_PersonalExerciseForm> createState() => _PersonalExerciseFormState();
+}
+
+class _PersonalExerciseFormState extends State<_PersonalExerciseForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _videoController = TextEditingController();
+  final _musclesController = TextEditingController();
+  final _equipmentController = TextEditingController();
+  String _difficulty = 'inicial';
+  String _exerciseType = 'repeticiones';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _videoController.dispose();
+    _musclesController.dispose();
+    _equipmentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          4,
+          20,
+          MediaQuery.viewInsetsOf(context).bottom + 20,
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Nuevo ejercicio propio',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Será privado y solo aparecerá en tu biblioteca.',
+                  style: TextStyle(color: Colors.white60),
+                ),
+                const SizedBox(height: 18),
+                TextFormField(
+                  key: const ValueKey('personal-exercise-name'),
+                  controller: _nameController,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre',
+                    hintText: 'Ej. Press francés con mancuerna',
+                  ),
+                  validator: (value) {
+                    final length = value?.trim().length ?? 0;
+                    return length < 2 || length > 80
+                        ? 'Escribe entre 2 y 80 caracteres.'
+                        : null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descriptionController,
+                  minLines: 2,
+                  maxLines: 4,
+                  maxLength: 500,
+                  decoration: const InputDecoration(
+                    labelText: 'Descripción (opcional)',
+                    hintText: 'Técnica o indicaciones importantes',
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                TextFormField(
+                  controller: _videoController,
+                  keyboardType: TextInputType.url,
+                  decoration: const InputDecoration(
+                    labelText: 'Vídeo HTTPS (opcional)',
+                    hintText: 'https://…',
+                    prefixIcon: Icon(Icons.play_circle_outline_rounded),
+                  ),
+                  validator: (value) {
+                    final text = value?.trim() ?? '';
+                    if (text.isEmpty) return null;
+                    final uri = Uri.tryParse(text);
+                    return uri == null ||
+                            uri.scheme != 'https' ||
+                            uri.host.isEmpty
+                        ? 'Introduce una dirección HTTPS válida.'
+                        : null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  key: const ValueKey('personal-exercise-muscles'),
+                  controller: _musclesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Grupos musculares',
+                    hintText: 'tríceps, pecho',
+                  ),
+                  validator: (value) => _tags(value).isEmpty
+                      ? 'Añade al menos un grupo muscular.'
+                      : _tags(value).length > 10
+                      ? 'Añade como máximo 10 grupos.'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _equipmentController,
+                  decoration: const InputDecoration(
+                    labelText: 'Material (opcional)',
+                    hintText: 'mancuerna, banco',
+                  ),
+                  validator: (value) => _tags(value).length > 10
+                      ? 'Añade como máximo 10 materiales.'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _difficulty,
+                  decoration: const InputDecoration(labelText: 'Dificultad'),
+                  items: const [
+                    DropdownMenuItem(value: 'inicial', child: Text('Inicial')),
+                    DropdownMenuItem(
+                      value: 'intermedio',
+                      child: Text('Intermedio'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'avanzado',
+                      child: Text('Avanzado'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) _difficulty = value;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _exerciseType,
+                  decoration: const InputDecoration(
+                    labelText: 'Medición habitual',
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'repeticiones',
+                      child: Text('Repeticiones'),
+                    ),
+                    DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) _exerciseType = value;
+                  },
+                ),
+                const SizedBox(height: 22),
+                FilledButton.icon(
+                  onPressed: _submit,
+                  icon: const Icon(Icons.check_rounded),
+                  label: const Text('Crear y añadir'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _submit() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    Navigator.of(context).pop(
+      PersonalExerciseDraft(
+        name: _nameController.text,
+        description: _descriptionController.text,
+        videoUrl: _videoController.text,
+        muscleGroups: _tags(_musclesController.text),
+        equipment: _tags(_equipmentController.text),
+        difficulty: _difficulty,
+        exerciseType: _exerciseType,
+      ),
+    );
+  }
+}
+
+List<String> _tags(String? value) => (value ?? '')
+    .split(',')
+    .map((tag) => tag.trim())
+    .where((tag) => tag.isNotEmpty)
+    .toList(growable: false);
 
 class _EmptyExercises extends StatelessWidget {
   const _EmptyExercises();
