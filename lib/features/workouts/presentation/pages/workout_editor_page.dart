@@ -274,7 +274,7 @@ class _ExerciseRowData {
   _ExerciseRowData({
     required this.exercise,
     required this.targetType,
-    required this.targetValue,
+    required this.sets,
   });
 
   factory _ExerciseRowData.fromExercise(ExerciseEntity exercise) {
@@ -284,30 +284,53 @@ class _ExerciseRowData {
     return _ExerciseRowData(
       exercise: exercise,
       targetType: type,
-      targetValue: type == WorkoutTargetType.duration ? 30 : 10,
+      sets: List.generate(
+        3,
+        (_) => _SetRowData(
+          targetValue: type == WorkoutTargetType.duration ? 30 : 10,
+        ),
+      ),
     );
   }
 
   final ExerciseEntity exercise;
   WorkoutTargetType targetType;
-  int setCount = 3;
-  double targetValue;
-  int restSeconds = 60;
-  double? loadKg;
-  double? rir = 2;
+  List<_SetRowData> sets;
 
   WorkoutExerciseDraft toDraft() => WorkoutExerciseDraft(
     exerciseId: exercise.id,
-    sets: List.generate(
-      setCount,
-      (_) => WorkoutSetDraft(
-        targetType: targetType,
-        targetValue: targetValue,
-        restAfterSeconds: restSeconds,
-        targetLoadKg: loadKg,
-        targetRir: rir,
-      ),
-    ),
+    sets: sets
+        .map(
+          (set) => WorkoutSetDraft(
+            targetType: targetType,
+            targetValue: set.targetValue,
+            restAfterSeconds: set.restSeconds,
+            targetLoadKg: set.loadKg,
+            targetRir: set.rir,
+          ),
+        )
+        .toList(),
+  );
+}
+
+class _SetRowData {
+  _SetRowData({
+    required this.targetValue,
+    this.restSeconds = 60,
+    this.loadKg,
+    this.rir = 2,
+  });
+
+  double targetValue;
+  int restSeconds;
+  double? loadKg;
+  double? rir;
+
+  _SetRowData copy() => _SetRowData(
+    targetValue: targetValue,
+    restSeconds: restSeconds,
+    loadKg: loadKg,
+    rir: rir,
   );
 }
 
@@ -400,90 +423,68 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   ? (value) => setState(() {
                       if (value == null) return;
                       data.targetType = value;
-                      data.targetValue = switch (value) {
-                        WorkoutTargetType.repetitions => 10,
-                        WorkoutTargetType.duration => 30,
-                        WorkoutTargetType.distance => 1000,
+                      final defaultTarget = switch (value) {
+                        WorkoutTargetType.repetitions => 10.0,
+                        WorkoutTargetType.duration => 30.0,
+                        WorkoutTargetType.distance => 1000.0,
                       };
+                      for (final set in data.sets) {
+                        set.targetValue = defaultTarget;
+                      }
                     })
                   : null,
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            Row(
               children: [
-                _NumberField(
-                  label: 'Series',
-                  initialValue: data.setCount.toString(),
-                  suffix: null,
-                  enabled: widget.enabled,
-                  integer: true,
-                  min: 1,
-                  max: 20,
-                  onChanged: (value) => data.setCount = value.round(),
+                Text(
+                  'Series (${data.sets.length})',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                _NumberField(
-                  key: ValueKey(data.targetType),
-                  label: switch (data.targetType) {
-                    WorkoutTargetType.repetitions => 'Repeticiones',
-                    WorkoutTargetType.duration => 'Tiempo',
-                    WorkoutTargetType.distance => 'Distancia',
-                  },
-                  initialValue: _numberText(data.targetValue),
-                  suffix: switch (data.targetType) {
-                    WorkoutTargetType.repetitions => 'reps',
-                    WorkoutTargetType.duration => 's',
-                    WorkoutTargetType.distance => 'm',
-                  },
-                  enabled: widget.enabled,
-                  integer: data.targetType != WorkoutTargetType.distance,
-                  min: 0.01,
-                  max: 100000,
-                  onChanged: (value) => data.targetValue = value,
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: !widget.enabled || data.sets.length < 2
+                      ? null
+                      : () => setState(() {
+                          final first = data.sets.first;
+                          data.sets = List.generate(
+                            data.sets.length,
+                            (_) => first.copy(),
+                          );
+                        }),
+                  icon: const Icon(Icons.copy_all_rounded, size: 17),
+                  label: const Text('Igualar'),
                 ),
-                _NumberField(
-                  label: 'Descanso',
-                  initialValue: data.restSeconds.toString(),
-                  suffix: 's',
-                  enabled: widget.enabled,
-                  integer: true,
-                  min: 0,
-                  max: 3600,
-                  onChanged: (value) => data.restSeconds = value.round(),
+                IconButton(
+                  tooltip: 'Quitar última serie',
+                  onPressed: !widget.enabled || data.sets.length <= 1
+                      ? null
+                      : () => setState(data.sets.removeLast),
+                  icon: const Icon(Icons.remove_circle_outline_rounded),
                 ),
-                _NumberField(
-                  label: 'Carga',
-                  initialValue: data.loadKg == null
-                      ? ''
-                      : _numberText(data.loadKg!),
-                  suffix: 'kg',
-                  enabled: widget.enabled,
-                  optional: true,
-                  min: 0,
-                  max: 1000,
-                  onChanged: (value) => data.loadKg = value,
-                  onCleared: () => data.loadKg = null,
-                ),
-                _NumberField(
-                  label: 'RIR',
-                  initialValue: data.rir == null ? '' : _numberText(data.rir!),
-                  suffix: null,
-                  enabled: widget.enabled,
-                  optional: true,
-                  min: 0,
-                  max: 10,
-                  onChanged: (value) => data.rir = value,
-                  onCleared: () => data.rir = null,
+                IconButton(
+                  tooltip: 'Añadir serie',
+                  onPressed: !widget.enabled || data.sets.length >= 20
+                      ? null
+                      : () => setState(
+                          () => data.sets.add(data.sets.last.copy()),
+                        ),
+                  icon: const Icon(Icons.add_circle_outline_rounded),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Por ahora todas las series de este ejercicio comparten objetivo. La edición serie a serie llegará en el siguiente nivel del creador.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white54,
-                height: 1.35,
+            const SizedBox(height: 4),
+            ...List.generate(
+              data.sets.length,
+              (index) => Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: _SetEditor(
+                  key: ValueKey(data.sets[index]),
+                  index: index,
+                  data: data.sets[index],
+                  targetType: data.targetType,
+                  enabled: widget.enabled,
+                ),
               ),
             ),
           ],
@@ -493,9 +494,106 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
   }
 }
 
+class _SetEditor extends StatelessWidget {
+  const _SetEditor({
+    super.key,
+    required this.index,
+    required this.data,
+    required this.targetType,
+    required this.enabled,
+  });
+
+  final int index;
+  final _SetRowData data;
+  final WorkoutTargetType targetType;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.035),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Serie ${index + 1}',
+            style: const TextStyle(
+              color: Color(0xFFFF8A50),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _NumberField(
+                label: switch (targetType) {
+                  WorkoutTargetType.repetitions => 'Repeticiones',
+                  WorkoutTargetType.duration => 'Tiempo',
+                  WorkoutTargetType.distance => 'Distancia',
+                },
+                initialValue: _numberText(data.targetValue),
+                suffix: switch (targetType) {
+                  WorkoutTargetType.repetitions => 'reps',
+                  WorkoutTargetType.duration => 's',
+                  WorkoutTargetType.distance => 'm',
+                },
+                enabled: enabled,
+                integer: targetType != WorkoutTargetType.distance,
+                min: 0.01,
+                max: 100000,
+                onChanged: (value) => data.targetValue = value,
+              ),
+              _NumberField(
+                label: 'Carga',
+                initialValue: data.loadKg == null
+                    ? ''
+                    : _numberText(data.loadKg!),
+                suffix: 'kg',
+                enabled: enabled,
+                optional: true,
+                min: 0,
+                max: 1000,
+                onChanged: (value) => data.loadKg = value,
+                onCleared: () => data.loadKg = null,
+              ),
+              _NumberField(
+                label: 'RIR',
+                initialValue: data.rir == null ? '' : _numberText(data.rir!),
+                suffix: null,
+                enabled: enabled,
+                optional: true,
+                min: 0,
+                max: 10,
+                onChanged: (value) => data.rir = value,
+                onCleared: () => data.rir = null,
+              ),
+              _NumberField(
+                label: 'Descanso',
+                initialValue: data.restSeconds.toString(),
+                suffix: 's',
+                enabled: enabled,
+                integer: true,
+                min: 0,
+                max: 3600,
+                onChanged: (value) => data.restSeconds = value.round(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NumberField extends StatelessWidget {
   const _NumberField({
-    super.key,
     required this.label,
     required this.initialValue,
     required this.suffix,

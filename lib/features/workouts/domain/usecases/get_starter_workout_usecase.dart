@@ -100,3 +100,21 @@ class CreatePersonalWorkoutUseCase {
     return _repository.createPersonalTemplate(input);
   }
 }
+
+class DuplicatePersonalWorkoutUseCase {
+  const DuplicatePersonalWorkoutUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<String> call(String templateId) =>
+      _repository.duplicatePersonalTemplate(templateId);
+}
+
+class ArchivePersonalWorkoutUseCase {
+  const ArchivePersonalWorkoutUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<void> call(String templateId) =>
+      _repository.archivePersonalTemplate(templateId);
+}

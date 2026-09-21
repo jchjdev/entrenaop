@@ -137,8 +137,20 @@ class _LibraryContent extends StatelessWidget {
                                 mainAxisExtent: 222,
                               ),
                           itemCount: workouts.length,
-                          itemBuilder: (context, index) =>
-                              _WorkoutCard(workout: workouts[index]),
+                          itemBuilder: (context, index) {
+                            final workout = workouts[index];
+                            return _WorkoutCard(
+                              workout: workout,
+                              personal: personal,
+                              busy: state.busyTemplateId == workout.id,
+                              onDuplicate: personal
+                                  ? () => _duplicate(context, workout)
+                                  : null,
+                              onArchive: personal
+                                  ? () => _archive(context, workout)
+                                  : null,
+                            );
+                          },
                         );
                       },
                     ),
@@ -150,12 +162,80 @@ class _LibraryContent extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _duplicate(
+    BuildContext context,
+    WorkoutTemplateSummary workout,
+  ) async {
+    final success = await context.read<WorkoutLibraryCubit>().duplicate(
+      workout.id,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Hemos creado una copia de “${workout.name}”.'
+              : 'No hemos podido duplicar la sesión.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _archive(
+    BuildContext context,
+    WorkoutTemplateSummary workout,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Archivar sesión'),
+        content: Text(
+          '“${workout.name}” dejará de aparecer en tus sesiones, pero su historial se conservará.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => dialogContext.pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => dialogContext.pop(true),
+            child: const Text('Archivar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final success = await context.read<WorkoutLibraryCubit>().archive(
+      workout.id,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Sesión archivada. Su historial sigue intacto.'
+              : 'No hemos podido archivar la sesión.',
+        ),
+      ),
+    );
+  }
 }
 
 class _WorkoutCard extends StatelessWidget {
-  const _WorkoutCard({required this.workout});
+  const _WorkoutCard({
+    required this.workout,
+    required this.personal,
+    required this.busy,
+    this.onDuplicate,
+    this.onArchive,
+  });
 
   final WorkoutTemplateSummary workout;
+  final bool personal;
+  final bool busy;
+  final Future<void> Function()? onDuplicate;
+  final Future<void> Function()? onArchive;
 
   @override
   Widget build(BuildContext context) {
@@ -184,10 +264,45 @@ class _WorkoutCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
+                  if (busy)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
                   if (workout.estimatedDurationMinutes case final minutes?)
                     Text(
                       '$minutes min',
                       style: const TextStyle(color: Colors.white54),
+                    ),
+                  if (personal)
+                    PopupMenuButton<_PersonalWorkoutAction>(
+                      enabled: !busy,
+                      tooltip: 'Opciones de sesión',
+                      onSelected: (action) => switch (action) {
+                        _PersonalWorkoutAction.duplicate => onDuplicate?.call(),
+                        _PersonalWorkoutAction.archive => onArchive?.call(),
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: _PersonalWorkoutAction.duplicate,
+                          child: ListTile(
+                            leading: Icon(Icons.copy_rounded),
+                            title: Text('Duplicar'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: _PersonalWorkoutAction.archive,
+                          child: ListTile(
+                            leading: Icon(Icons.archive_outlined),
+                            title: Text('Archivar'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -234,6 +349,8 @@ class _WorkoutCard extends StatelessWidget {
     );
   }
 }
+
+enum _PersonalWorkoutAction { duplicate, archive }
 
 class _EmptyLibrary extends StatelessWidget {
   const _EmptyLibrary({required this.personal});

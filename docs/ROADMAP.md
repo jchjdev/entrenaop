@@ -103,6 +103,11 @@ con descanso, carga y RIR opcionales. El guardado es privado y atómico en
 PostgreSQL. La edición serie a serie, los ejercicios propios y los formatos
 avanzados ampliarán este recorrido sin sustituirlo.
 
+La segunda iteración ya permite variar cada serie, copiar la primera al resto,
+añadir o retirar series, duplicar una sesión completa y archivarla sin perder
+su historial. El siguiente cierre del ciclo personal será la edición
+versionada de una sesión existente.
+
 ## Fase 3: adaptación y seguimiento
 
 - Algoritmo determinista de progresión, con auditoría y anulación manual.

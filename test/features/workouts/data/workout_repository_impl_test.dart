@@ -106,6 +106,15 @@ void main() {
     },
   );
 
+  test('delega el duplicado y archivado de sesiones personales', () async {
+    final copiedId = await repository.duplicatePersonalTemplate('template-1');
+    await repository.archivePersonalTemplate('template-1');
+
+    expect(copiedId, 'personal-template-copy');
+    expect(dataSource.duplicatedTemplateId, 'template-1');
+    expect(dataSource.archivedTemplateId, 'template-1');
+  });
+
   test('envía una corrección con su motivo auditable', () async {
     const correction = WorkoutSetCorrectionInput(
       resultId: 'result-1',
@@ -194,11 +203,24 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   final List<String> completedOperationIds = [];
   List<Map<String, dynamic>> publicTemplates = const [];
   Map<String, dynamic>? personalPayload;
+  String? duplicatedTemplateId;
+  String? archivedTemplateId;
+
+  @override
+  Future<void> archivePersonalTemplate(String templateId) async {
+    archivedTemplateId = templateId;
+  }
 
   @override
   Future<String> createPersonalTemplate(Map<String, dynamic> payload) async {
     personalPayload = payload;
     return 'personal-template-1';
+  }
+
+  @override
+  Future<String> duplicatePersonalTemplate(String templateId) async {
+    duplicatedTemplateId = templateId;
+    return 'personal-template-copy';
   }
 
   @override

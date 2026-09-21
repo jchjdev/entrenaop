@@ -51,6 +51,8 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 - Creación de rutinas propias.
 - Las rutinas propias son privadas y se distinguen visualmente de la biblioteca
   pública de EntrenaOP.
+- El creador mantiene una entrada rápida para series iguales, pero permite
+  ajustar objetivo, carga, RIR y descanso de cada serie cuando se necesita.
 - Historial conservado aunque el usuario deje de pagar.
 - Sin progresión adaptativa personalizada.
 

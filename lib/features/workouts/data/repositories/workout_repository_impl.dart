@@ -60,6 +60,14 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<String> duplicatePersonalTemplate(String templateId) =>
+      remoteDataSource.duplicatePersonalTemplate(templateId);
+
+  @override
+  Future<void> archivePersonalTemplate(String templateId) =>
+      remoteDataSource.archivePersonalTemplate(templateId);
+
+  @override
   Future<String> startExecution(String templateId) =>
       remoteDataSource.startExecution(templateId);
 

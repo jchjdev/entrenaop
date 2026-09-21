@@ -188,6 +188,8 @@ identidad
   `create_personal_workout_template(jsonb)`. La función valida de nuevo el
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
+- Duplicar una sesión copia atómicamente toda su jerarquía. Retirarla de la
+  biblioteca significa archivarla, no borrar resultados históricos.
 - Al comenzar, la ejecución copia la prescripción efectiva por serie. El
   historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan

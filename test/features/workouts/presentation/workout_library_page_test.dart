@@ -30,6 +30,8 @@ void main() {
     final cubit = WorkoutLibraryCubit(
       getPublicWorkouts: GetPublicWorkoutsUseCase(repository),
       getPersonalWorkouts: GetPersonalWorkoutsUseCase(repository),
+      duplicatePersonalWorkout: DuplicatePersonalWorkoutUseCase(repository),
+      archivePersonalWorkout: ArchivePersonalWorkoutUseCase(repository),
     );
     addTearDown(cubit.close);
     await cubit.load();

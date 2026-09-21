@@ -127,6 +127,21 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   }
 
   @override
+  Future<String> duplicatePersonalTemplate(String templateId) async {
+    final response = await supabaseClient.rpc(
+      'duplicate_personal_workout_template',
+      params: {'p_template_id': templateId},
+    );
+    return response as String;
+  }
+
+  @override
+  Future<void> archivePersonalTemplate(String templateId) => supabaseClient.rpc(
+    'archive_personal_workout_template',
+    params: {'p_template_id': templateId},
+  );
+
+  @override
   Future<String> startExecution(String templateId) async {
     final response = await supabaseClient.rpc(
       'start_workout_execution',

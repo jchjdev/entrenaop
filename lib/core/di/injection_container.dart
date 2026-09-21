@@ -188,6 +188,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetPublicWorkoutsUseCase(sl()));
   sl.registerLazySingleton(() => GetPersonalWorkoutsUseCase(sl()));
   sl.registerLazySingleton(() => CreatePersonalWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => DuplicatePersonalWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => ArchivePersonalWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
@@ -208,13 +210,12 @@ Future<void> initDependencies() async {
     () => WorkoutLibraryCubit(
       getPublicWorkouts: sl(),
       getPersonalWorkouts: sl(),
+      duplicatePersonalWorkout: sl(),
+      archivePersonalWorkout: sl(),
     )..load(),
   );
   sl.registerFactory(
-    () => WorkoutEditorCubit(
-      getExercises: sl(),
-      createWorkout: sl(),
-    )..load(),
+    () => WorkoutEditorCubit(getExercises: sl(), createWorkout: sl())..load(),
   );
   sl.registerFactoryParam<ActiveWorkoutCubit, String, void>(
     (executionId, _) => ActiveWorkoutCubit(

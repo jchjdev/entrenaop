@@ -141,6 +141,14 @@ class _Repository implements WorkoutRepository {
       throw UnimplementedError();
 
   @override
+  Future<String> duplicatePersonalTemplate(String templateId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> archivePersonalTemplate(String templateId) =>
+      throw UnimplementedError();
+
+  @override
   Future<WorkoutMutationDisposition> skipSet(String resultId) async =>
       WorkoutMutationDisposition.synced;
 
