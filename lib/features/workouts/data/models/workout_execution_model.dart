@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 
 class WorkoutExecutionModel {
   const WorkoutExecutionModel._();
@@ -31,6 +32,7 @@ class WorkoutExecutionModel {
       id: json['id'] as String,
       blockOrder: json['block_order'] as int,
       blockName: json['block_name'] as String,
+      blockFormat: _blockFormat(json['block_format'] as String?),
       itemOrder: json['item_order'] as int,
       exerciseId: json['exercise_id'] as String,
       exerciseName: json['exercise_name'] as String,
@@ -61,10 +63,28 @@ class WorkoutExecutionModel {
   ) {
     final block = first.blockOrder.compareTo(second.blockOrder);
     if (block != 0) return block;
+    if (first.isGrouped && second.isGrouped) {
+      final round = first.setOrder.compareTo(second.setOrder);
+      if (round != 0) return round;
+      return first.itemOrder.compareTo(second.itemOrder);
+    }
     final item = first.itemOrder.compareTo(second.itemOrder);
     if (item != 0) return item;
     return first.setOrder.compareTo(second.setOrder);
   }
+
+  static WorkoutBlockFormat _blockFormat(String? value) => switch (value) {
+    null || 'straight_sets' => WorkoutBlockFormat.straightSets,
+    'superset' => WorkoutBlockFormat.superset,
+    'circuit' => WorkoutBlockFormat.circuit,
+    'intervals' => WorkoutBlockFormat.intervals,
+    'emom' => WorkoutBlockFormat.emom,
+    'amrap' => WorkoutBlockFormat.amrap,
+    'tabata' => WorkoutBlockFormat.tabata,
+    'warm_up' => WorkoutBlockFormat.warmUp,
+    'cool_down' => WorkoutBlockFormat.coolDown,
+    _ => throw FormatException('Formato de bloque desconocido: $value'),
+  };
 
   static WorkoutExecutionStatus _executionStatus(String value) =>
       switch (value) {

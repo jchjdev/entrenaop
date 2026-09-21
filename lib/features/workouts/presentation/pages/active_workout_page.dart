@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -503,7 +504,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Serie ${set.setOrder + 1}',
+                set.isGrouped
+                    ? '${_executionBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}'
+                    : 'Serie ${set.setOrder + 1}',
                 style: const TextStyle(color: Colors.white60, fontSize: 17),
               ),
               if (set.exerciseDescription != null ||
@@ -1046,6 +1049,13 @@ String _progressLabel(WorkoutExecution execution) {
   return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
       '($completed completadas, $skipped omitidas)';
 }
+
+String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
+    switch (format) {
+      WorkoutBlockFormat.superset => 'Superserie',
+      WorkoutBlockFormat.circuit => 'Circuito',
+      _ => 'Serie',
+    };
 
 String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
     switch (reason) {

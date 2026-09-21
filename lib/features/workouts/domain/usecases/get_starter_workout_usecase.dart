@@ -89,14 +89,41 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         'Cada bloque necesita un nombre de hasta 60 caracteres.',
       );
     }
-    if (block.format != WorkoutBlockFormat.straightSets) {
+    if (block.format != WorkoutBlockFormat.straightSets &&
+        block.format != WorkoutBlockFormat.superset &&
+        block.format != WorkoutBlockFormat.circuit) {
       throw const FormatException(
-        'Este creador todavía solo admite bloques convencionales.',
+        'Este formato de bloque todavía no está disponible.',
       );
     }
     if (block.exercises.isEmpty || block.exercises.length > 20) {
       throw const FormatException(
         'Cada bloque debe contener entre 1 y 20 ejercicios.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.superset &&
+        block.exercises.length != 2) {
+      throw const FormatException(
+        'Una superserie debe contener exactamente dos ejercicios.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.circuit &&
+        block.exercises.length < 2) {
+      throw const FormatException(
+        'Un circuito debe contener al menos dos ejercicios.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.straightSets && block.rounds != 1) {
+      throw const FormatException(
+        'Los bloques convencionales no utilizan rondas.',
+      );
+    }
+    if (block.rounds < 1 || block.rounds > 20) {
+      throw const FormatException('Las rondas deben estar entre 1 y 20.');
+    }
+    if (block.restAfterSeconds < 0 || block.restAfterSeconds > 3600) {
+      throw const FormatException(
+        'El descanso entre rondas debe estar entre 0 y 3600 segundos.',
       );
     }
     exerciseCount += block.exercises.length;
@@ -110,6 +137,12 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
       if (exercise.sets.isEmpty || exercise.sets.length > 20) {
         throw const FormatException(
           'Cada ejercicio debe tener entre 1 y 20 series.',
+        );
+      }
+      if (block.format != WorkoutBlockFormat.straightSets &&
+          exercise.sets.length != block.rounds) {
+        throw const FormatException(
+          'Cada ejercicio debe tener una serie por ronda.',
         );
       }
       for (final set in exercise.sets) {

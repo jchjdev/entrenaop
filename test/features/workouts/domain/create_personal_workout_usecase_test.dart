@@ -82,6 +82,25 @@ void main() {
 
     expect(repository.created, input);
   });
+
+  test('valida las rondas de una superserie', () async {
+    final exercise = _validInput().blocks.single.exercises.single;
+    final input = CreatePersonalWorkoutInput(
+      name: 'Superserie incompleta',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Superserie',
+          format: WorkoutBlockFormat.superset,
+          rounds: 3,
+          restAfterSeconds: 90,
+          exercises: [exercise],
+        ),
+      ],
+    );
+
+    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
+    expect(repository.created, isNull);
+  });
 }
 
 CreatePersonalWorkoutInput _validInput() => const CreatePersonalWorkoutInput(

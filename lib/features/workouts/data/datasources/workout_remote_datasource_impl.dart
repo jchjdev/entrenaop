@@ -21,6 +21,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       id,
       block_order,
       block_name,
+      block_format,
       item_order,
       exercise_id,
       exercise_name,

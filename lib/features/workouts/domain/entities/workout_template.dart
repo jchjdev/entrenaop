@@ -54,21 +54,31 @@ class WorkoutExerciseDraft extends Equatable {
 
 /// Agrupación editable de ejercicios dentro de una sesión personal.
 ///
-/// Por ahora el creador admite bloques convencionales. Mantener el formato en
-/// el dominio permite añadir circuitos e intervalos sin cambiar el contrato.
+/// El formato determina tanto la validación como el orden de ejecución. Los
+/// formatos gobernados por reloj se incorporarán sobre este mismo contrato.
 class WorkoutBlockDraft extends Equatable {
   const WorkoutBlockDraft({
     required this.name,
     required this.exercises,
     this.format = WorkoutBlockFormat.straightSets,
+    this.rounds = 1,
+    this.restAfterSeconds = 0,
   });
 
   final String name;
   final WorkoutBlockFormat format;
+  final int rounds;
+  final int restAfterSeconds;
   final List<WorkoutExerciseDraft> exercises;
 
   @override
-  List<Object?> get props => [name, format, exercises];
+  List<Object?> get props => [
+    name,
+    format,
+    rounds,
+    restAfterSeconds,
+    exercises,
+  ];
 }
 
 class CreatePersonalWorkoutInput extends Equatable {

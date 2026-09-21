@@ -114,6 +114,11 @@ El usuario puede nombrarlos, ordenarlos, eliminarlos y mover ejercicios entre
 ellos. Esta estructura precede a los formatos avanzados: circuitos, superseries
 e intervalos añadirán comportamiento al bloque sin sustituir el editor actual.
 
+La primera ampliación de formatos incorpora superseries y circuitos. Ambos
+definen rondas y descanso entre rondas; la ejecución intercala los ejercicios
+de cada vuelta y descansa únicamente al finalizar la ronda. No son etiquetas
+visuales sobre una secuencia convencional.
+
 La agenda semanal global ya permite combinar sesiones personales y contenido
 de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada
 entrenamiento. Cada entrada conserva una instantánea del nombre, versión y

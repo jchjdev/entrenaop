@@ -35,7 +35,7 @@ void main() {
     expect(workoutRepository.revisedTemplateId, 'template-v1');
   });
 
-  testWidgets('permite añadir bloques en una pantalla móvil', (tester) async {
+  testWidgets('permite configurar formatos y bloques en móvil', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -60,6 +60,20 @@ void main() {
       ),
     );
     await tester.pump();
+    final formatSelector = find.byType(
+      DropdownButtonFormField<WorkoutBlockFormat>,
+    );
+    await tester.ensureVisible(formatSelector);
+    await tester.drag(find.byType(ListView), const Offset(0, -180));
+    await tester.pumpAndSettle();
+    await tester.tap(formatSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Superserie').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rondas'), findsOneWidget);
+    expect(find.textContaining('exactamente dos ejercicios'), findsOneWidget);
+
     final addBlock = find.byKey(const ValueKey('add-workout-block'));
     await tester.ensureVisible(addBlock);
     await tester.pumpAndSettle();

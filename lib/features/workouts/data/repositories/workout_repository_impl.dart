@@ -245,6 +245,8 @@ Map<String, dynamic> _draftToJson(CreatePersonalWorkoutInput input) => {
         (block) => {
           'name': block.name.trim(),
           'format': _blockFormatValue(block.format),
+          'rounds': block.rounds,
+          'rest_after_seconds': block.restAfterSeconds,
           'exercises': block.exercises
               .map(
                 (exercise) => {

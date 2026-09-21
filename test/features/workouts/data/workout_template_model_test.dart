@@ -213,4 +213,61 @@ void main() {
     expect(execution.status, WorkoutExecutionStatus.abandoned);
     expect(execution.abandonmentReason, WorkoutAbandonmentReason.lackOfTime);
   });
+
+  test('ordena una superserie por rondas y no por ejercicio', () {
+    Map<String, dynamic> groupedSet({
+      required String id,
+      required int item,
+      required int round,
+    }) => {
+      'id': id,
+      'block_order': 0,
+      'block_name': 'Superserie principal',
+      'block_format': 'superset',
+      'item_order': item,
+      'exercise_id': 'exercise-$item',
+      'exercise_name': 'Ejercicio $item',
+      'exercise_description': null,
+      'exercise_video_url': null,
+      'set_order': round,
+      'target_reps': 10,
+      'target_duration_seconds': null,
+      'target_distance_meters': null,
+      'target_load_kg': null,
+      'target_rpe': null,
+      'target_rir': null,
+      'rest_after_seconds': item == 1 ? 90 : 0,
+      'status': 'pending',
+      'actual_reps': null,
+      'actual_duration_seconds': null,
+      'actual_distance_meters': null,
+      'actual_load_kg': null,
+      'actual_rpe': null,
+      'actual_rir': null,
+      'completed_at': null,
+    };
+
+    final execution = WorkoutExecutionModel.fromJson({
+      'id': 'execution-grouped',
+      'template_id': 'template-grouped',
+      'template_name': 'Superserie',
+      'template_version': 1,
+      'status': 'in_progress',
+      'started_at': '2026-09-21T18:00:00Z',
+      'completed_at': null,
+      'final_rpe': null,
+      'notes': null,
+      'abandonment_reason': null,
+      'workout_execution_sets': [
+        groupedSet(id: 'b2', item: 1, round: 1),
+        groupedSet(id: 'a2', item: 0, round: 1),
+        groupedSet(id: 'b1', item: 1, round: 0),
+        groupedSet(id: 'a1', item: 0, round: 0),
+      ],
+    });
+
+    expect(execution.sets.map((set) => set.id), ['a1', 'b1', 'a2', 'b2']);
+    expect(execution.currentSet?.roundNumber, 1);
+    expect(execution.sets[1].restAfterSeconds, 90);
+  });
 }

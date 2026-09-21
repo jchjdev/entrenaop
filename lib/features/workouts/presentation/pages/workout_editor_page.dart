@@ -335,17 +335,101 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 4, bottom: 12),
-              child: Text(
-                'Series convencionales',
-                style: TextStyle(
-                  color: Color(0xFFFFA477),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+            const SizedBox(height: 4),
+            DropdownButtonFormField<WorkoutBlockFormat>(
+              isExpanded: true,
+              initialValue: block.format,
+              decoration: const InputDecoration(
+                labelText: 'Formato del bloque',
+                prefixIcon: Icon(Icons.account_tree_outlined),
               ),
+              items: const [
+                DropdownMenuItem(
+                  value: WorkoutBlockFormat.straightSets,
+                  child: Text('Series convencionales'),
+                ),
+                DropdownMenuItem(
+                  value: WorkoutBlockFormat.superset,
+                  child: Text('Superserie'),
+                ),
+                DropdownMenuItem(
+                  value: WorkoutBlockFormat.circuit,
+                  child: Text('Circuito'),
+                ),
+              ],
+              onChanged: saving
+                  ? null
+                  : (format) {
+                      if (format != null) {
+                        _changeBlockFormat(blockIndex, format);
+                      }
+                    },
             ),
+            if (block.isGrouped) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  SizedBox(
+                    width: 180,
+                    child: TextFormField(
+                      key: ValueKey('rounds-${block.identity}-${block.rounds}'),
+                      initialValue: block.rounds.toString(),
+                      enabled: !saving,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Rondas',
+                        prefixIcon: Icon(Icons.repeat_rounded),
+                      ),
+                      validator: (value) => _integerValidator(
+                        value,
+                        min: 1,
+                        max: 20,
+                        label: 'cantidad de rondas',
+                      ),
+                      onChanged: (value) {
+                        final rounds = int.tryParse(value);
+                        if (rounds != null && rounds >= 1 && rounds <= 20) {
+                          _changeBlockRounds(blockIndex, rounds);
+                        }
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 220,
+                    child: TextFormField(
+                      initialValue: block.restAfterSeconds.toString(),
+                      enabled: !saving,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Descanso entre rondas',
+                        suffixText: 's',
+                        prefixIcon: Icon(Icons.timer_outlined),
+                      ),
+                      validator: (value) => _integerValidator(
+                        value,
+                        min: 0,
+                        max: 3600,
+                        label: 'descanso',
+                      ),
+                      onChanged: (value) {
+                        final seconds = int.tryParse(value);
+                        if (seconds != null) block.restAfterSeconds = seconds;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                block.format == WorkoutBlockFormat.superset
+                    ? 'Alternaremos exactamente dos ejercicios en cada ronda.'
+                    : 'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
+                style: const TextStyle(color: Colors.white54, height: 1.35),
+              ),
+            ],
+            const SizedBox(height: 12),
             if (block.rows.isEmpty)
               _EmptyExercises(
                 onAdd: catalog.isEmpty || saving || _exerciseCount >= 40
@@ -362,9 +446,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     index: exerciseIndex,
                     data: block.rows[exerciseIndex],
                     enabled: !saving,
+                    fixedSetCount: block.isGrouped,
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
                         if (index != blockIndex &&
+                            (target.format != WorkoutBlockFormat.superset ||
+                                target.rows.length < 2) &&
                             !target.rows.any(
                               (row) =>
                                   row.exercise.id ==
@@ -400,7 +487,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               onPressed:
                   catalog.isEmpty ||
                       saving ||
-                      block.rows.length >= 20 ||
+                      block.rows.length >=
+                          (block.format == WorkoutBlockFormat.superset
+                              ? 2
+                              : 20) ||
                       _exerciseCount >= 40
                   ? null
                   : () => _chooseExercise(context, catalog, blockIndex),
@@ -444,7 +534,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           ),
         );
       }
-      return _BlockRowData(name: block.name, rows: rows);
+      return _BlockRowData(
+        name: block.name,
+        format: block.format,
+        rounds: block.rounds,
+        restAfterSeconds: block.restAfterSeconds,
+        rows: rows,
+      );
     }).toList();
     _didPopulateTemplate = true;
     _nameController.text = template.name;
@@ -472,6 +568,43 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       final block = _blocks.removeAt(from);
       _blocks.insert(to, block);
     });
+  }
+
+  void _changeBlockFormat(int index, WorkoutBlockFormat format) {
+    setState(() {
+      final block = _blocks[index];
+      block.format = format;
+      if (format == WorkoutBlockFormat.straightSets) {
+        block.rounds = 1;
+        block.restAfterSeconds = 0;
+      } else {
+        block.rounds = block.rows.isEmpty
+            ? 3
+            : block.rows.first.sets.length.clamp(1, 20);
+        block.restAfterSeconds = block.restAfterSeconds == 0
+            ? 90
+            : block.restAfterSeconds;
+        _syncBlockRounds(block);
+      }
+    });
+  }
+
+  void _changeBlockRounds(int index, int rounds) {
+    setState(() {
+      final block = _blocks[index]..rounds = rounds;
+      _syncBlockRounds(block);
+    });
+  }
+
+  void _syncBlockRounds(_BlockRowData block) {
+    for (final row in block.rows) {
+      while (row.sets.length > block.rounds) {
+        row.sets.removeLast();
+      }
+      while (row.sets.length < block.rounds) {
+        row.sets.add(row.sets.last.copy());
+      }
+    }
   }
 
   Future<void> _removeBlock(BuildContext context, int index) async {
@@ -512,6 +645,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     setState(() {
       final row = _blocks[fromBlock].rows.removeAt(exerciseIndex);
       _blocks[toBlock].rows.add(row);
+      if (_blocks[toBlock].isGrouped) {
+        _syncBlockRounds(_blocks[toBlock]);
+      }
     });
   }
 
@@ -535,7 +671,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     if (selected != null && mounted) {
       setState(
         () => _blocks[blockIndex].rows.add(
-          _ExerciseRowData.fromExercise(selected),
+          _ExerciseRowData.fromExercise(
+            selected,
+            setCount: _blocks[blockIndex].isGrouped
+                ? _blocks[blockIndex].rounds
+                : 3,
+          ),
         ),
       );
     }
@@ -565,14 +706,30 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 }
 
 class _BlockRowData {
-  _BlockRowData({required this.name, List<_ExerciseRowData>? rows})
-    : rows = rows ?? [];
+  _BlockRowData({
+    required this.name,
+    this.format = WorkoutBlockFormat.straightSets,
+    this.rounds = 1,
+    this.restAfterSeconds = 0,
+    List<_ExerciseRowData>? rows,
+  }) : rows = rows ?? [];
 
+  final Object identity = Object();
   String name;
+  WorkoutBlockFormat format;
+  int rounds;
+  int restAfterSeconds;
   final List<_ExerciseRowData> rows;
+
+  bool get isGrouped =>
+      format == WorkoutBlockFormat.superset ||
+      format == WorkoutBlockFormat.circuit;
 
   WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
     name: name,
+    format: format,
+    rounds: rounds,
+    restAfterSeconds: restAfterSeconds,
     exercises: rows.map((row) => row.toDraft()).toList(),
   );
 }
@@ -584,7 +741,10 @@ class _ExerciseRowData {
     required this.sets,
   });
 
-  factory _ExerciseRowData.fromExercise(ExerciseEntity exercise) {
+  factory _ExerciseRowData.fromExercise(
+    ExerciseEntity exercise, {
+    int setCount = 3,
+  }) {
     final type = exercise.exerciseType.toLowerCase().contains('dur')
         ? WorkoutTargetType.duration
         : WorkoutTargetType.repetitions;
@@ -592,7 +752,7 @@ class _ExerciseRowData {
       exercise: exercise,
       targetType: type,
       sets: List.generate(
-        3,
+        setCount,
         (_) => _SetRowData(
           targetValue: type == WorkoutTargetType.duration ? 30 : 10,
         ),
@@ -647,6 +807,7 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.index,
     required this.data,
     required this.enabled,
+    required this.fixedSetCount,
     required this.moveTargets,
     required this.onMoveToBlock,
     required this.onRemove,
@@ -657,6 +818,7 @@ class _ExerciseEditorCard extends StatefulWidget {
   final int index;
   final _ExerciseRowData data;
   final bool enabled;
+  final bool fixedSetCount;
   final List<({int index, String name})> moveTargets;
   final ValueChanged<int> onMoveToBlock;
   final VoidCallback onRemove;
@@ -782,7 +944,9 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
             Row(
               children: [
                 Text(
-                  'Series (${data.sets.length})',
+                  widget.fixedSetCount
+                      ? 'Una serie por ronda (${data.sets.length})'
+                      : 'Series (${data.sets.length})',
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 const Spacer(),
@@ -801,14 +965,20 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                 ),
                 IconButton(
                   tooltip: 'Quitar última serie',
-                  onPressed: !widget.enabled || data.sets.length <= 1
+                  onPressed:
+                      !widget.enabled ||
+                          widget.fixedSetCount ||
+                          data.sets.length <= 1
                       ? null
                       : () => setState(data.sets.removeLast),
                   icon: const Icon(Icons.remove_circle_outline_rounded),
                 ),
                 IconButton(
                   tooltip: 'Añadir serie',
-                  onPressed: !widget.enabled || data.sets.length >= 20
+                  onPressed:
+                      !widget.enabled ||
+                          widget.fixedSetCount ||
+                          data.sets.length >= 20
                       ? null
                       : () => setState(
                           () => data.sets.add(data.sets.last.copy()),

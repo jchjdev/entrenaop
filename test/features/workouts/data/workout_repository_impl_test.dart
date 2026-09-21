@@ -96,6 +96,8 @@ void main() {
           {
             'name': 'Series de pista',
             'format': 'straight_sets',
+            'rounds': 1,
+            'rest_after_seconds': 0,
             'exercises': [
               {
                 'exercise_id': 'exercise-1',

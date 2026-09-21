@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 
 enum WorkoutExecutionStatus { inProgress, completed, abandoned }
 
@@ -165,6 +166,7 @@ class WorkoutExecutionSet extends Equatable {
     required this.id,
     required this.blockOrder,
     required this.blockName,
+    this.blockFormat = WorkoutBlockFormat.straightSets,
     required this.itemOrder,
     required this.exerciseId,
     required this.exerciseName,
@@ -191,6 +193,7 @@ class WorkoutExecutionSet extends Equatable {
   final String id;
   final int blockOrder;
   final String blockName;
+  final WorkoutBlockFormat blockFormat;
   final int itemOrder;
   final String exerciseId;
   final String exerciseName;
@@ -213,6 +216,12 @@ class WorkoutExecutionSet extends Equatable {
   final double? actualRir;
   final DateTime? completedAt;
 
+  bool get isGrouped =>
+      blockFormat == WorkoutBlockFormat.superset ||
+      blockFormat == WorkoutBlockFormat.circuit;
+
+  int get roundNumber => setOrder + 1;
+
   bool canBeCorrectedAt(DateTime now) {
     final savedAt = completedAt;
     return status == WorkoutSetStatus.completed &&
@@ -233,6 +242,7 @@ class WorkoutExecutionSet extends Equatable {
     id: id,
     blockOrder: blockOrder,
     blockName: blockName,
+    blockFormat: blockFormat,
     itemOrder: itemOrder,
     exerciseId: exerciseId,
     exerciseName: exerciseName,
@@ -261,6 +271,7 @@ class WorkoutExecutionSet extends Equatable {
     id,
     blockOrder,
     blockName,
+    blockFormat,
     itemOrder,
     exerciseId,
     exerciseName,

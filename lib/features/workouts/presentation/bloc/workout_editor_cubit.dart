@@ -36,7 +36,10 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
       }
       if (originalTemplate != null &&
           originalTemplate.blocks.any(
-            (block) => block.format != WorkoutBlockFormat.straightSets,
+            (block) =>
+                block.format != WorkoutBlockFormat.straightSets &&
+                block.format != WorkoutBlockFormat.superset &&
+                block.format != WorkoutBlockFormat.circuit,
           )) {
         throw StateError('Unsupported workout format');
       }

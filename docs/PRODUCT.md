@@ -91,6 +91,9 @@ las prescripciones de varias preparaciones con una carga global coherente.
 El creador permite dividir una sesión en bloques convencionales con nombre y
 orden propios, manteniendo una entrada sencilla con un bloque principal creado
 por defecto.
+Una superserie enlaza exactamente dos ejercicios; un circuito recorre dos o
+más. Ambos permiten elegir rondas y descanso entre vueltas y se presentan en
+ese orden durante la sesión guiada.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:
