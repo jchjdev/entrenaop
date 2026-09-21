@@ -52,10 +52,29 @@ class WorkoutExerciseDraft extends Equatable {
   List<Object?> get props => [exerciseId, sets];
 }
 
+/// Agrupación editable de ejercicios dentro de una sesión personal.
+///
+/// Por ahora el creador admite bloques convencionales. Mantener el formato en
+/// el dominio permite añadir circuitos e intervalos sin cambiar el contrato.
+class WorkoutBlockDraft extends Equatable {
+  const WorkoutBlockDraft({
+    required this.name,
+    required this.exercises,
+    this.format = WorkoutBlockFormat.straightSets,
+  });
+
+  final String name;
+  final WorkoutBlockFormat format;
+  final List<WorkoutExerciseDraft> exercises;
+
+  @override
+  List<Object?> get props => [name, format, exercises];
+}
+
 class CreatePersonalWorkoutInput extends Equatable {
   const CreatePersonalWorkoutInput({
     required this.name,
-    required this.exercises,
+    required this.blocks,
     this.description,
     this.estimatedDurationMinutes,
   });
@@ -63,14 +82,14 @@ class CreatePersonalWorkoutInput extends Equatable {
   final String name;
   final String? description;
   final int? estimatedDurationMinutes;
-  final List<WorkoutExerciseDraft> exercises;
+  final List<WorkoutBlockDraft> blocks;
 
   @override
   List<Object?> get props => [
     name,
     description,
     estimatedDurationMinutes,
-    exercises,
+    blocks,
   ];
 }
 

@@ -66,15 +66,20 @@ void main() {
       const input = CreatePersonalWorkoutInput(
         name: ' Carrera corta ',
         estimatedDurationMinutes: 25,
-        exercises: [
-          WorkoutExerciseDraft(
-            exerciseId: 'exercise-1',
-            sets: [
-              WorkoutSetDraft(
-                targetType: WorkoutTargetType.distance,
-                targetValue: 400,
-                restAfterSeconds: 90,
-                targetRir: 2,
+        blocks: [
+          WorkoutBlockDraft(
+            name: 'Series de pista',
+            exercises: [
+              WorkoutExerciseDraft(
+                exerciseId: 'exercise-1',
+                sets: [
+                  WorkoutSetDraft(
+                    targetType: WorkoutTargetType.distance,
+                    targetValue: 400,
+                    restAfterSeconds: 90,
+                    targetRir: 2,
+                  ),
+                ],
               ),
             ],
           ),
@@ -87,17 +92,23 @@ void main() {
         'name': 'Carrera corta',
         'description': null,
         'estimated_duration_minutes': 25,
-        'exercises': [
+        'blocks': [
           {
-            'exercise_id': 'exercise-1',
-            'sets': [
+            'name': 'Series de pista',
+            'format': 'straight_sets',
+            'exercises': [
               {
-                'target_reps': null,
-                'target_duration_seconds': null,
-                'target_distance_meters': 400.0,
-                'target_load_kg': null,
-                'target_rir': 2.0,
-                'rest_after_seconds': 90,
+                'exercise_id': 'exercise-1',
+                'sets': [
+                  {
+                    'target_reps': null,
+                    'target_duration_seconds': null,
+                    'target_distance_meters': 400.0,
+                    'target_load_kg': null,
+                    'target_rir': 2.0,
+                    'rest_after_seconds': 90,
+                  },
+                ],
               },
             ],
           },
@@ -120,14 +131,19 @@ void main() {
       'template-v1',
       const CreatePersonalWorkoutInput(
         name: 'Fuerza revisada',
-        exercises: [
-          WorkoutExerciseDraft(
-            exerciseId: 'exercise-1',
-            sets: [
-              WorkoutSetDraft(
-                targetType: WorkoutTargetType.repetitions,
-                targetValue: 8,
-                restAfterSeconds: 120,
+        blocks: [
+          WorkoutBlockDraft(
+            name: 'Principal',
+            exercises: [
+              WorkoutExerciseDraft(
+                exerciseId: 'exercise-1',
+                sets: [
+                  WorkoutSetDraft(
+                    targetType: WorkoutTargetType.repetitions,
+                    targetValue: 8,
+                    restAfterSeconds: 120,
+                  ),
+                ],
               ),
             ],
           ),

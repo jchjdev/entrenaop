@@ -79,36 +79,64 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
       'La duración debe estar entre 1 y 600 minutos.',
     );
   }
-  if (input.exercises.isEmpty || input.exercises.length > 20) {
-    throw const FormatException('Añade entre 1 y 20 ejercicios.');
+  if (input.blocks.isEmpty || input.blocks.length > 10) {
+    throw const FormatException('Añade entre 1 y 10 bloques.');
   }
-  final exerciseIds = input.exercises.map((item) => item.exerciseId).toSet();
-  if (exerciseIds.length != input.exercises.length) {
-    throw const FormatException('No repitas el mismo ejercicio en la sesión.');
-  }
-  for (final exercise in input.exercises) {
-    if (exercise.sets.isEmpty || exercise.sets.length > 20) {
+  var exerciseCount = 0;
+  for (final block in input.blocks) {
+    if (block.name.trim().isEmpty || block.name.trim().length > 60) {
       throw const FormatException(
-        'Cada ejercicio debe tener entre 1 y 20 series.',
+        'Cada bloque necesita un nombre de hasta 60 caracteres.',
       );
     }
-    for (final set in exercise.sets) {
-      if (set.targetValue <= 0) {
+    if (block.format != WorkoutBlockFormat.straightSets) {
+      throw const FormatException(
+        'Este creador todavía solo admite bloques convencionales.',
+      );
+    }
+    if (block.exercises.isEmpty || block.exercises.length > 20) {
+      throw const FormatException(
+        'Cada bloque debe contener entre 1 y 20 ejercicios.',
+      );
+    }
+    exerciseCount += block.exercises.length;
+    final exerciseIds = block.exercises.map((item) => item.exerciseId).toSet();
+    if (exerciseIds.length != block.exercises.length) {
+      throw const FormatException(
+        'No repitas el mismo ejercicio dentro de un bloque.',
+      );
+    }
+    for (final exercise in block.exercises) {
+      if (exercise.sets.isEmpty || exercise.sets.length > 20) {
         throw const FormatException(
-          'El objetivo de cada serie debe ser mayor que cero.',
+          'Cada ejercicio debe tener entre 1 y 20 series.',
         );
       }
-      if (set.restAfterSeconds < 0 || set.restAfterSeconds > 3600) {
-        throw const FormatException(
-          'El descanso debe estar entre 0 y 3600 segundos.',
-        );
-      }
-      if ((set.targetLoadKg ?? 0) < 0 ||
-          (set.targetRir != null &&
-              (set.targetRir! < 0 || set.targetRir! > 10))) {
-        throw const FormatException('Revisa la carga y el RIR de las series.');
+      for (final set in exercise.sets) {
+        if (set.targetValue <= 0) {
+          throw const FormatException(
+            'El objetivo de cada serie debe ser mayor que cero.',
+          );
+        }
+        if (set.restAfterSeconds < 0 || set.restAfterSeconds > 3600) {
+          throw const FormatException(
+            'El descanso debe estar entre 0 y 3600 segundos.',
+          );
+        }
+        if ((set.targetLoadKg ?? 0) < 0 ||
+            (set.targetRir != null &&
+                (set.targetRir! < 0 || set.targetRir! > 10))) {
+          throw const FormatException(
+            'Revisa la carga y el RIR de las series.',
+          );
+        }
       }
     }
+  }
+  if (exerciseCount > 40) {
+    throw const FormatException(
+      'Una sesión no puede superar 40 ejercicios en total.',
+    );
   }
 }
 

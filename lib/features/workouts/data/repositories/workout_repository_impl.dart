@@ -240,14 +240,34 @@ Map<String, dynamic> _draftToJson(CreatePersonalWorkoutInput input) => {
   'name': input.name.trim(),
   'description': input.description?.trim(),
   'estimated_duration_minutes': input.estimatedDurationMinutes,
-  'exercises': input.exercises
+  'blocks': input.blocks
       .map(
-        (exercise) => {
-          'exercise_id': exercise.exerciseId,
-          'sets': exercise.sets.map(_setDraftToJson).toList(),
+        (block) => {
+          'name': block.name.trim(),
+          'format': _blockFormatValue(block.format),
+          'exercises': block.exercises
+              .map(
+                (exercise) => {
+                  'exercise_id': exercise.exerciseId,
+                  'sets': exercise.sets.map(_setDraftToJson).toList(),
+                },
+              )
+              .toList(),
         },
       )
       .toList(),
+};
+
+String _blockFormatValue(WorkoutBlockFormat format) => switch (format) {
+  WorkoutBlockFormat.straightSets => 'straight_sets',
+  WorkoutBlockFormat.circuit => 'circuit',
+  WorkoutBlockFormat.superset => 'superset',
+  WorkoutBlockFormat.intervals => 'intervals',
+  WorkoutBlockFormat.emom => 'emom',
+  WorkoutBlockFormat.amrap => 'amrap',
+  WorkoutBlockFormat.tabata => 'tabata',
+  WorkoutBlockFormat.warmUp => 'warm_up',
+  WorkoutBlockFormat.coolDown => 'cool_down',
 };
 
 Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {

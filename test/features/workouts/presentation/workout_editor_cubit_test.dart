@@ -6,6 +6,9 @@ import 'package:entrenaop/features/workouts/domain/repositories/workout_reposito
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -31,19 +34,59 @@ void main() {
     expect(cubit.state.createdTemplateId, 'template-v2');
     expect(workoutRepository.revisedTemplateId, 'template-v1');
   });
+
+  testWidgets('permite añadir bloques en una pantalla móvil', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _WorkoutRepository();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createWorkout: CreatePersonalWorkoutUseCase(repository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pump();
+    final addBlock = find.byKey(const ValueKey('add-workout-block'));
+    await tester.ensureVisible(addBlock);
+    await tester.pumpAndSettle();
+    await tester.tap(addBlock);
+    await tester.pump();
+
+    expect(find.text('Bloque 2'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 const _input = CreatePersonalWorkoutInput(
   name: 'Mi sesión revisada',
   estimatedDurationMinutes: 30,
-  exercises: [
-    WorkoutExerciseDraft(
-      exerciseId: 'exercise-1',
-      sets: [
-        WorkoutSetDraft(
-          targetType: WorkoutTargetType.repetitions,
-          targetValue: 8,
-          restAfterSeconds: 90,
+  blocks: [
+    WorkoutBlockDraft(
+      name: 'Principal',
+      exercises: [
+        WorkoutExerciseDraft(
+          exerciseId: 'exercise-1',
+          sets: [
+            WorkoutSetDraft(
+              targetType: WorkoutTargetType.repetitions,
+              targetValue: 8,
+              restAfterSeconds: 90,
+            ),
+          ],
         ),
       ],
     ),

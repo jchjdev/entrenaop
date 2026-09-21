@@ -189,6 +189,9 @@ identidad
   `create_personal_workout_template(jsonb)`. La función valida de nuevo el
   borrador y guarda plantilla, bloque, ejercicios y series en una única
   transacción; el cliente no encadena inserciones parciales.
+- El borrador personal contiene de uno a diez bloques. En esta etapa todos son
+  `straight_sets`; separar primero la estructura de bloques permite incorporar
+  circuitos, superseries e intervalos mediante reglas específicas y probadas.
 - Duplicar una sesión copia atómicamente toda su jerarquía. Retirarla de la
   biblioteca significa archivarla, no borrar resultados históricos.
 - `workout_templates.family_id`, `version` y `previous_version_id` relacionan

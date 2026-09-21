@@ -109,6 +109,11 @@ su historial. La edición de una sesión existente crea una revisión enlazada y
 archiva la anterior, por lo que el ciclo básico de rutinas personales queda
 cerrado sin reinterpretar ejecuciones pasadas.
 
+El creador organiza ya una sesión personal en varios bloques convencionales.
+El usuario puede nombrarlos, ordenarlos, eliminarlos y mover ejercicios entre
+ellos. Esta estructura precede a los formatos avanzados: circuitos, superseries
+e intervalos añadirán comportamiento al bloque sin sustituir el editor actual.
+
 La agenda semanal global ya permite combinar sesiones personales y contenido
 de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada
 entrenamiento. Cada entrada conserva una instantánea del nombre, versión y

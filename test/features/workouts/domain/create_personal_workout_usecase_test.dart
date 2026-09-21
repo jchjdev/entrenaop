@@ -31,10 +31,12 @@ void main() {
   });
 
   test('rechaza ejercicios repetidos antes de llamar a Supabase', () async {
-    final exercise = _validInput().exercises.single;
+    final exercise = _validInput().blocks.single.exercises.single;
     final input = CreatePersonalWorkoutInput(
       name: 'Sesión repetida',
-      exercises: [exercise, exercise],
+      blocks: [
+        WorkoutBlockDraft(name: 'Principal', exercises: [exercise, exercise]),
+      ],
     );
 
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
@@ -44,14 +46,19 @@ void main() {
   test('rechaza objetivos vacíos o negativos', () async {
     const input = CreatePersonalWorkoutInput(
       name: 'Sesión inválida',
-      exercises: [
-        WorkoutExerciseDraft(
-          exerciseId: 'exercise-1',
-          sets: [
-            WorkoutSetDraft(
-              targetType: WorkoutTargetType.repetitions,
-              targetValue: 0,
-              restAfterSeconds: 60,
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Principal',
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: 'exercise-1',
+              sets: [
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.repetitions,
+                  targetValue: 0,
+                  restAfterSeconds: 60,
+                ),
+              ],
             ),
           ],
         ),
@@ -60,20 +67,40 @@ void main() {
 
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
   });
+
+  test('permite reutilizar un ejercicio en bloques distintos', () async {
+    final exercise = _validInput().blocks.single.exercises.single;
+    final input = CreatePersonalWorkoutInput(
+      name: 'Técnica y trabajo principal',
+      blocks: [
+        WorkoutBlockDraft(name: 'Técnica', exercises: [exercise]),
+        WorkoutBlockDraft(name: 'Principal', exercises: [exercise]),
+      ],
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
 }
 
 CreatePersonalWorkoutInput _validInput() => const CreatePersonalWorkoutInput(
   name: 'Fuerza personal',
   estimatedDurationMinutes: 35,
-  exercises: [
-    WorkoutExerciseDraft(
-      exerciseId: 'exercise-1',
-      sets: [
-        WorkoutSetDraft(
-          targetType: WorkoutTargetType.repetitions,
-          targetValue: 10,
-          restAfterSeconds: 60,
-          targetRir: 2,
+  blocks: [
+    WorkoutBlockDraft(
+      name: 'Principal',
+      exercises: [
+        WorkoutExerciseDraft(
+          exerciseId: 'exercise-1',
+          sets: [
+            WorkoutSetDraft(
+              targetType: WorkoutTargetType.repetitions,
+              targetValue: 10,
+              restAfterSeconds: 60,
+              targetRir: 2,
+            ),
+          ],
         ),
       ],
     ),

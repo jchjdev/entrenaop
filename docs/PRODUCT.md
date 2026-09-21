@@ -88,6 +88,9 @@ Inicio enseña solo las que ha añadido; el catálogo completo se consulta apart
 Las sesiones personales no dependen de una oposición concreta. La agenda
 semanal ya reúne sesiones personales y de biblioteca; más adelante integrará
 las prescripciones de varias preparaciones con una carga global coherente.
+El creador permite dividir una sesión en bloques convencionales con nombre y
+orden propios, manteniendo una entrada sencilla con un bloque principal creado
+por defecto.
 
 La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:

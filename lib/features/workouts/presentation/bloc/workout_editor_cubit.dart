@@ -35,9 +35,9 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
         throw StateError('Workout not found');
       }
       if (originalTemplate != null &&
-          (originalTemplate.blocks.length != 1 ||
-              originalTemplate.blocks.single.format !=
-                  WorkoutBlockFormat.straightSets)) {
+          originalTemplate.blocks.any(
+            (block) => block.format != WorkoutBlockFormat.straightSets,
+          )) {
         throw StateError('Unsupported workout format');
       }
       emit(

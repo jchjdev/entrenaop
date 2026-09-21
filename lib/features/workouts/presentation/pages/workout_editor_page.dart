@@ -18,7 +18,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController(text: '30');
-  final List<_ExerciseRowData> _rows = [];
+  final List<_BlockRowData> _blocks = [_BlockRowData(name: 'Principal')];
   bool _didPopulateTemplate = false;
 
   @override
@@ -194,50 +194,37 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     children: [
                       const Expanded(
                         child: Text(
-                          'Ejercicios',
+                          'Bloques de la sesión',
                           style: TextStyle(
                             fontSize: 21,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                      Text('${_rows.length}/20'),
+                      Text('${_blocks.length}/10'),
                     ],
                   ),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Agrupa el calentamiento, el trabajo principal o los accesorios como prefieras.',
+                    style: TextStyle(color: Colors.white54, height: 1.35),
+                  ),
                   const SizedBox(height: 12),
-                  if (_rows.isEmpty)
-                    _EmptyExercises(
-                      onAdd: catalog.isEmpty || saving
-                          ? null
-                          : () => _chooseExercise(context, catalog),
-                    )
-                  else
-                    ...List.generate(
-                      _rows.length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _ExerciseEditorCard(
-                          key: ValueKey(_rows[index].exercise.id),
-                          index: index,
-                          data: _rows[index],
-                          enabled: !saving,
-                          onRemove: () => setState(() => _rows.removeAt(index)),
-                          onMoveUp: index == 0
-                              ? null
-                              : () => _move(index, index - 1),
-                          onMoveDown: index == _rows.length - 1
-                              ? null
-                              : () => _move(index, index + 1),
-                        ),
-                      ),
+                  ...List.generate(
+                    _blocks.length,
+                    (index) => Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: _buildBlockEditor(context, catalog, index, saving),
                     ),
+                  ),
                   const SizedBox(height: 4),
                   OutlinedButton.icon(
-                    onPressed: catalog.isEmpty || saving || _rows.length >= 20
+                    key: const ValueKey('add-workout-block'),
+                    onPressed: saving || _blocks.length >= 10
                         ? null
-                        : () => _chooseExercise(context, catalog),
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Añadir ejercicio'),
+                        : _addBlock,
+                    icon: const Icon(Icons.view_agenda_outlined),
+                    label: const Text('Añadir bloque'),
                   ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
@@ -261,6 +248,171 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     );
   }
 
+  Widget _buildBlockEditor(
+    BuildContext context,
+    List<ExerciseEntity> catalog,
+    int blockIndex,
+    bool saving,
+  ) {
+    final block = _blocks[blockIndex];
+    return Card(
+      color: const Color(0xFF111111),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Colors.white12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: const Color(0x33FF8A50),
+                  foregroundColor: const Color(0xFFFF8A50),
+                  child: Text('${blockIndex + 1}'),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey(block),
+                    initialValue: block.name,
+                    enabled: !saving,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre del bloque',
+                      isDense: true,
+                    ),
+                    maxLength: 60,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Ponle un nombre al bloque.'
+                        : null,
+                    onChanged: (value) => block.name = value,
+                  ),
+                ),
+                PopupMenuButton<int>(
+                  enabled: !saving,
+                  tooltip: 'Organizar bloque',
+                  onSelected: (value) {
+                    if (value == -1) {
+                      _moveBlock(blockIndex, blockIndex - 1);
+                    }
+                    if (value == -2) {
+                      _moveBlock(blockIndex, blockIndex + 1);
+                    }
+                    if (value == -3) _removeBlock(context, blockIndex);
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: -1,
+                      enabled: blockIndex > 0,
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.arrow_upward_rounded),
+                        title: Text('Subir bloque'),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: -2,
+                      enabled: blockIndex < _blocks.length - 1,
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.arrow_downward_rounded),
+                        title: Text('Bajar bloque'),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: -3,
+                      enabled: _blocks.length > 1,
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.delete_outline_rounded),
+                        title: Text('Eliminar bloque'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 4, bottom: 12),
+              child: Text(
+                'Series convencionales',
+                style: TextStyle(
+                  color: Color(0xFFFFA477),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (block.rows.isEmpty)
+              _EmptyExercises(
+                onAdd: catalog.isEmpty || saving || _exerciseCount >= 40
+                    ? null
+                    : () => _chooseExercise(context, catalog, blockIndex),
+              )
+            else
+              ...List.generate(
+                block.rows.length,
+                (exerciseIndex) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _ExerciseEditorCard(
+                    key: ValueKey(block.rows[exerciseIndex].exercise.id),
+                    index: exerciseIndex,
+                    data: block.rows[exerciseIndex],
+                    enabled: !saving,
+                    moveTargets: [
+                      for (final (index, target) in _blocks.indexed)
+                        if (index != blockIndex &&
+                            !target.rows.any(
+                              (row) =>
+                                  row.exercise.id ==
+                                  block.rows[exerciseIndex].exercise.id,
+                            ))
+                          (index: index, name: target.name),
+                    ],
+                    onMoveToBlock: (targetIndex) => _moveExerciseToBlock(
+                      blockIndex,
+                      exerciseIndex,
+                      targetIndex,
+                    ),
+                    onRemove: () =>
+                        setState(() => block.rows.removeAt(exerciseIndex)),
+                    onMoveUp: exerciseIndex == 0
+                        ? null
+                        : () => _moveExercise(
+                            blockIndex,
+                            exerciseIndex,
+                            exerciseIndex - 1,
+                          ),
+                    onMoveDown: exerciseIndex == block.rows.length - 1
+                        ? null
+                        : () => _moveExercise(
+                            blockIndex,
+                            exerciseIndex,
+                            exerciseIndex + 1,
+                          ),
+                  ),
+                ),
+              ),
+            OutlinedButton.icon(
+              onPressed:
+                  catalog.isEmpty ||
+                      saving ||
+                      block.rows.length >= 20 ||
+                      _exerciseCount >= 40
+                  ? null
+                  : () => _chooseExercise(context, catalog, blockIndex),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Añadir ejercicio al bloque'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _populateTemplate(
     WorkoutTemplate template,
     List<ExerciseEntity> catalog,
@@ -268,54 +420,109 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     final exercisesById = {
       for (final exercise in catalog) exercise.id: exercise,
     };
-    final items = template.blocks.single.items;
-    final rows = <_ExerciseRowData>[];
-    for (final item in items) {
-      final exercise = exercisesById[item.exerciseId];
-      if (exercise == null || item.sets.isEmpty) continue;
-      final targetType = _targetTypeOf(item.sets.first);
-      if (item.sets.any((set) => _targetTypeOf(set) != targetType)) continue;
-      rows.add(
-        _ExerciseRowData(
-          exercise: exercise,
-          targetType: targetType,
-          sets: item.sets
-              .map(
-                (set) => _SetRowData(
-                  targetValue: _targetValueOf(set),
-                  restSeconds: set.restAfterSeconds,
-                  loadKg: set.targetLoadKg,
-                  rir: set.targetRir,
-                ),
-              )
-              .toList(),
-        ),
-      );
-    }
+    final blocks = template.blocks.map((block) {
+      final rows = <_ExerciseRowData>[];
+      for (final item in block.items) {
+        final exercise = exercisesById[item.exerciseId];
+        if (exercise == null || item.sets.isEmpty) continue;
+        final targetType = _targetTypeOf(item.sets.first);
+        if (item.sets.any((set) => _targetTypeOf(set) != targetType)) continue;
+        rows.add(
+          _ExerciseRowData(
+            exercise: exercise,
+            targetType: targetType,
+            sets: item.sets
+                .map(
+                  (set) => _SetRowData(
+                    targetValue: _targetValueOf(set),
+                    restSeconds: set.restAfterSeconds,
+                    loadKg: set.targetLoadKg,
+                    rir: set.targetRir,
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      }
+      return _BlockRowData(name: block.name, rows: rows);
+    }).toList();
     _didPopulateTemplate = true;
     _nameController.text = template.name;
     _descriptionController.text = template.description ?? '';
     _durationController.text =
         template.estimatedDurationMinutes?.toString() ?? '';
     setState(() {
-      _rows
+      _blocks
         ..clear()
-        ..addAll(rows);
+        ..addAll(blocks);
     });
   }
 
-  void _move(int from, int to) {
+  int get _exerciseCount =>
+      _blocks.fold(0, (count, block) => count + block.rows.length);
+
+  void _addBlock() {
+    setState(
+      () => _blocks.add(_BlockRowData(name: 'Bloque ${_blocks.length + 1}')),
+    );
+  }
+
+  void _moveBlock(int from, int to) {
     setState(() {
-      final row = _rows.removeAt(from);
-      _rows.insert(to, row);
+      final block = _blocks.removeAt(from);
+      _blocks.insert(to, block);
+    });
+  }
+
+  Future<void> _removeBlock(BuildContext context, int index) async {
+    if (_blocks[index].rows.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Eliminar bloque'),
+          content: const Text(
+            'También se quitarán del borrador los ejercicios de este bloque.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => dialogContext.pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => dialogContext.pop(true),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+    setState(() => _blocks.removeAt(index));
+  }
+
+  void _moveExercise(int blockIndex, int from, int to) {
+    setState(() {
+      final rows = _blocks[blockIndex].rows;
+      final row = rows.removeAt(from);
+      rows.insert(to, row);
+    });
+  }
+
+  void _moveExerciseToBlock(int fromBlock, int exerciseIndex, int toBlock) {
+    setState(() {
+      final row = _blocks[fromBlock].rows.removeAt(exerciseIndex);
+      _blocks[toBlock].rows.add(row);
     });
   }
 
   Future<void> _chooseExercise(
     BuildContext context,
     List<ExerciseEntity> catalog,
+    int blockIndex,
   ) async {
-    final selectedIds = _rows.map((row) => row.exercise.id).toSet();
+    final selectedIds = _blocks[blockIndex].rows
+        .map((row) => row.exercise.id)
+        .toSet();
     final available = catalog
         .where((exercise) => !selectedIds.contains(exercise.id))
         .toList();
@@ -326,16 +533,22 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       builder: (context) => _ExercisePicker(exercises: available),
     );
     if (selected != null && mounted) {
-      setState(() => _rows.add(_ExerciseRowData.fromExercise(selected)));
+      setState(
+        () => _blocks[blockIndex].rows.add(
+          _ExerciseRowData.fromExercise(selected),
+        ),
+      );
     }
   }
 
   void _save(BuildContext context) {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_rows.isEmpty) {
+    if (_blocks.any((block) => block.rows.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Añade al menos un ejercicio.')),
+        const SnackBar(
+          content: Text('Cada bloque necesita al menos un ejercicio.'),
+        ),
       );
       return;
     }
@@ -345,10 +558,23 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           ? null
           : _descriptionController.text,
       estimatedDurationMinutes: int.tryParse(_durationController.text),
-      exercises: _rows.map((row) => row.toDraft()).toList(),
+      blocks: _blocks.map((block) => block.toDraft()).toList(),
     );
     context.read<WorkoutEditorCubit>().save(input);
   }
+}
+
+class _BlockRowData {
+  _BlockRowData({required this.name, List<_ExerciseRowData>? rows})
+    : rows = rows ?? [];
+
+  String name;
+  final List<_ExerciseRowData> rows;
+
+  WorkoutBlockDraft toDraft() => WorkoutBlockDraft(
+    name: name,
+    exercises: rows.map((row) => row.toDraft()).toList(),
+  );
 }
 
 class _ExerciseRowData {
@@ -421,6 +647,8 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.index,
     required this.data,
     required this.enabled,
+    required this.moveTargets,
+    required this.onMoveToBlock,
     required this.onRemove,
     required this.onMoveUp,
     required this.onMoveDown,
@@ -429,6 +657,8 @@ class _ExerciseEditorCard extends StatefulWidget {
   final int index;
   final _ExerciseRowData data;
   final bool enabled;
+  final List<({int index, String name})> moveTargets;
+  final ValueChanged<int> onMoveToBlock;
   final VoidCallback onRemove;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
@@ -463,20 +693,53 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Subir',
-                  onPressed: widget.enabled ? widget.onMoveUp : null,
-                  icon: const Icon(Icons.arrow_upward_rounded),
-                ),
-                IconButton(
-                  tooltip: 'Bajar',
-                  onPressed: widget.enabled ? widget.onMoveDown : null,
-                  icon: const Icon(Icons.arrow_downward_rounded),
-                ),
-                IconButton(
-                  tooltip: 'Quitar',
-                  onPressed: widget.enabled ? widget.onRemove : null,
-                  icon: const Icon(Icons.delete_outline_rounded),
+                PopupMenuButton<int>(
+                  enabled: widget.enabled,
+                  tooltip: 'Organizar ejercicio',
+                  onSelected: (value) {
+                    if (value == -1) widget.onMoveUp?.call();
+                    if (value == -2) widget.onMoveDown?.call();
+                    if (value == -3) widget.onRemove();
+                    if (value >= 0) widget.onMoveToBlock(value);
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: -1,
+                      enabled: widget.onMoveUp != null,
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.arrow_upward_rounded),
+                        title: Text('Subir'),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: -2,
+                      enabled: widget.onMoveDown != null,
+                      child: const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.arrow_downward_rounded),
+                        title: Text('Bajar'),
+                      ),
+                    ),
+                    for (final target in widget.moveTargets)
+                      PopupMenuItem(
+                        value: target.index,
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.drive_file_move_outline),
+                          title: Text('Mover a ${target.name}'),
+                        ),
+                      ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: -3,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.delete_outline_rounded),
+                        title: Text('Quitar ejercicio'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
