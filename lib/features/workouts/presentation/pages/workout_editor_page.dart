@@ -998,6 +998,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   data: data.sets[index],
                   targetType: data.targetType,
                   enabled: widget.enabled,
+                  showRest: !widget.fixedSetCount,
                 ),
               ),
             ),
@@ -1015,12 +1016,14 @@ class _SetEditor extends StatelessWidget {
     required this.data,
     required this.targetType,
     required this.enabled,
+    required this.showRest,
   });
 
   final int index;
   final _SetRowData data;
   final WorkoutTargetType targetType;
   final bool enabled;
+  final bool showRest;
 
   @override
   Widget build(BuildContext context) {
@@ -1088,16 +1091,17 @@ class _SetEditor extends StatelessWidget {
                 onChanged: (value) => data.rir = value,
                 onCleared: () => data.rir = null,
               ),
-              _NumberField(
-                label: 'Descanso',
-                initialValue: data.restSeconds.toString(),
-                suffix: 's',
-                enabled: enabled,
-                integer: true,
-                min: 0,
-                max: 3600,
-                onChanged: (value) => data.restSeconds = value.round(),
-              ),
+              if (showRest)
+                _NumberField(
+                  label: 'Descanso',
+                  initialValue: data.restSeconds.toString(),
+                  suffix: 's',
+                  enabled: enabled,
+                  integer: true,
+                  min: 0,
+                  max: 3600,
+                  onChanged: (value) => data.restSeconds = value.round(),
+                ),
             ],
           ),
         ],
