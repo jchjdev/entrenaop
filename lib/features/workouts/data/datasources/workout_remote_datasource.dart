@@ -3,6 +3,10 @@ abstract class WorkoutRemoteDataSource {
 
   Future<List<Map<String, dynamic>>> getPublicTemplates();
 
+  Future<List<Map<String, dynamic>>> getPersonalTemplates();
+
+  Future<String> createPersonalTemplate(Map<String, dynamic> payload);
+
   Future<String> startExecution(String templateId);
 
   Future<Map<String, dynamic>?> getExecution(String executionId);

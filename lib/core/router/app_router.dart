@@ -21,10 +21,12 @@ import 'package:entrenaop/features/training_plan/presentation/bloc/training_pref
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_detail_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_library_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_page.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
@@ -143,6 +145,13 @@ class AppRouter {
                         child: const WorkoutLibraryPage(),
                       ),
                       routes: [
+                        GoRoute(
+                          path: 'new',
+                          builder: (context, state) => BlocProvider(
+                            create: (_) => sl<WorkoutEditorCubit>(),
+                            child: const WorkoutEditorPage(),
+                          ),
+                        ),
                         GoRoute(
                           path: ':templateId',
                           builder: (context, state) {

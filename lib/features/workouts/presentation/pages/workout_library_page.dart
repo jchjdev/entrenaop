@@ -10,43 +10,86 @@ class WorkoutLibraryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          tooltip: 'Volver',
-          onPressed: context.pop,
-          icon: const Icon(Icons.arrow_back_rounded),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            tooltip: 'Volver',
+            onPressed: context.pop,
+            icon: const Icon(Icons.arrow_back_rounded),
+          ),
+          title: const Text('Sesiones'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Biblioteca'),
+              Tab(text: 'Mis sesiones'),
+            ],
+          ),
         ),
-        title: const Text('Biblioteca'),
-      ),
-      body: BlocBuilder<WorkoutLibraryCubit, WorkoutLibraryState>(
-        builder: (context, state) {
-          if (state.status == WorkoutLibraryStatus.initial ||
-              (state.status == WorkoutLibraryStatus.loading &&
-                  state.workouts.isEmpty)) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.status == WorkoutLibraryStatus.failure &&
-              state.workouts.isEmpty) {
-            return _Failure(
-              message:
-                  state.errorMessage ?? 'No hemos podido abrir la biblioteca.',
-              onRetry: context.read<WorkoutLibraryCubit>().load,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            final createdId = await context.push<String>('/plan/library/new');
+            if (createdId != null && context.mounted) {
+              await context.read<WorkoutLibraryCubit>().load();
+              if (context.mounted) {
+                DefaultTabController.of(context).animateTo(1);
+              }
+            }
+          },
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Crear sesión'),
+        ),
+        body: BlocBuilder<WorkoutLibraryCubit, WorkoutLibraryState>(
+          builder: (context, state) {
+            if (state.status == WorkoutLibraryStatus.initial ||
+                (state.status == WorkoutLibraryStatus.loading &&
+                    state.workouts.isEmpty &&
+                    state.personalWorkouts.isEmpty)) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.status == WorkoutLibraryStatus.failure &&
+                state.workouts.isEmpty &&
+                state.personalWorkouts.isEmpty) {
+              return _Failure(
+                message:
+                    state.errorMessage ?? 'No hemos podido abrir tus sesiones.',
+                onRetry: context.read<WorkoutLibraryCubit>().load,
+              );
+            }
+            return TabBarView(
+              children: [
+                _LibraryContent(
+                  state: state,
+                  workouts: state.workouts,
+                  personal: false,
+                ),
+                _LibraryContent(
+                  state: state,
+                  workouts: state.personalWorkouts,
+                  personal: true,
+                ),
+              ],
             );
-          }
-          return _LibraryContent(state: state);
-        },
+          },
+        ),
       ),
     );
   }
 }
 
 class _LibraryContent extends StatelessWidget {
-  const _LibraryContent({required this.state});
+  const _LibraryContent({
+    required this.state,
+    required this.workouts,
+    required this.personal,
+  });
 
   final WorkoutLibraryState state;
+  final List<WorkoutTemplateSummary> workouts;
+  final bool personal;
 
   @override
   Widget build(BuildContext context) {
@@ -65,18 +108,20 @@ class _LibraryContent extends StatelessWidget {
                   if (state.status == WorkoutLibraryStatus.loading)
                     const LinearProgressIndicator(minHeight: 2),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Sesiones de EntrenaOP',
+                  Text(
+                    personal ? 'Tus sesiones' : 'Sesiones de EntrenaOP',
                     style: TextStyle(fontSize: 29, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 7),
-                  const Text(
-                    'Entrenamientos públicos para elegir y ejecutar libremente. No son todavía una prescripción adaptativa.',
+                  Text(
+                    personal
+                        ? 'Entrenamientos privados creados por ti, listos para repetir cuando quieras.'
+                        : 'Entrenamientos públicos para elegir y ejecutar libremente. No son todavía una prescripción adaptativa.',
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
                   const SizedBox(height: 22),
-                  if (state.workouts.isEmpty)
-                    const _EmptyLibrary()
+                  if (workouts.isEmpty)
+                    _EmptyLibrary(personal: personal)
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
@@ -91,9 +136,9 @@ class _LibraryContent extends StatelessWidget {
                                 mainAxisSpacing: 12,
                                 mainAxisExtent: 222,
                               ),
-                          itemCount: state.workouts.length,
+                          itemCount: workouts.length,
                           itemBuilder: (context, index) =>
-                              _WorkoutCard(workout: state.workouts[index]),
+                              _WorkoutCard(workout: workouts[index]),
                         );
                       },
                     ),
@@ -191,17 +236,40 @@ class _WorkoutCard extends StatelessWidget {
 }
 
 class _EmptyLibrary extends StatelessWidget {
-  const _EmptyLibrary();
+  const _EmptyLibrary({required this.personal});
+
+  final bool personal;
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      color: Color(0xFF151515),
+    return Card(
+      color: const Color(0xFF151515),
       child: Padding(
-        padding: EdgeInsets.all(24),
-        child: Text(
-          'Todavía no hay sesiones públicas disponibles.',
-          textAlign: TextAlign.center,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Icon(
+              personal
+                  ? Icons.edit_calendar_rounded
+                  : Icons.inventory_2_outlined,
+              size: 40,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              personal
+                  ? 'Todavía no has creado ninguna sesión.'
+                  : 'Todavía no hay sesiones públicas disponibles.',
+              textAlign: TextAlign.center,
+            ),
+            if (personal) ...[
+              const SizedBox(height: 6),
+              const Text(
+                'Pulsa “Crear sesión” para diseñar la primera.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white60),
+              ),
+            ],
+          ],
         ),
       ),
     );

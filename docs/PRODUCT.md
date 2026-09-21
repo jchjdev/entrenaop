@@ -49,6 +49,8 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 - Biblioteca y sesiones públicas no adaptativas.
 - Creación de rutinas propias.
+- Las rutinas propias son privadas y se distinguen visualmente de la biblioteca
+  pública de EntrenaOP.
 - Historial conservado aunque el usuario deje de pagar.
 - Sin progresión adaptativa personalizada.
 

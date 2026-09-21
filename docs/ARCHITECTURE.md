@@ -184,6 +184,10 @@ identidad
 - `workout_templates.origin` separa contenido de sistema, usuario, entrenador y
   algoritmo. La biblioteca muestra únicamente plantillas públicas publicadas;
   las prescripciones adaptativas y las sesiones personales permanecen privadas.
+- Las sesiones personales convencionales se crean mediante
+  `create_personal_workout_template(jsonb)`. La función valida de nuevo el
+  borrador y guarda plantilla, bloque, ejercicios y series en una única
+  transacción; el cliente no encadena inserciones parciales.
 - Al comenzar, la ejecución copia la prescripción efectiva por serie. El
   historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan

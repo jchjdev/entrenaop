@@ -97,6 +97,12 @@ real. Las plantillas públicas, las rutinas personales y las futuras
 prescripciones adaptativas comparten motor de ejecución, pero conservan origen,
 visibilidad y versionado distintos.
 
+El primer creador de sesiones personales permite ordenar ejercicios del
+catálogo y prescribir series homogéneas por repeticiones, tiempo o distancia,
+con descanso, carga y RIR opcionales. El guardado es privado y atómico en
+PostgreSQL. La edición serie a serie, los ejercicios propios y los formatos
+avanzados ampliarán este recorrido sin sustituirlo.
+
 ## Fase 3: adaptación y seguimiento
 
 - Algoritmo determinista de progresión, con auditoría y anulación manual.

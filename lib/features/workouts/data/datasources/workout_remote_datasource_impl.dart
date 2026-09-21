@@ -102,6 +102,31 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getPersonalTemplates() async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) return const [];
+    final response = await supabaseClient
+        .from('workout_templates')
+        .select(
+          'id, name, description, estimated_duration_minutes, origin, version',
+        )
+        .eq('owner_user_id', userId)
+        .eq('origin', 'user')
+        .neq('status', 'archived')
+        .order('updated_at', ascending: false);
+    return response.cast<Map<String, dynamic>>();
+  }
+
+  @override
+  Future<String> createPersonalTemplate(Map<String, dynamic> payload) async {
+    final response = await supabaseClient.rpc(
+      'create_personal_workout_template',
+      params: {'p_payload': payload},
+    );
+    return response as String;
+  }
+
+  @override
   Future<String> startExecution(String templateId) async {
     final response = await supabaseClient.rpc(
       'start_workout_execution',

@@ -7,6 +7,10 @@ abstract class WorkoutRepository {
 
   Future<List<WorkoutTemplateSummary>> getPublicTemplates();
 
+  Future<List<WorkoutTemplateSummary>> getPersonalTemplates();
+
+  Future<String> createPersonalTemplate(CreatePersonalWorkoutInput input);
+
   Future<String> startExecution(String templateId);
 
   Future<WorkoutExecution?> getExecution(String executionId);

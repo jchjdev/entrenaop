@@ -14,6 +14,66 @@ enum WorkoutBlockFormat {
 
 enum WorkoutTemplateOrigin { system, user, coach, algorithm }
 
+enum WorkoutTargetType { repetitions, duration, distance }
+
+/// Serie que el usuario prescribe al crear una sesión propia.
+class WorkoutSetDraft extends Equatable {
+  const WorkoutSetDraft({
+    required this.targetType,
+    required this.targetValue,
+    required this.restAfterSeconds,
+    this.targetLoadKg,
+    this.targetRir,
+  });
+
+  final WorkoutTargetType targetType;
+  final double targetValue;
+  final int restAfterSeconds;
+  final double? targetLoadKg;
+  final double? targetRir;
+
+  @override
+  List<Object?> get props => [
+    targetType,
+    targetValue,
+    restAfterSeconds,
+    targetLoadKg,
+    targetRir,
+  ];
+}
+
+class WorkoutExerciseDraft extends Equatable {
+  const WorkoutExerciseDraft({required this.exerciseId, required this.sets});
+
+  final String exerciseId;
+  final List<WorkoutSetDraft> sets;
+
+  @override
+  List<Object?> get props => [exerciseId, sets];
+}
+
+class CreatePersonalWorkoutInput extends Equatable {
+  const CreatePersonalWorkoutInput({
+    required this.name,
+    required this.exercises,
+    this.description,
+    this.estimatedDurationMinutes,
+  });
+
+  final String name;
+  final String? description;
+  final int? estimatedDurationMinutes;
+  final List<WorkoutExerciseDraft> exercises;
+
+  @override
+  List<Object?> get props => [
+    name,
+    description,
+    estimatedDurationMinutes,
+    exercises,
+  ];
+}
+
 /// Datos ligeros para descubrir una sesión sin cargar todos sus bloques.
 class WorkoutTemplateSummary extends Equatable {
   const WorkoutTemplateSummary({

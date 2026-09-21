@@ -35,6 +35,31 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async {
+    final rows = await remoteDataSource.getPersonalTemplates();
+    return rows
+        .map(WorkoutTemplateSummaryModel.fromJson)
+        .toList(growable: false);
+  }
+
+  @override
+  Future<String> createPersonalTemplate(CreatePersonalWorkoutInput input) {
+    return remoteDataSource.createPersonalTemplate({
+      'name': input.name.trim(),
+      'description': input.description?.trim(),
+      'estimated_duration_minutes': input.estimatedDurationMinutes,
+      'exercises': input.exercises
+          .map(
+            (exercise) => {
+              'exercise_id': exercise.exerciseId,
+              'sets': exercise.sets.map(_setDraftToJson).toList(),
+            },
+          )
+          .toList(),
+    });
+  }
+
+  @override
   Future<String> startExecution(String templateId) =>
       remoteDataSource.startExecution(templateId);
 
@@ -208,6 +233,21 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         ),
       };
 }
+
+Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
+  'target_reps': set.targetType == WorkoutTargetType.repetitions
+      ? set.targetValue.round()
+      : null,
+  'target_duration_seconds': set.targetType == WorkoutTargetType.duration
+      ? set.targetValue.round()
+      : null,
+  'target_distance_meters': set.targetType == WorkoutTargetType.distance
+      ? set.targetValue
+      : null,
+  'target_load_kg': set.targetLoadKg,
+  'target_rir': set.targetRir,
+  'rest_after_seconds': set.restAfterSeconds,
+};
 
 String _reasonValue(WorkoutAbandonmentReason reason) => switch (reason) {
   WorkoutAbandonmentReason.lackOfTime => 'lack_of_time',

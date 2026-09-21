@@ -7,13 +7,15 @@ class WorkoutLibraryState extends Equatable {
   const WorkoutLibraryState({
     this.status = WorkoutLibraryStatus.initial,
     this.workouts = const [],
+    this.personalWorkouts = const [],
     this.errorMessage,
   });
 
   final WorkoutLibraryStatus status;
   final List<WorkoutTemplateSummary> workouts;
+  final List<WorkoutTemplateSummary> personalWorkouts;
   final String? errorMessage;
 
   @override
-  List<Object?> get props => [status, workouts, errorMessage];
+  List<Object?> get props => [status, workouts, personalWorkouts, errorMessage];
 }

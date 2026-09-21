@@ -60,6 +60,52 @@ void main() {
     expect(workouts.single.origin, WorkoutTemplateOrigin.system);
   });
 
+  test(
+    'serializa una sesión personal sin mezclar sus tipos de objetivo',
+    () async {
+      const input = CreatePersonalWorkoutInput(
+        name: ' Carrera corta ',
+        estimatedDurationMinutes: 25,
+        exercises: [
+          WorkoutExerciseDraft(
+            exerciseId: 'exercise-1',
+            sets: [
+              WorkoutSetDraft(
+                targetType: WorkoutTargetType.distance,
+                targetValue: 400,
+                restAfterSeconds: 90,
+                targetRir: 2,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await repository.createPersonalTemplate(input);
+
+      expect(dataSource.personalPayload, {
+        'name': 'Carrera corta',
+        'description': null,
+        'estimated_duration_minutes': 25,
+        'exercises': [
+          {
+            'exercise_id': 'exercise-1',
+            'sets': [
+              {
+                'target_reps': null,
+                'target_duration_seconds': null,
+                'target_distance_meters': 400.0,
+                'target_load_kg': null,
+                'target_rir': 2.0,
+                'rest_after_seconds': 90,
+              },
+            ],
+          },
+        ],
+      });
+    },
+  );
+
   test('envía una corrección con su motivo auditable', () async {
     const correction = WorkoutSetCorrectionInput(
       resultId: 'result-1',
@@ -147,6 +193,13 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   bool failComplete = false;
   final List<String> completedOperationIds = [];
   List<Map<String, dynamic>> publicTemplates = const [];
+  Map<String, dynamic>? personalPayload;
+
+  @override
+  Future<String> createPersonalTemplate(Map<String, dynamic> payload) async {
+    personalPayload = payload;
+    return 'personal-template-1';
+  }
 
   @override
   Future<void> abandonExecution(
@@ -202,6 +255,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> getPublicTemplates() async =>
       publicTemplates;
+
+  @override
+  Future<List<Map<String, dynamic>>> getPersonalTemplates() async => const [];
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';

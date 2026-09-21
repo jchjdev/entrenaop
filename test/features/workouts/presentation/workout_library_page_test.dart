@@ -29,6 +29,7 @@ void main() {
     ]);
     final cubit = WorkoutLibraryCubit(
       getPublicWorkouts: GetPublicWorkoutsUseCase(repository),
+      getPersonalWorkouts: GetPersonalWorkoutsUseCase(repository),
     );
     addTearDown(cubit.close);
     await cubit.load();
@@ -76,6 +77,9 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<List<WorkoutTemplateSummary>> getPublicTemplates() async => workouts;
+
+  @override
+  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async => const [];
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

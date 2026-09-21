@@ -56,6 +56,7 @@ import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
@@ -185,6 +186,8 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => GetWorkoutTemplateUseCase(sl()));
   sl.registerLazySingleton(() => GetPublicWorkoutsUseCase(sl()));
+  sl.registerLazySingleton(() => GetPersonalWorkoutsUseCase(sl()));
+  sl.registerLazySingleton(() => CreatePersonalWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
@@ -202,7 +205,16 @@ Future<void> initDependencies() async {
     )..load(),
   );
   sl.registerFactory(
-    () => WorkoutLibraryCubit(getPublicWorkouts: sl())..load(),
+    () => WorkoutLibraryCubit(
+      getPublicWorkouts: sl(),
+      getPersonalWorkouts: sl(),
+    )..load(),
+  );
+  sl.registerFactory(
+    () => WorkoutEditorCubit(
+      getExercises: sl(),
+      createWorkout: sl(),
+    )..load(),
   );
   sl.registerFactoryParam<ActiveWorkoutCubit, String, void>(
     (executionId, _) => ActiveWorkoutCubit(
