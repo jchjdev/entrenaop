@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_state.dart';
 import 'package:flutter/material.dart';
@@ -6,47 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-class PreparationGoalPage extends StatefulWidget {
+class PreparationGoalPage extends StatelessWidget {
   const PreparationGoalPage({super.key});
-
-  @override
-  State<PreparationGoalPage> createState() => _PreparationGoalPageState();
-}
-
-class _PreparationGoalPageState extends State<PreparationGoalPage> {
-  DateTime? _targetDate;
-  bool _hydrated = false;
-
-  void _hydrate(PreparationGoal? goal) {
-    if (_hydrated) return;
-    _hydrated = true;
-    if (goal == null) return;
-    _targetDate = goal.targetDate;
-  }
-
-  Future<void> _chooseDate() async {
-    final today = DateUtils.dateOnly(DateTime.now());
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _targetDate?.isAfter(today) == true
-          ? _targetDate!
-          : today.add(const Duration(days: 90)),
-      firstDate: today,
-      lastDate: DateTime(today.year + 10),
-      helpText: 'Fecha prevista de las pruebas',
-    );
-    if (date != null) setState(() => _targetDate = date);
-  }
-
-  void _save(PreparationGoal? currentGoal) {
-    context.read<PreparationGoalCubit>().save(
-      PreparationGoal(
-        id: currentGoal?.id,
-        programId: PreparationProgramIds.armedForcesTroopEntry,
-        targetDate: _targetDate,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,14 +21,14 @@ class _PreparationGoalPageState extends State<PreparationGoalPage> {
           onPressed: context.pop,
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: const Text('Mi objetivo'),
+        title: const Text('Explorar preparaciones'),
       ),
       body: BlocConsumer<PreparationGoalCubit, PreparationGoalState>(
         listener: (context, state) {
           if (state.status == PreparationGoalStatus.saved) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Objetivo guardado.')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Preparaciones actualizadas.')),
+            );
           } else if (state.status == PreparationGoalStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -80,114 +42,230 @@ class _PreparationGoalPageState extends State<PreparationGoalPage> {
               state.status == PreparationGoalStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          _hydrate(state.goal);
-          final saving = state.status == PreparationGoalStatus.saving;
-          return SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Card(
-                        color: Color(0xFF171717),
-                        child: Padding(
-                          padding: EdgeInsets.all(22),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.military_tech_outlined,
-                                color: Color(0xFFFF8A50),
-                                size: 36,
-                              ),
-                              SizedBox(height: 14),
-                              Text(
-                                'Ingreso · Tropa y marinería',
-                                style: TextStyle(
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: 7),
-                              Text(
-                                'Orden DEF/15/2026 · Catálogo oficial versionado',
-                                style: TextStyle(color: Colors.white60),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Card(
-                        color: const Color(0xFF141414),
-                        child: Padding(
-                          padding: const EdgeInsets.all(18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const Text(
-                                'Fecha prevista de las pruebas',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                              const SizedBox(height: 5),
-                              const Text(
-                                'Es opcional hasta que conozcas la convocatoria.',
-                                style: TextStyle(color: Colors.white60),
-                              ),
-                              const SizedBox(height: 14),
-                              OutlinedButton.icon(
-                                onPressed: _chooseDate,
-                                icon: const Icon(Icons.event_outlined),
-                                label: Text(
-                                  _targetDate == null
-                                      ? 'Elegir fecha'
-                                      : DateFormat(
-                                          'dd/MM/yyyy',
-                                        ).format(_targetDate!),
-                                ),
-                              ),
-                              if (_targetDate != null)
-                                TextButton(
-                                  onPressed: () =>
-                                      setState(() => _targetDate = null),
-                                  child: const Text(
-                                    'Todavía no conozco la fecha',
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: saving ? null : () => _save(state.goal),
-                        icon: saving
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.save_outlined),
-                        label: Text(saving ? 'Guardando…' : 'Guardar objetivo'),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Añadiremos nuevos programas solo cuando sus pruebas y baremos estén verificados.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
+          return _CatalogContent(state: state);
         },
       ),
     );
   }
 }
+
+class _CatalogContent extends StatelessWidget {
+  const _CatalogContent({required this.state});
+
+  final PreparationGoalState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final saving = state.status == PreparationGoalStatus.saving;
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Elige lo que estás preparando',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Puedes seguir varias preparaciones al mismo tiempo. Solo publicaremos programas con pruebas y baremos verificados.',
+                    style: TextStyle(color: Colors.white60, height: 1.45),
+                  ),
+                  const SizedBox(height: 22),
+                  if (state.programs.isEmpty)
+                    const _EmptyCatalog()
+                  else
+                    for (final program in state.programs) ...[
+                      _ProgramCard(
+                        program: program,
+                        activeGoal: _goalFor(program, state.goals),
+                        saving: saving,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+PreparationGoal? _goalFor(
+  PreparationProgram program,
+  List<PreparationGoal> goals,
+) {
+  for (final goal in goals) {
+    if (goal.programId == program.id) return goal;
+  }
+  return null;
+}
+
+class _ProgramCard extends StatelessWidget {
+  const _ProgramCard({
+    required this.program,
+    required this.activeGoal,
+    required this.saving,
+  });
+
+  final PreparationProgram program;
+  final PreparationGoal? activeGoal;
+  final bool saving;
+
+  @override
+  Widget build(BuildContext context) {
+    final goal = activeGoal;
+    return Card(
+      color: goal == null ? const Color(0xFF151515) : const Color(0xFF21130E),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  program.kind == PreparationProgramKind.access
+                      ? Icons.military_tech_outlined
+                      : Icons.fact_check_outlined,
+                  color: const Color(0xFFFF8A50),
+                  size: 32,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        program.name,
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        goal == null
+                            ? _kindLabel(program.kind)
+                            : goal.targetDate == null
+                            ? 'Añadida · Fecha todavía no indicada'
+                            : 'Añadida · ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)}',
+                        style: const TextStyle(color: Colors.white60),
+                      ),
+                    ],
+                  ),
+                ),
+                if (goal != null)
+                  const Icon(Icons.check_circle_rounded, color: Colors.green),
+              ],
+            ),
+            const SizedBox(height: 18),
+            if (goal == null)
+              FilledButton.icon(
+                onPressed: saving
+                    ? null
+                    : () => context.read<PreparationGoalCubit>().add(program),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Añadir preparación'),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: saving ? null : () => _changeDate(context, goal),
+                    icon: const Icon(Icons.event_outlined),
+                    label: Text(
+                      goal.targetDate == null
+                          ? 'Añadir fecha'
+                          : 'Cambiar fecha',
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: saving
+                        ? null
+                        : () => _confirmArchive(context, goal),
+                    child: const Text('Dejar de seguir'),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _changeDate(BuildContext context, PreparationGoal goal) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: goal.targetDate?.isAfter(today) == true
+          ? goal.targetDate!
+          : today.add(const Duration(days: 90)),
+      firstDate: today,
+      lastDate: DateTime(today.year + 10),
+      helpText: 'Fecha prevista de las pruebas',
+    );
+    if (selected == null || !context.mounted) return;
+    await context.read<PreparationGoalCubit>().updateTargetDate(goal, selected);
+  }
+
+  Future<void> _confirmArchive(
+    BuildContext context,
+    PreparationGoal goal,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Dejar de seguir esta preparación'),
+        content: const Text(
+          'Se conservará el historial. Podrás volver a añadirla más adelante.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Dejar de seguir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await context.read<PreparationGoalCubit>().archive(goal);
+  }
+}
+
+class _EmptyCatalog extends StatelessWidget {
+  const _EmptyCatalog();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      color: Color(0xFF151515),
+      child: Padding(
+        padding: EdgeInsets.all(22),
+        child: Text(
+          'Todavía no hay preparaciones verificadas disponibles.',
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+
+String _kindLabel(PreparationProgramKind kind) => switch (kind) {
+  PreparationProgramKind.access => 'Prueba de acceso',
+  PreparationProgramKind.internalAssessment => 'Evaluación interna',
+};

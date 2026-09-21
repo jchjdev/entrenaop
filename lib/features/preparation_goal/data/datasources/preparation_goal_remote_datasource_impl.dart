@@ -2,6 +2,7 @@ import 'package:entrenaop/core/errors/exceptions.dart';
 import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource.dart';
 import 'package:entrenaop/features/preparation_goal/data/models/preparation_goal_model.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PreparationGoalRemoteDataSourceImpl
@@ -11,14 +12,32 @@ class PreparationGoalRemoteDataSourceImpl
   final SupabaseClient supabaseClient;
 
   @override
-  Future<PreparationGoal?> getActive() async {
+  Future<List<PreparationGoal>> getActiveGoals() async {
     try {
       final response = await supabaseClient
           .from('preparation_goals')
-          .select()
+          .select('*, preparation_programs!inner(id, name, kind)')
           .eq('status', 'active')
-          .maybeSingle();
-      return response == null ? null : PreparationGoalModel.fromJson(response);
+          .order('created_at');
+      return response
+          .map(PreparationGoalModel.fromJson)
+          .toList(growable: false);
+    } catch (error) {
+      throw ServerException(error.toString());
+    }
+  }
+
+  @override
+  Future<List<PreparationProgram>> getAvailablePrograms() async {
+    try {
+      final response = await supabaseClient
+          .from('preparation_programs')
+          .select('id, name, kind')
+          .eq('enabled', true)
+          .order('name');
+      return response
+          .map(PreparationProgramModel.fromJson)
+          .toList(growable: false);
     } catch (error) {
       throw ServerException(error.toString());
     }
@@ -36,17 +55,32 @@ class PreparationGoalRemoteDataSourceImpl
           ? await supabaseClient
                 .from('preparation_goals')
                 .insert(values)
-                .select()
+                .select('*, preparation_programs!inner(id, name, kind)')
                 .single()
           : await supabaseClient
                 .from('preparation_goals')
                 .update(values)
                 .eq('id', goal.id!)
-                .select()
+                .select('*, preparation_programs!inner(id, name, kind)')
                 .single();
       return PreparationGoalModel.fromJson(response);
     } catch (error) {
       if (error is ServerException) rethrow;
+      throw ServerException(error.toString());
+    }
+  }
+
+  @override
+  Future<void> archive(String goalId) async {
+    try {
+      await supabaseClient
+          .from('preparation_goals')
+          .update({
+            'status': 'archived',
+            'archived_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', goalId);
+    } catch (error) {
       throw ServerException(error.toString());
     }
   }

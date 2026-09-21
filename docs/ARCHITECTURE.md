@@ -168,7 +168,15 @@ identidad
   automática sin almacenar diagnósticos ni texto médico.
 - `preparation_programs` identifica recorridos estables, tanto de acceso como
   de evaluación interna. Sus baremos viven en catálogos versionados separados.
-  `preparation_goals` guarda el programa activo y su fecha objetivo.
+  `preparation_goals` guarda las preparaciones que sigue cada usuario y sus
+  fechas objetivo. Puede mantener varias activas, pero no duplicar el mismo
+  programa mientras permanezca activo.
+- Las preparaciones, la planificación y las sesiones personales son conceptos
+  distintos. Una futura planificación podrá atender varios objetivos sin sumar
+  de forma ingenua planes incompatibles.
+- Una marca física se guarda como hecho del usuario. Solo se reutiliza como
+  resultado oficial entre preparaciones cuando prueba, unidad y protocolo son
+  compatibles; en otros casos puede ser contexto del algoritmo, no puntuación.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan
   una rutina hasta que las reglas deportivas estén validadas y versionadas.
 - Los eventos o resultados históricos deben ser inmutables o estar versionados

@@ -3,7 +3,6 @@ import 'package:entrenaop/features/training_plan/presentation/bloc/training_pref
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class TrainingPlanPage extends StatefulWidget {
   const TrainingPlanPage({super.key});
@@ -61,7 +60,7 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Mi plan'),
+        title: const Text('Preferencias de entrenamiento'),
       ),
       body: BlocConsumer<TrainingPreferencesCubit, TrainingPreferencesState>(
         listener: (context, state) {
@@ -94,46 +93,6 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const _IntroductionCard(),
-                      const SizedBox(height: 12),
-                      Card(
-                        color: const Color(0xFF141414),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 8,
-                          ),
-                          leading: const Icon(
-                            Icons.flag_outlined,
-                            color: Color(0xFFFF8A50),
-                          ),
-                          title: const Text('Objetivo de preparación'),
-                          subtitle: const Text(
-                            'Programa de preparación y fecha prevista.',
-                          ),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => context.push('/plan/goal'),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Card(
-                        color: const Color(0xFF141414),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 8,
-                          ),
-                          leading: const Icon(
-                            Icons.fitness_center_rounded,
-                            color: Color(0xFFFF8A50),
-                          ),
-                          title: const Text('Primera sesión real'),
-                          subtitle: const Text(
-                            'Bloques, ejercicios, series y descansos cargados desde Supabase.',
-                          ),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => context.push('/plan/starter-session'),
-                        ),
-                      ),
                       const SizedBox(height: 18),
                       _QuestionCard(
                         title: '¿Cuántos días puedes entrenar cada semana?',

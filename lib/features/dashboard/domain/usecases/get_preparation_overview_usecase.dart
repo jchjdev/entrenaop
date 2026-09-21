@@ -20,12 +20,12 @@ class GetPreparationOverviewUseCase {
     // Ambas lecturas son independientes, por lo que empiezan a la vez.
     final assessmentsFuture = _assessmentRepository.getHistory();
     final preferencesFuture = _preferencesRepository.get();
-    final goalFuture = _goalRepository.getActive();
+    final goalsFuture = _goalRepository.getActiveGoals();
 
     return PreparationOverview(
       assessments: await assessmentsFuture,
       preferences: await preferencesFuture,
-      goal: await goalFuture,
+      goals: await goalsFuture,
     );
   }
 }

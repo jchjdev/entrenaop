@@ -35,8 +35,10 @@ class ProfilePage extends StatelessWidget {
                       children: [
                         ListTile(
                           leading: Icon(Icons.flag_outlined),
-                          title: Text('Objetivo y disponibilidad'),
-                          subtitle: Text('Se configurará desde Mi plan.'),
+                          title: Text('Preferencias personales'),
+                          subtitle: Text(
+                            'La disponibilidad se configura desde Mi plan.',
+                          ),
                         ),
                         Divider(height: 1),
                         ListTile(

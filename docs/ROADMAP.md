@@ -56,6 +56,12 @@ Esta vertical incluirá:
 - Base inicial de ingreso a Tropa y Marinería, baremos versionados y
   pruebas/simulacros.
 
+El modelo permite que un usuario siga varias preparaciones simultáneas. Inicio
+muestra únicamente las añadidas por él y el catálogo se mantiene en una
+pantalla separada para no mezclar objetivos propios con toda la oferta futura.
+La primera vertical deportiva continúa limitada a Tropa y Marinería hasta que
+los demás programas dispongan de reglas y baremos verificados.
+
 El primer incremento del motor utiliza una plantilla pública mínima almacenada
 en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
 progreso, temporizar descansos, conservar la prescripción usada y registrar el

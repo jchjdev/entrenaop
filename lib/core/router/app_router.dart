@@ -16,6 +16,7 @@ import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart'
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
+import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
@@ -91,11 +92,15 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/plan',
-                  builder: (context, state) => BlocProvider(
-                    create: (_) => sl<TrainingPreferencesCubit>(),
-                    child: const TrainingPlanPage(),
-                  ),
+                  builder: (context, state) => const TrainingHubPage(),
                   routes: [
+                    GoRoute(
+                      path: 'preferences',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<TrainingPreferencesCubit>(),
+                        child: const TrainingPlanPage(),
+                      ),
+                    ),
                     GoRoute(
                       path: 'goal',
                       builder: (context, state) => BlocProvider(

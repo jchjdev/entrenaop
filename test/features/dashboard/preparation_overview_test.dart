@@ -5,6 +5,7 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.d
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
@@ -12,10 +13,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final assessment = _assessment();
-  const goal = PreparationGoal(
-    id: 'goal-1',
-    programId: PreparationProgramIds.armedForcesTroopEntry,
+  const program = PreparationProgram(
+    id: PreparationProgramIds.armedForcesTroopEntry,
+    name: 'Ingreso · Tropa y marinería',
+    kind: PreparationProgramKind.access,
   );
+  const goal = PreparationGoal(id: 'goal-1', program: program);
   const preferences = TrainingPreferences(
     availableDaysPerWeek: 3,
     sessionDurationMinutes: 60,
@@ -29,7 +32,7 @@ void main() {
       const overview = PreparationOverview(
         assessments: [],
         preferences: null,
-        goal: null,
+        goals: [],
       );
 
       expect(overview.nextStep, PreparationNextStep.preparationGoal);
@@ -39,7 +42,7 @@ void main() {
       const overview = PreparationOverview(
         assessments: [],
         preferences: null,
-        goal: goal,
+        goals: [goal],
       );
 
       expect(overview.nextStep, PreparationNextStep.physicalAssessment);
@@ -49,7 +52,7 @@ void main() {
       final overview = PreparationOverview(
         assessments: [assessment],
         preferences: null,
-        goal: goal,
+        goals: const [goal],
       );
 
       expect(overview.nextStep, PreparationNextStep.trainingPreferences);
@@ -65,7 +68,7 @@ void main() {
           equipment: {TrainingEquipment.none},
           requiresProfessionalReview: true,
         ),
-        goal: goal,
+        goals: const [goal],
       );
 
       expect(overview.nextStep, PreparationNextStep.professionalReview);
@@ -75,7 +78,7 @@ void main() {
       final overview = PreparationOverview(
         assessments: [assessment],
         preferences: preferences,
-        goal: goal,
+        goals: const [goal],
       );
 
       expect(overview.nextStep, PreparationNextStep.awaitingValidatedPlan);
@@ -89,7 +92,7 @@ void main() {
       getOverview: GetPreparationOverviewUseCase(
         assessmentRepository: assessmentRepository,
         preferencesRepository: preferencesRepository,
-        goalRepository: const _GoalRepository(goal),
+        goalRepository: const _GoalRepository([goal]),
       ),
     );
     addTearDown(cubit.close);
@@ -99,7 +102,7 @@ void main() {
     expect(cubit.state.status, DashboardStatus.loaded);
     expect(cubit.state.overview?.latestAssessment, assessment);
     expect(cubit.state.overview?.preferences, preferences);
-    expect(cubit.state.overview?.goal, goal);
+    expect(cubit.state.overview?.goals, [goal]);
   });
 
   test('el cubit conserva un error recuperable si falla la carga', () async {
@@ -107,7 +110,7 @@ void main() {
       getOverview: GetPreparationOverviewUseCase(
         assessmentRepository: _AssessmentRepository(const [], fail: true),
         preferencesRepository: _PreferencesRepository(null),
-        goalRepository: const _GoalRepository(null),
+        goalRepository: const _GoalRepository([]),
       ),
     );
     addTearDown(cubit.close);
@@ -191,15 +194,21 @@ class _PreferencesRepository implements TrainingPreferencesRepository {
 }
 
 class _GoalRepository implements PreparationGoalRepository {
-  const _GoalRepository(this.goal);
+  const _GoalRepository(this.goals);
 
-  final PreparationGoal? goal;
+  final List<PreparationGoal> goals;
 
   @override
-  Future<PreparationGoal?> getActive() async => goal;
+  Future<List<PreparationGoal>> getActiveGoals() async => goals;
+
+  @override
+  Future<List<PreparationProgram>> getAvailablePrograms() async => const [];
 
   @override
   Future<PreparationGoal> save(PreparationGoal goal) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> archive(String goalId) => throw UnimplementedError();
 }

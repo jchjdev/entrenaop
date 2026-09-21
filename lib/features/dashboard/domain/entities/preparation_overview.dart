@@ -15,18 +15,18 @@ class PreparationOverview extends Equatable {
   const PreparationOverview({
     required this.assessments,
     required this.preferences,
-    required this.goal,
+    required this.goals,
   });
 
   final List<PhysicalAssessmentHistoryEntry> assessments;
   final TrainingPreferences? preferences;
-  final PreparationGoal? goal;
+  final List<PreparationGoal> goals;
 
   PhysicalAssessmentHistoryEntry? get latestAssessment =>
       assessments.isEmpty ? null : assessments.first;
 
   PreparationNextStep get nextStep {
-    if (goal == null) {
+    if (goals.isEmpty) {
       return PreparationNextStep.preparationGoal;
     }
     if (latestAssessment == null) {
@@ -42,5 +42,5 @@ class PreparationOverview extends Equatable {
   }
 
   @override
-  List<Object?> get props => [assessments, preferences, goal];
+  List<Object?> get props => [assessments, preferences, goals];
 }
