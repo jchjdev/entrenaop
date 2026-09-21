@@ -37,6 +37,15 @@ class CompleteWorkoutSetUseCase {
       _repository.completeSet(result);
 }
 
+class CompleteAmrapBlockUseCase {
+  const CompleteAmrapBlockUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<WorkoutMutationDisposition> call(WorkoutAmrapResultInput result) =>
+      _repository.completeAmrap(result);
+}
+
 class CorrectWorkoutSetUseCase {
   const CorrectWorkoutSetUseCase(this._repository);
 

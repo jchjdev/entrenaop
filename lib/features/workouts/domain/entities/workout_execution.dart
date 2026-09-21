@@ -16,6 +16,7 @@ class WorkoutExecution extends Equatable {
     required this.status,
     required this.startedAt,
     required this.sets,
+    this.amrapResults = const [],
     this.completedAt,
     this.finalRpe,
     this.notes,
@@ -33,6 +34,14 @@ class WorkoutExecution extends Equatable {
   final String? notes;
   final WorkoutAbandonmentReason? abandonmentReason;
   final List<WorkoutExecutionSet> sets;
+  final List<WorkoutAmrapResult> amrapResults;
+
+  WorkoutAmrapResult? amrapResultFor(int blockOrder) {
+    for (final result in amrapResults) {
+      if (result.blockOrder == blockOrder) return result;
+    }
+    return null;
+  }
 
   WorkoutExecutionSet? get currentSet {
     for (final set in sets) {
@@ -58,6 +67,7 @@ class WorkoutExecution extends Equatable {
     String? notes,
     WorkoutAbandonmentReason? abandonmentReason,
     List<WorkoutExecutionSet>? sets,
+    List<WorkoutAmrapResult>? amrapResults,
   }) => WorkoutExecution(
     id: id,
     templateId: templateId,
@@ -70,6 +80,7 @@ class WorkoutExecution extends Equatable {
     notes: notes ?? this.notes,
     abandonmentReason: abandonmentReason ?? this.abandonmentReason,
     sets: sets ?? this.sets,
+    amrapResults: amrapResults ?? this.amrapResults,
   );
 
   @override
@@ -85,6 +96,57 @@ class WorkoutExecution extends Equatable {
     notes,
     abandonmentReason,
     sets,
+    amrapResults,
+  ];
+}
+
+class WorkoutAmrapResult extends Equatable {
+  const WorkoutAmrapResult({
+    required this.blockOrder,
+    required this.completedRounds,
+    required this.completedAt,
+    this.partialItemOrder,
+    this.partialReps = 0,
+  });
+
+  final int blockOrder;
+  final int completedRounds;
+  final int? partialItemOrder;
+  final int partialReps;
+  final DateTime completedAt;
+
+  @override
+  List<Object?> get props => [
+    blockOrder,
+    completedRounds,
+    partialItemOrder,
+    partialReps,
+    completedAt,
+  ];
+}
+
+class WorkoutAmrapResultInput extends Equatable {
+  const WorkoutAmrapResultInput({
+    required this.executionId,
+    required this.blockOrder,
+    required this.completedRounds,
+    this.partialItemOrder,
+    this.partialReps = 0,
+  });
+
+  final String executionId;
+  final int blockOrder;
+  final int completedRounds;
+  final int? partialItemOrder;
+  final int partialReps;
+
+  @override
+  List<Object?> get props => [
+    executionId,
+    blockOrder,
+    completedRounds,
+    partialItemOrder,
+    partialReps,
   ];
 }
 
@@ -167,6 +229,7 @@ class WorkoutExecutionSet extends Equatable {
     required this.blockOrder,
     required this.blockName,
     this.blockFormat = WorkoutBlockFormat.straightSets,
+    this.blockTimeCapSeconds,
     required this.itemOrder,
     required this.exerciseId,
     required this.exerciseName,
@@ -194,6 +257,7 @@ class WorkoutExecutionSet extends Equatable {
   final int blockOrder;
   final String blockName;
   final WorkoutBlockFormat blockFormat;
+  final int? blockTimeCapSeconds;
   final int itemOrder;
   final String exerciseId;
   final String exerciseName;
@@ -221,7 +285,8 @@ class WorkoutExecutionSet extends Equatable {
       blockFormat == WorkoutBlockFormat.circuit ||
       blockFormat == WorkoutBlockFormat.intervals ||
       blockFormat == WorkoutBlockFormat.tabata ||
-      blockFormat == WorkoutBlockFormat.emom;
+      blockFormat == WorkoutBlockFormat.emom ||
+      blockFormat == WorkoutBlockFormat.amrap;
 
   int get roundNumber => setOrder + 1;
 
@@ -246,6 +311,7 @@ class WorkoutExecutionSet extends Equatable {
     blockOrder: blockOrder,
     blockName: blockName,
     blockFormat: blockFormat,
+    blockTimeCapSeconds: blockTimeCapSeconds,
     itemOrder: itemOrder,
     exerciseId: exerciseId,
     exerciseName: exerciseName,
@@ -275,6 +341,7 @@ class WorkoutExecutionSet extends Equatable {
     blockOrder,
     blockName,
     blockFormat,
+    blockTimeCapSeconds,
     itemOrder,
     exerciseId,
     exerciseName,

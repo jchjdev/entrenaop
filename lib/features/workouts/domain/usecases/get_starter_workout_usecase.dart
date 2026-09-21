@@ -94,7 +94,8 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         block.format != WorkoutBlockFormat.circuit &&
         block.format != WorkoutBlockFormat.intervals &&
         block.format != WorkoutBlockFormat.tabata &&
-        block.format != WorkoutBlockFormat.emom) {
+        block.format != WorkoutBlockFormat.emom &&
+        block.format != WorkoutBlockFormat.amrap) {
       throw const FormatException(
         'Este formato de bloque todavía no está disponible.',
       );
@@ -141,6 +142,20 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         'Un bloque EMOM no puede superar 60 minutos.',
       );
     }
+    if (block.format == WorkoutBlockFormat.amrap &&
+        (block.rounds != 1 || block.restAfterSeconds != 0)) {
+      throw const FormatException(
+        'AMRAP utiliza un límite global, no rondas prescritas.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.amrap &&
+        (block.timeCapSeconds == null ||
+            block.timeCapSeconds! < 60 ||
+            block.timeCapSeconds! > 3600)) {
+      throw const FormatException(
+        'El tiempo AMRAP debe estar entre 1 y 60 minutos.',
+      );
+    }
     if (block.format == WorkoutBlockFormat.straightSets && block.rounds != 1) {
       throw const FormatException(
         'Los bloques convencionales no utilizan rondas.',
@@ -168,9 +183,18 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         );
       }
       if (block.format != WorkoutBlockFormat.straightSets &&
+          block.format != WorkoutBlockFormat.amrap &&
           exercise.sets.length != block.rounds) {
         throw const FormatException(
           'Cada ejercicio debe tener una serie por ronda.',
+        );
+      }
+      if (block.format == WorkoutBlockFormat.amrap &&
+          (exercise.sets.length != 1 ||
+              exercise.sets.single.targetType !=
+                  WorkoutTargetType.repetitions)) {
+        throw const FormatException(
+          'Cada ejercicio AMRAP necesita un objetivo de repeticiones.',
         );
       }
       for (final set in exercise.sets) {

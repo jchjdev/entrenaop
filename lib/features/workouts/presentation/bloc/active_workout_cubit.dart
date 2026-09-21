@@ -14,6 +14,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required this.executionId,
     required GetWorkoutExecutionUseCase getExecution,
     required CompleteWorkoutSetUseCase completeSet,
+    required CompleteAmrapBlockUseCase completeAmrap,
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
     required AbandonWorkoutExecutionUseCase abandonExecution,
@@ -22,6 +23,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required WorkoutCueService cueService,
   }) : _getExecution = getExecution,
        _completeSet = completeSet,
+       _completeAmrap = completeAmrap,
        _skipSet = skipSet,
        _finishExecution = finishExecution,
        _abandonExecution = abandonExecution,
@@ -33,6 +35,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final String executionId;
   final GetWorkoutExecutionUseCase _getExecution;
   final CompleteWorkoutSetUseCase _completeSet;
+  final CompleteAmrapBlockUseCase _completeAmrap;
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
@@ -151,6 +154,48 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
       await _timerStore.clear(_restTimerId);
+    }
+  }
+
+  Future<void> completeCurrentAmrap(WorkoutAmrapResultInput result) async {
+    final execution = state.execution;
+    final currentSet = execution?.currentSet;
+    if (execution == null ||
+        currentSet == null ||
+        currentSet.blockFormat != WorkoutBlockFormat.amrap ||
+        currentSet.blockOrder != result.blockOrder) {
+      return;
+    }
+    emit(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.saving,
+        execution: execution,
+        pendingSyncCount: state.pendingSyncCount,
+      ),
+    );
+    try {
+      final disposition = await _completeAmrap(result);
+      await _timerStore.clear(_amrapTimerId(result.blockOrder));
+      final updated = disposition == WorkoutMutationDisposition.queued
+          ? _completeAmrapLocally(execution, result)
+          : await _getExecution(executionId);
+      if (updated == null) throw StateError('Execution disappeared');
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.ready,
+          execution: updated,
+          pendingSyncCount: await _getPendingMutationCount(),
+        ),
+      );
+    } catch (_) {
+      emit(
+        ActiveWorkoutState(
+          status: ActiveWorkoutStatus.failure,
+          execution: execution,
+          pendingSyncCount: state.pendingSyncCount,
+          errorMessage: 'No hemos podido guardar el resultado AMRAP.',
+        ),
+      );
     }
   }
 
@@ -372,6 +417,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   String get _restTimerId => '$executionId:rest';
 
+  String _amrapTimerId(int blockOrder) => '$executionId:amrap:$blockOrder';
+
   WorkoutExecution _completeLocally(
     WorkoutExecution execution,
     String resultId,
@@ -405,6 +452,32 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             )
             .toList(growable: false),
       );
+
+  WorkoutExecution _completeAmrapLocally(
+    WorkoutExecution execution,
+    WorkoutAmrapResultInput result,
+  ) => execution.copyWith(
+    sets: execution.sets
+        .map(
+          (set) => set.blockOrder == result.blockOrder
+              ? set.copyWith(
+                  status: WorkoutSetStatus.completed,
+                  completedAt: DateTime.now().toUtc(),
+                )
+              : set,
+        )
+        .toList(growable: false),
+    amrapResults: [
+      ...execution.amrapResults,
+      WorkoutAmrapResult(
+        blockOrder: result.blockOrder,
+        completedRounds: result.completedRounds,
+        partialItemOrder: result.partialItemOrder,
+        partialReps: result.partialReps,
+        completedAt: DateTime.now().toUtc(),
+      ),
+    ],
+  );
 
   @override
   Future<void> close() async {

@@ -222,6 +222,22 @@ class _ActiveContentState extends State<_ActiveContent> {
                         canSkip: state.restCanBeSkipped,
                         onSkip: context.read<ActiveWorkoutCubit>().skipRest,
                       )
+                    else if (current?.blockFormat == WorkoutBlockFormat.amrap)
+                      _AmrapCard(
+                        key: ValueKey('amrap-${current!.blockOrder}'),
+                        executionId: execution.id,
+                        sets: execution.sets
+                            .where(
+                              (set) => set.blockOrder == current.blockOrder,
+                            )
+                            .toList(growable: false),
+                        timerStore: widget.timerStore,
+                        cueService: widget.cueService,
+                        saving: saving,
+                        onComplete: context
+                            .read<ActiveWorkoutCubit>()
+                            .completeCurrentAmrap,
+                      )
                     else if (current != null)
                       _CurrentSetCard(
                         key: ValueKey(current.id),
@@ -336,6 +352,190 @@ class _ActiveContentState extends State<_ActiveContent> {
     if (reason == null || !mounted) return;
     await context.read<ActiveWorkoutCubit>().abandon(reason);
   }
+}
+
+class _AmrapCard extends StatefulWidget {
+  const _AmrapCard({
+    super.key,
+    required this.executionId,
+    required this.sets,
+    required this.timerStore,
+    required this.cueService,
+    required this.saving,
+    required this.onComplete,
+  });
+
+  final String executionId;
+  final List<WorkoutExecutionSet> sets;
+  final WorkoutTimerStore timerStore;
+  final WorkoutCueService cueService;
+  final bool saving;
+  final ValueChanged<WorkoutAmrapResultInput> onComplete;
+
+  @override
+  State<_AmrapCard> createState() => _AmrapCardState();
+}
+
+class _AmrapCardState extends State<_AmrapCard> {
+  final _formKey = GlobalKey<FormState>();
+  final _roundsController = TextEditingController(text: '0');
+  final _partialRepsController = TextEditingController(text: '0');
+  int? _partialItemOrder;
+
+  WorkoutExecutionSet get first => widget.sets.first;
+
+  @override
+  void dispose() {
+    _roundsController.dispose();
+    _partialRepsController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final partialReps = int.parse(_partialRepsController.text);
+    widget.onComplete(
+      WorkoutAmrapResultInput(
+        executionId: widget.executionId,
+        blockOrder: first.blockOrder,
+        completedRounds: int.parse(_roundsController.text),
+        partialItemOrder: partialReps == 0
+            ? null
+            : (_partialItemOrder ?? widget.sets.first.itemOrder),
+        partialReps: partialReps,
+      ),
+    );
+  }
+
+  String? _validatePartialReps(String? value) {
+    final parsed = int.tryParse(value ?? '');
+    if (parsed == null || parsed < 0) {
+      return 'Introduce un número entero válido';
+    }
+    if (parsed == 0) return null;
+    final selectedOrder = _partialItemOrder ?? widget.sets.first.itemOrder;
+    final target = widget.sets
+        .firstWhere((set) => set.itemOrder == selectedOrder)
+        .targetReps;
+    if (target != null && parsed >= target) {
+      return 'Si completas el objetivo, cuenta una vuelta o pasa al siguiente ejercicio';
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seconds = first.blockTimeCapSeconds ?? 600;
+    return Card(
+      color: const Color(0xFF171717),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                first.blockName.toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFFFF8A50),
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'AMRAP',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 14),
+              for (final set in widget.sets)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 7),
+                  child: Text(
+                    '${set.itemOrder + 1}. ${set.exerciseName} · ${set.targetReps} reps',
+                    style: const TextStyle(fontSize: 17),
+                  ),
+                ),
+              const SizedBox(height: 18),
+              WorkoutSetCountdown(
+                targetSeconds: seconds,
+                title: 'RELOJ GLOBAL AMRAP',
+                timerId: '${widget.executionId}:amrap:${first.blockOrder}',
+                timerStore: widget.timerStore,
+                enabled: !widget.saving,
+                onElapsedChanged: (_) {},
+                onPreparationTick: () => unawaited(
+                  widget.cueService.signal(WorkoutCue.preparationTick),
+                ),
+                onStarted: () =>
+                    unawaited(widget.cueService.signal(WorkoutCue.workStarted)),
+                onFinished: () => unawaited(
+                  widget.cueService.signal(WorkoutCue.workFinished),
+                ),
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                'Resultado',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _roundsController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Vueltas completas',
+                ),
+                validator: _nonNegativeIntegerValidator,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                initialValue: _partialItemOrder,
+                decoration: const InputDecoration(
+                  labelText: 'Último ejercicio parcial (opcional)',
+                ),
+                items: widget.sets
+                    .map(
+                      (set) => DropdownMenuItem(
+                        value: set.itemOrder,
+                        child: Text(set.exerciseName),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: widget.saving
+                    ? null
+                    : (value) => setState(() => _partialItemOrder = value),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _partialRepsController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Repeticiones parciales',
+                ),
+                validator: _validatePartialReps,
+              ),
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                onPressed: widget.saving ? null : _save,
+                icon: const Icon(Icons.check_rounded),
+                label: Text(
+                  widget.saving ? 'Guardando…' : 'Guardar resultado AMRAP',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String? _nonNegativeIntegerValidator(String? value) {
+  final parsed = int.tryParse(value ?? '');
+  return parsed == null || parsed < 0
+      ? 'Introduce un número entero válido'
+      : null;
 }
 
 class _PendingSyncBanner extends StatelessWidget {

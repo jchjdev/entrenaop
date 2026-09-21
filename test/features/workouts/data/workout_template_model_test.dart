@@ -214,6 +214,64 @@ void main() {
     expect(execution.abandonmentReason, WorkoutAbandonmentReason.lackOfTime);
   });
 
+  test('conserva el límite y el resultado agregado de un AMRAP', () {
+    final execution = WorkoutExecutionModel.fromJson({
+      'id': 'execution-amrap',
+      'template_id': 'template-amrap',
+      'template_name': 'AMRAP diez minutos',
+      'template_version': 1,
+      'status': 'completed',
+      'started_at': '2026-09-21T18:00:00Z',
+      'completed_at': '2026-09-21T18:10:00Z',
+      'final_rpe': 8,
+      'notes': null,
+      'abandonment_reason': null,
+      'workout_execution_sets': [
+        {
+          'id': 'set-amrap',
+          'block_order': 0,
+          'block_name': 'Trabajo principal',
+          'block_format': 'amrap',
+          'block_time_cap_seconds': 600,
+          'item_order': 0,
+          'exercise_id': 'exercise-1',
+          'exercise_name': 'Dominadas',
+          'exercise_description': null,
+          'exercise_video_url': null,
+          'set_order': 0,
+          'target_reps': 8,
+          'target_duration_seconds': null,
+          'target_distance_meters': null,
+          'target_load_kg': null,
+          'target_rpe': null,
+          'target_rir': null,
+          'rest_after_seconds': 0,
+          'status': 'completed',
+          'actual_reps': null,
+          'actual_duration_seconds': null,
+          'actual_distance_meters': null,
+          'actual_load_kg': null,
+          'actual_rpe': null,
+          'actual_rir': null,
+          'completed_at': '2026-09-21T18:10:00Z',
+        },
+      ],
+      'workout_amrap_results': [
+        {
+          'block_order': 0,
+          'completed_rounds': 5,
+          'partial_item_order': 0,
+          'partial_reps': 3,
+          'completed_at': '2026-09-21T18:10:00Z',
+        },
+      ],
+    });
+
+    expect(execution.sets.single.blockTimeCapSeconds, 600);
+    expect(execution.amrapResults.single.completedRounds, 5);
+    expect(execution.amrapResults.single.partialReps, 3);
+  });
+
   test('ordena una superserie por rondas y no por ejercicio', () {
     Map<String, dynamic> groupedSet({
       required String id,

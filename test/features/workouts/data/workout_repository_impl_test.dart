@@ -185,6 +185,26 @@ void main() {
     expect(dataSource.skippedResultId, 'result-2');
   });
 
+  test('envía el resultado agregado de un AMRAP', () async {
+    await repository.completeAmrap(
+      const WorkoutAmrapResultInput(
+        executionId: 'execution-1',
+        blockOrder: 2,
+        completedRounds: 5,
+        partialItemOrder: 1,
+        partialReps: 4,
+      ),
+    );
+
+    expect(dataSource.completedAmrapValues, {
+      'p_execution_id': 'execution-1',
+      'p_block_order': 2,
+      'p_completed_rounds': 5,
+      'p_partial_item_order': 1,
+      'p_partial_reps': 4,
+    });
+  });
+
   test('envía el esfuerzo y las sensaciones al finalizar', () async {
     await repository.finishExecution(
       'execution-1',
@@ -234,6 +254,7 @@ void main() {
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Map<String, dynamic>? completedValues;
+  Map<String, dynamic>? completedAmrapValues;
   Map<String, dynamic>? correctedValues;
   String? skippedResultId;
   String? abandonedExecutionId;
@@ -295,6 +316,14 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     completedOperationIds.add(operationId);
     if (failComplete) throw Exception('sin conexión');
     completedValues = values;
+  }
+
+  @override
+  Future<void> completeAmrap(
+    String operationId,
+    Map<String, dynamic> values,
+  ) async {
+    completedAmrapValues = values;
   }
 
   @override

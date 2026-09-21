@@ -117,6 +117,12 @@ tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 comprueba que el resultado incluya la métrica principal prescrita y que solo el
 propietario pueda resolver una serie pendiente de su sesión activa.
 
+AMRAP constituye una excepción deliberada al resultado por serie: el bloque
+tiene un límite temporal global y persiste un agregado inmutable con vueltas
+completas, ejercicio parcial y repeticiones parciales. La ejecución conserva
+también una instantánea del límite para que cambios posteriores en la plantilla
+no reinterpreten el historial.
+
 Una serie completada puede corregirse durante las 24 horas siguientes, con un
 máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos

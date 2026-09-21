@@ -102,6 +102,28 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<WorkoutMutationDisposition> completeAmrap(
+    WorkoutAmrapResultInput result,
+  ) {
+    final values = <String, dynamic>{
+      'p_execution_id': result.executionId,
+      'p_block_order': result.blockOrder,
+      'p_completed_rounds': result.completedRounds,
+      'p_partial_item_order': result.partialItemOrder,
+      'p_partial_reps': result.partialReps,
+    };
+    final mutation = _mutation(
+      WorkoutMutationType.completeAmrap,
+      result.executionId,
+      values,
+    );
+    return _performOrQueue(
+      mutation,
+      () => remoteDataSource.completeAmrap(mutation.operationId, values),
+    );
+  }
+
+  @override
   Future<void> correctSet(WorkoutSetCorrectionInput correction) {
     return remoteDataSource.correctSet({
       'p_result_id': correction.resultId,
@@ -218,6 +240,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
           mutation.operationId,
           mutation.values,
         ),
+        WorkoutMutationType.completeAmrap => remoteDataSource.completeAmrap(
+          mutation.operationId,
+          mutation.values,
+        ),
         WorkoutMutationType.skipSet => remoteDataSource.skipSet(
           mutation.operationId,
           mutation.resourceId,
@@ -246,6 +272,8 @@ Map<String, dynamic> _draftToJson(CreatePersonalWorkoutInput input) => {
           'name': block.name.trim(),
           'format': _blockFormatValue(block.format),
           'rounds': block.rounds,
+          if (block.timeCapSeconds != null)
+            'time_cap_seconds': block.timeCapSeconds,
           'rest_after_seconds': block.restAfterSeconds,
           'exercises': block.exercises
               .map(

@@ -64,6 +64,30 @@ void main() {
     expect(cubit.state.restSecondsRemaining, inInclusiveRange(36, 37));
     expect(cubit.state.restCanBeSkipped, isFalse);
   });
+
+  test('guarda las vueltas y el parcial de un AMRAP', () async {
+    final repository = _Repository()..execution = _amrapExecution();
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await cubit.completeCurrentAmrap(
+      const WorkoutAmrapResultInput(
+        executionId: 'execution-1',
+        blockOrder: 0,
+        completedRounds: 4,
+        partialItemOrder: 1,
+        partialReps: 3,
+      ),
+    );
+
+    expect(cubit.state.status, ActiveWorkoutStatus.ready);
+    expect(cubit.state.execution?.currentSet, isNull);
+    final result = cubit.state.execution?.amrapResults.single;
+    expect(result?.completedRounds, 4);
+    expect(result?.partialItemOrder, 1);
+    expect(result?.partialReps, 3);
+  });
 }
 
 ActiveWorkoutCubit _cubit(_Repository repository, {_TimerStore? timerStore}) =>
@@ -71,6 +95,7 @@ ActiveWorkoutCubit _cubit(_Repository repository, {_TimerStore? timerStore}) =>
       executionId: 'execution-1',
       getExecution: GetWorkoutExecutionUseCase(repository),
       completeSet: CompleteWorkoutSetUseCase(repository),
+      completeAmrap: CompleteAmrapBlockUseCase(repository),
       skipSet: SkipWorkoutSetUseCase(repository),
       finishExecution: FinishWorkoutExecutionUseCase(repository),
       abandonExecution: AbandonWorkoutExecutionUseCase(repository),
@@ -99,6 +124,35 @@ class _Repository implements WorkoutRepository {
                 : set,
           )
           .toList(),
+    );
+    return WorkoutMutationDisposition.synced;
+  }
+
+  @override
+  Future<WorkoutMutationDisposition> completeAmrap(
+    WorkoutAmrapResultInput result,
+  ) async {
+    final completedAt = DateTime.utc(2026, 9, 21, 20, 10);
+    execution = execution.copyWith(
+      sets: execution.sets
+          .map(
+            (set) => set.blockOrder == result.blockOrder
+                ? set.copyWith(
+                    status: WorkoutSetStatus.completed,
+                    completedAt: completedAt,
+                  )
+                : set,
+          )
+          .toList(),
+      amrapResults: [
+        WorkoutAmrapResult(
+          blockOrder: result.blockOrder,
+          completedRounds: result.completedRounds,
+          partialItemOrder: result.partialItemOrder,
+          partialReps: result.partialReps,
+          completedAt: completedAt,
+        ),
+      ],
     );
     return WorkoutMutationDisposition.synced;
   }
@@ -156,6 +210,45 @@ WorkoutExecution _execution() => WorkoutExecution(
       setOrder: 1,
       targetReps: 8,
       restAfterSeconds: 60,
+      status: WorkoutSetStatus.pending,
+    ),
+  ],
+);
+
+WorkoutExecution _amrapExecution() => WorkoutExecution(
+  id: 'execution-1',
+  templateId: 'template-1',
+  templateName: 'AMRAP de fuerza',
+  templateVersion: 1,
+  status: WorkoutExecutionStatus.inProgress,
+  startedAt: DateTime.utc(2026, 9, 21, 20),
+  sets: const [
+    WorkoutExecutionSet(
+      id: 'set-1',
+      blockOrder: 0,
+      blockName: 'Trabajo principal',
+      blockFormat: WorkoutBlockFormat.amrap,
+      blockTimeCapSeconds: 600,
+      itemOrder: 0,
+      exerciseId: 'exercise-1',
+      exerciseName: 'Dominadas',
+      setOrder: 0,
+      targetReps: 10,
+      restAfterSeconds: 0,
+      status: WorkoutSetStatus.pending,
+    ),
+    WorkoutExecutionSet(
+      id: 'set-2',
+      blockOrder: 0,
+      blockName: 'Trabajo principal',
+      blockFormat: WorkoutBlockFormat.amrap,
+      blockTimeCapSeconds: 600,
+      itemOrder: 1,
+      exerciseId: 'exercise-2',
+      exerciseName: 'Flexiones',
+      setOrder: 0,
+      targetReps: 8,
+      restAfterSeconds: 0,
       status: WorkoutSetStatus.pending,
     ),
   ],

@@ -360,7 +360,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 DropdownMenuItem(
                   value: WorkoutBlockFormat.intervals,
                   enabled: block.rows.length <= 1,
-                  child: const Text('Intervalos'),
+                  child: const Text('Intervalos personalizados'),
                 ),
                 DropdownMenuItem(
                   value: WorkoutBlockFormat.tabata,
@@ -370,6 +370,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 const DropdownMenuItem(
                   value: WorkoutBlockFormat.emom,
                   child: Text('EMOM · cada minuto'),
+                ),
+                const DropdownMenuItem(
+                  value: WorkoutBlockFormat.amrap,
+                  child: Text('AMRAP · máximas vueltas'),
                 ),
               ],
               onChanged: saving
@@ -479,6 +483,42 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 _ => '',
               }, style: const TextStyle(color: Colors.white54, height: 1.35)),
             ],
+            if (block.format == WorkoutBlockFormat.amrap) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: 220,
+                child: TextFormField(
+                  key: ValueKey(
+                    'time-cap-${block.identity}-${block.timeCapSeconds}',
+                  ),
+                  initialValue: (block.timeCapSeconds ~/ 60).toString(),
+                  enabled: !saving,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Límite de tiempo',
+                    suffixText: 'min',
+                    prefixIcon: Icon(Icons.hourglass_bottom_rounded),
+                  ),
+                  validator: (value) => _integerValidator(
+                    value,
+                    min: 1,
+                    max: 60,
+                    label: 'límite de tiempo',
+                  ),
+                  onChanged: (value) {
+                    final minutes = int.tryParse(value);
+                    if (minutes != null && minutes >= 1 && minutes <= 60) {
+                      block.timeCapSeconds = minutes * 60;
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Repite la secuencia tantas veces como puedas. Guardaremos vueltas completas y el progreso de la última.',
+                style: TextStyle(color: Colors.white54, height: 1.35),
+              ),
+            ],
             const SizedBox(height: 12),
             if (block.rows.isEmpty)
               _EmptyExercises(
@@ -496,7 +536,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     index: exerciseIndex,
                     data: block.rows[exerciseIndex],
                     enabled: !saving,
-                    fixedSetCount: block.isRoundBased,
+                    fixedSetCount: block.fixedSetCount,
                     fixedTarget: block.format == WorkoutBlockFormat.tabata,
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
@@ -585,6 +625,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         name: block.name,
         format: block.format,
         rounds: block.rounds,
+        timeCapSeconds: block.timeCapSeconds ?? 600,
         restAfterSeconds: block.restAfterSeconds,
         rows: rows,
       );
@@ -663,6 +704,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         }
         block.restAfterSeconds = 60;
         _syncBlockRounds(block);
+      } else if (format == WorkoutBlockFormat.amrap) {
+        block.rounds = 1;
+        block.restAfterSeconds = 0;
+        block.timeCapSeconds = 600;
+        for (final row in block.rows) {
+          row.targetType = WorkoutTargetType.repetitions;
+          while (row.sets.length > 1) {
+            row.sets.removeLast();
+          }
+          row.sets.single.restSeconds = 0;
+        }
       } else {
         block.rounds = block.rows.isEmpty
             ? (format == WorkoutBlockFormat.intervals ? 6 : 3)
@@ -874,6 +926,7 @@ class _BlockRowData {
     this.format = WorkoutBlockFormat.straightSets,
     this.rounds = 1,
     this.restAfterSeconds = 0,
+    this.timeCapSeconds = 600,
     List<_ExerciseRowData>? rows,
   }) : rows = rows ?? [];
 
@@ -882,6 +935,7 @@ class _BlockRowData {
   WorkoutBlockFormat format;
   int rounds;
   int restAfterSeconds;
+  int timeCapSeconds;
   final List<_ExerciseRowData> rows;
 
   bool get isRoundBased =>
@@ -890,6 +944,8 @@ class _BlockRowData {
       format == WorkoutBlockFormat.intervals ||
       format == WorkoutBlockFormat.tabata ||
       format == WorkoutBlockFormat.emom;
+
+  bool get fixedSetCount => isRoundBased || format == WorkoutBlockFormat.amrap;
 
   int get maxRounds {
     if (format != WorkoutBlockFormat.emom || rows.isEmpty) return 20;
@@ -916,6 +972,7 @@ class _BlockRowData {
     format: format,
     rounds: rounds,
     restAfterSeconds: restAfterSeconds,
+    timeCapSeconds: format == WorkoutBlockFormat.amrap ? timeCapSeconds : null,
     exercises: rows.map((row) => row.toDraft()).toList(),
   );
 }

@@ -97,6 +97,14 @@ void main() {
       findsOneWidget,
     );
 
+    await tester.tap(formatSelector);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('AMRAP · máximas vueltas').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Límite de tiempo'), findsOneWidget);
+    expect(find.textContaining('vueltas completas'), findsOneWidget);
+
     final addBlock = find.byKey(const ValueKey('add-workout-block'));
     await tester.ensureVisible(addBlock);
     await tester.pumpAndSettle();

@@ -343,7 +343,7 @@ String _blockDescription(WorkoutBlock block) {
     WorkoutBlockFormat.straightSets => 'Series convencionales',
     WorkoutBlockFormat.circuit => 'Circuito',
     WorkoutBlockFormat.superset => 'Superserie',
-    WorkoutBlockFormat.intervals => 'Intervalos',
+    WorkoutBlockFormat.intervals => 'Intervalos personalizados',
     WorkoutBlockFormat.emom => 'EMOM',
     WorkoutBlockFormat.amrap => 'AMRAP',
     WorkoutBlockFormat.tabata => 'Tabata',

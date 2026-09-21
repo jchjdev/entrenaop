@@ -1,6 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-enum WorkoutMutationType { completeSet, skipSet, finish, abandon }
+enum WorkoutMutationType {
+  completeSet,
+  completeAmrap,
+  skipSet,
+  finish,
+  abandon,
+}
 
 enum WorkoutMutationDisposition { synced, queued }
 

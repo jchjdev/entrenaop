@@ -67,6 +67,92 @@ void main() {
     expect(find.text('Realizado · 8 rep · RIR 2'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('el detalle muestra el resultado agregado de un AMRAP', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _AmrapRepository();
+    final cubit = WorkoutHistoryDetailCubit(
+      executionId: 'execution-amrap',
+      getExecution: GetWorkoutExecutionUseCase(repository),
+      correctSet: CorrectWorkoutSetUseCase(repository),
+    );
+    await cubit.load();
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(useMaterial3: true),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutHistoryDetailPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('5 vueltas completas'), findsOneWidget);
+    expect(find.text('Parcial · Flexiones: 3 rep'), findsOneWidget);
+    expect(find.textContaining('Realizado ·'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+class _AmrapRepository extends _Repository {
+  final amrapExecution = WorkoutExecution(
+    id: 'execution-amrap',
+    templateId: 'template-amrap',
+    templateName: 'AMRAP de fuerza',
+    templateVersion: 1,
+    status: WorkoutExecutionStatus.completed,
+    startedAt: DateTime(2026, 9, 21, 17),
+    completedAt: DateTime(2026, 9, 21, 17, 10),
+    sets: const [
+      WorkoutExecutionSet(
+        id: 'amrap-1',
+        blockOrder: 0,
+        blockName: 'Trabajo principal',
+        blockFormat: WorkoutBlockFormat.amrap,
+        blockTimeCapSeconds: 600,
+        itemOrder: 0,
+        exerciseId: 'pull-ups',
+        exerciseName: 'Dominadas',
+        setOrder: 0,
+        targetReps: 8,
+        restAfterSeconds: 0,
+        status: WorkoutSetStatus.completed,
+      ),
+      WorkoutExecutionSet(
+        id: 'amrap-2',
+        blockOrder: 0,
+        blockName: 'Trabajo principal',
+        blockFormat: WorkoutBlockFormat.amrap,
+        blockTimeCapSeconds: 600,
+        itemOrder: 1,
+        exerciseId: 'push-ups',
+        exerciseName: 'Flexiones',
+        setOrder: 0,
+        targetReps: 12,
+        restAfterSeconds: 0,
+        status: WorkoutSetStatus.completed,
+      ),
+    ],
+    amrapResults: [
+      WorkoutAmrapResult(
+        blockOrder: 0,
+        completedRounds: 5,
+        partialItemOrder: 1,
+        partialReps: 3,
+        completedAt: DateTime(2026, 9, 21, 17, 10),
+      ),
+    ],
+  );
+
+  @override
+  Future<WorkoutExecution?> getExecution(String executionId) async =>
+      amrapExecution;
 }
 
 class _Repository implements WorkoutRepository {
@@ -112,6 +198,11 @@ class _Repository implements WorkoutRepository {
   @override
   Future<WorkoutMutationDisposition> completeSet(
     WorkoutSetResultInput result,
+  ) async => WorkoutMutationDisposition.synced;
+
+  @override
+  Future<WorkoutMutationDisposition> completeAmrap(
+    WorkoutAmrapResultInput result,
   ) async => WorkoutMutationDisposition.synced;
 
   @override

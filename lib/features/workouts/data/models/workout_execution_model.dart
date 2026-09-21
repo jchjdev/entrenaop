@@ -11,6 +11,18 @@ class WorkoutExecutionModel {
             .map(_setFromJson)
             .toList(growable: false)
           ..sort(_compareSets);
+    final amrapResults = (json['workout_amrap_results'] as List? ?? const [])
+        .cast<Map<String, dynamic>>()
+        .map(
+          (result) => WorkoutAmrapResult(
+            blockOrder: result['block_order'] as int,
+            completedRounds: result['completed_rounds'] as int,
+            partialItemOrder: result['partial_item_order'] as int?,
+            partialReps: result['partial_reps'] as int,
+            completedAt: DateTime.parse(result['completed_at'] as String),
+          ),
+        )
+        .toList(growable: false);
 
     return WorkoutExecution(
       id: json['id'] as String,
@@ -24,6 +36,7 @@ class WorkoutExecutionModel {
       notes: json['notes'] as String?,
       abandonmentReason: _abandonmentReason(json['abandonment_reason']),
       sets: sets,
+      amrapResults: amrapResults,
     );
   }
 
@@ -33,6 +46,7 @@ class WorkoutExecutionModel {
       blockOrder: json['block_order'] as int,
       blockName: json['block_name'] as String,
       blockFormat: _blockFormat(json['block_format'] as String?),
+      blockTimeCapSeconds: json['block_time_cap_seconds'] as int?,
       itemOrder: json['item_order'] as int,
       exerciseId: json['exercise_id'] as String,
       exerciseName: json['exercise_name'] as String,

@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_state.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,12 @@ class _DetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groups = _groupSets(execution.sets);
+    final amrapBlocks = _groupAmrapBlocks(execution.sets);
+    final groups = _groupSets(
+      execution.sets
+          .where((set) => set.blockFormat != WorkoutBlockFormat.amrap)
+          .toList(growable: false),
+    );
     final abandoned = execution.status == WorkoutExecutionStatus.abandoned;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
@@ -113,6 +119,12 @@ class _DetailContent extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
+                ...amrapBlocks.map(
+                  (block) => _AmrapResultCard(
+                    block: block,
+                    result: execution.amrapResultFor(block.blockOrder),
+                  ),
+                ),
                 ...groups.map(
                   (group) =>
                       _ExerciseResultCard(group, isCorrecting: isCorrecting),
@@ -124,6 +136,89 @@ class _DetailContent extends StatelessWidget {
       ],
     );
   }
+}
+
+class _AmrapResultCard extends StatelessWidget {
+  const _AmrapResultCard({required this.block, required this.result});
+
+  final _AmrapBlock block;
+  final WorkoutAmrapResult? result;
+
+  @override
+  Widget build(BuildContext context) {
+    final partialExercise = _findExercise(
+      block.exercises,
+      result?.partialItemOrder,
+    );
+    return Card(
+      color: const Color(0xFF171717),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'AMRAP',
+              style: TextStyle(
+                color: Color(0xFFFF8A50),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              block.blockName,
+              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              block.exercises
+                  .map((set) => '${set.exerciseName} · ${set.targetReps} rep')
+                  .join('\n'),
+              style: const TextStyle(color: Colors.white70, height: 1.5),
+            ),
+            const SizedBox(height: 14),
+            if (result == null)
+              const Text(
+                'Sin resultado guardado',
+                style: TextStyle(color: Colors.white54),
+              )
+            else ...[
+              Text(
+                '${result!.completedRounds} vueltas completas',
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (partialExercise != null && result!.partialReps > 0) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Parcial · ${partialExercise.exerciseName}: '
+                  '${result!.partialReps} rep',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+WorkoutExecutionSet? _findExercise(
+  List<WorkoutExecutionSet> exercises,
+  int? itemOrder,
+) {
+  if (itemOrder == null) return null;
+  for (final exercise in exercises) {
+    if (exercise.itemOrder == itemOrder) return exercise;
+  }
+  return null;
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -530,6 +625,38 @@ class _ExerciseGroup {
   final String blockName;
   final String exerciseName;
   final List<WorkoutExecutionSet> sets;
+}
+
+class _AmrapBlock {
+  const _AmrapBlock({
+    required this.blockOrder,
+    required this.blockName,
+    required this.exercises,
+  });
+
+  final int blockOrder;
+  final String blockName;
+  final List<WorkoutExecutionSet> exercises;
+}
+
+List<_AmrapBlock> _groupAmrapBlocks(List<WorkoutExecutionSet> sets) {
+  final blocks = <int, _AmrapBlock>{};
+  for (final set in sets.where(
+    (item) => item.blockFormat == WorkoutBlockFormat.amrap,
+  )) {
+    final block = blocks.putIfAbsent(
+      set.blockOrder,
+      () => _AmrapBlock(
+        blockOrder: set.blockOrder,
+        blockName: set.blockName,
+        exercises: [],
+      ),
+    );
+    if (!block.exercises.any((item) => item.itemOrder == set.itemOrder)) {
+      block.exercises.add(set);
+    }
+  }
+  return blocks.values.toList(growable: false);
 }
 
 List<_ExerciseGroup> _groupSets(List<WorkoutExecutionSet> sets) {

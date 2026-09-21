@@ -210,6 +210,51 @@ void main() {
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
     expect(repository.created, isNull);
   });
+
+  test('acepta un AMRAP con límite global y objetivos por vuelta', () async {
+    const input = CreatePersonalWorkoutInput(
+      name: 'AMRAP de diez minutos',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Principal',
+          format: WorkoutBlockFormat.amrap,
+          timeCapSeconds: 600,
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: 'exercise-1',
+              sets: [
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.repetitions,
+                  targetValue: 10,
+                  restAfterSeconds: 0,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
+
+  test('rechaza un AMRAP sin límite de tiempo', () async {
+    final exercise = _validInput().blocks.single.exercises.single;
+    final input = CreatePersonalWorkoutInput(
+      name: 'AMRAP inválido',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Principal',
+          format: WorkoutBlockFormat.amrap,
+          exercises: [exercise],
+        ),
+      ],
+    );
+
+    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
+  });
 }
 
 CreatePersonalWorkoutInput _timedInput({

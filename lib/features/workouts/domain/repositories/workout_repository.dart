@@ -28,6 +28,10 @@ abstract class WorkoutRepository {
 
   Future<WorkoutMutationDisposition> completeSet(WorkoutSetResultInput result);
 
+  Future<WorkoutMutationDisposition> completeAmrap(
+    WorkoutAmrapResultInput result,
+  );
+
   Future<void> correctSet(WorkoutSetCorrectionInput correction);
 
   Future<WorkoutMutationDisposition> skipSet(String resultId);

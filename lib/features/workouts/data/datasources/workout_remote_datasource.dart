@@ -24,6 +24,8 @@ abstract class WorkoutRemoteDataSource {
 
   Future<void> completeSet(String operationId, Map<String, dynamic> values);
 
+  Future<void> completeAmrap(String operationId, Map<String, dynamic> values);
+
   Future<void> correctSet(Map<String, dynamic> values);
 
   Future<void> skipSet(String operationId, String resultId);

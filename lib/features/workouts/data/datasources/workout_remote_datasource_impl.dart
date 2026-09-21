@@ -17,11 +17,19 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final_rpe,
     notes,
     abandonment_reason,
+    workout_amrap_results (
+      block_order,
+      completed_rounds,
+      partial_item_order,
+      partial_reps,
+      completed_at
+    ),
     workout_execution_sets (
       id,
       block_order,
       block_name,
       block_format,
+      block_time_cap_seconds,
       item_order,
       exercise_id,
       exercise_name,
@@ -191,6 +199,13 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       supabaseClient.rpc(
         'complete_workout_set_idempotent',
         params: {'p_operation_id': operationId, ...values},
+      );
+
+  @override
+  Future<void> completeAmrap(String operationId, Map<String, dynamic> values) =>
+      supabaseClient.rpc(
+        'complete_amrap_block_idempotent',
+        params: {...values, 'p_operation_id': operationId},
       );
 
   @override

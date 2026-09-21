@@ -201,6 +201,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));
+  sl.registerLazySingleton(() => CompleteAmrapBlockUseCase(sl()));
   sl.registerLazySingleton(() => CorrectWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
@@ -235,6 +236,7 @@ Future<void> initDependencies() async {
       executionId: executionId,
       getExecution: sl(),
       completeSet: sl(),
+      completeAmrap: sl(),
       skipSet: sl(),
       finishExecution: sl(),
       abandonExecution: sl(),

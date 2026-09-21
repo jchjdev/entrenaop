@@ -82,6 +82,11 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   ) async => WorkoutMutationDisposition.synced;
 
   @override
+  Future<WorkoutMutationDisposition> completeAmrap(
+    WorkoutAmrapResultInput result,
+  ) async => WorkoutMutationDisposition.synced;
+
+  @override
   Future<void> correctSet(WorkoutSetCorrectionInput correction) async {}
 
   @override

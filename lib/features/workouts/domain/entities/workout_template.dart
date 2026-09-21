@@ -63,12 +63,14 @@ class WorkoutBlockDraft extends Equatable {
     this.format = WorkoutBlockFormat.straightSets,
     this.rounds = 1,
     this.restAfterSeconds = 0,
+    this.timeCapSeconds,
   });
 
   final String name;
   final WorkoutBlockFormat format;
   final int rounds;
   final int restAfterSeconds;
+  final int? timeCapSeconds;
   final List<WorkoutExerciseDraft> exercises;
 
   @override
@@ -77,6 +79,7 @@ class WorkoutBlockDraft extends Equatable {
     format,
     rounds,
     restAfterSeconds,
+    timeCapSeconds,
     exercises,
   ];
 }
