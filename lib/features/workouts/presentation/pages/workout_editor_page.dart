@@ -19,6 +19,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   final _descriptionController = TextEditingController();
   final _durationController = TextEditingController(text: '30');
   final List<_ExerciseRowData> _rows = [];
+  bool _didPopulateTemplate = false;
 
   @override
   void dispose() {
@@ -35,7 +36,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           previous.status != current.status ||
           previous.errorMessage != current.errorMessage,
       listener: (context, state) {
-        if (state.status == WorkoutEditorStatus.saved) {
+        if (state.status == WorkoutEditorStatus.ready &&
+            state.originalTemplate != null &&
+            !_didPopulateTemplate) {
+          _populateTemplate(state.originalTemplate!, state.exercises);
+        } else if (state.status == WorkoutEditorStatus.saved) {
           context.pop(state.createdTemplateId);
         } else if (state.errorMessage case final message?) {
           ScaffoldMessenger.of(context)
@@ -54,7 +59,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               onPressed: saving ? null : context.pop,
               icon: const Icon(Icons.close_rounded),
             ),
-            title: const Text('Nueva sesión'),
+            title: Text(
+              state.originalTemplate == null ? 'Nueva sesión' : 'Editar sesión',
+            ),
             actions: [
               TextButton(
                 onPressed: saving ? null : () => _save(context),
@@ -73,7 +80,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               const Center(child: CircularProgressIndicator()),
             WorkoutEditorStatus.failure when state.exercises.isEmpty =>
               _LoadFailure(onRetry: context.read<WorkoutEditorCubit>().load),
-            _ => _buildForm(context, state.exercises, saving),
+            _ => _buildForm(
+              context,
+              state.exercises,
+              saving,
+              state.originalTemplate,
+            ),
           },
         );
       },
@@ -84,6 +96,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     BuildContext context,
     List<ExerciseEntity> catalog,
     bool saving,
+    WorkoutTemplate? originalTemplate,
   ) {
     return Form(
       key: _formKey,
@@ -96,15 +109,36 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Diseña tu entrenamiento',
+                  Text(
+                    originalTemplate == null
+                        ? 'Diseña tu entrenamiento'
+                        : 'Actualiza tu entrenamiento',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Crea una sesión privada. Después podrás abrirla y entrenarla con el mismo motor guiado.',
+                  Text(
+                    originalTemplate == null
+                        ? 'Crea una sesión privada. Después podrás abrirla y entrenarla con el mismo motor guiado.'
+                        : 'Guardaremos una versión nueva. Tus entrenamientos anteriores seguirán vinculados a la versión que realizaste.',
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
+                  if (originalTemplate != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0x1FFF8A50),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Versión actual ${originalTemplate.version} · se creará la versión ${originalTemplate.version + 1}',
+                        style: const TextStyle(
+                          color: Color(0xFFFFB08A),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _nameController,
@@ -209,9 +243,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   FilledButton.icon(
                     onPressed: saving ? null : () => _save(context),
                     icon: const Icon(Icons.check_rounded),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 5),
-                      child: Text('Guardar sesión'),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Text(
+                        originalTemplate == null
+                            ? 'Guardar sesión'
+                            : 'Guardar nueva versión',
+                      ),
                     ),
                   ),
                 ],
@@ -221,6 +259,49 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         ],
       ),
     );
+  }
+
+  void _populateTemplate(
+    WorkoutTemplate template,
+    List<ExerciseEntity> catalog,
+  ) {
+    final exercisesById = {
+      for (final exercise in catalog) exercise.id: exercise,
+    };
+    final items = template.blocks.single.items;
+    final rows = <_ExerciseRowData>[];
+    for (final item in items) {
+      final exercise = exercisesById[item.exerciseId];
+      if (exercise == null || item.sets.isEmpty) continue;
+      final targetType = _targetTypeOf(item.sets.first);
+      if (item.sets.any((set) => _targetTypeOf(set) != targetType)) continue;
+      rows.add(
+        _ExerciseRowData(
+          exercise: exercise,
+          targetType: targetType,
+          sets: item.sets
+              .map(
+                (set) => _SetRowData(
+                  targetValue: _targetValueOf(set),
+                  restSeconds: set.restAfterSeconds,
+                  loadKg: set.targetLoadKg,
+                  rir: set.targetRir,
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
+    _didPopulateTemplate = true;
+    _nameController.text = template.name;
+    _descriptionController.text = template.description ?? '';
+    _durationController.text =
+        template.estimatedDurationMinutes?.toString() ?? '';
+    setState(() {
+      _rows
+        ..clear()
+        ..addAll(rows);
+    });
   }
 
   void _move(int from, int to) {
@@ -773,3 +854,14 @@ String? _integerValidator(
 String _numberText(num value) => value == value.roundToDouble()
     ? value.round().toString()
     : value.toString();
+
+WorkoutTargetType _targetTypeOf(WorkoutSet set) {
+  if (set.targetReps != null) return WorkoutTargetType.repetitions;
+  if (set.targetDurationSeconds != null) return WorkoutTargetType.duration;
+  return WorkoutTargetType.distance;
+}
+
+double _targetValueOf(WorkoutSet set) =>
+    set.targetReps?.toDouble() ??
+    set.targetDurationSeconds?.toDouble() ??
+    set.targetDistanceMeters!;

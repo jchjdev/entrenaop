@@ -105,8 +105,9 @@ avanzados ampliarán este recorrido sin sustituirlo.
 
 La segunda iteración ya permite variar cada serie, copiar la primera al resto,
 añadir o retirar series, duplicar una sesión completa y archivarla sin perder
-su historial. El siguiente cierre del ciclo personal será la edición
-versionada de una sesión existente.
+su historial. La edición de una sesión existente crea una revisión enlazada y
+archiva la anterior, por lo que el ciclo básico de rutinas personales queda
+cerrado sin reinterpretar ejecuciones pasadas.
 
 ## Fase 3: adaptación y seguimiento
 

@@ -148,7 +148,7 @@ class AppRouter {
                         GoRoute(
                           path: 'new',
                           builder: (context, state) => BlocProvider(
-                            create: (_) => sl<WorkoutEditorCubit>(),
+                            create: (_) => sl<WorkoutEditorCubit>(param1: ''),
                             child: const WorkoutEditorPage(),
                           ),
                         ),
@@ -166,6 +166,15 @@ class AppRouter {
                             );
                           },
                           routes: [
+                            GoRoute(
+                              path: 'edit',
+                              builder: (context, state) => BlocProvider(
+                                create: (_) => sl<WorkoutEditorCubit>(
+                                  param1: state.pathParameters['templateId']!,
+                                ),
+                                child: const WorkoutEditorPage(),
+                              ),
+                            ),
                             GoRoute(
                               path: 'active/:executionId',
                               builder: (context, state) => BlocProvider(

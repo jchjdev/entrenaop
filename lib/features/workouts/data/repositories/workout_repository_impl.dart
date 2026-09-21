@@ -44,24 +44,18 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
 
   @override
   Future<String> createPersonalTemplate(CreatePersonalWorkoutInput input) {
-    return remoteDataSource.createPersonalTemplate({
-      'name': input.name.trim(),
-      'description': input.description?.trim(),
-      'estimated_duration_minutes': input.estimatedDurationMinutes,
-      'exercises': input.exercises
-          .map(
-            (exercise) => {
-              'exercise_id': exercise.exerciseId,
-              'sets': exercise.sets.map(_setDraftToJson).toList(),
-            },
-          )
-          .toList(),
-    });
+    return remoteDataSource.createPersonalTemplate(_draftToJson(input));
   }
 
   @override
   Future<String> duplicatePersonalTemplate(String templateId) =>
       remoteDataSource.duplicatePersonalTemplate(templateId);
+
+  @override
+  Future<String> revisePersonalTemplate(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) => remoteDataSource.revisePersonalTemplate(templateId, _draftToJson(input));
 
   @override
   Future<void> archivePersonalTemplate(String templateId) =>
@@ -241,6 +235,20 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         ),
       };
 }
+
+Map<String, dynamic> _draftToJson(CreatePersonalWorkoutInput input) => {
+  'name': input.name.trim(),
+  'description': input.description?.trim(),
+  'estimated_duration_minutes': input.estimatedDurationMinutes,
+  'exercises': input.exercises
+      .map(
+        (exercise) => {
+          'exercise_id': exercise.exerciseId,
+          'sets': exercise.sets.map(_setDraftToJson).toList(),
+        },
+      )
+      .toList(),
+};
 
 Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
   'target_reps': set.targetType == WorkoutTargetType.repetitions

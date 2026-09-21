@@ -53,6 +53,8 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
   pública de EntrenaOP.
 - El creador mantiene una entrada rápida para series iguales, pero permite
   ajustar objetivo, carga, RIR y descanso de cada serie cuando se necesita.
+- Editar una rutina no cambia entrenamientos pasados: la interfaz guarda una
+  nueva versión y conserva la anterior para el historial.
 - Historial conservado aunque el usuario deje de pagar.
 - Sin progresión adaptativa personalizada.
 

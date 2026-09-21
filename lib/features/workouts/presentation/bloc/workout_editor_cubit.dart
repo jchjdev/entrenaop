@@ -8,22 +8,43 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   WorkoutEditorCubit({
     required GetExercisesUseCase getExercises,
     required CreatePersonalWorkoutUseCase createWorkout,
+    required GetWorkoutTemplateUseCase getWorkoutTemplate,
+    required RevisePersonalWorkoutUseCase reviseWorkout,
+    this.templateId,
   }) : _getExercises = getExercises,
        _createWorkout = createWorkout,
+       _getWorkoutTemplate = getWorkoutTemplate,
+       _reviseWorkout = reviseWorkout,
        super(const WorkoutEditorState());
 
   final GetExercisesUseCase _getExercises;
   final CreatePersonalWorkoutUseCase _createWorkout;
+  final GetWorkoutTemplateUseCase _getWorkoutTemplate;
+  final RevisePersonalWorkoutUseCase _reviseWorkout;
+  final String? templateId;
 
   Future<void> load() async {
     emit(const WorkoutEditorState(status: WorkoutEditorStatus.loading));
     try {
-      final exercises = await _getExercises();
-      exercises.sort((a, b) => a.name.compareTo(b.name));
+      final exercises = [...await _getExercises()]
+        ..sort((a, b) => a.name.compareTo(b.name));
+      final originalTemplate = templateId == null
+          ? null
+          : await _getWorkoutTemplate(templateId!);
+      if (templateId != null && originalTemplate == null) {
+        throw StateError('Workout not found');
+      }
+      if (originalTemplate != null &&
+          (originalTemplate.blocks.length != 1 ||
+              originalTemplate.blocks.single.format !=
+                  WorkoutBlockFormat.straightSets)) {
+        throw StateError('Unsupported workout format');
+      }
       emit(
         WorkoutEditorState(
           status: WorkoutEditorStatus.ready,
           exercises: exercises,
+          originalTemplate: originalTemplate,
         ),
       );
     } catch (_) {
@@ -41,15 +62,19 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
       WorkoutEditorState(
         status: WorkoutEditorStatus.saving,
         exercises: state.exercises,
+        originalTemplate: state.originalTemplate,
       ),
     );
     try {
-      final templateId = await _createWorkout(input);
+      final savedTemplateId = templateId == null
+          ? await _createWorkout(input)
+          : await _reviseWorkout(templateId!, input);
       emit(
         WorkoutEditorState(
           status: WorkoutEditorStatus.saved,
           exercises: state.exercises,
-          createdTemplateId: templateId,
+          originalTemplate: state.originalTemplate,
+          createdTemplateId: savedTemplateId,
         ),
       );
     } on FormatException catch (error) {
@@ -57,6 +82,7 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
         WorkoutEditorState(
           status: WorkoutEditorStatus.ready,
           exercises: state.exercises,
+          originalTemplate: state.originalTemplate,
           errorMessage: error.message,
         ),
       );
@@ -65,6 +91,7 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
         WorkoutEditorState(
           status: WorkoutEditorStatus.ready,
           exercises: state.exercises,
+          originalTemplate: state.originalTemplate,
           errorMessage:
               'No hemos podido guardar la sesión. Inténtalo de nuevo.',
         ),

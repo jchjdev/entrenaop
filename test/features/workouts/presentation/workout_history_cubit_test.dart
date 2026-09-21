@@ -112,6 +112,12 @@ class _FakeWorkoutRepository implements WorkoutRepository {
       throw UnimplementedError();
 
   @override
+  Future<String> revisePersonalTemplate(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) => throw UnimplementedError();
+
+  @override
   Future<void> archivePersonalTemplate(String templateId) =>
       throw UnimplementedError();
 

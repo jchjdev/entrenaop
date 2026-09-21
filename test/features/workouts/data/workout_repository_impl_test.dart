@@ -115,6 +115,30 @@ void main() {
     expect(dataSource.archivedTemplateId, 'template-1');
   });
 
+  test('serializa la nueva versión con el identificador original', () async {
+    await repository.revisePersonalTemplate(
+      'template-v1',
+      const CreatePersonalWorkoutInput(
+        name: 'Fuerza revisada',
+        exercises: [
+          WorkoutExerciseDraft(
+            exerciseId: 'exercise-1',
+            sets: [
+              WorkoutSetDraft(
+                targetType: WorkoutTargetType.repetitions,
+                targetValue: 8,
+                restAfterSeconds: 120,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    expect(dataSource.revisedTemplateId, 'template-v1');
+    expect(dataSource.revisedPayload?['name'], 'Fuerza revisada');
+  });
+
   test('envía una corrección con su motivo auditable', () async {
     const correction = WorkoutSetCorrectionInput(
       resultId: 'result-1',
@@ -205,6 +229,8 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Map<String, dynamic>? personalPayload;
   String? duplicatedTemplateId;
   String? archivedTemplateId;
+  String? revisedTemplateId;
+  Map<String, dynamic>? revisedPayload;
 
   @override
   Future<void> archivePersonalTemplate(String templateId) async {
@@ -221,6 +247,16 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Future<String> duplicatePersonalTemplate(String templateId) async {
     duplicatedTemplateId = templateId;
     return 'personal-template-copy';
+  }
+
+  @override
+  Future<String> revisePersonalTemplate(
+    String templateId,
+    Map<String, dynamic> payload,
+  ) async {
+    revisedTemplateId = templateId;
+    revisedPayload = payload;
+    return 'personal-template-v2';
   }
 
   @override

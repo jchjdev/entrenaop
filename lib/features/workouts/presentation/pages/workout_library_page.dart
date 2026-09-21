@@ -146,6 +146,9 @@ class _LibraryContent extends StatelessWidget {
                               onDuplicate: personal
                                   ? () => _duplicate(context, workout)
                                   : null,
+                              onEdit: personal
+                                  ? () => _edit(context, workout)
+                                  : null,
                               onArchive: personal
                                   ? () => _archive(context, workout)
                                   : null,
@@ -178,6 +181,23 @@ class _LibraryContent extends StatelessWidget {
               ? 'Hemos creado una copia de “${workout.name}”.'
               : 'No hemos podido duplicar la sesión.',
         ),
+      ),
+    );
+  }
+
+  Future<void> _edit(
+    BuildContext context,
+    WorkoutTemplateSummary workout,
+  ) async {
+    final revisedId = await context.push<String>(
+      '/plan/library/${workout.id}/edit',
+    );
+    if (revisedId == null || !context.mounted) return;
+    await context.read<WorkoutLibraryCubit>().load();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Nueva versión guardada. El historial se conserva.'),
       ),
     );
   }
@@ -228,6 +248,7 @@ class _WorkoutCard extends StatelessWidget {
     required this.personal,
     required this.busy,
     this.onDuplicate,
+    this.onEdit,
     this.onArchive,
   });
 
@@ -235,6 +256,7 @@ class _WorkoutCard extends StatelessWidget {
   final bool personal;
   final bool busy;
   final Future<void> Function()? onDuplicate;
+  final Future<void> Function()? onEdit;
   final Future<void> Function()? onArchive;
 
   @override
@@ -282,10 +304,19 @@ class _WorkoutCard extends StatelessWidget {
                       enabled: !busy,
                       tooltip: 'Opciones de sesión',
                       onSelected: (action) => switch (action) {
+                        _PersonalWorkoutAction.edit => onEdit?.call(),
                         _PersonalWorkoutAction.duplicate => onDuplicate?.call(),
                         _PersonalWorkoutAction.archive => onArchive?.call(),
                       },
                       itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: _PersonalWorkoutAction.edit,
+                          child: ListTile(
+                            leading: Icon(Icons.edit_outlined),
+                            title: Text('Editar'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
                         PopupMenuItem(
                           value: _PersonalWorkoutAction.duplicate,
                           child: ListTile(
@@ -350,7 +381,7 @@ class _WorkoutCard extends StatelessWidget {
   }
 }
 
-enum _PersonalWorkoutAction { duplicate, archive }
+enum _PersonalWorkoutAction { edit, duplicate, archive }
 
 class _EmptyLibrary extends StatelessWidget {
   const _EmptyLibrary({required this.personal});

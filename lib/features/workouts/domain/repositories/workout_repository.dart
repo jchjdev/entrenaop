@@ -13,6 +13,11 @@ abstract class WorkoutRepository {
 
   Future<String> duplicatePersonalTemplate(String templateId);
 
+  Future<String> revisePersonalTemplate(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  );
+
   Future<void> archivePersonalTemplate(String templateId);
 
   Future<String> startExecution(String templateId);

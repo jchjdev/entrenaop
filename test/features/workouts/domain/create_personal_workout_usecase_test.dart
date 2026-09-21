@@ -19,6 +19,17 @@ void main() {
     expect(repository.created, _validInput());
   });
 
+  test('valida y envía una revisión sobre la plantilla original', () async {
+    final revisedId = await RevisePersonalWorkoutUseCase(repository)(
+      'template-v1',
+      _validInput(),
+    );
+
+    expect(revisedId, 'template-revised');
+    expect(repository.revisedTemplateId, 'template-v1');
+    expect(repository.revised, _validInput());
+  });
+
   test('rechaza ejercicios repetidos antes de llamar a Supabase', () async {
     final exercise = _validInput().exercises.single;
     final input = CreatePersonalWorkoutInput(
@@ -71,6 +82,8 @@ CreatePersonalWorkoutInput _validInput() => const CreatePersonalWorkoutInput(
 
 class _Repository implements WorkoutRepository {
   CreatePersonalWorkoutInput? created;
+  CreatePersonalWorkoutInput? revised;
+  String? revisedTemplateId;
 
   @override
   Future<String> createPersonalTemplate(
@@ -78,6 +91,16 @@ class _Repository implements WorkoutRepository {
   ) async {
     created = input;
     return 'template-created';
+  }
+
+  @override
+  Future<String> revisePersonalTemplate(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) async {
+    revisedTemplateId = templateId;
+    revised = input;
+    return 'template-revised';
   }
 
   @override
