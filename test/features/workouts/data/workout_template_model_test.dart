@@ -5,6 +5,21 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('convierte el resumen ligero usado por la biblioteca', () {
+    final summary = WorkoutTemplateSummaryModel.fromJson(const {
+      'id': 'template-1',
+      'name': 'Fuerza base',
+      'description': 'Sesión pública',
+      'estimated_duration_minutes': 20,
+      'origin': 'system',
+      'version': 2,
+    });
+
+    expect(summary.name, 'Fuerza base');
+    expect(summary.origin, WorkoutTemplateOrigin.system);
+    expect(summary.version, 2);
+  });
+
   test('convierte y ordena la jerarquía completa de una plantilla', () {
     final workout = WorkoutTemplateModel.fromJson({
       'id': 'template-1',

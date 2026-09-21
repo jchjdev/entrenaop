@@ -40,7 +40,7 @@ class TrainingHubPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 22),
                     _AvailableSessionCard(
-                      onOpen: () => context.push('/plan/starter-session'),
+                      onOpen: () => context.push('/plan/library'),
                     ),
                     const SizedBox(height: 22),
                     const _SectionTitle(
@@ -107,19 +107,19 @@ class _AvailableSessionCard extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               const Text(
-                'Sesión inicial de EntrenaOP',
+                'Biblioteca de EntrenaOP',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 7),
               const Text(
-                'Consulta los bloques, ejercicios y descansos antes de comenzar.',
+                'Explora las sesiones públicas y consulta sus bloques antes de comenzar.',
                 style: TextStyle(color: Colors.white70, height: 1.4),
               ),
               const SizedBox(height: 18),
               FilledButton.icon(
                 onPressed: onOpen,
                 icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Ver sesión'),
+                label: const Text('Abrir biblioteca'),
               ),
             ],
           ),

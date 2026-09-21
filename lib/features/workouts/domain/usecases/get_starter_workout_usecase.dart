@@ -11,3 +11,21 @@ class GetStarterWorkoutUseCase {
   Future<WorkoutTemplate?> call() =>
       _repository.getTemplateById(starterTemplateId);
 }
+
+class GetWorkoutTemplateUseCase {
+  const GetWorkoutTemplateUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<WorkoutTemplate?> call(String templateId) =>
+      _repository.getTemplateById(templateId);
+}
+
+class GetPublicWorkoutsUseCase {
+  const GetPublicWorkoutsUseCase(this._repository);
+
+  final WorkoutRepository _repository;
+
+  Future<List<WorkoutTemplateSummary>> call() =>
+      _repository.getPublicTemplates();
+}

@@ -89,6 +89,19 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getPublicTemplates() async {
+    final response = await supabaseClient
+        .from('workout_templates')
+        .select(
+          'id, name, description, estimated_duration_minutes, origin, version',
+        )
+        .eq('visibility', 'public')
+        .eq('status', 'published')
+        .order('created_at');
+    return response.cast<Map<String, dynamic>>();
+  }
+
+  @override
   Future<String> startExecution(String templateId) async {
     final response = await supabaseClient.rpc(
       'start_workout_execution',

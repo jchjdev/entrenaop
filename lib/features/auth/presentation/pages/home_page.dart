@@ -403,6 +403,13 @@ class _QuickActions extends StatelessWidget {
           child: Row(
             children: [
               _QuickActionCard(
+                icon: Icons.grid_view_rounded,
+                label: 'Biblioteca',
+                description: 'Explorar sesiones públicas',
+                onTap: () => context.push('/plan/library'),
+              ),
+              const SizedBox(width: 10),
+              _QuickActionCard(
                 icon: Icons.event_note_rounded,
                 label: 'Mi plan',
                 description: 'Sesiones y configuración',

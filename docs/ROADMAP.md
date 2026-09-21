@@ -91,6 +91,12 @@ duplicar series aunque una respuesta se haya perdido.
 La biblioteca completa y otros formatos se ampliarán después de validar este
 recorrido.
 
+La primera Biblioteca ya consulta las plantillas públicas publicadas y abre su
+detalle mediante una ruta genérica. La sesión inicial es su primer contenido
+real. Las plantillas públicas, las rutinas personales y las futuras
+prescripciones adaptativas comparten motor de ejecución, pero conservan origen,
+visibilidad y versionado distintos.
+
 ## Fase 3: adaptación y seguimiento
 
 - Algoritmo determinista de progresión, con auditoría y anulación manual.

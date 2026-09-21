@@ -1,6 +1,8 @@
 abstract class WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getTemplateById(String id);
 
+  Future<List<Map<String, dynamic>>> getPublicTemplates();
+
   Future<String> startExecution(String templateId);
 
   Future<Map<String, dynamic>?> getExecution(String executionId);

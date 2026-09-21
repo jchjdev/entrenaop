@@ -98,6 +98,9 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   Future<WorkoutTemplate?> getTemplateById(String id) async => null;
 
   @override
+  Future<List<WorkoutTemplateSummary>> getPublicTemplates() async => const [];
+
+  @override
   Future<WorkoutMutationDisposition> skipSet(String resultId) async =>
       WorkoutMutationDisposition.synced;
 

@@ -6,7 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class WorkoutPreviewPage extends StatelessWidget {
-  const WorkoutPreviewPage({super.key});
+  const WorkoutPreviewPage({required this.routeBase, super.key});
+
+  final String routeBase;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class WorkoutPreviewPage extends StatelessWidget {
         listener: (context, state) {
           final executionId = state.executionId;
           if (executionId != null) {
-            context.push('/plan/starter-session/active/$executionId');
+            context.push('$routeBase/active/$executionId');
           }
         },
         builder: (context, state) => switch (state.status) {

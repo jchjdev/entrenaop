@@ -56,6 +56,7 @@ import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -182,7 +183,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<WorkoutRepository>(
     () => WorkoutRepositoryImpl(remoteDataSource: sl(), mutationQueue: sl()),
   );
-  sl.registerLazySingleton(() => GetStarterWorkoutUseCase(sl()));
+  sl.registerLazySingleton(() => GetWorkoutTemplateUseCase(sl()));
+  sl.registerLazySingleton(() => GetPublicWorkoutsUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
@@ -192,10 +194,15 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetPendingWorkoutMutationCountUseCase(sl()));
+  sl.registerFactoryParam<WorkoutPreviewCubit, String, void>(
+    (templateId, _) => WorkoutPreviewCubit(
+      templateId: templateId,
+      getWorkoutTemplate: sl(),
+      startExecution: sl(),
+    )..load(),
+  );
   sl.registerFactory(
-    () =>
-        WorkoutPreviewCubit(getStarterWorkout: sl(), startExecution: sl())
-          ..load(),
+    () => WorkoutLibraryCubit(getPublicWorkouts: sl())..load(),
   );
   sl.registerFactoryParam<ActiveWorkoutCubit, String, void>(
     (executionId, _) => ActiveWorkoutCubit(

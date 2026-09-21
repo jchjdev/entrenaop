@@ -47,7 +47,7 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 ### Free
 
-- Biblioteca y sesiones públicas.
+- Biblioteca y sesiones públicas no adaptativas.
 - Creación de rutinas propias.
 - Historial conservado aunque el usuario deje de pagar.
 - Sin progresión adaptativa personalizada.
@@ -56,6 +56,8 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 - Planes específicos de oposiciones.
 - Progresión adaptativa automática.
+- Prescripciones privadas generadas para las marcas, objetivos y contexto del
+  usuario; no son simples copias de las sesiones públicas.
 - Seguimiento de marcas y comparación con baremos.
 - Sin intervención diaria de un entrenador.
 

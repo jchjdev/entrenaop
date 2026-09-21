@@ -27,6 +27,14 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
+  Future<List<WorkoutTemplateSummary>> getPublicTemplates() async {
+    final rows = await remoteDataSource.getPublicTemplates();
+    return rows
+        .map(WorkoutTemplateSummaryModel.fromJson)
+        .toList(growable: false);
+  }
+
+  @override
   Future<String> startExecution(String templateId) =>
       remoteDataSource.startExecution(templateId);
 

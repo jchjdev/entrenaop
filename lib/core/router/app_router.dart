@@ -21,10 +21,13 @@ import 'package:entrenaop/features/training_plan/presentation/bloc/training_pref
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_detail_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/workout_library_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_page.dart';
+import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -111,8 +114,12 @@ class AppRouter {
                     GoRoute(
                       path: 'starter-session',
                       builder: (context, state) => BlocProvider(
-                        create: (_) => sl<WorkoutPreviewCubit>(),
-                        child: const WorkoutPreviewPage(),
+                        create: (_) => sl<WorkoutPreviewCubit>(
+                          param1: GetStarterWorkoutUseCase.starterTemplateId,
+                        ),
+                        child: const WorkoutPreviewPage(
+                          routeBase: '/plan/starter-session',
+                        ),
                       ),
                       routes: [
                         GoRoute(
@@ -126,6 +133,43 @@ class AppRouter {
                               cueService: sl(),
                             ),
                           ),
+                        ),
+                      ],
+                    ),
+                    GoRoute(
+                      path: 'library',
+                      builder: (context, state) => BlocProvider(
+                        create: (_) => sl<WorkoutLibraryCubit>(),
+                        child: const WorkoutLibraryPage(),
+                      ),
+                      routes: [
+                        GoRoute(
+                          path: ':templateId',
+                          builder: (context, state) {
+                            final templateId =
+                                state.pathParameters['templateId']!;
+                            return BlocProvider(
+                              create: (_) =>
+                                  sl<WorkoutPreviewCubit>(param1: templateId),
+                              child: WorkoutPreviewPage(
+                                routeBase: '/plan/library/$templateId',
+                              ),
+                            );
+                          },
+                          routes: [
+                            GoRoute(
+                              path: 'active/:executionId',
+                              builder: (context, state) => BlocProvider(
+                                create: (_) => sl<ActiveWorkoutCubit>(
+                                  param1: state.pathParameters['executionId']!,
+                                ),
+                                child: ActiveWorkoutPage(
+                                  timerStore: sl(),
+                                  cueService: sl(),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

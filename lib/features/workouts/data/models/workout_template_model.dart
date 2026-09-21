@@ -103,3 +103,25 @@ class WorkoutTemplateModel {
     _ => throw FormatException('Formato de bloque desconocido: $value'),
   };
 }
+
+class WorkoutTemplateSummaryModel {
+  const WorkoutTemplateSummaryModel._();
+
+  static WorkoutTemplateSummary fromJson(Map<String, dynamic> json) =>
+      WorkoutTemplateSummary(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        description: json['description'] as String?,
+        estimatedDurationMinutes: json['estimated_duration_minutes'] as int?,
+        origin: switch (json['origin'] as String) {
+          'system' => WorkoutTemplateOrigin.system,
+          'user' => WorkoutTemplateOrigin.user,
+          'coach' => WorkoutTemplateOrigin.coach,
+          'algorithm' => WorkoutTemplateOrigin.algorithm,
+          final value => throw FormatException(
+            'Origen de sesión desconocido: $value',
+          ),
+        },
+        version: json['version'] as int,
+      );
+}

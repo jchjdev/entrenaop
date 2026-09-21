@@ -177,6 +177,15 @@ identidad
 - Una marca física se guarda como hecho del usuario. Solo se reutiliza como
   resultado oficial entre preparaciones cuando prueba, unidad y protocolo son
   compatibles; en otros casos puede ser contexto del algoritmo, no puntuación.
+- El entrenamiento distingue cuatro niveles: ejercicio, plantilla de sesión,
+  prescripción privada y ejecución. Una plantilla pública puede servir como
+  estructura, pero el algoritmo genera una nueva versión privada con origen
+  `algorithm`; no modifica la plantilla ni una prescripción histórica.
+- `workout_templates.origin` separa contenido de sistema, usuario, entrenador y
+  algoritmo. La biblioteca muestra únicamente plantillas públicas publicadas;
+  las prescripciones adaptativas y las sesiones personales permanecen privadas.
+- Al comenzar, la ejecución copia la prescripción efectiva por serie. El
+  historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan
   una rutina hasta que las reglas deportivas estén validadas y versionadas.
 - Los eventos o resultados históricos deben ser inmutables o estar versionados

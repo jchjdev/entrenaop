@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +39,25 @@ void main() {
       'p_actual_rpe': null,
       'p_actual_rir': 2,
     });
+  });
+
+  test('convierte las sesiones públicas en resúmenes de biblioteca', () async {
+    dataSource.publicTemplates = const [
+      {
+        'id': 'template-1',
+        'name': 'Fuerza base',
+        'description': 'Sesión pública',
+        'estimated_duration_minutes': 20,
+        'origin': 'system',
+        'version': 1,
+      },
+    ];
+
+    final workouts = await repository.getPublicTemplates();
+
+    expect(workouts, hasLength(1));
+    expect(workouts.single.name, 'Fuerza base');
+    expect(workouts.single.origin, WorkoutTemplateOrigin.system);
   });
 
   test('envía una corrección con su motivo auditable', () async {
@@ -126,6 +146,7 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   String? finalNotes;
   bool failComplete = false;
   final List<String> completedOperationIds = [];
+  List<Map<String, dynamic>> publicTemplates = const [];
 
   @override
   Future<void> abandonExecution(
@@ -177,6 +198,10 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>?> getTemplateById(String id) async => null;
+
+  @override
+  Future<List<Map<String, dynamic>>> getPublicTemplates() async =>
+      publicTemplates;
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';

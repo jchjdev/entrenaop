@@ -12,6 +12,37 @@ enum WorkoutBlockFormat {
   coolDown,
 }
 
+enum WorkoutTemplateOrigin { system, user, coach, algorithm }
+
+/// Datos ligeros para descubrir una sesión sin cargar todos sus bloques.
+class WorkoutTemplateSummary extends Equatable {
+  const WorkoutTemplateSummary({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.estimatedDurationMinutes,
+    required this.origin,
+    required this.version,
+  });
+
+  final String id;
+  final String name;
+  final String? description;
+  final int? estimatedDurationMinutes;
+  final WorkoutTemplateOrigin origin;
+  final int version;
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    estimatedDurationMinutes,
+    origin,
+    version,
+  ];
+}
+
 class WorkoutTemplate extends Equatable {
   const WorkoutTemplate({
     required this.id,

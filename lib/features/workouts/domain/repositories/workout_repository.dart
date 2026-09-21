@@ -5,6 +5,8 @@ import 'package:entrenaop/features/workouts/domain/entities/pending_workout_muta
 abstract class WorkoutRepository {
   Future<WorkoutTemplate?> getTemplateById(String id);
 
+  Future<List<WorkoutTemplateSummary>> getPublicTemplates();
+
   Future<String> startExecution(String templateId);
 
   Future<WorkoutExecution?> getExecution(String executionId);

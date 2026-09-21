@@ -5,19 +5,21 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_st
 
 class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
   WorkoutPreviewCubit({
-    required GetStarterWorkoutUseCase getStarterWorkout,
+    required this.templateId,
+    required GetWorkoutTemplateUseCase getWorkoutTemplate,
     required StartWorkoutExecutionUseCase startExecution,
-  }) : _getStarterWorkout = getStarterWorkout,
+  }) : _getWorkoutTemplate = getWorkoutTemplate,
        _startExecution = startExecution,
        super(const WorkoutPreviewState());
 
-  final GetStarterWorkoutUseCase _getStarterWorkout;
+  final String templateId;
+  final GetWorkoutTemplateUseCase _getWorkoutTemplate;
   final StartWorkoutExecutionUseCase _startExecution;
 
   Future<void> load() async {
     emit(const WorkoutPreviewState(status: WorkoutPreviewStatus.loading));
     try {
-      final workout = await _getStarterWorkout();
+      final workout = await _getWorkoutTemplate(templateId);
       emit(
         WorkoutPreviewState(
           status: workout == null
