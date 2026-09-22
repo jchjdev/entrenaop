@@ -32,6 +32,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mi evolución'), findsOneWidget);
+    expect(find.text('Nueva evaluación'), findsOneWidget);
     expect(find.text('Ya tienes tu primera referencia'), findsOneWidget);
     expect(find.text('Foco recomendado'), findsOneWidget);
     expect(tester.takeException(), isNull);

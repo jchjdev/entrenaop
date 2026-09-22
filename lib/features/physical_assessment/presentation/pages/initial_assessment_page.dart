@@ -83,7 +83,9 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             title: Text(
-              report == null ? 'Evaluación inicial' : 'Tu punto de partida',
+              report == null
+                  ? 'Evaluación física'
+                  : 'Resultado de la evaluación',
             ),
           ),
           body: SafeArea(
@@ -485,8 +487,7 @@ class _AssessmentReportView extends StatelessWidget {
               const SizedBox(height: 10),
               if (status == PhysicalAssessmentStatus.saved) ...[
                 OutlinedButton.icon(
-                  onPressed: () =>
-                      context.push('/assessment/history/physical'),
+                  onPressed: () => context.go('/assessment/history/physical'),
                   icon: const Icon(Icons.timeline_rounded),
                   label: const Text('Ver mi evolución'),
                 ),

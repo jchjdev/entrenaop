@@ -61,6 +61,19 @@ class _LoadedHistory extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  FilledButton.icon(
+                    onPressed: () async {
+                      await context.push('/assessment/initial');
+                      if (context.mounted) {
+                        await context
+                            .read<PhysicalAssessmentHistoryCubit>()
+                            .load();
+                      }
+                    },
+                    icon: const Icon(Icons.add_chart_rounded),
+                    label: const Text('Nueva evaluación'),
+                  ),
+                  const SizedBox(height: 12),
                   _ProgressOverview(
                     assessmentCount: state.entries.length,
                     progress: state.progress,
