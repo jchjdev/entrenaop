@@ -113,7 +113,7 @@ class _WorkoutContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'Esta es una sesión pública de validación, no una recomendación personalizada.',
+                      'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white54),
                     ),
@@ -258,7 +258,7 @@ class _BlockCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        _blockDescription(block),
+                        _blockFormatLabel(block.format),
                         style: const TextStyle(color: Colors.white54),
                       ),
                     ],
@@ -266,10 +266,22 @@ class _BlockCard extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Text(
+              _blockPlanSummary(block),
+              style: const TextStyle(
+                color: Color(0xFFFFA06F),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (_showsSequence(block.format)) ...[
+              const SizedBox(height: 12),
+              _SequenceOverview(block: block),
+            ],
             const SizedBox(height: 14),
             for (final (index, item) in block.items.indexed) ...[
               if (index > 0) const Divider(height: 24),
-              _ExerciseRow(item: item),
+              _ExerciseRow(block: block, index: index, item: item),
             ],
           ],
         ),
@@ -278,9 +290,54 @@ class _BlockCard extends StatelessWidget {
   }
 }
 
-class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow({required this.item});
+class _SequenceOverview extends StatelessWidget {
+  const _SequenceOverview({required this.block});
 
+  final WorkoutBlock block;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final (index, item) in block.items.indexed) ...[
+            if (index > 0)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 15,
+                  color: Colors.white38,
+                ),
+              ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.055),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Text(
+                '${_positionLabel(block.format, index)}  ${item.exerciseName}',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ExerciseRow extends StatelessWidget {
+  const _ExerciseRow({
+    required this.block,
+    required this.index,
+    required this.item,
+  });
+
+  final WorkoutBlock block;
+  final int index;
   final WorkoutItem item;
 
   @override
@@ -288,22 +345,101 @@ class _ExerciseRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          item.exerciseName,
-          style: const TextStyle(fontWeight: FontWeight.w700),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              constraints: const BoxConstraints(minWidth: 34),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0x33FF8A50),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Text(
+                _positionLabel(block.format, index),
+                style: const TextStyle(
+                  color: Color(0xFFFFA06F),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                item.exerciseName,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 5),
-        Text(
-          _setSummary(item.sets),
-          style: const TextStyle(
-            color: Color(0xFFFFA06F),
-            fontWeight: FontWeight.w600,
+        const SizedBox(height: 7),
+        _PrescriptionDetails(block: block, itemIndex: index, sets: item.sets),
+        if (item.exerciseDescription case final description?) ...[
+          const SizedBox(height: 7),
+          Text(
+            description,
+            style: const TextStyle(color: Colors.white54, height: 1.3),
           ),
-        ),
+        ],
         if (item.notes case final notes?) ...[
           const SizedBox(height: 5),
-          Text(notes, style: const TextStyle(color: Colors.white60)),
+          Text('Nota · $notes', style: const TextStyle(color: Colors.white60)),
         ],
+      ],
+    );
+  }
+}
+
+class _PrescriptionDetails extends StatelessWidget {
+  const _PrescriptionDetails({
+    required this.block,
+    required this.itemIndex,
+    required this.sets,
+  });
+
+  final WorkoutBlock block;
+  final int itemIndex;
+  final List<WorkoutSet> sets;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sets.isEmpty) {
+      return const Text(
+        'Sin series prescritas',
+        style: TextStyle(color: Colors.white54),
+      );
+    }
+
+    if (_setsAreEquivalent(sets)) {
+      final prefix = switch (block.format) {
+        WorkoutBlockFormat.amrap => 'En cada vuelta',
+        WorkoutBlockFormat.tabata => 'Trabajo',
+        WorkoutBlockFormat.straightSets => '${sets.length} series',
+        WorkoutBlockFormat.intervals => '${sets.length} intervalos',
+        _ => '${sets.length} rondas',
+      };
+      return Text(
+        '$prefix · ${_setPrescription(sets.first, block.format, includeRest: _includesSetRest(block, itemIndex))}',
+        style: const TextStyle(
+          color: Color(0xFFFFA06F),
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final (setIndex, set) in sets.indexed)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              '${_setPositionLabel(block.format, setIndex)} · ${_setPrescription(set, block.format, includeRest: _includesSetRest(block, itemIndex))}',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ),
       ],
     );
   }
@@ -338,38 +474,120 @@ class _Message extends StatelessWidget {
   }
 }
 
-String _blockDescription(WorkoutBlock block) {
-  final format = switch (block.format) {
-    WorkoutBlockFormat.straightSets => 'Series convencionales',
-    WorkoutBlockFormat.circuit => 'Circuito',
-    WorkoutBlockFormat.superset => 'Superserie',
-    WorkoutBlockFormat.intervals => 'Intervalos personalizados',
-    WorkoutBlockFormat.emom => 'EMOM',
-    WorkoutBlockFormat.amrap => 'AMRAP',
-    WorkoutBlockFormat.tabata => 'Tabata',
-    WorkoutBlockFormat.warmUp => 'Calentamiento',
-    WorkoutBlockFormat.coolDown => 'Vuelta a la calma',
+String _blockFormatLabel(WorkoutBlockFormat format) => switch (format) {
+  WorkoutBlockFormat.straightSets => 'Series convencionales',
+  WorkoutBlockFormat.circuit => 'Circuito',
+  WorkoutBlockFormat.superset => 'Superserie',
+  WorkoutBlockFormat.intervals => 'Intervalos de trabajo',
+  WorkoutBlockFormat.emom => 'EMOM',
+  WorkoutBlockFormat.amrap => 'AMRAP',
+  WorkoutBlockFormat.tabata => 'Tabata',
+  WorkoutBlockFormat.warmUp => 'Calentamiento',
+  WorkoutBlockFormat.coolDown => 'Vuelta a la calma',
+};
+
+String _blockPlanSummary(WorkoutBlock block) {
+  final itemCount = block.items.length;
+  final finalRest = block.restAfterSeconds > 0
+      ? ' · ${_duration(block.restAfterSeconds)} entre rondas'
+      : '';
+  return switch (block.format) {
+    WorkoutBlockFormat.straightSets =>
+      '$itemCount ${itemCount == 1 ? 'ejercicio' : 'ejercicios'} · ${block.items.fold<int>(0, (total, item) => total + item.sets.length)} series',
+    WorkoutBlockFormat.superset =>
+      '${block.rounds} rondas · A1 y A2 seguidos$finalRest',
+    WorkoutBlockFormat.circuit =>
+      '${block.rounds} rondas · $itemCount estaciones$finalRest',
+    WorkoutBlockFormat.intervals =>
+      '${block.items.firstOrNull?.sets.length ?? 0} intervalos · ${_duration(block.restAfterSeconds)} de recuperación',
+    WorkoutBlockFormat.tabata =>
+      '8 intervalos · 20 s de trabajo / 10 s de recuperación',
+    WorkoutBlockFormat.emom =>
+      '${block.rounds * itemCount} min · $itemCount ${itemCount == 1 ? 'estación' : 'estaciones'} × ${block.rounds} vueltas',
+    WorkoutBlockFormat.amrap =>
+      '${_duration(block.timeCapSeconds ?? 0)} · todas las vueltas posibles',
+    WorkoutBlockFormat.warmUp || WorkoutBlockFormat.coolDown =>
+      '$itemCount ${itemCount == 1 ? 'ejercicio' : 'ejercicios'}',
   };
-  return block.rounds > 1 ? '$format · ${block.rounds} rondas' : format;
 }
 
-String _setSummary(List<WorkoutSet> sets) {
-  if (sets.isEmpty) return 'Sin series prescritas';
+bool _showsSequence(WorkoutBlockFormat format) => switch (format) {
+  WorkoutBlockFormat.superset ||
+  WorkoutBlockFormat.circuit ||
+  WorkoutBlockFormat.tabata ||
+  WorkoutBlockFormat.emom ||
+  WorkoutBlockFormat.amrap => true,
+  _ => false,
+};
+
+String _positionLabel(WorkoutBlockFormat format, int index) => switch (format) {
+  WorkoutBlockFormat.superset => 'A${index + 1}',
+  WorkoutBlockFormat.circuit => 'E${index + 1}',
+  WorkoutBlockFormat.tabata => 'I${index + 1}',
+  WorkoutBlockFormat.emom => 'M${index + 1}',
+  WorkoutBlockFormat.amrap => '${index + 1}',
+  _ => '${index + 1}',
+};
+
+String _setPositionLabel(WorkoutBlockFormat format, int index) =>
+    switch (format) {
+      WorkoutBlockFormat.intervals => 'Intervalo ${index + 1}',
+      WorkoutBlockFormat.straightSets => 'Serie ${index + 1}',
+      _ => 'Ronda ${index + 1}',
+    };
+
+bool _setsAreEquivalent(List<WorkoutSet> sets) {
   final first = sets.first;
+  return sets
+      .skip(1)
+      .every(
+        (set) =>
+            set.targetReps == first.targetReps &&
+            set.targetDurationSeconds == first.targetDurationSeconds &&
+            set.targetDistanceMeters == first.targetDistanceMeters &&
+            set.targetLoadKg == first.targetLoadKg &&
+            set.targetRpe == first.targetRpe &&
+            set.targetRir == first.targetRir &&
+            set.restAfterSeconds == first.restAfterSeconds,
+      );
+}
+
+bool _includesSetRest(WorkoutBlock block, int itemIndex) =>
+    block.format == WorkoutBlockFormat.straightSets ||
+    block.format == WorkoutBlockFormat.warmUp ||
+    block.format == WorkoutBlockFormat.coolDown ||
+    (block.format == WorkoutBlockFormat.circuit &&
+        itemIndex < block.items.length - 1);
+
+String _setPrescription(
+  WorkoutSet set,
+  WorkoutBlockFormat format, {
+  required bool includeRest,
+}) {
+  final parts = <String>[];
   final target = switch ((
-    first.targetReps,
-    first.targetDurationSeconds,
-    first.targetDistanceMeters,
+    set.targetReps,
+    set.targetDurationSeconds,
+    set.targetDistanceMeters,
   )) {
     (final int reps, _, _) => '$reps repeticiones',
     (_, final int seconds, _) => '${_duration(seconds)} de trabajo',
     (_, _, final double meters) => '${_number(meters)} m',
     _ => 'objetivo configurado',
   };
-  final rest = first.restAfterSeconds > 0
-      ? ' · ${_duration(first.restAfterSeconds)} descanso'
-      : '';
-  return '${sets.length} × $target$rest';
+  parts.add(target);
+  if (set.targetLoadKg case final load?) {
+    parts.add('${_number(load)} kg');
+  }
+  if (set.targetRir case final rir?) parts.add('RIR ${_number(rir)}');
+  if (set.targetRpe case final rpe?) parts.add('RPE ${_number(rpe)}');
+  if (includeRest && set.restAfterSeconds > 0) {
+    final restName = format == WorkoutBlockFormat.circuit
+        ? 'transición'
+        : 'descanso';
+    parts.add('${_duration(set.restAfterSeconds)} $restName');
+  }
+  return parts.join(' · ');
 }
 
 String _duration(int seconds) {

@@ -70,18 +70,79 @@ void main() {
     expect(find.text('20 min'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('una sesión personal sin descripción no aparece como pública', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _Repository(
+      const [],
+      personalWorkouts: const [
+        WorkoutTemplateSummary(
+          id: 'personal-1',
+          name: 'Mi fuerza',
+          description: null,
+          estimatedDurationMinutes: 30,
+          origin: WorkoutTemplateOrigin.user,
+          version: 1,
+        ),
+      ],
+    );
+    final cubit = WorkoutLibraryCubit(
+      getPublicWorkouts: GetPublicWorkoutsUseCase(repository),
+      getPersonalWorkouts: GetPersonalWorkoutsUseCase(repository),
+      duplicatePersonalWorkout: DuplicatePersonalWorkoutUseCase(repository),
+      archivePersonalWorkout: ArchivePersonalWorkoutUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+    final router = GoRouter(
+      initialLocation: '/plan/library',
+      routes: [
+        GoRoute(
+          path: '/plan/library',
+          builder: (context, state) => BlocProvider.value(
+            value: cubit,
+            child: const WorkoutLibraryPage(),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: ThemeData.dark(useMaterial3: true),
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mis sesiones'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mi fuerza'), findsOneWidget);
+    expect(find.text('Sesión privada creada por ti.'), findsOneWidget);
+    expect(find.text('Sesión pública de EntrenaOP.'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _Repository implements WorkoutRepository {
-  _Repository(this.workouts);
+  _Repository(this.workouts, {this.personalWorkouts = const []});
 
   final List<WorkoutTemplateSummary> workouts;
+  final List<WorkoutTemplateSummary> personalWorkouts;
 
   @override
   Future<List<WorkoutTemplateSummary>> getPublicTemplates() async => workouts;
 
   @override
-  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async => const [];
+  Future<List<WorkoutTemplateSummary>> getPersonalTemplates() async =>
+      personalWorkouts;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

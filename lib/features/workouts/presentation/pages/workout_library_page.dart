@@ -350,7 +350,10 @@ class _WorkoutCard extends StatelessWidget {
               const SizedBox(height: 7),
               Expanded(
                 child: Text(
-                  workout.description ?? 'Sesión pública de EntrenaOP.',
+                  workout.description ??
+                      (personal
+                          ? 'Sesión privada creada por ti.'
+                          : 'Sesión pública de EntrenaOP.'),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white60, height: 1.35),

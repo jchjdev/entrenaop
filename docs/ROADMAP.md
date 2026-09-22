@@ -147,6 +147,13 @@ La cuarta ampliación incorpora AMRAP con un reloj global de hasta sesenta
 minutos. Su resultado no falsea series convencionales: conserva vueltas
 completas y el avance parcial alcanzado al terminar el tiempo.
 
+La V1 del creador de fuerza queda cerrada con una vista previa que explica el
+orden de cada bloque, sus rondas, transiciones, descansos y objetivos por
+serie antes de iniciar la sesión. El recorrido conserva esos datos al guardar,
+programar, ejecutar y consultar el historial. Las siguientes ampliaciones del
+creador se tratarán como nuevas iteraciones, no como requisitos pendientes de
+esta primera versión.
+
 La agenda semanal global ya permite combinar sesiones personales y contenido
 de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada
 entrenamiento. Cada entrada conserva una instantánea del nombre, versión y
