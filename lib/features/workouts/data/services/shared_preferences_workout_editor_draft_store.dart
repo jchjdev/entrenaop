@@ -65,6 +65,15 @@ Map<String, dynamic> _inputToJson(CreatePersonalWorkoutInput input) => {
                           'rest_after_seconds': set.restAfterSeconds,
                           'target_load_kg': set.targetLoadKg,
                           'target_rir': set.targetRir,
+                          'target_pace_min_seconds_per_km':
+                              set.targetPaceMinSecondsPerKm,
+                          'target_pace_max_seconds_per_km':
+                              set.targetPaceMaxSecondsPerKm,
+                          'recovery_type': set.recoveryType?.name,
+                          'recovery_duration_seconds':
+                              set.recoveryDurationSeconds,
+                          'recovery_distance_meters':
+                              set.recoveryDistanceMeters,
                         },
                       )
                       .toList(growable: false),
@@ -108,6 +117,20 @@ CreatePersonalWorkoutInput _inputFromJson(
                           targetLoadKg: (set['target_load_kg'] as num?)
                               ?.toDouble(),
                           targetRir: (set['target_rir'] as num?)?.toDouble(),
+                          targetPaceMinSecondsPerKm:
+                              set['target_pace_min_seconds_per_km'] as int?,
+                          targetPaceMaxSecondsPerKm:
+                              set['target_pace_max_seconds_per_km'] as int?,
+                          recoveryType: set['recovery_type'] == null
+                              ? null
+                              : RunningRecoveryType.values.byName(
+                                  set['recovery_type'] as String,
+                                ),
+                          recoveryDurationSeconds:
+                              set['recovery_duration_seconds'] as int?,
+                          recoveryDistanceMeters:
+                              (set['recovery_distance_meters'] as num?)
+                                  ?.toDouble(),
                         ),
                       )
                       .toList(growable: false),

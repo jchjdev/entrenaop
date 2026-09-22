@@ -108,6 +108,11 @@ void main() {
                     'target_distance_meters': 400.0,
                     'target_load_kg': null,
                     'target_rir': 2.0,
+                    'target_pace_min_seconds_per_km': null,
+                    'target_pace_max_seconds_per_km': null,
+                    'recovery_type': null,
+                    'recovery_duration_seconds': null,
+                    'recovery_distance_meters': null,
                     'rest_after_seconds': 90,
                   },
                 ],
@@ -118,6 +123,46 @@ void main() {
       });
     },
   );
+
+  test('serializa tramos de carrera sin convertirlos en intervalos', () async {
+    const input = CreatePersonalWorkoutInput(
+      name: 'Series de 400',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Carrera',
+          format: WorkoutBlockFormat.running,
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: runningExerciseId,
+              sets: [
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.distance,
+                  targetValue: 400,
+                  restAfterSeconds: 0,
+                  targetPaceMinSecondsPerKm: 240,
+                  targetPaceMaxSecondsPerKm: 255,
+                  recoveryType: RunningRecoveryType.jogging,
+                  recoveryDistanceMeters: 200,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await repository.createPersonalTemplate(input);
+
+    final block = (dataSource.personalPayload!['blocks'] as List).single as Map;
+    final exercise = (block['exercises'] as List).single as Map;
+    final segment = (exercise['sets'] as List).single as Map;
+    expect(block['format'], 'running');
+    expect(segment['target_distance_meters'], 400.0);
+    expect(segment['target_pace_min_seconds_per_km'], 240);
+    expect(segment['target_pace_max_seconds_per_km'], 255);
+    expect(segment['recovery_type'], 'jogging');
+    expect(segment['recovery_distance_meters'], 200.0);
+  });
 
   test('delega el duplicado y archivado de sesiones personales', () async {
     final copiedId = await repository.duplicatePersonalTemplate('template-1');

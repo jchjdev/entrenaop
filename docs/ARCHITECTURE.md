@@ -13,10 +13,10 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
   entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 30 migraciones SQL ordenadas: línea base y
+- El repositorio contiene 33 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
-  personal versionado, agenda y formatos avanzados de fuerza.
+  personal versionado, agenda, formatos avanzados de fuerza y Carrera V1.
 - La navegación autenticada dispone de un contenedor persistente con las áreas
   Inicio, Mi plan, Evolución y Perfil. En móvil utiliza una barra inferior y en
   pantallas amplias una navegación lateral.
@@ -33,9 +33,10 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
 
 Esta sección es una instantánea, no sustituye una auditoría completa.
 
-El recorrido manual de fuerza V1 está implementado de extremo a extremo:
-biblioteca y sesiones privadas, creador por bloques, agenda, vista previa,
-ejecución guiada, cola de mutaciones, historial y corrección auditada. El
+Los recorridos manuales de fuerza V1 y Carrera V1 mínima están implementados de
+extremo a extremo: biblioteca y sesiones privadas, creadores especializados,
+agenda, vista previa, ejecución guiada, cola de mutaciones, historial y
+corrección auditada. El
 recorrido adaptativo sigue abierto: aún no hay prescripciones generadas a partir
 de evaluación, disponibilidad, preparaciones y resultados.
 
@@ -101,9 +102,8 @@ más sencillas cuando una abstracción no aporte valor.
 
 No se modela cada formato con columnas aisladas en una única tabla rígida. La
 jerarquía actual separa plantilla, bloques, posiciones y series, y mantiene la
-ejecución y sus resultados aparte. La planificación adaptativa y el bloque
-especializado de carrera todavía requerirán extender esta estructura sin
-reinterpretar el historial existente.
+ejecución y sus resultados aparte. La planificación adaptativa deberá producir
+esta misma estructura sin reinterpretar el historial existente.
 
 La primera parte comprobable de esa jerarquía ya se modela mediante
 `workout_templates → workout_blocks → workout_items → workout_sets`. Una serie
@@ -238,12 +238,17 @@ identidad
   ejercicio. En circuitos, el descanso prescrito en cada estación representa
   la transición a la siguiente; el descanso del bloque se usa al terminar la
   ronda. Superseries conservan únicamente la pausa final de la ronda.
-- La carrera no se fuerza dentro de los intervalos de fuerza-resistencia. Su
-  futuro bloque especializado representará una lista ordenada de tramos con
-  objetivo por distancia o duración, rango de ritmo y recuperación propia
-  (pasiva, andando o trotando). El editor podrá ofrecer repeticiones y pirámides
-  como atajos, pero la prescripción se guardará expandida y versionada para que
-  el historial y el algoritmo sean auditables.
+- La carrera no se fuerza dentro de los intervalos de fuerza-resistencia. El
+  formato `running` usa un único ítem estable y una lista ordenada de series que
+  actúan como tramos. Cada tramo tiene exactamente un objetivo por distancia o
+  duración, un ritmo exacto o rango opcional y recuperación propia pasiva,
+  andando o trotando. Ritmo y recuperación se copian a
+  `workout_execution_sets`; el resultado real exige distancia y duración y
+  permite derivar el ritmo sin almacenarlo como una segunda verdad.
+- Repeticiones y pirámides son ayudas del creador. La RPC recibe y valida la
+  lista expandida, y los `CHECK` más un trigger relacional impiden usar campos
+  de carrera en bloques de fuerza. El ejercicio de sistema `Carrera` sirve como
+  ancla de la jerarquía, no como sustituto de los intervalos existentes.
 - Especializar fuerza y carrera no crea dos planificadores aislados. Ambos
   motores propondrán estímulos dentro de su dominio y un coordinador de carga
   trabajará sobre la semana completa: objetivos simultáneos, fatiga,

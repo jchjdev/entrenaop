@@ -31,6 +31,7 @@ import 'package:entrenaop/features/workouts/presentation/pages/active_workout_pa
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_detail_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/running_workout_editor_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_library_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_preview_page.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
@@ -195,6 +196,14 @@ class AppRouter {
                           ),
                         ),
                         GoRoute(
+                          path: 'new-running',
+                          builder: (context, state) => BlocProvider(
+                            create: (_) =>
+                                sl<WorkoutEditorCubit>(param1: ':running'),
+                            child: const RunningWorkoutEditorPage(),
+                          ),
+                        ),
+                        GoRoute(
                           path: ':templateId',
                           builder: (context, state) {
                             final templateId =
@@ -215,6 +224,16 @@ class AppRouter {
                                   param1: state.pathParameters['templateId']!,
                                 ),
                                 child: const WorkoutEditorPage(),
+                              ),
+                            ),
+                            GoRoute(
+                              path: 'edit-running',
+                              builder: (context, state) => BlocProvider(
+                                create: (_) => sl<WorkoutEditorCubit>(
+                                  param1:
+                                      'running:${state.pathParameters['templateId']!}',
+                                ),
+                                child: const RunningWorkoutEditorPage(),
                               ),
                             ),
                             GoRoute(

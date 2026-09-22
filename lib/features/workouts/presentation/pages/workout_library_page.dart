@@ -31,7 +31,44 @@ class WorkoutLibraryPage extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            final createdId = await context.push<String>('/plan/library/new');
+            final route = await showModalBottomSheet<String>(
+              context: context,
+              builder: (sheetContext) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        '¿Qué sesión quieres crear?',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ListTile(
+                        leading: const Icon(Icons.fitness_center_rounded),
+                        title: const Text('Fuerza y acondicionamiento'),
+                        onTap: () => sheetContext.pop('/plan/library/new'),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.directions_run_rounded),
+                        title: const Text('Carrera'),
+                        subtitle: const Text(
+                          'Continua, series o pirámide por tramos',
+                        ),
+                        onTap: () =>
+                            sheetContext.pop('/plan/library/new-running'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+            if (route == null || !context.mounted) return;
+            final createdId = await context.push<String>(route);
             if (createdId != null && context.mounted) {
               await context.read<WorkoutLibraryCubit>().load();
               if (context.mounted) {
@@ -190,7 +227,9 @@ class _LibraryContent extends StatelessWidget {
     WorkoutTemplateSummary workout,
   ) async {
     final revisedId = await context.push<String>(
-      '/plan/library/${workout.id}/edit',
+      workout.isRunning
+          ? '/plan/library/${workout.id}/edit-running'
+          : '/plan/library/${workout.id}/edit',
     );
     if (revisedId == null || !context.mounted) return;
     await context.read<WorkoutLibraryCubit>().load();

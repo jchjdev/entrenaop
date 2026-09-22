@@ -85,6 +85,42 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('la vista previa explica ritmo y recuperación de carrera', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _WorkoutRepository(workout: _runningWorkout);
+    final cubit = WorkoutPreviewCubit(
+      templateId: repository.workout.id,
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      startExecution: StartWorkoutExecutionUseCase(repository),
+    );
+    await cubit.load();
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(useMaterial3: true),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutPreviewPage(routeBase: '/plan/workout/test'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Carrera por tramos'), findsOneWidget);
+    expect(find.text('2 tramos ordenados'), findsOneWidget);
+    expect(
+      find.text(
+        'Tramo 1 · 400 m · 4:00–4:15/km · recuperación trotando · 200 m',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _WorkoutRepository extends Fake implements WorkoutRepository {
@@ -191,6 +227,48 @@ const _variableWorkout = WorkoutTemplate(
               targetLoadKg: 45,
               targetRir: 2,
               restAfterSeconds: 90,
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);
+
+const _runningWorkout = WorkoutTemplate(
+  id: 'workout-running',
+  name: 'Series de pista',
+  description: null,
+  estimatedDurationMinutes: 30,
+  version: 1,
+  blocks: [
+    WorkoutBlock(
+      id: 'block-running',
+      name: 'Carrera',
+      format: WorkoutBlockFormat.running,
+      rounds: 1,
+      restAfterSeconds: 0,
+      items: [
+        WorkoutItem(
+          id: 'item-running',
+          exerciseId: runningExerciseId,
+          exerciseName: 'Carrera',
+          sets: [
+            WorkoutSet(
+              id: 'segment-1',
+              order: 0,
+              targetDistanceMeters: 400,
+              targetPaceMinSecondsPerKm: 240,
+              targetPaceMaxSecondsPerKm: 255,
+              recoveryType: RunningRecoveryType.jogging,
+              recoveryDistanceMeters: 200,
+              restAfterSeconds: 0,
+            ),
+            WorkoutSet(
+              id: 'segment-2',
+              order: 1,
+              targetDistanceMeters: 800,
+              restAfterSeconds: 0,
             ),
           ],
         ),

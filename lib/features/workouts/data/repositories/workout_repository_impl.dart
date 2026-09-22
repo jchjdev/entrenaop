@@ -296,6 +296,7 @@ String _blockFormatValue(WorkoutBlockFormat format) => switch (format) {
   WorkoutBlockFormat.emom => 'emom',
   WorkoutBlockFormat.amrap => 'amrap',
   WorkoutBlockFormat.tabata => 'tabata',
+  WorkoutBlockFormat.running => 'running',
   WorkoutBlockFormat.warmUp => 'warm_up',
   WorkoutBlockFormat.coolDown => 'cool_down',
 };
@@ -312,6 +313,16 @@ Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
       : null,
   'target_load_kg': set.targetLoadKg,
   'target_rir': set.targetRir,
+  'target_pace_min_seconds_per_km': set.targetPaceMinSecondsPerKm,
+  'target_pace_max_seconds_per_km': set.targetPaceMaxSecondsPerKm,
+  'recovery_type': switch (set.recoveryType) {
+    RunningRecoveryType.passive => 'passive',
+    RunningRecoveryType.walking => 'walking',
+    RunningRecoveryType.jogging => 'jogging',
+    null => null,
+  },
+  'recovery_duration_seconds': set.recoveryDurationSeconds,
+  'recovery_distance_meters': set.recoveryDistanceMeters,
   'rest_after_seconds': set.restAfterSeconds,
 };
 

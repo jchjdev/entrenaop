@@ -256,6 +256,101 @@ void main() {
 
     await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
   });
+
+  test('acepta carrera continua y series con recuperación propia', () async {
+    const input = CreatePersonalWorkoutInput(
+      name: 'Carrera progresiva',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Carrera',
+          format: WorkoutBlockFormat.running,
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: runningExerciseId,
+              sets: [
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.duration,
+                  targetValue: 1200,
+                  restAfterSeconds: 0,
+                  targetPaceMinSecondsPerKm: 300,
+                  targetPaceMaxSecondsPerKm: 330,
+                ),
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.distance,
+                  targetValue: 400,
+                  restAfterSeconds: 0,
+                  recoveryType: RunningRecoveryType.walking,
+                  recoveryDurationSeconds: 90,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await useCase(input);
+
+    expect(repository.created, input);
+  });
+
+  test('rechaza recuperación pasiva por distancia', () async {
+    const input = CreatePersonalWorkoutInput(
+      name: 'Carrera inválida',
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Carrera',
+          format: WorkoutBlockFormat.running,
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: runningExerciseId,
+              sets: [
+                WorkoutSetDraft(
+                  targetType: WorkoutTargetType.distance,
+                  targetValue: 400,
+                  restAfterSeconds: 0,
+                  recoveryType: RunningRecoveryType.passive,
+                  recoveryDistanceMeters: 100,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await expectLater(() => useCase(input), throwsA(isA<FormatException>()));
+    expect(repository.created, isNull);
+  });
+
+  test('rechaza metadatos de carrera dentro de una serie de fuerza', () async {
+    final input = _validInput();
+    final original = input.blocks.single.exercises.single.sets.single;
+    final invalid = CreatePersonalWorkoutInput(
+      name: input.name,
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Principal',
+          exercises: [
+            WorkoutExerciseDraft(
+              exerciseId: 'exercise-1',
+              sets: [
+                WorkoutSetDraft(
+                  targetType: original.targetType,
+                  targetValue: original.targetValue,
+                  restAfterSeconds: original.restAfterSeconds,
+                  targetPaceMinSecondsPerKm: 300,
+                  targetPaceMaxSecondsPerKm: 300,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await expectLater(() => useCase(invalid), throwsA(isA<FormatException>()));
+  });
 }
 
 CreatePersonalWorkoutInput _timedInput({

@@ -20,7 +20,7 @@ El ciclo principal del producto es:
 ## Estado validado del producto
 
 Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
-2026, tras cerrar el creador de fuerza V1:
+2026, tras cerrar Carrera V1 mínima:
 
 - El acceso, la restauración de sesión y la navegación responsive están
   operativos.
@@ -34,6 +34,11 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   superseries, circuitos con transiciones, intervalos de trabajo, Tabata, EMOM y
   AMRAP. También permite crear ejercicios privados con descripción y una URL de
   vídeo HTTPS opcional.
+- El creador especializado de carrera admite carrera continua por distancia o
+  duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
+  recuperación pasiva, andando o trotando por duración o distancia. Repetir un
+  tramo y crear una pirámide son ayudas de edición: la prescripción se guarda
+  expandida y versionada.
 - Los borradores se guardan localmente por sesión. Duplicar, revisar o archivar
   una sesión no reescribe ejecuciones pasadas: las revisiones forman una familia
   versionada y el historial conserva una instantánea de la prescripción.
@@ -53,11 +58,12 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   correcciones del historial permanecen en línea y se auditan durante 24 horas,
   con motivo obligatorio y un máximo de tres cambios por serie.
 
-Esto cierra el recorrido manual de fuerza V1, no el ciclo principal completo.
-El contexto de preparación, marcas y agenda ya está conectado, pero todavía no
-existen la generación del plan semanal, la adaptación posterior al
-resultado, los simulacros ni la revisión por un entrenador. La carrera tampoco
-tiene aún su creador especializado. El vídeo propio se referencia por URL; no
+Esto cierra los recorridos manuales de fuerza V1 y Carrera V1 mínima, no el
+ciclo principal completo. El contexto de preparación, marcas, agenda y carrera
+ya está conectado, pero todavía no existen la generación del plan semanal, la
+adaptación posterior al resultado, los simulacros ni la revisión por un
+entrenador. Carrera V1 no incluye GPS, mapas, seguimiento en vivo, zonas
+cardíacas ni integraciones. El vídeo propio se referencia por URL; no
 hay subida ni gestión de archivos. Los borradores y temporizadores son locales
 al dispositivo y el soporte offline no permite descubrir, cargar o iniciar una
 sesión que nunca se hubiera obtenido del servidor.
@@ -94,6 +100,7 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 - Biblioteca y sesiones públicas no adaptativas.
 - Creación de rutinas propias.
+- Creación de sesiones personales de carrera continua, series y pirámides.
 - Las rutinas propias son privadas y se distinguen visualmente de la biblioteca
   pública de EntrenaOP.
 - El creador mantiene una entrada rápida para series iguales, pero permite
@@ -166,13 +173,14 @@ repite la secuencia por vueltas; completar u omitir una estación conserva el
 tiempo restante hasta el siguiente minuto. AMRAP usa un único reloj global y
 registra vueltas completas, último ejercicio parcial y repeticiones parciales.
 
-La carrera tendrá un creador específico dentro de la sesión unificada. Debe
-poder expresar tramos ordenados con distancia o duración, ritmo objetivo propio
-y recuperación individual, incluida su modalidad. Una pirámide puede así
-combinar 200/400/600/800/1000 metros y regresar sin fingir que todos los tramos
-comparten ritmo o descanso. Series, fartlek y carrera continua reutilizarán ese
-modelo; el algoritmo generará prescripciones versionadas sobre él, no reglas
-ocultas en la interfaz.
+La carrera dispone de un creador específico dentro de la sesión unificada.
+Expresa tramos ordenados con distancia o duración, ritmo objetivo propio y
+recuperación individual, incluida su modalidad. Una pirámide puede así combinar
+200/400/600/800/1000 metros y regresar sin fingir que todos los tramos comparten
+ritmo o descanso. Las ayudas de repeticiones y pirámide materializan la lista
+final; biblioteca, agenda, ejecución e historial leen esa misma prescripción.
+El futuro algoritmo generará el mismo contrato versionado, no reglas ocultas en
+la interfaz.
 Los motores de fuerza y carrera no competirán por separado: una capa de
 planificación global coordinará la carga semanal del alumno y podrá producir
 sesiones específicas o combinadas. La forma comercial de presentar esos
@@ -241,9 +249,10 @@ Es el flujo central del producto. Debe ofrecer:
 - Registro rápido del resultado real.
 - Feedback final mediante RPE/RIR, estado y notas.
 
-El modelo debe representar series tradicionales, circuitos, superseries, AMRAP,
-EMOM, Tabata, intervalos de carrera, isométricos, calentamiento y vuelta a la
-calma.
+El modelo representa ya series tradicionales, circuitos, superseries, AMRAP,
+EMOM, Tabata y tramos de carrera. Isométricos, calentamiento y vuelta a la calma
+siguen siendo necesidades del modelo completo, no recorridos cerrados por esta
+entrega.
 
 El historial necesita datos suficientemente detallados para el algoritmo:
 series, repeticiones, carga, tiempo, distancia, ritmo, descansos, cumplimiento,

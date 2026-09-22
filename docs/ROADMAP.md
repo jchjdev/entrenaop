@@ -2,7 +2,7 @@
 
 Este roadmap expresa prioridades, no fechas cerradas. Su estado se ha
 contrastado con código, migraciones y pruebas el 22 de septiembre de 2026, tras
-el cierre del creador de fuerza V1.
+el cierre de Carrera V1 mínima.
 
 ## Estado del ciclo principal
 
@@ -23,7 +23,7 @@ El ciclo objetivo continúa siendo:
 | Evaluación y progreso | Parcial | Registra, evalúa y compara marcas con el catálogo versionado de ingreso a Tropa y Marinería, calcula evolución y recomienda focos. No hay panel longitudinal completo ni simulacro. |
 | Plan semanal adaptativo | No existe | La agenda es manual; no se generan prescripciones a partir de preparaciones, evaluación, disponibilidad o historial. |
 | Adaptación posterior | No existe | No hay reglas versionadas que interpreten resultados y produzcan la siguiente recomendación o semana. |
-| Carrera especializada | No existe | Los intervalos actuales son de trabajo con un ejercicio; faltan tramos de carrera, ritmo y recuperación por tramo. |
+| Carrera especializada | Terminada en V1 mínima | Creador personal de carrera continua, series y pirámides; tramos expandidos por distancia o duración, ritmo exacto/rango, recuperación propia, agenda, ejecución, resultado real e historial. No incluye GPS, mapas, zonas ni integraciones. |
 | Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
 | Derechos y monetización | No existe | La separación conceptual está decidida, pero no hay suscripciones ni concesión fiable de derechos comerciales. |
 
@@ -65,6 +65,10 @@ El ciclo objetivo continúa siendo:
   hápticos, resultados, omisiones, abandono, notas y esfuerzo final.
 - Cola local de mutaciones con recibos idempotentes, historial y correcciones
   auditadas limitadas por tiempo y número.
+- Carrera personal mediante un formato distinto de los intervalos de fuerza,
+  con borrador local, revisión versionada, tramos ordenados, ritmo y
+  recuperación propia; usa la biblioteca, agenda, ejecución e historial
+  comunes.
 
 ## Único siguiente bloque recomendado
 
@@ -90,7 +94,7 @@ Se recomienda este bloque porque el producto ya puede crear, programar,
 ejecutar y auditar sesiones, y ya conecta cada preparación con sus marcas y su
 agenda. El ciclo se detiene justo antes de convertir ese contexto en un plan.
 Añadir ahora más formatos,
-la carrera, monetización o herramientas de entrenador ampliaría la superficie
+monetización o herramientas de entrenador ampliaría la superficie
 sin resolver esa interrupción principal.
 
 La adaptación posterior a una semana realizada será el bloque siguiente, pero
@@ -109,12 +113,9 @@ Una vez validada la primera semana adaptativa, el orden natural será:
 
 1. Interpretar cumplimiento, RPE/RIR, molestias, omisiones y abandono para
    adaptar la semana siguiente con reglas auditables y anulación profesional.
-2. Añadir el creador especializado de carrera con tramos ordenados, distancia o
-   duración, ritmo y recuperación individual, usando la misma agenda e
-   historial.
-3. Completar evolución longitudinal, simulacros y comparación con baremos.
-4. Incorporar relación entrenador-cliente, panel profesional y asignaciones.
-5. Consolidar derechos comerciales y monetización antes de integraciones o
+2. Completar evolución longitudinal, simulacros y comparación con baremos.
+3. Incorporar relación entrenador-cliente, panel profesional y asignaciones.
+4. Consolidar derechos comerciales y monetización antes de integraciones o
    expansión a otras oposiciones.
 
 ## Fuera del camino crítico del MVP

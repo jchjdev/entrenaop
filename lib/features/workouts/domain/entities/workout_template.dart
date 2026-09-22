@@ -8,6 +8,7 @@ enum WorkoutBlockFormat {
   emom,
   amrap,
   tabata,
+  running,
   warmUp,
   coolDown,
 }
@@ -15,6 +16,10 @@ enum WorkoutBlockFormat {
 enum WorkoutTemplateOrigin { system, user, coach, algorithm }
 
 enum WorkoutTargetType { repetitions, duration, distance }
+
+enum RunningRecoveryType { passive, walking, jogging }
+
+const runningExerciseId = '20000000-0000-4000-8000-000000000004';
 
 /// Serie que el usuario prescribe al crear una sesión propia.
 class WorkoutSetDraft extends Equatable {
@@ -24,6 +29,11 @@ class WorkoutSetDraft extends Equatable {
     required this.restAfterSeconds,
     this.targetLoadKg,
     this.targetRir,
+    this.targetPaceMinSecondsPerKm,
+    this.targetPaceMaxSecondsPerKm,
+    this.recoveryType,
+    this.recoveryDurationSeconds,
+    this.recoveryDistanceMeters,
   });
 
   final WorkoutTargetType targetType;
@@ -31,6 +41,11 @@ class WorkoutSetDraft extends Equatable {
   final int restAfterSeconds;
   final double? targetLoadKg;
   final double? targetRir;
+  final int? targetPaceMinSecondsPerKm;
+  final int? targetPaceMaxSecondsPerKm;
+  final RunningRecoveryType? recoveryType;
+  final int? recoveryDurationSeconds;
+  final double? recoveryDistanceMeters;
 
   @override
   List<Object?> get props => [
@@ -39,6 +54,11 @@ class WorkoutSetDraft extends Equatable {
     restAfterSeconds,
     targetLoadKg,
     targetRir,
+    targetPaceMinSecondsPerKm,
+    targetPaceMaxSecondsPerKm,
+    recoveryType,
+    recoveryDurationSeconds,
+    recoveryDistanceMeters,
   ];
 }
 
@@ -115,6 +135,7 @@ class WorkoutTemplateSummary extends Equatable {
     required this.estimatedDurationMinutes,
     required this.origin,
     required this.version,
+    this.isRunning = false,
   });
 
   final String id;
@@ -123,6 +144,7 @@ class WorkoutTemplateSummary extends Equatable {
   final int? estimatedDurationMinutes;
   final WorkoutTemplateOrigin origin;
   final int version;
+  final bool isRunning;
 
   @override
   List<Object?> get props => [
@@ -132,6 +154,7 @@ class WorkoutTemplateSummary extends Equatable {
     estimatedDurationMinutes,
     origin,
     version,
+    isRunning,
   ];
 }
 
@@ -233,6 +256,11 @@ class WorkoutSet extends Equatable {
     this.targetLoadKg,
     this.targetRpe,
     this.targetRir,
+    this.targetPaceMinSecondsPerKm,
+    this.targetPaceMaxSecondsPerKm,
+    this.recoveryType,
+    this.recoveryDurationSeconds,
+    this.recoveryDistanceMeters,
   });
 
   final String id;
@@ -243,6 +271,11 @@ class WorkoutSet extends Equatable {
   final double? targetLoadKg;
   final double? targetRpe;
   final double? targetRir;
+  final int? targetPaceMinSecondsPerKm;
+  final int? targetPaceMaxSecondsPerKm;
+  final RunningRecoveryType? recoveryType;
+  final int? recoveryDurationSeconds;
+  final double? recoveryDistanceMeters;
   final int restAfterSeconds;
 
   @override
@@ -255,6 +288,11 @@ class WorkoutSet extends Equatable {
     targetLoadKg,
     targetRpe,
     targetRir,
+    targetPaceMinSecondsPerKm,
+    targetPaceMaxSecondsPerKm,
+    recoveryType,
+    recoveryDurationSeconds,
+    recoveryDistanceMeters,
     restAfterSeconds,
   ];
 }

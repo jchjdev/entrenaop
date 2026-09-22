@@ -64,4 +64,44 @@ void main() {
 
     expect(await store.read('template-1'), isNull);
   });
+
+  test(
+    'restaura el ritmo y la recuperación de un borrador de carrera',
+    () async {
+      final preferences = await SharedPreferences.getInstance();
+      final store = SharedPreferencesWorkoutEditorDraftStore(preferences);
+      final snapshot = WorkoutEditorDraftSnapshot(
+        savedAt: DateTime.utc(2026, 9, 22),
+        input: const CreatePersonalWorkoutInput(
+          name: 'Series de pista',
+          blocks: [
+            WorkoutBlockDraft(
+              name: 'Carrera',
+              format: WorkoutBlockFormat.running,
+              exercises: [
+                WorkoutExerciseDraft(
+                  exerciseId: runningExerciseId,
+                  sets: [
+                    WorkoutSetDraft(
+                      targetType: WorkoutTargetType.distance,
+                      targetValue: 800,
+                      restAfterSeconds: 0,
+                      targetPaceMinSecondsPerKm: 250,
+                      targetPaceMaxSecondsPerKm: 265,
+                      recoveryType: RunningRecoveryType.passive,
+                      recoveryDurationSeconds: 120,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      await store.write('new-running', snapshot);
+
+      expect(await store.read('new-running'), snapshot);
+    },
+  );
 }

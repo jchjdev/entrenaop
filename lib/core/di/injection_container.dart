@@ -230,14 +230,20 @@ Future<void> initDependencies() async {
     )..load(),
   );
   sl.registerFactoryParam<WorkoutEditorCubit, String, void>(
-    (templateId, _) => WorkoutEditorCubit(
+    (request, _) => WorkoutEditorCubit(
       getExercises: sl(),
       createExercise: sl(),
       draftStore: sl(),
       createWorkout: sl(),
       getWorkoutTemplate: sl(),
       reviseWorkout: sl(),
-      templateId: templateId.isEmpty ? null : templateId,
+      templateId: request.isEmpty || request == ':running'
+          ? null
+          : request.startsWith('running:')
+          ? request.substring('running:'.length)
+          : request,
+      runningEditor: request == ':running' || request.startsWith('running:'),
+      draftId: request == ':running' ? 'new-running' : null,
     )..load(),
   );
   sl.registerFactoryParam<ActiveWorkoutCubit, String, void>(

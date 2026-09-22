@@ -42,6 +42,11 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       target_load_kg,
       target_rpe,
       target_rir,
+      target_pace_min_seconds_per_km,
+      target_pace_max_seconds_per_km,
+      recovery_type,
+      recovery_duration_seconds,
+      recovery_distance_meters,
       rest_after_seconds,
       status,
       actual_reps,
@@ -86,6 +91,11 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
                 target_load_kg,
                 target_rpe,
                 target_rir,
+                target_pace_min_seconds_per_km,
+                target_pace_max_seconds_per_km,
+                recovery_type,
+                recovery_duration_seconds,
+                recovery_distance_meters,
                 rest_after_seconds
               )
             )
@@ -102,7 +112,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final response = await supabaseClient
         .from('workout_templates')
         .select(
-          'id, name, description, estimated_duration_minutes, origin, version',
+          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format)',
         )
         .eq('visibility', 'public')
         .eq('status', 'published')
@@ -117,7 +127,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final response = await supabaseClient
         .from('workout_templates')
         .select(
-          'id, name, description, estimated_duration_minutes, origin, version',
+          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format)',
         )
         .eq('owner_user_id', userId)
         .eq('origin', 'user')

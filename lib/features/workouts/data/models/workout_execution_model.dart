@@ -59,6 +59,11 @@ class WorkoutExecutionModel {
       targetLoadKg: _doubleOrNull(json['target_load_kg']),
       targetRpe: _doubleOrNull(json['target_rpe']),
       targetRir: _doubleOrNull(json['target_rir']),
+      targetPaceMinSecondsPerKm: json['target_pace_min_seconds_per_km'] as int?,
+      targetPaceMaxSecondsPerKm: json['target_pace_max_seconds_per_km'] as int?,
+      recoveryType: _recoveryType(json['recovery_type']),
+      recoveryDurationSeconds: json['recovery_duration_seconds'] as int?,
+      recoveryDistanceMeters: _doubleOrNull(json['recovery_distance_meters']),
       restAfterSeconds: json['rest_after_seconds'] as int,
       status: _setStatus(json['status'] as String),
       actualReps: json['actual_reps'] as int?,
@@ -95,9 +100,18 @@ class WorkoutExecutionModel {
     'emom' => WorkoutBlockFormat.emom,
     'amrap' => WorkoutBlockFormat.amrap,
     'tabata' => WorkoutBlockFormat.tabata,
+    'running' => WorkoutBlockFormat.running,
     'warm_up' => WorkoutBlockFormat.warmUp,
     'cool_down' => WorkoutBlockFormat.coolDown,
     _ => throw FormatException('Formato de bloque desconocido: $value'),
+  };
+
+  static RunningRecoveryType? _recoveryType(Object? value) => switch (value) {
+    null => null,
+    'passive' => RunningRecoveryType.passive,
+    'walking' => RunningRecoveryType.walking,
+    'jogging' => RunningRecoveryType.jogging,
+    _ => throw FormatException('Recuperación de carrera desconocida: $value'),
   };
 
   static WorkoutExecutionStatus _executionStatus(String value) =>

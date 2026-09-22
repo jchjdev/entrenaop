@@ -16,12 +16,15 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
     required GetWorkoutTemplateUseCase getWorkoutTemplate,
     required RevisePersonalWorkoutUseCase reviseWorkout,
     this.templateId,
+    this.runningEditor = false,
+    String? draftId,
   }) : _getExercises = getExercises,
        _createExercise = createExercise,
        _draftStore = draftStore,
        _createWorkout = createWorkout,
        _getWorkoutTemplate = getWorkoutTemplate,
        _reviseWorkout = reviseWorkout,
+       _draftId = draftId ?? templateId ?? 'new',
        super(const WorkoutEditorState());
 
   final GetExercisesUseCase _getExercises;
@@ -31,7 +34,8 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   final GetWorkoutTemplateUseCase _getWorkoutTemplate;
   final RevisePersonalWorkoutUseCase _reviseWorkout;
   final String? templateId;
-  String get _draftId => templateId ?? 'new';
+  final bool runningEditor;
+  final String _draftId;
 
   Future<ExerciseEntity> createExercise(PersonalExerciseDraft draft) async {
     final created = await _createExercise(draft);
@@ -51,13 +55,23 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   Future<void> load() async {
     emit(const WorkoutEditorState(status: WorkoutEditorStatus.loading));
     try {
-      final exercises = [...await _getExercises()]
-        ..sort((a, b) => a.name.compareTo(b.name));
+      final exercises = [
+        ...(await _getExercises()).where(
+          (exercise) => exercise.id != runningExerciseId,
+        ),
+      ]..sort((a, b) => a.name.compareTo(b.name));
       final originalTemplate = templateId == null
           ? null
           : await _getWorkoutTemplate(templateId!);
       if (templateId != null && originalTemplate == null) {
         throw StateError('Workout not found');
+      }
+      if (originalTemplate != null &&
+          originalTemplate.blocks.any(
+                (block) => block.format == WorkoutBlockFormat.running,
+              ) !=
+              runningEditor) {
+        throw StateError('Workout editor does not match template format');
       }
       if (originalTemplate != null &&
           originalTemplate.blocks.any(
@@ -68,7 +82,8 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
                 block.format != WorkoutBlockFormat.intervals &&
                 block.format != WorkoutBlockFormat.tabata &&
                 block.format != WorkoutBlockFormat.emom &&
-                block.format != WorkoutBlockFormat.amrap,
+                block.format != WorkoutBlockFormat.amrap &&
+                (!runningEditor || block.format != WorkoutBlockFormat.running),
           )) {
         throw StateError('Unsupported workout format');
       }

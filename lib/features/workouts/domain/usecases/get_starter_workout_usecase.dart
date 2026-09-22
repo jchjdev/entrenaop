@@ -95,7 +95,8 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         block.format != WorkoutBlockFormat.intervals &&
         block.format != WorkoutBlockFormat.tabata &&
         block.format != WorkoutBlockFormat.emom &&
-        block.format != WorkoutBlockFormat.amrap) {
+        block.format != WorkoutBlockFormat.amrap &&
+        block.format != WorkoutBlockFormat.running) {
       throw const FormatException(
         'Este formato de bloque todavía no está disponible.',
       );
@@ -121,6 +122,16 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
         block.exercises.length != 1) {
       throw const FormatException(
         'Los intervalos personalizados utilizan exactamente un ejercicio.',
+      );
+    }
+    if (block.format == WorkoutBlockFormat.running &&
+        (input.blocks.length != 1 ||
+            block.exercises.length != 1 ||
+            block.exercises.single.exerciseId != runningExerciseId ||
+            block.rounds != 1 ||
+            block.restAfterSeconds != 0)) {
+      throw const FormatException(
+        'Una sesión de carrera debe contener un único bloque de tramos.',
       );
     }
     if (block.format == WorkoutBlockFormat.tabata &&
@@ -176,7 +187,8 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
     }
     exerciseCount += block.exercises.length;
     for (final exercise in block.exercises) {
-      if (exercise.sets.isEmpty || exercise.sets.length > 20) {
+      final maximumSets = block.format == WorkoutBlockFormat.running ? 40 : 20;
+      if (exercise.sets.isEmpty || exercise.sets.length > maximumSets) {
         throw const FormatException(
           'Cada ejercicio debe tener entre 1 y 20 series.',
         );
@@ -184,6 +196,7 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
       if (block.format != WorkoutBlockFormat.straightSets &&
           block.format != WorkoutBlockFormat.amrap &&
           block.format != WorkoutBlockFormat.tabata &&
+          block.format != WorkoutBlockFormat.running &&
           exercise.sets.length != block.rounds) {
         throw const FormatException(
           'Cada ejercicio debe tener una serie por ronda.',
@@ -226,6 +239,56 @@ void _validatePersonalWorkout(CreatePersonalWorkoutInput input) {
                 set.targetValue != 20)) {
           throw const FormatException(
             'Cada intervalo Tabata debe durar 20 segundos.',
+          );
+        }
+        if (block.format == WorkoutBlockFormat.running) {
+          if (set.targetType != WorkoutTargetType.distance &&
+              set.targetType != WorkoutTargetType.duration) {
+            throw const FormatException(
+              'Cada tramo de carrera debe medirse por distancia o duración.',
+            );
+          }
+          final minimumPace = set.targetPaceMinSecondsPerKm;
+          final maximumPace = set.targetPaceMaxSecondsPerKm;
+          if ((minimumPace == null) != (maximumPace == null) ||
+              (minimumPace != null &&
+                  (minimumPace <= 0 ||
+                      maximumPace! < minimumPace ||
+                      maximumPace > 3600))) {
+            throw const FormatException(
+              'El ritmo debe ser un objetivo o rango válido por kilómetro.',
+            );
+          }
+          final recoveryMetrics =
+              (set.recoveryDurationSeconds == null ? 0 : 1) +
+              (set.recoveryDistanceMeters == null ? 0 : 1);
+          if ((set.recoveryType == null && recoveryMetrics != 0) ||
+              (set.recoveryType != null && recoveryMetrics != 1) ||
+              (set.recoveryType == RunningRecoveryType.passive &&
+                  set.recoveryDurationSeconds == null) ||
+              (set.recoveryDurationSeconds != null &&
+                  (set.recoveryDurationSeconds! <= 0 ||
+                      set.recoveryDurationSeconds! > 3600)) ||
+              (set.recoveryDistanceMeters != null &&
+                  set.recoveryDistanceMeters! <= 0)) {
+            throw const FormatException(
+              'Revisa la modalidad y la medida de recuperación del tramo.',
+            );
+          }
+          if (set.targetLoadKg != null ||
+              set.targetRir != null ||
+              set.restAfterSeconds != 0) {
+            throw const FormatException(
+              'Los tramos de carrera usan su recuperación propia.',
+            );
+          }
+        } else if (set.targetPaceMinSecondsPerKm != null ||
+            set.targetPaceMaxSecondsPerKm != null ||
+            set.recoveryType != null ||
+            set.recoveryDurationSeconds != null ||
+            set.recoveryDistanceMeters != null) {
+          throw const FormatException(
+            'El ritmo y la recuperación de carrera solo pertenecen a tramos de carrera.',
           );
         }
       }

@@ -640,10 +640,14 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
         actualReps: set.targetReps == null
             ? null
             : _parseDecimal(_repsController.text)!.toInt(),
-        actualDurationSeconds: set.targetDurationSeconds == null
+        actualDurationSeconds:
+            set.targetDurationSeconds == null &&
+                set.blockFormat != WorkoutBlockFormat.running
             ? null
             : _parseDecimal(_durationController.text)!.toInt(),
-        actualDistanceMeters: set.targetDistanceMeters == null
+        actualDistanceMeters:
+            set.targetDistanceMeters == null &&
+                set.blockFormat != WorkoutBlockFormat.running
             ? null
             : _parseDecimal(_distanceController.text),
         actualLoadKg: set.targetLoadKg == null
@@ -654,7 +658,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
       ),
       restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
           ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
-          : null,
+          : set.recoveryDurationSeconds,
     );
   }
 
@@ -718,6 +722,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               Text(
                 set.isGrouped
                     ? _executionPositionLabel(set)
+                    : set.blockFormat == WorkoutBlockFormat.running
+                    ? 'Tramo ${set.setOrder + 1}'
                     : 'Serie ${set.setOrder + 1}',
                 style: const TextStyle(color: Colors.white60, fontSize: 17),
               ),
@@ -742,6 +748,24 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   'Objetivo: RIR ${_number(rir)}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white60),
+                ),
+              ],
+              if (set.targetPaceMinSecondsPerKm case final fastest?) ...[
+                const SizedBox(height: 7),
+                Text(
+                  fastest == set.targetPaceMaxSecondsPerKm
+                      ? 'Ritmo objetivo: ${_clock(fastest)}/km'
+                      : 'Ritmo objetivo: ${_clock(fastest)}–${_clock(set.targetPaceMaxSecondsPerKm!)}/km',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+              if (set.recoveryType case final recovery?) ...[
+                const SizedBox(height: 7),
+                Text(
+                  'Después: ${_runningRecovery(recovery, set)}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFFFFC2A3)),
                 ),
               ],
               if (set.blockFormat == WorkoutBlockFormat.emom) ...[
@@ -804,13 +828,15 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   label: 'Repeticiones realizadas',
                   decimal: false,
                 ),
-              if (set.targetDurationSeconds != null)
+              if (set.targetDurationSeconds != null ||
+                  set.blockFormat == WorkoutBlockFormat.running)
                 _ResultField(
                   controller: _durationController,
                   label: 'Segundos realizados',
                   decimal: false,
                 ),
-              if (set.targetDistanceMeters != null)
+              if (set.targetDistanceMeters != null ||
+                  set.blockFormat == WorkoutBlockFormat.running)
                 _ResultField(
                   controller: _distanceController,
                   label: 'Metros realizados',
@@ -858,6 +884,10 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                       ? 'Guardando…'
                       : set.blockFormat == WorkoutBlockFormat.emom
                       ? 'Guardar y esperar al siguiente minuto'
+                      : set.blockFormat == WorkoutBlockFormat.running
+                      ? set.recoveryType == null
+                            ? 'Guardar tramo'
+                            : 'Guardar tramo y recuperar'
                       : 'Guardar serie',
                 ),
               ),
@@ -1308,7 +1338,13 @@ String _progressLabel(WorkoutExecution execution) {
   final completed = execution.completedSetCount;
   final skipped = execution.skippedSetCount;
   if (skipped == 0) {
-    return '$completed de ${execution.sets.length} series completadas';
+    final unit =
+        execution.sets.every(
+          (set) => set.blockFormat == WorkoutBlockFormat.running,
+        )
+        ? 'tramos completados'
+        : 'series completadas';
+    return '$completed de ${execution.sets.length} $unit';
   }
   return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
       '($completed completadas, $skipped omitidas)';
@@ -1321,6 +1357,7 @@ String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
       WorkoutBlockFormat.intervals => 'Intervalo',
       WorkoutBlockFormat.tabata => 'Tabata',
       WorkoutBlockFormat.emom => 'EMOM',
+      WorkoutBlockFormat.running => 'Carrera',
       _ => 'Serie',
     };
 
@@ -1335,9 +1372,22 @@ String _executionPositionLabel(
   WorkoutBlockFormat.tabata => 'Intervalo ${set.itemOrder + 1} de 8',
   WorkoutBlockFormat.emom =>
     'Minuto ${set.itemOrder + 1} · vuelta ${set.roundNumber}',
+  WorkoutBlockFormat.running => 'Tramo ${set.setOrder + 1}',
   _ =>
     '${_executionBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}',
 };
+
+String _runningRecovery(RunningRecoveryType recovery, WorkoutExecutionSet set) {
+  final mode = switch (recovery) {
+    RunningRecoveryType.passive => 'recuperación pasiva',
+    RunningRecoveryType.walking => 'recuperación andando',
+    RunningRecoveryType.jogging => 'recuperación trotando',
+  };
+  final measure = set.recoveryDurationSeconds != null
+      ? _clock(set.recoveryDurationSeconds!)
+      : '${_number(set.recoveryDistanceMeters!)} m';
+  return '$measure de $mode';
+}
 
 String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
     switch (reason) {

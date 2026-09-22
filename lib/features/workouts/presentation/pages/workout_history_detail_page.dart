@@ -21,9 +21,8 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
         listener: (context, state) {
           final message = state.correctionMessage;
           if (message != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message)));
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -458,10 +457,14 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
         actualReps: set.targetReps == null
             ? null
             : _parseDecimal(_reps.text)!.toInt(),
-        actualDurationSeconds: set.targetDurationSeconds == null
+        actualDurationSeconds:
+            set.targetDurationSeconds == null &&
+                set.blockFormat != WorkoutBlockFormat.running
             ? null
             : _parseDecimal(_duration.text)!.toInt(),
-        actualDistanceMeters: set.targetDistanceMeters == null
+        actualDistanceMeters:
+            set.targetDistanceMeters == null &&
+                set.blockFormat != WorkoutBlockFormat.running
             ? null
             : _parseDecimal(_distance.text),
         actualLoadKg: set.targetLoadKg == null
@@ -496,13 +499,15 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                     label: 'Repeticiones realizadas',
                     decimal: false,
                   ),
-                if (set.targetDurationSeconds != null)
+                if (set.targetDurationSeconds != null ||
+                    set.blockFormat == WorkoutBlockFormat.running)
                   _CorrectionField(
                     controller: _duration,
                     label: 'Segundos realizados',
                     decimal: false,
                   ),
-                if (set.targetDistanceMeters != null)
+                if (set.targetDistanceMeters != null ||
+                    set.blockFormat == WorkoutBlockFormat.running)
                   _CorrectionField(
                     controller: _distance,
                     label: 'Metros realizados',
@@ -692,11 +697,35 @@ String _target(WorkoutExecutionSet set) {
   }
   if (set.targetLoadKg != null) parts.add('${_number(set.targetLoadKg!)} kg');
   if (set.targetRir != null) parts.add('RIR ${_number(set.targetRir!)}');
+  if (set.targetPaceMinSecondsPerKm != null) {
+    final fastest = set.targetPaceMinSecondsPerKm!;
+    final slowest = set.targetPaceMaxSecondsPerKm!;
+    parts.add(
+      fastest == slowest
+          ? '${_pace(fastest)}/km'
+          : '${_pace(fastest)}–${_pace(slowest)}/km',
+    );
+  }
+  if (set.recoveryType != null) {
+    final mode = switch (set.recoveryType!) {
+      RunningRecoveryType.passive => 'pasiva',
+      RunningRecoveryType.walking => 'andando',
+      RunningRecoveryType.jogging => 'trotando',
+    };
+    final measure = set.recoveryDurationSeconds != null
+        ? _shortDuration(set.recoveryDurationSeconds!)
+        : '${_number(set.recoveryDistanceMeters!)} m';
+    parts.add('rec. $mode $measure');
+  }
   return parts.join(' · ');
 }
 
 String _result(WorkoutExecutionSet set) {
-  if (set.status == WorkoutSetStatus.skipped) return 'Serie omitida';
+  if (set.status == WorkoutSetStatus.skipped) {
+    return set.blockFormat == WorkoutBlockFormat.running
+        ? 'Tramo omitido'
+        : 'Serie omitida';
+  }
   if (set.status == WorkoutSetStatus.pending) return 'No realizada';
   final parts = <String>[];
   if (set.actualReps != null) parts.add('${set.actualReps} rep');
@@ -708,8 +737,23 @@ String _result(WorkoutExecutionSet set) {
   }
   if (set.actualLoadKg != null) parts.add('${_number(set.actualLoadKg!)} kg');
   if (set.actualRir != null) parts.add('RIR ${_number(set.actualRir!)}');
+  if (set.blockFormat == WorkoutBlockFormat.running &&
+      set.actualDurationSeconds != null &&
+      set.actualDistanceMeters != null &&
+      set.actualDistanceMeters! > 0) {
+    final pace = (set.actualDurationSeconds! * 1000 / set.actualDistanceMeters!)
+        .round();
+    parts.add('${_pace(pace)}/km');
+  }
   return 'Realizado · ${parts.join(' · ')}';
 }
+
+String _pace(int seconds) =>
+    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+String _shortDuration(int seconds) => seconds < 60
+    ? '$seconds s'
+    : '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')} min';
 
 String _reasonLabel(WorkoutAbandonmentReason reason) => switch (reason) {
   WorkoutAbandonmentReason.lackOfTime => 'Falta de tiempo',

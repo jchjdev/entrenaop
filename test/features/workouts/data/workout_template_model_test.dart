@@ -118,6 +118,80 @@ void main() {
     );
   });
 
+  test('conserva ritmo y recuperación de los tramos de carrera', () {
+    final workout = WorkoutTemplateModel.fromJson({
+      'id': 'running-1',
+      'name': 'Pirámide',
+      'description': null,
+      'estimated_duration_minutes': 35,
+      'version': 2,
+      'workout_blocks': [
+        {
+          'id': 'block-running',
+          'order_index': 0,
+          'name': 'Carrera',
+          'format': 'running',
+          'rounds': 1,
+          'time_cap_seconds': null,
+          'rest_after_seconds': 0,
+          'workout_items': [
+            {
+              'id': 'item-running',
+              'order_index': 0,
+              'notes': null,
+              'exercises': {
+                'id': runningExerciseId,
+                'name': 'Carrera',
+                'description': null,
+              },
+              'workout_sets': [
+                {
+                  'id': 'segment-1',
+                  'order_index': 0,
+                  'target_reps': null,
+                  'target_duration_seconds': null,
+                  'target_distance_meters': 400,
+                  'target_load_kg': null,
+                  'target_rpe': null,
+                  'target_rir': null,
+                  'target_pace_min_seconds_per_km': 240,
+                  'target_pace_max_seconds_per_km': 255,
+                  'recovery_type': 'jogging',
+                  'recovery_duration_seconds': null,
+                  'recovery_distance_meters': 200,
+                  'rest_after_seconds': 0,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    final segment = workout.blocks.single.items.single.sets.single;
+    expect(workout.blocks.single.format, WorkoutBlockFormat.running);
+    expect(segment.targetPaceMinSecondsPerKm, 240);
+    expect(segment.targetPaceMaxSecondsPerKm, 255);
+    expect(segment.recoveryType, RunningRecoveryType.jogging);
+    expect(segment.recoveryDistanceMeters, 200);
+  });
+
+  test('marca como carrera el resumen que contiene un bloque running', () {
+    final summary = WorkoutTemplateSummaryModel.fromJson(const {
+      'id': 'running-1',
+      'name': 'Carrera continua',
+      'description': null,
+      'estimated_duration_minutes': 30,
+      'origin': 'user',
+      'version': 1,
+      'workout_blocks': [
+        {'format': 'running'},
+      ],
+    });
+
+    expect(summary.isRunning, isTrue);
+  });
+
   test('ordena una ejecución y localiza la siguiente serie pendiente', () {
     Map<String, dynamic> result({
       required String id,

@@ -418,6 +418,7 @@ class _PrescriptionDetails extends StatelessWidget {
         WorkoutBlockFormat.tabata => 'Trabajo',
         WorkoutBlockFormat.straightSets => '${sets.length} series',
         WorkoutBlockFormat.intervals => '${sets.length} intervalos',
+        WorkoutBlockFormat.running => '${sets.length} tramos',
         _ => '${sets.length} rondas',
       };
       return Text(
@@ -482,6 +483,7 @@ String _blockFormatLabel(WorkoutBlockFormat format) => switch (format) {
   WorkoutBlockFormat.emom => 'EMOM',
   WorkoutBlockFormat.amrap => 'AMRAP',
   WorkoutBlockFormat.tabata => 'Tabata',
+  WorkoutBlockFormat.running => 'Carrera por tramos',
   WorkoutBlockFormat.warmUp => 'Calentamiento',
   WorkoutBlockFormat.coolDown => 'Vuelta a la calma',
 };
@@ -506,6 +508,8 @@ String _blockPlanSummary(WorkoutBlock block) {
       '${block.rounds * itemCount} min · $itemCount ${itemCount == 1 ? 'estación' : 'estaciones'} × ${block.rounds} vueltas',
     WorkoutBlockFormat.amrap =>
       '${_duration(block.timeCapSeconds ?? 0)} · todas las vueltas posibles',
+    WorkoutBlockFormat.running =>
+      '${block.items.firstOrNull?.sets.length ?? 0} ${block.items.firstOrNull?.sets.length == 1 ? 'tramo' : 'tramos'} ordenados',
     WorkoutBlockFormat.warmUp || WorkoutBlockFormat.coolDown =>
       '$itemCount ${itemCount == 1 ? 'ejercicio' : 'ejercicios'}',
   };
@@ -533,6 +537,7 @@ String _setPositionLabel(WorkoutBlockFormat format, int index) =>
     switch (format) {
       WorkoutBlockFormat.intervals => 'Intervalo ${index + 1}',
       WorkoutBlockFormat.straightSets => 'Serie ${index + 1}',
+      WorkoutBlockFormat.running => 'Tramo ${index + 1}',
       _ => 'Ronda ${index + 1}',
     };
 
@@ -548,6 +553,11 @@ bool _setsAreEquivalent(List<WorkoutSet> sets) {
             set.targetLoadKg == first.targetLoadKg &&
             set.targetRpe == first.targetRpe &&
             set.targetRir == first.targetRir &&
+            set.targetPaceMinSecondsPerKm == first.targetPaceMinSecondsPerKm &&
+            set.targetPaceMaxSecondsPerKm == first.targetPaceMaxSecondsPerKm &&
+            set.recoveryType == first.recoveryType &&
+            set.recoveryDurationSeconds == first.recoveryDurationSeconds &&
+            set.recoveryDistanceMeters == first.recoveryDistanceMeters &&
             set.restAfterSeconds == first.restAfterSeconds,
       );
 }
@@ -581,6 +591,25 @@ String _setPrescription(
   }
   if (set.targetRir case final rir?) parts.add('RIR ${_number(rir)}');
   if (set.targetRpe case final rpe?) parts.add('RPE ${_number(rpe)}');
+  if (set.targetPaceMinSecondsPerKm case final fastest?) {
+    final slowest = set.targetPaceMaxSecondsPerKm!;
+    parts.add(
+      fastest == slowest
+          ? '${_pace(fastest)}/km'
+          : '${_pace(fastest)}–${_pace(slowest)}/km',
+    );
+  }
+  if (set.recoveryType case final recovery?) {
+    final mode = switch (recovery) {
+      RunningRecoveryType.passive => 'pasiva',
+      RunningRecoveryType.walking => 'andando',
+      RunningRecoveryType.jogging => 'trotando',
+    };
+    final measure = set.recoveryDurationSeconds != null
+        ? _duration(set.recoveryDurationSeconds!)
+        : '${_number(set.recoveryDistanceMeters!)} m';
+    parts.add('recuperación $mode · $measure');
+  }
   if (includeRest && set.restAfterSeconds > 0) {
     final restName = format == WorkoutBlockFormat.circuit
         ? 'transición'
@@ -589,6 +618,9 @@ String _setPrescription(
   }
   return parts.join(' · ');
 }
+
+String _pace(int seconds) =>
+    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 
 String _duration(int seconds) {
   if (seconds < 60) return '$seconds s';

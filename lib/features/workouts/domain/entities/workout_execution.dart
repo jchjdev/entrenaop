@@ -244,6 +244,11 @@ class WorkoutExecutionSet extends Equatable {
     this.targetLoadKg,
     this.targetRpe,
     this.targetRir,
+    this.targetPaceMinSecondsPerKm,
+    this.targetPaceMaxSecondsPerKm,
+    this.recoveryType,
+    this.recoveryDurationSeconds,
+    this.recoveryDistanceMeters,
     this.actualReps,
     this.actualDurationSeconds,
     this.actualDistanceMeters,
@@ -270,6 +275,11 @@ class WorkoutExecutionSet extends Equatable {
   final double? targetLoadKg;
   final double? targetRpe;
   final double? targetRir;
+  final int? targetPaceMinSecondsPerKm;
+  final int? targetPaceMaxSecondsPerKm;
+  final RunningRecoveryType? recoveryType;
+  final int? recoveryDurationSeconds;
+  final double? recoveryDistanceMeters;
   final int restAfterSeconds;
   final WorkoutSetStatus status;
   final int? actualReps;
@@ -324,6 +334,11 @@ class WorkoutExecutionSet extends Equatable {
     targetLoadKg: targetLoadKg,
     targetRpe: targetRpe,
     targetRir: targetRir,
+    targetPaceMinSecondsPerKm: targetPaceMinSecondsPerKm,
+    targetPaceMaxSecondsPerKm: targetPaceMaxSecondsPerKm,
+    recoveryType: recoveryType,
+    recoveryDurationSeconds: recoveryDurationSeconds,
+    recoveryDistanceMeters: recoveryDistanceMeters,
     restAfterSeconds: restAfterSeconds,
     status: status ?? this.status,
     actualReps: actualReps ?? this.actualReps,
@@ -354,6 +369,11 @@ class WorkoutExecutionSet extends Equatable {
     targetLoadKg,
     targetRpe,
     targetRir,
+    targetPaceMinSecondsPerKm,
+    targetPaceMaxSecondsPerKm,
+    recoveryType,
+    recoveryDurationSeconds,
+    recoveryDistanceMeters,
     restAfterSeconds,
     status,
     actualReps,
