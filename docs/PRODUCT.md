@@ -17,6 +17,44 @@ El ciclo principal del producto es:
 > Evaluación inicial → plan semanal → entrenamiento guiado → registro real →
 > adaptación → simulacro.
 
+## Estado validado del producto
+
+Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
+2026, tras cerrar el creador de fuerza V1:
+
+- El acceso, la restauración de sesión y la navegación responsive están
+  operativos.
+- El usuario puede mantener varias preparaciones activas, registrar y consultar
+  evaluaciones físicas versionadas de ingreso a Tropa y Marinería, y guardar su
+  disponibilidad y contexto de entrenamiento.
+- La biblioteca pública y las sesiones personales comparten vista previa,
+  agenda semanal, sesión guiada e historial, pero conservan origen, privacidad
+  y versión distintos.
+- El creador personal admite varios bloques, series con objetivos diferentes,
+  superseries, circuitos con transiciones, intervalos de trabajo, Tabata, EMOM y
+  AMRAP. También permite crear ejercicios privados con descripción y una URL de
+  vídeo HTTPS opcional.
+- Los borradores se guardan localmente por sesión. Duplicar, revisar o archivar
+  una sesión no reescribe ejecuciones pasadas: las revisiones forman una familia
+  versionada y el historial conserva una instantánea de la prescripción.
+- La agenda semanal permite añadir sesiones públicas o personales, moverlas,
+  retirarlas, iniciarlas y continuar las que están en curso.
+- La sesión guiada conserva objetivos y resultados por serie, descripciones y
+  vídeos, pausas y temporizadores recuperables. Registra omisiones, abandono con
+  motivo, esfuerzo final, notas y el resultado agregado propio de AMRAP.
+- Una cola local permite continuar las mutaciones de una ejecución ya cargada
+  durante cortes de red; Supabase las aplica de forma idempotente. Las
+  correcciones del historial permanecen en línea y se auditan durante 24 horas,
+  con motivo obligatorio y un máximo de tres cambios por serie.
+
+Esto cierra el recorrido manual de fuerza V1, no el ciclo principal completo.
+Todavía no existen la generación del plan semanal, la adaptación posterior al
+resultado, los simulacros ni la revisión por un entrenador. La carrera tampoco
+tiene aún su creador especializado. El vídeo propio se referencia por URL; no
+hay subida ni gestión de archivos. Los borradores y temporizadores son locales
+al dispositivo y el soporte offline no permite descubrir, cargar o iniciar una
+sesión que nunca se hubiera obtenido del servidor.
+
 El primer recorrido que se desarrollará en profundidad será el ingreso a Tropa
 y Marinería. Los accesos a Suboficiales y Oficiales se incorporarán después con
 sus propios catálogos oficiales. Las pruebas internas, ascensos, PAEF y PAFA se
@@ -88,7 +126,7 @@ Los nombres comerciales se validarán antes del lanzamiento. `Pro` y `Coaching`
 describen mejor el beneficio que etiquetas genéricas como `Premium` o `VIP`,
 pero todavía no son nombres definitivos.
 
-## Primera versión validable
+## Alcance de la primera versión validable
 
 Un usuario puede seguir varias preparaciones verificadas de forma simultánea.
 Inicio enseña solo las que ha añadido; el catálogo completo se consulta aparte.
@@ -128,7 +166,7 @@ sesiones específicas o combinadas. La forma comercial de presentar esos
 programas se decidirá después; el modelo no debe obligarnos prematuramente a
 una única estructura visible.
 
-La primera versión debe demostrar el ciclo completo con el ingreso a Tropa y
+La primera versión validable debe demostrar el ciclo completo con el ingreso a Tropa y
 Marinería:
 
 1. Alta, acceso y perfil físico.

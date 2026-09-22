@@ -2,32 +2,42 @@
 
 ## Estado observado
 
-Instantánea comprobada en el repositorio el 19 de septiembre de 2026:
+Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
 
 - Proyecto Flutter con destinos Android, iOS, web y Windows.
-- Restricción de Dart en `pubspec.yaml`: `>=3.5.0 <4.0.0`.
+- Restricción de Dart en `pubspec.yaml`: `>=3.9.0 <4.0.0`.
 - Dependencias declaradas para Bloc/Cubit, Equatable, `go_router`, GetIt,
   Supabase, vídeo, preferencias y utilidades.
-- Estructura por funcionalidades con capas `domain`, `data` y `presentation` en
-  autenticación y ejercicios.
+- Estructura por funcionalidades para autenticación, panel de inicio,
+  ejercicios, evaluación física, preparaciones, perfil, preferencias, agenda y
+  entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
+  una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- La funcionalidad de ejercicios ya contiene entidad, contrato, casos de uso,
-  modelo, datasource, repositorio y Cubit; cualquier documento que la describa
-  como pendiente está desactualizado.
+- El repositorio contiene 29 migraciones SQL ordenadas: línea base y
+  saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
+  ejecuciones, resultados y correcciones, idempotencia offline, creador
+  personal versionado, agenda y formatos avanzados de fuerza.
 - La navegación autenticada dispone de un contenedor persistente con las áreas
   Inicio, Mi plan, Evolución y Perfil. En móvil utiliza una barra inferior y en
   pantallas amplias una navegación lateral.
 - La URL y la clave pública de Supabase se inyectan por entorno. El desarrollo
   apunta a un proyecto aislado y no modifica producción.
-- El catálogo remoto de Supabase ya está auditado. La línea base reconstruida y
-  la primera migración de seguridad se encuentran en `supabase/migrations/`;
-  todavía no se han aplicado a producción.
+- El catálogo remoto original de Supabase fue auditado y su línea base quedó
+  reconstruida. Las migraciones del repositorio son la fuente reproducible del
+  esquema; esta revisión local no acredita por sí sola qué revisiones están
+  desplegadas en producción.
 - El esquema heredado contiene cinco tablas de producto. Su campo
   `profiles.role` permanece temporalmente por compatibilidad, pero la migración
   crea `admin_permissions` como autoridad administrativa independiente y
   retira al cliente la capacidad de modificar `role`.
 
 Esta sección es una instantánea, no sustituye una auditoría completa.
+
+El recorrido manual de fuerza V1 está implementado de extremo a extremo:
+biblioteca y sesiones privadas, creador por bloques, agenda, vista previa,
+ejecución guiada, cola de mutaciones, historial y corrección auditada. El
+recorrido adaptativo sigue abierto: aún no hay prescripciones generadas a partir
+de evaluación, disponibilidad, preparaciones y resultados.
 
 ## Clean Architecture aplicada a EntrenaOP
 
@@ -73,14 +83,14 @@ lib/
     utils/
   features/
     auth/
-      domain/
-      data/
-      presentation/
+    dashboard/
     exercises/
-    training/
-    oppositions/
-    clients/
-    chat/
+    physical_assessment/
+    preparation_goal/
+    profile/
+    training_plan/
+    workout_schedule/
+    workouts/
 ```
 
 Los nombres y módulos futuros no se crearán hasta que su caso de uso lo exija.
@@ -89,11 +99,11 @@ más sencillas cuando una abstracción no aporte valor.
 
 ## Modelo de entrenamiento
 
-No debe modelarse cada formato con columnas aisladas en una única tabla rígida.
-El diseño tendrá que expresar una jerarquía versionada, por ejemplo:
-planificación → sesión → bloques → ejercicios/intervalos → prescripción, junto a
-un registro separado del resultado realizado. La forma definitiva se decidirá
-tras concretar los casos de PAEF/PAFA.
+No se modela cada formato con columnas aisladas en una única tabla rígida. La
+jerarquía actual separa plantilla, bloques, posiciones y series, y mantiene la
+ejecución y sus resultados aparte. La planificación adaptativa y el bloque
+especializado de carrera todavía requerirán extender esta estructura sin
+reinterpretar el historial existente.
 
 La primera parte comprobable de esa jerarquía ya se modela mediante
 `workout_templates → workout_blocks → workout_items → workout_sets`. Una serie
@@ -264,8 +274,8 @@ identidad
 
 La sesión activa es una frontera de fiabilidad. Los temporizadores y las
 mutaciones pendientes se persisten localmente para sobrevivir a un reinicio y
-sincronizarse al recuperar la conexión. Esta solución se ha validado en la
-sesión convencional antes de generalizarla a otros formatos.
+sincronizarse al recuperar la conexión. La misma base se usa ya en sesiones
+convencionales, superseries, circuitos, intervalos, Tabata, EMOM y AMRAP.
 
 El servidor seguirá siendo la autoridad para permisos, derechos comerciales,
 asignaciones y datos consolidados. El soporte local no debe convertirse en una
@@ -283,6 +293,10 @@ una respuesta perdida no aplica dos veces la operación. Flutter muestra el
 resultado de forma optimista y avisa mientras existan cambios pendientes. Las
 validaciones y los permisos siguen ejecutándose en PostgreSQL; las correcciones
 históricas permanecen deliberadamente en línea por ser una operación auditada.
+
+El límite es deliberado: la cola no replica el catálogo ni la agenda y no
+permite arrancar offline una sesión nunca cargada. Tampoco sincroniza entre
+dispositivos los borradores del editor o las instantáneas de temporizador.
 
 Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
 locales, sin introducir permisos ni dependencias nativas adicionales. Los

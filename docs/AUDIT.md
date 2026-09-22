@@ -2,6 +2,11 @@
 
 Fecha de la revisión: 19 de septiembre de 2026.
 
+> **Documento histórico.** Refleja la auditoría inicial y conserva sus
+> hallazgos y cifras en el momento en que se realizó. No describe el estado
+> actual tras las migraciones y funcionalidades añadidas los días 20 y 21. La
+> instantánea vigente está en `PRODUCT.md`, `ARCHITECTURE.md` y `ROADMAP.md`.
+
 Este documento separa hechos comprobados, puntos pendientes de verificación y
 recomendaciones. No sustituye el historial de cambios ni convierte hipótesis
 sobre el backend en hechos.

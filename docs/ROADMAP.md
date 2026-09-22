@@ -1,206 +1,121 @@
 # Roadmap de EntrenaOP
 
-Este roadmap expresa prioridades, no fechas cerradas. Debe actualizarse cuando
-el código y las decisiones de producto cambien.
+Este roadmap expresa prioridades, no fechas cerradas. Su estado se ha
+contrastado con código, migraciones y pruebas el 22 de septiembre de 2026, tras
+el cierre del creador de fuerza V1.
 
-## Paso 0: comprender y estabilizar
+## Estado del ciclo principal
 
-1. Auditar repositorio, dependencias, Git, arranque, navegación, autenticación,
-   ejercicios, esquema SQL, RLS, correspondencia de modelos y pruebas.
-2. Clasificar hallazgos por roturas, seguridad/integridad, arquitectura que
-   conviene corregir ahora y mejoras aplazables.
-3. Acordar un único orden de corrección antes de modificar código funcional.
-4. Mover la configuración de Supabase a entornos adecuados y resolver los
-   defectos críticos que confirme la auditoría.
-5. Incorporar el esquema remoto a migraciones reproducibles, junto con
-   constraints, políticas RLS y datos de prueba controlados.
-6. Dejar autenticación, restauración de sesión, análisis estático y pruebas base
-   en un estado verificable antes de ampliar funcionalidad.
+El ciclo objetivo continúa siendo:
 
-## Fase 1: concretar el dominio PAEF/PAFA
+> Evaluación inicial → plan semanal → entrenamiento guiado → registro real →
+> adaptación → simulacro.
 
-Antes de diseñar las tablas definitivas se trabajará con ejemplos reales para
-definir:
+| Tramo | Estado | Evidencia y límite actual |
+| --- | --- | --- |
+| Acceso y contexto inicial | Terminado | Autenticación restaurable, varias preparaciones, evaluación inicial e historial de Tropa y Marinería, y preferencias de disponibilidad, experiencia y material. |
+| Biblioteca y sesiones personales | Terminado para fuerza V1 | Biblioteca pública, sesiones privadas, ejercicios propios, descripción y vídeo HTTPS, duplicado, archivado, borradores locales y revisiones versionadas. |
+| Agenda semanal manual | Terminada | Reúne biblioteca y sesiones personales; permite programar, reprogramar, retirar, iniciar y continuar. Conserva nombre, versión y duración como instantánea. |
+| Creador de fuerza por bloques | Terminado en V1 | Series variables, superseries A1/A2, circuitos con transiciones, intervalos de trabajo, Tabata 8 × 20/10, EMOM y AMRAP, con vista previa coherente. |
+| Sesión guiada e historial | Terminado para los formatos V1 | Objetivo y resultado real, omisión, abandono, RPE final, notas, vídeos, temporizadores restaurables, avisos configurables, cola idempotente e historial con correcciones auditadas. |
+| Funcionamiento sin conexión | Parcial | Encola completar/omitir serie, AMRAP, finalizar y abandonar una ejecución cargada. No replica catálogo o agenda, no inicia contenido desconocido y las correcciones exigen conexión. |
+| Evaluación y progreso | Parcial | Registra, evalúa y compara marcas con el catálogo versionado de ingreso a Tropa y Marinería, calcula evolución y recomienda focos. No hay panel longitudinal completo ni simulacro. |
+| Plan semanal adaptativo | No existe | La agenda es manual; no se generan prescripciones a partir de preparaciones, evaluación, disponibilidad o historial. |
+| Adaptación posterior | No existe | No hay reglas versionadas que interpreten resultados y produzcan la siguiente recomendación o semana. |
+| Carrera especializada | No existe | Los intervalos actuales son de trabajo con un ejercicio; faltan tramos de carrera, ritmo y recuperación por tramo. |
+| Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
+| Derechos y monetización | No existe | La separación conceptual está decidida, pero no hay suscripciones ni concesión fiable de derechos comerciales. |
 
-- Pruebas, convocatorias, categorías y baremos versionados.
-- Diferencia entre programas de acceso y evaluaciones internas.
-- Tramos de edad, tablas de puntos y cálculo total para PAEF/PAFA cuando se
-  disponga de sus fuentes oficiales.
-- Datos que se prescriben y resultados que se registran.
-- Fuerza, carrera, circuitos, superseries, AMRAP, EMOM, Tabata e isométricos.
-- Reglas ante sesiones completadas, fallidas, omitidas o con molestias.
-- Límites de adaptación y capacidad de anulación del entrenador.
+## Base completada
 
-El resultado de esta fase serán conceptos de dominio comprensibles y pruebas de
-sus reglas principales, no solo un diagrama o un conjunto de tablas.
+### Estabilización y seguridad
 
-## Fase 2: primera vertical funcional
+- Entornos de Supabase separados por configuración.
+- Línea base SQL reproducible, saneamiento de acceso, RLS, constraints e
+  índices.
+- Restauración y observación de autenticación, navegación centralizada y
+  pruebas base.
+- Arquitectura modular aplicada sin imponer capas que no aporten valor.
 
-Se completará un único recorrido antes de extender horizontalmente el producto:
+### Dominio de evaluación y contexto
 
-1. Registrar una marca inicial.
-2. Generar o recibir una sesión con pocos ejercicios reales.
-3. Ejecutar la sesión, incluso ante una pérdida temporal de conexión.
-4. Guardar el resultado prescrito y el realizado sin confundirlos.
-5. Mostrar evolución y comparación con el baremo usado.
-6. Producir una recomendación siguiente explicable.
+- Catálogo versionado de ingreso a Tropa y Marinería 2026 y evaluación de sus
+  cuatro pruebas.
+- Historial de evaluaciones, progreso y recomendación explicable del foco.
+- Preferencias de entrenamiento y bloqueo cuando se solicita revisión
+  profesional.
+- Múltiples preparaciones activas, sin duplicar un mismo programa activo.
 
-Esta vertical incluirá:
+### Vertical manual de entrenamiento
 
-- Autenticación y persistencia de sesión fiables.
-- Conjunto mínimo de ejercicios necesario para la vertical.
-- Creación y asignación de la sesión.
-- Modelo de entrenamiento capaz de expresar los formatos necesarios.
-- Pantalla de sesión activa.
-- Registro detallado de resultados y feedback.
-- Base inicial de ingreso a Tropa y Marinería, baremos versionados y
-  pruebas/simulacros.
+- Plantillas jerárquicas y ejecuciones con instantáneas inmutables de la
+  prescripción, el formato y el contenido explicativo usado.
+- Biblioteca pública, sesiones personales y agenda semanal común.
+- Creador privado y transaccional con múltiples bloques y objetivos por serie.
+- Series convencionales, superseries, circuitos, intervalos, Tabata, EMOM y
+  AMRAP; posiciones repetibles y transiciones de circuito.
+- Ejercicios privados, búsqueda por catálogo, descripción y vídeo HTTPS.
+- Borradores locales por sesión, duplicado, archivado y familias de revisiones.
+- Vista previa, sesión guiada, temporizadores persistentes, avisos sonoros y
+  hápticos, resultados, omisiones, abandono, notas y esfuerzo final.
+- Cola local de mutaciones con recibos idempotentes, historial y correcciones
+  auditadas limitadas por tiempo y número.
 
-El modelo permite que un usuario siga varias preparaciones simultáneas. Inicio
-muestra únicamente las añadidas por él y el catálogo se mantiene en una
-pantalla separada para no mezclar objetivos propios con toda la oferta futura.
-La primera vertical deportiva continúa limitada a Tropa y Marinería hasta que
-los demás programas dispongan de reglas y baremos verificados.
+## Único siguiente bloque recomendado
 
-El primer incremento del motor utiliza una plantilla pública mínima almacenada
-en Supabase y una ejecución persistente serie a serie. Ya permite recuperar el
-progreso, temporizar descansos, conservar la prescripción usada y registrar el
-resultado real o la omisión de cada serie. Las series por duración incluyen una
-cuenta atrás que puede pausarse, reanudarse y restaurarse al volver a la sesión.
-Salir conserva la sesión activa, mientras que el abandono definitivo registra
-el motivo sin convertir automáticamente las series restantes en omitidas.
-Las sesiones completadas y abandonadas ya aparecen en Evolución, donde puede
-consultarse el objetivo y el resultado real de cada serie. Las evaluaciones
-físicas conservan un historial separado dentro de la misma área para no mezclar
-pruebas de acceso con entrenamientos cotidianos.
-Al completar una sesión se registra el esfuerzo global y una nota opcional de
-sensaciones, que permanece visible en el resumen y el historial.
-Los errores de registro pueden corregirse desde el detalle durante 24 horas y
-con un máximo de tres cambios por serie. Cada cambio exige motivo y queda
-auditado en PostgreSQL.
-Durante la ejecución se muestra la descripción técnica del ejercicio y, cuando
-el catálogo dispone de él, un vídeo opcional cargado bajo demanda.
-Los temporizadores emiten avisos al preparar, comenzar y terminar el trabajo y
-al finalizar un descanso. Sonido y respuesta háptica se configuran de forma
-independiente y la preferencia queda guardada en el dispositivo.
-Los resultados pueden guardarse durante una pérdida de conexión. Una cola
-persistente conserva las operaciones, la interfaz indica cuántas quedan
-pendientes y Supabase las acepta de forma idempotente al volver la red, sin
-duplicar series aunque una respuesta se haya perdido.
+El siguiente bloque será la **primera planificación semanal adaptativa de
+Tropa y Marinería**, limitada a producir una semana explicable sobre la agenda
+existente.
 
-La biblioteca completa y otros formatos se ampliarán después de validar este
-recorrido.
+Debe cerrar, en este orden, un único tramo del ciclo:
 
-La primera Biblioteca ya consulta las plantillas públicas publicadas y abre su
-detalle mediante una ruta genérica. La sesión inicial es su primer contenido
-real. Las plantillas públicas, las rutinas personales y las futuras
-prescripciones adaptativas comparten motor de ejecución, pero conservan origen,
-visibilidad y versionado distintos.
+1. Definir una prescripción mínima con entradas explícitas: preparaciones
+   activas, evaluación vigente, disponibilidad, material e historial necesario.
+2. Versionar las reglas y guardar para cada propuesta entradas, salida y razones.
+3. Generar una semana privada con origen `algorithm` y colocarla en
+   `scheduled_workouts` sin modificar plantillas ni ejecuciones históricas.
+4. Mostrar al usuario por qué se propone cada sesión y permitir aceptar o
+   regenerar solo bajo reglas definidas.
+5. Cubrir dominio, persistencia, permisos y una prueba vertical desde contexto
+   válido hasta semana visible en agenda.
 
-El primer creador de sesiones personales permite ordenar ejercicios del
-catálogo y prescribir series homogéneas por repeticiones, tiempo o distancia,
-con descanso, carga y RIR opcionales. El guardado es privado y atómico en
-PostgreSQL. El catálogo ya permite buscar, separar contenido de EntrenaOP y
-ejercicios propios, y crear estos últimos como recursos privados con
-descripción y vídeo HTTPS opcional.
-El editor conserva además un borrador automático local por sesión. Puede
-recuperarse después de abandonar o reiniciar la aplicación y se limpia tras un
-guardado correcto, evitando escrituras continuas en el backend.
+Se recomienda este bloque porque el producto ya puede crear, programar,
+ejecutar y auditar sesiones, pero el ciclo se detiene justo antes de convertir
+la evaluación y el contexto del usuario en un plan. Añadir ahora más formatos,
+la carrera, monetización o herramientas de entrenador ampliaría la superficie
+sin resolver esa interrupción principal.
 
-La segunda iteración ya permite variar cada serie, copiar la primera al resto,
-añadir o retirar series, duplicar una sesión completa y archivarla sin perder
-su historial. La edición de una sesión existente crea una revisión enlazada y
-archiva la anterior, por lo que el ciclo básico de rutinas personales queda
-cerrado sin reinterpretar ejecuciones pasadas.
+La adaptación posterior a una semana realizada será el bloque siguiente, pero
+no forma parte de este trabajo: primero debe existir una primera prescripción
+determinista y verificable.
 
-El creador organiza ya una sesión personal en varios bloques convencionales.
-El usuario puede nombrarlos, ordenarlos, eliminarlos y mover ejercicios entre
-ellos. Esta estructura precede a los formatos avanzados: circuitos, superseries
-e intervalos añadirán comportamiento al bloque sin sustituir el editor actual.
+## Después, no en paralelo
 
-La primera ampliación de formatos incorpora superseries y circuitos. Ambos
-definen rondas y descanso entre rondas; la ejecución intercala los ejercicios
-de cada vuelta y descansa únicamente al finalizar la ronda. No son etiquetas
-visuales sobre una secuencia convencional. El editor muestra posiciones A1/A2
-en superseries y estaciones ordenadas en circuitos; cada posición es
-independiente aunque reutilice un ejercicio del catálogo.
+Una vez validada la primera semana adaptativa, el orden natural será:
 
-La segunda ampliación añade intervalos de trabajo de un solo ejercicio y
-Tabata canónico 8 × 20/10. Tabata permite elegir una secuencia de movimientos y
-la repite hasta completar sus ocho posiciones. Ambos reutilizan el
-temporizador, la pausa, la restauración y el historial del motor guiado. Este
-formato de intervalos no pretende cubrir el entrenamiento de carrera.
-
-La ampliación específica de carrera se diseñará antes de implementarse. Debe
-cubrir al menos series regulares, pirámides, fartlek y carrera continua mediante
-tramos ordenados con distancia o duración, ritmo objetivo y recuperación
-individual. El creador será especializado, pero publicará en la misma sesión,
-agenda, ejecución e historial que el resto de entrenamientos. Las decisiones de
-ritmo y progresión pertenecerán a un motor determinista y versionado.
-
-La tercera ampliación incorpora EMOM con uno o varios ejercicios alternados.
-Cada estación inicia automáticamente su minuto, conserva el tiempo restante
-como pausa y restaura su reloj si se interrumpe la pantalla. El bloque no puede
-superar sesenta minutos.
-
-La cuarta ampliación incorpora AMRAP con un reloj global de hasta sesenta
-minutos. Su resultado no falsea series convencionales: conserva vueltas
-completas y el avance parcial alcanzado al terminar el tiempo.
-
-La V1 del creador de fuerza queda cerrada con una vista previa que explica el
-orden de cada bloque, sus rondas, transiciones, descansos y objetivos por
-serie antes de iniciar la sesión. El recorrido conserva esos datos al guardar,
-programar, ejecutar y consultar el historial. Las siguientes ampliaciones del
-creador se tratarán como nuevas iteraciones, no como requisitos pendientes de
-esta primera versión.
-
-La agenda semanal global ya permite combinar sesiones personales y contenido
-de la biblioteca, seleccionar el día, reprogramar, retirar e iniciar cada
-entrenamiento. Cada entrada conserva una instantánea del nombre, versión y
-duración previstos para que el calendario no cambie retrospectivamente. Las
-futuras prescripciones del algoritmo y del entrenador utilizarán esta misma
-agenda sin mezclar sus responsabilidades.
-
-## Fase 3: adaptación y seguimiento
-
-- Algoritmo determinista de progresión, con auditoría y anulación manual.
-- Evolución de marcas y comparación con baremos.
-- Panel de administración y gestión de clientes.
-- Servicio de seguimiento personalizado.
-- Chat y notificaciones cuando permisos y modelo comercial estén consolidados.
-
-## Fase 4: monetización e integraciones
-
-- Suscripciones y derechos multiplataforma.
-- Integraciones de salud y actividad priorizadas por valor real.
-- Garmin y Strava si los acuerdos y APIs disponibles lo permiten.
-- Nutrición básica si no desvía el foco del producto.
-- Nuevas oposiciones: CNP, Guardia Civil y otras, una vez estabilizado el modelo.
-
-## Fase futura: entrenadores y academias
-
-El panel profesional comenzará con las necesidades reales de Javier y del
-seguimiento personalizado. Si el uso demuestra demanda, podrá evolucionar a:
-
-- Espacios de trabajo de entrenador.
-- Invitación e incorporación de clientes.
-- Grupos, alumnos y varios entrenadores por academia.
-- Programación compartida y métricas agregadas.
-
-La posibilidad futura de academias influye en la separación entre identidad,
-relaciones y organizaciones, pero no autoriza a implementar multi-tenancy antes
-de necesitarlo.
+1. Interpretar cumplimiento, RPE/RIR, molestias, omisiones y abandono para
+   adaptar la semana siguiente con reglas auditables y anulación profesional.
+2. Añadir el creador especializado de carrera con tramos ordenados, distancia o
+   duración, ritmo y recuperación individual, usando la misma agenda e
+   historial.
+3. Completar evolución longitudinal, simulacros y comparación con baremos.
+4. Incorporar relación entrenador-cliente, panel profesional y asignaciones.
+5. Consolidar derechos comerciales y monetización antes de integraciones o
+   expansión a otras oposiciones.
 
 ## Fuera del camino crítico del MVP
 
 - Resolver todas las oposiciones a la vez.
-- Integraciones externas antes de disponer de una sesión activa sólida.
+- Chat, nutrición, desafíos o red social.
+- Garmin, Strava y otras integraciones antes de cerrar el ciclo adaptativo.
 - Algoritmos opacos o aprendizaje automático antes de validar reglas
   deterministas.
+- Academias y multi-tenancy sin un caso profesional validado.
 - Arquitectura preventiva para funcionalidades todavía indefinidas.
 
 ## Regla de ejecución
 
-Cada fase debe entregar un recorrido utilizable y probado. No se abrirán varias
-áreas grandes a la vez ni se considerará terminada una funcionalidad porque
-existan sus capas si el usuario todavía no puede completar el caso de uso.
+Cada bloque debe entregar un recorrido utilizable y probado. No se abrirán
+varias áreas grandes a la vez ni se considerará terminada una funcionalidad
+porque existan sus capas si el usuario todavía no puede completar el caso de
+uso.
