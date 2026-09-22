@@ -7,8 +7,8 @@ histórica.
 
 ## Colaboración con Javier
 
-- Trabajar con un ritmo natural de *pair programming* y mantener una visión
-  global del producto.
+- Trabajar con un ritmo natural de *pair programming* y mantener el contexto
+  global del producto sin reauditar todo el repositorio en cada tarea.
 - No convertir cada paso en una pregunta o examen. Avanzar con supuestos
   razonables y señalar los que sean relevantes.
 - Entregar directamente configuración, infraestructura repetitiva y
@@ -29,7 +29,8 @@ histórica.
 
 ## Reglas del repositorio
 
-- Inspeccionar el código y el estado de Git antes de modificar nada.
+- Inspeccionar el estado de Git y el código directamente relacionado antes de
+  modificar nada.
 - Preservar cambios existentes y no revertir trabajo ajeno.
 - No realizar operaciones destructivas.
 - No hacer refactorizaciones generales al resolver un problema pequeño.
@@ -49,10 +50,87 @@ histórica.
 - La seguridad y los derechos comerciales nunca pueden depender solo de
   Flutter.
 
+## Flujo de trabajo por alcance
+
+Priorizar avanzar con rapidez sin degradar la arquitectura ni acumular deuda
+técnica innecesaria. El nivel de inspección y verificación depende del alcance
+real del cambio.
+
+### Durante una tarea cotidiana
+
+Antes de modificar código:
+
+- Inspeccionar únicamente los archivos, dependencias, modelos, pruebas y
+  migraciones directamente relacionados con la tarea.
+- Respetar la arquitectura, patrones, contratos y decisiones ya existentes.
+- Usar el código y las migraciones como fuente principal de verdad.
+- Consultar la documentación solo cuando sea necesaria para entender una
+  decisión o comportamiento existente.
+- No realizar una auditoría global del repositorio ni releer toda la
+  documentación en cada tarea.
+
+Si durante la implementación resulta necesario cambiar materialmente una
+decisión arquitectónica, el modelo de datos, la seguridad, un contrato entre
+capas o un comportamiento acordado, detenerse y explicar el cambio antes de
+realizarlo. En ese caso se amplía la inspección solo a las áreas afectadas y a
+sus fronteras de integración.
+
+Al terminar la tarea, realizar una mini-verificación:
+
+1. Revisar los archivos modificados y su integración con el código directamente
+   relacionado.
+2. Ejecutar `flutter analyze` y las pruebas relevantes cuando corresponda por
+   el tipo de cambio.
+3. Comprobar que no se hayan introducido errores evidentes, regresiones o
+   inconsistencias.
+4. Indicar brevemente qué se cambió, qué se validó y si queda alguna deuda o
+   riesgo conocido.
+
+No ampliar el alcance para corregir problemas ajenos a la tarea salvo que
+impidan completarla correctamente.
+
+### Ante un cambio transversal o arquitectónico
+
+Ampliar la inspección antes de modificar cuando el cambio afecte a varias
+funcionalidades, contratos compartidos, navegación global, identidad, permisos,
+modelo de datos, RLS, sincronización, configuración de entornos o decisiones de
+producto vigentes. Explicar a Javier el impacto, los riesgos y la alternativa
+recomendada antes de aplicar la decisión.
+
+### Al cerrar un bloque funcional importante
+
+Se considera bloque funcional el tramo identificado como tal en
+`docs/ROADMAP.md` o acordado expresamente con Javier. En su cierre se realiza
+una auditoría completa del bloque y de sus fronteras de integración, no una
+revisión indiscriminada de cada archivo del repositorio.
+
+La auditoría debe revisar:
+
+- Git y los cambios acumulados del bloque.
+- El código afectado y la arquitectura relacionada.
+- Las migraciones y el estado de Supabase cuando el bloque afecte a base de
+  datos, funciones, permisos o RLS.
+- Las pruebas y los recorridos completos del usuario incluidos en el bloque.
+- `AGENTS.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` y `docs/ROADMAP.md`.
+- Los documentos de dominio directamente relacionados con el bloque.
+
+Actualizar la documentación que haya quedado desfasada y comprobar que código,
+base de datos, pruebas y documentación describen el mismo estado del producto.
+`docs/HISTORY.md` se utiliza únicamente como contexto histórico: no recuperar
+decisiones antiguas o descartadas como si siguieran vigentes.
+
+En resumen:
+
+> Desarrollo cotidiano: inspección localizada → implementación →
+> mini-verificación. Cambio transversal: ampliar la inspección antes de
+> modificar. Cierre de bloque: auditoría del bloque → documentación →
+> validación final.
+
 ## Criterios técnicos vigentes
 
 - Flutter/Dart, Supabase, Bloc/Cubit, GetIt, `go_router` y Material 3 son la base
-  actual. Verificar siempre las versiones en `pubspec.yaml` y el *lockfile*.
+  actual. Verificar las versiones en `pubspec.yaml` y el *lockfile* cuando la
+  tarea afecte a paquetes, compatibilidad, compilación o infraestructura.
 - La arquitectura modular por funcionalidades es una guía. No añadir capas,
   interfaces o casos de uso que no aporten valor solo para cumplir una
   plantilla.
