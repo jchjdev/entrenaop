@@ -71,6 +71,9 @@ class _WorkoutContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRunning = workout.blocks.any(
+      (block) => block.format == WorkoutBlockFormat.running,
+    );
     return SafeArea(
       child: Center(
         child: ListView(
@@ -108,14 +111,22 @@ class _WorkoutContent extends StatelessWidget {
                             )
                           : const Icon(Icons.play_arrow_rounded),
                       label: Text(
-                        starting ? 'Preparando sesión…' : 'Empezar sesión',
+                        starting
+                            ? isRunning
+                                  ? 'Preparando registro…'
+                                  : 'Preparando sesión…'
+                            : isRunning
+                            ? 'Registrar resultado'
+                            : 'Empezar sesión',
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
+                    Text(
+                      isRunning
+                          ? 'Registra después del entrenamiento el resultado real de cada tramo.'
+                          : 'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white54),
+                      style: const TextStyle(color: Colors.white54),
                     ),
                   ],
                 ),

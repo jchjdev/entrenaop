@@ -119,6 +119,14 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.text('Registrar resultado'), findsOneWidget);
+    expect(
+      find.text(
+        'Registra después del entrenamiento el resultado real de cada tramo.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Empezar sesión'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
