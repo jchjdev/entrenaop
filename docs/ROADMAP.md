@@ -78,6 +78,11 @@ fechado y vinculado a una preparación, con RPE obligatorio, FC y parciales de
 siguen pendientes de validación deportiva; ninguna semana se recalcula aún
 automáticamente a partir de estas marcas.
 
+El contrato y la primera decisión determinista de carrera se documentan en
+`docs/ALGORITMO_CARRERA_V1.md`. Todavía no publican sesiones: la disponibilidad
+actual es conjunta para carrera y fuerza; faltan su reparto, días concretos
+y carga reciente de carrera.
+
 El siguiente bloque será la **primera planificación semanal adaptativa de
 Tropa y Marinería**, limitada a producir una semana explicable sobre la agenda
 existente.
