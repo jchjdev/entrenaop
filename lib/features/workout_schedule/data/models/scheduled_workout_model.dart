@@ -10,6 +10,7 @@ abstract final class ScheduledWorkoutModel {
       scheduledDate: DateTime.parse(json['scheduled_date'] as String),
       scheduledTime: json['scheduled_time'] as String?,
       estimatedDurationMinutes: json['estimated_duration_minutes'] as int?,
+      preparationGoalId: json['preparation_goal_id'] as String?,
       source: switch (json['source']) {
         'library' => ScheduledWorkoutSource.library,
         'user' => ScheduledWorkoutSource.user,

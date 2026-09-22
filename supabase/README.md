@@ -21,7 +21,8 @@ repositorio. Incorporan, en orden:
   vídeos, correcciones auditadas y recibos idempotentes;
 - creación, duplicado, archivado y revisiones versionadas de sesiones
   personales;
-- agenda semanal con instantáneas de plantilla y sincronización de estado;
+- agenda semanal con instantáneas de plantilla, sincronización de estado y
+  vínculo opcional a una preparación activa del mismo usuario;
 - bloques convencionales, superseries, circuitos y transiciones, intervalos de
   trabajo, Tabata, EMOM y AMRAP;
 - creación segura de ejercicios privados con descripción y URL HTTPS opcional.

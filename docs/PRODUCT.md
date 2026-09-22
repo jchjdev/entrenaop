@@ -39,6 +39,10 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   versionada y el historial conserva una instantánea de la prescripción.
 - La agenda semanal permite añadir sesiones públicas o personales, moverlas,
   retirarlas, iniciarlas y continuar las que están en curso.
+- Cada preparación activa dispone de una vista propia con su fecha objetivo,
+  la última evaluación compatible y las sesiones de la semana vinculadas a
+  ella. Una sesión también puede permanecer general, sin pertenecer a ninguna
+  preparación.
 - La sesión guiada conserva objetivos y resultados por serie, descripciones y
   vídeos, pausas y temporizadores recuperables. Registra omisiones, abandono con
   motivo, esfuerzo final, notas y el resultado agregado propio de AMRAP.
@@ -48,7 +52,8 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   con motivo obligatorio y un máximo de tres cambios por serie.
 
 Esto cierra el recorrido manual de fuerza V1, no el ciclo principal completo.
-Todavía no existen la generación del plan semanal, la adaptación posterior al
+El contexto de preparación, marcas y agenda ya está conectado, pero todavía no
+existen la generación del plan semanal, la adaptación posterior al
 resultado, los simulacros ni la revisión por un entrenador. La carrera tampoco
 tiene aún su creador especializado. El vídeo propio se referencia por URL; no
 hay subida ni gestión de archivos. Los borradores y temporizadores son locales
@@ -133,6 +138,9 @@ Inicio enseña solo las que ha añadido; el catálogo completo se consulta apart
 Las sesiones personales no dependen de una oposición concreta. La agenda
 semanal ya reúne sesiones personales y de biblioteca; más adelante integrará
 las prescripciones de varias preparaciones con una carga global coherente.
+El vínculo con una preparación es opcional e independiente del origen: una
+sesión personal puede contribuir a Tropa sin dejar de ser personal, y una
+sesión general puede continuar fuera de cualquier oposición.
 El creador permite dividir una sesión en bloques convencionales con nombre y
 orden propios, manteniendo una entrada sencilla con un bloque principal creado
 por defecto.

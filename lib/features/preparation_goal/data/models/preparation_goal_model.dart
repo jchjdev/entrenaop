@@ -42,5 +42,18 @@ class PreparationProgramModel {
             'Tipo de preparación desconocido: $value',
           ),
         },
+        currentAssessmentCatalogVersion: _currentCatalogVersion(json),
       );
+
+  static String? _currentCatalogVersion(Map<String, dynamic> json) {
+    final catalogs = json['preparation_program_catalogs'];
+    if (catalogs is! List) return null;
+    for (final value in catalogs) {
+      final catalog = Map<String, dynamic>.from(value as Map);
+      if (catalog['is_current'] == true) {
+        return catalog['catalog_version'] as String;
+      }
+    }
+    return null;
+  }
 }

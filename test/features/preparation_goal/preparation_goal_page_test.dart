@@ -62,6 +62,8 @@ void main() {
     expect(find.text('Añadir preparación'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
+    await tester.ensureVisible(find.text('Añadir preparación'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Añadir preparación'));
     await tester.pumpAndSettle();
 

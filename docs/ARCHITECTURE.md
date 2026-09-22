@@ -13,7 +13,7 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
   entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 29 migraciones SQL ordenadas: línea base y
+- El repositorio contiene 30 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
   personal versionado, agenda y formatos avanzados de fuerza.
@@ -259,6 +259,16 @@ identidad
   instantánea visible de nombre, versión y duración. Las escrituras se realizan
   mediante RPC y su estado se sincroniza desde la ejecución; el cliente no
   puede adjudicarse sesiones de otro usuario.
+- `scheduled_workouts.preparation_goal_id` conecta opcionalmente una sesión con
+  una preparación activa del mismo usuario. No sustituye a `source`: la primera
+  propiedad expresa para qué objetivo se entrena y la segunda conserva quién
+  originó la plantilla (`system`, usuario, algoritmo o entrenador). PostgreSQL
+  valida el vínculo al programar y las sesiones generales conservan el valor
+  nulo.
+- `GetPreparationDetailUseCase` compone preparaciones, evaluaciones y agenda sin
+  inventar una prescripción. Selecciona la evaluación más reciente cuyo catálogo
+  coincide con el catálogo vigente del programa y filtra la semana por el
+  identificador estable de la preparación.
 - Al comenzar, la ejecución copia la prescripción efectiva por serie. El
   historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan

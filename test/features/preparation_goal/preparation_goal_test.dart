@@ -11,6 +11,7 @@ void main() {
     id: PreparationProgramIds.armedForcesTroopEntry,
     name: 'Ingreso · Tropa y marinería',
     kind: PreparationProgramKind.access,
+    currentAssessmentCatalogVersion: 'es_def_15_2026_troop_v1',
   );
   const secondProgram = PreparationProgram(
     id: 'guardia_civil_entry',
@@ -30,11 +31,18 @@ void main() {
         'id': program.id,
         'name': program.name,
         'kind': 'access',
+        'preparation_program_catalogs': [
+          {'catalog_version': 'es_def_15_2026_troop_v1', 'is_current': true},
+        ],
       };
     final restored = PreparationGoalModel.fromJson(json);
 
     expect(json['program_id'], 'armed_forces_troop_entry');
     expect(json['target_date'], '2027-02-10');
+    expect(
+      restored.program.currentAssessmentCatalogVersion,
+      'es_def_15_2026_troop_v1',
+    );
     expect(restored, goal);
   });
 

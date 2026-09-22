@@ -7,13 +7,10 @@ abstract class WorkoutScheduleRepository {
     String templateId,
     DateTime date, {
     String? time,
+    String? preparationGoalId,
   });
 
-  Future<void> reschedule(
-    String scheduledId,
-    DateTime date, {
-    String? time,
-  });
+  Future<void> reschedule(String scheduledId, DateTime date, {String? time});
 
   Future<void> cancel(String scheduledId);
 

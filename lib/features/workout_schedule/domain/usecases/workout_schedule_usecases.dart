@@ -17,18 +17,21 @@ class ScheduleWorkoutUseCase {
     String templateId,
     DateTime date, {
     String? time,
-  }) => _repository.schedule(templateId, date, time: time);
+    String? preparationGoalId,
+  }) => _repository.schedule(
+    templateId,
+    date,
+    time: time,
+    preparationGoalId: preparationGoalId,
+  );
 }
 
 class RescheduleWorkoutUseCase {
   const RescheduleWorkoutUseCase(this._repository);
   final WorkoutScheduleRepository _repository;
 
-  Future<void> call(
-    String scheduledId,
-    DateTime date, {
-    String? time,
-  }) => _repository.reschedule(scheduledId, date, time: time);
+  Future<void> call(String scheduledId, DateTime date, {String? time}) =>
+      _repository.reschedule(scheduledId, date, time: time);
 }
 
 class CancelScheduledWorkoutUseCase {

@@ -14,6 +14,8 @@ import 'package:entrenaop/features/physical_assessment/presentation/pages/initia
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_detail_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
@@ -135,6 +137,17 @@ class AppRouter {
                         create: (_) => sl<PreparationGoalCubit>(),
                         child: const PreparationGoalPage(),
                       ),
+                      routes: [
+                        GoRoute(
+                          path: ':goalId',
+                          builder: (context, state) => BlocProvider(
+                            create: (_) => sl<PreparationDetailCubit>(
+                              param1: state.pathParameters['goalId']!,
+                            ),
+                            child: const PreparationDetailPage(),
+                          ),
+                        ),
+                      ],
                     ),
                     GoRoute(
                       path: 'starter-session',

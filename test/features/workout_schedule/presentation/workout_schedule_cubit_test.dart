@@ -42,6 +42,7 @@ void main() {
       expect(success, isTrue);
       expect(scheduleRepository.scheduledTemplateId, 'personal-1');
       expect(scheduleRepository.scheduledDate, DateTime(2026, 9, 24));
+      expect(scheduleRepository.scheduledPreparationGoalId, isNull);
       expect(cubit.state.selectedDay, DateTime(2026, 9, 24));
       await cubit.close();
     },
@@ -80,6 +81,7 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   DateTime? lastEnd;
   String? scheduledTemplateId;
   DateTime? scheduledDate;
+  String? scheduledPreparationGoalId;
 
   @override
   Future<List<ScheduledWorkout>> getRange(DateTime start, DateTime end) async {
@@ -93,9 +95,11 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
     String templateId,
     DateTime date, {
     String? time,
+    String? preparationGoalId,
   }) async {
     scheduledTemplateId = templateId;
     scheduledDate = date;
+    scheduledPreparationGoalId = preparationGoalId;
     return 'scheduled-2';
   }
 

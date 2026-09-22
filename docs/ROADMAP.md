@@ -16,6 +16,7 @@ El ciclo objetivo continúa siendo:
 | Acceso y contexto inicial | Terminado | Autenticación restaurable, varias preparaciones, evaluación inicial e historial de Tropa y Marinería, y preferencias de disponibilidad, experiencia y material. |
 | Biblioteca y sesiones personales | Terminado para fuerza V1 | Biblioteca pública, sesiones privadas, ejercicios propios, descripción y vídeo HTTPS, duplicado, archivado, borradores locales y revisiones versionadas. |
 | Agenda semanal manual | Terminada | Reúne biblioteca y sesiones personales; permite programar, reprogramar, retirar, iniciar y continuar. Conserva nombre, versión y duración como instantánea. |
+| Contexto por preparación | Terminado | Permite entrar en una preparación activa, ver objetivo, últimas marcas compatibles y sesiones semanales vinculadas. El vínculo es opcional y no altera el origen de la sesión. |
 | Creador de fuerza por bloques | Terminado en V1 | Series variables, superseries A1/A2, circuitos con transiciones, intervalos de trabajo, Tabata 8 × 20/10, EMOM y AMRAP, con vista previa coherente. |
 | Sesión guiada e historial | Terminado para los formatos V1 | Objetivo y resultado real, omisión, abandono, RPE final, notas, vídeos, temporizadores restaurables, avisos configurables, cola idempotente e historial con correcciones auditadas. |
 | Funcionamiento sin conexión | Parcial | Encola completar/omitir serie, AMRAP, finalizar y abandonar una ejecución cargada. No replica catálogo o agenda, no inicia contenido desconocido y las correcciones exigen conexión. |
@@ -45,6 +46,9 @@ El ciclo objetivo continúa siendo:
 - Preferencias de entrenamiento y bloqueo cuando se solicita revisión
   profesional.
 - Múltiples preparaciones activas, sin duplicar un mismo programa activo.
+- Detalle de preparación que compone fecha objetivo, última evaluación
+  compatible y agenda semanal relacionada, sin generar aún decisiones
+  deportivas.
 
 ### Vertical manual de entrenamiento
 
@@ -80,8 +84,9 @@ Debe cerrar, en este orden, un único tramo del ciclo:
    válido hasta semana visible en agenda.
 
 Se recomienda este bloque porque el producto ya puede crear, programar,
-ejecutar y auditar sesiones, pero el ciclo se detiene justo antes de convertir
-la evaluación y el contexto del usuario en un plan. Añadir ahora más formatos,
+ejecutar y auditar sesiones, y ya conecta cada preparación con sus marcas y su
+agenda. El ciclo se detiene justo antes de convertir ese contexto en un plan.
+Añadir ahora más formatos,
 la carrera, monetización o herramientas de entrenador ampliaría la superficie
 sin resolver esa interrupción principal.
 

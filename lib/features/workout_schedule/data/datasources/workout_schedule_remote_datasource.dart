@@ -5,13 +5,10 @@ abstract class WorkoutScheduleRemoteDataSource {
     String templateId,
     String date, {
     String? time,
+    String? preparationGoalId,
   });
 
-  Future<void> reschedule(
-    String scheduledId,
-    String date, {
-    String? time,
-  });
+  Future<void> reschedule(String scheduledId, String date, {String? time});
 
   Future<void> cancel(String scheduledId);
 

@@ -11,12 +11,14 @@ class PreparationProgram extends Equatable {
     required this.id,
     required this.name,
     required this.kind,
+    this.currentAssessmentCatalogVersion,
   });
 
   final String id;
   final String name;
   final PreparationProgramKind kind;
+  final String? currentAssessmentCatalogVersion;
 
   @override
-  List<Object?> get props => [id, name, kind];
+  List<Object?> get props => [id, name, kind, currentAssessmentCatalogVersion];
 }

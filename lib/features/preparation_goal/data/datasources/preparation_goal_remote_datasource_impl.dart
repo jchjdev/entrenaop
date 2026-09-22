@@ -16,7 +16,15 @@ class PreparationGoalRemoteDataSourceImpl
     try {
       final response = await supabaseClient
           .from('preparation_goals')
-          .select('*, preparation_programs!inner(id, name, kind)')
+          .select('''
+            *,
+            preparation_programs!inner(
+              id,
+              name,
+              kind,
+              preparation_program_catalogs(catalog_version, is_current)
+            )
+          ''')
           .eq('status', 'active')
           .order('created_at');
       return response
@@ -32,7 +40,12 @@ class PreparationGoalRemoteDataSourceImpl
     try {
       final response = await supabaseClient
           .from('preparation_programs')
-          .select('id, name, kind')
+          .select('''
+            id,
+            name,
+            kind,
+            preparation_program_catalogs(catalog_version, is_current)
+          ''')
           .eq('enabled', true)
           .order('name');
       return response
@@ -55,13 +68,29 @@ class PreparationGoalRemoteDataSourceImpl
           ? await supabaseClient
                 .from('preparation_goals')
                 .insert(values)
-                .select('*, preparation_programs!inner(id, name, kind)')
+                .select('''
+                  *,
+                  preparation_programs!inner(
+                    id,
+                    name,
+                    kind,
+                    preparation_program_catalogs(catalog_version, is_current)
+                  )
+                ''')
                 .single()
           : await supabaseClient
                 .from('preparation_goals')
                 .update(values)
                 .eq('id', goal.id!)
-                .select('*, preparation_programs!inner(id, name, kind)')
+                .select('''
+                  *,
+                  preparation_programs!inner(
+                    id,
+                    name,
+                    kind,
+                    preparation_program_catalogs(catalog_version, is_current)
+                  )
+                ''')
                 .single();
       return PreparationGoalModel.fromJson(response);
     } catch (error) {

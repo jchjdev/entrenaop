@@ -181,6 +181,11 @@ class _ProgramCard extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
+                  FilledButton.icon(
+                    onPressed: () => context.push('/plan/goal/${goal.id}'),
+                    icon: const Icon(Icons.dashboard_customize_outlined),
+                    label: const Text('Abrir preparación'),
+                  ),
                   OutlinedButton.icon(
                     onPressed: saving ? null : () => _changeDate(context, goal),
                     icon: const Icon(Icons.event_outlined),

@@ -19,6 +19,7 @@ class ScheduledWorkout extends Equatable {
     required this.scheduledDate,
     required this.source,
     required this.status,
+    this.preparationGoalId,
     this.scheduledTime,
     this.estimatedDurationMinutes,
     this.executionId,
@@ -33,6 +34,7 @@ class ScheduledWorkout extends Equatable {
   final int? estimatedDurationMinutes;
   final ScheduledWorkoutSource source;
   final ScheduledWorkoutStatus status;
+  final String? preparationGoalId;
   final String? executionId;
 
   @override
@@ -46,6 +48,7 @@ class ScheduledWorkout extends Equatable {
     estimatedDurationMinutes,
     source,
     status,
+    preparationGoalId,
     executionId,
   ];
 }

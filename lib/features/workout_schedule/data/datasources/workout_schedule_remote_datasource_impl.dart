@@ -8,10 +8,7 @@ class WorkoutScheduleRemoteDataSourceImpl
   final SupabaseClient supabaseClient;
 
   @override
-  Future<List<Map<String, dynamic>>> getRange(
-    String start,
-    String end,
-  ) async {
+  Future<List<Map<String, dynamic>>> getRange(String start, String end) async {
     final response = await supabaseClient
         .from('scheduled_workouts')
         .select('''
@@ -20,6 +17,7 @@ class WorkoutScheduleRemoteDataSourceImpl
           template_name,
           template_version,
           estimated_duration_minutes,
+          preparation_goal_id,
           execution_id,
           scheduled_date,
           scheduled_time,
@@ -40,6 +38,7 @@ class WorkoutScheduleRemoteDataSourceImpl
     String templateId,
     String date, {
     String? time,
+    String? preparationGoalId,
   }) async {
     final response = await supabaseClient.rpc(
       'schedule_workout',
@@ -47,24 +46,22 @@ class WorkoutScheduleRemoteDataSourceImpl
         'p_template_id': templateId,
         'p_scheduled_date': date,
         'p_scheduled_time': time,
+        'p_preparation_goal_id': preparationGoalId,
       },
     );
     return response as String;
   }
 
   @override
-  Future<void> reschedule(
-    String scheduledId,
-    String date, {
-    String? time,
-  }) => supabaseClient.rpc(
-    'reschedule_workout',
-    params: {
-      'p_scheduled_id': scheduledId,
-      'p_scheduled_date': date,
-      'p_scheduled_time': time,
-    },
-  );
+  Future<void> reschedule(String scheduledId, String date, {String? time}) =>
+      supabaseClient.rpc(
+        'reschedule_workout',
+        params: {
+          'p_scheduled_id': scheduledId,
+          'p_scheduled_date': date,
+          'p_scheduled_time': time,
+        },
+      );
 
   @override
   Future<void> cancel(String scheduledId) => supabaseClient.rpc(
