@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_state.dart';
+import 'package:flutter/foundation.dart';
 
 class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
   WorkoutPreviewCubit({
@@ -56,12 +57,16 @@ class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
           executionId: executionId,
         ),
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('No se pudo iniciar la ejecución: $error');
+      debugPrintStack(stackTrace: stackTrace);
       emit(
         WorkoutPreviewState(
           status: WorkoutPreviewStatus.failure,
           workout: workout,
-          errorMessage: 'No hemos podido iniciar la sesión.',
+          errorMessage: kDebugMode
+              ? 'No hemos podido crear el registro.\n$error'
+              : 'No hemos podido crear el registro.',
         ),
       );
     }
