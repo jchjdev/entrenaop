@@ -4,6 +4,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/domain/services/running_workout_estimator.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -629,6 +630,10 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                   child: TextFormField(
                     controller: data.targetController,
                     keyboardType: TextInputType.number,
+                    inputFormatters:
+                        data.targetType == WorkoutTargetType.duration
+                        ? const [DurationInputFormatter()]
+                        : null,
                     decoration: InputDecoration(
                       labelText: data.targetType == WorkoutTargetType.distance
                           ? 'Metros'
@@ -658,6 +663,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                   child: TextFormField(
                     controller: data.paceMinController,
                     keyboardType: TextInputType.number,
+                    inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Desde (min/km)',
                       hintText: '5:00',
@@ -670,6 +676,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                   child: TextFormField(
                     controller: data.paceMaxController,
                     keyboardType: TextInputType.number,
+                    inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Hasta (min/km)',
                       hintText: '5:20',
@@ -754,6 +761,9 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                     child: TextFormField(
                       controller: data.recoveryController,
                       keyboardType: TextInputType.number,
+                      inputFormatters: data.recoveryByDistance
+                          ? null
+                          : const [DurationInputFormatter()],
                       decoration: InputDecoration(
                         labelText: data.recoveryByDistance
                             ? 'Metros'
@@ -991,6 +1001,8 @@ CreatePersonalWorkoutInput _inputFromTemplate(WorkoutTemplate template) {
 }
 
 int _parseClock(String value) {
+  final formatted = parseDurationInput(value);
+  if (formatted != null && formatted > 0) return formatted;
   final parts = value.trim().split(':');
   if (parts.length == 1) {
     final seconds = int.tryParse(parts.single);

@@ -35,6 +35,9 @@ class WorkoutExecutionModel {
       finalRpe: json['final_rpe'] as int?,
       notes: json['notes'] as String?,
       abandonmentReason: _abandonmentReason(json['abandonment_reason']),
+      averageHeartRateBpm: json['average_heart_rate_bpm'] as int?,
+      maxHeartRateBpm: json['max_heart_rate_bpm'] as int?,
+      resultSource: _resultSource(json['result_source']),
       sets: sets,
       amrapResults: amrapResults,
     );
@@ -72,6 +75,12 @@ class WorkoutExecutionModel {
       actualLoadKg: _doubleOrNull(json['actual_load_kg']),
       actualRpe: _doubleOrNull(json['actual_rpe']),
       actualRir: _doubleOrNull(json['actual_rir']),
+      actualRecoveryDurationSeconds:
+          json['actual_recovery_duration_seconds'] as int?,
+      actualRecoveryDistanceMeters: _doubleOrNull(
+        json['actual_recovery_distance_meters'],
+      ),
+      resultSource: _resultSource(json['result_source']),
       completedAt: _dateOrNull(json['completed_at']),
     );
   }
@@ -138,6 +147,13 @@ class WorkoutExecutionModel {
         'other' => WorkoutAbandonmentReason.other,
         _ => throw FormatException('Motivo de abandono desconocido: $value'),
       };
+
+  static WorkoutResultSource? _resultSource(Object? value) => switch (value) {
+    null => null,
+    'manual' => WorkoutResultSource.manual,
+    'device' => WorkoutResultSource.device,
+    _ => throw FormatException('Origen de resultado desconocido: $value'),
+  };
 
   static DateTime? _dateOrNull(Object? value) =>
       value == null ? null : DateTime.parse(value as String);

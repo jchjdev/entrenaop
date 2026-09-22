@@ -13,7 +13,7 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
   entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 33 migraciones SQL ordenadas: línea base y
+- El repositorio contiene 37 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
   personal versionado, agenda, formatos avanzados de fuerza y Carrera V1.
@@ -131,6 +131,14 @@ tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 `skipped`, por lo que nunca se contabiliza como una serie completada. PostgreSQL
 comprueba que el resultado incluya la métrica principal prescrita y que solo el
 propietario pueda resolver una serie pendiente de su sesión activa.
+
+Carrera exige distancia y tiempo reales por tramo para derivar el ritmo, y la
+medida real de la recuperación que se hubiera prescrito. El RPE se guarda al
+cerrar la sesión; FC media y máxima son opcionales. Tanto sesión como parciales
+conservan `result_source` (`manual` o `device`) para que una futura importación
+no mezcle datos medidos con declaraciones manuales. El cumplimiento se deriva
+de todos los parciales: tolerancia del 1 % en distancia, 2 % en duración y 5 %
+en recuperación, además del rango de ritmo; nunca se decide por el promedio.
 
 AMRAP constituye una excepción deliberada al resultado por serie: el bloque
 tiene un límite temporal global y persiste un agregado inmutable con vueltas

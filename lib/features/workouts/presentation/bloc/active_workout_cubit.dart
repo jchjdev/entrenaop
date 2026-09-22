@@ -321,7 +321,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
   }
 
-  Future<void> finish({required int finalRpe, String? notes}) async {
+  Future<void> finish({
+    required int finalRpe,
+    String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+  }) async {
     final execution = state.execution;
     if (execution == null || execution.currentSet != null) return;
     emit(
@@ -336,6 +341,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         executionId,
         finalRpe: finalRpe,
         notes: notes,
+        averageHeartRateBpm: averageHeartRateBpm,
+        maxHeartRateBpm: maxHeartRateBpm,
       );
       final updated = disposition == WorkoutMutationDisposition.queued
           ? execution.copyWith(
@@ -343,6 +350,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               completedAt: DateTime.now().toUtc(),
               finalRpe: finalRpe,
               notes: notes?.trim(),
+              averageHeartRateBpm: averageHeartRateBpm,
+              maxHeartRateBpm: maxHeartRateBpm,
+              resultSource: WorkoutResultSource.manual,
             )
           : await _getExecution(executionId);
       final pendingSyncCount = await _getPendingMutationCount();
@@ -435,6 +445,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
                   actualLoadKg: result.actualLoadKg,
                   actualRpe: result.actualRpe,
                   actualRir: result.actualRir,
+                  actualRecoveryDurationSeconds:
+                      result.actualRecoveryDurationSeconds,
+                  actualRecoveryDistanceMeters:
+                      result.actualRecoveryDistanceMeters,
+                  resultSource: result.resultSource,
                   completedAt: DateTime.now().toUtc(),
                 )
               : set,

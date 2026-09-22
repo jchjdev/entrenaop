@@ -213,6 +213,9 @@ class _Repository implements WorkoutRepository {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) async => WorkoutMutationDisposition.synced;
 
   @override

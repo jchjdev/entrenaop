@@ -182,6 +182,12 @@ solo se expanden al guardar la prescripción; las pirámides mantienen visibles
 sus tramos distintos. Biblioteca, agenda, ejecución e historial leen esa misma
 lista final. La duración se estima automáticamente con distancia, ritmo y
 recuperaciones temporizadas, sin inventar tiempos para distancias sin ritmo.
+El resultado de una carrera continua se registra de forma global. En series,
+intervalos o fartlek se registra obligatoriamente cada tramo y su recuperación;
+el ritmo se deriva de distancia y tiempo para no ocultar la regularidad detrás
+de un promedio. El RPE final es obligatorio y la frecuencia cardíaca media y
+máxima son opcionales. Los resultados distinguen entrada manual y dispositivo
+para permitir una futura sincronización sin reinterpretar el historial.
 El futuro algoritmo generará el mismo contrato versionado, no reglas ocultas en
 la interfaz.
 Los motores de fuerza y carrera no competirán por separado: una capa de

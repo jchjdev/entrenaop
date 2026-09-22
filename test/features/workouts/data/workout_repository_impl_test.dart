@@ -38,6 +38,9 @@ void main() {
       'p_actual_load_kg': 12.5,
       'p_actual_rpe': null,
       'p_actual_rir': 2,
+      'p_actual_recovery_duration_seconds': null,
+      'p_actual_recovery_distance_meters': null,
+      'p_result_source': 'manual',
     });
   });
 
@@ -58,6 +61,34 @@ void main() {
     expect(workouts, hasLength(1));
     expect(workouts.single.name, 'Fuerza base');
     expect(workouts.single.origin, WorkoutTemplateOrigin.system);
+  });
+
+  test('envía cada parcial de carrera con su recuperación real', () async {
+    await repository.completeSet(
+      const WorkoutSetResultInput(
+        resultId: 'running-result-1',
+        actualDurationSeconds: 88,
+        actualDistanceMeters: 400,
+        actualRecoveryDurationSeconds: 62,
+      ),
+    );
+
+    expect(
+      dataSource.completedValues,
+      containsPair('p_result_id', 'running-result-1'),
+    );
+    expect(
+      dataSource.completedValues,
+      containsPair('p_actual_duration_seconds', 88),
+    );
+    expect(
+      dataSource.completedValues,
+      containsPair('p_actual_distance_meters', 400),
+    );
+    expect(
+      dataSource.completedValues,
+      containsPair('p_actual_recovery_duration_seconds', 62),
+    );
   });
 
   test(
@@ -221,6 +252,9 @@ void main() {
       'p_actual_load_kg': 20,
       'p_actual_rpe': null,
       'p_actual_rir': null,
+      'p_actual_recovery_duration_seconds': null,
+      'p_actual_recovery_distance_meters': null,
+      'p_result_source': 'manual',
     });
   });
 
@@ -255,11 +289,15 @@ void main() {
       'execution-1',
       finalRpe: 8,
       notes: 'Buena técnica, algo fatigado al final.',
+      averageHeartRateBpm: 158,
+      maxHeartRateBpm: 181,
     );
 
     expect(dataSource.finishedExecutionId, 'execution-1');
     expect(dataSource.finalRpe, 8);
     expect(dataSource.finalNotes, 'Buena técnica, algo fatigado al final.');
+    expect(dataSource.averageHeartRateBpm, 158);
+    expect(dataSource.maxHeartRateBpm, 181);
   });
 
   test(
@@ -307,6 +345,8 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   String? finishedExecutionId;
   int? finalRpe;
   String? finalNotes;
+  int? averageHeartRateBpm;
+  int? maxHeartRateBpm;
   bool failComplete = false;
   final List<String> completedOperationIds = [];
   List<Map<String, dynamic>> publicTemplates = const [];
@@ -387,10 +427,15 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) async {
     finishedExecutionId = executionId;
     this.finalRpe = finalRpe;
     finalNotes = notes;
+    this.averageHeartRateBpm = averageHeartRateBpm;
+    this.maxHeartRateBpm = maxHeartRateBpm;
   }
 
   @override

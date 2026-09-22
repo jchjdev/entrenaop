@@ -40,6 +40,9 @@ abstract class WorkoutRepository {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   });
 
   Future<WorkoutMutationDisposition> abandonExecution(

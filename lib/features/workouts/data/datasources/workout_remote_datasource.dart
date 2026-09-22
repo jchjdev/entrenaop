@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+
 abstract class WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getTemplateById(String id);
 
@@ -35,6 +37,9 @@ abstract class WorkoutRemoteDataSource {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   });
 
   Future<void> abandonExecution(

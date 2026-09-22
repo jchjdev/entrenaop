@@ -73,10 +73,16 @@ class FinishWorkoutExecutionUseCase {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) => _repository.finishExecution(
     executionId,
     finalRpe: finalRpe,
     notes: notes,
+    averageHeartRateBpm: averageHeartRateBpm,
+    maxHeartRateBpm: maxHeartRateBpm,
+    resultSource: resultSource,
   );
 }
 

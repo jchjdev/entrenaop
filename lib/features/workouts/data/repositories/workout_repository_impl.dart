@@ -89,6 +89,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       'p_actual_load_kg': result.actualLoadKg,
       'p_actual_rpe': result.actualRpe,
       'p_actual_rir': result.actualRir,
+      'p_actual_recovery_duration_seconds':
+          result.actualRecoveryDurationSeconds,
+      'p_actual_recovery_distance_meters': result.actualRecoveryDistanceMeters,
+      'p_result_source': result.resultSource.name,
     };
     final mutation = _mutation(
       WorkoutMutationType.completeSet,
@@ -134,6 +138,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       'p_actual_load_kg': correction.actualLoadKg,
       'p_actual_rpe': correction.actualRpe,
       'p_actual_rir': correction.actualRir,
+      'p_actual_recovery_duration_seconds':
+          correction.actualRecoveryDurationSeconds,
+      'p_actual_recovery_distance_meters':
+          correction.actualRecoveryDistanceMeters,
+      'p_result_source': correction.resultSource.name,
     });
   }
 
@@ -151,8 +160,17 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) {
-    final values = <String, dynamic>{'p_final_rpe': finalRpe, 'p_notes': notes};
+    final values = <String, dynamic>{
+      'p_final_rpe': finalRpe,
+      'p_notes': notes,
+      'p_average_heart_rate_bpm': averageHeartRateBpm,
+      'p_max_heart_rate_bpm': maxHeartRateBpm,
+      'p_result_source': resultSource.name,
+    };
     final mutation = _mutation(WorkoutMutationType.finish, executionId, values);
     return _performOrQueue(
       mutation,
@@ -161,6 +179,9 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         executionId,
         finalRpe: finalRpe,
         notes: notes,
+        averageHeartRateBpm: averageHeartRateBpm,
+        maxHeartRateBpm: maxHeartRateBpm,
+        resultSource: resultSource,
       ),
     );
   }
@@ -253,6 +274,12 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
           mutation.resourceId,
           finalRpe: mutation.values['p_final_rpe'] as int,
           notes: mutation.values['p_notes'] as String?,
+          averageHeartRateBpm:
+              mutation.values['p_average_heart_rate_bpm'] as int?,
+          maxHeartRateBpm: mutation.values['p_max_heart_rate_bpm'] as int?,
+          resultSource: WorkoutResultSource.values.byName(
+            mutation.values['p_result_source'] as String? ?? 'manual',
+          ),
         ),
         WorkoutMutationType.abandon => remoteDataSource.abandonExecution(
           mutation.operationId,

@@ -7,6 +7,8 @@ enum WorkoutSetStatus { pending, completed, skipped }
 
 enum WorkoutAbandonmentReason { lackOfTime, tooDifficult, discomfort, other }
 
+enum WorkoutResultSource { manual, device }
+
 class WorkoutExecution extends Equatable {
   const WorkoutExecution({
     required this.id,
@@ -21,6 +23,9 @@ class WorkoutExecution extends Equatable {
     this.finalRpe,
     this.notes,
     this.abandonmentReason,
+    this.averageHeartRateBpm,
+    this.maxHeartRateBpm,
+    this.resultSource,
   });
 
   final String id;
@@ -33,6 +38,9 @@ class WorkoutExecution extends Equatable {
   final int? finalRpe;
   final String? notes;
   final WorkoutAbandonmentReason? abandonmentReason;
+  final int? averageHeartRateBpm;
+  final int? maxHeartRateBpm;
+  final WorkoutResultSource? resultSource;
   final List<WorkoutExecutionSet> sets;
   final List<WorkoutAmrapResult> amrapResults;
 
@@ -66,6 +74,9 @@ class WorkoutExecution extends Equatable {
     int? finalRpe,
     String? notes,
     WorkoutAbandonmentReason? abandonmentReason,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource? resultSource,
     List<WorkoutExecutionSet>? sets,
     List<WorkoutAmrapResult>? amrapResults,
   }) => WorkoutExecution(
@@ -79,6 +90,9 @@ class WorkoutExecution extends Equatable {
     finalRpe: finalRpe ?? this.finalRpe,
     notes: notes ?? this.notes,
     abandonmentReason: abandonmentReason ?? this.abandonmentReason,
+    averageHeartRateBpm: averageHeartRateBpm ?? this.averageHeartRateBpm,
+    maxHeartRateBpm: maxHeartRateBpm ?? this.maxHeartRateBpm,
+    resultSource: resultSource ?? this.resultSource,
     sets: sets ?? this.sets,
     amrapResults: amrapResults ?? this.amrapResults,
   );
@@ -95,6 +109,9 @@ class WorkoutExecution extends Equatable {
     finalRpe,
     notes,
     abandonmentReason,
+    averageHeartRateBpm,
+    maxHeartRateBpm,
+    resultSource,
     sets,
     amrapResults,
   ];
@@ -163,6 +180,9 @@ class WorkoutSetResultInput extends Equatable {
     this.actualLoadKg,
     this.actualRpe,
     this.actualRir,
+    this.actualRecoveryDurationSeconds,
+    this.actualRecoveryDistanceMeters,
+    this.resultSource = WorkoutResultSource.manual,
   });
 
   final String resultId;
@@ -172,6 +192,9 @@ class WorkoutSetResultInput extends Equatable {
   final double? actualLoadKg;
   final double? actualRpe;
   final double? actualRir;
+  final int? actualRecoveryDurationSeconds;
+  final double? actualRecoveryDistanceMeters;
+  final WorkoutResultSource resultSource;
 
   @override
   List<Object?> get props => [
@@ -182,6 +205,9 @@ class WorkoutSetResultInput extends Equatable {
     actualLoadKg,
     actualRpe,
     actualRir,
+    actualRecoveryDurationSeconds,
+    actualRecoveryDistanceMeters,
+    resultSource,
   ];
 }
 
@@ -199,6 +225,9 @@ class WorkoutSetCorrectionInput extends Equatable {
     this.actualLoadKg,
     this.actualRpe,
     this.actualRir,
+    this.actualRecoveryDurationSeconds,
+    this.actualRecoveryDistanceMeters,
+    this.resultSource = WorkoutResultSource.manual,
   });
 
   final String resultId;
@@ -209,6 +238,9 @@ class WorkoutSetCorrectionInput extends Equatable {
   final double? actualLoadKg;
   final double? actualRpe;
   final double? actualRir;
+  final int? actualRecoveryDurationSeconds;
+  final double? actualRecoveryDistanceMeters;
+  final WorkoutResultSource resultSource;
 
   @override
   List<Object?> get props => [
@@ -220,6 +252,9 @@ class WorkoutSetCorrectionInput extends Equatable {
     actualLoadKg,
     actualRpe,
     actualRir,
+    actualRecoveryDurationSeconds,
+    actualRecoveryDistanceMeters,
+    resultSource,
   ];
 }
 
@@ -255,6 +290,9 @@ class WorkoutExecutionSet extends Equatable {
     this.actualLoadKg,
     this.actualRpe,
     this.actualRir,
+    this.actualRecoveryDurationSeconds,
+    this.actualRecoveryDistanceMeters,
+    this.resultSource,
     this.completedAt,
   });
 
@@ -288,6 +326,9 @@ class WorkoutExecutionSet extends Equatable {
   final double? actualLoadKg;
   final double? actualRpe;
   final double? actualRir;
+  final int? actualRecoveryDurationSeconds;
+  final double? actualRecoveryDistanceMeters;
+  final WorkoutResultSource? resultSource;
   final DateTime? completedAt;
 
   bool get isGrouped =>
@@ -315,6 +356,9 @@ class WorkoutExecutionSet extends Equatable {
     double? actualLoadKg,
     double? actualRpe,
     double? actualRir,
+    int? actualRecoveryDurationSeconds,
+    double? actualRecoveryDistanceMeters,
+    WorkoutResultSource? resultSource,
     DateTime? completedAt,
   }) => WorkoutExecutionSet(
     id: id,
@@ -347,6 +391,11 @@ class WorkoutExecutionSet extends Equatable {
     actualLoadKg: actualLoadKg ?? this.actualLoadKg,
     actualRpe: actualRpe ?? this.actualRpe,
     actualRir: actualRir ?? this.actualRir,
+    actualRecoveryDurationSeconds:
+        actualRecoveryDurationSeconds ?? this.actualRecoveryDurationSeconds,
+    actualRecoveryDistanceMeters:
+        actualRecoveryDistanceMeters ?? this.actualRecoveryDistanceMeters,
+    resultSource: resultSource ?? this.resultSource,
     completedAt: completedAt ?? this.completedAt,
   );
 
@@ -382,6 +431,9 @@ class WorkoutExecutionSet extends Equatable {
     actualLoadKg,
     actualRpe,
     actualRir,
+    actualRecoveryDurationSeconds,
+    actualRecoveryDistanceMeters,
+    resultSource,
     completedAt,
   ];
 }

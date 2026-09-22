@@ -1,9 +1,11 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:intl/intl.dart';
 
 class WorkoutHistoryDetailPage extends StatelessWidget {
@@ -21,8 +23,9 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
         listener: (context, state) {
           final message = state.correctionMessage;
           if (message != null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -256,6 +259,19 @@ class _SummaryCard extends StatelessWidget {
               ),
             if (execution.finalRpe case final rpe?)
               _SummaryMetric(value: '$rpe/10', label: 'RPE final'),
+            if (execution.averageHeartRateBpm case final heartRate?)
+              _SummaryMetric(value: '$heartRate', label: 'FC media'),
+            if (execution.maxHeartRateBpm case final heartRate?)
+              _SummaryMetric(value: '$heartRate', label: 'FC máxima'),
+            if (execution.sets.any(
+              (set) => set.blockFormat == WorkoutBlockFormat.running,
+            ))
+              _SummaryMetric(
+                value: runningAssessmentLabel(
+                  assessRunningExecution(execution.sets),
+                ),
+                label: 'Cumplimiento',
+              ),
           ],
         ),
       ),
@@ -415,6 +431,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
   late final TextEditingController _duration;
   late final TextEditingController _distance;
   late final TextEditingController _load;
+  late final TextEditingController _recoveryDuration;
+  late final TextEditingController _recoveryDistance;
   late final TextEditingController _reason;
   late double _rpe;
   late double _rir;
@@ -426,12 +444,24 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
     super.initState();
     _reps = TextEditingController(text: _integer(set.actualReps));
     _duration = TextEditingController(
-      text: _integer(set.actualDurationSeconds),
+      text:
+          set.blockFormat == WorkoutBlockFormat.running &&
+              set.actualDurationSeconds != null
+          ? _pace(set.actualDurationSeconds!)
+          : _integer(set.actualDurationSeconds),
     );
     _distance = TextEditingController(
       text: _nullableNumber(set.actualDistanceMeters),
     );
     _load = TextEditingController(text: _nullableNumber(set.actualLoadKg));
+    _recoveryDuration = TextEditingController(
+      text: set.actualRecoveryDurationSeconds == null
+          ? ''
+          : _pace(set.actualRecoveryDurationSeconds!),
+    );
+    _recoveryDistance = TextEditingController(
+      text: _nullableNumber(set.actualRecoveryDistanceMeters),
+    );
     _reason = TextEditingController();
     _rpe = (set.actualRpe ?? set.targetRpe ?? 7).clamp(1, 10).toDouble();
     _rir = (set.actualRir ?? set.targetRir ?? 2).clamp(0, 10).toDouble();
@@ -443,6 +473,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
     _duration.dispose();
     _distance.dispose();
     _load.dispose();
+    _recoveryDuration.dispose();
+    _recoveryDistance.dispose();
     _reason.dispose();
     super.dispose();
   }
@@ -461,6 +493,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
             set.targetDurationSeconds == null &&
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
+            : set.blockFormat == WorkoutBlockFormat.running
+            ? parseDurationInput(_duration.text)
             : _parseDecimal(_duration.text)!.toInt(),
         actualDistanceMeters:
             set.targetDistanceMeters == null &&
@@ -472,6 +506,12 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
             : _parseDecimal(_load.text),
         actualRpe: set.targetRpe == null && set.actualRpe == null ? null : _rpe,
         actualRir: set.targetRir == null && set.actualRir == null ? null : _rir,
+        actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
+            ? null
+            : parseDurationInput(_recoveryDuration.text),
+        actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
+            ? null
+            : _parseDecimal(_recoveryDistance.text),
       ),
     );
   }
@@ -501,11 +541,16 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                   ),
                 if (set.targetDurationSeconds != null ||
                     set.blockFormat == WorkoutBlockFormat.running)
-                  _CorrectionField(
-                    controller: _duration,
-                    label: 'Segundos realizados',
-                    decimal: false,
-                  ),
+                  set.blockFormat == WorkoutBlockFormat.running
+                      ? _DurationCorrectionField(
+                          controller: _duration,
+                          label: 'Tiempo real',
+                        )
+                      : _CorrectionField(
+                          controller: _duration,
+                          label: 'Segundos realizados',
+                          decimal: false,
+                        ),
                 if (set.targetDistanceMeters != null ||
                     set.blockFormat == WorkoutBlockFormat.running)
                   _CorrectionField(
@@ -516,6 +561,16 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                   _CorrectionField(
                     controller: _load,
                     label: 'Carga utilizada (kg)',
+                  ),
+                if (set.recoveryDurationSeconds != null)
+                  _DurationCorrectionField(
+                    controller: _recoveryDuration,
+                    label: 'Recuperación real',
+                  ),
+                if (set.recoveryDistanceMeters != null)
+                  _CorrectionField(
+                    controller: _recoveryDistance,
+                    label: 'Metros reales de recuperación',
                   ),
                 if (set.targetRpe != null || set.actualRpe != null) ...[
                   Text('RPE real · ${_number(_rpe)}'),
@@ -593,6 +648,38 @@ class _CorrectionField extends StatelessWidget {
             return 'Introduce un número entero';
           }
           return null;
+        },
+      ),
+    );
+  }
+}
+
+class _DurationCorrectionField extends StatelessWidget {
+  const _DurationCorrectionField({
+    required this.controller,
+    required this.label,
+  });
+
+  final TextEditingController controller;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: const [DurationInputFormatter()],
+        decoration: InputDecoration(
+          labelText: '$label (min:seg)',
+          helperText: 'Escribe 128 para registrar 1:28.',
+        ),
+        validator: (value) {
+          final seconds = parseDurationInput(value ?? '');
+          return seconds == null || seconds <= 0
+              ? 'Introduce un tiempo válido'
+              : null;
         },
       ),
     );
@@ -744,6 +831,12 @@ String _result(WorkoutExecutionSet set) {
     final pace = (set.actualDurationSeconds! * 1000 / set.actualDistanceMeters!)
         .round();
     parts.add('${_pace(pace)}/km');
+  }
+  if (set.actualRecoveryDurationSeconds != null) {
+    parts.add('rec. ${_shortDuration(set.actualRecoveryDurationSeconds!)}');
+  }
+  if (set.actualRecoveryDistanceMeters != null) {
+    parts.add('rec. ${_number(set.actualRecoveryDistanceMeters!)} m');
   }
   return 'Realizado · ${parts.join(' · ')}';
 }

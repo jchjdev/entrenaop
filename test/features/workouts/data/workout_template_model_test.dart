@@ -235,6 +235,9 @@ void main() {
       'final_rpe': null,
       'notes': null,
       'abandonment_reason': null,
+      'average_heart_rate_bpm': 152,
+      'max_heart_rate_bpm': 178,
+      'result_source': 'manual',
       'workout_execution_sets': [
         result(id: 'set-3', order: 2, status: 'skipped'),
         result(id: 'set-2', order: 1, status: 'pending'),
@@ -247,6 +250,9 @@ void main() {
     expect(execution.resolvedSetCount, 2);
     expect(execution.currentSet?.id, 'set-2');
     expect(execution.currentSet?.status, WorkoutSetStatus.pending);
+    expect(execution.averageHeartRateBpm, 152);
+    expect(execution.maxHeartRateBpm, 178);
+    expect(execution.resultSource, WorkoutResultSource.manual);
     expect(
       execution.sets.first.exerciseDescription,
       'Mantén el cuerpo alineado.',

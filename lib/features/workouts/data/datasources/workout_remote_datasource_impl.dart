@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
@@ -17,6 +18,9 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final_rpe,
     notes,
     abandonment_reason,
+    average_heart_rate_bpm,
+    max_heart_rate_bpm,
+    result_source,
     workout_amrap_results (
       block_order,
       completed_rounds,
@@ -55,6 +59,9 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       actual_load_kg,
       actual_rpe,
       actual_rir,
+      actual_recovery_duration_seconds,
+      actual_recovery_distance_meters,
+      result_source,
       completed_at
     )
   ''';
@@ -235,6 +242,9 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     String executionId, {
     required int finalRpe,
     String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) => supabaseClient.rpc(
     'finish_workout_execution_idempotent',
     params: {
@@ -242,6 +252,9 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       'p_execution_id': executionId,
       'p_final_rpe': finalRpe,
       'p_notes': notes,
+      'p_average_heart_rate_bpm': averageHeartRateBpm,
+      'p_max_heart_rate_bpm': maxHeartRateBpm,
+      'p_result_source': resultSource.name,
     },
   );
 

@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +40,12 @@ class ActiveWorkoutPage extends StatelessWidget {
           builder: (context, state) => Text(switch (state.status) {
             ActiveWorkoutStatus.completed => 'Sesión completada',
             ActiveWorkoutStatus.abandoned => 'Sesión cerrada',
+            _
+                when state.execution?.sets.any(
+                      (set) => set.blockFormat == WorkoutBlockFormat.running,
+                    ) ??
+                    false =>
+              'Registrar carrera',
             _ => 'Sesión en curso',
           }),
         ),
@@ -164,12 +172,16 @@ class _ActiveContent extends StatefulWidget {
 }
 
 class _ActiveContentState extends State<_ActiveContent> {
-  double _finalRpe = 7;
+  int? _finalRpe;
   final _notesController = TextEditingController();
+  final _averageHeartRateController = TextEditingController();
+  final _maxHeartRateController = TextEditingController();
 
   @override
   void dispose() {
     _notesController.dispose();
+    _averageHeartRateController.dispose();
+    _maxHeartRateController.dispose();
     super.dispose();
   }
 
@@ -179,6 +191,11 @@ class _ActiveContentState extends State<_ActiveContent> {
     final execution = state.execution!;
     final current = execution.currentSet;
     final saving = state.status == ActiveWorkoutStatus.saving;
+    final isRunning =
+        execution.sets.isNotEmpty &&
+        execution.sets.every(
+          (set) => set.blockFormat == WorkoutBlockFormat.running,
+        );
 
     return SafeArea(
       child: Center(
@@ -257,13 +274,12 @@ class _ActiveContentState extends State<_ActiveContent> {
                       _FinishCard(
                         rpe: _finalRpe,
                         notesController: _notesController,
+                        averageHeartRateController: _averageHeartRateController,
+                        maxHeartRateController: _maxHeartRateController,
+                        showHeartRate: isRunning,
                         saving: saving,
                         onChanged: (value) => setState(() => _finalRpe = value),
-                        onFinish: () =>
-                            context.read<ActiveWorkoutCubit>().finish(
-                              finalRpe: _finalRpe.round(),
-                              notes: _notesController.text,
-                            ),
+                        onFinish: _finish,
                       ),
                     if (state.status == ActiveWorkoutStatus.failure &&
                         state.errorMessage != null) ...[
@@ -297,6 +313,39 @@ class _ActiveContentState extends State<_ActiveContent> {
           ],
         ),
       ),
+    );
+  }
+
+  void _finish() {
+    final finalRpe = _finalRpe;
+    if (finalRpe == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona el RPE de la sesión.')),
+      );
+      return;
+    }
+    final averageHeartRate = int.tryParse(
+      _averageHeartRateController.text.trim(),
+    );
+    final maxHeartRate = int.tryParse(_maxHeartRateController.text.trim());
+    if ((averageHeartRate != null &&
+            (averageHeartRate < 30 || averageHeartRate > 250)) ||
+        (maxHeartRate != null && (maxHeartRate < 30 || maxHeartRate > 250)) ||
+        (averageHeartRate != null &&
+            maxHeartRate != null &&
+            maxHeartRate < averageHeartRate)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Revisa la frecuencia cardíaca introducida.'),
+        ),
+      );
+      return;
+    }
+    context.read<ActiveWorkoutCubit>().finish(
+      finalRpe: finalRpe,
+      notes: _notesController.text,
+      averageHeartRateBpm: averageHeartRate,
+      maxHeartRateBpm: maxHeartRate,
     );
   }
 
@@ -597,6 +646,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
   late final TextEditingController _repsController;
   late final TextEditingController _durationController;
   late final TextEditingController _distanceController;
+  late final TextEditingController _recoveryDurationController;
+  late final TextEditingController _recoveryDistanceController;
   late final TextEditingController _loadController;
   late double _actualRpe;
   late double _actualRir;
@@ -611,10 +662,20 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
     // el resultado real antes de enviarlo.
     _repsController = TextEditingController(text: _integer(set.targetReps));
     _durationController = TextEditingController(
-      text: _integer(set.targetDurationSeconds),
+      text: set.blockFormat == WorkoutBlockFormat.running
+          ? ''
+          : _integer(set.targetDurationSeconds),
     );
     _distanceController = TextEditingController(
-      text: _nullableNumber(set.targetDistanceMeters),
+      text:
+          set.blockFormat == WorkoutBlockFormat.running &&
+              set.targetDurationSeconds != null
+          ? ''
+          : _nullableNumber(set.targetDistanceMeters),
+    );
+    _recoveryDurationController = TextEditingController();
+    _recoveryDistanceController = TextEditingController(
+      text: _nullableNumber(set.recoveryDistanceMeters),
     );
     _loadController = TextEditingController(
       text: _nullableNumber(set.targetLoadKg),
@@ -628,6 +689,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
     _repsController.dispose();
     _durationController.dispose();
     _distanceController.dispose();
+    _recoveryDurationController.dispose();
+    _recoveryDistanceController.dispose();
     _loadController.dispose();
     super.dispose();
   }
@@ -644,6 +707,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
             set.targetDurationSeconds == null &&
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
+            : set.blockFormat == WorkoutBlockFormat.running
+            ? parseDurationInput(_durationController.text)!
             : _parseDecimal(_durationController.text)!.toInt(),
         actualDistanceMeters:
             set.targetDistanceMeters == null &&
@@ -655,10 +720,18 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
             : _parseDecimal(_loadController.text),
         actualRpe: set.targetRpe == null ? null : _actualRpe,
         actualRir: set.targetRir == null ? null : _actualRir,
+        actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
+            ? null
+            : parseDurationInput(_recoveryDurationController.text),
+        actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
+            ? null
+            : _parseDecimal(_recoveryDistanceController.text),
       ),
       restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
           ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
-          : set.recoveryDurationSeconds,
+          : set.blockFormat == WorkoutBlockFormat.running
+          ? 0
+          : null,
     );
   }
 
@@ -693,6 +766,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
 
   @override
   Widget build(BuildContext context) {
+    final actualPace = set.blockFormat == WorkoutBlockFormat.running
+        ? _actualPaceLabel(_distanceController.text, _durationController.text)
+        : null;
     return Card(
       color: const Color(0xFF171717),
       child: Padding(
@@ -758,6 +834,14 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                       : 'Ritmo objetivo: ${_clock(fastest)}–${_clock(set.targetPaceMaxSecondsPerKm!)}/km',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+              if (_targetTimeLabel(set) case final targetTime?) ...[
+                const SizedBox(height: 7),
+                Text(
+                  targetTime,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white60),
                 ),
               ],
               if (set.recoveryType case final recovery?) ...[
@@ -830,16 +914,46 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                 ),
               if (set.targetDurationSeconds != null ||
                   set.blockFormat == WorkoutBlockFormat.running)
-                _ResultField(
-                  controller: _durationController,
-                  label: 'Segundos realizados',
-                  decimal: false,
-                ),
+                set.blockFormat == WorkoutBlockFormat.running
+                    ? _DurationResultField(
+                        controller: _durationController,
+                        label: 'Tiempo real',
+                        onChanged: (_) => setState(() {}),
+                      )
+                    : _ResultField(
+                        controller: _durationController,
+                        label: 'Segundos realizados',
+                        decimal: false,
+                      ),
               if (set.targetDistanceMeters != null ||
                   set.blockFormat == WorkoutBlockFormat.running)
                 _ResultField(
                   controller: _distanceController,
                   label: 'Metros realizados',
+                  onChanged: set.blockFormat == WorkoutBlockFormat.running
+                      ? (_) => setState(() {})
+                      : null,
+                ),
+              if (actualPace != null) ...[
+                Text(
+                  'Ritmo calculado · $actualPace/km',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFFFFA06F),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+              if (set.recoveryDurationSeconds != null)
+                _DurationResultField(
+                  controller: _recoveryDurationController,
+                  label: 'Recuperación real',
+                ),
+              if (set.recoveryDistanceMeters != null)
+                _ResultField(
+                  controller: _recoveryDistanceController,
+                  label: 'Metros reales de recuperación',
                 ),
               if (set.targetLoadKg != null)
                 _ResultField(
@@ -885,9 +999,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                       : set.blockFormat == WorkoutBlockFormat.emom
                       ? 'Guardar y esperar al siguiente minuto'
                       : set.blockFormat == WorkoutBlockFormat.running
-                      ? set.recoveryType == null
-                            ? 'Guardar tramo'
-                            : 'Guardar tramo y recuperar'
+                      ? 'Guardar resultado del tramo'
                       : 'Guardar serie',
                 ),
               ),
@@ -1024,11 +1136,13 @@ class _ResultField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.decimal = true,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final String label;
   final bool decimal;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -1038,6 +1152,7 @@ class _ResultField extends StatelessWidget {
         controller: controller,
         keyboardType: TextInputType.numberWithOptions(decimal: decimal),
         decoration: InputDecoration(labelText: label),
+        onChanged: onChanged,
         validator: (value) {
           final parsed = _parseDecimal(value ?? '');
           if (parsed == null) return 'Introduce un número válido';
@@ -1046,6 +1161,41 @@ class _ResultField extends StatelessWidget {
             return 'Introduce un número entero';
           }
           return null;
+        },
+      ),
+    );
+  }
+}
+
+class _DurationResultField extends StatelessWidget {
+  const _DurationResultField({
+    required this.controller,
+    required this.label,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: const [DurationInputFormatter()],
+        decoration: InputDecoration(
+          labelText: '$label (min:seg)',
+          helperText: 'Escribe solo números: 128 se convierte en 1:28.',
+        ),
+        onChanged: onChanged,
+        validator: (value) {
+          final seconds = parseDurationInput(value ?? '');
+          return seconds == null || seconds <= 0
+              ? 'Introduce un tiempo válido'
+              : null;
         },
       ),
     );
@@ -1111,15 +1261,21 @@ class _FinishCard extends StatelessWidget {
   const _FinishCard({
     required this.rpe,
     required this.notesController,
+    required this.averageHeartRateController,
+    required this.maxHeartRateController,
+    required this.showHeartRate,
     required this.saving,
     required this.onChanged,
     required this.onFinish,
   });
 
-  final double rpe;
+  final int? rpe;
   final TextEditingController notesController;
+  final TextEditingController averageHeartRateController;
+  final TextEditingController maxHeartRateController;
+  final bool showHeartRate;
   final bool saving;
-  final ValueChanged<double> onChanged;
+  final ValueChanged<int> onChanged;
   final VoidCallback onFinish;
 
   @override
@@ -1144,16 +1300,61 @@ class _FinishCard extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'Esfuerzo global · RPE ${rpe.round()}',
+              rpe == null
+                  ? 'Selecciona el esfuerzo global (obligatorio)'
+                  : 'Esfuerzo global · RPE $rpe',
               textAlign: TextAlign.center,
             ),
-            Slider(
-              value: rpe,
-              min: 1,
-              max: 10,
-              divisions: 9,
-              onChanged: onChanged,
+            const SizedBox(height: 10),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (var value = 1; value <= 10; value++)
+                  ChoiceChip(
+                    label: Text('$value'),
+                    selected: rpe == value,
+                    onSelected: saving ? null : (_) => onChanged(value),
+                  ),
+              ],
             ),
+            if (showHeartRate) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'Frecuencia cardíaca (opcional)',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: averageHeartRateController,
+                      enabled: !saving,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'FC media',
+                        suffixText: 'ppm',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: maxHeartRateController,
+                      enabled: !saving,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'FC máxima',
+                        suffixText: 'ppm',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             const SizedBox(height: 8),
             TextField(
               controller: notesController,
@@ -1189,6 +1390,11 @@ class _Completed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRunning =
+        execution.sets.isNotEmpty &&
+        execution.sets.every(
+          (set) => set.blockFormat == WorkoutBlockFormat.running,
+        );
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1216,6 +1422,25 @@ class _Completed extends StatelessWidget {
               ' · RPE ${execution.finalRpe ?? '-'}',
               style: const TextStyle(color: Colors.white60),
             ),
+            if (isRunning) ...[
+              const SizedBox(height: 8),
+              Text(
+                runningAssessmentLabel(assessRunningExecution(execution.sets)),
+                style: const TextStyle(
+                  color: Color(0xFFFFA06F),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+            if (execution.averageHeartRateBpm != null ||
+                execution.maxHeartRateBpm != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'FC ${execution.averageHeartRateBpm ?? '-'} media · '
+                '${execution.maxHeartRateBpm ?? '-'} máxima',
+                style: const TextStyle(color: Colors.white60),
+              ),
+            ],
             if (execution.notes case final notes?) ...[
               const SizedBox(height: 14),
               Text(
@@ -1387,6 +1612,27 @@ String _runningRecovery(RunningRecoveryType recovery, WorkoutExecutionSet set) {
       ? _clock(set.recoveryDurationSeconds!)
       : '${_number(set.recoveryDistanceMeters!)} m';
   return '$measure de $mode';
+}
+
+String? _targetTimeLabel(WorkoutExecutionSet set) {
+  final distance = set.targetDistanceMeters;
+  final fastest = set.targetPaceMinSecondsPerKm;
+  final slowest = set.targetPaceMaxSecondsPerKm;
+  if (distance == null || fastest == null || slowest == null) return null;
+  final fastestTime = (distance / 1000 * fastest).round();
+  final slowestTime = (distance / 1000 * slowest).round();
+  return fastestTime == slowestTime
+      ? 'Tiempo objetivo: ${_clock(fastestTime)}'
+      : 'Tiempo objetivo: ${_clock(fastestTime)}–${_clock(slowestTime)}';
+}
+
+String? _actualPaceLabel(String distanceText, String durationText) {
+  final distance = _parseDecimal(distanceText);
+  final duration = parseDurationInput(durationText);
+  if (distance == null || distance <= 0 || duration == null || duration <= 0) {
+    return null;
+  }
+  return _clock((duration * 1000 / distance).round());
 }
 
 String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
