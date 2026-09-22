@@ -13,7 +13,7 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
   entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 37 migraciones SQL ordenadas: línea base y
+- El repositorio contiene 38 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
   personal versionado, agenda, formatos avanzados de fuerza y Carrera V1.
