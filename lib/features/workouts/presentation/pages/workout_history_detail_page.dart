@@ -271,6 +271,7 @@ class _SummaryCard extends StatelessWidget {
                   assessRunningExecution(execution.sets),
                 ),
                 label: 'Cumplimiento',
+                width: 230,
               ),
           ],
         ),
@@ -280,15 +281,20 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _SummaryMetric extends StatelessWidget {
-  const _SummaryMetric({required this.value, required this.label});
+  const _SummaryMetric({
+    required this.value,
+    required this.label,
+    this.width = 105,
+  });
 
   final String value;
   final String label;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 105,
+      width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
