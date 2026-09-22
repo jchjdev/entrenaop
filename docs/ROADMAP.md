@@ -23,7 +23,7 @@ El ciclo objetivo continúa siendo:
 | Evaluación y progreso | Parcial | Registra, evalúa y compara marcas con el catálogo versionado de ingreso a Tropa y Marinería, calcula evolución y recomienda focos. No hay panel longitudinal completo ni simulacro. |
 | Plan semanal adaptativo | No existe | La agenda es manual; no se generan prescripciones a partir de preparaciones, evaluación, disponibilidad o historial. |
 | Adaptación posterior | No existe | No hay reglas versionadas que interpreten resultados y produzcan la siguiente recomendación o semana. |
-| Carrera especializada | Terminada en V1 mínima | Creador personal de carrera continua, series y pirámides; tramos expandidos por distancia o duración, ritmo exacto/rango, recuperación propia, agenda, ejecución, resultado real e historial. No incluye GPS, mapas, zonas ni integraciones. |
+| Carrera especializada | Terminada en V1 mínima | Creador personal de carrera continua, series y pirámides; repeticiones iguales agrupadas en el editor, tramos finales por distancia o duración, ritmo exacto/rango, duración estimada, recuperación propia, agenda, ejecución, resultado real e historial. No incluye GPS, mapas, zonas ni integraciones. |
 | Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
 | Derechos y monetización | No existe | La separación conceptual está decidida, pero no hay suscripciones ni concesión fiable de derechos comerciales. |
 
@@ -122,7 +122,9 @@ Una vez validada la primera semana adaptativa, el orden natural será:
 
 - Resolver todas las oposiciones a la vez.
 - Chat, nutrición, desafíos o red social.
-- Garmin, Strava y otras integraciones antes de cerrar el ciclo adaptativo.
+- Garmin Connect, Strava y otras integraciones antes de cerrar el ciclo
+  adaptativo. Después se estudiará el envío de entrenamientos de carrera y su
+  vinculación con planes como Guardia Civil o Tropa y Marinería.
 - Algoritmos opacos o aprendizaje automático antes de validar reglas
   deterministas.
 - Academias y multi-tenancy sin un caso profesional validado.

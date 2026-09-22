@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/services/running_workout_estimator.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,6 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _durationController = TextEditingController();
   final List<_RunningSegmentData> _segments = [];
   Timer? _autosaveTimer;
   bool _initialized = false;
@@ -31,7 +31,9 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
     _autosaveTimer?.cancel();
     _nameController.dispose();
     _descriptionController.dispose();
-    _durationController.dispose();
+    for (final segment in _segments) {
+      segment.dispose();
+    }
     super.dispose();
   }
 
@@ -116,11 +118,11 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => dialogContext.pop(false),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
                 child: const Text('Descartar'),
               ),
               FilledButton(
-                onPressed: () => dialogContext.pop(true),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
                 child: const Text('Recuperar'),
               ),
             ],
@@ -163,7 +165,7 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Cada tramo conserva su objetivo, ritmo y recuperación. Repeticiones y pirámides se guardan ya expandidas.',
+                    'Agrupa las series iguales en un solo tramo. Al entrenar se mostrarán todas en su orden real.',
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
                   if (original != null) ...[
@@ -192,13 +194,7 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _durationController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Duración estimada (minutos)',
-                    ),
-                  ),
+                  _RunningEstimateCard(estimate: _safeEstimate()),
                   const SizedBox(height: 26),
                   Row(
                     children: [
@@ -211,12 +207,14 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                           ),
                         ),
                       ),
-                      Text('${_segments.length}/40'),
+                      Text(
+                        '${_segments.length} ${_segments.length == 1 ? 'bloque' : 'bloques'} · $_totalSegments/40 tramos',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Una carrera continua usa un solo tramo. Para series, añade o repite tramos y ajusta cada uno.',
+                    'Una carrera continua usa un tramo. Para series iguales, ajusta sus repeticiones sin duplicar tarjetas.',
                     style: TextStyle(color: Colors.white54),
                   ),
                   const SizedBox(height: 14),
@@ -234,6 +232,8 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                       onDelete: _segments.length == 1
                           ? null
                           : () => _delete(index),
+                      onRepetitionsChanged: (repetitions) =>
+                          _setRepetitions(index, repetitions),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -242,17 +242,17 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                     runSpacing: 8,
                     children: [
                       OutlinedButton.icon(
-                        onPressed: _segments.length >= 40 ? null : _addSegment,
+                        onPressed: _totalSegments >= 40 ? null : _addSegment,
                         icon: const Icon(Icons.add_rounded),
                         label: const Text('Añadir tramo'),
                       ),
                       OutlinedButton.icon(
-                        onPressed: _segments.length >= 40 ? null : _repeatLast,
+                        onPressed: _segments.isEmpty ? null : _repeatLast,
                         icon: const Icon(Icons.repeat_rounded),
                         label: const Text('Repetir último'),
                       ),
                       OutlinedButton.icon(
-                        onPressed: _segments.length >= 40 ? null : _addPyramid,
+                        onPressed: _segments.isEmpty ? null : _addPyramid,
                         icon: const Icon(Icons.stacked_line_chart_rounded),
                         label: const Text('Crear pirámide'),
                       ),
@@ -283,36 +283,64 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
   void _populate(CreatePersonalWorkoutInput input) {
     _nameController.text = input.name;
     _descriptionController.text = input.description ?? '';
-    _durationController.text = input.estimatedDurationMinutes?.toString() ?? '';
     final sets = input.blocks.first.exercises.first.sets;
     setState(() {
+      for (final segment in _segments) {
+        segment.dispose();
+      }
       _segments
         ..clear()
-        ..addAll(sets.map(_RunningSegmentData.fromDraft));
+        ..addAll(_groupConsecutiveSegments(sets));
     });
   }
 
-  CreatePersonalWorkoutInput _currentInput() => CreatePersonalWorkoutInput(
-    name: _nameController.text,
-    description: _descriptionController.text.trim().isEmpty
-        ? null
-        : _descriptionController.text,
-    estimatedDurationMinutes: int.tryParse(_durationController.text),
-    blocks: [
-      WorkoutBlockDraft(
-        name: 'Carrera',
-        format: WorkoutBlockFormat.running,
-        exercises: [
-          WorkoutExerciseDraft(
-            exerciseId: runningExerciseId,
-            sets: _segments.map((segment) => segment.toDraft()).toList(),
-          ),
-        ],
-      ),
-    ],
-  );
+  CreatePersonalWorkoutInput _currentInput() {
+    final sets = _expandedDrafts();
+    final estimate = estimateRunningWorkout(sets);
+    return CreatePersonalWorkoutInput(
+      name: _nameController.text,
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text,
+      estimatedDurationMinutes:
+          estimate.isComplete && estimate.maximumSeconds > 0
+          ? estimate.estimatedMinutes
+          : null,
+      blocks: [
+        WorkoutBlockDraft(
+          name: 'Carrera',
+          format: WorkoutBlockFormat.running,
+          exercises: [
+            WorkoutExerciseDraft(exerciseId: runningExerciseId, sets: sets),
+          ],
+        ),
+      ],
+    );
+  }
+
+  int get _totalSegments =>
+      _segments.fold(0, (total, segment) => total + segment.repetitions);
+
+  List<WorkoutSetDraft> _expandedDrafts() => [
+    for (final segment in _segments)
+      for (var repetition = 0; repetition < segment.repetitions; repetition++)
+        segment.toDraft(),
+  ];
+
+  RunningWorkoutEstimate? _safeEstimate() {
+    try {
+      return estimateRunningWorkout(_expandedDrafts());
+    } on FormatException {
+      return null;
+    }
+  }
 
   void _changed() {
+    if (mounted) setState(() {});
+    _scheduleAutosave();
+  }
+
+  void _scheduleAutosave() {
     if (_suspendAutosave) return;
     _autosaveTimer?.cancel();
     _autosaveTimer = Timer(const Duration(milliseconds: 600), () {
@@ -329,72 +357,74 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
     }
   }
 
-  void _addSegment() => setState(() {
-    _segments.add(_RunningSegmentData());
-    _changed();
-  });
+  void _addSegment() {
+    setState(() => _segments.add(_RunningSegmentData()));
+    _scheduleAutosave();
+  }
 
-  void _delete(int index) => setState(() {
-    _segments.removeAt(index);
-    _changed();
-  });
+  void _delete(int index) {
+    setState(() => _segments.removeAt(index).dispose());
+    _scheduleAutosave();
+  }
 
-  void _move(int index, int offset) => setState(() {
-    final segment = _segments.removeAt(index);
-    _segments.insert(index + offset, segment);
-    _changed();
-  });
+  void _move(int index, int offset) {
+    setState(() {
+      final segment = _segments.removeAt(index);
+      _segments.insert(index + offset, segment);
+    });
+    _scheduleAutosave();
+  }
+
+  void _setRepetitions(int index, int repetitions) {
+    final others = _totalSegments - _segments[index].repetitions;
+    if (repetitions < 1 || others + repetitions > 40) return;
+    setState(() => _segments[index].repetitions = repetitions);
+    _scheduleAutosave();
+  }
 
   Future<void> _repeatLast() async {
-    final controller = TextEditingController(text: '4');
+    var repetitionsText = _segments.last.repetitions.toString();
     final copies = await showDialog<int>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Repetir último tramo'),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          initialValue: repetitionsText,
           autofocus: true,
           keyboardType: TextInputType.number,
+          onChanged: (value) => repetitionsText = value,
           decoration: const InputDecoration(
             labelText: 'Repeticiones totales',
-            helperText: 'Después podrás ajustar cada tramo por separado.',
+            helperText: 'Se mostrarán agrupadas en una sola tarjeta.',
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => dialogContext.pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () => dialogContext.pop(int.tryParse(controller.text)),
-            child: const Text('Expandir'),
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(int.tryParse(repetitionsText)),
+            child: const Text('Aplicar'),
           ),
         ],
       ),
     );
-    controller.dispose();
-    if (copies == null || copies < 2 || copies > 20) return;
-    final available = 40 - _segments.length;
-    setState(() {
-      _segments.addAll(
-        List.generate(
-          (copies - 1).clamp(0, available),
-          (_) => _segments.last.copy(),
-        ),
-      );
-      _changed();
-    });
+    if (copies == null || copies < 1 || copies > 40) return;
+    _setRepetitions(_segments.length - 1, copies);
   }
 
   Future<void> _addPyramid() async {
-    final controller = TextEditingController(text: '200, 400, 600, 400, 200');
+    var distancesText = '200, 400, 600, 400, 200';
     final values = await showDialog<List<double>>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Crear pirámide'),
-        content: TextField(
-          controller: controller,
+        content: TextFormField(
+          initialValue: distancesText,
           autofocus: true,
+          onChanged: (value) => distancesText = value,
           decoration: const InputDecoration(
             labelText: 'Distancias en metros',
             helperText: 'Ejemplo: 200, 400, 600, 400, 200',
@@ -402,12 +432,12 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => dialogContext.pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () {
-              final parsed = controller.text
+              final parsed = distancesText
                   .split(',')
                   .map((value) => double.tryParse(value.trim()))
                   .toList();
@@ -415,28 +445,31 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                   parsed.any((value) => value == null || value <= 0)) {
                 return;
               }
-              dialogContext.pop(parsed.cast<double>());
+              Navigator.of(dialogContext).pop(parsed.cast<double>());
             },
             child: const Text('Expandir'),
           ),
         ],
       ),
     );
-    controller.dispose();
     if (values == null || values.length > 40) return;
     final base = _segments.last.copy();
     setState(() {
+      for (final segment in _segments) {
+        segment.dispose();
+      }
       _segments
         ..clear()
         ..addAll(
           values.map(
             (distance) => base.copy()
               ..targetType = WorkoutTargetType.distance
-              ..targetController.text = _number(distance),
+              ..targetController.text = _number(distance)
+              ..repetitions = 1,
           ),
         );
-      _changed();
     });
+    _scheduleAutosave();
   }
 
   Future<void> _save() async {
@@ -444,9 +477,6 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     try {
       final input = _currentInput();
-      for (final segment in _segments) {
-        segment.toDraft();
-      }
       await context.read<WorkoutEditorCubit>().save(input);
     } on FormatException catch (error) {
       if (!mounted) return;
@@ -476,6 +506,7 @@ class _RunningSegmentCard extends StatefulWidget {
     required this.data,
     required this.canDelete,
     required this.onChanged,
+    required this.onRepetitionsChanged,
     this.onMoveUp,
     this.onMoveDown,
     this.onDelete,
@@ -485,6 +516,7 @@ class _RunningSegmentCard extends StatefulWidget {
   final _RunningSegmentData data;
   final bool canDelete;
   final VoidCallback onChanged;
+  final ValueChanged<int> onRepetitionsChanged;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
   final VoidCallback? onDelete;
@@ -508,7 +540,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
               children: [
                 Expanded(
                   child: Text(
-                    'Tramo ${widget.index + 1}',
+                    'Tramo ${widget.index + 1}${data.repetitions > 1 ? ' × ${data.repetitions}' : ''}',
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
@@ -532,9 +564,42 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
             const SizedBox(height: 8),
             Row(
               children: [
+                const Expanded(
+                  child: Text(
+                    'Repeticiones',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Una repetición menos',
+                  onPressed: data.repetitions > 1
+                      ? () => widget.onRepetitionsChanged(data.repetitions - 1)
+                      : null,
+                  icon: const Icon(Icons.remove_circle_outline_rounded),
+                ),
+                SizedBox(
+                  width: 42,
+                  child: Text(
+                    '× ${data.repetitions}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Una repetición más',
+                  onPressed: () =>
+                      widget.onRepetitionsChanged(data.repetitions + 1),
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
                 Expanded(
                   child: DropdownButtonFormField<WorkoutTargetType>(
                     initialValue: data.targetType,
+                    isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Objetivo'),
                     items: const [
                       DropdownMenuItem(
@@ -617,6 +682,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
             const SizedBox(height: 12),
             DropdownButtonFormField<RunningRecoveryType?>(
               initialValue: data.recoveryType,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Recuperación posterior',
               ),
@@ -658,6 +724,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                     Expanded(
                       child: DropdownButtonFormField<bool>(
                         initialValue: data.recoveryByDistance,
+                        isExpanded: true,
                         decoration: const InputDecoration(labelText: 'Medida'),
                         items: const [
                           DropdownMenuItem(
@@ -714,6 +781,7 @@ class _RunningSegmentData {
     this.recoveryType,
     this.recoveryByDistance = false,
     String recovery = '',
+    this.repetitions = 1,
   }) : targetController = TextEditingController(text: target),
        paceMinController = TextEditingController(text: paceMin),
        paceMaxController = TextEditingController(text: paceMax),
@@ -747,6 +815,7 @@ class _RunningSegmentData {
   RunningRecoveryType? recoveryType;
   bool recoveryByDistance;
   final TextEditingController recoveryController;
+  int repetitions;
 
   double get targetValue => targetType == WorkoutTargetType.duration
       ? _parseClock(targetController.text).toDouble()
@@ -790,7 +859,72 @@ class _RunningSegmentData {
     recoveryType: recoveryType,
     recoveryByDistance: recoveryByDistance,
     recovery: recoveryController.text,
+    repetitions: repetitions,
   );
+
+  void dispose() {
+    targetController.dispose();
+    paceMinController.dispose();
+    paceMaxController.dispose();
+    recoveryController.dispose();
+  }
+}
+
+class _RunningEstimateCard extends StatelessWidget {
+  const _RunningEstimateCard({required this.estimate});
+
+  final RunningWorkoutEstimate? estimate;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = estimate;
+    final hasTime = value != null && value.maximumSeconds > 0;
+    final title = !hasTime
+        ? 'Completa distancia y ritmo para calcularla'
+        : _formatEstimate(value);
+    final subtitle = value == null || value.isComplete
+        ? 'Se actualiza automáticamente con ritmos, distancias y descansos.'
+        : 'Estimación parcial: falta ritmo en alguna distancia o recuperación.';
+    return Card(
+      color: const Color(0xFF171717),
+      child: ListTile(
+        leading: const Icon(Icons.schedule_rounded),
+        title: const Text('Duración estimada'),
+        subtitle: Text('$title\n$subtitle'),
+        isThreeLine: true,
+      ),
+    );
+  }
+}
+
+List<_RunningSegmentData> _groupConsecutiveSegments(
+  Iterable<WorkoutSetDraft> sets,
+) {
+  final groups = <_RunningSegmentData>[];
+  WorkoutSetDraft? previous;
+  for (final set in sets) {
+    if (previous == set && groups.last.repetitions < 40) {
+      groups.last.repetitions++;
+    } else {
+      groups.add(_RunningSegmentData.fromDraft(set));
+      previous = set;
+    }
+  }
+  return groups;
+}
+
+String _formatEstimate(RunningWorkoutEstimate estimate) {
+  final minimum = _friendlyDuration(estimate.minimumSeconds);
+  final maximum = _friendlyDuration(estimate.maximumSeconds);
+  return minimum == maximum ? minimum : '$minimum–$maximum';
+}
+
+String _friendlyDuration(double seconds) {
+  final roundedMinutes = (seconds / 60).round();
+  if (roundedMinutes < 60) return '$roundedMinutes min';
+  final hours = roundedMinutes ~/ 60;
+  final minutes = roundedMinutes % 60;
+  return minutes == 0 ? '$hours h' : '$hours h $minutes min';
 }
 
 CreatePersonalWorkoutInput _emptyInput() => CreatePersonalWorkoutInput(

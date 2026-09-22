@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:entrenaop/features/workouts/presentation/pages/running_workout_editor_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -155,6 +156,65 @@ void main() {
     await tester.pump();
 
     expect(find.text('Bloque 2'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('agrupa series de carrera y estima su duración por ritmo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _WorkoutRepository();
+    final draftStore = _DraftStore();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+      draftStore: draftStore,
+      createWorkout: CreatePersonalWorkoutUseCase(repository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+      runningEditor: true,
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const RunningWorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Repetir último'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Repetir último'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last, '4');
+    await tester.tap(find.text('Aplicar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tramo 1 × 4'), findsOneWidget);
+    expect(find.text('1 bloque · 4/40 tramos'), findsOneWidget);
+
+    final paceFrom = find.widgetWithText(TextFormField, 'Desde (min/km)');
+    final paceTo = find.widgetWithText(TextFormField, 'Hasta (min/km)');
+    await tester.ensureVisible(paceFrom);
+    await tester.enterText(paceFrom, '4:00');
+    await tester.enterText(paceTo, '4:30');
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(find.textContaining('16 min–18 min'), findsOneWidget);
+    expect(
+      draftStore.draft?.input.blocks.single.exercises.single.sets,
+      hasLength(4),
+    );
+    expect(draftStore.draft?.input.estimatedDurationMinutes, 17);
     expect(tester.takeException(), isNull);
   });
 

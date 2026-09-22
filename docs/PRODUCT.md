@@ -177,8 +177,11 @@ La carrera dispone de un creador específico dentro de la sesión unificada.
 Expresa tramos ordenados con distancia o duración, ritmo objetivo propio y
 recuperación individual, incluida su modalidad. Una pirámide puede así combinar
 200/400/600/800/1000 metros y regresar sin fingir que todos los tramos comparten
-ritmo o descanso. Las ayudas de repeticiones y pirámide materializan la lista
-final; biblioteca, agenda, ejecución e historial leen esa misma prescripción.
+ritmo o descanso. Las series iguales se editan como un bloque compacto `× N` y
+solo se expanden al guardar la prescripción; las pirámides mantienen visibles
+sus tramos distintos. Biblioteca, agenda, ejecución e historial leen esa misma
+lista final. La duración se estima automáticamente con distancia, ritmo y
+recuperaciones temporizadas, sin inventar tiempos para distancias sin ritmo.
 El futuro algoritmo generará el mismo contrato versionado, no reglas ocultas en
 la interfaz.
 Los motores de fuerza y carrera no competirán por separado: una capa de
@@ -276,7 +279,9 @@ RPE/RIR, modificaciones, pruebas y simulacros.
   Android, web y Windows.
 - Salud móvil: Health Connect y las APIs vigentes del ecosistema Apple/Google;
   no diseñar una integración nueva alrededor del antiguo Google Fit.
-- Garmin y Strava se investigarán más adelante y no deben bloquear el MVP.
+- Garmin Connect y Strava se investigarán más adelante y no deben bloquear el
+  MVP. La investigación de Garmin debe cubrir tanto sincronizar sesiones de
+  carrera como vincularlas a planes de preparación de oposiciones.
 - Nutrición, si se incorpora, comenzará con un alcance limitado.
 
 La IA generativa no decidirá la progresión inicial. Podrá ayudar en el futuro a
