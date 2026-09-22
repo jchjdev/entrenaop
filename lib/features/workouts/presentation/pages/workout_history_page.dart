@@ -18,26 +18,16 @@ class WorkoutHistoryPage extends StatelessWidget {
         title: const Text('Evolución'),
       ),
       body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(
-        builder: (context, state) => switch (state.status) {
-          WorkoutHistoryStatus.initial || WorkoutHistoryStatus.loading =>
-            const Center(child: CircularProgressIndicator()),
-          WorkoutHistoryStatus.failure => _ErrorView(
-            message: state.errorMessage!,
-            onRetry: context.read<WorkoutHistoryCubit>().load,
-          ),
-          WorkoutHistoryStatus.loaded => _HistoryContent(
-            executions: state.executions,
-          ),
-        },
+        builder: (context, state) => _HistoryContent(state: state),
       ),
     );
   }
 }
 
 class _HistoryContent extends StatelessWidget {
-  const _HistoryContent({required this.executions});
+  const _HistoryContent({required this.state});
 
-  final List<WorkoutExecution> executions;
+  final WorkoutHistoryState state;
 
   @override
   Widget build(BuildContext context) {
@@ -53,26 +43,78 @@ class _HistoryContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Tus entrenamientos',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
+                    'Tu evolución, en contexto',
+                    style: TextStyle(fontSize: 27, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Consulta lo prescrito y lo que realizaste realmente.',
+                    'Consulta tus controles físicos y lo que has realizado en cada entrenamiento.',
                     style: TextStyle(color: Colors.white60),
                   ),
-                  const SizedBox(height: 18),
-                  OutlinedButton.icon(
-                    onPressed: () =>
-                        context.push('/assessment/history/physical'),
-                    icon: const Icon(Icons.monitor_heart_outlined),
-                    label: const Text('Ver evaluaciones físicas'),
-                  ),
                   const SizedBox(height: 24),
-                  if (executions.isEmpty)
+                  const Text(
+                    'Evaluaciones y controles',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 10),
+                  _DestinationCard(
+                    icon: Icons.monitor_heart_outlined,
+                    title: 'Evaluación física · Tropa',
+                    subtitle:
+                        'Consulta tus marcas y repite las pruebas de esta evaluación.',
+                    onTap: () => context.push('/assessment/history/physical'),
+                  ),
+                  const SizedBox(height: 8),
+                  _DestinationCard(
+                    icon: Icons.flag_outlined,
+                    title: 'Controles por preparación',
+                    subtitle:
+                        'Abre un programa para ver o repetir sus tests, como el de 2 km.',
+                    onTap: () => context.push('/plan/goal'),
+                  ),
+                  const SizedBox(height: 26),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Historial de entrenamientos',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      if (state.status == WorkoutHistoryStatus.loaded)
+                        Text(
+                          '${state.executions.length}',
+                          style: const TextStyle(
+                            color: Color(0xFFFFA477),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Objetivo previsto y resultado real de cada sesión.',
+                    style: TextStyle(color: Colors.white60),
+                  ),
+                  const SizedBox(height: 12),
+                  if (state.status == WorkoutHistoryStatus.initial ||
+                      state.status == WorkoutHistoryStatus.loading)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state.status == WorkoutHistoryStatus.failure)
+                    _ErrorView(
+                      message: state.errorMessage!,
+                      onRetry: context.read<WorkoutHistoryCubit>().load,
+                    )
+                  else if (state.executions.isEmpty)
                     const _EmptyHistory()
                   else
-                    ...executions.map(_WorkoutHistoryCard.new),
+                    ...state.executions.map(_WorkoutHistoryCard.new),
                 ],
               ),
             ),
@@ -81,6 +123,40 @@ class _HistoryContent extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DestinationCard extends StatelessWidget {
+  const _DestinationCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: const Color(0xFF171717),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      leading: CircleAvatar(
+        backgroundColor: const Color(0xFF352016),
+        foregroundColor: const Color(0xFFFFA477),
+        child: Icon(icon),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(subtitle),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: onTap,
+    ),
+  );
 }
 
 class _WorkoutHistoryCard extends StatelessWidget {

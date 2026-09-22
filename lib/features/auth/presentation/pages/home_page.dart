@@ -577,9 +577,9 @@ class _QuickActions extends StatelessWidget {
               const SizedBox(width: 10),
               _QuickActionCard(
                 icon: Icons.monitor_heart_outlined,
-                label: assessment == null ? 'Evaluarme' : 'Mis marcas',
+                label: assessment == null ? 'Evaluación Tropa' : 'Marcas Tropa',
                 description: assessment == null
-                    ? 'Registrar punto de partida'
+                    ? 'Registrar pruebas físicas'
                     : 'Consultar la última valoración',
                 onTap: () => assessment == null
                     ? context.push('/assessment/initial')
@@ -757,9 +757,9 @@ class _AssessmentCard extends StatelessWidget {
     return _StatusCard(
       complete: completed,
       icon: Icons.monitor_heart_outlined,
-      title: 'Evaluación física',
+      title: 'Evaluación física · Tropa',
       description: entry == null
-          ? 'Aún no tenemos marcas guardadas.'
+          ? 'Aún no hay marcas de estas pruebas guardadas.'
           : '${entry.report.passedTests}/${entry.report.results.length} mínimos alcanzados\n'
                 'Última: ${formatAssessmentDate(entry.completedAt)}'
                 '${focusName == null ? '' : '\nFoco matemático: $focusName'}',

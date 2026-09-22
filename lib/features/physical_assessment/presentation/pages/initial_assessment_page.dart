@@ -84,7 +84,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
             foregroundColor: Colors.white,
             title: Text(
               report == null
-                  ? 'Evaluación física'
+                  ? 'Evaluación física · Tropa'
                   : 'Resultado de la evaluación',
             ),
           ),

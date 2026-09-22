@@ -16,7 +16,7 @@ class PhysicalAssessmentHistoryPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        title: const Text('Mi evolución'),
+        title: const Text('Evaluación física · Tropa'),
       ),
       body:
           BlocBuilder<
@@ -61,6 +61,11 @@ class _LoadedHistory extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Text(
+                    'Marcas de las pruebas físicas de Tropa y Marinería. No son un test general para todos tus programas.',
+                    style: TextStyle(color: Colors.white60, height: 1.4),
+                  ),
+                  const SizedBox(height: 14),
                   FilledButton.icon(
                     onPressed: () async {
                       await context.push('/assessment/initial');
@@ -71,7 +76,7 @@ class _LoadedHistory extends StatelessWidget {
                       }
                     },
                     icon: const Icon(Icons.add_chart_rounded),
-                    label: const Text('Nueva evaluación'),
+                    label: const Text('Repetir evaluación'),
                   ),
                   const SizedBox(height: 12),
                   _ProgressOverview(
@@ -367,7 +372,7 @@ class _EmptyHistory extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Guarda tu primera evaluación para empezar a medir la evolución.',
+                'Registra las marcas de Tropa y Marinería para empezar a medir tu evolución en estas pruebas.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white60),
               ),

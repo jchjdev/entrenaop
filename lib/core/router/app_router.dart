@@ -309,7 +309,7 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/profile',
-                  builder: (context, state) => const ProfilePage(),
+                  builder: (context, state) => ProfilePage(preparations: sl()),
                 ),
               ],
             ),

@@ -35,6 +35,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Evolución'), findsOneWidget);
+    expect(find.text('Evaluaciones y controles'), findsOneWidget);
+    expect(find.text('Historial de entrenamientos'), findsOneWidget);
     expect(find.text('Sesión inicial'), findsOneWidget);
     expect(find.text('1 completadas'), findsOneWidget);
     expect(tester.takeException(), isNull);
