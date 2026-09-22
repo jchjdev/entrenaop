@@ -35,6 +35,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource.dart';
 import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource_impl.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_goal_repository_impl.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/running_test_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
@@ -188,6 +189,7 @@ Future<void> initDependencies() async {
     () => PreparationGoalRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerFactory(() => PreparationGoalCubit(repository: sl())..load());
+  sl.registerLazySingleton(() => RunningTestRepository(sl()));
 
   // --- Workout templates ---
 

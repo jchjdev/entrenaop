@@ -91,6 +91,23 @@ class _Content extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 22),
+                  Card(
+                    color: const Color(0xFF171717),
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.directions_run,
+                        color: Color(0xFFFF8A50),
+                      ),
+                      title: const Text('Control de carrera · 2 km'),
+                      subtitle: const Text(
+                        'Registra una marca nueva o consulta los tests anteriores de esta preparación.',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () =>
+                          context.push('/plan/goal/${goal.id}/running-test'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   _AssessmentCard(state: state),
                   const SizedBox(height: 24),
                   _WeekHeader(state: state),

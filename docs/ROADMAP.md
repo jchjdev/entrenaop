@@ -72,6 +72,12 @@ El ciclo objetivo continúa siendo:
 
 ## Único siguiente bloque recomendado
 
+El control independiente de carrera de 2 km ya dispone de registro repetible,
+fechado y vinculado a una preparación, con RPE obligatorio, FC y parciales de
+400 m opcionales. Su protocolo de calentamiento y su cadencia de repetición
+siguen pendientes de validación deportiva; ninguna semana se recalcula aún
+automáticamente a partir de estas marcas.
+
 El siguiente bloque será la **primera planificación semanal adaptativa de
 Tropa y Marinería**, limitada a producir una semana explicable sobre la agenda
 existente.
