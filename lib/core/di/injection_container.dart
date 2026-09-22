@@ -283,8 +283,8 @@ Future<void> initDependencies() async {
       scheduleRepository: sl(),
     ),
   );
-  sl.registerFactory(
-    () => WorkoutScheduleCubit(
+  sl.registerFactoryParam<WorkoutScheduleCubit, DateTime, void>(
+    (initialDate, _) => WorkoutScheduleCubit(
       getSchedule: sl(),
       scheduleWorkout: sl(),
       rescheduleWorkout: sl(),
@@ -292,16 +292,12 @@ Future<void> initDependencies() async {
       startWorkout: sl(),
       getPublicWorkouts: sl(),
       getPersonalWorkouts: sl(),
+      initialDate: initialDate,
     )..load(),
   );
   sl.registerFactoryParam<PreparationDetailCubit, String, void>(
-    (goalId, _) => PreparationDetailCubit(
-      goalId: goalId,
-      getDetail: sl(),
-      scheduleWorkout: sl(),
-      getPublicWorkouts: sl(),
-      getPersonalWorkouts: sl(),
-    )..load(),
+    (goalId, _) =>
+        PreparationDetailCubit(goalId: goalId, getDetail: sl())..load(),
   );
 
   // --- Dashboard ---
@@ -311,6 +307,7 @@ Future<void> initDependencies() async {
       assessmentRepository: sl(),
       preferencesRepository: sl(),
       goalRepository: sl(),
+      scheduleRepository: sl(),
     ),
   );
   sl.registerFactory(() => DashboardCubit(getOverview: sl())..load());

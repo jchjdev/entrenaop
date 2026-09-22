@@ -39,10 +39,12 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   versionada y el historial conserva una instantánea de la prescripción.
 - La agenda semanal permite añadir sesiones públicas o personales, moverlas,
   retirarlas, iniciarlas y continuar las que están en curso.
+- Inicio muestra un resumen compacto de lunes a domingo; cada día indica si hay
+  sesiones y abre la agenda completa en la fecha elegida.
 - Cada preparación activa dispone de una vista propia con su fecha objetivo,
   la última evaluación compatible y las sesiones de la semana vinculadas a
-  ella. Una sesión también puede permanecer general, sin pertenecer a ninguna
-  preparación.
+  ella. Es una vista de solo lectura: el usuario no puede crear, vincular,
+  mover ni retirar contenido de un plan oficial.
 - La sesión guiada conserva objetivos y resultados por serie, descripciones y
   vídeos, pausas y temporizadores recuperables. Registra omisiones, abandono con
   motivo, esfuerzo final, notas y el resultado agregado propio de AMRAP.
@@ -138,9 +140,12 @@ Inicio enseña solo las que ha añadido; el catálogo completo se consulta apart
 Las sesiones personales no dependen de una oposición concreta. La agenda
 semanal ya reúne sesiones personales y de biblioteca; más adelante integrará
 las prescripciones de varias preparaciones con una carga global coherente.
-El vínculo con una preparación es opcional e independiente del origen: una
-sesión personal puede contribuir a Tropa sin dejar de ser personal, y una
-sesión general puede continuar fuera de cualquier oposición.
+Una sesión libre puede convivir el mismo día con una prescripción oficial, pero
+no pasa a formar parte de Tropa, CNP ni de otro plan interno porque el usuario
+la añada. El vínculo con una preparación queda reservado al algoritmo y a los
+servicios de confianza de EntrenaOP. En el futuro, el usuario podrá agrupar sus
+sesiones en una planificación personal claramente separada y sin adaptación ni
+supervisión de EntrenaOP.
 El creador permite dividir una sesión en bloques convencionales con nombre y
 orden propios, manteniendo una entrada sencilla con un bloque principal creado
 por defecto.

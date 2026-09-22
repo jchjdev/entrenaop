@@ -9,6 +9,9 @@ class WorkoutScheduleRemoteDataSourceImpl
 
   @override
   Future<List<Map<String, dynamic>>> getRange(String start, String end) async {
+    // Corrige únicamente vínculos manuales creados antes de cerrar la frontera
+    // de los planes oficiales. La función está acotada al usuario autenticado.
+    await supabaseClient.rpc('cleanup_own_legacy_preparation_links');
     final response = await supabaseClient
         .from('scheduled_workouts')
         .select('''
@@ -38,7 +41,6 @@ class WorkoutScheduleRemoteDataSourceImpl
     String templateId,
     String date, {
     String? time,
-    String? preparationGoalId,
   }) async {
     final response = await supabaseClient.rpc(
       'schedule_workout',
@@ -46,7 +48,6 @@ class WorkoutScheduleRemoteDataSourceImpl
         'p_template_id': templateId,
         'p_scheduled_date': date,
         'p_scheduled_time': time,
-        'p_preparation_goal_id': preparationGoalId,
       },
     );
     return response as String;

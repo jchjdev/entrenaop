@@ -260,11 +260,12 @@ identidad
   mediante RPC y su estado se sincroniza desde la ejecución; el cliente no
   puede adjudicarse sesiones de otro usuario.
 - `scheduled_workouts.preparation_goal_id` conecta opcionalmente una sesión con
-  una preparación activa del mismo usuario. No sustituye a `source`: la primera
-  propiedad expresa para qué objetivo se entrena y la segunda conserva quién
-  originó la plantilla (`system`, usuario, algoritmo o entrenador). PostgreSQL
-  valida el vínculo al programar y las sesiones generales conservan el valor
-  nulo.
+  una preparación activa. No sustituye a `source`: la primera propiedad expresa
+  para qué objetivo se entrena y la segunda conserva quién originó la plantilla
+  (`system`, usuario, algoritmo o entrenador). La RPC disponible al deportista
+  programa exclusivamente sesiones libres con vínculo nulo; asignar el objetivo
+  queda reservado a servicios de confianza. PostgreSQL también impide al
+  deportista reprogramar o retirar una sesión oficial ya pautada.
 - `GetPreparationDetailUseCase` compone preparaciones, evaluaciones y agenda sin
   inventar una prescripción. Selecciona la evaluación más reciente cuyo catálogo
   coincide con el catálogo vigente del programa y filtra la semana por el
@@ -279,6 +280,33 @@ identidad
   salida, razones y cualquier anulación manual.
 - La primera versión será determinista antes de estudiar técnicas menos
   explicables.
+
+### Autoría oficial y generación adaptativa
+
+El futuro plan oficial separará dos responsabilidades que no deben confundirse:
+
+1. **Autoría deportiva:** Javier define programas, fases, criterios de avance,
+   límites y sesiones base. Ese contenido se publica en versiones inmutables.
+   Al principio puede cargarse mediante migraciones o datos revisados en Git;
+   un panel administrativo será después una interfaz segura sobre el mismo
+   modelo, no una segunda fuente de verdad.
+2. **Prescripción individual:** un servicio de confianza ejecuta reglas
+   deterministas y versionadas sobre preparación, marcas, disponibilidad e
+   historial. Selecciona o materializa la sesión privada correspondiente, la
+   registra con origen `algorithm` y la coloca en la agenda con sus entradas y
+   razones auditables.
+
+Flutter se limita a recoger contexto, mostrar la explicación, iniciar la sesión
+y registrar el resultado real. No publica reglas, no asigna
+`preparation_goal_id` y no decide progresiones. El panel administrativo tampoco
+debe convertirse en una planificación manual diaria para todos los usuarios:
+servirá para diseñar, validar, publicar y, en una fase profesional, anular una
+decisión concreta dejando auditoría.
+
+La primera vertical adaptativa no necesita esperar al panel. Debe validar antes
+el modelo versionado y el motor con un único programa de Tropa y Marinería; así
+el panel se construirá sobre reglas reales y no fijará prematuramente una
+interfaz equivocada.
 
 ## Sesión activa y funcionamiento sin conexión
 
@@ -331,7 +359,9 @@ la navegación principal ni mezclar datos de distinta naturaleza.
 elige cada operación según la experiencia de usuario.
 
 El panel de Inicio compone datos de evaluación y preferencias mediante un caso
-de uso propio. Su estado siguiente solo puede ser completar evaluación,
+de uso propio. También lee la semana natural de la agenda para presentar siete
+días compactos y abrir la fecha elegida sin duplicar las acciones de edición de
+`Mi semana`. Su estado siguiente solo puede ser completar evaluación,
 completar disponibilidad, solicitar revisión profesional o esperar reglas
 deportivas validadas. No calcula un porcentaje de progreso ni presenta una
 prescripción que el dominio todavía no pueda justificar.

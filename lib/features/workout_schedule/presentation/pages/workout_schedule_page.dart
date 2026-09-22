@@ -292,7 +292,9 @@ class _ScheduledWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canModify = item.status == ScheduledWorkoutStatus.planned;
+    final canModify =
+        item.status == ScheduledWorkoutStatus.planned &&
+        item.preparationGoalId == null;
     return Card(
       color: const Color(0xFF171717),
       child: Padding(
@@ -343,6 +345,16 @@ class _ScheduledWorkoutCard extends StatelessWidget {
               item.templateName,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
+            if (item.preparationGoalId != null) ...[
+              const SizedBox(height: 6),
+              const Text(
+                'Sesión oficial pautada por EntrenaOP',
+                style: TextStyle(
+                  color: Color(0xFFFFA477),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
             const SizedBox(height: 6),
             Wrap(
               spacing: 12,

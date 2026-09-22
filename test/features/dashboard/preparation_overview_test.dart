@@ -9,9 +9,12 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
+import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  final weekStart = DateTime(2026, 9, 21);
   final assessment = _assessment();
   const program = PreparationProgram(
     id: PreparationProgramIds.armedForcesTroopEntry,
@@ -29,20 +32,24 @@ void main() {
 
   group('siguiente paso', () {
     test('solicita primero el objetivo de preparación', () {
-      const overview = PreparationOverview(
-        assessments: [],
+      final overview = PreparationOverview(
+        assessments: const [],
         preferences: null,
-        goals: [],
+        goals: const [],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
       );
 
       expect(overview.nextStep, PreparationNextStep.preparationGoal);
     });
 
     test('solicita la evaluación física después del objetivo', () {
-      const overview = PreparationOverview(
-        assessments: [],
+      final overview = PreparationOverview(
+        assessments: const [],
         preferences: null,
-        goals: [goal],
+        goals: const [goal],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
       );
 
       expect(overview.nextStep, PreparationNextStep.physicalAssessment);
@@ -53,6 +60,8 @@ void main() {
         assessments: [assessment],
         preferences: null,
         goals: const [goal],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
       );
 
       expect(overview.nextStep, PreparationNextStep.trainingPreferences);
@@ -69,6 +78,8 @@ void main() {
           requiresProfessionalReview: true,
         ),
         goals: const [goal],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
       );
 
       expect(overview.nextStep, PreparationNextStep.professionalReview);
@@ -79,6 +90,8 @@ void main() {
         assessments: [assessment],
         preferences: preferences,
         goals: const [goal],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
       );
 
       expect(overview.nextStep, PreparationNextStep.awaitingValidatedPlan);
@@ -88,11 +101,23 @@ void main() {
   test('el cubit reúne evaluación y disponibilidad', () async {
     final assessmentRepository = _AssessmentRepository([assessment]);
     final preferencesRepository = _PreferencesRepository(preferences);
+    final scheduled = ScheduledWorkout(
+      id: 'scheduled-1',
+      templateId: 'template-1',
+      templateName: 'Sesión libre',
+      templateVersion: 1,
+      scheduledDate: DateTime(2026, 9, 22),
+      source: ScheduledWorkoutSource.user,
+      status: ScheduledWorkoutStatus.planned,
+    );
+    final scheduleRepository = _ScheduleRepository([scheduled]);
     final cubit = DashboardCubit(
       getOverview: GetPreparationOverviewUseCase(
         assessmentRepository: assessmentRepository,
         preferencesRepository: preferencesRepository,
         goalRepository: const _GoalRepository([goal]),
+        scheduleRepository: scheduleRepository,
+        now: () => DateTime(2026, 9, 22),
       ),
     );
     addTearDown(cubit.close);
@@ -103,6 +128,10 @@ void main() {
     expect(cubit.state.overview?.latestAssessment, assessment);
     expect(cubit.state.overview?.preferences, preferences);
     expect(cubit.state.overview?.goals, [goal]);
+    expect(cubit.state.overview?.weekStart, weekStart);
+    expect(cubit.state.overview?.weeklyWorkouts, [scheduled]);
+    expect(scheduleRepository.lastStart, weekStart);
+    expect(scheduleRepository.lastEnd, DateTime(2026, 9, 27));
   });
 
   test('el cubit conserva un error recuperable si falla la carga', () async {
@@ -111,6 +140,7 @@ void main() {
         assessmentRepository: _AssessmentRepository(const [], fail: true),
         preferencesRepository: _PreferencesRepository(null),
         goalRepository: const _GoalRepository([]),
+        scheduleRepository: _ScheduleRepository(),
       ),
     );
     addTearDown(cubit.close);
@@ -211,4 +241,33 @@ class _GoalRepository implements PreparationGoalRepository {
 
   @override
   Future<void> archive(String goalId) => throw UnimplementedError();
+}
+
+class _ScheduleRepository implements WorkoutScheduleRepository {
+  _ScheduleRepository([this.items = const []]);
+
+  final List<ScheduledWorkout> items;
+  DateTime? lastStart;
+  DateTime? lastEnd;
+
+  @override
+  Future<List<ScheduledWorkout>> getRange(DateTime start, DateTime end) async {
+    lastStart = start;
+    lastEnd = end;
+    return items;
+  }
+
+  @override
+  Future<String> schedule(String templateId, DateTime date, {String? time}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> reschedule(String scheduledId, DateTime date, {String? time}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> cancel(String scheduledId) => throw UnimplementedError();
+
+  @override
+  Future<String> start(String scheduledId) => throw UnimplementedError();
 }

@@ -2,7 +2,6 @@ import 'package:entrenaop/features/physical_assessment/presentation/utils/assess
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_state.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
-import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -106,14 +105,6 @@ class _Content extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 8),
-                  FilledButton.icon(
-                    onPressed: _canAddToWeek(state.weekEnd)
-                        ? () => _addWorkout(context, state)
-                        : null,
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Añadir sesión a esta preparación'),
-                  ),
-                  const SizedBox(height: 8),
                   TextButton.icon(
                     onPressed: () => context.push('/plan/week'),
                     icon: const Icon(Icons.calendar_view_week_outlined),
@@ -121,7 +112,7 @@ class _Content extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Las sesiones personales y generales pueden seguir en la agenda sin pertenecer a ninguna preparación.',
+                    'EntrenaOP asignará aquí las sesiones oficiales. Tus sesiones libres siguen separadas en la agenda general.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white54, height: 1.4),
                   ),
@@ -130,48 +121,6 @@ class _Content extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _addWorkout(
-    BuildContext context,
-    PreparationDetailState state,
-  ) async {
-    final template = await showModalBottomSheet<WorkoutTemplateSummary>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => _TemplatePicker(
-        publicTemplates: state.publicTemplates,
-        personalTemplates: state.personalTemplates,
-      ),
-    );
-    if (template == null || !context.mounted) return;
-
-    final today = DateUtils.dateOnly(DateTime.now());
-    final initialDate = today.isAfter(state.weekStart)
-        ? today
-        : state.weekStart;
-    final date = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: initialDate,
-      lastDate: state.weekEnd,
-      helpText: 'Día de esta semana',
-    );
-    if (date == null || !context.mounted) return;
-    final success = await context.read<PreparationDetailCubit>().schedule(
-      template,
-      date,
-    );
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Sesión vinculada a esta preparación.'
-              : 'No hemos podido añadir la sesión.',
-        ),
       ),
     );
   }
@@ -313,87 +262,6 @@ class _WorkoutCard extends StatelessWidget {
   }
 }
 
-class _TemplatePicker extends StatelessWidget {
-  const _TemplatePicker({
-    required this.publicTemplates,
-    required this.personalTemplates,
-  });
-
-  final List<WorkoutTemplateSummary> publicTemplates;
-  final List<WorkoutTemplateSummary> personalTemplates;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.72,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-          children: [
-            const Text(
-              'Elegir sesión',
-              style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 16),
-            if (personalTemplates.isNotEmpty) ...[
-              const _PickerTitle('Mis sesiones'),
-              ...personalTemplates.map((item) => _TemplateTile(template: item)),
-              const SizedBox(height: 12),
-            ],
-            const _PickerTitle('Biblioteca de EntrenaOP'),
-            if (publicTemplates.isEmpty)
-              const ListTile(title: Text('No hay sesiones disponibles.'))
-            else
-              ...publicTemplates.map((item) => _TemplateTile(template: item)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PickerTitle extends StatelessWidget {
-  const _PickerTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(8, 8, 8, 5),
-    child: Text(
-      text.toUpperCase(),
-      style: const TextStyle(
-        color: Colors.white54,
-        fontSize: 12,
-        fontWeight: FontWeight.w800,
-      ),
-    ),
-  );
-}
-
-class _TemplateTile extends StatelessWidget {
-  const _TemplateTile({required this.template});
-  final WorkoutTemplateSummary template;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    color: const Color(0xFF181818),
-    child: ListTile(
-      leading: const Icon(
-        Icons.fitness_center_rounded,
-        color: Color(0xFFFF8A50),
-      ),
-      title: Text(template.name),
-      subtitle: Text(
-        template.estimatedDurationMinutes == null
-            ? 'Versión ${template.version}'
-            : '${template.estimatedDurationMinutes} min · versión ${template.version}',
-      ),
-      trailing: const Icon(Icons.add_circle_outline_rounded),
-      onTap: () => context.pop(template),
-    ),
-  );
-}
-
 class _EmptyWeek extends StatelessWidget {
   const _EmptyWeek();
 
@@ -403,7 +271,7 @@ class _EmptyWeek extends StatelessWidget {
     child: Padding(
       padding: EdgeInsets.all(22),
       child: Text(
-        'No hay sesiones vinculadas a esta preparación durante la semana.',
+        'EntrenaOP todavía no ha pautado sesiones oficiales para esta semana.',
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white60),
       ),
@@ -424,9 +292,6 @@ class _Failure extends StatelessWidget {
     ),
   );
 }
-
-bool _canAddToWeek(DateTime weekEnd) =>
-    !weekEnd.isBefore(DateUtils.dateOnly(DateTime.now()));
 
 String _sourceLabel(ScheduledWorkoutSource source) => switch (source) {
   ScheduledWorkoutSource.library => 'EntrenaOP',

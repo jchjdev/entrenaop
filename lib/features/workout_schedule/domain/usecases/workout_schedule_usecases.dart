@@ -13,17 +13,8 @@ class ScheduleWorkoutUseCase {
   const ScheduleWorkoutUseCase(this._repository);
   final WorkoutScheduleRepository _repository;
 
-  Future<String> call(
-    String templateId,
-    DateTime date, {
-    String? time,
-    String? preparationGoalId,
-  }) => _repository.schedule(
-    templateId,
-    date,
-    time: time,
-    preparationGoalId: preparationGoalId,
-  );
+  Future<String> call(String templateId, DateTime date, {String? time}) =>
+      _repository.schedule(templateId, date, time: time);
 }
 
 class RescheduleWorkoutUseCase {

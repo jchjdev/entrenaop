@@ -15,17 +15,8 @@ class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository {
   }
 
   @override
-  Future<String> schedule(
-    String templateId,
-    DateTime date, {
-    String? time,
-    String? preparationGoalId,
-  }) => remoteDataSource.schedule(
-    templateId,
-    _date(date),
-    time: time,
-    preparationGoalId: preparationGoalId,
-  );
+  Future<String> schedule(String templateId, DateTime date, {String? time}) =>
+      remoteDataSource.schedule(templateId, _date(date), time: time);
 
   @override
   Future<void> reschedule(String scheduledId, DateTime date, {String? time}) =>

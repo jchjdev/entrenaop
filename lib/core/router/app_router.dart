@@ -106,7 +106,13 @@ class AppRouter {
                     GoRoute(
                       path: 'week',
                       builder: (context, state) => BlocProvider(
-                        create: (_) => sl<WorkoutScheduleCubit>(),
+                        create: (_) => sl<WorkoutScheduleCubit>(
+                          param1:
+                              DateTime.tryParse(
+                                state.uri.queryParameters['date'] ?? '',
+                              ) ??
+                              DateTime.now(),
+                        ),
                         child: const WorkoutSchedulePage(),
                       ),
                       routes: [

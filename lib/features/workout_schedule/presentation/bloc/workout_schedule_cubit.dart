@@ -13,6 +13,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     required StartScheduledWorkoutUseCase startWorkout,
     required GetPublicWorkoutsUseCase getPublicWorkouts,
     required GetPersonalWorkoutsUseCase getPersonalWorkouts,
+    DateTime? initialDate,
     DateTime Function()? now,
   }) : _getSchedule = getSchedule,
        _scheduleWorkout = scheduleWorkout,
@@ -22,7 +23,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
        _getPublicWorkouts = getPublicWorkouts,
        _getPersonalWorkouts = getPersonalWorkouts,
        _now = now ?? DateTime.now,
-       super(_initialState((now ?? DateTime.now)()));
+       super(_initialState(initialDate ?? (now ?? DateTime.now)()));
 
   final GetWorkoutScheduleUseCase _getSchedule;
   final ScheduleWorkoutUseCase _scheduleWorkout;
@@ -34,7 +35,9 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   final DateTime Function() _now;
 
   Future<void> load() async {
-    emit(state.copyWith(status: WorkoutScheduleStatus.loading, clearError: true));
+    emit(
+      state.copyWith(status: WorkoutScheduleStatus.loading, clearError: true),
+    );
     try {
       final items = await _getSchedule(state.weekStart, state.weekEnd);
       final publicTemplates = await _getPublicWorkouts();
@@ -66,7 +69,8 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   Future<void> changeWeek(int offset) async {
     final nextStart = state.weekStart.add(Duration(days: offset * 7));
     final today = _dateOnly(_now());
-    final selected = !today.isBefore(nextStart) &&
+    final selected =
+        !today.isBefore(nextStart) &&
             !today.isAfter(nextStart.add(const Duration(days: 6)))
         ? today
         : nextStart;
@@ -103,12 +107,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     try {
       await _rescheduleWorkout(scheduledId, date);
       final nextWeek = _weekStart(date);
-      emit(
-        state.copyWith(
-          weekStart: nextWeek,
-          selectedDay: _dateOnly(date),
-        ),
-      );
+      emit(state.copyWith(weekStart: nextWeek, selectedDay: _dateOnly(date)));
       await _reloadItems();
       return true;
     } catch (_) {
@@ -181,10 +180,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
 
 WorkoutScheduleState _initialState(DateTime now) {
   final today = _dateOnly(now);
-  return WorkoutScheduleState(
-    weekStart: _weekStart(today),
-    selectedDay: today,
-  );
+  return WorkoutScheduleState(weekStart: _weekStart(today), selectedDay: today);
 }
 
 DateTime _dateOnly(DateTime value) =>

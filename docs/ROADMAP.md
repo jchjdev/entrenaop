@@ -15,8 +15,8 @@ El ciclo objetivo continúa siendo:
 | --- | --- | --- |
 | Acceso y contexto inicial | Terminado | Autenticación restaurable, varias preparaciones, evaluación inicial e historial de Tropa y Marinería, y preferencias de disponibilidad, experiencia y material. |
 | Biblioteca y sesiones personales | Terminado para fuerza V1 | Biblioteca pública, sesiones privadas, ejercicios propios, descripción y vídeo HTTPS, duplicado, archivado, borradores locales y revisiones versionadas. |
-| Agenda semanal manual | Terminada | Reúne biblioteca y sesiones personales; permite programar, reprogramar, retirar, iniciar y continuar. Conserva nombre, versión y duración como instantánea. |
-| Contexto por preparación | Terminado | Permite entrar en una preparación activa, ver objetivo, últimas marcas compatibles y sesiones semanales vinculadas. El vínculo es opcional y no altera el origen de la sesión. |
+| Agenda semanal manual | Terminada | Reúne biblioteca y sesiones personales; permite programar, reprogramar, retirar, iniciar y continuar. Inicio resume los siete días y abre la fecha seleccionada. Conserva nombre, versión y duración como instantánea. |
+| Contexto por preparación | Terminado | Permite entrar en una preparación activa, ver objetivo, últimas marcas compatibles y sesiones oficiales vinculadas. El deportista solo consulta y ejecuta: no puede crear, vincular, mover ni retirar sesiones del plan oficial. |
 | Creador de fuerza por bloques | Terminado en V1 | Series variables, superseries A1/A2, circuitos con transiciones, intervalos de trabajo, Tabata 8 × 20/10, EMOM y AMRAP, con vista previa coherente. |
 | Sesión guiada e historial | Terminado para los formatos V1 | Objetivo y resultado real, omisión, abandono, RPE final, notas, vídeos, temporizadores restaurables, avisos configurables, cola idempotente e historial con correcciones auditadas. |
 | Funcionamiento sin conexión | Parcial | Encola completar/omitir serie, AMRAP, finalizar y abandonar una ejecución cargada. No replica catálogo o agenda, no inicia contenido desconocido y las correcciones exigen conexión. |
@@ -48,7 +48,8 @@ El ciclo objetivo continúa siendo:
 - Múltiples preparaciones activas, sin duplicar un mismo programa activo.
 - Detalle de preparación que compone fecha objetivo, última evaluación
   compatible y agenda semanal relacionada, sin generar aún decisiones
-  deportivas.
+  deportivas. El vínculo queda reservado al futuro algoritmo o a un servicio
+  administrativo de confianza.
 
 ### Vertical manual de entrenamiento
 
@@ -74,12 +75,14 @@ existente.
 Debe cerrar, en este orden, un único tramo del ciclo:
 
 1. Definir una prescripción mínima con entradas explícitas: preparaciones
-   activas, evaluación vigente, disponibilidad, material e historial necesario.
+   activas, evaluación vigente, disponibilidad, material e historial necesario;
+   y separar el contenido deportivo versionado de las decisiones por usuario.
 2. Versionar las reglas y guardar para cada propuesta entradas, salida y razones.
 3. Generar una semana privada con origen `algorithm` y colocarla en
    `scheduled_workouts` sin modificar plantillas ni ejecuciones históricas.
-4. Mostrar al usuario por qué se propone cada sesión y permitir aceptar o
-   regenerar solo bajo reglas definidas.
+4. Mostrar al usuario por qué se pauta cada sesión y permitir ejecutarla o
+   registrar su resultado; cualquier sustitución futura deberá decidirla el
+   algoritmo o un servicio autorizado bajo reglas versionadas.
 5. Cubrir dominio, persistencia, permisos y una prueba vertical desde contexto
    válido hasta semana visible en agenda.
 
@@ -93,6 +96,12 @@ sin resolver esa interrupción principal.
 La adaptación posterior a una semana realizada será el bloque siguiente, pero
 no forma parte de este trabajo: primero debe existir una primera prescripción
 determinista y verificable.
+
+El panel administrativo no es un requisito previo para esta primera vertical.
+Las reglas y sesiones oficiales iniciales se revisarán como datos versionados en
+Git y Supabase. Cuando el modelo haya demostrado que representa el método real,
+el panel ofrecerá una interfaz segura para publicarlo sin cambiar el contrato del
+motor ni permitir que el cliente del deportista lo modifique.
 
 ## Después, no en paralelo
 

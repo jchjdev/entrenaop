@@ -5,6 +5,7 @@ import 'package:entrenaop/features/physical_assessment/domain/entities/physical_
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
+import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -109,6 +110,11 @@ class _DashboardContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 22),
+                  _CompactWeek(
+                    weekStart: overview.weekStart,
+                    workouts: overview.weeklyWorkouts,
+                  ),
+                  const SizedBox(height: 24),
                   _PreparationsCarousel(goals: overview.goals),
                   const SizedBox(height: 22),
                   const _TrainingHero(),
@@ -161,6 +167,152 @@ class _DashboardContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CompactWeek extends StatelessWidget {
+  const _CompactWeek({required this.weekStart, required this.workouts});
+
+  final DateTime weekStart;
+  final List<ScheduledWorkout> workouts;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Esta semana',
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.push('/plan/week'),
+              child: const Text('Ver semana'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final cells = List.generate(7, (index) {
+              final day = weekStart.add(Duration(days: index));
+              return _CompactDay(
+                day: day,
+                isToday: DateUtils.isSameDay(day, today),
+                workouts: workouts
+                    .where(
+                      (item) => DateUtils.isSameDay(item.scheduledDate, day),
+                    )
+                    .toList(growable: false),
+              );
+            });
+
+            if (constraints.maxWidth >= 650) {
+              return Row(
+                children: [
+                  for (final (index, cell) in cells.indexed) ...[
+                    if (index > 0) const SizedBox(width: 10),
+                    Expanded(child: cell),
+                  ],
+                ],
+              );
+            }
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final (index, cell) in cells.indexed) ...[
+                    if (index > 0) const SizedBox(width: 9),
+                    SizedBox(width: 74, child: cell),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _CompactDay extends StatelessWidget {
+  const _CompactDay({
+    required this.day,
+    required this.isToday,
+    required this.workouts,
+  });
+
+  final DateTime day;
+  final bool isToday;
+  final List<ScheduledWorkout> workouts;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCompleted = workouts.any(
+      (item) => item.status == ScheduledWorkoutStatus.completed,
+    );
+    return Semantics(
+      label:
+          '${_weekdayLabel(day.weekday)}, ${day.day}, ${workouts.length} sesiones',
+      button: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () => context.push('/plan/week?date=${_dateParam(day)}'),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          constraints: const BoxConstraints(minHeight: 116),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
+          decoration: BoxDecoration(
+            color: isToday ? const Color(0xFFFF6A2A) : const Color(0xFF171717),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isToday ? const Color(0xFFFF6A2A) : Colors.white12,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _weekdayLabel(day.weekday),
+                style: TextStyle(
+                  color: isToday ? Colors.white : Colors.white54,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 9),
+              Text(
+                '${day.day}',
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox.square(
+                dimension: 9,
+                child: workouts.isEmpty
+                    ? null
+                    : DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: hasCompleted
+                              ? const Color(0xFF69D39B)
+                              : isToday
+                              ? Colors.white
+                              : const Color(0xFFFF8A50),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -260,7 +412,7 @@ class _PreparationCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         color: const Color(0xFF171717),
         child: InkWell(
-          onTap: () => _openPreparationCatalog(context),
+          onTap: () => context.push('/plan/goal/${goal.id}'),
           child: Padding(
             padding: const EdgeInsets.all(19),
             child: Column(
@@ -778,6 +930,22 @@ String _formatDate(DateTime date) {
   String twoDigits(int value) => value.toString().padLeft(2, '0');
   return '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
 }
+
+String _dateParam(DateTime value) =>
+    '${value.year.toString().padLeft(4, '0')}-'
+    '${value.month.toString().padLeft(2, '0')}-'
+    '${value.day.toString().padLeft(2, '0')}';
+
+String _weekdayLabel(int weekday) => switch (weekday) {
+  DateTime.monday => 'LUN',
+  DateTime.tuesday => 'MAR',
+  DateTime.wednesday => 'MIÉ',
+  DateTime.thursday => 'JUE',
+  DateTime.friday => 'VIE',
+  DateTime.saturday => 'SÁB',
+  DateTime.sunday => 'DOM',
+  _ => '',
+};
 
 extension on TrainingEquipment {
   String get label => switch (this) {

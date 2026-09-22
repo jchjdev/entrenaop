@@ -47,15 +47,10 @@ void main() {
     final remote = _FakeRemoteDataSource();
     final repository = WorkoutScheduleRepositoryImpl(remoteDataSource: remote);
 
-    await repository.schedule(
-      'template-1',
-      DateTime(2026, 9, 22, 19),
-      preparationGoalId: 'goal-1',
-    );
+    await repository.schedule('template-1', DateTime(2026, 9, 22, 19));
     await repository.reschedule('scheduled-1', DateTime(2026, 10, 3, 8));
 
     expect(remote.scheduledDate, '2026-09-22');
-    expect(remote.preparationGoalId, 'goal-1');
     expect(remote.rescheduledDate, '2026-10-03');
   });
 }
@@ -68,7 +63,6 @@ class _FakeRemoteDataSource implements WorkoutScheduleRemoteDataSource {
   String? lastEnd;
   String? scheduledDate;
   String? rescheduledDate;
-  String? preparationGoalId;
 
   @override
   Future<List<Map<String, dynamic>>> getRange(String start, String end) async {
@@ -82,10 +76,8 @@ class _FakeRemoteDataSource implements WorkoutScheduleRemoteDataSource {
     String templateId,
     String date, {
     String? time,
-    String? preparationGoalId,
   }) async {
     scheduledDate = date;
-    this.preparationGoalId = preparationGoalId;
     return 'scheduled-1';
   }
 
