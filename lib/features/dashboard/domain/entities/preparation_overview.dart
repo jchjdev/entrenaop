@@ -28,13 +28,23 @@ class PreparationOverview extends Equatable {
   final List<ScheduledWorkout> weeklyWorkouts;
 
   PhysicalAssessmentHistoryEntry? get latestAssessment =>
-      assessments.isEmpty ? null : assessments.first;
+      goals.any(
+            (goal) =>
+                goal.programId == PreparationProgramIds.armedForcesTroopEntry,
+          ) &&
+          assessments.isNotEmpty
+      ? assessments.first
+      : null;
 
   PreparationNextStep get nextStep {
     if (goals.isEmpty) {
       return PreparationNextStep.preparationGoal;
     }
-    if (latestAssessment == null) {
+    if (latestAssessment == null &&
+        goals.any(
+          (goal) =>
+              goal.programId == PreparationProgramIds.armedForcesTroopEntry,
+        )) {
       return PreparationNextStep.physicalAssessment;
     }
     if (preferences == null) {

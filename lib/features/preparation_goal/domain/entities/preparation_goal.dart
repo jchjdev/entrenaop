@@ -3,6 +3,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 
 abstract final class PreparationProgramIds {
   static const armedForcesTroopEntry = 'armed_forces_troop_entry';
+  static const fasPeriodicAssessment = 'fas_periodic_assessment';
 }
 
 class PreparationGoal extends Equatable {

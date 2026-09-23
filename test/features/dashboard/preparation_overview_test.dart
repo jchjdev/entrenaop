@@ -55,6 +55,27 @@ void main() {
       expect(overview.nextStep, PreparationNextStep.physicalAssessment);
     });
 
+    test('no envía a Tropa si solo prepara la evaluación periódica FAS', () {
+      const fasGoal = PreparationGoal(
+        id: 'goal-fas',
+        program: PreparationProgram(
+          id: PreparationProgramIds.fasPeriodicAssessment,
+          name: 'Evaluación periódica FAS · 2027',
+          kind: PreparationProgramKind.internalAssessment,
+        ),
+      );
+      final overview = PreparationOverview(
+        assessments: [assessment],
+        preferences: null,
+        goals: const [fasGoal],
+        weekStart: weekStart,
+        weeklyWorkouts: const [],
+      );
+
+      expect(overview.latestAssessment, isNull);
+      expect(overview.nextStep, PreparationNextStep.trainingPreferences);
+    });
+
     test('solicita la disponibilidad tras completar la evaluación', () {
       final overview = PreparationOverview(
         assessments: [assessment],

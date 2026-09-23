@@ -93,24 +93,46 @@ class _Content extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 22),
-                  Card(
-                    color: const Color(0xFF171717),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.directions_run,
-                        color: Color(0xFFFF8A50),
+                  if (goal.programId ==
+                      PreparationProgramIds.fasPeriodicAssessment) ...[
+                    Card(
+                      color: const Color(0xFF171717),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.monitor_heart_outlined,
+                          color: Color(0xFFFF8A50),
+                        ),
+                        title: const Text('Registrar evaluación periódica'),
+                        subtitle: const Text(
+                          'Baremo FAS 2027 por edad y sexo. Consulta tus intentos y repite el test cuando corresponda.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push(
+                          '/plan/goal/${goal.id}/periodic-assessment',
+                        ),
                       ),
-                      title: const Text('Control de carrera · 2 km'),
-                      subtitle: const Text(
-                        'Registra una marca nueva o consulta los tests anteriores de esta preparación.',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () =>
-                          context.push('/plan/goal/${goal.id}/running-test'),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _AssessmentCard(state: state),
+                  ] else if (goal.programId ==
+                      PreparationProgramIds.armedForcesTroopEntry) ...[
+                    Card(
+                      color: const Color(0xFF171717),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.directions_run,
+                          color: Color(0xFFFF8A50),
+                        ),
+                        title: const Text('Control de carrera · 2 km'),
+                        subtitle: const Text(
+                          'Registra una marca nueva o consulta los tests anteriores de esta preparación.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            context.push('/plan/goal/${goal.id}/running-test'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _AssessmentCard(state: state),
+                  ],
                   if (goal.programId ==
                       PreparationProgramIds.armedForcesTroopEntry) ...[
                     const SizedBox(height: 12),

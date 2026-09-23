@@ -103,7 +103,8 @@ sin alterar esta primera vertical.
 
 Javier prefiere trabajar primero con las pruebas que conoce como PAFAS/PAEF.
 Para el nuevo régimen se ha creado el programa estable
-`fas_periodic_assessment`, de tipo `internal_assessment`, **deshabilitado**.
+`fas_periodic_assessment`, de tipo `internal_assessment`, **habilitado en
+desarrollo**.
 Ambos nombres se tratan como formas de referirse a esta evaluación periódica,
 no como dos baremos inventados. La referencia
 `assets/programs/fas_periodic_2027/assessment_reference_v1.json` recoge del
@@ -114,11 +115,15 @@ mínimos de ingreso de Tropa. Conforme al artículo 10, el circuito no se exige
 a partir de los 45 años, aunque el último tramo visible de su tabla se titule
 41–45. La vigencia de este régimen periódico comienza el 1 de enero de 2027.
 
-Esta referencia **no es el baremo íntegro de 0 a 100 puntos** ni está conectada
-al guardado. La base de datos actual solo admite los hitos de ingreso,
-formación y egreso y carece de edad y tabla de puntuación periódica; publicar
-el programa ahora produciría resultados erróneos. Antes de habilitarlo habrá
-que modelar la puntuación completa, fijar la edad aplicable en la fecha del
-test, validar el registro en servidor y resolver la captura inicial dentro
-del programa elegido. Un escenario de 2026 requiere su catálogo histórico
-propio; no se le aplicarán anticipadamente los baremos de 2027.
+Esta referencia **no es el baremo íntegro de 0 a 100 puntos**. La migración
+`20260923006000_fas_periodic_assessments.sql` guarda cada intento fechado en
+tablas independientes del ingreso, con edad declarada en la fecha del test,
+categoría, versión y las tres o cuatro marcas exigibles. El servidor valida
+propiedad de la preparación activa, conjunto exacto de pruebas y valores no
+negativos. La app permite repetir el test y consultar sus marcas frente al
+mínimo de 20 puntos; desde los 45 años el circuito no se exige. Las marcas
+anteriores a 2027 quedan etiquetadas como referencia de entrenamiento, no
+como evaluación oficial bajo el nuevo régimen. Aún faltan la puntuación
+completa, verificación independiente de edad/categoría declaradas y las reglas
+de aptitud operativa. Un escenario normativo de 2026 requiere su catálogo
+histórico propio; no se le aplican anticipadamente los baremos de 2027.

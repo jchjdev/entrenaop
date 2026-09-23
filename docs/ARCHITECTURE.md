@@ -200,13 +200,14 @@ identidad
   `preparation_goals` guarda las preparaciones que sigue cada usuario y sus
   fechas objetivo. Puede mantener varias activas, pero no duplicar el mismo
   programa mientras permanezca activo.
-- El programa `fas_periodic_assessment` existe como borrador deshabilitado.
-  `fas_periodic_2027/assessment_reference_v1.json` contiene solo los mínimos
-  que alcanzan al menos 20 puntos del anexo II de DEF/15/2026. El contrato SQL
-  actual de `physical_assessments` solo modela hitos de ingreso/formación y
-  todavía no puede validar puntuaciones por edad. No se conectará la referencia
-  del cliente al guardado ni se habilitará el programa hasta ampliar y probar
-  esa validación en servidor; Tropa conserva su catálogo e historial.
+- El programa `fas_periodic_assessment` está habilitado en desarrollo con
+  registro repetible e historial propios. La migración
+  `20260923006000_fas_periodic_assessments.sql` conserva versión, fecha, edad,
+  categoría y marcas por prueba, valida la propiedad de la preparación activa
+  mediante RPC y aplica RLS a la lectura. Los mínimos de 20 puntos del anexo II
+  de DEF/15/2026 viven en PostgreSQL y en la referencia versionada del cliente;
+  no equivalen al baremo completo de 0–100 puntos ni a aptitud oficial. Tropa
+  conserva su catálogo e historial, sin reutilización de sus marcas.
 - Las preparaciones, la planificación y las sesiones personales son conceptos
   distintos. `scheduled_workouts` actúa como agenda global del usuario y puede
   reunir distintas fuentes; una futura planificación adaptativa atenderá

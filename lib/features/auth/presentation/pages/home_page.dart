@@ -76,6 +76,15 @@ class _DashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final assessment = overview.latestAssessment;
     final preferences = overview.preferences;
+    final hasTroop = overview.goals.any(
+      (goal) => goal.programId == PreparationProgramIds.armedForcesTroopEntry,
+    );
+    final fasGoal = overview.goals
+        .where(
+          (goal) =>
+              goal.programId == PreparationProgramIds.fasPeriodicAssessment,
+        )
+        .firstOrNull;
 
     return RefreshIndicator(
       onRefresh: () => context.read<DashboardCubit>().load(),
@@ -119,7 +128,11 @@ class _DashboardContent extends StatelessWidget {
                   const SizedBox(height: 22),
                   const _TrainingHero(),
                   const SizedBox(height: 22),
-                  _QuickActions(assessment: assessment),
+                  _QuickActions(
+                    assessment: assessment,
+                    hasTroop: hasTroop,
+                    fasGoal: fasGoal,
+                  ),
                   const SizedBox(height: 26),
                   const Text(
                     'Completa tu contexto',
@@ -135,21 +148,26 @@ class _DashboardContent extends StatelessWidget {
                   const SizedBox(height: 16),
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final assessmentCard = _AssessmentCard(
-                        assessment: assessment,
-                      );
+                      final Widget? assessmentCard = hasTroop
+                          ? _AssessmentCard(assessment: assessment)
+                          : fasGoal?.id == null
+                          ? null
+                          : _FasAssessmentCard(goalId: fasGoal!.id!);
                       final preferencesCard = _PreferencesCard(
                         preferences: preferences,
                       );
                       if (constraints.maxWidth < 700) {
                         return Column(
                           children: [
-                            assessmentCard,
-                            const SizedBox(height: 12),
+                            if (assessmentCard != null) ...[
+                              assessmentCard,
+                              const SizedBox(height: 12),
+                            ],
                             preferencesCard,
                           ],
                         );
                       }
+                      if (assessmentCard == null) return preferencesCard;
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -536,9 +554,15 @@ class _TrainingHero extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.assessment});
+  const _QuickActions({
+    required this.assessment,
+    required this.hasTroop,
+    required this.fasGoal,
+  });
 
   final PhysicalAssessmentHistoryEntry? assessment;
+  final bool hasTroop;
+  final PreparationGoal? fasGoal;
 
   @override
   Widget build(BuildContext context) {
@@ -575,17 +599,30 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => context.go('/plan'),
               ),
               const SizedBox(width: 10),
-              _QuickActionCard(
-                icon: Icons.monitor_heart_outlined,
-                label: assessment == null ? 'Evaluación Tropa' : 'Marcas Tropa',
-                description: assessment == null
-                    ? 'Registrar pruebas físicas'
-                    : 'Consultar la última valoración',
-                onTap: () => assessment == null
-                    ? context.push('/assessment/initial')
-                    : context.go('/assessment/history/physical'),
-              ),
-              const SizedBox(width: 10),
+              if (hasTroop)
+                _QuickActionCard(
+                  icon: Icons.monitor_heart_outlined,
+                  label: assessment == null
+                      ? 'Evaluación Tropa'
+                      : 'Marcas Tropa',
+                  description: assessment == null
+                      ? 'Registrar pruebas físicas'
+                      : 'Consultar la última valoración',
+                  onTap: () => assessment == null
+                      ? context.push('/assessment/initial')
+                      : context.go('/assessment/history/physical'),
+                ),
+              if (hasTroop) const SizedBox(width: 10),
+              if (fasGoal?.id case final String goalId) ...[
+                _QuickActionCard(
+                  icon: Icons.monitor_heart_outlined,
+                  label: 'Evaluación FAS',
+                  description: 'Registrar o revisar marcas',
+                  onTap: () =>
+                      context.push('/plan/goal/$goalId/periodic-assessment'),
+                ),
+                const SizedBox(width: 10),
+              ],
               _QuickActionCard(
                 icon: Icons.insights_rounded,
                 label: 'Evolución',
@@ -769,6 +806,51 @@ class _AssessmentCard extends StatelessWidget {
           : context.push('/assessment/initial'),
     );
   }
+}
+
+class _FasAssessmentCard extends StatelessWidget {
+  const _FasAssessmentCard({required this.goalId});
+
+  final String goalId;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: const Color(0xFF151515),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Icon(
+              Icons.monitor_heart_outlined,
+              color: Color(0xFFFF8A50),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Evaluación periódica FAS · 2027',
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 7),
+          const Text(
+            'Registra y consulta tus intentos con el baremo por edad. Los resultados previos a 2027 son orientativos.',
+            style: TextStyle(color: Colors.white60, height: 1.45),
+          ),
+          const SizedBox(height: 18),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () =>
+                  context.push('/plan/goal/$goalId/periodic-assessment'),
+              child: const Text('Ver pruebas y marcas'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _PreferencesCard extends StatelessWidget {

@@ -12,6 +12,8 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/initial_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart';
+import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
@@ -158,6 +160,15 @@ class AppRouter {
                             child: const PreparationDetailPage(),
                           ),
                           routes: [
+                            GoRoute(
+                              path: 'periodic-assessment',
+                              builder: (context, state) =>
+                                  FasPeriodicAssessmentPage(
+                                    goalId: state.pathParameters['goalId']!,
+                                    repository:
+                                        sl<FasPeriodicAssessmentRepository>(),
+                                  ),
+                            ),
                             GoRoute(
                               path: 'week-simulator',
                               builder: (context, state) =>

@@ -93,19 +93,20 @@ programa de ingreso existente: tiene marcas y preparaciones históricas. La
 Orden DEF/15/2026 comparte tipos de prueba entre ingreso y evaluación
 periódica, pero diferencia sus baremos; los nuevos baremos periódicos entran
 en vigor el 1 de enero de 2027. Ya existe el programa estable
-`fas_periodic_assessment` **deshabilitado** y una referencia versionada con
-las marcas mínimas que alcanzan al menos 20 puntos por prueba, sexo y edad
-según el anexo II. No calcula todavía la puntuación completa ni guarda
-evaluaciones periódicas: la persistencia actual solo admite hitos de ingreso
-y no debe puntuar la evaluación periódica como si fuera Tropa.
+`fas_periodic_assessment` **habilitado en desarrollo** y una referencia
+versionada con las marcas mínimas que alcanzan al menos 20 puntos por prueba,
+sexo y edad según el anexo II. Su registro e historial periódicos son
+independientes de Tropa y validan las marcas en PostgreSQL. Antes del 1 de
+enero de 2027 se muestran solo como referencia de entrenamiento. No calcula
+todavía la puntuación íntegra ni certifica aptitud oficial; tampoco prescribe
+sesiones automáticamente.
 
 El siguiente tramo ejecutable será:
 
-1. Completar el contrato de evaluación periódica y su puntuación completa por
-   edad/sexo en PostgreSQL, con pruebas de dominio y permisos. Conectar el
-   registro al programa elegido sin reutilizar las marcas de ingreso como
-   calificación oficial. Confirmar con Javier los detalles operativos antes de
-   habilitarlo.
+1. Completado el contrato separado de registro, mínimos por edad/sexo,
+   historial y validación de propiedad en PostgreSQL. Pendiente la tabla
+   completa de 0–100 puntos y su cálculo; no confundir los mínimos visibles
+   con una calificación oficial.
 2. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
    las primeras plantillas: técnica, objetivo, material, variantes y
    limitaciones. El creador administrativo completo, fotos y biblioteca amplia
