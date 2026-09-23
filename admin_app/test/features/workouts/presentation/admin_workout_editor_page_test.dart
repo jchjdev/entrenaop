@@ -155,6 +155,29 @@ void main() {
     );
   });
 
+  testWidgets('el ritmo de carrera coloca dos puntos automáticamente', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1100));
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Ritmo (m:ss/km)'), '555');
+    expect(
+      tester.widget<TextField>(_field('Ritmo (m:ss/km)')).controller!.text,
+      '5:55',
+    );
+    await tester.enterText(_field('Hasta (m:ss/km)'), '600');
+    expect(
+      tester.widget<TextField>(_field('Hasta (m:ss/km)')).controller!.text,
+      '6:00',
+    );
+  });
+
   testWidgets('carrera admite rango y recuperación por metros', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1200));
     final repository = _FakeWorkouts();

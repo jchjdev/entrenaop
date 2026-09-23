@@ -17,7 +17,8 @@ permite combinar bloques convencionales, superseries, circuitos, intervalos,
 EMOM, AMRAP y Tabata con ejercicios públicos buscables por nombre, músculo o
 material; admite objetivos diferentes por serie. Ambas rutas guardan primero
 una plantilla `system/private/draft`.
-Los campos de carrera aceptan `m:ss` escrito con `:`; el selector enseña la
+Los campos de carrera formatean los dígitos como `m:ss` (por ejemplo, `555`
+se muestra como `5:55`) y también admiten escribir `:`; el selector enseña la
 miniatura de los ejercicios públicos cuando tienen una URL HTTPS válida y un
 icono cuando no hay foto.
 En fuerza, objetivos temporales y descansos se editan en segundos, igual que

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 
 /// Campos de un tramo de carrera compartidos por el editor personal y el panel.
 /// La aplicación propietaria conserva el estado, la persistencia y los permisos.
@@ -18,7 +18,6 @@ class RunningStepFields extends StatelessWidget {
     required this.onRecoveryTypeChanged,
     required this.onRecoveryMeasureChanged,
     required this.onEdited,
-    this.clockFormatter,
     this.targetValidator,
     this.adminLabels = false,
   });
@@ -34,7 +33,6 @@ class RunningStepFields extends StatelessWidget {
   final ValueChanged<RunningRecoveryType?> onRecoveryTypeChanged;
   final ValueChanged<bool> onRecoveryMeasureChanged;
   final VoidCallback onEdited;
-  final TextInputFormatter? clockFormatter;
   final FormFieldValidator<String>? targetValidator;
   final bool adminLabels;
 
@@ -193,7 +191,7 @@ class RunningStepFields extends StatelessWidget {
     keyboardType: clock
         ? TextInputType.datetime
         : const TextInputType.numberWithOptions(decimal: true),
-    inputFormatters: clock && clockFormatter != null ? [clockFormatter!] : null,
+    inputFormatters: clock ? const [DurationInputFormatter()] : null,
     decoration: InputDecoration(labelText: label, hintText: hint),
     onChanged: (_) => onEdited(),
     validator: validator,

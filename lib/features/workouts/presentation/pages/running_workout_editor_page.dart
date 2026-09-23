@@ -604,7 +604,6 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
               recoveryType: data.recoveryType,
               recoveryByDistance: data.recoveryByDistance,
               recoveryController: data.recoveryController,
-              clockFormatter: const DurationInputFormatter(),
               onEdited: widget.onChanged,
               targetValidator: (_) {
                 try {
