@@ -2019,7 +2019,7 @@ class _ExercisePickerState extends State<_ExercisePicker> {
                       itemBuilder: (context, index) {
                         final exercise = exercises[index];
                         return ListTile(
-                          leading: const Icon(Icons.fitness_center_rounded),
+                          leading: _exerciseThumbnail(exercise.thumbnailUrl),
                           title: Text(exercise.name),
                           subtitle: Text(
                             [
@@ -2052,6 +2052,29 @@ class _ExercisePickerState extends State<_ExercisePicker> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _exerciseThumbnail(String? url) {
+    final validUrl = url != null && Uri.tryParse(url)?.scheme == 'https';
+    if (!validUrl) {
+      return const SizedBox.square(
+        dimension: 48,
+        child: Icon(Icons.fitness_center_rounded),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        url,
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => const SizedBox.square(
+          dimension: 48,
+          child: Icon(Icons.fitness_center_rounded),
         ),
       ),
     );

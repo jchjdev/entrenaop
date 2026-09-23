@@ -120,6 +120,41 @@ void main() {
     expect(find.textContaining('Revisa repeticiones'), findsOneWidget);
   });
 
+  testWidgets('el panel acepta dos puntos escritos en el ritmo', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1100));
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
+      TextInputType.text,
+    );
+    await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
+    await tester.enterText(_field('Distancia (m)'), '400');
+    await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
+    await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.tap(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
+    expect(
+      repository
+          .saved!
+          .blocks
+          .single
+          .exercises
+          .single
+          .sets
+          .single
+          .targetPaceMinSecondsPerKm,
+      230,
+    );
+  });
+
   testWidgets('carrera admite rango y recuperación por metros', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1200));
     final repository = _FakeWorkouts();

@@ -629,7 +629,9 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                 Expanded(
                   child: TextFormField(
                     controller: data.targetController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: data.targetType == WorkoutTargetType.duration
+                        ? TextInputType.datetime
+                        : TextInputType.number,
                     inputFormatters:
                         data.targetType == WorkoutTargetType.duration
                         ? const [DurationInputFormatter()]
@@ -662,7 +664,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                 Expanded(
                   child: TextFormField(
                     controller: data.paceMinController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.datetime,
                     inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Desde (min/km)',
@@ -675,7 +677,7 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                 Expanded(
                   child: TextFormField(
                     controller: data.paceMaxController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.datetime,
                     inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Hasta (min/km)',
@@ -760,7 +762,9 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                   Expanded(
                     child: TextFormField(
                       controller: data.recoveryController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: data.recoveryByDistance
+                          ? TextInputType.number
+                          : TextInputType.datetime,
                       inputFormatters: data.recoveryByDistance
                           ? null
                           : const [DurationInputFormatter()],

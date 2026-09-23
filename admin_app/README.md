@@ -13,6 +13,9 @@ permite combinar bloques convencionales, superseries, circuitos, intervalos,
 EMOM, AMRAP y Tabata con ejercicios públicos buscables por nombre, músculo o
 material; admite objetivos diferentes por serie. Ambas rutas guardan primero
 una plantilla `system/private/draft`.
+Los campos de reloj aceptan `m:ss` escrito con `:`; el selector enseña la
+miniatura de los ejercicios públicos cuando tienen una URL HTTPS válida y un
+icono cuando no hay foto.
 
 Al abrir una sesión se muestra una vista previa de bloques, series y objetivos
 con el mismo lector de datos que usa la app. Desde ahí se puede editar un

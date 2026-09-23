@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
-/// Permite escribir tiempos solo con dígitos: 128 se muestra como 1:28 y
-/// 10205 como 1:02:05. Así se evitan cambios de teclado durante el registro.
+/// Admite tanto la entrada abreviada (128 → 1:28) como los dos puntos escritos
+/// por el usuario. Una entrada manual nunca debe convertirse en otro tiempo.
 class DurationInputFormatter extends TextInputFormatter {
   const DurationInputFormatter();
 
@@ -10,8 +10,30 @@ class DurationInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    if (!RegExp(r'^[0-9:]*$').hasMatch(newValue.text)) return oldValue;
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    if (digits.length > 6) return oldValue;
+    if (digits.length > 6 || ':'.allMatches(newValue.text).length > 2) {
+      return oldValue;
+    }
+    final oldDigits = oldValue.text.replaceAll(RegExp(r'\D'), '');
+    final oldWasAutomatic = oldValue.text == formatDurationDigits(oldDigits);
+    if (oldWasAutomatic && newValue.text == '${oldValue.text}:') {
+      final normalized = oldDigits.replaceFirst(RegExp(r'^0+(?=\d)'), '');
+      final explicit = normalized.length <= 2 ? '$normalized:' : newValue.text;
+      return TextEditingValue(
+        text: explicit,
+        selection: TextSelection.collapsed(offset: explicit.length),
+      );
+    }
+    if (newValue.text.contains(':') &&
+        !(oldWasAutomatic &&
+            newValue.text.startsWith(oldValue.text) &&
+            newValue.text.length > oldValue.text.length &&
+            RegExp(
+              r'^\d+$',
+            ).hasMatch(newValue.text.substring(oldValue.text.length)))) {
+      return newValue;
+    }
     final formatted = formatDurationDigits(digits);
     return TextEditingValue(
       text: formatted,

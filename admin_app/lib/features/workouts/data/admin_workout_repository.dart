@@ -29,12 +29,14 @@ class AdminExercise {
     required this.name,
     this.muscleGroups = const [],
     this.equipment = const [],
+    this.thumbnailUrl,
   });
 
   final String id;
   final String name;
   final List<String> muscleGroups;
   final List<String> equipment;
+  final String? thumbnailUrl;
 }
 
 abstract class AdminWorkoutRepository {
@@ -112,7 +114,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
   Future<List<AdminExercise>> listPublicExercises() async {
     final rows = await _client
         .from('exercises')
-        .select('id,name,muscle_groups,equipment')
+        .select('id,name,muscle_groups,equipment,thumbnail_url')
         .eq('is_public', true)
         .order('name');
     return rows
@@ -124,6 +126,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             muscleGroups: (row['muscle_groups'] as List? ?? const [])
                 .cast<String>(),
             equipment: (row['equipment'] as List? ?? const []).cast<String>(),
+            thumbnailUrl: row['thumbnail_url'] as String?,
           ),
         )
         .toList();

@@ -1,6 +1,7 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
@@ -876,7 +877,15 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                       setState(() => item.exerciseId = selected.id);
                     }
                   },
-            icon: const Icon(Icons.search),
+            icon: item.exerciseId == null
+                ? const Icon(Icons.search)
+                : _exerciseThumbnail(
+                    _catalog
+                        .where((exercise) => exercise.id == item.exerciseId)
+                        .firstOrNull
+                        ?.thumbnailUrl,
+                    28,
+                  ),
             label: Text(
               item.exerciseId == null
                   ? 'Buscar ejercicio del catálogo'
@@ -1041,7 +1050,17 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                         : ListView.builder(
                             itemCount: matches.length,
                             itemBuilder: (context, index) => ListTile(
+                              leading: _exerciseThumbnail(
+                                matches[index].thumbnailUrl,
+                                48,
+                              ),
                               title: Text(matches[index].name),
+                              subtitle: Text(
+                                [
+                                  ...matches[index].muscleGroups,
+                                  ...matches[index].equipment,
+                                ].join(' · '),
+                              ),
                               onTap: () => Navigator.of(
                                 dialogContext,
                               ).pop(matches[index]),
@@ -1059,6 +1078,29 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _exerciseThumbnail(String? url, double size) {
+    final validUrl = url != null && Uri.tryParse(url)?.scheme == 'https';
+    if (!validUrl) {
+      return SizedBox.square(
+        dimension: size,
+        child: const Icon(Icons.fitness_center_outlined),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        url,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => SizedBox.square(
+          dimension: size,
+          child: const Icon(Icons.fitness_center_outlined),
+        ),
       ),
     );
   }
@@ -1099,15 +1141,24 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     String label,
     double width, {
     ValueChanged<String>? onChanged,
-  }) => SizedBox(
-    width: width,
-    child: TextField(
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(labelText: label),
-    ),
-  );
+  }) {
+    final clock = label.contains('m:ss');
+    final text = label.startsWith('Nombre');
+    return SizedBox(
+      width: width,
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        keyboardType: clock || text
+            ? TextInputType.text
+            : const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: clock
+            ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))]
+            : null,
+        decoration: InputDecoration(labelText: label),
+      ),
+    );
+  }
 }
 
 class _Segment {
