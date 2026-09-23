@@ -4,6 +4,12 @@ Estado: **decisión de dominio probada, todavía sin publicación en la agenda**
 Ámbito: preparación de Tropa y Marinería; no se aplica automáticamente a otros
 programas que también incluyan 2 km.
 
+En la pantalla de la preparación de Tropa hay una **maqueta de semana de
+ejemplo** (2 días de carrera y 1 reservado para fuerza). Es contenido fijo de
+presentación: no usa las marcas del usuario, no ejecuta el planificador, no
+crea sesiones ni cambia la agenda. Sirve para revisar la experiencia y la
+sesión ilustrativa de 4 × 2 min antes de cerrar las reglas deportivas.
+
 ## Principios deportivos acordados
 
 - Dos semanas de carga y una de descarga como estructura de producto. No se

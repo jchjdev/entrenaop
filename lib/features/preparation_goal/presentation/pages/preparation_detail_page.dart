@@ -1,6 +1,8 @@
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_state.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/widgets/running_week_prototype_card.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -109,6 +111,11 @@ class _Content extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _AssessmentCard(state: state),
+                  if (goal.programId ==
+                      PreparationProgramIds.armedForcesTroopEntry) ...[
+                    const SizedBox(height: 12),
+                    const RunningWeekPrototypeCard(),
+                  ],
                   const SizedBox(height: 24),
                   _WeekHeader(state: state),
                   const SizedBox(height: 12),
