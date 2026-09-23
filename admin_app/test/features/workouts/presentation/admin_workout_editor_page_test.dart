@@ -268,6 +268,7 @@ void main() {
     final block = repository.saved!.blocks.single;
     expect(block.format, WorkoutBlockFormat.superset);
     expect(block.rounds, 3);
+    expect(block.restAfterSeconds, 60);
     expect(block.exercises, hasLength(2));
     expect(
       block.exercises.every((exercise) => exercise.sets.length == 3),
@@ -314,6 +315,42 @@ void main() {
     expect(block.exercises.single.sets, hasLength(3));
   });
 
+  testWidgets('el límite AMRAP usa minutos y se guarda en segundos', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1200));
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Nombre de la sesión'), 'AMRAP base');
+    await tester.tap(find.text('Fuerza convencional'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byType(DropdownButtonFormField<WorkoutBlockFormat>).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('AMRAP · máximas vueltas').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Límite global (min)'), '15');
+    await tester.tap(find.text('Buscar ejercicio del catálogo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Flexiones').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Cantidad'), '8');
+    await tester.scrollUntilVisible(
+      find.text('Guardar borrador'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
+    expect(repository.saved!.blocks.single.timeCapSeconds, 900);
+  });
+
   testWidgets('permite objetivos diferentes en cada serie de fuerza', (
     tester,
   ) async {
@@ -354,6 +391,74 @@ void main() {
     final sets = repository.saved!.blocks.single.exercises.single.sets;
     expect(sets.map((set) => set.targetValue).toList(), [10, 8, 10]);
   });
+
+  testWidgets(
+    'fuerza edita segundos sin reloj y conserva una sesión anterior',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 1200));
+      final repository = _FakeWorkouts();
+      const original = WorkoutTemplate(
+        id: 'fuerza-original',
+        name: 'Plancha',
+        description: null,
+        estimatedDurationMinutes: null,
+        version: 1,
+        blocks: [
+          WorkoutBlock(
+            id: 'bloque',
+            name: 'Fuerza',
+            format: WorkoutBlockFormat.straightSets,
+            rounds: 1,
+            restAfterSeconds: 0,
+            items: [
+              WorkoutItem(
+                id: 'ejercicio',
+                exerciseId: '30000000-0000-4000-8000-000000000001',
+                exerciseName: 'Flexiones',
+                sets: [
+                  WorkoutSet(
+                    id: 'serie',
+                    order: 0,
+                    targetDurationSeconds: 30,
+                    restAfterSeconds: 60,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AdminWorkoutEditorPage(
+            program: program,
+            repository: repository,
+            originalTemplate: original,
+            revisionId: original.id,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(_field('Tiempo')).controller!.text, '30');
+      expect(
+        tester.widget<TextField>(_field('Descanso')).controller!.text,
+        '60',
+      );
+      await tester.enterText(_field('Tiempo'), '45');
+      await tester.enterText(_field('Descanso'), '90');
+      await tester.scrollUntilVisible(
+        find.text('Guardar revisión como borrador'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await tester.tap(find.text('Guardar revisión como borrador'));
+      await tester.pumpAndSettle();
+      final set = repository.saved!.blocks.single.exercises.single.sets.single;
+      expect(set.targetValue, 45);
+      expect(set.restAfterSeconds, 90);
+    },
+  );
 
   testWidgets(
     'editar una carrera conserva series agrupadas y revisa la plantilla',

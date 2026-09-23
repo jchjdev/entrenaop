@@ -183,10 +183,10 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           : format == WorkoutBlockFormat.emom
           ? 60
           : usesRounds
-          ? _clock(block.rest.text)
+          ? int.tryParse(block.rest.text.trim())
           : 0;
       final cap = format == WorkoutBlockFormat.amrap
-          ? _clock(block.cap.text)
+          ? _minutesToSeconds(block.cap.text)
           : null;
       if (rounds == null ||
           rounds < 1 ||
@@ -213,7 +213,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         final target = format == WorkoutBlockFormat.tabata
             ? 20.0
             : type == WorkoutTargetType.duration
-            ? _clock(item.target.text)?.toDouble()
+            ? int.tryParse(item.target.text.trim())?.toDouble()
             : double.tryParse(item.target.text.replaceAll(',', '.'));
         final count = format == WorkoutBlockFormat.straightSets
             ? int.tryParse(item.count.text)
@@ -226,7 +226,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 format == WorkoutBlockFormat.emom ||
                 format == WorkoutBlockFormat.intervals
             ? 0
-            : _clock(item.rest.text);
+            : int.tryParse(item.rest.text.trim());
         final load =
             format == WorkoutBlockFormat.tabata || item.load.text.trim().isEmpty
             ? null
@@ -260,13 +260,13 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           final setTarget = targetText.isEmpty
               ? target
               : type == WorkoutTargetType.duration
-              ? _clock(targetText)?.toDouble()
+              ? int.tryParse(targetText)?.toDouble()
               : double.tryParse(targetText.replaceAll(',', '.'));
           final restText = variation?.rest.text.trim() ?? '';
           final setRest =
               format != WorkoutBlockFormat.straightSets || restText.isEmpty
               ? rest
-              : _clock(restText);
+              : int.tryParse(restText);
           final loadText = variation?.load.text.trim() ?? '';
           final setLoad = loadText.isEmpty
               ? load
@@ -708,9 +708,9 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             if (format == WorkoutBlockFormat.superset ||
                 format == WorkoutBlockFormat.circuit ||
                 format == WorkoutBlockFormat.intervals)
-              _field(block.rest, 'Descanso entre rondas (m:ss)', 230),
+              _field(block.rest, 'Descanso entre rondas (s)', 230),
             if (format == WorkoutBlockFormat.amrap)
-              _field(block.cap, 'Límite global (m:ss)', 190),
+              _field(block.cap, 'Límite global (min)', 190),
           ],
         ),
         const SizedBox(height: 8),
@@ -871,13 +871,11 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 loadText: item.load.text,
                 rirText: item.rir.text,
                 targetLabel: item.type == WorkoutTargetType.duration && !amrap
-                    ? 'Tiempo (m:ss)'
+                    ? 'Tiempo'
                     : 'Cantidad',
-                restLabel: 'Descanso (m:ss)',
+                restLabel: 'Descanso',
                 loadLabel: 'Carga kg (opcional)',
                 rirLabel: 'RIR (opcional)',
-                clockTarget: item.type == WorkoutTargetType.duration && !amrap,
-                clockRest: true,
                 validateNumbers: false,
                 showRest:
                     !amrap &&
@@ -934,13 +932,11 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             loadText: variation.load.text,
             rirText: variation.rir.text,
             targetLabel: 'Objetivo propio',
-            restLabel: 'Descanso propio (m:ss)',
+            restLabel: 'Descanso propio',
             loadLabel: 'Carga propia kg',
             rirLabel: 'RIR propio',
             targetOptional: true,
             restOptional: true,
-            clockTarget: item.type == WorkoutTargetType.duration,
-            clockRest: true,
             validateNumbers: false,
             showRest: showRest,
             onTargetChanged: (value) => variation.target.text = value,
@@ -1114,8 +1110,8 @@ class _StrengthBlock {
     block.name.text = source.name;
     block.format = source.format;
     block.rounds.text = source.rounds.toString();
-    block.rest.text = _time(source.restAfterSeconds);
-    block.cap.text = _time(source.timeCapSeconds ?? 600);
+    block.rest.text = source.restAfterSeconds.toString();
+    block.cap.text = _number((source.timeCapSeconds ?? 600) / 60);
     for (final exercise in block.exercises) {
       exercise.dispose();
     }
@@ -1127,8 +1123,8 @@ class _StrengthBlock {
 
   final name = TextEditingController(text: 'Fuerza');
   final rounds = TextEditingController(text: '3');
-  final rest = TextEditingController(text: '1:00');
-  final cap = TextEditingController(text: '10:00');
+  final rest = TextEditingController(text: '60');
+  final cap = TextEditingController(text: '10');
   final exercises = <_Exercise>[_Exercise()];
   WorkoutBlockFormat format = WorkoutBlockFormat.straightSets;
 
@@ -1157,12 +1153,12 @@ class _Exercise {
         ? WorkoutTargetType.distance
         : WorkoutTargetType.repetitions;
     String targetText(WorkoutSet set) => switch (exercise.type) {
-      WorkoutTargetType.duration => _time(set.targetDurationSeconds ?? 0),
+      WorkoutTargetType.duration => '${set.targetDurationSeconds ?? 0}',
       WorkoutTargetType.distance => _number(set.targetDistanceMeters ?? 0),
       _ => '${set.targetReps ?? 0}',
     };
     exercise.target.text = targetText(first);
-    exercise.rest.text = _time(first.restAfterSeconds);
+    exercise.rest.text = first.restAfterSeconds.toString();
     exercise.load.text = first.targetLoadKg?.toString() ?? '';
     exercise.rir.text = first.targetRir?.toString() ?? '';
     for (var index = 1; index < source.sets.length; index++) {
@@ -1177,7 +1173,7 @@ class _Exercise {
           _SetVariation.new,
         );
         variation.target.text = targetText(set);
-        variation.rest.text = _time(set.restAfterSeconds);
+        variation.rest.text = set.restAfterSeconds.toString();
         variation.load.text = set.targetLoadKg?.toString() ?? '';
         variation.rir.text = set.targetRir?.toString() ?? '';
       }
@@ -1187,7 +1183,7 @@ class _Exercise {
 
   final count = TextEditingController(text: '3');
   final target = TextEditingController();
-  final rest = TextEditingController(text: '1:00');
+  final rest = TextEditingController(text: '60');
   final load = TextEditingController();
   final rir = TextEditingController();
   String? exerciseId;
@@ -1213,6 +1209,13 @@ String _time(int seconds) =>
 String _number(double value) => value == value.roundToDouble()
     ? value.round().toString()
     : value.toString();
+
+// El editor de fuerza muestra minutos para el límite global, pero la plantilla
+// conserva segundos. El resto de objetivos y descansos de fuerza ya son segundos.
+int? _minutesToSeconds(String value) {
+  final minutes = double.tryParse(value.trim().replaceAll(',', '.'));
+  return minutes == null ? null : (minutes * 60).round();
+}
 
 class _SetVariation {
   final target = TextEditingController();
