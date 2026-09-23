@@ -23,8 +23,8 @@
       "name": "EntrenaOP Admin · Chrome 55555",
       "type": "dart",
       "request": "launch",
-      "cwd": "admin_app",
-      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}/admin_app",
+      "program": "${workspaceFolder}/admin_app/lib/main.dart",
       "deviceId": "chrome",
       "toolArgs": [
         "--web-hostname=localhost",
