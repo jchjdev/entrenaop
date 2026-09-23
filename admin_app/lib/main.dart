@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:entrenaop_admin/core/app_config.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_programs_page.dart';
+import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -40,6 +41,7 @@ class AdminApp extends StatelessWidget {
         return AdminProgramsPage(
           key: ValueKey(session.user.id),
           repository: SupabaseAdminProgramRepository(client),
+          workoutRepository: SupabaseAdminWorkoutRepository(client),
           onSignOut: () => unawaited(client.auth.signOut()),
         );
       },

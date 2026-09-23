@@ -302,12 +302,14 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    límites y sesiones base. Ese contenido se publica en versiones inmutables.
    Al principio puede cargarse mediante migraciones o datos revisados en Git.
    `admin_app/` es una aplicación Flutter web independiente dentro del mismo
-   repositorio. Ya crea la identidad de programas en borrador sobre
-   `preparation_programs`, mediante una operación de Supabase que exige
-   `admin_permissions`; no publica programas ni edita todavía sesiones, fases
-   o reglas. La app del deportista no importa código administrativo. El futuro
-   editor ampliará el panel sobre el mismo modelo, sin convertirse en una
-   segunda fuente de verdad.
+   repositorio. Crea programas y sesiones oficiales en borrador. El paquete
+   Dart puro `packages/workout_core/` comparte modelo, validaciones,
+   estimación de carrera y serialización entre panel y app del deportista; no
+   comparte navegación ni guardado personal. La función
+   `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
+   privada y la vincula a `program_workout_templates` en una transacción.
+   La app del deportista no importa código administrativo y no puede publicar
+   ni asignar estas sesiones. Aún faltan edición, publicación, fases y reglas.
 2. **Prescripción individual:** un servicio de confianza ejecuta reglas
    deterministas y versionadas sobre preparación, marcas, disponibilidad e
    historial. Selecciona o materializa la sesión privada correspondiente, la

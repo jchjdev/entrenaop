@@ -1,0 +1,10 @@
+name: workout_core
+description: "Modelo y reglas compartidas de sesiones EntrenaOP"
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  equatable: ^3.0.0

@@ -23,6 +23,8 @@ dependencies:
 
   # Supabase
   supabase_flutter: ^2.17.2
+  workout_core:
+    path: packages/workout_core
 
   # Video
   video_player: ^2.14.0

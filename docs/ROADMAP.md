@@ -112,10 +112,12 @@ La adaptación posterior a una semana realizada será el bloque siguiente, pero
 no forma parte de este trabajo: primero debe existir una primera prescripción
 determinista y verificable.
 
-El panel administrativo ya tiene una aplicación web separada y permite crear la
-identidad de programas en borrador; todavía no edita ni publica sesiones,
-mesociclos o reglas deportivas. No es un requisito previo para esta primera
-vertical.
+El panel administrativo ya tiene una aplicación web separada. Permite crear
+programas y sesiones oficiales de carrera o fuerza convencional en borrador,
+vinculadas a cada programa, sin asignarlas al alumno. Comparte las reglas del
+creador con la app mediante `workout_core`; todavía no edita ni publica
+sesiones, mesociclos o reglas deportivas. No es un requisito previo para esta
+primera vertical.
 Las reglas y sesiones oficiales iniciales se revisarán como datos versionados en
 Git y Supabase. Cuando el modelo haya demostrado que representa el método real,
 el panel ofrecerá una interfaz segura para publicarlo sin cambiar el contrato del

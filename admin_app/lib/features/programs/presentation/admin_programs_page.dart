@@ -1,14 +1,18 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
 import 'package:flutter/material.dart';
 
 class AdminProgramsPage extends StatefulWidget {
   const AdminProgramsPage({
     super.key,
     required this.repository,
+    required this.workoutRepository,
     required this.onSignOut,
   });
 
   final AdminProgramRepository repository;
+  final AdminWorkoutRepository workoutRepository;
   final VoidCallback onSignOut;
 
   @override
@@ -145,14 +149,28 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           for (final program in _programs)
             Card(
               child: ListTile(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AdminProgramWorkoutsPage(
+                      program: program,
+                      repository: widget.workoutRepository,
+                    ),
+                  ),
+                ),
                 title: Text(program.name),
                 subtitle: Text(
                   program.kind == 'access'
                       ? 'Acceso u oposición'
                       : 'Evaluación interna',
                 ),
-                trailing: Chip(
-                  label: Text(program.enabled ? 'Publicado' : 'Borrador'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Chip(
+                      label: Text(program.enabled ? 'Publicado' : 'Borrador'),
+                    ),
+                    const Icon(Icons.chevron_right),
+                  ],
                 ),
               ),
             ),

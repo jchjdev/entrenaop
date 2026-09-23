@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/domain/repositories/workout_reposito
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:workout_core/workout_draft_codec.dart';
 
 class WorkoutRepositoryImpl implements WorkoutRepository {
   WorkoutRepositoryImpl({
@@ -44,7 +45,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
 
   @override
   Future<String> createPersonalTemplate(CreatePersonalWorkoutInput input) {
-    return remoteDataSource.createPersonalTemplate(_draftToJson(input));
+    return remoteDataSource.createPersonalTemplate(workoutDraftToJson(input));
   }
 
   @override
@@ -55,7 +56,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   Future<String> revisePersonalTemplate(
     String templateId,
     CreatePersonalWorkoutInput input,
-  ) => remoteDataSource.revisePersonalTemplate(templateId, _draftToJson(input));
+  ) => remoteDataSource.revisePersonalTemplate(
+    templateId,
+    workoutDraftToJson(input),
+  );
 
   @override
   Future<void> archivePersonalTemplate(String templateId) =>
@@ -288,70 +292,6 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         ),
       };
 }
-
-Map<String, dynamic> _draftToJson(CreatePersonalWorkoutInput input) => {
-  'name': input.name.trim(),
-  'description': input.description?.trim(),
-  'estimated_duration_minutes': input.estimatedDurationMinutes,
-  'blocks': input.blocks
-      .map(
-        (block) => {
-          'name': block.name.trim(),
-          'format': _blockFormatValue(block.format),
-          'rounds': block.rounds,
-          if (block.timeCapSeconds != null)
-            'time_cap_seconds': block.timeCapSeconds,
-          'rest_after_seconds': block.restAfterSeconds,
-          'exercises': block.exercises
-              .map(
-                (exercise) => {
-                  'exercise_id': exercise.exerciseId,
-                  'sets': exercise.sets.map(_setDraftToJson).toList(),
-                },
-              )
-              .toList(),
-        },
-      )
-      .toList(),
-};
-
-String _blockFormatValue(WorkoutBlockFormat format) => switch (format) {
-  WorkoutBlockFormat.straightSets => 'straight_sets',
-  WorkoutBlockFormat.circuit => 'circuit',
-  WorkoutBlockFormat.superset => 'superset',
-  WorkoutBlockFormat.intervals => 'intervals',
-  WorkoutBlockFormat.emom => 'emom',
-  WorkoutBlockFormat.amrap => 'amrap',
-  WorkoutBlockFormat.tabata => 'tabata',
-  WorkoutBlockFormat.running => 'running',
-  WorkoutBlockFormat.warmUp => 'warm_up',
-  WorkoutBlockFormat.coolDown => 'cool_down',
-};
-
-Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
-  'target_reps': set.targetType == WorkoutTargetType.repetitions
-      ? set.targetValue.round()
-      : null,
-  'target_duration_seconds': set.targetType == WorkoutTargetType.duration
-      ? set.targetValue.round()
-      : null,
-  'target_distance_meters': set.targetType == WorkoutTargetType.distance
-      ? set.targetValue
-      : null,
-  'target_load_kg': set.targetLoadKg,
-  'target_rir': set.targetRir,
-  'target_pace_min_seconds_per_km': set.targetPaceMinSecondsPerKm,
-  'target_pace_max_seconds_per_km': set.targetPaceMaxSecondsPerKm,
-  'recovery_type': switch (set.recoveryType) {
-    RunningRecoveryType.passive => 'passive',
-    RunningRecoveryType.walking => 'walking',
-    RunningRecoveryType.jogging => 'jogging',
-    null => null,
-  },
-  'recovery_duration_seconds': set.recoveryDurationSeconds,
-  'recovery_distance_meters': set.recoveryDistanceMeters,
-  'rest_after_seconds': set.restAfterSeconds,
-};
 
 String _reasonValue(WorkoutAbandonmentReason reason) => switch (reason) {
   WorkoutAbandonmentReason.lackOfTime => 'lack_of_time',

@@ -1122,6 +1122,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  workout_core:
+    dependency: "direct main"
+    description:
+      path: "packages/workout_core"
+      relative: true
+    source: path
+    version: "0.1.0"
   xdg_directories:
     dependency: transitive
     description:
