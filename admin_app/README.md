@@ -5,18 +5,26 @@ pantallas ni servicios de la aplicación del deportista. Ambas aplicaciones usan
 `packages/workout_core/` para el modelo, la validación y la conversión de
 sesiones; cada una conserva su propia interfaz y su propio guardado.
 
-En Programas, abre un programa y pulsa **Nueva sesión**. Carrera permite
+En Programas, abre un programa y pulsa **Nueva sesión** para crear una plantilla
+exclusiva de esa preparación. La entrada **Biblioteca general de EntrenaOP**
+crea sesiones libres sin destino de programa. Carrera permite
 tramos repetidos, rangos de ritmo y recuperación por tiempo o metros. Fuerza
 permite combinar bloques convencionales, superseries, circuitos, intervalos,
-EMOM, AMRAP y Tabata con ejercicios del catálogo público. La operación de
-Supabase crea una plantilla `system/private/draft` y la vincula al programa
-de forma atómica.
+EMOM, AMRAP y Tabata con ejercicios públicos buscables por nombre, músculo o
+material; admite objetivos diferentes por serie. Ambas rutas guardan primero
+una plantilla `system/private/draft`.
 
 Al abrir una sesión se muestra una vista previa de bloques, series y objetivos
-con el mismo lector de datos que usa la app. **Publicar** solo aparece desde
-esa revisión, requiere confirmación y hace visible esa versión en la biblioteca
-general de la app. No la asigna a un plan ni modifica la agenda. La edición
-de borradores, las fases y los mesociclos siguen pendientes.
+con el mismo lector de datos que usa la app. Desde ahí se puede editar un
+borrador, preparar una versión nueva de una sesión publicada, publicar o retirar.
+Publicar una sesión general la muestra en la biblioteca de la app; publicar
+una sesión de programa solo la deja disponible para las futuras reglas de ese
+programa. Ninguna acción la asigna automáticamente ni modifica la agenda.
+Los borradores sin uso se borran tras confirmación; las sesiones publicadas se
+archivan para conservar el historial. Las fases, los mesociclos y la
+prescripción adaptativa siguen pendientes.
+Una sesión con entrenamientos pendientes o en curso no se puede retirar hasta
+reprogramarlos, para no dejar citas imposibles de ejecutar.
 
 Desde VS Code, abrir **esta carpeta `admin_app/`** como proyecto independiente y
 elegir `EntrenaOP Admin · Chrome 55555` en **Ejecutar y depurar**. La dirección

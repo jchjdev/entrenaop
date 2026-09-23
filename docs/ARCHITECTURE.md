@@ -307,11 +307,18 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    estimación de carrera, serialización y lectura de plantillas entre panel y
    app del deportista; no comparte navegación ni guardado personal. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
-   privada y la vincula a `program_workout_templates` en una transacción.
-   La publicación administrativa hace visible una versión en la biblioteca
-   pública que ya lee la app del deportista; no asigna la sesión ni crea agenda.
+   privada y registra su destino en `program_workout_templates` en una
+   transacción. El destino `general` puede publicarse en la biblioteca abierta;
+   el destino `program` permanece privado aunque esté publicado, reservado para
+   la futura prescripción de esa preparación. Ninguno crea agenda.
+   La edición de borradores reemplaza la versión privada; revisar una sesión
+   publicada crea otra versión en borrador y conserva el historial. La retirada
+   de sesiones publicadas archiva, mientras que un borrador sin referencias
+   puede borrarse físicamente.
+   Una sesión con agenda pendiente o en curso no puede retirarse hasta resolver
+   esas citas, pues su ejecución todavía necesita leer la plantilla.
    La app del deportista no importa código administrativo y no puede publicar
-   ni asignar estas sesiones. Aún faltan edición, fases y reglas.
+   ni asignar estas sesiones. Aún faltan fases y reglas.
 2. **Prescripción individual:** un servicio de confianza ejecuta reglas
    deterministas y versionadas sobre preparación, marcas, disponibilidad e
    historial. Selecciona o materializa la sesión privada correspondiente, la

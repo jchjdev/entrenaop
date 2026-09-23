@@ -112,13 +112,14 @@ La adaptación posterior a una semana realizada será el bloque siguiente, pero
 no forma parte de este trabajo: primero debe existir una primera prescripción
 determinista y verificable.
 
-El panel administrativo ya tiene una aplicación web separada. Permite crear
-programas y sesiones oficiales de carrera o fuerza con formatos avanzados en
-borrador, vinculadas a cada programa. La publicación explícita las muestra en
-la biblioteca general de la app, sin asignarlas al alumno. Comparte las reglas
-del creador con la app mediante `workout_core`; todavía no edita borradores ni
-define mesociclos o reglas deportivas. No es un requisito previo para esta
-primera vertical.
+El panel administrativo ya tiene una aplicación web separada. Distingue
+biblioteca general y plantillas de cada programa; permite crear, buscar
+ejercicios, revisar, editar borradores, versionar y retirar sesiones. Solo las
+sesiones generales publicadas aparecen en la biblioteca abierta; publicar una
+plantilla de programa la deja disponible para las futuras reglas de esa
+preparación, sin asignarla aún. Comparte modelo y validación con la app mediante
+`workout_core`, pero no reutiliza sus pantallas. Todavía no define mesociclos
+ni reglas deportivas. No es un requisito previo para esta primera vertical.
 Las reglas y sesiones que alimente el futuro algoritmo deben seguir revisándose
 como datos versionados en Git y Supabase. Publicar una sesión en la biblioteca
 general no la convierte todavía en parte de un mesociclo ni la asigna a nadie.

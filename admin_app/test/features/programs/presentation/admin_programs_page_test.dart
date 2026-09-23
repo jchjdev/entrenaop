@@ -39,7 +39,19 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   Future<void> publishDraft(String templateId) async {}
 
   @override
-  Future<String> createDraft(String programId, dynamic input) async => 'draft';
+  Future<void> remove(String templateId) async {}
+
+  @override
+  Future<String> revise(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) async => 'revised-id';
+
+  @override
+  Future<List<AdminWorkoutSummary>> listGeneral() async => const [];
+
+  @override
+  Future<String> createDraft(String? programId, dynamic input) async => 'draft';
 
   @override
   Future<List<AdminExercise>> listPublicExercises() async => const [];

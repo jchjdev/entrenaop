@@ -11,7 +11,7 @@ class AdminProgramWorkoutsPage extends StatefulWidget {
     required this.repository,
   });
 
-  final AdminProgram program;
+  final AdminProgram? program;
   final AdminWorkoutRepository repository;
 
   @override
@@ -22,6 +22,13 @@ class AdminProgramWorkoutsPage extends StatefulWidget {
 class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   List<AdminWorkoutSummary>? _workouts;
   String? _error;
+  String _filter = 'all';
+
+  List<AdminWorkoutSummary> get _visibleWorkouts => _workouts == null
+      ? const []
+      : _workouts!
+            .where((workout) => _filter == 'all' || workout.status == _filter)
+            .toList(growable: false);
 
   @override
   void initState() {
@@ -31,9 +38,9 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
 
   Future<void> _load() async {
     try {
-      final workouts = await widget.repository.listForProgram(
-        widget.program.id,
-      );
+      final workouts = widget.program == null
+          ? await widget.repository.listGeneral()
+          : await widget.repository.listForProgram(widget.program!.id);
       if (mounted) {
         setState(() {
           _workouts = workouts;
@@ -69,29 +76,23 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _preview(AdminWorkoutSummary workout) async {
-    final published = await Navigator.of(context).push<bool>(
+    final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => AdminWorkoutPreviewPage(
           workout: workout,
           repository: widget.repository,
+          program: widget.program,
         ),
       ),
     );
-    if (published == true) {
+    if (changed == true) {
       await _load();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sesión publicada en la biblioteca de la app.'),
-          ),
-        );
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.program.name)),
+    appBar: AppBar(title: Text(widget.program?.name ?? 'Biblioteca general')),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -99,12 +100,16 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              'Sesiones del programa',
+              widget.program == null
+                  ? 'Sesiones generales de EntrenaOP'
+                  : 'Sesiones del programa',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Biblioteca oficial de este programa. Guardar aquí no asigna sesiones ni modifica los planes de los alumnos.',
+            Text(
+              widget.program == null
+                  ? 'Solo las sesiones publicadas aquí aparecerán en la biblioteca general de la app.'
+                  : 'Estas plantillas pertenecen a este programa. Publicarlas no las muestra en la biblioteca general ni las asigna a alumnos.',
             ),
             const SizedBox(height: 24),
             Align(
@@ -116,6 +121,25 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               ),
             ),
             const SizedBox(height: 24),
+            if (_workouts != null && _workouts!.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final (value, label) in [
+                    ('all', 'Todas'),
+                    ('draft', 'Borradores'),
+                    ('published', 'Publicadas'),
+                    ('archived', 'Retiradas'),
+                  ])
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: _filter == value,
+                      onSelected: (_) => setState(() => _filter = value),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_error != null) ...[
               Text(
                 _error!,
@@ -125,9 +149,11 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
             ] else if (_workouts == null)
               const Center(child: CircularProgressIndicator())
             else if (_workouts!.isEmpty)
-              const Text('Todavía no hay sesiones oficiales en este programa.')
+              const Text('Todavía no hay sesiones en esta biblioteca.')
+            else if (_visibleWorkouts.isEmpty)
+              const Text('No hay sesiones con este estado.')
             else
-              for (final workout in _workouts!)
+              for (final workout in _visibleWorkouts)
                 Card(
                   child: ListTile(
                     onTap: () => _preview(workout),
@@ -146,11 +172,12 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Chip(
-                          label: Text(
-                            workout.status == 'draft'
-                                ? 'Borrador'
-                                : 'Publicado',
-                          ),
+                          label: Text(switch (workout.status) {
+                            'draft' => 'Borrador',
+                            'published' => 'Publicado',
+                            'archived' => 'Retirado',
+                            _ => workout.status,
+                          }),
                         ),
                         const Icon(Icons.chevron_right),
                       ],

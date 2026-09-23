@@ -1,16 +1,21 @@
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
+import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminWorkoutPreviewPage extends StatefulWidget {
   const AdminWorkoutPreviewPage({
     super.key,
     required this.workout,
     required this.repository,
+    required this.program,
   });
 
   final AdminWorkoutSummary workout;
   final AdminWorkoutRepository repository;
+  final AdminProgram? program;
 
   @override
   State<AdminWorkoutPreviewPage> createState() =>
@@ -20,6 +25,7 @@ class AdminWorkoutPreviewPage extends StatefulWidget {
 class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   late Future<WorkoutTemplate?> _template;
   bool _publishing = false;
+  bool _removing = false;
 
   @override
   void initState() {
@@ -33,9 +39,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Publicar sesión'),
         content: Text(
-          '«${widget.workout.name}» será visible para todos en la biblioteca de la app. '
-          'No se asignará a ningún plan ni aparecerá en la agenda. '
-          'Esta versión quedará fija; revisa los bloques y objetivos antes de continuar.',
+          widget.workout.catalogScope == 'general'
+              ? '«${widget.workout.name}» será visible para todos en la biblioteca general. No se asignará a ningún plan ni agenda.'
+              : '«${widget.workout.name}» quedará disponible como plantilla de este programa. No aparecerá en la biblioteca general ni se asignará a alumnos hasta definir las reglas del plan.',
         ),
         actions: [
           TextButton(
@@ -44,7 +50,11 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Publicar en biblioteca'),
+            child: Text(
+              widget.workout.catalogScope == 'general'
+                  ? 'Publicar en biblioteca general'
+                  : 'Publicar para el programa',
+            ),
           ),
         ],
       ),
@@ -54,6 +64,12 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     try {
       await widget.repository.publishDraft(widget.workout.id);
       if (mounted) Navigator.of(context).pop(true);
+    } on PostgrestException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +79,65 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     } finally {
       if (mounted) setState(() => _publishing = false);
     }
+  }
+
+  Future<void> _remove() async {
+    final draft = widget.workout.status == 'draft';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(draft ? 'Borrar borrador' : 'Retirar sesión'),
+        content: Text(
+          draft
+              ? 'Se borrará «${widget.workout.name}». Esta acción no se puede deshacer.'
+              : '«${widget.workout.name}» dejará de estar disponible para nuevas asignaciones. Si hay entrenamientos pendientes o en curso, tendrás que reprogramarlos antes. El historial se conservará.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(draft ? 'Borrar borrador' : 'Retirar sesión'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _removing = true);
+    try {
+      await widget.repository.remove(widget.workout.id);
+      if (mounted) Navigator.of(context).pop(true);
+    } on PostgrestException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo retirar la sesión.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _removing = false);
+    }
+  }
+
+  Future<void> _revise(WorkoutTemplate template) async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AdminWorkoutEditorPage(
+          program: widget.program,
+          repository: widget.repository,
+          originalTemplate: template,
+          revisionId: widget.workout.id,
+        ),
+      ),
+    );
+    if (saved == true && mounted) Navigator.of(context).pop(true);
   }
 
   @override
@@ -98,7 +173,13 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       Text(template.name, style: Theme.of(context).textTheme.headlineMedium),
       const SizedBox(height: 6),
       Text(
-        'Versión ${template.version} · ${widget.workout.status == 'draft' ? 'Borrador privado' : 'Publicado en biblioteca'}',
+        'Versión ${template.version} · ${widget.workout.status == 'draft'
+            ? 'Borrador privado'
+            : widget.workout.status == 'archived'
+            ? 'Retirada'
+            : widget.workout.catalogScope == 'general'
+            ? 'Publicado en biblioteca general'
+            : 'Publicado para el programa'}',
       ),
       if (template.description?.isNotEmpty == true) ...[
         const SizedBox(height: 10),
@@ -117,11 +198,28 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           ),
         ),
       const SizedBox(height: 16),
+      if (widget.workout.status != 'archived') ...[
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _publishing || _removing
+                ? null
+                : () => _revise(template),
+            icon: const Icon(Icons.edit_outlined),
+            label: Text(
+              widget.workout.status == 'draft'
+                  ? 'Editar borrador'
+                  : 'Crear nueva versión en borrador',
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
       if (widget.workout.status == 'draft') ...[
-        const Text(
-          'Publicar solo muestra esta sesión en la biblioteca general. '
-          'No crea un mesociclo, no la asigna al programa de ningún alumno '
-          'y no modifica su agenda.',
+        Text(
+          widget.workout.catalogScope == 'general'
+              ? 'Publicar la mostrará en la biblioteca general. No modifica planes ni agendas.'
+              : 'Publicar la deja disponible para las futuras reglas de este programa. No la asigna todavía a ningún alumno.',
         ),
         const SizedBox(height: 16),
         Align(
@@ -129,7 +227,30 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           child: FilledButton.icon(
             onPressed: _publishing ? null : _publish,
             icon: const Icon(Icons.public),
-            label: Text(_publishing ? 'Publicando…' : 'Publicar en biblioteca'),
+            label: Text(
+              _publishing
+                  ? 'Publicando…'
+                  : widget.workout.catalogScope == 'general'
+                  ? 'Publicar en biblioteca general'
+                  : 'Publicar para el programa',
+            ),
+          ),
+        ),
+      ],
+      if (widget.workout.status != 'archived') ...[
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _publishing || _removing ? null : _remove,
+            icon: const Icon(Icons.delete_outline),
+            label: Text(
+              _removing
+                  ? 'Retirando…'
+                  : widget.workout.status == 'draft'
+                  ? 'Borrar borrador'
+                  : 'Retirar sesión',
+            ),
           ),
         ),
       ],

@@ -11,13 +11,30 @@ class _FakeWorkouts implements AdminWorkoutRepository {
 
   CreatePersonalWorkoutInput? saved;
   String? programId;
+  String? revisedId;
 
   @override
   Future<void> publishDraft(String templateId) async {}
 
   @override
+  Future<void> remove(String templateId) async {}
+
+  @override
+  Future<String> revise(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) async {
+    revisedId = templateId;
+    saved = input;
+    return 'revised-id';
+  }
+
+  @override
+  Future<List<AdminWorkoutSummary>> listGeneral() async => const [];
+
+  @override
   Future<String> createDraft(
-    String programId,
+    String? programId,
     CreatePersonalWorkoutInput input,
   ) async {
     this.programId = programId;
@@ -66,6 +83,11 @@ void main() {
     await tester.enterText(_field('Veces'), '5');
     await tester.enterText(_field('Distancia (m)'), '200');
     await tester.enterText(_field('Ritmo (m:ss/km)'), '350');
+    await tester.scrollUntilVisible(
+      find.text('Guardar borrador'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -146,7 +168,7 @@ void main() {
     await tester.enterText(_field('Nombre de la sesión'), 'Fuerza base');
     await tester.tap(find.text('Fuerza convencional'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ejercicio del catálogo'));
+    await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Flexiones').last);
     await tester.pumpAndSettle();
@@ -189,10 +211,10 @@ void main() {
     await tester.tap(find.text('Superserie').last);
     await tester.pumpAndSettle();
 
-    final catalogSelectors = find.byType(DropdownButtonFormField<String>);
+    final catalogSelectors = find.text('Buscar ejercicio del catálogo');
     expect(catalogSelectors, findsNWidgets(2));
     for (var index = 0; index < 2; index++) {
-      await tester.tap(catalogSelectors.at(index));
+      await tester.tap(catalogSelectors.first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Flexiones').last);
       await tester.pumpAndSettle();
@@ -234,7 +256,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('EMOM').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Flexiones').last);
     await tester.pumpAndSettle();
@@ -254,4 +276,118 @@ void main() {
     expect(block.restAfterSeconds, 60);
     expect(block.exercises.single.sets, hasLength(3));
   });
+
+  testWidgets('permite objetivos diferentes en cada serie de fuerza', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1400));
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      _field('Nombre de la sesión'),
+      'Progresión de fuerza',
+    );
+    await tester.tap(find.text('Fuerza convencional'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buscar ejercicio del catálogo'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      _field('Buscar por nombre, músculo o material'),
+      'flex',
+    );
+    await tester.tap(find.text('Flexiones').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Cantidad'), '10');
+    await tester.tap(find.text('Personalizar cada serie'));
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Objetivo propio').at(1), '8');
+    await tester.scrollUntilVisible(
+      find.text('Guardar borrador'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.tap(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
+    final sets = repository.saved!.blocks.single.exercises.single.sets;
+    expect(sets.map((set) => set.targetValue).toList(), [10, 8, 10]);
+  });
+
+  testWidgets(
+    'editar una carrera conserva series agrupadas y revisa la plantilla',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 1100));
+      final repository = _FakeWorkouts();
+      const original = WorkoutTemplate(
+        id: 'original',
+        name: 'Series base',
+        description: null,
+        estimatedDurationMinutes: 8,
+        version: 1,
+        blocks: [
+          WorkoutBlock(
+            id: 'block',
+            name: 'Carrera',
+            format: WorkoutBlockFormat.running,
+            rounds: 1,
+            restAfterSeconds: 0,
+            items: [
+              WorkoutItem(
+                id: 'item',
+                exerciseId: runningExerciseId,
+                exerciseName: 'Carrera',
+                sets: [
+                  WorkoutSet(
+                    id: 'set-1',
+                    order: 0,
+                    targetDistanceMeters: 200,
+                    targetPaceMinSecondsPerKm: 230,
+                    targetPaceMaxSecondsPerKm: 230,
+                    restAfterSeconds: 0,
+                  ),
+                  WorkoutSet(
+                    id: 'set-2',
+                    order: 1,
+                    targetDistanceMeters: 200,
+                    targetPaceMinSecondsPerKm: 230,
+                    targetPaceMaxSecondsPerKm: 230,
+                    restAfterSeconds: 0,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AdminWorkoutEditorPage(
+            program: program,
+            repository: repository,
+            originalTemplate: original,
+            revisionId: original.id,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Tramo 1'), findsOneWidget);
+      expect(
+        (tester.widget(_field('Veces')) as TextField).controller!.text,
+        '2',
+      );
+      await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await tester.tap(find.text('Guardar revisión como borrador'));
+      await tester.pumpAndSettle();
+      expect(repository.revisedId, original.id);
+      expect(
+        repository.saved!.blocks.single.exercises.single.sets,
+        hasLength(2),
+      );
+    },
+  );
 }

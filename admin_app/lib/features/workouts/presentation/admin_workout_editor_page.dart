@@ -10,10 +10,14 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     super.key,
     required this.program,
     required this.repository,
+    this.originalTemplate,
+    this.revisionId,
   });
 
-  final AdminProgram program;
+  final AdminProgram? program;
   final AdminWorkoutRepository repository;
+  final WorkoutTemplate? originalTemplate;
+  final String? revisionId;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -33,6 +37,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.originalTemplate case final original?) _populate(original);
     widget.repository
         .listPublicExercises()
         .then((items) {
@@ -43,6 +48,36 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             setState(() => _error = 'No se pudo cargar el catálogo.');
           }
         });
+  }
+
+  void _populate(WorkoutTemplate template) {
+    _name.text = template.name;
+    _description.text = template.description ?? '';
+    _duration.text = template.estimatedDurationMinutes?.toString() ?? '';
+    _running =
+        template.blocks.length == 1 &&
+        template.blocks.single.format == WorkoutBlockFormat.running;
+    if (_running) {
+      for (final segment in _segments) {
+        segment.dispose();
+      }
+      _segments.clear();
+      for (final set in template.blocks.single.items.single.sets) {
+        if (_segments.isNotEmpty && _segments.last.matches(set)) {
+          _segments.last.count.text =
+              '${int.parse(_segments.last.count.text) + 1}';
+        } else {
+          _segments.add(_Segment.fromSet(set));
+        }
+      }
+    } else {
+      for (final block in _blocks) {
+        block.dispose();
+      }
+      _blocks
+        ..clear()
+        ..addAll(template.blocks.map(_StrengthBlock.fromBlock));
+    }
   }
 
   @override
@@ -211,18 +246,51 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             'Revisa las series, objetivos, descansos y cargas.',
           );
         }
-        final set = WorkoutSetDraft(
-          targetType: type,
-          targetValue: target,
-          restAfterSeconds: rest,
-          targetLoadKg: load,
-          targetRir: rir,
-        );
+        final sets = <WorkoutSetDraft>[];
+        for (var setIndex = 0; setIndex < count; setIndex++) {
+          final variation = item.customSets
+              ? item.variations.putIfAbsent(setIndex, _SetVariation.new)
+              : null;
+          final targetText = variation?.target.text.trim() ?? '';
+          final setTarget = targetText.isEmpty
+              ? target
+              : type == WorkoutTargetType.duration
+              ? _clock(targetText)?.toDouble()
+              : double.tryParse(targetText.replaceAll(',', '.'));
+          final restText = variation?.rest.text.trim() ?? '';
+          final setRest =
+              format != WorkoutBlockFormat.straightSets || restText.isEmpty
+              ? rest
+              : _clock(restText);
+          final loadText = variation?.load.text.trim() ?? '';
+          final setLoad = loadText.isEmpty
+              ? load
+              : double.tryParse(loadText.replaceAll(',', '.'));
+          final rirText = variation?.rir.text.trim() ?? '';
+          final setRir = rirText.isEmpty
+              ? rir
+              : double.tryParse(rirText.replaceAll(',', '.'));
+          if (setTarget == null ||
+              setTarget <= 0 ||
+              setRest == null ||
+              (loadText.isNotEmpty && setLoad == null) ||
+              (rirText.isNotEmpty && setRir == null)) {
+            throw FormatException(
+              'Revisa la serie ${setIndex + 1} del ejercicio.',
+            );
+          }
+          sets.add(
+            WorkoutSetDraft(
+              targetType: type,
+              targetValue: setTarget,
+              restAfterSeconds: setRest,
+              targetLoadKg: setLoad,
+              targetRir: setRir,
+            ),
+          );
+        }
         exercises.add(
-          WorkoutExerciseDraft(
-            exerciseId: item.exerciseId!,
-            sets: List.filled(count, set),
-          ),
+          WorkoutExerciseDraft(exerciseId: item.exerciseId!, sets: sets),
         );
       }
       blocks.add(
@@ -260,7 +328,11 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         _busy = true;
         _error = null;
       });
-      await widget.repository.createDraft(widget.program.id, input);
+      if (widget.revisionId case final id?) {
+        await widget.repository.revise(id, input);
+      } else {
+        await widget.repository.createDraft(widget.program?.id, input);
+      }
       if (mounted) Navigator.of(context).pop(true);
     } on FormatException catch (error) {
       if (mounted) setState(() => _error = error.message);
@@ -276,9 +348,89 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     }
   }
 
+  String? _runningEstimate() {
+    if (!_running ||
+        _segments.any((segment) => segment.target.text.trim().isEmpty)) {
+      return null;
+    }
+    try {
+      final input = _input();
+      return input.estimatedDurationMinutes == null
+          ? 'Completa los ritmos para calcular la duración.'
+          : 'Duración estimada: ${input.estimatedDurationMinutes} min';
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _moveSegment(int index, int offset) {
+    setState(() {
+      final segment = _segments.removeAt(index);
+      _segments.insert(index + offset, segment);
+    });
+  }
+
+  Future<void> _addPyramid() async {
+    var distances = '200, 400, 600, 400, 200';
+    final values = await showDialog<List<int>>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Crear pirámide'),
+        content: TextFormField(
+          autofocus: true,
+          initialValue: distances,
+          decoration: const InputDecoration(
+            labelText: 'Distancias en metros',
+            helperText: 'Ejemplo: 200, 400, 600, 400, 200',
+          ),
+          onChanged: (value) => distances = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final parsed = distances
+                  .split(',')
+                  .map((part) => int.tryParse(part.trim()))
+                  .toList();
+              if (parsed.isEmpty ||
+                  parsed.length > 40 ||
+                  parsed.any((value) => value == null || value <= 0)) {
+                return;
+              }
+              Navigator.of(dialogContext).pop(parsed.cast<int>());
+            },
+            child: const Text('Añadir tramos'),
+          ),
+        ],
+      ),
+    );
+    if (values == null || !mounted) return;
+    final total = _segments.fold<int>(
+      0,
+      (sum, segment) => sum + (int.tryParse(segment.count.text) ?? 1),
+    );
+    if (total + values.length > 40) {
+      setState(() => _error = 'La carrera no puede superar 40 tramos.');
+      return;
+    }
+    setState(() {
+      for (final distance in values) {
+        _segments.add(_Segment()..target.text = '$distance');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text('Nueva sesión · ${widget.program.name}')),
+    appBar: AppBar(
+      title: Text(
+        '${widget.revisionId == null ? 'Nueva sesión' : 'Revisar sesión'} · ${widget.program?.name ?? 'EntrenaOP'}',
+      ),
+    ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -286,12 +438,16 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              'Sesión oficial en borrador',
+              widget.program == null
+                  ? 'Sesión general en borrador'
+                  : 'Sesión del programa en borrador',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Se vincula al programa, pero no aparece al alumno ni en su agenda. Publicar y asignar son pasos posteriores.',
+            Text(
+              widget.program == null
+                  ? 'Se guarda en la biblioteca general. No será visible hasta que la publiques.'
+                  : 'Se vincula al programa, no a la biblioteca general. Publicar no la asigna a ningún alumno.',
             ),
             const SizedBox(height: 24),
             TextField(
@@ -337,7 +493,13 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               child: FilledButton.icon(
                 onPressed: _busy ? null : _save,
                 icon: const Icon(Icons.save_outlined),
-                label: Text(_busy ? 'Guardando…' : 'Guardar borrador'),
+                label: Text(
+                  _busy
+                      ? 'Guardando…'
+                      : widget.revisionId == null
+                      ? 'Guardar borrador'
+                      : 'Guardar revisión como borrador',
+                ),
               ),
             ),
           ],
@@ -369,10 +531,32 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                       : null,
                 ),
                 Wrap(
+                  spacing: 4,
+                  children: [
+                    IconButton(
+                      tooltip: 'Subir tramo',
+                      onPressed: i == 0 ? null : () => _moveSegment(i, -1),
+                      icon: const Icon(Icons.arrow_upward),
+                    ),
+                    IconButton(
+                      tooltip: 'Bajar tramo',
+                      onPressed: i == _segments.length - 1
+                          ? null
+                          : () => _moveSegment(i, 1),
+                      icon: const Icon(Icons.arrow_downward),
+                    ),
+                  ],
+                ),
+                Wrap(
                   spacing: 14,
                   runSpacing: 12,
                   children: [
-                    _field(_segments[i].count, 'Veces', 100),
+                    _field(
+                      _segments[i].count,
+                      'Veces',
+                      100,
+                      onChanged: (_) => setState(() {}),
+                    ),
                     SizedBox(
                       width: 155,
                       child: SwitchListTile(
@@ -388,9 +572,20 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                           ? 'Distancia (m)'
                           : 'Tiempo (m:ss)',
                       155,
+                      onChanged: (_) => setState(() {}),
                     ),
-                    _field(_segments[i].pace, 'Ritmo (m:ss/km)', 155),
-                    _field(_segments[i].paceMax, 'Hasta (m:ss/km)', 155),
+                    _field(
+                      _segments[i].pace,
+                      'Ritmo (m:ss/km)',
+                      155,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    _field(
+                      _segments[i].paceMax,
+                      'Hasta (m:ss/km)',
+                      155,
+                      onChanged: (_) => setState(() {}),
+                    ),
                     SizedBox(
                       width: 180,
                       child: DropdownButtonFormField<RunningRecoveryType?>(
@@ -440,6 +635,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                             ? 'Recuperación (m)'
                             : 'Recuperación (m:ss)',
                         180,
+                        onChanged: (_) => setState(() {}),
                       ),
                   ],
                 ),
@@ -447,11 +643,23 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             ),
           ),
         ),
-      TextButton.icon(
-        onPressed: () => setState(() => _segments.add(_Segment())),
-        icon: const Icon(Icons.add),
-        label: const Text('Añadir tramo distinto'),
+      Wrap(
+        spacing: 8,
+        children: [
+          TextButton.icon(
+            onPressed: () => setState(() => _segments.add(_Segment())),
+            icon: const Icon(Icons.add),
+            label: const Text('Añadir tramo distinto'),
+          ),
+          TextButton.icon(
+            onPressed: _addPyramid,
+            icon: const Icon(Icons.stacked_line_chart),
+            label: const Text('Crear pirámide'),
+          ),
+        ],
       ),
+      if (_runningEstimate() case final estimate?)
+        Padding(padding: const EdgeInsets.only(top: 12), child: Text(estimate)),
     ],
   );
 
@@ -568,7 +776,13 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 },
               ),
             ),
-            if (usesRounds) _field(block.rounds, 'Rondas', 100),
+            if (usesRounds)
+              _field(
+                block.rounds,
+                'Rondas',
+                100,
+                onChanged: (_) => setState(() {}),
+              ),
             if (format == WorkoutBlockFormat.superset ||
                 format == WorkoutBlockFormat.circuit ||
                 format == WorkoutBlockFormat.intervals)
@@ -653,27 +867,38 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 ),
             ],
           ),
-          DropdownButtonFormField<String>(
-            key: ValueKey(item.exerciseId),
-            initialValue: item.exerciseId,
-            decoration: const InputDecoration(
-              labelText: 'Ejercicio del catálogo',
+          OutlinedButton.icon(
+            onPressed: _catalog.isEmpty
+                ? null
+                : () async {
+                    final selected = await _chooseExercise();
+                    if (selected != null && mounted) {
+                      setState(() => item.exerciseId = selected.id);
+                    }
+                  },
+            icon: const Icon(Icons.search),
+            label: Text(
+              item.exerciseId == null
+                  ? 'Buscar ejercicio del catálogo'
+                  : _catalog
+                            .where((exercise) => exercise.id == item.exerciseId)
+                            .map((exercise) => exercise.name)
+                            .firstOrNull ??
+                        'Buscar ejercicio del catálogo',
             ),
-            items: [
-              for (final exercise in _catalog)
-                DropdownMenuItem(
-                  value: exercise.id,
-                  child: Text(exercise.name),
-                ),
-            ],
-            onChanged: (value) => item.exerciseId = value,
           ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 14,
             runSpacing: 12,
             children: [
-              if (!fixedRounds) _field(item.count, 'Series', 100),
+              if (!fixedRounds)
+                _field(
+                  item.count,
+                  'Series',
+                  100,
+                  onChanged: (_) => setState(() {}),
+                ),
               if (!tabata && !amrap)
                 SizedBox(
                   width: 225,
@@ -721,7 +946,119 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               if (!tabata) _field(item.rir, 'RIR (opcional)', 140),
             ],
           ),
+          if (!tabata && !amrap) ...[
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () =>
+                  setState(() => item.customSets = !item.customSets),
+              icon: Icon(item.customSets ? Icons.expand_less : Icons.tune),
+              label: Text(
+                item.customSets
+                    ? 'Ocultar objetivos por serie'
+                    : 'Personalizar cada serie',
+              ),
+            ),
+            if (item.customSets)
+              for (
+                var setIndex = 0;
+                setIndex <
+                    (fixedRounds
+                            ? int.tryParse(block.rounds.text) ?? 0
+                            : int.tryParse(item.count.text) ?? 0)
+                        .clamp(0, 20);
+                setIndex++
+              )
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text('Serie ${setIndex + 1}'),
+                      _field(
+                        item.variations
+                            .putIfAbsent(setIndex, _SetVariation.new)
+                            .target,
+                        'Objetivo propio',
+                        135,
+                      ),
+                      if (!fixedRounds)
+                        _field(
+                          item.variations[setIndex]!.rest,
+                          'Descanso propio (m:ss)',
+                          175,
+                        ),
+                      _field(
+                        item.variations[setIndex]!.load,
+                        'Carga propia kg',
+                        135,
+                      ),
+                      _field(item.variations[setIndex]!.rir, 'RIR propio', 110),
+                    ],
+                  ),
+                ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Future<AdminExercise?> _chooseExercise() {
+    var query = '';
+    return showDialog<AdminExercise>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, update) {
+          final matches = _catalog
+              .where(
+                (exercise) => [
+                  exercise.name,
+                  ...exercise.muscleGroups,
+                  ...exercise.equipment,
+                ].join(' ').toLowerCase().contains(query.toLowerCase()),
+              )
+              .toList();
+          return AlertDialog(
+            title: const Text('Buscar ejercicio'),
+            content: SizedBox(
+              width: 480,
+              height: 430,
+              child: Column(
+                children: [
+                  TextField(
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar por nombre, músculo o material',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (value) => update(() => query = value.trim()),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: matches.isEmpty
+                        ? const Center(child: Text('No hay coincidencias.'))
+                        : ListView.builder(
+                            itemCount: matches.length,
+                            itemBuilder: (context, index) => ListTile(
+                              title: Text(matches[index].name),
+                              onTap: () => Navigator.of(
+                                dialogContext,
+                              ).pop(matches[index]),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancelar'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -757,18 +1094,69 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     ],
   );
 
-  Widget _field(TextEditingController controller, String label, double width) =>
-      SizedBox(
-        width: width,
-        child: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: label),
-        ),
-      );
+  Widget _field(
+    TextEditingController controller,
+    String label,
+    double width, {
+    ValueChanged<String>? onChanged,
+  }) => SizedBox(
+    width: width,
+    child: TextField(
+      controller: controller,
+      onChanged: onChanged,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(labelText: label),
+    ),
+  );
 }
 
 class _Segment {
+  _Segment();
+
+  factory _Segment.fromSet(WorkoutSet set) {
+    final segment = _Segment();
+    segment.byDistance = set.targetDistanceMeters != null;
+    segment.target.text = set.targetDistanceMeters != null
+        ? _number(set.targetDistanceMeters!)
+        : _time(set.targetDurationSeconds ?? 0);
+    segment.pace.text = set.targetPaceMinSecondsPerKm == null
+        ? ''
+        : _time(set.targetPaceMinSecondsPerKm!);
+    segment.paceMax.text =
+        set.targetPaceMaxSecondsPerKm == null ||
+            set.targetPaceMaxSecondsPerKm == set.targetPaceMinSecondsPerKm
+        ? ''
+        : _time(set.targetPaceMaxSecondsPerKm!);
+    segment.recovery = set.recoveryType;
+    segment.recoveryByDistance = set.recoveryDistanceMeters != null;
+    segment.recoveryTime.text = set.recoveryDistanceMeters != null
+        ? _number(set.recoveryDistanceMeters!)
+        : _time(set.recoveryDurationSeconds ?? 60);
+    return segment;
+  }
+
+  bool matches(WorkoutSet set) =>
+      byDistance == (set.targetDistanceMeters != null) &&
+      target.text ==
+          (set.targetDistanceMeters != null
+              ? _number(set.targetDistanceMeters!)
+              : _time(set.targetDurationSeconds ?? 0)) &&
+      pace.text ==
+          (set.targetPaceMinSecondsPerKm == null
+              ? ''
+              : _time(set.targetPaceMinSecondsPerKm!)) &&
+      paceMax.text ==
+          (set.targetPaceMaxSecondsPerKm == null ||
+                  set.targetPaceMaxSecondsPerKm == set.targetPaceMinSecondsPerKm
+              ? ''
+              : _time(set.targetPaceMaxSecondsPerKm!)) &&
+      recovery == set.recoveryType &&
+      recoveryByDistance == (set.recoveryDistanceMeters != null) &&
+      recoveryTime.text ==
+          (set.recoveryDistanceMeters != null
+              ? _number(set.recoveryDistanceMeters!)
+              : _time(set.recoveryDurationSeconds ?? 60));
+
   final count = TextEditingController(text: '1');
   final target = TextEditingController();
   final pace = TextEditingController();
@@ -788,6 +1176,24 @@ class _Segment {
 }
 
 class _StrengthBlock {
+  _StrengthBlock();
+
+  factory _StrengthBlock.fromBlock(WorkoutBlock source) {
+    final block = _StrengthBlock();
+    block.name.text = source.name;
+    block.format = source.format;
+    block.rounds.text = source.rounds.toString();
+    block.rest.text = _time(source.restAfterSeconds);
+    block.cap.text = _time(source.timeCapSeconds ?? 600);
+    for (final exercise in block.exercises) {
+      exercise.dispose();
+    }
+    block.exercises
+      ..clear()
+      ..addAll(source.items.map(_Exercise.fromItem));
+    return block;
+  }
+
   final name = TextEditingController(text: 'Fuerza');
   final rounds = TextEditingController(text: '3');
   final rest = TextEditingController(text: '1:00');
@@ -807,6 +1213,47 @@ class _StrengthBlock {
 }
 
 class _Exercise {
+  _Exercise();
+
+  factory _Exercise.fromItem(WorkoutItem source) {
+    final exercise = _Exercise()..exerciseId = source.exerciseId;
+    if (source.sets.isEmpty) return exercise;
+    final first = source.sets.first;
+    exercise.count.text = source.sets.length.toString();
+    exercise.type = first.targetDurationSeconds != null
+        ? WorkoutTargetType.duration
+        : first.targetDistanceMeters != null
+        ? WorkoutTargetType.distance
+        : WorkoutTargetType.repetitions;
+    String targetText(WorkoutSet set) => switch (exercise.type) {
+      WorkoutTargetType.duration => _time(set.targetDurationSeconds ?? 0),
+      WorkoutTargetType.distance => _number(set.targetDistanceMeters ?? 0),
+      _ => '${set.targetReps ?? 0}',
+    };
+    exercise.target.text = targetText(first);
+    exercise.rest.text = _time(first.restAfterSeconds);
+    exercise.load.text = first.targetLoadKg?.toString() ?? '';
+    exercise.rir.text = first.targetRir?.toString() ?? '';
+    for (var index = 1; index < source.sets.length; index++) {
+      final set = source.sets[index];
+      if (targetText(set) != exercise.target.text ||
+          set.restAfterSeconds != first.restAfterSeconds ||
+          set.targetLoadKg != first.targetLoadKg ||
+          set.targetRir != first.targetRir) {
+        exercise.customSets = true;
+        final variation = exercise.variations.putIfAbsent(
+          index,
+          _SetVariation.new,
+        );
+        variation.target.text = targetText(set);
+        variation.rest.text = _time(set.restAfterSeconds);
+        variation.load.text = set.targetLoadKg?.toString() ?? '';
+        variation.rir.text = set.targetRir?.toString() ?? '';
+      }
+    }
+    return exercise;
+  }
+
   final count = TextEditingController(text: '3');
   final target = TextEditingController();
   final rest = TextEditingController(text: '1:00');
@@ -814,9 +1261,35 @@ class _Exercise {
   final rir = TextEditingController();
   String? exerciseId;
   WorkoutTargetType type = WorkoutTargetType.repetitions;
+  bool customSets = false;
+  final variations = <int, _SetVariation>{};
 
   void dispose() {
     count.dispose();
+    target.dispose();
+    rest.dispose();
+    load.dispose();
+    rir.dispose();
+    for (final variation in variations.values) {
+      variation.dispose();
+    }
+  }
+}
+
+String _time(int seconds) =>
+    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+String _number(double value) => value == value.roundToDouble()
+    ? value.round().toString()
+    : value.toString();
+
+class _SetVariation {
+  final target = TextEditingController();
+  final rest = TextEditingController();
+  final load = TextEditingController();
+  final rir = TextEditingController();
+
+  void dispose() {
     target.dispose();
     rest.dispose();
     load.dispose();

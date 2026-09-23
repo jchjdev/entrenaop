@@ -12,6 +12,7 @@ class AdminWorkoutSummary {
     required this.status,
     required this.version,
     required this.isRunning,
+    required this.catalogScope,
   });
 
   final String id;
@@ -19,24 +20,35 @@ class AdminWorkoutSummary {
   final String status;
   final int version;
   final bool isRunning;
+  final String catalogScope;
 }
 
 class AdminExercise {
-  const AdminExercise({required this.id, required this.name});
+  const AdminExercise({
+    required this.id,
+    required this.name,
+    this.muscleGroups = const [],
+    this.equipment = const [],
+  });
 
   final String id;
   final String name;
+  final List<String> muscleGroups;
+  final List<String> equipment;
 }
 
 abstract class AdminWorkoutRepository {
   Future<List<AdminWorkoutSummary>> listForProgram(String programId);
+  Future<List<AdminWorkoutSummary>> listGeneral();
   Future<List<AdminExercise>> listPublicExercises();
   Future<WorkoutTemplate?> getTemplateById(String templateId);
   Future<String> createDraft(
-    String programId,
+    String? programId,
     CreatePersonalWorkoutInput input,
   );
   Future<void> publishDraft(String templateId);
+  Future<void> remove(String templateId);
+  Future<String> revise(String templateId, CreatePersonalWorkoutInput input);
 }
 
 class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
@@ -49,7 +61,24 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
     final links = await _client
         .from('program_workout_templates')
         .select('template_id')
-        .eq('program_id', programId);
+        .eq('program_id', programId)
+        .eq('catalog_scope', 'program');
+    return _listFromLinks(links, 'program');
+  }
+
+  @override
+  Future<List<AdminWorkoutSummary>> listGeneral() async {
+    final links = await _client
+        .from('program_workout_templates')
+        .select('template_id')
+        .eq('catalog_scope', 'general');
+    return _listFromLinks(links, 'general');
+  }
+
+  Future<List<AdminWorkoutSummary>> _listFromLinks(
+    List<Map<String, dynamic>> links,
+    String catalogScope,
+  ) async {
     final ids = links.map((row) => row['template_id'] as String).toList();
     if (ids.isEmpty) return const [];
     final rows = await _client
@@ -73,6 +102,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             status: row['status'] as String,
             version: row['version'] as int,
             isRunning: runningIds.contains(row['id']),
+            catalogScope: catalogScope,
           ),
         )
         .toList();
@@ -82,7 +112,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
   Future<List<AdminExercise>> listPublicExercises() async {
     final rows = await _client
         .from('exercises')
-        .select('id,name')
+        .select('id,name,muscle_groups,equipment')
         .eq('is_public', true)
         .order('name');
     return rows
@@ -91,6 +121,9 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
           (row) => AdminExercise(
             id: row['id'] as String,
             name: row['name'] as String,
+            muscleGroups: (row['muscle_groups'] as List? ?? const [])
+                .cast<String>(),
+            equipment: (row['equipment'] as List? ?? const []).cast<String>(),
           ),
         )
         .toList();
@@ -108,7 +141,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
 
   @override
   Future<String> createDraft(
-    String programId,
+    String? programId,
     CreatePersonalWorkoutInput input,
   ) async {
     validateWorkoutDraft(input);
@@ -128,5 +161,29 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
       'publish_admin_workout_draft',
       params: {'p_template_id': templateId},
     );
+  }
+
+  @override
+  Future<void> remove(String templateId) async {
+    await _client.rpc(
+      'remove_admin_workout',
+      params: {'p_template_id': templateId},
+    );
+  }
+
+  @override
+  Future<String> revise(
+    String templateId,
+    CreatePersonalWorkoutInput input,
+  ) async {
+    validateWorkoutDraft(input);
+    final id = await _client.rpc(
+      'revise_admin_workout',
+      params: {
+        'p_template_id': templateId,
+        'p_payload': workoutDraftToJson(input),
+      },
+    );
+    return id as String;
   }
 }

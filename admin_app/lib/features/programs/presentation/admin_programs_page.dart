@@ -143,6 +143,25 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           ),
         ),
         const SizedBox(height: 24),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.public),
+            title: const Text('Biblioteca general de EntrenaOP'),
+            subtitle: const Text(
+              'Sesiones abiertas, independientes de los programas.',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AdminProgramWorkoutsPage(
+                  program: null,
+                  repository: widget.workoutRepository,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         if (_programs.isEmpty)
           const Text('Todavía no hay programas.')
         else
