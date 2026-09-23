@@ -200,6 +200,13 @@ identidad
   `preparation_goals` guarda las preparaciones que sigue cada usuario y sus
   fechas objetivo. Puede mantener varias activas, pero no duplicar el mismo
   programa mientras permanezca activo.
+- El programa `fas_periodic_assessment` existe como borrador deshabilitado.
+  `fas_periodic_2027/assessment_reference_v1.json` contiene solo los mínimos
+  que alcanzan al menos 20 puntos del anexo II de DEF/15/2026. El contrato SQL
+  actual de `physical_assessments` solo modela hitos de ingreso/formación y
+  todavía no puede validar puntuaciones por edad. No se conectará la referencia
+  del cliente al guardado ni se habilitará el programa hasta ampliar y probar
+  esa validación en servidor; Tropa conserva su catálogo e historial.
 - Las preparaciones, la planificación y las sesiones personales son conceptos
   distintos. `scheduled_workouts` actúa como agenda global del usuario y puede
   reunir distintas fuentes; una futura planificación adaptativa atenderá

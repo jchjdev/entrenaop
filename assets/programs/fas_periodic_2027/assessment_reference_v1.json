@@ -1,0 +1,251 @@
+{
+  "version": "es_def_15_2026_periodic_2027_v1",
+  "programId": "fas_periodic_assessment",
+  "status": "draft",
+  "effectiveFrom": "2027-01-01",
+  "sourceUrl": "https://www.boe.es/eli/es/o/2026/01/13/def15",
+  "sourceSection": "Anexo II, apartados II.1–II.4; artículo 12.1 y disposición transitoria segunda",
+  "minimumPointsPerTest": 20,
+  "ageBands": [
+    {
+      "id": "17_25",
+      "minAge": 17,
+      "maxAge": 25
+    },
+    {
+      "id": "26_30",
+      "minAge": 26,
+      "maxAge": 30
+    },
+    {
+      "id": "31_35",
+      "minAge": 31,
+      "maxAge": 35
+    },
+    {
+      "id": "36_40",
+      "minAge": 36,
+      "maxAge": 40
+    },
+    {
+      "id": "41_45",
+      "minAge": 41,
+      "maxAge": 45
+    },
+    {
+      "id": "46_50",
+      "minAge": 46,
+      "maxAge": 50
+    },
+    {
+      "id": "51_55",
+      "minAge": 51,
+      "maxAge": 55
+    },
+    {
+      "id": "56_59",
+      "minAge": 56,
+      "maxAge": 59
+    },
+    {
+      "id": "60_plus",
+      "minAge": 60,
+      "maxAge": null
+    }
+  ],
+  "tests": [
+    {
+      "id": "upper_body_push_ups_2_min",
+      "name": "Flexo-extensiones de brazos (2 min)",
+      "unit": "repetitions",
+      "betterDirection": "higher",
+      "passMarksAtLeast20Points": [
+        {
+          "ageBand": "17_25",
+          "men": 14,
+          "women": 8
+        },
+        {
+          "ageBand": "26_30",
+          "men": 13,
+          "women": 7
+        },
+        {
+          "ageBand": "31_35",
+          "men": 12,
+          "women": 6
+        },
+        {
+          "ageBand": "36_40",
+          "men": 11,
+          "women": 5
+        },
+        {
+          "ageBand": "41_45",
+          "men": 10,
+          "women": 4
+        },
+        {
+          "ageBand": "46_50",
+          "men": 9,
+          "women": 3
+        },
+        {
+          "ageBand": "51_55",
+          "men": 8,
+          "women": 3
+        },
+        {
+          "ageBand": "56_59",
+          "men": 6,
+          "women": 3
+        },
+        {
+          "ageBand": "60_plus",
+          "men": 5,
+          "women": 2
+        }
+      ]
+    },
+    {
+      "id": "abdominal_plank",
+      "name": "Plancha isométrica",
+      "unit": "milliseconds",
+      "betterDirection": "higher",
+      "passMarksAtLeast20Points": [
+        {
+          "ageBand": "17_25",
+          "men": 40000,
+          "women": 40000
+        },
+        {
+          "ageBand": "26_30",
+          "men": 36000,
+          "women": 36000
+        },
+        {
+          "ageBand": "31_35",
+          "men": 35000,
+          "women": 35000
+        },
+        {
+          "ageBand": "36_40",
+          "men": 34000,
+          "women": 34000
+        },
+        {
+          "ageBand": "41_45",
+          "men": 33000,
+          "women": 33000
+        },
+        {
+          "ageBand": "46_50",
+          "men": 32000,
+          "women": 32000
+        },
+        {
+          "ageBand": "51_55",
+          "men": 31000,
+          "women": 31000
+        },
+        {
+          "ageBand": "56_59",
+          "men": 30000,
+          "women": 30000
+        },
+        {
+          "ageBand": "60_plus",
+          "men": 28000,
+          "women": 28000
+        }
+      ]
+    },
+    {
+      "id": "run_2000_m",
+      "name": "Carrera continua de 2.000 m",
+      "unit": "milliseconds",
+      "betterDirection": "lower",
+      "passMarksAtLeast20Points": [
+        {
+          "ageBand": "17_25",
+          "men": 706000,
+          "women": 754000
+        },
+        {
+          "ageBand": "26_30",
+          "men": 714000,
+          "women": 762000
+        },
+        {
+          "ageBand": "31_35",
+          "men": 722000,
+          "women": 770000
+        },
+        {
+          "ageBand": "36_40",
+          "men": 730000,
+          "women": 786000
+        },
+        {
+          "ageBand": "41_45",
+          "men": 738000,
+          "women": 802000
+        },
+        {
+          "ageBand": "46_50",
+          "men": 754000,
+          "women": 818000
+        },
+        {
+          "ageBand": "51_55",
+          "men": 794000,
+          "women": 898000
+        },
+        {
+          "ageBand": "56_59",
+          "men": 826000,
+          "women": 990000
+        },
+        {
+          "ageBand": "60_plus",
+          "men": 842000,
+          "women": 1006000
+        }
+      ]
+    },
+    {
+      "id": "agility_speed_circuit",
+      "name": "Circuito de agilidad-velocidad",
+      "unit": "milliseconds",
+      "betterDirection": "lower",
+      "requiredBelowAge": 45,
+      "passMarksAtLeast20Points": [
+        {
+          "ageBand": "17_25",
+          "men": 15200,
+          "women": 16700
+        },
+        {
+          "ageBand": "26_30",
+          "men": 15400,
+          "women": 16900
+        },
+        {
+          "ageBand": "31_35",
+          "men": 15600,
+          "women": 17100
+        },
+        {
+          "ageBand": "36_40",
+          "men": 15800,
+          "women": 17300
+        },
+        {
+          "ageBand": "41_45",
+          "men": 16200,
+          "women": 17800
+        }
+      ]
+    }
+  ]
+}

@@ -102,11 +102,23 @@ sin alterar esta primera vertical.
 ## Siguiente piloto de evaluación periódica
 
 Javier prefiere trabajar primero con las pruebas que conoce como PAFAS/PAEF.
-Antes de codificarlas hay que acordar a qué colectivo y evaluación concreta se
-refiere, comprobar la norma y la fecha de aplicación y versionar tanto pruebas
-como puntuación. No se copiarán los mínimos de ingreso de Tropa. Si el piloto
-representa la evaluación periódica del nuevo régimen de la Orden DEF/15/2026,
-el catálogo del anexo II tendrá vigencia desde 2027; un escenario de 2026
-requiere identificar su normativa aplicable en ese momento. El nombre popular
-PAFAS/PAEF podrá figurar en la interfaz si ayuda al usuario, pero el contrato
-persistido debe distinguir con precisión régimen y versión.
+Para el nuevo régimen se ha creado el programa estable
+`fas_periodic_assessment`, de tipo `internal_assessment`, **deshabilitado**.
+Ambos nombres se tratan como formas de referirse a esta evaluación periódica,
+no como dos baremos inventados. La referencia
+`assets/programs/fas_periodic_2027/assessment_reference_v1.json` recoge del
+anexo II de la Orden DEF/15/2026 las marcas más bajas o más lentas que
+alcanzan **al menos 20 puntos** en cada prueba para los tramos 17–25 a 60+,
+según las columnas M/F. Conserva milisegundos para tiempos y no copia los
+mínimos de ingreso de Tropa. Conforme al artículo 10, el circuito no se exige
+a partir de los 45 años, aunque el último tramo visible de su tabla se titule
+41–45. La vigencia de este régimen periódico comienza el 1 de enero de 2027.
+
+Esta referencia **no es el baremo íntegro de 0 a 100 puntos** ni está conectada
+al guardado. La base de datos actual solo admite los hitos de ingreso,
+formación y egreso y carece de edad y tabla de puntuación periódica; publicar
+el programa ahora produciría resultados erróneos. Antes de habilitarlo habrá
+que modelar la puntuación completa, fijar la edad aplicable en la fecha del
+test, validar el registro en servidor y resolver la captura inicial dentro
+del programa elegido. Un escenario de 2026 requiere su catálogo histórico
+propio; no se le aplicarán anticipadamente los baremos de 2027.

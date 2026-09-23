@@ -667,10 +667,10 @@ class _NextStepCard extends StatelessWidget {
       ),
       PreparationNextStep.physicalAssessment => (
         icon: Icons.monitor_heart_outlined,
-        title: 'Haz tu evaluación inicial',
+        title: 'Registra tus marcas de ingreso a Tropa',
         description:
-            'Necesitamos tus marcas reales antes de decidir qué prueba requiere atención.',
-        action: 'Empezar evaluación',
+            'Esta evaluación usa el baremo de ingreso a Tropa y Marinería; no es un test general para otros programas.',
+        action: 'Registrar marcas de Tropa',
         route: '/assessment/initial',
       ),
       PreparationNextStep.trainingPreferences => (

@@ -72,8 +72,9 @@ El primer recorrido **implementado** es el ingreso a Tropa y Marinería; no
 equivale a la evaluación periódica del personal ya incorporado. Para validar
 el primer plan adaptativo se prioriza ahora un piloto de evaluación periódica
 militar, familiar para Javier, pendiente de concretar normativa y vigencia.
-Se modelará como programa distinto, no renombrando Tropa ni tratándolo como
-otra oposición. Los accesos a Suboficiales y Oficiales tendrán sus propios
+Se modela como programa distinto, actualmente oculto y con una referencia de
+mínimos de 2027 todavía no conectada al registro, no renombrando Tropa ni
+tratándolo como otra oposición. Los accesos a Suboficiales y Oficiales tendrán sus propios
 catálogos oficiales. CNP existe solo como borrador sin pruebas definidas y no
 se publicará por ahora; Guardia Civil y otros cuerpos quedan fuera del MVP
 inicial.

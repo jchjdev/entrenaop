@@ -92,14 +92,20 @@ contenido deportivo. No se cambiará el identificador ni el catálogo del
 programa de ingreso existente: tiene marcas y preparaciones históricas. La
 Orden DEF/15/2026 comparte tipos de prueba entre ingreso y evaluación
 periódica, pero diferencia sus baremos; los nuevos baremos periódicos entran
-en vigor el 1 de enero de 2027. Debemos fijar con Javier el ámbito concreto,
-la normativa aplicable y la vigencia antes de crear o habilitar ese programa.
+en vigor el 1 de enero de 2027. Ya existe el programa estable
+`fas_periodic_assessment` **deshabilitado** y una referencia versionada con
+las marcas mínimas que alcanzan al menos 20 puntos por prueba, sexo y edad
+según el anexo II. No calcula todavía la puntuación completa ni guarda
+evaluaciones periódicas: la persistencia actual solo admite hitos de ingreso
+y no debe puntuar la evaluación periódica como si fuera Tropa.
 
 El siguiente tramo ejecutable será:
 
-1. Precisar el programa de evaluación periódica y verificar pruebas, edades,
-   puntuación, fuente y vigencia. Crear su catálogo versionado y sus tests sin
-   reutilizar las marcas de ingreso como calificación oficial.
+1. Completar el contrato de evaluación periódica y su puntuación completa por
+   edad/sexo en PostgreSQL, con pruebas de dominio y permisos. Conectar el
+   registro al programa elegido sin reutilizar las marcas de ingreso como
+   calificación oficial. Confirmar con Javier los detalles operativos antes de
+   habilitarlo.
 2. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
    las primeras plantillas: técnica, objetivo, material, variantes y
    limitaciones. El creador administrativo completo, fotos y biblioteca amplia
