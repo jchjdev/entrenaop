@@ -117,13 +117,16 @@ a partir de los 45 años, aunque el último tramo visible de su tabla se titule
 
 Esta referencia **no es el baremo íntegro de 0 a 100 puntos**. La migración
 `20260923006000_fas_periodic_assessments.sql` guarda cada intento fechado en
-tablas independientes del ingreso, con edad declarada en la fecha del test,
+tablas independientes del ingreso, con edad calculada desde la fecha de
+nacimiento del perfil para la fecha del test,
 categoría, versión y las tres o cuatro marcas exigibles. El servidor valida
 propiedad de la preparación activa, conjunto exacto de pruebas y valores no
-negativos. La app permite repetir el test y consultar sus marcas frente al
+negativos. La migración `20260923007000_fas_periodic_age_from_profile.sql`
+comprueba en servidor que la edad guardada coincide con el perfil. La app
+permite repetir el test y consultar sus marcas frente al
 mínimo de 20 puntos; desde los 45 años el circuito no se exige. Las marcas
 anteriores a 2027 quedan etiquetadas como referencia de entrenamiento, no
 como evaluación oficial bajo el nuevo régimen. Aún faltan la puntuación
-completa, verificación independiente de edad/categoría declaradas y las reglas
+completa, verificación independiente de la categoría declarada y las reglas
 de aptitud operativa. Un escenario normativo de 2026 requiere su catálogo
 histórico propio; no se le aplican anticipadamente los baremos de 2027.

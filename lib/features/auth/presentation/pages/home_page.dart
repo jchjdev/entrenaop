@@ -426,6 +426,7 @@ class _PreparationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 286,
+      height: 220,
       child: Card(
         clipBehavior: Clip.antiAlias,
         color: const Color(0xFF171717),
@@ -458,7 +459,7 @@ class _PreparationCard extends StatelessWidget {
                       : 'Pruebas · ${_formatDate(goal.targetDate!)}',
                   style: const TextStyle(color: Colors.white54),
                 ),
-                const SizedBox(height: 16),
+                const Spacer(),
                 const Row(
                   children: [
                     Text(
@@ -823,10 +824,7 @@ class _FasAssessmentCard extends StatelessWidget {
         children: [
           const Align(
             alignment: Alignment.centerLeft,
-            child: Icon(
-              Icons.monitor_heart_outlined,
-              color: Color(0xFFFF8A50),
-            ),
+            child: Icon(Icons.monitor_heart_outlined, color: Color(0xFFFF8A50)),
           ),
           const SizedBox(height: 16),
           const Text(

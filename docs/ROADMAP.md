@@ -107,15 +107,26 @@ El siguiente tramo ejecutable será:
    historial y validación de propiedad en PostgreSQL. Pendiente la tabla
    completa de 0–100 puntos y su cálculo; no confundir los mínimos visibles
    con una calificación oficial.
-2. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
+   La fecha de nacimiento se recoge en el perfil; la edad se calcula para
+   cada intento y el servidor comprueba que coincide. El circuito deja de
+   exigirse al cumplir 45 años.
+2. Crear una **calculadora gratuita de puntos** como puerta de entrada a
+   EntrenaOP: elegir programa y convocatoria, introducir marcas y mostrar
+   puntuación por prueba, total y versión del baremo. Primero se cargará y
+   probará la tabla íntegra oficial, incluidos límites, tramos de edad y
+   vigencia; sin ella no se mostrarán puntos inventados. El registro de
+   entrenamiento y las propuestas adaptativas seguirán siendo flujos
+   separados. La conversión a Premium se diseñará sin ocultar el cálculo
+   gratuito ni confundirlo con una certificación oficial.
+3. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
    las primeras plantillas: técnica, objetivo, material, variantes y
    limitaciones. El creador administrativo completo, fotos y biblioteca amplia
    no bloquean el piloto; tampoco se debe inventar una progresión de fuerza a
    partir de solo flexiones, sentadillas y plancha.
-3. Componer y revisar con Javier una semana de plantillas ejecutables de
+4. Componer y revisar con Javier una semana de plantillas ejecutables de
    carrera y fuerza, registrables con los flujos existentes. Mantenerla como
    borrador hasta validar su contenido.
-4. Implementar una propuesta determinista y explicable sin asignación real;
+5. Implementar una propuesta determinista y explicable sin asignación real;
    después validar el recorrido completo antes de publicar en agenda.
 
 El trabajo existente de carrera de Tropa es un prototipo específico de ese

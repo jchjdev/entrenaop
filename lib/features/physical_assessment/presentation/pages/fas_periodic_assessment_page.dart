@@ -2,8 +2,10 @@ import 'package:entrenaop/features/physical_assessment/data/repositories/fas_per
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
+import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/domain/age_on_date.dart';
+import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class FasPeriodicAssessmentPage extends StatefulWidget {
@@ -11,10 +13,14 @@ class FasPeriodicAssessmentPage extends StatefulWidget {
     super.key,
     required this.goalId,
     required this.repository,
+    required this.birthDateRepository,
+    this.reference,
   });
 
   final String goalId;
   final FasPeriodicAssessmentRepository repository;
+  final ProfileBirthDateRepository birthDateRepository;
+  final FasPeriodic2027Reference? reference;
 
   @override
   State<FasPeriodicAssessmentPage> createState() =>
@@ -23,38 +29,55 @@ class FasPeriodicAssessmentPage extends StatefulWidget {
 
 class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
   final _formKey = GlobalKey<FormState>();
-  final _age = TextEditingController();
   final _fields = <String, TextEditingController>{
     for (final test in _tests) test.id: TextEditingController(),
   };
   late final Future<FasPeriodic2027Reference> _reference;
   late Future<List<FasPeriodicAssessmentEntry>> _history;
+  late Future<DateTime?> _birthDate;
   AssessmentCategory _category = AssessmentCategory.men;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _reference = FasPeriodic2027Reference.load();
+    _reference = widget.reference == null
+        ? FasPeriodic2027Reference.load()
+        : Future.value(widget.reference);
     _history = widget.repository.history(widget.goalId);
-    _age.addListener(_refreshAge);
+    _birthDate = widget.birthDateRepository.get();
   }
 
-  void _refreshAge() => setState(() {});
+  Future<void> _editBirthDate(DateTime? current) async {
+    final chosen = await chooseBirthDate(context, current: current);
+    if (chosen == null || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await widget.birthDateRepository.save(chosen);
+      if (!mounted) return;
+      setState(() => _birthDate = widget.birthDateRepository.get());
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo guardar la fecha de nacimiento.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   void dispose() {
-    _age.removeListener(_refreshAge);
-    _age.dispose();
     for (final controller in _fields.values) {
       controller.dispose();
     }
     super.dispose();
   }
 
-  Future<void> _save(FasPeriodic2027Reference reference) async {
+  Future<void> _save(FasPeriodic2027Reference reference, int age) async {
     if (!_formKey.currentState!.validate()) return;
-    final age = int.parse(_age.text);
     final marks = <String, int>{};
     for (final test in _tests) {
       if (reference.passMarkFor(
@@ -118,7 +141,6 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
           return const Center(child: CircularProgressIndicator());
         }
         final reference = snapshot.data!;
-        final age = int.tryParse(_age.text);
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -152,106 +174,163 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                       ),
                     ],
                     const SizedBox(height: 22),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextFormField(
-                            controller: _age,
-                            decoration: const InputDecoration(
-                              labelText: 'Edad en la fecha del test',
-                              helperText:
-                                  'Se guarda con este intento; no cambia tus marcas anteriores.',
+                    FutureBuilder<DateTime?>(
+                      future: _birthDate,
+                      builder: (context, birthSnapshot) {
+                        if (birthSnapshot.hasError) {
+                          return Card(
+                            child: ListTile(
+                              title: const Text(
+                                'No se pudo cargar tu fecha de nacimiento.',
+                              ),
+                              trailing: const Icon(Icons.refresh),
+                              onTap: () => setState(
+                                () => _birthDate = widget.birthDateRepository
+                                    .get(),
+                              ),
                             ),
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            validator: (value) {
-                              final parsed = int.tryParse(value ?? '');
-                              return parsed == null ||
-                                      parsed < 17 ||
-                                      parsed > 120
-                                  ? 'Indica una edad entre 17 y 120.'
-                                  : null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          SegmentedButton<AssessmentCategory>(
-                            segments: const [
-                              ButtonSegment(
-                                value: AssessmentCategory.men,
-                                label: Text('Baremo H'),
+                          );
+                        }
+                        if (birthSnapshot.connectionState !=
+                            ConnectionState.done) {
+                          return const LinearProgressIndicator();
+                        }
+                        final birthDate = birthSnapshot.data;
+                        if (birthDate == null) {
+                          return Card(
+                            child: ListTile(
+                              title: const Text(
+                                'Indica tu fecha de nacimiento',
                               ),
-                              ButtonSegment(
-                                value: AssessmentCategory.women,
-                                label: Text('Baremo M'),
+                              subtitle: const Text(
+                                'La edad determina qué marcas se aplican y si corresponde el circuito de agilidad.',
                               ),
-                            ],
-                            selected: {_category},
-                            onSelectionChanged: (values) =>
-                                setState(() => _category = values.first),
-                          ),
-                          const SizedBox(height: 12),
-                          for (final test in _tests)
-                            if (age == null ||
-                                age < 17 ||
-                                age > 120 ||
-                                reference.passMarkFor(
-                                      testId: test.id,
-                                      category: _category,
-                                      age: age,
-                                    ) !=
-                                    null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 14),
-                                child: TextFormField(
-                                  controller: _fields[test.id],
-                                  decoration: InputDecoration(
-                                    labelText: test.label,
-                                    helperText:
-                                        age != null && age >= 17 && age <= 120
-                                        ? 'Mínimo: ${_display(reference.passMarkFor(testId: test.id, category: _category, age: age)!.threshold, test.id)}'
-                                        : test.hint,
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  validator: (value) {
-                                    final parsed = switch (test.id) {
-                                      'upper_body_push_ups_2_min' =>
-                                        parseRepetitions(value ?? ''),
-                                      'run_2000_m' => parseClockToMilliseconds(
-                                        value ?? '',
-                                      ),
-                                      _ => parseSecondsToMilliseconds(
-                                        value ?? '',
-                                      ),
-                                    };
-                                    return parsed == null
-                                        ? 'Introduce una marca válida.'
-                                        : null;
-                                  },
+                              trailing: const Icon(
+                                Icons.calendar_month_outlined,
+                              ),
+                              onTap: _saving
+                                  ? null
+                                  : () => _editBirthDate(null),
+                            ),
+                          );
+                        }
+                        final age = ageOnDate(birthDate, DateTime.now());
+                        if (age < 17 || age > 120) {
+                          return Card(
+                            child: ListTile(
+                              title: const Text(
+                                'Revisa tu fecha de nacimiento',
+                              ),
+                              subtitle: const Text(
+                                'El baremo comienza a los 17 años.',
+                              ),
+                              trailing: const Icon(Icons.edit_outlined),
+                              onTap: _saving
+                                  ? null
+                                  : () => _editBirthDate(birthDate),
+                            ),
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Card(
+                              child: ListTile(
+                                title: Text(
+                                  '$age años · baremo según tu edad actual',
                                 ),
-                              ),
-                          if (age != null && age >= 45)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 14),
-                              child: Text(
-                                'El circuito de agilidad no es obligatorio desde los 45 años.',
-                                style: TextStyle(color: Colors.white70),
+                                subtitle: Text(
+                                  'Nacimiento: ${DateFormat('dd/MM/yyyy').format(birthDate)}',
+                                ),
+                                trailing: const Icon(Icons.edit_outlined),
+                                onTap: _saving
+                                    ? null
+                                    : () => _editBirthDate(birthDate),
                               ),
                             ),
-                          const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed: _saving ? null : () => _save(reference),
-                            child: Text(
-                              _saving
-                                  ? 'Guardando…'
-                                  : 'Guardar resultado del test',
+                            const SizedBox(height: 12),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SegmentedButton<AssessmentCategory>(
+                                    segments: const [
+                                      ButtonSegment(
+                                        value: AssessmentCategory.men,
+                                        label: Text('Baremo H'),
+                                      ),
+                                      ButtonSegment(
+                                        value: AssessmentCategory.women,
+                                        label: Text('Baremo M'),
+                                      ),
+                                    ],
+                                    selected: {_category},
+                                    onSelectionChanged: (values) => setState(
+                                      () => _category = values.first,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  for (final test in _tests)
+                                    if (reference.passMarkFor(
+                                          testId: test.id,
+                                          category: _category,
+                                          age: age,
+                                        ) !=
+                                        null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 14),
+                                        child: TextFormField(
+                                          controller: _fields[test.id],
+                                          decoration: InputDecoration(
+                                            labelText: test.label,
+                                            helperText:
+                                                'Mínimo: ${_display(reference.passMarkFor(testId: test.id, category: _category, age: age)!.threshold, test.id)}',
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) {
+                                            final parsed = switch (test.id) {
+                                              'upper_body_push_ups_2_min' =>
+                                                parseRepetitions(value ?? ''),
+                                              'run_2000_m' =>
+                                                parseClockToMilliseconds(
+                                                  value ?? '',
+                                                ),
+                                              _ => parseSecondsToMilliseconds(
+                                                value ?? '',
+                                              ),
+                                            };
+                                            return parsed == null
+                                                ? 'Introduce una marca válida.'
+                                                : null;
+                                          },
+                                        ),
+                                      ),
+                                  if (age >= 45)
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 14),
+                                      child: Text(
+                                        'El circuito de agilidad no es obligatorio desde los 45 años.',
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 24),
+                                  FilledButton(
+                                    onPressed: _saving
+                                        ? null
+                                        : () => _save(reference, age),
+                                    child: Text(
+                                      _saving
+                                          ? 'Guardando…'
+                                          : 'Guardar resultado del test',
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 32),
                     const Text(

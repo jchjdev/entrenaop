@@ -1,10 +1,32 @@
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart';
+import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late FasPeriodic2027Reference reference;
+  setUpAll(() async => reference = await FasPeriodic2027Reference.load());
+
+  testWidgets('pide nacimiento antes de mostrar el baremo', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicAssessmentPage(
+          goalId: 'goal-fas',
+          repository: _FakeRepository(),
+          birthDateRepository: _FakeBirthDateRepository(null),
+          reference: reference,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+
+    expect(find.text('Indica tu fecha de nacimiento'), findsOneWidget);
+    expect(find.text('Guardar resultado del test'), findsNothing);
+  });
 
   testWidgets('la agilidad desaparece desde los 45 años sin derivar a Tropa', (
     tester,
@@ -14,26 +36,50 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final repository = _FakeRepository();
+    final today = DateTime.now();
+    final profile = _FakeBirthDateRepository(
+      DateTime(today.year - 44, today.month, today.day),
+    );
     await tester.pumpWidget(
       MaterialApp(
         home: FasPeriodicAssessmentPage(
           goalId: 'goal-fas',
           repository: repository,
+          birthDateRepository: profile,
+          reference: reference,
         ),
       ),
     );
     await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Evaluación periódica FAS · 2027'), findsOneWidget);
-    final age = find.widgetWithText(TextFormField, 'Edad en la fecha del test');
-    await tester.enterText(age, '44');
-    await tester.pumpAndSettle();
+    expect(find.text('44 años · baremo según tu edad actual'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Circuito de agilidad'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Circuito de agilidad'), findsOneWidget);
     expect(
       find.text('El circuito de agilidad no es obligatorio desde los 45 años.'),
       findsNothing,
     );
 
-    await tester.enterText(age, '45');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicAssessmentPage(
+          key: const ValueKey('age-45'),
+          goalId: 'goal-fas',
+          repository: repository,
+          birthDateRepository: _FakeBirthDateRepository(
+            DateTime(today.year - 45, today.month, today.day),
+          ),
+          reference: reference,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(
       find.text('El circuito de agilidad no es obligatorio desde los 45 años.'),
@@ -61,6 +107,18 @@ void main() {
       'run_2000_m': 738000,
     });
   });
+}
+
+class _FakeBirthDateRepository implements ProfileBirthDateRepository {
+  _FakeBirthDateRepository(this.value);
+
+  DateTime? value;
+
+  @override
+  Future<DateTime?> get() async => value;
+
+  @override
+  Future<void> save(DateTime birthDate) async => value = birthDate;
 }
 
 class _FakeRepository implements FasPeriodicAssessmentRepository {

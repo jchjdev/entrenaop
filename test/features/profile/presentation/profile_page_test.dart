@@ -11,6 +11,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +38,10 @@ void main() {
           theme: ThemeData.dark(useMaterial3: true),
           home: BlocProvider.value(
             value: authCubit,
-            child: ProfilePage(preparations: _PreparationRepository()),
+            child: ProfilePage(
+              preparations: _PreparationRepository(),
+              birthDateRepository: _BirthDateRepository(),
+            ),
           ),
         ),
       );
@@ -50,6 +54,14 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+class _BirthDateRepository implements ProfileBirthDateRepository {
+  @override
+  Future<DateTime?> get() async => null;
+
+  @override
+  Future<void> save(DateTime birthDate) async {}
 }
 
 class _AuthRepository implements AuthRepository {

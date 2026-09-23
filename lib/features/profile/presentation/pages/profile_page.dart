@@ -2,15 +2,23 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/domain/age_on_date.dart';
+import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key, required this.preparations});
+  const ProfilePage({
+    super.key,
+    required this.preparations,
+    required this.birthDateRepository,
+  });
 
   final PreparationGoalRepository preparations;
+  final ProfileBirthDateRepository birthDateRepository;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -19,6 +27,28 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late Future<List<PreparationGoal>> _activeGoals = widget.preparations
       .getActiveGoals();
+  late Future<DateTime?> _birthDate = widget.birthDateRepository.get();
+  bool _savingBirthDate = false;
+
+  Future<void> _editBirthDate(DateTime? current) async {
+    final chosen = await chooseBirthDate(context, current: current);
+    if (chosen == null || !mounted) return;
+    setState(() => _savingBirthDate = true);
+    try {
+      await widget.birthDateRepository.save(chosen);
+      if (!mounted) return;
+      setState(() => _birthDate = widget.birthDateRepository.get());
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo guardar la fecha de nacimiento.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _savingBirthDate = false);
+    }
+  }
 
   void _reloadGoals() => setState(() {
     _activeGoals = widget.preparations.getActiveGoals();
@@ -46,6 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: RefreshIndicator(
           onRefresh: () async {
             _reloadGoals();
+            setState(() => _birthDate = widget.birthDateRepository.get());
             await _activeGoals;
           },
           child: ListView(
@@ -116,6 +147,53 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 26),
+                      FutureBuilder<DateTime?>(
+                        future: _birthDate,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return Card(
+                              child: ListTile(
+                                title: const Text(
+                                  'No pudimos cargar tu fecha de nacimiento',
+                                ),
+                                trailing: const Icon(Icons.refresh),
+                                onTap: () => setState(
+                                  () => _birthDate = widget.birthDateRepository
+                                      .get(),
+                                ),
+                              ),
+                            );
+                          }
+                          if (!snapshot.hasData &&
+                              snapshot.connectionState !=
+                                  ConnectionState.done) {
+                            return const LinearProgressIndicator();
+                          }
+                          final birthDate = snapshot.data;
+                          return Card(
+                            color: const Color(0xFF171717),
+                            child: ListTile(
+                              leading: const Icon(
+                                Icons.cake_outlined,
+                                color: Color(0xFFFF8A50),
+                              ),
+                              title: const Text('Fecha de nacimiento'),
+                              subtitle: Text(
+                                birthDate == null
+                                    ? 'Añádela para aplicar los baremos por edad.'
+                                    : '${DateFormat('dd/MM/yyyy').format(birthDate)} · ${ageOnDate(birthDate, DateTime.now())} años',
+                              ),
+                              trailing: _savingBirthDate
+                                  ? const CircularProgressIndicator()
+                                  : const Icon(Icons.edit_outlined),
+                              onTap: _savingBirthDate
+                                  ? null
+                                  : () => _editBirthDate(birthDate),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 26),
                       const Text(

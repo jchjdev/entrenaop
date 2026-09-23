@@ -167,6 +167,7 @@ class AppRouter {
                                     goalId: state.pathParameters['goalId']!,
                                     repository:
                                         sl<FasPeriodicAssessmentRepository>(),
+                                    birthDateRepository: sl(),
                                   ),
                             ),
                             GoRoute(
@@ -334,7 +335,10 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/profile',
-                  builder: (context, state) => ProfilePage(preparations: sl()),
+                  builder: (context, state) => ProfilePage(
+                    preparations: sl(),
+                    birthDateRepository: sl(),
+                  ),
                 ),
               ],
             ),

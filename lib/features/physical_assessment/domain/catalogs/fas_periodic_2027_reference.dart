@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:flutter/services.dart';
 
-/// Referencia deportiva del anexo II, aún no habilitada para guardar resultados.
-/// PostgreSQL deberá validar el baremo antes de publicar este programa.
+/// Referencia de mínimos del anexo II; no es la tabla íntegra de puntos.
+/// PostgreSQL conserva y valida su propia copia para el registro.
 class FasPeriodic2027Reference {
   FasPeriodic2027Reference._(this._data);
 

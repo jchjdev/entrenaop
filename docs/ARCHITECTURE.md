@@ -208,6 +208,10 @@ identidad
   de DEF/15/2026 viven en PostgreSQL y en la referencia versionada del cliente;
   no equivalen al baremo completo de 0–100 puntos ni a aptitud oficial. Tropa
   conserva su catálogo e historial, sin reutilización de sus marcas.
+  La fecha de nacimiento del perfil alimenta la edad calculada para cada
+  intento; un trigger de PostgreSQL rechaza edades que no coincidan con esa
+  fecha. El usuario puede corregir el perfil, sin alterar las marcas
+  históricas. La categoría del baremo sigue declarada por el usuario.
 - Las preparaciones, la planificación y las sesiones personales son conceptos
   distintos. `scheduled_workouts` actúa como agenda global del usuario y puede
   reunir distintas fuentes; una futura planificación adaptativa atenderá
