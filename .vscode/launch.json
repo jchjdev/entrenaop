@@ -18,18 +18,6 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart"
-    },
-    {
-      "name": "EntrenaOP Admin · Chrome 55555",
-      "type": "dart",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/admin_app",
-      "program": "${workspaceFolder}/admin_app/lib/main.dart",
-      "deviceId": "chrome",
-      "toolArgs": [
-        "--web-hostname=localhost",
-        "--web-port=55555"
-      ]
     }
   ]
 }

@@ -37,13 +37,14 @@ administración no se guardan en el repositorio.
 
 ## Ejecutar en VS Code
 
-En **Ejecutar y depurar** se puede elegir `EntrenaOP Chrome · puerto fijo` para
-la versión web de la app del alumno (`http://localhost:55554`). Para el panel
-independiente, elegir `EntrenaOP Admin · Chrome 55555`, que abre
+En **Ejecutar y depurar** desde la raíz se puede elegir
+`EntrenaOP Chrome · puerto fijo` para la versión web de la app del alumno
+(`http://localhost:55554`). Para el panel, abrir `admin_app/` como **otra carpeta
+de VS Code**, elegir allí `EntrenaOP Admin · Chrome 55555` y pulsar F5. Se abre
 `http://localhost:55555` (sin `/#/admin`). Esa dirección solo responde mientras
-está ejecutándose la depuración del panel. Cada uno es un proyecto Flutter
-distinto dentro del mismo repositorio. El panel requiere una cuenta con permiso
-administrativo en Supabase; sus operaciones vuelven a comprobarlo en el servidor.
+está ejecutándose el panel. Cada uno es un proyecto Flutter distinto dentro del
+mismo repositorio. El panel requiere una cuenta con permiso administrativo en
+Supabase; sus operaciones vuelven a comprobarlo en el servidor.
 
 Para la app, seleccionar primero un emulador o dispositivo Android en VS Code y
 ejecutar `EntrenaOP App · dispositivo seleccionado`. Ambas opciones usan el mismo
