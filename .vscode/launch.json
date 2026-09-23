@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "EntrenaOP Chrome · puerto fijo",
+      "type": "dart",
+      "request": "launch",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--web-hostname=localhost",
+        "--web-port=55554"
+      ]
+    }
+  ]
+}
