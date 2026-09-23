@@ -1,6 +1,8 @@
 import 'package:entrenaop/features/preparation_goal/data/initial_week_draft_catalog.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
 import 'package:entrenaop/features/preparation_goal/domain/services/initial_running_week_planner.dart';
+import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,8 +10,18 @@ import 'package:go_router/go_router.dart';
 /// Banco de pruebas local: reutiliza la decisión de dominio sin escribir en
 /// Supabase ni convertir el borrador deportivo en sesiones oficiales.
 class RunningWeekSimulatorPage extends StatefulWidget {
-  const RunningWeekSimulatorPage({super.key, this.draft});
+  const RunningWeekSimulatorPage({
+    super.key,
+    required this.goalId,
+    required this.loadRunningTests,
+    required this.loadPreferences,
+    this.draft,
+  });
 
+  final String goalId;
+  final Future<List<RunningTestResult>> Function(String goalId)
+  loadRunningTests;
+  final Future<TrainingPreferences?> Function() loadPreferences;
   final Future<InitialWeekDraft>? draft;
 
   @override
@@ -22,6 +34,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
 
   late final Future<InitialWeekDraft> _draft =
       widget.draft ?? InitialWeekDraftCatalog.load();
+  late final Future<void> _savedInputs = _loadSavedInputs();
   final _testTime = TextEditingController();
   final _scrollController = ScrollController();
   int _totalDays = 3;
@@ -32,8 +45,63 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
   bool _requiresReview = false;
   bool _hasOfficialWeek = false;
   InitialRunningWeekDecision? _decision;
+  String _testSource = 'Sin test de 2 km guardado para esta preparación.';
+  String _preferencesSource = 'Sin preferencias guardadas; revisa los valores.';
+  bool _sourceLoadFailed = false;
+  bool _inputsReady = false;
 
   int get _strengthDays => _totalDays - _runningDays;
+
+  Future<void> _loadSavedInputs() async {
+    // Las dos lecturas son independientes: un fallo no debe ocultar la otra.
+    final testsFuture = _latestTest();
+    final preferencesFuture = _savedPreferences();
+    final test = await testsFuture;
+    final preferences = await preferencesFuture;
+    if (!mounted) return;
+    if (preferences != null) {
+      _totalDays = preferences.availableDaysPerWeek.clamp(1, 7);
+      _runningDays = _runningDays.clamp(1, _totalDays);
+      if (preferences.sessionDurationMinutes > 0) {
+        _sessionMinutes = preferences.sessionDurationMinutes;
+      }
+      _requiresReview = preferences.requiresProfessionalReview;
+      _preferencesSource =
+          'De tus preferencias guardadas. El reparto entre carrera y fuerza sigue siendo provisional.';
+    }
+    if (test != null) {
+      final minutes = test.durationSeconds ~/ 60;
+      final seconds = (test.durationSeconds % 60).toString().padLeft(2, '0');
+      _testTime.text = '$minutes:$seconds';
+      final date = test.completedAt;
+      _testSource =
+          'Del test de 2 km del ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}. Comprueba si sigue siendo representativo.';
+    }
+    setState(() => _inputsReady = true);
+  }
+
+  Future<RunningTestResult?> _latestTest() async {
+    try {
+      final tests = await widget.loadRunningTests(widget.goalId);
+      return tests.firstOrNull;
+    } catch (_) {
+      _sourceLoadFailed = true;
+      _testSource =
+          'No se pudo consultar el test; introduce la marca manualmente.';
+      return null;
+    }
+  }
+
+  Future<TrainingPreferences?> _savedPreferences() async {
+    try {
+      return await widget.loadPreferences();
+    } catch (_) {
+      _sourceLoadFailed = true;
+      _preferencesSource =
+          'No se pudieron consultar las preferencias; revisa los valores.';
+      return null;
+    }
+  }
 
   @override
   void dispose() {
@@ -53,6 +121,8 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       _requiresReview = false;
       _hasOfficialWeek = false;
       _decision = null;
+      _testSource = 'Ejemplo ficticio; no procede de tu test.';
+      _preferencesSource = 'Ejemplo ficticio; no modifica tus preferencias.';
     });
   }
 
@@ -99,23 +169,31 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(20, 8, 20, 12),
         child: FilledButton.icon(
-          onPressed: _simulate,
+          onPressed: _inputsReady ? _simulate : null,
           icon: const Icon(Icons.play_arrow_rounded),
           label: const Text('Simular semana'),
         ),
       ),
-      body: FutureBuilder<InitialWeekDraft>(
-        future: _draft,
+      body: FutureBuilder<void>(
+        future: _savedInputs,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError || snapshot.data == null) {
-            return const Center(
-              child: Text('No se ha podido cargar el borrador deportivo.'),
-            );
-          }
-          return _body(snapshot.data!);
+          return FutureBuilder<InitialWeekDraft>(
+            future: _draft,
+            builder: (context, draftSnapshot) {
+              if (draftSnapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (draftSnapshot.hasError || draftSnapshot.data == null) {
+                return const Center(
+                  child: Text('No se ha podido cargar el borrador deportivo.'),
+                );
+              }
+              return _body(draftSnapshot.data!);
+            },
+          );
         },
       ),
     );
@@ -138,9 +216,16 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Los valores de esta pantalla se introducen a mano. No leemos aquí tu test real ni guardamos el resultado. Ninguna propuesta se añade a la agenda.',
+                  'Cargamos tu último test de 2 km y tus preferencias si existen. Puedes cambiarlos aquí para probar escenarios: nada se guarda ni se añade a la agenda.',
                   style: TextStyle(color: Colors.white70, height: 1.4),
                 ),
+                if (_sourceLoadFailed) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'No se pudieron cargar todos tus datos. Revisa los valores antes de simular.',
+                    style: TextStyle(color: Color(0xFFFFA477)),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 const Text(
                   'Límite actual: la marca solo comprueba que existe; todavía no calcula ritmos. El tiempo disponible solo comprueba un mínimo, no ajusta los tramos.',
@@ -184,8 +269,15 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           onChanged: (value) => setState(() {
                             _totalDays = value;
                             if (_runningDays > value) _runningDays = value;
+                            _preferencesSource =
+                                'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _preferencesSource,
+                          style: const TextStyle(color: Colors.white60),
                         ),
                         const SizedBox(height: 12),
                         _numberField(
@@ -221,10 +313,15 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                         _numberField(
                           label: 'Tiempo disponible por sesión',
                           value: _sessionMinutes,
-                          values: const [20, 30, 45, 60, 90],
+                          values: {
+                            ...[20, 30, 45, 60, 90],
+                            _sessionMinutes,
+                          }.toList()..sort(),
                           labelFor: (value) => '$value min',
                           onChanged: (value) => setState(() {
                             _sessionMinutes = value;
+                            _preferencesSource =
+                                'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),
@@ -240,7 +337,16 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                             helperText:
                                 'Puedes escribir solo dígitos: 1000 → 10:00.',
                           ),
-                          onChanged: (_) => setState(() => _decision = null),
+                          onChanged: (_) => setState(() {
+                            _testSource =
+                                'Modificado para esta simulación; no se guarda.';
+                            _decision = null;
+                          }),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _testSource,
+                          style: const TextStyle(color: Colors.white60),
                         ),
                         const SizedBox(height: 8),
                         SwitchListTile.adaptive(
@@ -258,6 +364,8 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           value: _requiresReview,
                           onChanged: (value) => setState(() {
                             _requiresReview = value;
+                            _preferencesSource =
+                                'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),

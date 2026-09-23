@@ -19,6 +19,8 @@ import 'package:entrenaop/features/preparation_goal/presentation/pages/preparati
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/running_test_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/running_week_simulator_page.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/running_test_repository.dart';
+import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
@@ -159,7 +161,13 @@ class AppRouter {
                             GoRoute(
                               path: 'week-simulator',
                               builder: (context, state) =>
-                                  const RunningWeekSimulatorPage(),
+                                  RunningWeekSimulatorPage(
+                                    goalId: state.pathParameters['goalId']!,
+                                    loadRunningTests:
+                                        sl<RunningTestRepository>().history,
+                                    loadPreferences:
+                                        sl<TrainingPreferencesRepository>().get,
+                                  ),
                             ),
                             GoRoute(
                               path: 'running-test',

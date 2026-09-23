@@ -16,14 +16,19 @@ Fuerza nombra las pruebas de flexo-extensiones y plancha, pero no prescribe
 ejercicios, repeticiones ni cargas. El reparto A/B/C es un escenario para
 revisar pantallas, no la asignación automática de días concretos.
 
-La preparación de Tropa ofrece también un **simulador manual de primera
-semana**. Introduce días totales, reparto carrera/fuerza, carrera reciente,
-tiempo por sesión, marca ficticia o manual de 2 km y avisos de salud. Invoca
+La preparación de Tropa ofrece también un **simulador de primera semana**.
+Precarga los días totales, el tiempo por sesión y la revisión pendiente desde
+las preferencias guardadas, y la última marca de 2 km de esa preparación.
+Muestra la procedencia y la fecha del test; el usuario puede modificar estos
+valores solo para el escenario. El reparto carrera/fuerza sigue siendo
+provisional y la carrera reciente, el dolor y la existencia de una semana
+oficial se indican manualmente. Si falla una lectura, permite continuar con
+valores manuales y avisa. Invoca
 `InitialRunningWeekPlanner` y muestra bloqueos o tipos de carrera con razones
 versionadas; recupera los textos del borrador para ilustrar los tipos ya
 definidos. La fuerza solo aparece como tiempo reservado, sin prescripción.
-No lee la marca real ni preferencias de la cuenta, no asigna días de calendario,
-no guarda el escenario y no escribe sesiones en Supabase. La regenerativa de
+No asigna días de calendario, no guarda el escenario y no escribe sesiones en
+Supabase. La regenerativa de
 cuatro días de carrera sigue sin plantilla propia y se indica como pendiente.
 En esta versión la marca solo supera el requisito de referencia; **no modifica
 ritmos**. El tiempo por sesión solo verifica un mínimo y aún no dimensiona los
