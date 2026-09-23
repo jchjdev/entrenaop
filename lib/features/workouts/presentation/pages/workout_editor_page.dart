@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
+import 'package:workout_editor_ui/strength_set_fields.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({super.key});
@@ -1693,82 +1694,39 @@ class _SetEditor extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _NumberField(
-                label: switch (targetType) {
-                  WorkoutTargetType.repetitions => 'Repeticiones',
-                  WorkoutTargetType.duration => 'Tiempo',
-                  WorkoutTargetType.distance => 'Distancia',
-                },
-                initialValue: _numberText(data.targetValue),
-                suffix: switch (targetType) {
-                  WorkoutTargetType.repetitions => 'reps',
-                  WorkoutTargetType.duration => 's',
-                  WorkoutTargetType.distance => 'm',
-                },
-                enabled: targetEnabled,
-                integer: targetType != WorkoutTargetType.distance,
-                min: 0.01,
-                max: 100000,
-                onChanged: (value) {
-                  data.targetValue = value;
-                  onChanged();
-                },
-              ),
-              _NumberField(
-                label: 'Carga',
-                initialValue: data.loadKg == null
-                    ? ''
-                    : _numberText(data.loadKg!),
-                suffix: 'kg',
-                enabled: enabled,
-                optional: true,
-                min: 0,
-                max: 1000,
-                onChanged: (value) {
-                  data.loadKg = value;
-                  onChanged();
-                },
-                onCleared: () {
-                  data.loadKg = null;
-                  onChanged();
-                },
-              ),
-              _NumberField(
-                label: 'RIR',
-                initialValue: data.rir == null ? '' : _numberText(data.rir!),
-                suffix: null,
-                enabled: enabled,
-                optional: true,
-                min: 0,
-                max: 10,
-                onChanged: (value) {
-                  data.rir = value;
-                  onChanged();
-                },
-                onCleared: () {
-                  data.rir = null;
-                  onChanged();
-                },
-              ),
-              if (showRest)
-                _NumberField(
-                  label: 'Descanso',
-                  initialValue: data.restSeconds.toString(),
-                  suffix: 's',
-                  enabled: enabled,
-                  integer: true,
-                  min: 0,
-                  max: 3600,
-                  onChanged: (value) {
-                    data.restSeconds = value.round();
-                    onChanged();
-                  },
-                ),
-            ],
+          StrengthSetFields(
+            targetType: targetType,
+            targetText: _numberText(data.targetValue),
+            restText: data.restSeconds.toString(),
+            loadText: data.loadKg == null ? '' : _numberText(data.loadKg!),
+            rirText: data.rir == null ? '' : _numberText(data.rir!),
+            showRest: showRest,
+            enabled: enabled,
+            targetEnabled: targetEnabled,
+            onTargetChanged: (text) {
+              final value = double.tryParse(text.replaceAll(',', '.'));
+              if (value == null) return;
+              data.targetValue = value;
+              onChanged();
+            },
+            onRestChanged: (text) {
+              final value = int.tryParse(text);
+              if (value == null) return;
+              data.restSeconds = value;
+              onChanged();
+            },
+            onLoadChanged: (text) {
+              data.loadKg = text.trim().isEmpty
+                  ? null
+                  : double.tryParse(text.replaceAll(',', '.'));
+              onChanged();
+            },
+            onRirChanged: (text) {
+              data.rir = text.trim().isEmpty
+                  ? null
+                  : double.tryParse(text.replaceAll(',', '.'));
+              onChanged();
+            },
           ),
         ],
       ),
@@ -1786,8 +1744,6 @@ class _NumberField extends StatelessWidget {
     required this.max,
     required this.onChanged,
     this.integer = false,
-    this.optional = false,
-    this.onCleared,
   });
 
   final String label;
@@ -1795,11 +1751,9 @@ class _NumberField extends StatelessWidget {
   final String? suffix;
   final bool enabled;
   final bool integer;
-  final bool optional;
   final double min;
   final double max;
   final ValueChanged<double> onChanged;
-  final VoidCallback? onCleared;
 
   @override
   Widget build(BuildContext context) {
@@ -1812,7 +1766,6 @@ class _NumberField extends StatelessWidget {
         decoration: InputDecoration(labelText: label, suffixText: suffix),
         validator: (value) {
           final normalized = value?.trim().replaceAll(',', '.') ?? '';
-          if (normalized.isEmpty && optional) return null;
           final number = double.tryParse(normalized);
           if (number == null || number < min || number > max) {
             return 'Entre ${_numberText(min)} y ${_numberText(max)}';
@@ -1824,10 +1777,6 @@ class _NumberField extends StatelessWidget {
         },
         onChanged: (value) {
           final normalized = value.trim().replaceAll(',', '.');
-          if (normalized.isEmpty) {
-            onCleared?.call();
-            return;
-          }
           final number = double.tryParse(normalized);
           if (number != null) onChanged(number);
         },

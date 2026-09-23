@@ -4,10 +4,10 @@ Aplicación Flutter exclusiva de web para crear contenido oficial. No importa
 pantallas ni servicios de la aplicación del opositor. Ambas aplicaciones usan
 `packages/workout_core/` para el modelo, la validación y la conversión de
 sesiones. `packages/workout_editor_ui/` aporta los campos de carrera, el
-buscador de ejercicios con miniaturas y el selector de formatos de bloque.
-Cada aplicación conserva su navegación, guardado y funciones propias. La
-edición detallada de series de fuerza todavía usa controles distintos y debe
-convergir antes de ampliar formatos complejos.
+buscador de ejercicios con miniaturas, el selector de formatos de bloque y
+los campos de objetivo, descanso, carga y RIR de cada serie. Cada aplicación
+conserva su navegación, guardado y funciones propias. La organización de
+bloques, repeticiones y variantes aún tiene adaptadores de pantalla distintos.
 
 En Programas, abre un programa y pulsa **Nueva sesión** para crear una plantilla
 exclusiva de esa preparación. La entrada **Biblioteca general de EntrenaOP**

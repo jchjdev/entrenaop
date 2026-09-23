@@ -8,6 +8,7 @@ import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/running_step_fields.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
+import 'package:workout_editor_ui/strength_set_fields.dart';
 
 class AdminWorkoutEditorPage extends StatefulWidget {
   const AdminWorkoutEditorPage({
@@ -853,28 +854,41 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                         setState(() => item.type = value ?? item.type),
                   ),
                 ),
-              if (tabata)
-                const Padding(
-                  padding: EdgeInsets.only(top: 15),
-                  child: Text('20 s de trabajo · 10 s de recuperación'),
-                )
-              else
-                _field(
-                  item.target,
-                  item.type == WorkoutTargetType.duration && !amrap
-                      ? 'Tiempo (m:ss)'
-                      : 'Cantidad',
-                  145,
-                ),
-              if (!tabata &&
-                  !amrap &&
-                  format != WorkoutBlockFormat.emom &&
-                  format != WorkoutBlockFormat.intervals)
-                _field(item.rest, 'Descanso (m:ss)', 165),
-              if (!tabata) _field(item.load, 'Carga kg (opcional)', 160),
-              if (!tabata) _field(item.rir, 'RIR (opcional)', 140),
             ],
           ),
+          if (tabata)
+            const Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: Text('20 s de trabajo · 10 s de recuperación'),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: StrengthSetFields(
+                targetType: item.type,
+                targetText: item.target.text,
+                restText: item.rest.text,
+                loadText: item.load.text,
+                rirText: item.rir.text,
+                targetLabel: item.type == WorkoutTargetType.duration && !amrap
+                    ? 'Tiempo (m:ss)'
+                    : 'Cantidad',
+                restLabel: 'Descanso (m:ss)',
+                loadLabel: 'Carga kg (opcional)',
+                rirLabel: 'RIR (opcional)',
+                clockTarget: item.type == WorkoutTargetType.duration && !amrap,
+                clockRest: true,
+                validateNumbers: false,
+                showRest:
+                    !amrap &&
+                    format != WorkoutBlockFormat.emom &&
+                    format != WorkoutBlockFormat.intervals,
+                onTargetChanged: (value) => item.target.text = value,
+                onRestChanged: (value) => item.rest.text = value,
+                onLoadChanged: (value) => item.load.text = value,
+                onRirChanged: (value) => item.rir.text = value,
+              ),
+            ),
           if (!tabata && !amrap) ...[
             const SizedBox(height: 8),
             TextButton.icon(
@@ -897,37 +911,43 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                         .clamp(0, 20);
                 setIndex++
               )
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text('Serie ${setIndex + 1}'),
-                      _field(
-                        item.variations
-                            .putIfAbsent(setIndex, _SetVariation.new)
-                            .target,
-                        'Objetivo propio',
-                        135,
-                      ),
-                      if (!fixedRounds)
-                        _field(
-                          item.variations[setIndex]!.rest,
-                          'Descanso propio (m:ss)',
-                          175,
-                        ),
-                      _field(
-                        item.variations[setIndex]!.load,
-                        'Carga propia kg',
-                        135,
-                      ),
-                      _field(item.variations[setIndex]!.rir, 'RIR propio', 110),
-                    ],
-                  ),
-                ),
+                _variationFields(item, setIndex, showRest: !fixedRounds),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _variationFields(_Exercise item, int index, {required bool showRest}) {
+    final variation = item.variations.putIfAbsent(index, _SetVariation.new);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Serie ${index + 1}'),
+          StrengthSetFields(
+            key: ValueKey(variation),
+            targetType: item.type,
+            targetText: variation.target.text,
+            restText: variation.rest.text,
+            loadText: variation.load.text,
+            rirText: variation.rir.text,
+            targetLabel: 'Objetivo propio',
+            restLabel: 'Descanso propio (m:ss)',
+            loadLabel: 'Carga propia kg',
+            rirLabel: 'RIR propio',
+            targetOptional: true,
+            restOptional: true,
+            clockTarget: item.type == WorkoutTargetType.duration,
+            clockRest: true,
+            validateNumbers: false,
+            showRest: showRest,
+            onTargetChanged: (value) => variation.target.text = value,
+            onRestChanged: (value) => variation.rest.text = value,
+            onLoadChanged: (value) => variation.load.text = value,
+            onRirChanged: (value) => variation.rir.text = value,
+          ),
         ],
       ),
     );

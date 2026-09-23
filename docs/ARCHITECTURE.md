@@ -307,9 +307,10 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    estimación de carrera, serialización y lectura de plantillas entre panel y
    app del opositor; no comparte navegación ni guardado personal. El paquete
    Flutter `packages/workout_editor_ui/` comparte campos de tramos de carrera,
-   búsqueda de ejercicios y selector de formatos; la edición detallada de
-   series de fuerza aún tiene controles separados y es la siguiente frontera
-   de convergencia. La función
+   búsqueda de ejercicios, selector de formatos y campos de series de fuerza.
+   La organización de bloques y repeticiones aún se adapta en cada pantalla;
+   la publicación y la edición personal siguen siendo responsabilidades
+   distintas. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
    privada y registra su destino en `program_workout_templates` en una
    transacción. El destino `general` puede publicarse en la biblioteca abierta;
