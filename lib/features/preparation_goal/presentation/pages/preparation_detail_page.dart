@@ -115,6 +115,24 @@ class _Content extends StatelessWidget {
                       PreparationProgramIds.armedForcesTroopEntry) ...[
                     const SizedBox(height: 12),
                     const RunningWeekPrototypeCard(),
+                    const SizedBox(height: 12),
+                    Card(
+                      color: const Color(0xFF211B18),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.tune_rounded,
+                          color: Color(0xFFFFA477),
+                        ),
+                        title: const Text('Simular primera semana'),
+                        subtitle: const Text(
+                          'Prueba escenarios sin guardar ni asignar entrenamientos.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push(
+                          '/plan/goal/${goal.id}/week-simulator',
+                        ),
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 24),
                   _WeekHeader(state: state),

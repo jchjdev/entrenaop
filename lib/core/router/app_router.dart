@@ -18,6 +18,7 @@ import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparatio
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_detail_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/running_test_page.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/running_week_simulator_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_plan_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/pages/training_hub_page.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
@@ -155,6 +156,11 @@ class AppRouter {
                             child: const PreparationDetailPage(),
                           ),
                           routes: [
+                            GoRoute(
+                              path: 'week-simulator',
+                              builder: (context, state) =>
+                                  const RunningWeekSimulatorPage(),
+                            ),
                             GoRoute(
                               path: 'running-test',
                               builder: (context, state) => RunningTestPage(
