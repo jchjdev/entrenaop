@@ -5,6 +5,8 @@
       "name": "EntrenaOP Chrome · puerto fijo",
       "type": "dart",
       "request": "launch",
+      "program": "lib/main.dart",
+      "templateFor": "lib",
       "deviceId": "chrome",
       "toolArgs": [
         "--web-hostname=localhost",
