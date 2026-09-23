@@ -44,3 +44,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/programs/tropa/initial_week_draft_v1.json

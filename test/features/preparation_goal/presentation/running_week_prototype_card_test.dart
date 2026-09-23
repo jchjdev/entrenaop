@@ -13,12 +13,17 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
 
       expect(find.text('Laboratorio · semana de ejemplo'), findsOneWidget);
       expect(find.text('Calidad controlada'), findsOneWidget);
       expect(find.text('Fuerza'), findsOneWidget);
       expect(find.text('Carrera fácil'), findsOneWidget);
       expect(find.textContaining('no se añade a tu agenda'), findsOneWidget);
+      expect(
+        find.textContaining('tropa_initial_week_draft_v1'),
+        findsOneWidget,
+      );
       expect(find.text('Registrar resultado'), findsNothing);
 
       await tester.tap(find.text('Calidad controlada'));

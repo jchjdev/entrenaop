@@ -1,94 +1,100 @@
+import 'package:entrenaop/features/preparation_goal/data/initial_week_draft_catalog.dart';
 import 'package:flutter/material.dart';
 
-/// Maqueta visible para discutir el flujo. No representa una prescripción ni
-/// se guarda en la agenda: todavía faltan el reparto real y la calibración.
-class RunningWeekPrototypeCard extends StatelessWidget {
+/// Vista de contenido deportivo en revisión; no prescribe ni agenda sesiones.
+class RunningWeekPrototypeCard extends StatefulWidget {
   const RunningWeekPrototypeCard({super.key});
 
   @override
+  State<RunningWeekPrototypeCard> createState() =>
+      _RunningWeekPrototypeCardState();
+}
+
+class _RunningWeekPrototypeCardState extends State<RunningWeekPrototypeCard> {
+  late final Future<InitialWeekDraft> _draft = InitialWeekDraftCatalog.load();
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFF1D1917),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Row(
+    return FutureBuilder<InitialWeekDraft>(
+      future: _draft,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('No se ha podido cargar la semana de ejemplo.'),
+            ),
+          );
+        }
+        final draft = snapshot.data;
+        if (draft == null) {
+          return const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+        return Card(
+          color: const Color(0xFF1D1917),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(Icons.science_outlined, color: Color(0xFFFFA477)),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Laboratorio · semana de ejemplo',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                const Row(
+                  children: [
+                    Icon(Icons.science_outlined, color: Color(0xFFFFA477)),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Laboratorio · semana de ejemplo',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Borrador deportivo · ${draft.version}',
+                  style: const TextStyle(
+                    color: Color(0xFFFFA477),
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  draft.intro,
+                  style: const TextStyle(color: Colors.white70, height: 1.4),
+                ),
+                const SizedBox(height: 12),
+                for (final session in draft.sessions)
+                  _PrototypeSession(session: session),
+                const SizedBox(height: 8),
+                Text(
+                  draft.cycleNote,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                    height: 1.4,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            const Text(
-              'Ejemplo con 3 días totales: 2 de carrera y 1 reservado para fuerza. No está adaptado a tus marcas, no se añade a tu agenda y no puedes registrarlo como realizado.',
-              style: TextStyle(color: Colors.white70, height: 1.4),
-            ),
-            const SizedBox(height: 12),
-            const _PrototypeSession(
-              day: 'Día A',
-              title: 'Calidad controlada',
-              subtitle: '1 sesión de calidad · ritmo por definir',
-              details: [
-                'Calentamiento progresivo: 10–12 min fáciles.',
-                '4 × 2 min a esfuerzo vivo pero controlado; 2 min suaves entre repeticiones.',
-                'Vuelta a la calma: 8–10 min fáciles.',
-                'Es una propuesta para revisar, no un ritmo de umbral calculado desde el test de 2 km.',
-              ],
-            ),
-            const _PrototypeSession(
-              day: 'Día B',
-              title: 'Fuerza',
-              subtitle: 'Día reservado · contenido pendiente',
-              details: [
-                'El programa debe reservar tiempo para las pruebas de fuerza.',
-                'Ejercicios, volumen y separación respecto a carrera aún no están definidos.',
-              ],
-            ),
-            const _PrototypeSession(
-              day: 'Día C',
-              title: 'Carrera fácil',
-              subtitle: 'Duración ilustrativa · por ajustar',
-              details: [
-                'Carrera a esfuerzo cómodo, que permita conversar.',
-                'La duración se ajustará al historial reciente; esta maqueta no fija minutos ni ritmo.',
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Después: 2 semanas de carga + 1 de descarga. La dosis y los días concretos aún necesitan reglas y validación.',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
 class _PrototypeSession extends StatelessWidget {
-  const _PrototypeSession({
-    required this.day,
-    required this.title,
-    required this.subtitle,
-    required this.details,
-  });
+  const _PrototypeSession({required this.session});
 
-  final String day;
-  final String title;
-  final String subtitle;
-  final List<String> details;
+  final InitialWeekDraftSession session;
 
   @override
   Widget build(BuildContext context) {
@@ -98,12 +104,15 @@ class _PrototypeSession extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: const Color(0xFF493024),
         foregroundColor: const Color(0xFFFFB18A),
-        child: Text(day.substring(4)),
+        child: Text(session.dayLabel.split(' ').last),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-      subtitle: Text('$day · $subtitle'),
+      title: Text(
+        session.title,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text('${session.dayLabel} · ${session.subtitle}'),
       children: [
-        for (final detail in details)
+        for (final detail in session.details)
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
             child: Align(

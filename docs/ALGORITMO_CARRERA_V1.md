@@ -4,11 +4,17 @@ Estado: **decisión de dominio probada, todavía sin publicación en la agenda**
 Ámbito: preparación de Tropa y Marinería; no se aplica automáticamente a otros
 programas que también incluyan 2 km.
 
-En la pantalla de la preparación de Tropa hay una **maqueta de semana de
-ejemplo** (2 días de carrera y 1 reservado para fuerza). Es contenido fijo de
-presentación: no usa las marcas del usuario, no ejecuta el planificador, no
-crea sesiones ni cambia la agenda. Sirve para revisar la experiencia y la
-sesión ilustrativa de 4 × 2 min antes de cerrar las reglas deportivas.
+En la pantalla de la preparación de Tropa hay un **borrador versionado de
+semana de ejemplo** (2 días de carrera y 1 reservado para fuerza). Su contenido
+se edita en `assets/programs/tropa/initial_week_draft_v1.json`, fuera de la
+pantalla; el lector comprueba que la suma de modalidades coincide con los días
+totales. Sigue siendo un archivo de producto revisado en Git, **no un panel
+administrativo ni una plantilla oficial en Supabase**. No usa las marcas del
+usuario, no ejecuta el planificador, no crea sesiones ni cambia la agenda.
+La sesión ilustrativa de 4 × 2 min no está validada como receta universal.
+Fuerza nombra las pruebas de flexo-extensiones y plancha, pero no prescribe
+ejercicios, repeticiones ni cargas. El reparto A/B/C es un escenario para
+revisar pantallas, no la asignación automática de días concretos.
 
 ## Principios deportivos acordados
 
@@ -110,6 +116,11 @@ carreras: Tropa necesita reservar también fuerza y otros componentes.
   corredores de élite: https://pubmed.ncbi.nlm.nih.gov/36900796/
 - Campos et al. (2022), distribución de intensidad en corredores y diferencias
   entre métodos de cuantificación: https://pubmed.ncbi.nlm.nih.gov/34749417/
+- Woltmann et al. (2015), prueba del habla para regular esfuerzo en carrera;
+  muestra utilidad práctica, no una zona individual exacta:
+  https://pubmed.ncbi.nlm.nih.gov/25536539/
+- Revisión de entrenamiento conjunto de fuerza y resistencia en corredores:
+  https://pubmed.ncbi.nlm.nih.gov/31541409/
 - Estudio de anclajes fijos de intensidad en corredores recreativos (2025):
   https://pubmed.ncbi.nlm.nih.gov/40088270/
 - Consenso de retorno al deporte tras lesión:
