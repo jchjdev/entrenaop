@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/running_step_fields.dart';
 
 class RunningWorkoutEditorPage extends StatefulWidget {
   const RunningWorkoutEditorPage({super.key});
@@ -595,122 +596,32 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<WorkoutTargetType>(
-                    initialValue: data.targetType,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Objetivo'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: WorkoutTargetType.distance,
-                        child: Text('Distancia'),
-                      ),
-                      DropdownMenuItem(
-                        value: WorkoutTargetType.duration,
-                        child: Text('Duración'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() {
-                        data.targetType = value;
-                        data.targetController.text =
-                            value == WorkoutTargetType.distance
-                            ? '1000'
-                            : '20:00';
-                      });
-                      widget.onChanged();
-                    },
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    controller: data.targetController,
-                    keyboardType: data.targetType == WorkoutTargetType.duration
-                        ? TextInputType.datetime
-                        : TextInputType.number,
-                    inputFormatters:
-                        data.targetType == WorkoutTargetType.duration
-                        ? const [DurationInputFormatter()]
-                        : null,
-                    decoration: InputDecoration(
-                      labelText: data.targetType == WorkoutTargetType.distance
-                          ? 'Metros'
-                          : 'Min:seg',
-                    ),
-                    onChanged: (_) => widget.onChanged(),
-                    validator: (_) {
-                      try {
-                        return data.targetValue > 0 ? null : 'Valor no válido';
-                      } on FormatException {
-                        return 'Valor no válido';
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Ritmo opcional',
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 7),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: data.paceMinController,
-                    keyboardType: TextInputType.datetime,
-                    inputFormatters: const [DurationInputFormatter()],
-                    decoration: const InputDecoration(
-                      labelText: 'Desde (min/km)',
-                      hintText: '5:00',
-                    ),
-                    onChanged: (_) => widget.onChanged(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                    controller: data.paceMaxController,
-                    keyboardType: TextInputType.datetime,
-                    inputFormatters: const [DurationInputFormatter()],
-                    decoration: const InputDecoration(
-                      labelText: 'Hasta (min/km)',
-                      hintText: '5:20',
-                    ),
-                    onChanged: (_) => widget.onChanged(),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<RunningRecoveryType?>(
-              initialValue: data.recoveryType,
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Recuperación posterior',
-              ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('Sin recuperación')),
-                DropdownMenuItem(
-                  value: RunningRecoveryType.passive,
-                  child: Text('Pasiva'),
-                ),
-                DropdownMenuItem(
-                  value: RunningRecoveryType.walking,
-                  child: Text('Andando'),
-                ),
-                DropdownMenuItem(
-                  value: RunningRecoveryType.jogging,
-                  child: Text('Trotando'),
-                ),
-              ],
-              onChanged: (value) {
+            RunningStepFields(
+              targetType: data.targetType,
+              targetController: data.targetController,
+              paceMinController: data.paceMinController,
+              paceMaxController: data.paceMaxController,
+              recoveryType: data.recoveryType,
+              recoveryByDistance: data.recoveryByDistance,
+              recoveryController: data.recoveryController,
+              clockFormatter: const DurationInputFormatter(),
+              onEdited: widget.onChanged,
+              targetValidator: (_) {
+                try {
+                  return data.targetValue > 0 ? null : 'Valor no válido';
+                } on FormatException {
+                  return 'Valor no válido';
+                }
+              },
+              onTargetTypeChanged: (value) {
+                setState(() {
+                  data.targetType = value;
+                  data.targetController.text =
+                      value == WorkoutTargetType.distance ? '1000' : '20:00';
+                });
+                widget.onChanged();
+              },
+              onRecoveryTypeChanged: (value) {
                 setState(() {
                   data.recoveryType = value;
                   if (value == null) {
@@ -724,61 +635,14 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                 });
                 widget.onChanged();
               },
+              onRecoveryMeasureChanged: (value) {
+                setState(() {
+                  data.recoveryByDistance = value;
+                  data.recoveryController.text = value ? '200' : '1:00';
+                });
+                widget.onChanged();
+              },
             ),
-            if (data.recoveryType != null) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  if (data.recoveryType != RunningRecoveryType.passive)
-                    Expanded(
-                      child: DropdownButtonFormField<bool>(
-                        initialValue: data.recoveryByDistance,
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Medida'),
-                        items: const [
-                          DropdownMenuItem(
-                            value: false,
-                            child: Text('Duración'),
-                          ),
-                          DropdownMenuItem(
-                            value: true,
-                            child: Text('Distancia'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value == null) return;
-                          setState(() {
-                            data.recoveryByDistance = value;
-                            data.recoveryController.text = value
-                                ? '200'
-                                : '1:00';
-                          });
-                          widget.onChanged();
-                        },
-                      ),
-                    ),
-                  if (data.recoveryType != RunningRecoveryType.passive)
-                    const SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                      controller: data.recoveryController,
-                      keyboardType: data.recoveryByDistance
-                          ? TextInputType.number
-                          : TextInputType.datetime,
-                      inputFormatters: data.recoveryByDistance
-                          ? null
-                          : const [DurationInputFormatter()],
-                      decoration: InputDecoration(
-                        labelText: data.recoveryByDistance
-                            ? 'Metros'
-                            : 'Min:seg',
-                      ),
-                      onChanged: (_) => widget.onChanged(),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
       ),

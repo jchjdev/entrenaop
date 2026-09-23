@@ -7,6 +7,8 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_sta
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/exercise_search_list.dart';
+import 'package:workout_editor_ui/workout_format_field.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({super.key});
@@ -549,53 +551,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               ],
             ),
             const SizedBox(height: 4),
-            DropdownButtonFormField<WorkoutBlockFormat>(
+            WorkoutFormatField(
               key: ValueKey('format-${block.identity}-${block.format}'),
-              isExpanded: true,
-              initialValue: block.format,
-              decoration: const InputDecoration(
-                labelText: 'Formato del bloque',
-                prefixIcon: Icon(Icons.account_tree_outlined),
-              ),
-              items: [
-                const DropdownMenuItem(
-                  value: WorkoutBlockFormat.straightSets,
-                  child: Text('Series convencionales'),
-                ),
-                const DropdownMenuItem(
-                  value: WorkoutBlockFormat.superset,
-                  child: Text('Superserie'),
-                ),
-                const DropdownMenuItem(
-                  value: WorkoutBlockFormat.circuit,
-                  child: Text('Circuito'),
-                ),
-                DropdownMenuItem(
-                  value: WorkoutBlockFormat.intervals,
-                  enabled: block.rows.length <= 1,
-                  child: const Text('Intervalos de trabajo'),
-                ),
-                DropdownMenuItem(
-                  value: WorkoutBlockFormat.tabata,
-                  enabled: block.rows.length <= 8,
-                  child: const Text('Tabata · 8 × 20/10'),
-                ),
-                const DropdownMenuItem(
-                  value: WorkoutBlockFormat.emom,
-                  child: Text('EMOM · cada minuto'),
-                ),
-                const DropdownMenuItem(
-                  value: WorkoutBlockFormat.amrap,
-                  child: Text('AMRAP · máximas vueltas'),
-                ),
-              ],
-              onChanged: saving
-                  ? null
-                  : (format) {
-                      if (format != null) {
-                        _changeBlockFormat(context, blockIndex, format);
-                      }
-                    },
+              format: block.format,
+              exerciseCount: block.rows.length,
+              enabled: !saving,
+              onChanged: (format) =>
+                  _changeBlockFormat(context, blockIndex, format),
             ),
             if (block.isRoundBased ||
                 block.format == WorkoutBlockFormat.tabata) ...[
@@ -1887,18 +1849,10 @@ class _ExercisePicker extends StatefulWidget {
 }
 
 class _ExercisePickerState extends State<_ExercisePicker> {
-  final _searchController = TextEditingController();
   _ExerciseScope _scope = _ExerciseScope.all;
   bool _creating = false;
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
   List<ExerciseEntity> get _filteredExercises {
-    final query = _searchController.text.trim().toLowerCase();
     return widget.exercises
         .where((exercise) {
           final matchesScope = switch (_scope) {
@@ -1906,14 +1860,7 @@ class _ExercisePickerState extends State<_ExercisePicker> {
             _ExerciseScope.system => exercise.origin == ExerciseOrigin.system,
             _ExerciseScope.mine => exercise.origin == ExerciseOrigin.user,
           };
-          if (!matchesScope) return false;
-          if (query.isEmpty) return true;
-          final searchable = [
-            exercise.name,
-            ...exercise.muscleGroups,
-            ...exercise.equipment,
-          ].join(' ').toLowerCase();
-          return searchable.contains(query);
+          return matchesScope;
         })
         .toList(growable: false);
   }
@@ -1947,7 +1894,6 @@ class _ExercisePickerState extends State<_ExercisePicker> {
 
   @override
   Widget build(BuildContext context) {
-    final exercises = _filteredExercises;
     return SafeArea(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.82,
@@ -1964,17 +1910,6 @@ class _ExercisePickerState extends State<_ExercisePicker> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 14),
-                  TextField(
-                    controller: _searchController,
-                    autofocus: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar',
-                      hintText: 'Nombre, músculo o material',
-                      prefixIcon: Icon(Icons.search_rounded),
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-                  const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     children: [
@@ -2002,39 +1937,27 @@ class _ExercisePickerState extends State<_ExercisePicker> {
               ),
             ),
             Expanded(
-              child: exercises.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text(
-                          'No hay ejercicios que coincidan con esta búsqueda.',
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      itemCount: exercises.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final exercise = exercises[index];
-                        return ListTile(
-                          leading: _exerciseThumbnail(exercise.thumbnailUrl),
-                          title: Text(exercise.name),
-                          subtitle: Text(
-                            [
-                              if (exercise.origin == ExerciseOrigin.user)
-                                'Ejercicio propio',
-                              ...exercise.muscleGroups,
-                            ].join(' · '),
-                          ),
-                          trailing: const Icon(
-                            Icons.add_circle_outline_rounded,
-                          ),
-                          onTap: () => Navigator.of(context).pop(exercise),
-                        );
-                      },
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ExerciseSearchList<ExerciseEntity>(
+                  exercises: _filteredExercises,
+                  nameOf: (exercise) => exercise.name,
+                  searchTermsOf: (exercise) => [
+                    exercise.name,
+                    ...exercise.muscleGroups,
+                    ...exercise.equipment,
+                  ],
+                  thumbnailOf: (exercise) => exercise.thumbnailUrl,
+                  searchLabel: 'Buscar',
+                  searchHint: 'Nombre, músculo o material',
+                  subtitleOf: (exercise) => [
+                    if (exercise.origin == ExerciseOrigin.user)
+                      'Ejercicio propio',
+                    ...exercise.muscleGroups,
+                  ].join(' · '),
+                  onSelected: (exercise) => Navigator.of(context).pop(exercise),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
@@ -2052,29 +1975,6 @@ class _ExercisePickerState extends State<_ExercisePicker> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _exerciseThumbnail(String? url) {
-    final validUrl = url != null && Uri.tryParse(url)?.scheme == 'https';
-    if (!validUrl) {
-      return const SizedBox.square(
-        dimension: 48,
-        child: Icon(Icons.fitness_center_rounded),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(
-        url,
-        width: 48,
-        height: 48,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => const SizedBox.square(
-          dimension: 48,
-          child: Icon(Icons.fitness_center_rounded),
         ),
       ),
     );

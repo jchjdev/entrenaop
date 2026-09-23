@@ -25,6 +25,8 @@ dependencies:
   supabase_flutter: ^2.17.2
   workout_core:
     path: packages/workout_core
+  workout_editor_ui:
+    path: packages/workout_editor_ui
 
   # Video
   video_player: ^2.14.0

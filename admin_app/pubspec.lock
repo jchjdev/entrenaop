@@ -612,6 +612,13 @@ packages:
       relative: true
     source: path
     version: "0.1.0"
+  workout_editor_ui:
+    dependency: "direct main"
+    description:
+      path: "../packages/workout_editor_ui"
+      relative: true
+    source: path
+    version: "0.1.0"
   xdg_directories:
     dependency: transitive
     description:

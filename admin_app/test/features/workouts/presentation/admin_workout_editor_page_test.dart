@@ -133,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
-      TextInputType.text,
+      TextInputType.datetime,
     );
     await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
     await tester.enterText(_field('Distancia (m)'), '400');
@@ -174,7 +174,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trote').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Rec. metros'));
+    await tester.tap(find.byType(DropdownButtonFormField<bool>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Distancia').last);
     await tester.pumpAndSettle();
     await tester.enterText(_field('Recuperación (m)'), '100');
     await tester.ensureVisible(find.text('Guardar borrador'));
@@ -289,7 +291,7 @@ void main() {
       find.byType(DropdownButtonFormField<WorkoutBlockFormat>).first,
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('EMOM').last);
+    await tester.tap(find.text('EMOM · cada minuto').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();

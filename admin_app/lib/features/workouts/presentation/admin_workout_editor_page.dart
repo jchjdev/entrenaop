@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_editor_ui/exercise_search_list.dart';
+import 'package:workout_editor_ui/running_step_fields.dart';
+import 'package:workout_editor_ui/workout_format_field.dart';
 
 class AdminWorkoutEditorPage extends StatefulWidget {
   const AdminWorkoutEditorPage({
@@ -548,97 +551,46 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                     ),
                   ],
                 ),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 12,
-                  children: [
-                    _field(
-                      _segments[i].count,
-                      'Veces',
-                      100,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    SizedBox(
-                      width: 155,
-                      child: SwitchListTile(
-                        title: const Text('Metros'),
-                        value: _segments[i].byDistance,
-                        onChanged: (value) =>
-                            setState(() => _segments[i].byDistance = value),
-                      ),
-                    ),
-                    _field(
-                      _segments[i].target,
-                      _segments[i].byDistance
-                          ? 'Distancia (m)'
-                          : 'Tiempo (m:ss)',
-                      155,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    _field(
-                      _segments[i].pace,
-                      'Ritmo (m:ss/km)',
-                      155,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    _field(
-                      _segments[i].paceMax,
-                      'Hasta (m:ss/km)',
-                      155,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    SizedBox(
-                      width: 180,
-                      child: DropdownButtonFormField<RunningRecoveryType?>(
-                        initialValue: _segments[i].recovery,
-                        decoration: const InputDecoration(
-                          labelText: 'Recuperación',
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: null, child: Text('Ninguna')),
-                          DropdownMenuItem(
-                            value: RunningRecoveryType.passive,
-                            child: Text('Pasiva'),
-                          ),
-                          DropdownMenuItem(
-                            value: RunningRecoveryType.walking,
-                            child: Text('Andando'),
-                          ),
-                          DropdownMenuItem(
-                            value: RunningRecoveryType.jogging,
-                            child: Text('Trote'),
-                          ),
-                        ],
-                        onChanged: (value) => setState(() {
-                          _segments[i].recovery = value;
-                          if (value == RunningRecoveryType.passive) {
-                            _segments[i].recoveryByDistance = false;
-                          }
-                        }),
-                      ),
-                    ),
-                    if (_segments[i].recovery != null &&
-                        _segments[i].recovery != RunningRecoveryType.passive)
-                      SizedBox(
-                        width: 165,
-                        child: SwitchListTile(
-                          title: const Text('Rec. metros'),
-                          value: _segments[i].recoveryByDistance,
-                          onChanged: (value) => setState(
-                            () => _segments[i].recoveryByDistance = value,
-                          ),
-                        ),
-                      ),
-                    if (_segments[i].recovery != null)
-                      _field(
-                        _segments[i].recoveryTime,
-                        _segments[i].recoveryByDistance
-                            ? 'Recuperación (m)'
-                            : 'Recuperación (m:ss)',
-                        180,
-                        onChanged: (_) => setState(() {}),
-                      ),
-                  ],
+                _field(
+                  _segments[i].count,
+                  'Veces',
+                  100,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 12),
+                RunningStepFields(
+                  adminLabels: true,
+                  targetType: _segments[i].byDistance
+                      ? WorkoutTargetType.distance
+                      : WorkoutTargetType.duration,
+                  targetController: _segments[i].target,
+                  paceMinController: _segments[i].pace,
+                  paceMaxController: _segments[i].paceMax,
+                  recoveryType: _segments[i].recovery,
+                  recoveryByDistance: _segments[i].recoveryByDistance,
+                  recoveryController: _segments[i].recoveryTime,
+                  onEdited: () => setState(() {}),
+                  onTargetTypeChanged: (value) => setState(() {
+                    _segments[i].byDistance =
+                        value == WorkoutTargetType.distance;
+                    _segments[i].target.text = _segments[i].byDistance
+                        ? '1000'
+                        : '20:00';
+                  }),
+                  onRecoveryTypeChanged: (value) => setState(() {
+                    _segments[i].recovery = value;
+                    if (value == RunningRecoveryType.passive) {
+                      _segments[i].recoveryByDistance = false;
+                      _segments[i].recoveryTime.text = '1:00';
+                    } else if (value != null &&
+                        _segments[i].recoveryTime.text.isEmpty) {
+                      _segments[i].recoveryTime.text = '1:00';
+                    }
+                  }),
+                  onRecoveryMeasureChanged: (value) => setState(() {
+                    _segments[i].recoveryByDistance = value;
+                    _segments[i].recoveryTime.text = value ? '200' : '1:00';
+                  }),
                 ),
               ],
             ),
@@ -725,43 +677,11 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             _field(block.name, 'Nombre del bloque', 230),
             SizedBox(
               width: 265,
-              child: DropdownButtonFormField<WorkoutBlockFormat>(
-                isExpanded: true,
-                key: ValueKey(format),
-                initialValue: format,
-                decoration: const InputDecoration(labelText: 'Formato'),
-                items: const [
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.straightSets,
-                    child: Text('Series convencionales'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.superset,
-                    child: Text('Superserie'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.circuit,
-                    child: Text('Circuito'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.intervals,
-                    child: Text('Intervalos'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.emom,
-                    child: Text('EMOM'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.amrap,
-                    child: Text('AMRAP'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutBlockFormat.tabata,
-                    child: Text('Tabata 20/10'),
-                  ),
-                ],
+              child: WorkoutFormatField(
+                format: format,
+                exerciseCount: block.exercises.length,
+                label: 'Formato',
                 onChanged: (value) {
-                  if (value == null) return;
                   setState(() {
                     block.format = value;
                     final minimum = value == WorkoutBlockFormat.tabata
@@ -879,12 +799,12 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                   },
             icon: item.exerciseId == null
                 ? const Icon(Icons.search)
-                : _exerciseThumbnail(
-                    _catalog
+                : ExerciseThumbnail(
+                    url: _catalog
                         .where((exercise) => exercise.id == item.exerciseId)
                         .firstOrNull
                         ?.thumbnailUrl,
-                    28,
+                    size: 28,
                   ),
             label: Text(
               item.exerciseId == null
@@ -1014,93 +934,33 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   }
 
   Future<AdminExercise?> _chooseExercise() {
-    var query = '';
     return showDialog<AdminExercise>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, update) {
-          final matches = _catalog
-              .where(
-                (exercise) => [
-                  exercise.name,
-                  ...exercise.muscleGroups,
-                  ...exercise.equipment,
-                ].join(' ').toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
-          return AlertDialog(
-            title: const Text('Buscar ejercicio'),
-            content: SizedBox(
-              width: 480,
-              height: 430,
-              child: Column(
-                children: [
-                  TextField(
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Buscar por nombre, músculo o material',
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: (value) => update(() => query = value.trim()),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: matches.isEmpty
-                        ? const Center(child: Text('No hay coincidencias.'))
-                        : ListView.builder(
-                            itemCount: matches.length,
-                            itemBuilder: (context, index) => ListTile(
-                              leading: _exerciseThumbnail(
-                                matches[index].thumbnailUrl,
-                                48,
-                              ),
-                              title: Text(matches[index].name),
-                              subtitle: Text(
-                                [
-                                  ...matches[index].muscleGroups,
-                                  ...matches[index].equipment,
-                                ].join(' · '),
-                              ),
-                              onTap: () => Navigator.of(
-                                dialogContext,
-                              ).pop(matches[index]),
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancelar'),
-              ),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Buscar ejercicio'),
+        content: SizedBox(
+          width: 480,
+          height: 430,
+          child: ExerciseSearchList<AdminExercise>(
+            exercises: _catalog,
+            nameOf: (exercise) => exercise.name,
+            searchTermsOf: (exercise) => [
+              exercise.name,
+              ...exercise.muscleGroups,
+              ...exercise.equipment,
             ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _exerciseThumbnail(String? url, double size) {
-    final validUrl = url != null && Uri.tryParse(url)?.scheme == 'https';
-    if (!validUrl) {
-      return SizedBox.square(
-        dimension: size,
-        child: const Icon(Icons.fitness_center_outlined),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(
-        url,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => SizedBox.square(
-          dimension: size,
-          child: const Icon(Icons.fitness_center_outlined),
+            thumbnailOf: (exercise) => exercise.thumbnailUrl,
+            subtitleOf: (exercise) =>
+                [...exercise.muscleGroups, ...exercise.equipment].join(' · '),
+            onSelected: (exercise) => Navigator.of(dialogContext).pop(exercise),
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
       ),
     );
   }

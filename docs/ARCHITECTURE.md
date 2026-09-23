@@ -305,7 +305,11 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    repositorio. Crea programas y sesiones oficiales en borrador. El paquete
    Dart puro `packages/workout_core/` comparte modelo, validaciones,
    estimación de carrera, serialización y lectura de plantillas entre panel y
-   app del deportista; no comparte navegación ni guardado personal. La función
+   app del opositor; no comparte navegación ni guardado personal. El paquete
+   Flutter `packages/workout_editor_ui/` comparte campos de tramos de carrera,
+   búsqueda de ejercicios y selector de formatos; la edición detallada de
+   series de fuerza aún tiene controles separados y es la siguiente frontera
+   de convergencia. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
    privada y registra su destino en `program_workout_templates` en una
    transacción. El destino `general` puede publicarse en la biblioteca abierta;
