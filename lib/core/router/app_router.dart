@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
+import 'package:entrenaop/features/admin/data/admin_program_repository.dart';
+import 'package:entrenaop/features/admin/presentation/admin_programs_page.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
@@ -83,6 +85,11 @@ class AppRouter {
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => const LoginPage()),
+        GoRoute(
+          path: '/admin',
+          builder: (context, state) =>
+              AdminProgramsPage(repository: sl<AdminProgramRepository>()),
+        ),
         GoRoute(
           path: '/sign-up',
           builder: (context, state) => const SignUpPage(),

@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/admin/data/admin_program_repository.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource_impl.dart';
 import 'package:entrenaop/features/auth/data/repositories/auth_repository_impl.dart';
@@ -78,6 +79,9 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton<AdminProgramRepository>(
+    () => SupabaseAdminProgramRepository(sl()),
+  );
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<WorkoutTimerStore>(
     () => SharedPreferencesWorkoutTimerStore(sharedPreferences),

@@ -34,3 +34,17 @@ por defecto y requiere compilar indicando explícitamente `APP_ENV=production`,
 Las claves publicables de Supabase identifican al cliente y pueden distribuirse
 con la aplicación. Las contraseñas de base de datos, claves secretas y tokens de
 administración no se guardan en el repositorio.
+
+## Ejecutar en VS Code
+
+En **Ejecutar y depurar** se puede elegir `EntrenaOP Chrome · puerto fijo` para
+la web, que abre `http://localhost:55554`. Una vez autenticado, la primera zona
+de administración está en `http://localhost:55554/#/admin`. Solo una cuenta con
+permiso administrativo en Supabase puede listar y crear borradores. Es necesario
+aplicar las migraciones pendientes del entorno antes de usarla.
+
+Para la app, seleccionar primero un emulador o dispositivo Android en VS Code y
+ejecutar `EntrenaOP App · dispositivo seleccionado`. Ambas opciones usan el mismo
+código y backend de desarrollo, pero la zona `/admin` solo se presenta en web.
+Publicar una web en Internet requiere configurar un alojamiento y el entorno
+de producción por separado; ejecutar en VS Code solo la sirve localmente.
