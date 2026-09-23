@@ -33,9 +33,6 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# Node tooling used by the Supabase CLI
-node_modules/
-
 # Symbolication related
 app.*.symbols
 
@@ -46,7 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/android/.kotlin/
 
-# Environment variables
-.env
+# Widget Preview related
+.widget_preview/

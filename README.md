@@ -7,9 +7,9 @@ oposiciones. Su primer foco es PAEF/PAFA y su núcleo de producto es el ciclo:
 > adaptación → simulacro.
 
 La aplicación se desarrolla con Flutter y Supabase. Android e iPhone son los
-clientes prioritarios para entrenar; la web servirá inicialmente como panel de
-gestión y seguimiento. Windows se mantiene como destino compatible sin
-condicionar el MVP.
+clientes prioritarios para entrenar. El panel de gestión web vive en el proyecto
+separado `admin_app/`; ambos comparten Supabase, no código de interfaz. Windows
+se mantiene como destino compatible sin condicionar el MVP.
 
 ## Documentación vigente
 
@@ -38,13 +38,16 @@ administración no se guardan en el repositorio.
 ## Ejecutar en VS Code
 
 En **Ejecutar y depurar** se puede elegir `EntrenaOP Chrome · puerto fijo` para
-la web, que abre `http://localhost:55554`. Una vez autenticado, la primera zona
-de administración está en `http://localhost:55554/#/admin`. Solo una cuenta con
-permiso administrativo en Supabase puede listar y crear borradores. Es necesario
-aplicar las migraciones pendientes del entorno antes de usarla.
+la versión web de la app del alumno (`http://localhost:55554`). Para el panel
+independiente, elegir `EntrenaOP Admin · Chrome 55555`, que abre
+`http://localhost:55555`. Cada uno es un proyecto Flutter distinto dentro del
+mismo repositorio. El panel requiere una cuenta con permiso administrativo en
+Supabase; sus operaciones vuelven a comprobarlo en el servidor.
 
 Para la app, seleccionar primero un emulador o dispositivo Android en VS Code y
 ejecutar `EntrenaOP App · dispositivo seleccionado`. Ambas opciones usan el mismo
-código y backend de desarrollo, pero la zona `/admin` solo se presenta en web.
+proyecto del alumno y el mismo backend de desarrollo; el código de `admin_app/`
+no forma parte de la APK/IPA. El panel tiene su propio inicio de sesión y guarda
+la sesión por separado al funcionar en otro puerto.
 Publicar una web en Internet requiere configurar un alojamiento y el entorno
 de producción por separado; ejecutar en VS Code solo la sirve localmente.

@@ -301,11 +301,13 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
 1. **Autoría deportiva:** Javier define programas, fases, criterios de avance,
    límites y sesiones base. Ese contenido se publica en versiones inmutables.
    Al principio puede cargarse mediante migraciones o datos revisados en Git.
-   La primera zona web `/admin` ya crea la identidad de programas en borrador
-   sobre `preparation_programs`, mediante una operación de Supabase que exige
+   `admin_app/` es una aplicación Flutter web independiente dentro del mismo
+   repositorio. Ya crea la identidad de programas en borrador sobre
+   `preparation_programs`, mediante una operación de Supabase que exige
    `admin_permissions`; no publica programas ni edita todavía sesiones, fases
-   o reglas. El futuro editor ampliará este módulo sobre el mismo modelo, sin
-   convertirse en una segunda fuente de verdad.
+   o reglas. La app del deportista no importa código administrativo. El futuro
+   editor ampliará el panel sobre el mismo modelo, sin convertirse en una
+   segunda fuente de verdad.
 2. **Prescripción individual:** un servicio de confianza ejecuta reglas
    deterministas y versionadas sobre preparación, marcas, disponibilidad e
    historial. Selecciona o materializa la sesión privada correspondiente, la

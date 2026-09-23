@@ -1,17 +1,15 @@
-import 'package:entrenaop/features/admin/data/admin_program_repository.dart';
-import 'package:flutter/foundation.dart';
+import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class AdminProgramsPage extends StatefulWidget {
   const AdminProgramsPage({
     super.key,
     required this.repository,
-    this.webEnabled = kIsWeb,
+    required this.onSignOut,
   });
 
   final AdminProgramRepository repository;
-  final bool webEnabled;
+  final VoidCallback onSignOut;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -27,7 +25,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.webEnabled) _load();
+    _load();
   }
 
   Future<void> _load() async {
@@ -95,11 +93,13 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administración · programas'),
-        leading: IconButton(
-          tooltip: 'Volver a la app',
-          onPressed: () => context.go('/home'),
-          icon: const Icon(Icons.arrow_back),
-        ),
+        actions: [
+          IconButton(
+            tooltip: 'Cerrar sesión',
+            onPressed: widget.onSignOut,
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -111,17 +111,12 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   }
 
   Widget _buildContent() {
-    if (!widget.webEnabled) {
-      return const _Message('Esta área se utiliza desde un navegador web.');
-    }
     if (_loading) return const CircularProgressIndicator();
     if (_error != null) {
       return _Message(_error!, onRetry: _load);
     }
     if (!_authorized) {
-      return const _Message(
-        'Esta cuenta no tiene permiso de administración. El acceso se concede desde el servidor, no desde la app.',
-      );
+      return const _Message('Esta cuenta no tiene permiso de administración.');
     }
     return ListView(
       padding: const EdgeInsets.all(24),

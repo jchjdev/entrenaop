@@ -1,5 +1,5 @@
-import 'package:entrenaop/features/admin/data/admin_program_repository.dart';
-import 'package:entrenaop/features/admin/presentation/admin_programs_page.dart';
+import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:entrenaop_admin/features/programs/presentation/admin_programs_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -34,7 +34,7 @@ void main() {
     final repository = _FakeRepository(allowed: false);
     await tester.pumpWidget(
       MaterialApp(
-        home: AdminProgramsPage(repository: repository, webEnabled: true),
+        home: AdminProgramsPage(repository: repository, onSignOut: () {}),
       ),
     );
     await tester.pumpAndSettle();
@@ -50,7 +50,7 @@ void main() {
     final repository = _FakeRepository(allowed: true);
     await tester.pumpWidget(
       MaterialApp(
-        home: AdminProgramsPage(repository: repository, webEnabled: true),
+        home: AdminProgramsPage(repository: repository, onSignOut: () {}),
       ),
     );
     await tester.pumpAndSettle();
