@@ -2,7 +2,9 @@
 
 Este roadmap expresa prioridades, no fechas cerradas. Su estado se ha
 contrastado con código, migraciones y pruebas el 22 de septiembre de 2026, tras
-el cierre de Carrera V1 mínima.
+el cierre de Carrera V1 mínima. Prioridades de programa revisadas el 23 de
+septiembre de 2026; esta revisión documental no sustituye una auditoría del
+bloque adaptativo, que todavía no existe.
 
 ## Estado del ciclo principal
 
@@ -83,11 +85,42 @@ El contrato y la primera decisión determinista de carrera se documentan en
 actual es conjunta para carrera y fuerza; faltan su reparto, días concretos
 y carga reciente de carrera.
 
-El siguiente bloque será la **primera planificación semanal adaptativa de
-Tropa y Marinería**, limitada a producir una semana explicable sobre la agenda
-existente.
+Antes de publicar la primera semana adaptativa, se cerrará un **piloto de
+evaluación periódica militar separado del ingreso a Tropa y Marinería**. Javier
+conoce mejor las pruebas que denomina PAFAS/PAEF y prefiere validar ahí el
+contenido deportivo. No se cambiará el identificador ni el catálogo del
+programa de ingreso existente: tiene marcas y preparaciones históricas. La
+Orden DEF/15/2026 comparte tipos de prueba entre ingreso y evaluación
+periódica, pero diferencia sus baremos; los nuevos baremos periódicos entran
+en vigor el 1 de enero de 2027. Debemos fijar con Javier el ámbito concreto,
+la normativa aplicable y la vigencia antes de crear o habilitar ese programa.
 
-Debe cerrar, en este orden, un único tramo del ciclo:
+El siguiente tramo ejecutable será:
+
+1. Precisar el programa de evaluación periódica y verificar pruebas, edades,
+   puntuación, fuente y vigencia. Crear su catálogo versionado y sus tests sin
+   reutilizar las marcas de ingreso como calificación oficial.
+2. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
+   las primeras plantillas: técnica, objetivo, material, variantes y
+   limitaciones. El creador administrativo completo, fotos y biblioteca amplia
+   no bloquean el piloto; tampoco se debe inventar una progresión de fuerza a
+   partir de solo flexiones, sentadillas y plancha.
+3. Componer y revisar con Javier una semana de plantillas ejecutables de
+   carrera y fuerza, registrables con los flujos existentes. Mantenerla como
+   borrador hasta validar su contenido.
+4. Implementar una propuesta determinista y explicable sin asignación real;
+   después validar el recorrido completo antes de publicar en agenda.
+
+El trabajo existente de carrera de Tropa es un prototipo específico de ese
+programa: sus reglas y el borrador de `assets/programs/tropa/` no pasan
+automáticamente al nuevo piloto. Se reutilizarán contratos y componentes
+compatibles, no baremos ni prescripciones sin revisión.
+
+CNP permanece como borrador administrativo sin pruebas ni requisitos: no se
+habilitará al opositor por ahora.
+
+La **primera planificación semanal adaptativa**, cuando el piloto deportivo
+esté preparado, debe cerrar en este orden un único tramo del ciclo:
 
 1. Definir una prescripción mínima con entradas explícitas: preparaciones
    activas, evaluación vigente, disponibilidad, material e historial necesario;
@@ -101,12 +134,11 @@ Debe cerrar, en este orden, un único tramo del ciclo:
 5. Cubrir dominio, persistencia, permisos y una prueba vertical desde contexto
    válido hasta semana visible en agenda.
 
-Se recomienda este bloque porque el producto ya puede crear, programar,
+Se recomienda este orden porque el producto ya puede crear, programar,
 ejecutar y auditar sesiones, y ya conecta cada preparación con sus marcas y su
-agenda. El ciclo se detiene justo antes de convertir ese contexto en un plan.
-Añadir ahora más formatos,
-monetización o herramientas de entrenador ampliaría la superficie
-sin resolver esa interrupción principal.
+agenda. El ciclo se detiene justo antes de convertir ese contexto en un plan,
+pero necesita primero un programa familiar y contenido de fuerza revisable.
+Una biblioteca completa o nuevos formatos no son condición previa.
 
 La adaptación posterior a una semana realizada será el bloque siguiente, pero
 no forma parte de este trabajo: primero debe existir una primera prescripción

@@ -68,11 +68,15 @@ hay subida ni gestión de archivos. Los borradores y temporizadores son locales
 al dispositivo y el soporte offline no permite descubrir, cargar o iniciar una
 sesión que nunca se hubiera obtenido del servidor.
 
-El primer recorrido que se desarrollará en profundidad será el ingreso a Tropa
-y Marinería. Los accesos a Suboficiales y Oficiales se incorporarán después con
-sus propios catálogos oficiales. Las pruebas internas, ascensos, PAEF y PAFA se
-modelarán como programas de evaluación distintos, no como si fueran otra
-oposición. CNP, Guardia Civil y otros cuerpos quedan fuera del MVP inicial.
+El primer recorrido **implementado** es el ingreso a Tropa y Marinería; no
+equivale a la evaluación periódica del personal ya incorporado. Para validar
+el primer plan adaptativo se prioriza ahora un piloto de evaluación periódica
+militar, familiar para Javier, pendiente de concretar normativa y vigencia.
+Se modelará como programa distinto, no renombrando Tropa ni tratándolo como
+otra oposición. Los accesos a Suboficiales y Oficiales tendrán sus propios
+catálogos oficiales. CNP existe solo como borrador sin pruebas definidas y no
+se publicará por ahora; Guardia Civil y otros cuerpos quedan fuera del MVP
+inicial.
 
 Lema previsto: **Entrena. Supera. Aprueba.**
 
@@ -196,8 +200,10 @@ sesiones específicas o combinadas. La forma comercial de presentar esos
 programas se decidirá después; el modelo no debe obligarnos prematuramente a
 una única estructura visible.
 
-La primera versión validable debe demostrar el ciclo completo con el ingreso a Tropa y
-Marinería:
+La primera versión validable debe demostrar el ciclo completo con **un programa
+oficial delimitado**. Tropa y Marinería aporta la vertical de evaluación ya
+implementada; el piloto de planificación se orientará a la evaluación
+periódica tras verificar su fuente y baremo:
 
 1. Alta, acceso y perfil físico.
 2. Selección de convocatoria, categoría y fecha objetivo.
@@ -210,10 +216,12 @@ Marinería:
 9. Simulacro de las pruebas físicas del programa.
 10. Revisión y modificación del plan por el entrenador.
 
-Primero se construirá una vertical completa con pocos ejercicios y una sesión
-real. No se desarrollará toda la biblioteca antes de comprobar que el recorrido
-de evaluación, entrenamiento, resultado y adaptación funciona de extremo a
-extremo.
+Primero se construirá una vertical completa con un catálogo pequeño pero
+revisado de ejercicios de fuerza y sesiones reales de carrera y fuerza. No se
+desarrollará toda la biblioteca ni el creador administrativo completo antes de
+comprobar que evaluación, entrenamiento, resultado y adaptación funcionan de
+extremo a extremo. Tampoco se usará un conjunto insuficiente de movimientos
+para aparentar una progresión de fuerza validada.
 
 Quedan fuera de esta primera validación el chat, nutrición, desafíos, red
 social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
@@ -235,8 +243,9 @@ social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
   activa.
 - **Explora:** programas, sesiones públicas, rutinas propias y, más adelante,
   desafíos.
-- **Programas:** ingreso a Tropa inicialmente; después, otros accesos y
-  evaluaciones internas con sus pruebas, baremos y planificación adaptativa.
+- **Programas:** ingreso a Tropa como primer catálogo implementado; evaluación
+  periódica militar como piloto adaptativo tras delimitar su versión; después,
+  otros accesos y evaluaciones con sus pruebas y baremos.
 - **Resultados:** marcas, evolución, comparación con baremos, historial y
   métricas de carga.
 - **Chat:** reservado al seguimiento personalizado en su fase correspondiente.

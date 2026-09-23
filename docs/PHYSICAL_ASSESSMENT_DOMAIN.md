@@ -1,6 +1,6 @@
 # Dominio de evaluación física
 
-Última revisión: 20 de septiembre de 2026.
+Última revisión: 23 de septiembre de 2026.
 
 ## Decisión vigente
 
@@ -13,6 +13,25 @@ aunque compartan parte de la normativa o de las pruebas.
 La [Orden DEF/15/2026](https://www.boe.es/eli/es/o/2026/01/13/def15) establece
 un régimen unificado y separa, entre otros contextos, ingreso, formación,
 egreso y evaluación periódica.
+
+El programa implementado `armed_forces_troop_entry` corresponde al **ingreso
+desde fuera a las escalas de Tropa y Marinería**, no a las pruebas periódicas
+de quien ya es militar. El artículo 6 comparte los tipos de prueba, pero el
+artículo 12 separa las tablas: anexo III para ingreso y anexo II, por marca,
+sexo y edad, para evaluación periódica. La disposición transitoria segunda
+aplaza la entrada en vigor de los nuevos baremos periódicos al 1 de enero de
+2027. Igual ejercicio no implica igual objetivo, puntuación ni programa.
+
+La evaluación inicial que tenía la app antes de incorporar preparaciones usaba
+el único catálogo disponible. La migración
+`20260920003000_preparation_goals.sql` asoció las evaluaciones existentes de
+ese catálogo al programa de Tropa sin alterar las marcas. Eso explica la
+sensación de que una evaluación «general» terminó dentro de Tropa: fue una
+transición de datos, no una regla de producto para futuros programas. No se
+renombrará ni reutilizará su identificador, porque hay preparaciones y
+evaluaciones vinculadas. La futura captura inicial debe nacer en el contexto
+del programa elegido y permitir reutilizar mediciones compatibles como dato
+de entrenamiento, no como apto oficial de otro baremo.
 
 Cada catálogo tendrá un identificador de versión, fuente oficial y fecha de
 vigencia. Una marca guardada conservará la versión del baremo con la que fue
@@ -79,3 +98,15 @@ razón junto a la evaluación; una versión futura no reescribirá esta decisió
 La prescripción se aplaza hasta validar sus reglas deportivas. La evaluación
 periódica y otros accesos se incorporarán como programas y catálogos posteriores
 sin alterar esta primera vertical.
+
+## Siguiente piloto de evaluación periódica
+
+Javier prefiere trabajar primero con las pruebas que conoce como PAFAS/PAEF.
+Antes de codificarlas hay que acordar a qué colectivo y evaluación concreta se
+refiere, comprobar la norma y la fecha de aplicación y versionar tanto pruebas
+como puntuación. No se copiarán los mínimos de ingreso de Tropa. Si el piloto
+representa la evaluación periódica del nuevo régimen de la Orden DEF/15/2026,
+el catálogo del anexo II tendrá vigencia desde 2027; un escenario de 2026
+requiere identificar su normativa aplicable en ese momento. El nombre popular
+PAFAS/PAEF podrá figurar en la interfaz si ayuda al usuario, pero el contrato
+persistido debe distinguir con precisión régimen y versión.
