@@ -113,15 +113,15 @@ no forma parte de este trabajo: primero debe existir una primera prescripción
 determinista y verificable.
 
 El panel administrativo ya tiene una aplicación web separada. Permite crear
-programas y sesiones oficiales de carrera o fuerza convencional en borrador,
-vinculadas a cada programa, sin asignarlas al alumno. Comparte las reglas del
-creador con la app mediante `workout_core`; todavía no edita ni publica
-sesiones, mesociclos o reglas deportivas. No es un requisito previo para esta
+programas y sesiones oficiales de carrera o fuerza con formatos avanzados en
+borrador, vinculadas a cada programa. La publicación explícita las muestra en
+la biblioteca general de la app, sin asignarlas al alumno. Comparte las reglas
+del creador con la app mediante `workout_core`; todavía no edita borradores ni
+define mesociclos o reglas deportivas. No es un requisito previo para esta
 primera vertical.
-Las reglas y sesiones oficiales iniciales se revisarán como datos versionados en
-Git y Supabase. Cuando el modelo haya demostrado que representa el método real,
-el panel ofrecerá una interfaz segura para publicarlo sin cambiar el contrato del
-motor ni permitir que el cliente del deportista lo modifique.
+Las reglas y sesiones que alimente el futuro algoritmo deben seguir revisándose
+como datos versionados en Git y Supabase. Publicar una sesión en la biblioteca
+general no la convierte todavía en parte de un mesociclo ni la asigna a nadie.
 
 ## Después, no en paralelo
 

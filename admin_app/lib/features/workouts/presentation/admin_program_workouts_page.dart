@@ -1,6 +1,7 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:flutter/material.dart';
 
 class AdminProgramWorkoutsPage extends StatefulWidget {
@@ -67,6 +68,27 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
     }
   }
 
+  Future<void> _preview(AdminWorkoutSummary workout) async {
+    final published = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AdminWorkoutPreviewPage(
+          workout: workout,
+          repository: widget.repository,
+        ),
+      ),
+    );
+    if (published == true) {
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sesión publicada en la biblioteca de la app.'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(widget.program.name)),
@@ -108,6 +130,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               for (final workout in _workouts!)
                 Card(
                   child: ListTile(
+                    onTap: () => _preview(workout),
                     leading: Icon(
                       workout.isRunning
                           ? Icons.directions_run
@@ -119,10 +142,18 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                           ? 'Carrera · versión ${workout.version}'
                           : 'Fuerza · versión ${workout.version}',
                     ),
-                    trailing: Chip(
-                      label: Text(
-                        workout.status == 'draft' ? 'Borrador' : workout.status,
-                      ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Chip(
+                          label: Text(
+                            workout.status == 'draft'
+                                ? 'Borrador'
+                                : 'Publicado',
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right),
+                      ],
                     ),
                   ),
                 ),

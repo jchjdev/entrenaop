@@ -3,6 +3,7 @@ import 'package:entrenaop_admin/features/programs/presentation/admin_programs_pa
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/workout_template.dart';
 
 class _FakeRepository implements AdminProgramRepository {
   _FakeRepository({required this.allowed});
@@ -31,6 +32,12 @@ class _FakeRepository implements AdminProgramRepository {
 }
 
 class _FakeWorkouts implements AdminWorkoutRepository {
+  @override
+  Future<WorkoutTemplate?> getTemplateById(String templateId) async => null;
+
+  @override
+  Future<void> publishDraft(String templateId) async {}
+
   @override
   Future<String> createDraft(String programId, dynamic input) async => 'draft';
 

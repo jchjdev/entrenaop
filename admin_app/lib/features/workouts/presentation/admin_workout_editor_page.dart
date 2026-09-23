@@ -24,7 +24,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   final _description = TextEditingController();
   final _duration = TextEditingController();
   final _segments = <_Segment>[_Segment()];
-  final _exercises = <_Exercise>[_Exercise()];
+  final _blocks = <_StrengthBlock>[_StrengthBlock()];
   List<AdminExercise> _catalog = const [];
   bool _running = true;
   bool _busy = false;
@@ -53,8 +53,8 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     for (final segment in _segments) {
       segment.dispose();
     }
-    for (final exercise in _exercises) {
-      exercise.dispose();
+    for (final block in _blocks) {
+      block.dispose();
     }
     super.dispose();
   }
@@ -70,15 +70,22 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         final pace = segment.pace.text.trim().isEmpty
             ? null
             : _pace(segment.pace.text);
+        final paceMax = segment.paceMax.text.trim().isEmpty
+            ? pace
+            : _pace(segment.paceMax.text);
         final recovery = segment.recovery == null
             ? null
-            : _clock(segment.recoveryTime.text);
+            : segment.recoveryByDistance
+            ? double.tryParse(segment.recoveryTime.text.replaceAll(',', '.'))
+            : _clock(segment.recoveryTime.text)?.toDouble();
         if (count == null ||
             count < 1 ||
             count > 40 ||
             target == null ||
             target <= 0 ||
             (segment.pace.text.trim().isNotEmpty && pace == null) ||
+            (segment.paceMax.text.trim().isNotEmpty &&
+                (pace == null || paceMax == null)) ||
             (segment.recovery != null && (recovery == null || recovery <= 0))) {
           throw const FormatException(
             'Revisa repeticiones, objetivo, ritmo y recuperación de los tramos.',
@@ -91,9 +98,12 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           targetValue: target,
           restAfterSeconds: 0,
           targetPaceMinSecondsPerKm: pace,
-          targetPaceMaxSecondsPerKm: pace,
+          targetPaceMaxSecondsPerKm: paceMax,
           recoveryType: segment.recovery,
-          recoveryDurationSeconds: recovery,
+          recoveryDurationSeconds: segment.recoveryByDistance
+              ? null
+              : recovery?.round(),
+          recoveryDistanceMeters: segment.recoveryByDistance ? recovery : null,
         );
         sets.addAll(List.filled(count, set));
       }
@@ -115,33 +125,114 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         ],
       );
     }
-    final exercises = <WorkoutExerciseDraft>[];
-    for (final item in _exercises) {
-      final count = int.tryParse(item.count.text);
-      final target = item.type == WorkoutTargetType.duration
-          ? _clock(item.target.text)?.toDouble()
-          : double.tryParse(item.target.text.replaceAll(',', '.'));
-      final rest = _clock(item.rest.text);
-      if (item.exerciseId == null ||
-          count == null ||
-          count < 1 ||
-          count > 20 ||
-          target == null ||
-          target <= 0 ||
-          rest == null) {
+    final blocks = <WorkoutBlockDraft>[];
+    for (final block in _blocks) {
+      final format = block.format;
+      final usesRounds =
+          format == WorkoutBlockFormat.superset ||
+          format == WorkoutBlockFormat.circuit ||
+          format == WorkoutBlockFormat.intervals ||
+          format == WorkoutBlockFormat.emom;
+      final rounds = format == WorkoutBlockFormat.tabata
+          ? 8
+          : usesRounds
+          ? int.tryParse(block.rounds.text.trim())
+          : 1;
+      final blockRest = format == WorkoutBlockFormat.tabata
+          ? 10
+          : format == WorkoutBlockFormat.emom
+          ? 60
+          : usesRounds
+          ? _clock(block.rest.text)
+          : 0;
+      final cap = format == WorkoutBlockFormat.amrap
+          ? _clock(block.cap.text)
+          : null;
+      if (rounds == null ||
+          rounds < 1 ||
+          rounds > 20 ||
+          blockRest == null ||
+          (format == WorkoutBlockFormat.amrap && cap == null)) {
         throw const FormatException(
-          'Revisa ejercicio, series, objetivo y descanso.',
+          'Revisa rondas, descanso y límite del bloque.',
         );
       }
-      final set = WorkoutSetDraft(
-        targetType: item.type,
-        targetValue: target,
-        restAfterSeconds: rest,
-      );
-      exercises.add(
-        WorkoutExerciseDraft(
-          exerciseId: item.exerciseId!,
-          sets: List.filled(count, set),
+
+      final exercises = <WorkoutExerciseDraft>[];
+      for (final item in block.exercises) {
+        if (item.exerciseId == null) {
+          throw const FormatException(
+            'Selecciona un ejercicio en cada posición.',
+          );
+        }
+        final type = format == WorkoutBlockFormat.tabata
+            ? WorkoutTargetType.duration
+            : format == WorkoutBlockFormat.amrap
+            ? WorkoutTargetType.repetitions
+            : item.type;
+        final target = format == WorkoutBlockFormat.tabata
+            ? 20.0
+            : type == WorkoutTargetType.duration
+            ? _clock(item.target.text)?.toDouble()
+            : double.tryParse(item.target.text.replaceAll(',', '.'));
+        final count = format == WorkoutBlockFormat.straightSets
+            ? int.tryParse(item.count.text)
+            : usesRounds
+            ? rounds
+            : 1;
+        final rest =
+            format == WorkoutBlockFormat.tabata ||
+                format == WorkoutBlockFormat.amrap ||
+                format == WorkoutBlockFormat.emom ||
+                format == WorkoutBlockFormat.intervals
+            ? 0
+            : _clock(item.rest.text);
+        final load =
+            format == WorkoutBlockFormat.tabata || item.load.text.trim().isEmpty
+            ? null
+            : double.tryParse(item.load.text.replaceAll(',', '.'));
+        final rir =
+            format == WorkoutBlockFormat.tabata || item.rir.text.trim().isEmpty
+            ? null
+            : double.tryParse(item.rir.text.replaceAll(',', '.'));
+        if (target == null ||
+            target <= 0 ||
+            count == null ||
+            count < 1 ||
+            count > 20 ||
+            rest == null ||
+            (format != WorkoutBlockFormat.tabata &&
+                item.load.text.trim().isNotEmpty &&
+                load == null) ||
+            (format != WorkoutBlockFormat.tabata &&
+                item.rir.text.trim().isNotEmpty &&
+                rir == null)) {
+          throw const FormatException(
+            'Revisa las series, objetivos, descansos y cargas.',
+          );
+        }
+        final set = WorkoutSetDraft(
+          targetType: type,
+          targetValue: target,
+          restAfterSeconds: rest,
+          targetLoadKg: load,
+          targetRir: rir,
+        );
+        exercises.add(
+          WorkoutExerciseDraft(
+            exerciseId: item.exerciseId!,
+            sets: List.filled(count, set),
+          ),
+        );
+      }
+      blocks.add(
+        WorkoutBlockDraft(
+          name: block.name.text.trim(),
+          format: format,
+          rounds: rounds,
+          restAfterSeconds: blockRest,
+          timeCapSeconds: cap,
+          exercises: exercises,
         ),
       );
     }
@@ -157,7 +248,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
       name: _name.text.trim(),
       description: _description.text.trim(),
       estimatedDurationMinutes: duration,
-      blocks: [WorkoutBlockDraft(name: 'Fuerza', exercises: exercises)],
+      blocks: blocks,
     );
   }
 
@@ -299,6 +390,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                       155,
                     ),
                     _field(_segments[i].pace, 'Ritmo (m:ss/km)', 155),
+                    _field(_segments[i].paceMax, 'Hasta (m:ss/km)', 155),
                     SizedBox(
                       width: 180,
                       child: DropdownButtonFormField<RunningRecoveryType?>(
@@ -321,14 +413,32 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                             child: Text('Trote'),
                           ),
                         ],
-                        onChanged: (value) =>
-                            setState(() => _segments[i].recovery = value),
+                        onChanged: (value) => setState(() {
+                          _segments[i].recovery = value;
+                          if (value == RunningRecoveryType.passive) {
+                            _segments[i].recoveryByDistance = false;
+                          }
+                        }),
                       ),
                     ),
+                    if (_segments[i].recovery != null &&
+                        _segments[i].recovery != RunningRecoveryType.passive)
+                      SizedBox(
+                        width: 165,
+                        child: SwitchListTile(
+                          title: const Text('Rec. metros'),
+                          value: _segments[i].recoveryByDistance,
+                          onChanged: (value) => setState(
+                            () => _segments[i].recoveryByDistance = value,
+                          ),
+                        ),
+                      ),
                     if (_segments[i].recovery != null)
                       _field(
                         _segments[i].recoveryTime,
-                        'Recuperación (m:ss)',
+                        _segments[i].recoveryByDistance
+                            ? 'Recuperación (m)'
+                            : 'Recuperación (m:ss)',
                         180,
                       ),
                   ],
@@ -349,96 +459,290 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        'Fuerza convencional',
+        'Bloques de fuerza y acondicionamiento',
         style: Theme.of(context).textTheme.titleLarge,
       ),
-      const Text('Un bloque, con series iguales para cada ejercicio.'),
+      const Text(
+        'Combina bloques convencionales, superseries, circuitos, intervalos, EMOM, AMRAP o Tabata.',
+      ),
       const SizedBox(height: 12),
       if (_catalog.isEmpty) const Text('No hay ejercicios públicos cargados.'),
-      for (var i = 0; i < _exercises.length; i++)
+      for (var i = 0; i < _blocks.length; i++)
         Card(
-          key: ValueKey(_exercises[i]),
+          key: ValueKey(_blocks[i]),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _rowTitle(
-                  'Ejercicio ${i + 1}',
-                  _exercises.length > 1
-                      ? () => setState(() => _exercises.removeAt(i).dispose())
-                      : null,
-                ),
-                DropdownButtonFormField<String>(
-                  initialValue: _exercises[i].exerciseId,
-                  decoration: const InputDecoration(
-                    labelText: 'Ejercicio del catálogo',
-                  ),
-                  items: [
-                    for (final exercise in _catalog)
-                      DropdownMenuItem(
-                        value: exercise.id,
-                        child: Text(exercise.name),
-                      ),
-                  ],
-                  onChanged: (value) => _exercises[i].exerciseId = value,
-                ),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 12,
-                  children: [
-                    _field(_exercises[i].count, 'Series', 100),
-                    SizedBox(
-                      width: 225,
-                      child: DropdownButtonFormField<WorkoutTargetType>(
-                        initialValue: _exercises[i].type,
-                        decoration: const InputDecoration(
-                          labelText: 'Objetivo',
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: WorkoutTargetType.repetitions,
-                            child: Text('Repeticiones'),
-                          ),
-                          DropdownMenuItem(
-                            value: WorkoutTargetType.duration,
-                            child: Text('Duración'),
-                          ),
-                          DropdownMenuItem(
-                            value: WorkoutTargetType.distance,
-                            child: Text('Metros'),
-                          ),
-                        ],
-                        onChanged: (value) => setState(
-                          () =>
-                              _exercises[i].type = value ?? _exercises[i].type,
-                        ),
-                      ),
-                    ),
-                    _field(
-                      _exercises[i].target,
-                      _exercises[i].type == WorkoutTargetType.duration
-                          ? 'Tiempo (m:ss)'
-                          : 'Cantidad',
-                      145,
-                    ),
-                    _field(_exercises[i].rest, 'Descanso (m:ss)', 165),
-                  ],
-                ),
-              ],
-            ),
+            child: _strengthBlock(i, _blocks[i]),
           ),
         ),
       TextButton.icon(
-        onPressed: _catalog.isEmpty
+        onPressed: _blocks.length >= 10
             ? null
-            : () => setState(() => _exercises.add(_Exercise())),
+            : () => setState(() => _blocks.add(_StrengthBlock())),
         icon: const Icon(Icons.add),
-        label: const Text('Añadir ejercicio'),
+        label: const Text('Añadir bloque'),
       ),
+      const SizedBox(height: 12),
       _field(_duration, 'Duración estimada (min, opcional)', 265),
     ],
   );
+
+  Widget _strengthBlock(int index, _StrengthBlock block) {
+    final format = block.format;
+    final usesRounds =
+        format == WorkoutBlockFormat.superset ||
+        format == WorkoutBlockFormat.circuit ||
+        format == WorkoutBlockFormat.intervals ||
+        format == WorkoutBlockFormat.emom;
+    final canAddExercise =
+        format != WorkoutBlockFormat.tabata &&
+        format != WorkoutBlockFormat.intervals &&
+        format != WorkoutBlockFormat.superset &&
+        block.exercises.length < 20;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _rowTitle(
+          'Bloque ${index + 1}',
+          _blocks.length > 1
+              ? () => setState(() => _blocks.removeAt(index).dispose())
+              : null,
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 14,
+          runSpacing: 12,
+          children: [
+            _field(block.name, 'Nombre del bloque', 230),
+            SizedBox(
+              width: 265,
+              child: DropdownButtonFormField<WorkoutBlockFormat>(
+                isExpanded: true,
+                key: ValueKey(format),
+                initialValue: format,
+                decoration: const InputDecoration(labelText: 'Formato'),
+                items: const [
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.straightSets,
+                    child: Text('Series convencionales'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.superset,
+                    child: Text('Superserie'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.circuit,
+                    child: Text('Circuito'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.intervals,
+                    child: Text('Intervalos'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.emom,
+                    child: Text('EMOM'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.amrap,
+                    child: Text('AMRAP'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutBlockFormat.tabata,
+                    child: Text('Tabata 20/10'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    block.format = value;
+                    final minimum = value == WorkoutBlockFormat.tabata
+                        ? 8
+                        : value == WorkoutBlockFormat.superset ||
+                              value == WorkoutBlockFormat.circuit
+                        ? 2
+                        : 1;
+                    while (block.exercises.length < minimum) {
+                      block.exercises.add(_Exercise());
+                    }
+                  });
+                },
+              ),
+            ),
+            if (usesRounds) _field(block.rounds, 'Rondas', 100),
+            if (format == WorkoutBlockFormat.superset ||
+                format == WorkoutBlockFormat.circuit ||
+                format == WorkoutBlockFormat.intervals)
+              _field(block.rest, 'Descanso entre rondas (m:ss)', 230),
+            if (format == WorkoutBlockFormat.amrap)
+              _field(block.cap, 'Límite global (m:ss)', 190),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _formatHelp(format),
+          style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+        ),
+        const SizedBox(height: 12),
+        for (var j = 0; j < block.exercises.length; j++)
+          Padding(
+            key: ValueKey(block.exercises[j]),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _strengthExercise(block, j),
+          ),
+        if (canAddExercise)
+          TextButton.icon(
+            onPressed: () => setState(() => block.exercises.add(_Exercise())),
+            icon: const Icon(Icons.add),
+            label: const Text('Añadir ejercicio o estación'),
+          ),
+      ],
+    );
+  }
+
+  Widget _strengthExercise(_StrengthBlock block, int index) {
+    final item = block.exercises[index];
+    final format = block.format;
+    final fixedRounds = format != WorkoutBlockFormat.straightSets;
+    final tabata = format == WorkoutBlockFormat.tabata;
+    final amrap = format == WorkoutBlockFormat.amrap;
+    final canRemove = tabata
+        ? block.exercises.length > 8
+        : block.exercises.length > 1;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                tabata ? 'Intervalo ${index + 1}' : 'Posición ${index + 1}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const Spacer(),
+              if (index > 0)
+                IconButton(
+                  tooltip: 'Subir posición',
+                  onPressed: () => setState(() {
+                    final previous = block.exercises[index - 1];
+                    block.exercises[index - 1] = item;
+                    block.exercises[index] = previous;
+                  }),
+                  icon: const Icon(Icons.arrow_upward),
+                ),
+              if (index < block.exercises.length - 1)
+                IconButton(
+                  tooltip: 'Bajar posición',
+                  onPressed: () => setState(() {
+                    final next = block.exercises[index + 1];
+                    block.exercises[index + 1] = item;
+                    block.exercises[index] = next;
+                  }),
+                  icon: const Icon(Icons.arrow_downward),
+                ),
+              if (canRemove)
+                IconButton(
+                  tooltip: 'Quitar posición',
+                  onPressed: () =>
+                      setState(() => block.exercises.removeAt(index).dispose()),
+                  icon: const Icon(Icons.delete_outline),
+                ),
+            ],
+          ),
+          DropdownButtonFormField<String>(
+            key: ValueKey(item.exerciseId),
+            initialValue: item.exerciseId,
+            decoration: const InputDecoration(
+              labelText: 'Ejercicio del catálogo',
+            ),
+            items: [
+              for (final exercise in _catalog)
+                DropdownMenuItem(
+                  value: exercise.id,
+                  child: Text(exercise.name),
+                ),
+            ],
+            onChanged: (value) => item.exerciseId = value,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 14,
+            runSpacing: 12,
+            children: [
+              if (!fixedRounds) _field(item.count, 'Series', 100),
+              if (!tabata && !amrap)
+                SizedBox(
+                  width: 225,
+                  child: DropdownButtonFormField<WorkoutTargetType>(
+                    key: ValueKey(item.type),
+                    initialValue: item.type,
+                    decoration: const InputDecoration(labelText: 'Objetivo'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: WorkoutTargetType.repetitions,
+                        child: Text('Repeticiones'),
+                      ),
+                      DropdownMenuItem(
+                        value: WorkoutTargetType.duration,
+                        child: Text('Duración'),
+                      ),
+                      DropdownMenuItem(
+                        value: WorkoutTargetType.distance,
+                        child: Text('Metros'),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => item.type = value ?? item.type),
+                  ),
+                ),
+              if (tabata)
+                const Padding(
+                  padding: EdgeInsets.only(top: 15),
+                  child: Text('20 s de trabajo · 10 s de recuperación'),
+                )
+              else
+                _field(
+                  item.target,
+                  item.type == WorkoutTargetType.duration && !amrap
+                      ? 'Tiempo (m:ss)'
+                      : 'Cantidad',
+                  145,
+                ),
+              if (!tabata &&
+                  !amrap &&
+                  format != WorkoutBlockFormat.emom &&
+                  format != WorkoutBlockFormat.intervals)
+                _field(item.rest, 'Descanso (m:ss)', 165),
+              if (!tabata) _field(item.load, 'Carga kg (opcional)', 160),
+              if (!tabata) _field(item.rir, 'RIR (opcional)', 140),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatHelp(WorkoutBlockFormat format) => switch (format) {
+    WorkoutBlockFormat.straightSets =>
+      'Cada ejercicio tiene sus propias series y descansos.',
+    WorkoutBlockFormat.superset =>
+      'Dos ejercicios alternados; una serie de cada uno por ronda.',
+    WorkoutBlockFormat.circuit =>
+      'Estaciones en orden; una pasada completa por ronda.',
+    WorkoutBlockFormat.intervals =>
+      'Un ejercicio repetido por rondas con descanso entre ellas.',
+    WorkoutBlockFormat.emom =>
+      'Cada estación ocupa un minuto; las rondas repiten la secuencia.',
+    WorkoutBlockFormat.amrap =>
+      'Tantas vueltas como sea posible hasta el límite global.',
+    WorkoutBlockFormat.tabata =>
+      'Ocho intervalos fijos de 20 s de trabajo y 10 s de recuperación.',
+    _ => '',
+  };
 
   Widget _rowTitle(String title, VoidCallback? remove) => Row(
     children: [
@@ -468,15 +772,37 @@ class _Segment {
   final count = TextEditingController(text: '1');
   final target = TextEditingController();
   final pace = TextEditingController();
+  final paceMax = TextEditingController();
   final recoveryTime = TextEditingController(text: '1:00');
   bool byDistance = true;
+  bool recoveryByDistance = false;
   RunningRecoveryType? recovery;
 
   void dispose() {
     count.dispose();
     target.dispose();
     pace.dispose();
+    paceMax.dispose();
     recoveryTime.dispose();
+  }
+}
+
+class _StrengthBlock {
+  final name = TextEditingController(text: 'Fuerza');
+  final rounds = TextEditingController(text: '3');
+  final rest = TextEditingController(text: '1:00');
+  final cap = TextEditingController(text: '10:00');
+  final exercises = <_Exercise>[_Exercise()];
+  WorkoutBlockFormat format = WorkoutBlockFormat.straightSets;
+
+  void dispose() {
+    name.dispose();
+    rounds.dispose();
+    rest.dispose();
+    cap.dispose();
+    for (final exercise in exercises) {
+      exercise.dispose();
+    }
   }
 }
 
@@ -484,6 +810,8 @@ class _Exercise {
   final count = TextEditingController(text: '3');
   final target = TextEditingController();
   final rest = TextEditingController(text: '1:00');
+  final load = TextEditingController();
+  final rir = TextEditingController();
   String? exerciseId;
   WorkoutTargetType type = WorkoutTargetType.repetitions;
 
@@ -491,6 +819,8 @@ class _Exercise {
     count.dispose();
     target.dispose();
     rest.dispose();
+    load.dispose();
+    rir.dispose();
   }
 }
 

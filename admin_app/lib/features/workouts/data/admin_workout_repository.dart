@@ -1,6 +1,8 @@
 import 'package:workout_core/workout_draft_codec.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/workout_template_model.dart';
+import 'package:workout_core/workout_template_query.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminWorkoutSummary {
@@ -29,10 +31,12 @@ class AdminExercise {
 abstract class AdminWorkoutRepository {
   Future<List<AdminWorkoutSummary>> listForProgram(String programId);
   Future<List<AdminExercise>> listPublicExercises();
+  Future<WorkoutTemplate?> getTemplateById(String templateId);
   Future<String> createDraft(
     String programId,
     CreatePersonalWorkoutInput input,
   );
+  Future<void> publishDraft(String templateId);
 }
 
 class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
@@ -93,6 +97,16 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
   }
 
   @override
+  Future<WorkoutTemplate?> getTemplateById(String templateId) async {
+    final row = await _client
+        .from('workout_templates')
+        .select(workoutTemplateSelect)
+        .eq('id', templateId)
+        .maybeSingle();
+    return row == null ? null : WorkoutTemplateModel.fromJson(row);
+  }
+
+  @override
   Future<String> createDraft(
     String programId,
     CreatePersonalWorkoutInput input,
@@ -106,5 +120,13 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
       },
     );
     return id as String;
+  }
+
+  @override
+  Future<void> publishDraft(String templateId) async {
+    await _client.rpc(
+      'publish_admin_workout_draft',
+      params: {'p_template_id': templateId},
+    );
   }
 }

@@ -304,12 +304,14 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    `admin_app/` es una aplicación Flutter web independiente dentro del mismo
    repositorio. Crea programas y sesiones oficiales en borrador. El paquete
    Dart puro `packages/workout_core/` comparte modelo, validaciones,
-   estimación de carrera y serialización entre panel y app del deportista; no
-   comparte navegación ni guardado personal. La función
+   estimación de carrera, serialización y lectura de plantillas entre panel y
+   app del deportista; no comparte navegación ni guardado personal. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
    privada y la vincula a `program_workout_templates` en una transacción.
+   La publicación administrativa hace visible una versión en la biblioteca
+   pública que ya lee la app del deportista; no asigna la sesión ni crea agenda.
    La app del deportista no importa código administrativo y no puede publicar
-   ni asignar estas sesiones. Aún faltan edición, publicación, fases y reglas.
+   ni asignar estas sesiones. Aún faltan edición, fases y reglas.
 2. **Prescripción individual:** un servicio de confianza ejecuta reglas
    deterministas y versionadas sobre preparación, marcas, disponibilidad e
    historial. Selecciona o materializa la sesión privada correspondiente, la

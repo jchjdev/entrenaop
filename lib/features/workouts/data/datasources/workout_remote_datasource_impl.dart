@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:workout_core/workout_template_query.dart';
 
 class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   const WorkoutRemoteDataSourceImpl({required this.supabaseClient});
@@ -70,44 +71,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getTemplateById(String id) async {
     final response = await supabaseClient
         .from('workout_templates')
-        .select('''
-          id,
-          name,
-          description,
-          estimated_duration_minutes,
-          version,
-          workout_blocks (
-            id,
-            order_index,
-            name,
-            format,
-            rounds,
-            time_cap_seconds,
-            rest_after_seconds,
-            workout_items (
-              id,
-              order_index,
-              notes,
-              exercises (id, name, description),
-              workout_sets (
-                id,
-                order_index,
-                target_reps,
-                target_duration_seconds,
-                target_distance_meters,
-                target_load_kg,
-                target_rpe,
-                target_rir,
-                target_pace_min_seconds_per_km,
-                target_pace_max_seconds_per_km,
-                recovery_type,
-                recovery_duration_seconds,
-                recovery_distance_meters,
-                rest_after_seconds
-              )
-            )
-          )
-        ''')
+        .select(workoutTemplateSelect)
         .eq('id', id)
         .maybeSingle();
 
