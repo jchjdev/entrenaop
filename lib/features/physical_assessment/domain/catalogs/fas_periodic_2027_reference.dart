@@ -168,6 +168,16 @@ class FasPeriodic2027Reference {
     );
   }
 
+  PeriodicMarkRange? markRangeFor({required String testId, required int age}) {
+    final table = _tableFor(testId, age);
+    if (table == null) return null;
+    final marks = table.rows.map((row) => row.mark);
+    return PeriodicMarkRange(
+      minimum: marks.reduce((a, b) => a < b ? a : b),
+      maximum: marks.reduce((a, b) => a > b ? a : b),
+    );
+  }
+
   _ScoreTable? _tableFor(String testId, int age) {
     _ageBandFor(age);
     final table = _tables[testId];
@@ -288,4 +298,11 @@ class PeriodicPassMark {
   bool meetsMinimum(int mark) => betterDirection == BetterDirection.higher
       ? mark >= threshold
       : mark <= threshold;
+}
+
+class PeriodicMarkRange {
+  const PeriodicMarkRange({required this.minimum, required this.maximum});
+
+  final int minimum;
+  final int maximum;
 }

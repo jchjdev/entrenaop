@@ -127,14 +127,16 @@ class _FakeRepository implements FasPeriodicAssessmentRepository {
   Map<String, int>? savedMarks;
 
   @override
-  Future<List<FasPeriodicAssessmentEntry>> history(String goalId) async => [];
+  Future<List<FasPeriodicAssessmentEntry>> history({String? goalId}) async =>
+      [];
 
   @override
   Future<String> save({
-    required String goalId,
+    String? goalId,
     required String category,
     required int age,
     required Map<String, int> marks,
+    DateTime? completedAt,
   }) async {
     savedGoalId = goalId;
     savedAge = age;

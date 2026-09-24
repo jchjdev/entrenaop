@@ -44,7 +44,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
     _reference = widget.reference == null
         ? FasPeriodic2027Reference.load()
         : Future.value(widget.reference);
-    _history = widget.repository.history(widget.goalId);
+    _history = widget.repository.history(goalId: widget.goalId);
     _birthDate = widget.birthDateRepository.get();
   }
 
@@ -107,7 +107,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
       );
       if (!mounted) return;
       setState(() {
-        _history = widget.repository.history(widget.goalId);
+        _history = widget.repository.history(goalId: widget.goalId);
         for (final controller in _fields.values) {
           controller.clear();
         }

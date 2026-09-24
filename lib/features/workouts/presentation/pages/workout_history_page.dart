@@ -66,6 +66,14 @@ class _HistoryContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   _DestinationCard(
+                    icon: Icons.military_tech_outlined,
+                    title: 'Tests periódicos FAS 2027',
+                    subtitle:
+                        'Tus tests guardados, aunque no pertenezcan a ninguna preparación.',
+                    onTap: () => context.push('/assessment/fas-history'),
+                  ),
+                  const SizedBox(height: 8),
+                  _DestinationCard(
                     icon: Icons.flag_outlined,
                     title: 'Controles por preparación',
                     subtitle:

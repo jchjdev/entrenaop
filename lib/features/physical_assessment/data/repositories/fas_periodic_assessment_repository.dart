@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class FasPeriodicAssessmentEntry {
   const FasPeriodicAssessmentEntry({
     required this.id,
+    required this.scoringVersion,
     required this.completedAt,
     required this.category,
     required this.age,
@@ -11,6 +12,7 @@ class FasPeriodicAssessmentEntry {
   });
 
   final String id;
+  final String scoringVersion;
   final DateTime completedAt;
   final String category;
   final int age;
@@ -43,12 +45,12 @@ class FasPeriodicAssessmentRepository {
 
   final SupabaseClient _client;
 
-  Future<List<FasPeriodicAssessmentEntry>> history(String goalId) async {
-    final response = await _client
-        .from('fas_periodic_results')
-        .select()
-        .eq('preparation_goal_id', goalId)
-        .order('completed_at', ascending: false);
+  Future<List<FasPeriodicAssessmentEntry>> history({String? goalId}) async {
+    var query = _client.from('fas_periodic_results').select();
+    if (goalId != null) {
+      query = query.eq('preparation_goal_id', goalId);
+    }
+    final response = await query.order('completed_at', ascending: false);
     final grouped = <String, List<Map<String, dynamic>>>{};
     for (final row in response) {
       final id = row['assessment_id'] as String;
@@ -74,6 +76,7 @@ class FasPeriodicAssessmentRepository {
             );
       return FasPeriodicAssessmentEntry(
         id: item.key,
+        scoringVersion: header['scoring_version'] as String,
         completedAt: DateTime.parse(header['completed_at'] as String).toLocal(),
         category: header['category'] as String,
         age: (header['age_at_assessment'] as num).toInt(),
@@ -84,10 +87,11 @@ class FasPeriodicAssessmentRepository {
   }
 
   Future<String> save({
-    required String goalId,
+    String? goalId,
     required String category,
     required int age,
     required Map<String, int> marks,
+    DateTime? completedAt,
   }) async {
     final id = await _client.rpc(
       'record_fas_periodic_assessment',
@@ -98,6 +102,9 @@ class FasPeriodicAssessmentRepository {
         'p_marks': marks.entries
             .map((mark) => {'test_id': mark.key, 'value': mark.value})
             .toList(growable: false),
+        'p_completed_at': (completedAt ?? DateTime.now())
+            .toUtc()
+            .toIso8601String(),
       },
     );
     if (id is! String || id.isEmpty) {

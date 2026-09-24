@@ -96,12 +96,14 @@ en vigor el 1 de enero de 2027. Ya existe el programa estable
 `fas_periodic_assessment` **habilitado en desarrollo** y un catálogo local
 versionado con la tabla íntegra de 0–100 puntos por prueba, columna H/M y edad
 del anexo II. La calculadora gratuita está visible en Inicio, no requiere una
-preparación activa y no guarda ni altera intentos. Muestra cada puntuación y el
+preparación activa y calcula en directo al escribir o mover sus deslizadores.
+Solo guarda un test cuando el usuario lo confirma. Muestra cada puntuación y el
 mínimo general de 20 puntos, sin presentar la suma como resultado normativo ni
 certificar aptitud oficial. Sí ofrece una suma matemática visible, rotulada como
-orientativa y separada del criterio normativo. Su registro e historial
-periódicos siguen siendo
-independientes de Tropa y validan las marcas en PostgreSQL. Antes del 1 de
+orientativa y separada del criterio normativo. Cada registro pertenece al
+perfil del usuario y puede enlazarse opcionalmente a una preparación, sin que
+esta sea su dueña. Su historial periódico sigue siendo independiente de Tropa
+y valida las marcas en PostgreSQL. Antes del 1 de
 enero de 2027 se muestra como referencia futura. Tampoco prescribe sesiones
 automáticamente.
 
@@ -118,7 +120,8 @@ El siguiente tramo ejecutable será:
 2. **Calculadora gratuita de puntos completada** para la evaluación periódica
    FAS 2027: usa la fecha de nacimiento del perfil, permite elegir explícitamente
    H/M, acepta entradas móviles de repeticiones y tiempos, muestra puntos por
-   prueba, versión y fuente, y mantiene separados cálculo e historial. Próxima
+   prueba, versión y fuente, permite guardar con fecha en un historial personal
+   independiente y mantiene las simulaciones fuera de ese historial. Próxima
    ampliación: selección de otros programas/convocatorias cuando dispongan de
    catálogos completos igualmente verificables. La conversión a Premium no
    ocultará el cálculo gratuito ni lo confundirá con una certificación oficial.

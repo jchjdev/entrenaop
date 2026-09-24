@@ -203,13 +203,15 @@ identidad
 - El programa `fas_periodic_assessment` está habilitado en desarrollo con
   registro repetible e historial propios. La migración
   `20260923006000_fas_periodic_assessments.sql` conserva versión, fecha, edad,
-  categoría y marcas por prueba, valida la propiedad de la preparación activa
-  mediante RPC y aplica RLS a la lectura. Los mínimos de 20 puntos del anexo II
+  categoría y marcas por prueba. Cada test pertenece al usuario; la preparación
+  es contexto opcional y su propiedad se valida mediante RPC cuando se aporta.
+  RLS limita la lectura al propietario. Los mínimos de 20 puntos del anexo II
   de DEF/15/2026 viven en PostgreSQL. El cliente contiene además el catálogo
-  íntegro de 0–100 puntos y un calculador de dominio puro para el flujo gratuito,
-  que no persiste datos ni depende de una preparación activa. Ninguno equivale
-  a aptitud oficial y la norma no define una puntuación total. Tropa conserva
-  su catálogo e historial, sin reutilización de sus marcas.
+  íntegro y versionado de 0–100 puntos y un calculador de dominio puro. La
+  simulación no persiste nada, pero el usuario puede guardar explícitamente el
+  test fechado en su historial personal sin crear una preparación. Ninguno
+  equivale a aptitud oficial y la norma no define una puntuación total. Tropa
+  conserva su catálogo e historial, sin reutilización de sus marcas.
   La fecha de nacimiento del perfil alimenta la edad calculada para cada
   intento; un trigger de PostgreSQL rechaza edades que no coincidan con esa
   fecha. El usuario puede corregir el perfil, sin alterar las marcas

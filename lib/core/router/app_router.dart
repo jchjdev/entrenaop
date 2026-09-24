@@ -14,6 +14,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/pages/initia
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_history_page.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
@@ -356,7 +357,12 @@ class AppRouter {
           path: '/assessment/fas-calculator',
           builder: (context, state) => FasPeriodicCalculatorPage(
             birthDateRepository: sl(),
+            repository: sl(),
           ),
+        ),
+        GoRoute(
+          path: '/assessment/fas-history',
+          builder: (context, state) => FasPeriodicHistoryPage(repository: sl()),
         ),
       ],
     );

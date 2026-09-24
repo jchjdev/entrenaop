@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
@@ -6,17 +7,20 @@ import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class FasPeriodicCalculatorPage extends StatefulWidget {
   const FasPeriodicCalculatorPage({
     super.key,
     required this.birthDateRepository,
+    required this.repository,
     this.reference,
     this.today,
   });
 
   final ProfileBirthDateRepository birthDateRepository;
+  final FasPeriodicAssessmentRepository repository;
   final FasPeriodic2027Reference? reference;
   final DateTime? today;
 
@@ -33,14 +37,17 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   late final Future<FasPeriodic2027Reference> _reference;
   late Future<DateTime?> _birthDate;
   AssessmentCategory _category = AssessmentCategory.men;
-  Map<String, PeriodicScoreResult>? _results;
+  final Map<String, PeriodicScoreResult> _results = {};
   bool _savingBirthDate = false;
+  bool _savingAssessment = false;
+  late DateTime _assessmentDate;
 
   DateTime get _calculationDate => widget.today ?? DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    _assessmentDate = _calculationDate;
     _reference = widget.reference == null
         ? FasPeriodic2027Reference.load()
         : Future.value(widget.reference);
@@ -64,7 +71,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       if (!mounted) return;
       setState(() {
         _birthDate = widget.birthDateRepository.get();
-        _results = null;
+        _results.clear();
       });
     } catch (_) {
       if (!mounted) return;
@@ -78,12 +85,12 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     }
   }
 
-  void _calculate(FasPeriodic2027Reference reference, int age) {
-    if (!_formKey.currentState!.validate()) return;
+  void _recalculate(FasPeriodic2027Reference reference, int age) {
     final results = <String, PeriodicScoreResult>{};
     for (final test in _calculatorTests) {
       if (test.id == 'agility_speed_circuit' && age >= 45) continue;
-      final mark = _parseMark(test.id, _controllers[test.id]!.text)!;
+      final mark = _parseMark(test.id, _controllers[test.id]!.text);
+      if (mark == null) continue;
       results[test.id] = reference.scoreFor(
         testId: test.id,
         category: _category,
@@ -91,7 +98,56 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
         mark: mark,
       )!;
     }
-    setState(() => _results = results);
+    setState(() {
+      _results
+        ..clear()
+        ..addAll(results);
+    });
+  }
+
+  Future<void> _chooseAssessmentDate(
+    FasPeriodic2027Reference reference,
+    DateTime birthDate,
+  ) async {
+    final chosen = await showDatePicker(
+      context: context,
+      initialDate: _assessmentDate,
+      firstDate: DateTime(2026, 1, 21),
+      lastDate: _calculationDate,
+    );
+    if (chosen == null || !mounted) return;
+    _assessmentDate = chosen;
+    _recalculate(reference, ageOnDate(birthDate, chosen));
+  }
+
+  Future<void> _saveAssessment(int age) async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _savingAssessment = true);
+    try {
+      await widget.repository.save(
+        category: _category.name,
+        age: age,
+        completedAt: _assessmentDate,
+        marks: {
+          for (final test in _calculatorTests)
+            if (test.id != 'agility_speed_circuit' || age < 45)
+              test.id: _parseMark(test.id, _controllers[test.id]!.text)!,
+        },
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Test guardado en tu historial personal.'),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo guardar el test.')),
+      );
+    } finally {
+      if (mounted) setState(() => _savingAssessment = false);
+    }
   }
 
   @override
@@ -118,7 +174,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Calcula tus puntos sin guardar nada',
+                      'Prueba marcas. Guarda solo cuando tú quieras.',
                       style: TextStyle(
                         fontSize: 27,
                         fontWeight: FontWeight.w900,
@@ -126,7 +182,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Introduce tus marcas y verás la puntuación de cada prueba. El cálculo es gratuito, no crea un intento ni modifica tu historial.',
+                      'Escribe una marca o mueve el control: los puntos cambian al instante. Nada entra en tu historial hasta que pulses Guardar test.',
                       style: TextStyle(color: Colors.white70, height: 1.4),
                     ),
                     if (_calculationDate.isBefore(DateTime(2027))) ...[
@@ -170,7 +226,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                                 : () => _editBirthDate(null),
                           );
                         }
-                        final age = ageOnDate(birthDate, _calculationDate);
+                        final age = ageOnDate(birthDate, _assessmentDate);
                         if (age < 17 || age > 120) {
                           return _BirthDateCard(
                             title: 'Revisa tu fecha de nacimiento',
@@ -225,10 +281,17 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _BirthDateCard(
-          title: '$age años · tramo calculado para hoy',
+          title:
+              '$age años · test del ${DateFormat('dd/MM/yyyy').format(_assessmentDate)}',
           subtitle: 'Nacimiento: ${DateFormat('dd/MM/yyyy').format(birthDate)}',
           icon: Icons.edit_outlined,
           onTap: _savingBirthDate ? null : () => _editBirthDate(birthDate),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: () => _chooseAssessmentDate(reference, birthDate),
+          icon: const Icon(Icons.event_outlined),
+          label: const Text('Cambiar fecha del test'),
         ),
         const SizedBox(height: 16),
         const Text(
@@ -248,10 +311,10 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             ),
           ],
           selected: {_category},
-          onSelectionChanged: (values) => setState(() {
+          onSelectionChanged: (values) {
             _category = values.first;
-            _results = null;
-          }),
+            _recalculate(reference, age);
+          },
         ),
         const SizedBox(height: 8),
         const Text(
@@ -267,23 +330,25 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                 if (test.id != 'agility_speed_circuit' || age < 45)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 14),
-                    child: TextFormField(
-                      controller: _controllers[test.id],
-                      keyboardType: TextInputType.number,
-                      inputFormatters: test.id == 'run_2000_m'
-                          ? const [DurationInputFormatter()]
-                          : null,
-                      decoration: InputDecoration(
-                        labelText: test.label,
-                        hintText: test.hint,
-                        helperText: test.helper,
-                      ),
-                      validator: (value) =>
-                          _parseMark(test.id, value ?? '') == null
-                          ? test.error
-                          : null,
-                      onChanged: (_) {
-                        if (_results != null) setState(() => _results = null);
+                    child: _MarkControl(
+                      test: test,
+                      controller: _controllers[test.id]!,
+                      range: reference.markRangeFor(testId: test.id, age: age),
+                      passMark: reference
+                          .passMarkFor(
+                            testId: test.id,
+                            category: _category,
+                            age: age,
+                          )
+                          ?.threshold,
+                      result: _results[test.id],
+                      onChanged: () => _recalculate(reference, age),
+                      onSliderChanged: (mark) {
+                        _controllers[test.id]!.text = _formatMarkForInput(
+                          test.id,
+                          mark,
+                        );
+                        _recalculate(reference, age);
                       },
                     ),
                   ),
@@ -298,22 +363,139 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                     ),
                   ),
                 ),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => _calculate(reference, age),
-                  icon: const Icon(Icons.calculate_outlined),
-                  label: const Text('Calcular puntos'),
-                ),
-              ),
             ],
           ),
         ),
-        if (_results case final results?) ...[
+        if (_results.length == (age < 45 ? 4 : 3)) ...[
           const SizedBox(height: 24),
-          _Results(results: results),
+          _Results(results: _results),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            onPressed: _savingAssessment ? null : () => _saveAssessment(age),
+            icon: _savingAssessment
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.bookmark_add_outlined),
+            label: const Text('Guardar test realizado'),
+          ),
         ],
+        const SizedBox(height: 10),
+        TextButton.icon(
+          onPressed: () => context.push('/assessment/fas-history'),
+          icon: const Icon(Icons.timeline_outlined),
+          label: const Text('Ver mi historial de tests FAS'),
+        ),
       ],
+    );
+  }
+}
+
+class _MarkControl extends StatelessWidget {
+  const _MarkControl({
+    required this.test,
+    required this.controller,
+    required this.range,
+    required this.passMark,
+    required this.result,
+    required this.onChanged,
+    required this.onSliderChanged,
+  });
+
+  final ({
+    String id,
+    String label,
+    String shortLabel,
+    String hint,
+    String helper,
+    String error,
+  })
+  test;
+  final TextEditingController controller;
+  final PeriodicMarkRange? range;
+  final int? passMark;
+  final PeriodicScoreResult? result;
+  final VoidCallback onChanged;
+  final ValueChanged<int> onSliderChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final limits = range;
+    final parsed = _parseMark(test.id, controller.text);
+    final fallback = passMark ?? limits?.minimum ?? 0;
+    final sliderValue = limits == null
+        ? 0.0
+        : (parsed ?? fallback).clamp(limits.minimum, limits.maximum).toDouble();
+    final step = _sliderStep(test.id);
+    final divisions = limits == null
+        ? null
+        : ((limits.maximum - limits.minimum) / step).round();
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: test.id == 'run_2000_m'
+                        ? const [DurationInputFormatter()]
+                        : null,
+                    decoration: InputDecoration(
+                      labelText: test.label,
+                      hintText: test.hint,
+                      helperText: test.helper,
+                    ),
+                    validator: (value) =>
+                        _parseMark(test.id, value ?? '') == null
+                        ? test.error
+                        : null,
+                    onChanged: (_) => onChanged(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 88,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      children: [
+                        Text(
+                          result == null ? '—' : '${result!.points}',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const Text(
+                          'puntos',
+                          style: TextStyle(color: Colors.white60),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (limits != null)
+              Slider(
+                value: sliderValue,
+                min: limits.minimum.toDouble(),
+                max: limits.maximum.toDouble(),
+                divisions: divisions,
+                onChanged: (value) =>
+                    onSliderChanged((value / step).round() * step),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -448,6 +630,27 @@ int? _parseMark(String testId, String value) => switch (testId) {
   'agility_speed_circuit' => parseSecondsToMilliseconds(value),
   _ => null,
 };
+
+int _sliderStep(String testId) => switch (testId) {
+  'upper_body_push_ups_2_min' => 1,
+  'agility_speed_circuit' => 100,
+  _ => 1000,
+};
+
+String _formatMarkForInput(String testId, int mark) => switch (testId) {
+  'upper_body_push_ups_2_min' => '$mark',
+  'abdominal_plank' => _formatClock(mark),
+  'run_2000_m' => _formatClock(mark),
+  'agility_speed_circuit' =>
+    (mark / 1000).toStringAsFixed(1).replaceAll('.', ','),
+  _ => '$mark',
+};
+
+String _formatClock(int milliseconds) {
+  final seconds = milliseconds ~/ 1000;
+  final minutes = seconds ~/ 60;
+  return '$minutes:${(seconds % 60).toString().padLeft(2, '0')}';
+}
 
 const _calculatorTests = [
   (
