@@ -6,16 +6,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_image.dart';
 
 class _FakeExercises implements AdminExerciseRepository {
   @override
-  Future<void> createOfficial(ExerciseDraft draft) async {}
+  Future<void> createOfficial(
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+  }) async {}
 
   @override
   Future<List<AdminCatalogExercise>> listOfficial() async => const [];
 
   @override
-  Future<void> updateOfficial(String id, ExerciseDraft draft) async {}
+  Future<void> updateOfficial(
+    String id,
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {}
 }
 
 class _FakeRepository implements AdminProgramRepository {

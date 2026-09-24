@@ -2,6 +2,7 @@ import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repositor
 import 'package:flutter/material.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
+import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 class AdminExercisesPage extends StatefulWidget {
   const AdminExercisesPage({super.key, required this.repository});
@@ -46,7 +47,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   }
 
   Future<void> _openEditor([AdminCatalogExercise? exercise]) async {
-    final draft = await showDialog<ExerciseDraft>(
+    final submission = await showDialog<ExerciseFormSubmission<ExerciseDraft>>(
       context: context,
       builder: (dialogContext) => Dialog(
         child: ConstrainedBox(
@@ -64,20 +65,29 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                   : 'Guardar cambios',
               fieldKeyPrefix: 'admin-exercise',
               initialDraft: exercise?.toDraft(),
+              initialImageUrl: exercise?.imageUrl,
               onSubmit: (value) => Navigator.of(dialogContext).pop(value),
             ),
           ),
         ),
       ),
     );
-    if (draft == null || !mounted) return;
+    if (submission == null || !mounted) return;
 
     setState(() => _saving = true);
     try {
       if (exercise == null) {
-        await widget.repository.createOfficial(draft);
+        await widget.repository.createOfficial(
+          submission.draft,
+          image: submission.image,
+        );
       } else {
-        await widget.repository.updateOfficial(exercise.id, draft);
+        await widget.repository.updateOfficial(
+          exercise.id,
+          submission.draft,
+          image: submission.image,
+          removeImage: submission.removeExistingImage,
+        );
       }
       await _load();
       if (!mounted) return;
@@ -145,6 +155,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
         final exercise = _exercises[index];
         return Card(
           child: ListTile(
+            leading: _ExerciseImage(url: exercise.imageUrl),
             title: Text(exercise.name),
             subtitle: Text(
               [...exercise.muscleGroups, ...exercise.equipment].join(' · '),
@@ -156,4 +167,29 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
       },
     );
   }
+}
+
+class _ExerciseImage extends StatelessWidget {
+  const _ExerciseImage({required this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: SizedBox(
+      width: 64,
+      height: 48,
+      child: url == null
+          ? ColoredBox(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: const Icon(Icons.fitness_center_outlined),
+            )
+          : Image.network(
+              url!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined),
+            ),
+    ),
+  );
 }

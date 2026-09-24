@@ -4,6 +4,7 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
+import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 class PersonalExerciseCreatorPage extends StatefulWidget {
   const PersonalExerciseCreatorPage({super.key, required this.createExercise});
@@ -20,11 +21,16 @@ class _PersonalExerciseCreatorPageState
   bool _saving = false;
   int _formVersion = 0;
 
-  Future<void> _save(PersonalExerciseDraft draft) async {
+  Future<void> _save(
+    ExerciseFormSubmission<PersonalExerciseDraft> submission,
+  ) async {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      final exercise = await widget.createExercise(draft);
+      final exercise = await widget.createExercise(
+        submission.draft,
+        image: submission.image,
+      );
       if (!mounted) return;
       setState(() => _formVersion++);
       ScaffoldMessenger.of(context).showSnackBar(

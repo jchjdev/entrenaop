@@ -3,6 +3,7 @@ import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_image.dart';
 
 class _FakeRepository implements AdminExerciseRepository {
   final exercises = <AdminCatalogExercise>[];
@@ -10,7 +11,10 @@ class _FakeRepository implements AdminExerciseRepository {
   ExerciseDraft? updated;
 
   @override
-  Future<void> createOfficial(ExerciseDraft draft) async {
+  Future<void> createOfficial(
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+  }) async {
     created = draft;
     exercises.add(
       AdminCatalogExercise(
@@ -30,7 +34,12 @@ class _FakeRepository implements AdminExerciseRepository {
   Future<List<AdminCatalogExercise>> listOfficial() async => List.of(exercises);
 
   @override
-  Future<void> updateOfficial(String id, ExerciseDraft draft) async {
+  Future<void> updateOfficial(
+    String id,
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {
     updated = draft;
   }
 }

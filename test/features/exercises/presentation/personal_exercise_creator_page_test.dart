@@ -4,12 +4,16 @@ import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_use
 import 'package:entrenaop/features/exercises/presentation/pages/personal_exercise_creator_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/exercise_image.dart';
 
 class _ExerciseRepository implements ExerciseRepository {
   PersonalExerciseDraft? created;
 
   @override
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) async {
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) async {
     created = exercise;
     return ExerciseEntity(
       id: 'exercise-id',

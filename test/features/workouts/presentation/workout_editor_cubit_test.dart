@@ -13,6 +13,7 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_pa
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/exercise_image.dart';
 
 void main() {
   test('carga una sesión existente y guarda una revisión', () async {
@@ -473,7 +474,10 @@ class _ExerciseRepository implements ExerciseRepository {
   ];
 
   @override
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) async =>
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) async =>
       ExerciseEntity(
         id: 'exercise-personal',
         name: exercise.name,

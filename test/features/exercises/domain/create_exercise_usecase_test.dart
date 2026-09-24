@@ -2,6 +2,7 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/exercise_image.dart';
 
 void main() {
   test('normaliza y crea un ejercicio privado', () async {
@@ -50,7 +51,10 @@ class _ExerciseRepository implements ExerciseRepository {
   PersonalExerciseDraft? received;
 
   @override
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) async {
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) async {
     received = exercise;
     return ExerciseEntity(
       id: 'created-id',

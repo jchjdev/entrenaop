@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  image: ^4.10.1
+  image_picker: ^1.2.3
   workout_core:
     path: ../workout_core
 

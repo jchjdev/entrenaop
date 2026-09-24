@@ -2,6 +2,7 @@ import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_da
 import 'package:entrenaop/features/exercises/data/models/exercise_model.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
+import 'package:workout_core/exercise_image.dart';
 
 class ExerciseRepositoryImpl implements ExerciseRepository {
   final ExerciseRemoteDataSource remoteDataSource;
@@ -9,8 +10,11 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   ExerciseRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) {
-    return remoteDataSource.createExercise(exercise);
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) {
+    return remoteDataSource.createExercise(exercise, image: image);
   }
 
   @override

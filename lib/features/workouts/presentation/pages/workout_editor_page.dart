@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
+import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
@@ -1813,32 +1814,39 @@ class _ExercisePickerState extends State<_ExercisePicker> {
   }
 
   Future<void> _createExercise() async {
-    final draft = await showModalBottomSheet<PersonalExerciseDraft>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            4,
-            20,
-            MediaQuery.viewInsetsOf(sheetContext).bottom + 20,
+    final submission =
+        await showModalBottomSheet<
+          ExerciseFormSubmission<PersonalExerciseDraft>
+        >(
+          context: context,
+          showDragHandle: true,
+          isScrollControlled: true,
+          builder: (sheetContext) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                4,
+                20,
+                MediaQuery.viewInsetsOf(sheetContext).bottom + 20,
+              ),
+              child: ExerciseForm(
+                title: 'Nuevo ejercicio propio',
+                supportingText:
+                    'Será privado y solo aparecerá en tu biblioteca.',
+                submitLabel: 'Crear y añadir',
+                fieldKeyPrefix: 'personal-exercise',
+                onSubmit: (value) => Navigator.of(sheetContext).pop(value),
+              ),
+            ),
           ),
-          child: ExerciseForm(
-            title: 'Nuevo ejercicio propio',
-            supportingText: 'Será privado y solo aparecerá en tu biblioteca.',
-            submitLabel: 'Crear y añadir',
-            fieldKeyPrefix: 'personal-exercise',
-            onSubmit: (draft) => Navigator.of(sheetContext).pop(draft),
-          ),
-        ),
-      ),
-    );
-    if (draft == null || !mounted) return;
+        );
+    if (submission == null || !mounted) return;
     setState(() => _creating = true);
     try {
-      final created = await widget.editorCubit.createExercise(draft);
+      final created = await widget.editorCubit.createExercise(
+        submission.draft,
+        image: submission.image,
+      );
       if (mounted) Navigator.of(context).pop(created);
     } on FormatException catch (error) {
       if (!mounted) return;

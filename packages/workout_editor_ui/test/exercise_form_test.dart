@@ -21,7 +21,7 @@ void main() {
               difficulty: 'inicial',
               exerciseType: 'repeticiones',
             ),
-            onSubmit: (value) => submitted = value,
+            onSubmit: (value) => submitted = value.draft,
           ),
         ),
       ),

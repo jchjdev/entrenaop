@@ -114,7 +114,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
   Future<List<AdminExercise>> listPublicExercises() async {
     final rows = await _client
         .from('exercises')
-        .select('id,name,muscle_groups,equipment,thumbnail_url')
+        .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
         .eq('is_public', true)
         .order('name');
     return rows
@@ -126,7 +126,11 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             muscleGroups: (row['muscle_groups'] as List? ?? const [])
                 .cast<String>(),
             equipment: (row['equipment'] as List? ?? const []).cast<String>(),
-            thumbnailUrl: row['thumbnail_url'] as String?,
+            thumbnailUrl: row['image_path'] == null
+                ? row['thumbnail_url'] as String?
+                : _client.storage
+                      .from('exercise-images-public')
+                      .getPublicUrl(row['image_path'] as String),
           ),
         )
         .toList();
