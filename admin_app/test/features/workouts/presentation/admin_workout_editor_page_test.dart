@@ -48,6 +48,10 @@ class _FakeWorkouts implements AdminWorkoutRepository {
       id: '30000000-0000-4000-8000-000000000001',
       name: 'Flexiones',
     ),
+    AdminExercise(
+      id: '30000000-0000-4000-8000-000000000002',
+      name: 'Sentadillas',
+    ),
   ];
 
   @override
@@ -248,6 +252,48 @@ void main() {
     expect(exercise.exerciseId, '30000000-0000-4000-8000-000000000001');
     expect(exercise.sets, hasLength(3));
     expect(exercise.sets.first.targetValue, 10);
+  });
+
+  testWidgets('cambia un ejercicio buscándolo y conserva sus series', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 1100));
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(_field('Nombre de la sesión'), 'Fuerza base');
+    await tester.tap(find.text('Fuerza convencional'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Buscar ejercicio del catálogo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Flexiones').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('Cantidad'), '12');
+
+    await tester.tap(find.text('Cambiar ejercicio · Flexiones'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Sentadillas');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sentadillas').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Guardar borrador'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.tap(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
+    final exercise = repository.saved!.blocks.single.exercises.single;
+    expect(exercise.exerciseId, '30000000-0000-4000-8000-000000000002');
+    expect(exercise.sets, hasLength(3));
+    expect(exercise.sets.first.targetValue, 12);
   });
 
   testWidgets('prescribe superserie con dos ejercicios y tres rondas', (

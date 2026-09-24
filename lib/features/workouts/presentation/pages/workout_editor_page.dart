@@ -750,6 +750,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     ),
                     onRemove: () =>
                         _updateEditor(() => block.rows.removeAt(exerciseIndex)),
+                    onReplace: () => _replaceExercise(
+                      context,
+                      catalog,
+                      blockIndex,
+                      block.rows[exerciseIndex],
+                    ),
                     onMoveUp: exerciseIndex == 0
                         ? null
                         : () => _moveExercise(
@@ -1023,6 +1029,46 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _adaptRowToBlock(row, block);
       });
     }
+  }
+
+  Future<void> _replaceExercise(
+    BuildContext context,
+    List<ExerciseEntity> catalog,
+    int blockIndex,
+    _ExerciseRowData current,
+  ) async {
+    final editorCubit = context.read<WorkoutEditorCubit>();
+    final selected = await showModalBottomSheet<ExerciseEntity>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) =>
+          _ExercisePicker(exercises: catalog, editorCubit: editorCubit),
+    );
+    if (selected == null ||
+        !mounted ||
+        !context.mounted ||
+        selected.id == current.exercise.id) {
+      return;
+    }
+    // La sustitución cambia solo el ejercicio; la prescripción requiere revisión manual.
+    final rows = _blocks[blockIndex].rows;
+    final index = rows.indexOf(current);
+    if (index < 0) return;
+    _updateEditor(() {
+      rows[index] = _ExerciseRowData(
+        exercise: selected,
+        targetType: current.targetType,
+        sets: current.sets.map((set) => set.copy()).toList(),
+      );
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Ejercicio cambiado. Revisa que el objetivo y la carga sigan siendo adecuados.',
+        ),
+      ),
+    );
   }
 
   void _adaptRowToBlock(_ExerciseRowData row, _BlockRowData block) {
@@ -1415,6 +1461,7 @@ class _ExerciseEditorCard extends StatefulWidget {
     required this.moveTargets,
     required this.onMoveToBlock,
     required this.onRemove,
+    required this.onReplace,
     required this.onMoveUp,
     required this.onMoveDown,
     required this.onChanged,
@@ -1432,6 +1479,7 @@ class _ExerciseEditorCard extends StatefulWidget {
   final List<({int index, String name})> moveTargets;
   final ValueChanged<int> onMoveToBlock;
   final VoidCallback onRemove;
+  final VoidCallback onReplace;
   final VoidCallback? onMoveUp;
   final VoidCallback? onMoveDown;
   final VoidCallback onChanged;
@@ -1473,9 +1521,18 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                     if (value == -1) widget.onMoveUp?.call();
                     if (value == -2) widget.onMoveDown?.call();
                     if (value == -3) widget.onRemove();
+                    if (value == -4) widget.onReplace();
                     if (value >= 0) widget.onMoveToBlock(value);
                   },
                   itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: -4,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.swap_horiz_rounded),
+                        title: Text('Cambiar ejercicio'),
+                      ),
+                    ),
                     PopupMenuItem(
                       value: -1,
                       enabled: widget.onMoveUp != null,
