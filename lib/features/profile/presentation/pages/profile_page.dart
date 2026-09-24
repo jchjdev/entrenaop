@@ -37,7 +37,9 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       await widget.birthDateRepository.save(chosen);
       if (!mounted) return;
-      setState(() => _birthDate = widget.birthDateRepository.get());
+      setState(() {
+        _birthDate = widget.birthDateRepository.get();
+      });
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +78,9 @@ class _ProfilePageState extends State<ProfilePage> {
         child: RefreshIndicator(
           onRefresh: () async {
             _reloadGoals();
-            setState(() => _birthDate = widget.birthDateRepository.get());
+            setState(() {
+              _birthDate = widget.birthDateRepository.get();
+            });
             await _activeGoals;
           },
           child: ListView(
@@ -159,10 +163,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   'No pudimos cargar tu fecha de nacimiento',
                                 ),
                                 trailing: const Icon(Icons.refresh),
-                                onTap: () => setState(
-                                  () => _birthDate = widget.birthDateRepository
-                                      .get(),
-                                ),
+                                onTap: () => setState(() {
+                                  _birthDate = widget.birthDateRepository.get();
+                                }),
                               ),
                             );
                           }

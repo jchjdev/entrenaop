@@ -55,7 +55,9 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
     try {
       await widget.birthDateRepository.save(chosen);
       if (!mounted) return;
-      setState(() => _birthDate = widget.birthDateRepository.get());
+      setState(() {
+        _birthDate = widget.birthDateRepository.get();
+      });
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -184,10 +186,9 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                                 'No se pudo cargar tu fecha de nacimiento.',
                               ),
                               trailing: const Icon(Icons.refresh),
-                              onTap: () => setState(
-                                () => _birthDate = widget.birthDateRepository
-                                    .get(),
-                              ),
+                              onTap: () => setState(() {
+                                _birthDate = widget.birthDateRepository.get();
+                              }),
                             ),
                           );
                         }

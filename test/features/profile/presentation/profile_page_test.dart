@@ -18,6 +18,50 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
+    'guardar la fecha actualiza el perfil sin mostrar un falso error',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final authRepository = _AuthRepository();
+      final authCubit = AuthCubit(
+        signInUseCase: SignInUseCase(authRepository),
+        signUpUseCase: SignUpUseCase(authRepository),
+        signOutUseCase: SignOutUseCase(authRepository),
+        getCurrentUserUseCase: GetCurrentUserUseCase(authRepository),
+        watchCurrentUserUseCase: WatchCurrentUserUseCase(authRepository),
+      );
+      await authCubit.checkCurrentUser();
+      addTearDown(authCubit.close);
+      final birthDateRepository = _BirthDateRepository(DateTime(2000, 9, 11));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(useMaterial3: true),
+          home: BlocProvider.value(
+            value: authCubit,
+            child: ProfilePage(
+              preparations: _PreparationRepository(),
+              birthDateRepository: birthDateRepository,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fecha de nacimiento'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(birthDateRepository.saveCalls, 1);
+      expect(
+        find.text('No se pudo guardar la fecha de nacimiento.'),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'muestra identidad y preparaciones reales sin plan comercial ficticio',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(390, 844));
@@ -57,11 +101,19 @@ void main() {
 }
 
 class _BirthDateRepository implements ProfileBirthDateRepository {
-  @override
-  Future<DateTime?> get() async => null;
+  _BirthDateRepository([this.value]);
+
+  DateTime? value;
+  int saveCalls = 0;
 
   @override
-  Future<void> save(DateTime birthDate) async {}
+  Future<DateTime?> get() async => value;
+
+  @override
+  Future<void> save(DateTime birthDate) async {
+    saveCalls++;
+    value = birthDate;
+  }
 }
 
 class _AuthRepository implements AuthRepository {
