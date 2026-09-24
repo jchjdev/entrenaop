@@ -7,6 +7,25 @@ select set_config(
   (select user_id::text from public.admin_permissions limit 1),
   true
 );
+select set_config(
+  'test.admin_id',
+  (select user_id::text from public.admin_permissions limit 1),
+  true
+);
+select set_config(
+  'test.user_id',
+  (
+    select id::text
+    from auth.users as candidate
+    where not exists (
+      select 1
+      from public.admin_permissions as permission
+      where permission.user_id = candidate.id
+    )
+    limit 1
+  ),
+  true
+);
 set local role authenticated;
 
 do $$
@@ -16,13 +35,8 @@ declare
   v_official_id uuid;
   v_personal_id uuid;
 begin
-  select user_id into v_admin_id from public.admin_permissions limit 1;
-  select id into v_user_id
-  from auth.users
-  where id <> all (
-    select user_id from public.admin_permissions
-  )
-  limit 1;
+  v_admin_id := current_setting('test.admin_id')::uuid;
+  v_user_id := current_setting('test.user_id')::uuid;
 
   if v_admin_id is null or v_user_id is null then
     raise exception 'La prueba necesita un administrador y un usuario no administrador.';

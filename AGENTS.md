@@ -89,6 +89,31 @@ Al terminar la tarea, realizar una mini-verificación:
 No ampliar el alcance para corregir problemas ajenos a la tarea salvo que
 impidan completarla correctamente.
 
+### Matriz de verificación
+
+Aplicar solo las comprobaciones correspondientes al alcance modificado:
+
+- Cambios en la aplicación del deportista: ejecutar `flutter analyze` y las
+  pruebas relevantes desde la raíz. En cambios materiales o cierres de bloque,
+  ejecutar también la batería completa de la raíz.
+- Cambios en `admin_app/`: ejecutar análisis y pruebas desde `admin_app/`.
+- Cambios en `packages/workout_core/` o `packages/workout_editor_ui/`: verificar
+  tanto la aplicación del deportista como `admin_app/`, porque ambos consumen
+  esos paquetes.
+- Cambios en migraciones, funciones, constraints, grants o RLS: comprobar el
+  historial con `supabase migration list` contra desarrollo y ejecutar la
+  prueba SQL transaccional relacionada. Añadirla si el contrato nuevo aún no
+  tiene cobertura. Las pruebas deben terminar con `ROLLBACK` y no dejar datos.
+- Cambios de dependencias: revisar `pubspec.yaml`, el *lockfile*, compatibilidad
+  resoluble y las dos aplicaciones afectadas; no actualizar paquetes a ciegas.
+- Cambios exclusivamente documentales: revisar el diff y su formato; no
+  ejecutar Flutter salvo que el contenido documente un comportamiento que
+  necesite contrastarse.
+
+Una verificación contra el proyecto enlazado acredita Supabase de desarrollo,
+no producción. No consultar, reparar ni desplegar producción salvo que la tarea
+lo pida expresamente.
+
 ### Ante un cambio transversal o arquitectónico
 
 Ampliar la inspección antes de modificar cuando el cambio afecte a varias
@@ -118,6 +143,11 @@ Actualizar la documentación que haya quedado desfasada y comprobar que código,
 base de datos, pruebas y documentación describen el mismo estado del producto.
 `docs/HISTORY.md` se utiliza únicamente como contexto histórico: no recuperar
 decisiones antiguas o descartadas como si siguieran vigentes.
+
+Antes de abrir otro bloque grande, dejar registrado en `docs/ROADMAP.md` qué
+recorrido se cerró, la fecha de la comprobación, sus límites conocidos y el
+único siguiente bloque recomendado. Actualizar las fechas de instantánea solo
+cuando se hayan contrastado realmente código, migraciones y pruebas.
 
 En resumen:
 
