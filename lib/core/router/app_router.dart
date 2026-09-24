@@ -7,6 +7,8 @@ import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/login_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
+import 'package:entrenaop/features/exercises/presentation/pages/personal_exercise_creator_page.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
@@ -354,8 +356,13 @@ class AppRouter {
         ),
         GoRoute(
           path: '/assessment/fas-calculator',
-          builder: (context, state) => FasPeriodicCalculatorPage(
-            birthDateRepository: sl(),
+          builder: (context, state) =>
+              FasPeriodicCalculatorPage(birthDateRepository: sl()),
+        ),
+        GoRoute(
+          path: '/exercises/new',
+          builder: (context, state) => PersonalExerciseCreatorPage(
+            createExercise: sl<CreateExerciseUseCase>(),
           ),
         ),
       ],

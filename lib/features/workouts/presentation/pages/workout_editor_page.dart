@@ -7,6 +7,7 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_sta
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
@@ -650,14 +651,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               Text(switch (block.format) {
                 WorkoutBlockFormat.superset =>
                   'Alternaremos exactamente dos ejercicios en cada ronda.',
-                WorkoutBlockFormat.circuit =>
-                  'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
+                WorkoutBlockFormat.circuit => 'Recorreremos todos los ejercicios antes de comenzar la siguiente ronda.',
                 WorkoutBlockFormat.intervals =>
                   'Harás ${block.rounds} esfuerzos del mismo ejercicio. Cada intervalo puede tener su propio objetivo y entre ambos habrá ${block.restAfterSeconds} s de recuperación. La carrera se configurará en un creador específico.',
-                WorkoutBlockFormat.tabata =>
-                  'El tiempo es cerrado: 8 intervalos de 20 s y 10 s de recuperación. Los movimientos elegidos se repetirán en orden hasta completar los ocho.',
-                WorkoutBlockFormat.emom =>
-                  'Cada ejercicio ocupa un minuto. Si añades varios, se alternarán y después comenzará una nueva vuelta.',
+                WorkoutBlockFormat.tabata => 'El tiempo es cerrado: 8 intervalos de 20 s y 10 s de recuperación. Los movimientos elegidos se repetirán en orden hasta completar los ocho.',
+                WorkoutBlockFormat.emom => 'Cada ejercicio ocupa un minuto. Si añades varios, se alternarán y después comenzará una nueva vuelta.',
                 _ => '',
               }, style: const TextStyle(color: Colors.white54, height: 1.35)),
             ],
@@ -1819,7 +1817,23 @@ class _ExercisePickerState extends State<_ExercisePicker> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) => const _PersonalExerciseForm(),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            4,
+            20,
+            MediaQuery.viewInsetsOf(sheetContext).bottom + 20,
+          ),
+          child: ExerciseForm(
+            title: 'Nuevo ejercicio propio',
+            supportingText: 'Será privado y solo aparecerá en tu biblioteca.',
+            submitLabel: 'Crear y añadir',
+            fieldKeyPrefix: 'personal-exercise',
+            onSubmit: (draft) => Navigator.of(sheetContext).pop(draft),
+          ),
+        ),
+      ),
     );
     if (draft == null || !mounted) return;
     setState(() => _creating = true);
@@ -1829,9 +1843,8 @@ class _ExercisePickerState extends State<_ExercisePicker> {
     } on FormatException catch (error) {
       if (!mounted) return;
       setState(() => _creating = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     } catch (_) {
       if (!mounted) return;
       setState(() => _creating = false);
@@ -1929,204 +1942,6 @@ class _ExercisePickerState extends State<_ExercisePicker> {
     );
   }
 }
-
-class _PersonalExerciseForm extends StatefulWidget {
-  const _PersonalExerciseForm();
-
-  @override
-  State<_PersonalExerciseForm> createState() => _PersonalExerciseFormState();
-}
-
-class _PersonalExerciseFormState extends State<_PersonalExerciseForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _videoController = TextEditingController();
-  final _musclesController = TextEditingController();
-  final _equipmentController = TextEditingController();
-  String _difficulty = 'inicial';
-  String _exerciseType = 'repeticiones';
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _videoController.dispose();
-    _musclesController.dispose();
-    _equipmentController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          4,
-          20,
-          MediaQuery.viewInsetsOf(context).bottom + 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Nuevo ejercicio propio',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Será privado y solo aparecerá en tu biblioteca.',
-                  style: TextStyle(color: Colors.white60),
-                ),
-                const SizedBox(height: 18),
-                TextFormField(
-                  key: const ValueKey('personal-exercise-name'),
-                  controller: _nameController,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    hintText: 'Ej. Press francés con mancuerna',
-                  ),
-                  validator: (value) {
-                    final length = value?.trim().length ?? 0;
-                    return length < 2 || length > 80
-                        ? 'Escribe entre 2 y 80 caracteres.'
-                        : null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  minLines: 2,
-                  maxLines: 4,
-                  maxLength: 500,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción (opcional)',
-                    hintText: 'Técnica o indicaciones importantes',
-                    alignLabelWithHint: true,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _videoController,
-                  keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: 'Vídeo HTTPS (opcional)',
-                    hintText: 'https://…',
-                    prefixIcon: Icon(Icons.play_circle_outline_rounded),
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.isEmpty) return null;
-                    final uri = Uri.tryParse(text);
-                    return uri == null ||
-                            uri.scheme != 'https' ||
-                            uri.host.isEmpty
-                        ? 'Introduce una dirección HTTPS válida.'
-                        : null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  key: const ValueKey('personal-exercise-muscles'),
-                  controller: _musclesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Grupos musculares',
-                    hintText: 'tríceps, pecho',
-                  ),
-                  validator: (value) => _tags(value).isEmpty
-                      ? 'Añade al menos un grupo muscular.'
-                      : _tags(value).length > 10
-                      ? 'Añade como máximo 10 grupos.'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _equipmentController,
-                  decoration: const InputDecoration(
-                    labelText: 'Material (opcional)',
-                    hintText: 'mancuerna, banco',
-                  ),
-                  validator: (value) => _tags(value).length > 10
-                      ? 'Añade como máximo 10 materiales.'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _difficulty,
-                  decoration: const InputDecoration(labelText: 'Dificultad'),
-                  items: const [
-                    DropdownMenuItem(value: 'inicial', child: Text('Inicial')),
-                    DropdownMenuItem(
-                      value: 'intermedio',
-                      child: Text('Intermedio'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'avanzado',
-                      child: Text('Avanzado'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) _difficulty = value;
-                  },
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _exerciseType,
-                  decoration: const InputDecoration(
-                    labelText: 'Medición habitual',
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'repeticiones',
-                      child: Text('Repeticiones'),
-                    ),
-                    DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) _exerciseType = value;
-                  },
-                ),
-                const SizedBox(height: 22),
-                FilledButton.icon(
-                  onPressed: _submit,
-                  icon: const Icon(Icons.check_rounded),
-                  label: const Text('Crear y añadir'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    Navigator.of(context).pop(
-      PersonalExerciseDraft(
-        name: _nameController.text,
-        description: _descriptionController.text,
-        videoUrl: _videoController.text,
-        muscleGroups: _tags(_musclesController.text),
-        equipment: _tags(_equipmentController.text),
-        difficulty: _difficulty,
-        exerciseType: _exerciseType,
-      ),
-    );
-  }
-}
-
-List<String> _tags(String? value) => (value ?? '')
-    .split(',')
-    .map((tag) => tag.trim())
-    .where((tag) => tag.isNotEmpty)
-    .toList(growable: false);
 
 class _EmptyExercises extends StatelessWidget {
   const _EmptyExercises();
