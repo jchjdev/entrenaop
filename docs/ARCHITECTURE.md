@@ -205,9 +205,11 @@ identidad
   `20260923006000_fas_periodic_assessments.sql` conserva versión, fecha, edad,
   categoría y marcas por prueba, valida la propiedad de la preparación activa
   mediante RPC y aplica RLS a la lectura. Los mínimos de 20 puntos del anexo II
-  de DEF/15/2026 viven en PostgreSQL y en la referencia versionada del cliente;
-  no equivalen al baremo completo de 0–100 puntos ni a aptitud oficial. Tropa
-  conserva su catálogo e historial, sin reutilización de sus marcas.
+  de DEF/15/2026 viven en PostgreSQL. El cliente contiene además el catálogo
+  íntegro de 0–100 puntos y un calculador de dominio puro para el flujo gratuito,
+  que no persiste datos ni depende de una preparación activa. Ninguno equivale
+  a aptitud oficial y la norma no define una puntuación total. Tropa conserva
+  su catálogo e historial, sin reutilización de sus marcas.
   La fecha de nacimiento del perfil alimenta la edad calculada para cada
   intento; un trigger de PostgreSQL rechaza edades que no coincidan con esa
   fecha. El usuario puede corregir el perfil, sin alterar las marcas

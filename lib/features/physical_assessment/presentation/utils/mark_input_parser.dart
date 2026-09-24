@@ -22,3 +22,10 @@ int? parseClockToMilliseconds(String input) {
   final totalSeconds = minutes * 60 + seconds;
   return totalSeconds > 0 ? totalSeconds * 1000 : null;
 }
+
+int? parseWholeSecondsDuration(String input) {
+  final trimmed = input.trim();
+  if (trimmed.contains(':')) return parseClockToMilliseconds(trimmed);
+  final seconds = int.tryParse(trimmed);
+  return seconds != null && seconds > 0 ? seconds * 1000 : null;
+}

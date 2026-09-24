@@ -11,7 +11,10 @@ void main() {
   });
 
   test('lee mínimos del anexo II sin reutilizar el baremo de ingreso', () {
-    expect(FasPeriodic2027Reference.version, 'es_def_15_2026_periodic_2027_v1');
+    expect(
+      FasPeriodic2027Reference.version,
+      'es_def_15_2026_periodic_2027_v2_full_scores',
+    );
     expect(
       reference
           .passMarkFor(
@@ -75,6 +78,104 @@ void main() {
         testId: 'agility_speed_circuit',
         category: AssessmentCategory.men,
         age: 45,
+      ),
+      isNull,
+    );
+  });
+
+  test('calcula puntos exactos y el intervalo conservador entre filas', () {
+    expect(
+      reference.scoreFor(
+        testId: 'upper_body_push_ups_2_min',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 73,
+      )!.points,
+      100,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'upper_body_push_ups_2_min',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 14,
+      )!.points,
+      20,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'run_2000_m',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 706000,
+      )!.points,
+      20,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'run_2000_m',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 707000,
+      )!.points,
+      19,
+    );
+  });
+
+  test('aplica columnas por sexo y tramo sin extrapolar', () {
+    expect(
+      reference.scoreFor(
+        testId: 'upper_body_push_ups_2_min',
+        category: AssessmentCategory.women,
+        age: 25,
+        mark: 14,
+      )!.points,
+      26,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'upper_body_push_ups_2_min',
+        category: AssessmentCategory.men,
+        age: 26,
+        mark: 14,
+      )!.points,
+      21,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'run_2000_m',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 300000,
+      )!.points,
+      100,
+    );
+    expect(
+      reference.scoreFor(
+        testId: 'run_2000_m',
+        category: AssessmentCategory.men,
+        age: 25,
+        mark: 1200000,
+      )!.points,
+      0,
+    );
+  });
+
+  test('elimina centésimas de agilidad y corta al cumplir 45', () {
+    final result = reference.scoreFor(
+      testId: 'agility_speed_circuit',
+      category: AssessmentCategory.men,
+      age: 44,
+      mark: 16299,
+    )!;
+    expect(result.scoredMark, 16200);
+    expect(result.points, 20);
+    expect(
+      reference.scoreFor(
+        testId: 'agility_speed_circuit',
+        category: AssessmentCategory.men,
+        age: 45,
+        mark: 16200,
       ),
       isNull,
     );

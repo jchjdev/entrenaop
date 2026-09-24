@@ -128,7 +128,7 @@ class _DashboardContent extends StatelessWidget {
                   const SizedBox(height: 22),
                   const _TrainingHero(),
                   const SizedBox(height: 22),
-                  _QuickActions(
+                  HomeQuickActions(
                     assessment: assessment,
                     hasTroop: hasTroop,
                     fasGoal: fasGoal,
@@ -554,8 +554,9 @@ class _TrainingHero extends StatelessWidget {
   }
 }
 
-class _QuickActions extends StatelessWidget {
-  const _QuickActions({
+class HomeQuickActions extends StatelessWidget {
+  const HomeQuickActions({
+    super.key,
     required this.assessment,
     required this.hasTroop,
     required this.fasGoal,
@@ -598,6 +599,13 @@ class _QuickActions extends StatelessWidget {
                 label: 'Mi plan',
                 description: 'Sesiones y configuración',
                 onTap: () => context.go('/plan'),
+              ),
+              const SizedBox(width: 10),
+              _QuickActionCard(
+                icon: Icons.calculate_outlined,
+                label: 'Calculadora FAS',
+                description: 'Puntos PAFAS/PAEF 2027 · gratis',
+                onTap: () => context.push('/assessment/fas-calculator'),
               ),
               const SizedBox(width: 10),
               if (hasTroop)

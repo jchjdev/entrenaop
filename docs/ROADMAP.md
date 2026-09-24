@@ -93,31 +93,33 @@ programa de ingreso existente: tiene marcas y preparaciones históricas. La
 Orden DEF/15/2026 comparte tipos de prueba entre ingreso y evaluación
 periódica, pero diferencia sus baremos; los nuevos baremos periódicos entran
 en vigor el 1 de enero de 2027. Ya existe el programa estable
-`fas_periodic_assessment` **habilitado en desarrollo** y una referencia
-versionada con las marcas mínimas que alcanzan al menos 20 puntos por prueba,
-sexo y edad según el anexo II. Su registro e historial periódicos son
+`fas_periodic_assessment` **habilitado en desarrollo** y un catálogo local
+versionado con la tabla íntegra de 0–100 puntos por prueba, columna H/M y edad
+del anexo II. La calculadora gratuita está visible en Inicio, no requiere una
+preparación activa y no guarda ni altera intentos. Muestra cada puntuación y el
+mínimo general de 20 puntos, pero no inventa una suma total ni certifica
+aptitud oficial. Su registro e historial periódicos siguen siendo
 independientes de Tropa y validan las marcas en PostgreSQL. Antes del 1 de
-enero de 2027 se muestran solo como referencia de entrenamiento. No calcula
-todavía la puntuación íntegra ni certifica aptitud oficial; tampoco prescribe
-sesiones automáticamente.
+enero de 2027 se muestra como referencia futura. Tampoco prescribe sesiones
+automáticamente.
 
 El siguiente tramo ejecutable será:
 
-1. Completado el contrato separado de registro, mínimos por edad/sexo,
-   historial y validación de propiedad en PostgreSQL. Pendiente la tabla
-   completa de 0–100 puntos y su cálculo; no confundir los mínimos visibles
-   con una calificación oficial.
+1. Completados el contrato separado de registro, los mínimos por edad/sexo,
+   el historial y la validación de propiedad en PostgreSQL. Completados también
+   la tabla íntegra de 0–100 puntos y su cálculo local auditable. El BOE no
+   define una suma total y contiene una secuencia anómala no corregida en II.3;
+   se conserva literalmente y se mantiene como limitación conocida.
    La fecha de nacimiento se recoge en el perfil; la edad se calcula para
    cada intento y el servidor comprueba que coincide. El circuito deja de
    exigirse al cumplir 45 años.
-2. Crear una **calculadora gratuita de puntos** como puerta de entrada a
-   EntrenaOP: elegir programa y convocatoria, introducir marcas y mostrar
-   puntuación por prueba, total y versión del baremo. Primero se cargará y
-   probará la tabla íntegra oficial, incluidos límites, tramos de edad y
-   vigencia; sin ella no se mostrarán puntos inventados. El registro de
-   entrenamiento y las propuestas adaptativas seguirán siendo flujos
-   separados. La conversión a Premium se diseñará sin ocultar el cálculo
-   gratuito ni confundirlo con una certificación oficial.
+2. **Calculadora gratuita de puntos completada** para la evaluación periódica
+   FAS 2027: usa la fecha de nacimiento del perfil, permite elegir explícitamente
+   H/M, acepta entradas móviles de repeticiones y tiempos, muestra puntos por
+   prueba, versión y fuente, y mantiene separados cálculo e historial. Próxima
+   ampliación: selección de otros programas/convocatorias cuando dispongan de
+   catálogos completos igualmente verificables. La conversión a Premium no
+   ocultará el cálculo gratuito ni lo confundirá con una certificación oficial.
 3. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
    las primeras plantillas: técnica, objetivo, material, variantes y
    limitaciones. El creador administrativo completo, fotos y biblioteca amplia

@@ -107,15 +107,32 @@ Para el nuevo régimen se ha creado el programa estable
 desarrollo**.
 Ambos nombres se tratan como formas de referirse a esta evaluación periódica,
 no como dos baremos inventados. La referencia
-`assets/programs/fas_periodic_2027/assessment_reference_v1.json` recoge del
-anexo II de la Orden DEF/15/2026 las marcas más bajas o más lentas que
-alcanzan **al menos 20 puntos** en cada prueba para los tramos 17–25 a 60+,
-según las columnas M/F. Conserva milisegundos para tiempos y no copia los
-mínimos de ingreso de Tropa. Conforme al artículo 10, el circuito no se exige
-a partir de los 45 años, aunque el último tramo visible de su tabla se titule
-41–45. La vigencia de este régimen periódico comienza el 1 de enero de 2027.
+`assets/programs/fas_periodic_2027/assessment_reference_v1.json` contiene la
+tabla íntegra de **0 a 100 puntos** del anexo II de la Orden DEF/15/2026:
+marca, columnas H/M y tramos 17–25 a 60+ para las cuatro pruebas. Conserva
+milisegundos para tiempos y no copia los mínimos de ingreso de Tropa. El
+calculador puro `FasPeriodicScoreCalculator` aplica el mejor umbral alcanzado;
+entre dos filas no interpola ni redondea a favor. En agilidad elimina las
+centésimas y usa la décima inferior, como prescribe el anexo I. Conforme al
+artículo 10, el circuito no se exige desde el mismo día en que se cumplen 45
+años, aunque el último tramo visible de su tabla se titule 41–45. La vigencia
+de este régimen periódico comienza el 1 de enero de 2027.
 
-Esta referencia **no es el baremo íntegro de 0 a 100 puntos**. La migración
+El texto oficial consultado el 24/09/2026 no muestra correcciones ni
+modificaciones posteriores. La tabla II.3 publicada contiene una secuencia
+anómala después de 15:14 (`16:22` a `16:54`, seguida de `16:02`). El catálogo
+conserva literalmente esas filas y no las sustituye por una progresión
+inferida mientras no exista corrección oficial.
+
+La calculadora gratuita está separada del registro: no requiere una
+preparación activa, no guarda marcas ni altera el historial y está disponible
+en los accesos rápidos de Inicio. Muestra puntos por prueba, el cumplimiento
+orientativo del mínimo general de 20 puntos y la fuente/versión. No suma ni
+promedia las pruebas porque la orden no define una puntuación total. Antes de
+2027 etiqueta el resultado como referencia futura y nunca lo presenta como
+calificación oficial.
+
+La migración
 `20260923006000_fas_periodic_assessments.sql` guarda cada intento fechado en
 tablas independientes del ingreso, con edad calculada desde la fecha de
 nacimiento del perfil para la fecha del test,
@@ -126,7 +143,7 @@ comprueba en servidor que la edad guardada coincide con el perfil. La app
 permite repetir el test y consultar sus marcas frente al
 mínimo de 20 puntos; desde los 45 años el circuito no se exige. Las marcas
 anteriores a 2027 quedan etiquetadas como referencia de entrenamiento, no
-como evaluación oficial bajo el nuevo régimen. Aún faltan la puntuación
-completa, verificación independiente de la categoría declarada y las reglas
-de aptitud operativa. Un escenario normativo de 2026 requiere su catálogo
+como evaluación oficial bajo el nuevo régimen. Aún faltan la verificación
+independiente de la categoría declarada y las reglas de aptitud operativa. Un
+escenario normativo de 2026 requiere su catálogo
 histórico propio; no se le aplican anticipadamente los baremos de 2027.
