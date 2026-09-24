@@ -28,14 +28,43 @@ class ProfileBirthDateRepository {
     if (age < 17 || age > 120) {
       throw ArgumentError.value(birthDate, 'birthDate', 'Edad no válida.');
     }
-    await _client
-        .from('profiles')
-        .update({
-          'fecha_nacimiento':
-              '${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
-        })
-        .eq('id', userId)
-        .select('id')
-        .single();
+    await confirmBirthDateWrite(
+      chosen: birthDate,
+      write: () async {
+        await _client
+            .from('profiles')
+            .update({
+              'fecha_nacimiento':
+                  '${birthDate.year.toString().padLeft(4, '0')}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
+            })
+            .eq('id', userId);
+      },
+      read: get,
+    );
+  }
+}
+
+Future<void> confirmBirthDateWrite({
+  required DateTime chosen,
+  required Future<void> Function() write,
+  required Future<DateTime?> Function() read,
+}) async {
+  try {
+    await write();
+  } catch (_) {
+    // Una respuesta fallida no implica que la escritura se haya deshecho.
+    // Confirmamos el estado real antes de decirle al usuario que falló.
+    try {
+      final stored = await read();
+      if (stored != null &&
+          stored.year == chosen.year &&
+          stored.month == chosen.month &&
+          stored.day == chosen.day) {
+        return;
+      }
+    } catch (_) {
+      // Sin lectura confirmada, conservamos el error original.
+    }
+    rethrow;
   }
 }
