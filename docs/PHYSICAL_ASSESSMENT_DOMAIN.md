@@ -128,8 +128,10 @@ La calculadora gratuita está separada del registro: no requiere una
 preparación activa, no guarda marcas ni altera el historial y está disponible
 en los accesos rápidos de Inicio. Muestra puntos por prueba, el cumplimiento
 orientativo del mínimo general de 20 puntos y la fuente/versión. No suma ni
-promedia las pruebas porque la orden no define una puntuación total. Antes de
-2027 etiqueta el resultado como referencia futura y nunca lo presenta como
+promedia las pruebas como calificación normativa. Para evitar cálculos manuales,
+muestra además una suma matemática grande y claramente rotulada como
+orientativa; la orden no define esa suma como resultado oficial. Antes de 2027
+etiqueta el resultado como referencia futura y nunca lo presenta como
 calificación oficial.
 
 La migración

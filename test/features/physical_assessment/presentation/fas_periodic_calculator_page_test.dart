@@ -29,7 +29,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Referencia futura: este baremo de evaluación periódica entra en vigor el 01/01/2027.'), findsOneWidget);
+    expect(
+      find.text(
+        'Referencia futura: este baremo de evaluación periódica entra en vigor el 01/01/2027.',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('H · hombres'), findsOneWidget);
     expect(find.text('M · mujeres'), findsOneWidget);
 
@@ -41,10 +46,9 @@ void main() {
       find.widgetWithText(TextFormField, 'Plancha isométrica'),
       '40',
     );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Carrera 2.000 m'),
-      '11:46',
-    );
+    final runField = find.widgetWithText(TextFormField, 'Carrera 2.000 m');
+    await tester.enterText(runField, '1146');
+    expect(tester.widget<TextFormField>(runField).controller!.text, '11:46');
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Circuito de agilidad-velocidad'),
       '15,29',
@@ -53,12 +57,18 @@ void main() {
     await tester.pump();
 
     expect(find.text('20 puntos'), findsNWidgets(4));
+    expect(find.text('SUMA ORIENTATIVA'), findsOneWidget);
+    expect(find.text('80 puntos'), findsOneWidget);
+    expect(
+      find.text('de 400 posibles en las pruebas aplicables'),
+      findsOneWidget,
+    );
     expect(
       find.text('Alcanza el mínimo general de 20 puntos por prueba'),
       findsOneWidget,
     );
     expect(
-      find.textContaining('no define una suma o media total'),
+      find.textContaining('no la define como calificación oficial'),
       findsOneWidget,
     );
     expect(profile.saveCalls, 0);
@@ -83,9 +93,7 @@ void main() {
       findsNothing,
     );
     expect(
-      find.text(
-        'Agilidad no exigible desde el día en que se cumplen 45 años.',
-      ),
+      find.text('Agilidad no exigible desde el día en que se cumplen 45 años.'),
       findsOneWidget,
     );
   });

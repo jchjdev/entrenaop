@@ -4,6 +4,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_i
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -269,6 +270,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                     child: TextFormField(
                       controller: _controllers[test.id],
                       keyboardType: TextInputType.number,
+                      inputFormatters: test.id == 'run_2000_m'
+                          ? const [DurationInputFormatter()]
+                          : null,
                       decoration: InputDecoration(
                         labelText: test.label,
                         hintText: test.hint,
@@ -346,6 +350,10 @@ class _Results extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final meetsAll = results.values.every((result) => result.meetsMinimum);
+    final total = results.values.fold<int>(
+      0,
+      (sum, result) => sum + result.points,
+    );
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -362,6 +370,43 @@ class _Results extends StatelessWidget {
             const Text(
               'Resultado orientativo: no sustituye la evaluación ni la calificación oficial.',
               style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 22),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE65100).withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE65100)),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'SUMA ORIENTATIVA',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$total puntos',
+                    style: const TextStyle(
+                      color: Color(0xFFFF8A50),
+                      fontSize: 46,
+                      fontWeight: FontWeight.w900,
+                      height: 1.05,
+                    ),
+                  ),
+                  Text(
+                    'de ${results.length * 100} posibles en las pruebas aplicables',
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
             const Divider(height: 28),
             for (final test in _calculatorTests)
@@ -386,7 +431,7 @@ class _Results extends StatelessWidget {
                 ),
             const SizedBox(height: 8),
             const Text(
-              'La Orden DEF/15/2026 no define una suma o media total para esta calificación; por eso no mostramos una puntuación total.',
+              'Esta suma facilita la consulta, pero la Orden DEF/15/2026 no la define como calificación oficial: la aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable.',
               style: TextStyle(color: Colors.white70, height: 1.35),
             ),
           ],
@@ -426,8 +471,8 @@ const _calculatorTests = [
     label: 'Carrera 2.000 m',
     shortLabel: 'Carrera 2.000 m',
     hint: 'Ej.: 11:46',
-    helper: 'Minutos:segundos',
-    error: 'Usa minutos:segundos, por ejemplo 11:46.',
+    helper: 'Teclea 1146 y se convertirá en 11:46',
+    error: 'Introduce los minutos y segundos, por ejemplo 1146.',
   ),
   (
     id: 'agility_speed_circuit',

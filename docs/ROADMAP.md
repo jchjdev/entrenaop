@@ -97,8 +97,10 @@ en vigor el 1 de enero de 2027. Ya existe el programa estable
 versionado con la tabla íntegra de 0–100 puntos por prueba, columna H/M y edad
 del anexo II. La calculadora gratuita está visible en Inicio, no requiere una
 preparación activa y no guarda ni altera intentos. Muestra cada puntuación y el
-mínimo general de 20 puntos, pero no inventa una suma total ni certifica
-aptitud oficial. Su registro e historial periódicos siguen siendo
+mínimo general de 20 puntos, sin presentar la suma como resultado normativo ni
+certificar aptitud oficial. Sí ofrece una suma matemática visible, rotulada como
+orientativa y separada del criterio normativo. Su registro e historial
+periódicos siguen siendo
 independientes de Tropa y validan las marcas en PostgreSQL. Antes del 1 de
 enero de 2027 se muestra como referencia futura. Tampoco prescribe sesiones
 automáticamente.
