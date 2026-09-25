@@ -16,13 +16,22 @@ se mantiene como destino compatible sin condicionar el MVP.
 - [Producto](docs/PRODUCT.md): visión, promesa, niveles y alcance.
 - [Arquitectura](docs/ARCHITECTURE.md): estado observado y criterios técnicos.
 - [Roadmap](docs/ROADMAP.md): orden de trabajo y fases.
+- [Dominio de evaluación](docs/PHYSICAL_ASSESSMENT_DOMAIN.md): separación de
+  programas, catálogos, baremos e historial.
+- [Algoritmo de carrera V1](docs/ALGORITMO_CARRERA_V1.md): contrato probado y
+  límites del prototipo de primera semana de Tropa.
 - [Auditoría inicial](docs/AUDIT.md): hallazgos comprobados y prioridades de
-  saneamiento.
+  saneamiento; es una instantánea histórica, no el estado actual.
 - [Historia](docs/HISTORY.md): contexto antiguo que no constituye una lista de
   instrucciones.
 
 Las reglas de colaboración y las decisiones vigentes del repositorio se
 encuentran en [AGENTS.md](AGENTS.md).
+
+El panel tiene sus instrucciones de ejecución en
+[admin_app/README.md](admin_app/README.md), y la evolución del esquema y sus
+pruebas transaccionales se documentan en
+[supabase/README.md](supabase/README.md).
 
 ## Entornos
 

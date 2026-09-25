@@ -810,11 +810,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             label: Text(
               item.exerciseId == null
                   ? 'Buscar ejercicio del catálogo'
-                  : _catalog
-                            .where((exercise) => exercise.id == item.exerciseId)
-                            .map((exercise) => exercise.name)
-                            .firstOrNull ??
-                        'Buscar ejercicio del catálogo',
+                  : 'Cambiar ejercicio · ${_catalog.where((exercise) => exercise.id == item.exerciseId).map((exercise) => exercise.name).firstOrNull ?? 'Buscar ejercicio del catálogo'}',
             ),
           ),
           const SizedBox(height: 8),

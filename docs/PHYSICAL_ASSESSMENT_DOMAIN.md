@@ -1,6 +1,6 @@
 # Dominio de evaluación física
 
-Última revisión: 23 de septiembre de 2026.
+Última revisión: 24 de septiembre de 2026.
 
 ## Decisión vigente
 

@@ -6,6 +6,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:workout_core/exercise_image.dart';
 
 class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   WorkoutEditorCubit({
@@ -37,8 +38,11 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
   final bool runningEditor;
   final String _draftId;
 
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft draft) async {
-    final created = await _createExercise(draft);
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft draft, {
+    ExerciseImageUpload? image,
+  }) async {
+    final created = await _createExercise(draft, image: image);
     final exercises = [...state.exercises, created]
       ..sort((a, b) => a.name.compareTo(b.name));
     emit(

@@ -19,8 +19,9 @@ El ciclo principal del producto es:
 
 ## Estado validado del producto
 
-Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
-2026, tras cerrar Carrera V1 mínima:
+Instantánea comprobada en código, migraciones y pruebas el 24 de septiembre de
+2026, tras cerrar Carrera V1 mínima, la autoría oficial inicial y la calculadora
+FAS 2027:
 
 - El acceso, la restauración de sesión y la navegación responsive están
   operativos.
@@ -57,6 +58,17 @@ Instantánea comprobada en código, migraciones y pruebas el 22 de septiembre de
   durante cortes de red; Supabase las aplica de forma idempotente. Las
   correcciones del historial permanecen en línea y se auditan durante 24 horas,
   con motivo obligatorio y un máximo de tres cambios por serie.
+- El panel web independiente permite crear, revisar, versionar, publicar y
+  retirar sesiones oficiales generales o ligadas a un programa. Comparte el
+  modelo y los controles de edición reutilizables con la app, pero conserva
+  autenticación, navegación y persistencia propias.
+- El creador de ejercicios comparte borrador, validación y formulario. El panel
+  solo crea contenido oficial global tras comprobar el permiso administrativo;
+  la app solo crea ejercicios privados del usuario autenticado.
+- La evaluación periódica FAS 2027 dispone de registro e historial separados
+  del ingreso a Tropa, validación de edad en PostgreSQL y una calculadora
+  gratuita que no guarda marcas ni presenta la suma orientativa como aptitud
+  oficial.
 
 Esto cierra los recorridos manuales de fuerza V1 y Carrera V1 mínima, no el
 ciclo principal completo. El contexto de preparación, marcas, agenda y carrera
@@ -68,10 +80,10 @@ hay subida ni gestión de archivos. Los borradores y temporizadores son locales
 al dispositivo y el soporte offline no permite descubrir, cargar o iniciar una
 sesión que nunca se hubiera obtenido del servidor.
 
-El primer recorrido **implementado** es el ingreso a Tropa y Marinería; no
-equivale a la evaluación periódica del personal ya incorporado. Para validar
-el primer plan adaptativo se prioriza ahora un piloto de evaluación periódica
-militar, familiar para Javier. Se modela como programa distinto y visible en
+El primer recorrido de acceso **implementado** es el ingreso a Tropa y
+Marinería; no equivale a la evaluación periódica del personal ya incorporado.
+Para validar el primer plan adaptativo se prioriza ahora un piloto de evaluación
+periódica militar, familiar para Javier. Se modela como programa distinto y visible en
 desarrollo: permite guardar y repetir intentos con mínimos de 2027 por edad
 y sexo, sin convertirlos en una calificación oficial ni en sesiones
 automáticas. Las marcas de 2026 son solo referencia para entrenar; no se ha
@@ -220,10 +232,10 @@ periódica tras verificar su fuente y baremo:
 
 Primero se construirá una vertical completa con un catálogo pequeño pero
 revisado de ejercicios de fuerza y sesiones reales de carrera y fuerza. No se
-desarrollará toda la biblioteca ni el creador administrativo completo antes de
-comprobar que evaluación, entrenamiento, resultado y adaptación funcionan de
-extremo a extremo. Tampoco se usará un conjunto insuficiente de movimientos
-para aparentar una progresión de fuerza validada.
+desarrollará toda la biblioteca ni se ampliará la autoría con gestión avanzada
+de medios antes de comprobar que evaluación, entrenamiento, resultado y
+adaptación funcionan de extremo a extremo. Tampoco se usará un conjunto
+insuficiente de movimientos para aparentar una progresión de fuerza validada.
 
 Quedan fuera de esta primera validación el chat, nutrición, desafíos, red
 social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.

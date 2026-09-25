@@ -39,9 +39,8 @@ class HomePage extends StatelessWidget {
         listener: (context, state) {
           if (state.status == DashboardStatus.failure &&
               state.errorMessage != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
           }
         },
         builder: (context, state) {
@@ -595,6 +594,13 @@ class HomeQuickActions extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _QuickActionCard(
+                icon: Icons.add_circle_outline_rounded,
+                label: 'Crear ejercicio',
+                description: 'Añadir un ejercicio personal',
+                onTap: () => context.push('/exercises/new'),
+              ),
+              const SizedBox(width: 10),
+              _QuickActionCard(
                 icon: Icons.event_note_rounded,
                 label: 'Mi plan',
                 description: 'Sesiones y configuración',
@@ -714,32 +720,28 @@ class _NextStepCard extends StatelessWidget {
       PreparationNextStep.physicalAssessment => (
         icon: Icons.monitor_heart_outlined,
         title: 'Registra tus marcas de ingreso a Tropa',
-        description:
-            'Esta evaluación usa el baremo de ingreso a Tropa y Marinería; no es un test general para otros programas.',
+        description: 'Esta evaluación usa el baremo de ingreso a Tropa y Marinería; no es un test general para otros programas.',
         action: 'Registrar marcas de Tropa',
         route: '/assessment/initial',
       ),
       PreparationNextStep.trainingPreferences => (
         icon: Icons.tune_rounded,
         title: 'Cuéntanos con qué tiempo cuentas',
-        description:
-            'Tu evaluación ya está guardada. Ahora falta conocer tu disponibilidad y material.',
+        description: 'Tu evaluación ya está guardada. Ahora falta conocer tu disponibilidad y material.',
         action: 'Completar disponibilidad',
         route: '/plan/preferences',
       ),
       PreparationNextStep.professionalReview => (
         icon: Icons.health_and_safety_outlined,
         title: 'La planificación automática está bloqueada',
-        description:
-            'Has indicado una limitación que debe revisarse antes de prescribir entrenamiento.',
+        description: 'Has indicado una limitación que debe revisarse antes de prescribir entrenamiento.',
         action: 'Revisar respuesta',
         route: '/plan/preferences',
       ),
       PreparationNextStep.awaitingValidatedPlan => (
         icon: Icons.fact_check_outlined,
         title: 'Tu contexto básico está completo',
-        description:
-            'La evaluación y tu disponibilidad están guardadas. El siguiente paso del producto es validar las reglas deportivas.',
+        description: 'La evaluación y tu disponibilidad están guardadas. El siguiente paso del producto es validar las reglas deportivas.',
         action: 'Ver mi evolución',
         route: '/assessment/history',
       ),

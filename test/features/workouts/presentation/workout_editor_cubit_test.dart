@@ -13,6 +13,7 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_pa
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/exercise_image.dart';
 
 void main() {
   test('carga una sesión existente y guarda una revisión', () async {
@@ -360,6 +361,66 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('cambia un ejercicio desde el buscador sin añadir otra fila', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _WorkoutRepository();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(_TwoExercisesRepository()),
+      createExercise: CreateExerciseUseCase(_TwoExercisesRepository()),
+      draftStore: _DraftStore(),
+      createWorkout: CreatePersonalWorkoutUseCase(repository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutEditorPage(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -250));
+    await tester.pumpAndSettle();
+    final addExercise = find.text('Añadir ejercicio al bloque');
+    await tester.ensureVisible(addExercise);
+    await tester.pumpAndSettle();
+    await tester.tap(addExercise);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dominadas').last);
+    await tester.pumpAndSettle();
+
+    final menu = find.byTooltip('Organizar ejercicio');
+    await tester.ensureVisible(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cambiar ejercicio'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Buscar'),
+      'Sentadillas',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sentadillas').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sentadillas'), findsOneWidget);
+    expect(find.text('Dominadas'), findsNothing);
+    expect(find.byTooltip('Organizar ejercicio'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('recupera y vuelve a guardar automáticamente un borrador', (
     tester,
   ) async {
@@ -473,7 +534,10 @@ class _ExerciseRepository implements ExerciseRepository {
   ];
 
   @override
-  Future<ExerciseEntity> createExercise(PersonalExerciseDraft exercise) async =>
+  Future<ExerciseEntity> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) async =>
       ExerciseEntity(
         id: 'exercise-personal',
         name: exercise.name,
@@ -490,6 +554,23 @@ class _ExerciseRepository implements ExerciseRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _TwoExercisesRepository extends _ExerciseRepository {
+  @override
+  Future<List<ExerciseEntity>> getExercises() async => [
+    ...await super.getExercises(),
+    const ExerciseEntity(
+      id: 'exercise-2',
+      name: 'Sentadillas',
+      muscleGroups: ['piernas'],
+      equipment: [],
+      difficulty: 'media',
+      exerciseType: 'repeticiones',
+      isPublic: true,
+      origin: ExerciseOrigin.system,
+    ),
+  ];
 }
 
 class _DraftStore implements WorkoutEditorDraftStore {

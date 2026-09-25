@@ -1,10 +1,10 @@
 # Roadmap de EntrenaOP
 
 Este roadmap expresa prioridades, no fechas cerradas. Su estado se ha
-contrastado con código, migraciones y pruebas el 22 de septiembre de 2026, tras
-el cierre de Carrera V1 mínima. Prioridades de programa revisadas el 23 de
-septiembre de 2026; esta revisión documental no sustituye una auditoría del
-bloque adaptativo, que todavía no existe.
+contrastado con código, las 48 migraciones locales y remotas de desarrollo, las
+pruebas Flutter y las pruebas SQL transaccionales el 24 de septiembre de 2026,
+tras el cierre de Carrera V1 mínima, la autoría oficial inicial y la calculadora
+FAS 2027. El bloque adaptativo todavía no existe.
 
 ## Estado del ciclo principal
 
@@ -22,7 +22,7 @@ El ciclo objetivo continúa siendo:
 | Creador de fuerza por bloques | Terminado en V1 | Series variables, superseries A1/A2, circuitos con transiciones, intervalos de trabajo, Tabata 8 × 20/10, EMOM y AMRAP, con vista previa coherente. |
 | Sesión guiada e historial | Terminado para los formatos V1 | Objetivo y resultado real, omisión, abandono, RPE final, notas, vídeos, temporizadores restaurables, avisos configurables, cola idempotente e historial con correcciones auditadas. |
 | Funcionamiento sin conexión | Parcial | Encola completar/omitir serie, AMRAP, finalizar y abandonar una ejecución cargada. No replica catálogo o agenda, no inicia contenido desconocido y las correcciones exigen conexión. |
-| Evaluación y progreso | Parcial | Registra, evalúa y compara marcas con el catálogo versionado de ingreso a Tropa y Marinería, calcula evolución y recomienda focos. No hay panel longitudinal completo ni simulacro. |
+| Evaluación y progreso | Parcial | Registra, evalúa y compara marcas con el catálogo versionado de ingreso a Tropa y Marinería, calcula evolución y recomienda focos. La evaluación periódica FAS 2027 tiene registro e historial propios y calculadora gratuita separada. No hay panel longitudinal completo ni simulacro. |
 | Plan semanal adaptativo | No existe | La agenda es manual; no se generan prescripciones a partir de preparaciones, evaluación, disponibilidad o historial. |
 | Adaptación posterior | No existe | No hay reglas versionadas que interpreten resultados y produzcan la siguiente recomendación o semana. |
 | Carrera especializada | Terminada en V1 manual | Creador de carrera continua, series y pirámides; repeticiones agrupadas al prescribir, registro individual obligatorio de parciales y recuperaciones, ritmo calculado, RPE, FC opcional, clasificación de cumplimiento e historial. No incluye GPS, mapas, zonas ni integraciones. |
@@ -72,7 +72,7 @@ El ciclo objetivo continúa siendo:
   recuperación propia; usa la biblioteca, agenda, ejecución e historial
   comunes.
 
-## Único siguiente bloque recomendado
+## Estado y único siguiente bloque recomendado
 
 El control independiente de carrera de 2 km ya dispone de registro repetible,
 fechado y vinculado a una preparación, con RPE obligatorio, FC y parciales de
@@ -127,9 +127,10 @@ El siguiente tramo ejecutable será:
    ocultará el cálculo gratuito ni lo confundirá con una certificación oficial.
 3. Curar un catálogo **mínimo** de ejercicios oficiales de fuerza aptos para
    las primeras plantillas: técnica, objetivo, material, variantes y
-   limitaciones. El creador administrativo completo, fotos y biblioteca amplia
-   no bloquean el piloto; tampoco se debe inventar una progresión de fuerza a
-   partir de solo flexiones, sentadillas y plancha.
+   limitaciones. La carga de fotos y una biblioteca amplia no bloquean el
+   piloto; tampoco se debe inventar una progresión de fuerza a partir de solo
+   flexiones, sentadillas y plancha. El creador administrativo y el creador
+   privado ya comparten contrato, validación y formulario.
 4. Componer y revisar con Javier una semana de plantillas ejecutables de
    carrera y fuerza, registrables con los flujos existentes. Mantenerla como
    borrador hasta validar su contenido.

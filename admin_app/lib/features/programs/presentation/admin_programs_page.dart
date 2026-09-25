@@ -1,3 +1,5 @@
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
+import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
@@ -8,11 +10,13 @@ class AdminProgramsPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.workoutRepository,
+    required this.exerciseRepository,
     required this.onSignOut,
   });
 
   final AdminProgramRepository repository;
   final AdminWorkoutRepository workoutRepository;
+  final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
 
   @override
@@ -96,7 +100,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administración · programas'),
+        title: const Text('Administración'),
         actions: [
           IconButton(
             tooltip: 'Cerrar sesión',
@@ -126,44 +130,81 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
       padding: const EdgeInsets.all(24),
       children: [
         const Text(
-          'Programas',
+          '¿Qué quieres gestionar?',
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         const Text(
-          'Crea la identidad de una preparación o evaluación. Un borrador no aparece al alumno ni genera sesiones. Publicarlo requerirá contenido y revisión deportiva.',
+          'Elige el catálogo de contenido de EntrenaOP en el que quieres trabajar.',
         ),
-        const SizedBox(height: 24),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            onPressed: _saving ? null : _createDraft,
-            icon: const Icon(Icons.add),
-            label: const Text('Nuevo programa'),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.public),
-            title: const Text('Biblioteca general de EntrenaOP'),
-            subtitle: const Text(
-              'Sesiones abiertas, independientes de los programas.',
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _AdminAreaCard(
+              icon: Icons.account_tree_outlined,
+              title: 'Programas',
+              description: 'Crear una preparación o evaluación.',
+              action: 'Crear programa',
+              onTap: _saving ? null : _createDraft,
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => AdminProgramWorkoutsPage(
-                  program: null,
-                  repository: widget.workoutRepository,
+            _AdminAreaCard(
+              icon: Icons.view_agenda_outlined,
+              title: 'Sesiones oficiales',
+              description: 'Crear sesiones para la biblioteca general.',
+              action: 'Abrir sesiones',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => AdminProgramWorkoutsPage(
+                    program: null,
+                    repository: widget.workoutRepository,
+                  ),
                 ),
               ),
             ),
-          ),
+            _AdminAreaCard(
+              icon: Icons.fitness_center,
+              title: 'Ejercicios oficiales',
+              description: 'Crear y editar el catálogo global.',
+              action: 'Abrir ejercicios',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AdminExercisesPage(repository: widget.exerciseRepository),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Programas existentes',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+            FilledButton.icon(
+              onPressed: _saving ? null : _createDraft,
+              icon: const Icon(Icons.add),
+              label: const Text('Nuevo programa'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Cada programa agrupa sus propias sesiones. Los borradores no aparecen en la aplicación del deportista.',
+        ),
+        const SizedBox(height: 16),
         if (_programs.isEmpty)
-          const Text('Todavía no hay programas.')
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Text('Todavía no hay programas.'),
+            ),
+          )
         else
           for (final program in _programs)
             Card(
@@ -196,6 +237,67 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
       ],
     );
   }
+}
+
+class _AdminAreaCard extends StatelessWidget {
+  const _AdminAreaCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.action,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final String action;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 268,
+    child: Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 30),
+              const SizedBox(height: 18),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(description),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      action,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_rounded, size: 18),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _Message extends StatelessWidget {

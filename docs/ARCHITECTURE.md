@@ -2,10 +2,12 @@
 
 ## Estado observado
 
-Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
+Instantánea comprobada en el repositorio el 24 de septiembre de 2026:
 
-- Proyecto Flutter con destinos Android, iOS, web y Windows.
-- Restricción de Dart en `pubspec.yaml`: `>=3.9.0 <4.0.0`.
+- Aplicación Flutter del deportista con destinos Android, iOS, web y Windows, y
+  aplicación Flutter web independiente en `admin_app/` para autoría oficial.
+- Toolchain mínimo declarado y verificado: Flutter 3.47 y Dart
+  `>=3.13.0 <4.0.0`, coherente en ambas aplicaciones y paquetes compartidos.
 - Dependencias declaradas para Bloc/Cubit, Equatable, `go_router`, GetIt,
   Supabase, vídeo, preferencias y utilidades.
 - Estructura por funcionalidades para autenticación, panel de inicio,
@@ -13,10 +15,15 @@ Instantánea comprobada en el repositorio el 22 de septiembre de 2026:
   entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 38 migraciones SQL ordenadas: línea base y
+- El repositorio contiene 48 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
-  personal versionado, agenda, formatos avanzados de fuerza y Carrera V1.
+  personal versionado, agenda, formatos avanzados de fuerza, Carrera V1,
+  autoría administrativa y evaluación periódica FAS 2027.
+- `packages/workout_core/` comparte contratos y validación de sesiones y
+  ejercicios entre ambas aplicaciones; `packages/workout_editor_ui/` comparte
+  sus formularios y controles de edición sin mezclar navegación, persistencia
+  ni permisos.
 - La navegación autenticada dispone de un contenedor persistente con las áreas
   Inicio, Mi plan, Evolución y Perfil. En móvil utiliza una barra inferior y en
   pantallas amplias una navegación lateral.
@@ -353,10 +360,12 @@ debe convertirse en una planificación manual diaria para todos los usuarios:
 servirá para diseñar, validar, publicar y, en una fase profesional, anular una
 decisión concreta dejando auditoría.
 
-La primera vertical adaptativa no necesita esperar al panel. Debe validar antes
-el modelo versionado y el motor con un único programa de Tropa y Marinería; así
-el panel se construirá sobre reglas reales y no fijará prematuramente una
-interfaz equivocada.
+El panel básico de autoría ya existe, pero la primera vertical adaptativa no
+depende de ampliar sus pantallas. El piloto actual prioriza la evaluación
+periódica FAS 2027 para validar con Javier contenido y reglas deportivas; los
+contratos y el prototipo de Tropa se reutilizarán solo cuando sean compatibles.
+Antes de publicar una semana deben existir reglas versionadas, contenido
+revisado y un recorrido sin asignación real que explique entradas y razones.
 
 ## Sesión activa y funcionamiento sin conexión
 

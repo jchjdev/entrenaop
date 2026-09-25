@@ -4,11 +4,11 @@ Estado: **decisión de dominio probada, todavía sin publicación en la agenda**
 Ámbito: preparación de Tropa y Marinería; no se aplica automáticamente a otros
 programas que también incluyan 2 km.
 
-Revisión de prioridad del 23 de septiembre de 2026: este documento conserva el
-prototipo existente de Tropa. El siguiente piloto deportivo propuesto es una
-evaluación periódica militar separada, pendiente de identificar su régimen y
-vigencia. Las decisiones reutilizables de carrera podrán trasladarse solo tras
-comprobar protocolo, objetivo y carga; ni este borrador ni su catálogo de
+Revisión de prioridad del 24 de septiembre de 2026: este documento conserva el
+prototipo existente de Tropa. El piloto deportivo actual es la evaluación
+periódica FAS 2027, ya separada mediante su propio programa, catálogo, registro
+e historial. Las decisiones reutilizables de carrera podrán trasladarse solo
+tras comprobar protocolo, objetivo y carga; ni este borrador ni su catálogo de
 ingreso se convertirán automáticamente en sesiones o marcas periódicas.
 
 En la pantalla de la preparación de Tropa hay un **borrador versionado de

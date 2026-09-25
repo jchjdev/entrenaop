@@ -2,15 +2,21 @@
 
 Aplicación Flutter exclusiva de web para crear contenido oficial. No importa
 pantallas ni servicios de la aplicación del opositor. Ambas aplicaciones usan
-`packages/workout_core/` para el modelo, la validación y la conversión de
-sesiones. `packages/workout_editor_ui/` aporta los campos de carrera, el
-buscador de ejercicios con miniaturas, el selector de formatos de bloque y
-los campos de objetivo, descanso, carga y RIR de cada serie. Cada aplicación
-conserva su navegación, guardado y funciones propias. La organización de
-bloques, repeticiones y variantes aún tiene adaptadores de pantalla distintos.
+`packages/workout_core/` para el modelo y la validación de sesiones y
+ejercicios. `packages/workout_editor_ui/` aporta el formulario de ejercicios,
+los campos de carrera, el buscador con miniaturas, el selector de formatos de
+bloque y los campos de objetivo, descanso, carga y RIR de cada serie. Cada
+aplicación conserva su navegación, guardado, autorización y funciones propias.
+La organización de bloques, repeticiones y variantes aún tiene adaptadores de
+pantalla distintos.
 
-En Programas, abre un programa y pulsa **Nueva sesión** para crear una plantilla
-exclusiva de esa preparación. La entrada **Biblioteca general de EntrenaOP**
+La portada administrativa separa tres áreas: **Programas**, **Sesiones
+oficiales** y **Ejercicios oficiales**. El creador de ejercicios guarda mediante
+funciones SQL que vuelven a comprobar `is_admin()` y fijan en servidor el origen
+oficial, la visibilidad pública y la ausencia de propietario personal.
+
+En **Programas**, abre un programa y pulsa **Nueva sesión** para crear una plantilla
+exclusiva de esa preparación. La entrada **Sesiones oficiales**
 crea sesiones libres sin destino de programa. Carrera permite
 tramos repetidos, rangos de ritmo y recuperación por tiempo o metros. Fuerza
 permite combinar bloques convencionales, superseries, circuitos, intervalos,

@@ -1,9 +1,31 @@
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_programs_page.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_image.dart';
+
+class _FakeExercises implements AdminExerciseRepository {
+  @override
+  Future<void> createOfficial(
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+  }) async {}
+
+  @override
+  Future<List<AdminCatalogExercise>> listOfficial() async => const [];
+
+  @override
+  Future<void> updateOfficial(
+    String id,
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {}
+}
 
 class _FakeRepository implements AdminProgramRepository {
   _FakeRepository({required this.allowed});
@@ -69,6 +91,7 @@ void main() {
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),
+          exerciseRepository: _FakeExercises(),
           onSignOut: () {},
         ),
       ),
@@ -89,13 +112,18 @@ void main() {
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),
+          exerciseRepository: _FakeExercises(),
           onSignOut: () {},
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Nuevo programa'));
+    expect(find.text('Programas'), findsOneWidget);
+    expect(find.text('Sesiones oficiales'), findsOneWidget);
+    expect(find.text('Ejercicios oficiales'), findsOneWidget);
+
+    await tester.tap(find.text('Crear programa'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField), 'Guardia Civil');
     await tester.tap(find.text('Crear borrador'));
@@ -104,6 +132,8 @@ void main() {
     expect(repository.createCalls, 1);
     expect(repository.programs.single.kind, 'access');
     expect(repository.programs.single.enabled, false);
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
     expect(find.text('Guardia Civil'), findsOneWidget);
     expect(find.text('Borrador'), findsOneWidget);
     expect(repository.listCalls, 2);

@@ -3,6 +3,7 @@ import 'package:entrenaop/features/exercises/data/models/exercise_model.dart';
 import 'package:entrenaop/features/exercises/data/repositories/exercise_repository_impl.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/exercise_image.dart';
 
 void main() {
   const exercise = PersonalExerciseDraft(
@@ -72,7 +73,10 @@ class _FakeExerciseRemoteDataSource implements ExerciseRemoteDataSource {
   ExerciseModel? updated;
 
   @override
-  Future<ExerciseModel> createExercise(PersonalExerciseDraft exercise) async {
+  Future<ExerciseModel> createExercise(
+    PersonalExerciseDraft exercise, {
+    ExerciseImageUpload? image,
+  }) async {
     created = exercise;
     return const ExerciseModel(
       id: 'exercise-id',
