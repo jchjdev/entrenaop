@@ -100,7 +100,9 @@ preparación activa y calcula en directo al escribir o mover sus deslizadores.
 Solo guarda un test cuando el usuario lo confirma. Muestra cada puntuación y el
 mínimo general de 20 puntos, sin presentar la suma como resultado normativo ni
 certificar aptitud oficial. Sí ofrece una suma matemática visible, rotulada como
-orientativa y separada del criterio normativo. Cada registro pertenece al
+orientativa y separada del criterio normativo. El resumen precede a una
+cuadrícula compacta de pruebas para reunir total, marcas, puntos y controles en
+el primer vistazo. Cada registro pertenece al
 perfil del usuario y puede enlazarse opcionalmente a una preparación, sin que
 esta sea su dueña. Su historial periódico sigue siendo independiente de Tropa
 y valida las marcas en PostgreSQL. Antes del 1 de

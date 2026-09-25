@@ -41,37 +41,26 @@ void main() {
     expect(find.text('M · mujeres'), findsOneWidget);
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Flexo-extensiones en 2 min'),
+      find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
       '14',
     );
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Plancha isométrica'),
+      find.byKey(const ValueKey('fas-mark-abdominal_plank')),
       '40',
     );
-    final runField = find.widgetWithText(TextFormField, 'Carrera 2.000 m');
+    final runField = find.byKey(const ValueKey('fas-mark-run_2000_m'));
     await tester.enterText(runField, '1146');
     expect(tester.widget<TextFormField>(runField).controller!.text, '11:46');
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Circuito de agilidad-velocidad'),
+      find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
       '15,29',
     );
     await tester.pump();
 
-    expect(find.text('20 puntos'), findsNWidgets(4));
+    expect(find.text('20 pt'), findsNWidgets(4));
     expect(find.text('SUMA ORIENTATIVA'), findsOneWidget);
     expect(find.text('80 puntos'), findsOneWidget);
-    expect(
-      find.text('de 400 posibles en las pruebas aplicables'),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Alcanza el mínimo general de 20 puntos por prueba'),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('no la define como calificación oficial'),
-      findsOneWidget,
-    );
+    expect(find.text('4/4 mínimos alcanzados'), findsOneWidget);
     expect(profile.saveCalls, 0);
   });
 
@@ -91,13 +80,48 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.widgetWithText(TextFormField, 'Circuito de agilidad-velocidad'),
+      find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
       findsNothing,
     );
     expect(
       find.text('Agilidad no exigible desde el día en que se cumplen 45 años.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('agrupa el resumen y las cuatro pruebas en dos columnas', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicCalculatorPage(
+          birthDateRepository: _BirthDateRepository(DateTime(2001, 1, 1)),
+          repository: _Repository(),
+          reference: reference,
+          today: DateTime(2027, 2, 3),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final grid = tester.widget<GridView>(
+      find.byKey(const ValueKey('fas-tests-grid')),
+    );
+    final delegate =
+        grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegate.crossAxisCount, 2);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('fas-score-summary'))).dy,
+      lessThan(
+        tester.getTopLeft(find.byKey(const ValueKey('fas-tests-grid'))).dy,
+      ),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('guarda el test en el perfil sin preparación', (tester) async {
@@ -120,18 +144,18 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final entry in {
-      'Flexo-extensiones en 2 min': '14',
-      'Plancha isométrica': '40',
-      'Carrera 2.000 m': '1146',
-      'Circuito de agilidad-velocidad': '15,29',
+      'upper_body_push_ups_2_min': '14',
+      'abdominal_plank': '40',
+      'run_2000_m': '1146',
+      'agility_speed_circuit': '15,29',
     }.entries) {
       await tester.enterText(
-        find.widgetWithText(TextFormField, entry.key),
+        find.byKey(ValueKey('fas-mark-${entry.key}')),
         entry.value,
       );
     }
     await tester.pump();
-    final save = find.text('Guardar test realizado');
+    final save = find.text('Guardar test');
     await tester.tap(save);
     await tester.pumpAndSettle();
 

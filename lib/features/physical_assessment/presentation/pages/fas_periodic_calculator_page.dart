@@ -173,30 +173,21 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'Prueba marcas. Guarda solo cuando tú quieras.',
-                      style: TextStyle(
-                        fontSize: 27,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Escribe una marca o mueve el control: los puntos cambian al instante. Nada entra en tu historial hasta que pulses Guardar test.',
-                      style: TextStyle(color: Colors.white70, height: 1.4),
-                    ),
                     if (_calculationDate.isBefore(DateTime(2027))) ...[
-                      const SizedBox(height: 12),
                       const Card(
                         child: Padding(
-                          padding: EdgeInsets.all(14),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           child: Text(
                             'Referencia futura: este baremo de evaluación periódica entra en vigor el 01/01/2027.',
+                            style: TextStyle(fontSize: 12),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 8),
                     ],
-                    const SizedBox(height: 18),
                     FutureBuilder<DateTime?>(
                       future: _birthDate,
                       builder: (context, birthSnapshot) {
@@ -218,8 +209,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                         if (birthDate == null) {
                           return _BirthDateCard(
                             title: 'Completa tu fecha de nacimiento',
-                            subtitle:
-                                'La necesitamos para elegir el tramo de edad correcto.',
+                            subtitle: 'La necesitamos para elegir el tramo de edad correcto.',
                             icon: Icons.calendar_month_outlined,
                             onTap: _savingBirthDate
                                 ? null
@@ -244,22 +234,35 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Fuente: Orden DEF/15/2026 · anexo II · catálogo ${FasPeriodic2027Reference.version} · verificado ${reference.verifiedOn}.',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Nota de fuente: la tabla II.3 publicada contiene una secuencia no ordenada en sus últimos tiempos de carrera. Se conserva literalmente hasta que exista una corrección oficial.',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                        height: 1.4,
+                    const SizedBox(height: 8),
+                    Card(
+                      child: ExpansionTile(
+                        title: const Text('Fuente y criterio oficial'),
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          16,
+                        ),
+                        children: [
+                          Text(
+                            'Orden DEF/15/2026 · anexo II · catálogo ${FasPeriodic2027Reference.version} · verificado ${reference.verifiedOn}.',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -277,28 +280,22 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     required DateTime birthDate,
     required int age,
   }) {
+    final expectedTests = age < 45 ? 4 : 3;
+    final isComplete = _results.length == expectedTests;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _BirthDateCard(
-          title:
-              '$age años · test del ${DateFormat('dd/MM/yyyy').format(_assessmentDate)}',
-          subtitle: 'Nacimiento: ${DateFormat('dd/MM/yyyy').format(birthDate)}',
-          icon: Icons.edit_outlined,
-          onTap: _savingBirthDate ? null : () => _editBirthDate(birthDate),
+        _AssessmentContext(
+          age: age,
+          birthDate: birthDate,
+          assessmentDate: _assessmentDate,
+          onEditBirthDate: _savingBirthDate
+              ? null
+              : () => _editBirthDate(birthDate),
+          onEditAssessmentDate: () =>
+              _chooseAssessmentDate(reference, birthDate),
         ),
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: () => _chooseAssessmentDate(reference, birthDate),
-          icon: const Icon(Icons.event_outlined),
-          label: const Text('Cambiar fecha del test'),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Categoría del baremo',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SegmentedButton<AssessmentCategory>(
           segments: const [
             ButtonSegment(
@@ -316,76 +313,90 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
             _recalculate(reference, age);
           },
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'H/M son las columnas que utiliza literalmente el anexo II.',
-          style: TextStyle(color: Colors.white60, fontSize: 12),
-        ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
+        _Results(results: _results, expectedTests: expectedTests),
+        const SizedBox(height: 10),
         Form(
           key: _formKey,
-          child: Column(
-            children: [
-              for (final test in _calculatorTests)
-                if (test.id != 'agility_speed_circuit' || age < 45)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: _MarkControl(
-                      test: test,
-                      controller: _controllers[test.id]!,
-                      range: reference.markRangeFor(testId: test.id, age: age),
-                      passMark: reference
-                          .passMarkFor(
-                            testId: test.id,
-                            category: _category,
-                            age: age,
-                          )
-                          ?.threshold,
-                      result: _results[test.id],
-                      onChanged: () => _recalculate(reference, age),
-                      onSliderChanged: (mark) {
-                        _controllers[test.id]!.text = _formatMarkForInput(
-                          test.id,
-                          mark,
-                        );
-                        _recalculate(reference, age);
-                      },
-                    ),
-                  ),
-              if (age >= 45)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 14),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Agilidad no exigible desde el día en que se cumplen 45 años.',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final tests = [
+                for (final test in _calculatorTests)
+                  if (test.id != 'agility_speed_circuit' || age < 45) test,
+              ];
+              final useTwoColumns = constraints.maxWidth >= 330;
+              return GridView.builder(
+                key: const ValueKey('fas-tests-grid'),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: tests.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: useTwoColumns ? 2 : 1,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: useTwoColumns
+                      ? (constraints.maxWidth < 500 ? 0.82 : 1.55)
+                      : 1.65,
                 ),
-            ],
+                itemBuilder: (context, index) {
+                  final test = tests[index];
+                  return _MarkControl(
+                    test: test,
+                    controller: _controllers[test.id]!,
+                    range: reference.markRangeFor(testId: test.id, age: age),
+                    passMark: reference
+                        .passMarkFor(
+                          testId: test.id,
+                          category: _category,
+                          age: age,
+                        )
+                        ?.threshold,
+                    result: _results[test.id],
+                    onChanged: () => _recalculate(reference, age),
+                    onSliderChanged: (mark) {
+                      _controllers[test.id]!.text = _formatMarkForInput(
+                        test.id,
+                        mark,
+                      );
+                      _recalculate(reference, age);
+                    },
+                  );
+                },
+              );
+            },
           ),
         ),
-        if (_results.length == (age < 45 ? 4 : 3)) ...[
-          const SizedBox(height: 24),
-          _Results(results: _results),
-          const SizedBox(height: 14),
-          FilledButton.icon(
-            onPressed: _savingAssessment ? null : () => _saveAssessment(age),
-            icon: _savingAssessment
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.bookmark_add_outlined),
-            label: const Text('Guardar test realizado'),
+        if (age >= 45) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'Agilidad no exigible desde el día en que se cumplen 45 años.',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
         const SizedBox(height: 10),
-        TextButton.icon(
-          onPressed: () => context.push('/assessment/fas-history'),
-          icon: const Icon(Icons.timeline_outlined),
-          label: const Text('Ver mi historial de tests FAS'),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => context.push('/assessment/fas-history'),
+                child: const Text('Historial'),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: FilledButton(
+                onPressed: !isComplete || _savingAssessment
+                    ? null
+                    : () => _saveAssessment(age),
+                child: _savingAssessment
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Guardar test'),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -434,70 +445,156 @@ class _MarkControl extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: controller,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: test.id == 'run_2000_m'
-                        ? const [DurationInputFormatter()]
-                        : null,
-                    decoration: InputDecoration(
-                      labelText: test.label,
-                      hintText: test.hint,
-                      helperText: test.helper,
+                  child: Text(
+                    test.shortLabel,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w700,
                     ),
-                    validator: (value) =>
-                        _parseMark(test.id, value ?? '') == null
-                        ? test.error
-                        : null,
-                    onChanged: (_) => onChanged(),
                   ),
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 88,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Column(
-                      children: [
-                        Text(
-                          result == null ? '—' : '${result!.points}',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const Text(
-                          'puntos',
-                          style: TextStyle(color: Colors.white60),
-                        ),
-                      ],
-                    ),
+                const SizedBox(width: 6),
+                Text(
+                  result == null ? '— pt' : '${result!.points} pt',
+                  style: TextStyle(
+                    color: result == null
+                        ? Colors.white54
+                        : const Color(0xFFFF8A50),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
             ),
-            if (limits != null)
-              Slider(
-                value: sliderValue,
-                min: limits.minimum.toDouble(),
-                max: limits.maximum.toDouble(),
-                divisions: divisions,
-                onChanged: (value) =>
-                    onSliderChanged((value / step).round() * step),
+            const SizedBox(height: 8),
+            TextFormField(
+              key: ValueKey('fas-mark-${test.id}'),
+              controller: controller,
+              keyboardType: TextInputType.number,
+              inputFormatters: test.id == 'run_2000_m'
+                  ? const [DurationInputFormatter()]
+                  : null,
+              decoration: InputDecoration(
+                isDense: true,
+                labelText: _inputLabel(test.id),
+                hintText: test.hint,
+                suffixText: _inputUnit(test.id),
               ),
+              validator: (value) =>
+                  _parseMark(test.id, value ?? '') == null ? test.error : null,
+              onChanged: (_) => onChanged(),
+            ),
+            const Spacer(),
+            if (limits != null) ...[
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 3,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 8,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 14,
+                  ),
+                ),
+                child: Slider(
+                  value: sliderValue,
+                  min: limits.minimum.toDouble(),
+                  max: limits.maximum.toDouble(),
+                  divisions: divisions,
+                  onChanged: (value) =>
+                      onSliderChanged((value / step).round() * step),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _formatRangeLabel(test.id, limits.minimum),
+                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                  ),
+                  Text(
+                    _formatRangeLabel(test.id, limits.maximum),
+                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+class _AssessmentContext extends StatelessWidget {
+  const _AssessmentContext({
+    required this.age,
+    required this.birthDate,
+    required this.assessmentDate,
+    required this.onEditBirthDate,
+    required this.onEditAssessmentDate,
+  });
+
+  final int age;
+  final DateTime birthDate;
+  final DateTime assessmentDate;
+  final VoidCallback? onEditBirthDate;
+  final VoidCallback onEditAssessmentDate;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: onEditBirthDate,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$age años',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      'Nacimiento ${DateFormat('dd/MM/yyyy').format(birthDate)}',
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onEditAssessmentDate,
+            child: Text(
+              'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _BirthDateCard extends StatelessWidget {
@@ -525,43 +622,31 @@ class _BirthDateCard extends StatelessWidget {
 }
 
 class _Results extends StatelessWidget {
-  const _Results({required this.results});
+  const _Results({required this.results, required this.expectedTests});
 
   final Map<String, PeriodicScoreResult> results;
+  final int expectedTests;
 
   @override
   Widget build(BuildContext context) {
-    final meetsAll = results.values.every((result) => result.meetsMinimum);
+    final complete = results.length == expectedTests;
+    final meetsAll =
+        complete && results.values.every((result) => result.meetsMinimum);
     final total = results.values.fold<int>(
       0,
       (sum, result) => sum + result.points,
     );
     return Card(
+      key: const ValueKey('fas-score-summary'),
+      margin: EdgeInsets.zero,
+      color: const Color(0xFFE65100).withValues(alpha: 0.14),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Row(
           children: [
-            Text(
-              meetsAll
-                  ? 'Alcanza el mínimo general de 20 puntos por prueba'
-                  : 'Hay alguna prueba por debajo de 20 puntos',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Resultado orientativo: no sustituye la evaluación ni la calificación oficial.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            const SizedBox(height: 22),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE65100).withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE65100)),
-              ),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'SUMA ORIENTATIVA',
@@ -574,47 +659,37 @@ class _Results extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$total puntos',
+                    results.isEmpty ? '—' : '$total puntos',
                     style: const TextStyle(
                       color: Color(0xFFFF8A50),
-                      fontSize: 46,
+                      fontSize: 42,
                       fontWeight: FontWeight.w900,
                       height: 1.05,
                     ),
                   ),
-                  Text(
-                    'de ${results.length * 100} posibles en las pruebas aplicables',
-                    style: const TextStyle(color: Colors.white70),
-                    textAlign: TextAlign.center,
-                  ),
                 ],
               ),
             ),
-            const Divider(height: 28),
-            for (final test in _calculatorTests)
-              if (results[test.id] case final result?)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(test.shortLabel),
-                  subtitle: Text(
-                    result.meetsMinimum
-                        ? 'Mínimo general alcanzado'
-                        : 'Por debajo del mínimo general',
-                  ),
-                  trailing: Text(
-                    '${result.points} puntos',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: result.meetsMinimum
-                          ? Colors.greenAccent
-                          : Colors.orangeAccent,
-                    ),
-                  ),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 120,
+              child: Text(
+                results.isEmpty
+                    ? 'Introduce una marca o mueve un control'
+                    : !complete
+                    ? '${results.length}/$expectedTests pruebas con marca'
+                    : meetsAll
+                    ? '$expectedTests/$expectedTests mínimos alcanzados'
+                    : 'Hay pruebas bajo 20 puntos',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: complete
+                      ? (meetsAll ? Colors.greenAccent : Colors.orangeAccent)
+                      : Colors.white70,
+                  fontWeight: FontWeight.w800,
+                  height: 1.25,
                 ),
-            const SizedBox(height: 8),
-            const Text(
-              'Esta suma facilita la consulta, pero la Orden DEF/15/2026 no la define como calificación oficial: la aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable.',
-              style: TextStyle(color: Colors.white70, height: 1.35),
+              ),
             ),
           ],
         ),
@@ -631,6 +706,22 @@ int? _parseMark(String testId, String value) => switch (testId) {
   _ => null,
 };
 
+String _inputLabel(String testId) => switch (testId) {
+  'upper_body_push_ups_2_min' => 'Repeticiones',
+  'abdominal_plank' => 'Duración',
+  'run_2000_m' => 'Tiempo',
+  'agility_speed_circuit' => 'Tiempo',
+  _ => 'Marca',
+};
+
+String _inputUnit(String testId) => switch (testId) {
+  'upper_body_push_ups_2_min' => 'rep',
+  'abdominal_plank' => 'min',
+  'run_2000_m' => 'min',
+  'agility_speed_circuit' => 's',
+  _ => '',
+};
+
 int _sliderStep(String testId) => switch (testId) {
   'upper_body_push_ups_2_min' => 1,
   'agility_speed_circuit' => 100,
@@ -638,6 +729,15 @@ int _sliderStep(String testId) => switch (testId) {
 };
 
 String _formatMarkForInput(String testId, int mark) => switch (testId) {
+  'upper_body_push_ups_2_min' => '$mark',
+  'abdominal_plank' => _formatClock(mark),
+  'run_2000_m' => _formatClock(mark),
+  'agility_speed_circuit' =>
+    (mark / 1000).toStringAsFixed(1).replaceAll('.', ','),
+  _ => '$mark',
+};
+
+String _formatRangeLabel(String testId, int mark) => switch (testId) {
   'upper_body_push_ups_2_min' => '$mark',
   'abdominal_plank' => _formatClock(mark),
   'run_2000_m' => _formatClock(mark),
