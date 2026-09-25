@@ -31,12 +31,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Referencia futura: este baremo de evaluación periódica entra en vigor el 01/01/2027.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Referencia futura'), findsNothing);
+    expect(find.text('Fuente y criterio oficial'), findsOneWidget);
     expect(find.text('H · hombres'), findsOneWidget);
     expect(find.text('M · mujeres'), findsOneWidget);
 
@@ -115,6 +111,14 @@ void main() {
     final delegate =
         grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
     expect(delegate.crossAxisCount, 2);
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('fas-official-criteria'))).dy,
+      lessThan(
+        tester
+            .getTopLeft(find.byKey(const ValueKey('fas-assessment-context')))
+            .dy,
+      ),
+    );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('fas-score-summary'))).dy,
       lessThan(

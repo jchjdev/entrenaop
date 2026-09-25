@@ -173,21 +173,38 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_calculationDate.isBefore(DateTime(2027))) ...[
-                      const Card(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          child: Text(
-                            'Referencia futura: este baremo de evaluación periódica entra en vigor el 01/01/2027.',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                    Card(
+                      key: const ValueKey('fas-official-criteria'),
+                      child: ExpansionTile(
+                        title: const Text('Fuente y criterio oficial'),
+                        childrenPadding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          16,
                         ),
+                        children: [
+                          Text(
+                            'Orden DEF/15/2026 · anexo II · catálogo ${FasPeriodic2027Reference.version} · verificado ${reference.verifiedOn}.',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                    ],
+                    ),
+                    const SizedBox(height: 8),
                     FutureBuilder<DateTime?>(
                       future: _birthDate,
                       builder: (context, birthSnapshot) {
@@ -233,37 +250,6 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                           age: age,
                         );
                       },
-                    ),
-                    const SizedBox(height: 8),
-                    Card(
-                      child: ExpansionTile(
-                        title: const Text('Fuente y criterio oficial'),
-                        childrenPadding: const EdgeInsets.fromLTRB(
-                          16,
-                          0,
-                          16,
-                          16,
-                        ),
-                        children: [
-                          Text(
-                            'Orden DEF/15/2026 · anexo II · catálogo ${FasPeriodic2027Reference.version} · verificado ${reference.verifiedOn}.',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'La suma es orientativa. La aptitud general exige alcanzar al menos 20 puntos en cada prueba aplicable. La tabla II.3 contiene una secuencia no ordenada que se conserva literalmente hasta que exista una corrección oficial.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -476,25 +462,37 @@ class _MarkControl extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            TextFormField(
-              key: ValueKey('fas-mark-${test.id}'),
-              controller: controller,
-              keyboardType: TextInputType.number,
-              inputFormatters: test.id == 'run_2000_m'
-                  ? const [DurationInputFormatter()]
-                  : null,
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: _inputLabel(test.id),
-                hintText: test.hint,
-                suffixText: _inputUnit(test.id),
+            Expanded(
+              child: Center(
+                child: TextFormField(
+                  key: ValueKey('fas-mark-${test.id}'),
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: test.id == 'run_2000_m'
+                      ? const [DurationInputFormatter()]
+                      : null,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: _inputLabel(test.id),
+                    hintText: test.hint,
+                    suffixText: _inputUnit(test.id),
+                    suffixStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    contentPadding: const EdgeInsets.only(bottom: 8),
+                  ),
+                  validator: (value) => _parseMark(test.id, value ?? '') == null
+                      ? test.error
+                      : null,
+                  onChanged: (_) => onChanged(),
+                ),
               ),
-              validator: (value) =>
-                  _parseMark(test.id, value ?? '') == null ? test.error : null,
-              onChanged: (_) => onChanged(),
             ),
-            const Spacer(),
             if (limits != null) ...[
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
@@ -553,6 +551,7 @@ class _AssessmentContext extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
+    key: const ValueKey('fas-assessment-context'),
     margin: EdgeInsets.zero,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
