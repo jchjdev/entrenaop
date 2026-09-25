@@ -80,6 +80,11 @@ fechado y vinculado a una preparación, con RPE obligatorio, FC y parciales de
 siguen pendientes de validación deportiva; ninguna semana se recalcula aún
 automáticamente a partir de estas marcas.
 
+La batería de evaluación acordada para Carrera incluye VAM, 2.000 m y Cooper.
+Solo el control de 2.000 m está implementado. Antes de incorporar las otras dos
+pruebas deben cerrarse el protocolo de VAM y las reglas que deciden cuándo usar
+VAM o Cooper; no se crearán equivalencias implícitas entre sus resultados.
+
 El contrato y la primera decisión determinista de carrera se documentan en
 `docs/ALGORITMO_CARRERA_V1.md`. Todavía no publican sesiones: la disponibilidad
 actual es conjunta para carrera y fuerza; faltan su reparto, días concretos

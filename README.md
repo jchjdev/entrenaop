@@ -13,6 +13,8 @@ se mantiene como destino compatible sin condicionar el MVP.
 
 ## Documentación vigente
 
+- [Decisiones](docs/DECISIONS.md): índice breve de criterios confirmados,
+  pendientes, implementados o sustituidos y su documento responsable.
 - [Producto](docs/PRODUCT.md): visión, promesa, niveles y alcance.
 - [Arquitectura](docs/ARCHITECTURE.md): estado observado y criterios técnicos.
 - [Roadmap](docs/ROADMAP.md): orden de trabajo y fases.

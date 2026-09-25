@@ -31,6 +31,11 @@ histórica.
 
 - Inspeccionar el estado de Git y el código directamente relacionado antes de
   modificar nada.
+- Consultar `docs/DECISIONS.md` y el documento de dominio que este enlace cuando
+  la tarea afecte a una decisión de producto, deporte, datos o arquitectura.
+- Cuando Javier confirme, corrija o descarte una decisión relevante, registrarla
+  en `docs/DECISIONS.md` y desarrollarla en su documento responsable dentro de
+  la misma tarea. No dejar decisiones vigentes únicamente en una conversación.
 - Preservar cambios existentes y no revertir trabajo ajeno.
 - No realizar operaciones destructivas.
 - No hacer refactorizaciones generales al resolver un problema pequeño.
@@ -186,6 +191,10 @@ En resumen:
 ## Prioridad documental
 
 1. Código, esquema SQL, migraciones y configuración comprobables.
-2. Este archivo y las decisiones vigentes de `docs/`.
+2. Este archivo, `docs/DECISIONS.md` y los documentos vigentes de `docs/`.
 3. Contexto histórico de `docs/HISTORY.md`, que no debe ejecutarse como una
    lista de instrucciones.
+
+El código describe el comportamiento implementado. Una decisión marcada como
+acordada en `docs/DECISIONS.md` puede describir trabajo futuro y no debe
+presentarse como implementada hasta que exista evidencia comprobable.

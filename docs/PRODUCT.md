@@ -208,6 +208,10 @@ máxima son opcionales. Los resultados distinguen entrada manual y dispositivo
 para permitir una futura sincronización sin reinterpretar el historial.
 El futuro algoritmo generará el mismo contrato versionado, no reglas ocultas en
 la interfaz.
+La evaluación de carrera prevista contempla VAM, 2.000 metros y Cooper. Cada
+preparación utilizará únicamente las pruebas que correspondan y conservará el
+protocolo aplicado; la elección concreta del test de VAM y las reglas para
+alternarlo con Cooper siguen pendientes de validación deportiva.
 Los motores de fuerza y carrera no competirán por separado: una capa de
 planificación global coordinará la carga semanal del alumno y podrá producir
 sesiones específicas o combinadas. La forma comercial de presentar esos

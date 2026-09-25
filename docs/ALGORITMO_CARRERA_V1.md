@@ -23,6 +23,27 @@ Fuerza nombra las pruebas de flexo-extensiones y plancha, pero no prescribe
 ejercicios, repeticiones ni cargas. El reparto A/B/C es un escenario para
 revisar pantallas, no la asignación automática de días concretos.
 
+## Evaluaciones de carrera acordadas
+
+La batería prevista para Carrera está formada por **VAM, 2.000 metros y
+Cooper**. Son protocolos con finalidades distintas y esta decisión no obliga a
+que todos los usuarios realicen las tres pruebas:
+
+- **2.000 m:** referencia de rendimiento específica cuando la preparación
+  oficial utilice esa distancia. Su registro independiente ya está
+  implementado, pero todavía no determina por sí solo los ritmos de una semana.
+- **VAM:** calibración prevista para prescribir ritmos. Sigue pendiente elegir
+  y validar el protocolo concreto; VAM es la variable obtenida y no identifica
+  por sí misma un único test.
+- **Cooper:** alternativa de evaluación aeróbica mediante la distancia de doce
+  minutos. Sigue pendiente acordar cuándo se utilizará en lugar de la prueba de
+  VAM y cómo influirá en la prescripción.
+
+Cada resultado deberá conservar el protocolo y su versión. No se convertirán
+automáticamente resultados entre estas pruebas ni se inventarán equivalencias
+para completar datos ausentes. Las reglas de selección y repetición se
+validarán con Javier antes de codificarse.
+
 La preparación de Tropa ofrece también un **simulador de primera semana**.
 Precarga los días totales, el tiempo por sesión y la revisión pendiente desde
 las preferencias guardadas, y la última marca de 2 km de esa preparación.
