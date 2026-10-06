@@ -448,10 +448,12 @@ identidad
   catálogo consulta contenido público y ejercicios propios, dejando que RLS
   descarte cualquier otro registro privado.
 - `WorkoutEditorDraftStore` persiste localmente una instantánea completa del
-  editor con espera corta entre cambios. La clave `new` separa una sesión aún
-  no creada y cada plantilla existente usa su propio identificador. Guardar la
-  sesión elimina el borrador; un dato local corrupto también se descarta sin
-  impedir abrir el creador. Esta primera versión no sincroniza borradores entre
+  editor con espera corta entre cambios. La clave v2 incluye propietario y
+  distingue `new`, `new-running` y cada plantilla existente. El adaptador se
+  crea por editor y conserva su propietario durante guardados tardíos. Guardar
+  la sesión elimina su borrador; un dato ilegible se conserva sin ofrecerlo al
+  editor. Los borradores v1 sin propietario permanecen intactos para recuperación
+  explícita: no se asignan a la primera cuenta que inicia sesión. No sincroniza borradores entre
   dispositivos ni escribe en Supabase en cada pulsación.
 - El borrador personal contiene de uno a diez bloques. Pueden ser
   convencionales, superseries, circuitos, intervalos de trabajo, Tabata, EMOM o
@@ -604,11 +606,22 @@ El límite es deliberado: la cola no replica el catálogo ni la agenda y no
 permite arrancar offline una sesión nunca cargada. Tampoco sincroniza entre
 dispositivos los borradores del editor o las instantáneas de temporizador.
 
-**Defecto comprobado el 06/10/2026:** la cola persistente carece de propietario
-por cuenta y el borrador de sesión nueva usa una clave común. Al cambiar de
-usuario, una mutación ajena puede bloquear la cola y un borrador nuevo puede
-ofrecerse a la otra cuenta. RLS mantiene la protección remota; el aislamiento
-local queda pendiente. La auditoría incluye dos reproducciones aisladas.
+**Aislamiento local corregido el 06/10/2026:** cada mutación captura su
+propietario al registrarse y se persiste en una cola v2 por cuenta. El adaptador
+serializa lecturas/escrituras; un fallo offline que termina tras cambiar de
+cuenta conserva la operación del propietario original. La sincronización se
+detiene antes del siguiente envío si cambia la identidad y retira el recibo
+únicamente de la cola original. Una lectura sin sesión no expone pendientes.
+Los permisos y la idempotencia remotos permanecen en PostgreSQL.
+
+La cola v1 se conserva íntegra. Su recuperación consulta mediante RLS el
+propietario exacto de la ejecución (o de la ejecución de la serie); sin red o
+sin correspondencia no se mezcla con la cola actual. Un marcador por cuenta
+evita recuperar otra vez una operación ya enviada. Los datos ilegibles no se
+sobrescriben con una cola vacía. Los borradores se separan también por cuenta;
+los v1 carecen de prueba de propiedad y requieren recuperación explícita,
+todavía sin interfaz de importación. Pruebas de cambio A/B, concurrencia,
+migración y guardados tardíos en `workout_account_isolation_test.dart`.
 
 Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
 locales, sin introducir permisos ni dependencias nativas adicionales. Los

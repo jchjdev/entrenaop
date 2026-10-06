@@ -18,6 +18,7 @@ void main() {
     repository = WorkoutRepositoryImpl(
       remoteDataSource: dataSource,
       mutationQueue: mutationQueue,
+      currentUserId: () => 'user-A',
     );
   });
 
@@ -45,24 +46,35 @@ void main() {
     });
   });
 
-  test('conserva medición decimal, invalidez y esfuerzo ausente al reintentar', () async {
-    dataSource.failComplete = true;
-    await repository.completeSet(const WorkoutSetResultInput(resultId: 'jump',
-      performanceResult: PerformanceSetResult(value: 2.375, techniqueValid: false,
-        conditionsConfirmed: true, stopReason: 'none')));
-    final queued = mutationQueue.mutations.single;
-    final snapshot = Map<String, dynamic>.from(queued.values);
-    dataSource.failComplete = false;
-    await repository.syncPendingMutations();
-    expect(dataSource.completedValues, snapshot);
-    expect(dataSource.completedOperationIds.last, queued.operationId);
-    final result = snapshot['p_performance_result'] as Map;
-    expect(result['value'], 2.375);
-    expect(result['technique_valid'], false);
-    expect(result['rir'], isNull);
-    expect(result['tolerated'], isNull);
-    expect(mutationQueue.mutations, isEmpty);
-  });
+  test(
+    'conserva medición decimal, invalidez y esfuerzo ausente al reintentar',
+    () async {
+      dataSource.failComplete = true;
+      await repository.completeSet(
+        const WorkoutSetResultInput(
+          resultId: 'jump',
+          performanceResult: PerformanceSetResult(
+            value: 2.375,
+            techniqueValid: false,
+            conditionsConfirmed: true,
+            stopReason: 'none',
+          ),
+        ),
+      );
+      final queued = mutationQueue.mutations.single;
+      final snapshot = Map<String, dynamic>.from(queued.values);
+      dataSource.failComplete = false;
+      await repository.syncPendingMutations();
+      expect(dataSource.completedValues, snapshot);
+      expect(dataSource.completedOperationIds.last, queued.operationId);
+      final result = snapshot['p_performance_result'] as Map;
+      expect(result['value'], 2.375);
+      expect(result['technique_valid'], false);
+      expect(result['rir'], isNull);
+      expect(result['tolerated'], isNull);
+      expect(mutationQueue.mutations, isEmpty);
+    },
+  );
 
   test('convierte las sesiones públicas en resúmenes de biblioteca', () async {
     dataSource.publicTemplates = const [
@@ -490,7 +502,9 @@ class _MemoryMutationQueue implements WorkoutMutationQueue {
   Future<List<PendingWorkoutMutation>> readAll() async => List.of(mutations);
 
   @override
-  Future<void> remove(String operationId) async {
-    mutations.removeWhere((item) => item.operationId == operationId);
+  Future<void> remove(String operationId, {required String userId}) async {
+    mutations.removeWhere(
+      (item) => item.operationId == operationId && item.userId == userId,
+    );
   }
 }

@@ -6,14 +6,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesWorkoutEditorDraftStore
     implements WorkoutEditorDraftStore {
-  const SharedPreferencesWorkoutEditorDraftStore(this._preferences);
+  const SharedPreferencesWorkoutEditorDraftStore(
+    this._preferences, {
+    required this.userId,
+  });
 
-  static const _prefix = 'workout_editor_draft_v1:';
+  static const _prefix = 'workout_editor_draft_v2:';
   final SharedPreferences _preferences;
+  // El editor conserva su propietario incluso si termina de guardar al salir.
+  final String? userId;
+
+  String _key(String draftId) {
+    if (userId == null) {
+      throw StateError('No hay cuenta para guardar el borrador.');
+    }
+    return '$_prefix$userId:$draftId';
+  }
 
   @override
   Future<WorkoutEditorDraftSnapshot?> read(String draftId) async {
-    final encoded = _preferences.getString('$_prefix$draftId');
+    if (userId == null) return null;
+    final encoded = _preferences.getString(_key(draftId));
     if (encoded == null) return null;
     try {
       final json = Map<String, dynamic>.from(jsonDecode(encoded) as Map);
@@ -22,7 +35,7 @@ class SharedPreferencesWorkoutEditorDraftStore
         savedAt: DateTime.parse(json['saved_at'] as String),
       );
     } on Object {
-      await clear(draftId);
+      // Conservar el contenido ilegible para poder recuperarlo; v1 tampoco se borra.
       return null;
     }
   }
@@ -30,7 +43,7 @@ class SharedPreferencesWorkoutEditorDraftStore
   @override
   Future<void> write(String draftId, WorkoutEditorDraftSnapshot snapshot) =>
       _preferences.setString(
-        '$_prefix$draftId',
+        _key(draftId),
         jsonEncode({
           'saved_at': snapshot.savedAt.toUtc().toIso8601String(),
           'input': _inputToJson(snapshot.input),
@@ -38,7 +51,7 @@ class SharedPreferencesWorkoutEditorDraftStore
       );
 
   @override
-  Future<void> clear(String draftId) => _preferences.remove('$_prefix$draftId');
+  Future<void> clear(String draftId) => _preferences.remove(_key(draftId));
 }
 
 Map<String, dynamic> _inputToJson(CreatePersonalWorkoutInput input) => {

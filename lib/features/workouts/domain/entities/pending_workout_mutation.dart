@@ -12,6 +12,7 @@ enum WorkoutMutationDisposition { synced, queued }
 
 class PendingWorkoutMutation extends Equatable {
   const PendingWorkoutMutation({
+    required this.userId,
     required this.operationId,
     required this.type,
     required this.resourceId,
@@ -20,11 +21,19 @@ class PendingWorkoutMutation extends Equatable {
   });
 
   final String operationId;
+  final String userId;
   final WorkoutMutationType type;
   final String resourceId;
   final Map<String, dynamic> values;
   final DateTime createdAt;
 
   @override
-  List<Object?> get props => [operationId, type, resourceId, values, createdAt];
+  List<Object?> get props => [
+    userId,
+    operationId,
+    type,
+    resourceId,
+    values,
+    createdAt,
+  ];
 }

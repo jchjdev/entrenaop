@@ -47,8 +47,10 @@ histórica.
   materiales.
 - Añadir pruebas para dominio, algoritmo, permisos y regresiones importantes;
   evitar pruebas que solo repitan la implementación.
-- No crear commits salvo petición de Javier o acuerdo expreso sobre el punto de
-  commit.
+- Javier autoriza desde el 06/10/2026 hacer commit y subir a GitHub cada bloque
+  terminado y validado, sin pedir confirmación de nuevo. Revisar el diff antes;
+  no guardar como cerrado un bloque con comprobaciones fallidas o pendientes.
+  Esta autorización no incluye despliegues, producción ni reescribir historial.
 - Mantener secretos fuera del repositorio y separar los entornos de desarrollo
   y producción. Una clave pública/anónima de Supabase puede estar en el cliente,
   pero debe configurarse por entorno.
@@ -160,6 +162,34 @@ En resumen:
 > mini-verificación. Cambio transversal: ampliar la inspección antes de
 > modificar. Cierre de bloque: auditoría del bloque → documentación →
 > validación final.
+
+## Puntos de guardado en Git · acuerdo del 06/10/2026
+
+- Al comenzar, comprobar directorio, rama, estado de Git y cambios pendientes.
+  El árbol local de esta consolidación es la versión actual confirmada por
+  Javier; una rama o un chat anterior no autoriza sustituirlo. Contrastar cualquier
+  trabajo externo mediante diffs y decisiones vigentes antes de integrarlo.
+- Al cerrar cada bloque, ejecutar la matriz de verificación correspondiente,
+  revisar código, migraciones, pruebas, documentación y recursos nuevos. Un
+  `git diff` sin archivos nuevos no basta: comprobar también los no versionados.
+- Hacer un commit en castellano con el alcance validado y subirlo al remoto
+  configurado. Comprobar después que el remoto apunta al commit y explicar qué
+  se guardó, qué se comprobó y qué queda pendiente. Si la subida falla, conservar
+  el commit local e informar; nunca usar force push como solución automática.
+- Conservar los cambios previos o de otros chats. No incluir trabajo ajeno sin
+  revisar ni declarar limpio un proyecto con cambios pendientes. Los chats que
+  comparten directorio comparten archivos: no necesitan subidas independientes
+  del mismo trabajo. Evitar modificaciones simultáneas sobre los mismos archivos.
+- Antes de abrir otro bloque grande, cerrar el punto de guardado del anterior o
+  explicar por qué sigue abierto. La autorización de guardado no permite borrar
+  archivos, reducir pruebas para que pasen ni modificar producción.
+- El plan o capacidad contratada no cambia los controles del repositorio. No
+  eliminar verificaciones acordadas por motivos de consumo sin explicarlo y
+  acordarlo con Javier; usar la matriz para evitar comprobaciones innecesarias.
+- `website/` contiene un repositorio independiente sin remoto configurado. La
+  copia completa de su historial al 06/10/2026 está en
+  `docs/audits/website-2026-10-06.bundle`; no añadir un gitlink sin remoto ni
+  `.gitmodules`. Si cambia la web, renovar su copia recuperable antes del cierre.
 
 ## Criterios técnicos vigentes
 

@@ -5,5 +5,5 @@ abstract class WorkoutMutationQueue {
 
   Future<void> enqueue(PendingWorkoutMutation mutation);
 
-  Future<void> remove(String operationId);
+  Future<void> remove(String operationId, {required String userId});
 }

@@ -54,3 +54,6 @@ app.*.map.json
 .env.*
 !.env.example
 !.env.*.example
+
+# Repositorio independiente, preservado mediante bundle en docs/audits/.
+/website/

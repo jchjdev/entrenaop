@@ -15,12 +15,14 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   WorkoutRepositoryImpl({
     required this.remoteDataSource,
     required this.mutationQueue,
+    required this.currentUserId,
     this.uuid = const Uuid(),
   });
 
   final WorkoutRemoteDataSource remoteDataSource;
   final WorkoutMutationQueue mutationQueue;
   final Uuid uuid;
+  final String? Function() currentUserId;
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String id) async {
@@ -226,8 +228,9 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   Future<void> syncPendingMutations() async {
     final pending = await mutationQueue.readAll();
     for (final mutation in pending) {
+      _requireAccount(mutation.userId);
       await _sendPending(mutation);
-      await mutationQueue.remove(mutation.operationId);
+      await mutationQueue.remove(mutation.operationId, userId: mutation.userId);
     }
   }
 
@@ -236,6 +239,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     String resourceId,
     Map<String, dynamic> values,
   ) => PendingWorkoutMutation(
+    userId:
+        currentUserId() ?? (throw const AuthException('No hay sesión activa.')),
     operationId: uuid.v4(),
     type: type,
     resourceId: resourceId,
@@ -247,6 +252,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     PendingWorkoutMutation mutation,
     Future<void> Function() send,
   ) async {
+    _requireAccount(mutation.userId);
     try {
       await send();
       return WorkoutMutationDisposition.synced;
@@ -257,6 +263,14 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     } catch (_) {
       await mutationQueue.enqueue(mutation);
       return WorkoutMutationDisposition.queued;
+    }
+  }
+
+  void _requireAccount(String userId) {
+    if (currentUserId() != userId) {
+      throw const AuthException(
+        'La cuenta ha cambiado. Vuelve a abrir la sesión.',
+      );
     }
   }
 

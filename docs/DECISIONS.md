@@ -26,6 +26,7 @@ La selección de nuevas semanas de carrera se revisa en PLAN-022, sobre PLAN-020
 
 | ID | Fecha | Área | Estado | Decisión | Documento de detalle |
 | --- | --- | --- | --- | --- | --- |
+| DEV-002 | 2026-10-06 | Git y colaboración | Confirmada por Javier | El árbol local actual es la referencia de esta consolidación; los chats/ramas anteriores aportan contexto, no sustituyen archivos. Javier autoriza guardar y subir cada bloque terminado y validado, sin repetir autorización. No incluye despliegues, producción ni reescritura de historial. | `AGENTS.md`, `docs/AUDIT_2026_10_06.md` |
 | STR-033 | 2026-10-06 | Contexto de entrenamiento | Implementada en desarrollo | Perfil y Mi programa usan el mismo contexto de días, minutos y material exacto del coordinador. Las preferencias antiguas solo ayudan a completarlo; guardar no reinicia ni borra resultados. | `docs/PROGRAMA_ADAPTATIVO.md` |
 | UI-007 | 2026-10-06 | Navegación de tareas | Confirmada por Javier e implementada | Consulta conserva la posición de cada sección; configuración y entrenamiento se abren sin barra. Salidas según cambios pendientes, borradores recuperables y series confirmadas, sin confundir salir con abandonar. | `docs/VISUAL_DESIGN.md` |
 | DOC-001 | 2026-09-25 | Colaboración | Implementada | Las decisiones relevantes no permanecerán únicamente en un chat: se registran aquí y se desarrollan en el documento de dominio correspondiente. | `AGENTS.md` |
@@ -489,6 +490,16 @@ aviso si los cambios incompletos no pueden guardarse. Salir del ejecutor
 conserva series confirmadas y permite retomar; no equivale a abandonar.
 La salida se comprueba en `GoRoute.onExit`, también para cambios de ruta.
 Detalle, alcance y límites: `docs/VISUAL_DESIGN.md`.
+
+## DEV-002 · Guardar y subir cada bloque validado · 06/10/2026
+
+Javier confirma que la app de su PC es el estado funcional más actualizado y
+pide conservarlo al consolidar Git. Después autoriza expresamente «Sí, guardar
+y subir cada bloque validado». Al cerrar un bloque se revisan cambios y archivos
+nuevos, se ejecuta la verificación correspondiente y se hace commit y push.
+Si algo falla, se conserva el trabajo y se explica el pendiente. No se reduce
+la verificación por el plan contratado ni se importan versiones de otros chats
+sin contrastarlas con el código local. Procedimiento en `AGENTS.md`.
 
 ## Regla para nuevas decisiones
 

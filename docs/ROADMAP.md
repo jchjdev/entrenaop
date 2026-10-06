@@ -1,6 +1,17 @@
 # Roadmap de EntrenaOP
 
-**Chequeo general, 06/10/2026:** app, admin, paquetes compartidos y Supabase de
+**Consolidación, 06/10/2026:** se conserva el estado local confirmado por Javier
+en el punto de recuperación `236f8b7`, sin importar versiones antiguas. Se
+separan pendientes y borradores por usuario, con 17 regresiones nuevas y 470
+pruebas completas de la app correctas. v1 permanece intacto: los pendientes se
+recuperan mediante comprobación remota del propietario; los borradores sin
+propietario requieren recuperación explícita, aún sin pantalla de importación.
+`website/` conserva su repositorio independiente y una copia completa en un
+bundle versionado. DEV-002 autoriza commit y subida de cada bloque validado;
+procedimiento permanente en `AGENTS.md` y detalle en la auditoría. Análisis
+final limpio y compilación web del deportista correcta.
+
+**Chequeo general inicial, 06/10/2026:** app, admin, paquetes compartidos y Supabase de
 desarrollo contrastados; informe e inventario en
 [AUDIT_2026_10_06.md](AUDIT_2026_10_06.md). La auditoría comienza con 123 archivos
 modificados y 346 sin seguimiento, entre ellos 81 migraciones aplicadas en
@@ -13,12 +24,11 @@ red de release, que aún usa firma de depuración. Pasan las 55 baterías SQL tr
 expectativa antigua del tamaño del catálogo. Windows carece de componentes
 del toolchain e iOS no se compila desde este equipo.
 
-**Próximo paso técnico recomendado:** aislar cola y borradores por cuenta,
-conservando los pendientes del propietario, y consolidar después el estado
-verificado en Git. Las reproducciones detectan bloqueo de cola y recuperación
-de un borrador ajeno al cambiar de usuario. Este chequeo no cierra el bloque
-deportivo: después de estabilizar esa frontera, continúa el único siguiente
-bloque deportivo de controles de protocolo y prioridades por déficit.
+El aislamiento y la consolidación recomendados por el chequeo inicial se
+abordan en el cierre descrito arriba. Este chequeo no cierra el bloque
+deportivo; continúa el único siguiente bloque deportivo de controles de
+protocolo y prioridades por déficit. La recuperación explícita de borradores
+v1 queda registrada como límite técnico, sin ampliar ahora el motor deportivo.
 
 **STR-033/UI-007, 06/10/2026 · contexto y navegación de tareas:** Perfil y
 «Mi programa» usan el contexto real por usuario del coordinador, con días y

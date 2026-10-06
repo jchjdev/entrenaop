@@ -10,8 +10,12 @@ void main() {
 
   test('conserva las operaciones pendientes entre instancias', () async {
     final preferences = await SharedPreferences.getInstance();
-    final queue = SharedPreferencesWorkoutMutationQueue(preferences);
+    final queue = SharedPreferencesWorkoutMutationQueue(
+      preferences,
+      currentUserId: () => 'user-A',
+    );
     final mutation = PendingWorkoutMutation(
+      userId: 'user-A',
       operationId: 'operation-1',
       type: WorkoutMutationType.completeSet,
       resourceId: 'result-1',
@@ -22,6 +26,7 @@ void main() {
     await queue.enqueue(mutation);
     final restored = await SharedPreferencesWorkoutMutationQueue(
       preferences,
+      currentUserId: () => 'user-A',
     ).readAll();
 
     expect(restored, [mutation]);
@@ -29,8 +34,12 @@ void main() {
 
   test('no duplica una operación y permite retirarla al sincronizar', () async {
     final preferences = await SharedPreferences.getInstance();
-    final queue = SharedPreferencesWorkoutMutationQueue(preferences);
+    final queue = SharedPreferencesWorkoutMutationQueue(
+      preferences,
+      currentUserId: () => 'user-A',
+    );
     final mutation = PendingWorkoutMutation(
+      userId: 'user-A',
       operationId: 'operation-1',
       type: WorkoutMutationType.skipSet,
       resourceId: 'result-1',
@@ -42,7 +51,7 @@ void main() {
     await queue.enqueue(mutation);
     expect(await queue.readAll(), hasLength(1));
 
-    await queue.remove(mutation.operationId);
+    await queue.remove(mutation.operationId, userId: mutation.userId);
     expect(await queue.readAll(), isEmpty);
   });
 }

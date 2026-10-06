@@ -70,6 +70,7 @@ import 'package:entrenaop/features/workouts/data/services/shared_preferences_wor
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_mutation_queue.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_editor_draft_store.dart';
+import 'package:entrenaop/features/workouts/data/services/workout_legacy_mutation_owner.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
@@ -105,10 +106,17 @@ Future<void> initDependencies() async {
     () => SharedPreferencesWorkoutCueService(sharedPreferences),
   );
   sl.registerLazySingleton<WorkoutMutationQueue>(
-    () => SharedPreferencesWorkoutMutationQueue(sharedPreferences),
+    () => SharedPreferencesWorkoutMutationQueue(
+      sharedPreferences,
+      currentUserId: () => sl<SupabaseClient>().auth.currentUser?.id,
+      ownsLegacyMutation: WorkoutLegacyMutationOwner(sl()).owns,
+    ),
   );
-  sl.registerLazySingleton<WorkoutEditorDraftStore>(
-    () => SharedPreferencesWorkoutEditorDraftStore(sharedPreferences),
+  sl.registerFactory<WorkoutEditorDraftStore>(
+    () => SharedPreferencesWorkoutEditorDraftStore(
+      sharedPreferences,
+      userId: sl<SupabaseClient>().auth.currentUser?.id,
+    ),
   );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
@@ -261,7 +269,11 @@ Future<void> initDependencies() async {
     () => WorkoutRemoteDataSourceImpl(supabaseClient: sl()),
   );
   sl.registerLazySingleton<WorkoutRepository>(
-    () => WorkoutRepositoryImpl(remoteDataSource: sl(), mutationQueue: sl()),
+    () => WorkoutRepositoryImpl(
+      remoteDataSource: sl(),
+      mutationQueue: sl(),
+      currentUserId: () => sl<SupabaseClient>().auth.currentUser?.id,
+    ),
   );
   sl.registerLazySingleton(() => GetWorkoutTemplateUseCase(sl()));
   sl.registerLazySingleton(() => GetPublicWorkoutsUseCase(sl()));

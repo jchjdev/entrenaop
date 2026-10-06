@@ -9,7 +9,10 @@ void main() {
 
   test('restaura toda la estructura de un borrador', () async {
     final preferences = await SharedPreferences.getInstance();
-    final store = SharedPreferencesWorkoutEditorDraftStore(preferences);
+    final store = SharedPreferencesWorkoutEditorDraftStore(
+      preferences,
+      userId: 'user-A',
+    );
     final snapshot = WorkoutEditorDraftSnapshot(
       savedAt: DateTime.utc(2026, 9, 21, 20, 30),
       input: const CreatePersonalWorkoutInput(
@@ -44,6 +47,7 @@ void main() {
     await store.write('new', snapshot);
     final restored = await SharedPreferencesWorkoutEditorDraftStore(
       preferences,
+      userId: 'user-A',
     ).read('new');
 
     expect(restored, snapshot);
@@ -51,7 +55,10 @@ void main() {
 
   test('elimina un borrador guardado', () async {
     final preferences = await SharedPreferences.getInstance();
-    final store = SharedPreferencesWorkoutEditorDraftStore(preferences);
+    final store = SharedPreferencesWorkoutEditorDraftStore(
+      preferences,
+      userId: 'user-A',
+    );
     await store.write(
       'template-1',
       WorkoutEditorDraftSnapshot(
@@ -69,7 +76,10 @@ void main() {
     'restaura el ritmo y la recuperación de un borrador de carrera',
     () async {
       final preferences = await SharedPreferences.getInstance();
-      final store = SharedPreferencesWorkoutEditorDraftStore(preferences);
+      final store = SharedPreferencesWorkoutEditorDraftStore(
+        preferences,
+        userId: 'user-A',
+      );
       final snapshot = WorkoutEditorDraftSnapshot(
         savedAt: DateTime.utc(2026, 9, 22),
         input: const CreatePersonalWorkoutInput(

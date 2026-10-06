@@ -1,3 +1,6 @@
+// Evidencia histórica anterior a la corrección de cuentas del 06/10/2026.
+// Estos tests afirman el defecto original; no son pruebas de regresión actuales.
+// Cobertura vigente: test/features/workouts/data/workout_account_isolation_test.dart.
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_editor_draft_store.dart';
