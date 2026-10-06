@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   supabase_flutter: ^2.17.2
+  go_router: 18.0.1
+  cupertino_icons: ^1.0.8
   workout_core:
     path: ../packages/workout_core
   workout_editor_ui:

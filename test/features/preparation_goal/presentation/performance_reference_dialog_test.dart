@@ -54,6 +54,7 @@ void main() {
           publishedWeeks: const [],
         );
         PerformanceReferenceInput? result;
+        var saveCalls = 0;
         await t.pumpWidget(
           RepaintBoundary(
             key: const ValueKey('review-boundary'),
@@ -67,6 +68,10 @@ void main() {
                         context: context,
                         builder: (_) => PerformanceReferenceDialog(
                           data: data,
+                          onSave: (_) async {
+                            saveCalls++;
+                            if (saveCalls == 1) throw StateError('Sin conexión');
+                          },
                           objective: {
                             'name': 'Prueba',
                             'profile_code': scenario.$1,
@@ -135,6 +140,16 @@ void main() {
         }
         await t.tap(find.text('Guardar referencia'));
         await t.pumpAndSettle();
+        expect(result, isNull);
+        expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
+        await t.tap(find.text('Atrás'));
+        await t.pumpAndSettle();
+        expect(t.widget<TextFormField>(field).controller!.text, scenario.$4);
+        await t.tap(find.text('Continuar'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Guardar referencia'));
+        await t.pumpAndSettle();
+        expect(saveCalls, 2);
         expect(result, isNotNull);
         expect(result!.reference['targets'], [
           double.parse(scenario.$4.replaceAll(',', '.')),

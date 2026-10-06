@@ -349,7 +349,7 @@ class AppRouter {
                                     sl<TrainingPreferencesRepository>().get,
                               ),
                             ),
-                            GoRoute(
+                            _workflowRoute(
                               path: 'troop-assessment',
                               builder: (context, state) => BlocProvider(
                                 create: (_) => sl<PhysicalAssessmentCubit>(),
@@ -358,7 +358,7 @@ class AppRouter {
                                 ),
                               ),
                             ),
-                            GoRoute(
+                            _workflowRoute(
                               path: 'program-assessment',
                               builder: (context, state) =>
                                   ProgramAssessmentPage(
@@ -376,7 +376,7 @@ class AppRouter {
                                         sl<ProfileBirthDateRepository>().save,
                                   ),
                             ),
-                            GoRoute(
+                            _workflowRoute(
                               path: 'periodic-assessment',
                               builder: (context, state) =>
                                   FasPeriodicAssessmentPage(

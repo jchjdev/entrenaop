@@ -1,9 +1,7 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
-import 'package:entrenaop_admin/features/programs/presentation/admin_program_attempt_preview_page.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
-import 'package:entrenaop_admin/features/programs/presentation/admin_test_pass_standards_page.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_performance_strategy_section.dart';
@@ -138,7 +136,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
         values.$1,
         values.$2,
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) context.pop(true);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -211,7 +209,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
       );
       if (confirmed != true || !mounted) return;
       await widget.repository.publishAssessment(widget.program.id);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) context.pop(true);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -482,13 +480,8 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                 title: const Text('Sesiones del programa'),
                 subtitle: const Text('Plantillas de entrenamiento'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => AdminProgramWorkoutsPage(
-                      program: widget.program,
-                      repository: widget.workoutRepository,
-                    ),
-                  ),
+                onTap: () => context.push(
+                  '/programs/${Uri.encodeComponent(widget.program.id)}/sessions',
                 ),
               ),
             ),
@@ -508,8 +501,15 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
               future: _rule,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return const Text(
-                    'No se pudo cargar la regla de calificación.',
+                  return TextButton(
+                    onPressed: () => setState(
+                      () => _rule = widget.repository.getScoringRule(
+                        widget.program.id,
+                      ),
+                    ),
+                    child: const Text(
+                      'No se pudo cargar la regla de calificación. Reintentar',
+                    ),
                   );
                 }
                 if (!snapshot.hasData &&
@@ -559,13 +559,14 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
               },
             ),
             const SizedBox(height: 28),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Expanded(
-                  child: Text(
-                    'Pruebas del programa',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                const Text(
+                  'Pruebas del programa',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 if (!widget.program.enabled)
                   FilledButton.icon(
@@ -609,14 +610,8 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => AdminProgramAttemptPreviewPage(
-                              program: widget.program,
-                              tests: snapshot.data!,
-                              repository: widget.repository,
-                            ),
-                          ),
+                        onPressed: () => context.push(
+                          '/programs/${Uri.encodeComponent(widget.program.id)}/simulation',
                         ),
                         icon: const Icon(Icons.calculate_outlined),
                         label: const Text('Simular calificación'),
@@ -657,22 +652,8 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                                   );
                                   return;
                                 }
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        rule.scoringMode == 'pass_fail'
-                                        ? AdminTestPassStandardsPage(
-                                            test: test,
-                                            repository: widget.repository,
-                                            editable: !widget.program.enabled,
-                                          )
-                                        : AdminTestScoreBandsPage(
-                                            programId: widget.program.id,
-                                            test: test,
-                                            repository: widget.repository,
-                                            editable: !widget.program.enabled,
-                                          ),
-                                  ),
+                                context.push(
+                                  '/programs/${Uri.encodeComponent(widget.program.id)}/tests/${Uri.encodeComponent(test.id)}/scale',
                                 );
                               },
                             ),

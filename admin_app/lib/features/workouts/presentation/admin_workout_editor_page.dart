@@ -1,6 +1,11 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:convert';
+
+import 'package:entrena_ui/entrena_ui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
@@ -38,11 +43,57 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   bool _running = true;
   bool _busy = false;
   String? _error;
+  late String _savedStamp;
+  String get _draftStamp => jsonEncode([
+    _name.text,
+    _description.text,
+    _duration.text,
+    _running,
+    for (final segment in _segments)
+      [
+        segment.count.text,
+        segment.target.text,
+        segment.pace.text,
+        segment.paceMax.text,
+        segment.recoveryTime.text,
+        segment.byDistance,
+        segment.recoveryByDistance,
+        segment.recovery?.name,
+      ],
+    for (final block in _blocks)
+      [
+        block.name.text,
+        block.rounds.text,
+        block.rest.text,
+        block.cap.text,
+        block.format.name,
+        for (final exercise in block.exercises)
+          [
+            exercise.exerciseId,
+            exercise.type.name,
+            exercise.customSets,
+            exercise.count.text,
+            exercise.target.text,
+            exercise.rest.text,
+            exercise.load.text,
+            exercise.rir.text,
+            for (final entry in exercise.variations.entries)
+              [
+                entry.key,
+                entry.value.target.text,
+                entry.value.rest.text,
+                entry.value.load.text,
+                entry.value.rir.text,
+              ],
+          ],
+      ],
+  ]);
 
   @override
   void initState() {
     super.initState();
     if (widget.originalTemplate case final original?) _populate(original);
+    _savedStamp = _draftStamp;
     widget.repository
         .listPublicExercises()
         .then((items) {
@@ -326,6 +377,8 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   }
 
   Future<void> _save() async {
+    if (_busy) return;
+    FocusScope.of(context).unfocus();
     try {
       final input = _input();
       validateWorkoutDraft(input);
@@ -338,7 +391,13 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
       } else {
         await widget.repository.createDraft(widget.program?.id, input);
       }
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _savedStamp = _draftStamp;
+        });
+        context.pop(true);
+      }
     } on FormatException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
@@ -430,7 +489,13 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => _draftStamp != _savedStamp,
+    isBusy: () => _busy,
+    child: AbsorbPointer(absorbing: _busy, child: _buildPage(context)),
+  );
+
+  Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text(
         '${widget.revisionId == null ? 'Nueva sesión' : 'Revisar sesión'} · ${widget.program?.name ?? 'EntrenaOP'}',

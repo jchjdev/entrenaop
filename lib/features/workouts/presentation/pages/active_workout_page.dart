@@ -17,6 +17,7 @@ import 'package:entrenaop/features/workouts/presentation/widgets/performance_sto
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_closure.dart';
 
 class ActiveWorkoutPage extends StatelessWidget {
   const ActiveWorkoutPage({
@@ -1545,67 +1546,64 @@ class _Completed extends StatelessWidget {
         execution.sets.every(
           (set) => set.blockFormat == WorkoutBlockFormat.running,
         );
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (pendingSyncCount > 0) ...[
-              _PendingSyncBanner(count: pendingSyncCount),
-              const SizedBox(height: 18),
-            ],
-            const Icon(
-              Icons.check_circle_rounded,
-              size: 68,
-              color: Color(0xFFFF8A50),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Sesión completada',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
-            ),
+    return WorkoutClosureLayout(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (pendingSyncCount > 0) ...[
+            _PendingSyncBanner(count: pendingSyncCount),
+            const SizedBox(height: 18),
+          ],
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 68,
+            color: Color(0xFFFF8A50),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Sesión completada',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${execution.completedSetCount} completadas'
+            '${execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
+            ' · RPE ${execution.finalRpe ?? '-'}',
+            style: const TextStyle(color: Colors.white60),
+          ),
+          if (isRunning) ...[
             const SizedBox(height: 8),
             Text(
-              '${execution.completedSetCount} completadas'
-              '${execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
-              ' · RPE ${execution.finalRpe ?? '-'}',
-              style: const TextStyle(color: Colors.white60),
-            ),
-            if (isRunning) ...[
-              const SizedBox(height: 8),
-              Text(
-                runningAssessmentLabel(assessRunningExecution(execution.sets)),
-                style: const TextStyle(
-                  color: Color(0xFFFFA06F),
-                  fontWeight: FontWeight.w800,
-                ),
+              runningAssessmentLabel(assessRunningExecution(execution.sets)),
+              style: const TextStyle(
+                color: Color(0xFFFFA06F),
+                fontWeight: FontWeight.w800,
               ),
-            ],
-            if (execution.averageHeartRateBpm != null ||
-                execution.maxHeartRateBpm != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'FC ${execution.averageHeartRateBpm ?? '-'} media · '
-                '${execution.maxHeartRateBpm ?? '-'} máxima',
-                style: const TextStyle(color: Colors.white60),
-              ),
-            ],
-            if (execution.notes case final notes?) ...[
-              const SizedBox(height: 14),
-              Text(
-                '“$notes”',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70),
-              ),
-            ],
-            const SizedBox(height: 22),
-            FilledButton(
-              onPressed: () => context.go('/plan'),
-              child: const Text('Volver a Mi plan'),
             ),
           ],
-        ),
+          if (execution.averageHeartRateBpm != null ||
+              execution.maxHeartRateBpm != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'FC ${execution.averageHeartRateBpm ?? '-'} media · '
+              '${execution.maxHeartRateBpm ?? '-'} máxima',
+              style: const TextStyle(color: Colors.white60),
+            ),
+          ],
+          if (execution.notes case final notes?) ...[
+            const SizedBox(height: 14),
+            Text(
+              '“$notes”',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ],
+          const SizedBox(height: 22),
+          WorkoutClosureActions(
+            executionId: execution.id,
+            pendingSyncCount: pendingSyncCount,
+          ),
+        ],
       ),
     );
   }
@@ -1620,42 +1618,39 @@ class _Abandoned extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reason = execution.abandonmentReason;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (pendingSyncCount > 0) ...[
-              _PendingSyncBanner(count: pendingSyncCount),
-              const SizedBox(height: 18),
-            ],
-            const Icon(Icons.flag_outlined, size: 68, color: Color(0xFFFFA06F)),
-            const SizedBox(height: 16),
-            const Text(
-              'Sesión cerrada',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${execution.completedSetCount} '
-              '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'
-              '${reason == null ? '' : ' · ${_abandonmentReasonLabel(reason)}'}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Lo realizado se conserva para tu historial.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 22),
-            FilledButton(
-              onPressed: () => context.go('/plan'),
-              child: const Text('Volver a Mi plan'),
-            ),
+    return WorkoutClosureLayout(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (pendingSyncCount > 0) ...[
+            _PendingSyncBanner(count: pendingSyncCount),
+            const SizedBox(height: 18),
           ],
-        ),
+          const Icon(Icons.flag_outlined, size: 68, color: Color(0xFFFFA06F)),
+          const SizedBox(height: 16),
+          const Text(
+            'Sesión cerrada',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${execution.completedSetCount} '
+            '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'
+            '${reason == null ? '' : ' · ${_abandonmentReasonLabel(reason)}'}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white60),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Lo realizado se conserva para tu historial.',
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 22),
+          WorkoutClosureActions(
+            executionId: execution.id,
+            pendingSyncCount: pendingSyncCount,
+          ),
+        ],
       ),
     );
   }

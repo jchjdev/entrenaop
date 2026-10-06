@@ -32,20 +32,43 @@ class _AdminProgramAttemptPreviewPageState
   DateTime _assessedOn = DateTime.now();
   DateTime? _referenceOn;
   bool _loading = false;
+  bool _loadingRule = true;
+  String? _ruleError;
 
   @override
   void initState() {
     super.initState();
-    widget.repository.getScoringRule(widget.program.id).then((rule) {
+    _loadRule();
+  }
+
+  Future<void> _loadRule() async {
+    setState(() {
+      _loadingRule = true;
+      _loadedRule = null;
+      _ruleError = null;
+    });
+    try {
+      final rule = await widget.repository.getScoringRule(widget.program.id);
       if (mounted) {
         setState(() {
           _loadedRule = rule;
+          _ruleError = rule == null
+              ? 'Este programa todavía no tiene regla de evaluación.'
+              : null;
           _referenceOn = rule?.ageReferenceOn == null
               ? null
               : DateTime.parse(rule!.ageReferenceOn!);
         });
       }
-    });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _ruleError = 'No se pudo cargar la regla de evaluación.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loadingRule = false);
+    }
   }
 
   int? get _age {
@@ -254,10 +277,13 @@ class _AdminProgramAttemptPreviewPageState
             ),
             const SizedBox(height: 24),
             Text(
-              _loadedRule == null
+              _loadingRule
                   ? 'Cargando regla de evaluación…'
-                  : '${_loadedRule!.stageLabel} · ${_loadedRule!.scoringMode == 'pass_fail' ? 'Apto / no apto' : 'Puntos'}',
+                  : _ruleError ??
+                        '${_loadedRule!.stageLabel} · ${_loadedRule!.scoringMode == 'pass_fail' ? 'Apto / no apto' : 'Puntos'}',
             ),
+            if (_ruleError != null)
+              TextButton(onPressed: _loadRule, child: const Text('Reintentar')),
             const SizedBox(height: 12),
             SegmentedButton<String>(
               segments: const [
@@ -344,7 +370,13 @@ class _AdminProgramAttemptPreviewPageState
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
-              onPressed: _loading || _applicable.isEmpty ? null : _score,
+              onPressed:
+                  _loading ||
+                      _loadingRule ||
+                      _ruleError != null ||
+                      _applicable.isEmpty
+                  ? null
+                  : _score,
               icon: const Icon(Icons.calculate_outlined),
               label: const Text('Evaluar marcas'),
             ),

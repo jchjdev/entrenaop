@@ -654,7 +654,27 @@ aplica `GoRoute.onExit` mediante un registro local al router. Cada página aport
 sus cambios actuales, guardado de borrador o estado de ejecución; el registro
 no almacena widgets ni decide progresión. Los avisos distinguen descarte,
 borrador recuperable y salida de una sesión sin abandonarla. Los formularios
-de evaluación oficial no se reorganizan en este tramo.
+de evaluación oficial no se reorganizaron en UI-007; UI-008 amplía la protección
+a los formularios de Tropa, FAS y evaluación de programa.
+
+UI-008 reutiliza el guard visual mediante `entrena_ui`, sin añadir dependencias
+de dominio. El registro de salidas vive en cada router; los campos y snapshots
+temporales pertenecen a sus pantallas. `RetainedSaveDialog` espera un callback
+de persistencia y conserva el formulario y el error recuperable; no recibe un
+cliente Supabase ni decide permisos. Los diálogos siguen usando el mecanismo
+modal de Flutter, no se convierten en páginas con URL.
+
+El admin usa `MaterialApp.router` y `go_router` (misma versión resuelta que la
+app del deportista). Sus rutas identifican programas, sesiones y pruebas por
+ID y recargan mediante repositorios, sin depender de `extra`. Se comprueba
+acceso antes de resolver páginas editoriales; los recursos se verifican contra
+su catálogo/programa. El guard de sesión redirige al acceso al cerrar sesión,
+pero nunca sustituye RLS ni los permisos de las RPC existentes. Cambiar un ID
+de URL renueva el loader; volver a un listado conserva búsqueda y selección.
+Renovar el token de la misma cuenta conserva navegación; cambiar identidad
+recrea el router del admin para no reutilizar consultas ni formularios de otra
+cuenta. La fuente `cupertino_icons`, ya usada por el deportista, se incluye
+también en admin para los iconos de las dependencias adaptables de navegación.
 
 STR-033 aporta `TrainingContext` y su repositorio en `training_plan`. Su
 adaptador de datos lee la RPC propia `get_training_context_settings` y escribe

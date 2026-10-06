@@ -599,13 +599,14 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
             const SizedBox(height: 12),
             Text(widget.test.protocolNotes),
             const SizedBox(height: 24),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
-                  child: Text(
-                    'Tramos de puntuación',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                Text(
+                  'Tramos de puntuación',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 if (widget.editable) ...[
                   OutlinedButton.icon(
@@ -613,7 +614,6 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
                     icon: const Icon(Icons.table_rows_outlined),
                     label: const Text('Pegar tabla'),
                   ),
-                  const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: _saving ? null : _add,
                     icon: const Icon(Icons.add),
@@ -631,7 +631,16 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
               future: _bands,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return const Text('No se pudo cargar el baremo.');
+                  return TextButton(
+                    onPressed: () => setState(
+                      () => _bands = widget.repository.listScoreBands(
+                        widget.test.id,
+                      ),
+                    ),
+                    child: const Text(
+                      'No se pudo cargar el baremo. Reintentar',
+                    ),
+                  );
                 }
                 if (!snapshot.hasData) return const LinearProgressIndicator();
                 if (snapshot.data!.isEmpty) {

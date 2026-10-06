@@ -1,6 +1,6 @@
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -63,12 +63,11 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     setState(() => _publishing = true);
     try {
       await widget.repository.publishDraft(widget.workout.id);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) context.pop(true);
     } on PostgrestException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
       }
     } catch (_) {
       if (mounted) {
@@ -108,12 +107,11 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     setState(() => _removing = true);
     try {
       await widget.repository.remove(widget.workout.id);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) context.pop(true);
     } on PostgrestException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
       }
     } catch (_) {
       if (mounted) {
@@ -127,17 +125,13 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   }
 
   Future<void> _revise(WorkoutTemplate template) async {
-    final saved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => AdminWorkoutEditorPage(
-          program: widget.program,
-          repository: widget.repository,
-          originalTemplate: template,
-          revisionId: widget.workout.id,
-        ),
-      ),
+    final base = widget.program == null
+        ? '/sessions'
+        : '/programs/${Uri.encodeComponent(widget.program!.id)}/sessions';
+    final saved = await context.push<bool>(
+      '$base/${Uri.encodeComponent(widget.workout.id)}/edit',
     );
-    if (saved == true && mounted) Navigator.of(context).pop(true);
+    if (saved == true && mounted) context.pop(true);
   }
 
   @override
@@ -153,10 +147,23 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
               return const CircularProgressIndicator();
             }
             if (snapshot.hasError || snapshot.data == null) {
-              return const Padding(
+              return Padding(
                 padding: EdgeInsets.all(24),
-                child: Text(
-                  'No se pudo cargar la prescripción. No la publiques todavía.',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'No se pudo cargar la sesión. No la publiques todavía.',
+                    ),
+                    TextButton(
+                      onPressed: () => setState(
+                        () => _template = widget.repository.getTemplateById(
+                          widget.workout.id,
+                        ),
+                      ),
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
                 ),
               );
             }

@@ -1,3 +1,5 @@
+import '../../../helpers/admin_test_app.dart';
+
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
@@ -12,6 +14,7 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   CreatePersonalWorkoutInput? saved;
   String? programId;
   String? revisedId;
+  bool failSave = false;
 
   @override
   Future<void> publishDraft(String templateId) async {}
@@ -37,6 +40,7 @@ class _FakeWorkouts implements AdminWorkoutRepository {
     String? programId,
     CreatePersonalWorkoutInput input,
   ) async {
+    if (failSave) throw StateError('Sin conexión');
     this.programId = programId;
     saved = input;
     return 'draft-id';
@@ -71,13 +75,91 @@ void main() {
     enabled: false,
   );
 
+  testWidgets('atrás permite conservar el formulario o descartar sin guardar', (
+    tester,
+  ) async {
+    final repository = _FakeWorkouts();
+    await tester.pumpWidget(
+      AdminTestApp(
+        home: AdminWorkoutEditorPage(program: program, repository: repository),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      _field('Nombre de la sesión'),
+      'Mi borrador sin terminar',
+    );
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+    await tester.tap(find.text('Seguir aquí'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(_field('Nombre de la sesión')).controller!.text,
+      'Mi borrador sin terminar',
+    );
+    expect(repository.saved, isNull);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salir sin guardar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pantalla anterior'), findsOneWidget);
+    expect(repository.saved, isNull);
+  });
+
+  testWidgets(
+    'fallar al guardar mantiene el editor y permite reintentar sin aviso falso al salir',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _FakeWorkouts()..failSave = true;
+      await tester.pumpWidget(
+        AdminTestApp(
+          home: AdminWorkoutEditorPage(
+            program: program,
+            repository: repository,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        _field('Nombre de la sesión'),
+        'Series recuperables',
+      );
+      await tester.enterText(_field('Distancia (m)'), '200');
+      await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
+      await tester.ensureVisible(find.text('Guardar borrador'));
+      await tester.tap(find.text('Guardar borrador'));
+      await tester.pumpAndSettle();
+      expect(repository.saved, isNull);
+      expect(
+        find.textContaining('No se pudo guardar el borrador'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(_field('Nombre de la sesión'))
+            .controller!
+            .text,
+        'Series recuperables',
+      );
+      repository.failSave = false;
+      await tester.ensureVisible(find.text('Guardar borrador'));
+      await tester.tap(find.text('Guardar borrador'));
+      await tester.pumpAndSettle();
+      expect(repository.saved?.name, 'Series recuperables');
+      expect(find.text('Pantalla anterior'), findsOneWidget);
+      expect(find.text('¿Salir sin guardar?'), findsNothing);
+    },
+  );
+
   testWidgets('agrupa cinco series iguales y guarda cinco parciales', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -107,7 +189,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -130,7 +212,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -165,7 +247,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -186,7 +268,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1200));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -223,7 +305,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -260,7 +342,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -302,7 +384,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1400));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -349,7 +431,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -390,7 +472,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1200));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -426,7 +508,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1200, 1400));
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminWorkoutEditorPage(program: program, repository: repository),
       ),
     );
@@ -498,7 +580,7 @@ void main() {
         ],
       );
       await tester.pumpWidget(
-        MaterialApp(
+        AdminTestApp(
           home: AdminWorkoutEditorPage(
             program: program,
             repository: repository,
@@ -576,7 +658,7 @@ void main() {
         ],
       );
       await tester.pumpWidget(
-        MaterialApp(
+        AdminTestApp(
           home: AdminWorkoutEditorPage(
             program: program,
             repository: repository,

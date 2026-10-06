@@ -1,7 +1,7 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
 
 class AdminProgramWorkoutsPage extends StatefulWidget {
@@ -23,11 +23,29 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   List<AdminWorkoutSummary>? _workouts;
   String? _error;
   String _filter = 'all';
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  String get _routeBase => widget.program == null
+      ? '/sessions'
+      : '/programs/${Uri.encodeComponent(widget.program!.id)}/sessions';
 
   List<AdminWorkoutSummary> get _visibleWorkouts => _workouts == null
       ? const []
       : _workouts!
-            .where((workout) => _filter == 'all' || workout.status == _filter)
+            .where(
+              (workout) =>
+                  (_filter == 'all' || workout.status == _filter) &&
+                  matchesCatalogSearch(_search.text, [
+                    workout.name,
+                    workout.isRunning ? 'Carrera' : 'Fuerza',
+                  ]),
+            )
             .toList(growable: false);
 
   @override
@@ -55,14 +73,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _create() async {
-    final saved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => AdminWorkoutEditorPage(
-          program: widget.program,
-          repository: widget.repository,
-        ),
-      ),
-    );
+    final saved = await context.push<bool>('$_routeBase/new');
     if (saved == true) {
       await _load();
       if (mounted) {
@@ -76,23 +87,22 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   }
 
   Future<void> _preview(AdminWorkoutSummary workout) async {
-    final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => AdminWorkoutPreviewPage(
-          workout: workout,
-          repository: widget.repository,
-          program: widget.program,
-        ),
-      ),
-    );
-    if (changed == true) {
-      await _load();
-    }
+    await context.push<bool>('$_routeBase/${Uri.encodeComponent(workout.id)}');
+    if (mounted) await _load();
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.program?.name ?? 'Biblioteca general')),
+    appBar: AppBar(
+      title: Text(widget.program?.name ?? 'Biblioteca general'),
+      leading: GoRouter.maybeOf(context)?.canPop() == false
+          ? IconButton(
+              tooltip: 'Ir a programas',
+              icon: const Icon(Icons.home_outlined),
+              onPressed: () => context.go('/programs'),
+            )
+          : null,
+    ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -121,6 +131,16 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               ),
             ),
             const SizedBox(height: 24),
+            TextField(
+              controller: _search,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Buscar sesiones',
+                hintText: 'Nombre, carrera o fuerza',
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+            const SizedBox(height: 16),
             if (_workouts != null && _workouts!.isNotEmpty) ...[
               Wrap(
                 spacing: 8,
@@ -151,7 +171,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
             else if (_workouts!.isEmpty)
               const Text('Todavía no hay sesiones en esta biblioteca.')
             else if (_visibleWorkouts.isEmpty)
-              const Text('No hay sesiones con este estado.')
+              const Text('No hay sesiones con esta búsqueda y estado.')
             else
               for (final workout in _visibleWorkouts)
                 Card(

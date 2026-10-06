@@ -1,11 +1,9 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
-import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
-import 'package:entrenaop_admin/features/programs/presentation/admin_program_detail_page.dart';
-import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
+import 'package:go_router/go_router.dart';
+import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
 
@@ -35,6 +33,22 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   bool _saving = false;
   String? _error;
   List<AdminProgram> _programs = const [];
+  final _search = TextEditingController();
+  List<AdminProgram> get _visiblePrograms => _programs
+      .where(
+        (program) => matchesCatalogSearch(_search.text, [
+          program.name,
+          program.kind == 'access' ? 'Acceso oposición' : 'Evaluación interna',
+          program.enabled ? 'Publicado' : 'Borrador',
+        ]),
+      )
+      .toList();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -44,7 +58,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
 
   Future<void> _load() async {
     setState(() {
-      _loading = true;
+      _loading = _programs.isEmpty;
       _error = null;
     });
     try {
@@ -76,12 +90,23 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   Future<void> _createDraft() async {
     final result = await showDialog<({String name, String kind})>(
       context: context,
-      builder: (_) => const _NewProgramDialog(),
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<({String name, String kind})>(
+        save: (value) =>
+            widget.repository.createDraft(name: value.name, kind: value.kind),
+        errorMessage: 'No se pudo crear el programa. Tus datos siguen aquí; revisa permisos y conexión.',
+        builder: (context, submit, saving, error, markDirty) =>
+            _NewProgramDialog(
+              onSubmit: submit,
+              saving: saving,
+              error: error,
+              onDirtyChanged: markDirty,
+            ),
+      ),
     );
     if (result == null || !mounted) return;
     setState(() => _saving = true);
     try {
-      await widget.repository.createDraft(name: result.name, kind: result.kind);
       if (!mounted) return;
       await _load();
       if (!mounted) return;
@@ -133,7 +158,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
 
   Widget _buildContent() {
     if (_loading) return const CircularProgressIndicator();
-    if (_error != null) {
+    if (_error != null && _programs.isEmpty) {
       return _Message(_error!, onRetry: _load);
     }
     if (!_authorized) {
@@ -178,14 +203,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
                   title: 'Sesiones oficiales',
                   description: 'Crear sesiones para la biblioteca general.',
                   action: 'Abrir sesiones',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => AdminProgramWorkoutsPage(
-                        program: null,
-                        repository: widget.workoutRepository,
-                      ),
-                    ),
-                  ),
+                  onTap: () => context.push('/sessions'),
                 ),
                 _AdminAreaCard(
                   width: width,
@@ -193,13 +211,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
                   title: 'Ejercicios oficiales',
                   description: 'Crear y editar el catálogo global.',
                   action: 'Abrir ejercicios',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => AdminExercisesPage(
-                        repository: widget.exerciseRepository,
-                      ),
-                    ),
-                  ),
+                  onTap: () => context.push('/exercises'),
                 ),
               ],
             );
@@ -207,18 +219,14 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
         ),
         const SizedBox(height: 24),
         Card(
-          child: ExpansionTile(
+          child: ListTile(
             title: const Text('Laboratorio de fuerza y rendimiento'),
             subtitle: const Text(
               'Revisar selección, dosis y respuesta con datos simulados',
             ),
             leading: const Icon(Icons.science_outlined),
-            childrenPadding: const EdgeInsets.all(16),
-            children: [
-              AdminPerformanceProgressionLab(
-                repository: widget.exerciseRepository,
-              ),
-            ],
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => context.push('/laboratory'),
           ),
         ),
         const SizedBox(height: 32),
@@ -244,6 +252,23 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           style: TextStyle(color: context.visuals.textMuted),
         ),
         const SizedBox(height: 16),
+        TextField(
+          controller: _search,
+          onChanged: (_) => setState(() {}),
+          decoration: const InputDecoration(
+            labelText: 'Buscar programas',
+            prefixIcon: Icon(Icons.search),
+            hintText: 'Nombre, tipo o estado',
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (_error != null)
+          TextButton(onPressed: _load, child: Text('$_error Reintentar')),
+        if (_programs.isNotEmpty && _visiblePrograms.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('No hay programas con esa búsqueda.'),
+          ),
         if (_programs.isEmpty)
           const Card(
             child: Padding(
@@ -252,19 +277,12 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
             ),
           )
         else
-          for (final program in _programs)
+          for (final program in _visiblePrograms)
             Card(
               child: ListTile(
                 onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute<bool>(
-                      builder: (_) => AdminProgramDetailPage(
-                        program: program,
-                        repository: widget.repository,
-                        workoutRepository: widget.workoutRepository,
-                        coverRepository: widget.coverRepository,
-                      ),
-                    ),
+                  await context.push(
+                    '/programs/${Uri.encodeComponent(program.id)}',
                   );
                   if (mounted) await _load();
                 },
@@ -392,7 +410,16 @@ class _Message extends StatelessWidget {
 }
 
 class _NewProgramDialog extends StatefulWidget {
-  const _NewProgramDialog();
+  const _NewProgramDialog({
+    required this.onSubmit,
+    required this.saving,
+    required this.onDirtyChanged,
+    this.error,
+  });
+  final ValueChanged<({String name, String kind})> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
 
   @override
   State<_NewProgramDialog> createState() => _NewProgramDialogState();
@@ -412,55 +439,71 @@ class _NewProgramDialogState extends State<_NewProgramDialog> {
   @override
   Widget build(BuildContext context) => AlertDialog(
     title: const Text('Nuevo programa'),
+    scrollable: true,
     content: SizedBox(
       width: 440,
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _name,
-              autofocus: true,
-              maxLength: 120,
-              decoration: const InputDecoration(labelText: 'Nombre'),
-              validator: (value) => (value?.trim().length ?? 0) < 3
-                  ? 'Escribe al menos 3 caracteres.'
-                  : null,
-            ),
-            DropdownButtonFormField<String>(
-              initialValue: _kind,
-              decoration: const InputDecoration(labelText: 'Tipo'),
-              items: const [
-                DropdownMenuItem(
-                  value: 'access',
-                  child: Text('Acceso u oposición'),
+      child: AbsorbPointer(
+        absorbing: widget.saving,
+        child: Form(
+          key: _formKey,
+          onChanged: () =>
+              widget.onDirtyChanged(_name.text.isNotEmpty || _kind != 'access'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.error != null)
+                Text(
+                  widget.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
-                DropdownMenuItem(
-                  value: 'internal_assessment',
-                  child: Text('Evaluación interna'),
-                ),
-              ],
-              onChanged: (value) => setState(() => _kind = value ?? _kind),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Se guardará como borrador. No será visible para alumnos.',
-            ),
-          ],
+              if (widget.saving) const LinearProgressIndicator(),
+              TextFormField(
+                controller: _name,
+                autofocus: true,
+                maxLength: 120,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+                validator: (value) => (value?.trim().length ?? 0) < 3
+                    ? 'Escribe al menos 3 caracteres.'
+                    : null,
+              ),
+              DropdownButtonFormField<String>(
+                initialValue: _kind,
+                decoration: const InputDecoration(labelText: 'Tipo'),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'access',
+                    child: Text('Acceso u oposición'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'internal_assessment',
+                    child: Text('Evaluación interna'),
+                  ),
+                ],
+                onChanged: (value) => setState(() => _kind = value ?? _kind),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Se guardará como borrador. No será visible para alumnos.',
+              ),
+            ],
+          ),
         ),
       ),
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: widget.saving
+            ? null
+            : () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
-        onPressed: () {
-          if (!_formKey.currentState!.validate()) return;
-          Navigator.of(context).pop((name: _name.text.trim(), kind: _kind));
-        },
+        onPressed: widget.saving
+            ? null
+            : () {
+                if (!_formKey.currentState!.validate()) return;
+                widget.onSubmit((name: _name.text.trim(), kind: _kind));
+              },
         child: const Text('Crear borrador'),
       ),
     ],

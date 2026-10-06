@@ -29,6 +29,7 @@ La selección de nuevas semanas de carrera se revisa en PLAN-022, sobre PLAN-020
 | DEV-002 | 2026-10-06 | Git y colaboración | Confirmada por Javier | El árbol local actual es la referencia de esta consolidación; los chats/ramas anteriores aportan contexto, no sustituyen archivos. Javier autoriza guardar y subir cada bloque terminado y validado, sin repetir autorización. No incluye despliegues, producción ni reescritura de historial. | `AGENTS.md`, `docs/AUDIT_2026_10_06.md` |
 | STR-033 | 2026-10-06 | Contexto de entrenamiento | Implementada en desarrollo | Perfil y Mi programa usan el mismo contexto de días, minutos y material exacto del coordinador. Las preferencias antiguas solo ayudan a completarlo; guardar no reinicia ni borra resultados. | `docs/PROGRAMA_ADAPTATIVO.md` |
 | UI-007 | 2026-10-06 | Navegación de tareas | Confirmada por Javier e implementada | Consulta conserva la posición de cada sección; configuración y entrenamiento se abren sin barra. Salidas según cambios pendientes, borradores recuperables y series confirmadas, sin confundir salir con abandonar. | `docs/VISUAL_DESIGN.md` |
+| UI-008 | 2026-10-06 | Fiabilidad y claridad de recorridos | Refresh aprobado; primer tramo implementado y validado | Javier aprueba el informe de UX: conservar formularios hasta guardar, refrescar sin perder estado, retorno contextual y resultado, recuperación de cuenta, Mi plan centrado en programa/semana, Evolución con datos comparables e historial, Biblioteca operativa y admin ordenado. Todas las pantallas usan go_router; StatefulWidget sigue siendo válido para estado temporal de interfaz, sin trasladar reglas ni acceso a Supabase al widget. Primer tramo: router admin por URL, protección de evaluaciones/editor, guardado retenido en referencias/programas/ejercicios, cierre de sesión accesible y búsquedas admin. El resto permanece pendiente y no se modifican algoritmos. | `docs/VISUAL_DESIGN.md`, `docs/ARCHITECTURE.md` |
 | DOC-001 | 2026-09-25 | Colaboración | Implementada | Las decisiones relevantes no permanecerán únicamente en un chat: se registran aquí y se desarrollan en el documento de dominio correspondiente. | `AGENTS.md` |
 | ARCH-001 | 2026-10-03 | Arquitectura | Reafirmada por Javier | Clean Architecture es el criterio permanente del proyecto: dominio independiente de Flutter/Supabase, adaptación de datos en la capa de datos y presentación mediante los contratos y casos de uso pertinentes. Los paquetes compartidos separan entidades/reglas de sus codecs; se mantienen capas con valor real, sin boilerplate por plantilla. | `docs/ARCHITECTURE.md` |
 | UI-001 | 2026-10-04 | Identidad visual | Aplicada en desarrollo a ambas apps; pulido por recorridos | Material 3 se mantiene como infraestructura y EntrenaOP añade un sistema visual centralizado propio. Javier confirma que también debe aplicarse al admin, conservando su densidad funcional. El paquete local de presentación `entrena_ui` comparte tema, tokens, tarjetas y wordmark oficial sin corredor ni eslogan; no conoce dominio, permisos ni persistencia. Ambas apps heredan superficies y controles comunes. Portada, acceso, Mi plan, perfil y panel admin tienen composición de marca; se retiran excepciones neutras locales en el resto de recorridos sin borrar significados de estados. | `docs/VISUAL_DESIGN.md` |
@@ -500,6 +501,20 @@ nuevos, se ejecuta la verificación correspondiente y se hace commit y push.
 Si algo falla, se conserva el trabajo y se explica el pendiente. No se reduce
 la verificación por el plan contratado ni se importan versiones de otros chats
 sin contrastarlas con el código local. Procedimiento en `AGENTS.md`.
+
+## UI-008 · Refresh de recorridos, sin cambiar el motor · 06/10/2026
+
+Javier acepta la revisión general y autoriza su implementación por tramos
+verificados. La identidad visual se mantiene. Se priorizan navegación previsible,
+conservación del trabajo y un siguiente paso claro, incluyendo el panel admin.
+`go_router` gestiona todas las pantallas; los diálogos mantienen su naturaleza
+modal. Clean Architecture no obliga a convertir widgets con campos, pestañas o
+animaciones en StatelessWidget: el estado temporal de presentación es legítimo.
+No se introducen reglas de entrenamiento ni consultas directas a Supabase en los
+nuevos widgets. El algoritmo se gestiona en otro chat y queda fuera de este
+refresh, al igual que cambios o despliegues en producción.
+
+Alcance implementado, verificaciones y pendientes en `docs/VISUAL_DESIGN.md`.
 
 ## Regla para nuevas decisiones
 

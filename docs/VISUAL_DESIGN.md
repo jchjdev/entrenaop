@@ -488,10 +488,79 @@ Las salidas se tratan según el estado real:
 El guard de `GoRoute.onExit` también intercepta cambios de ubicación, sin
 poner un aviso de pérdida genérico en todas las pantallas. No se afirma que
 intercepte el cierre del navegador/proceso. Los formularios de evaluación
-oficial existentes quedan fuera de esta reorganización.
+oficial existentes quedaron fuera de UI-007; se incorporan en UI-008.
 
 Regresiones: navegación de pestañas móvil/escritorio, rutas reales fuera de
 barra, cancelar salida conservando campos, guardar borrador antes de navegar,
 crear y guardar sin aviso falso, salir/retomar conservando series. Los tests
 utilizan repositorios simulados; la igualdad y permisos del contexto se
 comprueban además mediante fixtures SQL contra desarrollo con `ROLLBACK`.
+
+### Refresh de fiabilidad y claridad (UI-008, 06/10/2026)
+
+Javier aprueba el informe general y reafirma la separación entre estado de
+interfaz y dominio. Se mantiene la identidad actual, el calendario arriba,
+Tus preparaciones y Biblioteca como tercer destino. No se modifica el motor.
+
+Primer tramo implementado y verificado:
+
+- Admin utiliza rutas `go_router` para programas, sesiones, ejercicios,
+  simulación, baremos y laboratorio. Las URLs contienen IDs y se pueden
+  resolver sin haber visitado el listado. Errores de acceso o recurso ausente
+  ofrecen salida y los errores de carga ofrecen reintento. Cambiar el ID renueva
+  la lectura y evita enseñar un programa anterior con una URL distinta.
+- Tropa, evaluación periódica FAS y evaluación de programa se abren sin barra
+  y protegen campos pendientes mediante el mismo guard de salida de UI-007.
+  No se permite editar o salir mientras se guarda; un guardado confirmado
+  elimina el aviso de descarte, sin borrar los resultados anteriores.
+- El formulario de referencia conserva datos y muestra error hasta confirmar
+  `saveReference`. Admin hace lo mismo al crear un programa y crear/editar
+  ejercicios. El componente visual compartido no conoce repositorios y evita
+  doble envío o cierre por atrás durante la petición.
+- Evaluación de programa distingue persistencia de recarga: si el historial
+  falla después del guardado, mantiene «Guardado en esta preparación» y no
+  habilita un segundo envío del mismo formulario.
+- Al cerrar una sesión, «Volver» recupera el origen de la pila; una entrada
+  directa ofrece Mi semana. «Ver resultado» abre la ejecución concreta en
+  Evolución. Mientras haya operaciones de sincronización pendientes, ese acceso
+  permanece deshabilitado para no abrir un resultado aún ausente en servidor.
+  Tanto finalización como abandono admiten scroll, notas largas y texto 2×.
+- Admin tiene búsqueda de programas por nombre/tipo/estado, sesiones por
+  nombre/carrera/fuerza y ejercicios por nombre/grupo/material/tipo. Ignora
+  tildes y combina términos; la recarga del listado mantiene búsqueda y filtro.
+  El laboratorio tiene una página separada. Títulos y acciones de pruebas y
+  tramos pueden ocupar varias filas; carga de regla, sesión y baremo ofrece
+  reintento y la simulación explica una regla ausente o no cargada.
+
+Pendientes expresamente aprobados, todavía no implementados en este tramo:
+
+1. Extender guardado retenido a formularios editoriales de pruebas, reglas,
+   tramos, mínimos, importación y clonación; revisar salida de cada diálogo.
+2. Refresco coordinado de Inicio, Perfil, agenda y Evolución al cambiar datos,
+   sin reiniciar ramas ni perder selección/filtros/posición.
+3. Mi plan centrado en programa en curso, semana y pendientes; retirar accesos
+   redundantes que ya corresponden a Biblioteca y simplificar intermediarios.
+4. «Marcas» por preparación debe abrir resultados y controles, no gestión.
+   Evolución separará actividad de mediciones, con filtros por preparación,
+   fechas/tipo y consulta de entrenamientos antiguos. Solo habrá comparaciones
+   cuando protocolo, contexto y datos las permitan, nunca porcentajes ficticios.
+5. Biblioteca: consulta útil de vídeo, gestión de ejercicios propios y etiquetas
+   más coherentes conservando los contratos, autoría e historial existentes.
+6. Mensajes persistentes y siguientes pasos de confirmación/recuperación de
+   cuenta. Se revisarán los contratos y redirecciones de Supabase antes de
+   ampliar autenticación; no se cambiará seguridad ni producción a ciegas.
+7. Limpieza transversal de terminología, contraste, botones y formularios densos;
+   detalle admin dividido en secciones reconocibles.
+
+Este avance no acredita el cierre de todo el refresh ni de los pendientes
+deportivos. No cambia SQL, políticas de acceso, datos reales o producción.
+
+Verificación del primer tramo el 06/10/2026: análisis limpio en ambas apps,
+474 pruebas de raíz, 74 del admin (una omitida por su condición existente) y
+cinco de `entrena_ui`; ambas compilaciones web correctas. Las regresiones
+comprueban fallo/reintento sin perder campos, doble envío, descarte cancelado,
+retorno por router, pérdida de autenticación, URL directa sin permiso e identidad
+del recurso al cambiar el ID. El cierre se prueba a 320 × 480 con texto 2× y
+notas largas. Se utilizan repositorios simulados: no acredita el recorrido
+autenticado en el dispositivo de Javier ni el cierre del navegador/proceso.
+No se han ejecutado pruebas SQL nuevas porque no cambia ese contrato.

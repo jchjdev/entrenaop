@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
@@ -41,10 +44,31 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
   bool _saved = false;
   String? _error;
   String? _programId;
+  late String _savedStamp;
+
+  // Se comparan también intentos nulos y contexto; un campo vacío creado al
+  // dibujar el formulario no constituye una edición del usuario.
+  String get _draftStamp => jsonEncode([
+    _category,
+    DateFormat('yyyy-MM-dd').format(_assessedOn),
+    {
+      for (final entry in _marks.entries)
+        if (entry.value.text.isNotEmpty) entry.key: entry.value.text,
+    },
+    {
+      for (final entry in _attemptCounts.entries)
+        if (entry.value > 1) entry.key: entry.value,
+    },
+    {
+      for (final entry in _nullAttempts.entries)
+        if (entry.value) entry.key: true,
+    },
+  ]);
 
   @override
   void initState() {
     super.initState();
+    _savedStamp = _draftStamp;
     _load();
   }
 
@@ -90,6 +114,7 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
 
   Future<void> _loadContext() async {
     if (_birthDate == null || _rule == null) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _busy = true;
       _context = null;
@@ -261,7 +286,8 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
   }
 
   Future<void> _preview() async {
-    if (_context == null || !_form.currentState!.validate()) return;
+    if (_busy || _context == null || !_form.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _busy = true;
       _result = null;
@@ -290,7 +316,8 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
   }
 
   Future<void> _save() async {
-    if (_result == null || _saved || _context == null) return;
+    if (_busy || _result == null || _saved || _context == null) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _busy = true;
       _error = null;
@@ -303,15 +330,24 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
         _assessedOn,
         _enteredMarks(),
       );
-      final history = await widget.repository.history(widget.goalId);
       if (!mounted) return;
       setState(() {
         _saved = true;
-        _history = history;
+        _savedStamp = _draftStamp;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Marcas guardadas en esta preparación.')),
       );
+      try {
+        final history = await widget.repository.history(widget.goalId);
+        if (mounted) setState(() => _history = history);
+      } catch (_) {
+        if (mounted) {
+          setState(
+            () => _error = 'Las marcas están guardadas, pero no se pudo actualizar el historial. No necesitas volver a guardarlas.',
+          );
+        }
+      }
     } catch (_) {
       if (mounted) {
         setState(
@@ -324,7 +360,13 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    isBusy: () => _busy,
+    hasUnsavedChanges: () => _draftStamp != _savedStamp,
+    child: AbsorbPointer(absorbing: _busy, child: _buildPage(context)),
+  );
+
+  Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Evaluación del programa')),
     body: Center(
       child: ConstrainedBox(

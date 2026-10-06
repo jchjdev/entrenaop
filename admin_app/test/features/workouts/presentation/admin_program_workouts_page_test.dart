@@ -1,9 +1,37 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:entrenaop_admin/core/admin_router.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
+
+const _program = AdminProgram(
+  id: 'tropa',
+  name: 'Tropa',
+  kind: 'access',
+  enabled: false,
+);
+
+class _Programs extends Fake implements AdminProgramRepository {
+  @override
+  Future<bool> hasAccess() async => true;
+  @override
+  Future<List<AdminProgram>> listPrograms() async => [_program];
+  @override
+  Future<List<AdminProgramTest>> listTests(String id) async => [];
+  @override
+  Future<AdminProgramScoringRule?> getScoringRule(String id) async => null;
+  @override
+  Future<List<AdminProgramTrainingModule>> listTrainingModules(
+    String id,
+  ) async => [];
+  @override
+  Future<AdminPerformanceSetup> loadPerformanceSetup(String id) async =>
+      const AdminPerformanceSetup([], []);
+}
+
+class _Exercises extends Fake implements AdminExerciseRepository {}
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   String scope = 'program';
@@ -98,15 +126,13 @@ void main() {
   ) async {
     final repository = _FakeWorkouts();
     await tester.pumpWidget(
-      MaterialApp(
-        home: AdminProgramWorkoutsPage(
-          program: const AdminProgram(
-            id: 'tropa',
-            name: 'Tropa',
-            kind: 'access',
-            enabled: false,
-          ),
-          repository: repository,
+      MaterialApp.router(
+        routerConfig: createAdminRouter(
+          programs: _Programs(),
+          workouts: repository,
+          exercises: _Exercises(),
+          onSignOut: () {},
+          initialLocation: '/programs/tropa/sessions',
         ),
       ),
     );
@@ -137,8 +163,14 @@ void main() {
   ) async {
     final repository = _FakeWorkouts()..scope = 'general';
     await tester.pumpWidget(
-      MaterialApp(
-        home: AdminProgramWorkoutsPage(program: null, repository: repository),
+      MaterialApp.router(
+        routerConfig: createAdminRouter(
+          programs: _Programs(),
+          workouts: repository,
+          exercises: _Exercises(),
+          onSignOut: () {},
+          initialLocation: '/sessions',
+        ),
       ),
     );
     await tester.pumpAndSettle();

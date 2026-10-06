@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**UI-008, 06/10/2026 · primer tramo de fiabilidad:** se mantiene la identidad
+visual y se incorpora `go_router` al admin, con rutas recargables por ID,
+búsquedas editoriales y laboratorio separado. Las evaluaciones oficiales
+protegen cambios pendientes; el editor admin avisa antes de descartar y los
+formularios de referencia, creación de programa y edición de ejercicios
+permanecen abiertos si falla su guardado. El cierre de sesión de entrenamiento
+ofrece volver al origen o consultar su resultado concreto y admite notas largas.
+Mi plan, Evolución, Biblioteca, el resto de guardados editoriales y recuperación
+de cuenta siguen pendientes del refresh autorizado. No se amplía el motor
+deportivo ni se modifica producción. Alcance en `VISUAL_DESIGN.md`.
+
 **STR-032, 06/10/2026:** «Mi programa» presenta «Esta semana» y «Mis fases» de
 rendimiento, con propósito actual por objetivo y previsión orientativa. El motor
 elige principal y apoyos calibrados; su ausencia no impide entrenar. Las opciones

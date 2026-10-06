@@ -1,5 +1,27 @@
 # Roadmap de EntrenaOP
 
+**UI-008, 06/10/2026 · primer tramo de fiabilidad y navegación:** admin pasa a
+`go_router` con URLs por identificador, verificación de acceso y recursos,
+reintentos y renovación de la pila al cambiar de cuenta. Las evaluaciones
+oficiales y el editor admin protegen cambios pendientes. Referencias, creación
+de programa y edición de ejercicios conservan el formulario hasta confirmar
+guardado. El cierre del entrenamiento respeta el origen, permite abrir el
+resultado concreto y admite notas largas/texto grande. Búsquedas del admin
+conservadas al recargar; laboratorio separado de la edición habitual.
+
+Comprobación: análisis de ambas apps sin incidencias, 474 pruebas de raíz,
+74 del admin (una omitida por su condición existente), cinco de `entrena_ui`
+y compilaciones web correctas. Pruebas con repositorios simulados; no acredita
+el recorrido autenticado en dispositivo ni protege el cierre del navegador o
+proceso. No cambia SQL, algoritmos, permisos ni producción. Este tramo queda
+validado, no todo el refresh. Alcance y pendientes en `VISUAL_DESIGN.md`.
+
+El único siguiente tramo **UX** recomendado es completar el guardado retenido
+de los restantes formularios editoriales y el refresco entre secciones sin
+perder estado, antes de reorganizar Mi plan y Evolución. El siguiente bloque
+**deportivo** permanece sin cambios: controles de protocolo y prioridades por
+déficit, gestionados fuera de este refresh.
+
 **Consolidación, 06/10/2026:** se conserva el estado local confirmado por Javier
 en el punto de recuperación `236f8b7`, sin importar versiones antiguas. Se
 separan pendientes y borradores por usuario, con 17 regresiones nuevas y 470

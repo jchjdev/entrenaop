@@ -5,6 +5,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +24,14 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
   final _plankController = TextEditingController();
   final _runController = TextEditingController();
   final _agilityController = TextEditingController();
+  String? _savedStamp;
+  String get _draftStamp => [
+    context.read<PhysicalAssessmentCubit>().state.category.name,
+    _pushUpsController.text,
+    _plankController.text,
+    _runController.text,
+    _agilityController.text,
+  ].join('|');
 
   @override
   void dispose() {
@@ -66,6 +75,7 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == PhysicalAssessmentStatus.saved) {
+          _savedStamp = _draftStamp;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -82,32 +92,48 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
       },
       builder: (context, state) {
         final report = state.report;
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            title: Text(
-              report == null
-                  ? 'Evaluación física · Tropa'
-                  : 'Resultado de la evaluación',
+        return WorkflowDraftGuard(
+          isBusy: () =>
+              context.read<PhysicalAssessmentCubit>().state.status ==
+              PhysicalAssessmentStatus.saving,
+          hasUnsavedChanges: () => _savedStamp == null
+              ? [
+                  _pushUpsController,
+                  _plankController,
+                  _runController,
+                  _agilityController,
+                ].any((controller) => controller.text.isNotEmpty)
+              : _draftStamp != _savedStamp,
+          child: AbsorbPointer(
+            absorbing: state.status == PhysicalAssessmentStatus.saving,
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                title: Text(
+                  report == null
+                      ? 'Evaluación física · Tropa'
+                      : 'Resultado de la evaluación',
+                ),
+              ),
+              body: SafeArea(
+                child: report == null
+                    ? _AssessmentForm(
+                        formKey: _formKey,
+                        state: state,
+                        pushUpsController: _pushUpsController,
+                        plankController: _plankController,
+                        runController: _runController,
+                        agilityController: _agilityController,
+                        onEvaluate: _evaluate,
+                      )
+                    : _AssessmentReportView(
+                        report: report,
+                        status: state.status,
+                        goalId: widget.goalId,
+                      ),
+              ),
             ),
-          ),
-          body: SafeArea(
-            child: report == null
-                ? _AssessmentForm(
-                    formKey: _formKey,
-                    state: state,
-                    pushUpsController: _pushUpsController,
-                    plankController: _plankController,
-                    runController: _runController,
-                    agilityController: _agilityController,
-                    onEvaluate: _evaluate,
-                  )
-                : _AssessmentReportView(
-                    report: report,
-                    status: state.status,
-                    goalId: widget.goalId,
-                  ),
           ),
         );
       },

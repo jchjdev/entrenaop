@@ -9,12 +9,14 @@ class _FakeRepository implements AdminExerciseRepository {
   final exercises = <AdminCatalogExercise>[];
   ExerciseDraft? created;
   ExerciseDraft? updated;
+  bool failSave = false;
 
   @override
   Future<void> createOfficial(
     ExerciseDraft draft, {
     ExerciseImageUpload? image,
   }) async {
+    if (failSave) throw StateError('Sin conexión');
     created = draft;
     exercises.add(
       AdminCatalogExercise(
@@ -69,6 +71,22 @@ void main() {
     final create = find.text('Crear ejercicio');
     await tester.ensureVisible(create);
     await tester.pumpAndSettle();
+    repository.failSave = true;
+    await tester.tap(create);
+    await tester.pumpAndSettle();
+    expect(repository.created, isNull);
+    expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('admin-exercise-name')),
+          )
+          .controller!
+          .text,
+      'Dominada estricta',
+    );
+    repository.failSave = false;
+    await tester.ensureVisible(create);
     await tester.tap(create);
     await tester.pumpAndSettle();
 

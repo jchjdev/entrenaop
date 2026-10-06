@@ -19,6 +19,7 @@ class PerformanceReferenceDialog extends StatefulWidget {
     this.existing,
     this.initialWorkCode,
     this.initialMeasurement,
+    this.onSave,
     super.key,
   });
   final PreparationTrainingData data;
@@ -26,6 +27,7 @@ class PerformanceReferenceDialog extends StatefulWidget {
   final Map<String, dynamic>? existing;
   final String? initialWorkCode;
   final String? initialMeasurement;
+  final Future<void> Function(PerformanceReferenceInput input)? onSave;
   @override
   State<PerformanceReferenceDialog> createState() =>
       _PerformanceReferenceDialogState();
@@ -54,6 +56,7 @@ class _PerformanceReferenceDialogState
   String? _error;
   String? _kind;
   int _step = 0;
+  bool _saving = false;
   bool get _maximum => _kind == 'capacity_test' || _kind == 'official_test';
 
   bool get _practice =>
@@ -257,7 +260,9 @@ class _PerformanceReferenceDialogState
     });
   }
 
-  void _save() {
+  Future<void> _save() async {
+    if (_saving) return;
+    FocusScope.of(context).unfocus();
     if (!_form.currentState!.validate()) return;
     if (!_confirmed || (!_material && _work.requiredEquipment.isNotEmpty)) {
       setState(
@@ -328,32 +333,46 @@ class _PerformanceReferenceDialogState
       if (_loadMode == StrengthLoadMode.bodyweightPlusExternal)
         'body_mass_kg': _n(_mass),
     };
-    Navigator.of(context).pop(
-      PerformanceReferenceInput(
-        {
-          'program_objective_key': obj?['program_objective_key'],
-          'equipment_confirmed': _material || _work.requiredEquipment.isEmpty,
-          'goal_code': _goal.code,
-          'goal_version': _goal.definitionVersion,
-          'goal_measurement': _goalMode.code,
-          'task': task,
-          'targets': targets,
-          'observed_on':
-              '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
-          'current_capacity_confirmed': true,
-          'reported_rir': rir,
-          'reported_rpe': rpe,
-          'reference_kind': _kind,
-          'rest_seconds': rest.toInt(),
-          'frequency': _frequency,
-          'load_step_kg': _mode == StrengthMeasurement.loadReps
-              ? _n(_increment)
-              : null,
-        },
-        obj?['test_id'] as String? ?? widget.existing?['test_id'] as String?,
-        _work.requiredEquipment.toSet(),
-      ),
+    final input = PerformanceReferenceInput(
+      {
+        'program_objective_key': obj?['program_objective_key'],
+        'equipment_confirmed': _material || _work.requiredEquipment.isEmpty,
+        'goal_code': _goal.code,
+        'goal_version': _goal.definitionVersion,
+        'goal_measurement': _goalMode.code,
+        'task': task,
+        'targets': targets,
+        'observed_on':
+            '${_date.year}-${_date.month.toString().padLeft(2, '0')}-${_date.day.toString().padLeft(2, '0')}',
+        'current_capacity_confirmed': true,
+        'reported_rir': rir,
+        'reported_rpe': rpe,
+        'reference_kind': _kind,
+        'rest_seconds': rest.toInt(),
+        'frequency': _frequency,
+        'load_step_kg': _mode == StrengthMeasurement.loadReps
+            ? _n(_increment)
+            : null,
+      },
+      obj?['test_id'] as String? ?? widget.existing?['test_id'] as String?,
+      _work.requiredEquipment.toSet(),
     );
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.onSave?.call(input);
+      if (mounted) Navigator.of(context).pop(input);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'No se ha podido guardar. Tus datos siguen aquí; revisa la conexión e inténtalo de nuevo.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -365,80 +384,132 @@ class _PerformanceReferenceDialogState
       content: SizedBox(
         width: 560,
         child: SingleChildScrollView(
-          child: Form(
-            key: _form,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Paso ${_step + 1} de 3'),
-                const SizedBox(height: 12),
-                if (_step == 0) ...[
-                  Text(
-                    'Puedes empezar con una sola serie o un intento reciente. Indica qué tipo de dato es: el motor elegirá después el trabajo, sin copiar tu máximo como entrenamiento.',
-                  ),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('reference-kind-$_supportsOfficial'),
-                    initialValue: _kind,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Qué estás registrando',
+          child: AbsorbPointer(
+            absorbing: _saving,
+            child: Form(
+              key: _form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Paso ${_step + 1} de 3'),
+                  const SizedBox(height: 12),
+                  if (_step == 0) ...[
+                    Text(
+                      'Puedes empezar con una sola serie o un intento reciente. Indica qué tipo de dato es: el motor elegirá después el trabajo, sin copiar tu máximo como entrenamiento.',
                     ),
-                    items: [
-                      const DropdownMenuItem(
-                        value: 'performed_set',
-                        child: Text('Una serie de entrenamiento'),
-                      ),
-                      const DropdownMenuItem(
-                        value: 'repeated_work',
-                        child: Text('Varias series del mismo entrenamiento'),
-                      ),
-                      const DropdownMenuItem(
-                        value: 'capacity_test',
-                        child: Text('Mi máximo con técnica válida'),
-                      ),
-                      if (_supportsOfficial)
-                        const DropdownMenuItem(
-                          value: 'official_test',
-                          child: Text(
-                            'Una marca con el protocolo de la prueba',
-                          ),
-                        ),
-                    ],
-                    validator: (v) =>
-                        v == null ? 'Elige qué representa el dato.' : null,
-                    onChanged: (v) => setState(() {
-                      _kind = v;
-                      if (v == 'repeated_work' && _series.length == 1) {
-                        _series.add(TextEditingController());
-                      }
-                      if (v == 'official_test' &&
-                          _specific &&
-                          _workOptions.any(
-                            (option) => option.mode == _goalMode,
-                          )) {
-                        _mode = _goalMode;
-                      }
-                      if (v != 'repeated_work') {
-                        while (_series.length > 1) {
-                          _removedSeries.add(_series.removeLast());
-                        }
-                      }
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-                  if (widget.objective != null)
-                    Text('Prueba: ${widget.objective!['name']}')
-                  else
                     DropdownButtonFormField<String>(
-                      initialValue: _goal.code,
+                      key: ValueKey('reference-kind-$_supportsOfficial'),
+                      initialValue: _kind,
                       isExpanded: true,
-                      menuMaxHeight: 300,
                       decoration: const InputDecoration(
-                        labelText: 'Movimiento que quieres mejorar',
+                        labelText: 'Qué estás registrando',
                       ),
                       items: [
-                        for (final p in widget.data.catalog)
+                        const DropdownMenuItem(
+                          value: 'performed_set',
+                          child: Text('Una serie de entrenamiento'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'repeated_work',
+                          child: Text('Varias series del mismo entrenamiento'),
+                        ),
+                        const DropdownMenuItem(
+                          value: 'capacity_test',
+                          child: Text('Mi máximo con técnica válida'),
+                        ),
+                        if (_supportsOfficial)
+                          const DropdownMenuItem(
+                            value: 'official_test',
+                            child: Text(
+                              'Una marca con el protocolo de la prueba',
+                            ),
+                          ),
+                      ],
+                      validator: (v) =>
+                          v == null ? 'Elige qué representa el dato.' : null,
+                      onChanged: (v) => setState(() {
+                        _kind = v;
+                        if (v == 'repeated_work' && _series.length == 1) {
+                          _series.add(TextEditingController());
+                        }
+                        if (v == 'official_test' &&
+                            _specific &&
+                            _workOptions.any(
+                              (option) => option.mode == _goalMode,
+                            )) {
+                          _mode = _goalMode;
+                        }
+                        if (v != 'repeated_work') {
+                          while (_series.length > 1) {
+                            _removedSeries.add(_series.removeLast());
+                          }
+                        }
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                    if (widget.objective != null)
+                      Text('Prueba: ${widget.objective!['name']}')
+                    else
+                      DropdownButtonFormField<String>(
+                        initialValue: _goal.code,
+                        isExpanded: true,
+                        menuMaxHeight: 300,
+                        decoration: const InputDecoration(
+                          labelText: 'Movimiento que quieres mejorar',
+                        ),
+                        items: [
+                          for (final p in widget.data.catalog)
+                            DropdownMenuItem(
+                              value: p.code,
+                              child: Text(
+                                p.name,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                        onChanged: widget.existing != null
+                            ? null
+                            : (v) {
+                                _goal = widget.data.catalog.firstWhere(
+                                  (p) => p.code == v,
+                                );
+                                _goalMode = _goal.measurements.first.mode;
+                                _changeWork(_goal);
+                              },
+                      ),
+                    if (widget.objective == null)
+                      DropdownButtonFormField<StrengthMeasurement>(
+                        key: ValueKey('goal_${_goal.code}'),
+                        initialValue: _goalMode,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Qué quieres mejorar',
+                        ),
+                        items: [
+                          for (final m in _goal.measurements)
+                            DropdownMenuItem(
+                              value: m.mode,
+                              child: Text(performanceMeasurementLabel(m.mode)),
+                            ),
+                        ],
+                        onChanged: widget.existing != null
+                            ? null
+                            : (v) {
+                                _goalMode = v!;
+                                _changeWork(_goal);
+                              },
+                      ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('variant_${_goal.code}_${_work.code}'),
+                      initialValue: _work.code,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Variante que has realizado',
+                      ),
+                      items: [
+                        for (final p in _variants)
                           DropdownMenuItem(
                             value: p.code,
                             child: Text(
@@ -447,392 +518,370 @@ class _PerformanceReferenceDialogState
                             ),
                           ),
                       ],
-                      onChanged: widget.existing != null
-                          ? null
-                          : (v) {
-                              _goal = widget.data.catalog.firstWhere(
-                                (p) => p.code == v,
-                              );
-                              _goalMode = _goal.measurements.first.mode;
-                              _changeWork(_goal);
-                            },
+                      onChanged: (v) =>
+                          _changeWork(_variants.firstWhere((p) => p.code == v)),
                     ),
-                  if (widget.objective == null)
-                    DropdownButtonFormField<StrengthMeasurement>(
-                      key: ValueKey('goal_${_goal.code}'),
-                      initialValue: _goalMode,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Qué quieres mejorar',
+                    const SizedBox(height: 12),
+                    Text(
+                      _specific
+                          ? (widget.objective?['instructions'] as String? ??
+                                _work.notes)
+                          : 'Esta variante es un apoyo o una regresión. No equivale a una marca de la prueba. ${_work.notes}',
+                    ),
+                    if (_goalMode == StrengthMeasurement.maxLoad)
+                      const Text(
+                        'Para preparar fuerza máxima usamos una dosis submáxima con carga, no un intento máximo diario.',
                       ),
-                      items: [
-                        for (final m in _goal.measurements)
-                          DropdownMenuItem(
-                            value: m.mode,
-                            child: Text(performanceMeasurementLabel(m.mode)),
-                          ),
-                      ],
-                      onChanged: widget.existing != null
-                          ? null
-                          : (v) {
-                              _goalMode = v!;
-                              _changeWork(_goal);
-                            },
-                    ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('variant_${_goal.code}_${_work.code}'),
-                    initialValue: _work.code,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Variante que has realizado',
-                    ),
-                    items: [
-                      for (final p in _variants)
-                        DropdownMenuItem(
-                          value: p.code,
-                          child: Text(p.name, overflow: TextOverflow.ellipsis),
+                    if (_workOptions.length > 1)
+                      DropdownButtonFormField<StrengthMeasurement>(
+                        key: ValueKey('work_${_work.code}_${_mode.code}'),
+                        initialValue: _mode,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Medición de esta práctica',
                         ),
-                    ],
-                    onChanged: (v) =>
-                        _changeWork(_variants.firstWhere((p) => p.code == v)),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _specific
-                        ? (widget.objective?['instructions'] as String? ??
-                              _work.notes)
-                        : 'Esta variante es un apoyo o una regresión. No equivale a una marca de la prueba. ${_work.notes}',
-                  ),
-                  if (_goalMode == StrengthMeasurement.maxLoad)
-                    const Text(
-                      'Para preparar fuerza máxima usamos una dosis submáxima con carga, no un intento máximo diario.',
-                    ),
-                  if (_workOptions.length > 1)
-                    DropdownButtonFormField<StrengthMeasurement>(
-                      key: ValueKey('work_${_work.code}_${_mode.code}'),
-                      initialValue: _mode,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Medición de esta práctica',
+                        items: [
+                          for (final m in _workOptions)
+                            DropdownMenuItem(
+                              value: m.mode,
+                              child: Text(performanceMeasurementLabel(m.mode)),
+                            ),
+                        ],
+                        onChanged: (v) => setState(() {
+                          _mode = v!;
+                          _loadMode = _work.measurements
+                              .firstWhere((m) => m.mode == _mode)
+                              .loadModes
+                              .first;
+                          for (final c in _series) {
+                            c.clear();
+                          }
+                          _rir.clear();
+                          _confirmed = false;
+                        }),
                       ),
-                      items: [
-                        for (final m in _workOptions)
-                          DropdownMenuItem(
-                            value: m.mode,
-                            child: Text(performanceMeasurementLabel(m.mode)),
-                          ),
-                      ],
-                      onChanged: (v) => setState(() {
-                        _mode = v!;
-                        _loadMode = _work.measurements
+                    if (_goalMode == StrengthMeasurement.repsInTime &&
+                        _mode == StrengthMeasurement.reps)
+                      const Text(
+                        'Esta serie submáxima prepara la base de la prueba. No es un resultado de la ventana oficial ni sustituye su práctica específica.',
+                      ),
+                  ],
+                  if (_step == 1) ...[
+                    Text(
+                      _work.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _setup,
+                      maxLength: 500,
+                      maxLines: 2,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      decoration: InputDecoration(
+                        labelText: _needsSetup
+                            ? 'Cómo has preparado esta variante'
+                            : 'Condiciones (opcional)',
+                        helperMaxLines: 4,
+                        helperText: _needsSetup
+                            ? 'Indica la altura del apoyo, la banda o ayuda utilizada, o el instrumento de medición, según esta variante.'
+                            : 'Vacío si seguiste las condiciones descritas. Anota solo cambios de superficie, apoyos o material.',
+                      ),
+                      validator: (v) =>
+                          _needsSetup && (v?.trim().length ?? 0) < 3
+                          ? 'Describe el apoyo, ayuda o instrumento para poder repetirlo.'
+                          : null,
+                    ),
+                    if (_work.measurements
                             .firstWhere((m) => m.mode == _mode)
                             .loadModes
-                            .first;
-                        for (final c in _series) {
-                          c.clear();
-                        }
-                        _rir.clear();
-                        _confirmed = false;
-                      }),
-                    ),
-                  if (_goalMode == StrengthMeasurement.repsInTime &&
-                      _mode == StrengthMeasurement.reps)
-                    const Text(
-                      'Esta serie submáxima prepara la base de la prueba. No es un resultado de la ventana oficial ni sustituye su práctica específica.',
-                    ),
-                ],
-                if (_step == 1) ...[
-                  Text(
-                    _work.name,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _setup,
-                    maxLength: 500,
-                    maxLines: 2,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    decoration: InputDecoration(
-                      labelText: _needsSetup
-                          ? 'Cómo has preparado esta variante'
-                          : 'Condiciones (opcional)',
-                      helperMaxLines: 4,
-                      helperText: _needsSetup
-                          ? 'Indica la altura del apoyo, la banda o ayuda utilizada, o el instrumento de medición, según esta variante.'
-                          : 'Vacío si seguiste las condiciones descritas. Anota solo cambios de superficie, apoyos o material.',
-                    ),
-                    validator: (v) => _needsSetup && (v?.trim().length ?? 0) < 3
-                        ? 'Describe el apoyo, ayuda o instrumento para poder repetirlo.'
-                        : null,
-                  ),
-                  if (_work.measurements
-                          .firstWhere((m) => m.mode == _mode)
-                          .loadModes
-                          .length >
-                      1)
-                    DropdownButtonFormField<StrengthLoadMode>(
-                      isExpanded: true,
-                      key: ValueKey('load_${_work.code}_${_mode.code}'),
-                      initialValue: _loadMode,
-                      decoration: const InputDecoration(
-                        labelText: 'Tipo de carga',
-                      ),
-                      items: [
-                        for (final m
-                            in _work.measurements
-                                .firstWhere((m) => m.mode == _mode)
-                                .loadModes)
-                          DropdownMenuItem(
-                            value: m,
-                            child: Text(switch (m) {
-                              StrengthLoadMode.bodyweight => 'Peso corporal',
-                              StrengthLoadMode.externalLoad => 'Carga externa',
-                              StrengthLoadMode.bodyweightPlusExternal =>
-                                'Peso corporal y lastre',
-                              StrengthLoadMode.assisted => 'Asistencia',
-                            }),
-                          ),
-                      ],
-                      onChanged: (v) => setState(() => _loadMode = v!),
-                    ),
-                  if (_mode == StrengthMeasurement.repsInTime)
-                    _numeric(
-                      _window,
-                      'Tiempo de la prueba',
-                      time: true,
-                      enabled: _parameters['fixed_duration_seconds'] == null,
-                    ),
-                  if (_mode == StrengthMeasurement.timeForDistance)
-                    _numeric(
-                      _distance,
-                      'Trayecto o altura fija · metros',
-                      enabled: _parameters['fixed_distance_meters'] == null,
-                    ),
-                  if (_mode == StrengthMeasurement.reactiveMetrics)
-                    const Text(
-                      'Registra segundos de contacto obtenidos con instrumento adecuado. Indica el instrumento utilizado. Un cronómetro manual no sirve.',
-                    ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Series que has realizado',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  for (var i = 0; i < _series.length; i++)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _mode == StrengthMeasurement.passFail
-                              ? Text(
-                                  'Intento ${i + 1} conseguido con técnica válida',
-                                )
-                              : _numeric(
-                                  _series[i],
-                                  'Serie ${i + 1} · ${performanceMeasurementLabel(_mode)}',
-                                  time: const [
-                                    StrengthMeasurement.duration,
-                                    StrengthMeasurement.timeForCourse,
-                                    StrengthMeasurement.timeForDistance,
-                                  ].contains(_mode),
-                                  integer: const [
-                                    StrengthMeasurement.reps,
-                                    StrengthMeasurement.loadReps,
-                                    StrengthMeasurement.repsInTime,
-                                  ].contains(_mode),
-                                ),
+                            .length >
+                        1)
+                      DropdownButtonFormField<StrengthLoadMode>(
+                        isExpanded: true,
+                        key: ValueKey('load_${_work.code}_${_mode.code}'),
+                        initialValue: _loadMode,
+                        decoration: const InputDecoration(
+                          labelText: 'Tipo de carga',
                         ),
-                        if (_series.length > 2)
-                          IconButton(
-                            tooltip: 'Quitar serie ${i + 1}',
-                            icon: const Icon(Icons.remove_circle_outline),
-                            onPressed: () => setState(() {
-                              _removedSeries.add(_series.removeAt(i));
-                            }),
-                          ),
-                      ],
-                    ),
-                  if (_kind == 'repeated_work' && _series.length < 6)
-                    TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _series.add(TextEditingController())),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Añadir serie realizada'),
-                    ),
-                  if (_series.length > 1)
-                    _numeric(
-                      _rest,
-                      'Descanso entre series',
-                      time: true,
-                      integer: true,
-                    ),
-                  if (_rirRelevant) ...[
-                    const Text(
-                      'RIR: cuántas repeticiones más crees que podrías haber hecho con la misma técnica. '
-                      'Por ejemplo: hiciste 8 y calculas que quedaban 3; registra 8 en la serie y 3 aquí. No es un máximo de 11 medido.',
-                    ),
-                    _numeric(
-                      _rir,
-                      'Repeticiones que quedaban · 0 a 10 (opcional)',
-                      required: false,
-                      allowZero: true,
-                    ),
-                  ],
-                  if (!_maximum && _mode == StrengthMeasurement.duration) ...[
-                    const Text(
-                      '¿Cuánto esfuerzo supuso mantener la postura? 5: moderado; 7: difícil pero controlado; 10: tu límite. Si no lo sabes, déjalo vacío.',
-                    ),
-                    _numeric(
-                      _rpe,
-                      'Esfuerzo · 1 a 10 (opcional)',
-                      required: false,
-                    ),
-                  ],
-                  if (_loadMode != StrengthLoadMode.bodyweight)
-                    _numeric(
-                      _load,
-                      _loadMode == StrengthLoadMode.assisted
-                          ? 'Asistencia medida · kg (opcional para banda)'
-                          : 'Carga externa utilizada · kg',
-                      required: _loadMode != StrengthLoadMode.assisted,
-                    ),
-                  if (_loadMode == StrengthLoadMode.bodyweightPlusExternal)
-                    _numeric(_mass, 'Masa corporal en esa fecha · kg'),
-                  if (_mode == StrengthMeasurement.loadReps && !_practice) ...[
-                    _numeric(
-                      _increment,
-                      'Menor aumento de carga disponible · kg',
-                      required: false,
-                    ),
-                  ],
-                ],
-                if (_step == 2) ...[
-                  Text(
-                    '${_work.name}: ${_series.length} ${_series.length == 1 ? 'serie registrada' : 'series registradas'}. Estos datos describen lo realizado; aún no son tu entrenamiento pautado.',
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<int>(
-                    isExpanded: true,
-                    initialValue: _frequency,
-                    decoration: const InputDecoration(
-                      labelText: 'Sesiones por semana que ya toleras',
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 1,
-                        child: Text('Una sesión por semana'),
+                        items: [
+                          for (final m
+                              in _work.measurements
+                                  .firstWhere((m) => m.mode == _mode)
+                                  .loadModes)
+                            DropdownMenuItem(
+                              value: m,
+                              child: Text(switch (m) {
+                                StrengthLoadMode.bodyweight => 'Peso corporal',
+                                StrengthLoadMode.externalLoad =>
+                                  'Carga externa',
+                                StrengthLoadMode.bodyweightPlusExternal =>
+                                  'Peso corporal y lastre',
+                                StrengthLoadMode.assisted => 'Asistencia',
+                              }),
+                            ),
+                        ],
+                        onChanged: (v) => setState(() => _loadMode = v!),
                       ),
-                      DropdownMenuItem(
-                        value: 2,
-                        child: Text('Dos sesiones por semana'),
+                    if (_mode == StrengthMeasurement.repsInTime)
+                      _numeric(
+                        _window,
+                        'Tiempo de la prueba',
+                        time: true,
+                        enabled: _parameters['fixed_duration_seconds'] == null,
+                      ),
+                    if (_mode == StrengthMeasurement.timeForDistance)
+                      _numeric(
+                        _distance,
+                        'Trayecto o altura fija · metros',
+                        enabled: _parameters['fixed_distance_meters'] == null,
+                      ),
+                    if (_mode == StrengthMeasurement.reactiveMetrics)
+                      const Text(
+                        'Registra segundos de contacto obtenidos con instrumento adecuado. Indica el instrumento utilizado. Un cronómetro manual no sirve.',
+                      ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Series que has realizado',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    for (var i = 0; i < _series.length; i++)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _mode == StrengthMeasurement.passFail
+                                ? Text(
+                                    'Intento ${i + 1} conseguido con técnica válida',
+                                  )
+                                : _numeric(
+                                    _series[i],
+                                    'Serie ${i + 1} · ${performanceMeasurementLabel(_mode)}',
+                                    time: const [
+                                      StrengthMeasurement.duration,
+                                      StrengthMeasurement.timeForCourse,
+                                      StrengthMeasurement.timeForDistance,
+                                    ].contains(_mode),
+                                    integer: const [
+                                      StrengthMeasurement.reps,
+                                      StrengthMeasurement.loadReps,
+                                      StrengthMeasurement.repsInTime,
+                                    ].contains(_mode),
+                                  ),
+                          ),
+                          if (_series.length > 2)
+                            IconButton(
+                              tooltip: 'Quitar serie ${i + 1}',
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () => setState(() {
+                                _removedSeries.add(_series.removeAt(i));
+                              }),
+                            ),
+                        ],
+                      ),
+                    if (_kind == 'repeated_work' && _series.length < 6)
+                      TextButton.icon(
+                        onPressed: () => setState(
+                          () => _series.add(TextEditingController()),
+                        ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Añadir serie realizada'),
+                      ),
+                    if (_series.length > 1)
+                      _numeric(
+                        _rest,
+                        'Descanso entre series',
+                        time: true,
+                        integer: true,
+                      ),
+                    if (_rirRelevant) ...[
+                      const Text(
+                        'RIR: cuántas repeticiones más crees que podrías haber hecho con la misma técnica. '
+                        'Por ejemplo: hiciste 8 y calculas que quedaban 3; registra 8 en la serie y 3 aquí. No es un máximo de 11 medido.',
+                      ),
+                      _numeric(
+                        _rir,
+                        'Repeticiones que quedaban · 0 a 10 (opcional)',
+                        required: false,
+                        allowZero: true,
                       ),
                     ],
-                    onChanged: (v) => _frequency = v!,
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(
-                      'Realizado el ${_date.day}/${_date.month}/${_date.year}',
+                    if (!_maximum && _mode == StrengthMeasurement.duration) ...[
+                      const Text(
+                        '¿Cuánto esfuerzo supuso mantener la postura? 5: moderado; 7: difícil pero controlado; 10: tu límite. Si no lo sabes, déjalo vacío.',
+                      ),
+                      _numeric(
+                        _rpe,
+                        'Esfuerzo · 1 a 10 (opcional)',
+                        required: false,
+                      ),
+                    ],
+                    if (_loadMode != StrengthLoadMode.bodyweight)
+                      _numeric(
+                        _load,
+                        _loadMode == StrengthLoadMode.assisted
+                            ? 'Asistencia medida · kg (opcional para banda)'
+                            : 'Carga externa utilizada · kg',
+                        required: _loadMode != StrengthLoadMode.assisted,
+                      ),
+                    if (_loadMode == StrengthLoadMode.bodyweightPlusExternal)
+                      _numeric(_mass, 'Masa corporal en esa fecha · kg'),
+                    if (_mode == StrengthMeasurement.loadReps &&
+                        !_practice) ...[
+                      _numeric(
+                        _increment,
+                        'Menor aumento de carga disponible · kg',
+                        required: false,
+                      ),
+                    ],
+                  ],
+                  if (_step == 2) ...[
+                    Text(
+                      '${_work.name}: ${_series.length} ${_series.length == 1 ? 'serie registrada' : 'series registradas'}. Estos datos describen lo realizado; aún no son tu entrenamiento pautado.',
                     ),
-                    onPressed: () async {
-                      final d = await showDatePicker(
-                        context: context,
-                        initialDate:
-                            _date.isBefore(
-                              DateTime.now().subtract(const Duration(days: 14)),
-                            )
-                            ? DateTime.now()
-                            : _date,
-                        firstDate: DateTime.now().subtract(
-                          const Duration(days: 14),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<int>(
+                      isExpanded: true,
+                      initialValue: _frequency,
+                      decoration: const InputDecoration(
+                        labelText: 'Sesiones por semana que ya toleras',
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 1,
+                          child: Text('Una sesión por semana'),
                         ),
-                        lastDate: DateTime.now(),
-                      );
-                      if (d != null) setState(() => _date = d);
-                    },
-                  ),
-                  if (_work.requiredEquipment.isNotEmpty)
+                        DropdownMenuItem(
+                          value: 2,
+                          child: Text('Dos sesiones por semana'),
+                        ),
+                      ],
+                      onChanged: (v) => _frequency = v!,
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.calendar_today),
+                      label: Text(
+                        'Realizado el ${_date.day}/${_date.month}/${_date.year}',
+                      ),
+                      onPressed: () async {
+                        final d = await showDatePicker(
+                          context: context,
+                          initialDate:
+                              _date.isBefore(
+                                DateTime.now().subtract(
+                                  const Duration(days: 14),
+                                ),
+                              )
+                              ? DateTime.now()
+                              : _date,
+                          firstDate: DateTime.now().subtract(
+                            const Duration(days: 14),
+                          ),
+                          lastDate: DateTime.now(),
+                        );
+                        if (d != null) setState(() => _date = d);
+                      },
+                    ),
+                    if (_work.requiredEquipment.isNotEmpty)
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: _material,
+                        onChanged: (v) => setState(() => _material = v!),
+                        title: Text(
+                          'Dispongo de: ${_work.requiredEquipment.map(performanceEquipmentLabel).join(', ')} y puedo seguir las condiciones de esta variante.',
+                        ),
+                      ),
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
-                      value: _material,
-                      onChanged: (v) => setState(() => _material = v!),
-                      title: Text(
-                        'Dispongo de: ${_work.requiredEquipment.map(performanceEquipmentLabel).join(', ')} y puedo seguir las condiciones de esta variante.',
+                      value: _confirmed,
+                      onChanged: (v) => setState(() => _confirmed = v!),
+                      title: const Text(
+                        'Son datos realizados, con técnica válida y sin molestias; representan mi capacidad actual',
                       ),
                     ),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: _confirmed,
-                    onChanged: (v) => setState(() => _confirmed = v!),
-                    title: const Text(
-                      'Son datos realizados, con técnica válida y sin molestias; representan mi capacidad actual',
+                  ],
+                  if (_error != null)
+                    Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
-                  ),
                 ],
-                if (_error != null)
-                  Text(
-                    _error!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _saving ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
         if (_step > 0)
           TextButton(
-            onPressed: () => setState(() {
-              _step--;
-              _error = null;
-            }),
+            onPressed: _saving
+                ? null
+                : () => setState(() {
+                    _step--;
+                    _error = null;
+                  }),
             child: const Text('Atrás'),
           ),
         FilledButton(
-          onPressed: () {
-            if (_step == 2) {
-              _save();
-              return;
-            }
-            if (!_form.currentState!.validate()) return;
-            setState(() {
-              _step++;
-              _error = null;
-            });
-          },
-          child: Text(_step == 2 ? 'Guardar referencia' : 'Continuar'),
+          onPressed: _saving
+              ? null
+              : () {
+                  if (_step == 2) {
+                    _save();
+                    return;
+                  }
+                  if (!_form.currentState!.validate()) return;
+                  setState(() {
+                    _step++;
+                    _error = null;
+                  });
+                },
+          child: Text(
+            _saving
+                ? 'Guardando…'
+                : _step == 2
+                ? 'Guardar referencia'
+                : 'Continuar',
+          ),
         ),
       ],
     );
-    if (MediaQuery.sizeOf(context).width >= 600) return dialog;
-    return Dialog.fullscreen(
-      child: Scaffold(
-        appBar: AppBar(
-          title: dialog.title,
-          automaticallyImplyLeading: false,
-          actions: [
-            IconButton(
-              tooltip: 'Cancelar',
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        body: Padding(padding: const EdgeInsets.all(20), child: dialog.content),
-        bottomNavigationBar: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (_step > 0) dialog.actions![1],
-              if (_step > 0) const SizedBox(width: 12),
-              Expanded(child: dialog.actions!.last),
+    if (MediaQuery.sizeOf(context).width >= 600) {
+      return PopScope(canPop: !_saving, child: dialog);
+    }
+    return PopScope(
+      canPop: !_saving,
+      child: Dialog.fullscreen(
+        child: Scaffold(
+          appBar: AppBar(
+            title: dialog.title,
+            automaticallyImplyLeading: false,
+            actions: [
+              IconButton(
+                tooltip: 'Cancelar',
+                onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close),
+              ),
             ],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(20),
+            child: dialog.content,
+          ),
+          bottomNavigationBar: SafeArea(
+            minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (_step > 0) dialog.actions![1],
+                if (_step > 0) const SizedBox(width: 12),
+                Expanded(child: dialog.actions!.last),
+              ],
+            ),
           ),
         ),
       ),

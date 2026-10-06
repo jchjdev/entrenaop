@@ -6,6 +6,7 @@ import 'package:entrenaop/features/profile/data/profile_birth_date_repository.da
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:intl/intl.dart';
 
 class FasPeriodicAssessmentPage extends StatefulWidget {
@@ -79,7 +80,9 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
   }
 
   Future<void> _save(FasPeriodic2027Reference reference, int age) async {
+    if (_saving) return;
     if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
     final marks = <String, int>{};
     for (final test in _tests) {
       if (reference.passMarkFor(
@@ -156,7 +159,14 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    isBusy: () => _saving,
+    hasUnsavedChanges: () =>
+        _fields.values.any((field) => field.text.isNotEmpty),
+    child: AbsorbPointer(absorbing: _saving, child: _buildPage(context)),
+  );
+
+  Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Marcas para Mejora FAS')),
     body: FutureBuilder<FasPeriodic2027Reference>(
       future: _reference,

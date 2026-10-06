@@ -1,3 +1,7 @@
+import '../../../helpers/admin_test_app.dart';
+
+import 'package:entrenaop_admin/core/admin_router.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
@@ -33,14 +37,19 @@ class _FakeExercises implements AdminExerciseRepository {
 
 class _FakeRepository implements AdminProgramRepository {
   @override
-  Future<AdminPerformanceSetup> loadPerformanceSetup(String programId) async => const AdminPerformanceSetup([], []);
+  Future<AdminPerformanceSetup> loadPerformanceSetup(String programId) async =>
+      const AdminPerformanceSetup([], []);
   @override
-  Future<void> savePerformanceStrategy(String testId, Map<String, dynamic>? strategy) async {}
+  Future<void> savePerformanceStrategy(
+    String testId,
+    Map<String, dynamic>? strategy,
+  ) async {}
   _FakeRepository({required this.allowed});
 
   final bool allowed;
   int listCalls = 0;
   int createCalls = 0;
+  bool failCreate = false;
   final programs = <AdminProgram>[];
   final tests = <AdminProgramTest>[];
   final modules = <AdminProgramTrainingModule>[];
@@ -61,6 +70,7 @@ class _FakeRepository implements AdminProgramRepository {
   @override
   Future<void> createDraft({required String name, required String kind}) async {
     createCalls++;
+    if (failCreate) throw StateError('Sin conexión');
     programs.add(
       AdminProgram(id: 'new', name: name, kind: kind, enabled: false),
     );
@@ -262,8 +272,126 @@ class _FakeWorkouts implements AdminWorkoutRepository {
 }
 
 void main() {
+  testWidgets('perder la sesión retira un editor incluso con cambios pendientes', (tester) async {
+    final session = ValueNotifier<bool>(true);
+    final router = createAdminRouter(
+      programs: _FakeRepository(allowed: true), workouts: _FakeWorkouts(), exercises: _FakeExercises(),
+      onSignOut: () {}, initialLocation: '/sessions/new',
+      authChanges: session, isAuthenticated: () => session.value,
+      loginBuilder: (_) => const Scaffold(body: Text('Acceso al admin')),
+    );
+    addTearDown(router.dispose);
+    addTearDown(session.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+    final name = find.byWidgetPredicate((widget) => widget is TextField && widget.decoration?.labelText == 'Nombre de la sesión');
+    await tester.enterText(name, 'Privado de la cuenta anterior');
+    session.value = false;
+    await tester.pumpAndSettle();
+    expect(find.text('Acceso al admin'), findsOneWidget);
+    expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+    expect(find.text('¿Salir sin guardar?'), findsNothing);
+  });
+  testWidgets('una URL de editor no evita el control de acceso del admin', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: false);
+    final router = createAdminRouter(
+      programs: repository,
+      workouts: _FakeWorkouts(),
+      exercises: _FakeExercises(),
+      onSignOut: () {},
+      initialLocation: '/sessions/new',
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+    expect(find.textContaining('no tiene permiso'), findsWidgets);
+    expect(repository.listCalls, 0);
+  });
+
+  testWidgets(
+    'un detalle se reconstruye por URL y un identificador inexistente ofrece salida',
+    (tester) async {
+      final repository = _FakeRepository(allowed: true)
+        ..programs.add(
+          const AdminProgram(
+            id: 'direct',
+            name: 'Acceso directo',
+            kind: 'access',
+            enabled: false,
+          ),
+        );
+      final router = createAdminRouter(
+        programs: repository,
+        workouts: _FakeWorkouts(),
+        exercises: _FakeExercises(),
+        onSignOut: () {},
+        initialLocation: '/programs/direct',
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminProgramDetailPage), findsOneWidget);
+      router.go('/programs/missing');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('no está disponible'), findsOneWidget);
+      await tester.tap(find.text('Ir a programas'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminProgramsPage), findsOneWidget);
+      expect(router.routeInformationProvider.value.uri.path, '/programs');
+    },
+  );
+
+  testWidgets('la búsqueda de programas combina términos e ignora tildes', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..programs.addAll(const [
+        AdminProgram(
+          id: 'police',
+          name: 'Policía Nacional',
+          kind: 'access',
+          enabled: false,
+        ),
+        AdminProgram(
+          id: 'fas',
+          name: 'Evaluación FAS',
+          kind: 'internal_assessment',
+          enabled: true,
+        ),
+      ]);
+    await tester.pumpWidget(
+      AdminTestApp(
+        home: AdminProgramsPage(
+          repository: repository,
+          workoutRepository: _FakeWorkouts(),
+          exerciseRepository: _FakeExercises(),
+          onSignOut: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final search = find.widgetWithText(TextField, 'Buscar programas');
+    await tester.scrollUntilVisible(
+      search,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.enterText(search, 'policia borrador');
+    await tester.pumpAndSettle();
+    expect(find.text('Policía Nacional'), findsOneWidget);
+    expect(find.text('Evaluación FAS'), findsNothing);
+    await tester.enterText(search, 'algo inexistente');
+    await tester.pumpAndSettle();
+    expect(find.text('No hay programas con esa búsqueda.'), findsOneWidget);
+  });
   for (final width in [360.0, 1100.0]) {
-    testWidgets('panel de administración adaptable a ${width.toInt()} px', (tester) async {
+    testWidgets('panel de administración adaptable a ${width.toInt()} px', (
+      tester,
+    ) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = Size(width, 900);
       addTearDown(() {
@@ -271,26 +399,34 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
       final repository = _FakeRepository(allowed: true);
-      repository.programs.add(const AdminProgram(
-        id: 'program',
-        name: 'Preparación con nombre largo para revisar la disposición',
-        kind: 'access',
-        enabled: false,
-      ));
-      var signedOut = false;
-      await tester.pumpWidget(MaterialApp(
-        theme: EntrenaTheme.dark,
-        home: AdminProgramsPage(
-          repository: repository,
-          workoutRepository: _FakeWorkouts(),
-          exerciseRepository: _FakeExercises(),
-          onSignOut: () => signedOut = true,
+      repository.programs.add(
+        const AdminProgram(
+          id: 'program',
+          name: 'Preparación con nombre largo para revisar la disposición',
+          kind: 'access',
+          enabled: false,
         ),
-      ));
+      );
+      var signedOut = false;
+      await tester.pumpWidget(
+        AdminTestApp(
+          theme: EntrenaTheme.dark,
+          home: AdminProgramsPage(
+            repository: repository,
+            workoutRepository: _FakeWorkouts(),
+            exerciseRepository: _FakeExercises(),
+            onSignOut: () => signedOut = true,
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.byType(EntrenaWordmark), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.scrollUntilVisible(find.text('Borrador'), 300);
+      await tester.scrollUntilVisible(
+        find.text('Borrador'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(tester.takeException(), isNull);
       await tester.tap(find.byTooltip('Cerrar sesión'));
       expect(signedOut, isTrue);
@@ -326,7 +462,7 @@ void main() {
   testWidgets('sin permiso no consulta ni muestra borradores', (tester) async {
     final repository = _FakeRepository(allowed: false);
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),
@@ -347,7 +483,7 @@ void main() {
   ) async {
     final repository = _FakeRepository(allowed: true);
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),
@@ -365,10 +501,20 @@ void main() {
     await tester.tap(find.text('Crear programa'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField), 'Guardia Civil');
+    repository.failCreate = true;
+    await tester.tap(find.text('Crear borrador'));
+    await tester.pumpAndSettle();
+    expect(repository.programs, isEmpty);
+    expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
+    expect(
+      tester.widget<TextFormField>(find.byType(TextFormField)).controller!.text,
+      'Guardia Civil',
+    );
+    repository.failCreate = false;
     await tester.tap(find.text('Crear borrador'));
     await tester.pumpAndSettle();
 
-    expect(repository.createCalls, 1);
+    expect(repository.createCalls, 2);
     expect(repository.programs.single.kind, 'access');
     expect(repository.programs.single.enabled, false);
     await tester.drag(find.byType(ListView), const Offset(0, -500));
@@ -395,7 +541,7 @@ void main() {
         ),
       );
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         theme: ThemeData.dark(useMaterial3: true),
         home: AdminProgramsPage(
           repository: repository,
@@ -506,7 +652,7 @@ void main() {
         ),
       ]);
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminProgramDetailPage(
           program: const AdminProgram(
             id: 'draft',
@@ -590,7 +736,7 @@ void main() {
         AdminScoreBand(id: 'ten', category: 'men', minMark: 17, points: 10),
       ]);
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),
@@ -692,7 +838,7 @@ void main() {
       maxAge: 60,
     );
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFFE65100),
@@ -764,7 +910,7 @@ void main() {
       )
       ..issues.add('Falta un mínimo para mujeres de 35 años.');
     await tester.pumpWidget(
-      MaterialApp(
+      AdminTestApp(
         home: AdminProgramsPage(
           repository: repository,
           workoutRepository: _FakeWorkouts(),

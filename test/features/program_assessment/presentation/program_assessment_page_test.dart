@@ -4,6 +4,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 class _Assessment implements ProgramAssessmentRepository {
   _Assessment({this.allowRetry = false});
@@ -11,6 +12,8 @@ class _Assessment implements ProgramAssessmentRepository {
   String? lastCategory;
   String? lastProgramId;
   List<AssessmentMarkInput> savedMarks = const [];
+  bool failHistoryAfterSave = false;
+  int saveCalls = 0;
 
   @override
   Future<ProgramAssessmentRule> rule(String programId) async {
@@ -79,12 +82,17 @@ class _Assessment implements ProgramAssessmentRepository {
     DateTime assessedOn,
     List<AssessmentMarkInput> marks,
   ) async {
+    saveCalls++;
     savedMarks = marks;
   }
 
   @override
-  Future<List<ProgramAssessmentAttempt>> history(String goalId) async =>
-      const [];
+  Future<List<ProgramAssessmentAttempt>> history(String goalId) async {
+    if (failHistoryAfterSave && savedMarks.isNotEmpty) {
+      throw StateError('Sin conexión');
+    }
+    return const [];
+  }
 }
 
 void main() {
@@ -95,6 +103,75 @@ void main() {
       name: 'Programa de prueba',
       kind: PreparationProgramKind.access,
     ),
+  );
+  testWidgets(
+    'protege los campos y un fallo de recarga no convierte el guardado en fallido',
+    (tester) async {
+      final repository = _Assessment()..failHistoryAfterSave = true;
+      final exit = WorkflowExitController();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkflowExitScope(
+            controller: exit,
+            child: ProgramAssessmentPage(
+              goalId: 'goal',
+              loadGoal: (_) async => goal,
+              repository: repository,
+              loadBirthDate: () async => DateTime(2000, 1, 1),
+              saveBirthDate: (_) async {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextFormField), '8');
+      final leaving = exit.onExit!();
+      await tester.pumpAndSettle();
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await tester.tap(find.text('Seguir aquí'));
+      await tester.pumpAndSettle();
+      expect(await leaving, isFalse);
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField))
+            .controller!
+            .text,
+        '8',
+      );
+      await tester.scrollUntilVisible(
+        find.text('Ver resultado'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Ver resultado'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Guardar estas marcas'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Guardar estas marcas'));
+      await tester.pumpAndSettle();
+      expect(repository.saveCalls, 1);
+      expect(await exit.onExit!(), isTrue);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Guardado en esta preparación'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.scrollUntilVisible(
+        find.textContaining('No necesitas volver a guardarlas'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.textContaining('No necesitas volver a guardarlas'),
+        findsOneWidget,
+      );
+    },
   );
   test('el historial conserva el nulo y la segunda marca de una prueba', () {
     final record = ProgramAssessmentAttempt.fromJson({

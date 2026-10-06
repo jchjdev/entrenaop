@@ -68,13 +68,13 @@ void main() {
       router.go('/profile/detail');
       await tester.pumpAndSettle();
       expect(find.text('Detalle de Perfil'), findsOneWidget);
-      await tester.tap(find.text('Mi plan'));
+      await tester.tap(find.byIcon(Icons.event_note_outlined));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Perfil'));
+      await tester.tap(find.byIcon(Icons.person_outline_rounded));
       await tester.pumpAndSettle();
       expect(router.state.matchedLocation, '/profile/detail');
       expect(find.text('Detalle de Perfil'), findsOneWidget);
-      await tester.tap(find.text('Perfil'));
+      await tester.tap(find.byIcon(Icons.person_rounded));
       await tester.pumpAndSettle();
       expect(router.state.matchedLocation, '/profile');
       expect(find.text('Contenido de Perfil'), findsOneWidget);

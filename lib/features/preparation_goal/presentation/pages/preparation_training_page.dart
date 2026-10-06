@@ -272,15 +272,15 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         existing: existing,
         initialWorkCode: initialWorkCode,
         initialMeasurement: initialMeasurement,
+        onSave: (input) => widget.repository.saveReference(
+          widget.goalId,
+          input.reference,
+          testId: input.testId,
+        ),
       ),
     );
     if (input == null || !mounted) return;
     await _run(() async {
-      await widget.repository.saveReference(
-        widget.goalId,
-        input.reference,
-        testId: input.testId,
-      );
       _equipment.addAll(input.equipment);
       _savedContextStamp = _contextStamp;
       await _load(initialize: false);
