@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/preparation_goal/data/initial_week_draft_catalog.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/two_kilometre_performance.dart';
 import 'package:entrenaop/features/preparation_goal/domain/services/initial_running_week_planner.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
@@ -36,6 +37,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       widget.draft ?? InitialWeekDraftCatalog.load();
   late final Future<void> _savedInputs = _loadSavedInputs();
   final _testTime = TextEditingController();
+  final _targetTime = TextEditingController();
   final _scrollController = ScrollController();
   int _totalDays = 3;
   int _runningDays = 2;
@@ -66,8 +68,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
         _sessionMinutes = preferences.sessionDurationMinutes;
       }
       _requiresReview = preferences.requiresProfessionalReview;
-      _preferencesSource =
-          'De tus preferencias guardadas. El reparto entre carrera y fuerza sigue siendo provisional.';
+      _preferencesSource = 'De tus preferencias guardadas. El reparto entre carrera y fuerza sigue siendo provisional.';
     }
     if (test != null) {
       final minutes = test.durationSeconds ~/ 60;
@@ -106,6 +107,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
   @override
   void dispose() {
     _testTime.dispose();
+    _targetTime.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -117,6 +119,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       _recentRunningDays = 2;
       _sessionMinutes = 45;
       _testTime.text = '10:00';
+      _targetTime.text = '9:30';
       _reportsPain = false;
       _requiresReview = false;
       _hasOfficialWeek = false;
@@ -157,7 +160,6 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         title: const Text('Simulador · Tropa'),
         leading: IconButton(
@@ -239,11 +241,14 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                 ),
                 if (_decision != null) ...[
                   const SizedBox(height: 16),
+                  if (_performanceGapCard() case final gapCard?) ...[
+                    gapCard,
+                    const SizedBox(height: 12),
+                  ],
                   _result(draft, _decision!),
                 ],
                 const SizedBox(height: 12),
                 Card(
-                  color: const Color(0xFF171717),
                   child: Padding(
                     padding: const EdgeInsets.all(18),
                     child: Column(
@@ -269,8 +274,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           onChanged: (value) => setState(() {
                             _totalDays = value;
                             if (_runningDays > value) _runningDays = value;
-                            _preferencesSource =
-                                'Modificado para esta simulación; no se guarda.';
+                            _preferencesSource = 'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),
@@ -320,8 +324,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           labelFor: (value) => '$value min',
                           onChanged: (value) => setState(() {
                             _sessionMinutes = value;
-                            _preferencesSource =
-                                'Modificado para esta simulación; no se guarda.';
+                            _preferencesSource = 'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),
@@ -331,15 +334,13 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           keyboardType: TextInputType.number,
                           inputFormatters: const [DurationInputFormatter()],
                           decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
                             labelText: 'Marca de 2 km (escenario)',
                             hintText: 'Ejemplo: 10:00',
                             helperText:
                                 'Puedes escribir solo dígitos: 1000 → 10:00.',
                           ),
                           onChanged: (_) => setState(() {
-                            _testSource =
-                                'Modificado para esta simulación; no se guarda.';
+                            _testSource = 'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),
@@ -347,6 +348,18 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                         Text(
                           _testSource,
                           style: const TextStyle(color: Colors.white60),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _targetTime,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: const [DurationInputFormatter()],
+                          decoration: const InputDecoration(
+                            labelText: 'Objetivo de 2 km (opcional)',
+                            hintText: 'Ejemplo: 9:30',
+                            helperText: 'Solo para comparar la meta con la marca actual.',
+                          ),
+                          onChanged: (_) => setState(() => _decision = null),
                         ),
                         const SizedBox(height: 8),
                         SwitchListTile.adaptive(
@@ -360,12 +373,16 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                         ),
                         SwitchListTile.adaptive(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Revisión profesional pendiente'),
+                          title: const Text(
+                            'Lesión o limitación que afecta al entrenamiento',
+                          ),
+                          subtitle: const Text(
+                            'Pausa la propuesta automática; no depende del modo Pro.',
+                          ),
                           value: _requiresReview,
                           onChanged: (value) => setState(() {
                             _requiresReview = value;
-                            _preferencesSource =
-                                'Modificado para esta simulación; no se guarda.';
+                            _preferencesSource = 'Modificado para esta simulación; no se guarda.';
                             _decision = null;
                           }),
                         ),
@@ -403,10 +420,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       key: ValueKey('$label:$value'),
       initialValue: value,
       isExpanded: true,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
+      decoration: InputDecoration(labelText: label),
       items: [
         for (final item in values)
           DropdownMenuItem(
@@ -417,6 +431,53 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       onChanged: (selected) {
         if (selected != null) onChanged(selected);
       },
+    );
+  }
+
+  Widget? _performanceGapCard() {
+    if (_targetTime.text.isEmpty) return null;
+    final current = TwoKilometrePerformance.fromSeconds(
+      parseDurationInput(_testTime.text),
+    );
+    final target = TwoKilometrePerformance.fromSeconds(
+      parseDurationInput(_targetTime.text),
+    );
+    if (current == null || target == null) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(18),
+          child: Text('Revisa las marcas de 2 km para comparar el objetivo.'),
+        ),
+      );
+    }
+    final gap = current.speedGapTo(target);
+    final description = gap > 0
+        ? 'La meta exige aumentar la velocidad media un ${(gap * 100).toStringAsFixed(1)} % respecto a la marca actual.'
+        : gap == 0
+        ? 'La meta coincide con la marca actual.'
+        : 'La meta es más lenta que la marca actual.';
+    return Card(
+      color: const Color(0xFF1A2028),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Distancia hasta la meta',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Text(description),
+            const SizedBox(height: 6),
+            const Text(
+              'Es una comparación matemática, no un ritmo de entrenamiento. '
+              'La propuesta no utiliza todavía esta meta para prescribir.',
+              style: TextStyle(color: Colors.white60, height: 1.4),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -546,7 +607,7 @@ String _blockerLabel(RunningWeekBlocker blocker) => switch (blocker) {
   RunningWeekBlocker.unsupportedProgram =>
     'Estas reglas solo cubren Tropa y Marinería.',
   RunningWeekBlocker.healthReview =>
-    'Hay dolor o una revisión profesional pendiente.',
+    'Hay dolor, lesión o una limitación declarada que impide proponer carga.',
   RunningWeekBlocker.missingRunningAvailability =>
     'Indica días de carrera e historial reciente.',
   RunningWeekBlocker.missingStrengthAllocation =>

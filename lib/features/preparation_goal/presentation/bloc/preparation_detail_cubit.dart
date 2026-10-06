@@ -16,15 +16,20 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
   final GetPreparationDetailUseCase _getDetail;
 
   Future<void> load() async {
+    if (isClosed) return;
     emit(
       state.copyWith(status: PreparationDetailStatus.loading, clearError: true),
     );
     try {
       final detail = await _getDetail(goalId, state.weekStart, state.weekEnd);
+      // Al cambiar de preparación se cierra este controlador, aunque la
+      // consulta anterior todavía esté pendiente de respuesta.
+      if (isClosed) return;
       emit(
         state.copyWith(status: PreparationDetailStatus.ready, detail: detail),
       );
     } catch (_) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           status: PreparationDetailStatus.failure,
@@ -35,6 +40,7 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
   }
 
   Future<void> changeWeek(int offset) async {
+    if (isClosed) return;
     emit(
       state.copyWith(
         weekStart: state.weekStart.add(Duration(days: offset * 7)),
@@ -48,6 +54,7 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
   Future<void> _reloadDetail() async {
     try {
       final detail = await _getDetail(goalId, state.weekStart, state.weekEnd);
+      if (isClosed) return;
       emit(
         state.copyWith(
           status: PreparationDetailStatus.ready,
@@ -56,6 +63,7 @@ class PreparationDetailCubit extends Cubit<PreparationDetailState> {
         ),
       );
     } catch (_) {
+      if (isClosed) return;
       emit(
         state.copyWith(
           status: PreparationDetailStatus.failure,

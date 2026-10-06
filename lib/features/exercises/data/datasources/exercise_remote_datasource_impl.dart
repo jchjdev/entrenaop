@@ -13,7 +13,9 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   @override
   Future<List<ExerciseModel>> getExercises() async {
     try {
-      final response = await supabaseClient.from('exercises').select();
+      final response = await supabaseClient
+          .from('exercises')
+          .select(_exerciseColumns);
       return await Future.wait(
         (response as List).map(
           (json) async => ExerciseModel.fromJson(await _resolveImage(json)),
@@ -31,7 +33,7 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('exercises')
-          .select()
+          .select(_exerciseColumns)
           .eq('is_public', true)
           .contains('muscle_groups', [muscleGroup]);
       return await Future.wait(
@@ -49,7 +51,7 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('exercises')
-          .select()
+          .select(_exerciseColumns)
           .eq('id', id)
           .maybeSingle();
       if (response == null) return null;
@@ -166,3 +168,5 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
 
 const _publicBucket = 'exercise-images-public';
 const _privateBucket = 'exercise-images-private';
+const _exerciseColumns =
+    '*,training_profile:exercise_training_profiles!exercise_training_profile_fk(definition_version,definition)';

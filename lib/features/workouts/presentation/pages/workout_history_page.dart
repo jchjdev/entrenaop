@@ -1,4 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_state.dart';
 import 'package:flutter/material.dart';
@@ -6,33 +9,69 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-class WorkoutHistoryPage extends StatelessWidget {
-  const WorkoutHistoryPage({super.key});
+class WorkoutHistoryPage extends StatefulWidget {
+  const WorkoutHistoryPage({super.key, this.loadPreparations});
+
+  final Future<List<PreparationGoal>> Function()? loadPreparations;
+
+  @override
+  State<WorkoutHistoryPage> createState() => _WorkoutHistoryPageState();
+}
+
+class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
+  late Future<List<PreparationGoal>> _preparations = _loadPreparations();
+
+  Future<List<PreparationGoal>> _loadPreparations() =>
+      widget.loadPreparations?.call() ?? Future.value(const []);
+
+  void _reloadPreparations() {
+    final future = _loadPreparations();
+    setState(() {
+      _preparations = future;
+    });
+  }
+
+  Future<void> _refresh() async {
+    _reloadPreparations();
+    await context.read<WorkoutHistoryCubit>().load();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text('Evolución'),
       ),
       body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(
-        builder: (context, state) => _HistoryContent(state: state),
+        builder: (context, state) => _HistoryContent(
+          state: state,
+          preparations: _preparations,
+          onRefresh: _refresh,
+          onRetryPreparations: _reloadPreparations,
+        ),
       ),
     );
   }
 }
 
 class _HistoryContent extends StatelessWidget {
-  const _HistoryContent({required this.state});
+  const _HistoryContent({
+    required this.state,
+    required this.preparations,
+    required this.onRefresh,
+    required this.onRetryPreparations,
+  });
 
   final WorkoutHistoryState state;
+  final Future<List<PreparationGoal>> preparations;
+  final Future<void> Function() onRefresh;
+  final VoidCallback onRetryPreparations;
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: context.read<WorkoutHistoryCubit>().load,
+      onRefresh: onRefresh,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
@@ -52,33 +91,74 @@ class _HistoryContent extends StatelessWidget {
                     style: TextStyle(color: Colors.white60),
                   ),
                   const SizedBox(height: 24),
+                  if (state.status == WorkoutHistoryStatus.loaded) ...[
+                    _ActivitySummary(executions: state.executions),
+                    const SizedBox(height: 24),
+                  ],
                   const Text(
                     'Evaluaciones y controles',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 10),
-                  _DestinationCard(
-                    icon: Icons.monitor_heart_outlined,
-                    title: 'Evaluación física · Tropa',
-                    subtitle:
-                        'Consulta tus marcas y repite las pruebas de esta evaluación.',
-                    onTap: () => context.push('/assessment/history/physical'),
+                  FutureBuilder<List<PreparationGoal>>(
+                    future: preparations,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return TextButton.icon(
+                          onPressed: onRetryPreparations,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text(
+                            'Reintentar cargar tus preparaciones',
+                          ),
+                        );
+                      }
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const LinearProgressIndicator();
+                      }
+                      final goals = snapshot.data ?? const <PreparationGoal>[];
+                      return Column(
+                        children: [
+                          for (final goal in goals.where((g) => g.id != null))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _DestinationCard(
+                                icon: Icons.flag_outlined,
+                                title: 'Marcas · ${goal.program.name}',
+                                subtitle: 'Evaluación y resultados de esta preparación.',
+                                onTap: () =>
+                                    context.push('/plan/goal/${goal.id}'),
+                              ),
+                            ),
+                          if (goals.isEmpty)
+                            _DestinationCard(
+                              icon: Icons.flag_outlined,
+                              title: 'Tus preparaciones',
+                              subtitle: 'Añade una preparación para consultar sus marcas aquí.',
+                              onTap: () => context.push('/plan/goal'),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                   _DestinationCard(
                     icon: Icons.military_tech_outlined,
-                    title: 'Tests periódicos FAS 2027',
-                    subtitle:
-                        'Tus tests guardados, aunque no pertenezcan a ninguna preparación.',
+                    title: 'Pruebas FAS personales',
+                    subtitle: 'Tus tests guardados, aunque no pertenezcan a ninguna preparación.',
                     onTap: () => context.push('/assessment/fas-history'),
                   ),
                   const SizedBox(height: 8),
-                  _DestinationCard(
-                    icon: Icons.flag_outlined,
-                    title: 'Controles por preparación',
-                    subtitle:
-                        'Abre un programa para ver o repetir sus tests, como el de 2 km.',
-                    onTap: () => context.push('/plan/goal'),
+                  ExpansionTile(
+                    title: const Text('Otros historiales'),
+                    children: [
+                      _DestinationCard(
+                        icon: Icons.monitor_heart_outlined,
+                        title: 'Historial físico · Tropa',
+                        subtitle: 'Consulta las evaluaciones anteriores que hayas guardado.',
+                        onTap: () =>
+                            context.push('/assessment/history/physical'),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 26),
                   Row(
@@ -133,6 +213,53 @@ class _HistoryContent extends StatelessWidget {
   }
 }
 
+class _ActivitySummary extends StatelessWidget {
+  const _ActivitySummary({required this.executions});
+  final List<WorkoutExecution> executions;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final start = today.subtract(const Duration(days: 6));
+    final end = today.add(const Duration(days: 1));
+    final recent = executions
+        .where(
+          (e) =>
+              e.status == WorkoutExecutionStatus.completed &&
+              e.completedAt != null &&
+              !e.completedAt!.toLocal().isBefore(start) &&
+              e.completedAt!.toLocal().isBefore(end),
+        )
+        .toList();
+    final days = recent
+        .map((e) => DateUtils.dateOnly(e.completedAt!.toLocal()))
+        .toSet()
+        .length;
+    return EntrenaCard(
+      tone: EntrenaCardTone.progress,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Tu actividad reciente',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${recent.length} sesiones completadas · $days días con entrenamiento',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Últimos 7 días, según el historial disponible. Las sesiones incompletas siguen en el detalle.',
+            style: TextStyle(color: context.visuals.textMuted, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _DestinationCard extends StatelessWidget {
   const _DestinationCard({
     required this.icon,
@@ -148,7 +275,6 @@ class _DestinationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    color: const Color(0xFF171717),
     child: ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       leading: CircleAvatar(
@@ -178,7 +304,6 @@ class _WorkoutHistoryCard extends StatelessWidget {
     final completedAt = execution.completedAt;
     final duration = completedAt?.difference(execution.startedAt);
     return Card(
-      color: const Color(0xFF171717),
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),

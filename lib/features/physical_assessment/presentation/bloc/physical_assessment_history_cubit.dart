@@ -43,8 +43,7 @@ class PhysicalAssessmentHistoryCubit
       emit(
         const PhysicalAssessmentHistoryState(
           status: PhysicalAssessmentHistoryStatus.failure,
-          errorMessage:
-              'No hemos podido cargar tu historial. Revisa la conexión e inténtalo de nuevo.',
+          errorMessage: 'No hemos podido cargar tu historial. Revisa la conexión e inténtalo de nuevo.',
         ),
       );
     }

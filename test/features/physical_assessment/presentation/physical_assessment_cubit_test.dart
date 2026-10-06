@@ -36,6 +36,18 @@ void main() {
 
     await cubit.close();
   });
+
+  test('guarda una evaluación nueva en la preparación indicada', () async {
+    final repository = _FakePhysicalAssessmentRepository();
+    final cubit = _buildCubit(repository);
+    cubit.evaluate(_entryMarks);
+
+    await cubit.save(goalId: 'goal-1');
+
+    expect(repository.savedGoalId, 'goal-1');
+    expect(cubit.state.status, PhysicalAssessmentStatus.saved);
+    await cubit.close();
+  });
 }
 
 PhysicalAssessmentCubit _buildCubit(PhysicalAssessmentRepository repository) {
@@ -76,16 +88,24 @@ class _FakePhysicalAssessmentRepository
 
   final bool shouldFail;
   AssessmentReport? savedReport;
+  String? savedGoalId;
 
   @override
   Future<List<PhysicalAssessmentHistoryEntry>> getHistory() async => const [];
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistoryForGoal(
+    String goalId,
+  ) async => const [];
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,
+    String? goalId,
   }) async {
     savedReport = report;
+    savedGoalId = goalId;
     if (shouldFail) throw Exception('Fallo simulado');
     return 'assessment-123';
   }

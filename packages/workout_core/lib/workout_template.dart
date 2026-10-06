@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'performance_set.dart';
 
 enum WorkoutBlockFormat {
   straightSets,
@@ -250,6 +251,7 @@ class WorkoutSet extends Equatable {
     required this.id,
     required this.order,
     required this.restAfterSeconds,
+    this.performancePrescription,
     this.targetReps,
     this.targetDurationSeconds,
     this.targetDistanceMeters,
@@ -264,6 +266,7 @@ class WorkoutSet extends Equatable {
   });
 
   final String id;
+  final PerformanceSetPrescription? performancePrescription;
   final int order;
   final int? targetReps;
   final int? targetDurationSeconds;
@@ -281,6 +284,7 @@ class WorkoutSet extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    performancePrescription,
     order,
     targetReps,
     targetDurationSeconds,

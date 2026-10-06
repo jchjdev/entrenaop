@@ -179,6 +179,12 @@ class _Repository implements FasPeriodicAssessmentRepository {
   DateTime? savedAt;
 
   @override
+  Future<void> linkRecentToGoal({
+    required String assessmentId,
+    required String goalId,
+  }) async {}
+
+  @override
   Future<List<FasPeriodicAssessmentEntry>> history({String? goalId}) async =>
       [];
 

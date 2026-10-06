@@ -1,0 +1,28 @@
+Portadas EntrenaOP — FAS
+Generadas el 06/10/2026 con la herramienta integrada image_gen (no CLI).
+Dos imágenes nuevas, sin usar la fotografía de referencia como archivo de entrada.
+Los originales se conservan; no se incorporan al paquete de la app ni se suben automáticamente a Supabase.
+
+1. fas-ingreso-v1.png
+Use case: photorealistic-natural.
+Asset type: original photographic preparation cover for EntrenaOP, a physical-training app; asset 1, armed forces troop recruitment.
+Generate a brand-new original image, not an edit or a recreation of any existing photo. Landscape 16:9, request exact 1920 x 1080 pixels if supported, full bleed, no frame.
+Scene: a fictional military field-training area at dawn, softly blurred obstacles and distant low utilitarian structures, warm hazy sky, absolutely no famous or recognizable location.
+Subject: a fictional adult male serviceman in generic contemporary olive/earth camouflage, realistic dark helmet with simple unbranded mount, subdued protective goggles and fabric tactical vest, no visible patches, no emblems, no flags, no lettering. Chest-up three-quarter side/back portrait occupying the rightmost 35% of the composition, head centered around x=80% and y=40%. Looking toward the left, calm determined posture, face largely shaded and anonymous, realistic fabric grain and small scuffs, physically plausible equipment. No guns or ammunition visible.
+Composition: wide cinematic environmental portrait, leftmost 60% reserved as calm low-detail negative space for overlaid UI text; softly blurred low contrast charcoal and muted olive environment. The face/helmet should remain recognizable in a shallow horizontal crop through the central band, not touching the image edges; allow comfortable margin around the helmet. Subject must sit on the right and not drift into the center.
+Lighting and mood: premium cinematic realism, soft warm amber rim light on the helmet and shoulder, cool charcoal shadows with readable detail, muted earth tones. Motivating and professional, not a battle scene. Slight natural film texture, convincing optical shallow depth of field, not plastic CGI, not a video game.
+Constraints: no words, numbers, logos, watermarks, UI, frames, real identifiable people, real unit insignia or branded equipment. No smoke explosions violence or other prominent people. Do not pre-apply an opaque UI overlay or make the photograph excessively dark; the application supplies its own dark veil. Produce one standalone finished landscape photograph.
+
+2. fas-evaluacion-periodica-v1.png
+Use case: photorealistic-natural.
+Asset type: original photographic preparation cover for EntrenaOP, a physical-training app; asset 2, periodic armed forces physical assessment.
+Generate a brand-new original image with a distinctly different fictional person and environment from asset 1; not an edit or recreation of any existing photograph. Landscape 16:9, request exact 1920 x 1080 pixels if supported, full bleed, no frame.
+Scene: a fictional quiet armed-forces training base in early morning; an out-of-focus outdoor running track and low field-training structures disappear into soft atmospheric perspective on the left. The setting should suggest physical preparation, not combat, no recognizable real base.
+Subject: a fictional adult female servicemember with generic contemporary olive/earth camouflage, dark unbranded protective helmet and a lightweight field vest, athletic professional presence, three-quarter chest-up profile occupying only the rightmost 35% of the composition. Looking thoughtfully toward the distant track on the left. Face naturally shaded and anonymous, convincing fabric weave and folds, realistic helmet straps, no skin glamorization. No patches, flags, logos or badges. Hands outside the crop, no guns.
+Composition: premium cinematic environmental portrait, clear anonymous helmet/head-and-shoulder silhouette around x=80%, y=42%; leftmost 60% is calm, softly blurred, low-detail charcoal/olive negative space for app text. Comfortable helmet margin. Put important subject details around the middle vertical band to withstand very wide banner crops. Distinct from recruitment image but visually cohesive.
+Lighting and mood: gentle overcast dawn with subtle warm amber horizon and rim highlight, cool slate-charcoal/olive shadows, restrained contrast, shallow optical depth of field, natural cinematic photographic textures. Inspiring, disciplined, calm. Not blacked out, not oversaturated, no artificial orange graphics.
+Constraints: no text, numbers, branding, watermarks, UI, frame, real person identity, identifiable military unit emblems, flags, weaponry, combat, explosions or prominent extra people. The app will apply its own dark veil, so retain natural visible shadow detail. Produce exactly one standalone finished landscape photograph.
+
+El punto de interés recomendado está alrededor del 80 % horizontal y 40 % vertical.
+La app aplica el velo oscuro y genera las versiones ligeras automáticamente.
+

@@ -10,6 +10,12 @@ aplicación conserva su navegación, guardado, autorización y funciones propias
 La organización de bloques, repeticiones y variantes aún tiene adaptadores de
 pantalla distintos.
 
+`packages/entrena_ui/` comparte el tema, los componentes de marca y las portadas
+con la app del deportista. Programas incorpora edición de pruebas/baremos,
+previsualización de intentos, vínculos deportivos, configuración de estrategias
+y portadas con encuadres separados. Los laboratorios permiten revisar escenarios;
+la prescripción del deportista corresponde al motor de servidor.
+
 La portada administrativa separa tres áreas: **Programas**, **Sesiones
 oficiales** y **Ejercicios oficiales**. El creador de ejercicios guarda mediante
 funciones SQL que vuelven a comprobar `is_admin()` y fijan en servidor el origen
@@ -38,8 +44,9 @@ Publicar una sesión general la muestra en la biblioteca de la app; publicar
 una sesión de programa solo la deja disponible para las futuras reglas de ese
 programa. Ninguna acción la asigna automáticamente ni modifica la agenda.
 Los borradores sin uso se borran tras confirmación; las sesiones publicadas se
-archivan para conservar el historial. Las fases, los mesociclos y la
-prescripción adaptativa siguen pendientes.
+archivan para conservar el historial. El programa adaptativo ya tiene fases de
+rendimiento v3 y coordinación con carrera v5 en desarrollo; quedan límites
+deportivos pendientes descritos en `../docs/PROGRAMA_ADAPTATIVO.md`.
 Una sesión con entrenamientos pendientes o en curso no se puede retirar hasta
 reprogramarlos, para no dejar citas imposibles de ejecutar.
 
@@ -51,3 +58,7 @@ local es `http://localhost:55555`. Desde esta carpeta también se puede usar
 Sin `--dart-define` se conecta a EntrenaOP Dev. Una compilación de producción
 requiere `APP_ENV=production`, `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`
 explícitos. No se guardan secretos administrativos en el cliente.
+
+El [chequeo del 06/10/2026](../docs/AUDIT_2026_10_06.md) recoge análisis,
+pruebas, compilación web y limitaciones actuales. El admin todavía utiliza
+`Navigator`/`MaterialPageRoute`; su adopción de `go_router` queda pendiente.

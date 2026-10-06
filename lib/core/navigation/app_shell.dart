@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,8 +10,8 @@ class AppShell extends StatelessWidget {
   void _selectDestination(int index) {
     navigationShell.goBranch(
       index,
-      // Al pulsar de nuevo la pestaña activa volvemos a su raíz, igual que en
-      // las aplicaciones móviles habituales.
+      // Cambiar de sección conserva su pantalla; volver a pulsar la pestaña
+      // activa regresa a su raíz. Las tareas de edición requieren otra frontera.
       initialLocation: index == navigationShell.currentIndex,
     );
   }
@@ -21,23 +22,20 @@ class AppShell extends StatelessWidget {
       builder: (context, constraints) {
         if (constraints.maxWidth >= 840) {
           return Scaffold(
-            backgroundColor: const Color(0xFF0A0A0A),
             body: Row(
               children: [
                 SafeArea(
                   child: NavigationRail(
-                    backgroundColor: const Color(0xFF111111),
                     selectedIndex: navigationShell.currentIndex,
                     onDestinationSelected: _selectDestination,
                     extended: constraints.maxWidth >= 1180,
                     labelType: constraints.maxWidth >= 1180
                         ? NavigationRailLabelType.none
                         : NavigationRailLabelType.selected,
-                    leading: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 18),
-                      child: Icon(
-                        Icons.fitness_center_rounded,
-                        color: Color(0xFFE65100),
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      child: EntrenaWordmark(
+                        width: constraints.maxWidth >= 1180 ? 132 : 58,
                       ),
                     ),
                     destinations: _railDestinations,
@@ -51,7 +49,6 @@ class AppShell extends StatelessWidget {
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
           body: navigationShell,
           bottomNavigationBar: NavigationBar(
             selectedIndex: navigationShell.currentIndex,
@@ -76,6 +73,11 @@ const _barDestinations = [
     label: 'Mi plan',
   ),
   NavigationDestination(
+    icon: Icon(Icons.library_books_outlined),
+    selectedIcon: Icon(Icons.library_books_rounded),
+    label: 'Biblioteca',
+  ),
+  NavigationDestination(
     icon: Icon(Icons.insights_outlined),
     selectedIcon: Icon(Icons.insights_rounded),
     label: 'Evolución',
@@ -97,6 +99,11 @@ const _railDestinations = [
     icon: Icon(Icons.event_note_outlined),
     selectedIcon: Icon(Icons.event_note_rounded),
     label: Text('Mi plan'),
+  ),
+  NavigationRailDestination(
+    icon: Icon(Icons.library_books_outlined),
+    selectedIcon: Icon(Icons.library_books_rounded),
+    label: Text('Biblioteca'),
   ),
   NavigationRailDestination(
     icon: Icon(Icons.insights_outlined),

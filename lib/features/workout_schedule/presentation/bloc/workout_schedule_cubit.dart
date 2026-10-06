@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_state.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -13,9 +14,11 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
     required StartScheduledWorkoutUseCase startWorkout,
     required GetPublicWorkoutsUseCase getPublicWorkouts,
     required GetPersonalWorkoutsUseCase getPersonalWorkouts,
+    required PreparationTrainingRepository programs,
     DateTime? initialDate,
     DateTime Function()? now,
   }) : _getSchedule = getSchedule,
+       _programs = programs,
        _scheduleWorkout = scheduleWorkout,
        _rescheduleWorkout = rescheduleWorkout,
        _cancelWorkout = cancelWorkout,
@@ -26,6 +29,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
        super(_initialState(initialDate ?? (now ?? DateTime.now)()));
 
   final GetWorkoutScheduleUseCase _getSchedule;
+  final PreparationTrainingRepository _programs;
   final ScheduleWorkoutUseCase _scheduleWorkout;
   final RescheduleWorkoutUseCase _rescheduleWorkout;
   final CancelScheduledWorkoutUseCase _cancelWorkout;
@@ -39,6 +43,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
       state.copyWith(status: WorkoutScheduleStatus.loading, clearError: true),
     );
     try {
+      final programs = await _programs.refreshPrograms();
       final items = await _getSchedule(state.weekStart, state.weekEnd);
       final publicTemplates = await _getPublicWorkouts();
       final personalTemplates = await _getPersonalWorkouts();
@@ -46,6 +51,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
         state.copyWith(
           status: WorkoutScheduleStatus.ready,
           items: items,
+          programs: programs,
           publicTemplates: publicTemplates,
           personalTemplates: personalTemplates,
           clearBusy: true,
@@ -157,11 +163,13 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
 
   Future<void> _reloadItems() async {
     try {
+      final programs = await _programs.refreshPrograms();
       final items = await _getSchedule(state.weekStart, state.weekEnd);
       emit(
         state.copyWith(
           status: WorkoutScheduleStatus.ready,
           items: items,
+          programs: programs,
           clearBusy: true,
           clearError: true,
         ),

@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:workout_core/performance_set_codec.dart';
 
 class WorkoutExecutionModel {
   const WorkoutExecutionModel._();
@@ -54,6 +55,7 @@ class WorkoutExecutionModel {
       exerciseId: json['exercise_id'] as String,
       exerciseName: json['exercise_name'] as String,
       exerciseDescription: json['exercise_description'] as String?,
+      itemInstructions: json['item_instructions'] as String?,
       exerciseVideoUrl: json['exercise_video_url'] as String?,
       setOrder: json['set_order'] as int,
       targetReps: json['target_reps'] as int?,
@@ -69,6 +71,18 @@ class WorkoutExecutionModel {
       recoveryDistanceMeters: _doubleOrNull(json['recovery_distance_meters']),
       restAfterSeconds: json['rest_after_seconds'] as int,
       status: _setStatus(json['status'] as String),
+      performancePrescription: json['performance_prescription'] == null
+          ? null
+          : PerformanceSetCodec.prescription(
+              Map<String, dynamic>.from(
+                json['performance_prescription'] as Map,
+              ),
+            ),
+      performanceResult: json['performance_result'] == null
+          ? null
+          : PerformanceSetCodec.result(
+              Map<String, dynamic>.from(json['performance_result'] as Map),
+            ),
       actualReps: json['actual_reps'] as int?,
       actualDurationSeconds: json['actual_duration_seconds'] as int?,
       actualDistanceMeters: _doubleOrNull(json['actual_distance_meters']),

@@ -44,7 +44,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
     _reference = widget.reference == null
         ? FasPeriodic2027Reference.load()
         : Future.value(widget.reference);
-    _history = widget.repository.history(goalId: widget.goalId);
+    _history = widget.repository.history();
     _birthDate = widget.birthDateRepository.get();
   }
 
@@ -107,7 +107,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
       );
       if (!mounted) return;
       setState(() {
-        _history = widget.repository.history(goalId: widget.goalId);
+        _history = widget.repository.history();
         for (final controller in _fields.values) {
           controller.clear();
         }
@@ -129,10 +129,35 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
     }
   }
 
+  Future<void> _useProfileTest(FasPeriodicAssessmentEntry entry) async {
+    setState(() => _saving = true);
+    try {
+      await widget.repository.linkRecentToGoal(
+        assessmentId: entry.id,
+        goalId: widget.goalId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _history = widget.repository.history();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Test asociado a esta preparación FAS.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo usar este test. Revisa su fecha.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFF0A0A0A),
-    appBar: AppBar(title: const Text('Evaluación periódica FAS · 2027')),
+    appBar: AppBar(title: const Text('Marcas para Mejora FAS')),
     body: FutureBuilder<FasPeriodic2027Reference>(
       future: _reference,
       builder: (context, snapshot) {
@@ -153,10 +178,19 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Tus pruebas periódicas',
+                      'Tus marcas FAS',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(14),
+                        child: Text(
+                          'Los tests FAS guardados en tu perfil aparecen aquí. Puedes registrar uno nuevo o elegir expresamente uno reciente para esta preparación; las marcas antiguas quedan solo como historial.',
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -335,7 +369,7 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                     ),
                     const SizedBox(height: 32),
                     const Text(
-                      'Intentos anteriores',
+                      'Tests guardados en tu perfil',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -360,14 +394,38 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                               Card(
                                 child: ExpansionTile(
                                   title: Text(
-                                    DateFormat(
-                                      'dd/MM/yyyy · HH:mm',
-                                    ).format(entry.completedAt),
+                                    DateFormat('dd/MM/yyyy · HH:mm')
+                                        .format(entry.completedAt),
                                   ),
                                   subtitle: Text(
-                                    '${entry.age} años · baremo ${entry.category == 'men' ? 'H' : 'M'} · ${entry.meetsAllMinimums ? 'Mínimos alcanzados' : 'Por debajo de algún mínimo'}${entry.isPreEffectiveReference ? ' · referencia previa a 2027' : ''}',
+                                    '${entry.goalId == widget.goalId
+                                        ? 'En esta preparación'
+                                        : entry.goalId == null
+                                        ? 'Guardado en perfil FAS'
+                                        : 'Otra preparación FAS'} · ${entry.age} años · baremo ${entry.category == 'men' ? 'H' : 'M'}${entry.isPreEffectiveReference ? ' · referencia previa a 2027' : ''}',
                                   ),
                                   children: [
+                                    if (entry.goalId == null &&
+                                        !entry.completedAt.isBefore(
+                                          DateTime.now().subtract(
+                                            const Duration(days: 30),
+                                          ),
+                                        ) &&
+                                        !entry.completedAt.isAfter(
+                                          DateTime.now(),
+                                        ))
+                                      Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: FilledButton.icon(
+                                          onPressed: _saving
+                                              ? null
+                                              : () => _useProfileTest(entry),
+                                          icon: const Icon(Icons.add_link),
+                                          label: const Text(
+                                            'Usar este test en Mejora FAS',
+                                          ),
+                                        ),
+                                      ),
                                     for (final mark in entry.marks)
                                       ListTile(
                                         title: Text(mark.testName),

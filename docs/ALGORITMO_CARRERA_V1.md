@@ -1,5 +1,9 @@
 # Carrera: contrato de la primera semana (borrador v1)
 
+El recorrido de datos y el orden de implementación hacia una semana adaptativa
+de 2 km están en `docs/RECORRIDO_CARRERA_2K.md`. Este borrador conserva el
+comportamiento del prototipo actual y no valida todavía ritmos ni progresiones.
+
 Estado: **decisión de dominio probada, todavía sin publicación en la agenda**.
 Ámbito: preparación de Tropa y Marinería; no se aplica automáticamente a otros
 programas que también incluyan 2 km.
@@ -11,38 +15,79 @@ e historial. Las decisiones reutilizables de carrera podrán trasladarse solo
 tras comprobar protocolo, objetivo y carga; ni este borrador ni su catálogo de
 ingreso se convertirán automáticamente en sesiones o marcas periódicas.
 
-En la pantalla de la preparación de Tropa hay un **borrador versionado de
-semana de ejemplo** (2 días de carrera y 1 reservado para fuerza). Su contenido
-se edita en `assets/programs/tropa/initial_week_draft_v1.json`, fuera de la
-pantalla; el lector comprueba que la suma de modalidades coincide con los días
-totales. Sigue siendo un archivo de producto revisado en Git, **no un panel
-administrativo ni una plantilla oficial en Supabase**. No usa las marcas del
-usuario, no ejecuta el planificador, no crea sesiones ni cambia la agenda.
+El **borrador versionado de semana de ejemplo** (2 días de carrera y 1
+reservado para fuerza) ya no aparece como bloque independiente en el detalle
+de Tropa: confundía un ejemplo fijo con un plan del usuario. Su contenido se
+edita en `assets/programs/tropa/initial_week_draft_v1.json` y solo se usa para
+ilustrar tipos de sesión dentro del simulador. El lector comprueba que la suma
+de modalidades coincide con los días totales. Sigue siendo un archivo de
+producto revisado en Git, **no una plantilla oficial en Supabase**. No crea
+sesiones ni cambia la agenda.
 La sesión ilustrativa de 4 × 2 min no está validada como receta universal.
 Fuerza nombra las pruebas de flexo-extensiones y plancha, pero no prescribe
 ejercicios, repeticiones ni cargas. El reparto A/B/C es un escenario para
-revisar pantallas, no la asignación automática de días concretos.
+revisar el simulador, no la asignación automática de días concretos.
 
 ## Evaluaciones de carrera acordadas
 
-La batería prevista para Carrera está formada por **VAM, 2.000 metros y
-Cooper**. Son protocolos con finalidades distintas y esta decisión no obliga a
-que todos los usuarios realicen las tres pruebas:
+La evaluación inicial pertenece a la preparación y muestra en un mismo
+recorrido sus pruebas oficiales, el contexto de entrenamiento y, cuando haga
+falta, un test adicional de carrera. Si ya existe un **2.000 m oficial reciente
+y compatible del mismo programa**, su marca basta para empezar una pauta
+provisional: no se exigirá otro esfuerzo máximo. Cooper o VAMEVAL se podrán
+ofrecer después para calibrar, sin duplicar esa marca ni su puntuación.
+Si falta una referencia utilizable, el usuario elegirá **un Cooper de doce
+minutos (opción principal) o VAMEVAL continuo en pista (alternativa)**, no
+ambos. Se recomendará una pista medida: ayuda a registrar
+la distancia y familiariza al opositor con el entorno de competición. Para
+Cooper no será requisito de acceso; si usa otro recorrido, deberá declarar
+cómo midió la distancia. VAMEVAL sí requiere pista, marcas, audio y protocolo
+coherentes; no se confundirá con un test de ida y vuelta de 20 m.
+El resultado servirá como referencia de entrenamiento solo después de validar
+el protocolo y la forma de utilizarlo. Son posibles fuentes distintas de una
+referencia dentro del mismo recorrido, no formularios obligatorios separados:
 
-- **2.000 m:** referencia de rendimiento específica cuando la preparación
-  oficial utilice esa distancia. Su registro independiente ya está
-  implementado, pero todavía no determina por sí solo los ritmos de una semana.
-- **VAM:** calibración prevista para prescribir ritmos. Sigue pendiente elegir
-  y validar el protocolo concreto; VAM es la variable obtenida y no identifica
-  por sí misma un único test.
-- **Cooper:** alternativa de evaluación aeróbica mediante la distancia de doce
-  minutos. Sigue pendiente acordar cuándo se utilizará en lugar de la prueba de
-  VAM y cómo influirá en la prescripción.
+- **2.000 m oficial:** la marca se puntúa según el baremo de su programa y
+  versión. El mismo intento puede aportar segundos medidos al componente de
+  carrera si su protocolo y fecha son compatibles; sus puntos no son un ritmo.
+  Esto no determina por sí solo umbrales ni todos los ritmos de una semana.
+- **Cooper:** el usuario registra la distancia recorrida en doce minutos. La
+  velocidad media `distancia / 720 segundos` describe ese esfuerzo; no es una
+  VAM medida, un umbral ni un ritmo de sesión listo para usar. No se mostrará un
+  VO₂máx individual calculado como si fuese una medición precisa. Falta validar
+  cómo influirá en la prescripción.
+- **VAMEVAL:** test incremental continuo con referencias y pitidos en pista. La
+  velocidad final procede de su protocolo, no de Cooper ni de un test de
+  ida y vuelta. Como candidato técnico se ha descrito salida a 8,5 km/h,
+  incremento de 0,5 km/h cada minuto, referencias cada 20 m y registro de la
+  última etapa completa ([comparación de campo](https://scielo.isciii.es/scielo.php?pid=S1888-75462014000200002&script=sci_arttext)).
+  Antes de ofrecerlo en la app hay que fijar el audio, la salida, el criterio de
+  fallos y el cómputo de etapas en una versión única y comprobar que el usuario
+  pueda reproducirla.
 
 Cada resultado deberá conservar el protocolo y su versión. No se convertirán
 automáticamente resultados entre estas pruebas ni se inventarán equivalencias
-para completar datos ausentes. Las reglas de selección y repetición se
-validarán con Javier antes de codificarse.
+para completar datos ausentes. La evaluación empieza dentro de la preparación
+elegida; solo se sugerirá una marca previa pertinente, compatible y vigente,
+con fecha y procedencia, para que el usuario decida si la usa. No se completará
+automáticamente el test ni heredará el baremo de otro programa. El usuario
+introducirá el resultado después de correr; el móvil no es necesario durante
+la prueba. Se guardarán además el lugar y método de medición de la distancia
+para interpretar la comparabilidad de futuros intentos. RUN-005 fija una
+ventana común de carrera: sugerencia hasta 30 días y revisión condicionada hasta
+45 días; después la marca solo queda en historial para fijar ritmos. La
+confirmación de continuidad entre los días 31 y 45 se guarda con la elección
+del intento y se revalida con las cuatro semanas recientes. Faltan la cadencia
+de repetición y la calibración antes de publicar sesiones.
+
+La marca utilizable sitúa el punto de partida, pero la primera pauta depende
+también de la carrera reciente, la disponibilidad por día, la fuerza y el
+estado de salud. Sin base suficiente puede empezar solo con carrera fácil.
+Ni el 2.000 m, ni Cooper, ni VAMEVAL determinan por sí solos el umbral
+individual ni el ritmo de todas las sesiones. Las semanas posteriores se
+ajustarán con sesiones realizadas, esfuerzo, molestias y marcas repetidas con
+protocolo comparable;
+ninguna observación aislada obliga a progresar.
 
 La preparación de Tropa ofrece también un **simulador de primera semana**.
 Precarga los días totales, el tiempo por sesión y la revisión pendiente desde
@@ -84,6 +129,11 @@ tramos. Tampoco simula las semanas segunda y tercera del ciclo 2:1.
   no prescribirá movilidad o rehabilitación por defecto.
 
 ## Entradas necesarias para generar una semana real
+
+La lista siguiente describe el prototipo específico de Tropa existente, que
+todavía exige 2 km. El contrato común de entrada ya admite una marca oficial
+de 2 km, Cooper o VAMEVAL como referencia, pero aún no tiene captura ni
+conexión con este planificador. El prototipo no es la evaluación inicial común.
 
 1. Preparación activa y versión del programa.
 2. Test de 2 km con identificador, protocolo, fecha, tiempo, RPE e incidencias.

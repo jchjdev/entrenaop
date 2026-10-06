@@ -13,10 +13,22 @@ class PhysicalAssessmentRepositoryImpl implements PhysicalAssessmentRepository {
   }
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistoryForGoal(
+    String goalId,
+  ) {
+    return remoteDataSource.getHistoryForGoal(goalId);
+  }
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,
+    String? goalId,
   }) {
-    return remoteDataSource.saveAssessment(report, completedAt: completedAt);
+    return remoteDataSource.saveAssessment(
+      report,
+      completedAt: completedAt,
+      goalId: goalId,
+    );
   }
 }

@@ -152,7 +152,6 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFF0A0A0A),
     appBar: AppBar(title: const Text('Calculadora FAS 2027')),
     body: FutureBuilder<FasPeriodic2027Reference>(
       future: _reference,

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class FasPeriodicAssessmentEntry {
   const FasPeriodicAssessmentEntry({
     required this.id,
+    required this.goalId,
     required this.scoringVersion,
     required this.completedAt,
     required this.category,
@@ -12,6 +13,7 @@ class FasPeriodicAssessmentEntry {
   });
 
   final String id;
+  final String? goalId;
   final String scoringVersion;
   final DateTime completedAt;
   final String category;
@@ -76,6 +78,7 @@ class FasPeriodicAssessmentRepository {
             );
       return FasPeriodicAssessmentEntry(
         id: item.key,
+        goalId: header['preparation_goal_id'] as String?,
         scoringVersion: header['scoring_version'] as String,
         completedAt: DateTime.parse(header['completed_at'] as String).toLocal(),
         category: header['category'] as String,
@@ -111,6 +114,16 @@ class FasPeriodicAssessmentRepository {
       throw const FormatException('No se pudo guardar la evaluación.');
     }
     return id;
+  }
+
+  Future<void> linkRecentToGoal({
+    required String assessmentId,
+    required String goalId,
+  }) async {
+    await _client.rpc(
+      'link_recent_fas_assessment_to_goal',
+      params: {'p_assessment_id': assessmentId, 'p_goal_id': goalId},
+    );
   }
 }
 

@@ -1,0 +1,21 @@
+name: entrena_ui
+description: Identidad visual compartida de EntrenaOP.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  assets:
+    - assets/branding/entrenaop_wordmark_on_dark.png
+    - assets/branding/entrenaop_wordmark_on_light.png

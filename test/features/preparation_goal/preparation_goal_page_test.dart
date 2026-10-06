@@ -20,6 +20,47 @@ void main() {
     kind: PreparationProgramKind.access,
   );
 
+  testWidgets(
+    'abrir un programa no convierte una fecha de agenda en una orden de cálculo',
+    (tester) async {
+      final cubit = PreparationGoalCubit(
+        repository: _Repository(
+          goals: const [PreparationGoal(id: 'goal-1', program: troop)],
+          programs: const [troop],
+        ),
+      );
+      await cubit.load();
+      final router = GoRouter(
+        initialLocation: '/catalog',
+        routes: [
+          GoRoute(
+            path: '/catalog',
+            builder: (_, _) => BlocProvider.value(
+              value: cubit,
+              child: PreparationGoalPage(trainingWeek: DateTime(2026, 10, 12)),
+            ),
+          ),
+          GoRoute(
+            path: '/plan/goal/:id/training',
+            builder: (_, state) => Scaffold(
+              body: Text(
+                'Semana ${state.uri.queryParameters['week']} de ${state.pathParameters['id']}',
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      addTearDown(cubit.close);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Ver mi programa'));
+      await tester.tap(find.text('Ver mi programa'));
+      await tester.pumpAndSettle();
+      expect(find.text('Semana null de goal-1'), findsOneWidget);
+    },
+  );
+
   testWidgets('muestra el catálogo y permite añadir otra preparación', (
     tester,
   ) async {

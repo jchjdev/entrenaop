@@ -1,0 +1,475 @@
+EntrenaOP: inventario anterior a las correcciones de la auditoría del 06/10/2026.
+HEAD y main remoto: 20a962af6154f405731e794c817e2e5307fa4365.
+123 archivos modificados, 346 nuevos sin seguimiento, ninguno preparado para commit.
+ M: archivo versionado con cambios locales. ??: archivo fuera del índice de Git.
+Las nueve entradas de packages/workout_editor_ui/build/ se excluyeron después mediante .gitignore.
+
+ M admin_app/lib/features/exercises/data/admin_exercise_repository.dart
+ M admin_app/lib/features/programs/data/admin_program_repository.dart
+ M admin_app/lib/features/programs/presentation/admin_programs_page.dart
+ M admin_app/lib/features/workouts/presentation/admin_program_workouts_page.dart
+ M admin_app/lib/features/workouts/presentation/admin_workout_editor_page.dart
+ M admin_app/lib/main.dart
+ M admin_app/pubspec.lock
+ M admin_app/pubspec.yaml
+ M admin_app/test/features/programs/presentation/admin_programs_page_test.dart
+ M android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+ M android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+ M android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+ M android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+ M android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+ M docs/ALGORITMO_CARRERA_V1.md
+ M docs/ARCHITECTURE.md
+ M docs/DECISIONS.md
+ M docs/PHYSICAL_ASSESSMENT_DOMAIN.md
+ M docs/PRODUCT.md
+ M docs/ROADMAP.md
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png
+ M ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png
+ M lib/core/di/injection_container.dart
+ M lib/core/navigation/app_shell.dart
+ M lib/core/router/app_router.dart
+ M lib/features/auth/presentation/pages/home_page.dart
+ M lib/features/auth/presentation/pages/login_page.dart
+ M lib/features/auth/presentation/pages/sign_up_page.dart
+ M lib/features/dashboard/domain/entities/preparation_overview.dart
+ M lib/features/dashboard/domain/usecases/get_preparation_overview_usecase.dart
+ M lib/features/exercises/data/datasources/exercise_remote_datasource_impl.dart
+ M lib/features/exercises/data/models/exercise_model.dart
+ M lib/features/exercises/domain/entities/exercise_entity.dart
+ M lib/features/exercises/presentation/pages/personal_exercise_creator_page.dart
+ M lib/features/physical_assessment/data/datasources/physical_assessment_remote_datasource.dart
+ M lib/features/physical_assessment/data/datasources/physical_assessment_remote_datasource_impl.dart
+ M lib/features/physical_assessment/data/models/physical_assessment_history_model.dart
+ M lib/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart
+ M lib/features/physical_assessment/data/repositories/physical_assessment_repository_impl.dart
+ M lib/features/physical_assessment/domain/repositories/physical_assessment_repository.dart
+ M lib/features/physical_assessment/domain/usecases/save_physical_assessment_usecase.dart
+ M lib/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart
+ M lib/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart
+ M lib/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart
+ M lib/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart
+ M lib/features/physical_assessment/presentation/pages/initial_assessment_page.dart
+ M lib/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart
+ M lib/features/preparation_goal/data/datasources/preparation_goal_remote_datasource_impl.dart
+ M lib/features/preparation_goal/data/models/preparation_goal_model.dart
+ M lib/features/preparation_goal/data/repositories/running_test_repository.dart
+ M lib/features/preparation_goal/domain/entities/preparation_detail.dart
+ M lib/features/preparation_goal/domain/entities/preparation_program.dart
+ M lib/features/preparation_goal/domain/entities/running_test_result.dart
+ M lib/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart
+ M lib/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart
+ M lib/features/preparation_goal/presentation/pages/preparation_detail_page.dart
+ M lib/features/preparation_goal/presentation/pages/preparation_goal_page.dart
+ M lib/features/preparation_goal/presentation/pages/running_test_page.dart
+ M lib/features/preparation_goal/presentation/pages/running_week_simulator_page.dart
+ M lib/features/profile/presentation/pages/profile_page.dart
+ M lib/features/training_plan/presentation/pages/training_hub_page.dart
+ M lib/features/training_plan/presentation/pages/training_plan_page.dart
+ M lib/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart
+ M lib/features/workout_schedule/presentation/bloc/workout_schedule_state.dart
+ M lib/features/workout_schedule/presentation/pages/workout_schedule_page.dart
+ M lib/features/workouts/data/datasources/workout_remote_datasource_impl.dart
+ M lib/features/workouts/data/models/workout_execution_model.dart
+ M lib/features/workouts/data/repositories/workout_repository_impl.dart
+ M lib/features/workouts/domain/entities/workout_execution.dart
+ M lib/features/workouts/domain/services/running_execution_assessment.dart
+ M lib/features/workouts/presentation/bloc/active_workout_cubit.dart
+ M lib/features/workouts/presentation/pages/active_workout_page.dart
+ M lib/features/workouts/presentation/pages/running_workout_editor_page.dart
+ M lib/features/workouts/presentation/pages/workout_editor_page.dart
+ M lib/features/workouts/presentation/pages/workout_history_detail_page.dart
+ M lib/features/workouts/presentation/pages/workout_history_page.dart
+ M lib/features/workouts/presentation/pages/workout_library_page.dart
+ M lib/features/workouts/presentation/pages/workout_preview_page.dart
+ M lib/main.dart
+ M packages/workout_core/lib/workout_template.dart
+ M packages/workout_core/lib/workout_template_model.dart
+ M packages/workout_core/lib/workout_template_query.dart
+ M packages/workout_editor_ui/lib/exercise_form.dart
+ M packages/workout_editor_ui/test/exercise_form_test.dart
+ M pubspec.lock
+ M pubspec.yaml
+ M supabase/tests/fas_periodic_security_smoke.sql
+ M test/core/navigation/app_shell_test.dart
+ M test/features/auth/presentation/home_quick_actions_test.dart
+ M test/features/dashboard/preparation_overview_test.dart
+ M test/features/physical_assessment/presentation/fas_periodic_assessment_page_test.dart
+ M test/features/physical_assessment/presentation/fas_periodic_calculator_page_test.dart
+ M test/features/physical_assessment/presentation/physical_assessment_cubit_test.dart
+ M test/features/physical_assessment/presentation/physical_assessment_history_cubit_test.dart
+ M test/features/physical_assessment/presentation/physical_assessment_history_page_test.dart
+ M test/features/preparation_goal/get_preparation_detail_usecase_test.dart
+ M test/features/preparation_goal/preparation_goal_page_test.dart
+ M test/features/preparation_goal/presentation/running_week_simulator_page_test.dart
+ M test/features/workout_schedule/presentation/workout_schedule_cubit_test.dart
+ M test/features/workouts/data/workout_repository_impl_test.dart
+ M test/features/workouts/presentation/active_workout_cubit_test.dart
+ M test/features/workouts/presentation/workout_editor_cubit_test.dart
+ M test/features/workouts/presentation/workout_library_page_test.dart
+ M web/favicon.png
+ M web/icons/Icon-192.png
+ M web/icons/Icon-512.png
+ M web/icons/Icon-maskable-192.png
+ M web/icons/Icon-maskable-512.png
+ M web/index.html
+ M web/manifest.json
+?? admin_app/lib/features/auth/presentation/admin_login_page.dart
+?? admin_app/lib/features/programs/data/program_cover_repository.dart
+?? admin_app/lib/features/programs/domain/program_cover.dart
+?? admin_app/lib/features/programs/presentation/admin_performance_execution_dialog.dart
+?? admin_app/lib/features/programs/presentation/admin_performance_progression_lab.dart
+?? admin_app/lib/features/programs/presentation/admin_performance_strategy_section.dart
+?? admin_app/lib/features/programs/presentation/admin_program_attempt_preview_page.dart
+?? admin_app/lib/features/programs/presentation/admin_program_detail_page.dart
+?? admin_app/lib/features/programs/presentation/admin_program_scoring_editor.dart
+?? admin_app/lib/features/programs/presentation/admin_push_up_policy_lab.dart
+?? admin_app/lib/features/programs/presentation/admin_test_pass_standards_page.dart
+?? admin_app/lib/features/programs/presentation/program_cover_editor.dart
+?? admin_app/test/features/auth/presentation/admin_login_page_test.dart
+?? admin_app/test/features/exercises/data/admin_exercise_training_profile_test.dart
+?? admin_app/test/features/programs/data/program_cover_repository_test.dart
+?? admin_app/test/features/programs/presentation/admin_performance_execution_dialog_test.dart
+?? admin_app/test/features/programs/presentation/admin_performance_progression_lab_test.dart
+?? admin_app/test/features/programs/presentation/admin_performance_strategy_section_test.dart
+?? admin_app/test/features/programs/presentation/admin_push_up_policy_lab_test.dart
+?? admin_app/test/features/programs/presentation/program_cover_editor_test.dart
+?? android/app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
+?? android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+?? android/app/src/main/res/values/ic_launcher_background.xml
+?? assets/branding/entrenaop_app_icon.png
+?? assets/branding/entrenaop_app_icon_full_bleed.png
+?? assets/branding/entrenaop_app_icon_full_bleed.prompt.txt
+?? assets/branding/entrenaop_wordmark_on_dark.png
+?? assets/branding/entrenaop_wordmark_on_light.png
+?? docs/CATALOGO_CANDIDATO_CARRERA_2K.md
+?? docs/CATALOGO_FUERZA_RENDIMIENTO_V1.md
+?? docs/CONTRATO_FUERZA_RENDIMIENTO_V1.md
+?? docs/ESPECIFICACION_CEREBRO_CARRERA_2K.md
+?? docs/ESTRATEGIAS_RENDIMIENTO_V3.md
+?? docs/ESTRATEGIA_FLEXIONES_V1.md
+?? docs/MATRIZ_CEREBRO_CARRERA_2K.md
+?? docs/MODELOS_PROGRESION_FUERZA_RENDIMIENTO_V1.md
+?? docs/MOTOR_CARRERA_2K_V1.md
+?? docs/MOTOR_CARRERA_2K_V2.md
+?? docs/MOTOR_CARRERA_2K_V3.md
+?? docs/MOTOR_CARRERA_2K_V4.md
+?? docs/MOTOR_CARRERA_2K_V5.md
+?? docs/MOTOR_FUERZA_RENDIMIENTO_V1.md
+?? docs/MOTOR_FUERZA_RENDIMIENTO_V2.md
+?? docs/PROGRAMA_ADAPTATIVO.md
+?? docs/RECORRIDO_CARRERA_2K.md
+?? docs/VISUAL_DESIGN.md
+?? docs/labs/performance_v2_server_examples.json
+?? docs/labs/running_engine_v2.html
+?? docs/labs/running_engine_v3.html
+?? docs/references/2026-10-04_banco_bloques_v2_propuesta_usuario.txt
+?? docs/references/2026-10-04_banco_entrenamiento_propuesta_usuario.txt
+?? docs/references/2026-10-04_composicion_bloques_propuesta_usuario.txt
+?? lib/core/navigation/workflow_exit_guard.dart
+?? lib/core/presentation/widgets/entrena_card.dart
+?? lib/core/presentation/widgets/entrena_wordmark.dart
+?? lib/core/theme/entrena_theme.dart
+?? lib/features/auth/presentation/widgets/auth_page_shell.dart
+?? lib/features/auth/presentation/widgets/auth_text_field.dart
+?? lib/features/dashboard/data/repositories/shared_preferences_home_favorites_repository.dart
+?? lib/features/dashboard/domain/repositories/home_favorites_repository.dart
+?? lib/features/dashboard/presentation/home_day_selection.dart
+?? lib/features/dashboard/presentation/widgets/home_favorites.dart
+?? lib/features/dashboard/presentation/widgets/home_section_heading.dart
+?? lib/features/dashboard/presentation/widgets/home_tools_section.dart
+?? lib/features/exercises/presentation/bloc/exercise_library_cubit.dart
+?? lib/features/exercises/presentation/exercise_library_filter.dart
+?? lib/features/exercises/presentation/pages/exercise_library_page.dart
+?? lib/features/library/presentation/library_hub_page.dart
+?? lib/features/library/presentation/library_search.dart
+?? lib/features/library/presentation/widgets/library_search_controls.dart
+?? lib/features/preparation_goal/data/repositories/official_running_reference_repository.dart
+?? lib/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart
+?? lib/features/preparation_goal/data/repositories/program_running_reference_repository.dart
+?? lib/features/preparation_goal/data/repositories/running_intake_context_repository.dart
+?? lib/features/preparation_goal/data/repositories/running_reference_selection_repository.dart
+?? lib/features/preparation_goal/data/repositories/running_week_plan_repository.dart
+?? lib/features/preparation_goal/domain/entities/adaptive_program_path.dart
+?? lib/features/preparation_goal/domain/entities/adaptive_program_progress.dart
+?? lib/features/preparation_goal/domain/entities/running_initial_context.dart
+?? lib/features/preparation_goal/domain/entities/running_reference_candidate.dart
+?? lib/features/preparation_goal/domain/entities/running_reference_selection.dart
+?? lib/features/preparation_goal/domain/entities/training_scope.dart
+?? lib/features/preparation_goal/domain/entities/two_kilometre_performance.dart
+?? lib/features/preparation_goal/domain/repositories/preparation_training_repository.dart
+?? lib/features/preparation_goal/domain/services/running_reference_reuse_policy.dart
+?? lib/features/preparation_goal/domain/services/running_reference_selection_policy.dart
+?? lib/features/preparation_goal/domain/usecases/get_running_reference_candidates_usecase.dart
+?? lib/features/preparation_goal/domain/usecases/manage_running_reference_selection_usecase.dart
+?? lib/features/preparation_goal/presentation/pages/preparation_training_page.dart
+?? lib/features/preparation_goal/presentation/pages/running_context_form_page.dart
+?? lib/features/preparation_goal/presentation/pages/running_intake_page.dart
+?? lib/features/preparation_goal/presentation/widgets/performance_equipment_labels.dart
+?? lib/features/preparation_goal/presentation/widgets/performance_reference_dialog.dart
+?? lib/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart
+?? lib/features/preparation_goal/presentation/widgets/program_phase_section.dart
+?? lib/features/preparation_goal/presentation/widgets/running_reference_selection_section.dart
+?? lib/features/preparation_goal/presentation/widgets/running_week_preview_section.dart
+?? lib/features/program_assessment/data/program_assessment_repository.dart
+?? lib/features/program_assessment/presentation/program_assessment_page.dart
+?? lib/features/running_tools/domain/services/running_pace_calculator.dart
+?? lib/features/running_tools/presentation/pages/running_pace_calculator_page.dart
+?? lib/features/training_plan/data/repositories/training_context_repository_impl.dart
+?? lib/features/training_plan/domain/entities/training_context.dart
+?? lib/features/training_plan/domain/repositories/training_context_repository.dart
+?? lib/features/training_plan/presentation/pages/training_context_page.dart
+?? lib/features/training_plan/presentation/widgets/training_context_fields.dart
+?? lib/features/training_plan/presentation/widgets/training_equipment_labels.dart
+?? lib/features/workouts/presentation/widgets/performance_result_form.dart
+?? lib/features/workouts/presentation/widgets/performance_stopwatch.dart
+?? lib/features/workouts/presentation/widgets/session_creation.dart
+?? lib/features/workouts/presentation/workout_library_filter.dart
+?? output/preparation-covers/GENERACION.txt
+?? output/preparation-covers/fas-evaluacion-periodica-v1.png
+?? output/preparation-covers/fas-ingreso-v1.png
+?? packages/entrena_ui/.gitignore
+?? packages/entrena_ui/README.md
+?? packages/entrena_ui/analysis_options.yaml
+?? packages/entrena_ui/assets/branding/entrenaop_wordmark_on_dark.png
+?? packages/entrena_ui/assets/branding/entrenaop_wordmark_on_light.png
+?? packages/entrena_ui/lib/entrena_ui.dart
+?? packages/entrena_ui/lib/src/entrena_card.dart
+?? packages/entrena_ui/lib/src/entrena_cover_image.dart
+?? packages/entrena_ui/lib/src/entrena_theme.dart
+?? packages/entrena_ui/lib/src/entrena_wordmark.dart
+?? packages/entrena_ui/pubspec.yaml
+?? packages/entrena_ui/test/entrena_theme_test.dart
+?? packages/workout_core/lib/performance_progression_policy.dart
+?? packages/workout_core/lib/performance_set.dart
+?? packages/workout_core/lib/performance_set_codec.dart
+?? packages/workout_core/lib/performance_time.dart
+?? packages/workout_core/lib/performance_training_contract.dart
+?? packages/workout_core/lib/push_up_performance_proposal.dart
+?? packages/workout_core/lib/strength_exercise_catalog.dart
+?? packages/workout_core/lib/strength_exercise_catalog_codec.dart
+?? packages/workout_core/lib/strength_training_policy.dart
+?? packages/workout_editor_ui/build/native_assets/windows/native_assets.json
+?? packages/workout_editor_ui/build/test_cache/build/c89442bec8682bc50b5d32f531ab8a9b.cache.dill.track.dill
+?? packages/workout_editor_ui/build/unit_test_assets/AssetManifest.bin
+?? packages/workout_editor_ui/build/unit_test_assets/FontManifest.json
+?? packages/workout_editor_ui/build/unit_test_assets/NOTICES.Z
+?? packages/workout_editor_ui/build/unit_test_assets/NativeAssetsManifest.json
+?? packages/workout_editor_ui/build/unit_test_assets/fonts/MaterialIcons-Regular.otf
+?? packages/workout_editor_ui/build/unit_test_assets/shaders/ink_sparkle.frag
+?? packages/workout_editor_ui/build/unit_test_assets/shaders/stretch_effect.frag
+?? packages/workout_editor_ui/lib/program_cover_image_draft.dart
+?? packages/workout_editor_ui/test/program_cover_image_draft_test.dart
+?? supabase/catalogs/performance_exercises_v2.json
+?? supabase/catalogs/strength_exercises_v1.json
+?? supabase/migrations/20260925002000_program_assessment_tests.sql
+?? supabase/migrations/20260925003000_link_recent_fas_mark_to_goal.sql
+?? supabase/migrations/20260926000000_program_assessment_scoring.sql
+?? supabase/migrations/20260926001000_program_assessment_attempt_preview.sql
+?? supabase/migrations/20260926002000_cnp_2026_physical_draft.sql
+?? supabase/migrations/20260926003000_program_scoring_draft_safeguards.sql
+?? supabase/migrations/20260926004000_reject_zero_timed_marks.sql
+?? supabase/migrations/20260926005000_edit_draft_assessment_tests.sql
+?? supabase/migrations/20260926006000_guard_assessment_test_bands.sql
+?? supabase/migrations/20260927000000_contextual_assessment_rules.sql
+?? supabase/migrations/20260927001000_contextual_assessment_preview.sql
+?? supabase/migrations/20260927002000_publish_program_assessments.sql
+?? supabase/migrations/20260927003000_bulk_assessment_score_bands.sql
+?? supabase/migrations/20260927004000_guard_published_assessments.sql
+?? supabase/migrations/20260927005000_assessment_attempt_policies.sql
+?? supabase/migrations/20260927006000_cnp_agility_retry_policy.sql
+?? supabase/migrations/20260927007000_clone_program_assessment_version.sql
+?? supabase/migrations/20260927008000_validate_score_progression.sql
+?? supabase/migrations/20260929000000_program_training_modules.sql
+?? supabase/migrations/20260929001000_troop_goal_assessment.sql
+?? supabase/migrations/20260930000000_running_intake_contexts.sql
+?? supabase/migrations/20260930001000_running_intake_health_flag.sql
+?? supabase/migrations/20260930002000_running_reference_selections.sql
+?? supabase/migrations/20260930003000_running_current_capacity.sql
+?? supabase/migrations/20260930004000_fas_running_week_plans.sql
+?? supabase/migrations/20260930005000_fas_running_week_load_reasons.sql
+?? supabase/migrations/20260930006000_fas_running_week_capacity_cap.sql
+?? supabase/migrations/20260930007000_fas_running_week_reuse_context.sql
+?? supabase/migrations/20260930008000_fas_running_week_frequency.sql
+?? supabase/migrations/20260930009000_fas_running_week_replay_preview.sql
+?? supabase/migrations/20261001000000_fas_running_next_week_forecast.sql
+?? supabase/migrations/20261001001000_fas_running_high_effort_floor.sql
+?? supabase/migrations/20261001002000_fas_running_quality_entry.sql
+?? supabase/migrations/20261001003000_fas_running_quality_variant_progression.sql
+?? supabase/migrations/20261001004000_fas_running_quality_completed_intervals.sql
+?? supabase/migrations/20261001005000_running_engine_catalog_and_evidence.sql
+?? supabase/migrations/20261001006000_running_engine_week_policy.sql
+?? supabase/migrations/20261001007000_running_engine_fas_adapter.sql
+?? supabase/migrations/20261001008000_running_engine_response_v2.sql
+?? supabase/migrations/20261001009000_running_program_adapter.sql
+?? supabase/migrations/20261001010000_running_engine_selection_v3.sql
+?? supabase/migrations/20261001011000_running_engine_split_quality_v4.sql
+?? supabase/migrations/20261001012000_running_engine_easy_volume_v5.sql
+?? supabase/migrations/20261001013000_reset_running_plan.sql
+?? supabase/migrations/20261001014000_running_prior_quality_context.sql
+?? supabase/migrations/20261003000000_strength_training_profiles.sql
+?? supabase/migrations/20261003001000_strength_training_catalog_seed.sql
+?? supabase/migrations/20261003002000_published_training_profile_access.sql
+?? supabase/migrations/20261003003000_strength_exercise_library.sql
+?? supabase/migrations/20261003004000_performance_execution_contract.sql
+?? supabase/migrations/20261003005000_performance_measurement_semantics.sql
+?? supabase/migrations/20261003006000_performance_week_policy.sql
+?? supabase/migrations/20261003006500_legacy_performance_objectives.sql
+?? supabase/migrations/20261003007000_performance_context_and_references.sql
+?? supabase/migrations/20261003008000_running_coordination_adapter.sql
+?? supabase/migrations/20261003009000_preparation_week_coordinator.sql
+?? supabase/migrations/20261003010000_coordinated_running_publication.sql
+?? supabase/migrations/20261003011000_preparation_week_publication.sql
+?? supabase/migrations/20261003012000_performance_program_setup.sql
+?? supabase/migrations/20261003013000_coordinated_history_guard.sql
+?? supabase/migrations/20261003014000_quality_performance_feedback.sql
+?? supabase/migrations/20261003015000_relevant_training_modules.sql
+?? supabase/migrations/20261003016000_applicable_performance_tests.sql
+?? supabase/migrations/20261004000000_single_series_reference.sql
+?? supabase/migrations/20261004001000_preparation_week_revisions.sql
+?? supabase/migrations/20261004002000_session_guidance_and_protocol_fields.sql
+?? supabase/migrations/20261004003000_performance_stimulus_bank_v2.sql
+?? supabase/migrations/20261004004000_preparation_objective_coverage.sql
+?? supabase/migrations/20261004005000_separate_observed_reps_from_work_range.sql
+?? supabase/migrations/20261004006000_technical_practice_guidance.sql
+?? supabase/migrations/20261004007000_common_running_controls.sql
+?? supabase/migrations/20261004008000_adaptive_program_lifecycle.sql
+?? supabase/migrations/20261004009000_need_based_performance_review.sql
+?? supabase/migrations/20261004010000_automatic_program_follow_through.sql
+?? supabase/migrations/20261004011000_program_updates_and_trial_reset.sql
+?? supabase/migrations/20261004012000_program_pause_and_training_scope.sql
+?? supabase/migrations/20261006000000_performance_strategies_and_phases.sql
+?? supabase/migrations/20261006001000_shared_training_context_settings.sql
+?? supabase/migrations/20261006003000_preparation_program_covers.sql
+?? supabase/migrations/20261006004000_program_cover_upload_path_scope.sql
+?? supabase/migrations/20261006005000_independent_program_cover_framing.sql
+?? supabase/policies/adaptive_program_lifecycle.sql
+?? supabase/policies/performance_shared_session_v2.sql
+?? supabase/policies/performance_strategy_v3.sql
+?? supabase/policies/performance_v2.sql
+?? supabase/policies/program_publication.sql
+?? supabase/policies/program_setup_base.sql
+?? supabase/tests/adaptive_program_lifecycle.sql
+?? supabase/tests/adaptive_program_recovery.sql
+?? supabase/tests/admin_program_assessment_tests_smoke.sql
+?? supabase/tests/assessment_attempt_policies_smoke.sql
+?? supabase/tests/bulk_assessment_score_bands_smoke.sql
+?? supabase/tests/cnp_2026_scoring_smoke.sql
+?? supabase/tests/contextual_assessment_smoke.sql
+?? supabase/tests/edit_draft_assessment_tests_smoke.sql
+?? supabase/tests/independent_program_cover_framing.sql
+?? supabase/tests/need_based_performance_review.sql
+?? supabase/tests/performance_applicable_tests.sql
+?? supabase/tests/performance_execution_contract.sql
+?? supabase/tests/performance_horizons_and_catalog.sql
+?? supabase/tests/performance_observed_load_reference.sql
+?? supabase/tests/performance_policy.sql
+?? supabase/tests/performance_quality_feedback.sql
+?? supabase/tests/performance_stimulus_bank_v2.sql
+?? supabase/tests/performance_strategies_v3.sql
+?? supabase/tests/performance_v2_acceptance_examples.sql
+?? supabase/tests/performance_warm_up_neutrality_v3.sql
+?? supabase/tests/preparation_program_covers.sql
+?? supabase/tests/preparation_training_security.sql
+?? supabase/tests/preparation_week_integration.sql
+?? supabase/tests/preparation_week_revisions.sql
+?? supabase/tests/program_assessment_scoring_smoke.sql
+?? supabase/tests/program_pause_and_training_scope.sql
+?? supabase/tests/program_scope_follow_through.sql
+?? supabase/tests/program_training_modules_smoke.sql
+?? supabase/tests/program_updates_and_trial_reset.sql
+?? supabase/tests/publish_program_assessment_smoke.sql
+?? supabase/tests/running_engine_horizons.sql
+?? supabase/tests/running_engine_integration.sql
+?? supabase/tests/running_engine_lab.sql
+?? supabase/tests/running_engine_v2_regressions.sql
+?? supabase/tests/running_engine_v3_horizons.sql
+?? supabase/tests/running_engine_v3_regressions.sql
+?? supabase/tests/running_engine_v4_horizons.sql
+?? supabase/tests/running_engine_v4_regressions.sql
+?? supabase/tests/running_engine_v5_horizons.sql
+?? supabase/tests/running_engine_v5_regressions.sql
+?? supabase/tests/running_intake_contexts_smoke.sql
+?? supabase/tests/running_plan_reset_integration.sql
+?? supabase/tests/running_prior_quality_context_smoke.sql
+?? supabase/tests/running_program_integration.sql
+?? supabase/tests/running_reference_selections_smoke.sql
+?? supabase/tests/session_guidance_and_protocol_fields.sql
+?? supabase/tests/shared_training_context_settings.sql
+?? supabase/tests/strength_exercise_library_smoke.sql
+?? supabase/tests/strength_training_profiles_smoke.sql
+?? supabase/tests/troop_goal_assessment_smoke.sql
+?? test/core/navigation/workflow_exit_guard_test.dart
+?? test/core/router/library_routes_test.dart
+?? test/core/router/preparation_identity_test.dart
+?? test/core/router/profile_preferences_route_test.dart
+?? test/core/theme/entrena_cover_card_test.dart
+?? test/core/theme/entrena_theme_test.dart
+?? test/features/auth/presentation/auth_pages_test.dart
+?? test/features/auth/presentation/home_page_test.dart
+?? test/features/dashboard/home_day_selection_test.dart
+?? test/features/dashboard/home_favorites_test.dart
+?? test/features/dashboard/shared_preferences_home_favorites_repository_test.dart
+?? test/features/exercises/data/exercise_training_profile_model_test.dart
+?? test/features/exercises/domain/performance_progression_policy_test.dart
+?? test/features/exercises/domain/performance_training_contract_test.dart
+?? test/features/exercises/domain/push_up_training_policy_test.dart
+?? test/features/exercises/domain/strength_exercise_catalog_test.dart
+?? test/features/exercises/presentation/exercise_library_page_test.dart
+?? test/features/library/library_hub_page_test.dart
+?? test/features/library/library_search_test.dart
+?? test/features/preparation_goal/domain/manage_running_reference_selection_usecase_test.dart
+?? test/features/preparation_goal/domain/running_initial_context_test.dart
+?? test/features/preparation_goal/domain/running_reference_reuse_policy_test.dart
+?? test/features/preparation_goal/domain/two_kilometre_performance_test.dart
+?? test/features/preparation_goal/official_running_reference_repository_test.dart
+?? test/features/preparation_goal/preparation_program_cover_model_test.dart
+?? test/features/preparation_goal/presentation/performance_calibration_v3_test.dart
+?? test/features/preparation_goal/presentation/performance_reference_dialog_test.dart
+?? test/features/preparation_goal/presentation/preparation_detail_page_test.dart
+?? test/features/preparation_goal/presentation/preparation_training_page_test.dart
+?? test/features/preparation_goal/presentation/program_phase_section_test.dart
+?? test/features/preparation_goal/presentation/running_context_form_page_test.dart
+?? test/features/preparation_goal/presentation/running_intake_page_test.dart
+?? test/features/preparation_goal/presentation/running_reference_selection_section_test.dart
+?? test/features/preparation_goal/presentation/running_week_preview_section_test.dart
+?? test/features/preparation_goal/running_reference_candidates_test.dart
+?? test/features/program_assessment/presentation/program_assessment_page_test.dart
+?? test/features/running_tools/domain/running_pace_calculator_test.dart
+?? test/features/running_tools/presentation/running_pace_calculator_page_test.dart
+?? test/features/training_plan/presentation/training_context_page_test.dart
+?? test/features/training_plan/presentation/training_hub_page_test.dart
+?? test/features/workouts/data/workout_execution_guidance_test.dart
+?? test/features/workouts/domain/performance_set_test.dart
+?? test/features/workouts/domain/performance_time_test.dart
+?? test/features/workouts/presentation/evolution_overview_test.dart
+?? test/features/workouts/presentation/performance_result_form_test.dart
+?? test/helpers/performance_visual_review.dart
+?? tools/build_automatic_program_migration.py
+?? tools/build_automatic_program_preflight.py
+?? tools/build_performance_coverage_v2_1.py
+?? tools/build_performance_v2_migration.py
+?? tools/build_performance_v2_preflight.py
+?? tools/build_performance_v3_migration.py
+?? tools/build_performance_v3_preflight.py
+?? tools/build_program_flow_migrations.py
+?? tools/build_program_flow_preflight.py
+?? tools/build_program_modes_preflight.py
+?? tools/build_program_updates_preflight.py
+?? tools/generate_app_icons.ps1
+?? tools/render_running_lab.py
+?? tools/verify_app_icons.ps1
+?? website/

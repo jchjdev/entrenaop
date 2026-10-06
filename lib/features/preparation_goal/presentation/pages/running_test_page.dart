@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/preparation_goal/data/repositories/running_test_repository.dart';
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,7 @@ class _RunningTestPageState extends State<RunningTestPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Esta marca pertenece solo a esta preparación. Puedes repetir el test y conservar el historial.',
+              'Esta marca se guarda en esta preparación. Puedes repetir el test y conservar el historial. No se comparte automáticamente con otros programas.',
             ),
             const SizedBox(height: 16),
             Card(
@@ -59,7 +60,7 @@ class _RunningTestPageState extends State<RunningTestPage> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Calienta, realiza movilidad dinámica y progresa gradualmente antes del esfuerzo. El protocolo deportivo definitivo está pendiente de revisión con el entrenador.',
+                      'Calienta, realiza movilidad dinámica y progresa gradualmente antes del esfuerzo. El protocolo deportivo definitivo todavía está pendiente de validación.',
                     ),
                   ],
                 ),
@@ -153,6 +154,27 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
   bool _showSplits = false;
   bool _saving = false;
   String? _error;
+  bool _saved = false;
+  late final DateTime _initialDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialDate = _completedAt;
+  }
+
+  bool get _isDirty =>
+      !_saved &&
+      ([
+            _time,
+            _averageHr,
+            _maxHr,
+            _notes,
+            ..._splits,
+          ].any((controller) => controller.text.isNotEmpty) ||
+          _rpe != null ||
+          _showSplits ||
+          _completedAt != _initialDate);
 
   @override
   void dispose() {
@@ -197,6 +219,10 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
     try {
       await widget.repository.save(widget.goalId, result);
       if (mounted) {
+        setState(() {
+          _saved = true;
+          _saving = false;
+        });
         context.pop(true);
       }
     } catch (_) {
@@ -214,7 +240,13 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => _isDirty,
+    isBusy: () => _saving,
+    child: _buildContent(context),
+  );
+
+  Widget _buildContent(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Nueva marca de 2 km')),
     body: ListView(
       padding: const EdgeInsets.all(20),

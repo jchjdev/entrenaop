@@ -44,7 +44,7 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
     );
   }
 
-  Future<void> save() async {
+  Future<void> save({String? goalId}) async {
     final report = state.report;
     if (report == null || state.status == PhysicalAssessmentStatus.saving) {
       return;
@@ -55,7 +55,10 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
     );
 
     try {
-      final assessmentId = await _savePhysicalAssessment(report);
+      final assessmentId = await _savePhysicalAssessment(
+        report,
+        goalId: goalId,
+      );
       emit(
         state.copyWith(
           status: PhysicalAssessmentStatus.saved,
@@ -68,8 +71,7 @@ class PhysicalAssessmentCubit extends Cubit<PhysicalAssessmentState> {
       emit(
         state.copyWith(
           status: PhysicalAssessmentStatus.failure,
-          errorMessage:
-              'No hemos podido guardar la evaluación. Revisa la conexión e inténtalo de nuevo.',
+          errorMessage: 'No hemos podido guardar la evaluación. Revisa la conexión e inténtalo de nuevo.',
         ),
       );
     }

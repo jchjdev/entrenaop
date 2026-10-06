@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/core/router/app_router.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,13 +58,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
       child: MaterialApp.router(
         title: 'EntrenaOP',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFE65100),
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-        ),
+        theme: EntrenaTheme.dark,
         routerConfig: _appRouter.config,
       ),
     );

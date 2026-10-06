@@ -57,7 +57,7 @@ bool _withinTolerance(double actual, double target, double tolerance) =>
 
 String runningAssessmentLabel(RunningExecutionAssessment assessment) =>
     switch (assessment) {
-      RunningExecutionAssessment.onTarget => 'Cumplida dentro del objetivo',
-      RunningExecutionAssessment.changed => 'Cumplida con desviaciones',
-      RunningExecutionAssessment.incomplete => 'Parcialmente cumplida',
+      RunningExecutionAssessment.onTarget => 'Marca registrada según la pauta',
+      RunningExecutionAssessment.changed => 'Marca distinta de la pauta',
+      RunningExecutionAssessment.incomplete => 'Registro parcial',
     };

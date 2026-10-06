@@ -28,19 +28,42 @@ class PhysicalAssessmentRemoteDataSourceImpl
   }
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistoryForGoal(
+    String goalId,
+  ) async {
+    try {
+      final response = await supabaseClient
+          .from('physical_assessment_results')
+          .select()
+          .eq('preparation_goal_id', goalId)
+          .order('completed_at', ascending: false)
+          .order('test_id');
+      return PhysicalAssessmentHistoryModel.fromRows(
+        List<Map<String, dynamic>>.from(response),
+      );
+    } catch (error) {
+      throw ServerException(error.toString());
+    }
+  }
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,
+    String? goalId,
   }) async {
     try {
       // Flutter envía únicamente hechos medidos. La RPC vuelve a validar en
       // PostgreSQL el catálogo, el hito y el conjunto exacto de pruebas.
       final response = await supabaseClient.rpc(
-        'record_physical_assessment',
+        goalId == null
+            ? 'record_physical_assessment'
+            : 'record_troop_goal_assessment',
         params: {
+          'p_goal_id': ?goalId,
           'p_catalog_version': report.catalogVersion,
           'p_category': report.category.databaseValue,
-          'p_milestone': report.milestone.databaseValue,
+          if (goalId == null) 'p_milestone': report.milestone.databaseValue,
           'p_marks': report.results
               .map(
                 (result) => {

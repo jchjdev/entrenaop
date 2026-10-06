@@ -1,3 +1,5 @@
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -40,7 +42,19 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => !_allowPop,
+    isBusy: () =>
+        context.read<WorkoutEditorCubit>().state.status ==
+        WorkoutEditorStatus.saving,
+    saveDraftBeforeExit: _saveDraftForExit,
+    title: '¿Descartar los cambios incompletos?',
+    message: 'Estos cambios no se han podido guardar como borrador. Si sales, se conserva el último borrador guardado.',
+    exitLabel: 'Salir sin estos cambios',
+    child: _buildContent(context),
+  );
+
+  Widget _buildContent(BuildContext context) {
     return BlocConsumer<WorkoutEditorCubit, WorkoutEditorState>(
       listener: (context, state) {
         if (state.status == WorkoutEditorStatus.saved) {
@@ -64,7 +78,6 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
             if (!didPop && !saving) unawaited(_close());
           },
           child: Scaffold(
-            backgroundColor: const Color(0xFF0A0A0A),
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               leading: IconButton(
@@ -482,15 +495,17 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
       await context.read<WorkoutEditorCubit>().save(input);
     } on FormatException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     }
   }
 
   Future<void> _close() async {
     _autosaveTimer?.cancel();
-    if (!_suspendAutosave) {
+    final guard = WorkflowExitScope.maybeOf(context);
+    if (guard?.onExit != null) {
+      if (!await guard!.onExit!()) return;
+    } else if (!_suspendAutosave) {
       await _persistValidDraft();
     }
     if (!mounted) return;
@@ -498,6 +513,16 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.pop();
     });
+  }
+
+  Future<bool> _saveDraftForExit() async {
+    if (_allowPop || _suspendAutosave) return true;
+    try {
+      await context.read<WorkoutEditorCubit>().persistDraft(_currentInput());
+      return true;
+    } on FormatException {
+      return false;
+    }
   }
 }
 
@@ -532,7 +557,6 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
   Widget build(BuildContext context) {
     final data = widget.data;
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -763,7 +787,6 @@ class _RunningEstimateCard extends StatelessWidget {
         ? 'Se actualiza automáticamente con ritmos, distancias y descansos.'
         : 'Estimación parcial: falta ritmo en alguna distancia o recuperación.';
     return Card(
-      color: const Color(0xFF171717),
       child: ListTile(
         leading: const Icon(Icons.schedule_rounded),
         title: const Text('Duración estimada'),

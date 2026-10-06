@@ -3,6 +3,7 @@ import 'package:entrenaop/features/workouts/data/models/workout_execution_model.
 import 'package:entrenaop/features/workouts/data/models/workout_template_model.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:workout_core/performance_set_codec.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
@@ -87,6 +88,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   Future<WorkoutMutationDisposition> completeSet(WorkoutSetResultInput result) {
     final values = <String, dynamic>{
       'p_result_id': result.resultId,
+      if (result.performanceResult != null)
+        'p_performance_result': PerformanceSetCodec.encodeResult(
+          result.performanceResult!,
+        ),
       'p_actual_reps': result.actualReps,
       'p_actual_duration_seconds': result.actualDurationSeconds,
       'p_actual_distance_meters': result.actualDistanceMeters,
@@ -136,6 +141,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     return remoteDataSource.correctSet({
       'p_result_id': correction.resultId,
       'p_reason': correction.reason,
+      if (correction.performanceResult != null)
+        'p_performance_result': PerformanceSetCodec.encodeResult(
+          correction.performanceResult!,
+        ),
       'p_actual_reps': correction.actualReps,
       'p_actual_duration_seconds': correction.actualDurationSeconds,
       'p_actual_distance_meters': correction.actualDistanceMeters,

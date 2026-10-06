@@ -57,7 +57,6 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text('Preferencias de entrenamiento'),
@@ -180,16 +179,15 @@ class _TrainingPlanPageState extends State<TrainingPlanPage> {
                       ),
                       _QuestionCard(
                         title: 'Antes de planificar',
-                        subtitle:
-                            'No necesitamos que escribas diagnósticos ni datos médicos.',
+                        subtitle: 'No necesitamos que escribas diagnósticos ni datos médicos.',
                         child: SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: _requiresProfessionalReview,
                           title: const Text(
-                            'Tengo una lesión, limitación o indicación profesional que debe revisarse',
+                            'Tengo una lesión o limitación que afecta al entrenamiento',
                           ),
                           subtitle: const Text(
-                            'Al marcarlo, la futura planificación automática quedará bloqueada hasta una revisión.',
+                            'El algoritmo pausará las propuestas mientras mantengas esta señal activa. No depende del modo Pro.',
                           ),
                           onChanged: (value) => setState(
                             () => _requiresProfessionalReview = value,
@@ -235,7 +233,6 @@ class _IntroductionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF171717),
       child: const Padding(
         padding: EdgeInsets.all(22),
         child: Column(
@@ -274,7 +271,6 @@ class _QuestionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: const Color(0xFF141414),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(

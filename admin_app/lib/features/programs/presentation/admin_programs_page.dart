@@ -1,9 +1,13 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:entrenaop_admin/features/programs/presentation/admin_program_detail_page.dart';
+import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
 
 class AdminProgramsPage extends StatefulWidget {
   const AdminProgramsPage({
@@ -12,12 +16,14 @@ class AdminProgramsPage extends StatefulWidget {
     required this.workoutRepository,
     required this.exerciseRepository,
     required this.onSignOut,
+    this.coverRepository,
   });
 
   final AdminProgramRepository repository;
   final AdminWorkoutRepository workoutRepository;
   final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
+  final ProgramCoverRepository? coverRepository;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -100,7 +106,14 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administración'),
+        title: const Wrap(
+          spacing: 16,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            EntrenaWordmark(width: 132),
+            Text('Administración', style: TextStyle(fontSize: 14)),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Cerrar sesión',
@@ -111,7 +124,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 1100),
           child: _buildContent(),
         ),
       ),
@@ -129,62 +142,94 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
+        Text(
           '¿Qué quieres gestionar?',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Elige el catálogo de contenido de EntrenaOP en el que quieres trabajar.',
+          style: TextStyle(color: context.visuals.textMuted),
         ),
         const SizedBox(height: 20),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _AdminAreaCard(
-              icon: Icons.account_tree_outlined,
-              title: 'Programas',
-              description: 'Crear una preparación o evaluación.',
-              action: 'Crear programa',
-              onTap: _saving ? null : _createDraft,
-            ),
-            _AdminAreaCard(
-              icon: Icons.view_agenda_outlined,
-              title: 'Sesiones oficiales',
-              description: 'Crear sesiones para la biblioteca general.',
-              action: 'Abrir sesiones',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => AdminProgramWorkoutsPage(
-                    program: null,
-                    repository: widget.workoutRepository,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 840
+                ? 3
+                : constraints.maxWidth >= 560
+                ? 2
+                : 1;
+            final width = (constraints.maxWidth - 12 * (columns - 1)) / columns;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _AdminAreaCard(
+                  width: width,
+                  icon: Icons.account_tree_outlined,
+                  title: 'Programas',
+                  description: 'Crear una preparación o evaluación.',
+                  action: 'Crear programa',
+                  onTap: _saving ? null : _createDraft,
+                ),
+                _AdminAreaCard(
+                  width: width,
+                  icon: Icons.view_agenda_outlined,
+                  title: 'Sesiones oficiales',
+                  description: 'Crear sesiones para la biblioteca general.',
+                  action: 'Abrir sesiones',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AdminProgramWorkoutsPage(
+                        program: null,
+                        repository: widget.workoutRepository,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            _AdminAreaCard(
-              icon: Icons.fitness_center,
-              title: 'Ejercicios oficiales',
-              description: 'Crear y editar el catálogo global.',
-              action: 'Abrir ejercicios',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                      AdminExercisesPage(repository: widget.exerciseRepository),
+                _AdminAreaCard(
+                  width: width,
+                  icon: Icons.fitness_center,
+                  title: 'Ejercicios oficiales',
+                  description: 'Crear y editar el catálogo global.',
+                  action: 'Abrir ejercicios',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AdminExercisesPage(
+                        repository: widget.exerciseRepository,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        Card(
+          child: ExpansionTile(
+            title: const Text('Laboratorio de fuerza y rendimiento'),
+            subtitle: const Text(
+              'Revisar selección, dosis y respuesta con datos simulados',
             ),
-          ],
+            leading: const Icon(Icons.science_outlined),
+            childrenPadding: const EdgeInsets.all(16),
+            children: [
+              AdminPerformanceProgressionLab(
+                repository: widget.exerciseRepository,
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 32),
-        Row(
+        Wrap(
+          spacing: 20,
+          runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Expanded(
-              child: Text(
-                'Programas existentes',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+            Text(
+              'Programas existentes',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             FilledButton.icon(
               onPressed: _saving ? null : _createDraft,
@@ -194,8 +239,9 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Cada programa agrupa sus propias sesiones. Los borradores no aparecen en la aplicación del deportista.',
+          style: TextStyle(color: context.visuals.textMuted),
         ),
         const SizedBox(height: 16),
         if (_programs.isEmpty)
@@ -209,29 +255,48 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           for (final program in _programs)
             Card(
               child: ListTile(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => AdminProgramWorkoutsPage(
-                      program: program,
-                      repository: widget.workoutRepository,
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<bool>(
+                      builder: (_) => AdminProgramDetailPage(
+                        program: program,
+                        repository: widget.repository,
+                        workoutRepository: widget.workoutRepository,
+                        coverRepository: widget.coverRepository,
+                      ),
                     ),
+                  );
+                  if (mounted) await _load();
+                },
+                title: Text(program.name),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        program.kind == 'access'
+                            ? 'Acceso u oposición'
+                            : 'Evaluación interna',
+                      ),
+                      Chip(
+                        avatar: Icon(
+                          program.enabled
+                              ? Icons.check_circle_outline
+                              : Icons.edit_note_rounded,
+                          size: 16,
+                          color: program.enabled
+                              ? context.visuals.success
+                              : context.visuals.textMuted,
+                        ),
+                        label: Text(program.enabled ? 'Publicado' : 'Borrador'),
+                      ),
+                    ],
                   ),
                 ),
-                title: Text(program.name),
-                subtitle: Text(
-                  program.kind == 'access'
-                      ? 'Acceso u oposición'
-                      : 'Evaluación interna',
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Chip(
-                      label: Text(program.enabled ? 'Publicado' : 'Borrador'),
-                    ),
-                    const Icon(Icons.chevron_right),
-                  ],
-                ),
+                trailing: const Icon(Icons.chevron_right),
               ),
             ),
       ],
@@ -241,6 +306,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
 
 class _AdminAreaCard extends StatelessWidget {
   const _AdminAreaCard({
+    required this.width,
     required this.icon,
     required this.title,
     required this.description,
@@ -249,6 +315,7 @@ class _AdminAreaCard extends StatelessWidget {
   });
 
   final IconData icon;
+  final double width;
   final String title;
   final String description;
   final String action;
@@ -256,45 +323,47 @@ class _AdminAreaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 268,
-    child: Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    width: width,
+    child: EntrenaCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.visuals.accentSoft,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              size: 26,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(description, style: TextStyle(color: context.visuals.textMuted)),
+          const SizedBox(height: 18),
+          Row(
             children: [
-              Icon(icon, size: 30),
-              const SizedBox(height: 18),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Text(
+                  action,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(description),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      action,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_rounded, size: 18),
-                ],
-              ),
+              const Icon(Icons.arrow_forward_rounded, size: 18),
             ],
           ),
-        ),
+        ],
       ),
     ),
   );

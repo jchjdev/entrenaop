@@ -1,95 +1,147 @@
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
+import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
-import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
-import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
+import 'package:entrenaop/features/dashboard/presentation/home_day_selection.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/home_favorites.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/home_tools_section.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
-import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+    required this.favoritesRepository,
+    required this.userId,
+  });
+
+  final HomeFavoritesRepository favoritesRepository;
+  final String userId;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Row(
-          children: [
-            Icon(Icons.fitness_center_rounded, color: Color(0xFFE65100)),
-            SizedBox(width: 10),
-            Text('EntrenaOP'),
-          ],
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const EntrenaWordmark(width: 148),
+      actions: [
+        IconButton(
+          tooltip: 'Abrir perfil',
+          onPressed: () => context.go('/profile'),
+          icon: const Icon(Icons.person_outline_rounded),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Actualizar resumen',
-            onPressed: () => context.read<DashboardCubit>().load(),
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: BlocConsumer<DashboardCubit, DashboardState>(
-        listener: (context, state) {
-          if (state.status == DashboardStatus.failure &&
-              state.errorMessage != null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-          }
-        },
-        builder: (context, state) {
-          final overview = state.overview;
-          if (overview == null &&
-              (state.status == DashboardStatus.initial ||
-                  state.status == DashboardStatus.loading)) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (overview == null) {
-            return _LoadFailure(
-              onRetry: () => context.read<DashboardCubit>().load(),
-            );
-          }
-          return _DashboardContent(
-            overview: overview,
-            refreshing: state.status == DashboardStatus.loading,
+        IconButton(
+          tooltip: 'Actualizar resumen',
+          onPressed: () => context.read<DashboardCubit>().load(),
+          icon: const Icon(Icons.refresh_rounded),
+        ),
+        const SizedBox(width: 8),
+      ],
+    ),
+    body: BlocConsumer<DashboardCubit, DashboardState>(
+      listener: (context, state) {
+        if (state.status == DashboardStatus.failure &&
+            state.errorMessage != null) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+        }
+      },
+      builder: (context, state) {
+        final overview = state.overview;
+        if (overview == null &&
+            (state.status == DashboardStatus.initial ||
+                state.status == DashboardStatus.loading)) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (overview == null) {
+          return Center(
+            child: FilledButton.icon(
+              onPressed: () => context.read<DashboardCubit>().load(),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Reintentar cargar Inicio'),
+            ),
           );
-        },
-      ),
-    );
-  }
+        }
+        return _DashboardContent(
+          overview: overview,
+          refreshing: state.status == DashboardStatus.loading,
+          favoritesRepository: favoritesRepository,
+          userId: userId,
+        );
+      },
+    ),
+  );
 }
 
-class _DashboardContent extends StatelessWidget {
-  const _DashboardContent({required this.overview, required this.refreshing});
-
+class _DashboardContent extends StatefulWidget {
+  const _DashboardContent({
+    required this.overview,
+    required this.refreshing,
+    required this.favoritesRepository,
+    required this.userId,
+  });
   final PreparationOverview overview;
   final bool refreshing;
+  final HomeFavoritesRepository favoritesRepository;
+  final String userId;
+
+  @override
+  State<_DashboardContent> createState() => _DashboardContentState();
+}
+
+class _DashboardContentState extends State<_DashboardContent> {
+  late DateTime _selectedDay = _initialDay();
+
+  DateTime _initialDay() {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final start = widget.overview.weekStart;
+    return today.isBefore(start) ||
+            !today.isBefore(start.add(const Duration(days: 7)))
+        ? start
+        : today;
+  }
+
+  @override
+  void didUpdateWidget(covariant _DashboardContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!DateUtils.isSameDay(
+      oldWidget.overview.weekStart,
+      widget.overview.weekStart,
+    )) {
+      _selectedDay = _initialDay();
+    }
+  }
+
+  Future<void> _open(String route) async {
+    await context.push(route);
+    if (mounted) await context.read<DashboardCubit>().load();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final assessment = overview.latestAssessment;
-    final preferences = overview.preferences;
-    final hasTroop = overview.goals.any(
-      (goal) => goal.programId == PreparationProgramIds.armedForcesTroopEntry,
-    );
-    final fasGoal = overview.goals
+    final overview = widget.overview;
+    final complete = overview.weeklyWorkouts
+        .where((w) => w.status == ScheduledWorkoutStatus.completed)
+        .length;
+    final pending = overview.weeklyWorkouts
         .where(
-          (goal) =>
-              goal.programId == PreparationProgramIds.fasPeriodicAssessment,
+          (w) =>
+              w.status == ScheduledWorkoutStatus.planned ||
+              w.status == ScheduledWorkoutStatus.inProgress,
         )
-        .firstOrNull;
-
+        .length;
     return RefreshIndicator(
       onRefresh: () => context.read<DashboardCubit>().load(),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 6, 20, 32),
         children: [
           Center(
             child: ConstrainedBox(
@@ -97,88 +149,74 @@ class _DashboardContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (refreshing) const LinearProgressIndicator(minHeight: 2),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '¿Entrenamos?',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 9),
-                  const Text(
-                    'Elige una preparación o empieza una sesión.',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
+                  if (widget.refreshing)
+                    const LinearProgressIndicator(minHeight: 2),
                   _CompactWeek(
                     weekStart: overview.weekStart,
+                    selectedDay: _selectedDay,
                     workouts: overview.weeklyWorkouts,
+                    onSelect: (day) => setState(() => _selectedDay = day),
+                  ),
+                  if (overview.weeklyWorkouts.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        '$complete completadas · $pending pendientes esta semana',
+                        style: TextStyle(
+                          color: context.visuals.textMuted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 22),
+                  _DayHero(
+                    overview: overview,
+                    selectedDay: _selectedDay,
+                    onOpen: _open,
                   ),
                   const SizedBox(height: 24),
-                  _PreparationsCarousel(goals: overview.goals),
-                  const SizedBox(height: 22),
-                  const _TrainingHero(),
-                  const SizedBox(height: 22),
-                  HomeQuickActions(
-                    assessment: assessment,
-                    hasTroop: hasTroop,
-                    fasGoal: fasGoal,
-                  ),
-                  const SizedBox(height: 26),
-                  const Text(
-                    'Completa tu contexto',
-                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    'Lo que ya sabemos y el siguiente dato útil.',
-                    style: TextStyle(color: Colors.white54),
-                  ),
-                  const SizedBox(height: 12),
-                  _NextStepCard(nextStep: overview.nextStep),
-                  const SizedBox(height: 16),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final Widget? assessmentCard = hasTroop
-                          ? _AssessmentCard(assessment: assessment)
-                          : fasGoal?.id == null
-                          ? null
-                          : _FasAssessmentCard(goalId: fasGoal!.id!);
-                      final preferencesCard = _PreferencesCard(
-                        preferences: preferences,
-                      );
-                      if (constraints.maxWidth < 700) {
-                        return Column(
-                          children: [
-                            if (assessmentCard != null) ...[
-                              assessmentCard,
-                              const SizedBox(height: 12),
+                  _PreparationsSection(overview: overview, onOpen: _open),
+                  const SizedBox(height: 24),
+                  const HomeToolsSection(),
+                  const SizedBox(height: 24),
+                  EntrenaCard(
+                    onTap: () => _open('/library'),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Biblioteca de entrenamientos',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Explora sesiones y ejercicios',
+                                style: TextStyle(
+                                  color: context.visuals.textMuted,
+                                ),
+                              ),
                             ],
-                            preferencesCard,
-                          ],
-                        );
-                      }
-                      if (assessmentCard == null) return preferencesCard;
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: assessmentCard),
-                          const SizedBox(width: 12),
-                          Expanded(child: preferencesCard),
-                        ],
-                      );
-                    },
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  _PlanningBoundaryCard(preferences: preferences),
+                  const SizedBox(height: 24),
+                  HomeFavorites(
+                    key: ValueKey(widget.userId),
+                    repository: widget.favoritesRepository,
+                    userId: widget.userId,
+                    onOpen: _open,
+                  ),
                 ],
               ),
             ),
@@ -190,525 +228,490 @@ class _DashboardContent extends StatelessWidget {
 }
 
 class _CompactWeek extends StatelessWidget {
-  const _CompactWeek({required this.weekStart, required this.workouts});
-
-  final DateTime weekStart;
-  final List<ScheduledWorkout> workouts;
-
-  @override
-  Widget build(BuildContext context) {
-    final today = DateUtils.dateOnly(DateTime.now());
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Esta semana',
-                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-              ),
-            ),
-            TextButton(
-              onPressed: () => context.push('/plan/week'),
-              child: const Text('Ver semana'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final cells = List.generate(7, (index) {
-              final day = weekStart.add(Duration(days: index));
-              return _CompactDay(
-                day: day,
-                isToday: DateUtils.isSameDay(day, today),
-                workouts: workouts
-                    .where(
-                      (item) => DateUtils.isSameDay(item.scheduledDate, day),
-                    )
-                    .toList(growable: false),
-              );
-            });
-
-            if (constraints.maxWidth >= 650) {
-              return Row(
-                children: [
-                  for (final (index, cell) in cells.indexed) ...[
-                    if (index > 0) const SizedBox(width: 10),
-                    Expanded(child: cell),
-                  ],
-                ],
-              );
-            }
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final (index, cell) in cells.indexed) ...[
-                    if (index > 0) const SizedBox(width: 9),
-                    SizedBox(width: 74, child: cell),
-                  ],
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _CompactDay extends StatelessWidget {
-  const _CompactDay({
-    required this.day,
-    required this.isToday,
+  const _CompactWeek({
+    required this.weekStart,
+    required this.selectedDay,
     required this.workouts,
+    required this.onSelect,
   });
-
-  final DateTime day;
-  final bool isToday;
+  final DateTime weekStart;
+  final DateTime selectedDay;
   final List<ScheduledWorkout> workouts;
+  final ValueChanged<DateTime> onSelect;
 
   @override
-  Widget build(BuildContext context) {
-    final hasCompleted = workouts.any(
-      (item) => item.status == ScheduledWorkoutStatus.completed,
-    );
-    return Semantics(
-      label:
-          '${_weekdayLabel(day.weekday)}, ${day.day}, ${workouts.length} sesiones',
-      button: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: () => context.push('/plan/week?date=${_dateParam(day)}'),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          constraints: const BoxConstraints(minHeight: 116),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
-          decoration: BoxDecoration(
-            color: isToday ? const Color(0xFFFF6A2A) : const Color(0xFF171717),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isToday ? const Color(0xFFFF6A2A) : Colors.white12,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _weekdayLabel(day.weekday),
-                style: TextStyle(
-                  color: isToday ? Colors.white : Colors.white54,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 9),
-              Text(
-                '${day.day}',
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox.square(
-                dimension: 9,
-                child: workouts.isEmpty
-                    ? null
-                    : DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: hasCompleted
-                              ? const Color(0xFF69D39B)
-                              : isToday
-                              ? Colors.white
-                              : const Color(0xFFFF8A50),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-              ),
-            ],
-          ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      HomeSectionHeading(
+        title: _homeMonth(weekStart),
+        action: TextButton(
+          onPressed: () =>
+              context.push('/plan/week?date=${homeDateParam(selectedDay)}'),
+          child: const Text('Ver semana'),
         ),
       ),
-    );
-  }
-}
-
-class _PreparationsCarousel extends StatelessWidget {
-  const _PreparationsCarousel({required this.goals});
-
-  final List<PreparationGoal> goals;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Tus preparaciones',
-                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => _openPreparationCatalog(context),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Añadir'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (goals.isEmpty)
-          Card(
-            color: const Color(0xFF151515),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.flag_outlined,
-                    color: Color(0xFFFF8A50),
-                    size: 32,
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
+      const SizedBox(height: 8),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final scroll =
+              constraints.maxWidth < 300 ||
+              MediaQuery.textScalerOf(context).scale(14) > 23;
+          final days = List.generate(7, (index) {
+            final day = DateUtils.dateOnly(
+              weekStart.add(Duration(days: index)),
+            );
+            final selected = DateUtils.isSameDay(day, selectedDay);
+            final items = workouts
+                .where(
+                  (item) =>
+                      DateUtils.isSameDay(item.scheduledDate, day) &&
+                      item.status != ScheduledWorkoutStatus.skipped,
+                )
+                .toList();
+            final color = selected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface;
+            return Semantics(
+              label: '${_homeLongDay(day)}, ${items.length} sesiones',
+              selected: selected,
+              button: true,
+              child: Material(
+                color: selected
+                    ? Theme.of(context).colorScheme.primary
+                    : context.visuals.surfaceLow,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  key: ValueKey('home-day-${homeDateParam(day)}'),
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => onSelect(day),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 2,
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Añade tu primera preparación',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                          ['L', 'M', 'X', 'J', 'V', 'S', 'D'][index],
+                          style: TextStyle(color: color, fontSize: 12),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
-                          'Elige una oposición o prueba del catálogo verificado.',
-                          style: TextStyle(color: Colors.white60),
+                          '${day.day}',
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 19,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        SizedBox.square(
+                          dimension: 5,
+                          child: items.isEmpty
+                              ? null
+                              : DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: selected
+                                        ? color
+                                        : items.every(
+                                            (w) =>
+                                                w.status ==
+                                                ScheduledWorkoutStatus
+                                                    .completed,
+                                          )
+                                        ? context.visuals.success
+                                        : Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: () => _openPreparationCatalog(context),
-                    child: const Text('Explorar'),
-                  ),
+                ),
+              ),
+            );
+          });
+          if (scroll) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final (index, day) in days.indexed) ...[
+                    if (index > 0) const SizedBox(width: 5),
+                    SizedBox(width: 48, child: day),
+                  ],
                 ],
               ),
-            ),
-          )
-        else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final (index, goal) in goals.indexed) ...[
-                  if (index > 0) const SizedBox(width: 10),
-                  _PreparationCard(goal: goal),
-                ],
+            );
+          }
+          return Row(
+            children: [
+              for (final (index, day) in days.indexed) ...[
+                if (index > 0) const SizedBox(width: 5),
+                Expanded(child: day),
               ],
-            ),
-          ),
-      ],
-    );
-  }
+            ],
+          );
+        },
+      ),
+    ],
+  );
 }
 
-class _PreparationCard extends StatelessWidget {
-  const _PreparationCard({required this.goal});
-
-  final PreparationGoal goal;
+class _DayHero extends StatelessWidget {
+  const _DayHero({
+    required this.overview,
+    required this.selectedDay,
+    required this.onOpen,
+  });
+  final PreparationOverview overview;
+  final DateTime selectedDay;
+  final Future<void> Function(String route) onOpen;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 286,
-      height: 220,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        color: const Color(0xFF171717),
-        child: InkWell(
-          onTap: () => context.push('/plan/goal/${goal.id}'),
-          child: Padding(
-            padding: const EdgeInsets.all(19),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.military_tech_outlined,
-                  color: Color(0xFFFF8A50),
-                  size: 30,
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  goal.program.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  goal.targetDate == null
-                      ? 'Fecha todavía no indicada'
-                      : 'Pruebas · ${_formatDate(goal.targetDate!)}',
-                  style: const TextStyle(color: Colors.white54),
-                ),
-                const Spacer(),
-                const Row(
-                  children: [
-                    Text(
-                      'Gestionar preparación',
-                      style: TextStyle(
-                        color: Color(0xFFFF8A50),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 17,
-                      color: Color(0xFFFF8A50),
-                    ),
-                  ],
-                ),
-              ],
+    final items = homeWorkoutsForDay(overview, selectedDay);
+    final item = items.firstOrNull;
+    final program = overview.activeProgram;
+    // Un dato pendiente del programa se muestra sin alterar su estado ni agenda.
+    if (item?.status != ScheduledWorkoutStatus.inProgress &&
+        (program?.needsReview == true ||
+            (item == null &&
+                (overview.goals.isEmpty || program?.isCurrent != true)))) {
+      return _NextStepCard(
+        program: program,
+        nextStep: overview.nextStep,
+        goalNeedingAssessment: overview.goalNeedingAssessment,
+      );
+    }
+    final today = DateUtils.isSameDay(selectedDay, DateTime.now());
+    final label = today ? 'Tu sesión de hoy' : _homeLongDay(selectedDay);
+    final next =
+        overview.weeklyWorkouts
+            .where(
+              (w) =>
+                  w.scheduledDate.isAfter(selectedDay) &&
+                  w.status == ScheduledWorkoutStatus.planned,
+            )
+            .toList()
+          ..sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+    final completed = item?.status == ScheduledWorkoutStatus.completed;
+    final inProgress = item?.status == ScheduledWorkoutStatus.inProgress;
+    final abandoned = item?.status == ScheduledWorkoutStatus.abandoned;
+    final skipped = item?.status == ScheduledWorkoutStatus.skipped;
+    final title = item == null
+        ? 'No tienes sesión programada'
+        : item.templateName;
+    final description = item == null
+        ? next.isEmpty
+              ? 'Consulta tu semana para ver las próximas sesiones.'
+              : 'Próxima sesión: ${_homeLongDay(next.first.scheduledDate)}.'
+        : completed
+        ? 'Sesión completada. Consulta lo que has registrado.'
+        : inProgress
+        ? 'Tienes una sesión en curso.'
+        : abandoned
+        ? 'Sesión terminada sin completar.'
+        : skipped
+        ? 'Esta sesión se ha omitido.'
+        : item.preparationGoalId != null
+        ? 'Sesión de tu programa de preparación'
+        : 'Sesión que has añadido a tu semana';
+    final action = item == null || skipped
+        ? 'Ver mi semana'
+        : inProgress
+        ? 'Retomar sesión'
+        : completed || abandoned
+        ? 'Ver resultado'
+        : 'Ver sesión';
+    final route = item == null
+        ? '/plan/week?date=${homeDateParam(selectedDay)}'
+        : homeWorkoutRoute(item);
+    return EntrenaCard(
+      tone: EntrenaCardTone.accent,
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            item == null
+                ? today
+                      ? 'HOY'
+                      : label.toUpperCase()
+                : completed
+                ? 'SESIÓN COMPLETADA'
+                : inProgress
+                ? 'SESIÓN EN CURSO'
+                : label.toUpperCase(),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
             ),
           ),
-        ),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(description, style: TextStyle(color: context.visuals.textMuted)),
+          if (item?.estimatedDurationMinutes case final minutes?)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '$minutes min previstos',
+                style: TextStyle(color: context.visuals.textMuted),
+              ),
+            ),
+          if (items.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '${items.length} sesiones en esta fecha',
+                style: TextStyle(color: context.visuals.textMuted),
+              ),
+            ),
+          const SizedBox(height: 18),
+          FilledButton.icon(
+            onPressed: () => onOpen(route),
+            icon: Icon(
+              inProgress
+                  ? Icons.play_arrow_rounded
+                  : completed
+                  ? Icons.receipt_long_outlined
+                  : Icons.arrow_forward_rounded,
+            ),
+            label: Text(action),
+          ),
+        ],
       ),
     );
   }
 }
 
-Future<void> _openPreparationCatalog(BuildContext context) async {
-  await context.push('/plan/goal');
-  if (!context.mounted) return;
-  await context.read<DashboardCubit>().load();
+class _PreparationsSection extends StatelessWidget {
+  const _PreparationsSection({required this.overview, required this.onOpen});
+  final PreparationOverview overview;
+  final Future<void> Function(String route) onOpen;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      HomeSectionHeading(
+        title: 'Tus preparaciones',
+        action: TextButton.icon(
+          onPressed: () => onOpen('/plan/goal'),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Añadir'),
+        ),
+      ),
+      const SizedBox(height: 10),
+      if (overview.goals.isEmpty)
+        EntrenaCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Tus preparaciones aparecerán aquí',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Elige una prueba del catálogo. Podrás gestionar tu preparación y conservar su historial.',
+                style: TextStyle(color: context.visuals.textMuted),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => onOpen('/plan/goal'),
+                child: const Text('Explorar preparaciones'),
+              ),
+            ],
+          ),
+        )
+      else
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final (index, goal) in overview.goals.indexed) ...[
+                if (index > 0) const SizedBox(width: 10),
+                SizedBox(
+                  width: 250,
+                  child: _PreparationCard(
+                    goal: goal,
+                    progress: overview.programs
+                        .where((p) => p.goalId == goal.id)
+                        .firstOrNull,
+                    onOpen: onOpen,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+    ],
+  );
 }
 
-class _TrainingHero extends StatelessWidget {
-  const _TrainingHero();
+class _PreparationCard extends StatelessWidget {
+  const _PreparationCard({
+    required this.goal,
+    required this.progress,
+    required this.onOpen,
+  });
+  final PreparationGoal goal;
+  final AdaptiveProgramProgress? progress;
+  final Future<void> Function(String route) onOpen;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: const Color(0xFF28160F),
-      child: InkWell(
-        onTap: () => context.push('/plan/starter-session'),
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final status = progress == null || progress!.status == 'draft'
+        ? 'Por configurar'
+        : progress!.isPaused
+        ? 'Pausada'
+        : progress!.needsReview
+        ? 'Revisión pendiente'
+        : progress!.status == 'complete'
+        ? 'Finalizada'
+        : 'En curso';
+    return EntrenaCard(
+      tone: EntrenaCardTone.progress,
+      onTap: goal.id == null ? null : () => onOpen('/plan/goal/${goal.id}'),
+      coverImage: preparationCoverProvider(goal.program.cover?.cardUrl),
+      focalX: goal.program.cover?.focalX ?? 0.5,
+      focalY: goal.program.cover?.focalY ?? 0.5,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'SESIÓN DISPONIBLE',
+              Icon(
+                Icons.flag_outlined,
+                color: Theme.of(context).colorScheme.secondary,
+                size: 25,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  status,
                   style: TextStyle(
-                    color: Color(0xFFFFC3A5),
+                    color: context.visuals.textMuted,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              const Text(
-                'Sesión inicial de EntrenaOP',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 7),
-              const Text(
-                'Una sesión convencional completa para probar el entrenamiento real.',
-                style: TextStyle(color: Colors.white70, height: 1.4),
-              ),
-              const SizedBox(height: 19),
-              FilledButton.icon(
-                onPressed: () => context.push('/plan/starter-session'),
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Ver sesión'),
-              ),
-              const SizedBox(height: 9),
-              const Text(
-                'No es todavía una recomendación personalizada.',
-                style: TextStyle(color: Colors.white54, fontSize: 12),
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeQuickActions extends StatelessWidget {
-  const HomeQuickActions({
-    super.key,
-    required this.assessment,
-    required this.hasTroop,
-    required this.fasGoal,
-  });
-
-  final PhysicalAssessmentHistoryEntry? assessment;
-  final bool hasTroop;
-  final PreparationGoal? fasGoal;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Accesos rápidos',
-          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 11),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _QuickActionCard(
-                icon: Icons.calendar_view_week_rounded,
-                label: 'Mi semana',
-                description: 'Organizar y comenzar sesiones',
-                onTap: () => context.push('/plan/week'),
-              ),
-              const SizedBox(width: 10),
-              _QuickActionCard(
-                icon: Icons.grid_view_rounded,
-                label: 'Biblioteca',
-                description: 'Explorar sesiones públicas',
-                onTap: () => context.push('/plan/library'),
-              ),
-              const SizedBox(width: 10),
-              _QuickActionCard(
-                icon: Icons.add_circle_outline_rounded,
-                label: 'Crear ejercicio',
-                description: 'Añadir un ejercicio personal',
-                onTap: () => context.push('/exercises/new'),
-              ),
-              const SizedBox(width: 10),
-              _QuickActionCard(
-                icon: Icons.event_note_rounded,
-                label: 'Mi plan',
-                description: 'Sesiones y configuración',
-                onTap: () => context.go('/plan'),
-              ),
-              const SizedBox(width: 10),
-              _QuickActionCard(
-                icon: Icons.calculate_outlined,
-                label: 'Calculadora FAS',
-                description: 'Puntos PAFAS/PAEF 2027 · gratis',
-                onTap: () => context.push('/assessment/fas-calculator'),
-              ),
-              const SizedBox(width: 10),
-              if (hasTroop)
-                _QuickActionCard(
-                  icon: Icons.monitor_heart_outlined,
-                  label: assessment == null
-                      ? 'Evaluación Tropa'
-                      : 'Marcas Tropa',
-                  description: assessment == null
-                      ? 'Registrar pruebas físicas'
-                      : 'Consultar la última valoración',
-                  onTap: () => assessment == null
-                      ? context.push('/assessment/initial')
-                      : context.go('/assessment/history/physical'),
-                ),
-              if (hasTroop) const SizedBox(width: 10),
-              if (fasGoal?.id case final String goalId) ...[
-                _QuickActionCard(
-                  icon: Icons.monitor_heart_outlined,
-                  label: 'Evaluación FAS',
-                  description: 'Registrar o revisar marcas',
-                  onTap: () =>
-                      context.push('/plan/goal/$goalId/periodic-assessment'),
-                ),
-                const SizedBox(width: 10),
-              ],
-              _QuickActionCard(
-                icon: Icons.insights_rounded,
-                label: 'Evolución',
-                description: 'Historial de entrenamiento',
-                onTap: () => context.go('/assessment/history'),
-              ),
-            ],
+          const SizedBox(height: 14),
+          Text(
+            goal.program.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.description,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final String description;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 176,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        color: const Color(0xFF151515),
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: const Color(0xFFFF8A50), size: 27),
-                const SizedBox(height: 18),
-                Text(
-                  label,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ],
+          const SizedBox(height: 7),
+          Text(
+            goal.targetDate == null
+                ? 'Sin fecha objetivo'
+                : 'Pruebas · ${goal.targetDate!.day}/${goal.targetDate!.month}/${goal.targetDate!.year}',
+            style: TextStyle(color: context.visuals.textMuted, fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Gestionar preparación →',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
+const _homeMonths = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+const _homeWeekdays = [
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
+  'domingo',
+];
+String _homeMonth(DateTime date) =>
+    '${_homeMonths[date.month - 1]} ${date.year}';
+String _homeLongDay(DateTime date) =>
+    '${_homeWeekdays[date.weekday - 1]} ${date.day} de ${_homeMonths[date.month - 1]}';
+
 class _NextStepCard extends StatelessWidget {
-  const _NextStepCard({required this.nextStep});
+  const _NextStepCard({
+    required this.nextStep,
+    this.goalNeedingAssessment,
+    this.program,
+  });
+  final AdaptiveProgramProgress? program;
 
   final PreparationNextStep nextStep;
+  final PreparationGoal? goalNeedingAssessment;
+
+  String _assessmentRoute(PreparationGoal goal) {
+    final segment = switch (goal.programId) {
+      PreparationProgramIds.armedForcesTroopEntry => 'troop-assessment',
+      PreparationProgramIds.fasPeriodicAssessment => 'periodic-assessment',
+      _ => 'program-assessment',
+    };
+    return '/plan/goal/${goal.id}/$segment';
+  }
 
   @override
   Widget build(BuildContext context) {
     final (:icon, :title, :description, :action, :route) = switch (nextStep) {
+      PreparationNextStep.adaptiveProgram => (
+        icon: program!.needsReview
+            ? Icons.info_outline
+            : Icons.play_circle_outline,
+        title: program!.isPaused
+            ? 'Tu programa está pausado'
+            : program!.needsReview
+            ? 'Tu programa necesita un dato'
+            : 'Tu programa está en marcha',
+        description: program!.message,
+        action: program!.isPaused
+            ? 'Retomar mi programa'
+            : program!.needsReview
+            ? 'Revisar lo pendiente'
+            : 'Ver mis entrenamientos',
+        route: program!.isPaused || program!.needsReview
+            ? '/plan/goal/${program!.goalId}/training'
+            : '/plan/week',
+      ),
       PreparationNextStep.preparationGoal => (
         icon: Icons.flag_outlined,
         title: 'Define qué pruebas estás preparando',
@@ -717,332 +720,82 @@ class _NextStepCard extends StatelessWidget {
         action: 'Explorar preparaciones',
         route: '/plan/goal',
       ),
-      PreparationNextStep.physicalAssessment => (
+      PreparationNextStep.assessment => (
         icon: Icons.monitor_heart_outlined,
-        title: 'Registra tus marcas de ingreso a Tropa',
-        description: 'Esta evaluación usa el baremo de ingreso a Tropa y Marinería; no es un test general para otros programas.',
-        action: 'Registrar marcas de Tropa',
-        route: '/assessment/initial',
+        title: 'Registra las marcas de ${goalNeedingAssessment!.program.name}',
+        description: 'Estas pruebas y su baremo pertenecen a esa preparación.',
+        action: 'Registrar marcas',
+        route: _assessmentRoute(goalNeedingAssessment!),
       ),
       PreparationNextStep.trainingPreferences => (
         icon: Icons.tune_rounded,
         title: 'Cuéntanos con qué tiempo cuentas',
         description: 'Tu evaluación ya está guardada. Ahora falta conocer tu disponibilidad y material.',
         action: 'Completar disponibilidad',
-        route: '/plan/preferences',
+        route: '/profile/preferences',
       ),
       PreparationNextStep.professionalReview => (
         icon: Icons.health_and_safety_outlined,
         title: 'La planificación automática está bloqueada',
         description: 'Has indicado una limitación que debe revisarse antes de prescribir entrenamiento.',
         action: 'Revisar respuesta',
-        route: '/plan/preferences',
+        route: '/profile/preferences',
       ),
       PreparationNextStep.awaitingValidatedPlan => (
         icon: Icons.fact_check_outlined,
         title: 'Tu contexto básico está completo',
-        description: 'La evaluación y tu disponibilidad están guardadas. El siguiente paso del producto es validar las reglas deportivas.',
-        action: 'Ver mi evolución',
-        route: '/assessment/history',
+        description: 'Entra en tu preparación para completar los datos específicos y empezar tu programa.',
+        action: 'Ver preparaciones',
+        route: '/plan/goal',
       ),
     };
 
-    return Card(
-      color: const Color(0xFF21130E),
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Wrap(
-          spacing: 20,
-          runSpacing: 18,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Icon(icon, size: 38, color: const Color(0xFFFF8A50)),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 610),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    description,
-                    style: const TextStyle(color: Colors.white70, height: 1.4),
-                  ),
-                ],
-              ),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  nextStep == PreparationNextStep.physicalAssessment ||
-                      nextStep == PreparationNextStep.preparationGoal
-                  ? context.push(route)
-                  : context.go(route),
-              child: Text(action),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AssessmentCard extends StatelessWidget {
-  const _AssessmentCard({required this.assessment});
-
-  final PhysicalAssessmentHistoryEntry? assessment;
-
-  @override
-  Widget build(BuildContext context) {
-    final entry = assessment;
-    final completed = entry != null;
-    final focusName = entry == null ? null : _focusTestName(entry);
-    return _StatusCard(
-      complete: completed,
-      icon: Icons.monitor_heart_outlined,
-      title: 'Evaluación física · Tropa',
-      description: entry == null
-          ? 'Aún no hay marcas de estas pruebas guardadas.'
-          : '${entry.report.passedTests}/${entry.report.results.length} mínimos alcanzados\n'
-                'Última: ${formatAssessmentDate(entry.completedAt)}'
-                '${focusName == null ? '' : '\nFoco matemático: $focusName'}',
-      actionLabel: completed ? 'Ver evolución' : 'Comenzar',
-      onPressed: () => completed
-          ? context.go('/assessment/history/physical')
-          : context.push('/assessment/initial'),
-    );
-  }
-}
-
-class _FasAssessmentCard extends StatelessWidget {
-  const _FasAssessmentCard({required this.goalId});
-
-  final String goalId;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    color: const Color(0xFF151515),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return EntrenaCard(
+      tone: EntrenaCardTone.accent,
+      padding: const EdgeInsets.all(22),
+      child: Wrap(
+        spacing: 20,
+        runSpacing: 18,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Icon(Icons.monitor_heart_outlined, color: Color(0xFFFF8A50)),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Evaluación periódica FAS · 2027',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 7),
-          const Text(
-            'Registra y consulta tus intentos con el baremo por edad. Los resultados previos a 2027 son orientativos.',
-            style: TextStyle(color: Colors.white60, height: 1.45),
-          ),
-          const SizedBox(height: 18),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: () =>
-                  context.push('/plan/goal/$goalId/periodic-assessment'),
-              child: const Text('Ver pruebas y marcas'),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _PreferencesCard extends StatelessWidget {
-  const _PreferencesCard({required this.preferences});
-
-  final TrainingPreferences? preferences;
-
-  @override
-  Widget build(BuildContext context) {
-    final data = preferences;
-    return _StatusCard(
-      complete: data != null,
-      icon: Icons.calendar_month_outlined,
-      title: 'Disponibilidad',
-      description: data == null
-          ? 'Faltan tus días, duración y medios habituales.'
-          : '${data.availableDaysPerWeek} días por semana · '
-                '${data.sessionDurationMinutes} min por sesión\n'
-                '${data.equipment.map((item) => item.label).join(', ')}',
-      actionLabel: data == null ? 'Completar' : 'Editar',
-      onPressed: () => context.push('/plan/preferences'),
-    );
-  }
-}
-
-class _StatusCard extends StatelessWidget {
-  const _StatusCard({
-    required this.complete,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.actionLabel,
-    required this.onPressed,
-  });
-
-  final bool complete;
-  final IconData icon;
-  final String title;
-  final String description;
-  final String actionLabel;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final statusColor = complete
-        ? const Color(0xFF66BB6A)
-        : const Color(0xFFFFB74D);
-    return Card(
-      color: const Color(0xFF151515),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+          Icon(icon, size: 38, color: const Color(0xFFFF8A50)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 610),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: const Color(0xFFFF8A50)),
-                const Spacer(),
-                Icon(
-                  complete
-                      ? Icons.check_circle_rounded
-                      : Icons.pending_outlined,
-                  color: statusColor,
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  description,
+                  style: const TextStyle(color: Colors.white70, height: 1.4),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.white60, height: 1.45),
-            ),
-            const SizedBox(height: 18),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(onPressed: onPressed, child: Text(actionLabel)),
-            ),
-          ],
-        ),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (nextStep == PreparationNextStep.assessment ||
+                  nextStep == PreparationNextStep.preparationGoal) {
+                await context.push(route);
+                if (context.mounted) {
+                  context.read<DashboardCubit>().load();
+                }
+              } else {
+                await context.push(route);
+                if (context.mounted) context.read<DashboardCubit>().load();
+              }
+            },
+            child: Text(action),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _PlanningBoundaryCard extends StatelessWidget {
-  const _PlanningBoundaryCard({required this.preferences});
-
-  final TrainingPreferences? preferences;
-
-  @override
-  Widget build(BuildContext context) {
-    final needsReview = preferences?.requiresProfessionalReview == true;
-    return Card(
-      color: const Color(0xFF121212),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ),
-        leading: Icon(
-          needsReview ? Icons.lock_outline_rounded : Icons.science_outlined,
-          color: needsReview ? const Color(0xFFFFB74D) : Colors.white54,
-        ),
-        title: Text(
-          needsReview
-              ? 'Revisión necesaria antes de planificar'
-              : 'Algoritmo deportivo todavía no activado',
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        subtitle: Text(
-          needsReview
-              ? 'La aplicación no generará una prescripción automática mientras esta señal esté activa.'
-              : 'No mostraremos rutinas automáticas hasta validar y probar las reglas de cargas y progresión.',
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadFailure extends StatelessWidget {
-  const _LoadFailure({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 42),
-            const SizedBox(height: 12),
-            const Text('No hemos podido cargar tu resumen.'),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-String? _focusTestName(PhysicalAssessmentHistoryEntry entry) {
-  final focusId = entry.recommendation?.focusTestId;
-  if (focusId == null) return null;
-  for (final result in entry.report.results) {
-    if (result.mark.testId == focusId) return result.standard.test.name;
-  }
-  return null;
-}
-
-String _formatDate(DateTime date) {
-  String twoDigits(int value) => value.toString().padLeft(2, '0');
-  return '${twoDigits(date.day)}/${twoDigits(date.month)}/${date.year}';
-}
-
-String _dateParam(DateTime value) =>
-    '${value.year.toString().padLeft(4, '0')}-'
-    '${value.month.toString().padLeft(2, '0')}-'
-    '${value.day.toString().padLeft(2, '0')}';
-
-String _weekdayLabel(int weekday) => switch (weekday) {
-  DateTime.monday => 'LUN',
-  DateTime.tuesday => 'MAR',
-  DateTime.wednesday => 'MIÉ',
-  DateTime.thursday => 'JUE',
-  DateTime.friday => 'VIE',
-  DateTime.saturday => 'SÁB',
-  DateTime.sunday => 'DOM',
-  _ => '',
-};
-
-extension on TrainingEquipment {
-  String get label => switch (this) {
-    TrainingEquipment.none => 'Sin material',
-    TrainingEquipment.pullUpBar => 'Barra de dominadas',
-    TrainingEquipment.freeWeights => 'Pesas',
-    TrainingEquipment.gym => 'Gimnasio',
-    TrainingEquipment.runningTrack => 'Pista o zona medida',
-  };
 }

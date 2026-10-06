@@ -1,19 +1,21 @@
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_state.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class PreparationGoalPage extends StatelessWidget {
-  const PreparationGoalPage({super.key});
+  const PreparationGoalPage({this.trainingWeek, super.key});
+  final DateTime? trainingWeek;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -42,7 +44,7 @@ class PreparationGoalPage extends StatelessWidget {
               state.status == PreparationGoalStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          return _CatalogContent(state: state);
+          return _CatalogContent(state: state, trainingWeek: trainingWeek);
         },
       ),
     );
@@ -50,9 +52,10 @@ class PreparationGoalPage extends StatelessWidget {
 }
 
 class _CatalogContent extends StatelessWidget {
-  const _CatalogContent({required this.state});
+  const _CatalogContent({required this.state, this.trainingWeek});
 
   final PreparationGoalState state;
+  final DateTime? trainingWeek;
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +70,14 @@ class _CatalogContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Elige lo que estás preparando',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                  Text(
+                    trainingWeek == null
+                        ? 'Elige lo que estás preparando'
+                        : 'Tus programas de preparación',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -85,6 +93,7 @@ class _CatalogContent extends StatelessWidget {
                         program: program,
                         activeGoal: _goalFor(program, state.goals),
                         saving: saving,
+                        trainingWeek: trainingWeek,
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -113,98 +122,106 @@ class _ProgramCard extends StatelessWidget {
     required this.program,
     required this.activeGoal,
     required this.saving,
+    this.trainingWeek,
   });
 
   final PreparationProgram program;
   final PreparationGoal? activeGoal;
   final bool saving;
+  final DateTime? trainingWeek;
 
   @override
   Widget build(BuildContext context) {
     final goal = activeGoal;
-    return Card(
-      color: goal == null ? const Color(0xFF151515) : const Color(0xFF21130E),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  program.kind == PreparationProgramKind.access
-                      ? Icons.military_tech_outlined
-                      : Icons.fact_check_outlined,
-                  color: const Color(0xFFFF8A50),
-                  size: 32,
+    return EntrenaCard(
+      tone: goal == null ? EntrenaCardTone.neutral : EntrenaCardTone.progress,
+      coverImage: preparationCoverProvider(program.cover?.cardUrl),
+      focalX: program.cover?.focalX ?? 0.5,
+      focalY: program.cover?.focalY ?? 0.5,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                program.kind == PreparationProgramKind.access
+                    ? Icons.military_tech_outlined
+                    : Icons.fact_check_outlined,
+                color: const Color(0xFFFF8A50),
+                size: 32,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      program.name,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      goal == null
+                          ? _kindLabel(program.kind)
+                          : goal.targetDate == null
+                          ? 'Añadida · Fecha todavía no indicada'
+                          : 'Añadida · ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)}',
+                      style: const TextStyle(color: Colors.white60),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        program.name,
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        goal == null
-                            ? _kindLabel(program.kind)
-                            : goal.targetDate == null
-                            ? 'Añadida · Fecha todavía no indicada'
-                            : 'Añadida · ${DateFormat('dd/MM/yyyy').format(goal.targetDate!)}',
-                        style: const TextStyle(color: Colors.white60),
-                      ),
-                    ],
+              ),
+              if (goal != null)
+                const Icon(Icons.check_circle_rounded, color: Colors.green),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (goal == null)
+            FilledButton.icon(
+              onPressed: saving
+                  ? null
+                  : () => context.read<PreparationGoalCubit>().add(program),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Añadir preparación'),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: () => context.push(
+                    trainingWeek == null
+                        ? '/plan/goal/${goal.id}'
+                        : '/plan/goal/${goal.id}/training',
+                  ),
+                  icon: const Icon(Icons.dashboard_customize_outlined),
+                  label: Text(
+                    trainingWeek == null
+                        ? 'Abrir preparación'
+                        : 'Ver mi programa',
                   ),
                 ),
-                if (goal != null)
-                  const Icon(Icons.check_circle_rounded, color: Colors.green),
+                OutlinedButton.icon(
+                  onPressed: saving ? null : () => _changeDate(context, goal),
+                  icon: const Icon(Icons.event_outlined),
+                  label: Text(
+                    goal.targetDate == null ? 'Añadir fecha' : 'Cambiar fecha',
+                  ),
+                ),
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => _confirmArchive(context, goal),
+                  child: const Text('Dejar de seguir'),
+                ),
               ],
             ),
-            const SizedBox(height: 18),
-            if (goal == null)
-              FilledButton.icon(
-                onPressed: saving
-                    ? null
-                    : () => context.read<PreparationGoalCubit>().add(program),
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Añadir preparación'),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  FilledButton.icon(
-                    onPressed: () => context.push('/plan/goal/${goal.id}'),
-                    icon: const Icon(Icons.dashboard_customize_outlined),
-                    label: const Text('Abrir preparación'),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: saving ? null : () => _changeDate(context, goal),
-                    icon: const Icon(Icons.event_outlined),
-                    label: Text(
-                      goal.targetDate == null
-                          ? 'Añadir fecha'
-                          : 'Cambiar fecha',
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: saving
-                        ? null
-                        : () => _confirmArchive(context, goal),
-                    child: const Text('Dejar de seguir'),
-                  ),
-                ],
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -233,7 +250,9 @@ class _ProgramCard extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Dejar de seguir esta preparación'),
         content: const Text(
-          'Se conservará el historial. Podrás volver a añadirla más adelante.',
+          'Dejarás de seguir esta preparación personal y conservarás su historial. '
+          'El programa del catálogo, sus pruebas y baremos seguirán disponibles. '
+          'Podrás volver a añadirla más adelante.',
         ),
         actions: [
           TextButton(

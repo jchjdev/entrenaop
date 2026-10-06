@@ -13,7 +13,6 @@ class WorkoutPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -147,7 +146,6 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
@@ -232,7 +230,6 @@ class _BlockCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF141414),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -558,6 +555,7 @@ bool _setsAreEquivalent(List<WorkoutSet> sets) {
       .skip(1)
       .every(
         (set) =>
+            set.performancePrescription == first.performancePrescription &&
             set.targetReps == first.targetReps &&
             set.targetDurationSeconds == first.targetDurationSeconds &&
             set.targetDistanceMeters == first.targetDistanceMeters &&
@@ -586,6 +584,16 @@ String _setPrescription(
   required bool includeRest,
 }) {
   final parts = <String>[];
+  if (set.performancePrescription case final p?) {
+    return [
+      '${_number(p.targetValue)} ${p.unit}',
+      if (p.fixedDurationSeconds != null) 'en ${_number(p.fixedDurationSeconds!)} s',
+      if (p.fixedDistanceMeters != null) 'sobre ${_number(p.fixedDistanceMeters!)} m',
+      if (p.externalLoadKg != null) '${_number(p.externalLoadKg!)} kg ${p.loadMode == 'assisted' ? 'de asistencia' : 'externos'}',
+      if (p.targetRir != null) 'margen de ${_number(p.targetRir!)} repeticiones',
+      if (includeRest) '${_duration(set.restAfterSeconds)} de descanso',
+    ].join(' · ');
+  }
   final target = switch ((
     set.targetReps,
     set.targetDurationSeconds,

@@ -14,8 +14,66 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_image.dart';
+import 'package:workout_core/strength_exercise_catalog_codec.dart';
+
+import '../../exercises/domain/strength_exercise_catalog_test.dart'
+    show readCatalogJson;
 
 void main() {
+  testWidgets(
+    'EntrenaOP busca y añade variantes de la biblioteca de 63 ejercicios',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final exerciseRepository = _StrengthCatalogRepository();
+      final workoutRepository = _WorkoutRepository();
+      final cubit = WorkoutEditorCubit(
+        getExercises: GetExercisesUseCase(exerciseRepository),
+        createExercise: CreateExerciseUseCase(exerciseRepository),
+        draftStore: _DraftStore(),
+        createWorkout: CreatePersonalWorkoutUseCase(workoutRepository),
+        getWorkoutTemplate: GetWorkoutTemplateUseCase(workoutRepository),
+        reviseWorkout: RevisePersonalWorkoutUseCase(workoutRepository),
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(
+        cubit.state.exercises.where((e) => e.origin == ExerciseOrigin.system),
+        hasLength(63),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutEditorPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final addExercise = find.text('Añadir ejercicio al bloque');
+      await tester.ensureVisible(addExercise);
+      await tester.pumpAndSettle();
+      await tester.tap(addExercise);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('EntrenaOP'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar'),
+        'Dominada prona',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Dominada prona'), findsNWidgets(2));
+      expect(find.text('Dominada prona personal'), findsNothing);
+      await tester.tap(find.text('Dominada prona').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Elige un ejercicio'), findsNothing);
+      expect(find.text('Dominada prona'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   test('carga una sesión existente y guarda una revisión', () async {
     final workoutRepository = _WorkoutRepository();
     final draftStore = _DraftStore()
@@ -537,20 +595,19 @@ class _ExerciseRepository implements ExerciseRepository {
   Future<ExerciseEntity> createExercise(
     PersonalExerciseDraft exercise, {
     ExerciseImageUpload? image,
-  }) async =>
-      ExerciseEntity(
-        id: 'exercise-personal',
-        name: exercise.name,
-        description: exercise.description,
-        videoUrl: exercise.videoUrl,
-        muscleGroups: exercise.muscleGroups,
-        equipment: exercise.equipment,
-        difficulty: exercise.difficulty,
-        exerciseType: exercise.exerciseType,
-        isPublic: false,
-        createdBy: 'user-id',
-        origin: ExerciseOrigin.user,
-      );
+  }) async => ExerciseEntity(
+    id: 'exercise-personal',
+    name: exercise.name,
+    description: exercise.description,
+    videoUrl: exercise.videoUrl,
+    muscleGroups: exercise.muscleGroups,
+    equipment: exercise.equipment,
+    difficulty: exercise.difficulty,
+    exerciseType: exercise.exerciseType,
+    isPublic: false,
+    createdBy: 'user-id',
+    origin: ExerciseOrigin.user,
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -571,6 +628,38 @@ class _TwoExercisesRepository extends _ExerciseRepository {
       origin: ExerciseOrigin.system,
     ),
   ];
+}
+
+class _StrengthCatalogRepository extends _ExerciseRepository {
+  @override
+  Future<List<ExerciseEntity>> getExercises() async {
+    final catalog = StrengthExerciseCatalogCodec.decode(readCatalogJson());
+    return [
+      for (final profile in catalog.exercises)
+        ExerciseEntity(
+          id: profile.code,
+          name: profile.name,
+          muscleGroups: profile.primaryMuscles,
+          equipment: profile.requiredEquipment,
+          difficulty: 'inicial',
+          exerciseType: 'repeticiones',
+          isPublic: true,
+          origin: ExerciseOrigin.system,
+          trainingProfile: profile,
+        ),
+      const ExerciseEntity(
+        id: 'private-pull-up',
+        name: 'Dominada prona personal',
+        muscleGroups: ['espalda'],
+        equipment: ['barra'],
+        difficulty: 'intermedio',
+        exerciseType: 'repeticiones',
+        isPublic: false,
+        origin: ExerciseOrigin.user,
+        createdBy: 'user-id',
+      ),
+    ];
+  }
 }
 
 class _DraftStore implements WorkoutEditorDraftStore {

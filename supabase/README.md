@@ -52,9 +52,21 @@ historial remoto antes de cualquier publicación.
 
 ## Verificación
 
-A 24 de septiembre de 2026, las 48 migraciones versionadas coinciden con el
-historial del proyecto enlazado de **desarrollo**. Esta comprobación no acredita
-el estado de producción.
+A 6 de octubre de 2026, las 131 migraciones locales coinciden con el historial
+del proyecto enlazado de **desarrollo**, hasta `20261006005000`. En el inicio de
+la auditoría, solo 50 estaban en el commit de Git y 81 estaban sin seguimiento.
+Coincidencia de versiones desplegadas no significa que el trabajo local esté
+guardado en Git ni que se haya reconstruido una base vacía.
+Esta comprobación no acredita el estado de producción.
+
+Se ejecutaron las 55 baterías SQL existentes con transacción y `ROLLBACK`.
+Una expectativa obsoleta de tamaño global en `strength_training_profiles_smoke.sql`
+falló inicialmente; se sustituyó por el conjunto visible según enlaces públicos,
+manteniendo la exclusión explícita del perfil interno, y la repetición pasó.
+El esquema instalado tiene 51 tablas públicas con RLS; las dos vistas de
+evaluaciones son `security_invoker` y las funciones `SECURITY DEFINER` públicas
+tienen `search_path` explícito. Los detalles y límites están en
+[AUDIT_2026_10_06.md](../docs/AUDIT_2026_10_06.md).
 
 Las pruebas SQL de `supabase/tests/` se ejecutan contra desarrollo, abren una
 transacción y terminan con `ROLLBACK`; no dejan los datos temporales creados
@@ -68,6 +80,10 @@ durante la verificación:
   pruebas e historial de la evaluación periódica;
 - `exercise_creator_security_smoke.sql`: separación entre ejercicios privados
   y oficiales, autorización administrativa e invariantes de origen y propiedad.
+- Las demás baterías cubren evaluación configurable, carrera v1–v5, catálogo y
+  estrategias de rendimiento, semanas coordinadas, ciclo adaptativo, alcance,
+  pausa/reanudación, contexto compartido y portadas. La lista completa comprobada
+  figura en el informe de auditoría.
 
 Ejecutar primero `supabase migration list` y después la prueba relacionada con
 el cambio mediante `supabase db query --linked --file <ruta>`. Una nueva función,

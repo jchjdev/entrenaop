@@ -1,3 +1,5 @@
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
@@ -10,6 +12,8 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_sta
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/performance_stopwatch.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
@@ -25,13 +29,30 @@ class ActiveWorkoutPage extends StatelessWidget {
   final WorkoutCueService cueService;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () {
+      final state = context.read<ActiveWorkoutCubit>().state;
+      return state.execution != null &&
+          !const [
+            ActiveWorkoutStatus.completed,
+            ActiveWorkoutStatus.abandoned,
+          ].contains(state.status);
+    },
+    isBusy: () =>
+        context.read<ActiveWorkoutCubit>().state.status ==
+        ActiveWorkoutStatus.saving,
+    title: '¿Salir de la sesión?',
+    message: 'Las series confirmadas se conservan y podrás retomar la sesión desde tu agenda. Los datos que no hayas confirmado en pantalla no se registran. Salir no abandona la sesión.',
+    exitLabel: 'Salir y retomar después',
+    child: _buildContent(context),
+  );
+
+  Widget _buildContent(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          tooltip: 'Pausar y salir',
+          tooltip: 'Salir de la sesión',
           onPressed: context.pop,
           icon: const Icon(Icons.arrow_back_rounded),
         ),
@@ -269,6 +290,9 @@ class _ActiveContentState extends State<_ActiveContent> {
                         onSkip: context
                             .read<ActiveWorkoutCubit>()
                             .skipCurrentSet,
+                        onSkipWarmUp: context
+                            .read<ActiveWorkoutCubit>()
+                            .skipWarmUp,
                       )
                     else
                       _FinishCard(
@@ -476,7 +500,6 @@ class _AmrapCardState extends State<_AmrapCard> {
   Widget build(BuildContext context) {
     final seconds = first.blockTimeCapSeconds ?? 600;
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -626,6 +649,7 @@ class _CurrentSetCard extends StatefulWidget {
     required this.saving,
     required this.onComplete,
     required this.onSkip,
+    required this.onSkipWarmUp,
   });
 
   final WorkoutExecutionSet set;
@@ -636,12 +660,14 @@ class _CurrentSetCard extends StatefulWidget {
   final void Function(WorkoutSetResultInput result, {int? restSecondsOverride})
   onComplete;
   final void Function({int? restSecondsOverride}) onSkip;
+  final VoidCallback onSkipWarmUp;
 
   @override
   State<_CurrentSetCard> createState() => _CurrentSetCardState();
 }
 
 class _CurrentSetCardState extends State<_CurrentSetCard> {
+  final _performanceElapsed = ValueNotifier<double>(0);
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _repsController;
   late final TextEditingController _durationController;
@@ -649,8 +675,8 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
   late final TextEditingController _recoveryDurationController;
   late final TextEditingController _recoveryDistanceController;
   late final TextEditingController _loadController;
-  late double _actualRpe;
-  late double _actualRir;
+  double? _actualRpe;
+  double? _actualRir;
   int _emomElapsedSeconds = 0;
 
   WorkoutExecutionSet get set => widget.set;
@@ -662,7 +688,12 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
     // el resultado real antes de enviarlo.
     _repsController = TextEditingController(text: _integer(set.targetReps));
     _durationController = TextEditingController(
-      text: set.blockFormat == WorkoutBlockFormat.running
+      text:
+          const [
+            WorkoutBlockFormat.running,
+            WorkoutBlockFormat.warmUp,
+            WorkoutBlockFormat.coolDown,
+          ].contains(set.blockFormat)
           ? ''
           : _integer(set.targetDurationSeconds),
     );
@@ -680,12 +711,13 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
     _loadController = TextEditingController(
       text: _nullableNumber(set.targetLoadKg),
     );
-    _actualRpe = (set.targetRpe ?? 7).clamp(1, 10).toDouble();
-    _actualRir = (set.targetRir ?? 2).clamp(0, 10).toDouble();
+    // El esfuerzo prescrito no acredita una percepción realmente declarada.
+    // Si el usuario no lo conoce, guardamos ausencia de dato, nunca el objetivo.
   }
 
   @override
   void dispose() {
+    _performanceElapsed.dispose();
     _repsController.dispose();
     _durationController.dispose();
     _distanceController.dispose();
@@ -707,9 +739,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
             set.targetDurationSeconds == null &&
                 set.blockFormat != WorkoutBlockFormat.running
             ? null
-            : set.blockFormat == WorkoutBlockFormat.running
-            ? parseDurationInput(_durationController.text)!
-            : _parseDecimal(_durationController.text)!.toInt(),
+            : parseDurationInput(_durationController.text)!,
         actualDistanceMeters:
             set.targetDistanceMeters == null &&
                 set.blockFormat != WorkoutBlockFormat.running
@@ -769,8 +799,73 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
     final actualPace = set.blockFormat == WorkoutBlockFormat.running
         ? _actualPaceLabel(_distanceController.text, _durationController.text)
         : null;
+    if (set.performancePrescription case final prescription?) {
+      final clockSeconds = prescription.measurement == 'DURATION'
+          ? prescription.targetValue
+          : prescription.fixedDurationSeconds;
+      final useStopwatch = const [
+        'TIME_FOR_COURSE',
+        'TIME_FOR_DISTANCE',
+      ].contains(prescription.measurement);
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                set.exerciseName,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              Text('Serie ${set.setOrder + 1}'),
+              const SizedBox(height: 16),
+              PerformanceResultForm(
+                prescription: prescription,
+                saving: widget.saving,
+                elapsedSeconds: clockSeconds == null && !useStopwatch
+                    ? null
+                    : _performanceElapsed,
+                timer: clockSeconds == null
+                    ? (useStopwatch
+                          ? PerformanceStopwatch(
+                              onElapsed: (seconds) =>
+                                  _performanceElapsed.value = seconds,
+                            )
+                          : null)
+                    : WorkoutSetCountdown(
+                        targetSeconds: clockSeconds.ceil(),
+                        timerId: '${widget.executionId}:${set.id}',
+                        timerStore: widget.timerStore,
+                        enabled: !widget.saving,
+                        onElapsedChanged: (elapsed) =>
+                            _performanceElapsed.value = elapsed.toDouble(),
+                        onPreparationTick: () => unawaited(
+                          widget.cueService.signal(WorkoutCue.preparationTick),
+                        ),
+                        onStarted: () => unawaited(
+                          widget.cueService.signal(WorkoutCue.workStarted),
+                        ),
+                        onFinished: () => unawaited(
+                          widget.cueService.signal(WorkoutCue.workFinished),
+                        ),
+                      ),
+                onSave: (result, _) => widget.onComplete(
+                  WorkoutSetResultInput(
+                    resultId: set.id,
+                    performanceResult: result,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: widget.saving ? null : _confirmSkip,
+                child: const Text('Omitir esta serie'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -788,7 +883,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               ),
               const SizedBox(height: 16),
               Text(
-                set.exerciseName,
+                set.blockFormat == WorkoutBlockFormat.warmUp
+                    ? _warmUpHeading(set) ?? set.exerciseName
+                    : set.exerciseName,
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w900,
@@ -796,15 +893,29 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
               ),
               const SizedBox(height: 8),
               Text(
-                set.isGrouped
+                set.blockFormat == WorkoutBlockFormat.warmUp
+                    ? 'Calentamiento · paso ${set.itemOrder + 1}'
+                    : set.isGrouped
                     ? _executionPositionLabel(set)
                     : set.blockFormat == WorkoutBlockFormat.running
                     ? 'Tramo ${set.setOrder + 1}'
                     : 'Serie ${set.setOrder + 1}',
                 style: const TextStyle(color: Colors.white60, fontSize: 17),
               ),
+              if (set.blockFormat == WorkoutBlockFormat.warmUp) ...[
+                const SizedBox(height: 10),
+                const Text(
+                  'Puedes seguir el guiado u omitirlo. Esta elección no cambia por sí sola la progresión.',
+                ),
+                OutlinedButton.icon(
+                  onPressed: widget.saving ? null : widget.onSkipWarmUp,
+                  icon: const Icon(Icons.skip_next_rounded),
+                  label: const Text('Omitir calentamiento'),
+                ),
+              ],
               if (set.exerciseDescription != null ||
-                  set.exerciseVideoUrl != null) ...[
+                  set.exerciseVideoUrl != null ||
+                  set.itemInstructions != null) ...[
                 const SizedBox(height: 18),
                 _ExerciseGuidance(set: set),
               ],
@@ -920,10 +1031,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                         label: 'Tiempo real',
                         onChanged: (_) => setState(() {}),
                       )
-                    : _ResultField(
+                    : _DurationResultField(
                         controller: _durationController,
-                        label: 'Segundos realizados',
-                        decimal: false,
+                        label: 'Tiempo realizado',
                       ),
               if (set.targetDistanceMeters != null ||
                   set.blockFormat == WorkoutBlockFormat.running)
@@ -960,30 +1070,22 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   controller: _loadController,
                   label: 'Carga utilizada (kg)',
                 ),
-              if (set.targetRpe != null) ...[
-                Text('RPE real · ${_number(_actualRpe)}'),
-                Slider(
-                  value: _actualRpe,
-                  min: 1,
-                  max: 10,
-                  divisions: 18,
-                  onChanged: widget.saving
-                      ? null
-                      : (value) => setState(() => _actualRpe = value),
+              if (set.targetRpe != null)
+                _ReportedEffortField(
+                  label: set.blockFormat == WorkoutBlockFormat.running
+                      ? 'Esfuerzo de carrera · 1 fácil, 10 máximo'
+                      : 'RPE real',
+                  minimum: 1,
+                  enabled: !widget.saving,
+                  onChanged: (value) => _actualRpe = value,
                 ),
-              ],
-              if (set.targetRir != null) ...[
-                Text('RIR real · ${_number(_actualRir)}'),
-                Slider(
-                  value: _actualRir,
-                  min: 0,
-                  max: 10,
-                  divisions: 20,
-                  onChanged: widget.saving
-                      ? null
-                      : (value) => setState(() => _actualRir = value),
+              if (set.targetRir != null)
+                _ReportedEffortField(
+                  label: 'RIR real',
+                  minimum: 0,
+                  enabled: !widget.saving,
+                  onChanged: (value) => _actualRir = value,
                 ),
-              ],
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: widget.saving ? null : _save,
@@ -1000,13 +1102,16 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                       ? 'Guardar y esperar al siguiente minuto'
                       : set.blockFormat == WorkoutBlockFormat.running
                       ? 'Guardar resultado del tramo'
+                      : set.blockFormat == WorkoutBlockFormat.warmUp
+                      ? 'Terminar este paso'
                       : 'Guardar serie',
                 ),
               ),
-              TextButton(
-                onPressed: widget.saving ? null : _confirmSkip,
-                child: const Text('No he podido hacerla · Saltar serie'),
-              ),
+              if (set.blockFormat != WorkoutBlockFormat.warmUp)
+                TextButton(
+                  onPressed: widget.saving ? null : _confirmSkip,
+                  child: const Text('No he podido hacerla · Saltar serie'),
+                ),
             ],
           ),
         ),
@@ -1022,6 +1127,14 @@ class _ExerciseGuidance extends StatefulWidget {
 
   @override
   State<_ExerciseGuidance> createState() => _ExerciseGuidanceState();
+}
+
+String? _warmUpHeading(WorkoutExecutionSet set) {
+  if (set.blockFormat != WorkoutBlockFormat.warmUp) return null;
+  final instructions = set.itemInstructions;
+  if (instructions == null) return null;
+  final end = instructions.indexOf('\n');
+  return end > 0 && end <= 80 ? instructions.substring(0, end) : null;
 }
 
 class _ExerciseGuidanceState extends State<_ExerciseGuidance> {
@@ -1077,8 +1190,19 @@ class _ExerciseGuidanceState extends State<_ExerciseGuidance> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.set.itemInstructions case final instructions?) ...[
+              Text(
+                _warmUpHeading(widget.set) == null
+                    ? instructions
+                    : instructions.substring(instructions.indexOf('\n') + 1),
+                style: const TextStyle(height: 1.4),
+              ),
+              const SizedBox(height: 8),
+            ],
             if (widget.set.exerciseDescription case final description?)
-              Text(description, style: const TextStyle(height: 1.4)),
+              if (widget.set.itemInstructions == null ||
+                  widget.set.blockFormat != WorkoutBlockFormat.warmUp)
+                Text(description, style: const TextStyle(height: 1.4)),
             if (widget.set.exerciseVideoUrl != null) ...[
               if (widget.set.exerciseDescription != null)
                 const SizedBox(height: 12),
@@ -1129,6 +1253,35 @@ class _ExerciseGuidanceState extends State<_ExerciseGuidance> {
       ),
     );
   }
+}
+
+class _ReportedEffortField extends StatelessWidget {
+  const _ReportedEffortField({
+    required this.label,
+    required this.minimum,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int minimum;
+  final bool enabled;
+  final ValueChanged<double?> onChanged;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: DropdownButtonFormField<double>(
+      decoration: InputDecoration(labelText: label),
+      hint: const Text('Sin registrar'),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('No lo sé')),
+        for (var step = minimum * 2; step <= 20; step++)
+          DropdownMenuItem(value: step / 2, child: Text(_number(step / 2))),
+      ],
+      onChanged: enabled ? onChanged : null,
+    ),
+  );
 }
 
 class _ResultField extends StatelessWidget {
@@ -1216,7 +1369,6 @@ class _RestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
@@ -1281,7 +1433,6 @@ class _FinishCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -1367,7 +1518,6 @@ class _FinishCard extends StatelessWidget {
                 hintText:
                     'Técnica, molestias, energía o cualquier detalle útil.',
                 alignLabelWithHint: true,
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -1535,7 +1685,8 @@ class _Failure extends StatelessWidget {
 String _target(WorkoutExecutionSet set) {
   if (set.targetReps != null) return '${set.targetReps} repeticiones';
   if (set.targetDurationSeconds != null) {
-    return '${set.targetDurationSeconds} segundos';
+    final seconds = set.targetDurationSeconds!;
+    return seconds < 60 ? '$seconds segundos' : '${_clock(seconds)} min';
   }
   if (set.targetDistanceMeters != null) {
     return '${_number(set.targetDistanceMeters!)} metros';

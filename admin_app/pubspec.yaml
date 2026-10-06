@@ -14,6 +14,8 @@ dependencies:
     path: ../packages/workout_core
   workout_editor_ui:
     path: ../packages/workout_editor_ui
+  entrena_ui:
+    path: ../packages/entrena_ui
 
 dev_dependencies:
   flutter_test:

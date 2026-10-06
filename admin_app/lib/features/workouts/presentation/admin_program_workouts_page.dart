@@ -163,25 +163,30 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                           : Icons.fitness_center,
                     ),
                     title: Text(workout.name),
-                    subtitle: Text(
-                      workout.isRunning
-                          ? 'Carrera · versión ${workout.version}'
-                          : 'Fuerza · versión ${workout.version}',
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Wrap(
+                        spacing: 12,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            workout.isRunning
+                                ? 'Carrera · versión ${workout.version}'
+                                : 'Fuerza · versión ${workout.version}',
+                          ),
+                          Chip(
+                            label: Text(switch (workout.status) {
+                              'draft' => 'Borrador',
+                              'published' => 'Publicado',
+                              'archived' => 'Retirado',
+                              _ => workout.status,
+                            }),
+                          ),
+                        ],
+                      ),
                     ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Chip(
-                          label: Text(switch (workout.status) {
-                            'draft' => 'Borrador',
-                            'published' => 'Publicado',
-                            'archived' => 'Retirado',
-                            _ => workout.status,
-                          }),
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
+                    trailing: const Icon(Icons.chevron_right),
                   ),
                 ),
           ],

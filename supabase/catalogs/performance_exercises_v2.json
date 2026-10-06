@@ -1,0 +1,54 @@
+{
+  "catalog_version": 2,
+  "definition_version": 1,
+  "source": "https://www.boe.es/buscar/doc.php?id=BOE-A-2026-1379",
+  "exercises": [
+    {
+      "code": "slalom_ball_course_16m",
+      "name": "Circuito de agilidad de 16 m con pelota",
+      "family": "slalom_ball_course",
+      "movement_patterns": [
+        "change_of_direction"
+      ],
+      "movement_modes": [
+        "locomotor"
+      ],
+      "body_regions": [
+        "lower_body",
+        "trunk"
+      ],
+      "laterality": "bilateral",
+      "technical_level": "intermediate",
+      "required_equipment": [
+        "cones",
+        "measuring_tape",
+        "tennis_ball",
+        "chalk"
+      ],
+      "optional_equipment": [],
+      "primary_muscles": [
+        "quadriceps",
+        "gluteals",
+        "plantar_flexors"
+      ],
+      "secondary_muscles": [
+        "trunk_stabilizers"
+      ],
+      "measurement_options": [
+        {
+          "mode": "TIME_FOR_COURSE",
+          "load_modes": [
+            "bodyweight"
+          ]
+        }
+      ],
+      "progression_axes": [
+        "sets",
+        "rest",
+        "technique",
+        "specificity"
+      ],
+      "notes": "Recorrido DEF/15/2026: salida sentado de espaldas, manos en rodillas; señal de salida, eslalon de siete conos alternos en corredor de 16 × 2 m, recoger pelota y volver recto por dentro. Desplazar conos, perder la pelota o alterar el recorrido invalida el intento. Registrar tiempo bruto; el baremo aplica su propio redondeo."
+    }
+  ]
+}

@@ -1,124 +1,115 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_state.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/session_creation.dart';
+import 'package:entrenaop/features/workouts/presentation/workout_library_filter.dart';
+import 'package:entrenaop/features/library/presentation/widgets/library_search_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class WorkoutLibraryPage extends StatelessWidget {
-  const WorkoutLibraryPage({super.key});
+class WorkoutLibraryPage extends StatefulWidget {
+  const WorkoutLibraryPage({super.key, this.initialPersonalTab = false});
+
+  final bool initialPersonalTab;
+
+  @override
+  State<WorkoutLibraryPage> createState() => _WorkoutLibraryPageState();
+}
+
+class _WorkoutLibraryPageState extends State<WorkoutLibraryPage> {
+  final _personalContentKey = GlobalKey<_LibraryContentState>();
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          leading: IconButton(
-            tooltip: 'Volver',
-            onPressed: context.pop,
-            icon: const Icon(Icons.arrow_back_rounded),
-          ),
-          title: const Text('Sesiones'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Biblioteca'),
-              Tab(text: 'Mis sesiones'),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            final route = await showModalBottomSheet<String>(
-              context: context,
-              builder: (sheetContext) => SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        '¿Qué sesión quieres crear?',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ListTile(
-                        leading: const Icon(Icons.fitness_center_rounded),
-                        title: const Text('Fuerza y acondicionamiento'),
-                        onTap: () => sheetContext.pop('/plan/library/new'),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.directions_run_rounded),
-                        title: const Text('Carrera'),
-                        subtitle: const Text(
-                          'Continua, series o pirámide por tramos',
-                        ),
-                        onTap: () =>
-                            sheetContext.pop('/plan/library/new-running'),
-                      ),
-                    ],
-                  ),
-                ),
+      initialIndex: widget.initialPersonalTab ? 1 : 0,
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            leading: IconButton(
+              tooltip: 'Volver',
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/library'),
+              icon: const Icon(Icons.arrow_back_rounded),
+            ),
+            title: const Text('Sesiones'),
+            actions: [
+              IconButton(
+                tooltip: 'Crear ejercicio personal',
+                icon: const Icon(Icons.add_circle_outline_rounded),
+                onPressed: () => context.push('/exercises/new'),
               ),
-            );
-            if (route == null || !context.mounted) return;
-            final createdId = await context.push<String>(route);
-            if (createdId != null && context.mounted) {
-              await context.read<WorkoutLibraryCubit>().load();
-              if (context.mounted) {
-                DefaultTabController.of(context).animateTo(1);
-              }
-            }
-          },
-          icon: const Icon(Icons.add_rounded),
-          label: const Text('Crear sesión'),
-        ),
-        body: BlocBuilder<WorkoutLibraryCubit, WorkoutLibraryState>(
-          builder: (context, state) {
-            if (state.status == WorkoutLibraryStatus.initial ||
-                (state.status == WorkoutLibraryStatus.loading &&
-                    state.workouts.isEmpty &&
-                    state.personalWorkouts.isEmpty)) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state.status == WorkoutLibraryStatus.failure &&
-                state.workouts.isEmpty &&
-                state.personalWorkouts.isEmpty) {
-              return _Failure(
-                message:
-                    state.errorMessage ?? 'No hemos podido abrir tus sesiones.',
-                onRetry: context.read<WorkoutLibraryCubit>().load,
-              );
-            }
-            return TabBarView(
-              children: [
-                _LibraryContent(
-                  state: state,
-                  workouts: state.workouts,
-                  personal: false,
-                ),
-                _LibraryContent(
-                  state: state,
-                  workouts: state.personalWorkouts,
-                  personal: true,
-                ),
+            ],
+            bottom: const TabBar(
+              tabs: [
+                Tab(text: 'EntrenaOP'),
+                Tab(text: 'Mis sesiones'),
               ],
-            );
-          },
+            ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              final route = await chooseSessionEditor(context);
+              if (route == null || !context.mounted) return;
+              final createdId = await context.push<String>(route);
+              if (createdId != null && context.mounted) {
+                await context.read<WorkoutLibraryCubit>().load();
+                if (context.mounted) {
+                  _personalContentKey.currentState?._reset();
+                  DefaultTabController.of(context).animateTo(1);
+                }
+              }
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Crear sesión'),
+          ),
+          body: BlocBuilder<WorkoutLibraryCubit, WorkoutLibraryState>(
+            builder: (context, state) {
+              if (state.status == WorkoutLibraryStatus.initial ||
+                  (state.status == WorkoutLibraryStatus.loading &&
+                      state.workouts.isEmpty &&
+                      state.personalWorkouts.isEmpty)) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.status == WorkoutLibraryStatus.failure &&
+                  state.workouts.isEmpty &&
+                  state.personalWorkouts.isEmpty) {
+                return _Failure(
+                  message:
+                      state.errorMessage ??
+                      'No hemos podido abrir tus sesiones.',
+                  onRetry: context.read<WorkoutLibraryCubit>().load,
+                );
+              }
+              return TabBarView(
+                children: [
+                  _LibraryContent(
+                    state: state,
+                    workouts: state.workouts,
+                    personal: false,
+                  ),
+                  _LibraryContent(
+                    key: _personalContentKey,
+                    state: state,
+                    workouts: state.personalWorkouts,
+                    personal: true,
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-class _LibraryContent extends StatelessWidget {
+class _LibraryContent extends StatefulWidget {
   const _LibraryContent({
+    super.key,
     required this.state,
     required this.workouts,
     required this.personal,
@@ -129,12 +120,49 @@ class _LibraryContent extends StatelessWidget {
   final bool personal;
 
   @override
+  State<_LibraryContent> createState() => _LibraryContentState();
+}
+
+class _LibraryContentState extends State<_LibraryContent>
+    with AutomaticKeepAliveClientMixin {
+  final _search = TextEditingController();
+  LibrarySessionType? _type;
+  LibrarySessionDuration? _duration;
+  WorkoutLibraryState get state => widget.state;
+  bool get personal => widget.personal;
+  int get _activeFilters =>
+      (_type == null ? 0 : 1) + (_duration == null ? 0 : 1);
+  bool get _hasSearch => _search.text.trim().isNotEmpty || _activeFilters > 0;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _reset() => setState(() {
+    _search.clear();
+    _type = null;
+    _duration = null;
+  });
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final filter = WorkoutLibraryFilter(
+      query: _search.text,
+      type: _type,
+      duration: _duration,
+    );
+    final workouts = widget.workouts.where(filter.matches).toList();
     return RefreshIndicator(
       onRefresh: context.read<WorkoutLibraryCubit>().load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 104),
         children: [
           Center(
             child: ConstrainedBox(
@@ -157,8 +185,81 @@ class _LibraryContent extends StatelessWidget {
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
                   const SizedBox(height: 22),
-                  if (workouts.isEmpty)
+                  LibrarySearchControls(
+                    controller: _search,
+                    searchLabel: 'Buscar sesiones',
+                    onQueryChanged: (_) => setState(() {}),
+                    onReset: _reset,
+                    activeFilters: _activeFilters,
+                    resultCount: workouts.length,
+                    totalCount: widget.workouts.length,
+                    resultNoun: 'sesiones',
+                    filterFields: [
+                      LibraryFilterField(
+                        label: 'Tipo de sesión',
+                        value: _type?.name,
+                        options: const {
+                          'strength': 'Fuerza y acondicionamiento',
+                          'running': 'Carrera',
+                        },
+                        onChanged: (value) => setState(
+                          () => _type = value == null
+                              ? null
+                              : LibrarySessionType.values.byName(value),
+                        ),
+                      ),
+                      LibraryFilterField(
+                        label: 'Duración',
+                        value: _duration?.name,
+                        options: const {
+                          'short': 'Menos de 30 min',
+                          'medium': 'De 30 a 45 min',
+                          'long': 'Más de 45 min',
+                        },
+                        onChanged: (value) => setState(
+                          () => _duration = value == null
+                              ? null
+                              : LibrarySessionDuration.values.byName(value),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (!personal && !_hasSearch) ...[
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.play_circle_outline_rounded),
+                        title: const Text('Sesión inicial de EntrenaOP'),
+                        subtitle: const Text(
+                          'Demostración · no es tu sesión asignada.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => context.push('/plan/starter-session'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (widget.workouts.isEmpty)
                     _EmptyLibrary(personal: personal)
+                  else if (workouts.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'No hay sesiones que coincidan con tu búsqueda.',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: _reset,
+                              child: const Text('Limpiar búsqueda y filtros'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                   else
                     LayoutBuilder(
                       builder: (context, constraints) {
@@ -171,7 +272,10 @@ class _LibraryContent extends StatelessWidget {
                                 crossAxisCount: columns,
                                 crossAxisSpacing: 12,
                                 mainAxisSpacing: 12,
-                                mainAxisExtent: 222,
+                                mainAxisExtent:
+                                    222 *
+                                    MediaQuery.textScalerOf(context).scale(14) /
+                                    14,
                               ),
                           itemCount: workouts.length,
                           itemBuilder: (context, index) {
@@ -302,7 +406,6 @@ class _WorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      color: const Color(0xFF171717),
       child: InkWell(
         onTap: () => context.push('/plan/library/${workout.id}'),
         child: Padding(
@@ -319,8 +422,10 @@ class _WorkoutCard extends StatelessWidget {
                       color: const Color(0x33FF8A50),
                       borderRadius: BorderRadius.circular(13),
                     ),
-                    child: const Icon(
-                      Icons.fitness_center_rounded,
+                    child: Icon(
+                      workout.isRunning
+                          ? Icons.directions_run_rounded
+                          : Icons.fitness_center_rounded,
                       color: Color(0xFFFF8A50),
                     ),
                   ),
@@ -400,11 +505,13 @@ class _WorkoutCard extends StatelessWidget {
               ),
               const Row(
                 children: [
-                  Text(
-                    'Ver sesión',
-                    style: TextStyle(
-                      color: Color(0xFFFF8A50),
-                      fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: Text(
+                      'Ver sesión',
+                      style: TextStyle(
+                        color: Color(0xFFFF8A50),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   SizedBox(width: 4),
@@ -433,7 +540,6 @@ class _EmptyLibrary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF151515),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

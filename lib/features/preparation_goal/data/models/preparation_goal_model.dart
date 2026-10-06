@@ -4,14 +4,20 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 class PreparationGoalModel {
   const PreparationGoalModel._();
 
-  static PreparationGoal fromJson(Map<String, dynamic> json) {
+  static PreparationGoal fromJson(
+    Map<String, dynamic> json, {
+    String Function(String)? resolveCoverUrl,
+  }) {
     final targetDate = json['target_date'] as String?;
     final programJson = Map<String, dynamic>.from(
       json['preparation_programs'] as Map,
     );
     return PreparationGoal(
       id: json['id'] as String,
-      program: PreparationProgramModel.fromJson(programJson),
+      program: PreparationProgramModel.fromJson(
+        programJson,
+        resolveCoverUrl: resolveCoverUrl,
+      ),
       targetDate: targetDate == null ? null : DateTime.parse(targetDate),
     );
   }
@@ -31,19 +37,42 @@ class PreparationGoalModel {
 class PreparationProgramModel {
   const PreparationProgramModel._();
 
-  static PreparationProgram fromJson(Map<String, dynamic> json) =>
-      PreparationProgram(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        kind: switch (json['kind'] as String) {
-          'access' => PreparationProgramKind.access,
-          'internal_assessment' => PreparationProgramKind.internalAssessment,
-          final value => throw FormatException(
-            'Tipo de preparación desconocido: $value',
-          ),
-        },
-        currentAssessmentCatalogVersion: _currentCatalogVersion(json),
-      );
+  static PreparationProgram fromJson(
+    Map<String, dynamic> json, {
+    String Function(String)? resolveCoverUrl,
+  }) => PreparationProgram(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    kind: switch (json['kind'] as String) {
+      'access' => PreparationProgramKind.access,
+      'internal_assessment' => PreparationProgramKind.internalAssessment,
+      final value => throw FormatException(
+        'Tipo de preparación desconocido: $value',
+      ),
+    },
+    currentAssessmentCatalogVersion: _currentCatalogVersion(json),
+    cover: _cover(json['preparation_program_covers'], resolveCoverUrl),
+  );
+
+  static PreparationProgramCover? _cover(
+    dynamic value,
+    String Function(String)? resolveUrl,
+  ) {
+    if (resolveUrl == null || value == null) return null;
+    if (value is List) value = value.isEmpty ? null : value.first;
+    if (value is! Map) return null;
+    final card = value['card_image_path'];
+    final header = value['header_image_path'];
+    if (card is! String || header is! String) return null;
+    return PreparationProgramCover(
+      cardUrl: resolveUrl(card),
+      headerUrl: resolveUrl(header),
+      focalX: (value['focal_x'] as num?)?.toDouble() ?? 0.5,
+      focalY: (value['focal_y'] as num?)?.toDouble() ?? 0.5,
+      headerFocalX: (value['header_focal_x'] as num?)?.toDouble(),
+      headerFocalY: (value['header_focal_y'] as num?)?.toDouble(),
+    );
+  }
 
   static String? _currentCatalogVersion(Map<String, dynamic> json) {
     final catalogs = json['preparation_program_catalogs'];

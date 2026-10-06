@@ -1,5 +1,7 @@
 class RunningTestResult {
   const RunningTestResult({
+    this.id,
+    this.protocolVersion = 'run_2000m_v1',
     required this.completedAt,
     required this.durationSeconds,
     required this.rpe,
@@ -9,6 +11,8 @@ class RunningTestResult {
     this.splitsSeconds,
   });
 
+  final String? id;
+  final String protocolVersion;
   final DateTime completedAt;
   final int durationSeconds;
   final int rpe;

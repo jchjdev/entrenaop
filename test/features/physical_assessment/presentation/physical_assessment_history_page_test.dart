@@ -32,7 +32,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Evaluación física · Tropa'), findsOneWidget);
-    expect(find.text('Repetir evaluación'), findsOneWidget);
+    expect(find.text('Registrar desde mi preparación'), findsOneWidget);
     expect(find.text('Ya tienes tu primera referencia'), findsOneWidget);
     expect(find.text('Foco recomendado'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -86,9 +86,15 @@ class _Repository implements PhysicalAssessmentRepository {
   }
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistoryForGoal(
+    String goalId,
+  ) async => const [];
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,
+    String? goalId,
   }) {
     throw UnimplementedError();
   }

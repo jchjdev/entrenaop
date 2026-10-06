@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
+import 'package:workout_core/strength_exercise_catalog.dart';
+import 'package:workout_core/strength_exercise_catalog_codec.dart';
 import 'package:workout_core/workout_template.dart';
 
 class AdminCatalogExercise {
@@ -15,6 +17,7 @@ class AdminCatalogExercise {
     this.videoUrl,
     this.imagePath,
     this.imageUrl,
+    this.trainingProfile,
   });
 
   final String id;
@@ -27,6 +30,7 @@ class AdminCatalogExercise {
   final List<String> equipment;
   final String difficulty;
   final String exerciseType;
+  final StrengthExerciseDefinition? trainingProfile;
 
   ExerciseDraft toDraft() => ExerciseDraft(
     name: name,
@@ -50,6 +54,15 @@ class AdminCatalogExercise {
         equipment: (json['equipment'] as List? ?? const []).cast<String>(),
         difficulty: json['difficulty'] as String,
         exerciseType: json['exercise_type'] as String,
+        trainingProfile: json['training_profile'] == null
+            ? null
+            : StrengthExerciseCatalogCodec.decodeDefinition(
+                Map<String, dynamic>.from(
+                  json['training_profile']['definition'] as Map,
+                ),
+                definitionVersion:
+                    json['training_profile']['definition_version'] as int,
+              ),
       );
 }
 
@@ -77,7 +90,8 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
     final rows = await _client
         .from('exercises')
         .select(
-          'id,name,description,video_url,image_path,muscle_groups,equipment,difficulty,exercise_type',
+          'id,name,description,video_url,image_path,muscle_groups,equipment,difficulty,exercise_type,'
+          'training_profile:exercise_training_profiles!exercise_training_profile_fk(definition_version,definition)',
         )
         .eq('origin', 'system')
         .order('name');
@@ -97,6 +111,7 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
         equipment: exercise.equipment,
         difficulty: exercise.difficulty,
         exerciseType: exercise.exerciseType,
+        trainingProfile: exercise.trainingProfile,
       );
     }).toList();
   }

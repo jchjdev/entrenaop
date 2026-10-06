@@ -199,6 +199,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
+  /// Omitir el guiado no escribe resultados de capacidad ni omite trabajo.
+  Future<void> skipWarmUp() async {
+    final current = state.execution?.currentSet;
+    if (current?.blockFormat != WorkoutBlockFormat.warmUp ||
+        state.status == ActiveWorkoutStatus.saving) {
+      return;
+    }
+    final blockOrder = current!.blockOrder;
+    while (!isClosed &&
+        state.execution?.currentSet?.blockOrder == blockOrder &&
+        state.execution?.currentSet?.blockFormat == WorkoutBlockFormat.warmUp) {
+      await skipCurrentSet();
+      if (state.status == ActiveWorkoutStatus.failure) return;
+    }
+  }
+
   Future<void> skipCurrentSet({int? restSecondsOverride}) async {
     final execution = state.execution;
     final currentSet = execution?.currentSet;
@@ -445,6 +461,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
                   actualLoadKg: result.actualLoadKg,
                   actualRpe: result.actualRpe,
                   actualRir: result.actualRir,
+                  performanceResult: result.performanceResult,
                   actualRecoveryDurationSeconds:
                       result.actualRecoveryDurationSeconds,
                   actualRecoveryDistanceMeters:

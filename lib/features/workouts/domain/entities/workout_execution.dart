@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:workout_core/performance_set.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 
 enum WorkoutExecutionStatus { inProgress, completed, abandoned }
@@ -174,6 +175,7 @@ class WorkoutAmrapResultInput extends Equatable {
 class WorkoutSetResultInput extends Equatable {
   const WorkoutSetResultInput({
     required this.resultId,
+    this.performanceResult,
     this.actualReps,
     this.actualDurationSeconds,
     this.actualDistanceMeters,
@@ -186,6 +188,7 @@ class WorkoutSetResultInput extends Equatable {
   });
 
   final String resultId;
+  final PerformanceSetResult? performanceResult;
   final int? actualReps;
   final int? actualDurationSeconds;
   final double? actualDistanceMeters;
@@ -199,6 +202,7 @@ class WorkoutSetResultInput extends Equatable {
   @override
   List<Object?> get props => [
     resultId,
+    performanceResult,
     actualReps,
     actualDurationSeconds,
     actualDistanceMeters,
@@ -219,6 +223,7 @@ class WorkoutSetCorrectionInput extends Equatable {
   const WorkoutSetCorrectionInput({
     required this.resultId,
     required this.reason,
+    this.performanceResult,
     this.actualReps,
     this.actualDurationSeconds,
     this.actualDistanceMeters,
@@ -232,6 +237,7 @@ class WorkoutSetCorrectionInput extends Equatable {
 
   final String resultId;
   final String reason;
+  final PerformanceSetResult? performanceResult;
   final int? actualReps;
   final int? actualDurationSeconds;
   final double? actualDistanceMeters;
@@ -246,6 +252,7 @@ class WorkoutSetCorrectionInput extends Equatable {
   List<Object?> get props => [
     resultId,
     reason,
+    performanceResult,
     actualReps,
     actualDurationSeconds,
     actualDistanceMeters,
@@ -271,8 +278,11 @@ class WorkoutExecutionSet extends Equatable {
     required this.setOrder,
     required this.restAfterSeconds,
     required this.status,
+    this.performancePrescription,
+    this.performanceResult,
     this.targetReps,
     this.exerciseDescription,
+    this.itemInstructions,
     this.exerciseVideoUrl,
     this.targetDurationSeconds,
     this.targetDistanceMeters,
@@ -305,6 +315,9 @@ class WorkoutExecutionSet extends Equatable {
   final String exerciseId;
   final String exerciseName;
   final String? exerciseDescription;
+
+  /// Instrucciones de esta sesión, conservadas al iniciar la ejecución.
+  final String? itemInstructions;
   final String? exerciseVideoUrl;
   final int setOrder;
   final int? targetReps;
@@ -320,6 +333,8 @@ class WorkoutExecutionSet extends Equatable {
   final double? recoveryDistanceMeters;
   final int restAfterSeconds;
   final WorkoutSetStatus status;
+  final PerformanceSetPrescription? performancePrescription;
+  final PerformanceSetResult? performanceResult;
   final int? actualReps;
   final int? actualDurationSeconds;
   final double? actualDistanceMeters;
@@ -349,6 +364,7 @@ class WorkoutExecutionSet extends Equatable {
   }
 
   WorkoutExecutionSet copyWith({
+    PerformanceSetResult? performanceResult,
     WorkoutSetStatus? status,
     int? actualReps,
     int? actualDurationSeconds,
@@ -370,6 +386,7 @@ class WorkoutExecutionSet extends Equatable {
     exerciseId: exerciseId,
     exerciseName: exerciseName,
     exerciseDescription: exerciseDescription,
+    itemInstructions: itemInstructions,
     exerciseVideoUrl: exerciseVideoUrl,
     setOrder: setOrder,
     targetReps: targetReps,
@@ -385,6 +402,8 @@ class WorkoutExecutionSet extends Equatable {
     recoveryDistanceMeters: recoveryDistanceMeters,
     restAfterSeconds: restAfterSeconds,
     status: status ?? this.status,
+    performancePrescription: performancePrescription,
+    performanceResult: performanceResult ?? this.performanceResult,
     actualReps: actualReps ?? this.actualReps,
     actualDurationSeconds: actualDurationSeconds ?? this.actualDurationSeconds,
     actualDistanceMeters: actualDistanceMeters ?? this.actualDistanceMeters,
@@ -410,6 +429,7 @@ class WorkoutExecutionSet extends Equatable {
     exerciseId,
     exerciseName,
     exerciseDescription,
+    itemInstructions,
     exerciseVideoUrl,
     setOrder,
     targetReps,
@@ -425,6 +445,8 @@ class WorkoutExecutionSet extends Equatable {
     recoveryDistanceMeters,
     restAfterSeconds,
     status,
+    performancePrescription,
+    performanceResult,
     actualReps,
     actualDurationSeconds,
     actualDistanceMeters,

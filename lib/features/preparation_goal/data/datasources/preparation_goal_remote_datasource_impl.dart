@@ -10,6 +10,8 @@ class PreparationGoalRemoteDataSourceImpl
   const PreparationGoalRemoteDataSourceImpl({required this.supabaseClient});
 
   final SupabaseClient supabaseClient;
+  String _coverUrl(String path) =>
+      supabaseClient.storage.from('program-covers-public').getPublicUrl(path);
 
   @override
   Future<List<PreparationGoal>> getActiveGoals() async {
@@ -22,13 +24,17 @@ class PreparationGoalRemoteDataSourceImpl
               id,
               name,
               kind,
-              preparation_program_catalogs(catalog_version, is_current)
+              preparation_program_catalogs(catalog_version, is_current),
+              preparation_program_covers(card_image_path, header_image_path, focal_x, focal_y, header_focal_x, header_focal_y)
             )
           ''')
           .eq('status', 'active')
           .order('created_at');
       return response
-          .map(PreparationGoalModel.fromJson)
+          .map(
+            (json) =>
+                PreparationGoalModel.fromJson(json, resolveCoverUrl: _coverUrl),
+          )
           .toList(growable: false);
     } catch (error) {
       throw ServerException(error.toString());
@@ -44,12 +50,18 @@ class PreparationGoalRemoteDataSourceImpl
             id,
             name,
             kind,
-            preparation_program_catalogs(catalog_version, is_current)
+            preparation_program_catalogs(catalog_version, is_current),
+            preparation_program_covers(card_image_path, header_image_path, focal_x, focal_y, header_focal_x, header_focal_y)
           ''')
           .eq('enabled', true)
           .order('name');
       return response
-          .map(PreparationProgramModel.fromJson)
+          .map(
+            (json) => PreparationProgramModel.fromJson(
+              json,
+              resolveCoverUrl: _coverUrl,
+            ),
+          )
           .toList(growable: false);
     } catch (error) {
       throw ServerException(error.toString());
@@ -74,7 +86,8 @@ class PreparationGoalRemoteDataSourceImpl
                     id,
                     name,
                     kind,
-                    preparation_program_catalogs(catalog_version, is_current)
+                    preparation_program_catalogs(catalog_version, is_current),
+                    preparation_program_covers(card_image_path, header_image_path, focal_x, focal_y, header_focal_x, header_focal_y)
                   )
                 ''')
                 .single()
@@ -88,11 +101,15 @@ class PreparationGoalRemoteDataSourceImpl
                     id,
                     name,
                     kind,
-                    preparation_program_catalogs(catalog_version, is_current)
+                    preparation_program_catalogs(catalog_version, is_current),
+                    preparation_program_covers(card_image_path, header_image_path, focal_x, focal_y, header_focal_x, header_focal_y)
                   )
                 ''')
                 .single();
-      return PreparationGoalModel.fromJson(response);
+      return PreparationGoalModel.fromJson(
+        response,
+        resolveCoverUrl: _coverUrl,
+      );
     } catch (error) {
       if (error is ServerException) rethrow;
       throw ServerException(error.toString());

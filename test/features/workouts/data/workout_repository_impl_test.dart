@@ -5,6 +5,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/performance_set.dart';
 
 void main() {
   late _RecordingWorkoutRemoteDataSource dataSource;
@@ -42,6 +43,25 @@ void main() {
       'p_actual_recovery_distance_meters': null,
       'p_result_source': 'manual',
     });
+  });
+
+  test('conserva medición decimal, invalidez y esfuerzo ausente al reintentar', () async {
+    dataSource.failComplete = true;
+    await repository.completeSet(const WorkoutSetResultInput(resultId: 'jump',
+      performanceResult: PerformanceSetResult(value: 2.375, techniqueValid: false,
+        conditionsConfirmed: true, stopReason: 'none')));
+    final queued = mutationQueue.mutations.single;
+    final snapshot = Map<String, dynamic>.from(queued.values);
+    dataSource.failComplete = false;
+    await repository.syncPendingMutations();
+    expect(dataSource.completedValues, snapshot);
+    expect(dataSource.completedOperationIds.last, queued.operationId);
+    final result = snapshot['p_performance_result'] as Map;
+    expect(result['value'], 2.375);
+    expect(result['technique_valid'], false);
+    expect(result['rir'], isNull);
+    expect(result['tolerated'], isNull);
+    expect(mutationQueue.mutations, isEmpty);
   });
 
   test('convierte las sesiones públicas en resúmenes de biblioteca', () async {

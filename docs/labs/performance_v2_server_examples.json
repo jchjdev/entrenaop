@@ -1,0 +1,2768 @@
+[
+  {
+    "minutes": 25,
+    "plan": {
+      "already_published": false,
+      "availability": {
+        "1": 25,
+        "3": 25,
+        "5": 25
+      },
+      "context_observed_at": "2026-10-04T12:32:32.783565+02:00",
+      "coverage": {
+        "minimum_running_sessions": 2,
+        "running_expected": 3,
+        "running_scheduled": 2
+      },
+      "goal_id": "d5b8e9e5-c5e3-4da6-959c-493f69e2bbdd",
+      "pending": [
+        {
+          "name": "Flexión estándar",
+          "objective_key": "legacy:upper_body_push_ups_2_min",
+          "reason": "Se pauta una exposición: la segunda no cabe respetando tiempo y recuperación.",
+          "reference_id": "cdb677aa-ce63-4ff5-b092-36def3e65d14",
+          "requested": 2,
+          "required_for_objective": true,
+          "role": "support",
+          "scheduled": 1
+        },
+        {
+          "name": "Frecuencia de carrera",
+          "reason": "La semana conjunta conserva 2 de las 3 salidas que cabrían dedicando esos días solo a carrera. Para conservar ambas frecuencias, añade otro día o más tiempo.",
+          "requested": 3,
+          "role": "support",
+          "scheduled": 2,
+          "status": "reduced_running_coverage"
+        }
+      ],
+      "policy_version": "preparation_coordinator_v2_1",
+      "proposals": [
+        {
+          "body_regions": [
+            "trunk",
+            "upper_body"
+          ],
+          "compact": true,
+          "comparison_dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "bf0f99e1-bef3-43f1-958d-16820a8c2eeb"
+          ],
+          "dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "front_plank_forearms",
+          "frequency": 1,
+          "model": "isometric",
+          "movement_patterns": [
+            "core_anti_extension"
+          ],
+          "name": "Plancha frontal sobre antebrazos",
+          "objective_key": "legacy:abdominal_plank",
+          "outcome": "reduce",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+          "reference_id": "bf0f99e1-bef3-43f1-958d-16820a8c2eeb",
+          "reference_kind": "capacity_test",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+          "status": "ready",
+          "stimulus": {
+            "code": "ISO-E01",
+            "effort_mode": "rpe",
+            "name": "Resistencia isométrica submáxima",
+            "purpose": "endurance",
+            "rest_seconds": 75,
+            "sources": [
+              "PLANK-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 2,
+          "work_seconds": 87
+        },
+        {
+          "body_regions": [
+            "lower_body",
+            "trunk"
+          ],
+          "compact": true,
+          "comparison_dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "covered_reference_ids": [
+            "82580776-344f-44e5-baf7-a5afb6ee4f3b"
+          ],
+          "dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "evidence": [],
+          "exercise_code": "cod_braking_10m",
+          "frequency": 1,
+          "model": "course",
+          "movement_patterns": [
+            "change_of_direction"
+          ],
+          "name": "Aceleración suave y frenada en 10 m",
+          "objective_key": "legacy:agility_speed_circuit",
+          "outcome": "reduce",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+          "reference_id": "82580776-344f-44e5-baf7-a5afb6ee4f3b",
+          "reference_kind": "performed_set",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+          "status": "ready",
+          "stimulus": {
+            "code": "COD-T01",
+            "effort_mode": "none",
+            "name": "Aproximación y frenada controladas",
+            "purpose": "technique",
+            "rest_seconds": 75,
+            "sources": [
+              "COD-T01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 4,
+          "work_seconds": 195
+        },
+        {
+          "body_regions": [
+            "upper_body",
+            "trunk"
+          ],
+          "compact": true,
+          "comparison_dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "cdb677aa-ce63-4ff5-b092-36def3e65d14"
+          ],
+          "dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "push_up_standard",
+          "frequency": 1,
+          "model": "repetitions",
+          "movement_patterns": [
+            "horizontal_push"
+          ],
+          "name": "Flexión estándar",
+          "objective_key": "legacy:upper_body_push_ups_2_min",
+          "outcome": "reduce",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+          "reference_id": "cdb677aa-ce63-4ff5-b092-36def3e65d14",
+          "reference_kind": "performed_set",
+          "requested_frequency": 2,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "support",
+          "running_leg_load": false,
+          "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+          "status": "ready",
+          "stimulus": {
+            "code": "REP-E01",
+            "effort_mode": "rir",
+            "name": "Resistencia con margen",
+            "purpose": "endurance",
+            "rest_seconds": 90,
+            "sources": [
+              "FLEX-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 4,
+          "work_seconds": 195
+        }
+      ],
+      "reason": "Semana coordinada según objetivos, referencias, respuesta y disponibilidad total.",
+      "running": {
+        "anchor_seconds": 478,
+        "basis": "recent",
+        "calibration": "provisional",
+        "catalog_version": "running_catalog_v2",
+        "changes": [],
+        "context_updated_at": "2026-10-04T12:32:32.783565+02:00",
+        "control_due": false,
+        "control_review": {
+          "samples": 1,
+          "trend": "unknown"
+        },
+        "data_review_required": false,
+        "declared_prior_quality_weeks": 0,
+        "evidence": {
+          "families": {
+            "E": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "R": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "S": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "T": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "V": {
+              "samples": 0,
+              "trend": "unknown"
+            }
+          },
+          "observations": []
+        },
+        "goal": {
+          "margin_seconds": null,
+          "mode": "time",
+          "seconds": 465,
+          "standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          }
+        },
+        "goal_id": "d5b8e9e5-c5e3-4da6-959c-493f69e2bbdd",
+        "goal_seconds": 465,
+        "input_snapshot": {
+          "anchor_age_days": 0,
+          "anchor_seconds": 478,
+          "availability": {
+            "1": 5,
+            "2": 0,
+            "3": 25,
+            "4": 0,
+            "5": 25,
+            "6": 0,
+            "7": 0
+          },
+          "capacity_minutes": 60,
+          "controls": [
+            {
+              "date": "2026-10-04",
+              "protocol": "es_def_15_2026_periodic_2027_v1:run_2000_m",
+              "seconds": 478
+            }
+          ],
+          "declared_prior_quality_weeks": 0,
+          "goal_mode": "time",
+          "goal_seconds": 465,
+          "leg_load_days": [],
+          "occupied_days": [],
+          "official_margin_seconds": null,
+          "official_standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          },
+          "pain": false,
+          "previous": {},
+          "recent_days": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "recent_minutes": [
+            110,
+            110,
+            110,
+            110
+          ],
+          "strength_days": [],
+          "target_date": "2027-01-02",
+          "week_start": "2026-10-05"
+        },
+        "intense_work_seconds": 0,
+        "load_weeks": 1,
+        "mode": "normal",
+        "needs_control": false,
+        "normal_budget": 50,
+        "outcome": "initial",
+        "phase": "general",
+        "policy_version": "running_2k_v5",
+        "priority": "T",
+        "quality_entry": {
+          "eligible": false,
+          "exposures_21d": 0,
+          "exposures_42d": 0,
+          "paired": false,
+          "weeks": 0,
+          "work_cap_seconds": 0
+        },
+        "reason": "Entrada según carga reciente y disponibilidad",
+        "recommendations": [
+          {
+            "code": "quality_calendar",
+            "message": "No ha cabido una sesión de calidad completa con la separación necesaria. Revisa los días disponibles y las reservas de fuerza; mantenemos una pauta fácil mientras esas restricciones sigan activas."
+          }
+        ],
+        "reference_2k_milliseconds": 478000,
+        "reference_completed_at": "2026-10-04T12:32:32.783565+02:00",
+        "reference_record_id": "25fd130a-7548-4be2-899a-210486427388",
+        "reference_source": "fasPeriodicAssessment",
+        "rejected": [
+          {
+            "day": 3,
+            "family": "T",
+            "reason": "does_not_fit",
+            "step": 0
+          },
+          {
+            "day": 3,
+            "family": "V",
+            "reason": "does_not_fit",
+            "step": 0
+          },
+          {
+            "family": "S",
+            "reason": "needs_prior_quality_tolerance"
+          },
+          {
+            "day": 3,
+            "family": "T",
+            "reason": "does_not_fit",
+            "step": 0
+          },
+          {
+            "day": 5,
+            "family": "T",
+            "reason": "does_not_fit",
+            "step": 0
+          },
+          {
+            "day": 5,
+            "family": "V",
+            "reason": "does_not_fit",
+            "step": 0
+          },
+          {
+            "family": "S",
+            "reason": "needs_prior_quality_tolerance"
+          },
+          {
+            "day": 5,
+            "family": "T",
+            "reason": "does_not_fit",
+            "step": 0
+          }
+        ],
+        "rotation": 0,
+        "rpe_review_required": false,
+        "selection_policy": {
+          "adverse_days": 14,
+          "quality_history_days": 42,
+          "recent_quality_days": 21,
+          "recommended_quality_slot_minutes": 45,
+          "required_quality_exposures": 4,
+          "required_quality_weeks": 3,
+          "required_recent_quality": 2,
+          "session_floor_minutes": 25,
+          "two_quality_min_days": 3,
+          "two_quality_min_minutes": 120,
+          "work_growth_limit": 1.2
+        },
+        "sessions": [
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-07",
+            "description": "Cómodo, puedes conversar. El rango de ritmo es orientativo; manda el esfuerzo fácil.",
+            "family": "E",
+            "intention": "E",
+            "kind": "easy",
+            "minutes": 25,
+            "name": "Carrera fácil",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 5,
+            "segments": [
+              {
+                "pace_max": 368,
+                "pace_min": 306,
+                "role": "work",
+                "seconds": 1500
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "E_0_v1",
+            "work_seconds": 0
+          },
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-09",
+            "description": "Cómodo, puedes conversar. El rango de ritmo es orientativo; manda el esfuerzo fácil.",
+            "family": "E",
+            "intention": "E",
+            "kind": "easy",
+            "minutes": 25,
+            "name": "Carrera fácil",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 5,
+            "segments": [
+              {
+                "pace_max": 368,
+                "pace_min": 306,
+                "role": "work",
+                "seconds": 1500
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "E_0_v1",
+            "work_seconds": 0
+          }
+        ],
+        "target_date": "2027-01-02",
+        "target_gap": 0.0279569892473118,
+        "week_start": "2026-10-05"
+      },
+      "sessions": [
+        {
+          "cool_down_seconds": 180,
+          "date": "2026-10-05",
+          "kind": "performance",
+          "minutes": 20,
+          "name": "Fuerza y rendimiento",
+          "session_order": "performance_first",
+          "warm_up_instructions": "Calentamiento de esta sesión · unos 7 minutos como orientación.\n1. Empieza caminando o trotando suavemente, a un ritmo que te permita hablar sin esfuerzo.\n2. Mueve de forma suave y progresiva las articulaciones que vas a utilizar; evita forzar posiciones.\n• Hombros, codos y muñecas: movimientos controlados y preparación de los apoyos o agarres.\n• Tobillos, rodillas y caderas: marcha progresiva, elevación de talones y flexiones de piernas cómodas.\n• Tronco y apoyos: ensaya una posición estable durante unos segundos, respirando y sin agotarte.\n3. Ensaya el trabajo que viene después, de fácil a más específico:\n• Aceleración suave y frenada en 10 m: revisa las líneas y obstáculos; practica despacio la salida, los giros y la frenada. Aumenta gradualmente la velocidad sin buscar una marca.\n• Plancha frontal sobre antebrazos: ensaya una sujeción breve con los mismos apoyos y buena postura. Acaba antes de que cueste mantenerla.\n• Flexión estándar: ensaya unas pocas repeticiones con una variante o carga fácil, lejos del agotamiento.\nNo pases al trabajo intenso si aún no ejecutas los gestos con comodidad. Los siete minutos son una estimación, no una obligación ni garantía. Registra la duración real.",
+          "warm_up_protocol_version": "warm_up_v1_1",
+          "warm_up_seconds": 420,
+          "work": [
+            {
+              "body_regions": [
+                "lower_body",
+                "trunk"
+              ],
+              "compact": true,
+              "comparison_dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "covered_reference_ids": [
+                "82580776-344f-44e5-baf7-a5afb6ee4f3b"
+              ],
+              "dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "evidence": [],
+              "exercise_code": "cod_braking_10m",
+              "frequency": 1,
+              "model": "course",
+              "movement_patterns": [
+                "change_of_direction"
+              ],
+              "name": "Aceleración suave y frenada en 10 m",
+              "objective_key": "legacy:agility_speed_circuit",
+              "outcome": "reduce",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+              "reference_id": "82580776-344f-44e5-baf7-a5afb6ee4f3b",
+              "reference_kind": "performed_set",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+              "status": "ready",
+              "stimulus": {
+                "code": "COD-T01",
+                "effort_mode": "none",
+                "name": "Aproximación y frenada controladas",
+                "purpose": "technique",
+                "rest_seconds": 75,
+                "sources": [
+                  "COD-T01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 4,
+              "work_seconds": 195
+            },
+            {
+              "body_regions": [
+                "trunk",
+                "upper_body"
+              ],
+              "compact": true,
+              "comparison_dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "bf0f99e1-bef3-43f1-958d-16820a8c2eeb"
+              ],
+              "dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "front_plank_forearms",
+              "frequency": 1,
+              "model": "isometric",
+              "movement_patterns": [
+                "core_anti_extension"
+              ],
+              "name": "Plancha frontal sobre antebrazos",
+              "objective_key": "legacy:abdominal_plank",
+              "outcome": "reduce",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+              "reference_id": "bf0f99e1-bef3-43f1-958d-16820a8c2eeb",
+              "reference_kind": "capacity_test",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+              "status": "ready",
+              "stimulus": {
+                "code": "ISO-E01",
+                "effort_mode": "rpe",
+                "name": "Resistencia isométrica submáxima",
+                "purpose": "endurance",
+                "rest_seconds": 75,
+                "sources": [
+                  "PLANK-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 2,
+              "work_seconds": 87
+            },
+            {
+              "body_regions": [
+                "upper_body",
+                "trunk"
+              ],
+              "compact": true,
+              "comparison_dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "cdb677aa-ce63-4ff5-b092-36def3e65d14"
+              ],
+              "dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "push_up_standard",
+              "frequency": 1,
+              "model": "repetitions",
+              "movement_patterns": [
+                "horizontal_push"
+              ],
+              "name": "Flexión estándar",
+              "objective_key": "legacy:upper_body_push_ups_2_min",
+              "outcome": "reduce",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente. Formato corto por disponibilidad: menos series, misma técnica y margen. No aumentes la intensidad para compensarlo.",
+              "reference_id": "cdb677aa-ce63-4ff5-b092-36def3e65d14",
+              "reference_kind": "performed_set",
+              "requested_frequency": 2,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "support",
+              "running_leg_load": false,
+              "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+              "status": "ready",
+              "stimulus": {
+                "code": "REP-E01",
+                "effort_mode": "rir",
+                "name": "Resistencia con margen",
+                "purpose": "endurance",
+                "rest_seconds": 90,
+                "sources": [
+                  "FLEX-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 4,
+              "work_seconds": 195
+            }
+          ]
+        }
+      ],
+      "status": "ready",
+      "week_start": "2026-10-05"
+    }
+  },
+  {
+    "minutes": 35,
+    "plan": {
+      "already_published": false,
+      "availability": {
+        "1": 35,
+        "3": 35,
+        "5": 35
+      },
+      "context_observed_at": "2026-10-04T12:32:32.783565+02:00",
+      "coverage": {
+        "minimum_running_sessions": 2,
+        "running_expected": 3,
+        "running_scheduled": 2
+      },
+      "goal_id": "010264fb-2c83-4dfa-b543-b8eac90f394e",
+      "pending": [
+        {
+          "name": "Flexión estándar",
+          "objective_key": "legacy:upper_body_push_ups_2_min",
+          "reason": "Se pauta una exposición: la segunda no cabe respetando tiempo y recuperación.",
+          "reference_id": "2be71dd9-c78e-45f0-9dcc-fad01ab92e05",
+          "requested": 2,
+          "required_for_objective": true,
+          "role": "support",
+          "scheduled": 1
+        },
+        {
+          "name": "Frecuencia de carrera",
+          "reason": "La semana conjunta conserva 2 de las 3 salidas que cabrían dedicando esos días solo a carrera. Para conservar ambas frecuencias, añade otro día o más tiempo.",
+          "requested": 3,
+          "role": "support",
+          "scheduled": 2,
+          "status": "reduced_running_coverage"
+        }
+      ],
+      "policy_version": "preparation_coordinator_v2_1",
+      "proposals": [
+        {
+          "body_regions": [
+            "trunk",
+            "upper_body"
+          ],
+          "comparison_dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "a8a10669-1edd-4b9a-b3cd-bf72ec584dfa"
+          ],
+          "dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "front_plank_forearms",
+          "frequency": 1,
+          "model": "isometric",
+          "movement_patterns": [
+            "core_anti_extension"
+          ],
+          "name": "Plancha frontal sobre antebrazos",
+          "objective_key": "legacy:abdominal_plank",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "a8a10669-1edd-4b9a-b3cd-bf72ec584dfa",
+          "reference_kind": "capacity_test",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+          "status": "ready",
+          "stimulus": {
+            "code": "ISO-E01",
+            "effort_mode": "rpe",
+            "name": "Resistencia isométrica submáxima",
+            "purpose": "endurance",
+            "rest_seconds": 75,
+            "sources": [
+              "PLANK-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 4,
+          "work_seconds": 189
+        },
+        {
+          "body_regions": [
+            "lower_body",
+            "trunk"
+          ],
+          "comparison_dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "covered_reference_ids": [
+            "b2dcb6bd-db79-4306-92d8-ef4bbb6c746b"
+          ],
+          "dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "evidence": [],
+          "exercise_code": "cod_braking_10m",
+          "frequency": 1,
+          "model": "course",
+          "movement_patterns": [
+            "change_of_direction"
+          ],
+          "name": "Aceleración suave y frenada en 10 m",
+          "objective_key": "legacy:agility_speed_circuit",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "b2dcb6bd-db79-4306-92d8-ef4bbb6c746b",
+          "reference_kind": "performed_set",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+          "status": "ready",
+          "stimulus": {
+            "code": "COD-T01",
+            "effort_mode": "none",
+            "name": "Aproximación y frenada controladas",
+            "purpose": "technique",
+            "rest_seconds": 75,
+            "sources": [
+              "COD-T01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 7,
+          "work_seconds": 405
+        },
+        {
+          "body_regions": [
+            "upper_body",
+            "trunk"
+          ],
+          "comparison_dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "2be71dd9-c78e-45f0-9dcc-fad01ab92e05"
+          ],
+          "dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "push_up_standard",
+          "frequency": 1,
+          "model": "repetitions",
+          "movement_patterns": [
+            "horizontal_push"
+          ],
+          "name": "Flexión estándar",
+          "objective_key": "legacy:upper_body_push_ups_2_min",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "2be71dd9-c78e-45f0-9dcc-fad01ab92e05",
+          "reference_kind": "performed_set",
+          "requested_frequency": 2,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "support",
+          "running_leg_load": false,
+          "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+          "status": "ready",
+          "stimulus": {
+            "code": "REP-E01",
+            "effort_mode": "rir",
+            "name": "Resistencia con margen",
+            "purpose": "endurance",
+            "rest_seconds": 90,
+            "sources": [
+              "FLEX-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 7,
+          "work_seconds": 420
+        }
+      ],
+      "reason": "Semana coordinada según objetivos, referencias, respuesta y disponibilidad total.",
+      "running": {
+        "anchor_seconds": 478,
+        "basis": "recent",
+        "calibration": "provisional",
+        "catalog_version": "running_catalog_v2",
+        "changes": [
+          {
+            "dimension": "introduce_stimulus",
+            "family": "T"
+          }
+        ],
+        "context_updated_at": "2026-10-04T12:32:32.783565+02:00",
+        "control_due": false,
+        "control_review": {
+          "samples": 1,
+          "trend": "unknown"
+        },
+        "data_review_required": false,
+        "declared_prior_quality_weeks": 0,
+        "evidence": {
+          "families": {
+            "E": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "R": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "S": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "T": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "V": {
+              "samples": 0,
+              "trend": "unknown"
+            }
+          },
+          "observations": []
+        },
+        "goal": {
+          "margin_seconds": null,
+          "mode": "time",
+          "seconds": 465,
+          "standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          }
+        },
+        "goal_id": "010264fb-2c83-4dfa-b543-b8eac90f394e",
+        "goal_seconds": 465,
+        "input_snapshot": {
+          "anchor_age_days": 0,
+          "anchor_seconds": 478,
+          "availability": {
+            "1": 7,
+            "2": 0,
+            "3": 35,
+            "4": 0,
+            "5": 35,
+            "6": 0,
+            "7": 0
+          },
+          "capacity_minutes": 60,
+          "controls": [
+            {
+              "date": "2026-10-04",
+              "protocol": "es_def_15_2026_periodic_2027_v1:run_2000_m",
+              "seconds": 478
+            }
+          ],
+          "declared_prior_quality_weeks": 0,
+          "goal_mode": "time",
+          "goal_seconds": 465,
+          "leg_load_days": [],
+          "occupied_days": [],
+          "official_margin_seconds": null,
+          "official_standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          },
+          "pain": false,
+          "previous": {},
+          "recent_days": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "recent_minutes": [
+            110,
+            110,
+            110,
+            110
+          ],
+          "strength_days": [],
+          "target_date": "2027-01-02",
+          "week_start": "2026-10-05"
+        },
+        "intense_work_seconds": 600,
+        "load_weeks": 1,
+        "mode": "normal",
+        "needs_control": false,
+        "normal_budget": 70,
+        "outcome": "initial",
+        "phase": "general",
+        "policy_version": "running_2k_v5",
+        "priority": "T",
+        "quality_entry": {
+          "eligible": false,
+          "exposures_21d": 0,
+          "exposures_42d": 0,
+          "paired": false,
+          "weeks": 0,
+          "work_cap_seconds": 0
+        },
+        "reason": "Entrada según carga reciente y disponibilidad",
+        "recommendations": [],
+        "reference_2k_milliseconds": 478000,
+        "reference_completed_at": "2026-10-04T12:32:32.783565+02:00",
+        "reference_record_id": "05788ece-bcac-4b9b-9ae5-724041d45cc6",
+        "reference_source": "fasPeriodicAssessment",
+        "rejected": [],
+        "rotation": 1,
+        "rpe_review_required": false,
+        "selection_policy": {
+          "adverse_days": 14,
+          "quality_history_days": 42,
+          "recent_quality_days": 21,
+          "recommended_quality_slot_minutes": 45,
+          "required_quality_exposures": 4,
+          "required_quality_weeks": 3,
+          "required_recent_quality": 2,
+          "session_floor_minutes": 25,
+          "two_quality_min_days": 3,
+          "two_quality_min_minutes": 120,
+          "work_growth_limit": 1.2
+        },
+        "sessions": [
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-07",
+            "description": "Tramos sostenidos controlados. El ritmo es estimado, no un umbral medido.",
+            "family": "T",
+            "intention": "T",
+            "kind": "controlled_quality",
+            "minutes": 35,
+            "name": "Intervalos sostenidos controlados",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 7,
+            "segments": [
+              {
+                "role": "warmup",
+                "seconds": 600
+              },
+              {
+                "pace_max": 285,
+                "pace_min": 265,
+                "recovery_seconds": 120,
+                "role": "work",
+                "seconds": 300
+              },
+              {
+                "pace_max": 285,
+                "pace_min": 265,
+                "role": "work",
+                "seconds": 300
+              },
+              {
+                "role": "cooldown",
+                "seconds": 780
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "T_0_v1",
+            "work_seconds": 600
+          },
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-09",
+            "description": "Cómodo, puedes conversar. El rango de ritmo es orientativo; manda el esfuerzo fácil.",
+            "family": "E",
+            "intention": "E",
+            "kind": "easy",
+            "minutes": 35,
+            "name": "Carrera fácil",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 5,
+            "segments": [
+              {
+                "pace_max": 368,
+                "pace_min": 306,
+                "role": "work",
+                "seconds": 2100
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "E_0_v1",
+            "work_seconds": 0
+          }
+        ],
+        "target_date": "2027-01-02",
+        "target_gap": 0.0279569892473118,
+        "week_start": "2026-10-05"
+      },
+      "sessions": [
+        {
+          "cool_down_seconds": 180,
+          "date": "2026-10-05",
+          "kind": "performance",
+          "minutes": 28,
+          "name": "Fuerza y rendimiento",
+          "session_order": "performance_first",
+          "warm_up_instructions": "Calentamiento de esta sesión · unos 7 minutos como orientación.\n1. Empieza caminando o trotando suavemente, a un ritmo que te permita hablar sin esfuerzo.\n2. Mueve de forma suave y progresiva las articulaciones que vas a utilizar; evita forzar posiciones.\n• Hombros, codos y muñecas: movimientos controlados y preparación de los apoyos o agarres.\n• Tobillos, rodillas y caderas: marcha progresiva, elevación de talones y flexiones de piernas cómodas.\n• Tronco y apoyos: ensaya una posición estable durante unos segundos, respirando y sin agotarte.\n3. Ensaya el trabajo que viene después, de fácil a más específico:\n• Aceleración suave y frenada en 10 m: revisa las líneas y obstáculos; practica despacio la salida, los giros y la frenada. Aumenta gradualmente la velocidad sin buscar una marca.\n• Plancha frontal sobre antebrazos: ensaya una sujeción breve con los mismos apoyos y buena postura. Acaba antes de que cueste mantenerla.\n• Flexión estándar: ensaya unas pocas repeticiones con una variante o carga fácil, lejos del agotamiento.\nNo pases al trabajo intenso si aún no ejecutas los gestos con comodidad. Los siete minutos son una estimación, no una obligación ni garantía. Registra la duración real.",
+          "warm_up_protocol_version": "warm_up_v1_1",
+          "warm_up_seconds": 420,
+          "work": [
+            {
+              "body_regions": [
+                "lower_body",
+                "trunk"
+              ],
+              "comparison_dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "covered_reference_ids": [
+                "b2dcb6bd-db79-4306-92d8-ef4bbb6c746b"
+              ],
+              "dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "evidence": [],
+              "exercise_code": "cod_braking_10m",
+              "frequency": 1,
+              "model": "course",
+              "movement_patterns": [
+                "change_of_direction"
+              ],
+              "name": "Aceleración suave y frenada en 10 m",
+              "objective_key": "legacy:agility_speed_circuit",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "b2dcb6bd-db79-4306-92d8-ef4bbb6c746b",
+              "reference_kind": "performed_set",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+              "status": "ready",
+              "stimulus": {
+                "code": "COD-T01",
+                "effort_mode": "none",
+                "name": "Aproximación y frenada controladas",
+                "purpose": "technique",
+                "rest_seconds": 75,
+                "sources": [
+                  "COD-T01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 7,
+              "work_seconds": 405
+            },
+            {
+              "body_regions": [
+                "trunk",
+                "upper_body"
+              ],
+              "comparison_dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "a8a10669-1edd-4b9a-b3cd-bf72ec584dfa"
+              ],
+              "dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "front_plank_forearms",
+              "frequency": 1,
+              "model": "isometric",
+              "movement_patterns": [
+                "core_anti_extension"
+              ],
+              "name": "Plancha frontal sobre antebrazos",
+              "objective_key": "legacy:abdominal_plank",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "a8a10669-1edd-4b9a-b3cd-bf72ec584dfa",
+              "reference_kind": "capacity_test",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+              "status": "ready",
+              "stimulus": {
+                "code": "ISO-E01",
+                "effort_mode": "rpe",
+                "name": "Resistencia isométrica submáxima",
+                "purpose": "endurance",
+                "rest_seconds": 75,
+                "sources": [
+                  "PLANK-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 4,
+              "work_seconds": 189
+            },
+            {
+              "body_regions": [
+                "upper_body",
+                "trunk"
+              ],
+              "comparison_dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "2be71dd9-c78e-45f0-9dcc-fad01ab92e05"
+              ],
+              "dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "push_up_standard",
+              "frequency": 1,
+              "model": "repetitions",
+              "movement_patterns": [
+                "horizontal_push"
+              ],
+              "name": "Flexión estándar",
+              "objective_key": "legacy:upper_body_push_ups_2_min",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "2be71dd9-c78e-45f0-9dcc-fad01ab92e05",
+              "reference_kind": "performed_set",
+              "requested_frequency": 2,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "support",
+              "running_leg_load": false,
+              "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+              "status": "ready",
+              "stimulus": {
+                "code": "REP-E01",
+                "effort_mode": "rir",
+                "name": "Resistencia con margen",
+                "purpose": "endurance",
+                "rest_seconds": 90,
+                "sources": [
+                  "FLEX-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 7,
+              "work_seconds": 420
+            }
+          ]
+        }
+      ],
+      "status": "ready",
+      "week_start": "2026-10-05"
+    }
+  },
+  {
+    "minutes": 60,
+    "plan": {
+      "already_published": false,
+      "availability": {
+        "1": 60,
+        "3": 60,
+        "5": 60
+      },
+      "context_observed_at": "2026-10-04T12:32:32.783565+02:00",
+      "coverage": {
+        "minimum_running_sessions": 2,
+        "running_expected": 3,
+        "running_scheduled": 3
+      },
+      "goal_id": "ff0af168-ae77-49f9-896e-b8d726910f1a",
+      "pending": [],
+      "policy_version": "preparation_coordinator_v2_1",
+      "proposals": [
+        {
+          "body_regions": [
+            "lower_body",
+            "trunk"
+          ],
+          "comparison_dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "covered_reference_ids": [
+            "58fcffe8-392b-4f7c-8f36-393f5217a790"
+          ],
+          "dose": {
+            "model": "course",
+            "rest_seconds": 75,
+            "stimulus_code": "COD-T01",
+            "targets": [
+              1,
+              1,
+              1,
+              1
+            ],
+            "task": {
+              "effort_mode": "none",
+              "exercise_code": "cod_braking_10m",
+              "exercise_version": 1,
+              "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+              "intent": "practice",
+              "load_mode": "bodyweight",
+              "measurement": "PASS_FAIL",
+              "policy_version": "performance_v2",
+              "protocol_key": "cod_braking_10m_v1",
+              "protocol_version": 1,
+              "records_penalty_seconds": false,
+              "records_stimulus_responses": false,
+              "schema_version": 1,
+              "setup_key": "standard:cod_braking_10m_v1",
+              "stimulus_code": "COD-T01",
+              "target_value": 1
+            }
+          },
+          "evidence": [],
+          "exercise_code": "cod_braking_10m",
+          "frequency": 1,
+          "model": "course",
+          "movement_patterns": [
+            "change_of_direction"
+          ],
+          "name": "Aceleración suave y frenada en 10 m",
+          "objective_key": "legacy:agility_speed_circuit",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "58fcffe8-392b-4f7c-8f36-393f5217a790",
+          "reference_kind": "performed_set",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+          "status": "ready",
+          "stimulus": {
+            "code": "COD-T01",
+            "effort_mode": "none",
+            "name": "Aproximación y frenada controladas",
+            "purpose": "technique",
+            "rest_seconds": 75,
+            "sources": [
+              "COD-T01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 7,
+          "work_seconds": 405
+        },
+        {
+          "body_regions": [
+            "trunk",
+            "upper_body"
+          ],
+          "comparison_dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "b2d3a03e-61b0-4426-823c-cc106cd2018f"
+          ],
+          "dose": {
+            "model": "isometric",
+            "rest_seconds": 75,
+            "stimulus_code": "ISO-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rpe",
+              "exercise_code": "front_plank_forearms",
+              "exercise_version": 1,
+              "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "DURATION",
+              "policy_version": "performance_v2",
+              "protocol_key": "def_15_2026_plank",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo antideslizante y codos bajo hombros",
+              "stimulus_code": "ISO-E01",
+              "target_rpe": 7,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "front_plank_forearms",
+          "frequency": 1,
+          "model": "isometric",
+          "movement_patterns": [
+            "core_anti_extension"
+          ],
+          "name": "Plancha frontal sobre antebrazos",
+          "objective_key": "legacy:abdominal_plank",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "b2d3a03e-61b0-4426-823c-cc106cd2018f",
+          "reference_kind": "capacity_test",
+          "requested_frequency": 1,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "specific",
+          "running_leg_load": false,
+          "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+          "status": "ready",
+          "stimulus": {
+            "code": "ISO-E01",
+            "effort_mode": "rpe",
+            "name": "Resistencia isométrica submáxima",
+            "purpose": "endurance",
+            "rest_seconds": 75,
+            "sources": [
+              "PLANK-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 4,
+          "work_seconds": 189
+        },
+        {
+          "body_regions": [
+            "upper_body",
+            "trunk"
+          ],
+          "comparison_dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "covered_reference_ids": [
+            "fef7eefe-a2c0-4348-a672-0955b61af3b2"
+          ],
+          "dose": {
+            "model": "repetitions",
+            "rest_seconds": 90,
+            "stimulus_code": "REP-E01",
+            "targets": [
+              27,
+              27
+            ],
+            "task": {
+              "effort_mode": "rir",
+              "exercise_code": "push_up_standard",
+              "exercise_version": 1,
+              "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+              "intent": "work",
+              "load_mode": "bodyweight",
+              "measurement": "REPS",
+              "policy_version": "performance_v2",
+              "protocol_key": "floor_v1",
+              "protocol_version": 1,
+              "schema_version": 1,
+              "setup_key": "Suelo y recorrido completo",
+              "stimulus_code": "REP-E01",
+              "target_rir": 3,
+              "target_value": 27
+            }
+          },
+          "evidence": [],
+          "exercise_code": "push_up_standard",
+          "frequency": 2,
+          "model": "repetitions",
+          "movement_patterns": [
+            "horizontal_push"
+          ],
+          "name": "Flexión estándar",
+          "objective_key": "legacy:upper_body_push_ups_2_min",
+          "outcome": "initial",
+          "parameter_status": "operational_requires_outcome_monitoring",
+          "phase": "base",
+          "policy_version": "performance_v2",
+          "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+          "reference_id": "fef7eefe-a2c0-4348-a672-0955b61af3b2",
+          "reference_kind": "performed_set",
+          "requested_frequency": 2,
+          "required_for_objective": true,
+          "review_due": false,
+          "role": "support",
+          "running_leg_load": false,
+          "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+          "status": "ready",
+          "stimulus": {
+            "code": "REP-E01",
+            "effort_mode": "rir",
+            "name": "Resistencia con margen",
+            "purpose": "endurance",
+            "rest_seconds": 90,
+            "sources": [
+              "FLEX-E01"
+            ]
+          },
+          "weeks_since_review": 1,
+          "work_minutes": 7,
+          "work_seconds": 420
+        }
+      ],
+      "reason": "Semana coordinada según objetivos, referencias, respuesta y disponibilidad total.",
+      "running": {
+        "anchor_seconds": 478,
+        "basis": "recent",
+        "calibration": "provisional",
+        "catalog_version": "running_catalog_v2",
+        "changes": [
+          {
+            "dimension": "introduce_stimulus",
+            "family": "T"
+          }
+        ],
+        "context_updated_at": "2026-10-04T12:32:32.783565+02:00",
+        "control_due": false,
+        "control_review": {
+          "samples": 1,
+          "trend": "unknown"
+        },
+        "data_review_required": false,
+        "declared_prior_quality_weeks": 0,
+        "evidence": {
+          "families": {
+            "E": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "R": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "S": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "T": {
+              "samples": 0,
+              "trend": "unknown"
+            },
+            "V": {
+              "samples": 0,
+              "trend": "unknown"
+            }
+          },
+          "observations": []
+        },
+        "goal": {
+          "margin_seconds": null,
+          "mode": "time",
+          "seconds": 465,
+          "standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          }
+        },
+        "goal_id": "ff0af168-ae77-49f9-896e-b8d726910f1a",
+        "goal_seconds": 465,
+        "input_snapshot": {
+          "anchor_age_days": 0,
+          "anchor_seconds": 478,
+          "availability": {
+            "1": 32,
+            "2": 0,
+            "3": 43,
+            "4": 0,
+            "5": 60,
+            "6": 0,
+            "7": 0
+          },
+          "capacity_minutes": 60,
+          "controls": [
+            {
+              "date": "2026-10-04",
+              "protocol": "es_def_15_2026_periodic_2027_v1:run_2000_m",
+              "seconds": 478
+            }
+          ],
+          "declared_prior_quality_weeks": 0,
+          "goal_mode": "time",
+          "goal_seconds": 465,
+          "leg_load_days": [],
+          "occupied_days": [],
+          "official_margin_seconds": null,
+          "official_standard": {
+            "age_band": "26_30",
+            "catalog_version": "es_def_15_2026_periodic_2027_v1",
+            "category": "men",
+            "scope": "minimum_20_points_not_global_pass",
+            "seconds": 714
+          },
+          "pain": false,
+          "previous": {},
+          "recent_days": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "recent_minutes": [
+            110,
+            110,
+            110,
+            110
+          ],
+          "strength_days": [],
+          "target_date": "2027-01-02",
+          "week_start": "2026-10-05"
+        },
+        "intense_work_seconds": 600,
+        "load_weeks": 1,
+        "mode": "normal",
+        "needs_control": false,
+        "normal_budget": 110,
+        "outcome": "initial",
+        "phase": "general",
+        "policy_version": "running_2k_v5",
+        "priority": "T",
+        "quality_entry": {
+          "eligible": false,
+          "exposures_21d": 0,
+          "exposures_42d": 0,
+          "paired": false,
+          "weeks": 0,
+          "work_cap_seconds": 0
+        },
+        "reason": "Entrada según carga reciente y disponibilidad",
+        "recommendations": [],
+        "reference_2k_milliseconds": 478000,
+        "reference_completed_at": "2026-10-04T12:32:32.783565+02:00",
+        "reference_record_id": "8b740796-be6f-4118-8517-bc3734377940",
+        "reference_source": "fasPeriodicAssessment",
+        "rejected": [],
+        "rotation": 1,
+        "rpe_review_required": false,
+        "selection_policy": {
+          "adverse_days": 14,
+          "quality_history_days": 42,
+          "recent_quality_days": 21,
+          "recommended_quality_slot_minutes": 45,
+          "required_quality_exposures": 4,
+          "required_quality_weeks": 3,
+          "required_recent_quality": 2,
+          "session_floor_minutes": 25,
+          "two_quality_min_days": 3,
+          "two_quality_min_minutes": 120,
+          "work_growth_limit": 1.2
+        },
+        "sessions": [
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-05",
+            "description": "Tramos sostenidos controlados. El ritmo es estimado, no un umbral medido.",
+            "family": "T",
+            "intention": "T",
+            "kind": "controlled_quality",
+            "minutes": 32,
+            "name": "Intervalos sostenidos controlados",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 7,
+            "segments": [
+              {
+                "role": "warmup",
+                "seconds": 600
+              },
+              {
+                "pace_max": 285,
+                "pace_min": 265,
+                "recovery_seconds": 120,
+                "role": "work",
+                "seconds": 300
+              },
+              {
+                "pace_max": 285,
+                "pace_min": 265,
+                "role": "work",
+                "seconds": 300
+              },
+              {
+                "role": "cooldown",
+                "seconds": 600
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "T_0_v1",
+            "work_seconds": 600
+          },
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-07",
+            "description": "Cómodo, puedes conversar. El rango de ritmo es orientativo; manda el esfuerzo fácil.",
+            "family": "E",
+            "intention": "E",
+            "kind": "easy",
+            "minutes": 39,
+            "name": "Carrera fácil",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 5,
+            "segments": [
+              {
+                "pace_max": 368,
+                "pace_min": 306,
+                "role": "work",
+                "seconds": 2340
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "E_0_v1",
+            "work_seconds": 0
+          },
+          {
+            "anchor_seconds": 478,
+            "date": "2026-10-09",
+            "description": "Cómodo, puedes conversar. El rango de ritmo es orientativo; manda el esfuerzo fácil.",
+            "family": "E",
+            "intention": "E",
+            "kind": "easy",
+            "minutes": 39,
+            "name": "Carrera fácil",
+            "pace_basis": "estimated_from_2k",
+            "pace_policy": "running_2k_v1",
+            "rpe_ceiling": 5,
+            "segments": [
+              {
+                "pace_max": 368,
+                "pace_min": 306,
+                "role": "work",
+                "seconds": 2340
+              }
+            ],
+            "speed_factor": 1,
+            "step": 0,
+            "variant_code": "E_0_v1",
+            "work_seconds": 0
+          }
+        ],
+        "target_date": "2027-01-02",
+        "target_gap": 0.0279569892473118,
+        "week_start": "2026-10-05"
+      },
+      "sessions": [
+        {
+          "combined": true,
+          "cool_down_seconds": 180,
+          "date": "2026-10-05",
+          "kind": "performance",
+          "minutes": 21,
+          "name": "Fuerza y rendimiento",
+          "session_order": "performance_first",
+          "shared_total_minutes": 53,
+          "standalone_minutes": 28,
+          "warm_up_instructions": "La activación general se comparte con carrera. Después: 1:00 de movilidad de las articulaciones que usarás y 2:00 de ensayo fácil de los movimientos pautados. Sin máximos.",
+          "warm_up_protocol_version": "warm_up_v1_1",
+          "warm_up_seconds": 180,
+          "work": [
+            {
+              "body_regions": [
+                "lower_body",
+                "trunk"
+              ],
+              "comparison_dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "covered_reference_ids": [
+                "58fcffe8-392b-4f7c-8f36-393f5217a790"
+              ],
+              "dose": {
+                "model": "course",
+                "rest_seconds": 75,
+                "stimulus_code": "COD-T01",
+                "targets": [
+                  1,
+                  1,
+                  1,
+                  1
+                ],
+                "task": {
+                  "effort_mode": "none",
+                  "exercise_code": "cod_braking_10m",
+                  "exercise_version": 1,
+                  "instructions": "Marca 10 metros y deja espacio libre para frenar. Acelera a velocidad cómoda; acorta los pasos para detenerte estable. Vuelve andando. No busques velocidad máxima. Cada serie es un intento.",
+                  "intent": "practice",
+                  "load_mode": "bodyweight",
+                  "measurement": "PASS_FAIL",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "cod_braking_10m_v1",
+                  "protocol_version": 1,
+                  "records_penalty_seconds": false,
+                  "records_stimulus_responses": false,
+                  "schema_version": 1,
+                  "setup_key": "standard:cod_braking_10m_v1",
+                  "stimulus_code": "COD-T01",
+                  "target_value": 1
+                }
+              },
+              "evidence": [],
+              "exercise_code": "cod_braking_10m",
+              "frequency": 1,
+              "model": "course",
+              "movement_patterns": [
+                "change_of_direction"
+              ],
+              "name": "Aceleración suave y frenada en 10 m",
+              "objective_key": "legacy:agility_speed_circuit",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "58fcffe8-392b-4f7c-8f36-393f5217a790",
+              "reference_kind": "performed_set",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Practicar y consolidar aproximación y frenada; tu marca del circuito no se convierte en tiempo de este ejercicio.",
+              "status": "ready",
+              "stimulus": {
+                "code": "COD-T01",
+                "effort_mode": "none",
+                "name": "Aproximación y frenada controladas",
+                "purpose": "technique",
+                "rest_seconds": 75,
+                "sources": [
+                  "COD-T01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 7,
+              "work_seconds": 405
+            },
+            {
+              "body_regions": [
+                "trunk",
+                "upper_body"
+              ],
+              "comparison_dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "b2d3a03e-61b0-4426-823c-cc106cd2018f"
+              ],
+              "dose": {
+                "model": "isometric",
+                "rest_seconds": 75,
+                "stimulus_code": "ISO-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rpe",
+                  "exercise_code": "front_plank_forearms",
+                  "exercise_version": 1,
+                  "instructions": "Mantén hasta el tiempo indicado, respirando. Termina antes si pierdes la postura o el esfuerzo supera 7/10. Cuenta solo tiempo válido; hoy no medimos tu máximo. 5 es moderado, 7 es difícil pero controlado; 10 sería tu límite.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "DURATION",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "def_15_2026_plank",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo antideslizante y codos bajo hombros",
+                  "stimulus_code": "ISO-E01",
+                  "target_rpe": 7,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "front_plank_forearms",
+              "frequency": 1,
+              "model": "isometric",
+              "movement_patterns": [
+                "core_anti_extension"
+              ],
+              "name": "Plancha frontal sobre antebrazos",
+              "objective_key": "legacy:abdominal_plank",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "b2d3a03e-61b0-4426-823c-cc106cd2018f",
+              "reference_kind": "capacity_test",
+              "requested_frequency": 1,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "specific",
+              "running_leg_load": false,
+              "selection_reason": "Trabajo de postura submáximo. La referencia conserva su tipo; sus segundos no se copian como series al límite.",
+              "status": "ready",
+              "stimulus": {
+                "code": "ISO-E01",
+                "effort_mode": "rpe",
+                "name": "Resistencia isométrica submáxima",
+                "purpose": "endurance",
+                "rest_seconds": 75,
+                "sources": [
+                  "PLANK-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 4,
+              "work_seconds": 189
+            },
+            {
+              "body_regions": [
+                "upper_body",
+                "trunk"
+              ],
+              "comparison_dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "fef7eefe-a2c0-4348-a672-0955b61af3b2"
+              ],
+              "dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "push_up_standard",
+              "frequency": 2,
+              "model": "repetitions",
+              "movement_patterns": [
+                "horizontal_push"
+              ],
+              "name": "Flexión estándar",
+              "objective_key": "legacy:upper_body_push_ups_2_min",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "fef7eefe-a2c0-4348-a672-0955b61af3b2",
+              "reference_kind": "performed_set",
+              "requested_frequency": 2,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "support",
+              "running_leg_load": false,
+              "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+              "status": "ready",
+              "stimulus": {
+                "code": "REP-E01",
+                "effort_mode": "rir",
+                "name": "Resistencia con margen",
+                "purpose": "endurance",
+                "rest_seconds": 90,
+                "sources": [
+                  "FLEX-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 7,
+              "work_seconds": 420
+            }
+          ]
+        },
+        {
+          "combined": true,
+          "cool_down_seconds": 180,
+          "date": "2026-10-07",
+          "kind": "performance",
+          "minutes": 13,
+          "name": "Fuerza y rendimiento",
+          "session_order": "running_first",
+          "shared_total_minutes": 52,
+          "standalone_minutes": 17,
+          "warm_up_instructions": "La activación general se comparte con carrera. Después: 1:00 de movilidad de las articulaciones que usarás y 2:00 de ensayo fácil de los movimientos pautados. Sin máximos.",
+          "warm_up_protocol_version": "warm_up_v1_1",
+          "warm_up_seconds": 180,
+          "work": [
+            {
+              "body_regions": [
+                "upper_body",
+                "trunk"
+              ],
+              "comparison_dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "covered_reference_ids": [
+                "fef7eefe-a2c0-4348-a672-0955b61af3b2"
+              ],
+              "dose": {
+                "model": "repetitions",
+                "rest_seconds": 90,
+                "stimulus_code": "REP-E01",
+                "targets": [
+                  27,
+                  27
+                ],
+                "task": {
+                  "effort_mode": "rir",
+                  "exercise_code": "push_up_standard",
+                  "exercise_version": 1,
+                  "instructions": "\nHaz hasta las repeticiones pautadas con buena técnica. Conserva al menos tres repeticiones de margen; si llegas a ese esfuerzo antes, para y registra las que hiciste. Puedes terminar con más margen: no añadas repeticiones para agotarte.",
+                  "intent": "work",
+                  "load_mode": "bodyweight",
+                  "measurement": "REPS",
+                  "policy_version": "performance_v2",
+                  "protocol_key": "floor_v1",
+                  "protocol_version": 1,
+                  "schema_version": 1,
+                  "setup_key": "Suelo y recorrido completo",
+                  "stimulus_code": "REP-E01",
+                  "target_rir": 3,
+                  "target_value": 27
+                }
+              },
+              "evidence": [],
+              "exercise_code": "push_up_standard",
+              "frequency": 2,
+              "model": "repetitions",
+              "movement_patterns": [
+                "horizontal_push"
+              ],
+              "name": "Flexión estándar",
+              "objective_key": "legacy:upper_body_push_ups_2_min",
+              "outcome": "initial",
+              "parameter_status": "operational_requires_outcome_monitoring",
+              "phase": "base",
+              "policy_version": "performance_v2",
+              "reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado. Primera dosis de este estímulo: registra lo realizado para individualizar la siguiente.",
+              "reference_id": "fef7eefe-a2c0-4348-a672-0955b61af3b2",
+              "reference_kind": "performed_set",
+              "requested_frequency": 2,
+              "required_for_objective": true,
+              "review_due": false,
+              "role": "support",
+              "running_leg_load": false,
+              "selection_reason": "Series submáximas desde una práctica real; la cifra de referencia no se trata como un máximo estimado.",
+              "status": "ready",
+              "stimulus": {
+                "code": "REP-E01",
+                "effort_mode": "rir",
+                "name": "Resistencia con margen",
+                "purpose": "endurance",
+                "rest_seconds": 90,
+                "sources": [
+                  "FLEX-E01"
+                ]
+              },
+              "weeks_since_review": 1,
+              "work_minutes": 7,
+              "work_seconds": 420
+            }
+          ]
+        }
+      ],
+      "status": "ready",
+      "week_start": "2026-10-05"
+    }
+  }
+]

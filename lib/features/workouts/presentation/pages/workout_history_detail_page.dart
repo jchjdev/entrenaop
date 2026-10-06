@@ -4,6 +4,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_state.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +15,6 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text('Detalle de la sesión'),
@@ -23,9 +23,8 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
         listener: (context, state) {
           final message = state.correctionMessage;
           if (message != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message)));
           }
         },
         builder: (context, state) => switch (state.status) {
@@ -88,7 +87,6 @@ class _DetailContent extends StatelessWidget {
                 if (execution.notes case final notes?) ...[
                   const SizedBox(height: 12),
                   Card(
-                    color: const Color(0xFF171717),
                     child: ListTile(
                       leading: const Icon(
                         Icons.notes_rounded,
@@ -153,7 +151,6 @@ class _AmrapResultCard extends StatelessWidget {
       result?.partialItemOrder,
     );
     return Card(
-      color: const Color(0xFF171717),
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -232,8 +229,20 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedAt = execution.completedAt;
     final duration = completedAt?.difference(execution.startedAt);
+    final reportedRunningSeconds = execution.sets
+        .where(
+          (set) =>
+              set.blockFormat == WorkoutBlockFormat.running &&
+              set.status == WorkoutSetStatus.completed,
+        )
+        .fold<int>(
+          0,
+          (total, set) =>
+              total +
+              (set.actualDurationSeconds ?? 0) +
+              (set.actualRecoveryDurationSeconds ?? 0),
+        );
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Wrap(
@@ -255,7 +264,15 @@ class _SummaryCard extends StatelessWidget {
             if (duration != null)
               _SummaryMetric(
                 value: _compactDuration(duration),
-                label: 'Duración',
+                label: 'Tiempo en la app',
+              ),
+            if (reportedRunningSeconds > 0)
+              _SummaryMetric(
+                value: _compactDuration(
+                  Duration(seconds: reportedRunningSeconds),
+                ),
+                label: 'Tiempo de carrera registrado',
+                width: 155,
               ),
             if (execution.finalRpe case final rpe?)
               _SummaryMetric(value: '$rpe/10', label: 'RPE final'),
@@ -270,7 +287,7 @@ class _SummaryCard extends StatelessWidget {
                 value: runningAssessmentLabel(
                   assessRunningExecution(execution.sets),
                 ),
-                label: 'Cumplimiento',
+                label: 'Comparación con la pauta',
                 width: 230,
               ),
           ],
@@ -322,7 +339,6 @@ class _ExerciseResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF171717),
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -414,7 +430,34 @@ class _SetResultRow extends StatelessWidget {
   Future<void> _requestCorrection(BuildContext context) async {
     final correction = await showDialog<WorkoutSetCorrectionInput>(
       context: context,
-      builder: (_) => _CorrectionDialog(set: set),
+      builder: (dialogContext) => set.performancePrescription == null
+          ? _CorrectionDialog(set: set)
+          : AlertDialog(
+              title: Text('Corregir ${set.exerciseName}'),
+              content: SizedBox(
+                width: 520,
+                child: SingleChildScrollView(
+                  child: PerformanceResultForm(
+                    prescription: set.performancePrescription!,
+                    initialResult: set.performanceResult,
+                    correction: true,
+                    onSave: (result, reason) => Navigator.of(dialogContext).pop(
+                      WorkoutSetCorrectionInput(
+                        resultId: set.id,
+                        reason: reason,
+                        performanceResult: result,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancelar'),
+                ),
+              ],
+            ),
     );
     if (correction != null && context.mounted) {
       await context.read<WorkoutHistoryDetailCubit>().correct(correction);
@@ -440,8 +483,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
   late final TextEditingController _recoveryDuration;
   late final TextEditingController _recoveryDistance;
   late final TextEditingController _reason;
-  late double _rpe;
-  late double _rir;
+  double? _rpe;
+  double? _rir;
 
   WorkoutExecutionSet get set => widget.set;
 
@@ -469,8 +512,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
       text: _nullableNumber(set.actualRecoveryDistanceMeters),
     );
     _reason = TextEditingController();
-    _rpe = (set.actualRpe ?? set.targetRpe ?? 7).clamp(1, 10).toDouble();
-    _rir = (set.actualRir ?? set.targetRir ?? 2).clamp(0, 10).toDouble();
+    _rpe = set.actualRpe;
+    _rir = set.actualRir;
   }
 
   @override
@@ -579,23 +622,35 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                     label: 'Metros reales de recuperación',
                   ),
                 if (set.targetRpe != null || set.actualRpe != null) ...[
-                  Text('RPE real · ${_number(_rpe)}'),
+                  Text(
+                    'RPE real · ${_rpe == null ? 'Sin declarar' : _number(_rpe!)}',
+                  ),
                   Slider(
-                    value: _rpe,
+                    value: _rpe ?? 1,
                     min: 1,
                     max: 10,
                     divisions: 18,
                     onChanged: (value) => setState(() => _rpe = value),
                   ),
+                  TextButton(
+                    onPressed: () => setState(() => _rpe = null),
+                    child: const Text('No sé estimar el RPE'),
+                  ),
                 ],
                 if (set.targetRir != null || set.actualRir != null) ...[
-                  Text('RIR real · ${_number(_rir)}'),
+                  Text(
+                    'RIR real · ${_rir == null ? 'Sin declarar' : _number(_rir!)}',
+                  ),
                   Slider(
-                    value: _rir,
+                    value: _rir ?? 0,
                     min: 0,
                     max: 10,
                     divisions: 20,
                     onChanged: (value) => setState(() => _rir = value),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _rir = null),
+                    child: const Text('No sé estimar el RIR'),
                   ),
                 ],
                 TextFormField(
@@ -780,6 +835,9 @@ List<_ExerciseGroup> _groupSets(List<WorkoutExecutionSet> sets) {
 }
 
 String _target(WorkoutExecutionSet set) {
+  if (set.performancePrescription case final p?) {
+    return '${_number(p.targetValue)} ${p.unit}';
+  }
   final parts = <String>[];
   if (set.targetReps != null) parts.add('${set.targetReps} rep');
   if (set.targetDurationSeconds != null) {
@@ -814,6 +872,22 @@ String _target(WorkoutExecutionSet set) {
 }
 
 String _result(WorkoutExecutionSet set) {
+  if (set.performancePrescription case final p?) {
+    if (set.status == WorkoutSetStatus.skipped) return 'Omitida';
+    final r = set.performanceResult;
+    if (r == null) return 'Sin resultado';
+    return '${r.succeeded != null
+            ? (r.succeeded! ? 'Intento conseguido' : 'Intento no conseguido')
+            : r.value == null
+            ? 'Medición no declarada'
+            : '${_number(r.value!)} ${p.unit}'}'
+        ' · ${r.techniqueValid == null
+            ? 'Validez sin confirmar'
+            : r.techniqueValid!
+            ? 'Técnica válida'
+            : 'Intento no válido'}'
+        '${r.rir == null ? '' : ' · RIR ${_number(r.rir!)}'}';
+  }
   if (set.status == WorkoutSetStatus.skipped) {
     return set.blockFormat == WorkoutBlockFormat.running
         ? 'Tramo omitido'

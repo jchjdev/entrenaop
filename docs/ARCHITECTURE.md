@@ -1,39 +1,191 @@
 # Arquitectura de EntrenaOP
 
+## Portadas editoriales · UI-006 · 06/10/2026
+
+La identidad fotográfica es independiente del contenido deportivo publicado.
+`preparation_program_covers` enlaza una portada opcional por programa; la RPC
+administrativa valida archivos, encuadre y revisión antes de actualizarla.
+Storage público usa rutas inmutables y políticas de subida/limpieza administrativas.
+No modifica baremos, planificación ni historial. Admin: contrato de dominio →
+repositorio Supabase → Storage/RPC; el editor guarda únicamente tras confirmar.
+Deportista: datasource resuelve rutas → modelo de programa con portada opcional →
+presentación. `entrena_ui` comparte el tratamiento gráfico y `workout_editor_ui`
+la optimización de fotografías, sin incorporar Supabase a los paquetes visuales.
+Tarjeta y cabecera comparten fotografía pero tienen puntos de interés separados.
+`set_admin_program_cover_v2` persiste ambos; la RPC anterior conserva la cabecera
+de portadas existentes. La ampliación inicializa el punto de cabecera con el
+anterior, sin alterar fotos ni reglas deportivas.
+Migraciones `20261006003000` / `20261006004000` / `20261006005000` y pruebas SQL verificadas solo
+en desarrollo. Numeración separada del trabajo paralelo; no cambia el SQL aplicado.
+Detalles y límites:
+[VISUAL_DESIGN.md](VISUAL_DESIGN.md).
+
+## Estrategias y estado de fases v3 · 06/10/2026
+
+`performance_block_v3`, `performance_task_v3` y `performance_select_v3` separan
+estado, dosis y elección del repertorio. El coordinador v3 compara alternativas
+con/sin apoyos y conserva las guardas comunes; el gestor automático continúa
+publicando resultados versionados. Referencias activas únicas por preparación,
+objetivo, variante y medición permiten series libres/temporales independientes.
+Las RPC validan propiedad; helpers y materializadores nuevos no son públicos.
+
+`AdaptiveProgramPath` traduce la instantánea, sin decidir progresiones.
+Presentación separa fase real y previsión e inicia calibración de una variante
+sin precargar capacidad. El calentamiento usa instrucciones copiadas al iniciar;
+`ActiveWorkoutCubit` omite los pasos mediante las mutaciones/cola existentes.
+Carrera v5 y su adaptador quedan sin redefinir. Detalle, generación de migración,
+tests y límites: [ESTRATEGIAS_RENDIMIENTO_V3.md](ESTRATEGIAS_RENDIMIENTO_V3.md).
+
+## Selección y pausa de programa · STR-027 · 04/10/2026
+
+El dominio de Flutter incorpora `TrainingScope` en `PreparationTrainingRepository`.
+La capa de datos traduce su selección a las RPC; presentación organiza los pasos
+pertinentes sin ejecutar progresiones. El servidor conserva selección activa y
+borrador por preparación, estado reanudable y un único generador por deportista
+mediante índice parcial y bloqueo por perfil. La aceptación revalida propuesta,
+pausa otros programas y cancela solo sesiones automáticas sin empezar en una
+transacción. El historial y las marcas conservan sus identidades originales.
+
+El coordinador v2.2 (ampliado por v3 el 06/10) excluye familias según la selección activa y conserva tiempo,
+agenda y recuperación comunes. Carrera v5 mantiene sus reglas; su adaptador
+lee resultados compatibles del usuario entre preparaciones, sin sustituir la
+referencia propia. Retomar revisa el calendario actual y las guardas existentes.
+Migración `20261004012000` aplicada y verificada solo en desarrollo.
+Contratos y límites: [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+## Gestor de programa · STR-023 · 04/10/2026
+
+Tres responsabilidades dentro del servidor: estrategias deportivas, coordinador
+de propuestas y ciclo de programa. El gestor no duplica reglas de carrera/fuerza.
+`refresh_adaptive_programs` recupera la continuidad de programas propios antes
+de consultar las sesiones desde Inicio o agenda. Devuelve estados tipados para
+Flutter mediante `PreparationTrainingRepository`; Cubit y el caso de uso de
+Inicio esperan esa recuperación antes de leer la agenda. El disparador de cierre
+sigue siendo la vía inmediata. No hay selección de modo automático/manual,
+ni se ejecuta cálculo deportivo en la pantalla.
+Los mensajes de espera por fechas y las revisiones pendientes son datos del
+servidor. Contrato y pruebas: [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+## Continuidad de programa · STR-022 · 04/10/2026
+
+`PreparationTrainingRepository` conserva la frontera de Flutter. El servidor
+valida fecha/metas, guarda `adaptive_program_states` y publica la siguiente
+decisión al cerrar todas las sesiones. Un error al adaptar no revierte el
+resultado del entrenamiento. Publicación idempotente y cierre explícito;
+las cancelaciones internas de sesiones mixtas no disparan continuidad.
+Carrera reutiliza su formulario con disponibilidad común y sus controles de
+2 km, incluidos FAS y programas compatibles. El motor v5 no se modifica.
+Contrato, verificación y límites: [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+## Coordinación de rendimiento v2.1 · 04/10/2026
+
+PostgreSQL selecciona estímulos/dosis y conserva instantáneas versionadas.
+Flutter presenta referencias/decisiones; `workout_core` comparte medición y
+esfuerzo. En días mixtos, una plantilla ordena segmentos nativos de carrera y
+bloques de rendimiento; ambas familias enlazan la misma sesión. El adaptador
+extrae solo tramos y esfuerzo de carrera. `running_plan_v5` conserva sus reglas.
+Contrato y límites: [MOTOR_FUERZA_RENDIMIENTO_V2.md](MOTOR_FUERZA_RENDIMIENTO_V2.md).
+
+## Carrera: selección v5 verificada en desarrollo el 01/10/2026
+
+Motor `running_2k_v5` aplicado en **entrenaop-dev**. FAS, Tropa y programas
+con prueba vinculada al módulo 2 km usan un único planificador de servidor,
+con sus propias marcas y baremos. Reutiliza agenda y ejecutor; no hay IA de
+pago ni selector deportivo en Flutter. Incluye objetivos libre/tiempo/margen,
+lectura de registros incompletos, contraste del RPE y vuelta gradual tras fatiga.
+V3 corrigió encaje de calidad y repetición del foco; v4 añade dosis repartida
+al pasar a dos calidades; v5 permite progresar minutos fáciles al mantenerlas.
+Recomendaciones de disponibilidad sin modificar la elección.
+
+Verificados 1.573 semanas sintéticas e integración SQL con ROLLBACK. En la
+app, prueba del formulario y análisis Flutter limpios; la batería completa de 237
+pruebas corresponde al cierre anterior. El visor v3 histórico compara 13 perfiles en seis
+horizontes; el comparador controlado de 2/3/4/5 días sigue pendiente. Las simulaciones
+no demuestran eficacia deportiva.
+
+**Bloque deportivo todavía abierto. Único siguiente tramo:** incorporar con
+prudencia la experiencia de calidad previa al alta; después aclarar el RPE alto
+persistente y verificar el recorrido completo. Límites y evidencia en
+[`MOTOR_CARRERA_2K_V5.md`](MOTOR_CARRERA_2K_V5.md). La interfaz se verificó por
+widgets y el visor en navegador; falta el recorrido completo de la app
+recompilada en navegador. Producción no modificada. Esta revisión localizada
+no certifica los bloques ajenos ni sustituye su instantánea general anterior.
+
+
+## Presencia web provisional
+
+`website/` contiene una página HTML estática de presentación y su política de
+privacidad. Se publica en el alojamiento PHP/HTML de Hostinger, con
+`entrenaop.es` como dominio, de forma independiente y sin desplegar la
+aplicación Flutter del deportista ni `admin_app/`.
+La web describe el proyecto en desarrollo; no ofrece inicio de sesión ni
+integración con Garmin.
+Los archivos publicados están en `website/dist/` y en `public_html/` del sitio
+EntrenaOP de Hostinger. La antigua publicación en Sites permanece privada como
+copia de respaldo; su dominio personalizado está desvinculado. El manifiesto
+`website/.openai/hosting.json` corresponde únicamente a esa copia antigua.
+
+La visión acordada para la web pública es que sirva de puerta de entrada a la
+aplicación del deportista y a espacios diferenciados para administración y
+entrenadores. Podrán tener despliegues independientes y enlazarse desde la web
+principal bajo el mismo dominio. La app del deportista ya tiene destino web y
+`admin_app/` es una aplicación Flutter web separada; todavía no se han publicado
+en subdominios ni existe un portal de entrenadores. Los nombres de las rutas,
+la experiencia de acceso y la posible reutilización de interfaz se decidirán
+al implementar cada espacio. Los permisos administrativos y las relaciones
+entrenador-cliente seguirán siendo contratos distintos en el backend.
+
 ## Estado observado
 
-Instantánea comprobada en el repositorio el 24 de septiembre de 2026:
+Instantánea contrastada en código, análisis, pruebas y Supabase de desarrollo
+el 6 de octubre de 2026. Alcance y limitaciones en
+[AUDIT_2026_10_06.md](AUDIT_2026_10_06.md); no acredita producción ni recorridos
+autenticados en dispositivos:
 
 - Aplicación Flutter del deportista con destinos Android, iOS, web y Windows, y
   aplicación Flutter web independiente en `admin_app/` para autoría oficial.
-- Toolchain mínimo declarado y verificado: Flutter 3.47 y Dart
+- Toolchain instalado y verificado: Flutter 3.47.5 y Dart 3.13.4; Dart
   `>=3.13.0 <4.0.0`, coherente en ambas aplicaciones y paquetes compartidos.
 - Dependencias declaradas para Bloc/Cubit, Equatable, `go_router`, GetIt,
   Supabase, vídeo, preferencias y utilidades.
 - Estructura por funcionalidades para autenticación, panel de inicio,
-  ejercicios, evaluación física, preparaciones, perfil, preferencias, agenda y
-  entrenamientos. Se usan capas `domain`, `data` y `presentation` cuando existe
+  ejercicios, biblioteca, herramientas de carrera, evaluación física y por
+  programa, preparaciones, perfil, contexto, agenda y entrenamientos.
+  Se usan capas `domain`, `data` y `presentation` cuando existe
   una frontera que las justifica.
 - Autenticación, router y contenedor de dependencias presentes.
-- El repositorio contiene 48 migraciones SQL ordenadas: línea base y
+- El árbol local contiene 131 migraciones SQL ordenadas: línea base y
   saneamiento, evaluación y preferencias, múltiples preparaciones, plantillas y
   ejecuciones, resultados y correcciones, idempotencia offline, creador
   personal versionado, agenda, formatos avanzados de fuerza, Carrera V1,
-  autoría administrativa y evaluación periódica FAS 2027.
+  autoría administrativa, evaluación periódica FAS 2027 y configurable,
+  carrera 2 km v5, rendimiento v3, coordinación, ciclo adaptativo,
+  contexto compartido y portadas editoriales. El historial de desarrollo
+  coincide; 81 migraciones aún no estaban en Git al comenzar la auditoría.
 - `packages/workout_core/` comparte contratos y validación de sesiones y
   ejercicios entre ambas aplicaciones; `packages/workout_editor_ui/` comparte
   sus formularios y controles de edición sin mezclar navegación, persistencia
   ni permisos.
+- `packages/entrena_ui/` concentra tema, tokens semánticos, tarjetas de marca
+  y wordmark de ambas aplicaciones. Solo depende de Flutter y no contiene
+  navegación, persistencia, permisos ni reglas de negocio. La densidad y la
+  composición de cada pantalla siguen perteneciendo a su aplicación.
 - La navegación autenticada dispone de un contenedor persistente con las áreas
-  Inicio, Mi plan, Evolución y Perfil. En móvil utiliza una barra inferior y en
-  pantallas amplias una navegación lateral.
+  Inicio, Mi plan, Biblioteca, Evolución y Perfil. En móvil utiliza una barra
+  inferior, con Biblioteca en el centro; en pantallas amplias, navegación lateral.
+  Biblioteca agrupa contenido público de EntrenaOP y contenido personal; Mi plan
+  conserva planificación y prescripción. Los editores y repositorios existentes
+  se reutilizan. La consulta nueva de ejercicios usa un Cubit y el caso de uso
+  de lectura actual, sin acceder a Supabase desde las pantallas. Las URLs antiguas
+  de sesiones se conservan dentro de la rama de Biblioteca (UI-003).
 - La URL y la clave pública de Supabase se inyectan por entorno. El desarrollo
   apunta a un proyecto aislado y no modifica producción.
 - El catálogo remoto original de Supabase fue auditado y su línea base quedó
   reconstruida. Las migraciones del repositorio son la fuente reproducible del
   esquema; esta revisión local no acredita por sí sola qué revisiones están
   desplegadas en producción.
-- El esquema heredado contiene cinco tablas de producto. Su campo
+- La línea base heredada contenía cinco tablas de producto; desarrollo tiene
+  ahora 51 tablas públicas, todas con RLS. El campo heredado
   `profiles.role` permanece temporalmente por compatibilidad, pero la migración
   crea `admin_permissions` como autoridad administrativa independiente y
   retira al cliente la capacidad de modificar `role`.
@@ -44,10 +196,16 @@ Los recorridos manuales de fuerza V1 y Carrera V1 mínima están implementados d
 extremo a extremo: biblioteca y sesiones privadas, creadores especializados,
 agenda, vista previa, ejecución guiada, cola de mutaciones, historial y
 corrección auditada. El
-recorrido adaptativo sigue abierto: aún no hay prescripciones generadas a partir
-de evaluación, disponibilidad, preparaciones y resultados.
+recorrido adaptativo 2 km ya genera prescripciones en desarrollo a partir de
+marca, contexto, disponibilidad y resultados. La coordinación con rendimiento
+y la continuidad automática están implementadas; el bloque deportivo mantiene
+los límites descritos en `PROGRAMA_ADAPTATIVO.md`.
 
 ## Clean Architecture aplicada a EntrenaOP
+
+Javier reafirma el 03/10/2026 que este es el criterio permanente del proyecto.
+Los contratos deportivos compartidos conservan entidades y validaciones puras;
+sus codecs JSON y adaptadores de Supabase pertenecen a la capa de datos.
 
 Clean Architecture se utilizará para proteger las reglas del producto y hacer
 posible su evolución, no como una plantilla que obligue a crear el mismo número
@@ -207,6 +365,16 @@ identidad
   `preparation_goals` guarda las preparaciones que sigue cada usuario y sus
   fechas objetivo. Puede mantener varias activas, pero no duplicar el mismo
   programa mientras permanezca activo.
+- `program_assessment_tests` guarda las definiciones que el administrador crea
+  para programas borrador: nombre, unidad, dirección favorable, protocolo,
+  orden y columna H/M aplicable. `program_assessment_scoring_rules` conserva
+  fuente, versión y regla global; `program_assessment_score_bands` guarda los
+  tramos de marca y puntos por columna. Las RPC limitan la autoría al admin y
+  evitan intervalos solapados. La simulación calcula puntos y aprobado sin
+  persistir marcas. El borrador CNP 2026 contiene el anexo II del BOE como
+  primer ejemplo completo, todavía no publicado ni conectado a la captura del
+  deportista. Los catálogos oficiales existentes de Tropa y FAS permanecen
+  independientes.
 - El programa `fas_periodic_assessment` está habilitado en desarrollo con
   registro repetible e historial propios. La migración
   `20260923006000_fas_periodic_assessments.sql` conserva versión, fecha, edad,
@@ -219,6 +387,10 @@ identidad
   test fechado en su historial personal sin crear una preparación. Ninguno
   equivale a aptitud oficial y la norma no define una puntuación total. Tropa
   conserva su catálogo e historial, sin reutilización de sus marcas.
+  Una RPC permite asociar expresamente un test personal de los últimos 30 días
+  a una preparación activa del mismo usuario y del programa FAS. Conserva las
+  marcas y la fecha y rechaza test ajenos, antiguos o ya asociados. Este límite
+  es provisional y específico de la asociación FAS.
   La fecha de nacimiento del perfil alimenta la edad calculada para cada
   intento; un trigger de PostgreSQL rechaza edades que no coincidan con esa
   fecha. El usuario puede corregir el perfil, sin alterar las marcas
@@ -227,9 +399,38 @@ identidad
   distintos. `scheduled_workouts` actúa como agenda global del usuario y puede
   reunir distintas fuentes; una futura planificación adaptativa atenderá
   varios objetivos sin sumar de forma ingenua planes incompatibles.
-- Una marca física se guarda como hecho del usuario. Solo se reutiliza como
-  resultado oficial entre preparaciones cuando prueba, unidad y protocolo son
-  compatibles; en otros casos puede ser contexto del algoritmo, no puntuación.
+- Fuerza/rendimiento usa reglas puras en PostgreSQL y adaptadores autenticados,
+  junto a un repositorio de aplicación que no expone Supabase a presentación.
+  `performance_v1_1` prescribe desde calibración y ejecuciones; el coordinador
+  solicita a `running_2k_v5` propuestas restringidas por agenda, tiempo y regiones.
+  Perfil/protocolo/montaje, dosis y resultados conservan versiones y evidencia.
+  La publicación conjunta es transaccional e idempotente, usando plantillas,
+  agenda, ejecutor, cola offline e historial existentes. RLS permite lectura
+  propia y exige RPC para escribir. ADMIN vincula estrategias revisadas a pruebas
+  de programas borrador; FAS/Tropa conservan adaptadores de sus catálogos.
+  Hay 64 perfiles públicos: catálogo v1 de 63 variantes y ampliación v2 del
+  circuito de 16 m. Los laboratorios Dart anteriores son experimentales, no
+  otra autoridad de prescripción. Se reserva la agenda global, sin afirmar
+  optimización simultánea de todos los programas. Detalle:
+  `docs/MOTOR_FUERZA_RENDIMIENTO_V1.md`.
+- STR-019 conserva instrucciones propias del elemento de sesión en
+  `workout_execution_sets.item_instructions`: el servidor las copia al iniciar
+  y rechaza su modificación. La presentación las mantiene al registrar resultados;
+  los históricos anteriores quedan sin ese dato, sin reconstruirlo desde una
+  plantilla editada. El calentamiento nuevo se construye en servidor desde los
+  patrones del trabajo y se puede revisar antes de publicar. Las capacidades
+  opcionales de prescripción `records_stimulus_responses` y
+  `records_penalty_seconds` delimitan los campos del ejecutor; un recorrido
+  fijo no recibe preguntas reactivas por compartir unidad de cronometraje.
+  No se han activado el banco externo de estímulos ni una nueva dosis deportiva.
+- Una marca física se guarda como hecho del usuario dentro de su contexto de
+  evaluación. Al entrar en otro programa, una marca previa pertinente solo se
+  puede sugerir si prueba, unidad, protocolo y vigencia son compatibles. El
+  usuario ve fecha y procedencia y decide si la usa; no hay autocompletado
+  silencioso ni traslado de una puntuación oficial entre baremos. Un test
+  guardado en la calculadora FAS pertenece exclusivamente a Mejora FAS. La RPC
+  de asociación comprueba el identificador del programa; ningún otro programa
+  puede usar ese test aunque comparta pruebas o unidades.
 - El entrenamiento distingue cuatro niveles: ejercicio, plantilla de sesión,
   prescripción privada y ejecución. Una plantilla pública puede servir como
   estructura, pero el algoritmo genera una nueva versión privada con origen
@@ -302,10 +503,12 @@ identidad
   programa exclusivamente sesiones libres con vínculo nulo; asignar el objetivo
   queda reservado a servicios de confianza. PostgreSQL también impide al
   deportista reprogramar o retirar una sesión oficial ya pautada.
-- `GetPreparationDetailUseCase` compone preparaciones, evaluaciones y agenda sin
-  inventar una prescripción. Selecciona la evaluación más reciente cuyo catálogo
-  coincide con el catálogo vigente del programa y filtra la semana por el
-  identificador estable de la preparación.
+- `GetPreparationDetailUseCase` compone la preparación, la última evaluación de
+  Tropa expresamente vinculada, el control de 2 km propio y la agenda sin
+  inventar una prescripción. La evaluación configurable y Mejora FAS tienen
+  recorridos e historiales propios. El inicio comprueba el registro de cada
+  preparación activa por separado; esa comprobación no valida la vigencia
+  deportiva de las marcas.
 - Al comenzar, la ejecución copia la prescripción efectiva por serie. El
   historial no cambia aunque después evolucione la plantilla o el algoritmo.
 - Estas preferencias son entradas de contexto, no una prescripción. No generan
@@ -360,12 +563,18 @@ debe convertirse en una planificación manual diaria para todos los usuarios:
 servirá para diseñar, validar, publicar y, en una fase profesional, anular una
 decisión concreta dejando auditoría.
 
-El panel básico de autoría ya existe, pero la primera vertical adaptativa no
-depende de ampliar sus pantallas. El piloto actual prioriza la evaluación
-periódica FAS 2027 para validar con Javier contenido y reglas deportivas; los
-contratos y el prototipo de Tropa se reutilizarán solo cuando sean compatibles.
-Antes de publicar una semana deben existir reglas versionadas, contenido
-revisado y un recorrido sin asignación real que explique entradas y razones.
+El panel básico de autoría ya existe. La vertical 2 km usa un solo planificador
+de servidor, versionado y auditable, para FAS, Tropa y programas con un módulo
+compatible. Materializa las sesiones en `workout_templates`,
+`scheduled_workouts` y el ejecutor común; Flutter no decide la progresión.
+Una declaración de series previas queda en el contexto y en la instantánea de
+entrada, pero no sustituye ejecuciones verificadas. El reinicio transaccional
+por preparación elimina decisiones y sesiones automáticas sin tocar marcas,
+contexto ni sesiones personales; requiere cuenta propietaria y sesión no activa.
+Fuerza/rendimiento v2 ya participa en el coordinador común. Las preparaciones
+guardadas pueden pausarse/retomarse con un único generador; la prescripción
+simultánea de varios programas sigue pendiente. Contrato vigente:
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
 
 ## Sesión activa y funcionamiento sin conexión
 
@@ -395,6 +604,12 @@ El límite es deliberado: la cola no replica el catálogo ni la agenda y no
 permite arrancar offline una sesión nunca cargada. Tampoco sincroniza entre
 dispositivos los borradores del editor o las instantáneas de temporizador.
 
+**Defecto comprobado el 06/10/2026:** la cola persistente carece de propietario
+por cuenta y el borrador de sesión nueva usa una clave común. Al cambiar de
+usuario, una mutación ajena puede bloquear la cola y un borrador nuevo puede
+ofrecerse a la otra cuenta. RLS mantiene la protección remota; el aislamiento
+local queda pendiente. La auditoría incluye dos reproducciones aisladas.
+
 Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
 locales, sin introducir permisos ni dependencias nativas adicionales. Los
 eventos del temporizador no contienen reglas de negocio y pueden silenciarse de
@@ -402,9 +617,11 @@ forma independiente desde la sesión activa.
 
 ## Navegación y presentación
 
-`go_router` gestiona las rutas. El área autenticada usa
+`go_router` gestiona las rutas de la app del deportista. El admin todavía usa
+`Navigator`/`MaterialPageRoute`, una deuda respecto al criterio del repositorio.
+El área autenticada del deportista usa
 `StatefulShellRoute.indexedStack` para conservar el estado independiente de
-Inicio, Mi plan, Evolución y Perfil. `AppShell` representa esos destinos como
+Inicio, Mi plan, Biblioteca, Evolución y Perfil. `AppShell` representa esos destinos como
 `NavigationBar` en móvil y `NavigationRail` en pantallas amplias. La evaluación
 inicial queda fuera del contenedor porque es un flujo concentrado y temporal.
 
@@ -417,12 +634,31 @@ la navegación principal ni mezclar datos de distinta naturaleza.
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.
 
-El panel de Inicio compone datos de evaluación y preferencias mediante un caso
-de uso propio. También lee la semana natural de la agenda para presentar siete
+UI-007 conserva el estado de cada rama de consulta y abre configuración de
+programa/contexto, registro de marcas, creación de ejercicios, edición y
+ejecución de sesiones en el navegador raíz. `_workflowRoute` mantiene URLs y
+aplica `GoRoute.onExit` mediante un registro local al router. Cada página aporta
+sus cambios actuales, guardado de borrador o estado de ejecución; el registro
+no almacena widgets ni decide progresión. Los avisos distinguen descarte,
+borrador recuperable y salida de una sesión sin abandonarla. Los formularios
+de evaluación oficial no se reorganizan en este tramo.
+
+STR-033 aporta `TrainingContext` y su repositorio en `training_plan`. Su
+adaptador de datos lee la RPC propia `get_training_context_settings` y escribe
+con el contrato existente `save_performance_context`. Perfil y programa
+comparten `TrainingContextFields` de presentación y el contexto por usuario;
+las preferencias generales antiguas solo aportan ayuda inicial. El cuestionario
+integrado de carrera reutiliza disponibilidad sin duplicar la dosis ni el
+planificador; sus mediciones específicas conservan su contrato.
+
+El panel de Inicio compone datos de evaluación, contexto actual y preferencias
+legadas mediante un caso de uso propio. El contexto actual tiene prioridad
+sobre el registro antiguo; un programa ya iniciado conduce a su continuidad
+automática. También lee la semana natural de la agenda para presentar siete
 días compactos y abrir la fecha elegida sin duplicar las acciones de edición de
-`Mi semana`. Su estado siguiente solo puede ser completar evaluación,
-completar disponibilidad, solicitar revisión profesional o esperar reglas
-deportivas validadas. No calcula un porcentaje de progreso ni presenta una
+`Mi semana`. Sin programa iniciado, sus pasos cubren elegir preparación,
+completar evaluación/disponibilidad, solicitar revisión profesional o esperar
+reglas deportivas validadas. No calcula un porcentaje de progreso ni presenta una
 prescripción que el dominio todavía no pueda justificar.
 
 ## Verificación

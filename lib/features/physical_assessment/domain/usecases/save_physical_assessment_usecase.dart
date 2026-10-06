@@ -6,7 +6,15 @@ class SavePhysicalAssessmentUseCase {
 
   final PhysicalAssessmentRepository _repository;
 
-  Future<String> call(AssessmentReport report, {DateTime? completedAt}) {
-    return _repository.saveAssessment(report, completedAt: completedAt);
+  Future<String> call(
+    AssessmentReport report, {
+    DateTime? completedAt,
+    String? goalId,
+  }) {
+    return _repository.saveAssessment(
+      report,
+      completedAt: completedAt,
+      goalId: goalId,
+    );
   }
 }

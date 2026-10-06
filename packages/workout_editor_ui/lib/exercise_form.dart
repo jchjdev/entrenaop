@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:image_picker/image_picker.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
@@ -17,6 +18,7 @@ class ExerciseForm extends StatefulWidget {
     this.fieldKeyPrefix = 'exercise',
     this.autofocusName = true,
     this.initialImageUrl,
+    this.onDirtyChanged,
   });
 
   final String title;
@@ -27,6 +29,7 @@ class ExerciseForm extends StatefulWidget {
   final String fieldKeyPrefix;
   final bool autofocusName;
   final String? initialImageUrl;
+  final ValueChanged<bool>? onDirtyChanged;
 
   @override
   State<ExerciseForm> createState() => _ExerciseFormState();
@@ -45,6 +48,22 @@ class _ExerciseFormState extends State<ExerciseForm> {
   bool _removeExistingImage = false;
   bool _processingImage = false;
   String? _imageError;
+  late final List<Object?> _initialValues;
+
+  List<Object?> get _values => [
+    _nameController.text,
+    _descriptionController.text,
+    _videoController.text,
+    _musclesController.text,
+    _equipmentController.text,
+    _difficulty,
+    _exerciseType,
+    _image,
+    _removeExistingImage,
+  ];
+
+  void _notifyDirty() =>
+      widget.onDirtyChanged?.call(!listEquals(_values, _initialValues));
 
   @override
   void initState() {
@@ -61,6 +80,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
     );
     _difficulty = draft?.difficulty ?? 'inicial';
     _exerciseType = draft?.exerciseType ?? 'repeticiones';
+    _initialValues = _values;
   }
 
   @override
@@ -77,6 +97,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      onChanged: _notifyDirty,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -171,6 +192,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
               ],
               onChanged: (value) {
                 if (value != null) _difficulty = value;
+                _notifyDirty();
               },
             ),
             const SizedBox(height: 12),
@@ -186,6 +208,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
               ],
               onChanged: (value) {
                 if (value != null) _exerciseType = value;
+                _notifyDirty();
               },
             ),
             const SizedBox(height: 22),
@@ -235,6 +258,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
         _image = optimized;
         _removeExistingImage = false;
       });
+      _notifyDirty();
     } on FormatException catch (error) {
       if (mounted) setState(() => _imageError = error.message);
     } catch (_) {
@@ -250,6 +274,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
     _image = null;
     _removeExistingImage = true;
     _imageError = null;
+    _notifyDirty();
   });
 }
 

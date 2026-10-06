@@ -1,4 +1,5 @@
 import 'package:workout_core/workout_template.dart';
+import 'performance_set_codec.dart';
 
 class WorkoutTemplateModel {
   const WorkoutTemplateModel._();
@@ -69,6 +70,8 @@ class WorkoutTemplateModel {
     return (
       order: order,
       value: WorkoutSet(
+        performancePrescription: json['performance_prescription'] == null ? null
+          : PerformanceSetCodec.prescription(Map<String, dynamic>.from(json['performance_prescription'] as Map)),
         id: json['id'] as String,
         order: order,
         targetReps: json['target_reps'] as int?,

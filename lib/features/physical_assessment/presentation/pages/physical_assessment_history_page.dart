@@ -12,7 +12,6 @@ class PhysicalAssessmentHistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
@@ -67,16 +66,9 @@ class _LoadedHistory extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   FilledButton.icon(
-                    onPressed: () async {
-                      await context.push('/assessment/initial');
-                      if (context.mounted) {
-                        await context
-                            .read<PhysicalAssessmentHistoryCubit>()
-                            .load();
-                      }
-                    },
+                    onPressed: () => context.go('/plan/goal'),
                     icon: const Icon(Icons.add_chart_rounded),
-                    label: const Text('Repetir evaluación'),
+                    label: const Text('Registrar desde mi preparación'),
                   ),
                   const SizedBox(height: 12),
                   _ProgressOverview(
@@ -132,7 +124,6 @@ class _RecommendationCard extends StatelessWidget {
     final below = recommendation.reason == AssessmentFocusReason.belowMinimum;
 
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -296,7 +287,6 @@ class _AssessmentHistoryCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
-      color: const Color(0xFF171717),
       child: ExpansionTile(
         iconColor: Colors.white70,
         collapsedIconColor: Colors.white54,
@@ -372,15 +362,15 @@ class _EmptyHistory extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Registra las marcas de Tropa y Marinería para empezar a medir tu evolución en estas pruebas.',
+                'Registra nuevas marcas desde tu preparación de Tropa. Este historial conserva los intentos anteriores.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white60),
               ),
               const SizedBox(height: 22),
               FilledButton.icon(
-                onPressed: () => context.push('/assessment/initial'),
+                onPressed: () => context.go('/plan/goal'),
                 icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Hacer mi primera evaluación'),
+                label: const Text('Ir a mis preparaciones'),
               ),
             ],
           ),

@@ -64,10 +64,30 @@ void main() {
     expect(find.text('Calidad controlada'), findsOneWidget);
     expect(find.text('Carrera fácil'), findsOneWidget);
     expect(find.textContaining('1 día reservado'), findsOneWidget);
+    expect(find.textContaining('5.3 %'), findsOneWidget);
+    expect(find.textContaining('no un ritmo de entrenamiento'), findsOneWidget);
     expect(
       find.textContaining('tropa_running_initial_week_v1'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('una meta muy lejana se muestra como brecha, no como sesión', (
+    tester,
+  ) async {
+    await tester.pumpWidget(MaterialApp(home: page()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usar ejemplo ficticio'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(TextField).first);
+    await tester.enterText(find.byType(TextField).first, '11:00');
+    await tester.enterText(find.byType(TextField).last, '7:30');
+    await tester.tap(find.text('Simular semana'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('46.7 %'), findsOneWidget);
+    expect(find.textContaining('no un ritmo de entrenamiento'), findsOneWidget);
+    expect(find.text('Propuesta de prueba · no asignada'), findsOneWidget);
   });
 
   testWidgets('dolor bloquea la propuesta aunque haya marca', (tester) async {
@@ -126,7 +146,7 @@ void main() {
     expect(find.text('50 min'), findsOneWidget);
     await tester.tap(find.text('Simular semana'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('revisión profesional pendiente'), findsWidgets);
+    expect(find.textContaining('limitación declarada'), findsOneWidget);
   });
 
   testWidgets('si falla la lectura del test permite introducir datos', (

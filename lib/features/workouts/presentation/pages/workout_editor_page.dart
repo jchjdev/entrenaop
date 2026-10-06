@@ -1,3 +1,5 @@
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
@@ -62,7 +64,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => !_allowPop,
+    isBusy: () =>
+        context.read<WorkoutEditorCubit>().state.status ==
+        WorkoutEditorStatus.saving,
+    saveDraftBeforeExit: _saveDraftForExit,
+    title: '¿Descartar los cambios incompletos?',
+    message: 'Estos cambios no se han podido guardar como borrador. Si sales, se conserva el último borrador guardado.',
+    exitLabel: 'Salir sin estos cambios',
+    child: _buildContent(context),
+  );
+
+  Widget _buildContent(BuildContext context) {
     return BlocConsumer<WorkoutEditorCubit, WorkoutEditorState>(
       listenWhen: (previous, current) =>
           previous.status != current.status ||
@@ -92,7 +106,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             if (!didPop && !saving) unawaited(_closeEditor(result));
           },
           child: Scaffold(
-            backgroundColor: const Color(0xFF0A0A0A),
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               leading: IconButton(
@@ -274,12 +287,27 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   );
 
   Future<void> _closeEditor([Object? result]) async {
-    await _flushDraft();
+    final guard = WorkflowExitScope.maybeOf(context);
+    if (guard?.onExit != null) {
+      if (!await guard!.onExit!()) return;
+    } else {
+      await _flushDraft();
+    }
     if (!mounted) return;
     setState(() => _allowPop = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) Navigator.of(context).pop(result);
     });
+  }
+
+  Future<bool> _saveDraftForExit() async {
+    if (_allowPop) return true;
+    try {
+      await _flushDraft();
+      return true;
+    } on FormatException {
+      return false;
+    }
   }
 
   String _draftDateText(DateTime value) {
@@ -471,11 +499,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   ) {
     final block = _blocks[blockIndex];
     return Card(
-      color: const Color(0xFF111111),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Colors.white12),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1493,7 +1516,6 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
   Widget build(BuildContext context) {
     final data = widget.data;
     return Card(
-      color: const Color(0xFF171717),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -2014,7 +2036,6 @@ class _EmptyExercises extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF151515),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

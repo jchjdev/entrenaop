@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
@@ -69,7 +70,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final displayName = name == null || name.isEmpty ? 'Tu perfil' : name;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text('Perfil'),
@@ -93,15 +93,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Container(
+                      EntrenaCard(
+                        tone: EntrenaCardTone.progress,
                         padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF372016), Color(0xFF171717)],
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: const Color(0xFF6B3824)),
-                        ),
                         child: Row(
                           children: [
                             CircleAvatar(
@@ -176,7 +170,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           }
                           final birthDate = snapshot.data;
                           return Card(
-                            color: const Color(0xFF171717),
                             child: ListTile(
                               leading: const Icon(
                                 Icons.cake_outlined,
@@ -254,7 +247,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               else
                                 for (final goal in goals)
                                   Card(
-                                    color: const Color(0xFF171717),
                                     child: ListTile(
                                       leading: const Icon(
                                         Icons.flag_outlined,
@@ -293,7 +285,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 12),
                       Card(
-                        color: const Color(0xFF171717),
                         child: ListTile(
                           leading: const Icon(
                             Icons.tune_rounded,
@@ -301,10 +292,22 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           title: const Text('Disponibilidad y material'),
                           subtitle: const Text(
-                            'Ajusta tus preferencias de entrenamiento.',
+                            'Los días, el tiempo y el material que usa tu programa.',
                           ),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () => _open('/plan/preferences'),
+                          onTap: () => _open('/profile/preferences'),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.calculate_outlined),
+                          title: const Text('Herramientas para tus pruebas'),
+                          subtitle: const Text(
+                            'Ritmos de carrera y puntos PAEF/PAFAS.',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => _open('/tools'),
                         ),
                       ),
                       const SizedBox(height: 22),

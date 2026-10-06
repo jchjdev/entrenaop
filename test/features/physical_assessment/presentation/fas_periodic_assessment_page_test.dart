@@ -54,7 +54,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Evaluación periódica FAS · 2027'), findsOneWidget);
+    expect(find.text('Marcas para Mejora FAS'), findsOneWidget);
     expect(find.text('44 años · baremo según tu edad actual'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Circuito de agilidad'),
@@ -107,6 +107,55 @@ void main() {
       'run_2000_m': 738000,
     });
   });
+
+  testWidgets('un test del perfil FAS solo se vincula tras elegirlo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeRepository()
+      ..entries.add(
+        FasPeriodicAssessmentEntry(
+          id: 'test-libre',
+          goalId: null,
+          scoringVersion: FasPeriodic2027Reference.version,
+          completedAt: DateTime.now().subtract(const Duration(days: 4)),
+          category: 'men',
+          age: 30,
+          isPreEffectiveReference: true,
+          marks: const [],
+        ),
+      );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicAssessmentPage(
+          goalId: 'goal-fas',
+          repository: repository,
+          birthDateRepository: _FakeBirthDateRepository(null),
+          reference: reference,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(repository.linkedAssessmentId, isNull);
+    await tester.scrollUntilVisible(
+      find.byType(ExpansionTile),
+      350,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byType(ExpansionTile));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Usar este test en Mejora FAS'));
+    await tester.tap(find.text('Usar este test en Mejora FAS'));
+    await tester.pumpAndSettle();
+    expect(repository.linkedAssessmentId, 'test-libre');
+    expect(repository.linkedGoalId, 'goal-fas');
+    expect(find.text('Test asociado a esta preparación FAS.'), findsOneWidget);
+  });
 }
 
 class _FakeBirthDateRepository implements ProfileBirthDateRepository {
@@ -125,10 +174,13 @@ class _FakeRepository implements FasPeriodicAssessmentRepository {
   String? savedGoalId;
   int? savedAge;
   Map<String, int>? savedMarks;
+  String? linkedAssessmentId;
+  String? linkedGoalId;
+  final entries = <FasPeriodicAssessmentEntry>[];
 
   @override
   Future<List<FasPeriodicAssessmentEntry>> history({String? goalId}) async =>
-      [];
+      entries;
 
   @override
   Future<String> save({
@@ -142,5 +194,14 @@ class _FakeRepository implements FasPeriodicAssessmentRepository {
     savedAge = age;
     savedMarks = marks;
     return 'saved';
+  }
+
+  @override
+  Future<void> linkRecentToGoal({
+    required String assessmentId,
+    required String goalId,
+  }) async {
+    linkedAssessmentId = assessmentId;
+    linkedGoalId = goalId;
   }
 }

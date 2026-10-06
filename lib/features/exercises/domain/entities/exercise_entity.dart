@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/strength_exercise_catalog.dart';
 
 enum ExerciseOrigin { system, user }
 
@@ -20,6 +21,7 @@ class ExerciseEntity extends Equatable {
   final bool isPublic;
   final String? createdBy;
   final ExerciseOrigin origin;
+  final StrengthExerciseDefinition? trainingProfile;
 
   const ExerciseEntity({
     required this.id,
@@ -34,6 +36,7 @@ class ExerciseEntity extends Equatable {
     required this.isPublic,
     required this.origin,
     this.createdBy,
+    this.trainingProfile,
   });
 
   @override
@@ -50,5 +53,6 @@ class ExerciseEntity extends Equatable {
     isPublic,
     createdBy,
     origin,
+    trainingProfile,
   ];
 }

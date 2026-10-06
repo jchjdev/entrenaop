@@ -10,16 +10,17 @@ class RunningTestRepository {
     final rows = await client
         .from('preparation_running_tests')
         .select(
-          'completed_at,duration_seconds,rpe,average_hr_bpm,max_hr_bpm,notes,splits_seconds',
+          'id,protocol_version,completed_at,duration_seconds,rpe,average_hr_bpm,max_hr_bpm,notes,splits_seconds',
         )
         .eq('preparation_goal_id', goalId)
         .order('completed_at', ascending: false);
     return rows
         .map(
           (row) => RunningTestResult(
-            completedAt: DateTime.parse(
-              row['completed_at'] as String,
-            ).toLocal(),
+            id: row['id'] as String,
+            protocolVersion: row['protocol_version'] as String,
+            completedAt: DateTime.parse(row['completed_at'] as String)
+                .toLocal(),
             durationSeconds: row['duration_seconds'] as int,
             rpe: row['rpe'] as int,
             averageHrBpm: row['average_hr_bpm'] as int?,

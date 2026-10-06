@@ -1,11 +1,117 @@
 # Producto EntrenaOP
 
+**STR-032, 06/10/2026:** «Mi programa» presenta «Esta semana» y «Mis fases» de
+rendimiento, con propósito actual por objetivo y previsión orientativa. El motor
+elige principal y apoyos calibrados; su ausencia no impide entrenar. Las opciones
+de calibración recogen capacidad real, sin sustituir referencias de otras
+mediciones. Una comprobación submáxima puede sustituir trabajo al cambiar a
+especificidad; no es un máximo semanal. El guiado de rendimiento contiene tareas
+y reloj; completarlo u omitirlo por sí solos no altera la progresión. La
+continuidad sigue automática y carrera conserva v5. Alcance y límites en
+[ESTRATEGIAS_RENDIMIENTO_V3.md](ESTRATEGIAS_RENDIMIENTO_V3.md).
+
+**STR-027, 04/10/2026:** el deportista conserva varias preparaciones y un solo
+programa generando entrenamientos. «Mi programa» comienza eligiendo preparación
+completa, solo carrera o fuerza y otras pruebas, según el soporte disponible.
+Muestra únicamente los bloques elegidos e informa qué queda fuera. Activar o
+retomar otro programa muestra qué preparación se pausará antes de aceptar.
+La pausa conserva progreso, marcas y resultados; retomar revisa los datos con
+el calendario actual. Si son utilizables no exige un máximo nuevo. Después,
+la continuidad es automática con los resultados de las sesiones realizadas.
+El catálogo oficial y los baremos permanecen disponibles para evaluación.
+Implementado y comprobado en desarrollo; contrato y límites:
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+**STR-023, 04/10/2026:** el programa iniciado lleva a entrenar y registrar;
+no ofrece crear o calcular otra semana. Inicio y agenda muestran y recuperan la
+continuación. El alta y los cambios de datos tienen un recorrido separado.
+La consulta de semanas futuras explica su estado, sin volver al cuestionario.
+Prevalece sobre los recorridos de publicación manual históricos descritos abajo.
+Contrato y límites: [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+**STR-022, 04/10/2026:** «Mi programa» organiza fecha/objetivos, disponibilidad,
+carrera condicional, movimientos y propuesta. Tras activar el programa, las
+semanas se preparan al resolver todas las sesiones con los resultados reales.
+Los datos pendientes requieren revisión explícita; no se generan tests máximos
+por periodicidad fija. Metas numéricas de fuerza y programación de controles
+específicos tienen límites pendientes descritos en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
+Actualización 04/10/2026: selección v2 y coordinación v2.1, referencias por pasos,
+formatos ajustados al tiempo y una sesión en días mixtos. La cobertura reducida
+se muestra antes de guardar. Contrato vigente y límites deportivos:
+[MOTOR_FUERZA_RENDIMIENTO_V2.md](MOTOR_FUERZA_RENDIMIENTO_V2.md).
+
+## Fuerza y carrera: recorrido integrado en desarrollo (03/10/2026)
+
+Desde una preparación, «Fuerza y carrera» recoge disponibilidad total y
+referencias reales por movimiento, permite revisar una semana y guardarla en
+la agenda común. Las ejecuciones informan la siguiente decisión. ADMIN
+configura estrategias por prueba; FAS/Tropa reconocen sus pruebas existentes.
+Los apoyos no se presentan como marcas del examen. Carrera conserva su
+cuestionario y política. Alcance técnico, parámetros revisables y límites en
+[MOTOR_FUERZA_RENDIMIENTO_V1.md](MOTOR_FUERZA_RENDIMIENTO_V1.md).
+
+## Carrera: bloque técnico 2 km verificado en desarrollo el 01/10/2026
+
+Motor `running_2k_v5` aplicado en **entrenaop-dev**. FAS, Tropa y programas
+con prueba vinculada al módulo 2 km usan un único planificador de servidor,
+con sus propias marcas y baremos. Reutiliza agenda y ejecutor; no hay IA de
+pago ni selector deportivo en Flutter. Incluye objetivos libre/tiempo/margen,
+lectura de registros incompletos, contraste del RPE y vuelta gradual tras fatiga.
+V3 corrigió encaje de calidad y repetición del foco; v4 añade dosis repartida
+al pasar a dos calidades; v5 permite progresar minutos fáciles al mantenerlas.
+Recomendaciones de disponibilidad sin modificar la elección.
+
+Verificados 1.573 semanas sintéticas, el ciclo servidor con `ROLLBACK`, widgets,
+análisis y compilación web. El usuario puede declarar series recientes sin que
+se cuenten como entrenamientos verificados; puede reiniciar su planificación
+automática tras dos confirmaciones. Una sesión completada abre el historial
+compartido. El RPE alto persistente mantiene la carga y pide revisar la escala.
+
+Este cierre técnico no acredita eficacia deportiva ni incluye fuerza o
+coordinación entre pruebas. Falta una revisión visual autenticada de la app
+recompilada. Detalle en [`MOTOR_CARRERA_2K_V5.md`](MOTOR_CARRERA_2K_V5.md).
+
+
 ## Visión
 
 EntrenaOP es una aplicación multiplataforma para preparar pruebas físicas de
 oposiciones militares y de fuerzas y cuerpos de seguridad. Combina fuerza,
 calistenia, carrera y planificación específica. Debe funcionar en Android,
 iPhone, web y Windows con interfaces adaptadas a cada formato.
+
+Las pruebas de cada preparación dirigen los objetivos y la selección de
+ejercicios. La mejora general de condición física puede aportar complementos,
+pero no desplaza el trabajo pertinente a esas pruebas. El futuro motor general
+de fuerza/rendimiento recibirá objetivos deportivos desde el programa o desde
+un plan específico, sin depender del nombre de una oposición. Esta prioridad
+es STR-004; su primer tramo de selección está implementado en rendimiento v3,
+con los controles y prioridades por déficit todavía pendientes.
+
+Javier confirma mantener la creación de programas en ADMIN y reutilizar
+estrategias deportivas (STR-005). Cada deportista recibirá una adaptación a
+su capacidad, contexto y resultados (STR-006), por lo que una misma preparación
+podrá tener variantes, dosis y evolución distintas. Las diferencias tendrán
+un motivo deportivo; contextos equivalentes podrán recibir la misma
+prescripción. El recorrido inicial de rendimiento y su coordinación con carrera
+ya están implementados en desarrollo. Los límites deportivos vigentes están
+en `PROGRAMA_ADAPTATIVO.md` y `ESTRATEGIAS_RENDIMIENTO_V3.md`.
+
+STR-007 incorpora una revisión experimental de flexiones en ADMIN con entradas
+simuladas y ejercicios de la biblioteca real. Permite contrastar selección y
+adaptación; no genera planes publicados. La dosis está pendiente de revisión
+deportiva. El ejecutor del deportista requiere declaración explícita para
+guardar RIR/RPE de serie; un objetivo de esfuerzo no acredita esfuerzo real.
+STR-010 incorpora la primera representación común de objetivos, pendientes y
+propuestas, consumida por ese laboratorio. La agrupación permite seleccionar
+bloques pertinentes. STR-012 implementa esa captura por bloques en un
+laboratorio ADMIN de revisión, con ejemplos de repeticiones, fuerza con carga
+e isometría. El contexto se declara una vez y volver conserva respuestas.
+Incluye cambios explicados según resultados simulados y conserva objetivos
+sin dosificación como pendientes. Ese laboratorio no publica planes; el
+recorrido posterior del deportista ya tiene semana conjunta y continuidad
+automática. Las simulaciones no acreditan mejoras deportivas humanas.
 
 No pretende ser una biblioteca genérica de ejercicios. Su promesa inicial es:
 
@@ -19,7 +125,16 @@ El ciclo principal del producto es:
 
 ## Estado validado del producto
 
-Instantánea comprobada en código, migraciones y pruebas el 24 de septiembre de
+**Chequeo general del 06/10/2026:** ambas apps y los paquetes pasan análisis y
+sus pruebas; las dos webs y Android debug/release de desarrollo compilan
+(release aún usa firma de depuración). Desarrollo coincide con
+las 131 migraciones locales y pasan las 55 baterías SQL tras corregir una
+expectativa antigua de catálogo. Se han reproducido defectos de aislamiento
+local al cambiar de cuenta; quedan pendientes, junto a la verificación
+autenticada en dispositivos y la preparación de publicación. El detalle está
+en [AUDIT_2026_10_06.md](AUDIT_2026_10_06.md).
+
+La siguiente instantánea histórica fue comprobada el 24 de septiembre de
 2026, tras cerrar Carrera V1 mínima, la autoría oficial inicial y la calculadora
 FAS 2027:
 
@@ -72,9 +187,16 @@ FAS 2027:
 
 Esto cierra los recorridos manuales de fuerza V1 y Carrera V1 mínima, no el
 ciclo principal completo. El contexto de preparación, marcas, agenda y carrera
-ya está conectado, pero todavía no existen la generación del plan semanal, la
-adaptación posterior al resultado, los simulacros ni la revisión por un
-entrenador. Carrera V1 no incluye GPS, mapas, seguimiento en vivo, zonas
+ya está conectado y el motor 2 km genera y adapta semanas en desarrollo;
+fuerza dispone ahora de coordinación, referencias, publicación y adaptación
+operativas en desarrollo (STR-017). STR-019 comprueba que esa política conserva
+una dosis declarada y adapta cifras: la selección de estímulos y la dosis inicial
+desde capacidad todavía necesitan revisión e implementación. No equivale a
+programación deportiva completa. Las nuevas semanas se solicitan, revisan y
+guardan desde la preparación; avanzar el calendario solo consulta la agenda.
+El banco externo de 40 propuestas está recibido y revisado, sin activación
+automática. Los simulacros completos y la revisión por
+entrenador siguen pendientes. Carrera V1 no incluye GPS, mapas, seguimiento en vivo, zonas
 cardíacas ni integraciones. El vídeo propio se referencia por URL; no
 hay subida ni gestión de archivos. Los borradores y temporizadores son locales
 al dispositivo y el soporte offline no permite descubrir, cargar o iniciar una
@@ -88,7 +210,7 @@ desarrollo: permite guardar y repetir intentos con mínimos de 2027 por edad
 y sexo, sin convertirlos en una calificación oficial ni en sesiones
 automáticas. Las marcas de 2026 son solo referencia para entrenar; no se ha
 renombrado Tropa ni tratado como otra oposición. Los accesos a Suboficiales y Oficiales tendrán sus propios
-catálogos oficiales. CNP existe solo como borrador sin pruebas definidas y no
+catálogos oficiales. CNP conserva su evaluación definida como borrador y no
 se publicará por ahora; Guardia Civil y otros cuerpos quedan fuera del MVP
 inicial.
 
@@ -208,10 +330,34 @@ máxima son opcionales. Los resultados distinguen entrada manual y dispositivo
 para permitir una futura sincronización sin reinterpretar el historial.
 El futuro algoritmo generará el mismo contrato versionado, no reglas ocultas en
 la interfaz.
-La evaluación de carrera prevista contempla VAM, 2.000 metros y Cooper. Cada
-preparación utilizará únicamente las pruebas que correspondan y conservará el
-protocolo aplicado; la elección concreta del test de VAM y las reglas para
-alternarlo con Cooper siguen pendientes de validación deportiva.
+La evaluación inicial se abre dentro del programa elegido. Para la referencia
+de carrera el usuario elegirá entre un test de VAM y Cooper, sin realizar ambos
+por obligación; la prueba oficial de 2.000 m conserva su función cuando el
+programa la exige. Los resultados se introducen manualmente tras el esfuerzo.
+Una marca previa pertinente y suficientemente reciente puede mostrarse con
+su fecha para que el usuario decida si usarla; no se autocompleta la evaluación.
+En Mejora FAS ya se puede asociar expresamente un test personal FAS de los
+últimos 30 días; ese plazo es provisional y solo se aplica a esta asociación.
+Los tests guardados desde la calculadora FAS no alimentan ningún programa
+distinto de Mejora FAS.
+El administrador puede definir pruebas comunes o diferentes para H/M y edad,
+protocolos, intentos y nulos, tablas de marcas y puntos, y regla de aprobado.
+Puede importar tablas, simular, revisar la cobertura y publicar un programa
+completo. CNP 2026 tiene cargado el anexo II del BOE como borrador y exige
+publicación explícita tras su revisión. La columna H/M del baremo se elige
+expresamente y no se deduce de la identidad del perfil. En programas publicados,
+el deportista registra sus intentos dentro de su preparación y conserva el
+resultado y la versión. Falta integrar la evaluación genérica con el algoritmo
+semanal, además del protocolo de VAM, la calibración y los plazos de vigencia
+del resto de pruebas.
+La planificación comienza dentro de cada preparación: el usuario confirma
+sus marcas y su contexto de entrenamiento antes de recibir una semana. ADMIN
+vinculará módulos deportivos versionados a pruebas y protocolos concretos del
+programa; el mismo módulo de 2 km podrá servir a varios programas sin copiar
+su algoritmo ni mezclar baremos o historiales. Esta configuración todavía no
+está implementada. El plan automático de usuarios ordinarios no necesita un
+entrenador del modo Pro. Una limitación o lesión declarada pausa la prescripción
+automática por seguridad; no abre una tarea de aprobación profesional en la app.
 Los motores de fuerza y carrera no competirán por separado: una capa de
 planificación global coordinará la carga semanal del alumno y podrá producir
 sesiones específicas o combinadas. La forma comercial de presentar esos
@@ -305,6 +451,19 @@ RPE/RIR, modificaciones, pruebas y simulacros.
 - Vídeos previstos: MP4/H.264, normalmente cortos y hasta 720p; esta política se
   validará con costes, accesibilidad y necesidades reales antes de cerrar la
   implementación.
+
+## Consulta y tareas de entrenamiento · 06/10/2026
+
+Las secciones de consulta conservan dónde estaba el usuario. Configurar el
+programa o contexto, registrar una marca, crear ejercicios, editar sesiones y
+entrenar utilizan pantallas dedicadas sin barra de secciones. Los cambios sin
+guardar tienen salida confirmada; los borradores válidos y las series ya
+confirmadas se conservan. Salir de una sesión permite retomarla, sin abandonarla.
+
+Perfil y «Mi programa» comparten disponibilidad y material exacto. Guardar los
+datos actualiza el contexto para la siguiente adaptación y conserva el historial.
+El motor de carrera y el coordinador siguen en servidor; esta corrección no
+redefine sus reglas. Detalle en `PROGRAMA_ADAPTATIVO.md` y `VISUAL_DESIGN.md`.
 
 ## Integraciones futuras
 

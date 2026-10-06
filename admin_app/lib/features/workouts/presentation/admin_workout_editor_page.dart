@@ -460,7 +460,6 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               maxLength: 80,
               decoration: const InputDecoration(
                 labelText: 'Nombre de la sesión',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -470,7 +469,6 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               maxLines: 2,
               decoration: const InputDecoration(
                 labelText: 'Indicaciones (opcional)',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),

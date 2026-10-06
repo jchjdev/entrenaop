@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource_impl.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/running_week_plan_repository.dart';
 import 'package:entrenaop/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
 import 'package:entrenaop/features/auth/domain/usecases/get_current_user_usecase.dart';
@@ -28,6 +29,7 @@ import 'package:entrenaop/features/physical_assessment/data/datasources/physical
 import 'package:entrenaop/features/physical_assessment/data/repositories/physical_assessment_repository_impl.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/usecases/evaluate_initial_assessment_usecase.dart';
 import 'package:entrenaop/features/physical_assessment/domain/usecases/get_physical_assessment_history_usecase.dart';
@@ -37,15 +39,23 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource.dart';
 import 'package:entrenaop/features/preparation_goal/data/datasources/preparation_goal_remote_datasource_impl.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_goal_repository_impl.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/official_running_reference_repository.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/program_running_reference_repository.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/running_test_repository.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/running_intake_context_repository.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/running_reference_selection_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart';
+import 'package:entrenaop/features/preparation_goal/domain/usecases/get_running_reference_candidates_usecase.dart';
+import 'package:entrenaop/features/preparation_goal/domain/usecases/manage_running_reference_selection_usecase.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_detail_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource.dart';
 import 'package:entrenaop/features/training_plan/data/datasources/training_preferences_remote_datasource_impl.dart';
 import 'package:entrenaop/features/training_plan/data/repositories/training_preferences_repository_impl.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_preferences_repository.dart';
+import 'package:entrenaop/features/training_plan/domain/repositories/training_context_repository.dart';
+import 'package:entrenaop/features/training_plan/data/repositories/training_context_repository_impl.dart';
 import 'package:entrenaop/features/training_plan/presentation/bloc/training_preferences_cubit.dart';
 import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource.dart';
 import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource_impl.dart';
@@ -73,14 +83,21 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cub
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
+import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
+import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
+import 'package:entrenaop/features/dashboard/data/repositories/shared_preferences_home_favorites_repository.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
   final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<HomeFavoritesRepository>(
+    () => SharedPreferencesHomeFavoritesRepository(sharedPreferences),
+  );
   sl.registerLazySingleton<WorkoutTimerStore>(
     () => SharedPreferencesWorkoutTimerStore(sharedPreferences),
   );
@@ -159,6 +176,9 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => FasPeriodicAssessmentRepository(sl()));
   sl.registerLazySingleton(() => ProfileBirthDateRepository(sl()));
+  sl.registerLazySingleton<ProgramAssessmentRepository>(
+    () => SupabaseProgramAssessmentRepository(sl()),
+  );
   sl.registerLazySingleton(() => SavePhysicalAssessmentUseCase(sl()));
   sl.registerLazySingleton(() => GetPhysicalAssessmentHistoryUseCase(sl()));
   sl.registerFactory(
@@ -183,6 +203,9 @@ Future<void> initDependencies() async {
     () => TrainingPreferencesRepositoryImpl(remoteDataSource: sl()),
   );
   sl.registerFactory(() => TrainingPreferencesCubit(repository: sl())..load());
+  sl.registerLazySingleton<TrainingContextRepository>(
+    () => SupabaseTrainingContextRepository(sl()),
+  );
 
   // --- Preparation goal ---
 
@@ -194,6 +217,43 @@ Future<void> initDependencies() async {
   );
   sl.registerFactory(() => PreparationGoalCubit(repository: sl())..load());
   sl.registerLazySingleton(() => RunningTestRepository(sl()));
+  sl.registerLazySingleton(() => RunningIntakeContextRepository(sl()));
+  sl.registerLazySingleton(() => RunningWeekPlanRepository(sl()));
+  sl.registerLazySingleton<PreparationTrainingRepository>(
+    () => SupabasePreparationTrainingRepository(sl()),
+  );
+  sl.registerLazySingleton(() => RunningReferenceSelectionRepository(sl()));
+  sl.registerLazySingleton(
+    () => ProgramRunningReferenceRepository(client: sl(), assessments: sl()),
+  );
+  sl.registerLazySingleton(
+    () => OfficialRunningReferenceRepository(
+      troopAssessments: sl(),
+      fasAssessments: sl(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => GetRunningReferenceCandidatesUseCase(
+      goals: sl(),
+      loadTroopRunningTests: sl<RunningTestRepository>().history,
+      hasRunningModule:
+          sl<ProgramRunningReferenceRepository>().hasRunningModule,
+      loadTroopOfficialCandidates:
+          sl<OfficialRunningReferenceRepository>().forTroopGoal,
+      loadFasCandidates: sl<OfficialRunningReferenceRepository>().forFasGoal,
+      loadProgramCandidates: sl<ProgramRunningReferenceRepository>().forGoal,
+    ),
+  );
+  sl.registerLazySingleton(
+    () => ManageRunningReferenceSelectionUseCase(
+      loadCandidates: sl<GetRunningReferenceCandidatesUseCase>().call,
+      loadContext: sl<RunningIntakeContextRepository>().get,
+      loadSelection: sl<RunningReferenceSelectionRepository>().get,
+      saveSelection: sl<RunningReferenceSelectionRepository>().save,
+      clearSelection: sl<RunningReferenceSelectionRepository>().clear,
+      now: DateTime.now,
+    ),
+  );
 
   // --- Workout templates ---
 
@@ -291,12 +351,17 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(
     () => GetPreparationDetailUseCase(
       goalRepository: sl(),
-      assessmentRepository: sl(),
+      loadRunningTests: sl<RunningTestRepository>().history,
+      loadTroopAssessments:
+          sl<PhysicalAssessmentRepository>().getHistoryForGoal,
+      loadRunningReferenceCandidates:
+          sl<GetRunningReferenceCandidatesUseCase>().call,
       scheduleRepository: sl(),
     ),
   );
   sl.registerFactoryParam<WorkoutScheduleCubit, DateTime, void>(
     (initialDate, _) => WorkoutScheduleCubit(
+      programs: sl<PreparationTrainingRepository>(),
       getSchedule: sl(),
       scheduleWorkout: sl(),
       rescheduleWorkout: sl(),
@@ -316,10 +381,18 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton(
     () => GetPreparationOverviewUseCase(
+      refreshPrograms: sl<PreparationTrainingRepository>().refreshPrograms,
       assessmentRepository: sl(),
       preferencesRepository: sl(),
+      loadTrainingContext: () async =>
+          (await sl<TrainingContextRepository>().load()).context,
       goalRepository: sl(),
       scheduleRepository: sl(),
+      hasFasAssessment: (goalId) async =>
+          (await sl<FasPeriodicAssessmentRepository>().history(goalId: goalId))
+              .isNotEmpty,
+      hasProgramAssessment: (goalId) async =>
+          (await sl<ProgramAssessmentRepository>().history(goalId)).isNotEmpty,
     ),
   );
   sl.registerFactory(() => DashboardCubit(getOverview: sl())..load());

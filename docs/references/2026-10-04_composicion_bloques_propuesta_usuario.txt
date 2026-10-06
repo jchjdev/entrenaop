@@ -1,0 +1,779 @@
+Sí. Y aquí hay una corrección importante respecto a cómo te las presenté antes:
+
+**no quiero que Codex trate esas 40 como sesiones cerradas.**  
+Quiero que las trate como **40 bloques de estímulo combinables**.
+
+Eso encaja mucho mejor con lo que realmente necesitas para EntrenaOP.
+
+La estructura debería ser:
+
+**bloques pequeños → combinador → sesión final**
+
+Por ejemplo, en vez de tener:
+
+> F03 = sesión completa de flexión lastrada  
+> P04 = sesión completa de plancha alta
+
+EntrenaOP podría montar:
+
+> **F03 + P04 = sesión de 32 min**
+
+o:
+
+> **A02 + E01 = sesión COD + reactividad de 27 min**
+
+según el usuario.
+
+## Cómo deben ser esos bloques
+
+Cada uno debería durar aproximadamente **8-25 minutos**, salvo algunos tests o trabajos completos. Y tener información suficiente para saber si se puede combinar con otro.
+
+Algo conceptualmente así:
+
+```text
+F03 — Fuerza específica de flexiones
+
+capacity:
+  upper_body_strength
+
+priority:
+  primary
+
+duration:
+  18 min
+
+local_fatigue:
+  upper_push = moderate
+
+neuromuscular_fatigue:
+  moderate
+
+metabolic_fatigue:
+  low
+
+running_interference:
+  very_low
+
+quality_sensitive:
+  yes
+
+preferred_order:
+  early
+
+compatible:
+  core
+  light_upper_pull
+  light_lower_power
+
+avoid_same_session:
+  another_high_volume_push_block
+```
+
+Mientras un bloque de agilidad:
+
+```text
+A09 — Circuito específico rápido
+
+capacity:
+  COD_specific
+
+priority:
+  primary
+
+duration:
+  20 min
+
+local_fatigue:
+  lower_body = moderate-high
+
+neuromuscular_fatigue:
+  high
+
+metabolic_fatigue:
+  moderate
+
+running_interference:
+  high
+
+quality_sensitive:
+  very_high
+
+preferred_order:
+  first
+
+avoid_same_session:
+  heavy_lower_strength
+  hard_plyometrics
+  exhaustive_running
+```
+
+Ahí está la clave.
+
+---
+
+# No todas las combinaciones son igual de buenas
+
+**Combinables sí. Intercambiables libremente, no.**
+
+Hay combinaciones excelentes:
+
+### Flexiones + core
+
+```text
+F03
+Flexión lastrada
++
+P04
+Plancha alta
+```
+
+Muy poco conflicto.
+
+---
+
+### Técnica de flexiones + resistencia
+
+```text
+F01
+Técnica
++
+F05
+Volumen submáximo
+```
+
+Tiene muchísimo sentido porque el primer bloque no debe generar demasiada fatiga.
+
+---
+
+### Flexiones + plancha reglamentaria
+
+```text
+F07
+Ritmo específico
++
+P03
+Holds largos
+```
+
+Muy específico para oposición.
+
+---
+
+### COD + pequeña dosis pliométrica
+
+```text
+E01
+Pogos + CMJ
++
+A02
+Cambios de 90°
+```
+
+También tiene mucho sentido.
+
+Y yo pondría primero:
+
+**pliometría → COD**, porque ambas requieren calidad y no queremos llegar fatigados a los saltos.
+
+---
+
+# Pero otras combinaciones serían malas
+
+Por ejemplo:
+
+```text
+E07
+fuerza completa de piernas
+
++
+
+A09
+circuito oficial máximo
+
++
+
+8×400 carrera
+```
+
+Eso sería una burrada.
+
+Tres estímulos fuertes compitiendo por las mismas estructuras y por la capacidad neuromuscular.
+
+El combinador tiene que poder decir:
+
+> individualmente los tres entrenamientos son buenos; juntos hoy son una mala programación.
+
+Esto es precisamente lo interesante.
+
+---
+
+# Yo dividiría los bloques en tres categorías
+
+### PRIMARY
+
+Es el estímulo principal del día.
+
+Ejemplos:
+
+- sentadilla pesada;
+- circuito específico rápido;
+- prueba de flexiones;
+- COD intenso;
+- 1RM;
+- dominadas pesadas.
+
+Normalmente:
+
+**1 PRIMARY por sesión.**
+
+Excepcionalmente pueden convivir dos si afectan a zonas muy distintas.
+
+Por ejemplo:
+
+**dominadas pesadas + COD corto** podría tener sentido.
+
+---
+
+### SECONDARY
+
+Desarrolla una capacidad importante pero con menor coste.
+
+Ejemplo:
+
+```text
+flexiones submáximas
+plancha
+Pallof
+remo
+split squat ligero
+```
+
+Puede acompañar al principal.
+
+Normalmente:
+
+**1-2 SECONDARY.**
+
+---
+
+### MICRODOSE
+
+Muy poca carga pero estímulo útil.
+
+Por ejemplo:
+
+```text
+2×8 pogos
+3×2 CMJ
+2×30 s plancha
+2 series técnicas
+```
+
+5-10 minutos.
+
+Puede introducirse incluso en días donde existe otro entrenamiento importante.
+
+Para una app de opositores esto me parece extraordinariamente útil.
+
+---
+
+# Orden dentro de una sesión
+
+También tiene que poder combinar respetando **orden**.
+
+Una regla general muy razonable sería:
+
+### 1. Técnica que requiere frescura
+
+Circuito, aprendizaje, coordinación.
+
+↓
+
+### 2. Potencia/reactividad
+
+Saltos, lanzamientos, trabajo explosivo.
+
+↓
+
+### 3. Fuerza
+
+Sentadilla, banca, dominadas lastradas...
+
+↓
+
+### 4. Resistencia muscular
+
+Flexiones de volumen, etc.
+
+↓
+
+### 5. Core / accesorios
+
+Plancha, Pallof, etc.
+
+Pero no es una secuencia obligatoria universal.
+
+Ejemplo:
+
+si **la prueba de flexiones es la prioridad absoluta**, las flexiones específicas pueden ir antes de un press banca.
+
+Porque manda la prioridad.
+
+---
+
+# Ejemplo real de cómo EntrenaOP podría construir sesiones
+
+Supongamos un opositor:
+
+- corre 3 días;
+- tiene que mejorar flexiones;
+- plancha ya aceptable;
+- circuito mediocre;
+- dispone de 35 minutos dos días.
+
+### Día de tren superior
+
+EntrenaOP selecciona:
+
+```text
+F03 — Fuerza flexiones
+18 min
+
++
+
+F05 — Volumen específico
+10 min
+
++
+
+P04 — Plancha alta
+6 min
+```
+
+Total:
+
+**34 min.**
+
+Perfecto.
+
+---
+
+### Día de piernas/COD
+
+```text
+E01 — Reactividad
+10 min
+
++
+
+A02 — COD 90°
+15 min
+
++
+
+A03 — COD 180°
+10 min
+```
+
+Total:
+
+**35 min.**
+
+Aquí no necesito añadir sentadilla pesada necesariamente porque quizás el algoritmo de carrera ya ha creado bastante carga de pierna esa semana.
+
+---
+
+# Otro usuario puede recibir combinaciones completamente diferentes
+
+Misma prueba de flexiones, pero hace únicamente 8.
+
+Podría recibir:
+
+```text
+F02
+progresión mecánica
+
++
+
+F04
+fuerza de empuje
+
++
+
+P04
+plancha alta
+```
+
+Mientras otro que hace 50 pero se hunde durante el último tercio:
+
+```text
+F05
+volumen submáximo
+
++
+
+F06
+densidad
+
++
+
+P01
+core fácil
+```
+
+**Misma prueba. Diferente limitación.**
+
+Ese es exactamente el abanico que buscas.
+
+---
+
+# Necesitamos además “compatibilidad” por región y tipo de fatiga
+
+No basta con decir:
+
+```text
+upper
+lower
+```
+
+Porque dos ejercicios de pierna pueden tener efectos completamente distintos.
+
+Por ejemplo:
+
+### Pogo jumps
+
+Pierna:
+
+sí.
+
+Pero:
+
+**volumen pequeño, potencia/reactividad, fatiga metabólica mínima.**
+
+### Split squat 4×12 al fallo
+
+También pierna.
+
+Pero:
+
+**fatiga periférica y metabólica enorme.**
+
+No deberían pesar igual cuando EntrenaOP intenta combinarlos con carrera.
+
+Yo usaría conceptualmente varias dimensiones:
+
+```text
+upper_push_load
+upper_pull_load
+
+lower_strength_load
+lower_eccentric_load
+lower_plyometric_load
+
+core_load
+
+neuromuscular_load
+metabolic_load
+
+technical_demand
+```
+
+No necesariamente con puntuaciones exactas todavía.
+
+Pero sí necesitamos esa distinción.
+
+---
+
+# Compatibilidad aproximada de nuestras familias
+
+Podemos pensar en esto:
+
+| Bloque 1 | Bloque 2 | Compatibilidad |
+|---|---|---|
+| Flexiones fuerza | Core | 🟢 Alta |
+| Flexiones resistencia | Core | 🟢 Alta |
+| Flexiones fuerza | Tirón | 🟢 Alta |
+| Fuerza piernas | Flexiones | 🟢 Alta |
+| Pliometría corta | COD | 🟢 Alta |
+| Fuerza piernas moderada | COD técnico | 🟡 Depende |
+| Fuerza piernas pesada | COD máximo | 🔴 Mala |
+| COD máximo | series carrera duras | 🔴 Mala |
+| Pliometría alta | carrera intensa | 🔴 Mala |
+| Test máximo flexiones | volumen fuerte flexiones | 🔴 Mala |
+| Test plancha máximo | trabajo duro de core | 🟡/🔴 |
+| Flexiones técnicas | fuerza flexiones | 🟢 Alta |
+
+Esto eventualmente debería estar formalizado.
+
+---
+
+# Y podemos hacer algo todavía mejor
+
+Cada bloque puede tener un **rol dentro de una sesión**.
+
+Ejemplo:
+
+```text
+F03
+role = PRIMARY / SECONDARY
+```
+
+porque puede ser principal si buscamos flexiones o secundario si ese día buscamos banca.
+
+Otro:
+
+```text
+P04
+role = SECONDARY / MICRODOSE
+```
+
+Otro:
+
+```text
+A09
+role = PRIMARY_ONLY
+```
+
+porque hacer un circuito oficial máximo después de una sesión dura normalmente no tiene demasiado sentido.
+
+Otro:
+
+```text
+E01
+role = WARMUP / MICRODOSE / SECONDARY
+```
+
+Eso da muchísima flexibilidad al combinador.
+
+---
+
+# También podemos poner límites de tiempo
+
+El usuario ya puede decir:
+
+```text
+Tengo 20 min
+```
+
+El sistema podría escoger:
+
+```text
+F03 14 min
++
+P04 6 min
+```
+
+Si dispone de:
+
+```text
+45 min
+```
+
+puede ser:
+
+```text
+F03
++
+F05
++
+P06
+```
+
+No necesitamos inventar otra rutina.
+
+**Montamos una con piezas existentes.**
+
+Esto me parece bastante mejor que tener una colección de planes rígidos.
+
+---
+
+# Y aquí entra el horizonte de 1, 2, 3, 4, 6 mesociclos o un año
+
+Tampoco necesitamos crear:
+
+```text
+Programa flexiones 4 semanas
+Programa flexiones 8 semanas
+Programa flexiones 12 semanas
+...
+```
+
+como seis planes completamente separados.
+
+Podemos tener las mismas piezas y cambiar **qué familias predominan**.
+
+Por ejemplo, con 16 semanas:
+
+### Base
+
+```text
+F01
+F02
+F03
+P04
+```
+
+↓
+
+### Desarrollo
+
+```text
+F03
+F04
+F05
+```
+
+↓
+
+### Conversión específica
+
+```text
+F05
+F06
+F07
+```
+
+↓
+
+### Prueba
+
+```text
+F08
+F10
+M04
+```
+
+Con cuatro semanas saltamos gran parte del desarrollo general y utilizamos bastante más:
+
+```text
+F05
+F07
+F08
+F10
+```
+
+porque tenemos menos tiempo.
+
+Mismos componentes.
+
+**Distinta composición y dosis.**
+
+---
+
+# Cambiaría por tanto el nombre de las 40
+
+Para evitar que Codex las interprete mal, ya no hablaría de:
+
+> `40 entrenamientos base`
+
+sino:
+
+> **40 bloques de entrenamiento base**
+
+o incluso:
+
+> **Training Building Blocks**
+
+Cada bloque representa un estímulo entrenable y combinable.
+
+Y luego existen:
+
+```text
+BLOCK
++
+BLOCK
++
+BLOCK
+────────
+SESSION
+```
+
+y después:
+
+```text
+SESSION
++
+SESSION
++
+RUNNING SESSION
+───────────────
+MICROCYCLE
+```
+
+y:
+
+```text
+MICROCYCLE × varias semanas
+───────────────
+MESOCYCLE
+```
+
+Esta jerarquía me parece **muchísimo mejor** que la primera forma en que te las entregué.
+
+---
+
+# Una sesión final tendría entonces límites
+
+Yo usaría inicialmente algo como:
+
+**1 bloque principal**
+
++
+
+**0-2 secundarios**
+
++
+
+**0-1 microdosis**
+
+y:
+
+**15-60 min totales**, con preferencia por 20-40 minutos como tú quieres.
+
+Esto no es una ley científica; es una **regla de composición de producto** bastante sensata para vuestro contexto.
+
+---
+
+# Y una última distinción que merece mucho la pena
+
+El banco tampoco debería contener solamente ejercicios.
+
+Debe contener:
+
+> **estímulos completos.**
+
+Porque:
+
+```text
+Flexión
+```
+
+es un ejercicio.
+
+Mientras:
+
+```text
+6 × 45% máximo
+60-90 s descanso
+RIR ≥3
+```
+
+es un **bloque de resistencia específica**.
+
+Y:
+
+```text
+3 × 5 lastradas
+RIR 2
+2-3 min descanso
+```
+
+es un **bloque de fuerza**.
+
+Mismo ejercicio.
+
+Dos building blocks completamente diferentes.
+
+Ahí está precisamente el cerebro deportivo que necesitamos darle después a Codex.
+
+**Así que sí: tu planteamiento era más modular de lo que interpreté inicialmente. Y es mejor.** Lo correcto ahora sería rehacer esas 40 que te he dado en formato **bloque combinable**, definiendo para cada una `objetivo, duración, rol, carga/fatiga, compatibilidades, incompatibilidades, posición en sesión y protocolo exacto`. Entonces sí tendremos el verdadero abanico de piezas con el que EntrenaOP puede fabricar miles de sesiones coherentes sin inventárselas.

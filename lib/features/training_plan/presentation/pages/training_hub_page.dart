@@ -1,3 +1,5 @@
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,7 +13,6 @@ class TrainingHubPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text('Mi plan'),
@@ -35,7 +36,7 @@ class TrainingHubPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 7),
                     const Text(
-                      'Organiza tu semana, tus sesiones y la configuración de tus preparaciones.',
+                      'Sigue tus entrenamientos y registra cómo te van. Tu programa adapta las próximas sesiones con tus resultados.',
                       style: TextStyle(color: Colors.white60, fontSize: 16),
                     ),
                     const SizedBox(height: 22),
@@ -44,7 +45,7 @@ class TrainingHubPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     _AvailableSessionCard(
-                      onOpen: () => context.push('/plan/library'),
+                      onOpen: () => context.push('/library'),
                     ),
                     const SizedBox(height: 22),
                     const _SectionTitle(
@@ -53,7 +54,7 @@ class TrainingHubPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _PersonalSessionsCard(
-                      onOpen: () => context.push('/plan/library'),
+                      onOpen: () => context.push('/plan/library?tab=personal'),
                     ),
                     const SizedBox(height: 22),
                     const _SectionTitle(
@@ -63,7 +64,7 @@ class TrainingHubPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     _SettingsCard(
                       onGoal: () => context.push('/plan/goal'),
-                      onPreferences: () => context.push('/plan/preferences'),
+                      onPreferences: () => context.push('/profile/preferences'),
                     ),
                   ],
                 ),
@@ -83,51 +84,42 @@ class _WeeklyScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: const Color(0xFF172018),
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF27452D),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.calendar_view_week_rounded,
-                  color: Color(0xFF9BE5A8),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mi semana',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Programa tus sesiones y empieza la que toca hoy.',
-                      style: TextStyle(color: Colors.white60, height: 1.35),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
+    return EntrenaCard(
+      tone: EntrenaCardTone.accent,
+      onTap: onOpen,
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: context.visuals.accentSoft,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              Icons.calendar_view_week_rounded,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
-        ),
+          const SizedBox(width: 16),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mi semana',
+                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Programa tus sesiones y empieza la que toca hoy.',
+                  style: TextStyle(color: Colors.white60, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
       ),
     );
   }
@@ -140,53 +132,44 @@ class _AvailableSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: const Color(0xFF26150E),
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Text(
-                  'SESIÓN DISPONIBLE',
-                  style: TextStyle(
-                    color: Color(0xFFFFC3A5),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+    return EntrenaCard(
+      tone: EntrenaCardTone.neutral,
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'EXPLORA Y CREA',
+              style: TextStyle(
+                color: Color(0xFFFFC3A5),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
               ),
-              const SizedBox(height: 18),
-              const Text(
-                'Biblioteca de EntrenaOP',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 7),
-              const Text(
-                'Explora las sesiones públicas y consulta sus bloques antes de comenzar.',
-                style: TextStyle(color: Colors.white70, height: 1.4),
-              ),
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: onOpen,
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Abrir biblioteca'),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(height: 18),
+          const Text(
+            'Biblioteca de EntrenaOP',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 7),
+          const Text(
+            'Sesiones y ejercicios de EntrenaOP, junto a los que creas tú.',
+            style: TextStyle(color: Colors.white70, height: 1.4),
+          ),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: onOpen,
+            icon: const Icon(Icons.library_books_outlined),
+            label: const Text('Abrir biblioteca'),
+          ),
+        ],
       ),
     );
   }
@@ -221,41 +204,35 @@ class _PersonalSessionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFF151515),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.add_circle_outline_rounded,
-                color: Color(0xFFFF8A50),
-                size: 32,
-              ),
-              const SizedBox(width: 15),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Crear y gestionar sesiones',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Abre tus rutinas para editarlas, duplicarlas o crear una nueva.',
-                      style: TextStyle(color: Colors.white60, height: 1.35),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
+    return EntrenaCard(
+      tone: EntrenaCardTone.neutral,
+      onTap: onOpen,
+      child: Row(
+        children: [
+          const Icon(
+            Icons.add_circle_outline_rounded,
+            color: Color(0xFFFF8A50),
+            size: 32,
           ),
-        ),
+          const SizedBox(width: 15),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crear y gestionar sesiones',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Abre tus rutinas para editarlas, duplicarlas o crear una nueva.',
+                  style: TextStyle(color: Colors.white60, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
       ),
     );
   }
@@ -270,7 +247,6 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF141414),
       child: Column(
         children: [
           ListTile(

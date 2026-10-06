@@ -8,7 +8,8 @@ oposiciones. Su primer foco es PAEF/PAFA y su núcleo de producto es el ciclo:
 
 La aplicación se desarrolla con Flutter y Supabase. Android e iPhone son los
 clientes prioritarios para entrenar. El panel de gestión web vive en el proyecto
-separado `admin_app/`; ambos comparten Supabase, no código de interfaz. Windows
+separado `admin_app/`; ambos comparten Supabase y los paquetes locales de dominio,
+edición e identidad visual. Cada app conserva sus pantallas y navegación. Windows
 se mantiene como destino compatible sin condicionar el MVP.
 
 ## Documentación vigente
@@ -24,6 +25,8 @@ se mantiene como destino compatible sin condicionar el MVP.
   límites del prototipo de primera semana de Tropa.
 - [Auditoría inicial](docs/AUDIT.md): hallazgos comprobados y prioridades de
   saneamiento; es una instantánea histórica, no el estado actual.
+- [Chequeo del 06/10/2026](docs/AUDIT_2026_10_06.md): estado local y remoto de Git,
+  ambas apps, paquetes, Supabase de desarrollo, verificaciones y pendientes.
 - [Historia](docs/HISTORY.md): contexto antiguo que no constituye una lista de
   instrucciones.
 

@@ -20,6 +20,7 @@ const workoutTemplateSelect = '''
       exercises (id, name, description),
       workout_sets (
         id,
+        performance_prescription,
         order_index,
         target_reps,
         target_duration_seconds,

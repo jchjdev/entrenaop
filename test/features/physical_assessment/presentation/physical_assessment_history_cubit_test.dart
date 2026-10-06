@@ -48,9 +48,15 @@ class _HistoryRepository implements PhysicalAssessmentRepository {
   }
 
   @override
+  Future<List<PhysicalAssessmentHistoryEntry>> getHistoryForGoal(
+    String goalId,
+  ) async => const [];
+
+  @override
   Future<String> saveAssessment(
     AssessmentReport report, {
     DateTime? completedAt,
+    String? goalId,
   }) {
     throw UnimplementedError();
   }

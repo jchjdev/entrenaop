@@ -1,0 +1,1202 @@
+Sí. Y aquí ya podemos hacer algo realmente útil para EntrenaOP: **no 40 rutinas aleatorias**, sino 40 **sesiones base parametrizables**, cada una con una finalidad fisiológica clara. Luego el sistema podrá seleccionar, escalar y combinar estas piezas según nivel, fecha de prueba, prioridades y carga de carrera.
+
+Hay una precisión importante: los protocolos exactos de las 40 sesiones no han sido comparados uno contra uno en ensayos. Lo respaldado por la evidencia son los **principios que uso para construirlas**: especificidad, sobrecarga, proximidad al fallo, cargas altas para fuerza, volumen submáximo para resistencia, intención máxima para potencia, descansos suficientes para preservar calidad, trabajo específico de COD, etc. El ACSM 2026 confirma precisamente que fuerza, hipertrofia, potencia y resistencia responden a prescripciones diferentes. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41843416/?utm_source=chatgpt.com)
+
+Además, para corredores, fuerza pesada, pliometría y su combinación pueden mejorar economía de carrera; revisiones recientes encuentran beneficios con programas de 6-24 semanas y, habitualmente, 1-4 sesiones semanales. [PubMed](https://pubmed.ncbi.nlm.nih.gov/38165636/?utm_source=chatgpt.com) La pliometría también mejora salto, sprint, RSI y cambio de dirección. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41034241/?utm_source=chatgpt.com)
+
+## 1. Convenciones para las 40 sesiones
+
+Para que sean reutilizables:
+
+- **M** = máximo actual de repeticiones **válidas** de flexiones bajo el protocolo correspondiente.
+- **T** = duración oficial de la prueba de flexiones.
+- **P** = máximo actual de plancha válida en segundos.
+- **RIR** = repeticiones que podrían quedar antes del fallo. Solo lo uso cuando tiene sentido.
+- En agilidad y potencia, **calidad manda sobre cantidad**.
+- Si una repetición deja de cumplir la técnica reglamentaria, deja de contar.
+- Las sesiones incluyen calentamiento breve y duran **15-45 min en casi todos los casos**. Ninguna necesita superar 60.
+- Los porcentajes de `M` y `P` que empleo abajo son **heurísticas de programación**, no umbrales fisiológicos exactos demostrados.
+
+Para los horizontes voy a usar **4 semanas como mesociclo operativo**. Es una convención de EntrenaOP, no una ley científica.
+
+---
+
+# BLOQUE A — 10 sesiones base de FLEXIONES
+
+Aquí combinamos fuerza específica, fuerza general de empuje, volumen submáximo, densidad y finalmente especificidad temporal.
+
+### F01 — Técnica + volumen fácil
+
+**Objetivo:** consolidar repetición válida sin mucha fatiga.  
+**Duración:** 15-20 min.
+
+| Ejercicio | Trabajo |
+|---|---|
+| Flexión reglamentaria | 5 × 40-50% M |
+| Plancha frontal alta | 2 × 30-45 s |
+
+Descanso: 60-90 s entre series.
+
+Finalizar aproximadamente con **RIR 4-5**.
+
+Muy útil para principiantes y como segunda/tercera exposición semanal.
+
+---
+
+### F02 — Progresión mecánica
+
+**Objetivo:** elevar fuerza específica con calistenia.
+
+| Ejercicio | Trabajo |
+|---|---|
+| Variante de flexión suficientemente difícil | 3 × 6-8 |
+| Flexión reglamentaria | 2 × 40% M |
+
+Descanso: 2-3 min en la primera; 90 s en la segunda.
+
+Cuando 3×8 sea claramente dominado, se utiliza una variante más exigente o carga.
+
+Esta lógica se parece al estudio de Kotarsky que luego veremos. [PubMed](https://pubmed.ncbi.nlm.nih.gov/29466268/?utm_source=chatgpt.com)
+
+---
+
+### F03 — Flexión lastrada
+
+**Objetivo:** aumentar el techo de fuerza.
+
+| Ejercicio | Trabajo |
+|---|---|
+| Flexión lastrada | 4 × 4-6 @ RIR 2-3 |
+| Flexión reglamentaria | 2 × 50% M @ RIR ≥3 |
+| Plancha alta | 2 × 30 s |
+
+Descanso flexión lastrada: 2-3 min.
+
+Duración: 25-30 min.
+
+---
+
+### F04 — Press de banca + transferencia
+
+**Objetivo:** fuerza de empuje con mayor facilidad de cuantificación de carga.
+
+| Ejercicio | Trabajo |
+|---|---|
+| Press banca | 3 × 4-6 @ RIR 2 |
+| Flexión reglamentaria | 3 × 40-50% M |
+| Remo polea/máquina | 2 × 8 @ RIR 3 |
+
+Descanso: 2-3 min banca; 90 s resto.
+
+Duración: 30-35 min.
+
+El press **complementa**, no reemplaza, las flexiones reglamentarias.
+
+---
+
+### F05 — Volumen submáximo
+
+**Objetivo:** resistencia muscular específica.
+
+Flexiones:
+
+**6 × 40-50% M**
+
+Descanso: 60-90 s.
+
+Las primeras series deben parecer fáciles. La última no debería convertirse necesariamente en fallo.
+
+Duración: 15-20 min.
+
+---
+
+### F06 — Densidad EMOM
+
+**Objetivo:** acumular muchas repeticiones válidas conservando técnica.
+
+Durante 8-12 min:
+
+**cada minuto → 25-35% M**
+
+Ejemplo con M=40:
+
+10-14 flexiones/min.
+
+El resto del minuto es descanso.
+
+Si las últimas series se convierten en lucha por sobrevivir, la dosis está mal elegida.
+
+Duración: 15-20 min.
+
+---
+
+### F07 — Ritmo específico de oposición
+
+**Objetivo:** aprender la cadencia necesaria para la marca objetivo.
+
+Calcular:
+
+**cadencia objetivo = repeticiones objetivo / duración de prueba**
+
+Después:
+
+**4-6 × 20-30 s a cadencia objetivo**
+
+Descanso: 45-60 s.
+
+Después:
+
+**2 × 30-45 s plancha alta.**
+
+Duración: 15-20 min.
+
+Aquí no buscamos récord. Buscamos automatizar ritmo y técnica.
+
+---
+
+### F08 — Prueba fraccionada
+
+**Objetivo:** acercarse al estrés específico sin realizar constantemente AMRAP.
+
+Si la prueba dura `T`:
+
+**½T a ritmo objetivo → 60-90 s → ½T a ritmo objetivo.**
+
+Hacer 1-2 bloques.
+
+Descansar 3-4 min entre bloques completos.
+
+Ejemplo prueba 120 s:
+
+60 s + 90 s descanso + 60 s.
+
+Duración: 20-25 min.
+
+---
+
+### F09 — Fuerza-velocidad de empuje
+
+**Objetivo:** producir fuerza rápidamente sin acumular fatiga.
+
+| Ejercicio | Trabajo |
+|---|---|
+| Flexión lastrada | 3 × 4-5 @ RIR 3 |
+| Flexión explosiva | 3 × 3-5 |
+| Flexión reglamentaria | 2 × 40% M |
+
+Descanso: 2 min entre trabajos principales.
+
+Cada flexión explosiva debe ser realmente explosiva.
+
+No se realizan 15 hasta que dejan de parecer explosivas.
+
+Duración: 20-25 min.
+
+---
+
+### F10 — Simulación oficial
+
+**Objetivo:** evaluación y especificidad.
+
+Calentamiento breve.
+
+Después:
+
+**1 × prueba completa oficial**
+
+máximo número de repeticiones **válidas**.
+
+Descansar 5 min.
+
+Opcional:
+
+**2 × 25-30% M** muy cómodas y perfectas.
+
+Duración: 15-20 min.
+
+No convertir esto en la sesión habitual. **El test sirve para medir; no sustituye al entrenamiento.**
+
+---
+
+# BLOQUE B — 8 sesiones de PLANCHA / CORE
+
+La evidencia sobre core muestra mejoras bastante consistentes en resistencia del tronco y balance, pero una transferencia mucho menos uniforme hacia rendimiento deportivo. Por eso la plancha reglamentaria tiene que entrenarse específicamente además del trabajo complementario. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41098479/?utm_source=chatgpt.com)
+
+### P01 — Técnica y acumulación
+
+**4 × 30-45 s plancha frontal**  
+Descanso 45-60 s.
+
+**2 × 30-45 s plancha alta.**
+
+Duración: 15 min.
+
+---
+
+### P02 — Volumen relativo
+
+Utilizando `P`:
+
+**4 × 45-55% P**
+
+Descanso: 60-90 s.
+
+Ejemplo P=120 s:
+
+4 × 55-65 s aproximadamente.
+
+Duración: 15-20 min.
+
+---
+
+### P03 — Holds largos
+
+**3 × 60-70% P**
+
+Descanso: 90-120 s.
+
+No permitir pérdida progresiva de alineación para arañar segundos.
+
+Duración: 15-20 min.
+
+---
+
+### P04 — Plancha alta / transferencia a flexiones
+
+| Ejercicio | Trabajo |
+|---|---|
+| Plancha frontal alta | 3 × 45-60 s |
+| Plancha frontal antebrazos | 3 × 30-45 s |
+| Dead bug | 2 × 8-10/lado |
+
+Descanso 45-60 s.
+
+Duración: 20 min.
+
+---
+
+### P05 — Anti-extensión
+
+| Ejercicio | Trabajo |
+|---|---|
+| Dead bug | 3 × 8-10/lado |
+| Plancha frontal | 3 × 30-60 s |
+| Puente de glúteo | 2 × 10-12 |
+
+RPE moderado.
+
+Duración: 20-25 min.
+
+---
+
+### P06 — Core multidireccional
+
+| Ejercicio | Trabajo |
+|---|---|
+| Plancha frontal | 3 × 40-60 s |
+| Plancha lateral | 3 × 30-45 s/lado |
+| Pallof press | 3 × 8-12/lado |
+| Suitcase carry | 2 × 20-30 m/lado |
+
+Duración: 25-30 min.
+
+---
+
+### P07 — Circuito de resistencia de tronco
+
+3 vueltas:
+
+**plancha frontal 45 s → plancha alta 45 s → plancha lateral 30 s/lado → dead bug 8/lado**
+
+Descanso entre ejercicios: 20-30 s.
+
+Entre vueltas: 90 s.
+
+Duración: 20-25 min.
+
+---
+
+### P08 — Simulación plancha
+
+Calentamiento.
+
+**1 × P máximo bajo técnica reglamentaria.**
+
+Descanso: 4-5 min.
+
+Después:
+
+**2 × plancha alta 30-40 s**, cómoda.
+
+Duración: 15 min.
+
+Como F10, debe ser fundamentalmente una **sesión de evaluación/especificidad**, no una sesión repetida cada dos días.
+
+---
+
+# BLOQUE C — 10 sesiones de CAMBIO DE DIRECCIÓN / AGILIDAD
+
+Aquí hay un principio fundamental: para los circuitos conocidos de oposición entrenamos fundamentalmente **COD**, no “agilidad reactiva” en sentido estricto.
+
+Las revisiones muestran que fuerza, pliometría, sprints resistidos y, especialmente, entrenamientos con componentes multidireccionales pueden mejorar COD. [PubMed](https://pubmed.ncbi.nlm.nih.gov/38091370/?utm_source=chatgpt.com)
+
+### A01 — Aprender a frenar
+
+**Objetivo:** desaceleración.
+
+6 ×:
+
+**aceleración 8-10 m → frenada controlada en 3-4 apoyos**
+
+Después:
+
+4 ×:
+
+**5 m rápido → frenada agresiva pero controlada.**
+
+Descanso: 45-60 s.
+
+Duración: 15-20 min.
+
+---
+
+### A02 — Cambio 90°
+
+Por ambos lados:
+
+**2 × 3 repeticiones/lado**
+
+Cada repetición:
+
+5-8 m aceleración → COD 90° → 5 m salida.
+
+Descanso: 45-60 s entre repeticiones.
+
+2-3 min entre bloques.
+
+Duración: 20 min.
+
+---
+
+### A03 — Cambio 180°
+
+**6-8 × shuttle 5+5 m**
+
+o distancia relevante para la prueba.
+
+Descanso: 60-90 s.
+
+Prioridad:
+
+bajar centro de masas, apoyar correctamente, frenar y volver a acelerar.
+
+Duración: 15-20 min.
+
+---
+
+### A04 — Pro-Agility 5-10-5
+
+**4-6 repeticiones completas**
+
+Alternando dirección inicial.
+
+Descanso:
+
+**2-3 min.**
+
+La repetición tiene que ser máxima o casi máxima. No convertirlo en cardio.
+
+Duración: 20-25 min.
+
+---
+
+### A05 — Descomposición del circuito oficial
+
+Dividir el circuito objetivo en 3-4 sectores críticos.
+
+Cada sector:
+
+**2-3 repeticiones.**
+
+Descanso: 60-90 s.
+
+Finalmente:
+
+**1-2 circuitos completos al 85-90%.**
+
+Duración: 25-30 min.
+
+Muy importante en oposiciones.
+
+---
+
+### A06 — Fuerza lateral + COD
+
+| Ejercicio | Trabajo |
+|---|---|
+| Lateral bound | 3 × 4/lado |
+| COD 90° | 3 × 2/lado |
+| Shuttle 180° | 4 repeticiones |
+
+Descansos suficientemente largos para mantener velocidad.
+
+Duración: 20-25 min.
+
+---
+
+### A07 — Pliometría + COD
+
+| Ejercicio | Trabajo |
+|---|---|
+| Pogo jump | 2 × 10 |
+| CMJ | 3 × 3 |
+| COD específico corto | 6 repeticiones |
+
+Descanso: 60-120 s según ejercicio.
+
+Duración: 20-25 min.
+
+---
+
+### A08 — COD resistido
+
+**Solo deportistas con dominio técnico.**
+
+Chaleco aproximadamente 8-12,5% del peso corporal.
+
+Tres recorridos:
+
+- cambios de aproximadamente 90-100°;
+- recorrido multidireccional;
+- 180°.
+
+Una repetición de cada uno inicialmente.
+
+Progresar hasta 2-3.
+
+30 s entre repeticiones.
+
+3 min entre recorridos/bloques.
+
+Duración: 20-30 min.
+
+El 12,5% tiene precedente experimental, pero **no significa que 12,5% sea el peso óptimo universal**. Un estudio de seis semanas utilizó precisamente esa carga. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12533869/)
+
+---
+
+### A09 — Circuito oficial: calidad
+
+**3-5 repeticiones completas**
+
+Descanso:
+
+**3-5 min.**
+
+Objetivo:
+
+máximo rendimiento técnico.
+
+Como heurística práctica, terminar si los tiempos empeoran repetidamente aproximadamente un **3-5%** respecto al mejor o la técnica se deteriora.
+
+Ese umbral es criterio de coaching, no una frontera fisiológica establecida.
+
+Duración: 20-30 min.
+
+---
+
+### A10 — Agilidad reactiva
+
+Aunque no sea prioridad para muchas oposiciones, debe existir en la biblioteca.
+
+Un compañero, señal visual o sistema digital determina aleatoriamente dirección.
+
+**2 × 4-5 respuestas**
+
+3-6 s por repetición.
+
+Descanso: 45-60 s.
+
+2-3 min entre bloques.
+
+Duración: 15-20 min.
+
+Aquí sí existe:
+
+**percibir → decidir → desplazarse.**
+
+---
+
+# BLOQUE D — 8 sesiones de FUERZA/POTENCIA PARA CARRERA
+
+No quiero llenar al corredor de sentadillas y agujetas.
+
+Queremos **mucho retorno neuromuscular por poca fatiga**.
+
+La evidencia favorece fuerza pesada y métodos combinados para economía de carrera, mientras que la pliometría aporta también mejoras de sprint, salto y reactividad. [PubMed](https://pubmed.ncbi.nlm.nih.gov/36370207/?utm_source=chatgpt.com)
+
+### E01 — Micropíldora reactiva
+
+**Pogo jump 3 × 10-15**
+
+**CMJ 3 × 3**
+
+Descanso 60-90 s.
+
+Duración: 15 min.
+
+Ideal para insertar sin crear una sesión monstruosa.
+
+---
+
+### E02 — Potencia horizontal
+
+**Broad jump 4 × 3**
+
+**Lateral bound 3 × 4/lado**
+
+Descanso: 90-120 s.
+
+Duración: 15-20 min.
+
+---
+
+### E03 — Potencia multidireccional
+
+**Squat jump 3 × 4**
+
+**CMJ 3 × 3**
+
+**Lateral bound 3 × 3/lado**
+
+Descanso: 90-120 s.
+
+Duración: 20 min.
+
+---
+
+### E04 — Fuerza pesada mínima: sentadilla
+
+**Back squat 3 × 3-5 @ ≥80% 1RM aproximadamente / RIR 2-3**
+
+**Gemelo 2 × 6-8 @ RIR 2-3**
+
+Descanso sentadilla: 2,5-3 min.
+
+Duración: 25-30 min.
+
+No buscamos hipertrofia masiva ni fallo.
+
+---
+
+### E05 — Fuerza pesada mínima: bisagra
+
+**Trap-bar deadlift 3 × 3-5 @ RIR 2**
+
+**Hip thrust 2 × 5-6 @ RIR 2-3**
+
+Descanso: 2-3 min.
+
+Duración: 25-30 min.
+
+---
+
+### E06 — Complejo fuerza + salto
+
+3 bloques:
+
+**Back squat 3 reps @ ~80-85%**
+
+descanso suficiente,
+
+**CMJ 3 reps explosivas.**
+
+Después 2-3 min antes del siguiente bloque.
+
+Duración: 25-30 min.
+
+Si los saltos pierden claramente altura/velocidad, termina el trabajo explosivo.
+
+---
+
+### E07 — Fuerza completa del corredor
+
+| Ejercicio | Trabajo |
+|---|---|
+| Sentadilla o trap-bar deadlift | 3 × 4 @ RIR 2 |
+| Peso muerto rumano | 2 × 6 @ RIR 2-3 |
+| Split squat | 2 × 6/lado @ RIR 2-3 |
+| Gemelo | 2 × 8 |
+
+Duración: 35-45 min.
+
+Ésta sería la sesión más larga del banco.
+
+---
+
+### E08 — Primer neuromuscular
+
+**Pogo 2 × 8**
+
+**CMJ 3 × 2**
+
+**Broad jump 2 × 2**
+
+Descansos completos.
+
+Nada debe acercarse al fallo.
+
+Duración: 12-15 min.
+
+Muy útil cuando queremos mantener potencia con poquísimo coste.
+
+---
+
+# BLOQUE E — 4 sesiones MIXTAS para opositores
+
+Aquí empieza lo especialmente útil para EntrenaOP.
+
+### M01 — Empuje + plancha
+
+**Flexión lastrada 3 × 5 @ RIR 2-3**
+
+**Plancha frontal 3 × 40-60 s**
+
+**Pallof press 2 × 8/lado**
+
+Duración: 20-25 min.
+
+---
+
+### M02 — Flexiones + core de resistencia
+
+**EMOM flexiones 8 min: 25-35% M/min**
+
+Después:
+
+**plancha alta 3 × 40-60 s**
+
+**plancha lateral 2 × 30-40 s/lado**
+
+Duración: 20-25 min.
+
+---
+
+### M03 — Potencia + COD
+
+**CMJ 3 × 3**
+
+**Lateral bound 2 × 4/lado**
+
+**COD 90° 4 repeticiones/lado**
+
+**Split squat 2 × 5/lado @ RIR 3**
+
+Duración: 25-30 min.
+
+---
+
+### M04 — Primer preprueba
+
+Bajo volumen y alta especificidad:
+
+**Flexiones: 3 × 20-25% M**
+
+**Plancha: 2 × 20-30 s**
+
+**Circuito oficial: 2 repeticiones técnicamente rápidas pero no exhaustivas**
+
+Descansos largos.
+
+Duración: 15-20 min.
+
+La finalidad es **llegar fresco**, no demostrar forma en el entrenamiento.
+
+---
+
+# 2. Tenemos ya 40 sesiones, pero NO son 40 recetas equivalentes
+
+Esto es importante para Codex.
+
+| Grupo | Sesiones |
+|---|---:|
+| Flexiones | 10 |
+| Plancha/core | 8 |
+| COD/agilidad | 10 |
+| Fuerza/potencia para carrera | 8 |
+| Mixtas | 4 |
+| **TOTAL** | **40** |
+
+Una persona no debería realizar F01-F10 secuencialmente como si fueran diez niveles de videojuego.
+
+Son **herramientas**.
+
+La selección depende de lo que esté limitando su rendimiento.
+
+---
+
+# 3. Ejemplos REALES de investigación que podemos utilizar como contraste
+
+Esto responde exactamente a lo que me pedías de:
+
+> nivel + series + tiempos + descansos + frecuencia + semanas.
+
+## Referencia 1 — Flexiones: Kotarsky et al.
+
+Participantes: hombres moderadamente entrenados, unos 24 años.
+
+Duración:
+
+**4 semanas.**
+
+Frecuencia:
+
+**3 días/semana.**
+
+El protocolo de flexiones utilizó diez niveles, desde flexión en pared hasta flexión unilateral. Comenzaban con:
+
+**3 × 6**
+
+y trataban de añadir una repetición por serie hasta alcanzar:
+
+**3 × 8.**
+
+Para las variantes unilaterales utilizaban inicialmente 3 repeticiones por lado.
+
+Descanso entre series principales:
+
+**3 minutos.**
+
+Antes se realizaban dos series de calentamiento con una variante dos niveles más fácil:
+
+**8 reps → 1 min → 6 reps → 2 min → trabajo principal.**
+
+Cuando conseguían 3×8 durante **dos sesiones consecutivas**, pasaban a la siguiente variante y regresaban a 3×6.
+
+Tanto el grupo de flexiones como el de banca mejoraron fuerza; el grupo de flexiones progresó más específicamente en su progresión de flexiones. [PubMed](https://pubmed.ncbi.nlm.nih.gov/29466268/?utm_source=chatgpt.com)
+
+### Qué cogería EntrenaOP de este estudio
+
+La lógica:
+
+**dominar rango → aumentar reps → aumentar dificultad → volver a rango inferior.**
+
+### Qué NO cogería
+
+No demuestra que 3×6-8 sea la manera óptima de mejorar una prueba de **máximas flexiones en tiempo**.
+
+Ese objetivo necesita también resistencia y especificidad temporal.
+
+---
+
+# 4. Referencia real de plancha/core
+
+Hung et al. estudiaron atletas universitarios varones con al menos tres años de entrenamiento regular.
+
+Duración:
+
+**8 semanas.**
+
+Frecuencia:
+
+**3 sesiones/semana.**
+
+Duración por sesión:
+
+**30 min.**
+
+Dos sesiones supervisadas + una doméstica. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6407754/)
+
+### Semanas 1-3
+
+Dead bug: 1×30.
+
+Crunch: 3×20, pasando a 25.
+
+Bridge: 3×20, pasando a 25.
+
+Plancha: **3×45 s**, pasando a **3×60 s**.
+
+Plancha lateral con elevación de pierna: **3×30 → 45 s**.
+
+### Semanas 4-6
+
+Crunch: 3×25.
+
+Split bridge: 3×20/lado.
+
+Plancha con inestabilidad/banda: **3×60 s**.
+
+Plancha lateral: 3×30 s.
+
+### Semanas 7-8
+
+Mountain climber: 3×40.
+
+Pallof press: 3×60 s.
+
+Split bridge: 3×25.
+
+Cinco variaciones de plancha, **2×30 s cada una**.
+
+La sesión doméstica incluía:
+
+**3×1 min de plancha frontal.**
+
+El tiempo del test de resistencia del core pasó aproximadamente de **193,5 a 241,5 s** dentro del grupo de entrenamiento. Hay que ser rigurosos: la interacción grupo×tiempo no alcanzó significación estadística (`p=0,076`), por lo que es evidencia interesante pero no una demostración definitiva de superioridad. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6407754/)
+
+Esto me gusta porque nos enseña precisamente a **no vender como dogma lo que un estudio aislado encuentra**.
+
+---
+
+# 5. Referencia real de cambio de dirección
+
+Tenemos un estudio reciente con jugadores U19 de fútbol de élite.
+
+Participantes:
+
+**19 años aproximadamente, más de 8 años de experiencia.**
+
+Duración:
+
+**6 semanas.**
+
+Frecuencia:
+
+**2 sesiones/semana.**
+
+Utilizaron chaleco de:
+
+**12,5% del peso corporal.**
+
+Tres ejercicios diferentes, cada uno con cuatro cambios de dirección.
+
+El volumen fue: [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12533869/)
+
+| Semana | COD totales/sesión |
+|---|---:|
+| 1 | 12 |
+| 2 | 24 |
+| 3 | 24 |
+| 4 | 36 |
+| 5 | 24 |
+| 6 | 12 |
+
+30 s entre repeticiones.
+
+3 min entre bloques.
+
+Los recorridos incluían:
+
+- cuatro cambios de unos 100°;
+- recorrido multidireccional de 30 m;
+- cuatro giros de 180°. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12533869/)
+
+Es particularmente interesante porque:
+
+**carga → incremento → pico → reducción/taper.**
+
+Mejoraron aceleración a 5 m, saltos y algunas variables de rendimiento; en Illinois hubo mejora intragrupo, pero no una diferencia convincente entre grupos. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12533869/)
+
+Por tanto nuevamente:
+
+**buen modelo de sesión y progresión; no evidencia de que ésa sea “la mejor rutina de agilidad”.**
+
+Una revisión/meta-análisis de 2026 sí respalda globalmente que el entrenamiento resistido puede mejorar COD. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41762640/?utm_source=chatgpt.com)
+
+---
+
+# 6. Ahora viene lo que realmente buscabas: cómo utilizar estas sesiones según el tiempo disponible
+
+No utilizaría el mismo reparto para alguien que tiene **4 semanas** que para alguien que tiene **un año**.
+
+## 1 mesociclo — 4 semanas
+
+No tenemos tiempo para construir muchas capacidades desde cero.
+
+Predomina:
+
+**ESPECIFICIDAD + corregir la limitación principal.**
+
+Ejemplo de selección semanal:
+
+**Sesión A:** F03/F05 + P02  
+**Sesión B:** A05/A09 + E01  
+**Sesión C opcional corta:** F07/F08 + P03
+
+Semana final:
+
+reducir volumen y utilizar F10/P08/A09 con suficiente recuperación.
+
+No haría un bloque de hipertrofia general de tres semanas si la prueba es dentro de cuatro.
+
+---
+
+# 7. Dos mesociclos — 8 semanas
+
+Aquí ya tenemos margen.
+
+### Semanas 1-3
+Base.
+
+F01/F02/F03  
+P01/P04/P05  
+A01/A02/A03  
+E01/E04/E05
+
+### Semanas 4-6
+Desarrollo.
+
+F03/F05/F06  
+P02/P03  
+A04/A06/A07  
+E02/E03/E06
+
+### Semana 7
+Especificidad.
+
+F07/F08  
+P03/P07  
+A05/A09
+
+### Semana 8
+Reducción de fatiga + evaluación.
+
+F10  
+P08  
+A09
+
+Este horizonte encaja especialmente bien con el tipo de intervenciones de 6-8 semanas utilizadas con éxito en core, COD y fuerza complementaria. [PubMed Central (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6407754/)
+
+---
+
+# 8. Tres mesociclos — 12 semanas
+
+Aquí sí puedo hacer:
+
+**4 semanas base → 4 desarrollo → 3 específicas → 1 puesta a punto.**
+
+La diferencia respecto a ocho semanas es que ahora tenemos tiempo para elevar capacidades auxiliares antes de especializar.
+
+Por ejemplo, una persona floja de empuje puede utilizar más:
+
+F03/F04,
+
+antes de pasar hacia:
+
+F05/F07/F08.
+
+En piernas podemos mantener 1-2 dosis semanales de E04-E07.
+
+Y después reducirlas sin eliminarlas cuando empieza la fase específica.
+
+---
+
+# 9. Cuatro mesociclos — 16 semanas
+
+Yo lo estructuraría aproximadamente:
+
+**Bloque 1:** capacidad general y técnica.
+
+**Bloque 2:** fuerza + capacidad específica.
+
+**Bloque 3:** transformación hacia la prueba.
+
+**Bloque 4:** especificidad alta + puesta a punto.
+
+Ya no necesitamos machacar el circuito oficial durante cuatro meses.
+
+Primero mejoramos:
+
+**frenada → fuerza → potencia lateral → COD → circuito.**
+
+Y:
+
+**fuerza de empuje → volumen → densidad → ritmo de prueba → test.**
+
+Eso es muchísimo más lógico.
+
+---
+
+# 10. Seis mesociclos — 24 semanas
+
+Aquí evitaría hacer una progresión lineal infinita.
+
+Podemos alternar prioridades:
+
+**base → fuerza → volumen → fuerza/potencia → especificidad → prueba.**
+
+Pero manteniendo pequeñas dosis de las demás capacidades.
+
+Ejemplo:
+
+si durante un bloque priorizamos fuerza de empuje, no dejamos de hacer flexiones reglamentarias durante seis semanas.
+
+Las mantenemos con poco volumen.
+
+Esto respeta la especificidad sin impedir desarrollar el factor limitante.
+
+---
+
+# 11. Un año
+
+Aquí cambia completamente el planteamiento.
+
+**No haría un programa de 52 semanas persiguiendo continuamente el examen.**
+
+Tenemos tiempo para mejorar al deportista de verdad.
+
+Una estructura razonable sería:
+
+| Periodo | Prioridad aproximada |
+|---|---|
+| 1-8 semanas | preparación general + técnica |
+| 9-16 | fuerza máxima/relativa |
+| 17-24 | resistencia muscular + core |
+| 25-32 | potencia + COD |
+| 33-40 | integración específica |
+| 41-48 | preparación específica de pruebas |
+| últimas semanas | puesta a punto según fecha real |
+
+Esto tampoco debe convertirse en un calendario fijo.
+
+Si el usuario ya hace 70 flexiones pero falla el circuito:
+
+**no tiene sentido seguir dedicando el mismo volumen a flexiones que al circuito.**
+
+---
+
+# 12. Y aquí hay una conclusión MUY importante para EntrenaOP
+
+Creo que estas 40 sesiones ya nos enseñan cómo debería pensar la futura planificación.
+
+No selecciona simplemente:
+
+> «quiero mejorar flexiones → F06».
+
+Primero debe identificar algo más parecido a:
+
+**¿por qué no mejora las flexiones?**
+
+Porque puede ocurrir:
+
+### Caso A
+Hace 15 flexiones.
+
+Problema probable:
+
+**techo de fuerza muy bajo.**
+
+Tiene sentido F02/F03/F04.
+
+### Caso B
+Hace 35 y las primeras 20 parecen facilísimas pero se hunde rápidamente.
+
+Problema:
+
+**resistencia específica / distribución del esfuerzo.**
+
+F05/F06/F08.
+
+### Caso C
+Tiene fuerza enorme pero pierde muchas repeticiones por técnica.
+
+Problema:
+
+**especificidad.**
+
+F01/F07.
+
+### Caso D
+Hace 55 en entrenamiento pero 42 válidas en prueba.
+
+Entonces su máximo real para EntrenaOP **son 42**, no 55.
+
+---
+
+# 13. Lo mismo con la plancha
+
+Si alguien aguanta:
+
+**25 segundos**, necesita bastante capacidad básica.
+
+P01/P02/P05.
+
+Si aguanta:
+
+**2 minutos**, quizá necesita más especificidad:
+
+P03/P07.
+
+Si supera sobradamente el requisito oficial:
+
+seguir persiguiendo 5 minutos de plancha probablemente proporciona **poco retorno para la oposición**.
+
+Mantenimiento y trasladamos recursos a otra deficiencia.
+
+Eso es importantísimo.
+
+---
+
+# 14. Y agilidad todavía más
+
+Si pierde tiempo porque:
+
+**llega demasiado rápido al cono y tarda una eternidad en frenar**, A01/A03.
+
+Si frena perfectamente pero sale lento:
+
+fuerza/potencia + re-aceleración.
+
+Si ambos están bien pero falla el trazado:
+
+A05.
+
+Si domina todo por separado pero no consigue ensamblarlo:
+
+A09.
+
+Eso es muchísimo mejor que prescribir:
+
+> circuito × 10 hasta reventar.
+
+---
+
+# 15. Convivencia con carrera
+
+No colocaría alegremente:
+
+**8×400 + E07 + A09**
+
+en 24 horas.
+
+La evidencia más reciente es bastante tranquilizadora respecto al entrenamiento concurrente: en general se pueden mejorar simultáneamente resistencia y fuerza, pero en deportistas entrenados la organización sigue importando y hacer fuerza y resistencia dura en la misma sesión puede perjudicar especialmente el desarrollo de fuerza inferior. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41762427/?utm_source=chatgpt.com)
+
+Para EntrenaOP, las sesiones:
+
+**E04-E07 y A06-A09**
+
+deberían considerarse relativamente costosas para piernas.
+
+Mientras:
+
+**F01/F05/P01/P02**
+
+pueden convivir mucho más fácilmente con una semana dura de carrera.
+
+Ésa será una distinción esencial posteriormente.
+
+---
+
+# 16. Norma final de estas 40 sesiones
+
+Quiero que quede grabada porque evitará muchísimos errores:
+
+> **Una sesión base representa un estímulo, no un programa.**
+
+Y el programa surge de combinar esos estímulos según:
+
+**objetivo + nivel actual + déficit + días disponibles + tiempo hasta prueba + carrera + entrenamiento previo + respuesta real.**
+
+Estas 40 piezas ya me parecen un banco suficientemente sólido para que EntrenaOP pueda empezar a construir programas sin tener que inventarse entrenamientos cada vez.
+
+Y deliberadamente **no he metido todavía dominadas, suspensión CNP, cuerda ni 1RM de los grandes patrones**, porque mezclarlo ahora nos daría 80-100 sesiones y perderíamos calidad. Lo siguiente que haría sería construir un segundo banco equivalente para **dominadas/suspensión, cuerda y fuerza máxima**, y entonces tendríamos prácticamente todas las piezas físicas necesarias para las oposiciones que queremos cubrir.

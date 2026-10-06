@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:equatable/equatable.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 
 enum WorkoutScheduleStatus { initial, loading, ready, failure }
 
@@ -10,6 +11,7 @@ class WorkoutScheduleState extends Equatable {
     required this.selectedDay,
     this.status = WorkoutScheduleStatus.initial,
     this.items = const [],
+    this.programs = const [],
     this.publicTemplates = const [],
     this.personalTemplates = const [],
     this.busyItemId,
@@ -20,12 +22,20 @@ class WorkoutScheduleState extends Equatable {
   final DateTime weekStart;
   final DateTime selectedDay;
   final List<ScheduledWorkout> items;
+  final List<AdaptiveProgramProgress> programs;
   final List<WorkoutTemplateSummary> publicTemplates;
   final List<WorkoutTemplateSummary> personalTemplates;
   final String? busyItemId;
   final String? errorMessage;
 
   DateTime get weekEnd => weekStart.add(const Duration(days: 6));
+
+  AdaptiveProgramProgress? get currentProgram {
+    for (final program in programs) {
+      if (program.isCurrent) return program;
+    }
+    return null;
+  }
 
   List<ScheduledWorkout> get selectedItems => items
       .where((item) => _sameDate(item.scheduledDate, selectedDay))
@@ -36,6 +46,7 @@ class WorkoutScheduleState extends Equatable {
     DateTime? weekStart,
     DateTime? selectedDay,
     List<ScheduledWorkout>? items,
+    List<AdaptiveProgramProgress>? programs,
     List<WorkoutTemplateSummary>? publicTemplates,
     List<WorkoutTemplateSummary>? personalTemplates,
     String? busyItemId,
@@ -47,6 +58,7 @@ class WorkoutScheduleState extends Equatable {
     weekStart: weekStart ?? this.weekStart,
     selectedDay: selectedDay ?? this.selectedDay,
     items: items ?? this.items,
+    programs: programs ?? this.programs,
     publicTemplates: publicTemplates ?? this.publicTemplates,
     personalTemplates: personalTemplates ?? this.personalTemplates,
     busyItemId: clearBusy ? null : busyItemId ?? this.busyItemId,
@@ -59,6 +71,7 @@ class WorkoutScheduleState extends Equatable {
     weekStart,
     selectedDay,
     items,
+    programs,
     publicTemplates,
     personalTemplates,
     busyItemId,

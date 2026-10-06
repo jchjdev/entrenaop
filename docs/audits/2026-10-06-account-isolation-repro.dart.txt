@@ -1,0 +1,61 @@
+import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
+import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_editor_draft_store.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_mutation_queue.dart';
+import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() {
+  test('reproduce una mutación de A bloqueando la cola de B', () async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final queueA = SharedPreferencesWorkoutMutationQueue(preferences);
+    await queueA.enqueue(PendingWorkoutMutation(
+      operationId: 'operation-A', type: WorkoutMutationType.completeSet,
+      resourceId: 'result-A', values: const {'p_result_id': 'result-A'},
+      createdAt: DateTime.utc(2026, 10, 6),
+    ));
+    final queueB = SharedPreferencesWorkoutMutationQueue(preferences);
+    await queueB.enqueue(PendingWorkoutMutation(
+      operationId: 'operation-B', type: WorkoutMutationType.completeSet,
+      resourceId: 'result-B', values: const {'p_result_id': 'result-B'},
+      createdAt: DateTime.utc(2026, 10, 6, 1),
+    ));
+    final remoteB = _RemoteForB();
+    final repositoryB = WorkoutRepositoryImpl(remoteDataSource: remoteB, mutationQueue: queueB);
+    expect(await repositoryB.getPendingMutationCount(), 2);
+    await expectLater(repositoryB.syncPendingMutations(), throwsA(isA<PostgrestException>()));
+    expect(remoteB.attempted, ['result-A']);
+    expect(await repositoryB.getPendingMutationCount(), 2);
+  });
+
+  test('reproduce recuperación del borrador nuevo de A al entrar B', () async {
+    SharedPreferences.setMockInitialValues({});
+    final preferences = await SharedPreferences.getInstance();
+    final storeA = SharedPreferencesWorkoutEditorDraftStore(preferences);
+    await storeA.write('new', WorkoutEditorDraftSnapshot(
+      input: const CreatePersonalWorkoutInput(name: 'Sesión privada de A', blocks: []),
+      savedAt: DateTime.utc(2026, 10, 6),
+    ));
+    final storeB = SharedPreferencesWorkoutEditorDraftStore(preferences);
+    expect((await storeB.read('new'))?.input.name, 'Sesión privada de A');
+  });
+}
+
+class _RemoteForB implements WorkoutRemoteDataSource {
+  final attempted = <String>[];
+  @override
+  Future<void> completeSet(String operationId, Map<String, dynamic> values) async {
+    final result = values['p_result_id'] as String;
+    attempted.add(result);
+    if (result == 'result-A') {
+      throw const PostgrestException(message: 'Resultado ajeno', code: '42501');
+    }
+  }
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

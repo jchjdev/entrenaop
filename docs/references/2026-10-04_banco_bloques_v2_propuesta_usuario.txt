@@ -1,0 +1,1645 @@
+Sí. Yo **sustituiría el banco anterior por esta V2**. No intentaría parchear las 40 propuestas originales una a una porque Codex ha detectado correctamente que había ambigüedades de base.
+
+La norma para Codex debería ser: **las 40 anteriores quedan como borrador conceptual; esta versión es la referencia deportiva nueva**.
+
+La evidencia respalda los principios generales —especificidad, cargas altas para fuerza, volumen suficiente, intención explosiva para potencia, no necesidad de fallo, etc.— pero **las series/repeticiones exactas que definimos aquí son plantillas de prescripción razonadas, no “la dosis científicamente óptima”**, porque esa precisión no existe. El ACSM 2026 es bastante claro al respecto. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41843416/?utm_source=chatgpt.com)
+
+---
+
+# ENTRAOP — BANCO DE BLOQUES DE FUERZA/RENDIMIENTO V2
+
+## 1. Cambio conceptual
+
+Ya no existen:
+
+> 40 entrenamientos cerrados.
+
+Existen:
+
+> **40 bloques de estímulo combinables.**
+
+La jerarquía es:
+
+```text
+EJERCICIO
+    ↓
+PRESCRIPCIÓN
+    ↓
+BLOQUE DE ESTÍMULO
+    ↓
+varios bloques compatibles
+    ↓
+SESIÓN
+    ↓
+varias sesiones + carrera
+    ↓
+MICROCICLO
+```
+
+Un bloque puede funcionar solo o formar parte de una sesión mayor.
+
+---
+
+# 2. Métricas que NO debemos mezclar
+
+Esto corrige el problema principal señalado por Codex.
+
+### `TEST_SCORE`
+
+Resultado oficial.
+
+Ejemplo:
+
+```text
+47 flexiones válidas / 120 s
+```
+
+### `SET_CAPACITY`
+
+Capacidad máxima en una serie concreta bajo condiciones estandarizadas.
+
+Ejemplo:
+
+```text
+31 flexiones consecutivas válidas
+```
+
+### `WORKING_SET`
+
+Prescripción actual.
+
+Ejemplo:
+
+```text
+4 × 15
+RIR 3
+75 s descanso
+```
+
+### `TARGET_PACE`
+
+Cadencia necesaria para una determinada marca.
+
+Ejemplo:
+
+```text
+objetivo:
+50 reps / 120 s
+
+cadencia media:
+25 reps/min
+```
+
+**No se puede deducir el RIR de una serie usando directamente `TEST_SCORE`.**
+
+La relación entre repeticiones y esfuerzo presenta bastante variabilidad individual; incluso la relación reps/%1RM tiene una dispersión considerable. [PubMed](https://pubmed.ncbi.nlm.nih.gov/37792272/?utm_source=chatgpt.com)
+
+---
+
+# 3. Cómo utilizaremos RIR
+
+Para fuerza dinámica:
+
+**sí.**
+
+Para hipertrofia/resistencia dinámica:
+
+**sí, pero con prudencia.**
+
+Para planchas:
+
+**no.**
+
+Para saltos:
+
+**no.**
+
+Para circuitos:
+
+**no.**
+
+Para tests máximos:
+
+**normalmente no.**
+
+Además, el RIR es más preciso cuando las cargas son relativamente altas y estamos cerca del fallo; empeora con cargas ligeras y muchas repeticiones. [PubMed](https://pubmed.ncbi.nlm.nih.gov/33337690/?utm_source=chatgpt.com)
+
+Por tanto, en series largas de flexiones:
+
+> RIR es información auxiliar, no la única fuente de verdad.
+
+También miramos repeticiones, pérdida de rendimiento, técnica y descansos.
+
+---
+
+# 4. Dos dosis para cada bloque
+
+Ésta es una mejora importante.
+
+Cada bloque tendrá:
+
+### `FULL_DOSE`
+
+Cuando constituye gran parte del entrenamiento.
+
+### `COMBINED_DOSE`
+
+Cuando se combina con otro estímulo que comparte estructuras o fatiga.
+
+Así evitamos hacer:
+
+> sesión de fuerza completa + sesión de resistencia completa + sesión de core completa
+
+y llamarlo simplemente “combinación”.
+
+---
+
+# 5. Tiempo real
+
+También corrijo mi estimación anterior.
+
+Cada bloque tendrá:
+
+**`standalone_time`**
+
+Incluye calentamiento razonable, preparación, trabajo y descansos.
+
+Y:
+
+**`incremental_time`**
+
+Tiempo aproximado que añade cuando el deportista ya está caliente y preparado por un bloque previo compatible.
+
+No deben sumarse calentamientos completos varias veces.
+
+---
+
+# 6. Huella de carga
+
+No asignamos un `fatigue_cost` absoluto al ejercicio.
+
+La huella pertenece al **bloque completo**.
+
+Utilizaré:
+
+- `PH`: empuje horizontal dinámico.
+- `PS`: soporte de hombro/tríceps/serrato en cadena cerrada.
+- `CA`: core anti-extensión.
+- `CL`: core lateral/antirrotación.
+- `LS`: fuerza tren inferior.
+- `LE`: carga excéntrica/local tren inferior.
+- `PLY`: pliometría/reactividad.
+- `COD`: frenada/cambio de dirección.
+- `MU`: fatiga metabólica tren superior.
+- `TEC`: demanda técnica.
+
+Con:
+
+`L = baja`, `M = moderada`, `H = alta`.
+
+Esto **describe el bloque concreto**, no el ejercicio universalmente.
+
+---
+
+# A. FLEXIONES — 12 bloques
+
+## FLEX-T01 — Técnica reglamentaria
+
+**Objetivo:** automatizar repeticiones válidas.
+
+**Rol:** microdosis/secundario.
+
+**Prescripción completa:**  
+4 × 5-10 repeticiones perfectas, deliberadamente fáciles.  
+RIR ≥6.  
+45-60 s descanso.
+
+**Combinado:** 2-3 × 5-8.
+
+**Criterio:** cero repeticiones deliberadamente inválidas.
+
+**Tiempo:** 10-14 min / +6-8 min.
+
+**Huella:** PH:L, PS:L, TEC:M.
+
+Aquí **sí queremos muchas repeticiones en reserva** porque el objetivo es técnico, no fatigar.
+
+---
+
+## FLEX-S01 — Progresión mecánica
+
+**Objetivo:** aumentar fuerza específica utilizando la variante apropiada.
+
+Elegir entre:
+
+flexión inclinada → estándar → lastre/variante más difícil.
+
+La variante utilizada debe permitir:
+
+**3-4 × 4-8 @ RIR 2-3.**
+
+Descanso 120-180 s.
+
+**Combinado:** 3 × 4-6.
+
+**Tiempo:** 16-22 / +12-16 min.
+
+**Huella:** PH:H, PS:M, CA:M.
+
+Si 8 flexiones estándar dejan 15 RIR, **esa variante no sirve para este bloque**. Se aumenta dificultad.
+
+La progresión de variantes de flexiones tiene respaldo experimental para mejorar fuerza específica. [PubMed](https://pubmed.ncbi.nlm.nih.gov/29466268/?utm_source=chatgpt.com)
+
+---
+
+## FLEX-S02 — Flexión lastrada
+
+**Objetivo:** elevar techo de fuerza específico.
+
+3-4 × 4-6 @ RIR 2-3.
+
+Descanso:
+
+150-180 s.
+
+**Combinado:**
+
+3 × 4-6.
+
+**Tiempo:** 18-24 / +14-18.
+
+**Huella:** PH:H, PS:M, CA:M.
+
+Nunca al fallo de manera sistemática.
+
+---
+
+## FLEX-S03 — Press banca de soporte
+
+**Objetivo:** desarrollar fuerza de empuje cuantificable.
+
+3-4 × 3-6 @ RIR 2-3.
+
+Descanso:
+
+150-210 s.
+
+**Combinado:**
+
+3 × 3-5.
+
+**Tiempo:** 22-30 / +16-22.
+
+**Huella:** PH:H.
+
+Es menos específico que la flexión, por lo que **no sustituye la práctica reglamentaria**. La especificidad de tarea está bien establecida. [PubMed](https://pubmed.ncbi.nlm.nih.gov/40314751/?utm_source=chatgpt.com)
+
+---
+
+## FLEX-S04 — Press inclinado mancuernas
+
+**Objetivo:** fuerza/masa de soporte.
+
+3 × 6-10 @ RIR 2-3.
+
+Descanso:
+
+90-150 s.
+
+**Combinado:**
+
+2 × 6-10.
+
+**Tiempo:** 15-20 / +10-14.
+
+**Huella:** PH:M-H.
+
+Es accesorio; no sustituye flexiones.
+
+---
+
+## FLEX-E01 — Series repetidas submáximas
+
+**Objetivo:** resistencia muscular local.
+
+No utilizar porcentaje del test oficial.
+
+Elegir un número de repeticiones que permita aproximadamente:
+
+- primeras series: RIR ~4-5;
+- últimas: RIR ~2-3.
+
+**Completo:**
+
+4-6 series.
+
+Descanso:
+
+60-90 s.
+
+**Combinado:**
+
+3-4 series.
+
+Si el usuario es malo estimando RIR, controlar además:
+
+- repeticiones realizadas;
+- técnica;
+- caída entre series.
+
+**Tiempo:** 14-20 / +10-15.
+
+**Huella:** PH:M, MU:H, PS:M.
+
+---
+
+## FLEX-E02 — Densidad EMOM
+
+**Objetivo:** acumular repeticiones válidas con recuperación incompleta pero controlada.
+
+8-12 minutos.
+
+Cada minuto:
+
+un número individualizado de flexiones que permita conservar técnica durante todo el bloque.
+
+No derivarlo automáticamente de:
+
+> “hace 50 en la prueba”.
+
+El número debe calibrarse según su rendimiento real.
+
+**Combinado:** 6-8 min.
+
+**Tiempo:** 12-16 / +7-10.
+
+**Huella:** PH:M, MU:M-H.
+
+Si las últimas rondas se convierten en fallo continuo, el bloque está mal dosificado.
+
+---
+
+## FLEX-SP01 — Cadencia específica corta
+
+**Objetivo:** aprender ritmo de prueba.
+
+4-6 × 20-30 s.
+
+A:
+
+**cadencia objetivo de competición.**
+
+Descanso:
+
+45-75 s.
+
+**Combinado:**
+
+3-4 intervalos.
+
+**Tiempo:** 10-15 / +7-10.
+
+**Huella:** PH:L-M, MU:M, TEC:H.
+
+Aquí manda:
+
+**repeticiones válidas por tiempo**, no RIR.
+
+---
+
+## FLEX-SP02 — Cadencia específica media
+
+3-4 × 40-60 s.
+
+Cadencia objetivo o ligeramente inferior según fase.
+
+Descanso:
+
+90-150 s.
+
+**Combinado:**
+
+2-3 intervalos.
+
+**Tiempo:** 14-20 / +10-15.
+
+**Huella:** PH:M, MU:H, TEC:H.
+
+---
+
+## FLEX-SP03 — Prueba fraccionada
+
+**Objetivo:** alta especificidad sin realizar el test completo.
+
+Dos fragmentos de aproximadamente:
+
+**40-50% de la duración oficial cada uno.**
+
+Cadencia:
+
+objetivo de prueba.
+
+Descanso:
+
+2-3 min.
+
+Ejemplo para 120 s:
+
+```text
+50-60 s
+descanso
+50-60 s
+```
+
+**No tiene versión combinada fuerte.**
+
+Tiempo:
+
+12-18 / +10-14.
+
+Huella:
+
+PH:M-H, MU:H, TEC:H.
+
+Los porcentajes temporales son una **decisión de programación**, no un umbral fisiológico demostrado.
+
+---
+
+## FLEX-P01 — Flexión explosiva
+
+**Objetivo:** producir fuerza rápidamente.
+
+3-5 × 3-5.
+
+Máxima intención explosiva.
+
+Descanso:
+
+90-150 s.
+
+Parar antes de que las repeticiones dejen de ser claramente explosivas.
+
+**Combinado:**
+
+3 × 3.
+
+**Tiempo:** 10-15 / +7-10.
+
+**Huella:** PH:M, TEC:H, neuromuscular alto pero metabólico bajo.
+
+La potencia responde mejor a volumen bajo/moderado e intención concéntrica rápida que a series agotadoras. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41843416/?utm_source=chatgpt.com)
+
+---
+
+## FLEX-X01 — Test oficial
+
+**Objetivo:** medir.
+
+Un intento bajo protocolo reglamentario.
+
+Si oficialmente existen varios intentos, respetar dicho protocolo.
+
+**No realizar después un bloque completo duro de flexiones.**
+
+Tiempo:
+
+10-20 min según protocolo.
+
+Huella:
+
+PH:H, MU:H, TEC:H.
+
+---
+
+# B. PLANCHA / CORE — 8 bloques
+
+## PLANK-T01 — Posición reglamentaria
+
+3-4 × 20-30 s.
+
+RPE 4-5.
+
+Descanso 30-45 s.
+
+**Combinado:** 2×20-30 s.
+
+Tiempo:
+
+8-10 / +4-6.
+
+Huella:
+
+CA:L, TEC:H.
+
+---
+
+## PLANK-E01 — Resistencia submáxima
+
+3-5 holds.
+
+Duración individualizada para terminar aproximadamente:
+
+**RPE 6-7**, manteniendo técnica perfecta.
+
+Descanso:
+
+45-75 s.
+
+No utilizamos RIR.
+
+**Combinado:**
+
+2-3 holds.
+
+Tiempo:
+
+12-18 / +8-12.
+
+Huella:
+
+CA:M.
+
+---
+
+## PLANK-E02 — Holds largos
+
+2-3 holds.
+
+Final:
+
+aproximadamente RPE 8.
+
+Nunca prolongarlos artificialmente después de perder la posición válida.
+
+Descanso:
+
+90-120 s.
+
+**Combinado:**
+
+2 holds.
+
+Tiempo:
+
+12-18 / +8-12.
+
+Huella:
+
+CA:H.
+
+---
+
+## PLANK-SP01 — Fragmentos de tiempo objetivo
+
+Si la marca objetivo es `G`:
+
+2-3 segmentos de aproximadamente **30-50% de G**, siempre que mantengan buena técnica y esfuerzo razonable.
+
+Ejemplo:
+
+objetivo 120 s:
+
+40-60 s por segmento.
+
+Descanso:
+
+60-120 s.
+
+Esto se basa en **tiempo objetivo**, no en un porcentaje del máximo actual.
+
+Tiempo:
+
+12-18 min.
+
+Huella:
+
+CA:M-H, TEC:H.
+
+---
+
+## PLANK-S01 — Plancha frontal alta
+
+3 × 30-60 s.
+
+RPE aproximado 6-7.
+
+Descanso:
+
+45-60 s.
+
+**Combinado:**
+
+2 × 30-45 s.
+
+Tiempo:
+
+10-14 / +6-8.
+
+Huella:
+
+CA:M, **PS:M**, PH:L.
+
+Y aquí incorporamos explícitamente la objeción de Codex:
+
+> **esto NO es “solo core”.**
+
+Comparte estabilización de hombro, tríceps y serrato con las flexiones.
+
+---
+
+## CORE-S01 — Dead bug / anti-extensión de baja carga
+
+3 × 6-10 por lado.
+
+Movimiento controlado.
+
+No perseguir fallo.
+
+**Combinado:**
+
+2 × 6-8/lado.
+
+Tiempo:
+
+10-12 / +6-8.
+
+Huella:
+
+CA:L-M.
+
+Muy compatible con empuje porque no replica el apoyo prolongado de brazos.
+
+---
+
+## CORE-S02 — Lateral + antirrotación
+
+Plancha lateral:
+
+2-3 × 20-40 s/lado.
+
+Pallof press:
+
+2-3 × 8-12/lado.
+
+Descanso corto/moderado.
+
+**Combinado:**
+
+2 series de cada uno.
+
+Tiempo:
+
+14-20 / +10-14.
+
+Huella:
+
+CL:M.
+
+---
+
+## PLANK-X01 — Test oficial
+
+Un intento máximo/reglamentario.
+
+Termina cuando deja de cumplirse el estándar.
+
+No RIR.
+
+No intentar después otro bloque duro de plancha.
+
+La capacidad de resistencia de core puede mejorar claramente mediante entrenamiento específico durante varias semanas. [PubMed](https://pubmed.ncbi.nlm.nih.gov/30849105/?utm_source=chatgpt.com)
+
+---
+
+# C. CAMBIO DE DIRECCIÓN / CIRCUITO — 10 bloques
+
+La evidencia favorece desarrollar COD mediante una combinación de fuerza, acciones multidireccionales y pliometría; los estímulos mixtos verticales/horizontales parecen particularmente útiles. [PubMed](https://pubmed.ncbi.nlm.nih.gov/38091370/?utm_source=chatgpt.com)
+
+## COD-T01 — Frenada lineal
+
+Aceleración de 8-12 m.
+
+Frenada técnicamente controlada.
+
+**Completo:**
+
+6-8 repeticiones.
+
+**Combinado:**
+
+4-5.
+
+Descanso:
+
+45-75 s.
+
+Intensidad inicial moderada-alta y progresivamente alta según dominio.
+
+Tiempo:
+
+15-20 / +10-14.
+
+Huella:
+
+COD:M, LE:M, TEC:H.
+
+---
+
+## COD-T02 — Cambio 90°
+
+2 × 3 repeticiones por lado.
+
+Descanso:
+
+60-90 s entre repeticiones.
+
+2 min entre bloques.
+
+**Combinado:**
+
+2×2/lado.
+
+Tiempo:
+
+18-22 / +12-16.
+
+Huella:
+
+COD:M-H, LE:M, TEC:H.
+
+---
+
+## COD-T03 — Cambio 180°
+
+6 repeticiones de shuttle corto.
+
+Descanso:
+
+90-120 s.
+
+**Combinado:**
+
+4 repeticiones.
+
+Tiempo:
+
+16-22 / +10-15.
+
+Huella:
+
+COD:H, LE:M-H.
+
+---
+
+## COD-T04 — Transiciones/obstáculos
+
+Descomponer los elementos técnicos difíciles del circuito.
+
+6-10 ejecuciones cortas.
+
+Intensidad inicialmente submáxima, progresando sin sacrificar precisión.
+
+Descanso:
+
+45-90 s.
+
+**Combinado:**
+
+4-6 ejecuciones.
+
+Tiempo:
+
+15-20 / +10-14.
+
+Huella:
+
+COD:M, TEC:H.
+
+---
+
+## COD-S01 — 5-10-5 / shuttle de calidad
+
+4-6 repeticiones.
+
+Descanso:
+
+2-3 min.
+
+**Combinado:**
+
+3-4.
+
+Tiempo:
+
+20-25 / +14-18.
+
+Huella:
+
+COD:H, LE:M-H, TEC:H.
+
+No convertirlo en circuito cardiovascular.
+
+---
+
+## COD-SP01 — Sectores del circuito oficial
+
+Seleccionar 2-3 sectores limitantes.
+
+Cada sector:
+
+2-3 repeticiones.
+
+Descanso:
+
+60-120 s.
+
+**Combinado:**
+
+1-2 reps/sector.
+
+Tiempo:
+
+18-25 / +12-18.
+
+Huella:
+
+COD:M-H, TEC:H.
+
+---
+
+## COD-SP02 — Circuito completo de calidad
+
+3-5 repeticiones completas.
+
+Descanso:
+
+3-5 min.
+
+Cronometrar.
+
+**Combinado:**
+
+2-3 repeticiones.
+
+Tiempo:
+
+25-35 / +18-25.
+
+Huella:
+
+COD:H, LE:M-H, TEC:H.
+
+Criterio de corte:
+
+**degradación técnica clara o pérdida repetida de rendimiento.**
+
+No fijaría todavía un 3% o 5% universal.
+
+---
+
+## AGIL-R01 — Agilidad reactiva
+
+Para capacidades no completamente preplanificadas.
+
+2 × 4-5 respuestas a señal externa.
+
+Cada esfuerzo muy corto.
+
+Descanso:
+
+45-75 s.
+
+2-3 min entre bloques.
+
+**Combinado:**
+
+1×4-5.
+
+Tiempo:
+
+15-20 / +8-12.
+
+Huella:
+
+COD:M, TEC:H, decisión/percepción alta.
+
+No confundir con el circuito conocido de oposición.
+
+---
+
+## COD-R01 — COD resistido avanzado
+
+Solo para personas con buena técnica.
+
+Resistencia externa **ligera/moderada individualizada**, sin establecer 12,5% como valor mágico.
+
+2-3 × 2-3 repeticiones.
+
+Recuperación suficiente.
+
+Tiempo:
+
+18-25 / +12-18.
+
+Huella:
+
+COD:H, LS:M, LE:M.
+
+Los métodos resistidos pueden mejorar COD, pero no existe una carga universal óptima. [PubMed](https://pubmed.ncbi.nlm.nih.gov/41985742/?utm_source=chatgpt.com)
+
+---
+
+## COD-X01 — Test oficial
+
+Ejecutar exactamente el protocolo de la oposición.
+
+El test es un bloque principal.
+
+Después:
+
+solo técnica muy ligera si existe alguna razón.
+
+No añadir COD duro.
+
+---
+
+# D. FUERZA/POTENCIA DE PIERNA PARA CARRERA — 10 bloques
+
+La evidencia respalda que el entrenamiento pesado y la pliometría pueden mejorar economía de carrera, y que los métodos de fuerza pesada parecen especialmente efectivos en corredores entrenados. [PubMed](https://pubmed.ncbi.nlm.nih.gov/36370207/?utm_source=chatgpt.com)
+
+## RUN-S01 — Sentadilla pesada
+
+3 × 3-5.
+
+Aproximadamente 80-90% 1RM cuando esté correctamente establecido, o:
+
+**RIR 2-3.**
+
+Descanso:
+
+180 s aproximadamente.
+
+**Combinado:**
+
+2-3 × 3-5.
+
+Tiempo:
+
+25-35 / +18-25.
+
+Huella:
+
+LS:H, LE:M.
+
+No fallo.
+
+---
+
+## RUN-S02 — Trap-bar deadlift
+
+3 × 3-5 @ RIR 2-3.
+
+Descanso:
+
+180 s.
+
+**Combinado:**
+
+2-3 × 3-5.
+
+Tiempo:
+
+25-35 / +18-25.
+
+Huella:
+
+LS:H, LE:M.
+
+---
+
+## RUN-S03 — Peso muerto rumano
+
+3 × 5-6 @ RIR 2-3.
+
+Descanso:
+
+120-180 s.
+
+**Combinado:**
+
+2 × 5-6.
+
+Tiempo:
+
+20-25 / +14-18.
+
+Huella:
+
+LS:M-H, LE:H.
+
+Por su componente excéntrico hay que tener cuidado al combinarlo cerca de carrera rápida/COD.
+
+---
+
+## RUN-S04 — Hip thrust
+
+3 × 4-6 @ RIR 2-3.
+
+Descanso:
+
+120-180 s.
+
+**Combinado:**
+
+2 × 4-6.
+
+Tiempo:
+
+18-24 / +12-17.
+
+Huella:
+
+LS:M-H, LE:L-M.
+
+---
+
+## RUN-S05 — Unilateral
+
+Elegir:
+
+split squat / búlgara / step-up según contexto.
+
+2-3 × 5-8/lado @ RIR 2-3.
+
+Descanso:
+
+90-150 s.
+
+**Combinado:**
+
+2 × 5-6/lado.
+
+Tiempo:
+
+20-28 / +14-20.
+
+Huella:
+
+LS:M, LE:M-H.
+
+---
+
+## RUN-S06 — Gemelo pesado
+
+3 × 5-8 @ RIR 2-3.
+
+Descanso:
+
+90-120 s.
+
+**Combinado:**
+
+2 × 5-8.
+
+Tiempo:
+
+14-18 / +9-12.
+
+Huella:
+
+LS local:M-H.
+
+---
+
+## RUN-P01 — Pogo
+
+3 × 8-12 contactos.
+
+Máxima calidad reactiva.
+
+Descanso:
+
+45-75 s.
+
+**Combinado/microdosis:**
+
+2 × 8-10.
+
+Tiempo:
+
+10-14 / +6-8.
+
+Huella:
+
+PLY:M.
+
+No perseguir quemazón ni fallo.
+
+---
+
+## RUN-P02 — CMJ
+
+4 × 3.
+
+Máxima intención.
+
+Descanso:
+
+90-120 s.
+
+**Combinado:**
+
+3 × 2-3.
+
+Tiempo:
+
+12-16 / +8-10.
+
+Huella:
+
+PLY:M, TEC:H.
+
+La pliometría mejora salto, sprint y COD en múltiples poblaciones. [PubMed](https://pubmed.ncbi.nlm.nih.gov/40469857/?utm_source=chatgpt.com)
+
+---
+
+## RUN-P03 — Potencia horizontal/lateral
+
+Broad jump:
+
+3 × 3.
+
+Lateral bound:
+
+2 × 3/lado.
+
+Descanso:
+
+90-120 s.
+
+**Combinado:**
+
+2×2 broad + 2×2/lado lateral.
+
+Tiempo:
+
+15-20 / +10-14.
+
+Huella:
+
+PLY:M-H, COD:L.
+
+---
+
+## RUN-P04 — Primer neuromuscular
+
+Diseñado expresamente como microdosis.
+
+Pogo:
+
+2 × 8.
+
+CMJ:
+
+3 × 2.
+
+Broad jump:
+
+2 × 2.
+
+Descansos suficientes.
+
+Nada cerca del fallo.
+
+Tiempo:
+
+10-14 / +8-10.
+
+Huella:
+
+PLY:L-M.
+
+Éste es precisamente un bloque que **sí puede convivir mucho mejor con otras tareas**.
+
+---
+
+# 7. Cómo se combinan AHORA
+
+Ésta es la pieza que faltaba.
+
+## Regla 1 — No sumar dosis completas automáticamente
+
+Si tenemos:
+
+```text
+FLEX-S02
++
+FLEX-E01
+```
+
+no hacemos necesariamente:
+
+```text
+4×6 lastradas
++
+6 series resistencia
+```
+
+Usaríamos por ejemplo:
+
+**FLEX-S02 completo + FLEX-E01 combinado**
+
+o viceversa según prioridad.
+
+---
+
+# 8. Ejemplo correcto: fuerza + resistencia de flexiones
+
+Si el objetivo principal es fuerza:
+
+### FLEX-S02
+
+4×4-6 @ RIR2-3.
+
+Después:
+
+### FLEX-E01 COMBINADO
+
+3 series submáximas.
+
+No seis.
+
+Resultado:
+
+aproximadamente **30-35 min reales**, dependiendo del calentamiento y descansos.
+
+---
+
+# 9. Ejemplo correcto: flexiones + core
+
+Esto:
+
+### FLEX-S02
+3-4 series pesadas
+
++
+
+### CORE-S01
+dead bug
+
+es muy compatible.
+
+Pero:
+
+### FLEX-S02
++
+
+### FLEX-E01
++
+
+### PLANK-S01 plancha alta
+
+acumula:
+
+pectoral + tríceps + hombro/serrato + estabilización anterior.
+
+Por tanto, si se combinan los tres:
+
+**al menos uno debe ser microdosis o dosis combinada**.
+
+Codex tenía toda la razón en esto.
+
+---
+
+# 10. Potencia + COD
+
+Muy buena combinación posible:
+
+### RUN-P02
+
+CMJ 3×3.
+
+↓
+
+### COD-T02
+
+cambios 90°.
+
+Porque ambos necesitan frescura.
+
+Orden habitual:
+
+**potencia → COD.**
+
+Pero no haría:
+
+> 100 contactos pliométricos + 10 circuitos máximos.
+
+La literatura muestra que sesiones de resistencia/pliometría suficientemente dañinas pueden deteriorar sprint y COD durante las siguientes 24-72 h. [PubMed](https://pubmed.ncbi.nlm.nih.gov/38952917/?utm_source=chatgpt.com)
+
+---
+
+# 11. Fuerza pesada + COD
+
+Pueden compartir sesión, pero **no ambos necesariamente a dosis completa**.
+
+Si prioridad = COD:
+
+```text
+COD principal
++
+RUN-S01 combinado
+```
+
+Si prioridad = fuerza:
+
+```text
+RUN-S01 principal
++
+COD técnico/microdosis
+```
+
+No:
+
+```text
+5 circuitos máximos
++
+5×5 sentadilla pesada
+```
+
+por defecto.
+
+---
+
+# 12. Test + entrenamiento
+
+Los bloques:
+
+`FLEX-X01`  
+`PLANK-X01`  
+`COD-X01`
+
+son especiales.
+
+Un test máximo:
+
+**consume fatiga y no debe confundirse con un bloque de desarrollo.**
+
+Normalmente:
+
+```text
+TEST
++
+accesorios fáciles
+```
+
+No:
+
+```text
+TEST máximo
++
+otra dosis completa de la misma capacidad
+```
+
+---
+
+# 13. Regla de solapamiento
+
+Cuando dos bloques compartan una huella `H`, por defecto:
+
+> no utilizar ambos en `FULL_DOSE`.
+
+Ejemplo:
+
+```text
+PH:H
++
+PH:H
+```
+
+requiere reducir al menos uno o justificar expresamente la combinación.
+
+Cuando uno es:
+
+```text
+H + L
+```
+
+puede ser perfectamente razonable.
+
+Esto no pretende calcular fisiología con colores. Es simplemente **una protección contra combinaciones evidentemente redundantes**.
+
+---
+
+# 14. Sesión tipo de 25 minutos
+
+Usuario:
+
+prioridad flexiones.
+
+Podemos construir:
+
+### FLEX-S02 combinado
+
+3×5 lastradas.
+
+≈14-17 min añadido/caliente.
+
++
+
+### CORE-S01
+
+2×8/lado.
+
+≈6-7 min.
+
+Total aproximado:
+
+**20-25 min**, más cualquier transición extraordinaria.
+
+No le añadimos por obligación plancha alta, resistencia y press banca.
+
+---
+
+# 15. Sesión tipo de 35 minutos
+
+Prioridad:
+
+circuito/agilidad.
+
+### RUN-P01 combinado
+
+2×10 pogo.
+
+≈6 min.
+
+↓
+
+### COD-T02 completo
+
+≈18-20 min.
+
+↓
+
+### CORE-S02 combinado
+
+≈8-10 min.
+
+Total:
+
+aproximadamente **32-36 min**.
+
+Aquí sí existe una combinación bastante limpia.
+
+---
+
+# 16. Sesión específica de flexiones de 35-40 min
+
+### FLEX-S02
+
+3×4-6 lastradas.
+
+↓
+
+### FLEX-E01 combinado
+
+3 series resistencia.
+
+↓
+
+### CORE-S01
+
+2×8 dead bug/lado.
+
+No plancha alta.
+
+Esto consigue:
+
+**fuerza + resistencia específica + core**
+
+sin triplicar innecesariamente la carga de apoyo de brazos.
+
+---
+
+# 17. Sesión específica cercana a prueba
+
+### FLEX-SP02
+
+3×40-60 s a ritmo.
+
++
+
+### PLANK-SP01
+
+2 segmentos específicos.
+
+Total aproximado:
+
+25-35 min.
+
+No necesito introducir press banca pesado simplemente porque “toque empuje”.
+
+---
+
+# 18. Qué ocurre según el tiempo hasta prueba
+
+Los **bloques son los mismos**.
+
+Lo que cambia es la selección.
+
+| Horizonte | Prioridad predominante |
+|---|---|
+| 1 mesociclo | especificidad + limitación principal |
+| 2 mesociclos | capacidad base → especificidad |
+| 3 | fuerza/base → desarrollo → específica |
+| 4 | base → fuerza → conversión → específica |
+| 6 | mayor desarrollo general y varias exposiciones de especialización |
+| 1 año | desarrollo amplio, rotación de prioridades y especialización tardía |
+
+No necesitamos seis bibliotecas diferentes.
+
+---
+
+# 19. Ejemplo con cuatro mesociclos
+
+### M1 — Base/técnica
+
+Predominan:
+
+`FLEX-T01`  
+`FLEX-S01/S02`  
+`PLANK-T01/E01`  
+`COD-T01/T02`  
+`RUN-S01/P01`
+
+### M2 — Desarrollo
+
+`FLEX-S02/S03/E01`  
+`PLANK-E02`  
+`COD-T03/S01`  
+`RUN-S01-S05/P02`
+
+### M3 — Conversión
+
+`FLEX-E01/E02/SP01`  
+`PLANK-SP01`  
+`COD-SP01/SP02`  
+`RUN-P01-P03`
+
+### M4 — Específico
+
+`FLEX-SP01/SP02/SP03`  
+`PLANK-SP01`  
+`COD-SP01/SP02`
+
+con tests periódicos y reducción apropiada de volumen antes de la prueba.
+
+No significa que desaparezcan completamente fuerza o potencia. Se mantienen con dosis menores si siguen siendo útiles.
+
+---
+
+# 20. Qué debe quedar claro para Codex
+
+Le diría literalmente que **ésta reemplaza a la anterior** y añadiría estas normas:
+
+> Los bloques representan plantillas de estímulo, no sesiones cerradas ni protocolos científicamente únicos.
+>
+> `TEST_SCORE` nunca debe convertirse automáticamente en repeticiones de una serie o en RIR.
+>
+> Las series dinámicas de fuerza se regulan preferentemente mediante variante/carga + rango de repeticiones + RIR/RPE.
+>
+> En trabajo dinámico de altas repeticiones, RIR es auxiliar y debe contrastarse con rendimiento real.
+>
+> En flexiones cronometradas específicas se utiliza tiempo + cadencia/repeticiones válidas + técnica.
+>
+> En isométricos se utiliza tiempo + calidad/RPE, no RIR.
+>
+> En potencia se utiliza intención máxima + pocas repeticiones + calidad + recuperación.
+>
+> En COD se utiliza recorrido + repeticiones + tiempo/calidad + descanso.
+>
+> Cada bloque dispone de `FULL_DOSE` y `COMBINED_DOSE`.
+>
+> No se suman automáticamente dosis completas de bloques combinados.
+>
+> El tiempo real incluye calentamiento, preparación, ejecución, descansos y transiciones.
+>
+> Un bloque distingue `standalone_time` de `incremental_time`.
+>
+> La compatibilidad debe considerar solapamiento mecánico/muscular, no únicamente categorías como “push”, “core” o “pierna”.
+>
+> La plancha alta comparte carga con flexiones.
+>
+> Un ejercicio no posee una fatiga universal; la huella corresponde al ejercicio **más la prescripción concreta**.
+>
+> Dos bloques con alta demanda sobre la misma huella no deben combinarse a dosis completa por defecto.
+>
+> Los bloques de test son principalmente evaluativos y normalmente no se acompañan de otra dosis dura de la misma capacidad.
+>
+> No utilizar umbrales universales inventados de pérdida de velocidad, rendimiento o fatiga cuando la evidencia no establece uno.
+>
+> Los bloques deben poder escalarse o excluirse en función de nivel, tolerancia, material, molestias y otras sesiones del microciclo.
+
+Con esta V2 creo que ya tenemos algo **mucho más defendible** que las primeras 40 sesiones. El error inicial fue tratarlas demasiado como recetas terminadas. Ahora tenemos realmente lo que buscabas: **un banco de estímulos suficientemente definidos para combinarse, pero sin obligar al sistema a apilar carga porque sí**.
+
+Y la crítica de Codex ha sido útil: nos ha obligado a separar `marca de prueba`, `capacidad de serie`, `prescripción`, `tiempo real` y `solapamiento`, que son cinco cosas que necesitábamos distinguir antes de construir cualquier planificación automática.

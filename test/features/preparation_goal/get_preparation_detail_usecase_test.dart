@@ -1,7 +1,6 @@
-import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
-import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/usecases/get_preparation_detail_usecase.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
@@ -10,24 +9,31 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'reúne la última evaluación compatible y solo la agenda de la preparación',
+    'reúne la marca de 2 km propia y solo la agenda de la preparación',
     () async {
       final goal = PreparationGoal(
         id: 'goal-1',
         program: const PreparationProgram(
-          id: 'troop',
+          id: PreparationProgramIds.armedForcesTroopEntry,
           name: 'Tropa',
           kind: PreparationProgramKind.access,
-          currentAssessmentCatalogVersion: 'catalog-v1',
         ),
         targetDate: DateTime(2027, 3, 1),
       );
       final useCase = GetPreparationDetailUseCase(
         goalRepository: _GoalRepository(goal),
-        assessmentRepository: _AssessmentRepository([
-          _assessment('newer-other', 'catalog-v2', DateTime(2026, 9, 22)),
-          _assessment('compatible', 'catalog-v1', DateTime(2026, 9, 20)),
-        ]),
+        loadRunningTests: (goalId) async {
+          expect(goalId, 'goal-1');
+          return [
+            RunningTestResult(
+              completedAt: DateTime(2026, 9, 20),
+              durationSeconds: 470,
+              rpe: 8,
+            ),
+          ];
+        },
+        loadTroopAssessments: (_) async => const [],
+        loadRunningReferenceCandidates: (_) async => const [],
         scheduleRepository: _ScheduleRepository([
           _scheduled('related', preparationGoalId: 'goal-1'),
           _scheduled('general'),
@@ -42,48 +48,9 @@ void main() {
       );
 
       expect(detail.goal, goal);
-      expect(detail.latestAssessment?.id, 'compatible');
+      expect(detail.latestRunningTest?.durationSeconds, 470);
       expect(detail.weeklyWorkouts.map((item) => item.id), ['related']);
     },
-  );
-}
-
-PhysicalAssessmentHistoryEntry _assessment(
-  String id,
-  String catalogVersion,
-  DateTime completedAt,
-) {
-  const test = PhysicalTestDefinition(
-    id: 'push-ups',
-    name: 'Flexiones',
-    unit: MarkUnit.repetitions,
-    betterDirection: BetterDirection.higher,
-  );
-  return PhysicalAssessmentHistoryEntry(
-    id: id,
-    completedAt: completedAt,
-    report: AssessmentReport(
-      catalogVersion: catalogVersion,
-      category: AssessmentCategory.men,
-      milestone: AssessmentMilestone.entry,
-      results: const [
-        AssessmentResult(
-          passed: true,
-          mark: RecordedMark(
-            testId: 'push-ups',
-            unit: MarkUnit.repetitions,
-            value: 18,
-          ),
-          standard: AssessmentStandard(
-            catalogVersion: 'catalog-v1',
-            test: test,
-            category: AssessmentCategory.men,
-            milestone: AssessmentMilestone.entry,
-            threshold: 10,
-          ),
-        ),
-      ],
-    ),
   );
 }
 
@@ -105,17 +72,6 @@ class _GoalRepository implements PreparationGoalRepository {
 
   @override
   Future<List<PreparationGoal>> getActiveGoals() async => [goal];
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class _AssessmentRepository implements PhysicalAssessmentRepository {
-  const _AssessmentRepository(this.history);
-  final List<PhysicalAssessmentHistoryEntry> history;
-
-  @override
-  Future<List<PhysicalAssessmentHistoryEntry>> getHistory() async => history;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

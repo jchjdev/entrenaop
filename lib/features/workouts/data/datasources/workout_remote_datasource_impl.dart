@@ -39,8 +39,11 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       exercise_id,
       exercise_name,
       exercise_description,
+      item_instructions,
       exercise_video_url,
       set_order,
+      performance_prescription,
+      performance_result,
       target_reps,
       target_duration_seconds,
       target_distance_meters,
@@ -178,8 +181,17 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   @override
   Future<void> completeSet(String operationId, Map<String, dynamic> values) =>
       supabaseClient.rpc(
-        'complete_workout_set_idempotent',
-        params: {'p_operation_id': operationId, ...values},
+        values.containsKey('p_performance_result')
+            ? 'complete_performance_set_idempotent'
+            : 'complete_workout_set_idempotent',
+        params: {
+          'p_operation_id': operationId,
+          if (values.containsKey('p_performance_result')) ...{
+            'p_result_id': values['p_result_id'],
+            'p_performance_result': values['p_performance_result'],
+          } else
+            ...values,
+        },
       );
 
   @override
@@ -190,8 +202,18 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       );
 
   @override
-  Future<void> correctSet(Map<String, dynamic> values) =>
-      supabaseClient.rpc('correct_workout_set_result', params: values);
+  Future<void> correctSet(Map<String, dynamic> values) => supabaseClient.rpc(
+    values.containsKey('p_performance_result')
+        ? 'correct_performance_set_result'
+        : 'correct_workout_set_result',
+    params: values.containsKey('p_performance_result')
+        ? {
+            'p_result_id': values['p_result_id'],
+            'p_reason': values['p_reason'],
+            'p_performance_result': values['p_performance_result'],
+          }
+        : values,
+  );
 
   @override
   Future<void> skipSet(String operationId, String resultId) =>

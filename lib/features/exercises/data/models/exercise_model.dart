@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
 class ExerciseModel extends ExerciseEntity {
   const ExerciseModel({
@@ -14,6 +15,7 @@ class ExerciseModel extends ExerciseEntity {
     required super.isPublic,
     required super.origin,
     super.createdBy,
+    super.trainingProfile,
   });
 
   factory ExerciseModel.fromEntity(ExerciseEntity entity) {
@@ -30,6 +32,7 @@ class ExerciseModel extends ExerciseEntity {
       isPublic: entity.isPublic,
       createdBy: entity.createdBy,
       origin: entity.origin,
+      trainingProfile: entity.trainingProfile,
     );
   }
 
@@ -46,6 +49,15 @@ class ExerciseModel extends ExerciseEntity {
       exerciseType: json['exercise_type'],
       isPublic: json['is_public'],
       createdBy: json['created_by'],
+      trainingProfile: json['training_profile'] == null
+          ? null
+          : StrengthExerciseCatalogCodec.decodeDefinition(
+              Map<String, dynamic>.from(
+                json['training_profile']['definition'] as Map,
+              ),
+              definitionVersion:
+                  json['training_profile']['definition_version'] as int,
+            ),
       origin: switch (json['origin']) {
         'system' => ExerciseOrigin.system,
         'user' => ExerciseOrigin.user,

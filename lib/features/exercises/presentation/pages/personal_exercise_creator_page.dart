@@ -1,15 +1,23 @@
 import 'dart:async';
 
+import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 class PersonalExerciseCreatorPage extends StatefulWidget {
-  const PersonalExerciseCreatorPage({super.key, required this.createExercise});
+  const PersonalExerciseCreatorPage({
+    super.key,
+    required this.createExercise,
+    this.returnOnSave = false,
+  });
 
   final CreateExerciseUseCase createExercise;
+  final bool returnOnSave;
 
   @override
   State<PersonalExerciseCreatorPage> createState() =>
@@ -19,6 +27,7 @@ class PersonalExerciseCreatorPage extends StatefulWidget {
 class _PersonalExerciseCreatorPageState
     extends State<PersonalExerciseCreatorPage> {
   bool _saving = false;
+  bool _dirty = false;
   int _formVersion = 0;
 
   Future<void> _save(
@@ -32,6 +41,14 @@ class _PersonalExerciseCreatorPageState
         image: submission.image,
       );
       if (!mounted) return;
+      setState(() {
+        _dirty = false;
+        _saving = false;
+      });
+      if (widget.returnOnSave) {
+        context.pop(exercise.id);
+        return;
+      }
       setState(() => _formVersion++);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -53,8 +70,13 @@ class _PersonalExerciseCreatorPageState
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFF0A0A0A),
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => _dirty,
+    isBusy: () => _saving,
+    child: _buildContent(context),
+  );
+
+  Widget _buildContent(BuildContext context) => Scaffold(
     appBar: AppBar(
       backgroundColor: Colors.transparent,
       title: const Text('Crear ejercicio personal'),
@@ -77,6 +99,7 @@ class _PersonalExerciseCreatorPageState
                     submitLabel: 'Guardar ejercicio',
                     fieldKeyPrefix: 'personal-exercise',
                     onSubmit: (draft) => unawaited(_save(draft)),
+                    onDirtyChanged: (dirty) => _dirty = dirty,
                   ),
                 ),
                 if (_saving)

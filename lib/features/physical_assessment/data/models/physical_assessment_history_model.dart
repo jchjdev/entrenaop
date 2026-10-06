@@ -25,9 +25,9 @@ abstract final class PhysicalAssessmentHistoryModel {
     final header = rows.first;
     final orderedRows = [...rows]
       ..sort(
-        (a, b) => _testOrder(
-          a['test_id'] as String,
-        ).compareTo(_testOrder(b['test_id'] as String)),
+        (a, b) =>
+            _testOrder(a['test_id'] as String)
+                .compareTo(_testOrder(b['test_id'] as String)),
       );
     final results = orderedRows.map(_resultFromRow).toList(growable: false);
 

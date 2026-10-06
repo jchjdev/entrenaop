@@ -9,6 +9,134 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  testWidgets(
+    'busca sin tildes y combina tipo y duración, conservando cada pestaña',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final cubit = _searchCubit();
+      addTearDown(cubit.close);
+      await cubit.load();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData.dark(useMaterial3: true),
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutLibraryPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'TECNICA');
+      await tester.pumpAndSettle();
+      expect(find.text('Carrera técnica'), findsOneWidget);
+      expect(find.text('Fuerza base'), findsOneWidget);
+      await tester.tap(find.text('Filtros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Carrera').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Carrera técnica'), findsOneWidget);
+      expect(find.text('Fuerza base'), findsNothing);
+      await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Más de 45 min').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('No hay sesiones que coincidan con tu búsqueda.'),
+        findsOneWidget,
+      );
+      expect(find.text('Filtros (2)'), findsOneWidget);
+      await tester.tap(find.text('Mis sesiones'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sesión propia'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        isEmpty,
+      );
+      await tester.tap(find.text('EntrenaOP'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'TECNICA',
+      );
+      await tester.tap(find.text('Limpiar búsqueda y filtros').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Carrera técnica'), findsOneWidget);
+      expect(find.text('Fuerza base'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('los filtros y tarjetas caben a 320 px con texto al doble', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 850));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final cubit = _searchCubit();
+    addTearDown(cubit.close);
+    await cubit.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(useMaterial3: true),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutLibraryPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Filtros'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Filtros'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Fuerza base'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('Mis sesiones abre directamente el contenido personal', (
+    tester,
+  ) async {
+    final repository = _Repository(
+      const [],
+      personalWorkouts: const [
+        WorkoutTemplateSummary(
+          id: 'mine',
+          name: 'Sesión propia',
+          description: null,
+          estimatedDurationMinutes: 30,
+          origin: WorkoutTemplateOrigin.user,
+          version: 1,
+        ),
+      ],
+    );
+    final cubit = WorkoutLibraryCubit(
+      getPublicWorkouts: GetPublicWorkoutsUseCase(repository),
+      getPersonalWorkouts: GetPersonalWorkoutsUseCase(repository),
+      duplicatePersonalWorkout: DuplicatePersonalWorkoutUseCase(repository),
+      archivePersonalWorkout: ArchivePersonalWorkoutUseCase(repository),
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider.value(
+          value: cubit,
+          child: const WorkoutLibraryPage(initialPersonalTab: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Sesión propia'), findsOneWidget);
+    expect(find.text('Tus sesiones'), findsOneWidget);
+    expect(find.text('Demostración · no es tu sesión asignada.'), findsNothing);
+  });
   testWidgets('la biblioteca pública cabe en una pantalla móvil', (
     tester,
   ) async {
@@ -129,6 +257,46 @@ void main() {
     expect(find.text('Sesión pública de EntrenaOP.'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+}
+
+WorkoutLibraryCubit _searchCubit() {
+  final repository = _Repository(
+    const [
+      WorkoutTemplateSummary(
+        id: 'running',
+        name: 'Carrera técnica',
+        description: 'Rodaje tranquilo.',
+        estimatedDurationMinutes: 35,
+        origin: WorkoutTemplateOrigin.system,
+        version: 1,
+        isRunning: true,
+      ),
+      WorkoutTemplateSummary(
+        id: 'strength',
+        name: 'Fuerza base',
+        description: 'Técnica de movimientos.',
+        estimatedDurationMinutes: 25,
+        origin: WorkoutTemplateOrigin.system,
+        version: 1,
+      ),
+    ],
+    personalWorkouts: const [
+      WorkoutTemplateSummary(
+        id: 'mine',
+        name: 'Sesión propia',
+        description: null,
+        estimatedDurationMinutes: null,
+        origin: WorkoutTemplateOrigin.user,
+        version: 1,
+      ),
+    ],
+  );
+  return WorkoutLibraryCubit(
+    getPublicWorkouts: GetPublicWorkoutsUseCase(repository),
+    getPersonalWorkouts: GetPersonalWorkoutsUseCase(repository),
+    duplicatePersonalWorkout: DuplicatePersonalWorkoutUseCase(repository),
+    archivePersonalWorkout: ArchivePersonalWorkoutUseCase(repository),
+  );
 }
 
 class _Repository implements WorkoutRepository {
