@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
+
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -10,6 +12,32 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_st
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('el detalle descarta consultas anteriores y puede cerrarse durante una carga', () async {
+    final repository = _FakeWorkoutRepository();
+    final cubit = WorkoutHistoryDetailCubit(
+      executionId: 'execution-1',
+      getExecution: GetWorkoutExecutionUseCase(repository),
+      correctSet: CorrectWorkoutSetUseCase(repository),
+    );
+    final first = Completer<WorkoutExecution?>();
+    final second = Completer<WorkoutExecution?>();
+    repository.nextExecution = () => first.future;
+    final old = cubit.load();
+    repository.nextExecution = () => second.future;
+    final current = cubit.load();
+    second.complete(_execution(status: WorkoutExecutionStatus.abandoned));
+    await current;
+    first.complete(_execution());
+    await old;
+    expect(cubit.state.execution?.status, WorkoutExecutionStatus.abandoned);
+    final pending = Completer<WorkoutExecution?>();
+    repository.nextExecution = () => pending.future;
+    final closing = cubit.load();
+    await cubit.close();
+    pending.completeError(StateError('consulta cerrada'));
+    await closing;
+    await cubit.load();
+  });
   test(
     'el refresco conserva resultados y admite reintento tras un fallo',
     () async {
@@ -118,13 +146,16 @@ class _FakeWorkoutRepository implements WorkoutRepository {
   final List<WorkoutExecution> history;
   final WorkoutExecution? execution;
   Future<List<WorkoutExecution>> Function()? nextHistory;
+  Future<WorkoutExecution?> Function()? nextExecution;
 
   @override
-  Future<List<WorkoutExecution>> getExecutionHistory() async =>
-      nextHistory == null ? history : await nextHistory!();
+  Future<List<WorkoutExecution>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async => nextHistory == null ? history : await nextHistory!();
 
   @override
-  Future<WorkoutExecution?> getExecution(String executionId) async => execution;
+  Future<WorkoutExecution?> getExecution(String executionId) async =>
+      nextExecution == null ? execution : await nextExecution!();
 
   @override
   Future<WorkoutMutationDisposition> abandonExecution(

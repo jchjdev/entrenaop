@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -474,7 +475,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getExecution(String executionId) async => null;
 
   @override
-  Future<List<Map<String, dynamic>>> getExecutionHistory() async => const [];
+  Future<List<Map<String, dynamic>>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async => const [];
 
   @override
   Future<Map<String, dynamic>?> getTemplateById(String id) async => null;

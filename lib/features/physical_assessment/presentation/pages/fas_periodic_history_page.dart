@@ -20,6 +20,7 @@ class FasPeriodicHistoryPage extends StatefulWidget {
 
 class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
   late Future<_HistoryData> _data;
+  _HistoryData? _cached;
 
   @override
   void initState() {
@@ -32,26 +33,42 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
     reference: widget.reference ?? await FasPeriodic2027Reference.load(),
   );
 
+  Future<void> _refresh() async {
+    final future = _load();
+    setState(() {
+      _data = future;
+    });
+    try {
+      await future;
+    } catch (_) {
+      // La consulta anterior queda visible y el error ofrece reintento.
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Historial de tests FAS')),
     body: FutureBuilder<_HistoryData>(
       future: _data,
       builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
+        final loading = snapshot.connectionState != ConnectionState.done;
+        final data = snapshot.data ?? _cached;
+        if (loading && data == null) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (snapshot.hasError) {
+        if (data == null) {
           return Center(
             child: FilledButton.icon(
-              onPressed: () => setState(() => _data = _load()),
+              onPressed: _refresh,
               icon: const Icon(Icons.refresh),
               label: const Text('Reintentar'),
             ),
           );
         }
-        final data = snapshot.data!;
-        if (data.entries.isEmpty) {
+        if (snapshot.hasData) {
+          _cached = snapshot.data;
+        }
+        if (data.entries.isEmpty && !snapshot.hasError) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(24),
@@ -63,19 +80,29 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
           );
         }
         return RefreshIndicator(
-          onRefresh: () async {
-            final refreshed = _load();
-            setState(() => _data = refreshed);
-            await refreshed;
-          },
-          child: ListView.separated(
+          onRefresh: _refresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
-            itemCount: data.entries.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _HistoryCard(
-              entry: data.entries[index],
-              reference: data.reference,
-            ),
+            children: [
+              if (loading) const LinearProgressIndicator(),
+              if (snapshot.hasError)
+                TextButton.icon(
+                  onPressed: _refresh,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text(
+                    'No se pudieron actualizar los tests. Reintentar.',
+                  ),
+                ),
+              for (final entry in data.entries) ...[
+                FasAssessmentHistoryCard(
+                  key: ValueKey(entry.id),
+                  entry: entry,
+                  reference: data.reference,
+                ),
+                const SizedBox(height: 12),
+              ],
+            ],
           ),
         );
       },
@@ -83,8 +110,12 @@ class _FasPeriodicHistoryPageState extends State<FasPeriodicHistoryPage> {
   );
 }
 
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.entry, required this.reference});
+class FasAssessmentHistoryCard extends StatelessWidget {
+  const FasAssessmentHistoryCard({
+    required this.entry,
+    required this.reference,
+    super.key,
+  });
 
   final FasPeriodicAssessmentEntry entry;
   final FasPeriodic2027Reference reference;
@@ -93,12 +124,19 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (entry.scoringVersion != FasPeriodic2027Reference.version) {
       return Card(
-        child: ListTile(
+        child: ExpansionTile(
           leading: const Icon(Icons.update_outlined),
           title: Text(DateFormat('dd/MM/yyyy').format(entry.completedAt)),
           subtitle: const Text(
             'Este test usa otra versión del baremo. Actualiza la app para consultar sus puntos.',
           ),
+          children: [
+            for (final mark in entry.marks)
+              ListTile(
+                title: Text(mark.testName),
+                subtitle: Text(_formatStoredMark(mark)),
+              ),
+          ],
         ),
       );
     }

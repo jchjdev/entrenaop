@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/data/models/workout_execution_model.dart';
 import 'package:entrenaop/features/workouts/data/models/workout_template_model.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
@@ -80,9 +81,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   }
 
   @override
-  Future<List<WorkoutExecution>> getExecutionHistory() async {
+  Future<List<WorkoutExecution>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async {
     await _trySyncPending();
-    final rows = await remoteDataSource.getExecutionHistory();
+    final rows = await remoteDataSource.getExecutionHistory(query: query);
     return rows.map(WorkoutExecutionModel.fromJson).toList(growable: false);
   }
 

@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 
 abstract class WorkoutRemoteDataSource {
   Future<Map<String, dynamic>?> getTemplateById(String id);
@@ -22,7 +23,9 @@ abstract class WorkoutRemoteDataSource {
 
   Future<Map<String, dynamic>?> getExecution(String executionId);
 
-  Future<List<Map<String, dynamic>>> getExecutionHistory();
+  Future<List<Map<String, dynamic>>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  });
 
   Future<void> completeSet(String operationId, Map<String, dynamic> values);
 

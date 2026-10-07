@@ -163,6 +163,17 @@ El ciclo principal del producto es:
 
 ## Estado validado del producto
 
+**UI-011, comprobación acotada del 07/10/2026:** Evolución abre marcas y
+resultados de cada preparación en una vista propia, separada de su gestión.
+Incluye registros de Tropa, FAS, evaluación configurable y controles de carrera
+cuando existan, conservando sus versiones. Registrar usa los formularios
+actuales. El historial consulta sesiones antiguas por páginas y admite
+preparación, fechas y estado; distingue un resultado vacío por filtros de un
+historial vacío. Retorno, errores y cambio de cuenta están comprobados con
+repositorios simulados. No implementa comparativas nuevas, suscripciones ni
+cuotas. Inicio, Mi plan y sus tarjetas fotográficas permanecen iguales.
+Imágenes y límites: [REFRESH_EVOLUTION_2026_10_07.md](REFRESH_EVOLUTION_2026_10_07.md).
+
 **Chequeo general del 06/10/2026:** ambas apps y los paquetes pasan análisis y
 sus pruebas; las dos webs y Android debug/release de desarrollo compilan
 (release aún usa firma de depuración). Desarrollo coincide con

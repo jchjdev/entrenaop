@@ -20,6 +20,9 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_history_cubit.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/initial_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/pages/preparation_marks_page.dart';
+import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
+import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_assessment_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_history_page.dart';
@@ -581,29 +584,133 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/assessment/history',
-                  builder: (context, state) => BlocProvider(
-                    create: (_) => sl<WorkoutHistoryCubit>(),
-                    child: WorkoutHistoryPage(
-                      loadPreparations:
-                          sl<PreparationGoalRepository>().getActiveGoals,
-                    ),
-                  ),
+                  builder: (context, state) =>
+                      BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        buildWhen: (_, next) =>
+                            next is AuthAuthenticated ||
+                            next is AuthUnauthenticated,
+                        builder: (context, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : BlocProvider(
+                                key: ValueKey('history-${auth.user.id}'),
+                                create: (_) => sl<WorkoutHistoryCubit>(),
+                                child: WorkoutHistoryPage(
+                                  loadPreparations:
+                                      sl<PreparationGoalRepository>()
+                                          .getActiveGoals,
+                                ),
+                              ),
+                      ),
                   routes: [
                     GoRoute(
-                      path: 'physical',
-                      builder: (context, state) => BlocProvider(
-                        create: (_) => sl<PhysicalAssessmentHistoryCubit>(),
-                        child: const PhysicalAssessmentHistoryPage(),
+                      path: 'preparations/:goalId',
+                      builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        buildWhen: (_, next) =>
+                            next is AuthAuthenticated ||
+                            next is AuthUnauthenticated,
+                        builder: (context, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : PreparationMarksPage(
+                                key: ValueKey(
+                                  'marks-${auth.user.id}-${state.pathParameters['goalId']}',
+                                ),
+                                goalId: state.pathParameters['goalId']!,
+                                load: (goalId) async {
+                                  final goals =
+                                      await sl<PreparationGoalRepository>()
+                                          .getActiveGoals();
+                                  final goal = goals
+                                      .where((g) => g.id == goalId)
+                                      .firstOrNull;
+                                  if (goal == null) {
+                                    throw StateError(
+                                      'Preparación no disponible.',
+                                    );
+                                  }
+                                  if (goal.programId ==
+                                      PreparationProgramIds
+                                          .fasPeriodicAssessment) {
+                                    final history =
+                                        await sl<
+                                              FasPeriodicAssessmentRepository
+                                            >()
+                                            .history(goalId: goalId);
+                                    return PreparationMarksData(
+                                      goal: goal,
+                                      fas: history,
+                                      fasReference:
+                                          await FasPeriodic2027Reference.load(),
+                                    );
+                                  }
+                                  final program =
+                                      await sl<ProgramAssessmentRepository>()
+                                          .history(goalId);
+                                  if (goal.programId !=
+                                      PreparationProgramIds
+                                          .armedForcesTroopEntry) {
+                                    return PreparationMarksData(
+                                      goal: goal,
+                                      program: program,
+                                    );
+                                  }
+                                  return PreparationMarksData(
+                                    goal: goal,
+                                    program: program,
+                                    troop:
+                                        await sl<PhysicalAssessmentRepository>()
+                                            .getHistoryForGoal(goalId),
+                                    running: await sl<RunningTestRepository>()
+                                        .history(goalId),
+                                  );
+                                },
+                              ),
                       ),
+                    ),
+                    GoRoute(
+                      path: 'physical',
+                      builder: (context, state) =>
+                          BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            buildWhen: (_, next) =>
+                                next is AuthAuthenticated ||
+                                next is AuthUnauthenticated,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    key: ValueKey(
+                                      'physical-history-${auth.user.id}',
+                                    ),
+                                    create: (_) =>
+                                        sl<PhysicalAssessmentHistoryCubit>(),
+                                    child:
+                                        const PhysicalAssessmentHistoryPage(),
+                                  ),
+                          ),
                     ),
                     GoRoute(
                       path: 'workouts/:executionId',
-                      builder: (context, state) => BlocProvider(
-                        create: (_) => sl<WorkoutHistoryDetailCubit>(
-                          param1: state.pathParameters['executionId']!,
-                        ),
-                        child: const WorkoutHistoryDetailPage(),
-                      ),
+                      builder: (context, state) =>
+                          BlocBuilder<AuthCubit, AuthState>(
+                            bloc: authCubit,
+                            buildWhen: (_, next) =>
+                                next is AuthAuthenticated ||
+                                next is AuthUnauthenticated,
+                            builder: (_, auth) => auth is! AuthAuthenticated
+                                ? const SizedBox.shrink()
+                                : BlocProvider(
+                                    key: ValueKey(
+                                      'history-detail-${auth.user.id}-${state.pathParameters['executionId']}',
+                                    ),
+                                    create: (_) =>
+                                        sl<WorkoutHistoryDetailCubit>(
+                                          param1: state
+                                              .pathParameters['executionId']!,
+                                        ),
+                                    child: const WorkoutHistoryDetailPage(),
+                                  ),
+                          ),
                     ),
                   ],
                 ),
@@ -653,7 +760,17 @@ class AppRouter {
         ),
         GoRoute(
           path: '/assessment/fas-history',
-          builder: (context, state) => FasPeriodicHistoryPage(repository: sl()),
+          builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            buildWhen: (_, next) =>
+                next is AuthAuthenticated || next is AuthUnauthenticated,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : FasPeriodicHistoryPage(
+                    key: ValueKey('fas-history-${auth.user.id}'),
+                    repository: sl(),
+                  ),
+          ),
         ),
       ],
     );

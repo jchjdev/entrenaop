@@ -15,8 +15,11 @@ class PhysicalAssessmentHistoryCubit
 
   final GetPhysicalAssessmentHistoryUseCase _getHistory;
   final AssessmentProgressCalculator _progressCalculator;
+  int _loadVersion = 0;
 
   Future<void> load() async {
+    if (isClosed) return;
+    final version = ++_loadVersion;
     emit(
       const PhysicalAssessmentHistoryState(
         status: PhysicalAssessmentHistoryStatus.loading,
@@ -25,6 +28,7 @@ class PhysicalAssessmentHistoryCubit
 
     try {
       final entries = await _getHistory();
+      if (isClosed || version != _loadVersion) return;
       final List<AssessmentProgress> progress = entries.length < 2
           ? const <AssessmentProgress>[]
           : _progressCalculator.compare(
@@ -40,6 +44,7 @@ class PhysicalAssessmentHistoryCubit
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
         const PhysicalAssessmentHistoryState(
           status: PhysicalAssessmentHistoryStatus.failure,

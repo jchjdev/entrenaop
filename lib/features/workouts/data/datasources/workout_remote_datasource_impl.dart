@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/workout_template_query.dart';
 
@@ -165,16 +166,57 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getExecutionHistory() async {
+  Future<List<Map<String, dynamic>>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async {
     final userId = supabaseClient.auth.currentUser?.id;
     if (userId == null) return const [];
-    final response = await supabaseClient
+    var request = supabaseClient
         .from('workout_executions')
-        .select(_executionSelect)
+        .select(
+          query.preparationGoalId == null
+              ? _executionSelect
+              : '$_executionSelect, scheduled_workouts!inner(preparation_goal_id)',
+        )
         .eq('user_id', userId)
-        .neq('status', 'in_progress')
+        .neq('status', 'in_progress');
+    if (query.preparationGoalId case final goalId?) {
+      request = request.eq('scheduled_workouts.preparation_goal_id', goalId);
+    }
+    if (query.status case final status?) {
+      request = request.eq('status', status.name);
+    }
+    if (query.from case final from?) {
+      request = request.gte(
+        'started_at',
+        DateTime(from.year, from.month, from.day).toUtc().toIso8601String(),
+      );
+    }
+    if (query.through case final through?) {
+      // El día siguiente civil respeta también los cambios de horario.
+      request = request.lt(
+        'started_at',
+        DateTime(
+          through.year,
+          through.month,
+          through.day + 1,
+        ).toUtc().toIso8601String(),
+      );
+    }
+    if (query.before case final cursor?) {
+      if (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(cursor.id)) {
+        throw ArgumentError('Identificador de historial inválido.');
+      }
+      final date = cursor.startedAt.toUtc().toIso8601String();
+      // Fecha e ID forman un orden estable aunque haya varias sesiones simultáneas.
+      request = request.or(
+        'started_at.lt.$date,and(started_at.eq.$date,id.lt.${cursor.id})',
+      );
+    }
+    final response = await request
         .order('started_at', ascending: false)
-        .limit(30);
+        .order('id', ascending: false)
+        .limit(query.limit);
     return response.cast<Map<String, dynamic>>();
   }
 

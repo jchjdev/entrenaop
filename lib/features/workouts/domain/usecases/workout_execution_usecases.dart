@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 
 class StartWorkoutExecutionUseCase {
@@ -25,7 +26,9 @@ class GetWorkoutHistoryUseCase {
 
   final WorkoutRepository _repository;
 
-  Future<List<WorkoutExecution>> call() => _repository.getExecutionHistory();
+  Future<List<WorkoutExecution>> call({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) => _repository.getExecutionHistory(query: query);
 }
 
 class CompleteWorkoutSetUseCase {

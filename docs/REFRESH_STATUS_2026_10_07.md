@@ -118,7 +118,7 @@ widgets actuales con datos simulados y fuentes legibles del entorno de captura;
 no son una prueba autenticada en dispositivo. [Imágenes y recorrido](REFRESH_PLAN_2026_10_07.md).
 No cambia admin, paquetes compartidos, SQL, motores ni producción.
 
-El único siguiente bloque UX recomendado es Evolución/Marcas: destino de
+Ese cierre dio paso al bloque Evolución/Marcas: destino de
 resultados por preparación, filtros e historial de sesiones antiguas. Biblioteca,
 cuenta, pulido transversal/admin y verificación autenticada real siguen pendientes.
 
@@ -129,11 +129,14 @@ llevaron a mezclarlo con Free/Pro. La lista inicial de pendientes es histórica:
 Inicio/Mi plan ya se cerró y sigue conservado en la base restaurada por COM-003.
 No se vuelve a ejecutar esa lista como si todo siguiera pendiente.
 
-El siguiente bloque recomendado sigue siendo Evolución/Marcas. La inspección
-actual confirma que el acceso «Marcas» lleva a `/plan/goal/:goalId`, es decir,
+La delimitación recomendó Evolución/Marcas. La inspección previa confirmó
+que el acceso «Marcas» llevaba a `/plan/goal/:goalId`, es decir,
 gestión de preparación, y que el historial de entrenamientos consulta como
 máximo 30 registros. Corregir sus destinos y permitir consultar resultados
 anteriores sigue pendiente; no se modifica su código en esta delimitación.
+
+Esta descripción corresponde a la delimitación previa. El cierre UI-011 que
+sigue acredita la implementación posterior y conserva sus exclusiones.
 
 Para ese tramo, el alcance se limita a resultados e historial: conservar tema,
 contratos de medición y navegación existentes, con filtros y retornos que no
@@ -149,3 +152,32 @@ cuenta, pagos y cuotas siguen pendientes; los motores mantienen su tarea aparte.
 Cada cierre se basará en diff, recorridos probados e imágenes de widgets reales,
 indicando si usa datos simulados o una cuenta autenticada. Se guarda únicamente
 el alcance comprobado, sin presentar el refresh completo como terminado.
+
+## Cierre: resultados por preparación e historial · UI-011 · 07/10/2026
+
+«Marcas» abre resultados de la preparación en Evolución. Tropa conserva su
+baremo y controles de carrera; FAS conserva versión y referencia anterior a
+vigencia; los programas configurables muestran resultados e intentos guardados.
+El registro explícito abre las tareas existentes y actualiza al regresar.
+No activa, pausa ni cambia una preparación desde la consulta.
+
+Historial con filtros de preparación, fechas y estado, carga por páginas,
+errores persistentes/reintento y resultado vacío propio de filtros. Volver
+conserva criterios y profundidad; refrescar no recorta a 30 ni al máximo de
+una respuesta del servidor. Cubits/páginas de resultados se renuevan por cuenta
+y recurso y descartan respuestas tardías. FAS personal conserva datos al fallar
+un refresco; con otra versión muestra marcas sin inventar puntuación.
+
+Verificado: análisis limpio, 537 pruebas completas de raíz y nueve recorridos
+de captura, con 22 imágenes de widgets actuales y datos ficticios. Incluye
+HTTP local del contrato PostgREST, empates de fecha, 1205 ejecuciones,
+fallo/reintento, filtros combinados, router real, identidad y texto 2× a
+320/1100 px en Evolución y resultados configurables. No acredita un recorrido
+autenticado ni una consulta real al backend. [Imágenes y esquema](REFRESH_EVOLUTION_2026_10_07.md).
+
+Inicio/Mi plan, tarjetas/recursos fotográficos, catálogo, gestión de preparación,
+admin, paquetes compartidos, SQL y motores no cambian. El negocio permanece
+separado. Comparativas nuevas y tipo deportivo siguen pendientes; la lista de
+preparaciones filtra las no archivadas. El único siguiente bloque UX recomendado
+es Biblioteca: vídeo y gestión de ejercicios propios. Recuperación de cuenta,
+pulido transversal/admin y revisión autenticada real siguen pendientes.

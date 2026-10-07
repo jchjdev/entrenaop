@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
@@ -189,7 +190,9 @@ class _Repository implements WorkoutRepository {
   Future<WorkoutExecution?> getExecution(String executionId) async => execution;
 
   @override
-  Future<List<WorkoutExecution>> getExecutionHistory() async => [execution];
+  Future<List<WorkoutExecution>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async => [execution];
 
   @override
   Future<WorkoutMutationDisposition> abandonExecution(

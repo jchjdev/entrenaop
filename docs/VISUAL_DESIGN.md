@@ -659,8 +659,8 @@ No se modifica Supabase ni producción.
 Javier plantea continuar por los pendientes de fiabilidad y recorridos sin
 volver a mezclar el refresh con Free/Pro. Inicio/Mi plan ya está cerrado y la
 base restaurada mantiene sus tarjetas fotográficas y catálogo actuales.
-El siguiente bloque recomendado es Evolución/Marcas; su implementación sigue
-pendiente. Las mejoras comerciales de descubrimiento y ficha se desarrollarán
+El siguiente bloque recomendado era Evolución/Marcas; UI-011 implementa la
+consulta de resultados e historial descrita debajo. Las mejoras comerciales de descubrimiento y ficha se desarrollarán
 aparte, con derechos reales de cuenta y recorridos definidos antes de adaptar
 las vistas. Las composiciones rechazadas en UI-009 y el selector retirado en
 COM-002 no se recuperan como solución del refresh.
@@ -668,7 +668,33 @@ COM-002 no se recuperan como solución del refresh.
 Los cambios se revisarán por un recorrido concreto y con imágenes del código
 real, identificando datos simulados y límites de verificación. Una necesidad
 de cambiar las áreas apartadas requiere explicar primero la ampliación del
-alcance. Esta delimitación solo modifica documentación.
+alcance. La delimitación inicial solo modificó documentación.
+
+### Resultados por preparación e historial consultable · UI-011 · 07/10/2026
+
+Marcas abre resultados, conservando tema, portadas disponibles, versiones y
+formularios de registro existentes. Tropa y FAS reutilizan sus tarjetas; los
+resultados configurables muestran snapshot, puntos e intentos nulos. Los
+controles de carrera incluyen tiempo, esfuerzo, frecuencia cardíaca, parciales
+y notas cuando estén guardados. La consulta no inicia un programa.
+
+Evolución añade un grupo plegable de filtros (preparación, fechas y estado) y
+«Cargar más sesiones». El contador indica sesiones cargadas, no un total global;
+la actividad reciente explicita que pertenece a la consulta visible. Un vacío
+con filtros tiene su propio mensaje y se puede limpiar. Refrescar o regresar
+conserva criterios y profundidad, con reintento sin perder datos. Las tarjetas
+de entrenamientos permiten texto grande en pantalla estrecha sin desbordarse.
+Cambiar cuenta renueva los resultados; un baremo FAS desconocido mantiene sus
+marcas, sin calcular puntos con otra versión.
+
+Análisis limpio, 537 pruebas completas y nueve capturas de recorridos correctas.
+Las 22 imágenes proceden de widgets reales con datos ficticios y fuentes
+legibles del runner. No equivalen a revisión autenticada en dispositivo.
+[Imágenes, esquema y límites](REFRESH_EVOLUTION_2026_10_07.md).
+No cambia Inicio/Mi plan, sus tarjetas fotográficas, catálogo, gestión de
+preparaciones, derechos comerciales, SQL o motores. Las comparativas nuevas
+siguen pendientes. El siguiente bloque UX es Biblioteca, con vídeo y gestión
+de ejercicios propios, respetando autoría, versiones e historial.
 
 ### Revisión abierta: colección, catálogo y futuro Pro · 07/10/2026
 

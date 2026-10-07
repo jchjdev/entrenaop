@@ -638,11 +638,37 @@ Inicio, Mi plan, Biblioteca, Evolución y Perfil. `AppShell` representa esos des
 `NavigationBar` en móvil y `NavigationRail` en pantallas amplias. La evaluación
 inicial queda fuera del contenedor porque es un flujo concentrado y temporal.
 
-Evolución es una sección, no un sinónimo de valoración física. Su raíz muestra
-por ahora el historial de sesiones terminadas y ofrece acceso al historial de
-evaluaciones físicas mediante una ruta anidada. Esta jerarquía permite añadir
-más adelante resumen de progreso, marcas y comparación con baremos sin cambiar
-la navegación principal ni mezclar datos de distinta naturaleza.
+Evolución separa actividad, evaluaciones/controles e historial de entrenamientos.
+UI-011 añade `/assessment/history/preparations/:goalId`: el router compone
+`PreparationMarksData` mediante repositorios existentes de Tropa, FAS,
+evaluación configurable y controles de carrera. La página consulta hechos
+guardados; el botón de registro abre las tareas existentes en el navegador raíz
+y reconsulta al retornar. Los widgets no consultan Supabase ni activan programas.
+
+`WorkoutHistoryQuery`, en dominio, expresa preparación, fechas civiles, estado,
+límite y cursor. El caso de uso y repositorio transmiten esos criterios al
+datasource; este conserva propietario y exclusión de ejecuciones en curso.
+El orden descendente `(started_at, id)` y el cursor evitan desplazamientos por
+inserciones recientes y ordenan empates. Se solicita una fila adicional para
+detectar otra página. Refrescar reconsulta páginas pequeñas hasta la profundidad
+ya abierta; no depende de aumentar un único límite de respuesta del servidor.
+La fecha final incluye el día civil completo, convirtiendo sus límites a UTC.
+
+El filtro de preparación usa el vínculo existente
+`scheduled_workouts.execution_id` y `preparation_goal_id`, mediante una relación
+PostgREST interna. No añade campos a la ejecución ni consulta su plantilla
+vigente para reinterpretar datos históricos. La lista ofrece preparaciones
+no archivadas; el historial general conserva también ejecuciones sin vínculo.
+No se incorpora un filtro por deporte sin un dato histórico fiable.
+
+Las páginas y controladores de resultados se identifican por cuenta y recurso.
+Renovar la misma cuenta conserva estado; sustituirla descarta la consulta local.
+Raíz, historial físico y detalle de ejecución ignoran consultas antiguas y no
+emiten después de cerrarse. El historial FAS conserva resultados y expansión
+al fallar el refresco. Sus puntos reutilizan el catálogo local de la versión
+almacenada; otra versión permite ver marcas, pero no calcular puntos con un
+baremo distinto. Los resultados configurables muestran puntuación e intentos
+del snapshot. No se incorpora una regla comparativa nueva.
 
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.

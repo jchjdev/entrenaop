@@ -5,6 +5,7 @@ import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_state.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_history_filters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -78,6 +79,7 @@ class _HistoryContent extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
+        key: const PageStorageKey('evolution-history-scroll'),
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
           Center(
@@ -137,8 +139,9 @@ class _HistoryContent extends StatelessWidget {
                                 icon: Icons.flag_outlined,
                                 title: 'Marcas · ${goal.program.name}',
                                 subtitle: 'Evaluación y resultados de esta preparación.',
-                                onTap: () =>
-                                    context.push('/plan/goal/${goal.id}'),
+                                onTap: () => context.push(
+                                  '/assessment/history/preparations/${goal.id}',
+                                ),
                               ),
                             ),
                           if (goals.isEmpty)
@@ -186,10 +189,11 @@ class _HistoryContent extends StatelessWidget {
                       ),
                       if (state.status == WorkoutHistoryStatus.loaded)
                         Text(
-                          '${state.executions.length}',
+                          '${state.executions.length} cargadas',
                           style: const TextStyle(
                             color: Color(0xFFFFA477),
                             fontWeight: FontWeight.w800,
+                            fontSize: 12,
                           ),
                         ),
                     ],
@@ -200,6 +204,14 @@ class _HistoryContent extends StatelessWidget {
                     style: TextStyle(color: Colors.white60),
                   ),
                   const SizedBox(height: 12),
+                  FutureBuilder<List<PreparationGoal>>(
+                    future: preparations,
+                    builder: (context, snapshot) => WorkoutHistoryFilters(
+                      query: state.query,
+                      goals: snapshot.data ?? const [],
+                      onChanged: context.read<WorkoutHistoryCubit>().filter,
+                    ),
+                  ),
                   if (state.status == WorkoutHistoryStatus.initial ||
                       state.status == WorkoutHistoryStatus.loading)
                     const Padding(
@@ -212,9 +224,32 @@ class _HistoryContent extends StatelessWidget {
                       onRetry: context.read<WorkoutHistoryCubit>().load,
                     )
                   else if (state.executions.isEmpty)
-                    const _EmptyHistory()
-                  else
+                    state.query.hasFilters
+                        ? const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text(
+                              'No hay sesiones que coincidan con estos filtros.',
+                            ),
+                          )
+                        : const _EmptyHistory()
+                  else ...[
                     ...state.executions.map(_WorkoutHistoryCard.new),
+                    if (state.moreError != null) Text(state.moreError!),
+                    if (state.hasMore)
+                      OutlinedButton.icon(
+                        onPressed: state.isLoadingMore || state.isRefreshing
+                            ? null
+                            : context.read<WorkoutHistoryCubit>().loadMore,
+                        icon: const Icon(Icons.history_rounded),
+                        label: Text(
+                          state.isLoadingMore
+                              ? 'Cargando…'
+                              : state.moreError != null
+                              ? 'Reintentar cargar más'
+                              : 'Cargar más sesiones',
+                        ),
+                      ),
+                  ],
                 ],
               ),
             ),
@@ -263,7 +298,7 @@ class _ActivitySummary extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Últimos 7 días, según el historial disponible. Las sesiones incompletas siguen en el detalle.',
+            'Últimos 7 días dentro del historial consultado. Los filtros delimitan esta consulta; las sesiones incompletas siguen en el detalle.',
             style: TextStyle(color: context.visuals.textMuted, fontSize: 13),
           ),
         ],
@@ -326,19 +361,32 @@ class _WorkoutHistoryCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      execution.templateName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final title = Text(
+                    execution.templateName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ),
-                  _StatusChip(abandoned: abandoned),
-                ],
+                  );
+                  if (constraints.maxWidth < 260 ||
+                      MediaQuery.textScalerOf(context).scale(18) > 24) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        title,
+                        _StatusChip(abandoned: abandoned),
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      Expanded(child: title),
+                      _StatusChip(abandoned: abandoned),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 7),
               Text(
@@ -407,7 +455,9 @@ class _Metric extends StatelessWidget {
       children: [
         Icon(icon, size: 17, color: const Color(0xFFFF8A50)),
         const SizedBox(width: 5),
-        Text(text, style: const TextStyle(color: Colors.white70)),
+        Flexible(
+          child: Text(text, style: const TextStyle(color: Colors.white70)),
+        ),
       ],
     );
   }

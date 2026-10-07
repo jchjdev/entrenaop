@@ -1,4 +1,5 @@
 import 'package:entrenaop/core/theme/entrena_theme.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
@@ -133,7 +134,9 @@ class _Repository implements WorkoutRepository {
   const _Repository(this.executions);
   final List<WorkoutExecution> executions;
   @override
-  Future<List<WorkoutExecution>> getExecutionHistory() async => executions;
+  Future<List<WorkoutExecution>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  }) async => executions;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 
 abstract class WorkoutRepository {
   Future<WorkoutTemplate?> getTemplateById(String id);
@@ -24,7 +25,9 @@ abstract class WorkoutRepository {
 
   Future<WorkoutExecution?> getExecution(String executionId);
 
-  Future<List<WorkoutExecution>> getExecutionHistory();
+  Future<List<WorkoutExecution>> getExecutionHistory({
+    WorkoutHistoryQuery query = const WorkoutHistoryQuery(),
+  });
 
   Future<WorkoutMutationDisposition> completeSet(WorkoutSetResultInput result);
 

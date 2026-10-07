@@ -1,12 +1,29 @@
 # Roadmap de EntrenaOP
 
+**UI-011, 07/10/2026 · resultados e historial cerrado:** Marcas abre una consulta
+por preparación; registrar vuelve a los formularios existentes y actualiza al
+retornar. Historial con preparación, fechas y estado, páginas de 30 y reintento
+sin perder datos. El refresco mantiene la profundidad consultada, también con
+más de mil sesiones; cambiar cuenta renueva raíz y vistas de resultados.
+`flutter analyze` limpio, 537 pruebas completas y nueve recorridos de captura
+correctos, con 22 imágenes de widgets reales y datos ficticios. No acredita
+consulta autenticada a Supabase ni dispositivo real. No cambia SQL, motores,
+admin, paquetes compartidos, Inicio/Mi plan, portadas ni catálogo.
+Alcance, imágenes y límites en [REFRESH_EVOLUTION_2026_10_07.md](REFRESH_EVOLUTION_2026_10_07.md).
+Las comparativas nuevas y el filtro por tipo deportivo siguen pendientes: no
+se deducen de plantillas actuales ni se mezclan protocolos/baremos.
+El único siguiente bloque UX recomendado es Biblioteca: consulta de vídeo y
+gestión de ejercicios propios, respetando autoría, versiones e historial.
+Cuenta y pulido transversal/admin permanecen después; negocio Free/Pro y
+motores se trabajan aparte, manteniendo UI-010.
+
 **UI-010, 07/10/2026 · refresh separado del negocio:** la base sigue siendo la
 restaurada en COM-003. Inicio/Mi plan ya están cerrados; no se reabre su diseño
 ni el de las tarjetas, catálogo o preparaciones para introducir Free/Pro.
-El único siguiente tramo UX recomendado es Evolución/Marcas: destino de
+En esa delimitación se recomendó Evolución/Marcas: destino de
 resultados, filtros e historial antiguo. Descubrimiento comercial y derechos
-de cuenta se abordarán aparte. Esta delimitación es documental, no implementa
-ese siguiente tramo ni acredita una nueva prueba autenticada.
+de cuenta se abordarán aparte. La delimitación inicial fue documental;
+UI-011 implementa el siguiente tramo acotado, sin nueva prueba autenticada.
 
 **COM-003, 07/10/2026 · reversión del último bloque:** se retira `308ae18` y se
 recuperan código y pruebas de `82d74df`, conservando el historial de Git. No hay
@@ -30,7 +47,8 @@ Análisis limpio, 505 pruebas completas de raíz y ocho capturas verificadas;
 20 imágenes de widgets actuales con datos simulados. Sin cambios en admin,
 SQL, motores o producción; pendiente la revisión autenticada en dispositivo.
 Detalle en [REFRESH_PLAN_2026_10_07.md](REFRESH_PLAN_2026_10_07.md).
-El único siguiente tramo UX es Evolución/Marcas, filtros e historial antiguo.
+Ese cierre dio paso a Evolución/Marcas, completado después en UI-011 con
+resultados e historial consultable.
 
 **UI-008, 07/10/2026 · guardado editorial cerrado:** pruebas, reglas, tramos,
 mínimos, importación, clonación y vinculación de estrategia conservan los

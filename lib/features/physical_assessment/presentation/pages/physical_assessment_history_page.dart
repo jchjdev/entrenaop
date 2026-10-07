@@ -93,7 +93,7 @@ class _LoadedHistory extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ...state.entries.map(_AssessmentHistoryCard.new),
+                  ...state.entries.map(AssessmentHistoryCard.new),
                 ],
               ),
             ),
@@ -274,8 +274,8 @@ class _ProgressChip extends StatelessWidget {
   }
 }
 
-class _AssessmentHistoryCard extends StatelessWidget {
-  const _AssessmentHistoryCard(this.entry);
+class AssessmentHistoryCard extends StatelessWidget {
+  const AssessmentHistoryCard(this.entry, {super.key});
 
   final PhysicalAssessmentHistoryEntry entry;
 
