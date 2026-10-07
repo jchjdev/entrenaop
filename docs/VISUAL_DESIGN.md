@@ -642,29 +642,41 @@ complementan el atlas inicial y no acreditan sesión autenticada en dispositivo.
 No cambia SQL, admin, paquetes compartidos o motores. Pendientes 4–7 abiertos;
 el único siguiente tramo UX es Evolución/Marcas e historial navegable.
 
-### Colección, catálogo y futuro Pro · 07/10/2026
+### Retirada del bloque de simulación · COM-003 · 07/10/2026
+
+Javier pide recuperar el estado anterior a `308ae18` y abordar el negocio en
+un chat aparte. La reversión restaura las pantallas y recorridos de `82d74df`,
+incluidos los accesos previos de Inicio y el catálogo previo al bloque. Retira
+el selector temporal Free/Pro, sus guardas y la ficha básica. Las propuestas
+siguientes permanecen pendientes; las maquetas descartadas no son el diseño
+vigente ni autorizan sustituir las tarjetas fotográficas actuales.
+Restauración contrastada con `82d74df`: código y pruebas idénticos, análisis
+limpio, 505 pruebas completas correctas y compilación web debug válida.
+No se modifica Supabase ni producción.
+
+### Revisión abierta: colección, catálogo y futuro Pro · 07/10/2026
 
 Javier mantiene «Tus preparaciones» como colección de las elegidas, pero pide
 revisar cómo se descubre lo que aún no se ha añadido. Prefiere una tarjeta
 «+ Añadir» naranja translúcida frente al botón del encabezado, y plantea también
-mostrar preparaciones consultables antes de añadirlas. La entrada se coloca
-debajo de la colección, porque al final de un carrusel fuera de pantalla no
-resolvería el descubrimiento. La propuesta que combinaba esa entrada con un
+mostrar preparaciones consultables antes de añadirlas. La composición definitiva
+está abierta: una tarjeta al final de un carrusel fuera de pantalla no resolvería
+el problema de descubrimiento. La propuesta que combinaba esa entrada con un
 pequeño bloque de catálogo queda descartada por redundante. La corrección
 vigente se limita a reorganizar los accesos, según UI-009, conservando el diseño
 actual.
 
-El título de las calculadoras en Inicio pasa a «Herramientas». Se retira la
-tarjeta grande de Biblioteca por duplicar su pestaña central; se conservan el
-destino propio y los favoritos opcionales. Las imágenes de cierres anteriores
-conservan su fecha y no representan esta revisión posterior.
+El título preferido para las calculadoras es «Herramientas». Se revisa la tarjeta
+grande de Biblioteca en Inicio por duplicar la pestaña central; se recomienda
+retirarla y conservar el destino propio y los favoritos opcionales. Esta revisión
+todavía no modifica las pantallas ni las imágenes de los cierres anteriores.
 
 Javier confirma la frontera: ritmos, PAEF/PAFAS, sesiones propias limitadas,
 ejercicios con límite por concretar y algunas sesiones de EntrenaOP son Free.
 Los programas con algoritmos de generación/adaptación son Pro. El número de
 sesiones propias (dos o tres), el alcance/límite de ejercicios y las sesiones
-incluidas quedan pendientes. Los accesos y una ficha básica previa al alta se
-implementan en UI-009; el contenido editorial específico sigue pendiente.
+incluidas quedan pendientes. La composición visual y la ficha informativa previa
+a seguir/iniciar una preparación todavía deben confirmarse.
 
 Pro requiere diseño comercial separado: oferta, beneficios, presentación, precios,
 contratación y derechos de servidor. Los algoritmos actuales no acreditan ese
@@ -689,9 +701,9 @@ no se sustituyen por «Ver mi programa» ni por otro resumen genérico.
 
 La propuesta corregida conserva las tarjetas de la captura real aportada por
 Javier y deja una única entrada al catálogo dentro de «Tus preparaciones».
-La tarjeta «+ Añadir preparación», antes solicitada, sustituye al botón del
-encabezado. Se implementa debajo de la colección, visible sin desplazar el
-carrusel. `_PreparationCard` conserva exactamente el componente anterior.
+La tarjeta «+ Añadir preparación», antes solicitada, sustituiría el botón del
+encabezado. Situarla debajo de la colección permite que sea visible sin
+desplazar el carrusel; esa ubicación concreta es propuesta, no implementación.
 Se elimina el bloque adicional «Explora programas». La muestra se limita a
 este acceso y no propone cambios de estilo, distribución ni pantallas para el
 resto de la aplicación.
@@ -708,28 +720,8 @@ el anterior queda pausado, conserva datos/resultados y sus sesiones automáticas
 pendientes sin empezar salen de la agenda. Los datos incompletos o una ejecución
 en curso impiden activar. Retomar necesita revisión con fecha/contexto actuales.
 
-El catálogo abre `/plan/program/:programId` con la ficha básica del programa
-actual: nombre, portada de cabecera con su encuadre, tipo y pasos de inicio.
-Consultar no añade; la acción de alta es explícita. Después del alta abre la
-preparación y regresar renueva el catálogo. No se incluyen programas inventados
-ni se atribuyen protocolos o beneficios específicos sin metadatos publicados.
-
-### Selector temporal Free/Pro y cierre de accesos · COM-002 · 07/10/2026
-
-Perfil incorpora «Pruebas Free / Pro», solicitado y confirmado como herramienta
-temporal. Solo se ve en entorno development y fuera de release; comienza en Pro
-y conserva la selección local por cuenta. Free conserva la consulta y presenta
-las ventajas de Pro al intentar iniciar un programa nuevo o abrir el generador.
-Las rutas de cálculo se construyen solo en la vista Pro. Consultar Inicio o la
-agenda en Free lee los estados actuales sin avanzar ni modificar programas.
-No cambia identidad, permisos, suscripción real, historial ni programa activo.
-
-Validación: `flutter analyze` limpio, 520 pruebas completas de raíz correctas y
-`flutter build web --debug --no-pub` correcto, sin despliegue.
-Incluye 320/1100 px con texto 2×, catálogo → ficha → alta → retorno, vista Free
-sin alta, restauración local y cambio de cuenta durante una escritura, enlaces
-directos al generador y lectura de estados sin RPC de avance. El componente
-fotográfico de Inicio se compara con el anterior y permanece idéntico.
-Sin cambios en admin, paquetes compartidos, SQL o motores. No acredita prueba
-autenticada en dispositivo ni implementa cuotas, cobros o derechos comerciales
-de servidor. Esos puntos y el contenido editorial específico siguen abiertos.
+La revisión de accesos sigue pendiente de implementación. No cambia Flutter,
+rutas, motores, permisos o SQL. La maqueta anterior queda como exploración
+descartada de composición y no acredita una cuenta con suscripción ni una
+propuesta real del servidor. UI-009 y el recorrido responsable quedan
+registrados en `PRODUCT.md`.

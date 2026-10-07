@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
-import 'package:entrenaop/features/plan_preview/presentation/pro_preview_gate.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_program_page.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
@@ -162,22 +160,6 @@ class AppRouter {
                       ),
                   routes: [
                     GoRoute(
-                      path: 'pro',
-                      builder: (context, state) => const ProPreviewPage(),
-                    ),
-                    GoRoute(
-                      path: 'program/:programId',
-                      builder: (context, state) => BlocProvider(
-                        key: ValueKey(
-                          'program-${state.pathParameters['programId']}',
-                        ),
-                        create: (_) => sl<PreparationGoalCubit>(),
-                        child: PreparationProgramPage(
-                          programId: state.pathParameters['programId']!,
-                        ),
-                      ),
-                    ),
-                    GoRoute(
                       path: 'week',
                       builder: (context, state) => BlocProvider(
                         create: (_) => sl<WorkoutScheduleCubit>(
@@ -255,68 +237,23 @@ class AppRouter {
                           routes: [
                             _workflowRoute(
                               path: 'training',
-                              builder: (context, state) => ProPreviewGate(
-                                builder: (context) => PreparationTrainingPage(
-                                  key: ValueKey(
-                                    'training-${state.pathParameters['goalId']}',
-                                  ),
-                                  goalId: state.pathParameters['goalId']!,
-                                  runningStepBuilder: (context, next, back) => BlocProvider(
-                                    key: ValueKey(
-                                      'training-running-${state.pathParameters['goalId']}',
-                                    ),
-                                    create: (_) => sl<PreparationDetailCubit>(
-                                      param1: state.pathParameters['goalId']!,
-                                    ),
-                                    child: RunningIntakePage(
-                                      dataOnly: true,
-                                      embedded: true,
-                                      onContinue: next,
-                                      onBack: back,
-                                      loadContext:
-                                          sl<RunningIntakeContextRepository>()
-                                              .get,
-                                      loadSelectionState:
-                                          sl<ManageRunningReferenceSelectionUseCase>()
-                                              .current,
-                                      chooseReference:
-                                          sl<ManageRunningReferenceSelectionUseCase>()
-                                              .choose,
-                                      clearReference:
-                                          sl<ManageRunningReferenceSelectionUseCase>()
-                                              .clear,
-                                      loadScheduledWorkouts:
-                                          sl<WorkoutScheduleRepository>()
-                                              .getRange,
-                                    ),
-                                  ),
-                                  repository:
-                                      sl<PreparationTrainingRepository>(),
-                                  initialWeek: DateTime.tryParse(
-                                    state.uri.queryParameters['week'] ?? '',
-                                  ),
+                              builder: (context, state) => PreparationTrainingPage(
+                                key: ValueKey(
+                                  'training-${state.pathParameters['goalId']}',
                                 ),
-                              ),
-                            ),
-                            _workflowRoute(
-                              path: 'running-intake',
-                              redirect: (context, state) =>
-                                  state.uri.queryParameters['dataOnly'] ==
-                                      'true'
-                                  ? null
-                                  : '/plan/goal/${state.pathParameters['goalId']}/training',
-                              builder: (context, state) => ProPreviewGate(
-                                builder: (context) => BlocProvider(
+                                goalId: state.pathParameters['goalId']!,
+                                runningStepBuilder: (context, next, back) => BlocProvider(
                                   key: ValueKey(
-                                    'running-intake-${state.pathParameters['goalId']}',
+                                    'training-running-${state.pathParameters['goalId']}',
                                   ),
                                   create: (_) => sl<PreparationDetailCubit>(
                                     param1: state.pathParameters['goalId']!,
                                   ),
                                   child: RunningIntakePage(
-                                    dataOnly:
-                                        state.uri.queryParameters['dataOnly'] ==
-                                        'true',
+                                    dataOnly: true,
+                                    embedded: true,
+                                    onContinue: next,
+                                    onBack: back,
                                     loadContext:
                                         sl<RunningIntakeContextRepository>()
                                             .get,
@@ -332,23 +269,60 @@ class AppRouter {
                                     loadScheduledWorkouts:
                                         sl<WorkoutScheduleRepository>()
                                             .getRange,
-                                    calculateWeek:
-                                        sl<RunningWeekPlanRepository>()
-                                            .calculate,
-                                    previewInitialWeek:
-                                        sl<RunningWeekPlanRepository>()
-                                            .previewInitialWithCurrentPolicy,
-                                    previewNextWeek:
-                                        sl<RunningWeekPlanRepository>()
-                                            .previewNextFromCompletedWeek,
-                                    publishWeek:
-                                        sl<RunningWeekPlanRepository>().publish,
-                                    loadPublishedWeeks:
-                                        sl<RunningWeekPlanRepository>()
-                                            .publishedWeeks,
-                                    resetPlan:
-                                        sl<RunningWeekPlanRepository>().reset,
                                   ),
+                                ),
+                                repository: sl<PreparationTrainingRepository>(),
+                                initialWeek: DateTime.tryParse(
+                                  state.uri.queryParameters['week'] ?? '',
+                                ),
+                              ),
+                            ),
+                            _workflowRoute(
+                              path: 'running-intake',
+                              redirect: (context, state) =>
+                                  state.uri.queryParameters['dataOnly'] ==
+                                      'true'
+                                  ? null
+                                  : '/plan/goal/${state.pathParameters['goalId']}/training',
+                              builder: (context, state) => BlocProvider(
+                                key: ValueKey(
+                                  'running-intake-${state.pathParameters['goalId']}',
+                                ),
+                                create: (_) => sl<PreparationDetailCubit>(
+                                  param1: state.pathParameters['goalId']!,
+                                ),
+                                child: RunningIntakePage(
+                                  dataOnly:
+                                      state.uri.queryParameters['dataOnly'] ==
+                                      'true',
+                                  loadContext:
+                                      sl<RunningIntakeContextRepository>().get,
+                                  loadSelectionState:
+                                      sl<ManageRunningReferenceSelectionUseCase>()
+                                          .current,
+                                  chooseReference:
+                                      sl<ManageRunningReferenceSelectionUseCase>()
+                                          .choose,
+                                  clearReference:
+                                      sl<ManageRunningReferenceSelectionUseCase>()
+                                          .clear,
+                                  loadScheduledWorkouts:
+                                      sl<WorkoutScheduleRepository>().getRange,
+                                  calculateWeek:
+                                      sl<RunningWeekPlanRepository>().calculate,
+                                  previewInitialWeek:
+                                      sl<RunningWeekPlanRepository>()
+                                          .previewInitialWithCurrentPolicy,
+                                  previewNextWeek:
+                                      sl<RunningWeekPlanRepository>()
+                                          .previewNextFromCompletedWeek,
+                                  publishWeek:
+                                      sl<RunningWeekPlanRepository>().publish,
+                                  loadPublishedWeeks:
+                                      sl<RunningWeekPlanRepository>()
+                                          .publishedWeeks,
+                                  resetPlan:
+                                      sl<RunningWeekPlanRepository>().reset,
                                 ),
                               ),
                             ),
@@ -426,15 +400,14 @@ class AppRouter {
                             ),
                             GoRoute(
                               path: 'week-simulator',
-                              builder: (context, state) => ProPreviewGate(
-                                builder: (context) => RunningWeekSimulatorPage(
-                                  goalId: state.pathParameters['goalId']!,
-                                  loadRunningTests:
-                                      sl<RunningTestRepository>().history,
-                                  loadPreferences:
-                                      sl<TrainingPreferencesRepository>().get,
-                                ),
-                              ),
+                              builder: (context, state) =>
+                                  RunningWeekSimulatorPage(
+                                    goalId: state.pathParameters['goalId']!,
+                                    loadRunningTests:
+                                        sl<RunningTestRepository>().history,
+                                    loadPreferences:
+                                        sl<TrainingPreferencesRepository>().get,
+                                  ),
                             ),
                             GoRoute(
                               path: 'running-test',

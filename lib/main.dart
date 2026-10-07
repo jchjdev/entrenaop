@@ -5,12 +5,9 @@ import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
-import 'package:entrenaop/features/plan_preview/presentation/plan_preview_cubit.dart';
-import 'package:entrenaop/features/plan_preview/presentation/plan_preview_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,16 +23,13 @@ Future<void> main() async {
   final authCubit = sl<AuthCubit>();
   unawaited(authCubit.checkCurrentUser());
 
-  runApp(
-    EntrenaOpApp(authCubit: authCubit, planPreview: sl<PlanPreviewCubit>()),
-  );
+  runApp(EntrenaOpApp(authCubit: authCubit));
 }
 
 class EntrenaOpApp extends StatefulWidget {
   final AuthCubit authCubit;
-  final PlanPreviewCubit? planPreview;
 
-  const EntrenaOpApp({super.key, required this.authCubit, this.planPreview});
+  const EntrenaOpApp({super.key, required this.authCubit});
 
   @override
   State<EntrenaOpApp> createState() => _EntrenaOpAppState();
@@ -43,29 +37,16 @@ class EntrenaOpApp extends StatefulWidget {
 
 class _EntrenaOpAppState extends State<EntrenaOpApp> {
   late final AppRouter _appRouter;
-  StreamSubscription<AuthState>? _previewIdentity;
 
   @override
   void initState() {
     super.initState();
-    void bindPreview(AuthState auth) {
-      if (auth is AuthAuthenticated) {
-        widget.planPreview?.bindAccount(auth.user.id);
-      } else if (auth is AuthUnauthenticated || auth is AuthInitial) {
-        widget.planPreview?.bindAccount(null);
-      }
-    }
-
-    bindPreview(widget.authCubit.state);
-    _previewIdentity = widget.authCubit.stream.listen(bindPreview);
     _appRouter = AppRouter(widget.authCubit);
   }
 
   @override
   void dispose() {
     _appRouter.dispose();
-    unawaited(_previewIdentity?.cancel());
-    unawaited(widget.planPreview?.close());
     unawaited(widget.authCubit.close());
     super.dispose();
   }
@@ -74,18 +55,12 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: widget.authCubit,
-      child: _withPreview(
-        MaterialApp.router(
-          title: 'EntrenaOP',
-          debugShowCheckedModeBanner: false,
-          theme: EntrenaTheme.dark,
-          routerConfig: _appRouter.config,
-        ),
+      child: MaterialApp.router(
+        title: 'EntrenaOP',
+        debugShowCheckedModeBanner: false,
+        theme: EntrenaTheme.dark,
+        routerConfig: _appRouter.config,
       ),
     );
   }
-
-  Widget _withPreview(Widget app) => widget.planPreview == null
-      ? app
-      : PlanPreviewScope(cubit: widget.planPreview!, child: app);
 }

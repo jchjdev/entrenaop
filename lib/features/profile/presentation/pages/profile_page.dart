@@ -1,5 +1,4 @@
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
-import 'package:entrenaop/features/plan_preview/presentation/plan_preview_selector.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
@@ -330,7 +329,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: const Icon(Icons.logout_rounded),
                           label: const Text('Cerrar sesión'),
                         ),
-                        const PlanPreviewSelector(),
                       ],
                     ),
                   ),

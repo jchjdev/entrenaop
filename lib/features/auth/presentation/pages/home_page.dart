@@ -185,6 +185,38 @@ class _DashboardContentState extends State<_DashboardContent> {
                   const SizedBox(height: 24),
                   const HomeToolsSection(),
                   const SizedBox(height: 24),
+                  EntrenaCard(
+                    onTap: () => _open('/library'),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Biblioteca de entrenamientos',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Explora sesiones y ejercicios',
+                                style: TextStyle(
+                                  color: context.visuals.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   HomeFavorites(
                     key: ValueKey(widget.userId),
                     repository: widget.favoritesRepository,
@@ -481,7 +513,14 @@ class _PreparationsSection extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const HomeSectionHeading(title: 'Tus preparaciones'),
+      HomeSectionHeading(
+        title: 'Tus preparaciones',
+        action: TextButton.icon(
+          onPressed: () => onOpen('/plan/goal'),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Añadir'),
+        ),
+      ),
       const SizedBox(height: 10),
       if (overview.goals.isEmpty)
         EntrenaCard(
@@ -496,6 +535,11 @@ class _PreparationsSection extends StatelessWidget {
               Text(
                 'Elige una prueba del catálogo. Podrás gestionar tu preparación y conservar su historial.',
                 style: TextStyle(color: context.visuals.textMuted),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => onOpen('/plan/goal'),
+                child: const Text('Explorar preparaciones'),
               ),
             ],
           ),
@@ -521,75 +565,8 @@ class _PreparationsSection extends StatelessWidget {
             ],
           ),
         ),
-      const SizedBox(height: 12),
-      _AddPreparationCard(onTap: () => onOpen('/plan/goal')),
     ],
   );
-}
-
-class _AddPreparationCard extends StatelessWidget {
-  const _AddPreparationCard({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
-    const radius = BorderRadius.all(Radius.circular(22));
-    return Card(
-      margin: EdgeInsets.zero,
-      color: accent.withValues(alpha: .08),
-      shape: RoundedRectangleBorder(
-        borderRadius: radius,
-        side: BorderSide(color: accent.withValues(alpha: .42)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.add_rounded,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Añadir preparación',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Ver programas disponibles',
-                      style: TextStyle(color: context.visuals.textMuted),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _PreparationCard extends StatelessWidget {

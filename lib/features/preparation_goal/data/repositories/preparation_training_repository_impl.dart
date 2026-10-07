@@ -7,76 +7,27 @@ import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
 class SupabasePreparationTrainingRepository
     implements PreparationTrainingRepository {
-  const SupabasePreparationTrainingRepository(
-    this.client, {
-    bool Function()? readOnlyPreview,
-  }) : _readOnlyPreview = readOnlyPreview;
+  const SupabasePreparationTrainingRepository(this.client);
   final SupabaseClient client;
-  final bool Function()? _readOnlyPreview;
-
-  /// La vista Free de desarrollo consulta el estado sin avanzar ni generar.
-  Future<List<AdaptiveProgramProgress>> readPrograms() async {
-    final rows = await client
-        .from('preparation_goals')
-        .select(
-          'id, preparation_programs!inner(name), adaptive_program_states(status, message, last_generated_week, next_generation_on)',
-        )
-        .eq('status', 'active')
-        .order('created_at');
-    return rows
-        .map((row) {
-          final program = Map<String, dynamic>.from(
-            row['preparation_programs'] as Map,
-          );
-          final state = Map<String, dynamic>.from(
-            row['adaptive_program_states'] as Map? ?? {},
-          );
-          return AdaptiveProgramProgress(
-            goalId: row['id'] as String,
-            name: program['name'] as String,
-            status: state['status'] as String? ?? 'draft',
-            message:
-                state['message'] as String? ??
-                'Completa los datos iniciales para empezar tu programa.',
-            currentWeek: DateTime.tryParse(
-              state['last_generated_week'] as String? ?? '',
-            ),
-            nextGenerationOn: DateTime.tryParse(
-              state['next_generation_on'] as String? ?? '',
-            ),
-          );
-        })
-        .toList(growable: false);
-  }
-
   @override
   Future<List<AdaptiveProgramProgress>> refreshPrograms() async =>
-      _readOnlyPreview?.call() == true
-      ? readPrograms()
-      : _rows(await _rpc('refresh_adaptive_programs'))
-            .map(
-              (row) => AdaptiveProgramProgress(
-                goalId: row['goal_id'] as String,
-                name: row['name'] as String,
-                status: row['status'] as String,
-                message: row['message'] as String,
-                currentWeek: DateTime.tryParse(
-                  row['current_week'] as String? ?? '',
-                ),
-                nextGenerationOn: DateTime.tryParse(
-                  row['next_generation_on'] as String? ?? '',
-                ),
+      _rows(await _rpc('refresh_adaptive_programs'))
+          .map(
+            (row) => AdaptiveProgramProgress(
+              goalId: row['goal_id'] as String,
+              name: row['name'] as String,
+              status: row['status'] as String,
+              message: row['message'] as String,
+              currentWeek: DateTime.tryParse(
+                row['current_week'] as String? ?? '',
               ),
-            )
-            .toList(growable: false);
+              nextGenerationOn: DateTime.tryParse(
+                row['next_generation_on'] as String? ?? '',
+              ),
+            ),
+          )
+          .toList(growable: false);
   Future<dynamic> _rpc(String name, {Map<String, dynamic>? params}) async {
-    // Guarda de simulación, no autorización comercial: esta última es del servidor.
-    if (_readOnlyPreview?.call() == true &&
-        name != 'get_preparation_training_setup') {
-      throw const PreparationTrainingException(
-        'Los programas adaptativos forman parte de Pro.',
-      );
-    }
     try {
       return await client.rpc(name, params: params);
     } on PostgrestException catch (e) {

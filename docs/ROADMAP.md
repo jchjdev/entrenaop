@@ -1,20 +1,15 @@
 # Roadmap de EntrenaOP
 
-**UI-009 / COM-002, 07/10/2026 · accesos y vistas de prueba cerrados:** Inicio
-conserva sus tarjetas fotográficas y el carrusel; una única tarjeta «+ Añadir
-preparación» visible abre el catálogo. «Herramientas» sustituye «Para tus
-pruebas» y se retira la tarjeta grande duplicada de Biblioteca. Catálogo →
-ficha básica → alta explícita → preparación → retorno con catálogo actualizado.
-Perfil permite probar Free/Pro con una selección local temporal por cuenta,
-habilitada solo en development y fuera de release. Free consulta los estados
-sin avance automático y no monta generadores; volver a Pro conserva los datos.
-Análisis limpio, 520 pruebas completas correctas y compilación web debug válida.
-Sin cambios en admin,
-paquetes compartidos, SQL, motores o producción. Pendiente revisión autenticada
-en dispositivo; no cierra el contenido editorial, cuotas, sesiones Free,
-precios, cobros ni derechos de servidor. El único siguiente bloque recomendado
-de negocio es cerrar las cuotas y qué contenido incluye cada nivel antes de
-implementar sus derechos reales; Evolución/Marcas sigue pendiente en el refresh.
+**COM-003, 07/10/2026 · reversión del último bloque:** se retira `308ae18` y se
+recuperan código y pruebas de `82d74df`, conservando el historial de Git. No hay
+selector Free/Pro, guardas de simulación ni ficha básica añadida por ese bloque;
+la reorganización UI-009 permanece pendiente. No cambia admin, paquetes
+compartidos, SQL, datos remotos o producción. El trabajo comercial se deja para
+un chat aparte: cerrar capacidades, derechos de servidor y ciclo de pago antes
+de adaptar las vistas de la app. No retomar la simulación descartada COM-002.
+Validación de la restauración: `flutter analyze` limpio y las 505 pruebas
+completas del estado anterior correctas; código y pruebas sin diferencias
+respecto a `82d74df`. Compilación web debug correcta, sin despliegue.
 
 **UI-008, 07/10/2026 · Inicio/Mi plan cerrado:** Mi plan presenta programa en
 curso, semana y sesiones pendientes, con estados separados para preparaciones
