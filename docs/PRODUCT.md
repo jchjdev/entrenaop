@@ -361,15 +361,22 @@ superficie naranja translúcida, o mostrar preparaciones que se puedan explorar
 antes de incorporarlas a la colección personal. Javier acepta la dirección de
 la primera maqueta y pide concretarla para la vista actual con acceso completo,
 futuro Pro; ese recorrido tiene prioridad sobre la futura entrada de Free.
-La composición Pro revisada sigue pendiente de confirmación. COM-001 fija la
-frontera comercial de los programas adaptativos,
+Javier corrige después el alcance: reorganizar accesos, conservando el aspecto
+de la aplicación actual. Rechaza la composición que duplicaba «Añadir
+preparación» con un bloque «Explora programas» y sustituía sus tarjetas
+fotográficas por una tarjeta genérica de programa en curso. La ubicación
+concreta de la entrada única sigue siendo propuesta, sin implementar.
+COM-001 fija la frontera comercial de los programas adaptativos,
 pero no autoriza presentarla como ya implementada ni publicar programas no
 verificados.
 
-La recomendación en revisión es combinar la colección personal con una entrada
-de descubrimiento visible y fichas de catálogo consultables antes de seguir una
-preparación. El futuro producto comercial explicaría el beneficio del programa
-adaptativo en esa ficha. Para quien ya dispone de acceso, la acción debe llevar
+La recomendación en revisión es mantener la colección personal y una única
+entrada visible al catálogo dentro de «Tus preparaciones», sustituyendo el
+botón del encabezado por la tarjeta «+ Añadir» antes solicitada. No se añade un
+segundo bloque de descubrimiento. Las fichas de catálogo consultables antes de
+seguir una preparación siguen pendientes. El futuro producto comercial
+explicaría el beneficio del programa adaptativo en esa ficha. Para quien ya
+dispone de acceso, la acción debe llevar
 a preparar o empezar el programa, sin volver a ofrecer contratar Pro.
 La consulta informativa del catálogo,
 guardar una preparación como interés y la oferta comercial de las mediciones
@@ -388,10 +395,12 @@ recomendación de esta revisión, todavía no una modificación aplicada.
 #### Recorrido prioritario con acceso completo · UI-009
 
 La pregunta que debe resolver Inicio es «¿qué otro programa puedo preparar y
-por qué me interesa?». «Tus preparaciones» conserva las elegidas; «Explora
-programas» muestra contenido consultable antes de añadirlo, con propósito y
-acción de descubrimiento. Una ficha explica qué prepara, qué datos necesita y
-cómo encaja con disponibilidad/material y resultados. No se atribuyen mejoras
+por qué me interesa?». «Tus preparaciones» conserva las elegidas y su diseño
+actual: fotografía, encuadre, estado, nombre, fecha y «Gestionar preparación».
+Una única entrada permite consultar el catálogo antes de añadir, sin duplicar
+el destino con otra sección ni convertir las tarjetas actuales en resúmenes
+genéricos. Una futura ficha explica qué prepara, qué datos necesita y cómo
+encaja con disponibilidad/material y resultados. No se atribuyen mejoras
 medidas, duración fija o cobertura deportiva a programas sin comprobarlos.
 
 El recorrido propuesto es Inicio → catálogo → ficha → preparar el programa →
@@ -411,10 +420,12 @@ ejecución en curso bloquea el cambio hasta resolverla. La activación inválida
 puede dejar pausado el programa anterior; ese contrato pertenece al servidor.
 Retomar revisa fecha y situación actuales, en lugar de ejecutar una semana vieja.
 
-Esta corrección se representa en una propuesta visual con datos de ejemplo,
-sin cambiar motores, navegación Flutter, permisos ni SQL. La ficha informativa
-previa al alta aún requiere implementación y contenido editorial verificable;
-la maqueta no convierte sus textos en metadatos ya publicados.
+La corrección de accesos se ilustra conservando las tarjetas de la captura real
+aportada por Javier. Solo se propone la entrada única al catálogo; no se
+rediseñan otras pantallas. No cambia Flutter, motores, permisos ni SQL. La ficha
+informativa previa al alta aún requiere implementación y contenido editorial
+verificable; las maquetas anteriores no convierten sus textos en metadatos ya
+publicados ni su composición descartada en una decisión vigente.
 
 ### Recorrido actual
 

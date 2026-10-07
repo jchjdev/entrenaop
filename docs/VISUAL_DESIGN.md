@@ -649,8 +649,10 @@ revisar cómo se descubre lo que aún no se ha añadido. Prefiere una tarjeta
 «+ Añadir» naranja translúcida frente al botón del encabezado, y plantea también
 mostrar preparaciones consultables antes de añadirlas. La composición definitiva
 está abierta: una tarjeta al final de un carrusel fuera de pantalla no resolvería
-el problema de descubrimiento. La propuesta en revisión combina una entrada
-siempre visible con un pequeño bloque de catálogo y su ficha pública.
+el problema de descubrimiento. La propuesta que combinaba esa entrada con un
+pequeño bloque de catálogo queda descartada por redundante. La corrección
+vigente se limita a reorganizar los accesos, según UI-009, conservando el diseño
+actual.
 
 El título preferido para las calculadoras es «Herramientas». Se revisa la tarjeta
 grande de Biblioteca en Inicio por duplicar la pestaña central; se recomienda
@@ -678,21 +680,36 @@ futuro Pro. La futura entrada de Free no sustituye ese trabajo. El usuario debe
 ver qué otros programas hay, entender por qué le interesan y empezar su
 preparación desde una ficha, conservando sus preparaciones actuales.
 
-La nueva propuesta parte de Mejora FAS en curso, conserva la tarjeta naranja
-«+ Añadir preparación» y muestra «Explora programas» con propósito y acción
-antes del alta. Catálogo y ficha ofrecen descubrir/preparar para quien ya tiene
-acceso; el programa actual aparece como tal y abre su recorrido. No se repite
-un mensaje de compra de Pro. Se descarta el tono defensivo «Free sigue siendo
-útil» en favor de comunicar capacidades y beneficios concretos.
+Javier rechaza la maqueta Pro que sustituía las tarjetas actuales por una
+tarjeta genérica de Mejora FAS en curso y añadía tanto «+ Añadir preparación»
+como «Explora programas». La corrección explícita es reorganizar los accesos,
+sin cambiar el aspecto de la app. Se conservan las tarjetas fotográficas
+actuales, incluidos encuadre, estado, nombre, fecha y «Gestionar preparación»;
+no se sustituyen por «Ver mi programa» ni por otro resumen genérico.
 
-La interacción ilustrativa permite consultar otro programa, añadirlo sin pausar
-el actual, revisar sus datos y ver el cambio explícito de programa activo. Respeta
-STR-026/027: varias preparaciones guardadas y un generador. Al confirmar otro,
+La propuesta corregida conserva las tarjetas de la captura real aportada por
+Javier y deja una única entrada al catálogo dentro de «Tus preparaciones».
+La tarjeta «+ Añadir preparación», antes solicitada, sustituiría el botón del
+encabezado. Situarla debajo de la colección permite que sea visible sin
+desplazar el carrusel; esa ubicación concreta es propuesta, no implementación.
+Se elimina el bloque adicional «Explora programas». La muestra se limita a
+este acceso y no propone cambios de estilo, distribución ni pantallas para el
+resto de la aplicación.
+
+Catálogo y ficha deben ofrecer descubrir/preparar para quien ya tiene acceso;
+el programa actual aparece como tal y abre su recorrido. No se repite un mensaje
+de compra de Pro. Se descarta el tono defensivo «Free sigue siendo útil» en
+favor de comunicar capacidades y beneficios concretos.
+
+El recorrido de catálogo debe permitir consultar otro programa, añadirlo sin
+pausar el actual, revisar sus datos y ver el cambio explícito de programa activo.
+Respeta STR-026/027: varias preparaciones guardadas y un generador. Al confirmar otro,
 el anterior queda pausado, conserva datos/resultados y sus sesiones automáticas
 pendientes sin empezar salen de la agenda. Los datos incompletos o una ejecución
 en curso impiden activar. Retomar necesita revisión con fecha/contexto actuales.
 
-La composición revisada se entrega para valorar antes de implementar. No cambia
-Flutter, rutas, motores, permisos o SQL; la simulación usa datos de ejemplo y
-no acredita una cuenta con suscripción ni una propuesta real del servidor.
-UI-009 y el recorrido responsable quedan registrados en `PRODUCT.md`.
+La revisión de accesos sigue pendiente de implementación. No cambia Flutter,
+rutas, motores, permisos o SQL. La maqueta anterior queda como exploración
+descartada de composición y no acredita una cuenta con suscripción ni una
+propuesta real del servidor. UI-009 y el recorrido responsable quedan
+registrados en `PRODUCT.md`.
