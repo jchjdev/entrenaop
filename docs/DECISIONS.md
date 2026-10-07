@@ -525,6 +525,11 @@ propias. El informe pegado se reconcilia con lo ya implementado, sin rehacerlo
 ni sustituir el código actual por versiones anteriores. Estado y cierres en
 `docs/REFRESH_STATUS_2026_10_07.md` y `docs/VISUAL_DESIGN.md`.
 
+Quedan comprobados el refresco al regresar y el guardado editorial retenido.
+Javier reafirma `go_router` para pantallas y `Navigator` para modales; se unifican
+los retornos restantes del editor/carrera. El siguiente tramo UX es Inicio/Mi
+plan, sin trasladar ni cambiar reglas deportivas.
+
 ## Regla para nuevas decisiones
 
 Una entrada debe ser concreta y comprobable. Si todavía faltan datos, se

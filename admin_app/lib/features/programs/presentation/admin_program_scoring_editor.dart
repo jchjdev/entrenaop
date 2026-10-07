@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:flutter/material.dart';
 
@@ -15,14 +18,38 @@ String formatMark(double? value) => value == null
 
 Future<AdminProgramScoringRule?> showScoringRuleDialog(
   BuildContext context,
-  AdminProgramScoringRule? current,
-) async => showDialog<AdminProgramScoringRule>(
+  AdminProgramScoringRule? current, {
+  required Future<void> Function(AdminProgramScoringRule) save,
+}) => showDialog<AdminProgramScoringRule>(
   context: context,
-  builder: (_) => _ScoringRuleDialog(current: current),
+  barrierDismissible: false,
+  builder: (_) => RetainedSaveDialog<AdminProgramScoringRule>(
+    save: save,
+    errorMessage:
+        'No se pudo guardar la regla de calificación. Tus datos se conservan.',
+    builder: (_, submit, saving, error, markDirty) => _ScoringRuleDialog(
+      current: current,
+      onSubmit: submit,
+      saving: saving,
+      error: error,
+      onDirtyChanged: markDirty,
+    ),
+  ),
 );
 
 class _ScoringRuleDialog extends StatefulWidget {
-  const _ScoringRuleDialog({this.current});
+  const _ScoringRuleDialog({
+    this.current,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+
+  final ValueChanged<AdminProgramScoringRule> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
 
   final AdminProgramScoringRule? current;
 
@@ -61,6 +88,12 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
   late String _ageReference = widget.current?.ageReference ?? 'assessment_date';
 
   @override
+  void initState() {
+    super.initState();
+    _initialSnapshot = _snapshot;
+  }
+
+  @override
   void dispose() {
     for (final controller in [
       _version,
@@ -79,6 +112,28 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
     super.dispose();
   }
 
+  late final String _initialSnapshot;
+  String get _snapshot => jsonEncode([
+    _version.text,
+    _source.text,
+    _sourceLabel.text,
+    _max.text,
+    _each.text,
+    _aggregate.text,
+    _stage.text,
+    _effective.text,
+    _expires.text,
+    _ageReferenceOn.text,
+    _method,
+    _mode,
+    _ageReference,
+  ]);
+  void _markDirty() => widget.onDirtyChanged(_snapshot != _initialSnapshot);
+  void _change(VoidCallback change) {
+    setState(change);
+    _markDirty();
+  }
+
   @override
   Widget build(BuildContext context) => AlertDialog(
     title: const Text('Calificación del programa'),
@@ -86,11 +141,22 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
       width: 560,
       child: Form(
         key: _form,
+        onChanged: _markDirty,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    widget.error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
               const Text(
                 'Define cómo se aprueba este programa. Después podrás crear sus pruebas y sus baremos desde aquí.',
               ),
@@ -109,7 +175,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
                     child: Text('Puntos por marcas'),
                   ),
                 ],
-                onChanged: (value) => setState(() {
+                onChanged: (value) => _change(() {
                   _mode = value ?? _mode;
                   if (_mode == 'pass_fail') {
                     _method = 'none';
@@ -149,7 +215,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
                   ),
                 ],
                 onChanged: (value) =>
-                    setState(() => _ageReference = value ?? _ageReference),
+                    _change(() => _ageReference = value ?? _ageReference),
               ),
               if (_ageReference == 'reference_date')
                 TextFormField(
@@ -232,7 +298,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
                       child: Text('Solo mínimos por prueba'),
                     ),
                   ],
-                  onChanged: (v) => setState(() => _method = v ?? _method),
+                  onChanged: (v) => _change(() => _method = v ?? _method),
                 ),
               const SizedBox(height: 12),
               if (_mode == 'points')
@@ -259,7 +325,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
@@ -294,7 +360,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
             );
             return;
           }
-          Navigator.of(context).pop(
+          widget.onSubmit(
             AdminProgramScoringRule(
               version: _version.text.trim(),
               sourceUrl: _source.text.trim(),
@@ -318,7 +384,7 @@ class _ScoringRuleDialogState extends State<_ScoringRuleDialog> {
             ),
           );
         },
-        child: const Text('Guardar regla'),
+        child: Text(widget.saving ? 'Guardando…' : 'Guardar regla'),
       ),
     ],
   );
@@ -431,114 +497,90 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
   Future<void> _import() async {
     final rows = await showDialog<List<AdminScoreBand>>(
       context: context,
-      builder: (_) => _ScoreBandImportDialog(test: widget.test),
-    );
-    if (rows == null || !mounted) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Revisar ${rows.length} tramos'),
-        content: Text(
-          'Se sustituirán todos los tramos actuales de ${widget.test.name}. '
-          'Primera fila: ${categoryLabel(rows.first.category)}, '
-          '${rows.first.minAge}–${rows.first.maxAge} años, '
-          '${formatMark(rows.first.minMark)}–${formatMark(rows.first.maxMark)} = '
-          '${formatMark(rows.first.points)} puntos. Si una fila falla, no se cambia ninguna.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Importar y sustituir'),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<List<AdminScoreBand>>(
+        errorMessage: 'No se importó la tabla. Revisa solapes, resolución y máximo de puntos. Tus filas se conservan.',
+        save: (rows) async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Revisar ${rows.length} tramos'),
+              content: Text(
+                'Se sustituirán todos los tramos actuales de ${widget.test.name}. '
+                'Primera fila: ${categoryLabel(rows.first.category)}, '
+                '${rows.first.minAge}–${rows.first.maxAge} años, '
+                '${formatMark(rows.first.minMark)}–${formatMark(rows.first.maxMark)} = '
+                '${formatMark(rows.first.points)} puntos. Si una fila falla, no se cambia ninguna.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Volver'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Importar y sustituir'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true || !mounted) {
+            throw const RetainedSaveCancelled();
+          }
+          await widget.repository.importScoreBands(
+            widget.test.id,
+            rows,
+            replace: true,
+          );
+        },
+        builder: (_, submit, saving, error, markDirty) =>
+            _ScoreBandImportDialog(
+              test: widget.test,
+              onSubmit: submit,
+              saving: saving,
+              error: error,
+              onDirtyChanged: markDirty,
+            ),
       ),
     );
-    if (confirmed != true || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.importScoreBands(
-        widget.test.id,
-        rows,
-        replace: true,
-      );
-      if (!mounted) return;
-      setState(() {
-        _bands = widget.repository.listScoreBands(widget.test.id);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${rows.length} tramos importados.')),
-      );
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No se importó la tabla. Revisa solapes, resolución y máximo de puntos.',
-            ),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    if (rows == null || !mounted) return;
+    setState(() {
+      _bands = widget.repository.listScoreBands(widget.test.id);
+      _bands.ignore();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${rows.length} tramos importados.')),
+    );
   }
 
-  Future<void> _add() async {
-    final band = await showDialog<AdminScoreBand>(
-      context: context,
-      builder: (_) => _ScoreBandDialog(test: widget.test),
-    );
-    if (band == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.addScoreBand(widget.test.id, band);
-      if (!mounted) return;
-      setState(() {
-        _bands = widget.repository.listScoreBands(widget.test.id);
-      });
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo guardar. Revisa si el tramo se solapa o falta la regla general.',
-          ),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
-  }
+  Future<void> _add() => _editBand();
 
-  Future<void> _edit(AdminScoreBand current) async {
+  Future<void> _edit(AdminScoreBand current) => _editBand(current);
+
+  Future<void> _editBand([AdminScoreBand? current]) async {
     final band = await showDialog<AdminScoreBand>(
       context: context,
-      builder: (_) => _ScoreBandDialog(test: widget.test, existing: current),
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<AdminScoreBand>(
+        save: (value) => current == null
+            ? widget.repository.addScoreBand(widget.test.id, value)
+            : widget.repository.updateScoreBand(widget.test.id, value),
+        errorMessage: 'No se pudo guardar el tramo. Revisa límites, puntos, solapamientos y la regla general. Tus datos se conservan.',
+        builder: (_, submit, saving, error, markDirty) => _ScoreBandDialog(
+          test: widget.test,
+          existing: current,
+          onSubmit: submit,
+          saving: saving,
+          error: error,
+          onDirtyChanged: markDirty,
+        ),
+      ),
     );
     if (band == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.updateScoreBand(widget.test.id, band);
-      if (!mounted) return;
-      setState(() {
-        _bands = widget.repository.listScoreBands(widget.test.id);
-      });
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo cambiar el tramo. Revisa límites, puntos y solapamientos.',
-          ),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    setState(() {
+      _bands = widget.repository.listScoreBands(widget.test.id);
+      _bands.ignore();
+    });
   }
 
   Future<void> _delete(AdminScoreBand band) async {
@@ -568,6 +610,7 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
       if (!mounted) return;
       setState(() {
         _bands = widget.repository.listScoreBands(widget.test.id);
+        _bands.ignore();
       });
     } catch (_) {
       if (!mounted) return;
@@ -632,11 +675,10 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return TextButton(
-                    onPressed: () => setState(
-                      () => _bands = widget.repository.listScoreBands(
-                        widget.test.id,
-                      ),
-                    ),
+                    onPressed: () => setState(() {
+                      _bands = widget.repository.listScoreBands(widget.test.id);
+                      _bands.ignore();
+                    }),
                     child: const Text(
                       'No se pudo cargar el baremo. Reintentar',
                     ),
@@ -776,7 +818,19 @@ class _ThresholdSummary extends StatelessWidget {
 }
 
 class _ScoreBandDialog extends StatefulWidget {
-  const _ScoreBandDialog({required this.test, this.existing});
+  const _ScoreBandDialog({
+    required this.test,
+    this.existing,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+
+  final ValueChanged<AdminScoreBand> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
 
   final AdminProgramTest test;
   final AdminScoreBand? existing;
@@ -786,7 +840,17 @@ class _ScoreBandDialog extends StatefulWidget {
 }
 
 class _ScoreBandImportDialog extends StatefulWidget {
-  const _ScoreBandImportDialog({required this.test});
+  const _ScoreBandImportDialog({
+    required this.test,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+  final ValueChanged<List<AdminScoreBand>> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
   final AdminProgramTest test;
   @override
   State<_ScoreBandImportDialog> createState() => _ScoreBandImportDialogState();
@@ -812,6 +876,11 @@ class _ScoreBandImportDialogState extends State<_ScoreBandImportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.error != null)
+              Text(
+                widget.error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             const Text(
               'Copia filas desde una hoja de cálculo. Separa las columnas con punto y coma o tabulador.',
             ),
@@ -835,6 +904,7 @@ class _ScoreBandImportDialogState extends State<_ScoreBandImportDialog> {
                 errorText: _error,
               ),
               onChanged: (_) {
+                widget.onDirtyChanged(_text.text.isNotEmpty);
                 if (_error != null) setState(() => _error = null);
               },
             ),
@@ -844,19 +914,19 @@ class _ScoreBandImportDialogState extends State<_ScoreBandImportDialog> {
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
         onPressed: () {
           try {
             final rows = parseScoreBandsTable(_text.text, widget.test);
-            Navigator.pop(context, rows);
+            widget.onSubmit(rows);
           } on FormatException catch (error) {
             setState(() => _error = error.message);
           }
         },
-        child: const Text('Revisar filas'),
+        child: Text(widget.saving ? 'Revisando…' : 'Revisar filas'),
       ),
     ],
   );
@@ -875,13 +945,17 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
   void initState() {
     super.initState();
     final band = widget.existing;
-    if (band == null) return;
+    if (band == null) {
+      _initialSnapshot = _snapshot;
+      return;
+    }
     _category = band.category;
     _min.text = band.minMark == null ? '' : formatMark(band.minMark);
     _max.text = band.maxMark == null ? '' : formatMark(band.maxMark);
     _points.text = formatMark(band.points);
     _minAge.text = band.minAge.toString();
     _maxAge.text = band.maxAge.toString();
+    _initialSnapshot = _snapshot;
   }
 
   @override
@@ -894,6 +968,21 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
     super.dispose();
   }
 
+  late final String _initialSnapshot;
+  String get _snapshot => jsonEncode([
+    _min.text,
+    _max.text,
+    _points.text,
+    _minAge.text,
+    _maxAge.text,
+    _category,
+  ]);
+  void _markDirty() => widget.onDirtyChanged(_snapshot != _initialSnapshot);
+  void _change(VoidCallback change) {
+    setState(change);
+    _markDirty();
+  }
+
   @override
   Widget build(BuildContext context) => AlertDialog(
     title: Text(widget.existing == null ? 'Añadir tramo' : 'Editar tramo'),
@@ -901,10 +990,21 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
       width: 430,
       child: Form(
         key: _form,
+        onChanged: _markDirty,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (widget.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    widget.error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
               DropdownButtonFormField<String>(
                 initialValue: _category,
                 decoration: const InputDecoration(
@@ -922,7 +1022,7 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
                       child: Text('Mujeres'),
                     ),
                 ],
-                onChanged: (v) => setState(() => _category = v ?? _category),
+                onChanged: (v) => _change(() => _category = v ?? _category),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -984,7 +1084,7 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
@@ -1017,7 +1117,7 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
             );
             return;
           }
-          Navigator.of(context).pop(
+          widget.onSubmit(
             AdminScoreBand(
               id: widget.existing?.id ?? '',
               category: _category,
@@ -1030,7 +1130,11 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
           );
         },
         child: Text(
-          widget.existing == null ? 'Guardar tramo' : 'Guardar cambios',
+          widget.saving
+              ? 'Guardando…'
+              : widget.existing == null
+              ? 'Guardar tramo'
+              : 'Guardar cambios',
         ),
       ),
     ],

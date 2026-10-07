@@ -1,8 +1,13 @@
 # EntrenaOP: mapa visual y funcional del código actual
 
-Instantánea: **07/10/2026**, sobre `cf7025f`, versión actual del PC de Javier.
+Instantánea: **07/10/2026**, sobre `cf7025f`, versión auditada del PC de Javier.
 Esta tarea analiza y documenta; no cambia pantallas, datos, algoritmos o producción.
 Las propuestas no se convierten en decisiones aprobadas por aparecer aquí.
+
+Los avances posteriores de UI-008 se contrastan en
+[REFRESH_STATUS_2026_10_07.md](REFRESH_STATUS_2026_10_07.md). Estas imágenes
+conservan su revisión de origen; no representan los estados de error/guardado
+añadidos después ni sustituyen la evidencia del código y las pruebas actuales.
 
 ## Evidencia y límites de las imágenes
 

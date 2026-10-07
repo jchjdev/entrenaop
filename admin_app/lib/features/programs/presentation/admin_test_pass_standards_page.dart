@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
 import 'package:flutter/material.dart';
@@ -27,31 +30,29 @@ class _AdminTestPassStandardsPageState
 
   void _reload() => setState(() {
     _standards = widget.repository.listPassStandards(widget.test.id);
+    _standards.ignore();
   });
 
   Future<void> _edit([AdminPassStandard? current]) async {
     final value = await showDialog<AdminPassStandard>(
       context: context,
-      builder: (_) => _StandardDialog(test: widget.test, current: current),
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<AdminPassStandard>(
+        save: (value) =>
+            widget.repository.savePassStandard(widget.test.id, value),
+        errorMessage: 'No se pudo guardar. Comprueba la marca y que las edades no se solapen. Tus datos se conservan.',
+        builder: (_, submit, saving, error, markDirty) => _StandardDialog(
+          test: widget.test,
+          current: current,
+          onSubmit: submit,
+          saving: saving,
+          error: error,
+          onDirtyChanged: markDirty,
+        ),
+      ),
     );
     if (value == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.savePassStandard(widget.test.id, value);
-      if (mounted) _reload();
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No se pudo guardar. Comprueba la marca y que las edades no se solapen.',
-            ),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    _reload();
   }
 
   Future<void> _delete(AdminPassStandard standard) async {
@@ -108,13 +109,14 @@ class _AdminTestPassStandardsPageState
               '${categoryLabel(widget.test.category)} · edades ${widget.test.minAge}–${widget.test.maxAge} · ${widget.test.betterDirection == 'higher' ? 'se supera alcanzando o superando el mínimo' : 'se supera igualando o bajando del máximo'}',
             ),
             const SizedBox(height: 24),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Expanded(
-                  child: Text(
-                    'Marcas para ser apto',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                Text(
+                  'Marcas para ser apto',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 if (widget.editable)
                   FilledButton.icon(
@@ -197,7 +199,19 @@ String _unit(String unit) => switch (unit) {
 };
 
 class _StandardDialog extends StatefulWidget {
-  const _StandardDialog({required this.test, this.current});
+  const _StandardDialog({
+    required this.test,
+    this.current,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+  final ValueChanged<AdminPassStandard> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
+
   final AdminProgramTest test;
   final AdminPassStandard? current;
   @override
@@ -220,6 +234,12 @@ class _StandardDialogState extends State<_StandardDialog> {
       (widget.test.category == 'women' ? 'women' : 'men');
 
   @override
+  void initState() {
+    super.initState();
+    _initialSnapshot = _snapshot;
+  }
+
+  @override
   void dispose() {
     _from.dispose();
     _to.dispose();
@@ -227,17 +247,37 @@ class _StandardDialogState extends State<_StandardDialog> {
     super.dispose();
   }
 
+  late final String _initialSnapshot;
+  String get _snapshot =>
+      jsonEncode([_from.text, _to.text, _threshold.text, _category]);
+  void _markDirty() => widget.onDirtyChanged(_snapshot != _initialSnapshot);
+  void _change(VoidCallback change) {
+    setState(change);
+    _markDirty();
+  }
+
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: Text(widget.current == null ? 'Añadir mínimo' : 'Editar mínimo'),
     content: SizedBox(
       width: 430,
       child: Form(
         key: _form,
+        onChanged: _markDirty,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (widget.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  widget.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _category,
               decoration: const InputDecoration(
                 labelText: 'Columna del baremo',
@@ -252,7 +292,7 @@ class _StandardDialogState extends State<_StandardDialog> {
                   ),
               ],
               onChanged: (value) =>
-                  setState(() => _category = value ?? _category),
+                  _change(() => _category = value ?? _category),
             ),
             TextFormField(
               controller: _from,
@@ -292,7 +332,7 @@ class _StandardDialogState extends State<_StandardDialog> {
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
@@ -309,8 +349,7 @@ class _StandardDialogState extends State<_StandardDialog> {
             );
             return;
           }
-          Navigator.pop(
-            context,
+          widget.onSubmit(
             AdminPassStandard(
               id: widget.current?.id ?? '',
               category: _category,
@@ -320,7 +359,7 @@ class _StandardDialogState extends State<_StandardDialog> {
             ),
           );
         },
-        child: const Text('Guardar mínimo'),
+        child: Text(widget.saving ? 'Guardando…' : 'Guardar mínimo'),
       ),
     ],
   );

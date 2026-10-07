@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:workout_core/strength_exercise_catalog.dart';
@@ -21,8 +24,6 @@ class _AdminPerformanceStrategySectionState
     extends State<AdminPerformanceStrategySection> {
   late Future<AdminPerformanceSetup> _setup = widget.repository
       .loadPerformanceSetup(widget.program.id);
-  bool _saving = false;
-  String? _error;
   Future<void> _edit(
     AdminProgramTest test,
     AdminPerformanceSetup setup,
@@ -30,33 +31,29 @@ class _AdminPerformanceStrategySectionState
   ) async {
     final selected = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) =>
-          _StrategyDialog(test: test, setup: setup, binding: binding),
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<Map<String, dynamic>>(
+        save: (value) => widget.repository.savePerformanceStrategy(
+          test.id,
+          value.isEmpty ? null : value,
+        ),
+        errorMessage: 'No se pudo guardar la estrategia. Revisa sus datos e inténtalo otra vez; el formulario se conserva.',
+        builder: (_, submit, saving, error, markDirty) => _StrategyDialog(
+          test: test,
+          setup: setup,
+          binding: binding,
+          onSubmit: submit,
+          saving: saving,
+          error: error,
+          onDirtyChanged: markDirty,
+        ),
+      ),
     );
     if (selected == null || !mounted) return;
     setState(() {
-      _saving = true;
-      _error = null;
+      _setup = widget.repository.loadPerformanceSetup(widget.program.id);
+      _setup.ignore();
     });
-    try {
-      await widget.repository.savePerformanceStrategy(
-        test.id,
-        selected.isEmpty ? null : selected,
-      );
-      if (mounted) {
-        setState(
-          () => _setup = widget.repository.loadPerformanceSetup(
-            widget.program.id,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = 'No se pudo guardar la estrategia: $e');
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
   }
 
   @override
@@ -78,11 +75,6 @@ class _AdminPerformanceStrategySectionState
           const Text(
             'Vincula la tarea y sus condiciones. El motor elegirá dosis y apoyos según la capacidad y los resultados de cada persona; no necesitas diseñar su rutina individual.',
           ),
-          if (_error != null)
-            Text(
-              _error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
           for (final test in widget.tests.where(
             (t) => t.measurementProtocol != 'run_2000m_v1',
           ))
@@ -109,9 +101,7 @@ class _AdminPerformanceStrategySectionState
                     trailing: widget.program.enabled
                         ? const Icon(Icons.lock_outline)
                         : TextButton(
-                            onPressed: _saving
-                                ? null
-                                : () => _edit(test, data, binding),
+                            onPressed: () => _edit(test, data, binding),
                             child: Text(
                               binding == null ? 'Configurar' : 'Revisar',
                             ),
@@ -135,10 +125,18 @@ class _StrategyDialog extends StatefulWidget {
     required this.test,
     required this.setup,
     this.binding,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
   });
   final AdminProgramTest test;
   final AdminPerformanceSetup setup;
   final Map<String, dynamic>? binding;
+  final ValueChanged<Map<String, dynamic>> onSubmit;
+  final bool saving;
+  final String? error;
+  final ValueChanged<bool> onDirtyChanged;
   @override
   State<_StrategyDialog> createState() => _StrategyDialogState();
 }
@@ -149,6 +147,21 @@ class _StrategyDialogState extends State<_StrategyDialog> {
   StrengthExerciseDefinition? _profile;
   StrengthMeasurement? _mode;
   bool _confirmed = false;
+  late final String _initialSnapshot;
+  String get _snapshot => jsonEncode([
+    _note.text,
+    _condition.text,
+    _profile?.code,
+    _profile?.definitionVersion,
+    _mode?.code,
+    _confirmed,
+  ]);
+  void _markDirty() => widget.onDirtyChanged(_snapshot != _initialSnapshot);
+  void _change(VoidCallback change) {
+    setState(change);
+    _markDirty();
+  }
+
   List<StrengthMeasurement> _modes(StrengthExerciseDefinition p) => p
       .measurements
       .map((o) => o.mode)
@@ -190,6 +203,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
         (params?['fixed_duration_seconds'] ?? params?['fixed_distance_meters'])
             ?.toString() ??
         '';
+    _initialSnapshot = _snapshot;
   }
 
   @override
@@ -207,10 +221,16 @@ class _StrategyDialogState extends State<_StrategyDialog> {
       child: SingleChildScrollView(
         child: Form(
           key: _form,
+          onChanged: _markDirty,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (widget.error != null)
+                Text(
+                  widget.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               Text(widget.test.protocolNotes),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -233,7 +253,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
                 ],
                 validator: (v) =>
                     v == null ? 'Selecciona una variante compatible.' : null,
-                onChanged: (v) => setState(() {
+                onChanged: (v) => _change(() {
                   _profile = widget.setup.profiles.firstWhere(
                     (p) => '${p.code}:${p.definitionVersion}' == v,
                   );
@@ -268,7 +288,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
                         }),
                       ),
                   ],
-                  onChanged: (v) => setState(() => _mode = v),
+                  onChanged: (v) => _change(() => _mode = v),
                 ),
               if (_mode == StrengthMeasurement.repsInTime ||
                   _mode == StrengthMeasurement.timeForDistance)
@@ -303,7 +323,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 value: _confirmed,
-                onChanged: (v) => setState(() => _confirmed = v!),
+                onChanged: (v) => _change(() => _confirmed = v!),
                 title: const Text(
                   'He comprobado que variante, medición y condiciones corresponden al protocolo; compartir músculos no basta',
                 ),
@@ -316,11 +336,11 @@ class _StrategyDialogState extends State<_StrategyDialog> {
     actions: [
       if (widget.binding != null)
         TextButton(
-          onPressed: () => Navigator.of(context).pop(<String, dynamic>{}),
+          onPressed: () => widget.onSubmit(<String, dynamic>{}),
           child: const Text('Desvincular'),
         ),
       TextButton(
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
@@ -328,7 +348,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
             ? null
             : () {
                 if (!_form.currentState!.validate()) return;
-                Navigator.of(context).pop({
+                widget.onSubmit({
                   'profile_code': _profile!.code,
                   'profile_version': _profile!.definitionVersion,
                   'measurement_mode': _mode!.code,
@@ -345,7 +365,7 @@ class _StrategyDialogState extends State<_StrategyDialog> {
                   },
                 });
               },
-        child: const Text('Guardar estrategia'),
+        child: Text(widget.saving ? 'Guardando…' : 'Guardar estrategia'),
       ),
     ],
   );

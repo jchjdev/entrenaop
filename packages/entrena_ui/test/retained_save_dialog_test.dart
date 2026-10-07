@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Future<void> _open(
@@ -85,6 +86,30 @@ class _FormState extends State<_Form> {
 }
 
 void main() {
+  testWidgets(
+    'cancelar la revisión conserva campos sin error y permite guardar después',
+    (tester) async {
+      var attempts = 0;
+      await _open(tester, (value) async {
+        if (++attempts == 1) throw const RetainedSaveCancelled();
+        expect(value, 'Baremo revisado');
+      });
+      await tester.enterText(find.byType(TextField), 'Baremo revisado');
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.textContaining('No se pudo'), findsNothing);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Baremo revisado',
+      );
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(attempts, 2);
+    },
+  );
+
   testWidgets('un fallo conserva los campos y un reintento correcto cierra', (
     tester,
   ) async {
@@ -119,6 +144,8 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Serie');
     await tester.tap(find.text('Guardar'));
     await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    expect(tester.testTextInput.hasAnyClients, isFalse);
     tester.widget<FilledButton>(find.byType(FilledButton)).onPressed!();
     await Navigator.of(tester.element(find.byType(TextField))).maybePop();
     await tester.pumpAndSettle();

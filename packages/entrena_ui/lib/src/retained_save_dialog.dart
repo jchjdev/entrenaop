@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// Una revisión previa cancelada conserva el formulario sin simular un fallo.
+class RetainedSaveCancelled implements Exception {
+  const RetainedSaveCancelled();
+}
+
 /// Conserva el formulario montado hasta que el callback confirme persistencia.
 /// No conoce repositorios ni confunde un fallo de recarga con fallo de guardado.
 class RetainedSaveDialog<T> extends StatefulWidget {
@@ -50,6 +55,8 @@ class _RetainedSaveDialogState<T> extends State<RetainedSaveDialog<T>> {
           Navigator.of(context).pop(value);
         }
       });
+    } on RetainedSaveCancelled {
+      if (mounted) setState(() => _saving = false);
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -96,18 +103,21 @@ class _RetainedSaveDialogState<T> extends State<RetainedSaveDialog<T>> {
     onPopInvokedWithResult: (didPop, result) {
       if (!didPop) _confirmExit();
     },
-    child: AbsorbPointer(
-      absorbing: _saving,
-      child: widget.builder(
-        context,
-        (value) {
-          _submit(value);
-        },
-        _saving,
-        _error,
-        (dirty) {
-          if (_dirty != dirty) setState(() => _dirty = dirty);
-        },
+    child: ExcludeFocus(
+      excluding: _saving,
+      child: AbsorbPointer(
+        absorbing: _saving,
+        child: widget.builder(
+          context,
+          (value) {
+            _submit(value);
+          },
+          _saving,
+          _error,
+          (dirty) {
+            if (_dirty != dirty) setState(() => _dirty = dirty);
+          },
+        ),
       ),
     ),
   );

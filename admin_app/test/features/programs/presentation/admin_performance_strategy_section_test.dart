@@ -9,6 +9,8 @@ import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
 class _Repository implements AdminProgramRepository {
   Map<String, dynamic>? saved;
+  bool failSave = false;
+  int saveCalls = 0;
   @override
   Future<AdminPerformanceSetup> loadPerformanceSetup(String programId) async =>
       AdminPerformanceSetup(
@@ -34,6 +36,8 @@ class _Repository implements AdminProgramRepository {
     String testId,
     Map<String, dynamic>? strategy,
   ) async {
+    saveCalls++;
+    if (failSave) throw StateError('Sin conexión');
     saved = strategy;
   }
 
@@ -90,8 +94,21 @@ void main() {
           await t.pumpAndSettle();
           await t.tap(find.byType(CheckboxListTile));
           await t.pumpAndSettle();
+          repo.failSave = true;
           await t.tap(find.text('Guardar estrategia'));
           await t.pumpAndSettle();
+          expect(
+            find.textContaining('No se pudo guardar la estrategia'),
+            findsOneWidget,
+          );
+          expect(
+            t.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value,
+            isTrue,
+          );
+          repo.failSave = false;
+          await t.tap(find.text('Guardar estrategia'));
+          await t.pumpAndSettle();
+          expect(repo.saveCalls, 2);
           expect(repo.saved?['measurement_mode'], 'REPS_IN_TIME');
           expect(repo.saved?['training_parameters'], {
             'fixed_duration_seconds': 120.0,

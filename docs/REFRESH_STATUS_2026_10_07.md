@@ -58,3 +58,29 @@ correctas. Regresiones de router real con ramas y tarea raíz, conservación de
 texto/scroll, respuestas fuera de orden, cierre durante carga y fallo/reintento.
 Repositorios simulados; sigue pendiente el recorrido autenticado en dispositivo.
 No cambia SQL ni motores. Siguiente bloque: guardado retenido editorial de admin.
+
+## Cierre: guardado editorial de admin · 07/10/2026
+
+Implementado en creación/edición de pruebas, regla de calificación, tramos de
+puntos, mínimos, importación de tabla, clonación de edición y vinculación de
+estrategia. El diálogo espera la persistencia; un fallo mantiene sus campos y
+ofrece reintento. Bloquea doble envío, salida y foco de teclado durante la
+petición; al cancelar avisa solo si el contenido difiere del inicial.
+
+La revisión de cambio de medición conserva el bloqueo por módulo y la
+confirmación de retirada del baremo; cancelar vuelve al formulario. La
+importación conserva su revisión y sustitución atómica existentes: cancelar o
+fallar mantiene la tabla escrita. No se cambia qué se guarda ni las reglas de
+entrenamiento. Tras persistir, un fallo de consulta se presenta como recarga y
+no vuelve a abrir/habilitar el mismo envío. Clonación mantiene sus controles
+hasta terminar el cierre del diálogo. Mínimos admite 320 × 480 y texto 2×.
+
+Validación: análisis limpio en ambas apps; 482 pruebas de raíz, 85 de admin
+correctas (una optativa omitida) y seis de `entrena_ui`. Regresiones con
+repositorios simulados: fallo/reintento por formulario, doble envío/atrás,
+descarte cancelado y revertido, revisión cancelada, fallo posterior de recarga,
+clonación y accesibilidad. Sin cambios en SQL, motores o producción.
+
+Quedan los demás bloques del refresh. El único siguiente tramo UX recomendado
+es Inicio/Mi plan con programa en curso, semana y pendientes, retirando accesos
+redundantes sin sustituir Biblioteca ni los motores.

@@ -593,3 +593,28 @@ real con `StatefulShellRoute`, cambio de rama, tarea raíz y regreso, conservaci
 de texto/scroll, selección de semana y respuestas fuera de orden. No acredita
 conexión real ni reanudación del proceso. Comparación con el informe anterior y
 único siguiente tramo en `REFRESH_STATUS_2026_10_07.md`: guardado editorial admin.
+
+### Guardado editorial (UI-008, 07/10/2026)
+
+Se cierra el pendiente 1 del primer tramo para pruebas, calificación, tramos,
+mínimos, importación y clonación; se incluye también el diálogo de vinculación
+de estrategia. Todos conservan campos tras un fallo de persistencia y cierran
+al confirmarse el guardado. La petición bloquea edición, foco por teclado,
+salida y envíos duplicados. Cancelar sin cambios no avisa; con cambios ofrece
+seguir editando o descartar, y revertir los campos elimina el aviso.
+
+La confirmación al cambiar la medición conserva sus condiciones y el bloqueo
+por módulo. Cancelar esa revisión vuelve al formulario con los valores intactos.
+La importación mantiene revisión y sustitución atómica del contrato existente;
+cancelar o fallar no descarta el texto. Guardar y recargar son pasos distintos:
+un fallo posterior de consulta no presenta el guardado como fallido ni habilita
+el mismo formulario otra vez. Clonación conserva los controles durante la
+animación de cierre. Título/botón y selector de mínimos se adaptan a 320 px y
+texto 2×. No se modifican las reglas del motor ni los repositorios/SQL.
+
+Verificación: análisis de ambas apps sin incidencias; 482 pruebas completas
+de raíz, 85 de admin (una captura optativa omitida) y seis de `entrena_ui`.
+Pruebas con repositorios simulados, incluidos fallo/reintento de cada formulario,
+doble envío/atrás, descarte y revisión cancelados, recarga posterior fallida y
+pantalla estrecha. Sigue pendiente el recorrido autenticado en dispositivo.
+El siguiente tramo UX es Inicio/Mi plan; los pendientes 3–7 siguen abiertos.

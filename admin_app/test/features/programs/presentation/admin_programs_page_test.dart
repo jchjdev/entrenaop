@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../helpers/admin_test_app.dart';
 
 import 'package:entrenaop_admin/core/admin_router.dart';
@@ -50,6 +52,17 @@ class _FakeRepository implements AdminProgramRepository {
   int listCalls = 0;
   int createCalls = 0;
   bool failCreate = false;
+  final failSaves = <String>{};
+  final saveCalls = <String, int>{};
+  final pendingSaves = <String, Completer<void>>{};
+  bool failRuleReload = false;
+  String? clonedName;
+  Future<void> _beforeSave(String operation) async {
+    saveCalls.update(operation, (count) => count + 1, ifAbsent: () => 1);
+    await pendingSaves[operation]?.future;
+    if (failSaves.contains(operation)) throw StateError('Sin conexión');
+  }
+
   final programs = <AdminProgram>[];
   final tests = <AdminProgramTest>[];
   final modules = <AdminProgramTrainingModule>[];
@@ -97,7 +110,10 @@ class _FakeRepository implements AdminProgramRepository {
     String programId,
     String name,
     String version,
-  ) async {}
+  ) async {
+    await _beforeSave('clone');
+    clonedName = name;
+  }
 
   @override
   Future<List<AdminProgramTest>> listTests(String programId) async =>
@@ -105,6 +121,7 @@ class _FakeRepository implements AdminProgramRepository {
 
   @override
   Future<void> createTest(String programId, AdminProgramTest test) async {
+    await _beforeSave('test-create');
     tests.add(test);
   }
 
@@ -113,6 +130,7 @@ class _FakeRepository implements AdminProgramRepository {
     AdminProgramTest test, {
     bool resetBands = false,
   }) async {
+    await _beforeSave('test-edit');
     final index = tests.indexWhere((item) => item.id == test.id);
     tests[index] = test;
     if (resetBands) {
@@ -151,14 +169,21 @@ class _FakeRepository implements AdminProgramRepository {
   }
 
   @override
-  Future<AdminProgramScoringRule?> getScoringRule(String programId) async =>
-      scoringRule;
+  Future<AdminProgramScoringRule?> getScoringRule(String programId) async {
+    if (failRuleReload && (saveCalls['rule'] ?? 0) > 0) {
+      throw StateError('Recarga fallida');
+    }
+    return scoringRule;
+  }
 
   @override
   Future<void> saveScoringRule(
     String programId,
     AdminProgramScoringRule rule,
-  ) async => scoringRule = rule;
+  ) async {
+    await _beforeSave('rule');
+    scoringRule = rule;
+  }
 
   @override
   Future<List<AdminScoreBand>> listScoreBands(String testId) async =>
@@ -166,11 +191,13 @@ class _FakeRepository implements AdminProgramRepository {
 
   @override
   Future<void> addScoreBand(String testId, AdminScoreBand band) async {
+    await _beforeSave('band-add');
     bands.add(band);
   }
 
   @override
   Future<void> updateScoreBand(String testId, AdminScoreBand band) async {
+    await _beforeSave('band-edit');
     final index = bands.indexWhere((item) => item.id == band.id);
     bands[index] = band;
   }
@@ -186,6 +213,7 @@ class _FakeRepository implements AdminProgramRepository {
     List<AdminScoreBand> rows, {
     required bool replace,
   }) async {
+    await _beforeSave('import');
     if (replace) bands.clear();
     bands.addAll(rows);
   }
@@ -199,6 +227,7 @@ class _FakeRepository implements AdminProgramRepository {
     String testId,
     AdminPassStandard standard,
   ) async {
+    await _beforeSave('standard');
     final index = standards.indexWhere((item) => item.id == standard.id);
     if (index < 0) {
       standards.add(standard);
@@ -271,28 +300,529 @@ class _FakeWorkouts implements AdminWorkoutRepository {
       const [];
 }
 
-void main() {
-  testWidgets('perder la sesión retira un editor incluso con cambios pendientes', (tester) async {
-    final session = ValueNotifier<bool>(true);
-    final router = createAdminRouter(
-      programs: _FakeRepository(allowed: true), workouts: _FakeWorkouts(), exercises: _FakeExercises(),
-      onSignOut: () {}, initialLocation: '/sessions/new',
-      authChanges: session, isAuthenticated: () => session.value,
-      loginBuilder: (_) => const Scaffold(body: Text('Acceso al admin')),
+const _editorialTest = AdminProgramTest(
+  id: 'test',
+  code: 'test',
+  name: 'Dominadas',
+  unit: 'repetitions',
+  betterDirection: 'higher',
+  protocolNotes: 'Protocolo oficial completo.',
+  definitionVersion: 1,
+  minAge: 18,
+  maxAge: 60,
+);
+const _editorialRule = AdminProgramScoringRule(
+  version: 'baremo-v1',
+  sourceUrl: 'https://example.org/fuente',
+  sourceLabel: 'Fuente oficial',
+  aggregation: 'average',
+  maxPoints: 10,
+  minEachPoints: 1,
+  minAggregatePoints: 5,
+);
+void _desktop(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1100, 900);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+Future<void> _details(
+  WidgetTester tester,
+  _FakeRepository repository, {
+  bool published = false,
+}) async {
+  _desktop(tester);
+  await tester.pumpWidget(
+    AdminTestApp(
+      theme: ThemeData.dark(),
+      home: AdminProgramDetailPage(
+        program: AdminProgram(
+          id: 'program',
+          name: 'Programa',
+          kind: 'access',
+          enabled: published,
+        ),
+        repository: repository,
+        workoutRepository: _FakeWorkouts(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapVisible(WidgetTester tester, String text) async {
+  await tester.pump();
+  if (find.text(text).evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      find.text(text),
+      160,
+      scrollable: find.byType(Scrollable).first,
     );
-    addTearDown(router.dispose);
-    addTearDown(session.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  }
+  await tester.ensureVisible(find.text(text).last);
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(find.text(text).last);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(text).last);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _retrySave(
+  WidgetTester tester,
+  _FakeRepository repository, {
+  required String operation,
+  required String button,
+  required String label,
+  required String expectedValue,
+}) async {
+  repository.failSaves.add(operation);
+  await _tapVisible(tester, button);
+  expect(find.byType(AlertDialog), findsOneWidget);
+  expect(
+    tester
+        .widget<TextFormField>(find.widgetWithText(TextFormField, label))
+        .controller!
+        .text,
+    expectedValue,
+  );
+  expect(find.textContaining('No se pudo'), findsOneWidget);
+  repository.failSaves.remove(operation);
+  await _tapVisible(tester, button);
+  expect(repository.saveCalls[operation], 2);
+  expect(find.byType(AlertDialog), findsNothing);
+  expect(tester.takeException(), isNull);
+}
+
+void main() {
+  testWidgets(
+    'regla avisa solo ante cambios actuales y cancelar conserva campos',
+    (tester) async {
+      final repository = _FakeRepository(allowed: true)
+        ..scoringRule = _editorialRule;
+      await _details(tester, repository);
+      await _tapVisible(tester, 'Editar calificación');
+      await _tapVisible(tester, 'Cancelar');
+      expect(find.byType(AlertDialog), findsNothing);
+      await _tapVisible(tester, 'Editar calificación');
+      final source = find.widgetWithText(TextFormField, 'Fuente oficial');
+      await tester.enterText(source, 'Fuente pendiente');
+      await _tapVisible(tester, 'Cancelar');
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await _tapVisible(tester, 'Seguir editando');
+      expect(
+        tester.widget<TextFormField>(source).controller!.text,
+        'Fuente pendiente',
+      );
+      await tester.enterText(source, _editorialRule.sourceLabel);
+      await _tapVisible(tester, 'Cancelar');
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(repository.saveCalls['rule'], isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'mínimo con error y texto grande permite corregir y guardar a 320 px',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 480);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = _FakeRepository(allowed: true);
+      await tester.pumpWidget(
+        AdminTestApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: AdminTestPassStandardsPage(
+            test: _editorialTest,
+            repository: repository,
+            editable: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tapVisible(tester, 'Añadir mínimo');
+      final mark = find.widgetWithText(
+        TextFormField,
+        'Marca mínima para aprobar',
+      );
+      await tester.ensureVisible(mark);
+      await tester.enterText(mark, '6');
+      await _retrySave(
+        tester,
+        repository,
+        operation: 'standard',
+        button: 'Guardar mínimo',
+        label: 'Marca mínima para aprobar',
+        expectedValue: '6',
+      );
+    },
+  );
+
+  testWidgets(
+    'prueba conserva valores tras fallo y bloquea atrás y doble envío',
+    (tester) async {
+      final repository = _FakeRepository(allowed: true);
+      await _details(tester, repository);
+      await _tapVisible(tester, 'Añadir prueba');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Nombre de la prueba'),
+        'Nueva prueba',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Cómo se realiza y valida'),
+        'Protocolo oficial completo.',
+      );
+      final pending = Completer<void>();
+      repository.pendingSaves['test-create'] = pending;
+      await tester.tap(find.text('Guardar prueba'));
+      await tester.pump();
+      tester
+          .widget<FilledButton>(find.widgetWithText(FilledButton, 'Guardando…'))
+          .onPressed!();
+      await Navigator.of(tester.element(find.byType(TextFormField).first))
+          .maybePop();
+      await tester.pump();
+      expect(repository.saveCalls['test-create'], 1);
+      expect(find.text('¿Salir sin guardar?'), findsNothing);
+      pending.completeError(StateError('Sin conexión'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('No se pudo guardar la prueba'),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextFormField>(
+              find.widgetWithText(TextFormField, 'Nombre de la prueba'),
+            )
+            .controller!
+            .text,
+        'Nueva prueba',
+      );
+      repository.pendingSaves.clear();
+      await _tapVisible(tester, 'Guardar prueba');
+      expect(repository.tests.single.name, 'Nueva prueba');
+      expect(repository.saveCalls['test-create'], 2);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('cancelar el cambio de medición conserva formulario y baremo', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..tests.add(_editorialTest)
+      ..bands.add(
+        const AdminScoreBand(
+          id: 'band',
+          category: 'men',
+          minMark: 1,
+          maxMark: 5,
+          points: 1,
+          minAge: 18,
+          maxAge: 60,
+        ),
+      );
+    await _details(tester, repository);
+    final testTile = find.widgetWithText(ExpansionTile, 'Dominadas');
+    await tester.ensureVisible(testTile);
     await tester.pumpAndSettle();
-    expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-    final name = find.byWidgetPredicate((widget) => widget is TextField && widget.decoration?.labelText == 'Nombre de la sesión');
-    await tester.enterText(name, 'Privado de la cuenta anterior');
-    session.value = false;
+    await tester.tap(
+      find.descendant(of: testTile, matching: find.text('Dominadas')),
+    );
     await tester.pumpAndSettle();
-    expect(find.text('Acceso al admin'), findsOneWidget);
-    expect(find.byType(AdminWorkoutEditorPage), findsNothing);
-    expect(find.text('¿Salir sin guardar?'), findsNothing);
+    await _tapVisible(tester, 'Editar prueba');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Resolución de la marca'),
+      '0,5',
+    );
+    await _tapVisible(tester, 'Guardar cambios');
+    expect(find.text('Cambiar cómo se mide la prueba'), findsOneWidget);
+    await _tapVisible(tester, 'Cancelar');
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(repository.saveCalls['test-edit'], isNull);
+    expect(repository.bands, hasLength(1));
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.widgetWithText(TextFormField, 'Resolución de la marca'),
+          )
+          .controller!
+          .text,
+      '0,5',
+    );
+    await _tapVisible(tester, 'Guardar cambios');
+    await _tapVisible(tester, 'Cambiar y borrar baremo');
+    expect(repository.bands, isEmpty);
+    expect(repository.tests.single.markStep, .5);
+    expect(repository.saveCalls['test-edit'], 1);
+    expect(tester.takeException(), isNull);
   });
+
+  testWidgets('clonar conserva nombre y versión si falla antes de volver', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..scoringRule = _editorialRule;
+    await _details(tester, repository, published: true);
+    await _tapVisible(tester, 'Crear nueva versión editable');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nombre del programa nuevo'),
+      'Programa actualizado',
+    );
+    await _retrySave(
+      tester,
+      repository,
+      operation: 'clone',
+      button: 'Crear borrador',
+      label: 'Nombre del programa nuevo',
+      expectedValue: 'Programa actualizado',
+    );
+    expect(repository.clonedName, 'Programa actualizado');
+    expect(find.text('Pantalla anterior'), findsOneWidget);
+  });
+
+  testWidgets(
+    'guardar regla y fallar su recarga no permite reenviar el formulario',
+    (tester) async {
+      final repository = _FakeRepository(allowed: true)
+        ..scoringRule = _editorialRule;
+      await _details(tester, repository);
+      await _tapVisible(tester, 'Editar calificación');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Fuente oficial'),
+        'Fuente revisada',
+      );
+      repository.failSaves.add('rule');
+      await _tapVisible(tester, 'Guardar regla');
+      expect(
+        find.textContaining('No se pudo guardar la regla'),
+        findsOneWidget,
+      );
+      expect(find.text('Fuente revisada'), findsOneWidget);
+      repository.failSaves.clear();
+      repository.failRuleReload = true;
+      await _tapVisible(tester, 'Guardar regla');
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(repository.scoringRule!.sourceLabel, 'Fuente revisada');
+      expect(repository.saveCalls['rule'], 2);
+      repository.failRuleReload = false;
+      await _tapVisible(
+        tester,
+        'No se pudo cargar la regla de calificación. Reintentar',
+      );
+      expect(find.text('Fuente revisada · baremo-v1'), findsOneWidget);
+      expect(repository.saveCalls['rule'], 2);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  for (final editing in [false, true]) {
+    testWidgets(
+      'tramo ${editing ? 'editado' : 'nuevo'} conserva límites tras fallo',
+      (tester) async {
+        _desktop(tester);
+        final repository = _FakeRepository(allowed: true)
+          ..scoringRule = _editorialRule;
+        if (editing) {
+          repository.bands.add(
+            const AdminScoreBand(
+              id: 'band',
+              category: 'men',
+              minMark: 1,
+              maxMark: 5,
+              points: 1,
+              minAge: 18,
+              maxAge: 60,
+            ),
+          );
+        }
+        await tester.pumpWidget(
+          AdminTestApp(
+            home: AdminTestScoreBandsPage(
+              programId: 'program',
+              test: _editorialTest,
+              repository: repository,
+              editable: true,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (editing) {
+          await tester.tap(find.byTooltip('Editar tramo'));
+          await tester.pumpAndSettle();
+        } else {
+          await _tapVisible(tester, 'Añadir tramo');
+        }
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Desde (vacío = sin mínimo)'),
+          '3',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Hasta (vacío = sin máximo)'),
+          '4',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Puntos'),
+          '2',
+        );
+        await _retrySave(
+          tester,
+          repository,
+          operation: editing ? 'band-edit' : 'band-add',
+          button: editing ? 'Guardar cambios' : 'Guardar tramo',
+          label: 'Desde (vacío = sin mínimo)',
+          expectedValue: '3',
+        );
+        expect(repository.bands.single.minMark, 3);
+      },
+    );
+
+    testWidgets(
+      'mínimo ${editing ? 'editado' : 'nuevo'} conserva marca tras fallo',
+      (tester) async {
+        _desktop(tester);
+        final repository = _FakeRepository(allowed: true);
+        if (editing) {
+          repository.standards.add(
+            const AdminPassStandard(
+              id: 'min',
+              category: 'men',
+              minAge: 18,
+              maxAge: 60,
+              threshold: 5,
+            ),
+          );
+        }
+        await tester.pumpWidget(
+          AdminTestApp(
+            home: AdminTestPassStandardsPage(
+              test: _editorialTest,
+              repository: repository,
+              editable: true,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (editing) {
+          await tester.tap(find.byTooltip('Editar mínimo'));
+          await tester.pumpAndSettle();
+        } else {
+          await _tapVisible(tester, 'Añadir mínimo');
+        }
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Marca mínima para aprobar'),
+          '6',
+        );
+        await _retrySave(
+          tester,
+          repository,
+          operation: 'standard',
+          button: 'Guardar mínimo',
+          label: 'Marca mínima para aprobar',
+          expectedValue: '6',
+        );
+        expect(repository.standards.single.threshold, 6);
+      },
+    );
+  }
+
+  testWidgets(
+    'importación cancelada o fallida conserva filas y baremo anterior',
+    (tester) async {
+      _desktop(tester);
+      final repository = _FakeRepository(allowed: true)
+        ..scoringRule = _editorialRule
+        ..bands.add(
+          const AdminScoreBand(
+            id: 'previous',
+            category: 'men',
+            minMark: 1,
+            maxMark: 5,
+            points: 1,
+            minAge: 18,
+            maxAge: 60,
+          ),
+        );
+      await tester.pumpWidget(
+        AdminTestApp(
+          home: AdminTestScoreBandsPage(
+            programId: 'program',
+            test: _editorialTest,
+            repository: repository,
+            editable: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tapVisible(tester, 'Pegar tabla');
+      const rows = 'H;18;60;1;5;2\nH;18;60;6;*;3';
+      await tester.enterText(find.byType(TextField), rows);
+      await _tapVisible(tester, 'Revisar filas');
+      await _tapVisible(tester, 'Volver');
+      expect(repository.saveCalls['import'], isNull);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        rows,
+      );
+      repository.failSaves.add('import');
+      await _tapVisible(tester, 'Revisar filas');
+      await _tapVisible(tester, 'Importar y sustituir');
+      expect(find.textContaining('No se importó'), findsOneWidget);
+      expect(repository.bands.single.id, 'previous');
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        rows,
+      );
+      repository.failSaves.clear();
+      await _tapVisible(tester, 'Revisar filas');
+      await _tapVisible(tester, 'Importar y sustituir');
+      expect(repository.bands, hasLength(2));
+      expect(repository.saveCalls['import'], 2);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'perder la sesión retira un editor incluso con cambios pendientes',
+    (tester) async {
+      final session = ValueNotifier<bool>(true);
+      final router = createAdminRouter(
+        programs: _FakeRepository(allowed: true),
+        workouts: _FakeWorkouts(),
+        exercises: _FakeExercises(),
+        onSignOut: () {},
+        initialLocation: '/sessions/new',
+        authChanges: session,
+        isAuthenticated: () => session.value,
+        loginBuilder: (_) => const Scaffold(body: Text('Acceso al admin')),
+      );
+      addTearDown(router.dispose);
+      addTearDown(session.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+      final name = find.byWidgetPredicate(
+        (widget) =>
+            widget is TextField &&
+            widget.decoration?.labelText == 'Nombre de la sesión',
+      );
+      await tester.enterText(name, 'Privado de la cuenta anterior');
+      session.value = false;
+      await tester.pumpAndSettle();
+      expect(find.text('Acceso al admin'), findsOneWidget);
+      expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+      expect(find.text('¿Salir sin guardar?'), findsNothing);
+    },
+  );
   testWidgets('una URL de editor no evita el control de acceso del admin', (
     tester,
   ) async {
@@ -603,8 +1133,14 @@ void main() {
       find.byType(TextFormField).first,
       'Carrera 1.000 metros',
     );
-    await tester.tap(find.text('Guardar cambios'));
-    await tester.pumpAndSettle();
+    await _retrySave(
+      tester,
+      repository,
+      operation: 'test-edit',
+      button: 'Guardar cambios',
+      label: 'Nombre de la prueba',
+      expectedValue: 'Carrera 1.000 metros',
+    );
     expect(repository.tests.single.name, 'Carrera 1.000 metros');
     await tester.pump(const Duration(seconds: 5));
 

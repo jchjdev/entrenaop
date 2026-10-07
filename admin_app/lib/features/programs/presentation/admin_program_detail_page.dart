@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
@@ -49,6 +52,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
       if (!mounted) return;
       setState(() {
         _modules = widget.repository.listTrainingModules(widget.program.id);
+        _modules.ignore();
       });
     } catch (_) {
       if (!mounted) return;
@@ -65,89 +69,29 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
   Future<void> _cloneVersion() async {
     final rule = await _rule;
     if (!mounted || rule == null) return;
-    final name = TextEditingController(
-      text: '${widget.program.name} · nueva edición',
-    );
-    final version = TextEditingController(text: '${rule.version}_v2');
-    final form = GlobalKey<FormState>();
     final values = await showDialog<(String, String)>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Crear nueva versión'),
-        content: SizedBox(
-          width: 480,
-          child: Form(
-            key: form,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Se copiarán las pruebas y baremos a un borrador nuevo. Las evaluaciones anteriores conservarán esta versión.',
-                ),
-                TextFormField(
-                  controller: name,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre del programa nuevo',
-                  ),
-                  maxLength: 120,
-                  validator: (value) => (value?.trim().length ?? 0) < 3
-                      ? 'Indica un nombre.'
-                      : null,
-                ),
-                TextFormField(
-                  controller: version,
-                  decoration: const InputDecoration(
-                    labelText: 'Versión nueva del baremo',
-                  ),
-                  maxLength: 120,
-                  validator: (value) =>
-                      (value?.trim().length ?? 0) < 3 ||
-                          value?.trim() == rule.version
-                      ? 'Indica una versión diferente.'
-                      : null,
-                ),
-              ],
-            ),
-          ),
+      barrierDismissible: false,
+      builder: (_) => RetainedSaveDialog<(String, String)>(
+        save: (values) => widget.repository.cloneAssessmentVersion(
+          widget.program.id,
+          values.$1,
+          values.$2,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (form.currentState!.validate()) {
-                Navigator.pop(context, (name.text.trim(), version.text.trim()));
-              }
-            },
-            child: const Text('Crear borrador'),
-          ),
-        ],
+        errorMessage: 'No se pudo crear la versión. Revisa sus datos e inténtalo otra vez.',
+        builder: (_, submit, saving, error, markDirty) => _CloneVersionDialog(
+          initialName: '${widget.program.name} · nueva edición',
+          oldVersion: rule.version,
+          initialVersion: '${rule.version}_v2',
+          onSubmit: submit,
+          saving: saving,
+          error: error,
+          onDirtyChanged: markDirty,
+        ),
       ),
     );
-    name.dispose();
-    version.dispose();
     if (values == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.cloneAssessmentVersion(
-        widget.program.id,
-        values.$1,
-        values.$2,
-      );
-      if (mounted) context.pop(true);
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo crear la versión. Revisa sus datos.'),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    context.pop(true);
   }
 
   Future<void> _publish() async {
@@ -224,148 +168,145 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
   }
 
   Future<void> _editRule(AdminProgramScoringRule? current) async {
-    final rule = await showScoringRuleDialog(context, current);
+    final rule = await showScoringRuleDialog(
+      context,
+      current,
+      save: (value) =>
+          widget.repository.saveScoringRule(widget.program.id, value),
+    );
     if (rule == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.saveScoringRule(widget.program.id, rule);
-      if (!mounted) return;
-      setState(
-        () => _rule = widget.repository.getScoringRule(widget.program.id),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Regla de calificación guardada.')),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo guardar la regla de calificación.'),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    // FutureBuilder se suscribe al reconstruir; observa el fallo desde ahora.
+    setState(() {
+      _rule = widget.repository.getScoringRule(widget.program.id);
+      _rule.ignore();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Regla de calificación guardada.')),
+    );
   }
 
   Future<void> _createTest() async {
     final existing = await _tests;
     if (!mounted) return;
-    final test = await showDialog<AdminProgramTest>(
-      context: context,
-      builder: (_) => _NewProgramTestDialog(existingTests: existing),
+    final test = await _testDialog(
+      existing,
+      save: (value) => widget.repository.createTest(widget.program.id, value),
+      error: 'No se pudo guardar la prueba. Revisa si ya existe e inténtalo otra vez.',
     );
     if (test == null || !mounted) return;
-    setState(() => _saving = true);
-    try {
-      await widget.repository.createTest(widget.program.id, test);
-      if (!mounted) return;
-      setState(() {
-        _tests = widget.repository.listTests(widget.program.id);
-        _modules = widget.repository.listTrainingModules(widget.program.id);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Prueba añadida al borrador.')),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo guardar la prueba. Revisa si ya existe.'),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    _reloadTests();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Prueba añadida al borrador.')),
+    );
   }
+
+  Future<AdminProgramTest?> _testDialog(
+    List<AdminProgramTest> existing, {
+    AdminProgramTest? current,
+    required Future<void> Function(AdminProgramTest) save,
+    required String error,
+  }) => showDialog<AdminProgramTest>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => RetainedSaveDialog<AdminProgramTest>(
+      save: save,
+      errorMessage: error,
+      builder: (_, submit, saving, error, markDirty) => _NewProgramTestDialog(
+        existing: current,
+        existingTests: existing,
+        onSubmit: submit,
+        saving: saving,
+        error: error,
+        onDirtyChanged: markDirty,
+      ),
+    ),
+  );
+
+  void _reloadTests() => setState(() {
+    _tests = widget.repository.listTests(widget.program.id);
+    _tests.ignore();
+    _modules = widget.repository.listTrainingModules(widget.program.id);
+    _modules.ignore();
+  });
 
   Future<void> _editTest(AdminProgramTest current) async {
     final existing = await _tests;
     if (!mounted) return;
-    final edited = await showDialog<AdminProgramTest>(
-      context: context,
-      builder: (_) =>
-          _NewProgramTestDialog(existing: current, existingTests: existing),
+    final test = await _testDialog(
+      existing,
+      current: current,
+      error: 'No se pudo actualizar la prueba. Revisa sus datos e inténtalo otra vez.',
+      save: (edited) async {
+        final bands = await widget.repository.listScoreBands(current.id);
+        final standards = await widget.repository.listPassStandards(current.id);
+        if (!mounted) throw const RetainedSaveCancelled();
+        final changesMeasurement =
+            current.unit != edited.unit ||
+            current.betterDirection != edited.betterDirection ||
+            current.distanceMeters != edited.distanceMeters ||
+            current.measurementProtocol != edited.measurementProtocol ||
+            current.category != edited.category ||
+            current.markStep != edited.markStep ||
+            bands.any(
+              (band) =>
+                  band.minAge < edited.minAge || band.maxAge > edited.maxAge,
+            ) ||
+            standards.any(
+              (standard) =>
+                  standard.minAge < edited.minAge ||
+                  standard.maxAge > edited.maxAge,
+            );
+        if (current.unit != edited.unit ||
+            current.betterDirection != edited.betterDirection ||
+            current.distanceMeters != edited.distanceMeters ||
+            current.measurementProtocol != edited.measurementProtocol) {
+          final modules = await _modules;
+          if (!mounted) throw const RetainedSaveCancelled();
+          if (modules.any((module) => module.testId == current.id)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Desvincula el módulo antes de cambiar la medición.',
+                ),
+              ),
+            );
+            throw const RetainedSaveCancelled();
+          }
+        }
+        if (changesMeasurement && (bands.isNotEmpty || standards.isNotEmpty)) {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cambiar cómo se mide la prueba'),
+              content: Text(
+                'Se borrarán ${bands.length} tramos y ${standards.length} mínimos de ${current.name}. Tendrás que crear de nuevo su baremo.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Cambiar y borrar baremo'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true || !mounted) {
+            throw const RetainedSaveCancelled();
+          }
+        }
+        await widget.repository.updateTest(
+          edited,
+          resetBands: changesMeasurement,
+        );
+      },
     );
-    if (edited == null || !mounted) return;
-    final bands = await widget.repository.listScoreBands(current.id);
-    final standards = await widget.repository.listPassStandards(current.id);
-    if (!mounted) return;
-    final changesMeasurement =
-        current.unit != edited.unit ||
-        current.betterDirection != edited.betterDirection ||
-        current.distanceMeters != edited.distanceMeters ||
-        current.measurementProtocol != edited.measurementProtocol ||
-        current.category != edited.category ||
-        current.markStep != edited.markStep ||
-        bands.any(
-          (band) => band.minAge < edited.minAge || band.maxAge > edited.maxAge,
-        ) ||
-        standards.any(
-          (standard) =>
-              standard.minAge < edited.minAge ||
-              standard.maxAge > edited.maxAge,
-        );
-    if (current.unit != edited.unit ||
-        current.betterDirection != edited.betterDirection ||
-        current.distanceMeters != edited.distanceMeters ||
-        current.measurementProtocol != edited.measurementProtocol) {
-      final modules = await _modules;
-      if (!mounted) return;
-      if (modules.any((module) => module.testId == current.id)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Desvincula el módulo antes de cambiar la medición.'),
-          ),
-        );
-        return;
-      }
-    }
-    if (changesMeasurement && (bands.isNotEmpty || standards.isNotEmpty)) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Cambiar cómo se mide la prueba'),
-          content: Text(
-            'Se borrarán ${bands.length} tramos y ${standards.length} mínimos de ${current.name}. Tendrás que crear de nuevo su baremo.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Cambiar y borrar baremo'),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true || !mounted) return;
-    }
-    setState(() => _saving = true);
-    try {
-      await widget.repository.updateTest(
-        edited,
-        resetBands: changesMeasurement,
-      );
-      if (!mounted) return;
-      setState(() {
-        _tests = widget.repository.listTests(widget.program.id);
-        _modules = widget.repository.listTrainingModules(widget.program.id);
-      });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Prueba actualizada.')));
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo actualizar la prueba. Revisa sus datos.'),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+    if (test == null || !mounted) return;
+    _reloadTests();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Prueba actualizada.')));
   }
 
   Future<void> _deleteTest(AdminProgramTest test) async {
@@ -398,7 +339,9 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
       if (!mounted) return;
       setState(() {
         _tests = widget.repository.listTests(widget.program.id);
+        _tests.ignore();
         _modules = widget.repository.listTrainingModules(widget.program.id);
+        _modules.ignore();
       });
     } catch (_) {
       if (!mounted) return;
@@ -502,11 +445,12 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return TextButton(
-                    onPressed: () => setState(
-                      () => _rule = widget.repository.getScoringRule(
+                    onPressed: () => setState(() {
+                      _rule = widget.repository.getScoringRule(
                         widget.program.id,
-                      ),
-                    ),
+                      );
+                      _rule.ignore();
+                    }),
                     child: const Text(
                       'No se pudo cargar la regla de calificación. Reintentar',
                     ),
@@ -588,6 +532,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                   return TextButton(
                     onPressed: () => setState(() {
                       _tests = widget.repository.listTests(widget.program.id);
+                      _tests.ignore();
                     }),
                     child: const Text(
                       'No se pudieron cargar las pruebas. Reintentar',
@@ -841,8 +786,115 @@ String _unitLabel(String unit) => switch (unit) {
   _ => unit,
 };
 
+class _CloneVersionDialog extends StatefulWidget {
+  const _CloneVersionDialog({
+    required this.initialName,
+    required this.initialVersion,
+    required this.oldVersion,
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+  final String initialName, initialVersion, oldVersion;
+  final ValueChanged<(String, String)> onSubmit;
+  final bool saving;
+  final String? error;
+  final ValueChanged<bool> onDirtyChanged;
+  @override
+  State<_CloneVersionDialog> createState() => _CloneVersionDialogState();
+}
+
+class _CloneVersionDialogState extends State<_CloneVersionDialog> {
+  final _form = GlobalKey<FormState>();
+  late final _name = TextEditingController(text: widget.initialName);
+  late final _version = TextEditingController(text: widget.initialVersion);
+  @override
+  void dispose() {
+    _name.dispose();
+    _version.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
+    title: const Text('Crear nueva versión'),
+    content: SizedBox(
+      width: 480,
+      child: Form(
+        key: _form,
+        onChanged: () => widget.onDirtyChanged(
+          _name.text != widget.initialName ||
+              _version.text != widget.initialVersion,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.error != null)
+              Text(
+                widget.error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            const Text(
+              'Se copiarán las pruebas y baremos a un borrador nuevo. Las evaluaciones anteriores conservarán esta versión.',
+            ),
+            TextFormField(
+              controller: _name,
+              maxLength: 120,
+              decoration: const InputDecoration(
+                labelText: 'Nombre del programa nuevo',
+              ),
+              validator: (value) =>
+                  (value?.trim().length ?? 0) < 3 ? 'Indica un nombre.' : null,
+            ),
+            TextFormField(
+              controller: _version,
+              maxLength: 120,
+              decoration: const InputDecoration(
+                labelText: 'Versión nueva del baremo',
+              ),
+              validator: (value) =>
+                  (value?.trim().length ?? 0) < 3 ||
+                      value?.trim() == widget.oldVersion
+                  ? 'Indica una versión diferente.'
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(context).maybePop(),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(
+        onPressed: () {
+          if (_form.currentState!.validate()) {
+            widget.onSubmit((_name.text.trim(), _version.text.trim()));
+          }
+        },
+        child: Text(widget.saving ? 'Creando…' : 'Crear borrador'),
+      ),
+    ],
+  );
+}
+
 class _NewProgramTestDialog extends StatefulWidget {
-  const _NewProgramTestDialog({this.existing, this.existingTests = const []});
+  const _NewProgramTestDialog({
+    this.existing,
+    this.existingTests = const [],
+    required this.onSubmit,
+    required this.saving,
+    required this.error,
+    required this.onDirtyChanged,
+  });
+
+  final ValueChanged<AdminProgramTest> onSubmit;
+  final ValueChanged<bool> onDirtyChanged;
+  final bool saving;
+  final String? error;
 
   final AdminProgramTest? existing;
   final List<AdminProgramTest> existingTests;
@@ -913,7 +965,10 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
   void initState() {
     super.initState();
     final test = widget.existing;
-    if (test == null) return;
+    if (test == null) {
+      _initialSnapshot = _snapshot;
+      return;
+    }
     _name.text = test.name;
     _protocol.text = test.protocolNotes;
     _order.text = test.displayOrder.toString();
@@ -927,6 +982,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
     _distance.text = test.distanceMeters?.toString() ?? '';
     _continuous2000mProtocol = test.measurementProtocol == 'run_2000m_v1';
     _retryPolicy = test.retryPolicy;
+    _initialSnapshot = _snapshot;
   }
 
   @override
@@ -942,6 +998,28 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
     super.dispose();
   }
 
+  late final String _initialSnapshot;
+  String get _snapshot => jsonEncode([
+    _name.text,
+    _protocol.text,
+    _order.text,
+    _step.text,
+    _minAge.text,
+    _maxAge.text,
+    _maxAttempts.text,
+    _distance.text,
+    _unit,
+    _direction,
+    _category,
+    _retryPolicy,
+    _continuous2000mProtocol,
+  ]);
+  void _markDirty() => widget.onDirtyChanged(_snapshot != _initialSnapshot);
+  void _change(VoidCallback change) {
+    setState(change);
+    _markDirty();
+  }
+
   @override
   Widget build(BuildContext context) => AlertDialog(
     title: Text(widget.existing == null ? 'Añadir prueba' : 'Editar prueba'),
@@ -949,10 +1027,21 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
       width: 520,
       child: Form(
         key: _key,
+        onChanged: _markDirty,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (widget.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    widget.error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
               TextFormField(
                 controller: _name,
                 decoration: const InputDecoration(
@@ -977,7 +1066,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                   DropdownMenuItem(value: 'men', child: Text('Solo hombres')),
                   DropdownMenuItem(value: 'women', child: Text('Solo mujeres')),
                 ],
-                onChanged: (v) => setState(() => _category = v ?? _category),
+                onChanged: (v) => _change(() => _category = v ?? _category),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -1027,7 +1116,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                     child: Text('Distancia en metros'),
                   ),
                 ],
-                onChanged: (value) => setState(() => _unit = value ?? _unit),
+                onChanged: (value) => _change(() => _unit = value ?? _unit),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -1044,7 +1133,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                   ),
                 ],
                 onChanged: (value) =>
-                    setState(() => _direction = value ?? _direction),
+                    _change(() => _direction = value ?? _direction),
               ),
               if (_unit == 'seconds' && _direction == 'lower') ...[
                 const SizedBox(height: 12),
@@ -1078,7 +1167,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                     'Medición cronometrada compatible con el módulo de carrera 2 km. Confirma que el protocolo oficial corresponde.',
                   ),
                   onChanged: (value) =>
-                      setState(() => _continuous2000mProtocol = value ?? false),
+                      _change(() => _continuous2000mProtocol = value ?? false),
                 ),
               ],
               const SizedBox(height: 12),
@@ -1116,7 +1205,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                   ),
                 ],
                 onChanged: (value) =>
-                    setState(() => _retryPolicy = value ?? _retryPolicy),
+                    _change(() => _retryPolicy = value ?? _retryPolicy),
               ),
               if (_retryPolicy != 'none')
                 TextFormField(
@@ -1154,7 +1243,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
     ),
     actions: [
       TextButton(
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => Navigator.of(context).maybePop(),
         child: const Text('Cancelar'),
       ),
       FilledButton(
@@ -1176,7 +1265,7 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
             );
             return;
           }
-          Navigator.of(context).pop(
+          widget.onSubmit(
             AdminProgramTest(
               id: widget.existing?.id ?? '',
               code: widget.existing?.code ?? _slug(_name.text),
@@ -1214,7 +1303,11 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
           );
         },
         child: Text(
-          widget.existing == null ? 'Guardar prueba' : 'Guardar cambios',
+          widget.saving
+              ? 'Guardando…'
+              : widget.existing == null
+              ? 'Guardar prueba'
+              : 'Guardar cambios',
         ),
       ),
     ],

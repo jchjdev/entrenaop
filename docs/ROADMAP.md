@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**UI-008, 07/10/2026 · guardado editorial cerrado:** pruebas, reglas, tramos,
+mínimos, importación, clonación y vinculación de estrategia conservan los
+formularios hasta persistir y permiten reintentar sin perder campos. Se mantienen
+las confirmaciones y reglas actuales; cancelar una revisión devuelve al
+formulario. Un fallo de recarga posterior no habilita un nuevo envío del mismo
+guardado. Incluye mínimos a 320 × 480 con texto 2×. Análisis limpio en ambas
+apps, 482 pruebas de raíz, 85 de admin (una optativa omitida) y seis de
+`entrena_ui`. Sin SQL, motores o producción; falta revisión autenticada real.
+Detalle en `REFRESH_STATUS_2026_10_07.md` y `VISUAL_DESIGN.md`. El único siguiente
+tramo UX recomendado es Inicio/Mi plan orientado a programa, semana y pendientes;
+el bloque deportivo conserva su prioridad y se gestiona fuera de este refresh.
+
 **UI-008, 07/10/2026 · refresco cerrado:** Inicio, Perfil, Mi semana y Evolución
 actualizan al regresar sin desmontar ramas ni perder selección/posición. Se
 conserva la última consulta y se descartan respuestas antiguas en los Cubits

@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**UI-008, 07/10/2026 · fiabilidad editorial ampliada:** creación/edición de
+pruebas, calificación, baremos/mínimos, importación, clonación y vinculación de
+estrategia esperan el guardado sin perder campos ante un fallo. Se conservan
+las revisiones y confirmaciones existentes. Se cierra ese pendiente; la siguiente
+reorganización es Inicio/Mi plan. Análisis limpio y baterías completas: 482
+pruebas de app, 85 de admin (una optativa omitida) y seis del componente UI.
+
 **UI-008, 07/10/2026 · refresco al regresar:** Inicio, Perfil, Mi semana y
 Evolución consultan de nuevo al volver de otra sección o una tarea, conservando
 su navegación y posición. La agenda mantiene semana/día; Inicio e historial

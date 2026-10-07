@@ -672,6 +672,15 @@ de persistencia y conserva el formulario y el error recuperable; no recibe un
 cliente Supabase ni decide permisos. Los diálogos siguen usando el mecanismo
 modal de Flutter, no se convierten en páginas con URL.
 
+La ampliación editorial del 07/10 reutiliza el mismo componente para pruebas,
+calificación, mínimos/tramos, importación, clonación y vinculación de estrategia.
+`RetainedSaveCancelled` distingue la revisión previa cancelada de un fallo de
+persistencia: conserva el formulario y no presenta un éxito o error falsos.
+La recarga de las consultas ocurre después de cerrar por éxito. Los futuros de
+recarga observan errores desde su creación para que un fallo inmediato no quede
+sin manejar antes de la siguiente suscripción de `FutureBuilder`; este conserva
+su presentación de error. Los valores y reglas enviados al repositorio no cambian.
+
 El admin usa `MaterialApp.router` y `go_router` (misma versión resuelta que la
 app del deportista). Sus rutas identifican programas, sesiones y pruebas por
 ID y recargan mediante repositorios, sin depender de `extra`. Se comprueba
