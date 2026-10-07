@@ -570,3 +570,26 @@ del recurso al cambiar el ID. El cierre se prueba a 320 × 480 con texto 2× y
 notas largas. Se utilizan repositorios simulados: no acredita el recorrido
 autenticado en el dispositivo de Javier ni el cierre del navegador/proceso.
 No se han ejecutado pruebas SQL nuevas porque no cambia ese contrato.
+
+### Refresco al regresar (UI-008, 07/10/2026)
+
+Se cierra el pendiente 2 del primer tramo: Inicio, Perfil, Mi semana y la raíz
+de Evolución refrescan al volver a mostrarse, desde otra sección o una tarea.
+Las ramas conservan sus widgets, posición y selección; no se reinicia la barra.
+La agenda conserva semana y día aunque la consulta anterior estuviera vacía.
+Inicio y el historial siguen mostrando su última consulta durante el refresco.
+El historial ofrece un error con reintento sin retirar resultados ya cargados.
+Respuestas antiguas no sustituyen cargas más recientes ni emiten tras cerrar
+los Cubits de Inicio, agenda o historial. Se evitan recargas duplicadas de los
+botones que antes esperaban el retorno manualmente.
+
+Javier reafirma que las pantallas deben navegar mediante `go_router`. Se corrigen
+los retornos que aún usaban `Navigator.pop` al guardar/salir del editor de
+sesiones y guardar datos de carrera. `Navigator` se conserva únicamente para
+los diálogos y paneles modales; no se añaden `MaterialPageRoute` ni pilas paralelas.
+
+Comprobación: análisis de raíz limpio y 482 pruebas completas correctas. Router
+real con `StatefulShellRoute`, cambio de rama, tarea raíz y regreso, conservación
+de texto/scroll, selección de semana y respuestas fuera de orden. No acredita
+conexión real ni reanudación del proceso. Comparación con el informe anterior y
+único siguiente tramo en `REFRESH_STATUS_2026_10_07.md`: guardado editorial admin.

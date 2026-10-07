@@ -8,14 +8,16 @@ class WorkoutHistoryState extends Equatable {
     this.status = WorkoutHistoryStatus.initial,
     this.executions = const [],
     this.errorMessage,
+    this.isRefreshing = false,
   });
 
   final WorkoutHistoryStatus status;
   final List<WorkoutExecution> executions;
   final String? errorMessage;
+  final bool isRefreshing;
 
   @override
-  List<Object?> get props => [status, executions, errorMessage];
+  List<Object?> get props => [status, executions, errorMessage, isRefreshing];
 }
 
 enum WorkoutHistoryDetailStatus { initial, loading, loaded, failure }

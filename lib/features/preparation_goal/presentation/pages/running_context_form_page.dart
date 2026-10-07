@@ -4,6 +4,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/running_init
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'dart:convert';
 
@@ -322,7 +323,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
       _savedStamp = _stamp;
       if (mounted) {
         setState(() => _saving = false);
-        Navigator.of(context).pop(true);
+        context.pop(true);
       }
     } catch (_) {
       if (mounted) {

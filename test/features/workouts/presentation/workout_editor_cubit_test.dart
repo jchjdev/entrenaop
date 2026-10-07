@@ -13,6 +13,7 @@ import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_pa
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:workout_core/exercise_image.dart';
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
@@ -20,6 +21,57 @@ import '../../exercises/domain/strength_exercise_catalog_test.dart'
     show readCatalogJson;
 
 void main() {
+  for (final save in [false, true]) {
+    testWidgets(
+      'el editor devuelve el control al router al salir, guardado $save',
+      (tester) async {
+        final repository = _WorkoutRepository();
+        final cubit = WorkoutEditorCubit(
+          getExercises: GetExercisesUseCase(_ExerciseRepository()),
+          createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+          draftStore: _DraftStore(),
+          createWorkout: CreatePersonalWorkoutUseCase(repository),
+          getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+          reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+          templateId: 'template-v1',
+        );
+        addTearDown(cubit.close);
+        await cubit.load();
+        final router = GoRouter(
+          initialLocation: '/origin',
+          routes: [
+            GoRoute(
+              path: '/origin',
+              builder: (_, _) => const Scaffold(body: Text('Mi biblioteca')),
+            ),
+            GoRoute(
+              path: '/editor',
+              builder: (_, _) => BlocProvider.value(
+                value: cubit,
+                child: const WorkoutEditorPage(),
+              ),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        final returned = router.push<String>('/editor');
+        await tester.pumpAndSettle();
+        if (save) {
+          await cubit.save(_input);
+        } else {
+          await tester.tap(find.byTooltip('Volver'));
+        }
+        await tester.pumpAndSettle();
+        expect(await returned, save ? 'template-v2' : null);
+        expect(router.state.uri.path, '/origin');
+        expect(find.text('Mi biblioteca'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'EntrenaOP busca y añade variantes de la biblioteca de 63 ejercicios',
     (tester) async {

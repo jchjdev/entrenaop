@@ -9,11 +9,24 @@ class WorkoutHistoryCubit extends Cubit<WorkoutHistoryState> {
       super(const WorkoutHistoryState());
 
   final GetWorkoutHistoryUseCase _getHistory;
+  int _loadVersion = 0;
 
   Future<void> load() async {
-    emit(const WorkoutHistoryState(status: WorkoutHistoryStatus.loading));
+    if (isClosed) return;
+    final version = ++_loadVersion;
+    final previous = state.executions;
+    emit(
+      WorkoutHistoryState(
+        status: previous.isEmpty
+            ? WorkoutHistoryStatus.loading
+            : WorkoutHistoryStatus.loaded,
+        executions: previous,
+        isRefreshing: previous.isNotEmpty,
+      ),
+    );
     try {
       final executions = await _getHistory();
+      if (isClosed || version != _loadVersion) return;
       emit(
         WorkoutHistoryState(
           status: WorkoutHistoryStatus.loaded,
@@ -21,10 +34,16 @@ class WorkoutHistoryCubit extends Cubit<WorkoutHistoryState> {
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
-        const WorkoutHistoryState(
-          status: WorkoutHistoryStatus.failure,
-          errorMessage: 'No hemos podido cargar tus sesiones.',
+        WorkoutHistoryState(
+          status: previous.isEmpty
+              ? WorkoutHistoryStatus.failure
+              : WorkoutHistoryStatus.loaded,
+          executions: previous,
+          errorMessage: previous.isEmpty
+              ? 'No hemos podido cargar tus sesiones.'
+              : 'No hemos podido actualizar. Sigues viendo la última consulta; puedes reintentar.',
         ),
       );
     }
@@ -104,8 +123,7 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
         WorkoutHistoryDetailState(
           status: WorkoutHistoryDetailStatus.loaded,
           execution: execution,
-          correctionMessage:
-              'No hemos podido corregirla. El plazo o el límite pueden haber finalizado.',
+          correctionMessage: 'No hemos podido corregirla. El plazo o el límite pueden haber finalizado.',
         ),
       );
     }

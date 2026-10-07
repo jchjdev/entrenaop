@@ -516,6 +516,15 @@ refresh, al igual que cambios o despliegues en producción.
 
 Alcance implementado, verificaciones y pendientes en `docs/VISUAL_DESIGN.md`.
 
+### Ratificación de UI-008 · 07/10/2026
+
+Javier aprueba continuar el refresh de recorridos propuesto a partir del mapa
+actual: fiabilidad/retorno/refresco primero, luego Inicio/Mi plan, lenguaje,
+Evolución, Biblioteca, admin y cuenta. Los motores se pulirán en sus tareas
+propias. El informe pegado se reconcilia con lo ya implementado, sin rehacerlo
+ni sustituir el código actual por versiones anteriores. Estado y cierres en
+`docs/REFRESH_STATUS_2026_10_07.md` y `docs/VISUAL_DESIGN.md`.
+
 ## Regla para nuevas decisiones
 
 Una entrada debe ser concreta y comprobable. Si todavía faltan datos, se

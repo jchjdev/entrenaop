@@ -87,7 +87,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           setState(() => _allowPop = true);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              Navigator.of(context).pop(state.createdTemplateId);
+              context.pop(state.createdTemplateId);
             }
           });
         } else if (state.errorMessage case final message?) {
@@ -296,7 +296,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     if (!mounted) return;
     setState(() => _allowPop = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Navigator.of(context).pop(result);
+      if (mounted) context.pop(result);
     });
   }
 

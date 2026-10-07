@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -8,6 +10,58 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_st
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'el refresco conserva resultados y admite reintento tras un fallo',
+    () async {
+      final repository = _FakeWorkoutRepository(history: [_execution()]);
+      final cubit = WorkoutHistoryCubit(
+        getHistory: GetWorkoutHistoryUseCase(repository),
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      final pending = Completer<List<WorkoutExecution>>();
+      repository.nextHistory = () => pending.future;
+      final refresh = cubit.load();
+      expect(cubit.state.status, WorkoutHistoryStatus.loaded);
+      expect(cubit.state.isRefreshing, isTrue);
+      expect(cubit.state.executions, hasLength(1));
+      pending.completeError(StateError('sin conexión'));
+      await refresh;
+      expect(cubit.state.executions, hasLength(1));
+      expect(cubit.state.isRefreshing, isFalse);
+      expect(cubit.state.errorMessage, isNotNull);
+      repository.nextHistory = null;
+      await cubit.load();
+      expect(cubit.state.errorMessage, isNull);
+    },
+  );
+
+  test('una respuesta anterior no sustituye la última y cerrar durante carga es seguro', () async {
+    final repository = _FakeWorkoutRepository();
+    final cubit = WorkoutHistoryCubit(
+      getHistory: GetWorkoutHistoryUseCase(repository),
+    );
+    final first = Completer<List<WorkoutExecution>>();
+    final second = Completer<List<WorkoutExecution>>();
+    repository.nextHistory = () => first.future;
+    final oldLoad = cubit.load();
+    repository.nextHistory = () => second.future;
+    final newLoad = cubit.load();
+    second.complete([_execution()]);
+    await newLoad;
+    first.completeError(StateError('respuesta antigua'));
+    await oldLoad;
+    expect(cubit.state.executions, hasLength(1));
+    expect(cubit.state.errorMessage, isNull);
+    final closing = Completer<List<WorkoutExecution>>();
+    repository.nextHistory = () => closing.future;
+    final lastLoad = cubit.load();
+    await cubit.close();
+    closing.complete([]);
+    await lastLoad;
+    await cubit.load();
+  });
+
   test('carga las sesiones terminadas en el historial', () async {
     final execution = _execution();
     final repository = _FakeWorkoutRepository(history: [execution]);
@@ -63,9 +117,11 @@ class _FakeWorkoutRepository implements WorkoutRepository {
 
   final List<WorkoutExecution> history;
   final WorkoutExecution? execution;
+  Future<List<WorkoutExecution>> Function()? nextHistory;
 
   @override
-  Future<List<WorkoutExecution>> getExecutionHistory() async => history;
+  Future<List<WorkoutExecution>> getExecutionHistory() async =>
+      nextHistory == null ? history : await nextHistory!();
 
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async => execution;

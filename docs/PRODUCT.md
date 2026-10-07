@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**UI-008, 07/10/2026 · refresco al regresar:** Inicio, Perfil, Mi semana y
+Evolución consultan de nuevo al volver de otra sección o una tarea, conservando
+su navegación y posición. La agenda mantiene semana/día; Inicio e historial
+conservan la última consulta durante la actualización. Comprobado con análisis
+limpio y 482 pruebas de raíz; el siguiente tramo es el guardado editorial admin.
+El resto del refresh continúa pendiente, como recoge `VISUAL_DESIGN.md`.
+
 **UI-008, 06/10/2026 · primer tramo de fiabilidad:** se mantiene la identidad
 visual y se incorpora `go_router` al admin, con rutas recargables por ID,
 búsquedas editoriales y laboratorio separado. Las evaluaciones oficiales

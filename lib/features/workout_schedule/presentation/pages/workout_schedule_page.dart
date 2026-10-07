@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workout_schedule/presentation/bloc/workout_schedule_cubit.dart';
@@ -15,59 +16,65 @@ class WorkoutSchedulePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          tooltip: 'Volver',
-          onPressed: context.pop,
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
-        title: const Text('Mi semana'),
-      ),
-      floatingActionButton:
-          BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
-            buildWhen: (previous, current) =>
-                previous.publicTemplates != current.publicTemplates ||
-                previous.personalTemplates != current.personalTemplates ||
-                previous.programs != current.programs ||
-                previous.selectedDay != current.selectedDay,
-            builder: (context, state) => state.currentProgram != null
-                ? FloatingActionButton.small(
-                    onPressed: () => _showTemplatePicker(context, state),
-                    tooltip: 'Añadir un entrenamiento extra',
-                    child: const Icon(Icons.add_rounded),
-                  )
-                : FloatingActionButton.extended(
-                    onPressed: () => _showTemplatePicker(context, state),
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Entrenamiento extra'),
-                  ),
+    return SectionRefreshBoundary(
+      location: '/plan/week',
+      onVisible: () => context.read<WorkoutScheduleCubit>().load(),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            tooltip: 'Volver',
+            onPressed: context.pop,
+            icon: const Icon(Icons.arrow_back_rounded),
           ),
-      body: BlocConsumer<WorkoutScheduleCubit, WorkoutScheduleState>(
-        listenWhen: (previous, current) =>
-            previous.errorMessage != current.errorMessage &&
-            current.errorMessage != null,
-        listener: (context, state) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-        },
-        builder: (context, state) {
-          if (state.status == WorkoutScheduleStatus.initial ||
-              (state.status == WorkoutScheduleStatus.loading &&
-                  state.items.isEmpty)) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.status == WorkoutScheduleStatus.failure &&
-              state.items.isEmpty) {
-            return _Failure(onRetry: context.read<WorkoutScheduleCubit>().load);
-          }
-          return _ScheduleContent(
-            state: state,
-            focusedWorkoutId: focusedWorkoutId,
-          );
-        },
+          title: const Text('Mi semana'),
+        ),
+        floatingActionButton:
+            BlocBuilder<WorkoutScheduleCubit, WorkoutScheduleState>(
+              buildWhen: (previous, current) =>
+                  previous.publicTemplates != current.publicTemplates ||
+                  previous.personalTemplates != current.personalTemplates ||
+                  previous.programs != current.programs ||
+                  previous.selectedDay != current.selectedDay,
+              builder: (context, state) => state.currentProgram != null
+                  ? FloatingActionButton.small(
+                      onPressed: () => _showTemplatePicker(context, state),
+                      tooltip: 'Añadir un entrenamiento extra',
+                      child: const Icon(Icons.add_rounded),
+                    )
+                  : FloatingActionButton.extended(
+                      onPressed: () => _showTemplatePicker(context, state),
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Entrenamiento extra'),
+                    ),
+            ),
+        body: BlocConsumer<WorkoutScheduleCubit, WorkoutScheduleState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage &&
+              current.errorMessage != null,
+          listener: (context, state) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+          },
+          builder: (context, state) {
+            if (state.status == WorkoutScheduleStatus.initial ||
+                (state.status == WorkoutScheduleStatus.loading &&
+                    !state.hasLoaded)) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.status == WorkoutScheduleStatus.failure &&
+                !state.hasLoaded) {
+              return _Failure(
+                onRetry: context.read<WorkoutScheduleCubit>().load,
+              );
+            }
+            return _ScheduleContent(
+              state: state,
+              focusedWorkoutId: focusedWorkoutId,
+            );
+          },
+        ),
       ),
     );
   }

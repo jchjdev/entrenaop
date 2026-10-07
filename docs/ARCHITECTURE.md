@@ -630,8 +630,8 @@ forma independiente desde la sesión activa.
 
 ## Navegación y presentación
 
-`go_router` gestiona las rutas de la app del deportista. El admin todavía usa
-`Navigator`/`MaterialPageRoute`, una deuda respecto al criterio del repositorio.
+`go_router` gestiona las rutas de la app del deportista y del admin. Los diálogos
+conservan el mecanismo modal de Flutter.
 El área autenticada del deportista usa
 `StatefulShellRoute.indexedStack` para conservar el estado independiente de
 Inicio, Mi plan, Biblioteca, Evolución y Perfil. `AppShell` representa esos destinos como
@@ -646,6 +646,14 @@ la navegación principal ni mezclar datos de distinta naturaleza.
 
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.
+
+UI-008 incorpora `SectionRefreshBoundary` a Inicio, Perfil, Mi semana y la raíz
+de Evolución. Observa la ubicación de `go_router` y pide una nueva consulta al
+volver a mostrar esa pantalla, tanto desde otra rama como tras una tarea.
+No remonta la rama ni almacena datos de dominio. Los Cubits de Inicio, agenda
+e historial conservan la última consulta y descartan respuestas anteriores a
+la carga vigente; tampoco emiten después de cerrarse. La agenda mantiene día y
+semana seleccionados, incluso si la última consulta no tenía sesiones.
 
 UI-007 conserva el estado de cada rama de consulta y abre configuración de
 programa/contexto, registro de marcas, creación de ejercicios, edición y

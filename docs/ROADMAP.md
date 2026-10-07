@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**UI-008, 07/10/2026 · refresco cerrado:** Inicio, Perfil, Mi semana y Evolución
+actualizan al regresar sin desmontar ramas ni perder selección/posición. Se
+conserva la última consulta y se descartan respuestas antiguas en los Cubits
+afectados. Análisis limpio y 482 pruebas completas de raíz; sin cambios en SQL,
+motores o producción. No acredita el recorrido autenticado en dispositivo.
+Comparación del informe anterior en `REFRESH_STATUS_2026_10_07.md`. El único
+siguiente tramo UX es completar el guardado retenido editorial de admin, antes
+de reorganizar Mi plan y Evolución. El bloque deportivo conserva su prioridad.
+
 **Inventario visual, 07/10/2026:** [mapa de app/admin](SCREEN_MAP_2026_10_07.md)
 con imágenes de widgets actuales, estados, recorridos y mejoras diferenciadas.
 Análisis de ambas apps limpio; 474 pruebas de raíz y 74 del admin correctas

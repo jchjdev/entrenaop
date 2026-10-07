@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -28,54 +29,58 @@ class HomePage extends StatelessWidget {
   final String userId;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const EntrenaWordmark(width: 148),
-      actions: [
-        IconButton(
-          tooltip: 'Abrir perfil',
-          onPressed: () => context.go('/profile'),
-          icon: const Icon(Icons.person_outline_rounded),
-        ),
-        IconButton(
-          tooltip: 'Actualizar resumen',
-          onPressed: () => context.read<DashboardCubit>().load(),
-          icon: const Icon(Icons.refresh_rounded),
-        ),
-        const SizedBox(width: 8),
-      ],
-    ),
-    body: BlocConsumer<DashboardCubit, DashboardState>(
-      listener: (context, state) {
-        if (state.status == DashboardStatus.failure &&
-            state.errorMessage != null) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-        }
-      },
-      builder: (context, state) {
-        final overview = state.overview;
-        if (overview == null &&
-            (state.status == DashboardStatus.initial ||
-                state.status == DashboardStatus.loading)) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (overview == null) {
-          return Center(
-            child: FilledButton.icon(
-              onPressed: () => context.read<DashboardCubit>().load(),
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Reintentar cargar Inicio'),
-            ),
+  Widget build(BuildContext context) => SectionRefreshBoundary(
+    location: '/home',
+    onVisible: () => context.read<DashboardCubit>().load(),
+    child: Scaffold(
+      appBar: AppBar(
+        title: const EntrenaWordmark(width: 148),
+        actions: [
+          IconButton(
+            tooltip: 'Abrir perfil',
+            onPressed: () => context.go('/profile'),
+            icon: const Icon(Icons.person_outline_rounded),
+          ),
+          IconButton(
+            tooltip: 'Actualizar resumen',
+            onPressed: () => context.read<DashboardCubit>().load(),
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: BlocConsumer<DashboardCubit, DashboardState>(
+        listener: (context, state) {
+          if (state.status == DashboardStatus.failure &&
+              state.errorMessage != null) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+          }
+        },
+        builder: (context, state) {
+          final overview = state.overview;
+          if (overview == null &&
+              (state.status == DashboardStatus.initial ||
+                  state.status == DashboardStatus.loading)) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (overview == null) {
+            return Center(
+              child: FilledButton.icon(
+                onPressed: () => context.read<DashboardCubit>().load(),
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Reintentar cargar Inicio'),
+              ),
+            );
+          }
+          return _DashboardContent(
+            overview: overview,
+            refreshing: state.status == DashboardStatus.loading,
+            favoritesRepository: favoritesRepository,
+            userId: userId,
           );
-        }
-        return _DashboardContent(
-          overview: overview,
-          refreshing: state.status == DashboardStatus.loading,
-          favoritesRepository: favoritesRepository,
-          userId: userId,
-        );
-      },
+        },
+      ),
     ),
   );
 }
@@ -121,7 +126,6 @@ class _DashboardContentState extends State<_DashboardContent> {
 
   Future<void> _open(String route) async {
     await context.push(route);
-    if (mounted) await context.read<DashboardCubit>().load();
   }
 
   @override

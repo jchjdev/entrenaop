@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/workout_schedule/domain/repositories/workout_schedule_repository.dart';
 import 'package:entrenaop/features/workout_schedule/domain/usecases/workout_schedule_usecases.dart';
@@ -19,6 +21,30 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  test(
+    'una semana antigua no reemplaza la nueva al terminar fuera de orden',
+    () async {
+      final pending = Completer<List<ScheduledWorkout>>();
+      final repository = _FakeScheduleRepository();
+      repository.onRange = (start, end) =>
+          start == DateTime(2026, 9, 21) ? pending.future : Future.value([]);
+      final cubit = _cubit(repository, _FakeWorkoutRepository());
+      final oldLoad = cubit.load();
+      await Future<void>.delayed(Duration.zero);
+      await cubit.changeWeek(1);
+      expect(cubit.state.weekStart, DateTime(2026, 9, 28));
+      expect(cubit.state.selectedDay, DateTime(2026, 9, 28));
+      pending.complete([_scheduled()]);
+      await oldLoad;
+      expect(cubit.state.items, isEmpty);
+      expect(cubit.state.status, WorkoutScheduleStatus.ready);
+      cubit.selectDay(DateTime(2026, 10, 1));
+      await cubit.load();
+      expect(cubit.state.selectedDay, DateTime(2026, 10, 1));
+      await cubit.close();
+      await cubit.load();
+    },
+  );
   testWidgets(
     'Mi semana muestra solo el programa en curso y sigue el cambio al retomar',
     (tester) async {
@@ -412,12 +438,13 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   DateTime? lastEnd;
   String? scheduledTemplateId;
   DateTime? scheduledDate;
+  Future<List<ScheduledWorkout>> Function(DateTime, DateTime)? onRange;
 
   @override
   Future<List<ScheduledWorkout>> getRange(DateTime start, DateTime end) async {
     lastStart = start;
     lastEnd = end;
-    return items;
+    return onRange == null ? items : await onRange!(start, end);
   }
 
   @override

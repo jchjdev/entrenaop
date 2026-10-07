@@ -37,19 +37,25 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   final GetPublicWorkoutsUseCase _getPublicWorkouts;
   final GetPersonalWorkoutsUseCase _getPersonalWorkouts;
   final DateTime Function() _now;
+  int _loadVersion = 0;
 
   Future<void> load() async {
+    if (isClosed) return;
+    final version = ++_loadVersion;
+    final start = state.weekStart, end = state.weekEnd;
     emit(
       state.copyWith(status: WorkoutScheduleStatus.loading, clearError: true),
     );
     try {
       final programs = await _programs.refreshPrograms();
-      final items = await _getSchedule(state.weekStart, state.weekEnd);
+      final items = await _getSchedule(start, end);
       final publicTemplates = await _getPublicWorkouts();
       final personalTemplates = await _getPersonalWorkouts();
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: WorkoutScheduleStatus.ready,
+          hasLoaded: true,
           items: items,
           programs: programs,
           publicTemplates: publicTemplates,
@@ -58,6 +64,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: WorkoutScheduleStatus.failure,
@@ -162,12 +169,17 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
   }
 
   Future<void> _reloadItems() async {
+    if (isClosed) return;
+    final version = ++_loadVersion;
+    final start = state.weekStart, end = state.weekEnd;
     try {
       final programs = await _programs.refreshPrograms();
-      final items = await _getSchedule(state.weekStart, state.weekEnd);
+      final items = await _getSchedule(start, end);
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: WorkoutScheduleStatus.ready,
+          hasLoaded: true,
           items: items,
           programs: programs,
           clearBusy: true,
@@ -175,6 +187,7 @@ class WorkoutScheduleCubit extends Cubit<WorkoutScheduleState> {
         ),
       );
     } catch (_) {
+      if (isClosed || version != _loadVersion) return;
       emit(
         state.copyWith(
           status: WorkoutScheduleStatus.failure,

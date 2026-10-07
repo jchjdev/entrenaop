@@ -10,6 +10,7 @@ class WorkoutScheduleState extends Equatable {
     required this.weekStart,
     required this.selectedDay,
     this.status = WorkoutScheduleStatus.initial,
+    this.hasLoaded = false,
     this.items = const [],
     this.programs = const [],
     this.publicTemplates = const [],
@@ -19,6 +20,7 @@ class WorkoutScheduleState extends Equatable {
   });
 
   final WorkoutScheduleStatus status;
+  final bool hasLoaded;
   final DateTime weekStart;
   final DateTime selectedDay;
   final List<ScheduledWorkout> items;
@@ -43,6 +45,7 @@ class WorkoutScheduleState extends Equatable {
 
   WorkoutScheduleState copyWith({
     WorkoutScheduleStatus? status,
+    bool? hasLoaded,
     DateTime? weekStart,
     DateTime? selectedDay,
     List<ScheduledWorkout>? items,
@@ -55,6 +58,7 @@ class WorkoutScheduleState extends Equatable {
     bool clearError = false,
   }) => WorkoutScheduleState(
     status: status ?? this.status,
+    hasLoaded: hasLoaded ?? this.hasLoaded,
     weekStart: weekStart ?? this.weekStart,
     selectedDay: selectedDay ?? this.selectedDay,
     items: items ?? this.items,
@@ -68,6 +72,7 @@ class WorkoutScheduleState extends Equatable {
   @override
   List<Object?> get props => [
     status,
+    hasLoaded,
     weekStart,
     selectedDay,
     items,

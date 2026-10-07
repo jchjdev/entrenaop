@@ -6,6 +6,7 @@ import 'package:entrenaop/features/preparation_goal/presentation/pages/running_c
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('el bloque de carrera reutiliza la disponibilidad común', (
@@ -93,16 +94,28 @@ void main() {
       ),
     );
     RunningInitialContext? saved;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: RunningContextFormPage(
-          goalId: 'goal-1',
-          goals: const _Goals(goal),
-          loadContext: ({required goalId, required programId}) async => null,
-          saveContext: (context) async => saved = context,
+    final router = GoRouter(
+      initialLocation: '/origin',
+      routes: [
+        GoRoute(
+          path: '/origin',
+          builder: (_, _) => const Scaffold(body: Text('Mi preparación')),
         ),
-      ),
+        GoRoute(
+          path: '/context',
+          builder: (_, _) => RunningContextFormPage(
+            goalId: 'goal-1',
+            goals: const _Goals(goal),
+            loadContext: ({required goalId, required programId}) async => null,
+            saveContext: (context) async => saved = context,
+          ),
+        ),
+      ],
     );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    final returned = router.push<bool>('/context');
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('available-day-1')));
@@ -193,6 +206,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(saved, isNotNull);
+    expect(await returned, isTrue);
+    expect(router.state.uri.path, '/origin');
+    expect(find.text('Mi preparación'), findsOneWidget);
     expect(saved!.availableMinutesByWeekday, {1: 45});
     expect(
       saved!.recentRunningWeeks.map((week) => week.runningDays),

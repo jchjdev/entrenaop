@@ -1,3 +1,4 @@
+import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -38,17 +39,21 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Evolución'),
-      ),
-      body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(
-        builder: (context, state) => _HistoryContent(
-          state: state,
-          preparations: _preparations,
-          onRefresh: _refresh,
-          onRetryPreparations: _reloadPreparations,
+    return SectionRefreshBoundary(
+      location: '/assessment/history',
+      onVisible: () => _refresh(),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text('Evolución'),
+        ),
+        body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(
+          builder: (context, state) => _HistoryContent(
+            state: state,
+            preparations: _preparations,
+            onRefresh: _refresh,
+            onRetryPreparations: _reloadPreparations,
+          ),
         ),
       ),
     );
@@ -91,6 +96,13 @@ class _HistoryContent extends StatelessWidget {
                     style: TextStyle(color: Colors.white60),
                   ),
                   const SizedBox(height: 24),
+                  if (state.isRefreshing) const LinearProgressIndicator(),
+                  if (state.errorMessage != null && state.executions.isNotEmpty)
+                    TextButton.icon(
+                      onPressed: onRefresh,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(state.errorMessage!),
+                    ),
                   if (state.status == WorkoutHistoryStatus.loaded) ...[
                     _ActivitySummary(executions: state.executions),
                     const SizedBox(height: 24),
