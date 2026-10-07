@@ -32,6 +32,9 @@ dependencies:
 
   # Video
   video_player: ^2.14.0
+  # Abrir enlaces de referencia que el reproductor integrado no admite.
+  # Ya se resuelve esta versión a través de Supabase; no añade un plugin nuevo.
+  url_launcher: ^6.3.2
 
   # Utilidades
   intl: ^0.20.3

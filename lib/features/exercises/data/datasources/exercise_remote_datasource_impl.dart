@@ -145,13 +145,49 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   }
 
   @override
-  Future<void> updateExercise(ExerciseModel exercise) async {
+  Future<void> updateExercise(
+    ExerciseModel exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {
+    String? uploadedPath;
     try {
-      await supabaseClient
-          .from('exercises')
-          .update(exercise.toJson())
-          .eq('id', exercise.id);
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId == null) throw const ServerException('Debes iniciar sesión.');
+      if (image != null) {
+        uploadedPath =
+            '$userId/${exercise.id}/${DateTime.now().microsecondsSinceEpoch}.jpg';
+        await supabaseClient.storage
+            .from(_privateBucket)
+            .uploadBinary(
+              uploadedPath,
+              image.bytes,
+              fileOptions: FileOptions(
+                contentType: image.contentType,
+                upsert: false,
+              ),
+            );
+      }
+      // La función valida autoría y guarda contenido e imagen en una transacción.
+      // Nunca se persisten URLs firmadas ni campos de autoridad del cliente.
+      await supabaseClient.rpc(
+        'update_personal_exercise',
+        params: {
+          'p_exercise_id': exercise.id,
+          'p_name': exercise.name,
+          'p_description': exercise.description,
+          'p_video_url': exercise.videoUrl,
+          'p_muscle_groups': exercise.muscleGroups,
+          'p_equipment': exercise.equipment,
+          'p_difficulty': exercise.difficulty,
+          'p_exercise_type': exercise.exerciseType,
+          'p_replace_image': image != null || removeImage,
+          'p_image_path': uploadedPath,
+        },
+      );
     } catch (e) {
+      // Un timeout puede llegar después del commit remoto: no se elimina la
+      // imagen subida, pues podría ser ya la portada vigente del ejercicio.
       throw ServerException(e.toString());
     }
   }

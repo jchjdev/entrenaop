@@ -11,6 +11,9 @@ import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/update_exercise_usecase.dart';
+import 'package:entrenaop/features/exercises/presentation/pages/personal_exercise_editor_page.dart';
 import 'package:entrenaop/features/exercises/presentation/bloc/exercise_library_cubit.dart';
 import 'package:entrenaop/features/exercises/presentation/pages/exercise_library_page.dart';
 import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
@@ -448,25 +451,57 @@ class AppRouter {
                   routes: [
                     GoRoute(
                       path: 'exercises',
-                      builder: (context, state) {
-                        final auth = authCubit.state;
-                        if (auth is! AuthAuthenticated) {
-                          return const SizedBox.shrink();
-                        }
-                        final personal =
-                            state.uri.queryParameters['tab'] == 'personal';
-                        return BlocProvider(
-                          key: ValueKey('exercises-${auth.user.id}-$personal'),
-                          create: (_) => ExerciseLibraryCubit(
-                            getExercises: sl<GetExercisesUseCase>(),
-                            userId: auth.user.id,
-                          )..load(),
-                          child: ExerciseLibraryPage(
-                            initialPersonalTab: personal,
+                      builder: (context, state) =>
+                          BlocBuilder<AuthCubit, AuthState>(
+                            buildWhen: (_, next) =>
+                                next is AuthAuthenticated ||
+                                next is AuthUnauthenticated,
+                            builder: (context, auth) {
+                              if (auth is! AuthAuthenticated) {
+                                return const SizedBox.shrink();
+                              }
+                              final personal =
+                                  state.uri.queryParameters['tab'] ==
+                                  'personal';
+                              return BlocProvider(
+                                key: ValueKey(
+                                  'exercises-${auth.user.id}-$personal',
+                                ),
+                                create: (_) => ExerciseLibraryCubit(
+                                  getExercises: sl<GetExercisesUseCase>(),
+                                  userId: auth.user.id,
+                                )..load(),
+                                child: ExerciseLibraryPage(
+                                  initialPersonalTab: personal,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
                       routes: [
+                        _workflowRoute(
+                          path: ':exerciseId/edit',
+                          builder: (context, state) =>
+                              BlocBuilder<AuthCubit, AuthState>(
+                                buildWhen: (_, next) =>
+                                    next is AuthAuthenticated ||
+                                    next is AuthUnauthenticated,
+                                builder: (context, auth) =>
+                                    auth is AuthAuthenticated
+                                    ? PersonalExerciseEditorPage(
+                                        key: ValueKey(
+                                          '${auth.user.id}-${state.pathParameters['exerciseId']}',
+                                        ),
+                                        exerciseId:
+                                            state.pathParameters['exerciseId']!,
+                                        userId: auth.user.id,
+                                        getExercise:
+                                            sl<GetExerciseByIdUseCase>(),
+                                        updateExercise:
+                                            sl<UpdateExerciseUseCase>(),
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                        ),
                         _workflowRoute(
                           path: 'new',
                           builder: (context, state) =>

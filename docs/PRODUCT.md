@@ -199,6 +199,13 @@ FAS 2027:
   superseries, circuitos con transiciones, intervalos de trabajo, Tabata, EMOM y
   AMRAP. También permite crear ejercicios privados con descripción y una URL de
   vídeo HTTPS opcional.
+- Biblioteca permite consultar el vídeo bajo demanda, pausarlo y abrir el
+  enlace original si el proveedor externo no admite reproducción integrada.
+  Los ejercicios personales privados se editan desde su detalle, incluyendo
+  foto; un fallo conserva lo escrito y el retorno mantiene la búsqueda. La
+  edición actualiza el catálogo privado para futuras ejecuciones y conserva
+  las instantáneas de entrenamientos anteriores. El contenido de EntrenaOP
+  permanece de consulta en la app del deportista (UI-012, 08/10/2026).
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
   recuperación pasiva, andando o trotando por duración o distancia. Repetir un

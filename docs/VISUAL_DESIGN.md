@@ -376,6 +376,31 @@ fuentes e iconos reales para primer acceso, sesión de hoy, día sin sesión y
 escritorio, con repositorios simulados. No acredita una revisión con cuentas
 reales ni añade validación de algoritmos, base de datos o producción.
 
+## Biblioteca y estabilidad de fotografías (08/10/2026)
+
+UI-012 conserva la composición y el tratamiento fotográfico aprobado. El fallo
+se reproduce en web al salir y volver a una ruta: `CachedNetworkImageProvider`
+redecodifica el mismo elemento HTML, que se vacía cuando Flutter libera la imagen
+anterior. Las portadas web usan ahora `NetworkImage`, con caché HTTP del navegador;
+en móvil se mantiene la caché en disco. No cambian URL, encuadres, fotografías
+guardadas, tarjetas ni cabeceras. La reproducción local compara ambos proveedores
+con el mismo PNG y confirma cinco retornos con la imagen corregida conservada.
+
+Biblioteca mantiene pestañas, listas y filtros. El detalle de un ejercicio con
+vídeo ofrece «Ver vídeo» y «Abrir enlace original». El reproductor carga solo al
+pulsar, tiene pausa/progreso y se libera al cerrar; un fallo permite reintentar y
+conserva el enlace. «Editar ejercicio» solo aparece para contenido propio privado.
+Abre el formulario compartido en una ruta de trabajo sin la barra inferior,
+protege el borrador y presenta errores persistentes sin cubrir Guardar. Al
+guardar vuelve a la colección y consulta de nuevo conservando búsqueda y filtros.
+El cambio de cuenta renueva colección y editor. La creación existente se mantiene.
+
+La fotografía personal se conserva por defecto; cambiarla o quitarla es una
+decisión explícita del formulario y se guarda junto al contenido en servidor.
+No se añade borrado de ejercicios vinculados a sesiones ni se modifica su
+historial. Detalle, capturas actuales y límites en
+[REFRESH_LIBRARY_2026_10_08.md](REFRESH_LIBRARY_2026_10_08.md).
+
 ## Biblioteca central (05/10/2026)
 
 Javier confirma la variante «Por contenido»: la navegación queda como Inicio,

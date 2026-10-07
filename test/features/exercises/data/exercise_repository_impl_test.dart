@@ -92,7 +92,11 @@ class _FakeExerciseRemoteDataSource implements ExerciseRemoteDataSource {
   }
 
   @override
-  Future<void> updateExercise(ExerciseModel exercise) async {
+  Future<void> updateExercise(
+    ExerciseModel exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {
     updated = exercise;
   }
 

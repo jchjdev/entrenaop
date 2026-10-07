@@ -14,6 +14,10 @@ abstract class ExerciseRepository {
     PersonalExerciseDraft exercise, {
     ExerciseImageUpload? image,
   });
-  Future<void> updateExercise(ExerciseEntity exercise);
+  Future<void> updateExercise(
+    ExerciseEntity exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  });
   Future<void> deleteExercise(String id);
 }

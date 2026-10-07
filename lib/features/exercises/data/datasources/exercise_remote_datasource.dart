@@ -12,6 +12,10 @@ abstract class ExerciseRemoteDataSource {
     PersonalExerciseDraft exercise, {
     ExerciseImageUpload? image,
   });
-  Future<void> updateExercise(ExerciseModel exercise);
+  Future<void> updateExercise(
+    ExerciseModel exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  });
   Future<void> deleteExercise(String id);
 }

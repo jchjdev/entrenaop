@@ -447,6 +447,16 @@ identidad
   e `is_public = false`; el cliente solo proporciona contenido descriptivo. El
   catálogo consulta contenido público y ejercicios propios, dejando que RLS
   descarte cualquier otro registro privado.
+- Su edición usa `update_personal_exercise` (UI-012, 08/10/2026). La función
+  valida `auth.uid()`, autoría, origen usuario y privacidad; reutiliza la
+  normalización editorial y actualiza únicamente contenido descriptivo. La
+  imagen se sube primero a una ruta nueva privada; la función comprueba ruta y
+  objeto y guarda contenido e imagen juntos. `p_replace_image = false` conserva
+  la foto; con `true` admite sustitución o retirada. Nunca recibe permisos,
+  propietario ni URLs firmadas. No modifica plantillas, dosis ni instantáneas
+  de ejecución. No ofrece borrado de ejercicios ni revisiones concurrentes;
+  prevalece el último guardado. No se eliminan imágenes antiguas o de una
+  operación incierta: la limpieza de objetos huérfanos queda aparte.
 - `WorkoutEditorDraftStore` persiste localmente una instantánea completa del
   editor con espera corta entre cambios. La clave v2 incluye propietario y
   distingue `new`, `new-running` y cada plantilla existente. El adaptador se

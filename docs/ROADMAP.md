@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-012, 08/10/2026 · Biblioteca y fotografías cerrado en desarrollo:**
+corregida la pérdida de portadas web al regresar, conservando aspecto y
+encuadres. Biblioteca ofrece vídeo bajo demanda/enlace externo y edición de
+ejercicios personales privados con foto, borrador protegido, error persistente
+y retorno conservando búsqueda. RPC de edición con autoría/validación en
+servidor; instantáneas históricas preservadas. Análisis limpio en ambas apps,
+544 pruebas de raíz y 85 de admin correctas (una exclusiva web y una optativa
+de admin omitidas respectivamente), cinco recorridos de captura, doce imágenes
+de widgets y dos del navegador. Prueba comparada de cinco retornos en Chromium:
+proveedor anterior pierde la imagen, proveedor corregido la conserva.
+Compilación web debug correcta; 132 migraciones coincidentes y tres baterías
+SQL correctas con `ROLLBACK`, solo en desarrollo. No modifica producción,
+motores, diseño de Inicio/Mi plan ni negocio Free/Pro.
+Límites: recorrido autenticado/dispositivo pendiente; runner web automatizado
+no arrancó, sustituido para las fotos por reproducción compilada y navegador
+real. Sin borrado/archivado de ejercicios ni resolución de edición concurrente.
+Detalle en [REFRESH_LIBRARY_2026_10_08.md](REFRESH_LIBRARY_2026_10_08.md).
+El único siguiente bloque UX recomendado es Cuenta: recuperación de contraseña
+y confirmaciones persistentes. Comparativas de Evolución y pulido transversal/admin
+siguen después; negocio y motores mantienen sus trabajos aparte.
+
 **UI-011, 07/10/2026 · resultados e historial cerrado:** Marcas abre una consulta
 por preparación; registrar vuelve a los formularios existentes y actualiza al
 retornar. Historial con preparación, fechas y estado, páginas de 30 y reintento
@@ -12,8 +33,8 @@ admin, paquetes compartidos, Inicio/Mi plan, portadas ni catálogo.
 Alcance, imágenes y límites en [REFRESH_EVOLUTION_2026_10_07.md](REFRESH_EVOLUTION_2026_10_07.md).
 Las comparativas nuevas y el filtro por tipo deportivo siguen pendientes: no
 se deducen de plantillas actuales ni se mezclan protocolos/baremos.
-El único siguiente bloque UX recomendado es Biblioteca: consulta de vídeo y
-gestión de ejercicios propios, respetando autoría, versiones e historial.
+Este cierre dio paso a Biblioteca, implementada después en UI-012 para consulta
+de vídeo y edición de ejercicios propios, respetando autoría e historial.
 Cuenta y pulido transversal/admin permanecen después; negocio Free/Pro y
 motores se trabajan aparte, manteniendo UI-010.
 

@@ -8,6 +8,8 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/update_exercise_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
@@ -18,6 +20,103 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_image.dart';
 
 void main() {
+  testWidgets('la colección se renueva al cambiar de cuenta en la misma ruta', (
+    tester,
+  ) async {
+    final repository = _Exercises()
+      ..exercises.add(_exercise('Ejercicio de otra cuenta', owner: 'other'));
+    _register(repository);
+    addTearDown(sl.reset);
+    final auth = _SwitchableAuth();
+    addTearDown(auth.close);
+    final router = AppRouter(auth);
+    addTearDown(router.dispose);
+    router.config.go('/library/exercises?tab=personal');
+    await tester.pumpWidget(_app(auth, router));
+    await tester.pumpAndSettle();
+    expect(find.text('Ejercicio privado'), findsOneWidget);
+    expect(find.text('Ejercicio de otra cuenta'), findsNothing);
+    auth.change('other');
+    await tester.pumpAndSettle();
+    expect(find.text('Ejercicio privado'), findsNothing);
+    expect(find.text('Ejercicio de otra cuenta'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'editar conserva búsqueda, protege el borrador y reintenta sin perder campos',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 950));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _Exercises()..failUpdate = true;
+      _register(repository);
+      addTearDown(sl.reset);
+      final auth = _Auth();
+      final router = AppRouter(auth);
+      addTearDown(router.dispose);
+      router.config.go('/library/exercises?tab=personal');
+      await tester.pumpWidget(_app(auth, router));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'privado');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ejercicio privado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar ejercicio'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NavigationBar), findsNothing);
+      final name = find.byKey(const ValueKey('personal-exercise-name'));
+      await tester.enterText(name, 'Ejercicio privado mejorado');
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await tester.tap(find.text('Seguir aquí'));
+      await tester.pumpAndSettle();
+      final save = find.text('Guardar ejercicio');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Puedes reintentarlo.'), findsOneWidget);
+      expect(
+        tester.widget<TextFormField>(name).controller!.text,
+        'Ejercicio privado mejorado',
+      );
+      repository.failUpdate = false;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(
+        router.config.routeInformationProvider.value.uri.path,
+        '/library/exercises',
+      );
+      expect(find.text('Ejercicio privado mejorado'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'privado',
+      );
+      expect(repository.updated, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('un enlace directo no permite editar ejercicios oficiales', (
+    tester,
+  ) async {
+    _register(_Exercises());
+    addTearDown(sl.reset);
+    final auth = _Auth();
+    final router = AppRouter(auth);
+    addTearDown(router.dispose);
+    router.config.go('/library/exercises/Sentadilla%20de%20cat%C3%A1logo/edit');
+    await tester.pumpWidget(_app(auth, router));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Este ejercicio no está disponible para editar.'),
+      findsOneWidget,
+    );
+    expect(find.text('Guardar ejercicio'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
   for (final (route, content) in [
     ('/library', 'Sesiones EntrenaOP'),
     ('/library/exercises', 'Sentadilla de catálogo'),
@@ -138,6 +237,8 @@ Widget _app(AuthCubit auth, AppRouter router) => BlocProvider<AuthCubit>.value(
 void _register(_Exercises repository) {
   sl.registerSingleton(GetExercisesUseCase(repository));
   sl.registerSingleton(CreateExerciseUseCase(repository));
+  sl.registerSingleton(GetExerciseByIdUseCase(repository));
+  sl.registerSingleton(UpdateExerciseUseCase(repository));
   final workouts = _Workouts();
   sl.registerFactory(
     () => WorkoutLibraryCubit(
@@ -167,12 +268,28 @@ class _Auth implements AuthCubit {
 
 class _Exercises implements ExerciseRepository {
   int created = 0;
+  int updated = 0;
+  bool failUpdate = false;
   final exercises = [
     _exercise('Sentadilla de catálogo', official: true),
     _exercise('Ejercicio privado'),
   ];
   @override
   Future<List<ExerciseEntity>> getExercises() async => List.of(exercises);
+  @override
+  Future<ExerciseEntity?> getExerciseById(String id) async =>
+      exercises.where((e) => e.id == id).firstOrNull;
+  @override
+  Future<void> updateExercise(
+    ExerciseEntity exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {
+    if (failUpdate) throw Exception('Fallo simulado');
+    updated++;
+    exercises[exercises.indexWhere((e) => e.id == exercise.id)] = exercise;
+  }
+
   @override
   Future<ExerciseEntity> createExercise(
     PersonalExerciseDraft draft, {
@@ -188,18 +305,36 @@ class _Exercises implements ExerciseRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-ExerciseEntity _exercise(String name, {bool official = false}) =>
-    ExerciseEntity(
-      id: name,
-      name: name,
-      muscleGroups: const ['piernas'],
-      equipment: const [],
-      difficulty: 'beginner',
-      exerciseType: 'strength',
-      isPublic: official,
-      origin: official ? ExerciseOrigin.system : ExerciseOrigin.user,
-      createdBy: official ? null : 'me',
-    );
+ExerciseEntity _exercise(
+  String name, {
+  bool official = false,
+  String owner = 'me',
+}) => ExerciseEntity(
+  id: name,
+  name: name,
+  muscleGroups: const ['piernas'],
+  equipment: const [],
+  difficulty: 'inicial',
+  exerciseType: 'repeticiones',
+  isPublic: official,
+  origin: official ? ExerciseOrigin.system : ExerciseOrigin.user,
+  createdBy: official ? null : owner,
+);
+
+class _SwitchableAuth extends Cubit<AuthState> implements AuthCubit {
+  _SwitchableAuth() : super(_stateFor('me'));
+  void change(String userId) => emit(_stateFor(userId));
+  static AuthState _stateFor(String userId) => AuthAuthenticated(
+    user: UserEntity(
+      id: userId,
+      email: '$userId@example.invalid',
+      role: 'free',
+      createdAt: DateTime(2026),
+    ),
+  );
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class _Workouts implements WorkoutRepository {
   @override

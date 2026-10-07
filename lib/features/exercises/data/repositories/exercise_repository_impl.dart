@@ -40,8 +40,16 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   }
 
   @override
-  Future<void> updateExercise(ExerciseEntity exercise) async {
-    return remoteDataSource.updateExercise(ExerciseModel.fromEntity(exercise));
+  Future<void> updateExercise(
+    ExerciseEntity exercise, {
+    ExerciseImageUpload? image,
+    bool removeImage = false,
+  }) async {
+    return remoteDataSource.updateExercise(
+      ExerciseModel.fromEntity(exercise),
+      image: image,
+      removeImage: removeImage,
+    );
   }
 
   // Implement the methods and properties defined in ExerciseRepository
