@@ -15,7 +15,7 @@ class HomeToolsSection extends StatelessWidget {
     children: [
       if (showHeading) ...[
         HomeSectionHeading(
-          title: 'Para tus pruebas',
+          title: 'Herramientas',
           action: TextButton(
             onPressed: () => context.push('/tools'),
             child: const Text('Ver todas'),
@@ -66,7 +66,7 @@ class HomeToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Herramientas para tus pruebas')),
+    appBar: AppBar(title: const Text('Herramientas')),
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Center(

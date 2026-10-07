@@ -296,9 +296,36 @@ su recorrido en una función comercial Pro ya disponible.
 | Programas con algoritmos de generación/adaptación | Pro | Generación y continuidad adaptativa requieren derechos Pro de servidor cuando se implemente el producto comercial. |
 
 La frontera utiliza «programa adaptativo» como concepto de producto: no implica
-cobrar por cualquier cálculo matemático de una herramienta. No se introducen
-ahora cuotas, candados funcionales o cobros. Precios, contratación, derechos,
-cancelación y experiencias sin Pro siguen pendientes de diseño e implementación.
+cobrar por cualquier cálculo matemático de una herramienta. COM-002 incorpora
+una simulación de vistas Free/Pro exclusivamente para desarrollo, descrita a
+continuación. No introduce cuotas definitivas ni cobros. Precios, contratación,
+derechos de servidor y cancelación siguen pendientes.
+
+### Selector temporal de pruebas · COM-002 · 07/10/2026
+
+Javier confirma que la app sigue en desarrollo/pruebas, con una cuenta habitual,
+y autoriza un selector sencillo en Perfil. «Pruebas Free / Pro» permite cambiar
+la vista sin editar el perfil remoto, el historial o la preparación activa. La
+vista inicial es Pro para conservar el recorrido actual; recuerda la última
+elección local por cuenta y se podrá retirar cuando se decidan las reglas de
+negocio. No aparece en producción ni en compilaciones release.
+
+En la simulación Free se mantienen las herramientas, la consulta del catálogo,
+las preparaciones existentes y el historial. Una ficha nueva ofrece conocer Pro
+en lugar de añadir el programa; acceder al generador o a las rutas de cálculo
+presenta las ventajas de Pro sin montar sus controladores. Inicio y agenda
+consultan los estados guardados mediante lectura, sin avanzar programas ni
+generar semanas. Volver a Pro devuelve los accesos actuales sin pausar ni
+reiniciar datos. Las sesiones propias y el contenido de Biblioteca conservan
+el comportamiento actual: no se fijan sus cuotas ni la selección Free mientras
+estas reglas sigan abiertas.
+
+Esta herramienta acredita presentación y recorridos de prueba, no el derecho
+real de una cuenta. La futura suscripción tendrá vigencia y fuente fiable en
+servidor, separada de permisos administrativos y seguimiento. La autorización
+de generación/adaptación y las cuotas se aplicarán también en backend; no se
+derivarán de este selector, del campo histórico `role` ni de preferencias
+locales. Pro todavía no se puede contratar en la aplicación.
 
 Las listas siguientes conservan detalles del borrador anterior. COM-001 tiene
 prioridad: los puntos que no aparecen en el reparto confirmado, como asignar
@@ -352,7 +379,7 @@ pero todavía no son nombres definitivos.
 
 ## Alcance de la primera versión validable
 
-### Descubrimiento de preparaciones: revisión abierta · 07/10/2026
+### Descubrimiento de preparaciones: accesos y ficha básica · 07/10/2026
 
 Javier señala que «Tus preparaciones» le gusta como colección personal, pero el
 botón «Añadir» no permite descubrir fácilmente el resto del catálogo ni explicar
@@ -364,23 +391,25 @@ futuro Pro; ese recorrido tiene prioridad sobre la futura entrada de Free.
 Javier corrige después el alcance: reorganizar accesos, conservando el aspecto
 de la aplicación actual. Rechaza la composición que duplicaba «Añadir
 preparación» con un bloque «Explora programas» y sustituía sus tarjetas
-fotográficas por una tarjeta genérica de programa en curso. La ubicación
-concreta de la entrada única sigue siendo propuesta, sin implementar.
+fotográficas por una tarjeta genérica de programa en curso.
+La reorganización y la ficha básica se implementan tras su autorización de
+continuar, conservando el componente de las tarjetas fotográficas.
 COM-001 fija la frontera comercial de los programas adaptativos,
 pero no autoriza presentarla como ya implementada ni publicar programas no
 verificados.
 
-La recomendación en revisión es mantener la colección personal y una única
-entrada visible al catálogo dentro de «Tus preparaciones», sustituyendo el
-botón del encabezado por la tarjeta «+ Añadir» antes solicitada. No se añade un
-segundo bloque de descubrimiento. Las fichas de catálogo consultables antes de
-seguir una preparación siguen pendientes. El futuro producto comercial
-explicaría el beneficio del programa adaptativo en esa ficha. Para quien ya
-dispone de acceso, la acción debe llevar
-a preparar o empezar el programa, sin volver a ofrecer contratar Pro.
-La consulta informativa del catálogo,
-guardar una preparación como interés y la oferta comercial de las mediciones
-todavía deben diseñarse; la adaptación de entrenamiento queda reservada a Pro.
+Inicio mantiene la colección personal y una única entrada visible al catálogo
+dentro de «Tus preparaciones»: la tarjeta «+ Añadir preparación» debajo de las
+tarjetas existentes sustituye al botón del encabezado. No se añade un segundo
+bloque de descubrimiento. La ficha básica ya permite consultar el nombre,
+portada, tipo y pasos de inicio antes de seguir una preparación. El contenido
+editorial específico y la explicación deportiva detallada siguen pendientes.
+El futuro producto comercial explicaría el beneficio del programa adaptativo
+en esa ficha. Para quien ya dispone de acceso, la acción debe llevar a preparar
+o empezar el programa, sin volver a ofrecer contratar Pro.
+Guardar una preparación solo como interés y la oferta comercial de las
+mediciones todavía deben diseñarse; la adaptación queda reservada a Pro en
+el reparto confirmado, con derechos reales de servidor aún pendientes.
 
 El posicionamiento quiere representar a opositores y sus pruebas físicas,
 conservando los programas militares actuales. La cobertura real no cambia por
@@ -389,8 +418,8 @@ no se presenta como un programa ya disponible por aparecer como ejemplo de UX.
 La incorporación de nuevos cuerpos requiere su propio contenido y comprobación.
 
 Javier prefiere el título «Herramientas» en Inicio. Cuestiona la tarjeta grande de
-Biblioteca porque esa sección ya tiene su pestaña propia; retirarla es una
-recomendación de esta revisión, todavía no una modificación aplicada.
+Biblioteca porque esa sección ya tiene su pestaña propia; el acceso grande se
+retira de Inicio, conservando la pestaña y los favoritos opcionales.
 
 #### Recorrido prioritario con acceso completo · UI-009
 
@@ -399,12 +428,13 @@ por qué me interesa?». «Tus preparaciones» conserva las elegidas y su diseñ
 actual: fotografía, encuadre, estado, nombre, fecha y «Gestionar preparación».
 Una única entrada permite consultar el catálogo antes de añadir, sin duplicar
 el destino con otra sección ni convertir las tarjetas actuales en resúmenes
-genéricos. Una futura ficha explica qué prepara, qué datos necesita y cómo
-encaja con disponibilidad/material y resultados. No se atribuyen mejoras
+genéricos. La ficha básica presenta el propósito según el tipo de programa y
+los pasos actuales de inicio; ampliarla con contenido deportivo específico y
+metadatos editoriales sigue pendiente. No se atribuyen mejoras
 medidas, duración fija o cobertura deportiva a programas sin comprobarlos.
 
-El recorrido propuesto es Inicio → catálogo → ficha → preparar el programa →
-revisar datos/propuesta → activar. Consultar la ficha no modifica la colección;
+El recorrido con acceso completo es Inicio → catálogo → ficha → preparar el
+programa → revisar datos/propuesta → activar. Consultar la ficha no modifica la colección;
 añadir conserva el programa que ya está en curso. Los programas ya elegidos
 muestran su estado y abren su recorrido existente; el catálogo no los presenta
 como novedades sin empezar. La presentación comercial evita justificar Free
@@ -420,12 +450,13 @@ ejecución en curso bloquea el cambio hasta resolverla. La activación inválida
 puede dejar pausado el programa anterior; ese contrato pertenece al servidor.
 Retomar revisa fecha y situación actuales, en lugar de ejecutar una semana vieja.
 
-La corrección de accesos se ilustra conservando las tarjetas de la captura real
-aportada por Javier. Solo se propone la entrada única al catálogo; no se
-rediseñan otras pantallas. No cambia Flutter, motores, permisos ni SQL. La ficha
-informativa previa al alta aún requiere implementación y contenido editorial
-verificable; las maquetas anteriores no convierten sus textos en metadatos ya
-publicados ni su composición descartada en una decisión vigente.
+La corrección conserva el componente actual de las tarjetas de preparación.
+El catálogo enlaza a `/plan/program/:programId`; la ficha usa metadatos actuales
+y solo añade al pulsar la acción explícita. Abrirla no modifica preparaciones
+ni publica semanas; regresar actualiza el catálogo. La simulación Free/Pro se
+describe en COM-002. No cambia motores, permisos ni SQL. El contenido editorial
+específico sigue pendiente: las maquetas anteriores no convierten sus textos
+en metadatos publicados ni su composición descartada en una decisión vigente.
 
 ### Recorrido actual
 

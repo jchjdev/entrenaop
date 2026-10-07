@@ -1,4 +1,7 @@
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:entrenaop/core/config/app_config.dart';
+import 'package:entrenaop/features/plan_preview/data/shared_preferences_plan_preview_store.dart';
+import 'package:entrenaop/features/plan_preview/presentation/plan_preview_cubit.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource_impl.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/running_week_plan_repository.dart';
 import 'package:entrenaop/features/auth/data/repositories/auth_repository_impl.dart';
@@ -96,6 +99,12 @@ final sl = GetIt.instance;
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
   final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(
+    () => PlanPreviewCubit(
+      enabled: AppConfig.planPreviewEnabled,
+      store: SharedPreferencesPlanPreviewStore(sharedPreferences),
+    ),
+  );
   sl.registerLazySingleton<HomeFavoritesRepository>(
     () => SharedPreferencesHomeFavoritesRepository(sharedPreferences),
   );
@@ -227,8 +236,14 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => RunningTestRepository(sl()));
   sl.registerLazySingleton(() => RunningIntakeContextRepository(sl()));
   sl.registerLazySingleton(() => RunningWeekPlanRepository(sl()));
+  sl.registerLazySingleton(
+    () => SupabasePreparationTrainingRepository(
+      sl(),
+      readOnlyPreview: () => sl<PlanPreviewCubit>().state.isFree,
+    ),
+  );
   sl.registerLazySingleton<PreparationTrainingRepository>(
-    () => SupabasePreparationTrainingRepository(sl()),
+    () => sl<SupabasePreparationTrainingRepository>(),
   );
   sl.registerLazySingleton(() => RunningReferenceSelectionRepository(sl()));
   sl.registerLazySingleton(

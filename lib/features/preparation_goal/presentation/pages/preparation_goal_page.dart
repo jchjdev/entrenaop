@@ -81,7 +81,7 @@ class _CatalogContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Puedes seguir varias preparaciones al mismo tiempo. Solo publicaremos programas con pruebas y baremos verificados.',
+                    'Descubre los programas disponibles. Puedes guardar varias preparaciones; una sola genera tus entrenamientos.',
                     style: TextStyle(color: Colors.white60, height: 1.45),
                   ),
                   const SizedBox(height: 22),
@@ -182,11 +182,14 @@ class _ProgramCard extends StatelessWidget {
           const SizedBox(height: 18),
           if (goal == null)
             FilledButton.icon(
-              onPressed: saving
-                  ? null
-                  : () => context.read<PreparationGoalCubit>().add(program),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Añadir preparación'),
+              onPressed: () async {
+                await context.push('/plan/program/${program.id}');
+                if (context.mounted) {
+                  await context.read<PreparationGoalCubit>().load();
+                }
+              },
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text('Ver programa'),
             )
           else
             Wrap(

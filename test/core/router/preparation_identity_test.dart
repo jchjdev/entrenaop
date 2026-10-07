@@ -1,6 +1,11 @@
 import 'dart:async';
 
 import 'package:entrenaop/core/di/injection_container.dart';
+import 'package:entrenaop/features/plan_preview/data/shared_preferences_plan_preview_store.dart';
+import 'package:entrenaop/features/plan_preview/domain/plan_preview.dart';
+import 'package:entrenaop/features/plan_preview/presentation/plan_preview_cubit.dart';
+import 'package:entrenaop/features/plan_preview/presentation/plan_preview_scope.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
@@ -73,6 +78,34 @@ void main() {
     );
   });
   tearDown(() async => sl.reset());
+
+  testWidgets(
+    'el simulador directo en Free conserva las consultas padre sin abrir el algoritmo',
+    (t) async {
+      SharedPreferences.setMockInitialValues({});
+      final preview = PlanPreviewCubit(
+        enabled: true,
+        store: SharedPreferencesPlanPreviewStore(
+          await SharedPreferences.getInstance(),
+        ),
+      )..bindAccount('user');
+      addTearDown(preview.close);
+      await preview.select(PlanPreviewTier.free);
+      final router = AppRouter(_Auth());
+      addTearDown(router.dispose);
+      router.config.go('/plan/goal/fas/week-simulator');
+      await t.pumpWidget(
+        PlanPreviewScope(
+          cubit: preview,
+          child: MaterialApp.router(routerConfig: router.config),
+        ),
+      );
+      await t.pumpAndSettle();
+      // RunningTestRepository no está registrado: la vista Free no lo necesita.
+      expect(find.text('Tu programa, adaptado a ti'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    },
+  );
 
   for (final suffix in [
     '',

@@ -3,6 +3,12 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_goal_page.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/pages/preparation_program_page.dart';
+import 'package:entrenaop/features/plan_preview/data/shared_preferences_plan_preview_store.dart';
+import 'package:entrenaop/features/plan_preview/domain/plan_preview.dart';
+import 'package:entrenaop/features/plan_preview/presentation/plan_preview_cubit.dart';
+import 'package:entrenaop/features/plan_preview/presentation/plan_preview_scope.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +25,66 @@ void main() {
     name: 'Ingreso · Guardia Civil',
     kind: PreparationProgramKind.access,
   );
+
+  testWidgets('Free consulta la ficha sin dar de alta y Pro permite añadir', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final preview = PlanPreviewCubit(
+      enabled: true,
+      store: SharedPreferencesPlanPreviewStore(
+        await SharedPreferences.getInstance(),
+      ),
+    )..bindAccount('user');
+    addTearDown(preview.close);
+    await preview.select(PlanPreviewTier.free);
+    final repository = _Repository(goals: [], programs: [troop]);
+    final cubit = PreparationGoalCubit(repository: repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    final router = GoRouter(
+      initialLocation: '/program',
+      routes: [
+        GoRoute(
+          path: '/program',
+          builder: (_, _) => BlocProvider.value(
+            value: cubit,
+            child: PreparationProgramPage(programId: troop.id),
+          ),
+        ),
+        GoRoute(
+          path: '/plan/pro',
+          builder: (_, _) => const Scaffold(body: Text('Información de Pro')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      PlanPreviewScope(
+        cubit: preview,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(troop.name), findsOneWidget);
+    expect(find.text('Añadir preparación'), findsNothing);
+    await tester.ensureVisible(find.text('Conocer Pro'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Conocer Pro'));
+    await tester.pumpAndSettle();
+    expect(find.text('Información de Pro'), findsOneWidget);
+    expect(repository.goals, isEmpty);
+    router.pop();
+    await preview.select(PlanPreviewTier.pro);
+    await tester.pumpAndSettle();
+    expect(find.text('Añadir preparación'), findsOneWidget);
+    expect(repository.goals, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'abrir un programa no convierte una fecha de agenda en una orden de cálculo',
@@ -86,6 +152,19 @@ void main() {
             child: const PreparationGoalPage(),
           ),
         ),
+        GoRoute(
+          path: '/plan/program/:id',
+          builder: (_, state) => BlocProvider.value(
+            value: cubit,
+            child: PreparationProgramPage(
+              programId: state.pathParameters['id']!,
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/plan/goal/:id',
+          builder: (_, _) => const Scaffold(body: Text('Preparación creada')),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -100,16 +179,27 @@ void main() {
 
     expect(find.text(troop.name), findsOneWidget);
     expect(find.text(guard.name), findsOneWidget);
-    expect(find.text('Añadir preparación'), findsOneWidget);
+    expect(find.text('Ver programa'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.ensureVisible(find.text('Añadir preparación'));
+    await tester.ensureVisible(find.text('Ver programa'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Ver programa'));
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.goals, hasLength(1));
+    expect(find.text('Cómo empezar'), findsOneWidget);
+    await tester.ensureVisible(find.text('Añadir preparación'));
     await tester.tap(find.text('Añadir preparación'));
     await tester.pumpAndSettle();
 
     expect(cubit.state.goals, hasLength(2));
-    expect(find.text('Añadir preparación'), findsNothing);
+    expect(find.text('Preparación creada'), findsOneWidget);
+    router.pop();
+    await tester.pumpAndSettle();
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Ver programa'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

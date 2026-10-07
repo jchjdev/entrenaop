@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**UI-009 / COM-002, 07/10/2026 · accesos y vistas de prueba cerrados:** Inicio
+conserva sus tarjetas fotográficas y el carrusel; una única tarjeta «+ Añadir
+preparación» visible abre el catálogo. «Herramientas» sustituye «Para tus
+pruebas» y se retira la tarjeta grande duplicada de Biblioteca. Catálogo →
+ficha básica → alta explícita → preparación → retorno con catálogo actualizado.
+Perfil permite probar Free/Pro con una selección local temporal por cuenta,
+habilitada solo en development y fuera de release. Free consulta los estados
+sin avance automático y no monta generadores; volver a Pro conserva los datos.
+Análisis limpio, 520 pruebas completas correctas y compilación web debug válida.
+Sin cambios en admin,
+paquetes compartidos, SQL, motores o producción. Pendiente revisión autenticada
+en dispositivo; no cierra el contenido editorial, cuotas, sesiones Free,
+precios, cobros ni derechos de servidor. El único siguiente bloque recomendado
+de negocio es cerrar las cuotas y qué contenido incluye cada nivel antes de
+implementar sus derechos reales; Evolución/Marcas sigue pendiente en el refresh.
+
 **UI-008, 07/10/2026 · Inicio/Mi plan cerrado:** Mi plan presenta programa en
 curso, semana y sesiones pendientes, con estados separados para preparaciones
 por configurar, pausadas y finalizadas. Abre el programa directamente, conserva

@@ -97,6 +97,10 @@ void main() {
           ),
         ),
         GoRoute(
+          path: '/plan/goal',
+          builder: (_, _) => const Scaffold(body: Text('Catálogo disponible')),
+        ),
+        GoRoute(
           path: '/plan/week/active/:id',
           builder: (_, _) => const Scaffold(body: Text('Retomada')),
         ),
@@ -127,6 +131,28 @@ void main() {
   }
 
   for (final width in [320.0, 1100.0]) {
+    testWidgets('el acceso único al catálogo conserva las cards a $width px', (
+      tester,
+    ) async {
+      await mount(tester, overview(), width: width, textScale: 2);
+      await tester.scrollUntilVisible(
+        find.text('Añadir preparación'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Añadir preparación'), findsOneWidget);
+      expect(find.text('Añadir'), findsNothing);
+      expect(find.text('Gestionar preparación →'), findsOneWidget);
+      expect(find.text('Herramientas'), findsOneWidget);
+      expect(find.text('Biblioteca de entrenamientos'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.text('Añadir preparación'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Añadir preparación'));
+      await tester.pumpAndSettle();
+      expect(find.text('Catálogo disponible'), findsOneWidget);
+    });
+
     testWidgets(
       'primer acceso conserva calendario y siguiente paso a $width px',
       (tester) async {

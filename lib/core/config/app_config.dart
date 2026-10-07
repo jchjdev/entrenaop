@@ -1,6 +1,17 @@
+import 'package:flutter/foundation.dart';
+
 enum AppEnvironment { development, production }
 
 abstract final class AppConfig {
+  static bool get planPreviewEnabled =>
+      allowsPlanPreview(environment: environment, release: kReleaseMode);
+
+  // Ni una preferencia local ni un define pueden habilitarlo en producción.
+  static bool allowsPlanPreview({
+    required AppEnvironment environment,
+    required bool release,
+  }) => environment == AppEnvironment.development && !release;
+
   static const _environmentName = String.fromEnvironment(
     'APP_ENV',
     defaultValue: 'development',

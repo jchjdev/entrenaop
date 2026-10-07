@@ -326,6 +326,31 @@ el que se evaluaron.
 
 ## Identidad, acceso y negocio
 
+### Simulación temporal Free/Pro · COM-002 · 07/10/2026
+
+`features/plan_preview` contiene exclusivamente la simulación de desarrollo:
+estado de vista → Cubit → store local por cuenta → scope de presentación.
+`AppConfig` solo la habilita en entorno development y fuera de release. La
+identidad de Auth enlaza/restaura la preferencia y la limpia de la vista al
+cerrar sesión; una escritura tardía no sustituye la selección de otra cuenta.
+Perfil muestra el selector. No cambia `UserEntity.role` ni escribe derechos
+comerciales en Supabase.
+
+Las rutas de generación usan una barrera de presentación con construcción
+diferida para evitar crear el generador en la simulación Free. El adaptador de
+`PreparationTrainingRepository` recibe una guarda opcional de simulación: lee
+los estados con las políticas RLS existentes, evita la RPC de avance automático
+y rechaza mutaciones del programa en esa vista. Inicio y agenda comparten ese
+adaptador. No se modifica el contrato del repositorio ni el cálculo deportivo.
+
+Esta guarda local sirve para probar UX; no autoriza ni protege el futuro
+producto de pago. Cuando se implementen derechos comerciales, el servidor
+deberá validar su vigencia en las operaciones sensibles. El selector temporal
+y su conexión se retirarán o sustituirán entonces. Sin migraciones, precios,
+checkout ni cambios de permisos o producción en este bloque.
+
+### Identidad y derechos reales
+
 - Supabase Auth representa la identidad.
 - El perfil contiene datos personales de la aplicación.
 - Los permisos administrativos se modelan por separado.
