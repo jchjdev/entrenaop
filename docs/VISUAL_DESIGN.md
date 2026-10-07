@@ -641,3 +641,31 @@ identidad con repositorios simulados. Las [20 capturas actuales](REFRESH_PLAN_20
 complementan el atlas inicial y no acreditan sesión autenticada en dispositivo.
 No cambia SQL, admin, paquetes compartidos o motores. Pendientes 4–7 abiertos;
 el único siguiente tramo UX es Evolución/Marcas e historial navegable.
+
+### Revisión abierta: colección, catálogo y futuro Pro · 07/10/2026
+
+Javier mantiene «Tus preparaciones» como colección de las elegidas, pero pide
+revisar cómo se descubre lo que aún no se ha añadido. Prefiere una tarjeta
+«+ Añadir» naranja translúcida frente al botón del encabezado, y plantea también
+mostrar preparaciones consultables antes de añadirlas. La composición definitiva
+está abierta: una tarjeta al final de un carrusel fuera de pantalla no resolvería
+el problema de descubrimiento. La propuesta en revisión combina una entrada
+siempre visible con un pequeño bloque de catálogo y su ficha pública.
+
+El título preferido para las calculadoras es «Herramientas». Se revisa la tarjeta
+grande de Biblioteca en Inicio por duplicar la pestaña central; se recomienda
+retirarla y conservar el destino propio y los favoritos opcionales. Esta revisión
+todavía no modifica las pantallas ni las imágenes de los cierres anteriores.
+
+Javier confirma la frontera: ritmos, PAEF/PAFAS, sesiones propias limitadas,
+ejercicios con límite por concretar y algunas sesiones de EntrenaOP son Free.
+Los programas con algoritmos de generación/adaptación son Pro. El número de
+sesiones propias (dos o tres), el alcance/límite de ejercicios y las sesiones
+incluidas quedan pendientes. La composición visual y la ficha informativa previa
+a seguir/iniciar una preparación todavía deben confirmarse.
+
+Pro requiere diseño comercial separado: oferta, beneficios, presentación, precios,
+contratación y derechos de servidor. Los algoritmos actuales no acreditan ese
+producto comercial. Las fichas y categorías distinguirán cobertura publicada de
+futura, sin presentar candados o cobros como operativos antes de implementar ese
+contrato. Reparto confirmado y propuestas pendientes en `PRODUCT.md`, COM-001.

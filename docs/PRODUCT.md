@@ -272,9 +272,41 @@ Una variante para academias podría incorporar organizaciones, grupos, alumnos y
 varios entrenadores. Es una dirección futura, no alcance del MVP. El modelo
 actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
-## Niveles comerciales
+## Free y Pro: reparto confirmado, diseño comercial pendiente
 
-### Free
+**Aclaración de Javier · 07/10/2026:** existen pruebas y algoritmos en desarrollo,
+pero Pro todavía no está diseñado ni implementado como producto comercial.
+No hay oferta cerrada, pantallas de contratación, precios, suscripciones o
+concesión de derechos Pro verificada. Javier concreta a continuación la frontera
+comercial: las herramientas y el entrenamiento manual limitado pertenecen a
+Free; los programas que generan/adaptan entrenamientos con los algoritmos
+pertenecen a Pro. Este reparto está confirmado, pero no describe restricciones
+actuales implementadas en servidor. Tener un algoritmo implementado no convierte
+su recorrido en una función comercial Pro ya disponible.
+
+### Reparto confirmado por Javier · COM-001
+
+| Capacidad | Nivel acordado | Límite o pendiente |
+| --- | --- | --- |
+| Herramientas de ritmos | Free | No se convierten en Pro por utilizar cálculos. |
+| Calculadora PAEF/PAFAS | Free | Conserva su acceso gratuito. |
+| Crear sesiones propias | Free con límite | Javier plantea dos o tres; la cifra definitiva está pendiente. |
+| Ejercicios | Free con límite pendiente | Falta concretar cantidad y qué operación o colección limita. |
+| Algunas sesiones de EntrenaOP | Free | Falta elegir las sesiones incluidas y el criterio de acceso. |
+| Programas con algoritmos de generación/adaptación | Pro | Generación y continuidad adaptativa requieren derechos Pro de servidor cuando se implemente el producto comercial. |
+
+La frontera utiliza «programa adaptativo» como concepto de producto: no implica
+cobrar por cualquier cálculo matemático de una herramienta. No se introducen
+ahora cuotas, candados funcionales o cobros. Precios, contratación, derechos,
+cancelación y experiencias sin Pro siguen pendientes de diseño e implementación.
+
+Las listas siguientes conservan detalles del borrador anterior. COM-001 tiene
+prioridad: los puntos que no aparecen en el reparto confirmado, como asignar
+comercialmente seguimiento de marcas, todavía no se consideran aprobados.
+Los contratos vigentes de datos, autoría, conservación del historial y seguridad
+se mantienen; aclarar el nivel comercial no elimina esas garantías.
+
+### Borrador anterior: Free
 
 - Biblioteca y sesiones públicas no adaptativas.
 - Creación de rutinas propias.
@@ -295,7 +327,7 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 - Historial conservado aunque el usuario deje de pagar.
 - Sin progresión adaptativa personalizada.
 
-### Pro (nombre provisional)
+### Borrador anterior: Pro (nombre provisional)
 
 - Planes específicos de oposiciones.
 - Progresión adaptativa automática.
@@ -304,7 +336,7 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 - Seguimiento de marcas y comparación con baremos.
 - Sin intervención diaria de un entrenador.
 
-### Coaching (nombre provisional)
+### Borrador anterior: Coaching (nombre provisional)
 
 - Javier asigna y modifica entrenamientos.
 - Acceso detallado al progreso del cliente.
@@ -319,6 +351,36 @@ describen mejor el beneficio que etiquetas genéricas como `Premium` o `VIP`,
 pero todavía no son nombres definitivos.
 
 ## Alcance de la primera versión validable
+
+### Descubrimiento de preparaciones: revisión abierta · 07/10/2026
+
+Javier señala que «Tus preparaciones» le gusta como colección personal, pero el
+botón «Añadir» no permite descubrir fácilmente el resto del catálogo ni explicar
+el futuro valor comercial de la adaptación. Plantea una tarjeta con «+ Añadir»,
+superficie naranja translúcida, o mostrar preparaciones que se puedan explorar
+antes de incorporarlas a la colección personal. La composición queda pendiente
+de confirmar. COM-001 fija la frontera comercial de los programas adaptativos,
+pero no autoriza presentarla como ya implementada ni publicar programas no
+verificados.
+
+La recomendación en revisión es combinar la colección personal con una entrada
+de descubrimiento visible y fichas de catálogo consultables antes de seguir una
+preparación. El futuro producto comercial explicaría el beneficio del programa
+adaptativo en esa ficha, antes de contratar. La consulta informativa del catálogo,
+guardar una preparación como interés y la oferta comercial de las mediciones
+todavía deben diseñarse; la adaptación de entrenamiento queda reservada a Pro.
+
+El posicionamiento quiere representar a opositores y sus pruebas físicas,
+conservando los programas militares actuales. La cobertura real no cambia por
+mostrar categorías: CNP sigue sujeto a publicación/verificación y Guardia Civil
+no se presenta como un programa ya disponible por aparecer como ejemplo de UX.
+La incorporación de nuevos cuerpos requiere su propio contenido y comprobación.
+
+Javier prefiere el título «Herramientas» en Inicio. Cuestiona la tarjeta grande de
+Biblioteca porque esa sección ya tiene su pestaña propia; retirarla es una
+recomendación de esta revisión, todavía no una modificación aplicada.
+
+### Recorrido actual
 
 Un usuario puede seguir varias preparaciones verificadas de forma simultánea.
 Inicio enseña solo las que ha añadido; el catálogo completo se consulta aparte.
