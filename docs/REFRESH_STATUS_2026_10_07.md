@@ -121,3 +121,31 @@ No cambia admin, paquetes compartidos, SQL, motores ni producción.
 El único siguiente bloque UX recomendado es Evolución/Marcas: destino de
 resultados por preparación, filtros e historial de sesiones antiguas. Biblioteca,
 cuenta, pulido transversal/admin y verificación autenticada real siguen pendientes.
+
+## Continuación acotada tras la reversión · UI-010 · 07/10/2026
+
+Javier plantea retomar este refresh evitando las pantallas y decisiones que
+llevaron a mezclarlo con Free/Pro. La lista inicial de pendientes es histórica:
+Inicio/Mi plan ya se cerró y sigue conservado en la base restaurada por COM-003.
+No se vuelve a ejecutar esa lista como si todo siguiera pendiente.
+
+El siguiente bloque recomendado sigue siendo Evolución/Marcas. La inspección
+actual confirma que el acceso «Marcas» lleva a `/plan/goal/:goalId`, es decir,
+gestión de preparación, y que el historial de entrenamientos consulta como
+máximo 30 registros. Corregir sus destinos y permitir consultar resultados
+anteriores sigue pendiente; no se modifica su código en esta delimitación.
+
+Para ese tramo, el alcance se limita a resultados e historial: conservar tema,
+contratos de medición y navegación existentes, con filtros y retornos que no
+pierdan estado. Inicio, Mi plan, tarjetas fotográficas, catálogo y preparación
+actuales se mantienen como referencia, sin cambio comercial. Si alguna mejora
+exige modificar esas áreas, se explicará primero su necesidad y el nuevo
+alcance; no se ampliará el bloque por proximidad de una idea.
+
+La propuesta de descubrimiento y ficha conserva ideas para el trabajo comercial
+en otro chat. No autoriza recuperar la composición duplicada o las tarjetas
+genéricas descartadas en UI-009, ni la simulación retirada COM-002. Derechos de
+cuenta, pagos y cuotas siguen pendientes; los motores mantienen su tarea aparte.
+Cada cierre se basará en diff, recorridos probados e imágenes de widgets reales,
+indicando si usa datos simulados o una cuenta autenticada. Se guarda únicamente
+el alcance comprobado, sin presentar el refresh completo como terminado.

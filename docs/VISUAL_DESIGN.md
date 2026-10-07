@@ -654,6 +654,22 @@ Restauración contrastada con `82d74df`: código y pruebas idénticos, análisis
 limpio, 505 pruebas completas correctas y compilación web debug válida.
 No se modifica Supabase ni producción.
 
+### Límite para continuar el refresh · UI-010 · 07/10/2026
+
+Javier plantea continuar por los pendientes de fiabilidad y recorridos sin
+volver a mezclar el refresh con Free/Pro. Inicio/Mi plan ya está cerrado y la
+base restaurada mantiene sus tarjetas fotográficas y catálogo actuales.
+El siguiente bloque recomendado es Evolución/Marcas; su implementación sigue
+pendiente. Las mejoras comerciales de descubrimiento y ficha se desarrollarán
+aparte, con derechos reales de cuenta y recorridos definidos antes de adaptar
+las vistas. Las composiciones rechazadas en UI-009 y el selector retirado en
+COM-002 no se recuperan como solución del refresh.
+
+Los cambios se revisarán por un recorrido concreto y con imágenes del código
+real, identificando datos simulados y límites de verificación. Una necesidad
+de cambiar las áreas apartadas requiere explicar primero la ampliación del
+alcance. Esta delimitación solo modifica documentación.
+
 ### Revisión abierta: colección, catálogo y futuro Pro · 07/10/2026
 
 Javier mantiene «Tus preparaciones» como colección de las elegidas, pero pide

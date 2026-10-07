@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**UI-010, 07/10/2026 · refresh separado del negocio:** la base sigue siendo la
+restaurada en COM-003. Inicio/Mi plan ya están cerrados; no se reabre su diseño
+ni el de las tarjetas, catálogo o preparaciones para introducir Free/Pro.
+El único siguiente tramo UX recomendado es Evolución/Marcas: destino de
+resultados, filtros e historial antiguo. Descubrimiento comercial y derechos
+de cuenta se abordarán aparte. Esta delimitación es documental, no implementa
+ese siguiente tramo ni acredita una nueva prueba autenticada.
+
 **COM-003, 07/10/2026 · reversión del último bloque:** se retira `308ae18` y se
 recuperan código y pruebas de `82d74df`, conservando el historial de Git. No hay
 selector Free/Pro, guardas de simulación ni ficha básica añadida por ese bloque;
