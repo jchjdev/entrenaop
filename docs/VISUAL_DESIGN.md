@@ -669,3 +669,30 @@ contratación y derechos de servidor. Los algoritmos actuales no acreditan ese
 producto comercial. Las fichas y categorías distinguirán cobertura publicada de
 futura, sin presentar candados o cobros como operativos antes de implementar ese
 contrato. Reparto confirmado y propuestas pendientes en `PRODUCT.md`, COM-001.
+
+### Corrección de prioridad: descubrir otro programa con acceso completo · 07/10/2026
+
+Javier acepta la dirección visual de la primera maqueta, pero aclara que la
+vista a resolver primero es la actual con programa activo y acceso completo,
+futuro Pro. La futura entrada de Free no sustituye ese trabajo. El usuario debe
+ver qué otros programas hay, entender por qué le interesan y empezar su
+preparación desde una ficha, conservando sus preparaciones actuales.
+
+La nueva propuesta parte de Mejora FAS en curso, conserva la tarjeta naranja
+«+ Añadir preparación» y muestra «Explora programas» con propósito y acción
+antes del alta. Catálogo y ficha ofrecen descubrir/preparar para quien ya tiene
+acceso; el programa actual aparece como tal y abre su recorrido. No se repite
+un mensaje de compra de Pro. Se descarta el tono defensivo «Free sigue siendo
+útil» en favor de comunicar capacidades y beneficios concretos.
+
+La interacción ilustrativa permite consultar otro programa, añadirlo sin pausar
+el actual, revisar sus datos y ver el cambio explícito de programa activo. Respeta
+STR-026/027: varias preparaciones guardadas y un generador. Al confirmar otro,
+el anterior queda pausado, conserva datos/resultados y sus sesiones automáticas
+pendientes sin empezar salen de la agenda. Los datos incompletos o una ejecución
+en curso impiden activar. Retomar necesita revisión con fecha/contexto actuales.
+
+La composición revisada se entrega para valorar antes de implementar. No cambia
+Flutter, rutas, motores, permisos o SQL; la simulación usa datos de ejemplo y
+no acredita una cuenta con suscripción ni una propuesta real del servidor.
+UI-009 y el recorrido responsable quedan registrados en `PRODUCT.md`.

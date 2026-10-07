@@ -358,15 +358,20 @@ Javier señala que «Tus preparaciones» le gusta como colección personal, pero
 botón «Añadir» no permite descubrir fácilmente el resto del catálogo ni explicar
 el futuro valor comercial de la adaptación. Plantea una tarjeta con «+ Añadir»,
 superficie naranja translúcida, o mostrar preparaciones que se puedan explorar
-antes de incorporarlas a la colección personal. La composición queda pendiente
-de confirmar. COM-001 fija la frontera comercial de los programas adaptativos,
+antes de incorporarlas a la colección personal. Javier acepta la dirección de
+la primera maqueta y pide concretarla para la vista actual con acceso completo,
+futuro Pro; ese recorrido tiene prioridad sobre la futura entrada de Free.
+La composición Pro revisada sigue pendiente de confirmación. COM-001 fija la
+frontera comercial de los programas adaptativos,
 pero no autoriza presentarla como ya implementada ni publicar programas no
 verificados.
 
 La recomendación en revisión es combinar la colección personal con una entrada
 de descubrimiento visible y fichas de catálogo consultables antes de seguir una
 preparación. El futuro producto comercial explicaría el beneficio del programa
-adaptativo en esa ficha, antes de contratar. La consulta informativa del catálogo,
+adaptativo en esa ficha. Para quien ya dispone de acceso, la acción debe llevar
+a preparar o empezar el programa, sin volver a ofrecer contratar Pro.
+La consulta informativa del catálogo,
 guardar una preparación como interés y la oferta comercial de las mediciones
 todavía deben diseñarse; la adaptación de entrenamiento queda reservada a Pro.
 
@@ -380,9 +385,41 @@ Javier prefiere el título «Herramientas» en Inicio. Cuestiona la tarjeta gran
 Biblioteca porque esa sección ya tiene su pestaña propia; retirarla es una
 recomendación de esta revisión, todavía no una modificación aplicada.
 
+#### Recorrido prioritario con acceso completo · UI-009
+
+La pregunta que debe resolver Inicio es «¿qué otro programa puedo preparar y
+por qué me interesa?». «Tus preparaciones» conserva las elegidas; «Explora
+programas» muestra contenido consultable antes de añadirlo, con propósito y
+acción de descubrimiento. Una ficha explica qué prepara, qué datos necesita y
+cómo encaja con disponibilidad/material y resultados. No se atribuyen mejoras
+medidas, duración fija o cobertura deportiva a programas sin comprobarlos.
+
+El recorrido propuesto es Inicio → catálogo → ficha → preparar el programa →
+revisar datos/propuesta → activar. Consultar la ficha no modifica la colección;
+añadir conserva el programa que ya está en curso. Los programas ya elegidos
+muestran su estado y abren su recorrido existente; el catálogo no los presenta
+como novedades sin empezar. La presentación comercial evita justificar Free
+con frases defensivas: muestra sus capacidades y comunica el beneficio concreto
+de la adaptación cuando corresponde vender Pro.
+
+Se mantiene el contrato vigente de STR-026/027: se guardan varias preparaciones
+y solo una genera entrenamientos. Al activar otra, el usuario debe entender
+cuál se pausa y cuál se activa. Se conservan marcas, contexto y resultados del
+programa anterior; se retiran de la agenda sus sesiones automáticas pendientes
+sin empezar, sin borrar su trazabilidad ni afectar a las personales. Una
+ejecución en curso bloquea el cambio hasta resolverla. La activación inválida no
+puede dejar pausado el programa anterior; ese contrato pertenece al servidor.
+Retomar revisa fecha y situación actuales, en lugar de ejecutar una semana vieja.
+
+Esta corrección se representa en una propuesta visual con datos de ejemplo,
+sin cambiar motores, navegación Flutter, permisos ni SQL. La ficha informativa
+previa al alta aún requiere implementación y contenido editorial verificable;
+la maqueta no convierte sus textos en metadatos ya publicados.
+
 ### Recorrido actual
 
-Un usuario puede seguir varias preparaciones verificadas de forma simultánea.
+Un usuario puede guardar y seguir varias preparaciones verificadas. Solo una
+genera entrenamientos a la vez, según STR-026/027.
 Inicio enseña solo las que ha añadido; el catálogo completo se consulta aparte.
 Las sesiones personales no dependen de una oposición concreta. La agenda
 semanal ya reúne sesiones personales y de biblioteca; más adelante integrará
