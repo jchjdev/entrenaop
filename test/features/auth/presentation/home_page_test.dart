@@ -66,18 +66,20 @@ void main() {
     double width = 360,
     double textScale = 1,
     _Favorites? favorites,
+    _Overview? source,
   }) async {
     tester.view.physicalSize = Size(width, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final cubit = DashboardCubit(getOverview: _Overview(data));
+    final cubit = DashboardCubit(getOverview: source ?? _Overview(data));
     addTearDown(cubit.close);
     await cubit.load();
     final router = GoRouter(
+      initialLocation: '/home',
       routes: [
         GoRoute(
-          path: '/',
+          path: '/home',
           builder: (_, _) => BlocProvider.value(
             value: cubit,
             child: HomePage(
@@ -217,13 +219,32 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+  testWidgets('volver del siguiente paso refresca Inicio una sola vez', (
+    tester,
+  ) async {
+    final data = overview(needsReview: true);
+    final source = _Overview(data);
+    final router = await mount(tester, data, source: source);
+    await tester.ensureVisible(find.text('Revisar lo pendiente'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Revisar lo pendiente'));
+    await tester.pumpAndSettle();
+    expect(source.calls, 1);
+    router.pop();
+    await tester.pumpAndSettle();
+    expect(source.calls, 2);
+  });
 }
 
 class _Overview implements GetPreparationOverviewUseCase {
-  const _Overview(this.overview);
+  _Overview(this.overview);
   final PreparationOverview overview;
+  int calls = 0;
   @override
-  Future<PreparationOverview> call() async => overview;
+  Future<PreparationOverview> call() async {
+    calls++;
+    return overview;
+  }
 }
 
 class _Favorites implements HomeFavoritesRepository {

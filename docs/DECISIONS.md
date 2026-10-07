@@ -527,8 +527,12 @@ ni sustituir el código actual por versiones anteriores. Estado y cierres en
 
 Quedan comprobados el refresco al regresar y el guardado editorial retenido.
 Javier reafirma `go_router` para pantallas y `Navigator` para modales; se unifican
-los retornos restantes del editor/carrera. El siguiente tramo UX es Inicio/Mi
-plan, sin trasladar ni cambiar reglas deportivas.
+los retornos restantes del editor/carrera. Javier pide continuar y se cierra
+Inicio/Mi plan con programa en curso, semana y pendientes, manteniendo calendario,
+preparaciones y Biblioteca. El resumen distingue guardar una preparación de
+iniciar su programa y no traslada reglas deportivas a Flutter. Alcance, pruebas
+e imágenes actuales en `docs/REFRESH_PLAN_2026_10_07.md`. El siguiente tramo UX
+es Evolución/Marcas, filtros e historial antiguo.
 
 ## Regla para nuevas decisiones
 

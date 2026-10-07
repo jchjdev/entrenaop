@@ -8,6 +8,8 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.d
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:entrenaop/features/dashboard/presentation/home_day_selection.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_favorites.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_next_step_card.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_status_label.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_tools_section.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
@@ -386,7 +388,7 @@ class _DayHero extends StatelessWidget {
         (program?.needsReview == true ||
             (item == null &&
                 (overview.goals.isEmpty || program?.isCurrent != true)))) {
-      return _NextStepCard(
+      return PreparationNextStepCard(
         program: program,
         nextStep: overview.nextStep,
         goalNeedingAssessment: overview.goalNeedingAssessment,
@@ -423,7 +425,7 @@ class _DayHero extends StatelessWidget {
         : skipped
         ? 'Esta sesión se ha omitido.'
         : item.preparationGoalId != null
-        ? 'Sesión de tu programa de preparación'
+        ? 'Sesión de ${overview.programs.where((p) => p.goalId == item.preparationGoalId).firstOrNull?.name ?? 'tu preparación'}'
         : 'Sesión que has añadido a tu semana';
     final action = item == null || skipped
         ? 'Ver mi semana'
@@ -579,15 +581,7 @@ class _PreparationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = progress == null || progress!.status == 'draft'
-        ? 'Por configurar'
-        : progress!.isPaused
-        ? 'Pausada'
-        : progress!.needsReview
-        ? 'Revisión pendiente'
-        : progress!.status == 'complete'
-        ? 'Finalizada'
-        : 'En curso';
+    final status = preparationStatusLabel(progress);
     return EntrenaCard(
       tone: EntrenaCardTone.progress,
       onTap: goal.id == null ? null : () => onOpen('/plan/goal/${goal.id}'),
@@ -673,133 +667,3 @@ String _homeMonth(DateTime date) =>
     '${_homeMonths[date.month - 1]} ${date.year}';
 String _homeLongDay(DateTime date) =>
     '${_homeWeekdays[date.weekday - 1]} ${date.day} de ${_homeMonths[date.month - 1]}';
-
-class _NextStepCard extends StatelessWidget {
-  const _NextStepCard({
-    required this.nextStep,
-    this.goalNeedingAssessment,
-    this.program,
-  });
-  final AdaptiveProgramProgress? program;
-
-  final PreparationNextStep nextStep;
-  final PreparationGoal? goalNeedingAssessment;
-
-  String _assessmentRoute(PreparationGoal goal) {
-    final segment = switch (goal.programId) {
-      PreparationProgramIds.armedForcesTroopEntry => 'troop-assessment',
-      PreparationProgramIds.fasPeriodicAssessment => 'periodic-assessment',
-      _ => 'program-assessment',
-    };
-    return '/plan/goal/${goal.id}/$segment';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final (:icon, :title, :description, :action, :route) = switch (nextStep) {
-      PreparationNextStep.adaptiveProgram => (
-        icon: program!.needsReview
-            ? Icons.info_outline
-            : Icons.play_circle_outline,
-        title: program!.isPaused
-            ? 'Tu programa está pausado'
-            : program!.needsReview
-            ? 'Tu programa necesita un dato'
-            : 'Tu programa está en marcha',
-        description: program!.message,
-        action: program!.isPaused
-            ? 'Retomar mi programa'
-            : program!.needsReview
-            ? 'Revisar lo pendiente'
-            : 'Ver mis entrenamientos',
-        route: program!.isPaused || program!.needsReview
-            ? '/plan/goal/${program!.goalId}/training'
-            : '/plan/week',
-      ),
-      PreparationNextStep.preparationGoal => (
-        icon: Icons.flag_outlined,
-        title: 'Define qué pruebas estás preparando',
-        description:
-            'Añade una o varias preparaciones del catálogo oficial verificado.',
-        action: 'Explorar preparaciones',
-        route: '/plan/goal',
-      ),
-      PreparationNextStep.assessment => (
-        icon: Icons.monitor_heart_outlined,
-        title: 'Registra las marcas de ${goalNeedingAssessment!.program.name}',
-        description: 'Estas pruebas y su baremo pertenecen a esa preparación.',
-        action: 'Registrar marcas',
-        route: _assessmentRoute(goalNeedingAssessment!),
-      ),
-      PreparationNextStep.trainingPreferences => (
-        icon: Icons.tune_rounded,
-        title: 'Cuéntanos con qué tiempo cuentas',
-        description: 'Tu evaluación ya está guardada. Ahora falta conocer tu disponibilidad y material.',
-        action: 'Completar disponibilidad',
-        route: '/profile/preferences',
-      ),
-      PreparationNextStep.professionalReview => (
-        icon: Icons.health_and_safety_outlined,
-        title: 'La planificación automática está bloqueada',
-        description: 'Has indicado una limitación que debe revisarse antes de prescribir entrenamiento.',
-        action: 'Revisar respuesta',
-        route: '/profile/preferences',
-      ),
-      PreparationNextStep.awaitingValidatedPlan => (
-        icon: Icons.fact_check_outlined,
-        title: 'Tu contexto básico está completo',
-        description: 'Entra en tu preparación para completar los datos específicos y empezar tu programa.',
-        action: 'Ver preparaciones',
-        route: '/plan/goal',
-      ),
-    };
-
-    return EntrenaCard(
-      tone: EntrenaCardTone.accent,
-      padding: const EdgeInsets.all(22),
-      child: Wrap(
-        spacing: 20,
-        runSpacing: 18,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          Icon(icon, size: 38, color: const Color(0xFFFF8A50)),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 610),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  description,
-                  style: const TextStyle(color: Colors.white70, height: 1.4),
-                ),
-              ],
-            ),
-          ),
-          FilledButton(
-            onPressed: () async {
-              if (nextStep == PreparationNextStep.assessment ||
-                  nextStep == PreparationNextStep.preparationGoal) {
-                await context.push(route);
-                if (context.mounted) {
-                  context.read<DashboardCubit>().load();
-                }
-              } else {
-                await context.push(route);
-                if (context.mounted) context.read<DashboardCubit>().load();
-              }
-            },
-            child: Text(action),
-          ),
-        ],
-      ),
-    );
-  }
-}

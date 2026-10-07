@@ -247,8 +247,8 @@ formulario; en móvil conserva una única columna y prioriza la tarea.
 Plan, agenda, biblioteca, edición y ejecución de sesiones, evaluación,
 evolución y perfil heredan ahora las superficies y controles comunes. Se han
 retirado excepciones neutras locales, sin sustituir indiscriminadamente los
-colores de éxito, aviso, error o intensidad. Mi plan prioriza la semana con una
-única tarjeta acentuada; el perfil y las preparaciones usan superficies de
+colores de éxito, aviso, error o intensidad. Mi plan prioriza el programa con una
+tarjeta acentuada y presenta la semana después; el perfil y las preparaciones usan superficies de
 progreso.
 
 Javier confirma que el admin debe compartir la identidad. Su acceso incluye el
@@ -302,7 +302,8 @@ historiales de STR-026/027/028; esta reorganización no cambia esas reglas.
 No se incorpora un carrusel de herramientas ni rotación automática. La quinta
 pestaña confirmada posteriormente en UI-003 es Biblioteca, no Herramientas.
 El bloque de Inicio conserva un acceso estable a las herramientas y a la
-Biblioteca; Mi plan mantiene también enlaces al contenido disponible y personal.
+Biblioteca. Desde el cierre de Inicio/Mi plan de UI-008, el contenido disponible
+y personal se gestiona en Biblioteca, sin repetir sus entradas en Mi plan.
 
 Los favoritos permiten elegir hasta cuatro destinos y ordenarlos. No
 reorganizan los bloques de Inicio ni son el único acceso a ninguna función.
@@ -618,3 +619,25 @@ Pruebas con repositorios simulados, incluidos fallo/reintento de cada formulario
 doble envío/atrás, descarte y revisión cancelados, recarga posterior fallida y
 pantalla estrecha. Sigue pendiente el recorrido autenticado en dispositivo.
 El siguiente tramo UX es Inicio/Mi plan; los pendientes 3–7 siguen abiertos.
+
+### Inicio/Mi plan (UI-008, 07/10/2026)
+
+Se cierra el pendiente 3: la raíz de Mi plan prioriza programa en curso, semana
+natural y pendientes. Los borradores, pausas y programas finalizados conservan
+su estado y acceso, sin anunciarse como programa en curso. Las preparaciones
+se gestionan desde sus tarjetas; un programa activo/revisión se abre directamente,
+sin pasar por el detalle de gestión. Biblioteca conserva sesiones personales y
+contenido público, y Mi semana conserva el alta de entrenamientos extra.
+
+Inicio conserva su orden, calendario seleccionado y favoritos. Ambas raíces
+comparten la tarjeta de siguiente paso y los nombres de estado. La tarjeta no
+recarga por su cuenta al volver: cada raíz conserva una única frontera de
+refresco. Las sesiones se consultan por fecha/ID y las ejecuciones se retoman por
+ID; el resumen no inicia ni genera una prescripción de Flutter.
+
+Análisis limpio, 505 pruebas de raíz y ocho recorridos de captura correctos.
+Texto 2× comprobado a 320 × 480 y 1100 × 480; router real, errores y cambios de
+identidad con repositorios simulados. Las [20 capturas actuales](REFRESH_PLAN_2026_10_07.md)
+complementan el atlas inicial y no acreditan sesión autenticada en dispositivo.
+No cambia SQL, admin, paquetes compartidos o motores. Pendientes 4–7 abiertos;
+el único siguiente tramo UX es Evolución/Marcas e historial navegable.

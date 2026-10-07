@@ -84,3 +84,40 @@ clonación y accesibilidad. Sin cambios en SQL, motores o producción.
 Quedan los demás bloques del refresh. El único siguiente tramo UX recomendado
 es Inicio/Mi plan con programa en curso, semana y pendientes, retirando accesos
 redundantes sin sustituir Biblioteca ni los motores.
+
+## Cierre: Inicio/Mi plan · 07/10/2026
+
+Mi plan deja de ser un menú de Biblioteca y muestra el programa realmente en
+curso (incluida revisión pendiente), la semana natural con recuentos de agenda,
+las tres primeras sesiones pendientes y el acceso a la semana completa. Retomar
+abre la ejecución existente; ver una sesión abre su fecha/ID en agenda y no la
+inicia desde una plantilla. Las otras preparaciones mantienen sus estados de
+borrador, pausa y finalización, acceso a gestión e historial y configuración
+propia. Se conserva disponibilidad/material y se retiran las entradas duplicadas
+a Biblioteca y sesiones personales de esta raíz; Biblioteca sigue siendo el
+tercer destino y la agenda conserva los entrenamientos extra.
+
+Inicio conserva calendario, selección diaria, preparaciones, herramientas y
+favoritos. Nombra la preparación de la sesión y comparte la tarjeta de siguiente
+paso y los estados con Mi plan. Volver de esa tarjeta usa una única recarga desde
+la frontera de navegación, sin el segundo callback que aún duplicaba la consulta.
+No se cambian los criterios de siguiente paso ni las reglas deportivas.
+
+Mi plan reutiliza el caso de uso/Cubit de resumen existente, con instancia por
+cuenta. Una entrada directa a una ruta hija no carga el resumen de la raíz;
+tras visitarla conserva la instancia y el scroll al salir y volver. Renovar la
+sesión de la misma cuenta conserva la instancia; cambiar identidad la sustituye
+y descarta una respuesta antigua pendiente. Carga, error persistente y reintento
+conservan la consulta anterior.
+
+Validación: `flutter analyze` limpio, 505 pruebas completas de raíz correctas y
+ocho recorridos de captura correctos. Regresiones con router real para entrada
+directa, retorno, identidad, cargas tardías, fallo/reintento, evaluación Tropa/FAS/
+genérica, agenda manual y texto 2× a 320/1100 px. Las 20 imágenes proceden de
+widgets actuales con datos simulados y fuentes legibles del entorno de captura;
+no son una prueba autenticada en dispositivo. [Imágenes y recorrido](REFRESH_PLAN_2026_10_07.md).
+No cambia admin, paquetes compartidos, SQL, motores ni producción.
+
+El único siguiente bloque UX recomendado es Evolución/Marcas: destino de
+resultados por preparación, filtros e historial de sesiones antiguas. Biblioteca,
+cuenta, pulido transversal/admin y verificación autenticada real siguen pendientes.

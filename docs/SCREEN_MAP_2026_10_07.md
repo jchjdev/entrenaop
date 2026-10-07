@@ -8,6 +8,9 @@ Los avances posteriores de UI-008 se contrastan en
 [REFRESH_STATUS_2026_10_07.md](REFRESH_STATUS_2026_10_07.md). Estas imágenes
 conservan su revisión de origen; no representan los estados de error/guardado
 añadidos después ni sustituyen la evidencia del código y las pruebas actuales.
+La reorganización posterior de Inicio/Mi plan dispone de sus propias
+[20 capturas y recorrido verificado](REFRESH_PLAN_2026_10_07.md); el atlas inicial
+mantiene la versión de origen y no debe utilizarse para describir esa raíz actual.
 
 ## Evidencia y límites de las imágenes
 

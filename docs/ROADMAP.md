@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**UI-008, 07/10/2026 · Inicio/Mi plan cerrado:** Mi plan presenta programa en
+curso, semana y sesiones pendientes, con estados separados para preparaciones
+por configurar, pausadas y finalizadas. Abre el programa directamente, conserva
+el vínculo de la sesión al consultar/retomar y retira accesos duplicados a
+Biblioteca. Inicio comparte estados/siguiente paso y conserva su calendario.
+El resumen de Mi plan se carga al visitar la raíz, se actualiza al regresar y
+se renueva al cambiar de cuenta, conservándolo al renovar la misma sesión.
+Análisis limpio, 505 pruebas completas de raíz y ocho capturas verificadas;
+20 imágenes de widgets actuales con datos simulados. Sin cambios en admin,
+SQL, motores o producción; pendiente la revisión autenticada en dispositivo.
+Detalle en [REFRESH_PLAN_2026_10_07.md](REFRESH_PLAN_2026_10_07.md).
+El único siguiente tramo UX es Evolución/Marcas, filtros e historial antiguo.
+
 **UI-008, 07/10/2026 · guardado editorial cerrado:** pruebas, reglas, tramos,
 mínimos, importación, clonación y vinculación de estrategia conservan los
 formularios hasta persistir y permiten reintentar sin perder campos. Se mantienen

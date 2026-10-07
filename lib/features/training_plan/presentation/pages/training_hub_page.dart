@@ -1,279 +1,478 @@
+import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
+import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
+import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
+import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:entrenaop/features/dashboard/presentation/home_day_selection.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_next_step_card.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_status_label.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
+import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
-/// Centro de organización del entrenamiento.
-///
-/// Aquí viven las sesiones y la planificación. La configuración personal se
-/// mantiene accesible, pero deja de ocupar toda la pestaña «Mi plan».
+/// Una URL directa de preparación no necesita cargar el resumen de su raíz.
+/// Tras visitarla se conserva el Cubit al abrir sus rutas hijas.
+class TrainingHubEntry extends StatefulWidget {
+  const TrainingHubEntry({required this.createCubit, super.key});
+  final DashboardCubit Function() createCubit;
+
+  @override
+  State<TrainingHubEntry> createState() => _TrainingHubEntryState();
+}
+
+class _TrainingHubEntryState extends State<TrainingHubEntry> {
+  GoRouter? _router;
+  bool _visited = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.of(context);
+    if (_router == router) return;
+    _router?.routerDelegate.removeListener(_routeChanged);
+    _router = router;
+    _visited = _visited || router.state.uri.path == '/plan';
+    router.routerDelegate.addListener(_routeChanged);
+  }
+
+  void _routeChanged() {
+    if (!_visited && _router?.state.uri.path == '/plan') {
+      setState(() => _visited = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_routeChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _visited
+      ? BlocProvider(
+          create: (_) => widget.createCubit(),
+          child: const TrainingHubPage(),
+        )
+      : const SizedBox.shrink();
+}
+
+/// Resumen del programa y de sesiones ya asignadas; no prescribe entrenamiento.
 class TrainingHubPage extends StatelessWidget {
   const TrainingHubPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => SectionRefreshBoundary(
+    location: '/plan',
+    onVisible: context.read<DashboardCubit>().load,
+    child: Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         title: const Text('Mi plan'),
+        actions: [
+          IconButton(
+            tooltip: 'Actualizar mi plan',
+            onPressed: context.read<DashboardCubit>().load,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 920),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+        child: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            final overview = state.overview;
+            if (overview == null && state.status != DashboardStatus.failure) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (overview == null) {
+              return Center(
+                child: _LoadFailure(
+                  onRetry: context.read<DashboardCubit>().load,
+                ),
+              );
+            }
+            return _PlanContent(overview: overview, state: state);
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+class _PlanContent extends StatelessWidget {
+  const _PlanContent({required this.overview, required this.state});
+  final PreparationOverview overview;
+  final DashboardState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = overview.programs.where((p) => p.isCurrent).firstOrNull;
+    final otherGoals = overview.goals
+        .where((g) => g.id != current?.goalId)
+        .toList();
+    final pending =
+        overview.weeklyWorkouts
+            .where(
+              (w) =>
+                  w.status == ScheduledWorkoutStatus.planned ||
+                  w.status == ScheduledWorkoutStatus.inProgress,
+            )
+            .toList()
+          ..sort((a, b) {
+            // Retomar una ejecución tiene prioridad visual, sin cambiar su pauta.
+            if (a.status != b.status) {
+              return a.status == ScheduledWorkoutStatus.inProgress ? -1 : 1;
+            }
+            final date = a.scheduledDate.compareTo(b.scheduledDate);
+            if (date != 0) return date;
+            final time = (a.scheduledTime ?? '99:99').compareTo(
+              b.scheduledTime ?? '99:99',
+            );
+            return time != 0 ? time : a.id.compareTo(b.id);
+          });
+    final completed = overview.weeklyWorkouts
+        .where((w) => w.status == ScheduledWorkoutStatus.completed)
+        .length;
+    final dateFormat = DateFormat('dd/MM');
+
+    return RefreshIndicator(
+      onRefresh: context.read<DashboardCubit>().load,
+      child: ListView(
+        key: const PageStorageKey('training-hub-scroll'),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 920),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (state.status == DashboardStatus.loading)
+                    const LinearProgressIndicator(minHeight: 2),
+                  if (state.status == DashboardStatus.failure) ...[
+                    _LoadFailure(onRetry: context.read<DashboardCubit>().load),
+                    const SizedBox(height: 16),
+                  ],
+                  if (current != null)
+                    _CurrentProgramCard(
+                      program: current,
+                      goal: overview.goals
+                          .where((g) => g.id == current.goalId)
+                          .firstOrNull,
+                    )
+                  else ...[
                     const Text(
-                      'Tu entrenamiento',
+                      'No hay programa en curso',
                       style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 26,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 7),
-                    const Text(
-                      'Sigue tus entrenamientos y registra cómo te van. Tu programa adapta las próximas sesiones con tus resultados.',
-                      style: TextStyle(color: Colors.white60, fontSize: 16),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Una preparación guardada puede estar pendiente de configurar, pausada o finalizada.',
+                      style: TextStyle(color: context.visuals.textMuted),
                     ),
-                    const SizedBox(height: 22),
-                    _WeeklyScheduleCard(
-                      onOpen: () => context.push('/plan/week'),
-                    ),
-                    const SizedBox(height: 12),
-                    _AvailableSessionCard(
-                      onOpen: () => context.push('/library'),
-                    ),
-                    const SizedBox(height: 22),
-                    const _SectionTitle(
-                      title: 'Mis sesiones',
-                      subtitle: 'Rutinas creadas y guardadas por ti.',
-                    ),
-                    const SizedBox(height: 10),
-                    _PersonalSessionsCard(
-                      onOpen: () => context.push('/plan/library?tab=personal'),
-                    ),
-                    const SizedBox(height: 22),
-                    const _SectionTitle(
-                      title: 'Configuración del plan',
-                      subtitle: 'Objetivo, tiempo disponible y material.',
-                    ),
-                    const SizedBox(height: 10),
-                    _SettingsCard(
-                      onGoal: () => context.push('/plan/goal'),
-                      onPreferences: () => context.push('/profile/preferences'),
+                    const SizedBox(height: 16),
+                    PreparationNextStepCard(
+                      nextStep: overview.nextStep,
+                      goalNeedingAssessment: overview.goalNeedingAssessment,
+                      program: overview.activeProgram,
                     ),
                   ],
-                ),
+                  const SizedBox(height: 24),
+                  const HomeSectionHeading(title: 'Esta semana'),
+                  const SizedBox(height: 10),
+                  EntrenaCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '${dateFormat.format(overview.weekStart)} – ${dateFormat.format(overview.weekStart.add(const Duration(days: 6)))}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '$completed completadas · ${pending.length} pendientes',
+                          style: TextStyle(color: context.visuals.textMuted),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          overview.weeklyWorkouts.isEmpty
+                              ? 'No hay sesiones programadas esta semana. Puedes consultar la agenda y añadir entrenamientos extra.'
+                              : 'Incluye las sesiones de tu programa y los entrenamientos extra que has añadido.',
+                          style: TextStyle(color: context.visuals.textMuted),
+                        ),
+                        const SizedBox(height: 14),
+                        FilledButton.icon(
+                          onPressed: () => context.push('/plan/week'),
+                          icon: const Icon(Icons.calendar_view_week_rounded),
+                          label: const Text('Abrir mi semana'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const HomeSectionHeading(title: 'Pendientes de esta semana'),
+                  const SizedBox(height: 10),
+                  if (pending.isEmpty)
+                    Text(
+                      overview.weeklyWorkouts.isEmpty
+                          ? 'Cuando tengas sesiones programadas, aparecerán aquí.'
+                          : 'No quedan sesiones pendientes en esta semana.',
+                      style: TextStyle(color: context.visuals.textMuted),
+                    )
+                  else ...[
+                    for (final item in pending.take(3)) ...[
+                      _PendingSessionCard(item: item),
+                      const SizedBox(height: 10),
+                    ],
+                    if (pending.length > 3)
+                      TextButton(
+                        onPressed: () => context.push('/plan/week'),
+                        child: Text(
+                          'Ver las ${pending.length} sesiones pendientes en Mi semana',
+                        ),
+                      ),
+                  ],
+                  const SizedBox(height: 24),
+                  HomeSectionHeading(
+                    title: current == null
+                        ? 'Tus preparaciones'
+                        : 'Otras preparaciones',
+                    action: TextButton.icon(
+                      onPressed: () => context.push('/plan/goal'),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Añadir'),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (otherGoals.isEmpty)
+                    Text(
+                      current == null
+                          ? 'Todavía no has añadido ninguna preparación.'
+                          : 'Puedes conservar otras preparaciones y sus historiales sin iniciar otro programa.',
+                      style: TextStyle(color: context.visuals.textMuted),
+                    )
+                  else
+                    for (final goal in otherGoals) ...[
+                      _SavedPreparationCard(
+                        goal: goal,
+                        progress: overview.programs
+                            .where((p) => p.goalId == goal.id)
+                            .firstOrNull,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  const SizedBox(height: 24),
+                  EntrenaCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Disponibilidad y material',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Mantén al día el tiempo y el material con los que puedes entrenar.',
+                          style: TextStyle(color: context.visuals.textMuted),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push('/profile/preferences'),
+                          icon: const Icon(Icons.tune_rounded),
+                          label: const Text('Editar disponibilidad y material'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WeeklyScheduleCard extends StatelessWidget {
-  const _WeeklyScheduleCard({required this.onOpen});
-
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return EntrenaCard(
-      tone: EntrenaCardTone.accent,
-      onTap: onOpen,
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: context.visuals.accentSoft,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.calendar_view_week_rounded,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
           ),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mi semana',
-                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Programa tus sesiones y empieza la que toca hoy.',
-                  style: TextStyle(color: Colors.white60, height: 1.35),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded),
         ],
       ),
     );
   }
 }
 
-class _AvailableSessionCard extends StatelessWidget {
-  const _AvailableSessionCard({required this.onOpen});
-
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return EntrenaCard(
-      tone: EntrenaCardTone.neutral,
-      onTap: onOpen,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: const Text(
-              'EXPLORA Y CREA',
-              style: TextStyle(
-                color: Color(0xFFFFC3A5),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            'Biblioteca de EntrenaOP',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
-          ),
-          const SizedBox(height: 7),
-          const Text(
-            'Sesiones y ejercicios de EntrenaOP, junto a los que creas tú.',
-            style: TextStyle(color: Colors.white70, height: 1.4),
-          ),
-          const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: onOpen,
-            icon: const Icon(Icons.library_books_outlined),
-            label: const Text('Abrir biblioteca'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
+class _CurrentProgramCard extends StatelessWidget {
+  const _CurrentProgramCard({required this.program, required this.goal});
+  final AdaptiveProgramProgress program;
+  final PreparationGoal? goal;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) => EntrenaCard(
+    tone: EntrenaCardTone.accent,
+    coverImage: preparationCoverProvider(goal?.program.cover?.headerUrl),
+    focalX: goal?.program.cover?.headerFocalX ?? 0.5,
+    focalY: goal?.program.cover?.headerFocalY ?? 0.5,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          title,
+          'PROGRAMA EN CURSO · ${preparationStatusLabel(program)}',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          program.name,
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          program.message,
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        if (goal?.targetDate case final date?) ...[
+          const SizedBox(height: 8),
+          Text('Fecha objetivo: ${DateFormat('dd/MM/yyyy').format(date)}'),
+        ],
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: () =>
+              context.push('/plan/goal/${program.goalId}/training'),
+          icon: Icon(
+            program.needsReview ? Icons.info_outline : Icons.tune_rounded,
+          ),
+          label: Text(
+            program.needsReview ? 'Revisar lo pendiente' : 'Ver mi programa',
+          ),
+        ),
+        TextButton(
+          onPressed: () => context.push('/plan/goal/${program.goalId}'),
+          child: const Text('Gestionar esta preparación'),
+        ),
+      ],
+    ),
+  );
+}
+
+class _PendingSessionCard extends StatelessWidget {
+  const _PendingSessionCard({required this.item});
+  final ScheduledWorkout item;
+
+  @override
+  Widget build(BuildContext context) => EntrenaCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '${DateFormat('dd/MM').format(item.scheduledDate)}${item.scheduledTime == null ? '' : ' · ${item.scheduledTime}'} · ${item.status == ScheduledWorkoutStatus.inProgress ? 'En curso' : 'Pendiente'}',
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          item.templateName,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+        ),
+        if (item.estimatedDurationMinutes case final minutes?) ...[
+          const SizedBox(height: 6),
+          Text(
+            '$minutes min previstos',
+            style: TextStyle(color: context.visuals.textMuted),
+          ),
+        ],
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => context.push(homeWorkoutRoute(item)),
+          icon: Icon(
+            item.status == ScheduledWorkoutStatus.inProgress
+                ? Icons.play_arrow_rounded
+                : Icons.arrow_forward_rounded,
+          ),
+          label: Text(
+            item.status == ScheduledWorkoutStatus.inProgress
+                ? 'Retomar sesión'
+                : 'Ver sesión',
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _SavedPreparationCard extends StatelessWidget {
+  const _SavedPreparationCard({required this.goal, required this.progress});
+  final PreparationGoal goal;
+  final AdaptiveProgramProgress? progress;
+
+  @override
+  Widget build(BuildContext context) => EntrenaCard(
+    tone: EntrenaCardTone.progress,
+    coverImage: preparationCoverProvider(goal.program.cover?.cardUrl),
+    focalX: goal.program.cover?.focalX ?? 0.5,
+    focalY: goal.program.cover?.focalY ?? 0.5,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          preparationStatusLabel(progress),
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          goal.program.name,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
-        const SizedBox(height: 3),
-        Text(subtitle, style: const TextStyle(color: Colors.white54)),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: goal.id == null
+              ? null
+              : () => context.push('/plan/goal/${goal.id}'),
+          child: const Text('Gestionar preparación'),
+        ),
+        if (goal.id != null && progress?.status != 'complete')
+          TextButton(
+            onPressed: () => context.push('/plan/goal/${goal.id}/training'),
+            child: Text(
+              progress?.isPaused == true
+                  ? 'Retomar programa'
+                  : 'Configurar programa',
+            ),
+          ),
       ],
-    );
-  }
+    ),
+  );
 }
 
-class _PersonalSessionsCard extends StatelessWidget {
-  const _PersonalSessionsCard({required this.onOpen});
-
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return EntrenaCard(
-      tone: EntrenaCardTone.neutral,
-      onTap: onOpen,
-      child: Row(
-        children: [
-          const Icon(
-            Icons.add_circle_outline_rounded,
-            color: Color(0xFFFF8A50),
-            size: 32,
-          ),
-          const SizedBox(width: 15),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Crear y gestionar sesiones',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Abre tus rutinas para editarlas, duplicarlas o crear una nueva.',
-                  style: TextStyle(color: Colors.white60, height: 1.35),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded),
-        ],
-      ),
-    );
-  }
-}
-
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.onGoal, required this.onPreferences});
-
-  final VoidCallback onGoal;
-  final VoidCallback onPreferences;
+class _LoadFailure extends StatelessWidget {
+  const _LoadFailure({required this.onRetry});
+  final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 7,
-            ),
-            leading: const Icon(Icons.flag_outlined, color: Color(0xFFFF8A50)),
-            title: const Text('Preparaciones'),
-            subtitle: const Text('Oposiciones, pruebas y fechas previstas.'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: onGoal,
-          ),
-          const Divider(height: 1),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 7,
-            ),
-            leading: const Icon(Icons.tune_rounded, color: Color(0xFFFF8A50)),
-            title: const Text('Preferencias de entrenamiento'),
-            subtitle: const Text('Disponibilidad, experiencia y material.'),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: onPreferences,
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'No hemos podido actualizar Mi plan. Puede que los datos mostrados hayan cambiado.',
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('Reintentar cargar Mi plan'),
+        ),
+      ],
+    ),
+  );
 }

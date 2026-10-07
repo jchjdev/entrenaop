@@ -647,9 +647,9 @@ la navegación principal ni mezclar datos de distinta naturaleza.
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.
 
-UI-008 incorpora `SectionRefreshBoundary` a Inicio, Perfil, Mi semana y la raíz
-de Evolución. Observa la ubicación de `go_router` y pide una nueva consulta al
-volver a mostrar esa pantalla, tanto desde otra rama como tras una tarea.
+UI-008 incorpora `SectionRefreshBoundary` a Inicio, Mi plan, Perfil, Mi semana
+y la raíz de Evolución. Observa la ubicación de `go_router` y pide una nueva
+consulta al volver a mostrar esa pantalla, desde otra rama o tras una tarea.
 No remonta la rama ni almacena datos de dominio. Los Cubits de Inicio, agenda
 e historial conservan la última consulta y descartan respuestas anteriores a
 la carga vigente; tampoco emiten después de cerrarse. La agenda mantiene día y
@@ -710,6 +710,16 @@ días compactos y abrir la fecha elegida sin duplicar las acciones de edición d
 completar evaluación/disponibilidad, solicitar revisión profesional o esperar
 reglas deportivas validadas. No calcula un porcentaje de progreso ni presenta una
 prescripción que el dominio todavía no pueda justificar.
+
+Mi plan reutiliza `GetPreparationOverviewUseCase` y `DashboardCubit` sin añadir
+consultas a Supabase en widgets ni un coordinador nuevo. `TrainingHubEntry`
+instancia el Cubit al visitar `/plan`, evitando la consulta de resumen cuando se
+entra directamente a una ruta hija. Tras esa visita conserva la instancia; su
+frontera de refresco consulta al volver. El router observa `AuthCubit` y la clave
+incluye el usuario: cambiar identidad cierra el Cubit anterior, mientras renovar
+la sesión de la misma cuenta lo mantiene. La comprobación de permisos sigue
+perteneciendo al servidor. `PreparationNextStepCard` y los nombres de estado son
+presentación compartida entre Inicio/Mi plan; los criterios de dominio se mantienen.
 
 ## Verificación
 

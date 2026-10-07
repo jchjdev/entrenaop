@@ -145,7 +145,19 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: '/plan',
-                  builder: (context, state) => const TrainingHubPage(),
+                  builder: (context, state) =>
+                      BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (context, auth) {
+                          if (auth is! AuthAuthenticated) {
+                            return const SizedBox.shrink();
+                          }
+                          return TrainingHubEntry(
+                            key: ValueKey('plan-${auth.user.id}'),
+                            createCubit: () => sl<DashboardCubit>(),
+                          );
+                        },
+                      ),
                   routes: [
                     GoRoute(
                       path: 'week',
