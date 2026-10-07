@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**Inventario visual, 07/10/2026:** [mapa de app/admin](SCREEN_MAP_2026_10_07.md)
+con imágenes de widgets actuales, estados, recorridos y mejoras diferenciadas.
+Análisis de ambas apps limpio; 474 pruebas de raíz y 74 del admin correctas
+(una optativa omitida). No modifica SQL, motor ni producción; no cierra la
+revisión autenticada. El siguiente tramo UX sigue siendo guardado retenido y
+refresco entre secciones; el deportivo, controles de protocolo y prioridades
+por déficit.
+
 **UI-008, 06/10/2026 · primer tramo de fiabilidad y navegación:** admin pasa a
 `go_router` con URLs por identificador, verificación de acceso y recursos,
 reintentos y renovación de la pila al cambiar de cuenta. Las evaluaciones

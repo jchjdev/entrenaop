@@ -1,5 +1,11 @@
 # Identidad visual de EntrenaOP
 
+Mapa visual del código actual, 07/10/2026: [pantallas, estados, recorridos y
+pendientes de app/admin](SCREEN_MAP_2026_10_07.md). Imágenes renderizadas desde
+widgets reales con fixtures; distingue implementación, límites y propuestas.
+No acredita por sí solo el recorrido autenticado en dispositivo ni cambia
+decisiones deportivas o de interfaz.
+
 Estado contrastado: 04/10/2026. La identidad compartida está aplicada en
 desarrollo a la aplicación del deportista y al panel de administración.
 

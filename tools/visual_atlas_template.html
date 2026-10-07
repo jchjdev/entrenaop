@@ -1,0 +1,89 @@
+<div id="@@ROOT@@">
+  <h3>@@TITLE@@ · código del 07/10/2026</h3>
+  <div class="viz-controls">
+    <label class="form-label">Pantalla<select class="form-select" data-screen></select></label>
+    <label class="form-label">Estado capturado<select class="form-select" data-state></select></label>
+  </div>
+  <div class="atlas-main" data-main>
+    <figure><img data-image alt="" /><figcaption class="text-small text-muted" data-caption></figcaption></figure>
+    <div class="atlas-detail" aria-live="polite">
+      <span class="viz-badge" data-status></span>
+      <h3 data-name></h3>
+      <div data-does></div>
+      <hr />
+      <div data-gap></div>
+      <details><summary>Entrada en la navegación</summary><code data-route></code></details>
+    </div>
+  </div>
+  <hr />
+  <label class="form-label">Recorrido<select class="form-select" data-flow></select></label>
+  <div class="text-small text-muted">Pantallas relacionadas · incluye ramas alternativas</div>
+  <div class="viz-row" data-steps></div>
+  <div class="text-small" data-limit></div>
+  <div class="text-small text-muted">Widgets Flutter reales · tema actual · datos ficticios · vistas aisladas y diálogos · Arial en el render de prueba</div>
+</div>
+<style>
+#@@ROOT@@ {color:var(--foreground); overflow-wrap:anywhere}
+#@@ROOT@@ .atlas-main {display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:20px;margin-top:16px}
+#@@ROOT@@ figure {margin:0;min-width:0}
+#@@ROOT@@ img {display:block;width:100%;height:auto;max-width:760px}
+#@@ROOT@@ figcaption {margin-top:8px}
+#@@ROOT@@ .atlas-detail {min-width:0}
+#@@ROOT@@ .atlas-main.is-landscape {display:flex;flex-direction:column}
+#@@ROOT@@ details {margin-top:16px}
+#@@ROOT@@ [data-steps] {margin:12px 0}
+#atlas-admin .atlas-main {display:flex;flex-direction:column}
+@media(max-width:570px) {#@@ROOT@@ .atlas-main {display:flex;flex-direction:column} #@@ROOT@@ figure {max-width:390px}}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('@@ROOT@@');
+  const data = @@DATA@@;
+  const q = (key) => root.querySelector('[data-' + key + ']');
+  const screenPicker = q('screen'), statePicker = q('state'), flowPicker = q('flow');
+  const grouped = new Map();
+  data.screens.forEach((s, index) => {
+    if (!grouped.has(s.group)) { const group = document.createElement('optgroup'); group.label = s.group; grouped.set(s.group,group); screenPicker.append(group); }
+    grouped.get(s.group).append(new Option(s.title,String(index)));
+  });
+  data.flows.forEach((f,index) => flowPicker.add(new Option(f.title,String(index))));
+  function image() {
+    const s = data.screens[Number(screenPicker.value)];
+    const c = s.captures[Number(statePicker.value)];
+    q('image').src = c.src; q('image').alt = s.title + ' · ' + c.label;
+    q('main').classList.toggle('is-landscape', c.width > c.height);
+    q('caption').textContent = c.label + ' · ' + c.width + ' × ' + c.height;
+  }
+  function screen(index, state = 0) {
+    screenPicker.value = String(index); const s = data.screens[index];
+    statePicker.replaceChildren(); s.captures.forEach((c,i) => statePicker.add(new Option(c.label,String(i))));
+    const safeState = Number.isInteger(state) && state >= 0 ? state : 0;
+    statePicker.value = String(Math.min(safeState,s.captures.length - 1));
+    q('name').textContent = s.title; q('status').textContent = s.status;
+    q('does').textContent = s.does; q('gap').textContent = s.gap; q('route').textContent = s.route;
+    image();
+  }
+  function flow() {
+    const f = data.flows[Number(flowPicker.value)]; q('steps').replaceChildren();
+    f.steps.forEach(name => {
+      const index = data.screens.findIndex(s => s.class === name); if(index < 0) return;
+      const button = document.createElement('button'); button.type='button'; button.className='btn'; button.textContent=data.screens[index].title;
+      button.addEventListener('click', () => {screen(index);save();}); q('steps').append(button);
+    }); q('limit').textContent = f.limit;
+  }
+  function save() {
+    if(window.openai?.setWidgetState) window.openai.setWidgetState({modelContent:{atlas:'@@ROOT@@',screen:data.screens[Number(screenPicker.value)].title},privateContent:{atlas:'@@ROOT@@',screen:Number(screenPicker.value),state:Number(statePicker.value),flow:Number(flowPicker.value)}}).catch(()=>{});
+  }
+  function restore(saved) {
+    const p = saved?.privateContent; if(p?.atlas !== '@@ROOT@@') return;
+    if(Number.isInteger(p.screen) && data.screens[p.screen]) screen(p.screen,p.state || 0);
+    if(Number.isInteger(p.flow) && data.flows[p.flow]) {flowPicker.value=String(p.flow);flow();}
+  }
+  screenPicker.addEventListener('change',()=>{screen(Number(screenPicker.value));save();});
+  statePicker.addEventListener('change',()=>{image();save();});
+  flowPicker.addEventListener('change',()=>{flow();save();});
+  screen(data.screens.findIndex(s=>s.class==='HomePage') >= 0 ? data.screens.findIndex(s=>s.class==='HomePage') : 1);flow();
+  restore(window.openai?.widgetState);
+  window.addEventListener('openai:set_globals', event=>restore(event.detail?.globals?.widgetState));
+})();
+</script>
