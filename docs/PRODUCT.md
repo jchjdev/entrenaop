@@ -1,5 +1,18 @@
 # Producto EntrenaOP
 
+**UI-013, 08/10/2026 · Cuenta implementada en desarrollo:** acceso ofrece
+recuperación de contraseña; alta/acceso con correo sin confirmar abre una
+pantalla persistente con instrucciones y reenvío. El SDK distingue recuperación
+del acceso normal y Auth valida el cambio. Los errores conservan los campos;
+el éxito permanece visible hasta volver al acceso. La respuesta de solicitud
+no revela si existe la cuenta. Se conservan Inicio/Mi plan, fotos y separación
+del negocio/motores. Análisis, pruebas y compilaciones contrastados; correo real
+y dispositivo siguen pendientes, sin acreditar auditoría integral de seguridad.
+Detalle en [REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
+El siguiente bloque UX recomendado es Evolución: filtro deportivo y comparativas
+de mediciones compatibles. Las notas fechadas siguientes describen sus cierres
+anteriores; no sustituyen este estado ni el de `ROADMAP.md`.
+
 **UI-008, 07/10/2026 · Inicio/Mi plan cerrado:** Mi plan presenta programa en
 curso, semana y sesiones pendientes, con estados separados para preparaciones
 por configurar, pausadas y finalizadas. Abre el programa directamente, conserva
@@ -11,7 +24,8 @@ Análisis limpio, 505 pruebas completas de raíz y ocho capturas verificadas;
 20 imágenes de widgets actuales con datos simulados. Sin cambios en admin,
 SQL, motores o producción; pendiente la revisión autenticada en dispositivo.
 Detalle en [REFRESH_PLAN_2026_10_07.md](REFRESH_PLAN_2026_10_07.md).
-El único siguiente tramo UX es Evolución/Marcas, filtros e historial antiguo.
+Ese cierre dio paso a Evolución/Marcas, implementado después en UI-011 para
+resultados, filtros de historial y consulta de registros antiguos.
 
 **UI-008, 07/10/2026 · fiabilidad editorial ampliada:** creación/edición de
 pruebas, calificación, baremos/mínimos, importación, clonación y vinculación de

@@ -1,0 +1,527 @@
+{
+  "date": "2026-10-08",
+  "provenance": "Widgets actuales, datos y contraseñas ficticios; sin correos reales ni Supabase remoto.",
+  "sources": {
+    "lib/core/router/app_router.dart": "a934899e2c069e2a1ebfa6cd32dd503f80674de0c974605c2abb90d9e6f38012",
+    "lib/features/auth/presentation/pages/account_email_page.dart": "f9b097649d0d9940c4097138efdbb172c781b47e1bb577283a31573437cfadc7",
+    "lib/features/auth/presentation/pages/reset_password_page.dart": "3dc85aecc526a2521b308f3b7b559edc49a41e0596afe5e677b60a036346a74b",
+    "lib/features/auth/presentation/pages/login_page.dart": "7c93057c96be189fc8d07661727720e98589036187f5868d72f1e773e4518359",
+    "lib/features/auth/presentation/pages/sign_up_page.dart": "c8b71cb94604bc3147390da507298570afe6e05c6bfe1c4dd70fba87b8f71682",
+    "lib/features/auth/presentation/bloc/auth_cubit.dart": "1132fb0955a13331ac082324e7f83b65ed5acf589b0b94143d396f942ccdd585",
+    "tools/visual_refresh_account_capture.dart": "8fa7ac0e7c31b6a4096b139a8dca83ff4240dbc83e2ca285e4f58dbff688ef0a"
+  },
+  "captures": [
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 1,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Recupera tu contraseña",
+        "Te enviaremos un enlace para crear una nueva contraseña.",
+        "Correo electrónico",
+        "Enviar enlace",
+        "Volver al acceso"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-solicitar.webp",
+      "sha256": "ee659f3dcf2eb3e1f5855980d20adb7e62e2d6e0cbd1dbe5dcd99d659663e5ea"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 2,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Revisa tu correo",
+        "Si existe una cuenta con ese correo, recibirás un enlace para crear una nueva contraseña.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar en 60s",
+        "Volver al acceso"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-correo-enviado.webp",
+      "sha256": "82805ccca79b08c036561cb182b5127b05922e36980685660d76208ef41f4632"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 3,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Confirma tu correo",
+        "Abre el enlace del correo de EntrenaOP para activar tu cuenta.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar correo",
+        "Volver al acceso"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-confirmar-cuenta.webp",
+      "sha256": "e460d7382c7ad47f600425dfe59d49d0bf6b5d48e577ba52bb23892d3445da30"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 4,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-nueva-contrasena.webp",
+      "sha256": "2002c4a37894171eb8ab92899e02935cc863acd36928913ec9465797e9c6c7e7"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 5,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación",
+        "No se ha podido guardar. Puedes reintentarlo."
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-error-con-borrador.webp",
+      "sha256": "e5cbcd11d4b1d004b7fb62efa0834887551c6f65024c4a868f5bb02c7ecef791"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 6,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Contraseña actualizada",
+        "Ya puedes acceder a EntrenaOP con tu nueva contraseña.",
+        "persona@example.com",
+        "Ir al acceso"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-contrasena-actualizada.webp",
+      "sha256": "ec4d3f5c1521363995a52e3a7f96a166c0f16d498516179cf789a24e2d7b9334"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 1100.0 1.0",
+      "stage": "estable",
+      "sequence": 7,
+      "widgets": [
+        "AccountLinkErrorPage"
+      ],
+      "texts": [
+        "Tu preparación, más clara.",
+        "Objetivos, entrenamientos y evolución en un recorrido que te dice qué importa ahora.",
+        "Tu semana de entrenamiento, en un vistazo",
+        "Tus marcas y tu evolución, con contexto",
+        "Un recorrido ordenado hacia tu objetivo",
+        "Necesitas un enlace nuevo",
+        "El enlace ha caducado, ya se ha usado o no corresponde a este dispositivo. Solicita uno nuevo y ábrelo donde lo pediste.",
+        "Solicitar enlace de recuperación",
+        "Volver al acceso"
+      ],
+      "width": 1100,
+      "height": 900,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "escritorio-enlace-invalido.webp",
+      "sha256": "a98d3392c6a5020a51a390edb9c80dde9d46f351fe80e92ba3042578dbea340b"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 1,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Recupera tu contraseña",
+        "Te enviaremos un enlace para crear una nueva contraseña.",
+        "Correo electrónico",
+        "Enviar enlace",
+        "Volver al acceso"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-solicitar.webp",
+      "sha256": "e419e02e90f4634156e4fda198f4261aeb324c96226084ad7600571df54682b7"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 2,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Revisa tu correo",
+        "Si existe una cuenta con ese correo, recibirás un enlace para crear una nueva contraseña.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar en 60s",
+        "Volver al acceso"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-correo-enviado.webp",
+      "sha256": "2b4dd6c4972bcf833e0beeb43c7e9aeb80246eca84923bac4c22a5513dc7d94a"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 3,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Confirma tu correo",
+        "Abre el enlace del correo de EntrenaOP para activar tu cuenta.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar correo",
+        "Volver al acceso"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-confirmar-cuenta.webp",
+      "sha256": "0b3bcaa0a5e58cc7c43708109f686bd8fe76452ce2712727323ba99a175f9236"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 4,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-nueva-contrasena.webp",
+      "sha256": "5a820c9d6007e83f6917f3d83c91d5351a0b80dc255d796bb26a13414dfd2558"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 5,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación",
+        "No se ha podido guardar. Puedes reintentarlo."
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-error-con-borrador.webp",
+      "sha256": "32b1000714ae0a17d9119592f0d2752be0cd8300941ed555970e760d01a25ef3"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 6,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Contraseña actualizada",
+        "Ya puedes acceder a EntrenaOP con tu nueva contraseña.",
+        "persona@example.com",
+        "Ir al acceso"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-contrasena-actualizada.webp",
+      "sha256": "39ebde1e31f57c20fe530f216c2a2312371231e5a6c90b163fb1d0ae3db948da"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 320.0 2.0",
+      "stage": "estable",
+      "sequence": 7,
+      "widgets": [
+        "AccountLinkErrorPage"
+      ],
+      "texts": [
+        "Necesitas un enlace nuevo",
+        "El enlace ha caducado, ya se ha usado o no corresponde a este dispositivo. Solicita uno nuevo y ábrelo donde lo pediste.",
+        "Solicitar enlace de recuperación",
+        "Volver al acceso"
+      ],
+      "width": 320,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "texto-ampliado-enlace-invalido.webp",
+      "sha256": "d961458057e869654109b5c3760685c67ecf9203e742b0c7428232cbe9660024"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 1,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Recupera tu contraseña",
+        "Te enviaremos un enlace para crear una nueva contraseña.",
+        "Correo electrónico",
+        "Enviar enlace",
+        "Volver al acceso"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-solicitar.webp",
+      "sha256": "b58b1947d8c0852d0b62ea507189f1a56b272c9116bc9ff4bf702694d731cecd"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 2,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Revisa tu correo",
+        "Si existe una cuenta con ese correo, recibirás un enlace para crear una nueva contraseña.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar en 60s",
+        "Volver al acceso"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-correo-enviado.webp",
+      "sha256": "92d50a0bb1eca6ace14867f4d6e676baccc2991f90ca8b170732ee79955cbcd6"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 3,
+      "widgets": [
+        "AccountEmailPage"
+      ],
+      "texts": [
+        "Confirma tu correo",
+        "Abre el enlace del correo de EntrenaOP para activar tu cuenta.",
+        "Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.",
+        "Correo electrónico",
+        "Reenviar correo",
+        "Volver al acceso"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-confirmar-cuenta.webp",
+      "sha256": "8e487e5b92d1c4bccc239832f9551bd91cb25fd958aa26e9f0146cc5b6498151"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 4,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-nueva-contrasena.webp",
+      "sha256": "fbb73420ccd7f2809b3dace63b4da8c29cf098dda07f24cb203b5137679bdb21"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 5,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Crea una nueva contraseña",
+        "El enlace ha sido validado. Elige la nueva contraseña de tu cuenta.",
+        "persona@example.com",
+        "Nueva contraseña",
+        "Repite la nueva contraseña",
+        "Guardar nueva contraseña",
+        "Cancelar recuperación",
+        "No se ha podido guardar. Puedes reintentarlo."
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-error-con-borrador.webp",
+      "sha256": "afaad0224c08602e046b3b2acb653eda20d076cffc528ee454872697aa2d6baa"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 6,
+      "widgets": [
+        "ResetPasswordPage"
+      ],
+      "texts": [
+        "Contraseña actualizada",
+        "Ya puedes acceder a EntrenaOP con tu nueva contraseña.",
+        "persona@example.com",
+        "Ir al acceso"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-contrasena-actualizada.webp",
+      "sha256": "12b389dc48cbe93e6fa4c183938e4bd13b164cb2e408648234e1311bb53aca0a"
+    },
+    {
+      "source": "tools/visual_refresh_account_capture.dart",
+      "description": "Cuenta 390.0 1.0",
+      "stage": "estable",
+      "sequence": 7,
+      "widgets": [
+        "AccountLinkErrorPage"
+      ],
+      "texts": [
+        "Necesitas un enlace nuevo",
+        "El enlace ha caducado, ya se ha usado o no corresponde a este dispositivo. Solicita uno nuevo y ábrelo donde lo pediste.",
+        "Solicitar enlace de recuperación",
+        "Volver al acceso"
+      ],
+      "width": 390,
+      "height": 1050,
+      "commit": "",
+      "provenance": "Widgets reales; datos ficticios de tests; tema EntrenaTheme.dark; Arial sustituye el fallback Ahem de tests.",
+      "image": "movil-enlace-invalido.webp",
+      "sha256": "734c1c9c32d3450b30bb6bac7c7571f87f1566ed0afe2f029a7445920ea2fc2e"
+    }
+  ]
+}

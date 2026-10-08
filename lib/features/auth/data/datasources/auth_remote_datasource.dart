@@ -1,5 +1,6 @@
 // features/auth/data/datasources/auth_remote_datasource.dart
 import 'package:entrenaop/features/auth/data/models/user_model.dart';
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 
 abstract class AuthRemoteDataSource {
   /// Inicia sesión con email y contraseña.
@@ -21,6 +22,12 @@ abstract class AuthRemoteDataSource {
   Future<UserModel?> getCurrentUser();
 
   /// Emite el usuario vigente cuando Supabase crea, renueva o elimina la
-  /// sesión. Un valor null significa que la sesión ha dejado de ser válida.
-  Stream<UserModel?> watchCurrentUser();
+  /// sesión, distinguiendo una recuperación de contraseña. Un usuario null
+  /// sin identidad de recuperación significa que la sesión ha terminado.
+  Stream<AuthSessionChange> watchCurrentUser();
+
+  Future<void> requestPasswordReset(String email);
+  Future<void> resendConfirmation(String email);
+  Future<void> updateRecoveredPassword(String password);
+  Future<void> finishPasswordRecovery();
 }

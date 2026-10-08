@@ -1,4 +1,4 @@
-import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
 
 class WatchCurrentUserUseCase {
@@ -6,5 +6,5 @@ class WatchCurrentUserUseCase {
 
   final AuthRepository _repository;
 
-  Stream<UserEntity?> call() => _repository.watchCurrentUser();
+  Stream<AuthSessionChange> call() => _repository.watchCurrentUser();
 }

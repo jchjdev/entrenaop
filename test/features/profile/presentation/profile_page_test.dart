@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/features/auth/domain/entities/sign_up_outcome.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
@@ -143,7 +144,15 @@ class _AuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
-  Stream<UserEntity?> watchCurrentUser() => const Stream.empty();
+  Stream<AuthSessionChange> watchCurrentUser() => const Stream.empty();
+  @override
+  Future<void> requestPasswordReset(String email) async {}
+  @override
+  Future<void> resendConfirmation(String email) async {}
+  @override
+  Future<void> updateRecoveredPassword(String password) async {}
+  @override
+  Future<void> finishPasswordRecovery() async {}
 }
 
 class _PreparationRepository implements PreparationGoalRepository {

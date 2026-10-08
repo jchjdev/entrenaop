@@ -88,6 +88,7 @@ import 'package:entrenaop/features/preparation_goal/domain/repositories/preparat
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
 import 'package:entrenaop/features/dashboard/data/repositories/shared_preferences_home_favorites_repository.dart';
 
@@ -120,7 +121,11 @@ Future<void> initDependencies() async {
   );
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(supabaseClient: sl()),
+    () => AuthRemoteDataSourceImpl(
+      supabaseClient: sl(),
+      preferences: sharedPreferences,
+      redirectUrl: AppConfig.authRedirectUrl,
+    ),
   );
 
   sl.registerLazySingleton<AuthRepository>(
@@ -140,6 +145,7 @@ Future<void> initDependencies() async {
       signOutUseCase: sl(),
       getCurrentUserUseCase: sl(),
       watchCurrentUserUseCase: sl(),
+      accountRepository: sl<AuthRepository>(),
     )..watchAuthState(),
   );
 

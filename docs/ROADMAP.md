@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**UI-013, 08/10/2026 · Cuenta comprobada en desarrollo, recorrido real abierto:**
+recuperación con sesión diferenciada por el SDK, pantallas persistentes de correo,
+confirmación y contraseña actualizada, errores con campos conservados y reenvío
+limitado. Auth autoriza el cambio; URL y marcador local no conceden derechos.
+Respuestas tardías no restauran otra cuenta. Retornos web/móvil configurados
+solo en desarrollo, conservando confirmación de correo, límites y MFA remotos.
+Análisis limpio en ambas apps; 563 pruebas de raíz y 85 de admin correctas, con
+una exclusiva web y una optativa de admin omitidas. Tres recorridos de captura,
+21 imágenes de widgets actuales; web debug y APK debug compilados. Sin cambios
+SQL, RLS, motores, negocio, Inicio/Mi plan o producción. No acredita auditoría
+integral de seguridad del login. Pendientes: correo real, enlaces caducados o
+reutilizados en servidor y recorrido de nuevo acceso en dispositivo físico;
+iOS no compilado desde Windows. Detalle en
+[REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
+El único siguiente bloque UX recomendado es Evolución: filtro por tipo deportivo
+y comparativas de mediciones compatibles. Antes de dar por cerrado el recorrido
+de Cuenta hay que completar su comprobación real; no se presenta como validado.
+Pulido transversal/admin y retirada de ejercicios personales permanecen después;
+vídeos, negocio y motores mantienen sus trabajos aparte.
+
 **UI-012, 08/10/2026 · Biblioteca y fotografías cerrado en desarrollo:**
 corregida la pérdida de portadas web al regresar, conservando aspecto y
 encuadres. Biblioteca ofrece vídeo bajo demanda/enlace externo y edición de
@@ -17,9 +37,9 @@ Límites: recorrido autenticado/dispositivo pendiente; runner web automatizado
 no arrancó, sustituido para las fotos por reproducción compilada y navegador
 real. Sin borrado/archivado de ejercicios ni resolución de edición concurrente.
 Detalle en [REFRESH_LIBRARY_2026_10_08.md](REFRESH_LIBRARY_2026_10_08.md).
-El único siguiente bloque UX recomendado es Cuenta: recuperación de contraseña
-y confirmaciones persistentes. Comparativas de Evolución y pulido transversal/admin
-siguen después; negocio y motores mantienen sus trabajos aparte.
+Ese cierre dio paso a Cuenta, implementada después en UI-013 con los límites
+indicados arriba. Comparativas de Evolución y pulido transversal/admin siguen
+después; negocio y motores mantienen sus trabajos aparte.
 
 **UI-011, 07/10/2026 · resultados e historial cerrado:** Marcas abre una consulta
 por preparación; registrar vuelve a los formularios existentes y actualiza al

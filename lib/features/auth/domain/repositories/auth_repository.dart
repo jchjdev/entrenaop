@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/domain/entities/sign_up_outcome.dart';
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 
 abstract class AuthRepository {
   Future<UserEntity> signIn({required String email, required String password});
@@ -14,5 +15,10 @@ abstract class AuthRepository {
 
   Future<UserEntity?> getCurrentUser();
 
-  Stream<UserEntity?> watchCurrentUser();
+  Stream<AuthSessionChange> watchCurrentUser();
+
+  Future<void> requestPasswordReset(String email);
+  Future<void> resendConfirmation(String email);
+  Future<void> updateRecoveredPassword(String password);
+  Future<void> finishPasswordRecovery();
 }

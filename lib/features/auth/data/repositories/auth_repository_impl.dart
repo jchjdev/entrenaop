@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:entrenaop/features/auth/domain/entities/sign_up_outcome.dart';
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
 
@@ -44,7 +45,23 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Stream<UserEntity?> watchCurrentUser() {
+  Stream<AuthSessionChange> watchCurrentUser() {
     return remoteDataSource.watchCurrentUser();
   }
+
+  @override
+  Future<void> requestPasswordReset(String email) =>
+      remoteDataSource.requestPasswordReset(email);
+
+  @override
+  Future<void> resendConfirmation(String email) =>
+      remoteDataSource.resendConfirmation(email);
+
+  @override
+  Future<void> updateRecoveredPassword(String password) =>
+      remoteDataSource.updateRecoveredPassword(password);
+
+  @override
+  Future<void> finishPasswordRecovery() =>
+      remoteDataSource.finishPasswordRecovery();
 }

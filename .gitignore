@@ -57,3 +57,6 @@ app.*.map.json
 
 # Repositorio independiente, preservado mediante bundle en docs/audits/.
 /website/
+
+# Metadatos generados por la configuración parcial de Auth en desarrollo.
+/tools/account_access_dev/supabase/.temp/

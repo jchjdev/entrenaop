@@ -52,20 +52,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state case AuthEmailConfirmationRequired(:final email)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Revisa $email para confirmar tu cuenta.')),
-          );
-          context.go('/');
-        } else if (state case AuthError(:final message)) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message)));
-        }
-      },
+    return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
-        final isLoading = state is AuthLoading;
+        final isLoading = state is AuthLoading || state is AuthInitial;
         return AuthPageShell(
           title: 'Crea tu cuenta',
           subtitle: 'Empieza con tus datos básicos. Tu objetivo se configura después.',
@@ -168,6 +157,10 @@ class _SignUpPageState extends State<SignUpPage> {
                         ? 'Las contraseñas no coinciden.'
                         : null,
                   ),
+                  if (state case AuthError(:final message)) ...[
+                    Text(message, key: const ValueKey('sign-up-error')),
+                    const SizedBox(height: 16),
+                  ],
                   const SizedBox(height: 26),
                   SizedBox(
                     height: 52,

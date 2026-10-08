@@ -51,6 +51,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
 
+  # Ya transitiva de Supabase; permite probar Auth con respuestas de red simuladas.
+  http: ^1.6.0
 flutter:
   uses-material-design: true
   assets:

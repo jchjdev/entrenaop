@@ -21,7 +21,8 @@ Future<void> main() async {
   await initDependencies();
 
   final authCubit = sl<AuthCubit>();
-  unawaited(authCubit.checkCurrentUser());
+  // El SDK emite initialSession y passwordRecovery. Otra consulta al arrancar
+  // podría tratar el enlace de recuperación como un acceso normal.
 
   runApp(EntrenaOpApp(authCubit: authCubit));
 }

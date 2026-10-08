@@ -38,15 +38,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state case AuthError(:final message)) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message)));
-        }
-      },
+    return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
-        final isLoading = state is AuthLoading;
+        final isLoading = state is AuthLoading || state is AuthInitial;
         return AuthPageShell(
           title: 'Te damos la bienvenida',
           subtitle: 'Accede para continuar con tu preparación.',
@@ -59,7 +53,12 @@ class _LoginPageState extends State<LoginPage> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               TextButton(
-                onPressed: isLoading ? null : () => context.push('/sign-up'),
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        context.read<AuthCubit>().dismissAccountNotice();
+                        context.push('/sign-up');
+                      },
                 child: const Text('Crear cuenta'),
               ),
             ],
@@ -71,6 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   AuthTextField(
+                    enabled: !isLoading,
                     controller: _emailController,
                     label: 'Correo electrónico',
                     hint: 'tu@correo.com',
@@ -87,6 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 18),
                   AuthTextField(
+                    enabled: !isLoading,
                     controller: _passwordController,
                     label: 'Contraseña',
                     prefixIcon: Icons.lock_outline_rounded,
@@ -112,6 +113,25 @@ class _LoginPageState extends State<LoginPage> {
                         ? 'Introduce tu contraseña.'
                         : null,
                   ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              context.read<AuthCubit>().dismissAccountNotice();
+                              context.push(
+                                '/forgot-password',
+                                extra: _emailController.text.trim(),
+                              );
+                            },
+                      child: const Text('¿Olvidaste tu contraseña?'),
+                    ),
+                  ),
+                  if (state case AuthError(:final message)) ...[
+                    Text(message, key: const ValueKey('login-error')),
+                    const SizedBox(height: 16),
+                  ],
                   const SizedBox(height: 26),
                   SizedBox(
                     height: 52,

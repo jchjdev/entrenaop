@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/domain/entities/sign_up_outcome.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
@@ -112,6 +113,7 @@ AuthCubit _createCubit(AuthRepository repository) {
     signOutUseCase: SignOutUseCase(repository),
     getCurrentUserUseCase: GetCurrentUserUseCase(repository),
     watchCurrentUserUseCase: WatchCurrentUserUseCase(repository),
+    accountRepository: repository,
   );
 }
 
@@ -150,5 +152,14 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
-  Stream<UserEntity?> watchCurrentUser() => authChanges;
+  Stream<AuthSessionChange> watchCurrentUser() =>
+      authChanges.map(AuthSessionChange.new);
+  @override
+  Future<void> requestPasswordReset(String email) async {}
+  @override
+  Future<void> resendConfirmation(String email) async {}
+  @override
+  Future<void> updateRecoveredPassword(String password) async {}
+  @override
+  Future<void> finishPasswordRecovery() async {}
 }

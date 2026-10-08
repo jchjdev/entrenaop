@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/domain/entities/sign_up_outcome.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
@@ -28,7 +29,7 @@ void main() {
 
     expect(find.byType(Image), findsOneWidget);
     expect(find.text('Te damos la bienvenida'), findsOneWidget);
-    expect(find.text('¿Olvidaste tu contraseña?'), findsNothing);
+    expect(find.text('¿Olvidaste tu contraseña?'), findsOneWidget);
     await tester.tap(find.text('Entrar en EntrenaOP'));
     await tester.pump();
 
@@ -95,7 +96,8 @@ AuthCubit _createCubit(AuthRepository repository) {
     signOutUseCase: SignOutUseCase(repository),
     getCurrentUserUseCase: GetCurrentUserUseCase(repository),
     watchCurrentUserUseCase: WatchCurrentUserUseCase(repository),
-  );
+    accountRepository: repository,
+  )..checkCurrentUser();
 }
 
 class _FakeAuthRepository implements AuthRepository {
@@ -133,5 +135,13 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> signOut() async {}
 
   @override
-  Stream<UserEntity?> watchCurrentUser() => const Stream.empty();
+  Stream<AuthSessionChange> watchCurrentUser() => const Stream.empty();
+  @override
+  Future<void> requestPasswordReset(String email) async {}
+  @override
+  Future<void> resendConfirmation(String email) async {}
+  @override
+  Future<void> updateRecoveredPassword(String password) async {}
+  @override
+  Future<void> finishPasswordRecovery() async {}
 }

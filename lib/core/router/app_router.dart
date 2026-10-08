@@ -8,6 +8,8 @@ import 'package:entrenaop/features/auth/presentation/pages/home_page.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_tools_section.dart';
 import 'package:entrenaop/features/auth/presentation/pages/login_page.dart';
 import 'package:entrenaop/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:entrenaop/features/auth/presentation/pages/account_email_page.dart';
+import 'package:entrenaop/features/auth/presentation/pages/reset_password_page.dart';
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
@@ -106,10 +108,31 @@ class AppRouter {
       refreshListenable: _notifier,
       redirect: (context, state) {
         final authState = authCubit.state;
+        if (authState is AuthPasswordRecovery) {
+          return state.matchedLocation == '/reset-password'
+              ? null
+              : '/reset-password';
+        }
+        if (authState is AuthLinkError) {
+          return state.matchedLocation == '/auth-link-error'
+              ? null
+              : '/auth-link-error';
+        }
+        if (authState is AuthEmailConfirmationRequired &&
+            (state.matchedLocation == '/' ||
+                state.matchedLocation == '/sign-up')) {
+          return '/confirm-email';
+        }
         final isAuthenticated = authState is AuthAuthenticated;
         final isLoading = authState is AuthLoading || authState is AuthInitial;
-        final isPublicRoute =
-            state.matchedLocation == '/' || state.matchedLocation == '/sign-up';
+        final isPublicRoute = const [
+          '/',
+          '/sign-up',
+          '/forgot-password',
+          '/confirm-email',
+          '/reset-password',
+          '/auth-link-error',
+        ].contains(state.matchedLocation);
 
         if (isLoading) return null;
         if (!isAuthenticated && !isPublicRoute) return '/';
@@ -117,6 +140,24 @@ class AppRouter {
         return null;
       },
       routes: [
+        GoRoute(
+          path: '/forgot-password',
+          builder: (_, state) => AccountEmailPage(
+            initialEmail: state.extra is String ? state.extra as String : '',
+          ),
+        ),
+        GoRoute(
+          path: '/confirm-email',
+          builder: (_, _) => const AccountEmailPage(confirmation: true),
+        ),
+        GoRoute(
+          path: '/reset-password',
+          builder: (_, _) => const ResetPasswordPage(),
+        ),
+        GoRoute(
+          path: '/auth-link-error',
+          builder: (_, _) => const AccountLinkErrorPage(),
+        ),
         GoRoute(path: '/', builder: (context, state) => const LoginPage()),
         GoRoute(
           path: '/sign-up',

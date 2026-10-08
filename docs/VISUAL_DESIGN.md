@@ -376,6 +376,26 @@ fuentes e iconos reales para primer acceso, sesión de hoy, día sin sesión y
 escritorio, con repositorios simulados. No acredita una revisión con cuentas
 reales ni añade validación de algoritmos, base de datos o producción.
 
+## Cuenta: recuperación y confirmaciones (08/10/2026)
+
+UI-013 reutiliza `AuthPageShell`, logotipo, colores y campos actuales. Acceso
+ofrece «Olvidé mi contraseña» conservando el correo escrito. Registro y acceso
+con correo pendiente llevan a «Confirma tu correo»; la solicitud de recuperación
+lleva a «Revisa tu correo». Los mensajes permanecen en pantalla, con instrucciones
+y reenvío visible limitado; no dependen de un aviso que desaparece.
+
+La sesión de recuperación validada por el SDK abre «Crea una nueva contraseña».
+El fallo conserva los campos, el éxito los limpia y muestra «Contraseña
+actualizada». Terminar/cancelar vuelve al acceso cerrando la sesión local. Una URL
+sin esa sesión no habilita el formulario y permite solicitar otro enlace.
+La guarda organiza el recorrido; la autorización sigue en Supabase Auth.
+
+Tres recorridos de captura cubren siete estados a 390/1100 px y 320 px con texto
+2×, desplazable y sin errores de disposición. Son widgets reales con datos de
+prueba; no acreditan correo ni dispositivo autenticados. No cambia las tarjetas,
+portadas, Inicio/Mi plan, catálogo, motores ni negocio. Capturas y límites en
+[REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
+
 ## Biblioteca y estabilidad de fotografías (08/10/2026)
 
 UI-012 conserva la composición y el tratamiento fotográfico aprobado. El fallo

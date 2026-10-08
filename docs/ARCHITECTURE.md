@@ -326,6 +326,37 @@ el que se evaluaron.
 
 ## Identidad, acceso y negocio
 
+### Recuperación y confirmación · UI-013 · 08/10/2026
+
+`AuthSessionChange` diferencia perfil autenticado y sesión de recuperación.
+El datasource conserva `AuthChangeEvent.passwordRecovery` del SDK; el Cubit lo
+presenta y `go_router` mantiene la ruta de contraseña hasta terminar/cancelar.
+El arranque escucha `initialSession` en un único flujo, sin una consulta paralela
+que pudiera restaurar el perfil y saltarse el recorrido. Lecturas/respuestas
+anteriores se descartan al cambiar o cerrar la identidad; renovar la misma
+recuperación no reemplaza guardado ni confirmación.
+
+Solicitud, reenvío y actualización usan Supabase Auth/PKCE; el servidor autoriza
+el cambio. El nuevo marcador de preferencias guarda propietario y éxito visible,
+solo para restaurar la interfaz con la sesión actual del SDK. No almacena la
+nueva contraseña ni tokens del enlace; no modifica la persistencia de sesión
+del SDK. La guarda de página no representa una restricción de permisos de
+Supabase. Terminar/cancelar usa `SignOutScope.local`.
+
+`AuthRedirect` resuelve el retorno por entorno: origen/path web sin parámetros,
+callback móvil `es.entrenaop://auth-callback/` y override `AUTH_REDIRECT_URL`.
+HTTP local se permite únicamente en desarrollo; se rechazan credenciales,
+consulta o fragmento en el destino. Android/iOS entregan el callback al SDK,
+con la interpretación automática de Flutter desactivada. La configuración
+parcial en `tools/account_access_dev/supabase/config.toml` declara únicamente
+retornos de desarrollo y conserva las demás propiedades remotas. No se cambia
+RLS, rol, derechos comerciales ni producción. Pruebas del SDK con HTTP simulado
+y configuración remota comprobada; correo real, dispositivo e iOS compilado
+pendientes. Alcance y límites en
+[REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
+
+### Separación de responsabilidades
+
 - Supabase Auth representa la identidad.
 - El perfil contiene datos personales de la aplicación.
 - Los permisos administrativos se modelan por separado.
