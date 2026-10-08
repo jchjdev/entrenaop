@@ -343,7 +343,14 @@ estructurado. Esta diferencia será una entrada auditable para la adaptación.
 UI-019 corrige la visibilidad del abandono: depende de la ejecución en curso,
 no de que queden series pendientes, y sigue disponible esperando el cierre final.
 Salir sin guardar campos no confirmados no elimina series ya registradas.
-Estado, alcance y propuesta de salidas en
+UI-020 ofrece desde la flecha seguir, retomar o abandonar con la misma operación
+y motivo que el botón inferior. `WorkflowDraftGuard.confirmExit` es opcional y
+se ejecuta después de los controles existentes de guardado/borrador; los demás
+formularios conservan su confirmación predeterminada. Un fallo de abandono no
+autoriza al router a salir. Los tiempos escritos por el reloj o por el objetivo
+se convierten de segundos a min:seg; el resultado mantiene segundos reales,
+sin aplicar a esos valores el formateador de dígitos destinado al teclado.
+Estado, alcance y regresiones de salidas en
 [SESSION_CONTROLS_2026_10_08.md](SESSION_CONTROLS_2026_10_08.md).
 
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
@@ -700,7 +707,11 @@ reutilizando el WAV de preparación, sin reproducir segundos pasados al restaura
 no cambia prescripción ni confirmación de resultados. El descanso restaurado
 conserva duración original y tiempo ya transcurrido. El diálogo permite probar
 sonido sin guardar preferencias; no solicita permisos adicionales. Verificación
-en pruebas, Chromium y APK debug, con compilación/escucha iOS nueva pendientes.
+en pruebas, Chromium y APK debug. IOS-002 acredita compilación y reproducción
+del banco iOS en simulador y escucha confirmada por Javier: la ejecución antigua
+carecía del plugin y los WAV; actualizar/reconstruir fue suficiente, sin cambios
+en el contexto de audio. Vibración física y convivencia con otros sonidos
+requieren dispositivo real.
 No garantiza ejecución en segundo plano. Contrato, recursos y límites en
 [WORKOUT_AUDIO_2026_10_08.md](WORKOUT_AUDIO_2026_10_08.md).
 

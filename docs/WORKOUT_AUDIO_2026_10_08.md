@@ -94,9 +94,10 @@ inventan una mitad ni un final. El ejecutor sigue requiriendo confirmar resultad
   de reproducción, no una valoración humana del volumen o de los tonos.
   Prueba explícita y recorrido final de 20 segundos también correctos: preparación,
   inicio, un solo aviso intermedio de diez segundos y final, sin errores de consola.
-- iOS: compatibilidad de SPM revisada en el paquete resuelto; compilación con
-  el plugin nuevo y escucha en simulador/dispositivo **pendientes**. Windows no
-  permite acreditar Xcode. No se presenta UI-018 como cierre de audio nativo.
+- iOS en UI-018: compatibilidad de SPM revisada en el paquete resuelto; esa
+  comprobación desde Windows no acreditaba compilación o escucha nativas.
+  IOS-002 añade después compilación/reproducción en simulador y escucha de
+  Javier, como se detalla más abajo. Dispositivo físico sigue pendiente.
 - No se implementan avisos garantizados con pantalla bloqueada o aplicación
   suspendida. El diálogo indica mantener la sesión en pantalla. El trabajo en
   segundo plano necesitaría su propio diseño y verificación.
@@ -118,7 +119,23 @@ ni datos personales; no representan un rediseño de la sesión:
 
 ## Siguiente recorrido único
 
-Actualizar la copia del Mac con el bloque guardado, preparar dependencias con
+**IOS-002, 08/10/2026:** Javier confirma sonido en navegador Android y comunica
+silencio en simulador iOS. Autoriza coordinar «Prepara EntrenaOP para iOS» del
+proyecto EntrenaOP MacOS. La copia y la app instalada seguían en `98e037e`, antes
+del plugin y los WAV. Tras revisar el diff, actualizar la copia limpia a
+`774361b`, preparar el lockfile y reconstruir, el banco sin cuenta compila y
+arranca en iPhone 17 Pro/iOS 26.3.1. Los cinco WAV están empaquetados e idénticos
+a los del repositorio; SPM registra audioplayers_darwin 6.5.0.
+
+El banco confirma estados playing de preparación, inicio, mitad, diez segundos,
+3/2/1, final y descanso. Javier confirma en ese chat **«Sí, ahora suena»**. Análisis
+limpio y 621 pruebas correctas con la omisión web existente; app principal
+relanzada con Supabase de desarrollo. Sin cambios de código, dependencias,
+configuración iOS ni sesión playback/mixWithOthers. La vibración estaba activada
+y sus llamadas no dieron errores, pero el simulador no acredita sensación física.
+[Herramientas y comprobación nativa](IOS_DEVELOPMENT.md).
+
+Para preparar una copia actualizada del Mac, usar las dependencias con
 `flutter pub get --enforce-lockfile`, detener y volver a lanzar la app en iOS
 de desarrollo (el plugin nuevo requiere reinicio completo). En una sesión:
 **Avisos del temporizador → Probar sonido**, seguido de un intervalo de 40
@@ -127,6 +144,8 @@ auriculares cuando haya dispositivo físico disponible. El banco sin cuenta
 puede ejecutarse también con `flutter run -d <simulador> -t
 tools/workout_cue_probe.dart`.
 
-No abrir otro bloque grande antes de resolver este recorrido o dejar su límite
-explícito. Comparativas configurables, publicación segura, vídeos, negocio y
-motores conservan sus pendientes propios.
+El siguiente recorrido recomendado es comprobar sonido y vibración en iPhone/
+Android físicos cuando estén disponibles, incluyendo volumen/silencio, música,
+auriculares y una sesión real. Segundo plano no se da por implementado.
+Comparativas configurables, publicación segura, vídeos, negocio y motores
+conservan sus pendientes propios.

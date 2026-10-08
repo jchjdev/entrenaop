@@ -1,5 +1,29 @@
 # Roadmap de EntrenaOP
 
+**UI-020, 08/10/2026 · tiempo y salidas verificados:** corregido el valor de
+segundos que el temporizador escribía sin formato en Tiempo realizado. 20 se
+muestra como 0:20 y se confirma como 20 segundos; también comprobados 90 y 3601.
+La flecha ofrece seguir, retomar o abandonar conservando resultados con motivo.
+Cancelación, error/reintento y sincronización pendiente mantienen su contrato.
+Diálogos desplazables a 320 px con texto doble. Análisis limpio en app/admin/
+entrena_ui y baterías completas de 630/91/6 pruebas correctas, con las dos
+omisiones existentes; 30 regresiones específicas correctas.
+[Detalle](SESSION_CONTROLS_2026_10_08.md).
+
+**IOS-002, 08/10/2026 · audio del simulador comprobado:** la copia del Mac y la
+app instalada seguían en 98e037e, antes de incorporar plugin y WAV. Actualizada
+sin cambios de código a 774361b y reconstruida: banco iOS compila, arranca y
+confirma reproducción de todos los avisos. Javier confirma «Sí, ahora suena».
+Análisis limpio, 621 pruebas correctas con la omisión web; app principal
+relanzada con Supabase de desarrollo. La vibración estaba activada y sus llamadas
+no dieron errores. [Evidencia y límites](IOS_DEVELOPMENT.md).
+
+El único siguiente recorrido recomendado es probar sonido y vibración en un
+dispositivo físico cuando esté disponible, incluyendo volumen/silencio, música,
+auriculares y una sesión real. No se acredita vibración física ni segundo plano
+en simulador. Descartar resultados registrados, negocio y motores mantienen
+su alcance aparte; no se requiere abrir correo en el simulador para este bloque.
+
 **UI-019, 08/10/2026 · correcciones localizadas verificadas:** los vídeos de
 Javier permiten reproducir la ausencia de abandono en el cierre final y el
 ancho fijo de los días en Mi semana. Ambos corregidos conservando diseño y
@@ -9,10 +33,9 @@ regresiones de fallo/reintento/sincronización, anchos y restauración, además 
 tres capturas de semana actual y banco web compilado. Cuenta real de cinco
 segundos en Chromium con tres pitidos finales y final aceptados, sin errores.
 [Cambios, evidencia y límites](SESSION_CONTROLS_2026_10_08.md).
-La salida con opciones unificadas y el posible descarte total son propuestas
-pendientes de contrato, no cambios ya implementados. El único siguiente
-recorrido recomendado sigue siendo comprobar la escucha nativa en el Mac
-indicada en UI-018; este arreglo no acredita esa revisión ni un cierre global.
+UI-020 amplía la salida con opciones; el posible descarte total sigue pendiente
+de contrato. La recomendación original de escucha en el Mac queda comprobada
+en IOS-002; este arreglo por sí solo no acredita un cierre global.
 
 **UI-018, 08/10/2026 · sonido implementado, revisión nativa abierta:** corregido
 el adaptador que usaba SystemSound.alert, ignorado en Android/iOS/web. Cinco
@@ -24,10 +47,11 @@ reproducción real aceptada en Chromium y APK debug compilada. Se mantiene el
 aspecto de la app y la configuración iOS del Mac. No modifica motores, negocio,
 SQL ni producción. [Recorrido, evidencia y límites](WORKOUT_AUDIO_2026_10_08.md).
 
-El único siguiente recorrido recomendado es actualizar y reiniciar completamente
+El recorrido recomendado originalmente fue actualizar y reiniciar completamente
 la app de desarrollo en el Mac, compilar el plugin nuevo y escuchar Probar sonido
 y un intervalo/descanso. SPM revisado por configuración, sin acreditar aún ese
-arranque o escucha. Android físico, música/auriculares y segundo plano no se
+arranque o escucha en esa comprobación; IOS-002 añade después esa evidencia.
+Android físico, música/auriculares y segundo plano no se
 dan por comprobados. Javier comunica una revisión superficial positiva en
 simulador de guardado, Evolución y fotografías; no cierra la auditoría
 autenticada global. Recuperación de correo nativa puede esperar. Comparativas

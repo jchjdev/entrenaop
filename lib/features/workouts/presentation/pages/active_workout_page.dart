@@ -43,11 +43,61 @@ class ActiveWorkoutPage extends StatelessWidget {
     isBusy: () =>
         context.read<ActiveWorkoutCubit>().state.status ==
         ActiveWorkoutStatus.saving,
-    title: '¿Salir de la sesión?',
-    message: 'Las series confirmadas se conservan y podrás retomar la sesión desde tu agenda. Los datos que no hayas confirmado en pantalla no se registran. Salir no abandona la sesión.',
-    exitLabel: 'Salir y retomar después',
+    confirmExit: _confirmExit,
     child: _buildContent(context),
   );
+
+  Future<bool> _confirmExit(BuildContext context) async {
+    final action = await showDialog<_SessionExitAction>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        scrollable: true,
+        title: const Text('¿Salir de la sesión?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Las series confirmadas se conservan. Puedes retomar la sesión '
+              'después o cerrarla definitivamente. Los datos que no hayas '
+              'confirmado en pantalla no se registran al salir.',
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _SessionExitAction.resumeLater),
+              child: const Text(
+                'Salir y retomar después',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _SessionExitAction.abandon),
+              icon: const Icon(Icons.flag_outlined),
+              label: const Text(
+                'Abandonar y conservar lo realizado',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Seguir aquí'),
+          ),
+        ],
+      ),
+    );
+    if (!context.mounted) return false;
+    return switch (action) {
+      _SessionExitAction.resumeLater => true,
+      _SessionExitAction.abandon => _requestWorkoutAbandonment(context),
+      null => false,
+    };
+  }
 
   Widget _buildContent(BuildContext context) {
     return Scaffold(
@@ -260,7 +310,9 @@ class _ActiveContentState extends State<_ActiveContent> {
                         style: TextStyle(color: Colors.white54),
                       ),
                       TextButton.icon(
-                        onPressed: saving ? null : _requestAbandonment,
+                        onPressed: saving
+                            ? null
+                            : () => _requestWorkoutAbandonment(context),
                         icon: const Icon(Icons.flag_outlined),
                         label: const Text(
                           'Abandonar la sesión definitivamente',
@@ -309,59 +361,66 @@ class _ActiveContentState extends State<_ActiveContent> {
       maxHeartRateBpm: maxHeartRate,
     );
   }
+}
 
-  Future<void> _requestAbandonment() async {
-    final reason = await showDialog<WorkoutAbandonmentReason>(
-      context: context,
-      builder: (dialogContext) {
-        WorkoutAbandonmentReason? selected;
-        return StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: const Text('Abandonar sesión'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'La sesión se cerrará, pero conservaremos todo lo que ya has realizado. ¿Cuál es el motivo?',
-                ),
-                const SizedBox(height: 18),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: WorkoutAbandonmentReason.values
-                      .map(
-                        (reason) => ChoiceChip(
-                          label: Text(_abandonmentReasonLabel(reason)),
-                          selected: selected == reason,
-                          onSelected: (_) {
-                            setDialogState(() => selected = reason);
-                          },
-                        ),
-                      )
-                      .toList(growable: false),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Seguir entrenando'),
+enum _SessionExitAction { resumeLater, abandon }
+
+Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
+  final reason = await showDialog<WorkoutAbandonmentReason>(
+    context: context,
+    builder: (dialogContext) {
+      WorkoutAbandonmentReason? selected;
+      return StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          scrollable: true,
+          title: const Text('Abandonar sesión'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'La sesión se cerrará, pero conservaremos todo lo que ya has realizado. ¿Cuál es el motivo?',
               ),
-              FilledButton(
-                onPressed: selected == null
-                    ? null
-                    : () => Navigator.pop(dialogContext, selected),
-                child: const Text('Confirmar abandono'),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: WorkoutAbandonmentReason.values
+                    .map(
+                      (reason) => ChoiceChip(
+                        label: Text(_abandonmentReasonLabel(reason)),
+                        selected: selected == reason,
+                        onSelected: (_) {
+                          setDialogState(() => selected = reason);
+                        },
+                      ),
+                    )
+                    .toList(growable: false),
               ),
             ],
           ),
-        );
-      },
-    );
-    if (reason == null || !mounted) return;
-    await context.read<ActiveWorkoutCubit>().abandon(reason);
-  }
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Seguir entrenando'),
+            ),
+            FilledButton(
+              onPressed: selected == null
+                  ? null
+                  : () => Navigator.pop(dialogContext, selected),
+              child: const Text('Confirmar abandono'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+  if (reason == null || !context.mounted) return false;
+  final cubit = context.read<ActiveWorkoutCubit>();
+  await cubit.abandon(reason);
+  // El router solo permite salir tras el cierre confirmado o encolado.
+  // Un fallo o la cancelación del motivo mantiene la pantalla y su borrador.
+  return cubit.state.status == ActiveWorkoutStatus.abandoned;
 }
 
 class _AmrapCard extends StatefulWidget {
@@ -640,7 +699,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
             WorkoutBlockFormat.coolDown,
           ].contains(set.blockFormat)
           ? ''
-          : _integer(set.targetDurationSeconds),
+          : set.targetDurationSeconds == null
+          ? ''
+          : _clock(set.targetDurationSeconds!),
     );
     _distanceController = TextEditingController(
       text:
@@ -960,7 +1021,7 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   timerStore: widget.timerStore,
                   enabled: !widget.saving,
                   onElapsedChanged: (elapsed) {
-                    _durationController.text = elapsed.toString();
+                    _durationController.text = _clock(elapsed);
                   },
                   onPreparationTick: () => unawaited(
                     widget.cueService.signal(WorkoutCue.preparationTick),

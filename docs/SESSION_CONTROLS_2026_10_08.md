@@ -1,4 +1,44 @@
-# Sesión y ancho de Mi semana · UI-019 · 08/10/2026
+# Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
+
+## Ampliación UI-020: tiempo realizado y flecha
+
+Javier muestra un reloj de 20 segundos finalizado que escribe `20` en Tiempo
+realizado (min:seg); la validación lo rechaza. Los input formatters solo actúan
+al escribir con el teclado, no al asignar el texto del controlador. El objetivo
+inicial y los segundos emitidos por el reloj se formatean ahora como min:seg:
+`20 → 0:20`, `90 → 1:30`, `3601 → 60:01`. No se interpretan segundos reales como
+dígitos de teclado. La confirmación conserva 20, 90 y 3601 segundos en el contrato
+de resultados; escribir manualmente 20 sigue convirtiéndose en 0:20.
+
+La flecha ofrece **Seguir aquí**, **Salir y retomar después** y **Abandonar y
+conservar lo realizado**. La última opción reutiliza el mismo diálogo de motivo
+y la misma operación que el botón inferior. Cancelar el motivo o fallar el
+guardado impide salir y mantiene el borrador; el abandono confirmado o encolado
+conserva las series y permite volver. Los dos diálogos admiten desplazamiento
+con texto grande. No hay eliminación de series, descarte de historial ni cambio
+en la interpretación de las sesiones por los motores.
+
+El guard compartido incorpora un callback opcional de confirmación, después de
+sus controles existentes de estado ocupado y guardado de borrador. Se conserva
+el router y la confirmación predeterminada de los formularios de app/admin.
+
+Verificación del 08/10/2026:
+
+- Las cuatro regresiones de valor inicial/reloj rechazaban el formato anterior;
+  las de abandono desde atrás no encontraban la opción antes del arreglo.
+- **30 pruebas específicas correctas** de ejecución, guard y formato: incluye
+  guardado sin reescribir, 20 manual, motivo, cancelación, error/reintento,
+  sincronización pendiente y 320 px con texto doble.
+- Análisis limpio en app, admin y entrena_ui. Baterías completas: **630**, **91**
+  y **6** correctas; se mantienen las omisiones exclusivas web y captura optativa.
+- Recorridos de sesión con repositorio de prueba. No hay cambios SQL ni se
+  acredita aquí una prueba autenticada nueva del servidor.
+- Las fotos, Inicio/Mi plan, negocio y motores no se modifican. Javier confirma
+  escucha en navegador Android. IOS-002 acredita por separado que actualizar y
+  reconstruir la copia antigua del Mac resuelve el silencio del simulador,
+  con escucha confirmada por Javier; los dispositivos físicos quedan pendientes.
+
+## Alcance original de UI-019
 
 ## Abandono: fallo reproducido y corrección
 
@@ -34,12 +74,12 @@ el estado de la cita con el de la ejecución. Abandonar una sesión no pausa ni
 abandona toda la preparación. Los motores mantienen su interpretación existente
 del estado y del motivo; no se cambian sus políticas en esta tarea.
 
-Javier propone valorar una salida más clara con opciones de retomar, abandonar
-conservando resultados y salir sin guardar. **Pendiente de diseño:** unificar
-esas opciones en un único diálogo. «Sin guardar» necesita distinguir descartar
+Javier propuso valorar una salida más clara con opciones de retomar, abandonar
+conservando resultados y salir sin guardar. UI-020 incorpora seguir, retomar y
+abandonar desde la flecha. **Pendiente de contrato:** «Sin guardar» distingue descartar
 campos no confirmados de eliminar series ya guardadas. La segunda operación
 afectaría historial y entradas de los planes y requiere su propio contrato; no
-se trata como un abandono ordinario. Esta propuesta no está implementada ni
+se trata como un abandono ordinario. La eliminación no está implementada ni
 se registra como una autorización para borrar datos.
 
 ## Mi semana: ancho disponible
@@ -104,6 +144,7 @@ el usuario ni garantizar reproducción con la aplicación suspendida.
 
 ![Preparación, inicio, tres pitidos y final reproducidos](visual-audit/session-controls-2026-10-08/audio-3-2-1.png)
 
-El siguiente recorrido recomendado sigue siendo comprobar el audio actualizado
-en el Mac/simulador y registrar la escucha nativa; el diálogo de salidas queda
-como propuesta para acordar después, sin mezclarlo con borrado de historial.
+IOS-002 completa después la comprobación del audio en Mac/simulador. El siguiente
+recorrido es comprobar sonido/vibración en dispositivo físico cuando esté
+disponible. UI-020 cierra las opciones de la flecha, conservando separado el
+posible borrado de historial.

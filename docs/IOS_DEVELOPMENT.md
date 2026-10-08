@@ -95,3 +95,26 @@ La configuración mezcla los pitidos con otro audio usando playback/mixWithOther
 Volumen/silencio y convivencia con vídeo, música y auriculares necesitan prueba
 nativa. No se habilita una garantía de avisos con pantalla bloqueada o app
 suspendida. [Contrato y comprobaciones actuales](WORKOUT_AUDIO_2026_10_08.md).
+
+## Comprobación posterior del audio · IOS-002 · 08/10/2026
+
+Investigación coordinada con «Prepara EntrenaOP para iOS», autorizada por Javier.
+La copia limpia del Mac y la app instalada seguían en `98e037e`; faltaban el
+plugin de audio y los cinco WAV. Se revisó el diff de los dos commits nuevos,
+avanzó hasta `774361b` y preparó las dependencias con lockfile. No se modificó
+código ni se añadió otro commit en el Mac.
+
+- Banco `tools/workout_cue_probe.dart` compilado y arrancado en iPhone 17 Pro,
+  iOS 26.3.1, con audioplayers_darwin 6.5.0 registrado por SPM.
+- Cinco WAV empaquetados e idénticos a los del repositorio. Reproducción de
+  preparación, inicio, mitad, diez segundos, cuenta final 3/2/1, final y descanso.
+- Javier confirma **«Sí, ahora suena»** al probarlo. Sin errores de audio.
+- Análisis limpio y **621 pruebas correctas**, con una exclusiva web omitida.
+- App principal relanzada con Supabase de desarrollo, árbol limpio en 774361b.
+- Vibración activada, generadores hápticos nativos de Flutter y llamadas sin
+  errores. Esto no acredita una vibración física en el simulador.
+
+La causa comprobada fue la versión antigua ejecutada, no la configuración
+playback/mixWithOthers. Mantener actualizados Git y el ejecutable: hot reload no
+incorpora un plugin nuevo. La escucha y vibración en dispositivo real, volumen/
+silencio, música, auriculares y una sesión de entrenamiento siguen pendientes.

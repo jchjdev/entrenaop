@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_us
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,191 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  for (final queued in [false, true]) {
+    testWidgets(
+      'la flecha permite abandonar y volver con sincronización pendiente $queued',
+      (tester) async {
+        final repository = _Repository()
+          ..execution = _executionWithStatuses([
+            WorkoutSetStatus.completed,
+            WorkoutSetStatus.pending,
+          ])
+          ..abandonmentDisposition = queued
+              ? WorkoutMutationDisposition.queued
+              : WorkoutMutationDisposition.synced;
+        final savedSets = repository.execution.sets;
+        final (cubit, router) = await _mountSession(tester, repository);
+        await _chooseExitAbandonment(tester);
+        await tester.tap(find.text('Falta de tiempo'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Confirmar abandono'));
+        await tester.pumpAndSettle();
+        expect(repository.abandonAttempts, 1);
+        expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
+        expect(cubit.state.execution!.sets, savedSets);
+        expect(
+          cubit.state.execution!.abandonmentReason,
+          WorkoutAbandonmentReason.lackOfTime,
+        );
+        expect(cubit.state.pendingSyncCount, queued ? 1 : 0);
+        expect(router.state.matchedLocation, '/');
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'cancelar o fallar el abandono desde atrás mantiene la sesión y el borrador',
+    (tester) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses([
+          WorkoutSetStatus.completed,
+          WorkoutSetStatus.completed,
+        ])
+        ..failAbandonment = true;
+      final (cubit, router) = await _mountSession(tester, repository);
+      final savedSets = repository.execution.sets;
+      final notes = find.widgetWithText(
+        TextField,
+        '¿Cómo te has sentido? (opcional)',
+      );
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, 'Borrador que quiero conservar');
+      await _chooseExitAbandonment(tester);
+      await tester.tap(find.text('Seguir entrenando'));
+      await tester.pumpAndSettle();
+      expect(repository.abandonAttempts, 0);
+      expect(router.state.matchedLocation, '/session');
+      expect(
+        tester.widget<TextField>(notes).controller!.text,
+        'Borrador que quiero conservar',
+      );
+      await _chooseExitAbandonment(tester);
+      await tester.tap(find.text('Falta de tiempo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirmar abandono'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.status, ActiveWorkoutStatus.failure);
+      expect(router.state.matchedLocation, '/session');
+      expect(cubit.state.execution!.sets, savedSets);
+      expect(
+        tester.widget<TextField>(notes).controller!.text,
+        'Borrador que quiero conservar',
+      );
+      repository.failAbandonment = false;
+      await _chooseExitAbandonment(tester);
+      await tester.tap(find.text('Falta de tiempo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirmar abandono'));
+      await tester.pumpAndSettle();
+      expect(repository.abandonAttempts, 2);
+      expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
+      expect(router.state.matchedLocation, '/');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('las opciones de salida son accesibles con texto doble', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _Repository();
+    final (_, router) = await _mountSession(
+      tester,
+      repository,
+      textScaler: const TextScaler.linear(2),
+    );
+    await tester.tap(find.byTooltip('Salir de la sesión'));
+    await tester.pumpAndSettle();
+    final abandon = find.text('Abandonar y conservar lo realizado');
+    await tester.ensureVisible(abandon);
+    await tester.pumpAndSettle();
+    await tester.tap(abandon);
+    await tester.pumpAndSettle();
+    expect(find.text('Abandonar sesión'), findsOneWidget);
+    await tester.tap(find.text('Seguir entrenando'));
+    await tester.pumpAndSettle();
+    expect(router.state.matchedLocation, '/session');
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final (seconds, expectedText) in [
+    (20, '0:20'),
+    (90, '1:30'),
+    (3601, '60:01'),
+  ]) {
+    testWidgets(
+      'el tiempo inicial de $seconds s se puede confirmar sin reescribir',
+      (tester) async {
+        final repository = _Repository()..execution = _timedExecution(seconds);
+        await _mountSession(tester, repository);
+        final field = find.widgetWithText(
+          TextFormField,
+          'Tiempo realizado (min:seg)',
+        );
+        expect(
+          tester.widget<TextFormField>(field).controller!.text,
+          expectedText,
+        );
+        final save = find.text('Guardar serie');
+        await tester.ensureVisible(save);
+        await tester.pumpAndSettle();
+        await tester.tap(save);
+        await tester.pumpAndSettle();
+        expect(repository.lastSetResult?.actualDurationSeconds, seconds);
+        expect(find.text('Introduce un tiempo válido'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
+    'el tiempo escrito por el reloj conserva segundos y formato válido',
+    (tester) async {
+      final repository = _Repository()..execution = _timedExecution(90);
+      await _mountSession(tester, repository);
+      final timer = tester.widget<WorkoutSetCountdown>(
+        find.byType(WorkoutSetCountdown),
+      );
+      timer.onElapsedChanged(20);
+      await tester.pump();
+      final field = find.widgetWithText(
+        TextFormField,
+        'Tiempo realizado (min:seg)',
+      );
+      expect(tester.widget<TextFormField>(field).controller!.text, '0:20');
+      final save = find.text('Guardar serie');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(repository.lastSetResult?.actualDurationSeconds, 20);
+      expect(find.text('Introduce un tiempo válido'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('escribir 20 manualmente guarda veinte segundos', (tester) async {
+    final repository = _Repository()..execution = _timedExecution(90);
+    await _mountSession(tester, repository);
+    final field = find.widgetWithText(
+      TextFormField,
+      'Tiempo realizado (min:seg)',
+    );
+    await tester.ensureVisible(field);
+    await tester.enterText(field, '20');
+    expect(tester.widget<TextFormField>(field).controller!.text, '0:20');
+    final save = find.text('Guardar serie');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.lastSetResult?.actualDurationSeconds, 20);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final scenario in <String, List<WorkoutSetStatus>>{
     'antes de confirmar ninguna serie': [
       WorkoutSetStatus.pending,
@@ -509,10 +695,29 @@ WorkoutExecution _executionWithStatuses(List<WorkoutSetStatus> statuses) {
   );
 }
 
+WorkoutExecution _timedExecution(int seconds) => _execution().copyWith(
+  sets: [
+    WorkoutExecutionSet(
+      id: 'set-1',
+      blockOrder: 0,
+      blockName: 'Trabajo',
+      itemOrder: 0,
+      exerciseId: 'plank',
+      exerciseName: 'Plancha',
+      setOrder: 0,
+      targetDurationSeconds: seconds,
+      targetRir: 2,
+      restAfterSeconds: 0,
+      status: WorkoutSetStatus.pending,
+    ),
+  ],
+);
+
 Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   WidgetTester tester,
-  _Repository repository,
-) async {
+  _Repository repository, {
+  TextScaler textScaler = TextScaler.noScaling,
+}) async {
   final cubit = _cubit(repository);
   addTearDown(cubit.close);
   await cubit.load();
@@ -540,10 +745,25 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
     ],
   );
   addTearDown(router.dispose);
-  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  await tester.pumpWidget(
+    MaterialApp.router(
+      routerConfig: router,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+        child: child!,
+      ),
+    ),
+  );
   router.push('/session');
   await tester.pumpAndSettle();
   return (cubit, router);
+}
+
+Future<void> _chooseExitAbandonment(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Salir de la sesión'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Abandonar y conservar lo realizado'));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _openAbandonment(WidgetTester tester) async {

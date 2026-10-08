@@ -41,6 +41,7 @@ class WorkflowDraftGuard extends StatefulWidget {
     required this.child,
     this.isBusy,
     this.saveDraftBeforeExit,
+    this.confirmExit,
     this.title = '¿Salir sin guardar?',
     this.message = 'Se perderán los cambios que no hayas guardado en esta pantalla. Los datos ya guardados se conservan.',
     this.exitLabel = 'Salir sin guardar',
@@ -49,6 +50,10 @@ class WorkflowDraftGuard extends StatefulWidget {
   final bool Function() hasUnsavedChanges;
   final bool Function()? isBusy;
   final Future<bool> Function()? saveDraftBeforeExit;
+
+  /// Un flujo con varias salidas puede decidir sin cambiar el guard del router
+  /// ni el comportamiento predeterminado de los demás formularios.
+  final Future<bool> Function(BuildContext context)? confirmExit;
   final String title, message, exitLabel;
   final Widget child;
   @override
@@ -97,6 +102,9 @@ class _WorkflowDraftGuardState extends State<WorkflowDraftGuard> {
       return true;
     }
     if (!mounted) return false;
+    if (widget.confirmExit case final confirmExit?) {
+      return confirmExit(context);
+    }
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(

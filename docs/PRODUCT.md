@@ -1,26 +1,37 @@
 # Producto EntrenaOP
 
+**UI-020, 08/10/2026 · tiempo y salida corregidos:** el tiempo que escribe el
+reloj se presenta en min:seg y se registra en segundos, sin exigir reescribirlo.
+La flecha ofrece seguir aquí, salir y retomar después, o abandonar conservando
+lo realizado con motivo. Cancelar o fallar conserva la sesión y el borrador.
+Los diálogos admiten desplazamiento con texto grande. Análisis limpio en app,
+admin y UI compartida; 630/91/6 pruebas correctas con las omisiones existentes.
+Eliminar resultados ya guardados sigue fuera de este recorrido.
+[Contrato y regresiones](SESSION_CONTROLS_2026_10_08.md).
+
 **UI-019, 08/10/2026 · sesión y Mi semana:** abandono disponible mientras la
 ejecución esté en curso, también tras resolver todas las series, conservando
 resultados y motivo. Mi semana reparte los días en todo el ancho del contenido;
 texto ampliado y pantallas estrechas permiten desplazamiento legible. Javier
 confirma pitidos a tres, dos y un segundo del final de trabajo, seguidos del
 sonido de final. Análisis limpio y 621 pruebas correctas con una omisión web
-existente. La propuesta de unificar retomar/abandonar/descartar queda pendiente
-de acordar su efecto sobre los datos. [Recorrido y límites](SESSION_CONTROLS_2026_10_08.md).
+existente. UI-020 incorpora retomar/abandonar desde la flecha; el posible
+descarte de resultados sigue pendiente de contrato.
+[Recorrido y límites](SESSION_CONTROLS_2026_10_08.md).
 
 **UI-018, 08/10/2026 · avisos reales del temporizador:** el ejecutor incluye
 pitidos locales de preparación, inicio, mitad, últimos diez segundos y final,
 también para descanso. Sonido y vibración conservan controles independientes;
 el diálogo añade Probar sonido sin guardar el borrador. Coincidencias y tiempos
 cortos evitan duplicados. Comprobado con análisis, 606 pruebas de app, 91 de
-admin, reproducción aceptada en Chromium y APK debug; escucha/compilación iOS
-con el plugin nuevo y escucha en Android físico pendientes. Se mantiene la
+admin, reproducción aceptada en Chromium y APK debug. IOS-002 acredita después
+compilación y reproducción en simulador iOS, con escucha confirmada por Javier.
+Escucha en Android físico pendiente. Se mantiene la
 sesión en pantalla para recibir avisos, sin garantía de segundo plano.
 Javier comunica una revisión superficial positiva de guardado, Evolución y
 fotos en simulador. [Criterio, pruebas y límites](WORKOUT_AUDIO_2026_10_08.md).
-El siguiente recorrido es verificar el audio nativo en el Mac y registrar el
-resultado, conservando los pendientes de publicación/negocio/motores.
+El siguiente recorrido es probar audio/vibración en dispositivo físico cuando
+esté disponible, conservando los pendientes de publicación/negocio/motores.
 
 **UI-017, 08/10/2026 · formularios más legibles:** nuevo programa admin y
 formulario compartido de ejercicios permiten leer la selección completa con
