@@ -28,15 +28,18 @@ Hostinger y la configuración SMTP en Supabase. La consulta remota acredita host
 puerto, usuario, remitente y nombre acordados; también coincide exactamente la
 plantilla versionada. El bloqueo HTTP 400 inicial del proveedor predeterminado
 queda resuelto al conectar SMTP propio. No se ha comprado ningún plan ni se han
-modificado DNS o producción. La entrega real y el recorrido desde el correo aún
-están pendientes.
+modificado DNS o producción. Javier aporta después un correo real recibido en
+Gmail: asunto español, remitente acordado y logotipo visibles. La recepción y
+esa representación quedan comprobadas; el cambio de contraseña y el acceso
+posterior siguen pendientes.
 Confirmación de alta y otras plantillas no se modifican en este tramo.
 
 Javier confirma el 08/10/2026 que ha cambiado la contraseña del buzón y guardado
 los cambios; la credencial vigente es distinta de la que apareció en la captura.
 La rotación deja de ser una tarea pendiente. Esta confirmación no acredita por
-sí sola el transporte SMTP: sigue pendiente solicitar la recuperación desde la
-app y completar el enlace en el mismo navegador o dispositivo.
+sí sola el transporte SMTP; el correo real recibido posteriormente sí acredita
+la entrega de esa solicitud. Sigue pendiente completar el enlace en el mismo
+perfil de navegador y origen donde se solicitó.
 
 El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
 su `content_path` en ese recorrido remoto. No basta un diff limpio del CLI para
@@ -67,14 +70,30 @@ configuración SMTP sigue provocando fallo. Hay cinco regresiones locales:
 python -B -m unittest discover -s tools/account_access_dev -p test_recovery_template.py
 ```
 
-## Entrega: comprobación aún abierta
+## Prueba real y perfiles de navegador
 
-Comprobar envío real, bandeja/spam, identidad del remitente, firma/alineación del
-dominio, validación del enlace, nueva contraseña y entrada posterior. No se ha
-enviado ningún correo de prueba ni se ha cambiado la contraseña de la cuenta de
-Javier. El remitente SMTP de Supabase es común a los correos de Auth, aunque aquí
-solo se ha traducido la plantilla de recuperación. Las credenciales permanecen
-en servidor y no se versionan.
+Javier confirma que solicitó la recuperación desde Chrome lanzado con F5 en
+VS Code y abrió el correo en su navegador habitual. La inspección del equipo
+comprueba dos procesos principales: Chrome habitual y Chrome con perfil temporal
+de Flutter en `localhost:55554`. La configuración de VS Code fija ese puerto y
+no fuerza otro destino de Auth. Son almacenes distintos aunque ambos navegadores
+estén en el mismo PC; esto explica el rechazo esperado del canje PKCE al pasar
+del perfil de Flutter al habitual. El mensaje de la app agrupa varias causas y
+no acredita por sí solo caducidad o reutilización del enlace.
+
+Para repetir la prueba, mantener F5 ejecutándose y abrir
+`http://localhost:55554/#/forgot-password` en Chrome habitual. Solicitar allí un
+correo nuevo y abrir el botón en ese mismo perfil, sin cambiar de puerto ni de
+`localhost` a `127.0.0.1`. No reutilizar el intento anterior. El verificador PKCE
+se conserva en el perfil y origen de la solicitud; no se cambia el flujo de
+seguridad ni se comparte almacenamiento entre perfiles para facilitar la prueba.
+
+La captura del correo recibido acredita bandeja de entrada, remitente y
+presentación en Gmail. Quedan por comprobar firma/alineación del mensaje,
+validación del enlace, nueva contraseña y entrada posterior. No se ha cambiado
+la contraseña de la cuenta de Javier. El remitente SMTP de Supabase es común a
+los correos de Auth, aunque aquí solo se ha traducido recuperación. Las
+credenciales permanecen en servidor y no se versionan.
 
 Comprobaciones del 08/10/2026:
 
@@ -111,8 +130,8 @@ La revisión de HTML en navegador con un enlace ficticio no acredita la entrega,
 la representación en todos los clientes de correo ni un recorrido autenticado.
 El panel de Supabase muestra asunto y cuerpo españoles; en su previsualización
 no carga el logotipo externo, aunque la URL es la misma que carga la vista local.
-No se atribuye una causa sin comprobarla. La imagen y el resto de la presentación
-en un correo recibido forman parte de la prueba de entrega pendiente; el texto
+La captura real aportada posteriormente por Javier muestra el logotipo y la
+presentación correctamente en Gmail; no acredita otros clientes. El texto
 alternativo identifica EntrenaOP cuando la imagen no se muestra.
 Las cuotas de Supabase y Hostinger son independientes; subir la cuota del
 proyecto o contratar Supabase Pro no amplía el plan de correo de Hostinger.
@@ -122,13 +141,15 @@ consulta sin escritura, actualización limitada a las dos propiedades,
 idempotencia y detección de cambios ajenos. Las salidas no incluyen el token ni
 la contraseña SMTP de las simulaciones. Las consultas de API acreditan la
 configuración remota; las simulaciones y regresiones acreditan el verificador
-local. Ninguna de estas comprobaciones acredita el envío real pendiente.
+local. La entrega real se acredita por separado mediante el correo recibido por
+Javier, no mediante estas comprobaciones locales.
 
 Vista revisada en navegador a 320 y 560 píxeles, con enlace ficticio:
 
 ![Vista previa del correo; no es un envío real](../../docs/visual-audit/recovery-email-2026-10-08/preview.png)
 
 Fuentes: [plantillas de Supabase](https://supabase.com/docs/guides/auth/auth-email-templates),
+[flujo PKCE](https://supabase.com/docs/guides/auth/sessions/pkce-flow),
 [SMTP de Supabase](https://supabase.com/docs/guides/auth/auth-smtp),
 [configuración SMTP de Hostinger](https://www.hostinger.com/support/1575756-how-to-get-email-account-configuration-details-for-hostinger-email/),
 [buzones de Hostinger](https://www.hostinger.com/support/1583217-how-to-create-and-manage-mailboxes-for-hostinger-email/).

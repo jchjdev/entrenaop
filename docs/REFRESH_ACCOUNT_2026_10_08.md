@@ -74,9 +74,11 @@ flowchart TD
   [Auth con contraseña](https://supabase.com/docs/guides/auth/passwords) y
   [retornos autorizados](https://supabase.com/docs/guides/auth/redirect-urls)
   complementa la revisión del SDK instalado. El canje PKCE debe completarse en
-  el navegador o dispositivo donde se solicitó el correo; la pantalla lo explica.
+  el mismo perfil de navegador y origen donde se solicitó el correo; la pantalla
+  indica abrirlo donde se pidió. Chrome temporal de F5 y Chrome habitual no
+  comparten la comprobación local, aunque se utilicen en el mismo PC.
 
-## Correo de recuperación: configuración comprobada; entrega pendiente
+## Correo de recuperación: recepción comprobada; cambio de contraseña pendiente
 
 Actualización MAIL-001: Javier confirma `acceso@entrenaop.es` como remitente
 propio, separado de su dirección personal. Asunto y HTML del correo de
@@ -89,8 +91,19 @@ confirma la configuración acordada. El bloqueo inicial del envío predeterminad
 queda resuelto; asunto/HTML e indicadores de personalización coinciden con lo
 esperado. Segunda aplicación idempotente y cinco pruebas del verificador local
 correctas. Supabase conserva el límite inicial de 30 correos por hora y 60
-segundos por usuario; Hostinger impone 100 por día. Entrega real y recorrido
-desde el enlace todavía pendientes. No se han contratado planes.
+segundos por usuario; Hostinger impone 100 por día. Javier aporta un correo real
+recibido en la bandeja de Gmail con asunto español, remitente y logotipo correctos.
+La entrega y esa representación quedan comprobadas; faltan el cambio de
+contraseña y el acceso posterior. No se han contratado planes.
+
+En el primer intento Javier solicita desde Chrome de F5 y abre el botón en su
+navegador habitual. Se comprueba que F5 utiliza un perfil temporal de Flutter en
+`localhost:55554`, separado del perfil habitual. Ese cambio de perfil explica el
+rechazo esperado por PKCE; el aviso genérico no demuestra que el enlace haya
+caducado. La siguiente prueba debe solicitar un correo nuevo desde Chrome
+habitual en ese mismo origen y completar allí el recorrido, manteniendo la app
+local ejecutándose. No se modifican el flujo de Auth ni el código para omitir
+esta comprobación.
 Configuración, comprobación y tareas abiertas en
 [Cuenta de desarrollo](../tools/account_access_dev/README.md).
 
@@ -127,10 +140,11 @@ dimensiones, fuentes y huellas del código y de las imágenes.
   de desarrollo para `MockClient`. Resolución offline sin cambiar versiones.
 - Compilaciones web debug y APK debug correctas. iOS tiene configuración de
   callback revisada, pero no se compila desde este equipo Windows.
-- **Pendiente:** correo real de alta/recuperación, apertura del enlace en web y
+- **Pendiente:** correo real de alta, apertura del enlace de recuperación en web y
   Android físico, rechazo real de un enlace caducado o reutilizado y nuevo acceso
-  con la contraseña cambiada. No se han enviado correos ni cambiado la cuenta
-  de Javier para simular ese cierre. Tampoco se ha revisado producción, SMTP,
+  con la contraseña cambiada. La recepción del correo de recuperación en Gmail
+  se acredita mediante la prueba de Javier; no se ha cambiado su contraseña ni
+  se presenta el recorrido como cerrado. Tampoco se ha revisado producción,
   dominios de publicación, almacenamiento de sesión o toda la seguridad del login.
 - Antes de publicar hay que definir y comprobar los retornos y el correo del
   entorno real. La lista con puertos localhost es exclusivamente de desarrollo;
