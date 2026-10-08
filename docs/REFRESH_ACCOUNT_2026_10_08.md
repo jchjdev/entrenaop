@@ -76,19 +76,21 @@ flowchart TD
   complementa la revisión del SDK instalado. El canje PKCE debe completarse en
   el navegador o dispositivo donde se solicitó el correo; la pantalla lo explica.
 
-## Correo de recuperación: preparación pendiente de SMTP
+## Correo de recuperación: configuración comprobada; entrega pendiente
 
 Actualización MAIL-001: Javier confirma `acceso@entrenaop.es` como remitente
 propio, separado de su dirección personal. Asunto y HTML del correo de
-recuperación están preparados en español, con aplicación remota pendiente;
+recuperación están aplicados y comprobados en español en desarrollo;
 conservan el enlace de Supabase y el logotipo de la web. No se cambian las
 plantillas de alta ni la lógica Flutter. Hostinger ya está accesible y su plan
 incluye plazas libres sin contratar nada; Javier ha creado el buzón y el panel
-confirma `acceso@entrenaop.es` activo. Sus parámetros SMTP están comprobados,
-pero la conexión con Supabase sigue pendiente. La API ha
-rechazado aplicar la plantilla: este plan gratuito
-con envío predeterminado requiere SMTP propio para personalizarla. Aún no se
-acredita remitente activado ni entrega real. No se han contratado planes.
+confirma `acceso@entrenaop.es` activo. Javier guarda SMTP en Supabase y la consulta
+confirma la configuración acordada. El bloqueo inicial del envío predeterminado
+queda resuelto; asunto/HTML e indicadores de personalización coinciden con lo
+esperado. Segunda aplicación idempotente y cinco pruebas del verificador local
+correctas. Supabase conserva el límite inicial de 30 correos por hora y 60
+segundos por usuario; Hostinger impone 100 por día. Entrega real y recorrido
+desde el enlace todavía pendientes. No se han contratado planes.
 Configuración, comprobación y tareas abiertas en
 [Cuenta de desarrollo](../tools/account_access_dev/README.md).
 

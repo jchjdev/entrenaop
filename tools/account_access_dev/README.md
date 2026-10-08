@@ -22,15 +22,14 @@ El HTML conserva `{{ .ConfirmationURL }}` para botón y enlace alternativo; no
 recibe ni solicita contraseñas, no añade seguimiento ni fija la duración del
 enlace. Utiliza el logotipo público actual de la web, con texto alternativo.
 
-**Estado al 08/10/2026:** asunto y contenido de recuperación preparados para
-desarrollo, pero **no aplicados**. La API rechaza la modificación con HTTP 400:
-el plan gratuito con el proveedor de correo predeterminado requiere configurar
-SMTP propio para personalizar las plantillas. La consulta posterior confirma
-que siguen el asunto original y la ausencia de SMTP propio. No se ha comprado
-ningún plan. **Javier ha creado `acceso@entrenaop.es` y el panel confirma el
-buzón activo**, con 98 de 100 plazas libres. La contraseña se ha completado en
-Hostinger, sin pasar por el chat. SMTP permanece pendiente de introducir la
-credencial en Supabase; el buzón aún no es el remitente del servicio Auth.
+**Estado al 08/10/2026:** buzón activo, **SMTP conectado y asunto/HTML españoles
+aplicados y comprobados en desarrollo**. Javier ha completado la contraseña en
+Hostinger y la configuración SMTP en Supabase. La consulta remota acredita host,
+puerto, usuario, remitente y nombre acordados; también coincide exactamente la
+plantilla versionada. El bloqueo HTTP 400 inicial del proveedor predeterminado
+queda resuelto al conectar SMTP propio. No se ha comprado ningún plan ni se han
+modificado DNS o producción. La entrega real y el recorrido desde el correo aún
+están pendientes.
 Confirmación de alta y otras plantillas no se modifican en este tramo.
 
 El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
@@ -53,21 +52,25 @@ Sin `--apply` solo consulta. Al aplicar envía únicamente
 contenido exacto y que las demás propiedades no cambien. No imprime la
 configuración completa, credenciales ni tokens. No guarda claves en Flutter.
 
-## Buzón y entrega: tareas aún abiertas
+La API actualiza automáticamente sus dos mapas de indicadores de personalización.
+La comprobación admite únicamente el indicador de recuperación dentro de cada
+mapa; cualquier cambio en los indicadores de otros correos, permisos, cuotas o
+configuración SMTP sigue provocando fallo. Hay cinco regresiones locales:
 
-1. Entrar en el panel de Supabase y configurar SMTP **solo en desarrollo**.
-   Host `smtp.hostinger.com`, puerto 465, usuario y remitente
-   `acceso@entrenaop.es`, nombre `EntrenaOP`. Javier introduce allí la contraseña
-   del buzón; no usar la credencial de su dirección personal. El remitente SMTP de
-   Supabase es común a los correos de Auth, aunque aquí solo se ha traducido la
-   plantilla de recuperación. Las credenciales permanecen en servidor.
-2. Aplicar la plantilla mediante el script y comprobar tanto el asunto como
-   el HTML remoto. No repetir la aplicación mientras no cambie el bloqueo SMTP.
-3. Comprobar envío real, bandeja/spam, identidad del remitente, validación del
-   enlace, nueva contraseña y entrada posterior. No se ha enviado ningún correo
-   de prueba ni se ha cambiado la contraseña de la cuenta de Javier.
+```powershell
+python -B -m unittest discover -s tools/account_access_dev -p test_recovery_template.py
+```
 
-Comprobación del panel del 08/10/2026, antes de crear el buzón:
+## Entrega: comprobación aún abierta
+
+Comprobar envío real, bandeja/spam, identidad del remitente, firma/alineación del
+dominio, validación del enlace, nueva contraseña y entrada posterior. No se ha
+enviado ningún correo de prueba ni se ha cambiado la contraseña de la cuenta de
+Javier. El remitente SMTP de Supabase es común a los correos de Auth, aunque aquí
+solo se ha traducido la plantilla de recuperación. Las credenciales permanecen
+en servidor y no se versionan.
+
+Comprobaciones del 08/10/2026:
 
 - Dominio `entrenaop.es`, plan activo **Free Business Email**, caducidad mostrada
   `2028-11-05`, **99 de 100 plazas libres**. El formulario ofrece crear el buzón
@@ -87,19 +90,33 @@ Comprobación del panel del 08/10/2026, antes de crear el buzón:
   sus destinos DKIM de Hostinger, y DMARC `v=DMARC1; p=none`. No se han modificado
   estos registros. La presencia de registros no acredita todavía la firma y
   alineación de un mensaje entregado.
-- Supabase de desarrollo conserva SMTP sin configurar y la plantilla original.
-  El panel web necesita iniciar sesión aunque el acceso del CLI ya funciona.
+- Tras guardar SMTP y aplicar la plantilla, la consulta de desarrollo confirma
+  `smtp.hostinger.com:465`, usuario/remitente `acceso@entrenaop.es`, nombre
+  `EntrenaOP`, límite inicial de **30 envíos por hora** e intervalo por usuario
+  de **60 segundos**. Este límite de Supabase se combina con los 100 envíos
+  diarios de Hostinger; aumentar uno no elimina el otro. No se han ampliado
+  cuotas ni reducido controles contra abuso manualmente.
+- Asunto y HTML remotos coinciden con los archivos versionados; SHA-256 del HTML
+  `10c4d2b975800a3e43cd30e1c86ed1b9b601e043da0c2f35bc8667d04f6bf121`.
+  Solo recuperación aparece marcada como personalizada. Segunda aplicación
+  idempotente: ninguna escritura y ninguna propiedad inesperada.
 
 La revisión de HTML en navegador con un enlace ficticio no acredita la entrega,
 la representación en todos los clientes de correo ni un recorrido autenticado.
-El proveedor predeterminado de Supabase limita destinatarios y envíos; esta
-configuración de plantilla no elimina esos límites.
+El panel de Supabase muestra asunto y cuerpo españoles; en su previsualización
+no carga el logotipo externo, aunque la URL es la misma que carga la vista local.
+No se atribuye una causa sin comprobarla. La imagen y el resto de la presentación
+en un correo recibido forman parte de la prueba de entrega pendiente; el texto
+alternativo identifica EntrenaOP cuando la imagen no se muestra.
+Las cuotas de Supabase y Hostinger son independientes; subir la cuota del
+proyecto o contratar Supabase Pro no amplía el plan de correo de Hostinger.
 
 Validación local del 08/10/2026: HTML/TOML y sintaxis comprobados; simulación de
 consulta sin escritura, actualización limitada a las dos propiedades,
 idempotencia y detección de cambios ajenos. Las salidas no incluyen el token ni
-la contraseña SMTP de las simulaciones. Esto valida la preparación local, no
-el envío pendiente ni la aplicación remota rechazada.
+la contraseña SMTP de las simulaciones. Las consultas de API acreditan la
+configuración remota; las simulaciones y regresiones acreditan el verificador
+local. Ninguna de estas comprobaciones acredita el envío real pendiente.
 
 Vista revisada en navegador a 320 y 560 píxeles, con enlace ficticio:
 

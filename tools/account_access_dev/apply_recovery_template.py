@@ -12,6 +12,28 @@ import tomllib
 ROOT = Path(__file__).resolve().parent
 PROJECT_REF = "sxbxfjqgoddzhtcyhalw"
 URL = f"https://api.supabase.com/v1/projects/{PROJECT_REF}/config/auth"
+RECOVERY_MARKERS = {
+    "mailer_subjects_custom_contents": "MAILER_SUBJECTS_RECOVERY",
+    "mailer_templates_custom_contents": "MAILER_TEMPLATES_RECOVERY_CONTENT",
+}
+
+
+def unexpected_properties(before, after, expected):
+    unexpected = []
+    for key in sorted(set(before) | set(after)):
+        if key in expected or before.get(key) == after.get(key):
+            continue
+        marker = RECOVERY_MARKERS.get(key)
+        previous, current = before.get(key), after.get(key)
+        # La API marca la recuperación como personalizada automáticamente.
+        # Solo se admite ese indicador; los de otros correos deben conservarse.
+        if marker and isinstance(previous, dict) and isinstance(current, dict):
+            if current.get(marker) is True and {
+                k: v for k, v in previous.items() if k != marker
+            } == {k: v for k, v in current.items() if k != marker}:
+                continue
+        unexpected.append(key)
+    return unexpected
 
 
 def main():
@@ -51,10 +73,7 @@ def main():
         # Dos propiedades explícitas: no cambia SMTP, permisos ni confirmación.
         request("PATCH", expected)
         after = request()
-    unexpected = sorted(
-        k for k in set(before) | set(after)
-        if k not in expected and before.get(k) != after.get(k)
-    )
+    unexpected = unexpected_properties(before, after, expected)
     matches_after = all(after.get(k) == v for k, v in expected.items())
     # Solo información del trabajo: no imprimir Auth completo ni credenciales.
     print(json.dumps({
@@ -64,6 +83,11 @@ def main():
         "content_matches": after.get("mailer_templates_recovery_content") == content,
         "html_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
         "custom_smtp_configured": bool(after.get("smtp_host")),
+        "recovery_custom_markers": {
+            key: after.get(key, {}).get(marker) is True
+            if isinstance(after.get(key), dict) else False
+            for key, marker in RECOVERY_MARKERS.items()
+        },
         "unexpected_changed_properties": unexpected,
     }, ensure_ascii=False))
     if unexpected or (args.apply and not matches_after):
