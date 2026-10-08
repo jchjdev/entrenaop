@@ -61,7 +61,15 @@ class _AdminPerformanceStrategySectionState
     future: _setup,
     builder: (context, snapshot) {
       if (snapshot.hasError) {
-        return const Text('No se pudo consultar la cobertura de fuerza.');
+        return TextButton(
+          onPressed: () => setState(() {
+            _setup = widget.repository.loadPerformanceSetup(widget.program.id);
+            _setup.ignore();
+          }),
+          child: const Text(
+            'No se pudo consultar la cobertura de fuerza. Reintentar',
+          ),
+        );
       }
       final data = snapshot.data;
       if (data == null) return const LinearProgressIndicator();
@@ -90,22 +98,45 @@ class _AdminPerformanceStrategySectionState
                           p.definitionVersion == binding?['profile_version'],
                     )
                     .firstOrNull;
+                final description = binding == null
+                    ? 'Sin estrategia de fuerza vinculada'
+                    : profile?.name ?? 'Variante vinculada';
+                final action = widget.program.enabled
+                    ? const Icon(Icons.lock_outline)
+                    : TextButton(
+                        onPressed: () => _edit(test, data, binding),
+                        child: Text(binding == null ? 'Configurar' : 'Revisar'),
+                      );
                 return Card(
-                  child: ListTile(
-                    title: Text(test.name),
-                    subtitle: Text(
-                      binding == null
-                          ? 'Sin estrategia de fuerza vinculada'
-                          : profile?.name ?? 'Variante vinculada',
-                    ),
-                    trailing: widget.program.enabled
-                        ? const Icon(Icons.lock_outline)
-                        : TextButton(
-                            onPressed: () => _edit(test, data, binding),
-                            child: Text(
-                              binding == null ? 'Configurar' : 'Revisar',
-                            ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth < 480) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                test.name,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(description),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: action,
+                              ),
+                            ],
                           ),
+                        );
+                      }
+                      return ListTile(
+                        title: Text(test.name),
+                        subtitle: Text(description),
+                        trailing: action,
+                      );
+                    },
                   ),
                 );
               },

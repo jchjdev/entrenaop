@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-014, 08/10/2026 · detalle de programa admin cerrado en desarrollo:**
+índice fijo de Contenido, Evaluación y Entrenamiento; los saltos conservan las
+secciones y sus estados. Sesiones se sitúa junto a la preparación deportiva.
+Baremo publicado se presenta como consulta; módulos y cobertura de fuerza
+ofrecen reintento. Formularios y acciones admiten texto grande y pantalla estrecha;
+las pruebas conservan estado propio al recargar y no comparten el almacenamiento
+del scroll. No se presenta una prueba ya vinculada como una prueba inexistente.
+Análisis admin limpio, 89 pruebas y seis recorridos de captura correctos
+(95 en la ejecución final conjunta), con una captura optativa existente omitida.
+24 imágenes de widgets actuales con datos ficticios y tema compartido.
+Sin cambios en deportista, paquetes, SQL, permisos, motores, negocio o producción.
+Se adelanta este tramo puntual del pulido mientras Javier no puede completar
+la prueba del correo desde el móvil; Cuenta permanece abierta para su recorrido
+real. No cierra el resto de formularios del pulido transversal ni acredita
+revisión autenticada. Detalle en [REFRESH_ADMIN_2026_10_08.md](REFRESH_ADMIN_2026_10_08.md).
+El único siguiente bloque UX recomendado sigue siendo Evolución: definir y
+mostrar comparativas de mediciones compatibles y el filtro deportivo, sin
+inferir protocolos ni tipo histórico de una plantilla actual. Antes de ampliar
+sus contratos se explicará el criterio y el impacto; el correo real se comprobará
+cuando Javier disponga del dispositivo. Vídeos, negocio y motores siguen aparte.
+
 **UI-013, 08/10/2026 · Cuenta comprobada en desarrollo, recorrido real abierto:**
 recuperación con sesión diferenciada por el SDK, pantallas persistentes de correo,
 confirmación y contraseña actualizada, errores con campos conservados y reenvío

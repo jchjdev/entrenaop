@@ -741,6 +741,29 @@ preparaciones, derechos comerciales, SQL o motores. Las comparativas nuevas
 siguen pendientes. El siguiente bloque UX es Biblioteca, con vídeo y gestión
 de ejercicios propios, respetando autoría, versiones e historial.
 
+### Detalle administrativo por secciones · UI-014 · 08/10/2026
+
+Javier pide continuar el refresh mientras no puede probar el correo desde el
+móvil. Se adelanta el detalle admin del pendiente 7, conservando tema y controles.
+Un índice fijo permite saltar a Contenido, Evaluación o Entrenamiento sin cambiar
+de página ni desmontar sus secciones. La portada y publicación quedan en el primer
+grupo; calificación, pruebas y baremos en el segundo; sesiones y preparación
+deportiva en el tercero. Los laboratorios mantienen sus rutas separadas.
+
+Publicado muestra «Ver baremo de la prueba», coherente con su consulta. Módulos
+y cobertura de fuerza admiten reintento; el mensaje distingue pruebas ausentes
+de las ya vinculadas. Acciones de edición se distribuyen en varias filas cuando
+es necesario; los selectores y las acciones de fuerza admiten texto grande.
+El estado desplegado de cada prueba se conserva con su propia clave.
+
+Análisis admin limpio, 89 pruebas y seis recorridos de captura correctos;
+una captura optativa existente omitida. 24 imágenes de widgets actuales en
+390/1100 px y 320 px con texto doble, con tema compartido y datos ficticios.
+[Imágenes, esquema y alcance](REFRESH_ADMIN_2026_10_08.md).
+No modifica Inicio/Mi plan, fotos del deportista, SQL, permisos, motores, vídeos
+ni Free/Pro. El recorrido real del correo, las comparativas de Evolución y el
+resto del pulido transversal permanecen pendientes.
+
 ### Revisión abierta: colección, catálogo y futuro Pro · 07/10/2026
 
 Javier mantiene «Tus preparaciones» como colección de las elegidas, pero pide

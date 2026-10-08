@@ -181,3 +181,17 @@ separado. Comparativas nuevas y tipo deportivo siguen pendientes; la lista de
 preparaciones filtra las no archivadas. El único siguiente bloque UX recomendado
 es Biblioteca: vídeo y gestión de ejercicios propios. Recuperación de cuenta,
 pulido transversal/admin y revisión autenticada real siguen pendientes.
+
+## Actualización: detalle admin · UI-014 · 08/10/2026
+
+Tras Biblioteca y Cuenta, Javier pide avanzar mientras no puede realizar la
+prueba del correo desde el móvil. Se adelanta este tramo del pulido: Contenido,
+Evaluación y Entrenamiento con índice fijo, formularios/estado conservados,
+consulta publicada explícita y reintentos de entrenamiento. Análisis admin limpio,
+89 pruebas y seis recorridos de captura correctos; 24 imágenes actuales con datos
+ficticios. Una captura optativa existente omitida. El resto del pulido transversal
+no se considera terminado. [Alcance e imágenes](REFRESH_ADMIN_2026_10_08.md).
+
+Comparativas y filtro deportivo de Evolución siguen siendo el siguiente bloque
+UX recomendado, con criterios de compatibilidad explícitos. El correo real y
+el recorrido autenticado permanecen pendientes; vídeos, negocio y motores aparte.

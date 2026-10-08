@@ -39,8 +39,12 @@ class _FakeExercises implements AdminExerciseRepository {
 
 class _FakeRepository implements AdminProgramRepository {
   @override
-  Future<AdminPerformanceSetup> loadPerformanceSetup(String programId) async =>
-      const AdminPerformanceSetup([], []);
+  Future<AdminPerformanceSetup> loadPerformanceSetup(String programId) async {
+    performanceReads++;
+    if (failPerformance) throw StateError('Sin conexión');
+    return const AdminPerformanceSetup([], []);
+  }
+
   @override
   Future<void> savePerformanceStrategy(
     String testId,
@@ -51,6 +55,11 @@ class _FakeRepository implements AdminProgramRepository {
   final bool allowed;
   int listCalls = 0;
   int createCalls = 0;
+  int testReads = 0;
+  int moduleReads = 0;
+  int performanceReads = 0;
+  bool failModules = false;
+  bool failPerformance = false;
   bool failCreate = false;
   final failSaves = <String>{};
   final saveCalls = <String, int>{};
@@ -116,8 +125,10 @@ class _FakeRepository implements AdminProgramRepository {
   }
 
   @override
-  Future<List<AdminProgramTest>> listTests(String programId) async =>
-      List.of(tests);
+  Future<List<AdminProgramTest>> listTests(String programId) async {
+    testReads++;
+    return List.of(tests);
+  }
 
   @override
   Future<void> createTest(String programId, AdminProgramTest test) async {
@@ -150,7 +161,11 @@ class _FakeRepository implements AdminProgramRepository {
   @override
   Future<List<AdminProgramTrainingModule>> listTrainingModules(
     String programId,
-  ) async => List.of(modules);
+  ) async {
+    moduleReads++;
+    if (failModules) throw StateError('Sin conexión');
+    return List.of(modules);
+  }
 
   @override
   Future<void> setRunningTwoKilometreModule(
@@ -395,6 +410,141 @@ Future<void> _retrySave(
 }
 
 void main() {
+  testWidgets('el índice conserva pruebas desplegadas sin repetir consultas', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..tests.add(_editorialTest)
+      ..scoringRule = _editorialRule;
+    await _details(tester, repository);
+    await tester.tap(find.byKey(const ValueKey('program-section-assessment')));
+    await tester.pumpAndSettle();
+    final testTile = find.widgetWithText(ExpansionTile, 'Dominadas');
+    await tester.ensureVisible(testTile);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: testTile, matching: find.text('Dominadas')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Protocolo oficial completo.'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('program-section-training')));
+    await tester.pumpAndSettle();
+    expect(find.text('Sesiones del programa').hitTestable(), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('program-section-assessment')));
+    await tester.pumpAndSettle();
+    expect(find.text('Editar prueba'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('program-section-content')));
+    await tester.pumpAndSettle();
+    expect(find.text('Revisar y publicar').hitTestable(), findsOneWidget);
+    expect(repository.testReads, 1);
+    expect(repository.moduleReads, 1);
+    expect(repository.performanceReads, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('entrenamiento permite reintentar ambas consultas fallidas', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..failModules = true
+      ..failPerformance = true;
+    await _details(tester, repository);
+    await tester.tap(find.byKey(const ValueKey('program-section-training')));
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, 'No se pudieron cargar los módulos. Reintentar');
+    expect(repository.moduleReads, 2);
+    expect(
+      find.textContaining('No se pudieron cargar los módulos'),
+      findsOneWidget,
+    );
+    repository.failModules = false;
+    await _tapVisible(tester, 'No se pudieron cargar los módulos. Reintentar');
+    expect(find.text('Sin módulos vinculados.'), findsOneWidget);
+    repository.failPerformance = false;
+    await _tapVisible(
+      tester,
+      'No se pudo consultar la cobertura de fuerza. Reintentar',
+    );
+    expect(repository.performanceReads, 2);
+    expect(
+      find.textContaining('No se pudo consultar la cobertura'),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('detalle publicado ofrece consulta sin edición de pruebas', (
+    tester,
+  ) async {
+    final repository = _FakeRepository(allowed: true)
+      ..tests.add(_editorialTest)
+      ..scoringRule = _editorialRule;
+    await _details(tester, repository, published: true);
+    await tester.tap(find.byKey(const ValueKey('program-section-assessment')));
+    await tester.pumpAndSettle();
+    final testTile = find.widgetWithText(ExpansionTile, 'Dominadas');
+    await tester.ensureVisible(testTile);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: testTile, matching: find.text('Dominadas')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ver baremo de la prueba'), findsOneWidget);
+    expect(find.text('Editar prueba'), findsNothing);
+    expect(find.text('Borrar prueba'), findsNothing);
+    expect(find.text('Añadir prueba'), findsNothing);
+    expect(find.text('Editar calificación'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('secciones y acciones admiten 320 px con texto doble', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 650);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeRepository(allowed: true)
+      ..tests.add(_editorialTest);
+    await tester.pumpWidget(
+      AdminTestApp(
+        theme: EntrenaTheme.dark,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: AdminProgramDetailPage(
+          program: const AdminProgram(
+            id: 'program',
+            name: 'Programa',
+            kind: 'access',
+            enabled: false,
+          ),
+          repository: repository,
+          workoutRepository: _FakeWorkouts(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (final section in ['assessment', 'training', 'content']) {
+      await tester.tap(find.byKey(ValueKey('program-section-$section')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    final testTile = find.widgetWithText(ExpansionTile, 'Dominadas');
+    await tester.ensureVisible(testTile);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(of: testTile, matching: find.text('Dominadas')),
+    );
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, 'Editar prueba');
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'regla avisa solo ante cambios actuales y cancelar conserva campos',
     (tester) async {
@@ -1114,21 +1264,16 @@ void main() {
     expect(repository.tests.single.betterDirection, 'lower');
     expect(repository.tests.single.category, 'both');
     expect(repository.tests.single.groupCode, 'exercise_1');
-    expect(find.text('Carrera 1.000 m'), findsOneWidget);
+    final runTile = find.widgetWithText(ExpansionTile, 'Carrera 1.000 m');
+    expect(runTile, findsOneWidget);
     expect(find.text('Prueba añadida al borrador.'), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
 
-    await tester.tap(find.text('Carrera 1.000 m'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Editar prueba'),
-      200,
-      scrollable: find.byType(Scrollable).first,
+    await tester.tap(
+      find.descendant(of: runTile, matching: find.text('Carrera 1.000 m')),
     );
-    await tester.drag(find.byType(ListView).last, const Offset(0, -240));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Editar prueba'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, 'Editar prueba');
     await tester.enterText(
       find.byType(TextFormField).first,
       'Carrera 1.000 metros',
@@ -1216,6 +1361,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Vincular carrera 2 km'));
     await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'Las pruebas compatibles de carrera de 2 km ya están vinculadas.',
+      ),
+      findsOneWidget,
+    );
     expect(repository.modules.single.testId, '2000');
   });
 
@@ -1309,11 +1460,17 @@ void main() {
     expect(repository.scoringRule?.aggregation, 'average');
     expect(repository.scoringRule?.minEachPoints, 1);
     expect(repository.scoringRule?.minAggregatePoints, 5);
-    expect(find.text('Dominadas'), findsOneWidget);
-    expect(find.text('Suspensión en barra'), findsOneWidget);
+    final pullupTile = find.widgetWithText(ExpansionTile, 'Dominadas');
+    expect(pullupTile, findsOneWidget);
+    expect(
+      find.widgetWithText(ExpansionTile, 'Suspensión en barra'),
+      findsOneWidget,
+    );
     await tester.pump(const Duration(seconds: 5));
 
-    await tester.tap(find.text('Dominadas'));
+    await tester.tap(
+      find.descendant(of: pullupTile, matching: find.text('Dominadas')),
+    );
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Editar baremo de la prueba'));
     await tester.tap(find.text('Editar baremo de la prueba'));
@@ -1337,8 +1494,7 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Simular calificación'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, 'Simular calificación');
     expect(find.text('Dominadas'), findsNothing);
     await tester.tap(find.textContaining('Nacimiento:'));
     await tester.pumpAndSettle();

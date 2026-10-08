@@ -984,15 +984,15 @@ Fixture: panel de administración adaptable a 1100 px; vista 2; 1100 × 900.
 
 Entrada: `/programs/:programId`.
 
-**Actual:** Portada, pruebas, reglas, módulos, estrategias, sesiones, simulación y estado editorial; publicación con validaciones y versiones.
+**Actualización acotada UI-014, 08/10/2026:** Índice fijo de Contenido (portada/publicación), Evaluación (calificación/pruebas/baremos) y Entrenamiento (sesiones/módulos/estrategias). Conserva estado y formularios; publicado ofrece «Ver baremo». Consultas de entrenamiento con reintento. [Alcance, esquema y capturas actuales](REFRESH_ADMIN_2026_10_08.md).
 
-**Pendiente / propuesta:** Pendiente acordado: reducir densidad y mejorar jerarquía. La asignación de un módulo no acredita planificación automática completa.
+**Pendiente / propuesta:** Resto del pulido transversal y revisión autenticada real. La asignación de un módulo no acredita planificación automática completa.
 
 Código: [admin_app/lib/features/programs/presentation/admin_program_detail_page.dart](../admin_app/lib/features/programs/presentation/admin_program_detail_page.dart).
 
-![Editar programa](visual-audit/2026-10-07/images/AdminProgramDetailPage-1.webp)
+![Detalle admin organizado, código actual](visual-audit/refresh-admin-2026-10-08/escritorio-borrador-contenido.webp)
 
-Fixture: un detalle se reconstruye por URL y un identificador inexistente ofrece salida; vista 1; 800 × 600.
+Fixture actualizado: widgets reales, tema compartido y datos ficticios; borrador en escritorio, 1100 × 900. Las dos vistas siguientes pertenecen al inventario inicial del 07/10.
 
 - [Estado: ADMIN vincula solo la prueba de 2 km compatible · vista 2](visual-audit/2026-10-07/images/AdminProgramDetailPage-2.webp)
 - [Estado: ADMIN vincula solo la prueba de 2 km compatible · vista 3](visual-audit/2026-10-07/images/AdminProgramDetailPage-3.webp)

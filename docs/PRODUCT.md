@@ -1,5 +1,17 @@
 # Producto EntrenaOP
 
+**UI-014, 08/10/2026 · detalle administrativo organizado:** acceso fijo a
+Contenido (portada/publicación), Evaluación (calificación, pruebas y baremos)
+y Entrenamiento (sesiones y preparación vinculada), conservando la misma página
+y sus formularios. Los publicados ofrecen consulta del baremo, sin presentar
+una edición disponible; las consultas de entrenamiento permiten reintentar.
+Comprobado en desarrollo con análisis, 89 pruebas y seis recorridos visuales.
+No modifica la app del deportista, motores ni negocio. Se adelanta este tramo
+del pulido durante la espera de la prueba real del correo, que permanece abierta.
+El siguiente bloque UX sigue siendo Evolución y sus comparativas compatibles;
+el resto del pulido transversal no se considera completado.
+Detalle en [REFRESH_ADMIN_2026_10_08.md](REFRESH_ADMIN_2026_10_08.md).
+
 **UI-013, 08/10/2026 · Cuenta implementada en desarrollo:** acceso ofrece
 recuperación de contraseña; alta/acceso con correo sin confirmar abre una
 pantalla persistente con instrucciones y reenvío. El SDK distingue recuperación

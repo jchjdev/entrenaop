@@ -760,6 +760,15 @@ recrea el router del admin para no reutilizar consultas ni formularios de otra
 cuenta. La fuente `cupertino_icons`, ya usada por el deportista, se incluye
 también en admin para los iconos de las dependencias adaptables de navegación.
 
+UI-014 organiza el detalle admin con un índice de scroll y tres grupos en la
+misma página. Las secciones permanecen montadas; pulsar el índice no crea rutas,
+reinicia consultas ni descarta formularios. Los destinos a sesiones, baremos y
+simulación conservan go_router y sus comprobaciones. Cada prueba tiene su propia
+`PageStorageKey`, distinta de la del scroll: el estado desplegado no puede leer
+la posición numérica del contenedor como un booleano. Los reintentos renuevan
+únicamente las consultas afectadas. Los selectores adaptables y el texto «Ver
+baremo» de publicados no alteran mediciones, persistencia ni permisos existentes.
+
 STR-033 aporta `TrainingContext` y su repositorio en `training_plan`. Su
 adaptador de datos lee la RPC propia `get_training_context_settings` y escribe
 con el contrato existente `save_performance_context`. Perfil y programa
