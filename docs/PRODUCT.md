@@ -1,5 +1,20 @@
 # Producto EntrenaOP
 
+**UI-016, 08/10/2026 · historial con tipo de entrenamiento:** Evolución permite
+filtrar Carrera, Fuerza y acondicionamiento, Mixta y Sin clasificar junto a
+preparación, fechas y estado. El servidor guarda el tipo al iniciar y lo conserva
+aunque después cambie la plantilla; las ejecuciones antiguas no se reclasifican.
+La consulta se mantiene al paginar/refrescar/fallar y los selectores admiten
+texto grande. Análisis limpio, 591 pruebas completas, 25 específicas y tres
+recorridos de captura correctos; una exclusiva web omitida. Migración aplicada
+solo en desarrollo, con 133 coincidentes y cuatro pruebas SQL transaccionales
+correctas. [Criterio, límites e imágenes](HISTORY_SESSION_TYPE_2026_10_08.md).
+El siguiente bloque es el pulido localizado de textos/estados/accesos de app y
+admin. Comparación configurable y recorrido autenticado global permanecen
+pendientes; recepción y recuperación web ya confirmadas por Javier en MAIL-001.
+No cambia el diseño de Inicio/Mi plan ni introduce el negocio Free/Pro.
+Las notas anteriores describen la situación en el cierre de cada tramo.
+
 **UI-015, 08/10/2026 · comparación de marcas disponible en desarrollo:**
 desde Evolución → Marcas de una preparación se elige prueba y dos fechas para
 ver las mediciones guardadas y su cambio. Tropa/FAS comparan dentro de su versión

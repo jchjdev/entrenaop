@@ -34,6 +34,7 @@ void main() {
         limit: 31,
         preparationGoalId: 'goal',
         status: WorkoutExecutionStatus.completed,
+        sessionType: WorkoutSessionType.mixed,
         before: WorkoutHistoryCursor(
           startedAt: DateTime.utc(2026, 9, 20),
           id: '00000000-0000-0000-0000-000000000001',
@@ -50,6 +51,9 @@ void main() {
       contains('scheduled_workouts!inner(preparation_goal_id)'),
     );
     expect(p['status'], 'eq.completed');
+    expect(p['session_type'], 'eq.mixed');
+    expect(p['select'], contains('session_type_policy'));
+    expect(p['select'], isNot(contains('workout_templates')));
     expect(p['or'], contains('id.lt.00000000-0000-0000-0000-000000000001'));
     expect(p['or'], contains('started_at.lt.2026-09-20T00:00:00.000Z'));
   });
@@ -69,6 +73,25 @@ void main() {
       contains(Uri.encodeComponent('gte.${from.toUtc().toIso8601String()}')),
     );
     expect(p['select'], isNot(contains('scheduled_workouts!inner')));
+  });
+  test('sin clasificar consulta NULL en servidor antes de paginar', () async {
+    await source.getExecutionHistory(
+      query: const WorkoutHistoryQuery(
+        limit: 31,
+        sessionType: WorkoutSessionType.unclassified,
+      ),
+    );
+    final p = requests.single.queryParameters;
+    expect(p['session_type'], 'is.null');
+    expect(p['user_id'], 'eq.owner');
+    expect(p['status'], 'neq.in_progress');
+    expect(p['limit'], '31');
+    requests.clear();
+    await source.getExecutionHistory();
+    expect(
+      requests.single.queryParameters.containsKey('session_type'),
+      isFalse,
+    );
   });
   test(
     'sin sesión no consulta y un cursor inválido se rechaza antes de red',

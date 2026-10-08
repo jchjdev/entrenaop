@@ -41,6 +41,36 @@ void main() {
     expect(repo.queries[2].before, isNull);
     expect(repo.queries.last.before?.id, repo.rows[29].id);
   });
+  test('tipo se mantiene en todas las páginas, refresco y fallo', () async {
+    await cubit.filter(
+      const WorkoutHistoryQuery(sessionType: WorkoutSessionType.running),
+    );
+    await cubit.loadMore();
+    expect(cubit.state.executions, hasLength(33));
+    expect(
+      cubit.state.executions.every(
+        (e) => e.sessionType == WorkoutSessionType.running,
+      ),
+      isTrue,
+    );
+    expect(cubit.state.hasMore, isFalse);
+    repo.next = (_) async => throw StateError('offline');
+    await cubit.load();
+    expect(cubit.state.query.sessionType, WorkoutSessionType.running);
+    expect(cubit.state.executions, hasLength(33));
+    repo.next = null;
+    await cubit.load();
+    expect(cubit.state.executions, hasLength(33));
+    expect(
+      repo.queries.every((q) => q.sessionType == WorkoutSessionType.running),
+      isTrue,
+    );
+    await cubit.filter(
+      const WorkoutHistoryQuery(sessionType: WorkoutSessionType.unclassified),
+    );
+    expect(cubit.state.executions, isEmpty);
+    expect(cubit.state.query.hasFilters, isTrue);
+  });
   test(
     'un historial de más de mil sesiones tampoco se trunca al refrescar',
     () async {
@@ -108,6 +138,7 @@ void main() {
       from: DateTime(2026, 9, 1),
       through: DateTime(2026, 9, 30),
       status: WorkoutExecutionStatus.abandoned,
+      sessionType: WorkoutSessionType.mixed,
     );
     await cubit.filter(query);
     old.complete(repo.rows.skip(30).take(31).toList());
@@ -117,6 +148,7 @@ void main() {
     expect(cubit.state.isLoadingMore, isFalse);
     expect(repo.queries.last.preparationGoalId, 'goal');
     expect(repo.queries.last.status, WorkoutExecutionStatus.abandoned);
+    expect(repo.queries.last.sessionType, WorkoutSessionType.mixed);
   });
   test(
     'cerrar durante la carga de otra página no emite ni repite consultas',
@@ -143,6 +175,10 @@ class _Repository implements WorkoutRepository {
       templateId: 'template',
       templateName: 'Sesión $index',
       templateVersion: 1,
+      sessionType: index.isEven
+          ? WorkoutSessionType.running
+          : WorkoutSessionType.strength,
+      sessionTypePolicy: 'block_format_v1',
       status: WorkoutExecutionStatus.completed,
       startedAt: DateTime.utc(2026, 9, 20),
       completedAt: DateTime.utc(2026, 9, 20, 1),
@@ -156,10 +192,16 @@ class _Repository implements WorkoutRepository {
   }) async {
     queries.add(query);
     if (next != null) return next!(query);
+    final filtered = rows
+        .where(
+          (e) =>
+              query.sessionType == null || e.sessionType == query.sessionType,
+        )
+        .toList();
     final start = query.before == null
         ? 0
-        : rows.indexWhere((e) => e.id == query.before!.id) + 1;
-    return rows.skip(start).take(query.limit).toList();
+        : filtered.indexWhere((e) => e.id == query.before!.id) + 1;
+    return filtered.skip(start).take(query.limit).toList();
   }
 
   @override

@@ -390,7 +390,7 @@ class _WorkoutHistoryCard extends StatelessWidget {
               ),
               const SizedBox(height: 7),
               Text(
-                _dateFormat.format(execution.startedAt.toLocal()),
+                '${execution.sessionType.label} · ${_dateFormat.format(execution.startedAt.toLocal())}',
                 style: const TextStyle(color: Colors.white60),
               ),
               const SizedBox(height: 14),

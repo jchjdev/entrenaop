@@ -25,19 +25,35 @@ class WorkoutHistoryFilters extends StatelessWidget {
         key: ValueKey('history-goal-${query.preparationGoalId}'),
         initialValue: query.preparationGoalId ?? '',
         isExpanded: true,
+        isDense: false,
+        itemHeight: null,
         decoration: const InputDecoration(labelText: 'Preparación'),
         items: [
           const DropdownMenuItem(value: '', child: Text('Todas las sesiones')),
           for (final goal in goals.where((g) => g.id != null))
-            DropdownMenuItem(
-              value: goal.id!,
-              child: Text(goal.program.name, overflow: TextOverflow.ellipsis),
-            ),
+            DropdownMenuItem(value: goal.id!, child: Text(goal.program.name)),
           if (query.preparationGoalId != null &&
               !goals.any((g) => g.id == query.preparationGoalId))
             DropdownMenuItem(
               value: query.preparationGoalId,
               child: const Text('Preparación seleccionada'),
+            ),
+        ],
+        selectedItemBuilder: (_) => [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Todas las sesiones'),
+          ),
+          for (final goal in goals.where((g) => g.id != null))
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(goal.program.name),
+            ),
+          if (query.preparationGoalId != null &&
+              !goals.any((g) => g.id == query.preparationGoalId))
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Preparación seleccionada'),
             ),
         ],
         onChanged: (value) => onChanged(
@@ -46,6 +62,40 @@ class WorkoutHistoryFilters extends StatelessWidget {
             from: query.from,
             through: query.through,
             status: query.status,
+            sessionType: query.sessionType,
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<String>(
+        key: ValueKey('history-type-${query.sessionType}'),
+        initialValue: query.sessionType?.name ?? '',
+        isExpanded: true,
+        isDense: false,
+        itemHeight: null,
+        decoration: const InputDecoration(labelText: 'Tipo de entrenamiento'),
+        items: [
+          const DropdownMenuItem(value: '', child: Text('Todos los tipos')),
+          for (final type in WorkoutSessionType.values)
+            DropdownMenuItem(value: type.name, child: Text(type.label)),
+        ],
+        selectedItemBuilder: (_) => [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Todos los tipos'),
+          ),
+          for (final type in WorkoutSessionType.values)
+            Align(alignment: Alignment.centerLeft, child: Text(type.label)),
+        ],
+        onChanged: (value) => onChanged(
+          WorkoutHistoryQuery(
+            preparationGoalId: query.preparationGoalId,
+            from: query.from,
+            through: query.through,
+            status: query.status,
+            sessionType: value == '' || value == null
+                ? null
+                : WorkoutSessionType.values.byName(value),
           ),
         ),
       ),
@@ -54,6 +104,8 @@ class WorkoutHistoryFilters extends StatelessWidget {
         key: ValueKey('history-status-${query.status}'),
         initialValue: query.status?.name ?? '',
         isExpanded: true,
+        isDense: false,
+        itemHeight: null,
         decoration: const InputDecoration(labelText: 'Estado de la sesión'),
         items: const [
           DropdownMenuItem(value: '', child: Text('Todos los estados')),
@@ -63,11 +115,23 @@ class WorkoutHistoryFilters extends StatelessWidget {
             child: Text('Cerradas sin completar'),
           ),
         ],
+        selectedItemBuilder: (_) => const [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Todos los estados'),
+          ),
+          Align(alignment: Alignment.centerLeft, child: Text('Completadas')),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Cerradas sin completar'),
+          ),
+        ],
         onChanged: (value) => onChanged(
           WorkoutHistoryQuery(
             preparationGoalId: query.preparationGoalId,
             from: query.from,
             through: query.through,
+            sessionType: query.sessionType,
             status: value == '' || value == null
                 ? null
                 : WorkoutExecutionStatus.values.byName(value),
@@ -100,6 +164,7 @@ class WorkoutHistoryFilters extends StatelessWidget {
                   WorkoutHistoryQuery(
                     preparationGoalId: query.preparationGoalId,
                     status: query.status,
+                    sessionType: query.sessionType,
                     from: range.start,
                     through: range.end,
                   ),

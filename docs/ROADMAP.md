@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-016, 08/10/2026 · tipo histórico y filtro cerrados en desarrollo:**
+Evolución filtra Carrera, Fuerza y acondicionamiento, Mixta y Sin clasificar,
+combinados con preparación, fechas, estado y paginación. Servidor conserva tipo
+y política al iniciar; editar la plantilla no altera el dato. Las sesiones
+anteriores mantienen su clasificación ausente y siguen consultables. Selectores
+completos con texto ampliado. Análisis limpio, 591 pruebas completas y 25
+regresiones específicas correctas (una exclusiva web omitida); tres recorridos
+de captura y 15 imágenes revisadas. Solo desarrollo: 133 migraciones coincidentes
+y cuatro pruebas SQL con `ROLLBACK` correctas. No cambia Inicio/Mi plan, fotos,
+código admin, paquetes, motores, negocio ni producción.
+[Recorrido, criterio y evidencia](HISTORY_SESSION_TYPE_2026_10_08.md).
+
+El único siguiente bloque UX recomendado es el pulido localizado de textos,
+estados y accesos de app/admin, conservando aspecto y trabajo ya terminado.
+Comparación configurable y recorrido autenticado global siguen pendientes.
+MAIL-001 ya acredita recepción y recuperación web confirmadas por Javier;
+iPhone/iOS espera a su entorno Mac. Keychain, eliminación de cuenta y acceso a
+privacidad quedan registrados para preparar publicación. Vídeos, negocio y
+motores siguen aparte. Los cierres anteriores conservan sus fechas y pruebas;
+esta entrada sustituye sus recomendaciones de siguiente bloque ya realizadas.
+
 **UI-015, 08/10/2026 · comparativas guardadas cerradas en desarrollo:**
 «Marcas y resultados» permite elegir prueba y dos fechas, consultar cambio en
 repeticiones/tiempo y conservar selección durante refresco, fallo o entrada de

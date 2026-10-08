@@ -30,6 +30,8 @@ class WorkoutExecutionModel {
       templateId: json['template_id'] as String,
       templateName: json['template_name'] as String,
       templateVersion: json['template_version'] as int,
+      sessionType: _sessionType(json['session_type']),
+      sessionTypePolicy: json['session_type_policy'] as String?,
       status: _executionStatus(json['status'] as String),
       startedAt: DateTime.parse(json['started_at'] as String),
       completedAt: _dateOrNull(json['completed_at']),
@@ -98,6 +100,14 @@ class WorkoutExecutionModel {
       completedAt: _dateOrNull(json['completed_at']),
     );
   }
+
+  static WorkoutSessionType _sessionType(Object? value) => switch (value) {
+    null => WorkoutSessionType.unclassified,
+    'running' => WorkoutSessionType.running,
+    'strength' => WorkoutSessionType.strength,
+    'mixed' => WorkoutSessionType.mixed,
+    _ => throw FormatException('Tipo de sesión histórico desconocido: $value'),
+  };
 
   static int _compareSets(
     WorkoutExecutionSet first,

@@ -11,6 +11,9 @@ añadidos después ni sustituyen la evidencia del código y las pruebas actuales
 La reorganización posterior de Inicio/Mi plan dispone de sus propias
 [20 capturas y recorrido verificado](REFRESH_PLAN_2026_10_07.md); el atlas inicial
 mantiene la versión de origen y no debe utilizarse para describir esa raíz actual.
+UI-016 documenta después el [tipo histórico y filtro de Evolución con 15 capturas
+propias](HISTORY_SESSION_TYPE_2026_10_08.md), sin alterar la fecha ni la cobertura
+del inventario inicial.
 
 ## Evidencia y límites de las imágenes
 

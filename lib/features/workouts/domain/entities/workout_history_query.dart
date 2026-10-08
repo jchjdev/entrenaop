@@ -18,6 +18,7 @@ class WorkoutHistoryQuery extends Equatable {
     this.from,
     this.through,
     this.status,
+    this.sessionType,
   }) : assert(limit > 0),
        assert(status != WorkoutExecutionStatus.inProgress);
 
@@ -27,6 +28,7 @@ class WorkoutHistoryQuery extends Equatable {
   final DateTime? from;
   final DateTime? through;
   final WorkoutExecutionStatus? status;
+  final WorkoutSessionType? sessionType;
 
   WorkoutHistoryQuery page({
     required int limit,
@@ -38,13 +40,15 @@ class WorkoutHistoryQuery extends Equatable {
     from: from,
     through: through,
     status: status,
+    sessionType: sessionType,
   );
 
   bool get hasFilters =>
       preparationGoalId != null ||
       from != null ||
       through != null ||
-      status != null;
+      status != null ||
+      sessionType != null;
 
   @override
   List<Object?> get props => [
@@ -54,5 +58,6 @@ class WorkoutHistoryQuery extends Equatable {
     from,
     through,
     status,
+    sessionType,
   ];
 }

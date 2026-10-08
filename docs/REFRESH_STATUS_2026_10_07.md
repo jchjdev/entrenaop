@@ -1,14 +1,18 @@
 # Refresh: comparación con el informe anterior
 
-**Último tramo comprobado · UI-015, 08/10/2026:** comparador de marcas de
-Tropa/FAS y controles de 2 km, con prueba/fechas conservadas, versiones separadas
-y estado propio de las tarjetas. Análisis limpio, 579 pruebas completas correctas
-(una exclusiva web omitida) y seis recorridos visuales, 19 imágenes. No cambia
-Inicio/Mi plan, fotografías, admin, negocio, motores o SQL. Comparación configurable
-y filtro deportivo siguen pendientes; el único siguiente bloque recomendado es
-definir el dato histórico de tipo deportivo antes de implementar ese filtro.
-Correo/dispositivo real siguen pendientes. Detalle e imágenes en
-[MEASUREMENT_COMPARISON_2026_10_08.md](MEASUREMENT_COMPARISON_2026_10_08.md).
+**Último tramo comprobado · UI-016, 08/10/2026:** filtro del tipo de entrenamiento
+conservado en servidor al iniciar: Carrera, Fuerza/acondicionamiento y Mixta.
+Sesiones anteriores siguen Sin clasificar. Preparación, fechas, estado y páginas
+se combinan conservando consulta al refrescar/fallar. Selectores completos con
+texto ampliado. Análisis limpio, 591 pruebas completas y 25 específicas correctas
+(una exclusiva web omitida); tres recorridos visuales y 15 imágenes revisadas.
+Solo desarrollo: 133 migraciones coincidentes y cuatro pruebas SQL con `ROLLBACK`
+correctas. No cambia Inicio/Mi plan, fotos, código admin, negocio o motores.
+El único siguiente bloque recomendado es el pulido localizado de textos,
+estados y accesos de app/admin. Comparación configurable, recorrido autenticado
+global y dispositivo siguen abiertos; MAIL-001 ya recoge recuperación web y
+recepción confirmadas por Javier. Detalle e imágenes en
+[HISTORY_SESSION_TYPE_2026_10_08.md](HISTORY_SESSION_TYPE_2026_10_08.md).
 Las tablas y cierres fechados siguientes conservan el estado de su propio tramo.
 
 Javier confirma el 07/10/2026 continuar el refresh aprobado y conservar los

@@ -741,6 +741,24 @@ preparaciones, derechos comerciales, SQL o motores. Las comparativas nuevas
 siguen pendientes. El siguiente bloque UX es Biblioteca, con vídeo y gestión
 de ejercicios propios, respetando autoría, versiones e historial.
 
+### Tipo histórico y filtros · UI-016 · 08/10/2026
+
+El desplegable existente del historial de Evolución añade «Tipo de entrenamiento»
+entre Preparación y Estado: Todos los tipos, Carrera, Fuerza y acondicionamiento,
+Mixta y Sin clasificar. La tarjeta incluye el tipo junto a la fecha. Campos con
+selección en varias líneas evitan el recorte a 320 px con texto doble. Se conservan
+tema, tarjetas, composición y accesos actuales.
+
+El tipo procede de la ejecución al iniciarse, sin reclasificar el historial desde
+una plantilla actual. Filtros, páginas y refresco conservan la consulta; los fallos
+mantienen resultados y ofrecen reintento. Análisis limpio, 591 pruebas completas
+y 25 específicas correctas (una exclusiva web omitida), tres recorridos de captura
+y 15 imágenes revisadas. [Recorrido, imágenes y límites](HISTORY_SESSION_TYPE_2026_10_08.md).
+El siguiente bloque es el pulido localizado de textos/estados/accesos. Comparación
+configurable y recorrido autenticado global siguen pendientes; MAIL-001 ya recoge
+recepción y recuperación web confirmadas. Las notas siguientes conservan el
+estado del cierre original; no vuelven a abrir trabajos completados después.
+
 ### Comparación de marcas · UI-015 · 08/10/2026
 
 Javier pide continuar Evolución. «Marcas y resultados» conserva la cabecera,

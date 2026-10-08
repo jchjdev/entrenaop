@@ -14,6 +14,8 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     template_id,
     template_name,
     template_version,
+    session_type,
+    session_type_policy,
     status,
     started_at,
     completed_at,
@@ -185,6 +187,12 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     }
     if (query.status case final status?) {
       request = request.eq('status', status.name);
+    }
+    if (query.sessionType case final type?) {
+      // Las sesiones antiguas no se reclasifican desde su plantilla vigente.
+      request = type == WorkoutSessionType.unclassified
+          ? request.isFilter('session_type', null)
+          : request.eq('session_type', type.name);
     }
     if (query.from case final from?) {
       request = request.gte(

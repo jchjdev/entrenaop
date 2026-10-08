@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:workout_core/performance_set.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
+import 'package:entrenaop/features/workouts/domain/entities/workout_session_type.dart';
+
+export 'workout_session_type.dart';
 
 enum WorkoutExecutionStatus { inProgress, completed, abandoned }
 
@@ -19,6 +22,8 @@ class WorkoutExecution extends Equatable {
     required this.status,
     required this.startedAt,
     required this.sets,
+    this.sessionType = WorkoutSessionType.unclassified,
+    this.sessionTypePolicy,
     this.amrapResults = const [],
     this.completedAt,
     this.finalRpe,
@@ -33,6 +38,8 @@ class WorkoutExecution extends Equatable {
   final String templateId;
   final String templateName;
   final int templateVersion;
+  final WorkoutSessionType sessionType;
+  final String? sessionTypePolicy;
   final WorkoutExecutionStatus status;
   final DateTime startedAt;
   final DateTime? completedAt;
@@ -85,6 +92,8 @@ class WorkoutExecution extends Equatable {
     templateId: templateId,
     templateName: templateName,
     templateVersion: templateVersion,
+    sessionType: sessionType,
+    sessionTypePolicy: sessionTypePolicy,
     status: status ?? this.status,
     startedAt: startedAt,
     completedAt: completedAt ?? this.completedAt,
@@ -104,6 +113,8 @@ class WorkoutExecution extends Equatable {
     templateId,
     templateName,
     templateVersion,
+    sessionType,
+    sessionTypePolicy,
     status,
     startedAt,
     completedAt,

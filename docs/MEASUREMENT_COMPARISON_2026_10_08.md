@@ -81,6 +81,11 @@ cambian; no corresponde ejecutar su matriz ni SQL para este alcance.
 
 ## Único siguiente bloque recomendado
 
+Esta recomendación corresponde al cierre de UI-015. El contrato y filtro ya se
+implementaron y comprobaron después en [UI-016](HISTORY_SESSION_TYPE_2026_10_08.md),
+que registra el siguiente bloque actual. MAIL-001 recoge además la confirmación
+posterior de recepción y recuperación web por Javier.
+
 Definir el dato histórico de tipo deportivo de la sesión antes de añadir su
 filtro a Evolución. Hoy la ejecución no lo conserva y no debe inferirse de una
 plantilla mutable. Se explicará el cambio de contrato antes de implementar;

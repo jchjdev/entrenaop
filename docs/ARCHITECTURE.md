@@ -287,6 +287,15 @@ resultados mediante funciones autenticadas y no puede insertar ejecuciones
 arbitrarias. Esta copia constituye el primer límite histórico entre una
 plantilla editable y el entrenamiento que realmente se realizó.
 
+UI-016 añade `session_type` y `session_type_policy` a esa instantánea. El trigger
+de inserción clasifica los bloques de la plantilla según `block_format_v1`:
+`running`, `strength` o `mixed`, excluyendo calentamiento y vuelta a la calma
+como trabajo adicional. La familia sin carrera se presenta como fuerza y
+acondicionamiento. Ambos campos quedan inmutables mediante trigger y `CHECK`;
+no amplía permisos de escritura. Las ejecuciones anteriores conservan `NULL`,
+incluidas las que estaban en curso, sin backfill ni inferencia al leer o reanudar.
+El detalle y sus pruebas se registran en `HISTORY_SESSION_TYPE_2026_10_08.md`.
+
 La copia de ejecución incluye también la descripción y la URL de vídeo del
 ejercicio. La sesión activa muestra siempre la explicación y carga el vídeo
 solo cuando el usuario lo solicita, evitando consumo innecesario de datos.
@@ -686,8 +695,8 @@ evaluación configurable y controles de carrera. La página consulta hechos
 guardados; el botón de registro abre las tareas existentes en el navegador raíz
 y reconsulta al retornar. Los widgets no consultan Supabase ni activan programas.
 
-`WorkoutHistoryQuery`, en dominio, expresa preparación, fechas civiles, estado,
-límite y cursor. El caso de uso y repositorio transmiten esos criterios al
+`WorkoutHistoryQuery`, en dominio, expresa preparación, tipo histórico,
+fechas civiles, estado, límite y cursor. El caso de uso y repositorio transmiten esos criterios al
 datasource; este conserva propietario y exclusión de ejecuciones en curso.
 El orden descendente `(started_at, id)` y el cursor evitan desplazamientos por
 inserciones recientes y ordenan empates. Se solicita una fila adicional para
@@ -700,7 +709,9 @@ El filtro de preparación usa el vínculo existente
 PostgREST interna. No añade campos a la ejecución ni consulta su plantilla
 vigente para reinterpretar datos históricos. La lista ofrece preparaciones
 no archivadas; el historial general conserva también ejecuciones sin vínculo.
-No se incorpora un filtro por deporte sin un dato histórico fiable.
+UI-016 filtra el tipo copiado en la ejecución antes de ordenar/paginar;
+`unclassified` representa `session_type is null`, sin consultar la plantilla.
+La política de clasificación se conserva en el modelo al actualizar resultados.
 
 Las páginas y controladores de resultados se identifican por cuenta y recurso.
 Renovar la misma cuenta conserva estado; sustituirla descarta la consulta local.

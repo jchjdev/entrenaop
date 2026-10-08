@@ -6,6 +6,7 @@ import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_us
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_history_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -54,7 +55,13 @@ void main() {
       final cubit = await mount(t);
       final from = DateTime(2026, 9, 1);
       final through = DateTime(2026, 9, 30);
-      await cubit.filter(WorkoutHistoryQuery(from: from, through: through));
+      await cubit.filter(
+        WorkoutHistoryQuery(
+          from: from,
+          through: through,
+          sessionType: WorkoutSessionType.strength,
+        ),
+      );
       await t.pumpAndSettle();
       await t.ensureVisible(find.text('Filtrar historial'));
       await t.pumpAndSettle();
@@ -76,6 +83,7 @@ void main() {
       expect(cubit.state.query.status, WorkoutExecutionStatus.completed);
       expect(cubit.state.query.from, from);
       expect(cubit.state.query.through, through);
+      expect(cubit.state.query.sessionType, WorkoutSessionType.strength);
       expect(
         find.text('No hay sesiones que coincidan con estos filtros.'),
         findsOneWidget,
@@ -89,6 +97,89 @@ void main() {
       expect(t.takeException(), isNull);
     },
   );
+  for (final type in WorkoutSessionType.values) {
+    testWidgets('selecciona ${type.label} a 320 px y texto 2× sin recortar', (
+      t,
+    ) async {
+      final cubit = await mount(t, width: 320, scale: 2);
+      await t.ensureVisible(find.text('Filtrar historial'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Filtrar historial'));
+      await t.pumpAndSettle();
+      final field = find.byKey(const ValueKey('history-type-null'));
+      await t.ensureVisible(field);
+      await t.pumpAndSettle();
+      await t.tap(field);
+      await t.pumpAndSettle();
+      await t.ensureVisible(find.text(type.label).last);
+      await t.tap(find.text(type.label).last);
+      await t.pumpAndSettle();
+      expect(cubit.state.query.sessionType, type);
+      final selected = find.byKey(ValueKey('history-type-$type'));
+      await t.ensureVisible(selected);
+      await t.pumpAndSettle();
+      final paragraph = t.renderObject<RenderParagraph>(
+        find.descendant(of: selected, matching: find.text(type.label)).first,
+      );
+      final painter = TextPainter(
+        text: paragraph.text,
+        textDirection: TextDirection.ltr,
+        textScaler: paragraph.textScaler,
+      )..layout(maxWidth: paragraph.size.width);
+      expect(paragraph.size.height, greaterThanOrEqualTo(painter.height));
+      painter.dispose();
+      expect(t.takeException(), isNull);
+    });
+  }
+  testWidgets('preparación y estado completos a 320 px y texto 2×', (t) async {
+    final cubit = await mount(t, width: 320, scale: 2);
+    await t.ensureVisible(find.text('Filtrar historial'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Filtrar historial'));
+    await t.pumpAndSettle();
+
+    Future<void> expectFullLabel(Finder field, String label) async {
+      await t.ensureVisible(field);
+      await t.pumpAndSettle();
+      final paragraph = t.renderObject<RenderParagraph>(
+        find.descendant(of: field, matching: find.text(label)).first,
+      );
+      final painter = TextPainter(
+        text: paragraph.text,
+        textDirection: TextDirection.ltr,
+        textScaler: paragraph.textScaler,
+      )..layout(maxWidth: paragraph.size.width);
+      expect(paragraph.size.height, greaterThanOrEqualTo(painter.height));
+      painter.dispose();
+    }
+
+    await expectFullLabel(
+      find.byKey(const ValueKey('history-goal-null')),
+      'Todas las sesiones',
+    );
+    await expectFullLabel(
+      find.byKey(const ValueKey('history-status-null')),
+      'Todos los estados',
+    );
+    await cubit.filter(
+      const WorkoutHistoryQuery(
+        preparationGoalId: 'fas',
+        status: WorkoutExecutionStatus.abandoned,
+      ),
+    );
+    await t.pumpAndSettle();
+    await expectFullLabel(
+      find.byKey(const ValueKey('history-goal-fas')),
+      evolutionFas.program.name,
+    );
+    await expectFullLabel(
+      find.byKey(
+        const ValueKey('history-status-WorkoutExecutionStatus.abandoned'),
+      ),
+      'Cerradas sin completar',
+    );
+    expect(t.takeException(), isNull);
+  });
   for (final width in [320.0, 1100.0]) {
     testWidgets(
       'Evolución y filtros sin desbordamiento con texto 2× en $width px',
