@@ -741,6 +741,30 @@ preparaciones, derechos comerciales, SQL o motores. Las comparativas nuevas
 siguen pendientes. El siguiente bloque UX es Biblioteca, con vídeo y gestión
 de ejercicios propios, respetando autoría, versiones e historial.
 
+### Comparación de marcas · UI-015 · 08/10/2026
+
+Javier pide continuar Evolución. «Marcas y resultados» conserva la cabecera,
+registro e historial actuales y añade un desplegable de comparación. Prueba,
+origen y dos fechas preceden a las marcas y su cambio; usa `EntrenaCard`, colores
+de mejora/retroceso y texto de dirección favorable. No añade puntuaciones de
+progreso ni cambia composiciones de Inicio/Mi plan o fotografías.
+
+Los selectores admiten varias líneas y muestran completo el nombre/fecha con
+texto doble; origen queda bajo la prueba y la versión guardada se consulta al
+tocar su información. La comparación usa valores originales compatibles,
+separa controles de carrera y conserva prueba/fechas al recargar o fallar.
+Cada resultado conserva expansión propia, sin compartir el estado del scroll.
+Otra versión o un snapshot configurable incompleto no producen una comparación
+inferida; el historial permanece consultable.
+
+Análisis limpio, 579 pruebas completas correctas (una exclusiva web omitida)
+y seis recorridos visuales, con 19 imágenes revisadas. La prueba de texto grande
+comprueba altura real del párrafo/campo además de ausencia de overflow.
+[Imágenes, esquema, criterio y límites](MEASUREMENT_COMPARISON_2026_10_08.md).
+Filtro deportivo y comparativas configurables siguen pendientes; el siguiente
+bloque es definir el dato histórico del tipo antes de implementar su filtro.
+Correo real y recorrido autenticado siguen pendientes.
+
 ### Detalle administrativo por secciones · UI-014 · 08/10/2026
 
 Javier pide continuar el refresh mientras no puede probar el correo desde el

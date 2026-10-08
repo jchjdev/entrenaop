@@ -4,6 +4,8 @@ import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_perio
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_history_page.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/physical_assessment_history_page.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/utils/preparation_measurement_history.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/widgets/measurement_comparison_card.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
@@ -155,7 +157,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Evaluaciones y controles guardados de esta preparación. Cada resultado conserva su protocolo y baremo.',
+                        'Consulta tus evaluaciones y controles guardados. Compara mediciones compatibles o registra nuevas marcas.',
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
@@ -168,6 +170,44 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                           }
                         },
                       ),
+                      if (!data.isEmpty) ...[
+                        MeasurementComparisonCard(
+                          key: ValueKey('comparison-${goal.id}'),
+                          series: preparationMeasurementHistory(
+                            troop: data.troop,
+                            fas: data.fas,
+                            running: data.running,
+                            fasReference: data.fasReference,
+                          ),
+                        ),
+                        if (data.program.isNotEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Estas evaluaciones conservan marcas y puntos, pero no la unidad y el protocolo necesarios para compararlas.',
+                            ),
+                          ),
+                        if (data.fas.any(
+                          (e) =>
+                              e.scoringVersion !=
+                              FasPeriodic2027Reference.version,
+                        ))
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Hay resultados de otra versión del baremo. Se conservan en el historial, por separado de la comparación.',
+                            ),
+                          ),
+                        if (data.running.any(
+                          (r) => r.protocolVersion != 'run_2000m_v1',
+                        ))
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Hay controles con otro protocolo. Puedes consultar sus datos en el historial; esta comparación admite controles de 2 km.',
+                            ),
+                          ),
+                      ],
                       const SizedBox(height: 20),
                       if (data.isEmpty)
                         const Text(
@@ -283,6 +323,7 @@ class _ProgramResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     child: ExpansionTile(
+      key: PageStorageKey('program-assessment-${attempt.id}'),
       title: Text(
         '${DateFormat('dd/MM/yyyy').format(attempt.assessedOn)} · ${attempt.result.passed ? 'Apto' : 'No apto'}',
       ),

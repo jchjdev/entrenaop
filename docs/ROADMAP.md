@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-015, 08/10/2026 · comparativas guardadas cerradas en desarrollo:**
+«Marcas y resultados» permite elegir prueba y dos fechas, consultar cambio en
+repeticiones/tiempo y conservar selección durante refresco, fallo o entrada de
+otra evaluación. Tropa exige versión, columna, hito, unidad y dirección iguales;
+FAS compara marcas de su catálogo versionado compatible, mostrando edades;
+los controles de 2 km conservan RPE y se mantienen separados de evaluaciones.
+Los resultados configurables siguen mostrando snapshot/puntos/intentos; faltan
+unidad y protocolo históricos completos para compararlos. Tarjetas con estado
+de expansión propio y selectores sin recortes con texto grande. Análisis limpio,
+579 pruebas de raíz correctas (una exclusiva web omitida) y seis recorridos
+de captura, con 19 imágenes revisadas. No modifica Inicio/Mi plan, fotografías,
+admin, motores, negocio, paquetes compartidos, SQL ni producción. No cierra toda
+Evolución ni la revisión autenticada. Detalle en
+[MEASUREMENT_COMPARISON_2026_10_08.md](MEASUREMENT_COMPARISON_2026_10_08.md).
+El único siguiente bloque UX recomendado es definir el dato histórico de tipo
+deportivo antes de implementar su filtro: la ejecución actual no lo conserva;
+no se infiere de una plantilla mutable ni se reclasifican sesiones antiguas sin
+evidencia. Se explicará el cambio de contrato antes de aplicarlo. Comparativas
+configurables pendientes. Correo/dispositivo real se comprobarán cuando Javier
+pueda; vídeos, negocio y motores siguen aparte.
+
 **UI-014, 08/10/2026 · detalle de programa admin cerrado en desarrollo:**
 índice fijo de Contenido, Evaluación y Entrenamiento; los saltos conservan las
 secciones y sus estados. Sesiones se sitúa junto a la preparación deportiva.

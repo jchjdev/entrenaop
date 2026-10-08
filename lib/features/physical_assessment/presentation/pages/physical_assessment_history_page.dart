@@ -217,7 +217,9 @@ class _ProgressOverview extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             progress.isEmpty
-                ? 'La siguiente evaluación permitirá medir tu evolución prueba a prueba.'
+                ? assessmentCount < 2
+                      ? 'Otra evaluación de las mismas pruebas y versión permitirá medir tu evolución.'
+                      : 'Las dos últimas evaluaciones no tienen marcas compatibles para comparar. Sus resultados siguen disponibles abajo.'
                 : '$improved mejoras y $unchanged marcas mantenidas respecto a la evaluación anterior.',
             style: const TextStyle(color: Colors.white70, height: 1.4),
           ),
@@ -288,6 +290,7 @@ class AssessmentHistoryCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
       child: ExpansionTile(
+        key: PageStorageKey('troop-assessment-${entry.id}'),
         iconColor: Colors.white70,
         collapsedIconColor: Colors.white54,
         leading: CircleAvatar(

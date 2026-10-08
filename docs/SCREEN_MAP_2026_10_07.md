@@ -766,7 +766,9 @@ Entrada: `/assessment/history`.
 
 **Actual:** Consultar sesiones realizadas y accesos a marcas/evaluaciones por preparación.
 
-**Pendiente / propuesta:** Pendiente acordado: Marcas abre ahora detalle de preparación; necesita un recorrido específico de resultados.
+**Actualización acotada UI-011/UI-015, 08/10/2026:** Marcas abre resultados de la preparación en `/assessment/history/preparations/:goalId`. El comparador permite elegir prueba y dos fechas compatibles de Tropa/FAS o controles de 2 km separados. Conserva selección y resultados al recargar. Los programas configurables conservan snapshot/puntos/intentos e indican por qué no son comparables todavía. [Criterio, límites y capturas actuales](MEASUREMENT_COMPARISON_2026_10_08.md). La imagen de raíz siguiente conserva su fecha de captura original.
+
+**Pendiente / propuesta:** Dato histórico fiable para filtrar por deporte, comparación configurable y recorrido autenticado real.
 
 Código: [lib/features/workouts/presentation/pages/workout_history_page.dart](../lib/features/workouts/presentation/pages/workout_history_page.dart).
 
@@ -776,6 +778,12 @@ Fixture: el historial de sesiones cabe en una pantalla móvil; vista 2; 390 × 8
 
 - [Estado: la actividad cuenta fechas de cierre y no sesiones abandonadas · vista 2](visual-audit/2026-10-07/images/WorkoutHistoryPage-2.webp)
 - [Estado: el historial de sesiones cabe en una pantalla móvil · vista 1](visual-audit/2026-10-07/images/WorkoutHistoryPage-3.webp)
+
+![Comparación actual de marcas · datos ficticios](visual-audit/measurement-comparison-2026-10-08/movil-tropa-2.webp)
+
+Fixture UI-015: tres evaluaciones compatibles y dos controles guardados,
+390 × 1050; la preparación ficticia no lleva portada. No acredita fotografías
+remotas ni cuenta autenticada. El tema y los widgets son los actuales.
 
 #### Resultado de sesión
 

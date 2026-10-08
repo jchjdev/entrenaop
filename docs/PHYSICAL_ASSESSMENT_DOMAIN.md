@@ -316,6 +316,17 @@ evaluación y compara los dos últimos intentos. La diferencia favorable mantien
 el mismo significado en todas las pruebas: positiva es mejora, aunque para
 carrera y agilidad se obtenga reduciendo el tiempo.
 
+UI-015, comprobado el 08/10/2026, exige además que ambas evaluaciones conserven
+la misma versión de catálogo, columna e hito, y que cada marca/estándar coincida
+en identidad, unidad y dirección. No compara fechas iguales o invertidas.
+«Marcas y resultados» permite elegir otros pares dentro de esa misma serie,
+incluye mediciones FAS de su versión íntegra compatible y separa controles
+de 2 km de pruebas oficiales. Compara valores originales, sin trasladar puntos
+entre baremos o tramos de edad. No inventa protocolos históricos ausentes ni
+completa la unidad de snapshots configurables desde definiciones actuales.
+Contrato, límites e imágenes en
+[MEASUREMENT_COMPARISON_2026_10_08.md](MEASUREMENT_COMPARISON_2026_10_08.md).
+
 La recomendación `assessment_focus_v1` prioriza el mayor déficit porcentual
 respecto al mínimo. Cuando las cuatro pruebas están superadas, prioriza la de
 menor margen relativo. PostgreSQL guarda la versión, prueba elegida, margen y

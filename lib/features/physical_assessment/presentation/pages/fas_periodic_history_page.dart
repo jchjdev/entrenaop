@@ -125,6 +125,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
     if (entry.scoringVersion != FasPeriodic2027Reference.version) {
       return Card(
         child: ExpansionTile(
+          key: PageStorageKey('fas-assessment-${entry.id}'),
           leading: const Icon(Icons.update_outlined),
           title: Text(DateFormat('dd/MM/yyyy').format(entry.completedAt)),
           subtitle: const Text(
@@ -156,6 +157,7 @@ class FasAssessmentHistoryCard extends StatelessWidget {
     );
     return Card(
       child: ExpansionTile(
+        key: PageStorageKey('fas-assessment-${entry.id}'),
         title: Text(
           '$total puntos',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),

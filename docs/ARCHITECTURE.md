@@ -709,7 +709,22 @@ emiten después de cerrarse. El historial FAS conserva resultados y expansión
 al fallar el refresco. Sus puntos reutilizan el catálogo local de la versión
 almacenada; otra versión permite ver marcas, pero no calcular puntos con un
 baremo distinto. Los resultados configurables muestran puntuación e intentos
-del snapshot. No se incorpora una regla comparativa nueva.
+del snapshot. UI-011 no incorporaba una regla comparativa nueva.
+
+UI-015 añade `MeasurementSeries`/`MeasurementSample`, datos de lectura sin
+persistencia nueva. El adaptador `preparationMeasurementHistory` agrupa marcas
+por origen, prueba, versión, columna/hito cuando corresponde, unidad y dirección;
+no consulta una definición editorial mutable. FAS resuelve dirección/unidad
+exclusivamente en el catálogo íntegro de la versión almacenada. Controles válidos
+`run_2000m_v1` forman series independientes. El widget elige IDs de prueba/fechas,
+conserva selección y expansión durante el refresco y deriva únicamente la vista;
+el cálculo puro exige fecha anterior estricta y pertenencia a la misma serie.
+El comparador anterior de Tropa también verifica el contexto y cada marca/estándar.
+Las tarjetas usan `PageStorageKey` propio por resultado, separado del scroll.
+Los programas configurables no tienen comparación mientras su snapshot carezca
+de unidad/protocolo/dirección completos; no se completan desde el catálogo actual.
+No cambia consultas, rutas, RLS, puntos ni algoritmos prescriptivos. Alcance y
+regresiones en `docs/MEASUREMENT_COMPARISON_2026_10_08.md`.
 
 `go` sustituye la ubicación, `push` apila un flujo temporal y `pop` vuelve; se
 elige cada operación según la experiencia de usuario.

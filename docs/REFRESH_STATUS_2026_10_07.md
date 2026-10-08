@@ -1,5 +1,16 @@
 # Refresh: comparación con el informe anterior
 
+**Último tramo comprobado · UI-015, 08/10/2026:** comparador de marcas de
+Tropa/FAS y controles de 2 km, con prueba/fechas conservadas, versiones separadas
+y estado propio de las tarjetas. Análisis limpio, 579 pruebas completas correctas
+(una exclusiva web omitida) y seis recorridos visuales, 19 imágenes. No cambia
+Inicio/Mi plan, fotografías, admin, negocio, motores o SQL. Comparación configurable
+y filtro deportivo siguen pendientes; el único siguiente bloque recomendado es
+definir el dato histórico de tipo deportivo antes de implementar ese filtro.
+Correo/dispositivo real siguen pendientes. Detalle e imágenes en
+[MEASUREMENT_COMPARISON_2026_10_08.md](MEASUREMENT_COMPARISON_2026_10_08.md).
+Las tablas y cierres fechados siguientes conservan el estado de su propio tramo.
+
 Javier confirma el 07/10/2026 continuar el refresh aprobado y conservar los
 motores de ejercicios para sus tareas de dominio. El texto entregado corresponde
 a la revisión previa a `cf7025f`; se contrasta con el código local, no se ejecuta

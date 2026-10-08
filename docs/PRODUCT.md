@@ -1,5 +1,19 @@
 # Producto EntrenaOP
 
+**UI-015, 08/10/2026 · comparación de marcas disponible en desarrollo:**
+desde Evolución → Marcas de una preparación se elige prueba y dos fechas para
+ver las mediciones guardadas y su cambio. Tropa/FAS comparan dentro de su versión
+y contexto; controles de 2 km van separados y muestran esfuerzo. La selección
+se mantiene al refrescar/fallar y el historial completo sigue disponible.
+Resultados configurables conservan marcas/puntos/intentos; sin unidad/protocolo
+históricos completos no se ofrece una comparación inferida. Se conserva la
+composición aprobada, portadas y separación de negocio/motores. Análisis limpio,
+579 pruebas completas y seis recorridos visuales correctos; una prueba exclusiva
+web omitida. Pendientes: definir el tipo deportivo histórico antes de su filtro,
+comparación configurable y revisión autenticada. El siguiente bloque UX único
+es el contrato del filtro deportivo. Detalle e imágenes en
+[MEASUREMENT_COMPARISON_2026_10_08.md](MEASUREMENT_COMPARISON_2026_10_08.md).
+
 **UI-014, 08/10/2026 · detalle administrativo organizado:** acceso fijo a
 Contenido (portada/publicación), Evaluación (calificación, pruebas y baremos)
 y Entrenamiento (sesiones y preparación vinculada), conservando la misma página
