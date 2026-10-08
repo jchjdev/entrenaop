@@ -30,16 +30,17 @@ plantilla versionada. El bloqueo HTTP 400 inicial del proveedor predeterminado
 queda resuelto al conectar SMTP propio. No se ha comprado ningún plan ni se han
 modificado DNS o producción. Javier aporta después un correo real recibido en
 Gmail: asunto español, remitente acordado y logotipo visibles. La recepción y
-esa representación quedan comprobadas; el cambio de contraseña y el acceso
-posterior siguen pendientes.
+esa representación quedan comprobadas. Tras repetir la prueba desde el mismo
+perfil, Javier confirma «funciona perfectamente»: la recuperación web queda
+confirmada por él. La comprobación nativa y de producción sigue abierta.
 Confirmación de alta y otras plantillas no se modifican en este tramo.
 
 Javier confirma el 08/10/2026 que ha cambiado la contraseña del buzón y guardado
 los cambios; la credencial vigente es distinta de la que apareció en la captura.
 La rotación deja de ser una tarea pendiente. Esta confirmación no acredita por
 sí sola el transporte SMTP; el correo real recibido posteriormente sí acredita
-la entrega de esa solicitud. Sigue pendiente completar el enlace en el mismo
-perfil de navegador y origen donde se solicitó.
+la entrega de esa solicitud. Javier confirma posteriormente que la recuperación
+funciona al completar el enlace en el mismo perfil de navegador y origen.
 
 El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
 su `content_path` en ese recorrido remoto. No basta un diff limpio del CLI para
@@ -89,11 +90,13 @@ se conserva en el perfil y origen de la solicitud; no se cambia el flujo de
 seguridad ni se comparte almacenamiento entre perfiles para facilitar la prueba.
 
 La captura del correo recibido acredita bandeja de entrada, remitente y
-presentación en Gmail. Quedan por comprobar firma/alineación del mensaje,
-validación del enlace, nueva contraseña y entrada posterior. No se ha cambiado
-la contraseña de la cuenta de Javier. El remitente SMTP de Supabase es común a
-los correos de Auth, aunque aquí solo se ha traducido recuperación. Las
-credenciales permanecen en servidor y no se versionan.
+presentación en Gmail. La confirmación posterior de Javier acredita su prueba
+funcional de recuperación web; no es una auditoría del servicio ni una prueba
+de caducidad o reutilización contra Auth real. Quedan por comprobar la
+firma/alineación del mensaje y el recorrido en dispositivos nativos. El agente
+no ha enviado correos ni cambiado la contraseña de Javier. El remitente SMTP de
+Supabase es común a los correos de Auth, aunque aquí solo se ha traducido
+recuperación. Las credenciales permanecen en servidor y no se versionan.
 
 Comprobaciones del 08/10/2026:
 

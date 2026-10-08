@@ -78,7 +78,7 @@ flowchart TD
   indica abrirlo donde se pidió. Chrome temporal de F5 y Chrome habitual no
   comparten la comprobación local, aunque se utilicen en el mismo PC.
 
-## Correo de recuperación: recepción comprobada; cambio de contraseña pendiente
+## Correo de recuperación: prueba web confirmada por Javier
 
 Actualización MAIL-001: Javier confirma `acceso@entrenaop.es` como remitente
 propio, separado de su dirección personal. Asunto y HTML del correo de
@@ -93,17 +93,19 @@ esperado. Segunda aplicación idempotente y cinco pruebas del verificador local
 correctas. Supabase conserva el límite inicial de 30 correos por hora y 60
 segundos por usuario; Hostinger impone 100 por día. Javier aporta un correo real
 recibido en la bandeja de Gmail con asunto español, remitente y logotipo correctos.
-La entrega y esa representación quedan comprobadas; faltan el cambio de
-contraseña y el acceso posterior. No se han contratado planes.
+La entrega y esa representación quedan comprobadas. Javier confirma después
+«funciona perfectamente» al repetir el recorrido desde el mismo perfil:
+recuperación web confirmada por él, sin una comprobación independiente del
+agente sobre su contraseña o el acceso posterior. No se han contratado planes.
 
 En el primer intento Javier solicita desde Chrome de F5 y abre el botón en su
 navegador habitual. Se comprueba que F5 utiliza un perfil temporal de Flutter en
 `localhost:55554`, separado del perfil habitual. Ese cambio de perfil explica el
 rechazo esperado por PKCE; el aviso genérico no demuestra que el enlace haya
-caducado. La siguiente prueba debe solicitar un correo nuevo desde Chrome
-habitual en ese mismo origen y completar allí el recorrido, manteniendo la app
-local ejecutándose. No se modifican el flujo de Auth ni el código para omitir
-esta comprobación.
+caducado. La repetición recomendada solicita un correo nuevo desde Chrome
+habitual en ese mismo origen y completa allí el recorrido, manteniendo la app
+local ejecutándose; Javier confirma que funciona. No se modifican el flujo de
+Auth ni el código para omitir esta comprobación.
 Configuración, comprobación y tareas abiertas en
 [Cuenta de desarrollo](../tools/account_access_dev/README.md).
 
@@ -140,17 +142,64 @@ dimensiones, fuentes y huellas del código y de las imágenes.
   de desarrollo para `MockClient`. Resolución offline sin cambiar versiones.
 - Compilaciones web debug y APK debug correctas. iOS tiene configuración de
   callback revisada, pero no se compila desde este equipo Windows.
-- **Pendiente:** correo real de alta, apertura del enlace de recuperación en web y
-  Android físico, rechazo real de un enlace caducado o reutilizado y nuevo acceso
-  con la contraseña cambiada. La recepción del correo de recuperación en Gmail
-  se acredita mediante la prueba de Javier; no se ha cambiado su contraseña ni
-  se presenta el recorrido como cerrado. Tampoco se ha revisado producción,
-  dominios de publicación, almacenamiento de sesión o toda la seguridad del login.
+- **Pendiente:** correo real de alta, recuperación en Android físico e iPhone,
+  rechazo real de un enlace caducado o reutilizado y
+  verificación independiente del acceso con la contraseña cambiada. La recepción
+  del correo y la recuperación web se acreditan mediante la prueba de Javier;
+  el agente no ha accedido a su contraseña ni la ha cambiado. Tampoco se ha revisado
+  producción, dominios de publicación o toda la seguridad del login. La revisión posterior
+  identifica el almacenamiento por defecto del SDK, sin auditarlo íntegramente.
 - Antes de publicar hay que definir y comprobar los retornos y el correo del
   entorno real. La lista con puertos localhost es exclusivamente de desarrollo;
   no constituye configuración ni validación de producción.
 
-El tramo técnico y visual queda comprobado en desarrollo, con el recorrido real
-de correo/dispositivo abierto. El único siguiente bloque UX recomendado es
+El tramo técnico y visual queda comprobado en desarrollo, con el correo recibido
+y la recuperación web confirmados por Javier; la prueba nativa sigue abierta.
+El único siguiente bloque UX recomendado es
 Evolución: filtro deportivo y comparativas de mediciones compatibles, sin tocar
 los motores ni mezclar protocolos o versiones de baremo.
+
+## Revisión localizada de seguridad y publicación en iOS
+
+Javier pide valorar la seguridad después de confirmar que la recuperación
+funciona. Se revisan el código de Auth, router, configuración de callback, SDK
+instalado, persistencia y accesos de Perfil; no se modifica su arquitectura.
+
+- Supabase realiza el canje PKCE y autoriza `updateUser`. El marcador local no
+  concede permisos: sin sesión válida el servidor rechaza la actualización.
+  La solicitud solo envía el correo y desafío PKCE; la nueva contraseña se
+  entrega a Auth por HTTPS y el formulario la limpia al guardar. Los destinos
+  HTTP se limitan a localhost de desarrollo; producción exige HTTPS en web.
+- Se repiten 24 regresiones de datasource, recuperación y Cubit, todas correctas.
+  Incluyen ausencia de sesión, otro propietario, rechazo de Auth, consumo del
+  verificador, respuestas tardías y cierre local. El transporte es simulado:
+  estos tests no acreditan caducidad real, auditoría RLS ni seguridad integral.
+- `main.dart` no proporciona un almacén de sesión personalizado. En
+  `supabase_flutter` 2.17.2, el almacén nativo y el verificador PKCE predeterminados
+  usan SharedPreferences; web usa almacenamiento del navegador. La app aún no
+  integra Keychain para esos secretos. Se recomienda estudiar persistencia
+  protegida en móvil, con migración y pruebas de sesión/callback antes de
+  cambiarla. Es una recomendación técnica pendiente, no un cambio aplicado ni
+  una exigencia textual de Apple sobre este paquete concreto.
+- El Perfil y las rutas de la app no ofrecen eliminar cuenta ni un acceso a la
+  política de privacidad. Apple exige iniciar la eliminación desde la app cuando
+  permite crear cuentas, y un enlace accesible a la política tanto en la app como
+  en App Store Connect. La eliminación necesita un contrato de servidor y datos;
+  no se resuelve borrando preferencias locales.
+- El acceso actual usa correo/contraseña de EntrenaOP. La regla 4.8 contempla una
+  excepción para sistemas de cuenta propios; el uso de Supabase como backend no
+  equivale a ofrecer Google/Facebook como inicio de sesión social. No se añade un
+  proveedor de acceso por esta consulta.
+
+Antes de publicar deben comprobarse el recorrido en iPhone, destinos reales,
+política de contraseñas en Auth, aislamiento de datos y sesiones después de
+recuperar. `finishPasswordRecovery` solicita cierre local; no acredita cierre
+de todos los dispositivos. Esta revisión no garantiza aprobación de App Review
+ni autoriza configurar o desplegar producción.
+
+Fuentes consultadas el 08/10/2026:
+[PKCE de Supabase](https://supabase.com/docs/guides/auth/sessions/pkce-flow),
+[seguridad de contraseñas](https://supabase.com/docs/guides/auth/password-security),
+[App Review, 1.6, 4.8 y 5.1.1](https://developer.apple.com/app-store/review/guidelines/),
+[eliminación de cuenta](https://developer.apple.com/help/app-review/guideline-reference/5-1-1-account-deletion),
+[Keychain](https://developer.apple.com/documentation/security/keychain-services).
