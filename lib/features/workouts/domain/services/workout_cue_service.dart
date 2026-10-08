@@ -33,5 +33,8 @@ abstract class WorkoutCueService {
   /// Prueba explícita del sonido, sin guardar ni modificar preferencias.
   Future<bool> previewSound();
 
+  /// Prueba explícita de vibración, sin sonido ni cambios de preferencias.
+  Future<bool> previewHaptics();
+
   Future<void> signal(WorkoutCue cue);
 }

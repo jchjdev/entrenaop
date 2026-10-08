@@ -149,3 +149,55 @@ Android físicos cuando estén disponibles, incluyendo volumen/silencio, música
 auriculares y una sesión real. Segundo plano no se da por implementado.
 Comparativas configurables, publicación segura, vídeos, negocio y motores
 conservan sus pendientes propios.
+
+## HAPT-001 · vibración en Android nativo
+
+Javier aclara que prueba la app nativa en un Samsung mediante F5 de VS Code,
+no el navegador: oye los pitidos, pero no percibe la vibración. El adaptador
+anterior usaba `HapticFeedback.selectionClick`, `lightImpact` y `mediumImpact`.
+En Android Flutter los traduce a efectos de reloj, tecla virtual y teclado,
+respectivamente. Respetan la configuración de respuesta táctil del sistema;
+que la llamada termine sin error no acredita vibración perceptible. Las
+duraciones de 10–20 ms corresponden al adaptador web de Flutter, no a esta prueba
+nativa. [Contrato de Android](https://developer.android.com/develop/ui/views/haptics/haptics-apis).
+
+Se añade un adaptador Android pequeño, sin dependencias nuevas, conectado por
+`es.entrenaop/workout_vibration`. Usa el motor del dispositivo con patrones
+finitos, sin repetición ni cola de avisos:
+
+| Aviso | Patrón solicitado en Android |
+| --- | --- |
+| Preparación y últimos 3/2/1 de trabajo | Un pulso de 60 ms |
+| Mitad y últimos diez segundos | Un pulso de 120 ms |
+| Inicio del trabajo | Un pulso de 200 ms |
+| Final del trabajo o descanso | Dos pulsos de 160 ms separados por 100 ms |
+
+El permiso normal `VIBRATE` se declara en el manifiesto, sin diálogo de
+autorización. API 31+ usa `VibratorManager`; API 26+ usa `VibrationEffect`, con
+el mecanismo anterior para las versiones admitidas más antiguas. Los avisos
+se clasifican como notificaciones, sujetos a sus ajustes y No molestar,
+sin forzar amplitud ni tratar el entrenamiento como una alarma. Solo se
+solicitan mientras la actividad esté visible y se cancelan al salir de primer
+plano. No se añade soporte de pantalla bloqueada o ejecución en segundo plano.
+iOS y web conservan los efectos de Flutter existentes.
+
+El diálogo añade **Probar vibración**, que solicita el aviso de final sin sonido
+ni guardar preferencias. Los botones de prueba dependen de sus interruptores
+del borrador; cancelar conserva los valores guardados. Se indica error si el
+motor no existe o falla la solicitud nativa. Una solicitud aceptada no permite
+detectar si Android la silencia por sus ajustes ni si el usuario la percibe.
+
+Para comprobarlo en el Samsung, actualizar la copia de desarrollo, detener la
+ejecución de VS Code y volver a lanzar con F5: el código nativo y el manifiesto
+requieren recompilación completa, no hot reload. En una sesión abrir
+**Avisos del temporizador → Probar vibración**, sosteniendo el móvil, y después
+probar preparación, intervalo de 40 segundos y final de descanso.
+
+Validación de la corrección: análisis limpio y 637 pruebas correctas, con la
+omisión web existente. APK Android debug de desarrollo y compilación iOS para
+simulador correctos. El APK contiene el permiso VIBRATE y el adaptador nativo.
+El diálogo y la prueba independiente se comprueban en el banco del simulador,
+sin error ni reproducción de audio; se restaura la app principal con Supabase
+de desarrollo. Para la primera compilación Android del Mac se instalan NDK
+28.2.13676358, plataforma/build-tools 36 y CMake 3.22.1, sin cambiar lockfiles.
+Esto no acredita todavía la sensación física en el Samsung ni en iPhone.

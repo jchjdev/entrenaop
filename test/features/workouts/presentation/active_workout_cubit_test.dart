@@ -1000,6 +1000,8 @@ class _CueService implements WorkoutCueService {
   @override
   Future<bool> previewSound() async => true;
   @override
+  Future<bool> previewHaptics() async => true;
+  @override
   WorkoutCuePreferences get preferences => const WorkoutCuePreferences();
 
   @override

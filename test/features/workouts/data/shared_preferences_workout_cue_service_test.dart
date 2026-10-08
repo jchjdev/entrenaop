@@ -102,6 +102,44 @@ void main() {
       expect(audio.cues.last, WorkoutCue.restFinished);
     },
   );
+
+  test(
+    'probar vibración no suena ni modifica preferencias desactivadas',
+    () async {
+      final audio = _Audio();
+      final haptics = <WorkoutCue>[];
+      final service = SharedPreferencesWorkoutCueService(
+        await SharedPreferences.getInstance(),
+        audio: audio,
+        haptic: (cue) async => haptics.add(cue),
+      );
+      const disabled = WorkoutCuePreferences(
+        soundEnabled: false,
+        hapticsEnabled: false,
+      );
+      await service.savePreferences(disabled);
+      expect(await service.previewHaptics(), isTrue);
+      expect(haptics, [WorkoutCue.workFinished]);
+      expect(audio.cues, isEmpty);
+      expect(service.preferences, disabled);
+    },
+  );
+
+  test(
+    'un fallo háptico se comunica al probar y no detiene el sonido',
+    () async {
+      final audio = _Audio();
+      final service = SharedPreferencesWorkoutCueService(
+        await SharedPreferences.getInstance(),
+        audio: audio,
+        haptic: (_) async => throw StateError('No hay motor disponible'),
+      );
+      expect(await service.previewHaptics(), isFalse);
+      await expectLater(service.signal(WorkoutCue.workStarted), completes);
+      expect(audio.cues, [WorkoutCue.workStarted]);
+      expect(service.preferences, const WorkoutCuePreferences());
+    },
+  );
 }
 
 class _Audio implements WorkoutCueAudio {

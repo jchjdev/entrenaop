@@ -700,13 +700,16 @@ migración y guardados tardíos en `workout_account_isolation_test.dart`.
 Los avisos usan preferencias locales independientes. UI-018 sustituye
 SystemSound.alert (ignorado en Android/iOS/web) por WAV originales empaquetados
 y audioplayers 6.8.1. Un adaptador de audio reutiliza el reproductor, precarga,
-evita acumulación y aísla fallos; la vibración conserva HapticFeedback de Flutter.
+evita acumulación y aísla fallos. HAPT-001 sustituye en Android los efectos de
+teclado de HapticFeedback por pulsos finitos del motor mediante un canal nativo,
+con permiso normal VIBRATE, ajustes de notificación/No molestar y cancelación al
+salir de primer plano. iOS/web conservan HapticFeedback de Flutter.
 El ejecutor emite hitos de preparación, inicio, mitad, diez segundos y final;
 UI-019 añade un pitido breve a tres, dos y un segundo del final del trabajo,
 reutilizando el WAV de preparación, sin reproducir segundos pasados al restaurar;
 no cambia prescripción ni confirmación de resultados. El descanso restaurado
 conserva duración original y tiempo ya transcurrido. El diálogo permite probar
-sonido sin guardar preferencias; no solicita permisos adicionales. Verificación
+sonido o vibración sin guardar preferencias; VIBRATE no exige diálogo. Verificación
 en pruebas, Chromium y APK debug. IOS-002 acredita compilación y reproducción
 del banco iOS en simulador y escucha confirmada por Javier: la ejecución antigua
 carecía del plugin y los WAV; actualizar/reconstruir fue suficiente, sin cambios

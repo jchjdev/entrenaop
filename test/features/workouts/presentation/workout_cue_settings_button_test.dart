@@ -22,7 +22,14 @@ void main() {
     await tester.tap(find.text('Sonido'));
     await tester.pump();
     expect(
-      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      tester
+          .widget<OutlinedButton>(
+            find.ancestor(
+              of: find.text('Probar sonido'),
+              matching: find.byType(OutlinedButton),
+            ),
+          )
+          .onPressed,
       isNull,
     );
     await tester.tap(find.text('Sonido'));
@@ -31,11 +38,62 @@ void main() {
     await tester.pump();
     expect(service.previews, 1);
     expect(service.saves, 0);
+    await tester.tap(find.text('Probar vibración'));
+    await tester.pump();
+    expect(service.hapticPreviews, 1);
+    expect(service.previews, 1);
+    expect(service.saves, 0);
     await tester.tap(find.text('Vibración'));
     await tester.pump();
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
     expect(service.preferences, const WorkoutCuePreferences());
+    expect(service.saves, 0);
+  });
+
+  testWidgets('la prueba de vibración indica errores sin sonido ni guardado', (
+    tester,
+  ) async {
+    final service = _Cues()..hapticSuccess = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: WorkoutCueSettingsButton(cueService: service)),
+      ),
+    );
+    await tester.tap(find.byTooltip('Avisos del temporizador'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Probar vibración'));
+    await tester.pump();
+    expect(
+      find.text('No se ha podido activar la vibración en este dispositivo.'),
+      findsOneWidget,
+    );
+    expect(service.previews, 0);
+    expect(service.saves, 0);
+    service.hapticSuccess = true;
+    await tester.tap(find.text('Probar vibración'));
+    await tester.pump();
+    expect(
+      find.text('No se ha podido activar la vibración en este dispositivo.'),
+      findsNothing,
+    );
+    expect(service.hapticPreviews, 2);
+    await tester.tap(find.text('Vibración'));
+    await tester.pump();
+    expect(
+      tester
+          .widget<OutlinedButton>(
+            find.ancestor(
+              of: find.text('Probar vibración'),
+              matching: find.byType(OutlinedButton),
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(service.preferences.hapticsEnabled, isTrue);
     expect(service.saves, 0);
   });
 
@@ -79,6 +137,14 @@ class _Cues implements WorkoutCueService {
   int previews = 0;
   int saves = 0;
   bool previewSuccess = true;
+  int hapticPreviews = 0;
+  bool hapticSuccess = true;
+
+  @override
+  Future<bool> previewHaptics() async {
+    hapticPreviews++;
+    return hapticSuccess;
+  }
 
   @override
   Future<void> prepare() async {}

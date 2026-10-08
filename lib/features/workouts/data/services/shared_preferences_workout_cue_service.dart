@@ -1,7 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/data/services/asset_workout_cue_audio.dart';
+import 'package:entrenaop/features/workouts/data/services/platform_workout_cue_haptics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesWorkoutCueService implements WorkoutCueService {
@@ -10,7 +10,7 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
     WorkoutCueAudio? audio,
     Future<void> Function(WorkoutCue)? haptic,
   }) : _audio = audio ?? AssetWorkoutCueAudio(),
-       _haptic = haptic ?? _signalHaptic;
+       _haptic = haptic ?? PlatformWorkoutCueHaptics.signal;
 
   static const _soundKey = 'workout_cues.sound_enabled';
   static const _hapticsKey = 'workout_cues.haptics_enabled';
@@ -36,6 +36,17 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   }
 
   Future<void> dispose() => _audio.dispose();
+
+  @override
+  Future<bool> previewHaptics() async {
+    try {
+      await _haptic(WorkoutCue.workFinished);
+      return true;
+    } catch (error) {
+      debugPrint('No se ha podido probar la vibración: $error');
+      return false;
+    }
+  }
 
   @override
   WorkoutCuePreferences get preferences => WorkoutCuePreferences(
@@ -67,21 +78,6 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
       await action();
     } catch (error) {
       debugPrint('No se ha podido emitir el aviso del temporizador: $error');
-    }
-  }
-
-  static Future<void> _signalHaptic(WorkoutCue cue) async {
-    switch (cue) {
-      case WorkoutCue.preparationTick:
-      case WorkoutCue.workEndingTick:
-        await HapticFeedback.selectionClick();
-      case WorkoutCue.workStarted:
-      case WorkoutCue.workFinished:
-      case WorkoutCue.restFinished:
-        await HapticFeedback.mediumImpact();
-      case WorkoutCue.halfway:
-      case WorkoutCue.tenSecondsRemaining:
-        await HapticFeedback.lightImpact();
     }
   }
 }

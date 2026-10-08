@@ -46,20 +46,36 @@ class _CueSettingsDialog extends StatefulWidget {
 class _CueSettingsDialogState extends State<_CueSettingsDialog> {
   late bool _sound = widget.cueService.preferences.soundEnabled;
   late bool _haptics = widget.cueService.preferences.hapticsEnabled;
-  bool _testing = false;
+  bool _testingSound = false;
+  bool _testingHaptics = false;
   String? _error;
 
   Future<void> _preview() async {
     setState(() {
-      _testing = true;
+      _testingSound = true;
       _error = null;
     });
     final success = await widget.cueService.previewSound();
     if (!mounted) return;
     setState(() {
-      _testing = false;
+      _testingSound = false;
       if (!success) {
         _error = 'No se ha podido reproducir el sonido. Vuelve a probarlo.';
+      }
+    });
+  }
+
+  Future<void> _previewHaptics() async {
+    setState(() {
+      _testingHaptics = true;
+      _error = null;
+    });
+    final success = await widget.cueService.previewHaptics();
+    if (!mounted) return;
+    setState(() {
+      _testingHaptics = false;
+      if (!success) {
+        _error = 'No se ha podido activar la vibración en este dispositivo.';
       }
     });
   }
@@ -92,9 +108,18 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
             onChanged: (value) => setState(() => _haptics = value),
           ),
           OutlinedButton.icon(
-            onPressed: _sound && !_testing ? _preview : null,
+            onPressed: _sound && !_testingSound && !_testingHaptics
+                ? _preview
+                : null,
             icon: const Icon(Icons.volume_up_outlined),
-            label: Text(_testing ? 'Probando…' : 'Probar sonido'),
+            label: Text(_testingSound ? 'Probando…' : 'Probar sonido'),
+          ),
+          OutlinedButton.icon(
+            onPressed: _haptics && !_testingHaptics && !_testingSound
+                ? _previewHaptics
+                : null,
+            icon: const Icon(Icons.vibration),
+            label: Text(_testingHaptics ? 'Probando…' : 'Probar vibración'),
           ),
           const SizedBox(height: 12),
           const Text(
