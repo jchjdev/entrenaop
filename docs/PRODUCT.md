@@ -206,6 +206,11 @@ FAS 2027:
   edición actualiza el catálogo privado para futuras ejecuciones y conserva
   las instantáneas de entrenamientos anteriores. El contenido de EntrenaOP
   permanece de consulta en la app del deportista (UI-012, 08/10/2026).
+- Gestión de vídeos pendiente (VID-001, 08/10/2026): Javier decide concretar
+  alojamiento, subidas y gestión en otro chat. La consulta actual usa la URL
+  HTTPS del ejercicio; la base de datos guarda el enlace y el archivo permanece
+  en su alojamiento original. El reproductor no incorpora una subida de vídeos
+  ni supone que se haya elegido proveedor.
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
   recuperación pasiva, andando o trotando por duración o distancia. Repetir un
