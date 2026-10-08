@@ -721,8 +721,13 @@ carecía del plugin y los WAV; actualizar/reconstruir fue suficiente, sin cambio
 en el contexto de audio. Javier confirma después vibración física en Samsung
 SM-A326B/Android 13 tras conceder el permiso de notificaciones. Percibe un pequeño
 adelanto sobre el sonido, aceptable y sin medir; no se garantiza sincronización
-física exacta. Pedir el permiso antes de la primera sesión, fuera del botón de
-prueba, sigue pendiente. iPhone físico, auriculares y convivencia con otros
+física exacta. La primera sesión activa ofrece el permiso en Android 13+ si
+falta y la vibración está activada; el usuario elige Permitir avisos o Ahora no.
+Una marca local recuerda la oferta para no repetirla; la petición se conserva
+también en la prueba manual. Una denegación o fallo permite continuar, sin
+modificar preferencias ni resultados. El nuevo recorrido de entrada está
+verificado en pruebas, pendiente de un Android físico sin permiso.
+iPhone físico, auriculares y convivencia con otros
 sonidos conservan sus verificaciones pendientes.
 No garantiza ejecución en segundo plano. Contrato, recursos y límites en
 [WORKOUT_AUDIO_2026_10_08.md](WORKOUT_AUDIO_2026_10_08.md).

@@ -385,6 +385,33 @@ void main() {
     },
   );
 
+  testWidgets('solo ofrece el permiso después de cargar una sesión activa', (
+    tester,
+  ) async {
+    final cubit = _cubit(_Repository());
+    addTearDown(cubit.close);
+    final cues = _CueService()..offerPermission = true;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider.value(
+          value: cubit,
+          child: ActiveWorkoutPage(timerStore: _TimerStore(), cueService: cues),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Avisos de la sesión'), findsNothing);
+    expect(cues.permissionChecks, 0);
+    await cubit.load();
+    await tester.pumpAndSettle();
+    expect(find.text('Avisos de la sesión'), findsOneWidget);
+    await tester.tap(find.text('Ahora no'));
+    await tester.pumpAndSettle();
+    expect(cues.offerPermission, isFalse);
+    expect(find.text('Sesión en curso'), findsOneWidget);
+    expect(cubit.state.execution, isNotNull);
+  });
+
   testWidgets('salir y retomar conserva series y no abandona la sesión', (
     tester,
   ) async {
@@ -992,6 +1019,18 @@ class _TimerStore implements WorkoutTimerStore {
 }
 
 class _CueService implements WorkoutCueService {
+  bool offerPermission = false;
+  int permissionChecks = 0;
+  @override
+  Future<bool> shouldOfferHapticsPermission() async {
+    permissionChecks++;
+    return offerPermission;
+  }
+
+  @override
+  Future<void> markHapticsPermissionOffered() async => offerPermission = false;
+  @override
+  Future<bool> requestHapticsPermission() async => true;
   final cues = <WorkoutCue>[];
 
   @override

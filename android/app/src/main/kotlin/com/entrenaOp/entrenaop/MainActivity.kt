@@ -27,6 +27,12 @@ class MainActivity : FlutterActivity() {
             channel.setMethodCallHandler { call, result ->
                 try {
                     when (call.method) {
+                        "needsPermission" -> result.success(
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                !workoutVibration.notificationsEnabled() &&
+                                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                                    PackageManager.PERMISSION_GRANTED,
+                        )
                         "requestPermission" -> requestVibrationPermission(result)
                         "diagnostics" -> {
                             if (isDebug) {

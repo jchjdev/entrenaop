@@ -19,6 +19,107 @@ void main() {
   });
 
   test(
+    'ofrecer no pide permiso ni emite avisos y no se repite entre instancias',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(native, (call) async {
+        methods.add(call.method);
+        expect(call.method, 'needsPermission');
+        return true;
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final service = SharedPreferencesWorkoutCueService(
+        prefs,
+        audio: _Audio(),
+      );
+      expect(await service.shouldOfferHapticsPermission(), isTrue);
+      await service.markHapticsPermissionOffered();
+      expect(await service.shouldOfferHapticsPermission(), isFalse);
+      expect(
+        await SharedPreferencesWorkoutCueService(
+          prefs,
+          audio: _Audio(),
+        ).shouldOfferHapticsPermission(),
+        isFalse,
+      );
+      expect(methods, ['needsPermission']);
+      expect(service.preferences, const WorkoutCuePreferences());
+    },
+  );
+
+  test('no ofrece permiso con vibración desactivada o ya concedido', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final methods = <String>[];
+    messenger.setMockMethodCallHandler(native, (call) async {
+      methods.add(call.method);
+      return false;
+    });
+    final service = SharedPreferencesWorkoutCueService(
+      await SharedPreferences.getInstance(),
+      audio: _Audio(),
+    );
+    await service.savePreferences(
+      const WorkoutCuePreferences(hapticsEnabled: false),
+    );
+    expect(await service.shouldOfferHapticsPermission(), isFalse);
+    expect(methods, isEmpty);
+    await service.savePreferences(const WorkoutCuePreferences());
+    expect(await service.shouldOfferHapticsPermission(), isFalse);
+    expect(methods, ['needsPermission']);
+  });
+
+  test(
+    'la petición denegada no guarda preferencias ni insiste automáticamente',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(native, (call) async {
+        methods.add(call.method);
+        expect(call.method, 'requestPermission');
+        return false;
+      });
+      final audio = _Audio();
+      final service = SharedPreferencesWorkoutCueService(
+        await SharedPreferences.getInstance(),
+        audio: audio,
+      );
+      expect(await service.requestHapticsPermission(), isFalse);
+      expect(await service.shouldOfferHapticsPermission(), isFalse);
+      expect(audio.cues, isEmpty);
+      expect(service.preferences, const WorkoutCuePreferences());
+      expect(methods, ['requestPermission']);
+    },
+  );
+
+  test('fallar el canal de permisos no impide abrir la sesión', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    messenger.setMockMethodCallHandler(native, (_) async {
+      throw PlatformException(code: 'permission_failed');
+    });
+    final service = SharedPreferencesWorkoutCueService(
+      await SharedPreferences.getInstance(),
+      audio: _Audio(),
+    );
+    expect(await service.shouldOfferHapticsPermission(), isFalse);
+    expect(await service.requestHapticsPermission(), isFalse);
+    expect(await service.shouldOfferHapticsPermission(), isFalse);
+  });
+
+  test('iOS no ofrece ni pide el permiso Android', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    messenger.setMockMethodCallHandler(native, (_) async {
+      fail('iOS no debe consultar el canal de permisos Android');
+    });
+    final service = SharedPreferencesWorkoutCueService(
+      await SharedPreferences.getInstance(),
+      audio: _Audio(),
+    );
+    expect(await service.shouldOfferHapticsPermission(), isFalse);
+    expect(await service.requestHapticsPermission(), isTrue);
+  });
+
+  test(
     'denegar notificaciones falla la prueba sin bloquear reloj ni sonido',
     () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;

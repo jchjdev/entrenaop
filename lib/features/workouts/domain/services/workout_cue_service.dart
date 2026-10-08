@@ -30,6 +30,14 @@ abstract class WorkoutCueService {
 
   Future<void> prepare();
 
+  /// Primera oferta de permiso, según plataforma y preferencias locales.
+  Future<bool> shouldOfferHapticsPermission();
+
+  Future<void> markHapticsPermissionOffered();
+
+  /// Acción explícita del usuario; no reproduce avisos ni guarda preferencias.
+  Future<bool> requestHapticsPermission();
+
   /// Prueba explícita del sonido, sin guardar ni modificar preferencias.
   Future<bool> previewSound();
 

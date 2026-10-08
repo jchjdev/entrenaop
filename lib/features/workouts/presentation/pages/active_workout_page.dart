@@ -11,6 +11,7 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cub
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_permission_prompt.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
@@ -151,10 +152,13 @@ class ActiveWorkoutPage extends StatelessWidget {
               pendingSyncCount: state.pendingSyncCount,
             );
           }
-          return _ActiveContent(
-            state: state,
-            timerStore: timerStore,
+          return WorkoutCuePermissionPrompt(
             cueService: cueService,
+            child: _ActiveContent(
+              state: state,
+              timerStore: timerStore,
+              cueService: cueService,
+            ),
           );
         },
       ),

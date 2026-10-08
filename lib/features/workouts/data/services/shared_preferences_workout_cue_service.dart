@@ -15,6 +15,8 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
 
   static const _soundKey = 'workout_cues.sound_enabled';
   static const _hapticsKey = 'workout_cues.haptics_enabled';
+  static const _permissionOfferedKey =
+      'workout_cues.haptics_permission_offered';
 
   final SharedPreferences _preferences;
   final WorkoutCueAudio _audio;
@@ -24,6 +26,41 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   @override
   Future<void> prepare() async {
     if (preferences.soundEnabled) await _guard(_audio.prepare);
+  }
+
+  @override
+  Future<bool> shouldOfferHapticsPermission() async {
+    bool eligible() =>
+        _usesPlatformHaptic &&
+        preferences.hapticsEnabled &&
+        _preferences.getBool(_permissionOfferedKey) != true;
+    if (!eligible()) return false;
+    try {
+      final needsPermission = await PlatformWorkoutCueHaptics.needsPermission();
+      // Revalidar después del canal evita ofrecerlo si otra pantalla ya lo
+      // mostró o las preferencias cambiaron mientras Android respondía.
+      return needsPermission && eligible();
+    } catch (error) {
+      debugPrint('No se ha podido consultar el permiso de avisos: $error');
+      return false;
+    }
+  }
+
+  @override
+  Future<void> markHapticsPermissionOffered() async {
+    await _preferences.setBool(_permissionOfferedKey, true);
+  }
+
+  @override
+  Future<bool> requestHapticsPermission() async {
+    try {
+      await markHapticsPermissionOffered();
+      return !_usesPlatformHaptic ||
+          await PlatformWorkoutCueHaptics.requestPermission();
+    } catch (error) {
+      debugPrint('No se ha podido solicitar el permiso de avisos: $error');
+      return false;
+    }
   }
 
   @override
@@ -49,6 +86,7 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
         }
       }
       if (_usesPlatformHaptic) {
+        await markHapticsPermissionOffered();
         await PlatformWorkoutCueHaptics.preview();
       } else {
         await _haptic(WorkoutCue.workFinished);

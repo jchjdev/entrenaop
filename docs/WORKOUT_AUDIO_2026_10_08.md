@@ -316,3 +316,44 @@ no un flujo ya implementado. No se solicitan permisos durante la descarga ni
 otros ajenos a la función usada al iniciar la app. Los permisos de cámara se
 tratarán en el recorrido que la necesite. Esta recomendación sigue el criterio
 de [pedir permisos en contexto](https://developer.android.com/training/permissions/requesting).
+
+### Primera oferta al entrar en la sesión
+
+Javier pide continuar con el primer uso del permiso. Se integra una oferta al
+abrir la primera sesión activa que necesite autorización en Android 13+, fuera
+del botón de prueba y antes de la interacción con los controles. La oferta
+explica la vibración del temporizador y permite **Permitir avisos** o **Ahora
+no**. Solo la primera opción abre la petición nativa; no suena ni vibra al
+concederla. No se pide al descargar, durante el arranque global ni desde los
+hitos del reloj. No se añaden permisos de cámara ni paquetes.
+
+No se ofrece durante la carga, ante un error de sesión ni en una ejecución
+completada o abandonada. El servicio consulta el estado real de Android y
+omite la oferta si el permiso ya está concedido, la vibración está desactivada,
+la plataforma no lo necesita o ya se ofreció. Una marca local recuerda la
+oferta, incluyendo Ahora no y cerrar el diálogo. Denegar en el sistema muestra
+ayuda y permite continuar con el entrenamiento y la configuración de sonido
+existente. No cambia las preferencias de avisos, temporizadores ni resultados.
+
+La marca se conserva entre sesiones y se comparte en este dispositivo, igual
+que el permiso de la app; no corresponde a una cuenta de Supabase. La prueba
+manual también recuerda que ya se solicitó, y permite volver a pedirlo después
+de declinar la oferta. Un bloqueo definitivo se resuelve desde los ajustes del
+móvil. Fallos del canal se aíslan y no bloquean la sesión; si se sale mientras
+se consulta, no se abre el diálogo en otra pantalla.
+
+El contrato WorkoutCueService incorpora la consulta, el registro de la oferta
+y la petición explícita; la presentación no llama al canal nativo directamente.
+El canal solo añade una consulta sin efectos sobre si Android requiere el
+permiso. Se reutiliza la petición validada físicamente en HAPT-001, manteniendo
+los patrones, el audio y la clasificación de los avisos. El primer recorrido
+completo desde esta nueva oferta aún requiere comprobación en un Android físico
+sin permiso; la confirmación previa de Javier acredita la petición manual y
+la vibración, no esta entrada automática.
+
+Validación del primer uso: análisis limpio, 54 pruebas localizadas correctas,
+653 pruebas completas correctas con la omisión web existente y compilaciones
+Android debug de desarrollo/iOS simulador correctas. Las pruebas cubren esperar
+a una sesión cargada, Ahora no, concesión, denegación, persistencia entre
+instancias, salida durante la consulta, exclusión de iOS y diálogo a 320 px con
+texto doble. No se cambian dependencias ni datos de Supabase.

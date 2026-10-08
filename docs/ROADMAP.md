@@ -22,10 +22,12 @@ no dieron errores. [Evidencia y límites](IOS_DEVELOPMENT.md).
 que funciona en SM-A326B/Android 13 al conceder el permiso de notificaciones.
 El log anterior acreditó que Samsung cancelaba los avisos por tenerlas
 desactivadas para EntrenaOP. La prueba manual pide el permiso y respeta su
-denegación; análisis limpio, 641 pruebas correctas con la omisión web existente
+denegación; análisis limpio, 653 pruebas correctas con la omisión web existente
 y compilaciones Android/iOS correctas. Percibe un pequeño adelanto respecto al
-sonido, aceptable y sin medir. Pedir el permiso al activar avisos o antes de la
-primera sesión es una mejora recomendada pendiente; hoy se pide en la prueba.
+sonido, aceptable y sin medir. La primera sesión activa ofrece ahora el permiso
+si falta en Android 13+, con explicación, Permitir avisos o Ahora no y recuerdo
+local para no repetirlo. La prueba manual sigue disponible. Este nuevo recorrido
+de entrada requiere comprobación en un Android físico sin permiso.
 [Evidencia y límites](WORKOUT_AUDIO_2026_10_08.md).
 
 El único siguiente recorrido recomendado es probar una sesión real en el

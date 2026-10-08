@@ -137,6 +137,12 @@ void main() {
 
 class _Cues implements WorkoutCueService {
   @override
+  Future<bool> shouldOfferHapticsPermission() async => false;
+  @override
+  Future<void> markHapticsPermissionOffered() async {}
+  @override
+  Future<bool> requestHapticsPermission() async => true;
+  @override
   WorkoutCuePreferences preferences = const WorkoutCuePreferences();
   int previews = 0;
   int saves = 0;
