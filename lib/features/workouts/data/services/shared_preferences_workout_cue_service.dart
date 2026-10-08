@@ -10,7 +10,8 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
     WorkoutCueAudio? audio,
     Future<void> Function(WorkoutCue)? haptic,
   }) : _audio = audio ?? AssetWorkoutCueAudio(),
-       _haptic = haptic ?? PlatformWorkoutCueHaptics.signal;
+       _haptic = haptic ?? PlatformWorkoutCueHaptics.signal,
+       _usesPlatformHaptic = haptic == null;
 
   static const _soundKey = 'workout_cues.sound_enabled';
   static const _hapticsKey = 'workout_cues.haptics_enabled';
@@ -18,6 +19,7 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   final SharedPreferences _preferences;
   final WorkoutCueAudio _audio;
   final Future<void> Function(WorkoutCue) _haptic;
+  final bool _usesPlatformHaptic;
 
   @override
   Future<void> prepare() async {
@@ -40,10 +42,24 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   @override
   Future<bool> previewHaptics() async {
     try {
+      if (kDebugMode) {
+        debugPrint('EntrenaOPVibration: prueba manual iniciada');
+        if (_usesPlatformHaptic) {
+          await PlatformWorkoutCueHaptics.debugDescribe();
+        }
+      }
       await _haptic(WorkoutCue.workFinished);
+      if (kDebugMode) {
+        debugPrint(
+          'EntrenaOPVibration: prueba terminada; solicitud sin error, '
+          'percepción física sin confirmar',
+        );
+      }
       return true;
     } catch (error) {
-      debugPrint('No se ha podido probar la vibración: $error');
+      debugPrint(
+        'EntrenaOPVibration: no se ha podido probar la vibración: $error',
+      );
       return false;
     }
   }

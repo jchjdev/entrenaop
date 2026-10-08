@@ -212,3 +212,31 @@ solución físicamente confirmada. Se investiga si la solicitud llega al sistema
 los ajustes de vibración/notificación, modo silencio y funcionamiento del motor;
 no se cambian los patrones de nuevo ni se ignoran ajustes del usuario sin
 evidencia. [Comprobaciones de Samsung](https://www.samsung.com/uk/support/mobile-devices/solutions-for-when-your-galaxy-phone-wont-vibrate-when-receiving-calls-or-notifications/).
+
+Javier confirma después que el Samsung sí vibra en su prueba de ajustes y que
+tiene la vibración activada para esta comprobación. El funcionamiento del motor
+queda confirmado por el usuario; no se atribuye el fallo de EntrenaOP a los
+ajustes ni se cambia la clasificación del aviso sin diagnóstico del dispositivo.
+
+Se añade diagnóstico de desarrollo al botón existente, con el prefijo
+`EntrenaOPVibration` en la consola de VS Code: inicio de prueba, plataforma/web,
+modelo y SDK Android, presencia del motor y control de amplitud, permiso VIBRATE,
+actividad visible, modo de sonido, filtro de interrupciones e intensidad de
+notificaciones cuando sea legible. `-1` en esta última indica valor no explícito,
+no intensidad cero. El canal nativo registra también el aviso y si se envía la
+solicitud; no expone el método de diagnóstico en compilaciones no depurables.
+No se registran datos de cuenta, sesiones, identificadores del teléfono ni
+credenciales. Los patrones y ajustes se conservan; Android no devuelve por esta
+API si el usuario percibe la vibración.
+
+El diagnóstico solo se consulta en la prueba manual de desarrollo. Fallar o
+tardar más de dos segundos no impide solicitar después la vibración. Para
+continuar desde Windows: traer el commit, detener la app y volver a lanzar F5,
+pulsar Probar vibración y aportar las líneas `EntrenaOPVibration` de la consola.
+Esto permitirá distinguir la ruta de Flutter, la recepción nativa y las
+condiciones declaradas por Android; la causa del fallo físico sigue pendiente.
+Análisis limpio, 638 pruebas correctas con la omisión web existente y
+compilaciones Android debug/iOS simulador correctas. Una regresión acredita que
+el fallo de diagnóstico no impide solicitar el aviso. El Samsung no está
+conectado al Mac de este chat; se requiere la traza de su ejecución en Windows
+para contrastar estas condiciones en el dispositivo real.

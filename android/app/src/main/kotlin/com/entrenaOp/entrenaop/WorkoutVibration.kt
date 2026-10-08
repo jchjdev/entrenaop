@@ -1,20 +1,45 @@
 package com.entrenaOp.entrenaop
 
+import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.media.AudioAttributes
 import android.os.Build
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.provider.Settings
 
-class WorkoutVibration(context: Context) {
+class WorkoutVibration(private val context: Context) {
     private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         context.getSystemService(VibratorManager::class.java)?.defaultVibrator
     } else {
         @Suppress("DEPRECATION")
         context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     }
+
+    fun diagnostics(): Map<String, Any?> = mapOf(
+        "sdk" to Build.VERSION.SDK_INT,
+        "manufacturer" to Build.MANUFACTURER,
+        "model" to Build.MODEL,
+        "hasVibrator" to (vibrator?.hasVibrator() == true),
+        "hasAmplitudeControl" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator?.hasAmplitudeControl()
+        } else null,
+        "permissionGranted" to (
+            context.checkSelfPermission(Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED
+        ),
+        "ringerMode" to context.getSystemService(AudioManager::class.java)?.ringerMode,
+        "interruptionFilter" to context.getSystemService(NotificationManager::class.java)
+            ?.currentInterruptionFilter,
+        // -1 indica que no hay valor explícito; no significa intensidad cero.
+        "notificationIntensity" to runCatching {
+            Settings.System.getInt(context.contentResolver, "notification_vibration_intensity", -1)
+        }.getOrNull(),
+    )
 
     @Suppress("DEPRECATION")
     fun signal(cue: String?): Boolean {

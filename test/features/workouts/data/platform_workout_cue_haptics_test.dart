@@ -82,4 +82,22 @@ void main() {
       'HapticFeedbackType.lightImpact',
     ]);
   });
+
+  test('un diagnóstico ausente no impide emitir el aviso de Android', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final methods = <String>[];
+    messenger.setMockMethodCallHandler(native, (call) async {
+      methods.add(call.method);
+      if (call.method == 'diagnostics') {
+        throw PlatformException(code: 'diagnostic_failed');
+      }
+      return true;
+    });
+    await expectLater(PlatformWorkoutCueHaptics.debugDescribe(), completes);
+    await expectLater(
+      PlatformWorkoutCueHaptics.signal(WorkoutCue.workFinished),
+      completes,
+    );
+    expect(methods, ['diagnostics', 'signal']);
+  });
 }

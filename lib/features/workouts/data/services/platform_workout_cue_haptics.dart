@@ -5,11 +5,34 @@ import 'package:flutter/services.dart';
 class PlatformWorkoutCueHaptics {
   static const _channel = MethodChannel('es.entrenaop/workout_vibration');
 
+  static Future<void> debugDescribe() async {
+    if (!kDebugMode) return;
+    debugPrint(
+      'EntrenaOPVibration: plataforma=${defaultTargetPlatform.name}, web=$kIsWeb',
+    );
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      final info = await _channel
+          .invokeMapMethod<String, dynamic>('diagnostics')
+          .timeout(const Duration(seconds: 2));
+      debugPrint('EntrenaOPVibration: diagnóstico Android=$info');
+    } catch (error) {
+      // El diagnóstico nunca impide probar el motor, incluso en un APK que
+      // aún conserve el canal nativo anterior.
+      debugPrint('EntrenaOPVibration: diagnóstico no disponible: $error');
+    }
+  }
+
   static Future<void> signal(WorkoutCue cue) async {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       // Los avisos del reloj necesitan pulsos perceptibles, no los efectos
       // de teclado de HapticFeedback, sujetos al ajuste de respuesta táctil.
       final available = await _channel.invokeMethod<bool>('signal', cue.name);
+      if (kDebugMode) {
+        debugPrint(
+          'EntrenaOPVibration: aviso=${cue.name}, solicitud enviada=$available',
+        );
+      }
       if (available != true) {
         throw UnsupportedError('El dispositivo no dispone de vibración.');
       }
