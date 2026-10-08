@@ -75,6 +75,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
             remaining,
             pendingSyncCount,
             canBeSkipped: restSnapshot.restCanBeSkipped,
+            totalSeconds: restSnapshot.targetSeconds,
           );
           return;
         }
@@ -270,17 +271,19 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     int seconds,
     int pendingSyncCount, {
     bool canBeSkipped = true,
+    int? totalSeconds,
   }) {
+    final total = totalSeconds ?? seconds;
     _restTimer?.cancel();
     unawaited(
       _timerStore.write(
         _restTimerId,
         WorkoutTimerSnapshot(
           phase: WorkoutTimerPhase.running,
-          targetSeconds: seconds,
+          targetSeconds: total,
           preparationSeconds: 0,
           phaseStartedAt: DateTime.now().toUtc(),
-          elapsedBeforeRun: Duration.zero,
+          elapsedBeforeRun: Duration(seconds: total - seconds),
           restCanBeSkipped: canBeSkipped,
         ),
       ),
@@ -308,6 +311,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           ),
         );
       } else {
+        if (total > 10 && remaining == 10) {
+          unawaited(_cueService.signal(WorkoutCue.tenSecondsRemaining));
+        } else if (total >= 20 && remaining == total ~/ 2) {
+          unawaited(_cueService.signal(WorkoutCue.halfway));
+        }
         emit(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.resting,

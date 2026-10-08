@@ -105,6 +105,8 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<WorkoutCueService>(
     () => SharedPreferencesWorkoutCueService(sharedPreferences),
+    dispose: (service) =>
+        (service as SharedPreferencesWorkoutCueService).dispose(),
   );
   sl.registerLazySingleton<WorkoutMutationQueue>(
     () => SharedPreferencesWorkoutMutationQueue(

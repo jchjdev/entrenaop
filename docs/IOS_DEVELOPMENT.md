@@ -70,3 +70,28 @@ el análisis desde la raíz incluye ese proyecto anidado.
 El arranque no acredita por sí solo el login, un correo real de recuperación,
 la reproducción de vídeo ni la selección de fotografías. Estos recorridos
 requieren una comprobación funcional específica y no implican producción.
+
+## Avisos del temporizador · UI-018
+
+Javier comunica el 08/10/2026 una revisión superficial positiva en el simulador
+de guardado, Evolución y fotos; no acredita todos los recorridos autenticados.
+La recuperación por correo nativa puede esperar, sin requerir abrir un buzón
+en el simulador.
+
+UI-018 añade audioplayers 6.8.1 y WAV locales. El paquete Darwin 6.5.0 incluye
+SPM con mínimo iOS 13, dentro del mínimo iOS 15 del proyecto. Esa revisión de
+configuración no acredita la compilación ni la reproducción con el plugin nuevo.
+Tras actualizar el repositorio, ejecutar pub get con lockfile, detener la app
+y arrancarla de nuevo: hot reload no registra plugins nuevos. Comprobar
+Sesión → Avisos del temporizador → Probar sonido, seguido de un intervalo de
+40 segundos y descanso; registrar compilación, avisos y errores si los hubiera.
+Existe un banco sin cuenta ni Supabase:
+
+```sh
+flutter run -d <simulador> -t tools/workout_cue_probe.dart
+```
+
+La configuración mezcla los pitidos con otro audio usando playback/mixWithOthers.
+Volumen/silencio y convivencia con vídeo, música y auriculares necesitan prueba
+nativa. No se habilita una garantía de avisos con pantalla bloqueada o app
+suspendida. [Contrato y comprobaciones actuales](WORKOUT_AUDIO_2026_10_08.md).

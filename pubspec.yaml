@@ -32,6 +32,8 @@ dependencies:
 
   # Video
   video_player: ^2.14.0
+  # Pitidos locales del ejecutor en web, Android e iOS (incluye soporte SPM).
+  audioplayers: 6.8.1
   # Abrir enlaces de referencia que el reproductor integrado no admite.
   # Ya se resuelve esta versión a través de Supabase; no añade un plugin nuevo.
   url_launcher: ^6.3.2
@@ -56,5 +58,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/audio/workout/
     - assets/programs/tropa/initial_week_draft_v1.json
     - assets/programs/fas_periodic_2027/assessment_reference_v1.json

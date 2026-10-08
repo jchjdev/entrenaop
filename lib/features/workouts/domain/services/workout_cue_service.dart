@@ -1,6 +1,13 @@
 import 'package:equatable/equatable.dart';
 
-enum WorkoutCue { preparationTick, workStarted, workFinished, restFinished }
+enum WorkoutCue {
+  preparationTick,
+  workStarted,
+  halfway,
+  tenSecondsRemaining,
+  workFinished,
+  restFinished,
+}
 
 class WorkoutCuePreferences extends Equatable {
   const WorkoutCuePreferences({
@@ -19,6 +26,11 @@ abstract class WorkoutCueService {
   WorkoutCuePreferences get preferences;
 
   Future<void> savePreferences(WorkoutCuePreferences preferences);
+
+  Future<void> prepare();
+
+  /// Prueba explícita del sonido, sin guardar ni modificar preferencias.
+  Future<bool> previewSound();
 
   Future<void> signal(WorkoutCue cue);
 }

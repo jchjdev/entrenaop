@@ -1,14 +1,41 @@
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:entrenaop/features/workouts/data/services/asset_workout_cue_audio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesWorkoutCueService implements WorkoutCueService {
-  SharedPreferencesWorkoutCueService(this._preferences);
+  SharedPreferencesWorkoutCueService(
+    this._preferences, {
+    WorkoutCueAudio? audio,
+    Future<void> Function(WorkoutCue)? haptic,
+  }) : _audio = audio ?? AssetWorkoutCueAudio(),
+       _haptic = haptic ?? _signalHaptic;
 
   static const _soundKey = 'workout_cues.sound_enabled';
   static const _hapticsKey = 'workout_cues.haptics_enabled';
 
   final SharedPreferences _preferences;
+  final WorkoutCueAudio _audio;
+  final Future<void> Function(WorkoutCue) _haptic;
+
+  @override
+  Future<void> prepare() async {
+    if (preferences.soundEnabled) await _guard(_audio.prepare);
+  }
+
+  @override
+  Future<bool> previewSound() async {
+    try {
+      await _audio.play(WorkoutCue.workStarted, allowDelay: true);
+      return true;
+    } catch (error) {
+      debugPrint('No se ha podido reproducir el aviso: $error');
+      return false;
+    }
+  }
+
+  Future<void> dispose() => _audio.dispose();
 
   @override
   WorkoutCuePreferences get preferences => WorkoutCuePreferences(
@@ -27,10 +54,23 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   @override
   Future<void> signal(WorkoutCue cue) async {
     final current = preferences;
-    if (current.soundEnabled) {
-      await SystemSound.play(SystemSoundType.alert);
+    // Sonido y vibración son independientes; sus fallos nunca interrumpen
+    // temporizadores, resultados ni guardados, incluso con llamadas unawaited.
+    await Future.wait([
+      if (current.soundEnabled) _guard(() => _audio.play(cue)),
+      if (current.hapticsEnabled) _guard(() => _haptic(cue)),
+    ]);
+  }
+
+  static Future<void> _guard(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (error) {
+      debugPrint('No se ha podido emitir el aviso del temporizador: $error');
     }
-    if (!current.hapticsEnabled) return;
+  }
+
+  static Future<void> _signalHaptic(WorkoutCue cue) async {
     switch (cue) {
       case WorkoutCue.preparationTick:
         await HapticFeedback.selectionClick();
@@ -38,6 +78,9 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
       case WorkoutCue.workFinished:
       case WorkoutCue.restFinished:
         await HapticFeedback.mediumImpact();
+      case WorkoutCue.halfway:
+      case WorkoutCue.tenSecondsRemaining:
+        await HapticFeedback.lightImpact();
     }
   }
 }

@@ -10,6 +10,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
@@ -71,7 +72,7 @@ class ActiveWorkoutPage extends StatelessWidget {
             _ => 'Sesión en curso',
           }),
         ),
-        actions: [_CueSettingsButton(cueService: cueService)],
+        actions: [WorkoutCueSettingsButton(cueService: cueService)],
       ),
       body: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
         builder: (context, state) {
@@ -108,73 +109,6 @@ class ActiveWorkoutPage extends StatelessWidget {
         },
       ),
     );
-  }
-}
-
-class _CueSettingsButton extends StatelessWidget {
-  const _CueSettingsButton({required this.cueService});
-
-  final WorkoutCueService cueService;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: 'Avisos del temporizador',
-      icon: const Icon(Icons.notifications_active_outlined),
-      onPressed: () => _showSettings(context),
-    );
-  }
-
-  Future<void> _showSettings(BuildContext context) async {
-    var sound = cueService.preferences.soundEnabled;
-    var haptics = cueService.preferences.hapticsEnabled;
-    final selected = await showDialog<WorkoutCuePreferences>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Avisos del temporizador'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: sound,
-                title: const Text('Sonido'),
-                subtitle: const Text('Preparación, inicio, final y descanso.'),
-                onChanged: (value) => setDialogState(() => sound = value),
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: haptics,
-                title: const Text('Vibración'),
-                subtitle: const Text(
-                  'Se aplicará cuando el dispositivo sea compatible.',
-                ),
-                onChanged: (value) => setDialogState(() => haptics = value),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(
-                dialogContext,
-                WorkoutCuePreferences(
-                  soundEnabled: sound,
-                  hapticsEnabled: haptics,
-                ),
-              ),
-              child: const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (selected == null) return;
-    await cueService.savePreferences(selected);
   }
 }
 
@@ -543,6 +477,11 @@ class _AmrapCardState extends State<_AmrapCard> {
                 ),
                 onStarted: () =>
                     unawaited(widget.cueService.signal(WorkoutCue.workStarted)),
+                onHalfway: () =>
+                    unawaited(widget.cueService.signal(WorkoutCue.halfway)),
+                onTenSecondsRemaining: () => unawaited(
+                  widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
+                ),
                 onFinished: () => unawaited(
                   widget.cueService.signal(WorkoutCue.workFinished),
                 ),
@@ -846,6 +785,14 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                         onStarted: () => unawaited(
                           widget.cueService.signal(WorkoutCue.workStarted),
                         ),
+                        onHalfway: () => unawaited(
+                          widget.cueService.signal(WorkoutCue.halfway),
+                        ),
+                        onTenSecondsRemaining: () => unawaited(
+                          widget.cueService.signal(
+                            WorkoutCue.tenSecondsRemaining,
+                          ),
+                        ),
                         onFinished: () => unawaited(
                           widget.cueService.signal(WorkoutCue.workFinished),
                         ),
@@ -985,6 +932,11 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   onStarted: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workStarted),
                   ),
+                  onHalfway: () =>
+                      unawaited(widget.cueService.signal(WorkoutCue.halfway)),
+                  onTenSecondsRemaining: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
+                  ),
                   onFinished: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workFinished),
                   ),
@@ -1004,6 +956,11 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   ),
                   onStarted: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workStarted),
+                  ),
+                  onHalfway: () =>
+                      unawaited(widget.cueService.signal(WorkoutCue.halfway)),
+                  onTenSecondsRemaining: () => unawaited(
+                    widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
                   ),
                   onFinished: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workFinished),

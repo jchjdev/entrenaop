@@ -4,6 +4,145 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('mitad y diez segundos no se repiten al pausar y reanudar', (
+    tester,
+  ) async {
+    var now = Duration.zero;
+    final cues = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 40,
+            preparationSeconds: 0,
+            clock: () => now,
+            onElapsedChanged: (_) {},
+            onHalfway: () => cues.add('mitad'),
+            onTenSecondsRemaining: () => cues.add('diez'),
+            onFinished: () => cues.add('final'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Iniciar temporizador'));
+    now = const Duration(seconds: 20);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['mitad']);
+    await tester.tap(find.text('Pausar'));
+    now = const Duration(seconds: 100);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('Reanudar'));
+    now = const Duration(seconds: 110);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['mitad', 'diez']);
+    now = const Duration(seconds: 120);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['mitad', 'diez', 'final']);
+    await tester.tap(find.text('Repetir'));
+    now = const Duration(seconds: 140);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues.last, 'mitad');
+  });
+
+  for (final seconds in [5, 10, 20]) {
+    testWidgets('intervalo de $seconds s no superpone mitad, diez y final', (
+      tester,
+    ) async {
+      var now = Duration.zero;
+      final cues = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WorkoutSetCountdown(
+              targetSeconds: seconds,
+              preparationSeconds: 0,
+              clock: () => now,
+              onElapsedChanged: (_) {},
+              onHalfway: () => cues.add('mitad'),
+              onTenSecondsRemaining: () => cues.add('diez'),
+              onFinished: () => cues.add('final'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Iniciar temporizador'));
+      now = Duration(seconds: seconds ~/ 2);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(cues, seconds == 20 ? ['diez'] : isEmpty);
+      now = Duration(seconds: seconds);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(cues, seconds == 20 ? ['diez', 'final'] : ['final']);
+    });
+  }
+
+  testWidgets('restaurar tras los hitos no reproduce avisos pasados', (
+    tester,
+  ) async {
+    final wallNow = DateTime.utc(2026, 10, 8);
+    var now = Duration.zero;
+    final cues = <String>[];
+    final store = _MemoryTimerStore(
+      WorkoutTimerSnapshot(
+        phase: WorkoutTimerPhase.running,
+        targetSeconds: 40,
+        preparationSeconds: 0,
+        phaseStartedAt: wallNow.subtract(const Duration(seconds: 35)),
+        elapsedBeforeRun: Duration.zero,
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 40,
+            preparationSeconds: 0,
+            clock: () => now,
+            wallClock: () => wallNow,
+            timerStore: store,
+            timerId: 'set',
+            onElapsedChanged: (_) {},
+            onStarted: () => cues.add('inicio'),
+            onHalfway: () => cues.add('mitad'),
+            onTenSecondsRemaining: () => cues.add('diez'),
+            onFinished: () => cues.add('final'),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('0:05'), findsOneWidget);
+    expect(cues, isEmpty);
+    now = const Duration(seconds: 5);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['final']);
+  });
+
+  testWidgets('saltar directamente al final emite solo el final', (
+    tester,
+  ) async {
+    var now = Duration.zero;
+    final cues = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 40,
+            preparationSeconds: 0,
+            clock: () => now,
+            onElapsedChanged: (_) {},
+            onHalfway: () => cues.add('mitad'),
+            onTenSecondsRemaining: () => cues.add('diez'),
+            onFinished: () => cues.add('final'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Iniciar temporizador'));
+    now = const Duration(seconds: 50);
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['final']);
+  });
+
   testWidgets('cuenta, permite pausar y entrega los segundos realizados', (
     tester,
   ) async {

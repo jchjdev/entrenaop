@@ -685,10 +685,17 @@ los v1 carecen de prueba de propiedad y requieren recuperación explícita,
 todavía sin interfaz de importación. Pruebas de cambio A/B, concurrencia,
 migración y guardados tardíos en `workout_account_isolation_test.dart`.
 
-Los avisos acústicos y hápticos usan capacidades de Flutter y preferencias
-locales, sin introducir permisos ni dependencias nativas adicionales. Los
-eventos del temporizador no contienen reglas de negocio y pueden silenciarse de
-forma independiente desde la sesión activa.
+Los avisos usan preferencias locales independientes. UI-018 sustituye
+SystemSound.alert (ignorado en Android/iOS/web) por WAV originales empaquetados
+y audioplayers 6.8.1. Un adaptador de audio reutiliza el reproductor, precarga,
+evita acumulación y aísla fallos; la vibración conserva HapticFeedback de Flutter.
+El ejecutor emite hitos de preparación, inicio, mitad, diez segundos y final;
+no cambia prescripción ni confirmación de resultados. El descanso restaurado
+conserva duración original y tiempo ya transcurrido. El diálogo permite probar
+sonido sin guardar preferencias; no solicita permisos adicionales. Verificación
+en pruebas, Chromium y APK debug, con compilación/escucha iOS nueva pendientes.
+No garantiza ejecución en segundo plano. Contrato, recursos y límites en
+[WORKOUT_AUDIO_2026_10_08.md](WORKOUT_AUDIO_2026_10_08.md).
 
 ## Navegación y presentación
 

@@ -15,6 +15,54 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets('el descanso avisa a mitad, diez segundos y final', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final cues = _CueService();
+    final cubit = _cubit(repository, cueService: cues);
+    await cubit.load();
+    await cubit.completeCurrentSet(
+      const WorkoutSetResultInput(resultId: 'set-1', actualReps: 8),
+      restSecondsOverride: 40,
+    );
+    await tester.pump(const Duration(seconds: 20));
+    expect(cues.cues, [WorkoutCue.halfway]);
+    await tester.pump(const Duration(seconds: 10));
+    expect(cues.cues, [WorkoutCue.halfway, WorkoutCue.tenSecondsRemaining]);
+    await tester.pump(const Duration(seconds: 10));
+    expect(cues.cues.last, WorkoutCue.restFinished);
+    expect(cubit.state.status, ActiveWorkoutStatus.ready);
+    await cubit.close();
+  });
+
+  testWidgets(
+    'restaurar un descanso conserva la mitad original y no repite hitos',
+    (tester) async {
+      final repository = _Repository();
+      final cues = _CueService();
+      final store = _TimerStore(
+        WorkoutTimerSnapshot(
+          phase: WorkoutTimerPhase.running,
+          targetSeconds: 40,
+          preparationSeconds: 0,
+          phaseStartedAt: DateTime.now().toUtc(),
+          elapsedBeforeRun: const Duration(seconds: 25),
+        ),
+      );
+      final cubit = _cubit(repository, timerStore: store, cueService: cues);
+      await cubit.load();
+      expect(store.snapshot!.targetSeconds, 40);
+      expect(store.snapshot!.elapsedBeforeRun.inSeconds, 25);
+      await tester.pump(const Duration(seconds: 5));
+      expect(cues.cues, [WorkoutCue.tenSecondsRemaining]);
+      cubit.skipRest();
+      await tester.pump(const Duration(seconds: 10));
+      expect(cues.cues, [WorkoutCue.tenSecondsRemaining]);
+      await cubit.close();
+    },
+  );
+
   testWidgets('salir y retomar conserva series y no abandona la sesión', (
     tester,
   ) async {
@@ -309,21 +357,22 @@ void main() {
   });
 }
 
-ActiveWorkoutCubit _cubit(_Repository repository, {_TimerStore? timerStore}) =>
-    ActiveWorkoutCubit(
-      executionId: 'execution-1',
-      getExecution: GetWorkoutExecutionUseCase(repository),
-      completeSet: CompleteWorkoutSetUseCase(repository),
-      completeAmrap: CompleteAmrapBlockUseCase(repository),
-      skipSet: SkipWorkoutSetUseCase(repository),
-      finishExecution: FinishWorkoutExecutionUseCase(repository),
-      abandonExecution: AbandonWorkoutExecutionUseCase(repository),
-      getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(
-        repository,
-      ),
-      timerStore: timerStore ?? _TimerStore(),
-      cueService: _CueService(),
-    );
+ActiveWorkoutCubit _cubit(
+  _Repository repository, {
+  _TimerStore? timerStore,
+  _CueService? cueService,
+}) => ActiveWorkoutCubit(
+  executionId: 'execution-1',
+  getExecution: GetWorkoutExecutionUseCase(repository),
+  completeSet: CompleteWorkoutSetUseCase(repository),
+  completeAmrap: CompleteAmrapBlockUseCase(repository),
+  skipSet: SkipWorkoutSetUseCase(repository),
+  finishExecution: FinishWorkoutExecutionUseCase(repository),
+  abandonExecution: AbandonWorkoutExecutionUseCase(repository),
+  getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(repository),
+  timerStore: timerStore ?? _TimerStore(),
+  cueService: cueService ?? _CueService(),
+);
 
 class _Repository implements WorkoutRepository {
   WorkoutExecution execution = _execution();
@@ -493,6 +542,13 @@ class _TimerStore implements WorkoutTimerStore {
 }
 
 class _CueService implements WorkoutCueService {
+  final cues = <WorkoutCue>[];
+
+  @override
+  Future<void> prepare() async {}
+
+  @override
+  Future<bool> previewSound() async => true;
   @override
   WorkoutCuePreferences get preferences => const WorkoutCuePreferences();
 
@@ -500,5 +556,5 @@ class _CueService implements WorkoutCueService {
   Future<void> savePreferences(WorkoutCuePreferences preferences) async {}
 
   @override
-  Future<void> signal(WorkoutCue cue) async {}
+  Future<void> signal(WorkoutCue cue) async => cues.add(cue);
 }

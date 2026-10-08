@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-018, 08/10/2026 · sonido implementado, revisión nativa abierta:** corregido
+el adaptador que usaba SystemSound.alert, ignorado en Android/iOS/web. Cinco
+WAV locales y audioplayers 6.8.1; preparación/inicio/mitad/diez segundos/final
+en trabajo y descanso, sin duplicar ni reproducir hitos pasados. Preferencias
+independientes, prueba explícita y fallos aislados. Análisis limpio app/admin,
+606 y 91 pruebas completas correctas con las omisiones existentes, 27 específicas,
+reproducción real aceptada en Chromium y APK debug compilada. Se mantiene el
+aspecto de la app y la configuración iOS del Mac. No modifica motores, negocio,
+SQL ni producción. [Recorrido, evidencia y límites](WORKOUT_AUDIO_2026_10_08.md).
+
+El único siguiente recorrido recomendado es actualizar y reiniciar completamente
+la app de desarrollo en el Mac, compilar el plugin nuevo y escuchar Probar sonido
+y un intervalo/descanso. SPM revisado por configuración, sin acreditar aún ese
+arranque o escucha. Android físico, música/auriculares y segundo plano no se
+dan por comprobados. Javier comunica una revisión superficial positiva en
+simulador de guardado, Evolución y fotografías; no cierra la auditoría
+autenticada global. Recuperación de correo nativa puede esperar. Comparativas
+configurables, seguridad de publicación, vídeos, negocio y motores mantienen
+su alcance aparte. Esta entrada sustituye las recomendaciones previas ya
+realizadas, sin actualizar sus fechas históricas de comprobación.
+
 **UI-017, 08/10/2026 · tramo de formularios cerrado:** nuevo programa admin y
 selectores del formulario compartido de ejercicios muestran sus selecciones
 completas con texto grande. Nombre/tipo se conservan tras fallo y reintento;

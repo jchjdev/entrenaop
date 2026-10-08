@@ -1,5 +1,18 @@
 # Producto EntrenaOP
 
+**UI-018, 08/10/2026 · avisos reales del temporizador:** el ejecutor incluye
+pitidos locales de preparación, inicio, mitad, últimos diez segundos y final,
+también para descanso. Sonido y vibración conservan controles independientes;
+el diálogo añade Probar sonido sin guardar el borrador. Coincidencias y tiempos
+cortos evitan duplicados. Comprobado con análisis, 606 pruebas de app, 91 de
+admin, reproducción aceptada en Chromium y APK debug; escucha/compilación iOS
+con el plugin nuevo y escucha en Android físico pendientes. Se mantiene la
+sesión en pantalla para recibir avisos, sin garantía de segundo plano.
+Javier comunica una revisión superficial positiva de guardado, Evolución y
+fotos en simulador. [Criterio, pruebas y límites](WORKOUT_AUDIO_2026_10_08.md).
+El siguiente recorrido es verificar el audio nativo en el Mac y registrar el
+resultado, conservando los pendientes de publicación/negocio/motores.
+
 **UI-017, 08/10/2026 · formularios más legibles:** nuevo programa admin y
 formulario compartido de ejercicios permiten leer la selección completa con
 texto ampliado. El borrador de programa conserva nombre/tipo si falla el guardado;

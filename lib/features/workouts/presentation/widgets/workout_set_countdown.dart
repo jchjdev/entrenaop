@@ -21,6 +21,8 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.timerId,
     this.onPreparationTick,
     this.onStarted,
+    this.onHalfway,
+    this.onTenSecondsRemaining,
     this.onFinished,
     super.key,
   }) : assert(targetSeconds > 0),
@@ -42,6 +44,8 @@ class WorkoutSetCountdown extends StatefulWidget {
   final String? timerId;
   final VoidCallback? onPreparationTick;
   final VoidCallback? onStarted;
+  final VoidCallback? onHalfway;
+  final VoidCallback? onTenSecondsRemaining;
   final VoidCallback? onFinished;
 
   @override
@@ -161,6 +165,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     );
     if (elapsed == _elapsedSeconds) return;
 
+    final previousElapsed = _elapsedSeconds;
     _elapsedSeconds = elapsed;
     widget.onElapsedChanged(elapsed);
     if (_isFinished) {
@@ -169,6 +174,21 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _ticker?.cancel();
       _clearPersistedTimer();
       widget.onFinished?.call();
+    } else {
+      // Al restaurar no se reproducen hitos pasados. Si una actualización
+      // cruza ambos, el aviso de diez segundos tiene prioridad; nunca se
+      // superpone a mitad ni al final (coinciden en intervalos de 20 s).
+      final tenSecondMark = widget.targetSeconds - 10;
+      final halfwayMark = (widget.targetSeconds / 2).ceil();
+      if (widget.targetSeconds > 10 &&
+          previousElapsed < tenSecondMark &&
+          elapsed >= tenSecondMark) {
+        widget.onTenSecondsRemaining?.call();
+      } else if (widget.targetSeconds >= 20 &&
+          previousElapsed < halfwayMark &&
+          elapsed >= halfwayMark) {
+        widget.onHalfway?.call();
+      }
     }
     if (mounted) setState(() {});
   }
