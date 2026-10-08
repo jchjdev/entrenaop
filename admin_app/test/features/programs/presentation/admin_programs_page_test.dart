@@ -13,6 +13,7 @@ import 'package:entrenaop_admin/features/programs/presentation/admin_program_sco
 import 'package:entrenaop_admin/features/programs/presentation/admin_test_pass_standards_page.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/exercise_draft.dart';
@@ -410,6 +411,74 @@ Future<void> _retrySave(
 }
 
 void main() {
+  for (final (label, kind) in [
+    ('Acceso u oposición', 'access'),
+    ('Evaluación interna', 'internal_assessment'),
+  ]) {
+    testWidgets('crear $label conserva selección y borrador con texto doble', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repository = _FakeRepository(allowed: true)..failCreate = true;
+      await tester.pumpWidget(
+        AdminTestApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: AdminProgramsPage(
+            repository: repository,
+            workoutRepository: _FakeWorkouts(),
+            exerciseRepository: _FakeExercises(),
+            onSignOut: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tapVisible(tester, 'Crear programa');
+      await tester.enterText(find.byType(TextFormField), 'Programa de prueba');
+      final field = find.byType(DropdownButtonFormField<String>);
+      await tester.ensureVisible(field);
+      await tester.pumpAndSettle();
+      await tester.tap(field);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+      final paragraph = tester.renderObject<RenderParagraph>(
+        find.descendant(of: field, matching: find.text(label)).first,
+      );
+      final painter = TextPainter(
+        text: paragraph.text,
+        textDirection: TextDirection.ltr,
+        textScaler: paragraph.textScaler,
+      )..layout(maxWidth: paragraph.size.width);
+      expect(paragraph.size.height, greaterThanOrEqualTo(painter.height));
+      painter.dispose();
+      await _tapVisible(tester, 'Crear borrador');
+      expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField))
+            .controller!
+            .text,
+        'Programa de prueba',
+      );
+      expect(
+        tester.widget<DropdownButtonFormField<String>>(field).initialValue,
+        kind,
+      );
+      repository.failCreate = false;
+      await _tapVisible(tester, 'Crear borrador');
+      expect(repository.programs.single.kind, kind);
+      expect(repository.programs.single.enabled, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('el índice conserva pruebas desplegadas sin repetir consultas', (
     tester,
   ) async {

@@ -468,6 +468,9 @@ class _NewProgramDialogState extends State<_NewProgramDialog> {
               ),
               DropdownButtonFormField<String>(
                 initialValue: _kind,
+                isExpanded: true,
+                isDense: false,
+                itemHeight: null,
                 decoration: const InputDecoration(labelText: 'Tipo'),
                 items: const [
                   DropdownMenuItem(
@@ -476,6 +479,16 @@ class _NewProgramDialogState extends State<_NewProgramDialog> {
                   ),
                   DropdownMenuItem(
                     value: 'internal_assessment',
+                    child: Text('Evaluación interna'),
+                  ),
+                ],
+                selectedItemBuilder: (_) => const [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Acceso u oposición'),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
                     child: Text('Evaluación interna'),
                   ),
                 ],

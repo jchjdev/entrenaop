@@ -741,6 +741,19 @@ preparaciones, derechos comerciales, SQL o motores. Las comparativas nuevas
 siguen pendientes. El siguiente bloque UX es Biblioteca, con vídeo y gestión
 de ejercicios propios, respetando autoría, versiones e historial.
 
+### Formularios legibles · UI-017 · 08/10/2026
+
+El tipo de nuevo programa admin y Dificultad/Medición habitual del formulario
+de ejercicios muestran la selección completa en varias líneas. En poco ancho o
+texto ampliado, indicación/controles de foto pasan bajo la vista previa 16:9;
+en el resto siguen superpuestos. Conserva colores, imagen y encuadre, sin tocar
+tarjetas o portadas de Inicio/Mi plan. Opciones y guardado mantienen sus reglas.
+Análisis limpio en app/admin/paquete y 591, 91 y 8 pruebas completas correctas,
+con omisiones existentes; seis recorridos y 12 imágenes revisadas.
+[Imágenes, regresiones y límites](REFRESH_FORMS_2026_10_08.md).
+El siguiente bloque es la comprobación autenticada de los recorridos actuales,
+pendiente de sesión disponible. No cierra todo el pulido transversal.
+
 ### Tipo histórico y filtros · UI-016 · 08/10/2026
 
 El desplegable existente del historial de Evolución añade «Tipo de entrenamiento»

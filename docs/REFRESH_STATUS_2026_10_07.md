@@ -1,6 +1,17 @@
 # Refresh: comparación con el informe anterior
 
-**Último tramo comprobado · UI-016, 08/10/2026:** filtro del tipo de entrenamiento
+**Último tramo comprobado · UI-017, 08/10/2026:** corrección de desbordamientos
+en crear programa admin y el formulario compartido de ejercicios con texto
+ampliado. Selecciones completas, borrador conservado tras fallo/reintento y
+controles de foto debajo de la vista previa cuando requieren más espacio.
+Análisis limpio en app/admin/paquete; 591, 91 y 8 pruebas completas correctas,
+con sus omisiones existentes; seis recorridos visuales y 12 imágenes revisadas.
+No cambia reglas, datos, permisos, Inicio/Mi plan, negocio, motores o producción.
+El siguiente bloque único es la comprobación autenticada de app/admin; no hay
+sesión disponible en el navegador de pruebas. No cierra todo el pulido transversal.
+[Detalle e imágenes](REFRESH_FORMS_2026_10_08.md).
+
+**Tramo anterior comprobado · UI-016, 08/10/2026:** filtro del tipo de entrenamiento
 conservado en servidor al iniciar: Carrera, Fuerza/acondicionamiento y Mixta.
 Sesiones anteriores siguen Sin clasificar. Preparación, fechas, estado y páginas
 se combinan conservando consulta al refrescar/fallar. Selectores completos con

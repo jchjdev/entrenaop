@@ -181,6 +181,9 @@ class _ExerciseFormState extends State<ExerciseForm> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _difficulty,
+              isExpanded: true,
+              isDense: false,
+              itemHeight: null,
               decoration: const InputDecoration(labelText: 'Dificultad'),
               items: const [
                 DropdownMenuItem(value: 'inicial', child: Text('Inicial')),
@@ -190,6 +193,14 @@ class _ExerciseFormState extends State<ExerciseForm> {
                 ),
                 DropdownMenuItem(value: 'avanzado', child: Text('Avanzado')),
               ],
+              selectedItemBuilder: (_) => const [
+                Align(alignment: Alignment.centerLeft, child: Text('Inicial')),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Intermedio'),
+                ),
+                Align(alignment: Alignment.centerLeft, child: Text('Avanzado')),
+              ],
               onChanged: (value) {
                 if (value != null) _difficulty = value;
                 _notifyDirty();
@@ -198,6 +209,9 @@ class _ExerciseFormState extends State<ExerciseForm> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _exerciseType,
+              isExpanded: true,
+              isDense: false,
+              itemHeight: null,
               decoration: const InputDecoration(labelText: 'Medición habitual'),
               items: const [
                 DropdownMenuItem(
@@ -205,6 +219,13 @@ class _ExerciseFormState extends State<ExerciseForm> {
                   child: Text('Repeticiones'),
                 ),
                 DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
+              ],
+              selectedItemBuilder: (_) => const [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Repeticiones'),
+                ),
+                Align(alignment: Alignment.centerLeft, child: Text('Tiempo')),
               ],
               onChanged: (value) {
                 if (value != null) _exerciseType = value;
@@ -304,75 +325,96 @@ class _ImageHeader extends StatelessWidget {
         : initialUrl != null && Uri.tryParse(initialUrl!)?.scheme == 'https'
         ? NetworkImage(initialUrl!)
         : null;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (provider != null)
-                  Image(image: provider, fit: BoxFit.cover)
-                else
-                  ColoredBox(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_photo_alternate_outlined, size: 44),
-                        SizedBox(height: 8),
-                        Text('Añade una foto del ejercicio'),
-                      ],
-                    ),
-                  ),
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 12,
-                  child: Row(
-                    children: [
-                      FilledButton.tonalIcon(
-                        onPressed: processing ? null : onPick,
-                        icon: processing
-                            ? const SizedBox.square(
-                                dimension: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.photo_library_outlined),
-                        label: Text(
-                          provider == null ? 'Elegir foto' : 'Cambiar',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact =
+            constraints.maxWidth < 280 ||
+            MediaQuery.textScalerOf(context).scale(14) > 18;
+        final controls = Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: processing ? null : onPick,
+              icon: processing
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.photo_library_outlined),
+              label: Text(provider == null ? 'Elegir foto' : 'Cambiar'),
+            ),
+            if (onRemove != null)
+              IconButton.filledTonal(
+                tooltip: 'Quitar foto',
+                onPressed: processing ? null : onRemove,
+                icon: const Icon(Icons.delete_outline),
+              ),
+          ],
+        );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (provider != null)
+                      Image(image: provider, fit: BoxFit.cover)
+                    else
+                      ColoredBox(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 44,
+                            ),
+                            if (!compact) ...[
+                              const SizedBox(height: 8),
+                              const Text('Añade una foto del ejercicio'),
+                            ],
+                          ],
                         ),
                       ),
-                      if (onRemove != null) ...[
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          tooltip: 'Quitar foto',
-                          onPressed: processing ? null : onRemove,
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                      ],
-                    ],
-                  ),
+                    if (!compact)
+                      Positioned(
+                        left: 12,
+                        right: 12,
+                        bottom: 12,
+                        child: controls,
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          error ?? 'Se optimizará automáticamente a un máximo de 500 KB.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: error == null ? null : Theme.of(context).colorScheme.error,
-          ),
-        ),
-      ],
+            if (compact) ...[
+              const SizedBox(height: 8),
+              if (provider == null) ...[
+                const Text('Añade una foto del ejercicio'),
+                const SizedBox(height: 8),
+              ],
+              controls,
+            ],
+            const SizedBox(height: 6),
+            Text(
+              error ?? 'Se optimizará automáticamente a un máximo de 500 KB.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: error == null
+                    ? null
+                    : Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

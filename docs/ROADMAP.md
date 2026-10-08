@@ -1,5 +1,22 @@
 # Roadmap de EntrenaOP
 
+**UI-017, 08/10/2026 · tramo de formularios cerrado:** nuevo programa admin y
+selectores del formulario compartido de ejercicios muestran sus selecciones
+completas con texto grande. Nombre/tipo se conservan tras fallo y reintento;
+crear programa continúa creando un borrador. Los controles de foto se sitúan
+bajo la vista previa cuando necesitan espacio, conservando imagen y encuadre.
+No cambia Inicio/Mi plan, datos, permisos, rutas, motores, negocio o producción.
+Análisis limpio de app/admin/paquete; 591, 91 y 8 pruebas completas correctas,
+con sus omisiones existentes. Seis recorridos visuales y 12 imágenes revisadas.
+[Alcance, imágenes y límites](REFRESH_FORMS_2026_10_08.md).
+
+El único siguiente bloque recomendado es la comprobación autenticada de los
+recorridos actuales de app/admin. El navegador disponible está sin sesión;
+esa prueba queda pendiente. Este cierre es localizado, no cierra todo el pulido
+transversal. Comparación configurable, revisión física y pendientes de
+publicación de UI-013 permanecen abiertos. iPhone/iOS espera al entorno Mac de
+Javier; vídeos, negocio y motores mantienen sus tareas aparte.
+
 **UI-016, 08/10/2026 · tipo histórico y filtro cerrados en desarrollo:**
 Evolución filtra Carrera, Fuerza y acondicionamiento, Mixta y Sin clasificar,
 combinados con preparación, fechas, estado y paginación. Servidor conserva tipo

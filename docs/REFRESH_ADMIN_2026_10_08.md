@@ -78,3 +78,10 @@ transversal permanece abierto.
 compatibilidad para comparativas y filtro deportivo; no inferir datos históricos
 de una plantilla actual. Cuenta conserva su prueba real pendiente hasta que
 Javier pueda usar el dispositivo. Vídeos, negocio y motores se trabajan aparte.
+
+Actualización posterior: UI-015/UI-016 implementan comparaciones compatibles y
+tipo histórico; MAIL-001 recoge recuperación web confirmada por Javier.
+[UI-017](REFRESH_FORMS_2026_10_08.md) comprueba después el selector de nuevo
+programa y el formulario de ejercicios compartido, sin rehacer el detalle de
+este documento. La recomendación anterior corresponde al cierre de UI-014;
+el siguiente bloque actual se consulta en `ROADMAP.md`.

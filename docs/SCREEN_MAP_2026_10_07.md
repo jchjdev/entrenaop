@@ -14,6 +14,9 @@ mantiene la versión de origen y no debe utilizarse para describir esa raíz act
 UI-016 documenta después el [tipo histórico y filtro de Evolución con 15 capturas
 propias](HISTORY_SESSION_TYPE_2026_10_08.md), sin alterar la fecha ni la cobertura
 del inventario inicial.
+UI-017 registra [12 capturas de formularios actuales](REFRESH_FORMS_2026_10_08.md)
+para nuevo programa admin y ejercicios compartidos; tampoco amplía la cobertura
+de la instantánea inicial al resto del pulido.
 
 ## Evidencia y límites de las imágenes
 

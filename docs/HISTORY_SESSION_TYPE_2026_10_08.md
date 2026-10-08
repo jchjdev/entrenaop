@@ -98,6 +98,10 @@ queda fuera del viewport, sin recortarse su contenido en el campo.
 
 ## Único siguiente bloque recomendado
 
+El pulido localizado siguiente se comprueba después en
+[UI-017](REFRESH_FORMS_2026_10_08.md), que registra su alcance y la recomendación
+actual. La sección siguiente conserva el cierre original de UI-016.
+
 Pulido localizado de textos, estados y accesos en app/admin, contrastando cada
 recorrido con su código y conservando el diseño aprobado. El detalle de programa
 admin ya se organizó en UI-014; no se rehace como trabajo pendiente.

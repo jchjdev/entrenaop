@@ -1,5 +1,15 @@
 # Producto EntrenaOP
 
+**UI-017, 08/10/2026 · formularios más legibles:** nuevo programa admin y
+formulario compartido de ejercicios permiten leer la selección completa con
+texto ampliado. El borrador de programa conserva nombre/tipo si falla el guardado;
+los controles de foto admiten el espacio de un diálogo estrecho. No cambia
+opciones, validación, derechos o diseño de Inicio/Mi plan. Comprobado con análisis
+de app/admin/paquete y baterías completas: 591, 91 y 8 pruebas correctas, con
+las omisiones existentes. [Imágenes y alcance](REFRESH_FORMS_2026_10_08.md).
+El siguiente bloque es la comprobación autenticada de los recorridos actuales,
+pendiente de sesión disponible; no cierra todo el pulido transversal.
+
 **UI-016, 08/10/2026 · historial con tipo de entrenamiento:** Evolución permite
 filtrar Carrera, Fuerza y acondicionamiento, Mixta y Sin clasificar junto a
 preparación, fechas y estado. El servidor guarda el tipo al iniciar y lo conserva
