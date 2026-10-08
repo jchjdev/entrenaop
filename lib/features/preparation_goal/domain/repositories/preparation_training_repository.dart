@@ -52,6 +52,8 @@ class PreparationTrainingData {
 }
 
 abstract interface class PreparationTrainingRepository {
+  /// Una ejecución de cualquier preparación puede bloquear el cambio de programa.
+  Future<String?> getInProgressExecutionId();
   Future<void> pause(String goalId);
   Future<void> resetTrial(String goalId, String confirmation);
   Future<List<AdaptiveProgramProgress>> refreshPrograms();

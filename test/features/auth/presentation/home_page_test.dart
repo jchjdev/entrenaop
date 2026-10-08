@@ -89,6 +89,10 @@ void main() {
           ),
         ),
         GoRoute(
+          path: '/plan',
+          builder: (_, _) => const Scaffold(body: Text('Elegir preparación')),
+        ),
+        GoRoute(
           path: '/plan/week',
           builder: (_, state) => Scaffold(
             body: Text(
@@ -234,6 +238,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(source.calls, 2);
   });
+  testWidgets(
+    'sin programa y con varias preparaciones no pide marcas de la primera',
+    (tester) async {
+      final router = await mount(
+        tester,
+        PreparationOverview(
+          assessments: const [],
+          preferences: null,
+          goals: const [
+            goal,
+            PreparationGoal(
+              id: 'second',
+              program: PreparationProgram(
+                id: 'troop',
+                name: 'Tropa',
+                kind: PreparationProgramKind.access,
+              ),
+            ),
+          ],
+          weekStart: week,
+          weeklyWorkouts: const [],
+        ),
+      );
+      expect(find.text('Elige una preparación'), findsOneWidget);
+      expect(find.textContaining('Registra las marcas de'), findsNothing);
+      await tester.ensureVisible(find.text('Ver preparaciones'));
+      await tester.tap(find.text('Ver preparaciones'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/plan');
+    },
+  );
 }
 
 class _Overview implements GetPreparationOverviewUseCase {

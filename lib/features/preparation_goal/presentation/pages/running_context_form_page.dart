@@ -1,3 +1,5 @@
+import '../widgets/preparation_select_field.dart';
+
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_initial_context.dart';
@@ -428,7 +430,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                 const SizedBox(height: 20),
               ],
               ...[
-                DropdownButtonFormField<String>(
+                PreparationSelectField<String>(
                   initialValue: _goalMode,
                   decoration: const InputDecoration(
                     labelText: 'Qué quieres conseguir',
@@ -449,7 +451,8 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                   ],
                   onChanged: (value) => setState(() => _goalMode = value!),
                 ),
-                if (_goalMode == 'time')
+                if (_goalMode == 'time') ...[
+                  const SizedBox(height: 20),
                   TextField(
                     controller: _target,
                     decoration: const InputDecoration(
@@ -458,15 +461,19 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                       helperText: 'La meta no fija tus ritmos actuales.',
                     ),
                   ),
+                ],
                 if (_goalMode == 'official_margin') ...[
+                  const SizedBox(height: 16),
                   const Text(
                     'Usaremos el umbral del 2 km de tu evaluación elegida, con su categoría y edad. La propuesta mostrará la fuente y el tiempo resultante. El mínimo de una prueba no garantiza superar toda la evaluación.',
                   ),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: _margin,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Segundos por debajo del umbral',
+                      helperMaxLines: 4,
                       helperText: 'Elige un margen de 0 a 120 s. Verás el tiempo resultante antes de publicar.',
                     ),
                   ),

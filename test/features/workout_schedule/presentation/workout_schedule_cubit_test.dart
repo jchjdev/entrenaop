@@ -504,6 +504,9 @@ AdaptiveProgramProgress _program(String id, String name, String status) =>
     );
 
 class _Programs implements PreparationTrainingRepository {
+  @override
+  Future<String?> getInProgressExecutionId() async => null;
+
   int refreshes = 0;
   List<AdaptiveProgramProgress> results = [];
   @override

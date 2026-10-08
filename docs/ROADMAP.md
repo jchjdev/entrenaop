@@ -1,5 +1,23 @@
 # Roadmap de EntrenaOP
 
+**UI-021, 08/10/2026 · coherencia localizada cerrada:** referencias y meta de
+carrera mantienen campos separados, selección completa y ayudas legibles.
+Mi plan sin programa ofrece Elige una preparación antes de la semana, diferencia
+borrador/pausa/finalización y resume el contexto común de disponibilidad/material.
+Inicio usa Preparaciones y no elige la primera entre varias sin programa activo.
+El bloqueo por sesión abre la ejecución concreta y vuelve a la misma propuesta,
+conservando la semana; retomar después mantiene el bloqueo y resolverla permite
+revisar la activación. Tarjetas y portadas conservadas. Análisis limpio y 671
+pruebas completas correctas con la omisión web existente; capturas de fixtures
+revisadas y 133 migraciones coincidentes en desarrollo, sin cambios SQL.
+[Recorrido, evidencia y límites](PLAN_COHERENCE_2026_10_08.md).
+
+El único siguiente bloque recomendado es la revisión pausada de incoherencias
+que Javier quiere hacer, por recorrido y estado real. Este cierre no acredita
+una prueba autenticada nueva ni el uso entrenando. Gimnasio, iPhone físico y
+primera entrada Android sin permiso quedan como validaciones posteriores.
+Negocio Free/Pro, motores, vídeos y comparación configurable siguen aparte.
+
 **UI-020, 08/10/2026 · tiempo y salidas verificados:** corregido el valor de
 segundos que el temporizador escribía sin formato en Tiempo realizado. 20 se
 muestra como 0:20 y se confirma como 20 segundos; también comprobados 90 y 3601.

@@ -104,14 +104,43 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
     return _lastInputStep;
   }
 
-  void _openIssue(Map<String, dynamic> issue) {
+  Future<void> _openIssue(Map<String, dynamic> issue) async {
     if (issue['status'] == 'session_in_progress') {
-      context.go('/plan/week');
+      await _openBlockingSession();
       return;
     }
     setState(() {
       _editing = _started || _paused;
       _step = _issueStep(issue);
+    });
+  }
+
+  Future<void> _openBlockingSession() async {
+    String? executionId;
+    await _run(() async {
+      executionId = await widget.repository.getInProgressExecutionId();
+      if (executionId == null) {
+        // Puede haberse cerrado en otro dispositivo desde la propuesta.
+        _plan = await widget.repository.calculate(
+          widget.goalId,
+          _week,
+          activation: true,
+        );
+        _notice =
+            'La sesión ya no está abierta. Hemos actualizado la propuesta.';
+      }
+    });
+    if (!mounted || executionId == null) return;
+    // Volver regresa a esta propuesta, sin sustituirla por la agenda de hoy.
+    await context.push('/plan/week/active/$executionId');
+    if (!mounted) return;
+    await _run(() async {
+      await _load(initialize: false);
+      _plan = await widget.repository.calculate(
+        widget.goalId,
+        _week,
+        activation: true,
+      );
     });
   }
 

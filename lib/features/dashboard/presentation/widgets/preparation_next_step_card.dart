@@ -12,16 +12,25 @@ class PreparationNextStepCard extends StatelessWidget {
     required this.nextStep,
     this.goalNeedingAssessment,
     this.program,
+    this.savedGoalCount = 1,
     super.key,
   });
 
   final PreparationNextStep nextStep;
   final PreparationGoal? goalNeedingAssessment;
   final AdaptiveProgramProgress? program;
+  final int savedGoalCount;
 
   @override
   Widget build(BuildContext context) {
     final (:icon, :title, :description, :action, :route) = switch (nextStep) {
+      _ when savedGoalCount > 1 && program?.isCurrent != true => (
+        icon: Icons.flag_outlined,
+        title: 'Elige una preparación',
+        description: 'No hay un programa en curso. Elige qué preparación quieres configurar o retomar y revisa su propuesta antes de empezar.',
+        action: 'Ver preparaciones',
+        route: '/plan',
+      ),
       PreparationNextStep.adaptiveProgram => (
         icon: program!.needsReview
             ? Icons.info_outline

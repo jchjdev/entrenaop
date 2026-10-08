@@ -57,7 +57,10 @@ void main() {
         );
         await tester.pumpAndSettle();
         final variant = tester.widget<DropdownButtonFormField<String>>(
-          find.byKey(ValueKey('variant_push_up_standard_${scenario.$1}')),
+          find.descendant(
+            of: find.byKey(ValueKey('variant_push_up_standard_${scenario.$1}')),
+            matching: find.byType(DropdownButtonFormField<String>),
+          ),
         );
         expect(variant.initialValue, scenario.$1);
         // El formulario pide una práctica nueva: no recibe una referencia ficticia

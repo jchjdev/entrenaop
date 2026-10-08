@@ -1,3 +1,4 @@
+import 'preparation_select_field.dart';
 import 'performance_equipment_labels.dart';
 
 import 'package:flutter/material.dart';
@@ -204,8 +205,9 @@ class _PerformanceReferenceDialogState
     bool enabled = true,
     bool time = false,
     bool allowZero = false,
+    String? helperText,
   }) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
+    padding: EdgeInsets.zero,
     child: TextFormField(
       controller: c,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -215,8 +217,13 @@ class _PerformanceReferenceDialogState
           : TextInputType.numberWithOptions(decimal: !integer),
       decoration: InputDecoration(
         labelText: label,
-        helperMaxLines: 2,
-        helperText: time ? 'Minutos:segundos (1:30) o segundos (90).' : null,
+        errorMaxLines: 3,
+        helper: helperText != null || time
+            ? Text(
+                helperText ?? 'Minutos:segundos (1:30) o segundos (90).',
+                style: Theme.of(context).textTheme.bodySmall,
+              )
+            : null,
       ),
       validator: (_) {
         if (!required && c.text.trim().isEmpty) return null;
@@ -391,17 +398,18 @@ class _PerformanceReferenceDialogState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
+                spacing: 20,
                 children: [
                   Text('Paso ${_step + 1} de 3'),
-                  const SizedBox(height: 12),
+
                   if (_step == 0) ...[
                     Text(
                       'Puedes empezar con una sola serie o un intento reciente. Indica qué tipo de dato es: el motor elegirá después el trabajo, sin copiar tu máximo como entrenamiento.',
                     ),
-                    DropdownButtonFormField<String>(
+                    PreparationSelectField<String>(
                       key: ValueKey('reference-kind-$_supportsOfficial'),
                       initialValue: _kind,
-                      isExpanded: true,
+
                       decoration: const InputDecoration(
                         labelText: 'Qué estás registrando',
                       ),
@@ -447,13 +455,13 @@ class _PerformanceReferenceDialogState
                         }
                       }),
                     ),
-                    const SizedBox(height: 16),
+
                     if (widget.objective != null)
                       Text('Prueba: ${widget.objective!['name']}')
                     else
-                      DropdownButtonFormField<String>(
+                      PreparationSelectField<String>(
                         initialValue: _goal.code,
-                        isExpanded: true,
+
                         menuMaxHeight: 300,
                         decoration: const InputDecoration(
                           labelText: 'Movimiento que quieres mejorar',
@@ -462,10 +470,7 @@ class _PerformanceReferenceDialogState
                           for (final p in widget.data.catalog)
                             DropdownMenuItem(
                               value: p.code,
-                              child: Text(
-                                p.name,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              child: Text(p.name),
                             ),
                         ],
                         onChanged: widget.existing != null
@@ -479,10 +484,10 @@ class _PerformanceReferenceDialogState
                               },
                       ),
                     if (widget.objective == null)
-                      DropdownButtonFormField<StrengthMeasurement>(
+                      PreparationSelectField<StrengthMeasurement>(
                         key: ValueKey('goal_${_goal.code}'),
                         initialValue: _goalMode,
-                        isExpanded: true,
+
                         decoration: const InputDecoration(
                           labelText: 'Qué quieres mejorar',
                         ),
@@ -500,28 +505,22 @@ class _PerformanceReferenceDialogState
                                 _changeWork(_goal);
                               },
                       ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
+
+                    PreparationSelectField<String>(
                       key: ValueKey('variant_${_goal.code}_${_work.code}'),
                       initialValue: _work.code,
-                      isExpanded: true,
+
                       decoration: const InputDecoration(
                         labelText: 'Variante que has realizado',
                       ),
                       items: [
                         for (final p in _variants)
-                          DropdownMenuItem(
-                            value: p.code,
-                            child: Text(
-                              p.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                          DropdownMenuItem(value: p.code, child: Text(p.name)),
                       ],
                       onChanged: (v) =>
                           _changeWork(_variants.firstWhere((p) => p.code == v)),
                     ),
-                    const SizedBox(height: 12),
+
                     Text(
                       _specific
                           ? (widget.objective?['instructions'] as String? ??
@@ -533,10 +532,10 @@ class _PerformanceReferenceDialogState
                         'Para preparar fuerza máxima usamos una dosis submáxima con carga, no un intento máximo diario.',
                       ),
                     if (_workOptions.length > 1)
-                      DropdownButtonFormField<StrengthMeasurement>(
+                      PreparationSelectField<StrengthMeasurement>(
                         key: ValueKey('work_${_work.code}_${_mode.code}'),
                         initialValue: _mode,
-                        isExpanded: true,
+
                         decoration: const InputDecoration(
                           labelText: 'Medición de esta práctica',
                         ),
@@ -571,7 +570,7 @@ class _PerformanceReferenceDialogState
                       _work.name,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 12),
+
                     TextFormField(
                       controller: _setup,
                       maxLength: 500,
@@ -581,10 +580,13 @@ class _PerformanceReferenceDialogState
                         labelText: _needsSetup
                             ? 'Cómo has preparado esta variante'
                             : 'Condiciones (opcional)',
-                        helperMaxLines: 4,
-                        helperText: _needsSetup
-                            ? 'Indica la altura del apoyo, la banda o ayuda utilizada, o el instrumento de medición, según esta variante.'
-                            : 'Vacío si seguiste las condiciones descritas. Anota solo cambios de superficie, apoyos o material.',
+                        errorMaxLines: 3,
+                        helper: Text(
+                          _needsSetup
+                              ? 'Indica la altura del apoyo, la banda o ayuda utilizada, o el instrumento de medición, según esta variante.'
+                              : 'Vacío si seguiste las condiciones descritas. Anota solo cambios de superficie, apoyos o material.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
                       validator: (v) =>
                           _needsSetup && (v?.trim().length ?? 0) < 3
@@ -596,8 +598,7 @@ class _PerformanceReferenceDialogState
                             .loadModes
                             .length >
                         1)
-                      DropdownButtonFormField<StrengthLoadMode>(
-                        isExpanded: true,
+                      PreparationSelectField<StrengthLoadMode>(
                         key: ValueKey('load_${_work.code}_${_mode.code}'),
                         initialValue: _loadMode,
                         decoration: const InputDecoration(
@@ -639,7 +640,7 @@ class _PerformanceReferenceDialogState
                       const Text(
                         'Registra segundos de contacto obtenidos con instrumento adecuado. Indica el instrumento utilizado. Un cronómetro manual no sirve.',
                       ),
-                    const SizedBox(height: 12),
+
                     const Text(
                       'Series que has realizado',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -699,7 +700,8 @@ class _PerformanceReferenceDialogState
                       ),
                       _numeric(
                         _rir,
-                        'Repeticiones que quedaban · 0 a 10 (opcional)',
+                        'Repeticiones que quedaban',
+                        helperText: 'De 0 a 10. Opcional.',
                         required: false,
                         allowZero: true,
                       ),
@@ -710,7 +712,8 @@ class _PerformanceReferenceDialogState
                       ),
                       _numeric(
                         _rpe,
-                        'Esfuerzo · 1 a 10 (opcional)',
+                        'Esfuerzo percibido',
+                        helperText: 'De 1 a 10. Opcional.',
                         required: false,
                       ),
                     ],
@@ -718,17 +721,26 @@ class _PerformanceReferenceDialogState
                       _numeric(
                         _load,
                         _loadMode == StrengthLoadMode.assisted
-                            ? 'Asistencia medida · kg (opcional para banda)'
+                            ? 'Asistencia medida · kg'
                             : 'Carga externa utilizada · kg',
+                        helperText: _loadMode == StrengthLoadMode.assisted
+                            ? 'Opcional para banda.'
+                            : null,
                         required: _loadMode != StrengthLoadMode.assisted,
                       ),
                     if (_loadMode == StrengthLoadMode.bodyweightPlusExternal)
-                      _numeric(_mass, 'Masa corporal en esa fecha · kg'),
+                      _numeric(
+                        _mass,
+                        'Masa corporal · kg',
+                        helperText: 'En la fecha de este registro.',
+                      ),
                     if (_mode == StrengthMeasurement.loadReps &&
                         !_practice) ...[
                       _numeric(
                         _increment,
-                        'Menor aumento de carga disponible · kg',
+                        'Aumento mínimo · kg',
+                        helperText:
+                            'El menor aumento de carga disponible. Opcional.',
                         required: false,
                       ),
                     ],
@@ -737,9 +749,8 @@ class _PerformanceReferenceDialogState
                     Text(
                       '${_work.name}: ${_series.length} ${_series.length == 1 ? 'serie registrada' : 'series registradas'}. Estos datos describen lo realizado; aún no son tu entrenamiento pautado.',
                     ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<int>(
-                      isExpanded: true,
+
+                    PreparationSelectField<int>(
                       initialValue: _frequency,
                       decoration: const InputDecoration(
                         labelText: 'Sesiones por semana que ya toleras',

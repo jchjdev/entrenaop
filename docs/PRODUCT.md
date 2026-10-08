@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**UI-021, 08/10/2026 · Mi plan y formularios:** Preparaciones y Elige una
+preparación distinguen objetivos guardados de un programa iniciado. Sin programa,
+Mi plan ofrece elegir antes de la agenda y no parece asignar Tropa por defecto.
+Disponibilidad/material resume el mismo contexto que el asistente y Perfil.
+El bloqueo de cambio abre la sesión concreta y vuelve a la propuesta; salir
+para retomar sigue bloqueando, resolverla permite revisar la activación.
+Campos separados, selectores completos y ayudas legibles con teclado/texto grande.
+Tarjetas fotográficas, motores y negocio conservados. Análisis limpio, 671
+pruebas correctas con la omisión web; recorrido autenticado posterior.
+[Estados, capturas y límites](PLAN_COHERENCE_2026_10_08.md).
+
 **UI-020, 08/10/2026 · tiempo y salida corregidos:** el tiempo que escribe el
 reloj se presenta en min:seg y se registra en segundos, sin exigir reescribirlo.
 La flecha ofrece seguir aquí, salir y retomar después, o abandonar conservando

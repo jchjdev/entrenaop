@@ -219,6 +219,9 @@ class _Goals implements PreparationGoalRepository {
 }
 
 class _Training implements PreparationTrainingRepository {
+  @override
+  Future<String?> getInProgressExecutionId() async => null;
+
   bool runningForBoth = false;
   @override
   Future<void> advance(String goalId) async {}

@@ -389,6 +389,7 @@ class _DayHero extends StatelessWidget {
             (item == null &&
                 (overview.goals.isEmpty || program?.isCurrent != true)))) {
       return PreparationNextStepCard(
+        savedGoalCount: overview.goals.length,
         program: program,
         nextStep: overview.nextStep,
         goalNeedingAssessment: overview.goalNeedingAssessment,
@@ -514,7 +515,7 @@ class _PreparationsSection extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       HomeSectionHeading(
-        title: 'Tus preparaciones',
+        title: 'Preparaciones',
         action: TextButton.icon(
           onPressed: () => onOpen('/plan/goal'),
           icon: const Icon(Icons.add_rounded, size: 18),
@@ -528,7 +529,7 @@ class _PreparationsSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Tus preparaciones aparecerán aquí',
+                'Las preparaciones que añadas aparecerán aquí',
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),

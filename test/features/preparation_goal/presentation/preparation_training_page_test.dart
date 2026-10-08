@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,6 +17,21 @@ import 'package:entrenaop/features/preparation_goal/presentation/widgets/perform
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
 
 class _Repository implements PreparationTrainingRepository {
+  @override
+  Future<String?> getInProgressExecutionId() async {
+    lookups++;
+    if (lookupFails) {
+      throw const PreparationTrainingException(
+        'No se ha podido consultar la sesión abierta. Vuelve a intentarlo.',
+      );
+    }
+    return inProgressExecution;
+  }
+
+  String? inProgressExecution;
+  bool lookupFails = false;
+  int lookups = 0;
+
   bool paused = false;
   int pauses = 0;
   bool? calculatedActivation;
@@ -812,4 +829,123 @@ void main() {
     expect(fields.every((f) => f.controller?.text.isEmpty ?? true), isTrue);
     expect(t.takeException(), isNull);
   });
+  for (final situation in ['open', 'closed', 'offline', 'still-open']) {
+    testWidgets(
+      'aviso de sesión $situation conserva la propuesta y vuelve al lugar correcto',
+      (t) async {
+        final repo = _Repository()
+          ..blocked = true
+          ..inProgressExecution = situation == 'closed'
+              ? null
+              : 'execution-other-goal'
+          ..lookupFails = situation == 'offline'
+          ..pendingOverride = [
+            {
+              'status': 'session_in_progress',
+              'name': 'Entrenamiento en curso',
+              'reason': 'Finaliza o abandona la sesión en curso antes de cambiar el programa.',
+            },
+          ];
+        final router = GoRouter(
+          initialLocation: '/plan/goal/goal/training',
+          routes: [
+            GoRoute(
+              path: '/plan',
+              builder: (_, _) => const Scaffold(body: Text('Mi plan')),
+              routes: [
+                GoRoute(
+                  path: 'goal/:goal',
+                  builder: (_, _) => const Scaffold(body: Text('Preparación')),
+                  routes: [
+                    GoRoute(
+                      path: 'training',
+                      builder: (_, _) => PreparationTrainingPage(
+                        goalId: 'goal',
+                        repository: repo,
+                      ),
+                    ),
+                  ],
+                ),
+                GoRoute(
+                  path: 'week',
+                  builder: (_, _) => const Scaffold(body: Text('Mi semana')),
+                  routes: [
+                    GoRoute(
+                      path: 'active/:execution',
+                      builder: (context, state) => Scaffold(
+                        body: Column(
+                          children: [
+                            Text(
+                              'Ejecución: ${state.pathParameters['execution']}',
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (situation != 'still-open') {
+                                  repo.blocked = false;
+                                  repo.pendingOverride = [];
+                                  repo.inProgressExecution = null;
+                                }
+                                context.pop();
+                              },
+                              child: const Text('Resolver sesión y volver'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await t.pumpWidget(
+          MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+        );
+        await t.pumpAndSettle();
+        await _prepare(t);
+        if (situation == 'closed') {
+          repo.blocked = false;
+          repo.pendingOverride = [];
+        }
+        await _tap(t, 'Entrenamiento en curso');
+        expect(repo.lookups, 1);
+        if (situation == 'open' || situation == 'still-open') {
+          expect(
+            router.state.uri.path,
+            '/plan/week/active/execution-other-goal',
+          );
+          expect(find.text('Ejecución: execution-other-goal'), findsOneWidget);
+          await _tap(t, 'Resolver sesión y volver');
+        } else if (situation == 'offline') {
+          expect(router.state.uri.path, '/plan/goal/goal/training');
+          expect(
+            find.textContaining('No se ha podido consultar la sesión abierta'),
+            findsOneWidget,
+          );
+          repo.lookupFails = false;
+          await _tap(t, 'Entrenamiento en curso');
+          await _tap(t, 'Resolver sesión y volver');
+        }
+        expect(router.state.uri.path, '/plan/goal/goal/training');
+        expect(find.text('Paso 4 de 4 · Propuesta'), findsOneWidget);
+        expect(
+          find.text('Entrenamiento en curso'),
+          situation == 'still-open' ? findsOneWidget : findsNothing,
+        );
+        expect(repo.publications, 0);
+        expect(repo.savedContexts, 1);
+        expect(repo.savedTargetDate, repo.initialTargetDate);
+        final activate = t.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Activar mi programa'),
+        );
+        expect(
+          activate.onPressed,
+          situation == 'still-open' ? isNull : isNotNull,
+        );
+        expect(t.takeException(), isNull);
+      },
+    );
+  }
 }

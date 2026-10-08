@@ -1,5 +1,11 @@
 # Inicio y Mi plan: recorrido cerrado el 07/10/2026
 
+Actualización localizada del 08/10/2026: [UI-021](PLAN_COHERENCE_2026_10_08.md)
+ajusta el estado sin programa, los nombres de Preparaciones, el contexto común
+y el retorno desde una sesión bloqueante. El contenido y las capturas siguientes
+conservan su fecha histórica; los siguientes bloques originales deben consultarse
+en el estado vigente de [ROADMAP.md](ROADMAP.md).
+
 Estas imágenes renderizan `HomePage`, `TrainingHubPage` y `AppShell` del código
 actual. Usan datos simulados, sin cuentas ni consultas a servidor. Arial sustituye
 las fuentes del runner; la familia de la etiqueta seleccionada del rail también

@@ -1,3 +1,6 @@
+import '../../../helpers/performance_visual_review.dart';
+
+import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
 import 'package:entrenaop/features/dashboard/domain/usecases/get_preparation_overview_usecase.dart';
@@ -35,8 +38,10 @@ PreparationOverview _overview({
   List<PreparationGoal> goals = const [_goal],
   List<AdaptiveProgramProgress> programs = const [],
   List<ScheduledWorkout> workouts = const [],
+  TrainingContext? trainingContext,
 }) => PreparationOverview(
   assessments: const [],
+  trainingContext: trainingContext,
   preferences: null,
   goals: goals,
   weekStart: _week,
@@ -64,6 +69,7 @@ ScheduledWorkout _workout(
 );
 
 void main() {
+  setUpAll(loadReviewFont);
   Future<({GoRouter router, DashboardCubit cubit, _Overview source})> mount(
     WidgetTester tester,
     PreparationOverview data, {
@@ -108,13 +114,17 @@ void main() {
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(
-      MaterialApp.router(
-        theme: EntrenaTheme.dark,
-        routerConfig: router,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
+      RepaintBoundary(
+        key: const ValueKey('review-boundary'),
+        child: MaterialApp.router(
+          theme: EntrenaTheme.dark,
+          debugShowCheckedModeBanner: false,
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          ),
         ),
       ),
     );
@@ -136,7 +146,8 @@ void main() {
     (tester) async {
       await mount(tester, _overview(goals: []));
       expect(find.text('No hay programa en curso'), findsOneWidget);
-      expect(find.text('Define qué pruebas estás preparando'), findsOneWidget);
+      expect(find.text('Elige una preparación'), findsOneWidget);
+      expect(find.text('Registrar marcas'), findsNothing);
       expect(find.textContaining('PROGRAMA EN CURSO'), findsNothing);
       expect(find.text('Abrir biblioteca'), findsNothing);
       expect(find.text('Crear y gestionar sesiones'), findsNothing);
@@ -204,7 +215,7 @@ void main() {
           ? 'Ver mi programa'
           : status == 'needs_review'
           ? 'Revisar lo pendiente'
-          : 'Retomar mi programa';
+          : 'Retomar programa';
       if (status == 'paused') {
         expect(find.text('No hay programa en curso'), findsOneWidget);
         expect(find.textContaining('PROGRAMA EN CURSO'), findsNothing);
@@ -307,12 +318,12 @@ void main() {
     expect(find.text('No hay programa en curso'), findsOneWidget);
   });
 
-  for (final (programId, segment) in [
-    (PreparationProgramIds.armedForcesTroopEntry, 'troop-assessment'),
-    (PreparationProgramIds.fasPeriodicAssessment, 'periodic-assessment'),
-    ('generic', 'program-assessment'),
+  for (final programId in [
+    PreparationProgramIds.armedForcesTroopEntry,
+    PreparationProgramIds.fasPeriodicAssessment,
+    'generic',
   ]) {
-    testWidgets('el siguiente paso mantiene la evaluación de $programId', (
+    testWidgets('configurar $programId no escoge una evaluación implícita', (
       tester,
     ) async {
       final goal = PreparationGoal(
@@ -324,10 +335,11 @@ void main() {
         ),
       );
       final result = await mount(tester, _overview(goals: [goal]));
-      await show(tester, find.text('Registrar marcas'));
-      await tester.tap(find.text('Registrar marcas'));
+      expect(find.text('Registrar marcas'), findsNothing);
+      await show(tester, find.text('Configurar programa'));
+      await tester.tap(find.text('Configurar programa'));
       await tester.pumpAndSettle();
-      expect(result.router.state.uri.path, '/plan/goal/g/$segment');
+      expect(result.router.state.uri.path, '/plan/goal/g/training');
     });
   }
 
@@ -379,6 +391,56 @@ void main() {
       });
     }
   }
+  testWidgets(
+    'sin programa no prioriza Tropa y permite elegir otra preparación',
+    (tester) async {
+      const second = PreparationGoal(
+        id: 'second',
+        program: PreparationProgram(
+          id: 'second-p',
+          name: 'Otra preparación',
+          kind: PreparationProgramKind.access,
+        ),
+      );
+      final result = await mount(tester, _overview(goals: [_goal, second]));
+      expect(find.text('Elige una preparación'), findsOneWidget);
+      expect(find.text('Registrar marcas'), findsNothing);
+      await capturePerformanceWidget(tester, 'mi-plan-eleccion-sin-programa');
+      expect(
+        tester.getTopLeft(find.text('Otra preparación')).dy,
+        lessThan(tester.getTopLeft(find.text('Esta semana')).dy),
+      );
+      final configure = find.text('Configurar programa').last;
+      await show(tester, configure);
+      await tester.tap(configure);
+      await tester.pumpAndSettle();
+      expect(result.router.state.uri.path, '/plan/goal/second/training');
+    },
+  );
+
+  testWidgets('el resumen muestra el contexto compartido realmente guardado', (
+    tester,
+  ) async {
+    await mount(
+      tester,
+      _overview(
+        trainingContext: TrainingContext(
+          availability: {'1': 45, '3': 60, '7': 0},
+          equipment: {'pull_up_bar', 'resistance_band'},
+          reportsPain: false,
+          capacityConfirmed: true,
+        ),
+      ),
+    );
+    await show(tester, find.text('Editar disponibilidad y material'));
+    expect(find.text('Lun 45 min · Mié 60 min'), findsOneWidget);
+    expect(
+      find.text('Material: barra de dominadas, banda de asistencia.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('guardarlos no inicia'), findsOneWidget);
+    await capturePerformanceWidget(tester, 'mi-plan-contexto-guardado');
+  });
 }
 
 class _Overview implements GetPreparationOverviewUseCase {

@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Retorno a la propuesta y contexto común · UI-021 · 08/10/2026
+
+El repositorio de entrenamiento consulta la ejecución `in_progress` de la cuenta
+actual en `scheduled_workouts`, con filtro explícito de usuario incluso si también
+es administrador. Usa el contrato de lectura/RLS existente y no limita semana o
+preparación, porque cualquiera puede bloquear la activación. La presentación
+abre su ID mediante `go_router.push` y al volver recarga datos y propuesta sin
+reinicializar el asistente. Flutter orienta; el servidor sigue validando la
+activación. Mi plan resume el contexto de cuenta existente, sin otra persistencia
+ni reglas de prescripción en el widget. Análisis y pruebas de app correctos;
+133 migraciones coincidentes en desarrollo, sin cambios SQL.
+[Contrato, recorrido y límites](PLAN_COHERENCE_2026_10_08.md).
+
 ## Portadas editoriales · UI-006 · 06/10/2026
 
 La identidad fotográfica es independiente del contenido deportivo publicado.

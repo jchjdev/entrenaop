@@ -10,6 +10,34 @@ class SupabasePreparationTrainingRepository
   const SupabasePreparationTrainingRepository(this.client);
   final SupabaseClient client;
   @override
+  Future<String?> getInProgressExecutionId() async {
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) {
+      throw const PreparationTrainingException(
+        'Vuelve a iniciar sesión para continuar.',
+      );
+    }
+    try {
+      // La política existente limita la lectura. El filtro explícito evita
+      // incluir sesiones ajenas cuando la cuenta también es administradora.
+      final row = await client
+          .from('scheduled_workouts')
+          .select('execution_id')
+          .eq('user_id', userId)
+          .eq('status', 'in_progress')
+          .order('scheduled_date', ascending: true)
+          .order('id', ascending: true)
+          .limit(1)
+          .maybeSingle();
+      return row?['execution_id'] as String?;
+    } catch (_) {
+      throw const PreparationTrainingException(
+        'No se ha podido consultar la sesión abierta. Vuelve a intentarlo.',
+      );
+    }
+  }
+
+  @override
   Future<List<AdaptiveProgramProgress>> refreshPrograms() async =>
       _rows(await _rpc('refresh_adaptive_programs'))
           .map(

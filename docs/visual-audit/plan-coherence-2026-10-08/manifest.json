@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-08",
+  "decision": "UI-021",
+  "method": "Widgets actuales con fixtures y Arial, pixelRatio 2; sin cuenta ni servidor. Teclado simulado mediante viewInsets. Los fixtures de Mi plan no aportan portada.",
+  "captures": [
+    {
+      "file": "referencia-separada-320.0.webp",
+      "dimensions": [
+        640,
+        1800
+      ],
+      "sha256": "1d1a783062435a89e46abeec056d05f873ca928c43c5f74abf01ad96e1198cdf"
+    },
+    {
+      "file": "referencia-con-teclado.webp",
+      "dimensions": [
+        780,
+        1800
+      ],
+      "sha256": "a138cd47068b7f599df5797ef606e1b67bd579d6a0f2edb19cea2236691042b7"
+    },
+    {
+      "file": "mi-plan-eleccion-sin-programa.webp",
+      "dimensions": [
+        720,
+        1800
+      ],
+      "sha256": "a43910c3ef543b0e869520ae25f388f1d4c4a9295f863585b15542464c6b50d0"
+    },
+    {
+      "file": "mi-plan-contexto-guardado.webp",
+      "dimensions": [
+        720,
+        1800
+      ],
+      "sha256": "af548d3fe8fef97d9f533e8e3523a4d5ad57d584f5fa2c87b6230a7c7acc17f4"
+    }
+  ],
+  "source_sha256": {
+    "lib/features/preparation_goal/presentation/widgets/performance_reference_dialog.dart": "b1d40d47bfe0b439d41ab4f56a126813e097396ab48c6d6a7a2d0c1ce75203b0",
+    "lib/features/preparation_goal/presentation/widgets/preparation_select_field.dart": "b7fe942e019a89c0b05a4ccbaf5f3781cffc1ac1e6b89adcabfc2505e8f73847",
+    "lib/features/preparation_goal/presentation/pages/running_context_form_page.dart": "ae19315c4fc0fefc668a1d653b9f32c82d6a429ec64a098b37b2000c128b1864",
+    "lib/features/preparation_goal/presentation/pages/preparation_training_page.dart": "ec16b32f41fb6cfabe5ab47cd1c772cc5f3620210f17d3f8018282b96518581c",
+    "lib/features/training_plan/presentation/pages/training_hub_page.dart": "2a39fadcd00e720daf200ec06a9d7af256ba7bdb7b38f202682e5cf64b982cd9",
+    "test/features/preparation_goal/presentation/preparation_layout_regression_test.dart": "dc7d121a1954cf9473c11049c893dfa94a239fc0dbb57d43fed75b160ed01ddd",
+    "test/features/training_plan/presentation/training_hub_page_test.dart": "c3a81db0273afa9981b9aaf2b51ee25a0fa4de4a8472dea78183eeb8a957378d"
+  }
+}

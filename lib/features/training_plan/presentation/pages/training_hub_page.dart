@@ -1,3 +1,5 @@
+import '../widgets/training_equipment_labels.dart';
+
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
@@ -6,7 +8,6 @@ import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_cubit.d
 import 'package:entrenaop/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:entrenaop/features/dashboard/presentation/home_day_selection.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
-import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_next_step_card.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_status_label.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
@@ -140,6 +141,40 @@ class _PlanContent extends StatelessWidget {
         .length;
     final dateFormat = DateFormat('dd/MM');
 
+    final preparations = <Widget>[
+      HomeSectionHeading(
+        title: current == null ? 'Elige una preparación' : 'Preparaciones',
+        action: TextButton.icon(
+          onPressed: () => context.push('/plan/goal'),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Añadir'),
+        ),
+      ),
+      const SizedBox(height: 8),
+      if (otherGoals.isNotEmpty) ...[
+        Text(
+          'Guardar una preparación conserva su objetivo y sus marcas. Su programa empieza al configurar y aceptar una propuesta.',
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        const SizedBox(height: 12),
+      ],
+      if (otherGoals.isEmpty)
+        Text(
+          current == null ? 'Todavía no has añadido ninguna preparación.' : 'Puedes conservar otras preparaciones y sus historiales sin iniciar otro programa.',
+          style: TextStyle(color: context.visuals.textMuted),
+        )
+      else
+        for (final goal in otherGoals) ...[
+          _SavedPreparationCard(
+            goal: goal,
+            progress: overview.programs
+                .where((p) => p.goalId == goal.id)
+                .firstOrNull,
+          ),
+          const SizedBox(height: 10),
+        ],
+    ];
+
     return RefreshIndicator(
       onRefresh: context.read<DashboardCubit>().load,
       child: ListView(
@@ -176,15 +211,13 @@ class _PlanContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Una preparación guardada puede estar pendiente de configurar, pausada o finalizada.',
+                      overview.goals.isEmpty
+                          ? 'Añade la preparación que quieres entrenar. Podrás revisar el programa antes de iniciarlo.'
+                          : 'Elige abajo qué preparación quieres configurar o retomar. Ninguna está entrenando automáticamente ahora.',
                       style: TextStyle(color: context.visuals.textMuted),
                     ),
                     const SizedBox(height: 16),
-                    PreparationNextStepCard(
-                      nextStep: overview.nextStep,
-                      goalNeedingAssessment: overview.goalNeedingAssessment,
-                      program: overview.activeProgram,
-                    ),
+                    ...preparations,
                   ],
                   const SizedBox(height: 24),
                   const HomeSectionHeading(title: 'Esta semana'),
@@ -221,17 +254,12 @@ class _PlanContent extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const HomeSectionHeading(title: 'Pendientes de esta semana'),
-                  const SizedBox(height: 10),
-                  if (pending.isEmpty)
-                    Text(
-                      overview.weeklyWorkouts.isEmpty
-                          ? 'Cuando tengas sesiones programadas, aparecerán aquí.'
-                          : 'No quedan sesiones pendientes en esta semana.',
-                      style: TextStyle(color: context.visuals.textMuted),
-                    )
-                  else ...[
+                  if (pending.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    const HomeSectionHeading(
+                      title: 'Pendientes de esta semana',
+                    ),
+                    const SizedBox(height: 10),
                     for (final item in pending.take(3)) ...[
                       _PendingSessionCard(item: item),
                       const SizedBox(height: 10),
@@ -244,35 +272,10 @@ class _PlanContent extends StatelessWidget {
                         ),
                       ),
                   ],
-                  const SizedBox(height: 24),
-                  HomeSectionHeading(
-                    title: current == null
-                        ? 'Tus preparaciones'
-                        : 'Otras preparaciones',
-                    action: TextButton.icon(
-                      onPressed: () => context.push('/plan/goal'),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Añadir'),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (otherGoals.isEmpty)
-                    Text(
-                      current == null
-                          ? 'Todavía no has añadido ninguna preparación.'
-                          : 'Puedes conservar otras preparaciones y sus historiales sin iniciar otro programa.',
-                      style: TextStyle(color: context.visuals.textMuted),
-                    )
-                  else
-                    for (final goal in otherGoals) ...[
-                      _SavedPreparationCard(
-                        goal: goal,
-                        progress: overview.programs
-                            .where((p) => p.goalId == goal.id)
-                            .firstOrNull,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
+                  if (current != null) ...[
+                    const SizedBox(height: 24),
+                    ...preparations,
+                  ],
                   const SizedBox(height: 24),
                   EntrenaCard(
                     child: Column(
@@ -287,9 +290,40 @@ class _PlanContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Mantén al día el tiempo y el material con los que puedes entrenar.',
+                          current == null
+                              ? 'Datos compartidos de tu cuenta. Se usarán al configurar tu próximo programa; guardarlos no inicia ningún entrenamiento.'
+                              : 'Son los mismos datos que revisas en Mi programa. Se usan para repartir el tiempo y elegir ejercicios compatibles. Los cambios se aplican en la siguiente adaptación; no sustituyen las sesiones ya iniciadas.',
                           style: TextStyle(color: context.visuals.textMuted),
                         ),
+                        const SizedBox(height: 12),
+                        if (overview.trainingContext case final settings?) ...[
+                          Text(
+                            settings.availability.values.any((m) => m > 0)
+                                ? [
+                                    for (var day = 1; day <= 7; day++)
+                                      if ((settings.availability['$day'] ?? 0) >
+                                          0)
+                                        '${const ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day - 1]} ${settings.availability['$day']} min',
+                                  ].join(' · ')
+                                : 'Días y minutos pendientes de indicar.',
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            settings.equipment.isEmpty
+                                ? 'Sin material adicional indicado.'
+                                : 'Material: ${(settings.equipment.toList()..sort()).map(performanceEquipmentLabel).join(', ')}.',
+                          ),
+                          if (!settings.capacityConfirmed ||
+                              settings.reportsPain) ...[
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Revisa también la confirmación de capacidad y molestias antes de pautar entrenamientos.',
+                            ),
+                          ],
+                        ] else
+                          const Text(
+                            'Aún no has guardado días, minutos y material para el programa.',
+                          ),
                         const SizedBox(height: 12),
                         OutlinedButton.icon(
                           onPressed: () => context.push('/profile/preferences'),
@@ -430,6 +464,17 @@ class _SavedPreparationCard extends StatelessWidget {
         Text(
           goal.program.name,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        if (goal.targetDate case final date?)
+          Text('Pruebas: ${DateFormat('dd/MM/yyyy').format(date)}'),
+        const SizedBox(height: 8),
+        Text(
+          progress?.isPaused == true
+              ? 'Tu progreso se conserva. Revisa la propuesta antes de retomarlo.'
+              : progress?.status == 'complete'
+              ? 'Programa finalizado. Puedes consultar tu preparación y sus resultados.'
+              : 'Preparación guardada. Falta revisar y aceptar su programa de entrenamiento.',
         ),
         const SizedBox(height: 12),
         OutlinedButton(
