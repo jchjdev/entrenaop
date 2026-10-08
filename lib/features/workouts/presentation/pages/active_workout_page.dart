@@ -249,8 +249,10 @@ class _ActiveContentState extends State<_ActiveContent> {
                         style: const TextStyle(color: Colors.redAccent),
                       ),
                     ],
-                    if (current != null ||
-                        state.status == ActiveWorkoutStatus.resting) ...[
+                    // Resolver las series no cierra la sesión: se puede
+                    // abandonar también antes de confirmar el cierre final.
+                    if (execution.status ==
+                        WorkoutExecutionStatus.inProgress) ...[
                       const SizedBox(height: 24),
                       const Text(
                         'Puedes salir y continuar después: el progreso guardado no se pierde.',
@@ -481,6 +483,9 @@ class _AmrapCardState extends State<_AmrapCard> {
                     unawaited(widget.cueService.signal(WorkoutCue.halfway)),
                 onTenSecondsRemaining: () => unawaited(
                   widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
+                ),
+                onEndingTick: (_) => unawaited(
+                  widget.cueService.signal(WorkoutCue.workEndingTick),
                 ),
                 onFinished: () => unawaited(
                   widget.cueService.signal(WorkoutCue.workFinished),
@@ -793,6 +798,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                             WorkoutCue.tenSecondsRemaining,
                           ),
                         ),
+                        onEndingTick: (_) => unawaited(
+                          widget.cueService.signal(WorkoutCue.workEndingTick),
+                        ),
                         onFinished: () => unawaited(
                           widget.cueService.signal(WorkoutCue.workFinished),
                         ),
@@ -937,6 +945,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                   onTenSecondsRemaining: () => unawaited(
                     widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
                   ),
+                  onEndingTick: (_) => unawaited(
+                    widget.cueService.signal(WorkoutCue.workEndingTick),
+                  ),
                   onFinished: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workFinished),
                   ),
@@ -961,6 +972,9 @@ class _CurrentSetCardState extends State<_CurrentSetCard> {
                       unawaited(widget.cueService.signal(WorkoutCue.halfway)),
                   onTenSecondsRemaining: () => unawaited(
                     widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
+                  ),
+                  onEndingTick: (_) => unawaited(
+                    widget.cueService.signal(WorkoutCue.workEndingTick),
                   ),
                   onFinished: () => unawaited(
                     widget.cueService.signal(WorkoutCue.workFinished),

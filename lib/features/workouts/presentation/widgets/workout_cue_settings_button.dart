@@ -77,8 +77,8 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
             value: _sound,
             title: const Text('Sonido'),
             subtitle: const Text(
-              'Preparación, inicio, mitad, últimos 10 segundos y final. '
-              'También durante el descanso.',
+              'Preparación, inicio, mitad y final. Últimos 10 segundos de '
+              'trabajo y descanso; 3, 2, 1 al terminar el trabajo.',
             ),
             onChanged: (value) => setState(() => _sound = value),
           ),

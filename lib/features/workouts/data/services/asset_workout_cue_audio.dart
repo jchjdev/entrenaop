@@ -19,6 +19,7 @@ class AssetWorkoutCueAudio implements WorkoutCueAudio {
     WorkoutCue.workStarted: 'audio/workout/start.wav',
     WorkoutCue.halfway: 'audio/workout/halfway.wav',
     WorkoutCue.tenSecondsRemaining: 'audio/workout/ten_seconds.wav',
+    WorkoutCue.workEndingTick: 'audio/workout/preparation.wav',
     WorkoutCue.workFinished: 'audio/workout/finish.wav',
     WorkoutCue.restFinished: 'audio/workout/start.wav',
   };

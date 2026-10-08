@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**UI-019, 08/10/2026 · correcciones localizadas verificadas:** los vídeos de
+Javier permiten reproducir la ausencia de abandono en el cierre final y el
+ancho fijo de los días en Mi semana. Ambos corregidos conservando diseño y
+contratos. Cuenta de trabajo añade los pitidos 3, 2, 1 confirmados por Javier.
+Análisis limpio, 621 pruebas completas correctas con la omisión web existente,
+regresiones de fallo/reintento/sincronización, anchos y restauración, además de
+tres capturas de semana actual y banco web compilado. Cuenta real de cinco
+segundos en Chromium con tres pitidos finales y final aceptados, sin errores.
+[Cambios, evidencia y límites](SESSION_CONTROLS_2026_10_08.md).
+La salida con opciones unificadas y el posible descarte total son propuestas
+pendientes de contrato, no cambios ya implementados. El único siguiente
+recorrido recomendado sigue siendo comprobar la escucha nativa en el Mac
+indicada en UI-018; este arreglo no acredita esa revisión ni un cierre global.
+
 **UI-018, 08/10/2026 · sonido implementado, revisión nativa abierta:** corregido
 el adaptador que usaba SystemSound.alert, ignorado en Android/iOS/web. Cinco
 WAV locales y audioplayers 6.8.1; preparación/inicio/mitad/diez segundos/final

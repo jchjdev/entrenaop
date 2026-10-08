@@ -15,6 +15,142 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  for (final scenario in <String, List<WorkoutSetStatus>>{
+    'antes de confirmar ninguna serie': [
+      WorkoutSetStatus.pending,
+      WorkoutSetStatus.pending,
+    ],
+    'con parte del trabajo confirmado': [
+      WorkoutSetStatus.completed,
+      WorkoutSetStatus.pending,
+    ],
+    'después de confirmar todas las series': [
+      WorkoutSetStatus.completed,
+      WorkoutSetStatus.completed,
+    ],
+    'después de omitir todas las series': [
+      WorkoutSetStatus.skipped,
+      WorkoutSetStatus.skipped,
+    ],
+  }.entries) {
+    testWidgets('permite abandonar ${scenario.key} sin inventar resultados', (
+      tester,
+    ) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses(scenario.value);
+      final savedSets = repository.execution.sets;
+      final (cubit, router) = await _mountSession(tester, repository);
+
+      await _openAbandonment(tester);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Confirmar abandono'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(find.text('Seguir entrenando'));
+      await tester.pumpAndSettle();
+      expect(repository.abandonAttempts, 0);
+      expect(cubit.state.execution!.status, WorkoutExecutionStatus.inProgress);
+
+      await _confirmAbandonment(tester);
+      expect(repository.abandonAttempts, 1);
+      expect(repository.execution.status, WorkoutExecutionStatus.abandoned);
+      expect(
+        repository.execution.abandonmentReason,
+        WorkoutAbandonmentReason.lackOfTime,
+      );
+      expect(cubit.state.execution!.sets, savedSets);
+      expect(cubit.state.execution!.finalRpe, isNull);
+      expect(
+        find.text('Lo realizado se conserva para tu historial.'),
+        findsOneWidget,
+      );
+      expect(find.text('Abandonar la sesión definitivamente'), findsNothing);
+
+      await tester.tap(find.text('Volver'));
+      await tester.pumpAndSettle();
+      expect(router.state.matchedLocation, '/');
+      expect(find.text('¿Salir de la sesión?'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets(
+    'fallar el abandono conserva el borrador final y permite reintentar',
+    (tester) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses([
+          WorkoutSetStatus.completed,
+          WorkoutSetStatus.completed,
+        ])
+        ..failAbandonment = true;
+      final savedSets = repository.execution.sets;
+      final (cubit, _) = await _mountSession(tester, repository);
+      const draft = 'He hecho las series, pero tengo que salir.';
+      final notes = find.widgetWithText(
+        TextField,
+        '¿Cómo te has sentido? (opcional)',
+      );
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, draft);
+      await _confirmAbandonment(tester);
+
+      expect(cubit.state.status, ActiveWorkoutStatus.failure);
+      expect(find.text('No hemos podido abandonar la sesión.'), findsOneWidget);
+      expect(tester.widget<TextField>(notes).controller!.text, draft);
+      expect(cubit.state.execution!.sets, savedSets);
+      expect(repository.execution.status, WorkoutExecutionStatus.inProgress);
+
+      repository.failAbandonment = false;
+      await _confirmAbandonment(tester);
+      expect(repository.abandonAttempts, 2);
+      expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
+      expect(cubit.state.execution!.sets, savedSets);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'el abandono pendiente de sincronizar cierra sin perder las series',
+    (tester) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses([
+          WorkoutSetStatus.completed,
+          WorkoutSetStatus.completed,
+        ])
+        ..abandonmentDisposition = WorkoutMutationDisposition.queued;
+      final savedSets = repository.execution.sets;
+      final (cubit, _) = await _mountSession(tester, repository);
+      await _confirmAbandonment(tester);
+
+      expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
+      expect(cubit.state.execution!.status, WorkoutExecutionStatus.abandoned);
+      expect(cubit.state.execution!.sets, savedSets);
+      expect(
+        cubit.state.execution!.abandonmentReason,
+        WorkoutAbandonmentReason.lackOfTime,
+      );
+      expect(cubit.state.pendingSyncCount, 1);
+      expect(find.text('Resultado pendiente de sincronizar'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextButton>(
+              find.widgetWithText(
+                TextButton,
+                'Resultado pendiente de sincronizar',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(repository.execution.status, WorkoutExecutionStatus.inProgress);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('el descanso avisa a mitad, diez segundos y final', (
     tester,
   ) async {
@@ -357,6 +493,76 @@ void main() {
   });
 }
 
+WorkoutExecution _executionWithStatuses(List<WorkoutSetStatus> statuses) {
+  final execution = _execution();
+  return execution.copyWith(
+    sets: [
+      for (var i = 0; i < execution.sets.length; i++)
+        execution.sets[i].copyWith(
+          status: statuses[i],
+          actualReps: statuses[i] == WorkoutSetStatus.completed ? 8 : null,
+          completedAt: statuses[i] == WorkoutSetStatus.pending
+              ? null
+              : DateTime.utc(2026, 10, 8, 17, i),
+        ),
+    ],
+  );
+}
+
+Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
+  WidgetTester tester,
+  _Repository repository,
+) async {
+  final cubit = _cubit(repository);
+  addTearDown(cubit.close);
+  await cubit.load();
+  final registry = WorkflowExitRegistry();
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const Scaffold(body: Text('Mi semana')),
+      ),
+      GoRoute(
+        path: '/session',
+        onExit: (context, state) => registry.requestExit(state.pageKey),
+        builder: (context, state) => WorkflowExitScope(
+          controller: registry.controller(state.pageKey),
+          child: BlocProvider.value(
+            value: cubit,
+            child: ActiveWorkoutPage(
+              timerStore: _TimerStore(),
+              cueService: _CueService(),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+  await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+  router.push('/session');
+  await tester.pumpAndSettle();
+  return (cubit, router);
+}
+
+Future<void> _openAbandonment(WidgetTester tester) async {
+  final abandon = find.text('Abandonar la sesión definitivamente');
+  expect(abandon, findsOneWidget);
+  await tester.ensureVisible(abandon);
+  await tester.pumpAndSettle();
+  await tester.tap(abandon);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _confirmAbandonment(WidgetTester tester) async {
+  await _openAbandonment(tester);
+  await tester.tap(find.text('Falta de tiempo'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Confirmar abandono'));
+  await tester.pumpAndSettle();
+}
+
 ActiveWorkoutCubit _cubit(
   _Repository repository, {
   _TimerStore? timerStore,
@@ -377,6 +583,11 @@ ActiveWorkoutCubit _cubit(
 class _Repository implements WorkoutRepository {
   WorkoutExecution execution = _execution();
   WorkoutSetResultInput? lastSetResult;
+  bool failAbandonment = false;
+  int abandonAttempts = 0;
+  int pendingMutationCount = 0;
+  WorkoutMutationDisposition abandonmentDisposition =
+      WorkoutMutationDisposition.synced;
 
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async => execution;
@@ -442,7 +653,26 @@ class _Repository implements WorkoutRepository {
   }
 
   @override
-  Future<int> getPendingMutationCount() async => 0;
+  Future<WorkoutMutationDisposition> abandonExecution(
+    String executionId,
+    WorkoutAbandonmentReason reason,
+  ) async {
+    abandonAttempts++;
+    if (failAbandonment) throw StateError('Fallo simulado de guardado');
+    if (abandonmentDisposition == WorkoutMutationDisposition.queued) {
+      pendingMutationCount++;
+    } else {
+      execution = execution.copyWith(
+        status: WorkoutExecutionStatus.abandoned,
+        abandonmentReason: reason,
+        completedAt: DateTime.utc(2026, 10, 8, 17, 30),
+      );
+    }
+    return abandonmentDisposition;
+  }
+
+  @override
+  Future<int> getPendingMutationCount() async => pendingMutationCount;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

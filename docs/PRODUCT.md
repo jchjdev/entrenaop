@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**UI-019, 08/10/2026 · sesión y Mi semana:** abandono disponible mientras la
+ejecución esté en curso, también tras resolver todas las series, conservando
+resultados y motivo. Mi semana reparte los días en todo el ancho del contenido;
+texto ampliado y pantallas estrechas permiten desplazamiento legible. Javier
+confirma pitidos a tres, dos y un segundo del final de trabajo, seguidos del
+sonido de final. Análisis limpio y 621 pruebas correctas con una omisión web
+existente. La propuesta de unificar retomar/abandonar/descartar queda pendiente
+de acordar su efecto sobre los datos. [Recorrido y límites](SESSION_CONTROLS_2026_10_08.md).
+
 **UI-018, 08/10/2026 · avisos reales del temporizador:** el ejecutor incluye
 pitidos locales de preparación, inicio, mitad, últimos diez segundos y final,
 también para descanso. Sonido y vibración conservan controles independientes;

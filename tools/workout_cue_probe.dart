@@ -98,6 +98,7 @@ class _ProbeState extends State<_Probe> {
           onStarted: () => _cue(WorkoutCue.workStarted),
           onHalfway: () => _cue(WorkoutCue.halfway),
           onTenSecondsRemaining: () => _cue(WorkoutCue.tenSecondsRemaining),
+          onEndingTick: (_) => _cue(WorkoutCue.workEndingTick),
           onFinished: () => _cue(WorkoutCue.workFinished),
         ),
         const SizedBox(height: 20),

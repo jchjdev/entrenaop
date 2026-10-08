@@ -350,9 +350,11 @@ class _DaySelector extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 6.0;
+        // La semana llena el contenido disponible. Solo se desplaza cuando
+        // el ancho o el texto ampliado no permiten días legibles.
         final dayWidth = ((constraints.maxWidth - 6 * spacing) / 7).clamp(
-          36.0,
-          74.0,
+          MediaQuery.textScalerOf(context).scale(44),
+          double.infinity,
         );
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,

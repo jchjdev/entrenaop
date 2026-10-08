@@ -340,6 +340,11 @@ Salir de la pantalla mantiene la ejecución en curso y permite recuperarla. El
 abandono es una transición terminal distinta que conserva las series resueltas,
 deja las pendientes sin falsearlas como omitidas y registra un motivo
 estructurado. Esta diferencia será una entrada auditable para la adaptación.
+UI-019 corrige la visibilidad del abandono: depende de la ejecución en curso,
+no de que queden series pendientes, y sigue disponible esperando el cierre final.
+Salir sin guardar campos no confirmados no elimina series ya registradas.
+Estado, alcance y propuesta de salidas en
+[SESSION_CONTROLS_2026_10_08.md](SESSION_CONTROLS_2026_10_08.md).
 
 Modificar una plantilla no debe cambiar sesiones ya realizadas ni el baremo con
 el que se evaluaron.
@@ -690,6 +695,8 @@ SystemSound.alert (ignorado en Android/iOS/web) por WAV originales empaquetados
 y audioplayers 6.8.1. Un adaptador de audio reutiliza el reproductor, precarga,
 evita acumulación y aísla fallos; la vibración conserva HapticFeedback de Flutter.
 El ejecutor emite hitos de preparación, inicio, mitad, diez segundos y final;
+UI-019 añade un pitido breve a tres, dos y un segundo del final del trabajo,
+reutilizando el WAV de preparación, sin reproducir segundos pasados al restaurar;
 no cambia prescripción ni confirmación de resultados. El descanso restaurado
 conserva duración original y tiempo ya transcurrido. El diálogo permite probar
 sonido sin guardar preferencias; no solicita permisos adicionales. Verificación

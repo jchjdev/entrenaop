@@ -5,6 +5,7 @@ enum WorkoutCue {
   workStarted,
   halfway,
   tenSecondsRemaining,
+  workEndingTick,
   workFinished,
   restFinished,
 }

@@ -45,6 +45,20 @@ prueba específica de sus restricciones.
 
 ## Hitos y restauración
 
+**Ampliación UI-019, 08/10/2026:** Javier confirma también pitidos breves cuando
+quedan tres, dos y un segundo de trabajo. Reutilizan el WAV de preparación y
+el sonido final existente. No se añaden al descanso ni a cronómetros sin duración
+objetivo. Pausar y restaurar no repite segundos; un salto emite únicamente el
+segundo actual o el final, sin recuperar una ráfaga atrasada. En tiempos de uno
+a tres segundos el inicio prima sobre un pitido simultáneo y solo avisan los
+segundos posteriores. Banco web actualizado y compilado; intervalo real de cinco
+segundos aceptado en Chromium (tres preparaciones, inicio, tres pitidos finales
+y final), sin errores. Análisis limpio y
+621 pruebas completas correctas, con la omisión web existente. Evidencia de
+regresiones y límites en [SESSION_CONTROLS_2026_10_08.md](SESSION_CONTROLS_2026_10_08.md).
+La tabla siguiente conserva el criterio de mitad/diez segundos; en trabajo se
+suma esa cuenta final cuando haya tiempo para ella.
+
 | Tiempo del intervalo | Avisos durante la cuenta |
 | --- | --- |
 | Hasta 10 segundos | Inicio y final, además de preparación cuando corresponda |

@@ -23,6 +23,7 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.onStarted,
     this.onHalfway,
     this.onTenSecondsRemaining,
+    this.onEndingTick,
     this.onFinished,
     super.key,
   }) : assert(targetSeconds > 0),
@@ -46,6 +47,7 @@ class WorkoutSetCountdown extends StatefulWidget {
   final VoidCallback? onStarted;
   final VoidCallback? onHalfway;
   final VoidCallback? onTenSecondsRemaining;
+  final ValueChanged<int>? onEndingTick;
   final VoidCallback? onFinished;
 
   @override
@@ -175,12 +177,13 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _clearPersistedTimer();
       widget.onFinished?.call();
     } else {
-      // Al restaurar no se reproducen hitos pasados. Si una actualización
-      // cruza ambos, el aviso de diez segundos tiene prioridad; nunca se
-      // superpone a mitad ni al final (coinciden en intervalos de 20 s).
+      // Solo suena el segundo final actual: un salto del reloj no reproduce
+      // 3-2-1 en ráfaga ni superpone avisos antiguos de mitad/diez segundos.
       final tenSecondMark = widget.targetSeconds - 10;
       final halfwayMark = (widget.targetSeconds / 2).ceil();
-      if (widget.targetSeconds > 10 &&
+      if (_remainingSeconds <= 3) {
+        widget.onEndingTick?.call(_remainingSeconds);
+      } else if (widget.targetSeconds > 10 &&
           previousElapsed < tenSecondMark &&
           elapsed >= tenSecondMark) {
         widget.onTenSecondsRemaining?.call();

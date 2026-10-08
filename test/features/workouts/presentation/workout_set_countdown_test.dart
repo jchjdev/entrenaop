@@ -4,6 +4,132 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('los últimos tres segundos avisan una vez al pausar y repetir', (
+    tester,
+  ) async {
+    var now = Duration.zero;
+    final cues = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: WorkoutSetCountdown(
+            targetSeconds: 40,
+            preparationSeconds: 0,
+            clock: () => now,
+            onElapsedChanged: (_) {},
+            onHalfway: () => cues.add('mitad'),
+            onTenSecondsRemaining: () => cues.add('diez'),
+            onEndingTick: (remaining) => cues.add('$remaining'),
+            onFinished: () => cues.add('final'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Iniciar temporizador'));
+    for (final second in [20, 30, 37, 38]) {
+      now = Duration(seconds: second);
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(cues, ['mitad', 'diez', '3', '2']);
+    await tester.tap(find.text('Pausar'));
+    now = const Duration(seconds: 100);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('Reanudar'));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(cues, ['mitad', 'diez', '3', '2']);
+    for (final second in [101, 102]) {
+      now = Duration(seconds: second);
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(cues, ['mitad', 'diez', '3', '2', '1', 'final']);
+    await tester.tap(find.text('Repetir'));
+    for (final second in [139, 140, 141, 142]) {
+      now = Duration(seconds: second);
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(cues.skip(6), ['3', '2', '1', 'final']);
+  });
+
+  testWidgets(
+    'restaurar en los últimos segundos no repite el pitido anterior',
+    (tester) async {
+      final wallNow = DateTime.utc(2026, 10, 8);
+      var now = Duration.zero;
+      final cues = <String>[];
+      final store = _MemoryTimerStore(
+        WorkoutTimerSnapshot(
+          phase: WorkoutTimerPhase.running,
+          targetSeconds: 40,
+          preparationSeconds: 0,
+          phaseStartedAt: wallNow.subtract(const Duration(seconds: 38)),
+          elapsedBeforeRun: Duration.zero,
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WorkoutSetCountdown(
+              targetSeconds: 40,
+              preparationSeconds: 0,
+              clock: () => now,
+              wallClock: () => wallNow,
+              timerStore: store,
+              timerId: 'set',
+              onElapsedChanged: (_) {},
+              onEndingTick: (remaining) => cues.add('$remaining'),
+              onFinished: () => cues.add('final'),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('0:02'), findsOneWidget);
+      expect(cues, isEmpty);
+      now = const Duration(seconds: 1);
+      await tester.pump(const Duration(milliseconds: 200));
+      now = const Duration(seconds: 2);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(cues, ['1', 'final']);
+    },
+  );
+
+  for (final seconds in [1, 2, 3]) {
+    testWidgets(
+      'un intervalo de $seconds s no solapa el inicio con la cuenta final',
+      (tester) async {
+        var now = Duration.zero;
+        final cues = <String>[];
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: WorkoutSetCountdown(
+                targetSeconds: seconds,
+                preparationSeconds: 0,
+                clock: () => now,
+                onElapsedChanged: (_) {},
+                onStarted: () => cues.add('inicio'),
+                onEndingTick: (remaining) => cues.add('$remaining'),
+                onFinished: () => cues.add('final'),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Iniciar temporizador'));
+        expect(cues, ['inicio']);
+        for (var second = 1; second <= seconds; second++) {
+          now = Duration(seconds: second);
+          await tester.pump(const Duration(milliseconds: 200));
+        }
+        expect(cues, [
+          'inicio',
+          for (var remaining = seconds - 1; remaining > 0; remaining--)
+            '$remaining',
+          'final',
+        ]);
+      },
+    );
+  }
+
   testWidgets('mitad y diez segundos no se repiten al pausar y reanudar', (
     tester,
   ) async {
@@ -132,6 +258,7 @@ void main() {
             onElapsedChanged: (_) {},
             onHalfway: () => cues.add('mitad'),
             onTenSecondsRemaining: () => cues.add('diez'),
+            onEndingTick: (remaining) => cues.add('$remaining'),
             onFinished: () => cues.add('final'),
           ),
         ),

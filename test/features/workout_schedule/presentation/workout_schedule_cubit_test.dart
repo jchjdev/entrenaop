@@ -21,6 +21,102 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  for (final width in [390.0, 800.0, 1200.0]) {
+    testWidgets('los siete días ocupan el ancho de Mi semana a $width px', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final cubit = _cubit(_FakeScheduleRepository(), _FakeWorkoutRepository());
+      addTearDown(cubit.close);
+      await cubit.load();
+      final router = GoRouter(
+        initialLocation: '/plan/week',
+        routes: [
+          GoRoute(
+            path: '/plan/week',
+            builder: (_, _) => RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: BlocProvider.value(
+                value: cubit,
+                child: const WorkoutSchedulePage(),
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      Finder day(String label) => find
+          .ancestor(of: find.text(label), matching: find.byType(InkWell))
+          .first;
+      final monday = tester.getRect(day('LUN'));
+      final sunday = tester.getRect(day('DOM'));
+      final contentWidth = (width - 32).clamp(0.0, 920.0);
+      expect(sunday.right - monday.left, closeTo(contentWidth, .1));
+      expect(monday.width, closeTo(sunday.width, .1));
+      await capturePerformanceWidget(tester, 'semana-ancho-${width.toInt()}');
+      await tester.tap(day('DOM'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.selectedDay, cubit.state.weekEnd);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets(
+    'los días siguen accesibles con texto ampliado en pantalla estrecha',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final cubit = _cubit(_FakeScheduleRepository(), _FakeWorkoutRepository());
+      addTearDown(cubit.close);
+      await cubit.load();
+      final router = GoRouter(
+        initialLocation: '/plan/week',
+        routes: [
+          GoRoute(
+            path: '/plan/week',
+            builder: (_, _) => BlocProvider.value(
+              value: cubit,
+              child: const WorkoutSchedulePage(),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: EntrenaTheme.dark,
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final strip = find.byWidgetPredicate(
+        (widget) =>
+            widget is SingleChildScrollView &&
+            widget.scrollDirection == Axis.horizontal,
+      );
+      await tester.drag(strip, const Offset(-700, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('DOM'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.selectedDay, cubit.state.weekEnd);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   test(
     'una semana antigua no reemplaza la nueva al terminar fuera de orden',
     () async {

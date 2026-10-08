@@ -73,6 +73,7 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
   static Future<void> _signalHaptic(WorkoutCue cue) async {
     switch (cue) {
       case WorkoutCue.preparationTick:
+      case WorkoutCue.workEndingTick:
         await HapticFeedback.selectionClick();
       case WorkoutCue.workStarted:
       case WorkoutCue.workFinished:
