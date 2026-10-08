@@ -709,7 +709,12 @@ UI-019 añade un pitido breve a tres, dos y un segundo del final del trabajo,
 reutilizando el WAV de preparación, sin reproducir segundos pasados al restaurar;
 no cambia prescripción ni confirmación de resultados. El descanso restaurado
 conserva duración original y tiempo ya transcurrido. El diálogo permite probar
-sonido o vibración sin guardar preferencias; VIBRATE no exige diálogo. Verificación
+sonido o vibración sin guardar preferencias; VIBRATE no exige diálogo. Samsung
+cancela los avisos clasificados como notificación si la app tiene sus
+notificaciones bloqueadas. La prueba manual solicita POST_NOTIFICATIONS en
+Android 13+ y espera la decisión; los hitos del reloj no abren peticiones.
+Un bloqueo conocido se comunica como fallo, con ayuda para los ajustes de la
+app, y no impide el sonido ni la ejecución. Verificación
 en pruebas, Chromium y APK debug. IOS-002 acredita compilación y reproducción
 del banco iOS en simulador y escucha confirmada por Javier: la ejecución antigua
 carecía del plugin y los WAV; actualizar/reconstruir fue suficiente, sin cambios

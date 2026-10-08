@@ -21,6 +21,9 @@ class WorkoutVibration(private val context: Context) {
         context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     }
 
+    fun notificationsEnabled(): Boolean =
+        context.getSystemService(NotificationManager::class.java)?.areNotificationsEnabled() == true
+
     fun diagnostics(): Map<String, Any?> = mapOf(
         "sdk" to Build.VERSION.SDK_INT,
         "manufacturer" to Build.MANUFACTURER,
@@ -32,6 +35,7 @@ class WorkoutVibration(private val context: Context) {
         "permissionGranted" to (
             context.checkSelfPermission(Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED
         ),
+        "notificationsEnabled" to notificationsEnabled(),
         "ringerMode" to context.getSystemService(AudioManager::class.java)?.ringerMode,
         "interruptionFilter" to context.getSystemService(NotificationManager::class.java)
             ?.currentInterruptionFilter,

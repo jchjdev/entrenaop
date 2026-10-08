@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class WorkoutCueSettingsButton extends StatefulWidget {
@@ -75,7 +76,9 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
     setState(() {
       _testingHaptics = false;
       if (!success) {
-        _error = 'No se ha podido activar la vibración en este dispositivo.';
+        _error =
+            'No se ha podido activar la vibración. '
+            'Revisa los permisos y ajustes del dispositivo.';
       }
     });
   }
@@ -102,8 +105,12 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
             contentPadding: EdgeInsets.zero,
             value: _haptics,
             title: const Text('Vibración'),
-            subtitle: const Text(
-              'Se aplicará cuando el dispositivo sea compatible.',
+            subtitle: Text(
+              !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                  ? 'Pulsa Probar vibración y permite las notificaciones de '
+                        'EntrenaOP. Si las bloqueaste, actívalas en Ajustes → '
+                        'Aplicaciones → EntrenaOP → Notificaciones.'
+                  : 'Se aplicará cuando el dispositivo sea compatible.',
             ),
             onChanged: (value) => setState(() => _haptics = value),
           ),

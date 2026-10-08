@@ -1,6 +1,8 @@
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/data/services/asset_workout_cue_audio.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -8,6 +10,41 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  const native = MethodChannel('es.entrenaop/workout_vibration');
+  final messenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  tearDown(() {
+    debugDefaultTargetPlatformOverride = null;
+    messenger.setMockMethodCallHandler(native, null);
+  });
+
+  test(
+    'denegar notificaciones falla la prueba sin bloquear reloj ni sonido',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(native, (call) async {
+        methods.add(call.method);
+        if (call.method == 'diagnostics') {
+          return {'notificationsEnabled': false};
+        }
+        if (call.method == 'requestPermission') return false;
+        throw PlatformException(code: 'notifications_disabled');
+      });
+      final audio = _Audio();
+      final service = SharedPreferencesWorkoutCueService(
+        await SharedPreferences.getInstance(),
+        audio: audio,
+      );
+      expect(await service.previewHaptics(), isFalse);
+      expect(methods, ['diagnostics', 'requestPermission']);
+      expect(audio.cues, isEmpty);
+      await expectLater(service.signal(WorkoutCue.workStarted), completes);
+      expect(audio.cues, [WorkoutCue.workStarted]);
+      expect(methods, ['diagnostics', 'requestPermission', 'signal']);
+      expect(service.preferences, const WorkoutCuePreferences());
+    },
+  );
 
   test(
     'los avisos están activos por defecto y conservan la configuración',

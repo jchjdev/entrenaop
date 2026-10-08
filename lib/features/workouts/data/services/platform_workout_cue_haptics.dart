@@ -5,6 +5,18 @@ import 'package:flutter/services.dart';
 class PlatformWorkoutCueHaptics {
   static const _channel = MethodChannel('es.entrenaop/workout_vibration');
 
+  static Future<void> preview() async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      // Solo una acción explícita pide permiso; los hitos del reloj nunca
+      // abren diálogos ni interrumpen el entrenamiento.
+      final allowed = await _channel.invokeMethod<bool>('requestPermission');
+      if (allowed != true) {
+        throw PlatformException(code: 'notifications_disabled');
+      }
+    }
+    await signal(WorkoutCue.workFinished);
+  }
+
   static Future<void> debugDescribe() async {
     if (!kDebugMode) return;
     debugPrint(

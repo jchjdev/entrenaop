@@ -65,7 +65,9 @@ void main() {
     await tester.tap(find.text('Probar vibración'));
     await tester.pump();
     expect(
-      find.text('No se ha podido activar la vibración en este dispositivo.'),
+      find.text(
+        'No se ha podido activar la vibración. Revisa los permisos y ajustes del dispositivo.',
+      ),
       findsOneWidget,
     );
     expect(service.previews, 0);
@@ -74,7 +76,9 @@ void main() {
     await tester.tap(find.text('Probar vibración'));
     await tester.pump();
     expect(
-      find.text('No se ha podido activar la vibración en este dispositivo.'),
+      find.text(
+        'No se ha podido activar la vibración. Revisa los permisos y ajustes del dispositivo.',
+      ),
       findsNothing,
     );
     expect(service.hapticPreviews, 2);

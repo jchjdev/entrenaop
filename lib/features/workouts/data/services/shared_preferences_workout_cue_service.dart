@@ -48,7 +48,11 @@ class SharedPreferencesWorkoutCueService implements WorkoutCueService {
           await PlatformWorkoutCueHaptics.debugDescribe();
         }
       }
-      await _haptic(WorkoutCue.workFinished);
+      if (_usesPlatformHaptic) {
+        await PlatformWorkoutCueHaptics.preview();
+      } else {
+        await _haptic(WorkoutCue.workFinished);
+      }
       if (kDebugMode) {
         debugPrint(
           'EntrenaOPVibration: prueba terminada; solicitud sin error, '

@@ -258,3 +258,42 @@ evidencia. El historial puede aportar el estado del sistema, pero tampoco
 acredita por sí solo sensación física.
 [Patrones básicos de Android](https://developer.android.com/develop/ui/views/haptics/haptics-apis)
 y [estados del historial de vibración](https://android.googlesource.com/platform/frameworks/base/+/81f52b053da6/services/core/java/com/android/server/vibrator/Vibration.java).
+
+**Causa contrastada en el Samsung:** el log del servicio del 08/10/2026 a las
+21:20 muestra el patrón correcto de EntrenaOP (160/100/160 ms, NOTIFICATION),
+seguido de `Vibrator Cancel, notifications are disabled` para el paquete de
+la app. AppOps devuelve permiso por defecto permitido; los ajustes globales
+declaran vibración activada, notificaciones con intensidad HIGH y ahorro de
+batería desactivado. La entrada anterior TOUCH de 45 ms pertenecía al UID de
+una instalación anterior y no a estas solicitudes. El servicio cancela los
+avisos actuales antes de añadirlos al historial mostrado. No es ausencia de
+motor ni falta de control de amplitud.
+
+El manifiesto declara ahora POST_NOTIFICATIONS. En Android 13+ la prueba manual
+solicita ese permiso si falta y espera la decisión antes de enviar el patrón;
+una denegación no provoca vibración ni un efecto alternativo. Si ya están
+permitidas las notificaciones, no pide permiso de nuevo. Un bloqueo de ajustes
+o de versiones anteriores devuelve fallo. El diálogo explica cómo activarlas
+desde los ajustes de la app. No solicita cámara ni otros permisos, no publica
+notificaciones y no abre peticiones durante los hitos del reloj.
+
+El adaptador comprueba además `areNotificationsEnabled()` antes de enviar un
+aviso: un bloqueo conocido produce error, en vez de una prueba aparentemente
+aceptada. El diagnóstico incluye `notificationsEnabled`. Los patrones,
+clasificación y respeto a No molestar se conservan. iOS/web no pasan por la
+petición Android. Probar o denegar no guarda las preferencias del borrador ni
+afecta al sonido, temporizador o resultados. El permiso de Android es un ajuste
+del sistema independiente: cancelar el diálogo de EntrenaOP no lo revoca.
+[Permiso de notificaciones de Android 13](https://developer.android.com/develop/ui/compose/notifications/notification-permission).
+
+La corrección debe traerse a Windows y reconstruirse con F5; pulsar Probar
+vibración y elegir Permitir en el diálogo del sistema. Si se denegó antes y
+Android ya no muestra la petición, usar Ajustes → Aplicaciones → EntrenaOP →
+Notificaciones. La causa está identificada, pero la sensación física tras
+conceder el permiso sigue pendiente de Javier en su Samsung.
+
+Validación de este cambio: análisis limpio, 641 pruebas correctas con la omisión
+web existente y compilaciones Android debug de desarrollo/iOS simulador
+correctas. El APK declara POST_NOTIFICATIONS y VIBRATE. Las regresiones comprueban
+la espera de la respuesta del permiso, la denegación sin efecto alternativo,
+el aislamiento del sonido/reloj y la conservación de la ruta iOS.

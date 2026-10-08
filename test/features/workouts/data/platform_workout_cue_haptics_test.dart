@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/workouts/data/services/platform_workout_cue_haptics.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:flutter/foundation.dart';
@@ -48,6 +50,50 @@ void main() {
     );
   });
 
+  test('la prueba espera el permiso antes de solicitar la vibración', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final permission = Completer<bool>();
+    final methods = <String>[];
+    messenger.setMockMethodCallHandler(native, (call) async {
+      methods.add(call.method);
+      if (call.method == 'requestPermission') return permission.future;
+      expect(call.arguments, WorkoutCue.workFinished.name);
+      return true;
+    });
+    final preview = PlatformWorkoutCueHaptics.preview();
+    await Future<void>.delayed(Duration.zero);
+    expect(methods, ['requestPermission']);
+    permission.complete(true);
+    await preview;
+    expect(methods, ['requestPermission', 'signal']);
+  });
+
+  test(
+    'denegar permiso no solicita vibración ni usa efectos de teclado',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(native, (call) async {
+        methods.add(call.method);
+        return false;
+      });
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (_) async {
+        fail('No debe eludir la denegación mediante efectos de teclado');
+      });
+      await expectLater(
+        PlatformWorkoutCueHaptics.preview(),
+        throwsA(
+          isA<PlatformException>().having(
+            (error) => error.code,
+            'code',
+            'notifications_disabled',
+          ),
+        ),
+      );
+      expect(methods, ['requestPermission']);
+    },
+  );
+
   test(
     'propaga un fallo nativo para comunicarlo en la prueba manual',
     () async {
@@ -74,7 +120,7 @@ void main() {
       return null;
     });
     await PlatformWorkoutCueHaptics.signal(WorkoutCue.preparationTick);
-    await PlatformWorkoutCueHaptics.signal(WorkoutCue.workFinished);
+    await PlatformWorkoutCueHaptics.preview();
     await PlatformWorkoutCueHaptics.signal(WorkoutCue.halfway);
     expect(effects, [
       'HapticFeedbackType.selectionClick',
