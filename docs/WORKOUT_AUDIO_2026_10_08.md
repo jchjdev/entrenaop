@@ -201,3 +201,14 @@ sin error ni reproducción de audio; se restaura la app principal con Supabase
 de desarrollo. Para la primera compilación Android del Mac se instalan NDK
 28.2.13676358, plataforma/build-tools 36 y CMake 3.22.1, sin cambiar lockfiles.
 Esto no acredita todavía la sensación física en el Samsung ni en iPhone.
+
+**Prueba posterior de Javier, 08/10/2026:** trabaja desde Windows y lanza el
+Samsung por F5 en esa copia. Al principio no aparecía Probar vibración: la copia
+Windows seguía en `d79dde3`. Javier aporta el avance directo con
+`git pull --ff-only` hasta `b38d974`; después de volver a lanzar comunica que
+sigue sin vibrar. La salida aportada anteriormente contiene solo MediaPlayer,
+sin diagnóstico de la vibración. La corrección compilada no se considera una
+solución físicamente confirmada. Se investiga si la solicitud llega al sistema,
+los ajustes de vibración/notificación, modo silencio y funcionamiento del motor;
+no se cambian los patrones de nuevo ni se ignoran ajustes del usuario sin
+evidencia. [Comprobaciones de Samsung](https://www.samsung.com/uk/support/mobile-devices/solutions-for-when-your-galaxy-phone-wont-vibrate-when-receiving-calls-or-notifications/).
