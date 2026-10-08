@@ -27,8 +27,10 @@ desarrollo, pero **no aplicados**. La API rechaza la modificación con HTTP 400:
 el plan gratuito con el proveedor de correo predeterminado requiere configurar
 SMTP propio para personalizar las plantillas. La consulta posterior confirma
 que siguen el asunto original y la ausencia de SMTP propio. No se ha comprado
-ningún plan. Buzón y SMTP pendientes de acceso al panel de Hostinger;
-`acceso@entrenaop.es` todavía no está acreditado como buzón ni remitente activo.
+ningún plan. **Javier ha creado `acceso@entrenaop.es` y el panel confirma el
+buzón activo**, con 98 de 100 plazas libres. La contraseña se ha completado en
+Hostinger, sin pasar por el chat. SMTP permanece pendiente de introducir la
+credencial en Supabase; el buzón aún no es el remitente del servicio Auth.
 Confirmación de alta y otras plantillas no se modifican en este tramo.
 
 El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
@@ -53,20 +55,40 @@ configuración completa, credenciales ni tokens. No guarda claves en Flutter.
 
 ## Buzón y entrega: tareas aún abiertas
 
-1. Entrar en Hostinger y comprobar plazas/coste del plan de correo. Crear
-   `acceso@entrenaop.es` con credenciales propias; no cambiar la contraseña ni
-   configurar el envío mediante el buzón personal de Javier.
-2. Verificar los detalles SMTP del buzón y los registros de autenticación del
-   dominio que muestra el proveedor. Los MX públicos del dominio apuntan a
-   Hostinger y su SPF incluye `_spf.mail.hostinger.com`; no se han cambiado DNS.
-3. Configurar SMTP **solo en Supabase de desarrollo**. El remitente SMTP de
+1. Entrar en el panel de Supabase y configurar SMTP **solo en desarrollo**.
+   Host `smtp.hostinger.com`, puerto 465, usuario y remitente
+   `acceso@entrenaop.es`, nombre `EntrenaOP`. Javier introduce allí la contraseña
+   del buzón; no usar la credencial de su dirección personal. El remitente SMTP de
    Supabase es común a los correos de Auth, aunque aquí solo se ha traducido la
    plantilla de recuperación. Las credenciales permanecen en servidor.
-4. Aplicar la plantilla mediante el script y comprobar tanto el asunto como
+2. Aplicar la plantilla mediante el script y comprobar tanto el asunto como
    el HTML remoto. No repetir la aplicación mientras no cambie el bloqueo SMTP.
-5. Comprobar envío real, bandeja/spam, identidad del remitente, validación del
+3. Comprobar envío real, bandeja/spam, identidad del remitente, validación del
    enlace, nueva contraseña y entrada posterior. No se ha enviado ningún correo
    de prueba ni se ha cambiado la contraseña de la cuenta de Javier.
+
+Comprobación del panel del 08/10/2026, antes de crear el buzón:
+
+- Dominio `entrenaop.es`, plan activo **Free Business Email**, caducidad mostrada
+  `2028-11-05`, **99 de 100 plazas libres**. El formulario ofrece crear el buzón
+  sin compra ni cambio de plan.
+- Límites mostrados: 1 GB por buzón y 100 envíos cada 24 horas. Esta capacidad
+  se utiliza para desarrollo y pruebas; no acredita dimensionamiento comercial.
+- Tras la intervención de Javier, el panel muestra «Buzón creado correctamente»
+  y `acceso@entrenaop.es` activo, con 98 plazas libres. No se ha cambiado la
+  contraseña de ningún buzón previo.
+- SMTP documentado por el proveedor: `smtp.hostinger.com`, puerto 465 con TLS
+  implícito; alternativa 587 con STARTTLS. Usuario: dirección completa del
+  buzón. La contraseña se introduce en los servicios y se conserva fuera del
+  repositorio y del chat.
+  El panel «Conecta apps y dispositivos» del buzón nuevo confirma host y puerto.
+- Consulta DNS pública: MX `mx1.hostinger.com`/`mx2.hostinger.com`, SPF con
+  `_spf.mail.hostinger.com`, tres CNAME `hostingermail-{a,b,c}._domainkey` hacia
+  sus destinos DKIM de Hostinger, y DMARC `v=DMARC1; p=none`. No se han modificado
+  estos registros. La presencia de registros no acredita todavía la firma y
+  alineación de un mensaje entregado.
+- Supabase de desarrollo conserva SMTP sin configurar y la plantilla original.
+  El panel web necesita iniciar sesión aunque el acceso del CLI ya funciona.
 
 La revisión de HTML en navegador con un enlace ficticio no acredita la entrega,
 la representación en todos los clientes de correo ni un recorrido autenticado.
@@ -85,4 +107,5 @@ Vista revisada en navegador a 320 y 560 píxeles, con enlace ficticio:
 
 Fuentes: [plantillas de Supabase](https://supabase.com/docs/guides/auth/auth-email-templates),
 [SMTP de Supabase](https://supabase.com/docs/guides/auth/auth-smtp),
+[configuración SMTP de Hostinger](https://www.hostinger.com/support/1575756-how-to-get-email-account-configuration-details-for-hostinger-email/),
 [buzones de Hostinger](https://www.hostinger.com/support/1583217-how-to-create-and-manage-mailboxes-for-hostinger-email/).
