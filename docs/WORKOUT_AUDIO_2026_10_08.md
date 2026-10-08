@@ -240,3 +240,21 @@ compilaciones Android debug/iOS simulador correctas. Una regresión acredita que
 el fallo de diagnóstico no impide solicitar el aviso. El Samsung no está
 conectado al Mac de este chat; se requiere la traza de su ejecución en Windows
 para contrastar estas condiciones en el dispositivo real.
+
+Javier aporta después la traza de dos pruebas manuales en Samsung SM-A326B,
+Android SDK 33: motor presente, permiso VIBRATE concedido, actividad visible,
+modo de sonido normal (`ringerMode=2`) y todas las interrupciones permitidas
+(`interruptionFilter=1`). Ambas llegan al adaptador nativo y envían
+`workFinished` sin excepción. `hasAmplitudeControl=false` no impide los patrones
+básicos de encendido/apagado usados aquí; `notificationIntensity=-1` sigue sin
+acreditar intensidad cero. La percepción física continúa fallando según Javier.
+
+La ruta Flutter/nativa queda contrastada en el teléfono. El siguiente paso es
+leer desde ADB en Windows el historial de `dumpsys vibrator_manager` filtrado
+por el paquete y el estado de AppOps VIBRATE, inmediatamente después de la
+prueba, para distinguir solicitudes ignoradas, canceladas o finalizadas por
+Android. No se cambia la amplitud, el patrón ni la clasificación sin esa
+evidencia. El historial puede aportar el estado del sistema, pero tampoco
+acredita por sí solo sensación física.
+[Patrones básicos de Android](https://developer.android.com/develop/ui/views/haptics/haptics-apis)
+y [estados del historial de vibración](https://android.googlesource.com/platform/frameworks/base/+/81f52b053da6/services/core/java/com/android/server/vibrator/Vibration.java).
