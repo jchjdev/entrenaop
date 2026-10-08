@@ -297,3 +297,22 @@ web existente y compilaciones Android debug de desarrollo/iOS simulador
 correctas. El APK declara POST_NOTIFICATIONS y VIBRATE. Las regresiones comprueban
 la espera de la respuesta del permiso, la denegación sin efecto alternativo,
 el aislamiento del sonido/reloj y la conservación de la ruta iOS.
+
+**Confirmación física de Javier, 08/10/2026:** tras actualizar la copia Windows
+y conceder el permiso, comunica que el Samsung ya vibra. Queda contrastada la
+sensación física de la corrección en SM-A326B/Android 13. Percibe un pequeño
+adelanto de la vibración respecto al sonido y lo considera aceptable; su
+estimación es informal, sin una medición de latencia. Ambas rutas se solicitan
+en paralelo desde el servicio, pero no existe sincronización física de sus
+inicios. No se añade un retardo fijo ni se da por comprobada la reproducción
+con auriculares, en iPhone físico, con pantalla bloqueada o durante una sesión
+real de gimnasio.
+
+Javier plantea cuándo pedir los permisos por primera vez. La petición actual
+ocurre únicamente al pulsar Probar vibración. Se recomienda integrar su
+solicitud al activar los avisos o antes de la primera sesión, con explicación
+del beneficio y permitiendo continuar si se deniega. Es una mejora pendiente,
+no un flujo ya implementado. No se solicitan permisos durante la descarga ni
+otros ajenos a la función usada al iniciar la app. Los permisos de cámara se
+tratarán en el recorrido que la necesite. Esta recomendación sigue el criterio
+de [pedir permisos en contexto](https://developer.android.com/training/permissions/requesting).

@@ -18,10 +18,20 @@ Análisis limpio, 621 pruebas correctas con la omisión web; app principal
 relanzada con Supabase de desarrollo. La vibración estaba activada y sus llamadas
 no dieron errores. [Evidencia y límites](IOS_DEVELOPMENT.md).
 
-El único siguiente recorrido recomendado es probar sonido y vibración en un
-dispositivo físico cuando esté disponible, incluyendo volumen/silencio, música,
-auriculares y una sesión real. No se acredita vibración física ni segundo plano
-en simulador. Descartar resultados registrados, negocio y motores mantienen
+**HAPT-001, 08/10/2026 · vibración física confirmada en Samsung:** Javier confirma
+que funciona en SM-A326B/Android 13 al conceder el permiso de notificaciones.
+El log anterior acreditó que Samsung cancelaba los avisos por tenerlas
+desactivadas para EntrenaOP. La prueba manual pide el permiso y respeta su
+denegación; análisis limpio, 641 pruebas correctas con la omisión web existente
+y compilaciones Android/iOS correctas. Percibe un pequeño adelanto respecto al
+sonido, aceptable y sin medir. Pedir el permiso al activar avisos o antes de la
+primera sesión es una mejora recomendada pendiente; hoy se pide en la prueba.
+[Evidencia y límites](WORKOUT_AUDIO_2026_10_08.md).
+
+El único siguiente recorrido recomendado es probar una sesión real en el
+Samsung, incluyendo volumen/silencio, música y auriculares. iPhone físico y
+segundo plano conservan sus comprobaciones pendientes; el simulador no acredita
+sensación física. Descartar resultados registrados, negocio y motores mantienen
 su alcance aparte; no se requiere abrir correo en el simulador para este bloque.
 
 **UI-019, 08/10/2026 · correcciones localizadas verificadas:** los vídeos de
@@ -51,8 +61,9 @@ El recorrido recomendado originalmente fue actualizar y reiniciar completamente
 la app de desarrollo en el Mac, compilar el plugin nuevo y escuchar Probar sonido
 y un intervalo/descanso. SPM revisado por configuración, sin acreditar aún ese
 arranque o escucha en esa comprobación; IOS-002 añade después esa evidencia.
-Android físico, música/auriculares y segundo plano no se
-dan por comprobados. Javier comunica una revisión superficial positiva en
+HAPT-001 añade después la confirmación física en Samsung; música/auriculares,
+sesión real y segundo plano no se dan por comprobados. Javier comunica una
+revisión superficial positiva en
 simulador de guardado, Evolución y fotografías; no cierra la auditoría
 autenticada global. Recuperación de correo nativa puede esperar. Comparativas
 configurables, seguridad de publicación, vídeos, negocio y motores mantienen

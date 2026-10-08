@@ -718,8 +718,12 @@ app, y no impide el sonido ni la ejecución. Verificación
 en pruebas, Chromium y APK debug. IOS-002 acredita compilación y reproducción
 del banco iOS en simulador y escucha confirmada por Javier: la ejecución antigua
 carecía del plugin y los WAV; actualizar/reconstruir fue suficiente, sin cambios
-en el contexto de audio. Vibración física y convivencia con otros sonidos
-requieren dispositivo real.
+en el contexto de audio. Javier confirma después vibración física en Samsung
+SM-A326B/Android 13 tras conceder el permiso de notificaciones. Percibe un pequeño
+adelanto sobre el sonido, aceptable y sin medir; no se garantiza sincronización
+física exacta. Pedir el permiso antes de la primera sesión, fuera del botón de
+prueba, sigue pendiente. iPhone físico, auriculares y convivencia con otros
+sonidos conservan sus verificaciones pendientes.
 No garantiza ejecución en segundo plano. Contrato, recursos y límites en
 [WORKOUT_AUDIO_2026_10_08.md](WORKOUT_AUDIO_2026_10_08.md).
 
