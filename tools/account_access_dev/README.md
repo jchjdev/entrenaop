@@ -32,6 +32,12 @@ modificado DNS o producción. La entrega real y el recorrido desde el correo aú
 están pendientes.
 Confirmación de alta y otras plantillas no se modifican en este tramo.
 
+Javier confirma el 08/10/2026 que ha cambiado la contraseña del buzón y guardado
+los cambios; la credencial vigente es distinta de la que apareció en la captura.
+La rotación deja de ser una tarea pendiente. Esta confirmación no acredita por
+sí sola el transporte SMTP: sigue pendiente solicitar la recuperación desde la
+app y completar el enlace en el mismo navegador o dispositivo.
+
 El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
 su `content_path` en ese recorrido remoto. No basta un diff limpio del CLI para
 afirmar que el HTML está aplicado. `apply_recovery_template.py` utiliza la
