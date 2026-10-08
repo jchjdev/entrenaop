@@ -357,3 +357,15 @@ Android debug de desarrollo/iOS simulador correctas. Las pruebas cubren esperar
 a una sesión cargada, Ahora no, concesión, denegación, persistencia entre
 instancias, salida durante la consulta, exclusión de iOS y diálogo a 320 px con
 texto doble. No se cambian dependencias ni datos de Supabase.
+
+### Aclaración sobre el cierre del tramo · 08/10/2026
+
+Javier indica que el recorrido de una sesión en Android ya está comprobado
+parcialmente; queda usarla entrenando en el gimnasio para valorar su comodidad
+y comportamiento durante el esfuerzo. No equivale a otra implementación pendiente
+del ejecutor ni a una validación deportiva completa. El iPhone físico no está
+disponible ahora. Estas pruebas y el primer acceso Android sin permiso quedan
+registrados, sin impedir continuar con las incoherencias de la app que Javier
+quiere revisar. Se conservan los límites de segundo plano y de convivencia con
+música/auriculares; no se presentan las observaciones parciales como una auditoría
+autenticada completa.

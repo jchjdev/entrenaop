@@ -30,11 +30,14 @@ local para no repetirlo. La prueba manual sigue disponible. Este nuevo recorrido
 de entrada requiere comprobación en un Android físico sin permiso.
 [Evidencia y límites](WORKOUT_AUDIO_2026_10_08.md).
 
-El único siguiente recorrido recomendado es probar una sesión real en el
-Samsung, incluyendo volumen/silencio, música y auriculares. iPhone físico y
-segundo plano conservan sus comprobaciones pendientes; el simulador no acredita
-sensación física. Descartar resultados registrados, negocio y motores mantienen
-su alcance aparte; no se requiere abrir correo en el simulador para este bloque.
+Javier aclara que ya ha comprobado parcialmente en Android el recorrido de
+avisos, guardado, salida/reanudación y resultado. El uso entrenando en el gimnasio
+queda como validación posterior, junto con volumen/silencio, música y auriculares.
+iPhone físico y primer uso Android sin permiso conservan sus pruebas pendientes;
+no se exige realizarlas ahora para continuar con la revisión de incoherencias
+que Javier quiere mostrar. El simulador no acredita sensación física y segundo
+plano mantiene su alcance pendiente. Descartar resultados registrados, negocio
+y motores continúan aparte.
 
 **UI-019, 08/10/2026 · correcciones localizadas verificadas:** los vídeos de
 Javier permiten reproducir la ausencia de abandono en el cierre final y el
