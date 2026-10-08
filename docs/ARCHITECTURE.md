@@ -135,6 +135,17 @@ la experiencia de acceso y la posible reutilización de interfaz se decidirán
 al implementar cada espacio. Los permisos administrativos y las relaciones
 entrenador-cliente seguirán siendo contratos distintos en el backend.
 
+## Desarrollo iOS en macOS · IOS-001 · 08/10/2026
+
+La configuración nativa está adaptada a Flutter 3.47.5/Dart 3.13.4: mínimo
+iOS 15, ciclo de vida `UIScene` y plugins mediante Swift Package Manager.
+El registro de plugins ocurre al inicializar el motor implícito. Se conservan
+`FlutterDeepLinkingEnabled=false` y el esquema `es.entrenaop` para Supabase.
+Compilación y arranque comprobados en iPhone 17 Pro con iOS 26.3.1, usando solo
+Supabase de desarrollo; análisis limpio y 591 pruebas correctas (una exclusiva
+web omitida). No acredita aún un recorrido autenticado ni correo real en iOS.
+Herramientas, comandos y límites en [IOS_DEVELOPMENT.md](IOS_DEVELOPMENT.md).
+
 ## Estado observado
 
 Instantánea contrastada en código, análisis, pruebas y Supabase de desarrollo
@@ -360,8 +371,9 @@ con la interpretación automática de Flutter desactivada. La configuración
 parcial en `tools/account_access_dev/supabase/config.toml` declara únicamente
 retornos de desarrollo y conserva las demás propiedades remotas. No se cambia
 RLS, rol, derechos comerciales ni producción. Pruebas del SDK con HTTP simulado
-y configuración remota comprobada; correo real, dispositivo e iOS compilado
-pendientes. Alcance y límites en
+y configuración remota comprobada. Compilación y arranque iOS comprobados en
+IOS-001; el recorrido de correo real en iOS y dispositivo físico sigue pendiente.
+Alcance y límites en
 [REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
 
 ### Separación de responsabilidades

@@ -40,6 +40,9 @@ pruebas transaccionales se documentan en
 
 ## Entornos
 
+La preparación de Xcode y la ejecución en un simulador iOS se explican en
+[docs/IOS_DEVELOPMENT.md](docs/IOS_DEVELOPMENT.md).
+
 Las ejecuciones sin parámetros usan `entrenaop-dev`. Producción nunca se elige
 por defecto y requiere compilar indicando explícitamente `APP_ENV=production`,
 `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` mediante `--dart-define` o
@@ -60,9 +63,9 @@ está ejecutándose el panel. Cada uno es un proyecto Flutter distinto dentro de
 mismo repositorio. El panel requiere una cuenta con permiso administrativo en
 Supabase; sus operaciones vuelven a comprobarlo en el servidor.
 
-Para la app, seleccionar primero un emulador o dispositivo Android en VS Code y
-ejecutar `EntrenaOP App · dispositivo seleccionado`. Ambas opciones usan el mismo
-proyecto del alumno y el mismo backend de desarrollo; el código de `admin_app/`
+Para la app, seleccionar primero un emulador Android, simulador iOS o dispositivo
+en VS Code y ejecutar `EntrenaOP App · dispositivo seleccionado`. Ambas opciones
+usan el mismo proyecto del alumno y el mismo backend de desarrollo; el código de `admin_app/`
 no forma parte de la APK/IPA. El panel tiene su propio inicio de sesión y guarda
 la sesión por separado al funcionar en otro puerto.
 Publicar una web en Internet requiere configurar un alojamiento y el entorno
