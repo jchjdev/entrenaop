@@ -76,6 +76,19 @@ flowchart TD
   complementa la revisión del SDK instalado. El canje PKCE debe completarse en
   el navegador o dispositivo donde se solicitó el correo; la pantalla lo explica.
 
+## Correo de recuperación: preparación pendiente de SMTP
+
+Actualización MAIL-001: Javier confirma `acceso@entrenaop.es` como remitente
+propio, separado de su dirección personal. Asunto y HTML del correo de
+recuperación están preparados en español, con aplicación remota pendiente;
+conservan el enlace de Supabase y el logotipo de la web. No se cambian las
+plantillas de alta ni la lógica Flutter. Buzón y SMTP pendientes de acceso al
+panel de Hostinger. La API ha rechazado aplicar la plantilla: este plan gratuito
+con envío predeterminado requiere SMTP propio para personalizarla. Aún no se
+acredita remitente activado ni entrega real. No se han contratado planes.
+Configuración, comprobación y tareas abiertas en
+[Cuenta de desarrollo](../tools/account_access_dev/README.md).
+
 ## Capturas del código actual
 
 Son widgets actuales, con fuentes e iconos reales, repositorio de prueba y
