@@ -148,6 +148,13 @@ la experiencia de acceso y la posible reutilización de interfaz se decidirán
 al implementar cada espacio. Los permisos administrativos y las relaciones
 entrenador-cliente seguirán siendo contratos distintos en el backend.
 
+`website/next/` contiene un borrador local de la futura web de presentación.
+Resume el recorrido que existe en desarrollo, anuncia iPhone y Android sin
+ofrecer descargas y reserva entradas visibles pero desactivadas para
+administración y entrenadores. No reemplaza `website/dist/` ni está desplegado.
+Antes de habilitar esos accesos habrá que publicar cada panel y verificar sus
+permisos y rutas reales.
+
 ## Desarrollo iOS en macOS · IOS-001 · 08/10/2026
 
 La configuración nativa está adaptada a Flutter 3.47.5/Dart 3.13.4: mínimo
