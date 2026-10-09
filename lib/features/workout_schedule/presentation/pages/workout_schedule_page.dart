@@ -35,8 +35,13 @@ class WorkoutSchedulePage extends StatelessWidget {
                   previous.publicTemplates != current.publicTemplates ||
                   previous.personalTemplates != current.personalTemplates ||
                   previous.programs != current.programs ||
+                  previous.items != current.items ||
+                  previous.hasLoaded != current.hasLoaded ||
                   previous.selectedDay != current.selectedDay,
-              builder: (context, state) => state.currentProgram != null
+              builder: (context, state) =>
+                  !state.hasLoaded || state.selectedItems.isEmpty
+                  ? const SizedBox.shrink()
+                  : state.currentProgram != null
                   ? FloatingActionButton.small(
                       onPressed: () => _showTemplatePicker(context, state),
                       tooltip: 'Añadir entrenamiento al día',
@@ -44,6 +49,7 @@ class WorkoutSchedulePage extends StatelessWidget {
                     )
                   : FloatingActionButton.extended(
                       onPressed: () => _showTemplatePicker(context, state),
+                      tooltip: 'Añadir entrenamiento al día',
                       icon: const Icon(Icons.add_rounded),
                       label: const Text('Añadir entrenamiento'),
                     ),
@@ -804,13 +810,24 @@ class _EmptyDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final addButton = FilledButton.icon(
+      onPressed: onAdd,
+      icon: const Icon(Icons.add_rounded),
+      label: const Text('Añadir entrenamiento al día'),
+    );
     if (hasProgram) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'No hay entrenamiento pautado para este día. Sigue las sesiones de tu programa y respeta los días de descanso.',
-            textAlign: TextAlign.center,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const Text(
+                'No hay entrenamiento pautado para este día. Sigue las sesiones de tu programa y respeta los días de descanso.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              addButton,
+            ],
           ),
         ),
       );
@@ -845,11 +862,7 @@ class _EmptyDay extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Añadir entrenamiento al día'),
-            ),
+            addButton,
           ],
         ),
       ),

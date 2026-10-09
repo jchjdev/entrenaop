@@ -21,6 +21,117 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  for (final hasProgram in [false, true]) {
+    testWidgets(
+      'añadir usa la card vacía y después el flotante, con programa $hasProgram',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final stored = <ScheduledWorkout>[];
+        final repository = _FakeScheduleRepository();
+        repository.onRange = (_, _) async => List.of(stored);
+        repository.onSchedule = (id, date) => stored.add(
+          ScheduledWorkout(
+            id: 'added-${stored.length}',
+            templateId: id,
+            templateName: 'Mi sesión de dominadas',
+            templateVersion: 2,
+            scheduledDate: date,
+            source: ScheduledWorkoutSource.user,
+            status: ScheduledWorkoutStatus.planned,
+          ),
+        );
+        final programs = _Programs()
+          ..results = hasProgram
+              ? [_program('tropa', 'Ingreso · Tropa', 'training')]
+              : [];
+        final cubit = _cubit(
+          repository,
+          _FakeWorkoutRepository(),
+          programs: programs,
+        );
+        addTearDown(cubit.close);
+        await cubit.load();
+        final router = GoRouter(
+          initialLocation: '/plan/week',
+          routes: [
+            GoRoute(
+              path: '/plan/week',
+              builder: (_, _) => RepaintBoundary(
+                key: const ValueKey('review-boundary'),
+                child: BlocProvider.value(
+                  value: cubit,
+                  child: const WorkoutSchedulePage(),
+                ),
+              ),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: EntrenaTheme.dark,
+            routerConfig: router,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final inCard = find.widgetWithText(
+          FilledButton,
+          'Añadir entrenamiento al día',
+        );
+        expect(inCard, findsOneWidget);
+        expect(find.byType(FloatingActionButton), findsNothing);
+        await tester.ensureVisible(inCard);
+        if (!hasProgram) {
+          await capturePerformanceWidget(tester, 'semana-vacia-un-acceso');
+        }
+        await tester.tap(inCard);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Mi sesión de dominadas'));
+        await tester.pumpAndSettle();
+        expect(stored.single.scheduledDate, DateTime(2026, 9, 23));
+        expect(cubit.state.selectedItems, hasLength(1));
+        expect(inCard, findsNothing);
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        if (!hasProgram) {
+          await tester.pump(const Duration(seconds: 5));
+          await tester.pumpAndSettle();
+          await capturePerformanceWidget(tester, 'semana-con-sesion-un-acceso');
+        }
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pumpAndSettle();
+        // La sesión ya programada sigue en el fondo; elegir la del modal.
+        await tester.tap(
+          find.widgetWithText(ListTile, 'Mi sesión de dominadas'),
+        );
+        await tester.pumpAndSettle();
+        expect(cubit.state.selectedItems, hasLength(2));
+        cubit.selectDay(DateTime(2026, 9, 24));
+        await tester.pumpAndSettle();
+        expect(inCard, findsOneWidget);
+        expect(find.byType(FloatingActionButton), findsNothing);
+        await tester.ensureVisible(inCard);
+        await tester.tap(inCard);
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.widgetWithText(ListTile, 'Mi sesión de dominadas'),
+        );
+        await tester.pumpAndSettle();
+        expect(stored.last.scheduledDate, DateTime(2026, 9, 24));
+        expect(cubit.state.selectedItems, hasLength(1));
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        cubit.selectDay(DateTime(2026, 9, 23));
+        await tester.pumpAndSettle();
+        expect(cubit.state.selectedItems, hasLength(2));
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(inCard, findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   for (final width in [390.0, 800.0, 1200.0]) {
     testWidgets('los siete días ocupan el ancho de Mi semana a $width px', (
       tester,
@@ -538,6 +649,7 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   String? scheduledTemplateId;
   DateTime? scheduledDate;
   Future<List<ScheduledWorkout>> Function(DateTime, DateTime)? onRange;
+  void Function(String, DateTime)? onSchedule;
 
   @override
   Future<List<ScheduledWorkout>> getRange(DateTime start, DateTime end) async {
@@ -554,6 +666,7 @@ class _FakeScheduleRepository implements WorkoutScheduleRepository {
   }) async {
     scheduledTemplateId = templateId;
     scheduledDate = date;
+    onSchedule?.call(templateId, date);
     return 'scheduled-2';
   }
 

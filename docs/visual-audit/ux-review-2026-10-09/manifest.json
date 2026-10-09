@@ -11,6 +11,28 @@
         2400
       ],
       "sha256": "76564d9f9542811cf0e80b314b46e491c4f5bb22463b549f9102e2337f9018e1"
+    },
+    {
+      "file": "semana-vacia-un-acceso.webp",
+      "dimensions": [
+        780,
+        1800
+      ],
+      "sha256": "7cedc386b4832a6e7fb852e0bc89292824f2ee3b85c09ccf581e57de1f33bc1c",
+      "decision": "UI-023",
+      "method": "Widget actual de Mi semana con agenda ficticia, Arial y tema real, ancho lógico 390 px y pixelRatio 2. Sin cuenta ni servidor.",
+      "test": "test/features/workout_schedule/presentation/workout_schedule_cubit_test.dart"
+    },
+    {
+      "file": "semana-con-sesion-un-acceso.webp",
+      "dimensions": [
+        780,
+        1800
+      ],
+      "sha256": "18d390a476553711cd766bc38c09ca45ddbe7890e8536d6aaf957c2ec111bcfd",
+      "decision": "UI-023",
+      "method": "Widget actual de Mi semana con agenda ficticia, Arial y tema real, ancho lógico 390 px y pixelRatio 2. Sin cuenta ni servidor.",
+      "test": "test/features/workout_schedule/presentation/workout_schedule_cubit_test.dart"
     }
   ]
 }
