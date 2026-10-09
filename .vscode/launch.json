@@ -18,6 +18,13 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart"
+    },
+    {
+      "name": "EntrenaOP App · rendimiento (profile)",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "profile"
     }
   ]
 }
