@@ -782,7 +782,9 @@ UI-024 explicita las páginas del deportista mediante `materialAppRoute`:
 Flutter utilizado aquí, y elegía páginas sin transición. Se conservan claves,
 argumentos de ruta/consulta, restauración y `onExit`; el contenido se obtiene
 de los settings actuales para respetar la reutilización de páginas.
-El tema de la app habilita Cupertino en iOS/web, manteniendo Android nativo.
+El tema de la app habilita Cupertino en Android, iOS y web, ofreciendo el mismo
+gesto de borde independientemente de la navegación de tres botones del teléfono.
+Android mantiene disponible atrás del sistema y sus confirmaciones.
 Las rutas con `onExit` desactivan el gesto interactivo previo a la decisión;
 su borde solicita `go_router.pop` y deja la pantalla inmóvil si se cancela o
 falla el borrador. `PopScope` conserva su contrato y el mismo acceso protegido

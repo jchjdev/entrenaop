@@ -4,11 +4,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Conserva Android nativo y el tema visual; añade el gesto de borde a iOS/web.
+/// Añade el mismo gesto de borde a Android, iOS y web, sin cambiar el tema visual.
 ThemeData withAppBackGesture(ThemeData theme) => theme.copyWith(
   pageTransitionsTheme: PageTransitionsTheme(
     builders: {
       ...theme.pageTransitionsTheme.builders,
+      TargetPlatform.android: const AppBackPageTransitionsBuilder(),
       TargetPlatform.iOS: const AppBackPageTransitionsBuilder(),
       if (kIsWeb)
         for (final platform in TargetPlatform.values)

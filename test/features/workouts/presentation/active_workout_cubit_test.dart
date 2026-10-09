@@ -543,10 +543,13 @@ void main() {
     expect(cubit.state.execution, isNotNull);
   });
 
-  for (final bySwipe in [false, true]) {
-    testWidgets('salir y retomar conserva series, gesto $bySwipe', (
-      tester,
-    ) async {
+  for (final scenario in [
+    (bySwipe: false, platform: TargetPlatform.iOS),
+    (bySwipe: true, platform: TargetPlatform.iOS),
+    (bySwipe: true, platform: TargetPlatform.android),
+  ]) {
+    final bySwipe = scenario.bySwipe;
+    testWidgets('salir y retomar conserva series, $scenario', (tester) async {
       final repository = _Repository();
       final cubit = _cubit(repository);
       addTearDown(cubit.close);
@@ -594,7 +597,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp.router(
           theme: withAppBackGesture(
-            EntrenaTheme.dark.copyWith(platform: TargetPlatform.iOS),
+            EntrenaTheme.dark.copyWith(platform: scenario.platform),
           ),
           routerConfig: router,
         ),

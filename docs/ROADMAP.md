@@ -1,13 +1,16 @@
 # Roadmap de EntrenaOP
 
 **UI-024, 09/10/2026 · gesto de volver verificado:** páginas explícitas de Flutter
-y gesto desde el borde en iOS/web, manteniendo flecha, scroll y pestañas. Sesiones
+y gesto desde el borde en Android/iOS/web, manteniendo flecha, scroll y pestañas. Sesiones
 y formularios consultan sus protecciones antes de salir; cancelar permite repetir
-el gesto y mantiene los datos. Android nativo conserva atrás del sistema. Análisis
-limpio, 697 pruebas completas correctas con la omisión web existente y nueve
-regresiones correctas en Chrome. El banco web necesitó normalizar en memoria
+el gesto y mantiene los datos. Javier precisa que Android debe ofrecerlo también
+con navegación de tres botones, además de atrás del sistema: implementado.
+Análisis limpio, 706 pruebas completas correctas con la omisión web existente;
+51 regresiones relacionadas incluyen ambos móviles. La primera verificación
+acreditó además nueve regresiones en Chrome. El banco web necesitó normalizar en memoria
 dos rutas generadas por Flutter en Windows; no se modificó el SDK. Requiere hot
-restart. [Implementación y límites](VISUAL_DESIGN.md). iPhone físico y un nuevo
+restart. [Implementación y límites](VISUAL_DESIGN.md). Nuevo gesto Android físico,
+iPhone físico y un nuevo
 recorrido autenticado siguen pendientes. El único siguiente bloque recomendado
 continúa siendo la revisión de Javier de preparación → Mi plan → Hoy.
 

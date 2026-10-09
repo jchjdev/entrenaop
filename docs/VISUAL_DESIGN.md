@@ -5,16 +5,18 @@
 Javier confirma el gesto habitual desde el borde como alternativa al botón de
 volver, que se mantiene. Las consultas deben conservar scroll y selección al
 regresar. Las sesiones y formularios deben respetar las opciones de salida,
-los borradores y el bloqueo mientras se guarda. Android conserva el gesto del
-sistema; no se acuerda un detector horizontal global que compita con tarjetas
-deslizables o controles.
+los borradores y el bloqueo mientras se guarda. Javier precisa que también
+Android debe ofrecer el gesto de la app, aunque use navegación de tres botones;
+el gesto y botón del sistema siguen disponibles. No se acuerda un detector
+horizontal global que compita con tarjetas deslizables o controles.
 
-Implementado en la app del deportista: iOS y navegador admiten deslizar desde
-el borde inicial. Las consultas usan la transición interactiva de Cupertino;
+Implementado en la app del deportista: Android, iOS y navegador admiten deslizar
+desde el borde inicial. Las consultas usan la transición interactiva de Cupertino;
 si una ruta tiene `onExit`, el gesto solicita primero la salida a `go_router`
 sin mover la pantalla antes de la confirmación. Cancelar conserva el contenido
 y permite repetir el gesto. Los formularios con `PopScope` mantienen sus
-protecciones. Android nativo conserva atrás del sistema y su transición.
+protecciones. Android utiliza la misma transición de vuelta y conserva además
+atrás del sistema; el gesto de la app no depende de los ajustes del teléfono.
 
 La versión resuelta de `go_router` reconoce el `MaterialApp` de `material_ui`,
 pero esta app usa el de Flutter. Su detección automática creaba páginas sin
@@ -26,13 +28,21 @@ Las regresiones cubren el scroll al volver, cancelación del gesto interactivo,
 formularios con/sin `PopScope`, guardado/fallo de borrador, bloqueo durante
 guardado y salida/reanudación de una sesión con series confirmadas. Las rutas
 reales de Disponibilidad vuelven a Perfil, incluida su URL anterior redirigida.
-Análisis limpio y 697 pruebas completas correctas, con una omisión web existente;
-nueve regresiones del gesto también correctas en Chrome. El banco web de Flutter
+La primera verificación acreditó análisis limpio y 697 pruebas completas
+correctas, con una omisión web existente; nueve regresiones del gesto también
+correctas en Chrome. El banco web de Flutter
 en Windows generó dos rutas incorrectas: CanvasKit con separadores incompatibles
 y el selector de prueba con barras invertidas sin escapar. Para esa comprobación
 se sirvieron los archivos locales del SDK y se normalizó el selector únicamente
 en memoria del navegador aislado, sin modificar el SDK, la app ni las pruebas.
-No acredita iPhone físico ni un nuevo recorrido autenticado. La nueva configuración
+La ampliación Android ejecuta las mismas regresiones de borde para iOS y Android,
+incluyendo cancelar/repetir, scroll, borradores y ocupación. También comprueba
+el botón Atrás del sistema y salir/retomar una sesión con series en Android.
+Análisis limpio, 51 regresiones relacionadas y 706 pruebas completas correctas,
+con una omisión web existente, tras incorporar Android. El comportamiento web
+conserva el mismo adaptador comprobado anteriormente en Chrome. El gesto propio
+en Android físico queda por comprobar con Javier; tampoco acredita iPhone físico
+ni un nuevo recorrido autenticado. La nueva configuración
 de rutas requiere hot restart para probarla. Javier continúa personalmente
 la revisión pausada de preparación → Mi plan → Hoy.
 

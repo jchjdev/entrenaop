@@ -107,10 +107,16 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    group('Gesto de la app en $platform', () => _testBackGestures(platform));
+  }
+}
+
+void _testBackGestures(TargetPlatform platform) {
   testWidgets('cancelar el gesto interactivo permite volver después', (
     tester,
   ) async {
-    final router = await _mount(tester);
+    final router = await _mount(tester, platform: platform);
     router.push('/plan/detail');
     await tester.pumpAndSettle();
     await tester.timedDragFrom(
@@ -127,7 +133,7 @@ void main() {
   testWidgets('el gesto nativo vuelve y conserva el scroll de consulta', (
     tester,
   ) async {
-    final router = await _mount(tester);
+    final router = await _mount(tester, platform: platform);
     await tester.drag(find.byType(ListView), const Offset(0, -600));
     await tester.pumpAndSettle();
     final before = tester
@@ -151,7 +157,7 @@ void main() {
   testWidgets('la raíz y un gesto interior no cambian de pantalla', (
     tester,
   ) async {
-    final router = await _mount(tester);
+    final router = await _mount(tester, platform: platform);
     await _back(tester);
     expect(router.state.uri.path, '/plan');
     router.push('/plan/detail');
@@ -170,6 +176,7 @@ void main() {
           tester,
           draft: _Draft(),
           blockNative: blockNative,
+          platform: platform,
         );
         router.push('/plan/detail');
         await tester.pumpAndSettle();
@@ -195,7 +202,7 @@ void main() {
     tester,
   ) async {
     final draft = _Draft()..busy = true;
-    final router = await _mount(tester, draft: draft);
+    final router = await _mount(tester, draft: draft, platform: platform);
     router.push('/plan/detail');
     await tester.pumpAndSettle();
     await _back(tester);
@@ -211,7 +218,12 @@ void main() {
     tester,
   ) async {
     final draft = _Draft()..fail = true;
-    final router = await _mount(tester, draft: draft, saveDraft: true);
+    final router = await _mount(
+      tester,
+      draft: draft,
+      saveDraft: true,
+      platform: platform,
+    );
     router.push('/plan/detail');
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'borrador');
@@ -231,7 +243,7 @@ void main() {
   testWidgets('gestos cortos, invertidos y verticales no descartan', (
     tester,
   ) async {
-    final router = await _mount(tester, draft: _Draft());
+    final router = await _mount(tester, draft: _Draft(), platform: platform);
     router.push('/plan/detail');
     await tester.pumpAndSettle();
     for (final offset in [
