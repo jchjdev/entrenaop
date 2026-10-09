@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**UI-024, 09/10/2026 · gesto de volver verificado:** páginas explícitas de Flutter
+y gesto desde el borde en iOS/web, manteniendo flecha, scroll y pestañas. Sesiones
+y formularios consultan sus protecciones antes de salir; cancelar permite repetir
+el gesto y mantiene los datos. Android nativo conserva atrás del sistema. Análisis
+limpio, 697 pruebas completas correctas con la omisión web existente y nueve
+regresiones correctas en Chrome. El banco web necesitó normalizar en memoria
+dos rutas generadas por Flutter en Windows; no se modificó el SDK. Requiere hot
+restart. [Implementación y límites](VISUAL_DESIGN.md). iPhone físico y un nuevo
+recorrido autenticado siguen pendientes. El único siguiente bloque recomendado
+continúa siendo la revisión de Javier de preparación → Mi plan → Hoy.
+
 **UI-022, 09/10/2026 · ajustes cotidianos cerrados:** descarte confirmado de
 ejecución en curso y series, con cita restaurada e historial cerrado protegido;
 Perfil sin acceso duplicado; Añadir entrenamiento en agenda; días/minutos

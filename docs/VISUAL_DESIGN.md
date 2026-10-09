@@ -9,10 +9,32 @@ los borradores y el bloqueo mientras se guarda. Android conserva el gesto del
 sistema; no se acuerda un detector horizontal global que compita con tarjetas
 deslizables o controles.
 
-Es un criterio acordado pendiente de comprobar por rutas y plataformas antes
-de implementarlo donde falte. No acredita el gesto en iPhone físico ni modifica
-la navegación actual. Javier continúa personalmente la revisión pausada del
-recorrido preparación → Mi plan → Hoy.
+Implementado en la app del deportista: iOS y navegador admiten deslizar desde
+el borde inicial. Las consultas usan la transición interactiva de Cupertino;
+si una ruta tiene `onExit`, el gesto solicita primero la salida a `go_router`
+sin mover la pantalla antes de la confirmación. Cancelar conserva el contenido
+y permite repetir el gesto. Los formularios con `PopScope` mantienen sus
+protecciones. Android nativo conserva atrás del sistema y su transición.
+
+La versión resuelta de `go_router` reconoce el `MaterialApp` de `material_ui`,
+pero esta app usa el de Flutter. Su detección automática creaba páginas sin
+transición. `materialAppRoute` define las páginas de Flutter explícitamente,
+con las mismas claves, argumentos, destinos y guards. La composición fotográfica
+y las pestañas no cambian. No se añaden paquetes ni se modifica el admin.
+
+Las regresiones cubren el scroll al volver, cancelación del gesto interactivo,
+formularios con/sin `PopScope`, guardado/fallo de borrador, bloqueo durante
+guardado y salida/reanudación de una sesión con series confirmadas. Las rutas
+reales de Disponibilidad vuelven a Perfil, incluida su URL anterior redirigida.
+Análisis limpio y 697 pruebas completas correctas, con una omisión web existente;
+nueve regresiones del gesto también correctas en Chrome. El banco web de Flutter
+en Windows generó dos rutas incorrectas: CanvasKit con separadores incompatibles
+y el selector de prueba con barras invertidas sin escapar. Para esa comprobación
+se sirvieron los archivos locales del SDK y se normalizó el selector únicamente
+en memoria del navegador aislado, sin modificar el SDK, la app ni las pruebas.
+No acredita iPhone físico ni un nuevo recorrido autenticado. La nueva configuración
+de rutas requiere hot restart para probarla. Javier continúa personalmente
+la revisión pausada de preparación → Mi plan → Hoy.
 
 UI-021, 08/10/2026: [Mi plan, elección de preparación y formularios](PLAN_COHERENCE_2026_10_08.md).
 Preparaciones sustituye Tus preparaciones; sin programa, Elige una preparación.

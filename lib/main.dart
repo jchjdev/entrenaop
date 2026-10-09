@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
+import 'package:entrenaop/core/navigation/app_back_gesture.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
@@ -59,7 +60,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
       child: MaterialApp.router(
         title: 'EntrenaOP',
         debugShowCheckedModeBanner: false,
-        theme: EntrenaTheme.dark,
+        theme: withAppBackGesture(EntrenaTheme.dark),
         routerConfig: _appRouter.config,
       ),
     );

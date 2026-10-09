@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:entrenaop/core/navigation/app_back_gesture.dart';
+import 'package:entrenaop/core/router/material_app_route.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
+
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -539,67 +543,90 @@ void main() {
     expect(cubit.state.execution, isNotNull);
   });
 
-  testWidgets('salir y retomar conserva series y no abandona la sesión', (
-    tester,
-  ) async {
-    final repository = _Repository();
-    final cubit = _cubit(repository);
-    addTearDown(cubit.close);
-    await cubit.load();
-    await cubit.completeCurrentSet(
-      const WorkoutSetResultInput(resultId: 'set-1', actualReps: 8),
-      restSecondsOverride: 0,
-    );
-    final savedExecution = cubit.state.execution!;
-    final registry = WorkflowExitRegistry();
-    final router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => Scaffold(
-            body: FilledButton(
-              onPressed: () => context.push('/session'),
-              child: const Text('Retomar'),
-            ),
-          ),
-        ),
-        GoRoute(
-          path: '/session',
-          onExit: (context, state) => registry.requestExit(state.pageKey),
-          builder: (context, state) => WorkflowExitScope(
-            controller: registry.controller(state.pageKey),
-            child: BlocProvider.value(
-              value: cubit,
-              child: ActiveWorkoutPage(
-                timerStore: _TimerStore(),
-                cueService: _CueService(),
+  for (final bySwipe in [false, true]) {
+    testWidgets('salir y retomar conserva series, gesto $bySwipe', (
+      tester,
+    ) async {
+      final repository = _Repository();
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.completeCurrentSet(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 8),
+        restSecondsOverride: 0,
+      );
+      final savedExecution = cubit.state.execution!;
+      if (bySwipe) {
+        tester.view.physicalSize = const Size(390, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+      }
+      final registry = WorkflowExitRegistry();
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => Scaffold(
+              body: FilledButton(
+                onPressed: () => context.push('/session'),
+                child: const Text('Retomar'),
               ),
             ),
           ),
+          materialAppRoute(
+            path: '/session',
+            onExit: (context, state) => registry.requestExit(state.pageKey),
+            builder: (context, state) => WorkflowExitScope(
+              controller: registry.controller(state.pageKey),
+              child: BlocProvider.value(
+                value: cubit,
+                child: ActiveWorkoutPage(
+                  timerStore: _TimerStore(),
+                  cueService: _CueService(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: withAppBackGesture(
+            EntrenaTheme.dark.copyWith(platform: TargetPlatform.iOS),
+          ),
+          routerConfig: router,
         ),
-      ],
-    );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    router.push('/session');
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Salir de la sesión'));
-    await tester.pumpAndSettle();
-    expect(find.text('¿Salir de la sesión?'), findsOneWidget);
-    await tester.tap(find.text('Seguir aquí'));
-    await tester.pumpAndSettle();
-    expect(router.state.matchedLocation, '/session');
-    await tester.tap(find.byTooltip('Salir de la sesión'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Salir y retomar después'));
-    await tester.pumpAndSettle();
-    expect(cubit.state.execution, savedExecution);
-    expect(repository.execution.status, WorkoutExecutionStatus.inProgress);
-    await tester.tap(find.text('Retomar'));
-    await tester.pumpAndSettle();
-    expect(cubit.state.execution!.completedSetCount, 1);
-    expect(tester.takeException(), isNull);
-  });
+      );
+      router.push('/session');
+      await tester.pumpAndSettle();
+      if (bySwipe) {
+        await tester.dragFrom(const Offset(2, 400), const Offset(310, 0));
+      } else {
+        await tester.tap(find.byTooltip('Salir de la sesión'));
+      }
+      await tester.pumpAndSettle();
+      expect(find.text('¿Salir de la sesión?'), findsOneWidget);
+      await tester.tap(find.text('Seguir aquí'));
+      await tester.pumpAndSettle();
+      expect(router.state.matchedLocation, '/session');
+      if (bySwipe) {
+        await tester.dragFrom(const Offset(2, 400), const Offset(310, 0));
+      } else {
+        await tester.tap(find.byTooltip('Salir de la sesión'));
+      }
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Salir y retomar después'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.execution, savedExecution);
+      expect(repository.execution.status, WorkoutExecutionStatus.inProgress);
+      await tester.tap(find.text('Retomar'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.execution!.completedSetCount, 1);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets(
     'omitir calentamiento pasa al trabajo sin resultados inventados',
     (tester) async {

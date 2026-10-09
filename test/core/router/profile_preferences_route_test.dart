@@ -1,4 +1,5 @@
 import 'package:entrenaop/core/di/injection_container.dart';
+import 'package:entrenaop/core/navigation/app_back_gesture.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
@@ -29,7 +30,9 @@ void main() {
         BlocProvider<AuthCubit>.value(
           value: auth,
           child: MaterialApp.router(
-            theme: EntrenaTheme.dark,
+            theme: withAppBackGesture(
+              EntrenaTheme.dark.copyWith(platform: TargetPlatform.iOS),
+            ),
             routerConfig: router.config,
           ),
         ),
@@ -44,6 +47,12 @@ void main() {
       expect(find.text('El mismo contexto para tu programa'), findsOneWidget);
       expect(preferences.saves, 0);
       expect(preferences.reads, 1);
+      // La tarea está en el navegador raíz, sobre la rama Perfil.
+      await tester.dragFrom(const Offset(2, 300), const Offset(600, 0));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile');
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(preferences.saves, 0);
       expect(tester.takeException(), isNull);
     });
   }

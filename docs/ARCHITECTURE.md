@@ -776,6 +776,19 @@ No garantiza ejecución en segundo plano. Contrato, recursos y límites en
 
 `go_router` gestiona las rutas de la app del deportista y del admin. Los diálogos
 conservan el mecanismo modal de Flutter.
+
+UI-024 explicita las páginas del deportista mediante `materialAppRoute`:
+`go_router` 18 detectaba el `MaterialApp` de `material_ui`, diferente del de
+Flutter utilizado aquí, y elegía páginas sin transición. Se conservan claves,
+argumentos de ruta/consulta, restauración y `onExit`; el contenido se obtiene
+de los settings actuales para respetar la reutilización de páginas.
+El tema de la app habilita Cupertino en iOS/web, manteniendo Android nativo.
+Las rutas con `onExit` desactivan el gesto interactivo previo a la decisión;
+su borde solicita `go_router.pop` y deja la pantalla inmóvil si se cancela o
+falla el borrador. `PopScope` conserva su contrato y el mismo acceso protegido
+al gesto. El adaptador pertenece a la app del deportista, no al paquete visual
+compartido ni al admin. No cambia la jerarquía de navegadores o las pestañas.
+
 El área autenticada del deportista usa
 `StatefulShellRoute.indexedStack` para conservar el estado independiente de
 Inicio, Mi plan, Biblioteca, Evolución y Perfil. `AppShell` representa esos destinos como

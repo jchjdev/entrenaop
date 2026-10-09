@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrenaop/core/router/material_app_route.dart';
+
 import 'package:entrenaop/core/navigation/app_shell.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
@@ -140,36 +142,43 @@ class AppRouter {
         return null;
       },
       routes: [
-        GoRoute(
+        materialAppRoute(
           path: '/forgot-password',
           builder: (_, state) => AccountEmailPage(
             initialEmail: state.extra is String ? state.extra as String : '',
           ),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/confirm-email',
           builder: (_, _) => const AccountEmailPage(confirmation: true),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/reset-password',
           builder: (_, _) => const ResetPasswordPage(),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/auth-link-error',
           builder: (_, _) => const AccountLinkErrorPage(),
         ),
-        GoRoute(path: '/', builder: (context, state) => const LoginPage()),
-        GoRoute(
+        materialAppRoute(
+          path: '/',
+          builder: (context, state) => const LoginPage(),
+        ),
+        materialAppRoute(
           path: '/sign-up',
           builder: (context, state) => const SignUpPage(),
         ),
         StatefulShellRoute.indexedStack(
-          builder: (context, state, navigationShell) =>
-              AppShell(navigationShell: navigationShell),
+          pageBuilder: (context, state, navigationShell) =>
+              MaterialPage<Object?>(
+                key: state.pageKey,
+                restorationId: state.pageKey.value,
+                child: AppShell(navigationShell: navigationShell),
+              ),
           branches: [
             StatefulShellBranch(
               routes: [
-                GoRoute(
+                materialAppRoute(
                   path: '/home',
                   builder: (context, state) {
                     final auth = authCubit.state;
@@ -190,7 +199,7 @@ class AppRouter {
             ),
             StatefulShellBranch(
               routes: [
-                GoRoute(
+                materialAppRoute(
                   path: '/plan',
                   builder: (context, state) =>
                       BlocBuilder<AuthCubit, AuthState>(
@@ -206,7 +215,7 @@ class AppRouter {
                         },
                       ),
                   routes: [
-                    GoRoute(
+                    materialAppRoute(
                       path: 'week',
                       builder: (context, state) => BlocProvider(
                         create: (_) => sl<WorkoutScheduleCubit>(
@@ -236,11 +245,11 @@ class AppRouter {
                         ),
                       ],
                     ),
-                    GoRoute(
+                    materialAppRoute(
                       path: 'preferences',
                       redirect: (context, state) => '/profile/preferences',
                     ),
-                    GoRoute(
+                    materialAppRoute(
                       path: 'goal',
                       builder: (context, state) => BlocProvider(
                         create: (_) => sl<PreparationGoalCubit>(),
@@ -251,7 +260,7 @@ class AppRouter {
                         ),
                       ),
                       routes: [
-                        GoRoute(
+                        materialAppRoute(
                           path: ':goalId',
                           builder: (context, state) => BlocProvider(
                             // Una ruta parametrizada puede reutilizar su página.
@@ -445,7 +454,7 @@ class AppRouter {
                                     birthDateRepository: sl(),
                                   ),
                             ),
-                            GoRoute(
+                            materialAppRoute(
                               path: 'week-simulator',
                               builder: (context, state) =>
                                   RunningWeekSimulatorPage(
@@ -456,7 +465,7 @@ class AppRouter {
                                         sl<TrainingPreferencesRepository>().get,
                                   ),
                             ),
-                            GoRoute(
+                            materialAppRoute(
                               path: 'running-test',
                               builder: (context, state) => RunningTestPage(
                                 goalId: state.pathParameters['goalId']!,
@@ -486,11 +495,11 @@ class AppRouter {
             StatefulShellBranch(
               initialLocation: '/library',
               routes: [
-                GoRoute(
+                materialAppRoute(
                   path: '/library',
                   builder: (context, state) => const LibraryHubPage(),
                   routes: [
-                    GoRoute(
+                    materialAppRoute(
                       path: 'exercises',
                       builder: (context, state) =>
                           BlocBuilder<AuthCubit, AuthState>(
@@ -555,7 +564,7 @@ class AppRouter {
                     ),
                   ],
                 ),
-                GoRoute(
+                materialAppRoute(
                   path: '/plan/starter-session',
                   builder: (context, state) => BlocProvider(
                     create: (_) => sl<WorkoutPreviewCubit>(
@@ -580,7 +589,7 @@ class AppRouter {
                     ),
                   ],
                 ),
-                GoRoute(
+                materialAppRoute(
                   path: '/plan/library',
                   builder: (context, state) => BlocProvider(
                     create: (_) => sl<WorkoutLibraryCubit>(),
@@ -606,7 +615,7 @@ class AppRouter {
                         child: const RunningWorkoutEditorPage(),
                       ),
                     ),
-                    GoRoute(
+                    materialAppRoute(
                       path: ':templateId',
                       builder: (context, state) {
                         final templateId = state.pathParameters['templateId']!;
@@ -658,7 +667,7 @@ class AppRouter {
             ),
             StatefulShellBranch(
               routes: [
-                GoRoute(
+                materialAppRoute(
                   path: '/assessment/history',
                   builder: (context, state) =>
                       BlocBuilder<AuthCubit, AuthState>(
@@ -679,7 +688,7 @@ class AppRouter {
                               ),
                       ),
                   routes: [
-                    GoRoute(
+                    materialAppRoute(
                       path: 'preparations/:goalId',
                       builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
                         bloc: authCubit,
@@ -744,7 +753,7 @@ class AppRouter {
                               ),
                       ),
                     ),
-                    GoRoute(
+                    materialAppRoute(
                       path: 'physical',
                       builder: (context, state) =>
                           BlocBuilder<AuthCubit, AuthState>(
@@ -765,7 +774,7 @@ class AppRouter {
                                   ),
                           ),
                     ),
-                    GoRoute(
+                    materialAppRoute(
                       path: 'workouts/:executionId',
                       builder: (context, state) =>
                           BlocBuilder<AuthCubit, AuthState>(
@@ -794,7 +803,7 @@ class AppRouter {
             ),
             StatefulShellBranch(
               routes: [
-                GoRoute(
+                materialAppRoute(
                   path: '/profile',
                   builder: (context, state) => ProfilePage(
                     preparations: sl(),
@@ -813,18 +822,18 @@ class AppRouter {
             ),
           ],
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/assessment/fas-calculator',
           builder: (context, state) => FasPeriodicCalculatorPage(
             birthDateRepository: sl(),
             repository: sl(),
           ),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/tools/running-pace-calculator',
           builder: (context, state) => const RunningPaceCalculatorPage(),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/tools',
           builder: (context, state) => const HomeToolsPage(),
         ),
@@ -834,7 +843,7 @@ class AppRouter {
             createExercise: sl<CreateExerciseUseCase>(),
           ),
         ),
-        GoRoute(
+        materialAppRoute(
           path: '/assessment/fas-history',
           builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
             bloc: authCubit,
@@ -857,7 +866,7 @@ class AppRouter {
     required GoRouterWidgetBuilder builder,
     GoRouterRedirect? redirect,
     List<RouteBase> routes = const [],
-  }) => GoRoute(
+  }) => materialAppRoute(
     path: path,
     parentNavigatorKey: _rootNavigatorKey,
     redirect: redirect,
