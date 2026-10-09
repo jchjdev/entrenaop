@@ -1,5 +1,17 @@
 # Identidad visual de EntrenaOP
 
+## Accesos depurados · UI-026 · 10/10/2026
+
+Las tarjetas fotográficas de preparación mantienen su diseño y ofrecen una
+única entrada «Ver preparación», confirmada por Javier. Este cambio sustituye
+solo el nombre y la duplicación de accesos que UI-009 pedía conservar; no
+reactiva ninguna composición comercial descartada. Programa, fecha, marcas y
+resultados siguen en el detalle. El programa activo conserva su entrada
+contextual. Favoritos: Mis sesiones, Mis ejercicios y Disponibilidad; las
+herramientas y pestañas conservan sus destinos sin repetirse como favoritos.
+Biblioteca conserva su pestaña y Herramientas sus dos tarjetas.
+[Recorrido, preferencias antiguas y verificación](UX_REVIEW_2026_10_09.md).
+
 ## Gesto de volver · UI-024 · 09/10/2026
 
 Javier confirma el gesto habitual desde el borde como alternativa al botón de
@@ -333,10 +345,10 @@ Inicio mantiene este orden:
 
 1. Calendario compacto, conservando su posición superior.
 2. Sesión del día o siguiente paso necesario, con la tarjeta principal de marca.
-3. Tus preparaciones, conservando su papel central y sus acciones de gestión.
+3. Preparaciones, conservando su papel central y una entrada «Ver preparación».
 4. Herramientas para tus pruebas: Ritmos y PAEF/PAFAS visibles simultáneamente.
-5. Biblioteca de entrenamientos, con acceso propio y menor protagonismo.
-6. Favoritos personales, si el usuario los utiliza.
+5. Favoritos personales, si el usuario los utiliza. Biblioteca conserva su
+   pestaña y no se repite como tarjeta de Inicio desde UI-026 (10/10/2026).
 
 El calendario selecciona una fecha y la tarjeta debe describir esa fecha; al
 volver a hoy recupera la sesión correspondiente. Sin sesión programada no
@@ -356,11 +368,12 @@ historiales de STR-026/027/028; esta reorganización no cambia esas reglas.
 
 No se incorpora un carrusel de herramientas ni rotación automática. La quinta
 pestaña confirmada posteriormente en UI-003 es Biblioteca, no Herramientas.
-El bloque de Inicio conserva un acceso estable a las herramientas y a la
-Biblioteca. Desde el cierre de Inicio/Mi plan de UI-008, el contenido disponible
+El bloque de Inicio conserva un acceso estable a las herramientas; Biblioteca
+tiene su pestaña. Desde el cierre de Inicio/Mi plan de UI-008, el contenido disponible
 y personal se gestiona en Biblioteca, sin repetir sus entradas en Mi plan.
 
-Los favoritos permiten elegir hasta cuatro destinos y ordenarlos. No
+UI-026 depura los favoritos a Mis sesiones, Mis ejercicios y Disponibilidad;
+permite elegirlos y ordenarlos, sin añadir un cuarto destino por rellenar. No
 reorganizan los bloques de Inicio ni son el único acceso a ninguna función.
 `HomeFavoritesRepository` separa el contrato de su adaptador local con
 `shared_preferences`, ya disponible en el proyecto. La clave incluye la cuenta:
@@ -369,12 +382,17 @@ entre dispositivos ni cambios en Supabase. Cancelar no guarda; un error al
 guardar conserva la selección anterior. Una selección vacía se respeta.
 
 Herramientas tiene un destino propio `/tools`, sin ocupar una pestaña principal;
-se abre desde Inicio o Perfil y conserva el retorno al origen. Ritmos y
-PAEF/PAFAS conservan sus pantallas y cálculos existentes. Crear ejercicio sigue
-disponible en Biblioteca aunque se quite de favoritos. La sesión inicial de
+se mantiene para enlaces y Perfil y conserva el retorno al origen. Inicio
+muestra directamente Ritmos y PAEF/PAFAS sin un «Ver todas» que repita esas dos
+tarjetas. Conservan sus pantallas y cálculos existentes. Crear ejercicio sigue
+disponible dentro de Mis ejercicios y Biblioteca. La sesión inicial de
 EntrenaOP tiene un acceso opcional en Biblioteca, identificado como demostración.
 Mis sesiones usa `/plan/library?tab=personal` y abre directamente la pestaña
 personal, sin mezclarla con las sesiones públicas.
+Mis ejercicios usa `/library/exercises?tab=personal`. Al leer los favoritos
+antiguos, Crear ejercicio pasa a Mis ejercicios y se retiran Mi semana, Marcas
+y pruebas, Ritmos, PAEF/PAFAS y Biblioteca; se conserva el orden restante, la
+selección vacía y la separación por cuenta. No se rellenan huecos automáticamente.
 
 ### Disponibilidad general: conservar y hacer útil
 
@@ -886,10 +904,9 @@ pequeño bloque de catálogo queda descartada por redundante. La corrección
 vigente se limita a reorganizar los accesos, según UI-009, conservando el diseño
 actual.
 
-El título preferido para las calculadoras es «Herramientas». Se revisa la tarjeta
-grande de Biblioteca en Inicio por duplicar la pestaña central; se recomienda
-retirarla y conservar el destino propio y los favoritos opcionales. Esta revisión
-todavía no modifica las pantallas ni las imágenes de los cierres anteriores.
+El título de las calculadoras es «Herramientas». UI-026 (10/10/2026) aplica la
+retirada de la tarjeta grande de Biblioteca en Inicio por duplicar su pestaña,
+y depura los favoritos. Conserva los destinos y las imágenes existentes.
 
 Javier confirma la frontera: ritmos, PAEF/PAFAS, sesiones propias limitadas,
 ejercicios con límite por concretar y algunas sesiones de EntrenaOP son Free.

@@ -548,14 +548,16 @@ no se presenta como un programa ya disponible por aparecer como ejemplo de UX.
 La incorporación de nuevos cuerpos requiere su propio contenido y comprobación.
 
 Javier prefiere el título «Herramientas» en Inicio. Cuestiona la tarjeta grande de
-Biblioteca porque esa sección ya tiene su pestaña propia; retirarla es una
-recomendación de esta revisión, todavía no una modificación aplicada.
+Biblioteca porque esa sección ya tiene su pestaña propia. UI-026 (10/10/2026)
+aplica el título y la retirada del acceso duplicado, sin modificar el negocio.
 
 #### Recorrido prioritario con acceso completo · UI-009
 
 La pregunta que debe resolver Inicio es «¿qué otro programa puedo preparar y
 por qué me interesa?». «Tus preparaciones» conserva las elegidas y su diseño
-actual: fotografía, encuadre, estado, nombre, fecha y «Gestionar preparación».
+actual: fotografía, encuadre, estado, nombre y fecha. UI-026 cambia únicamente
+el acceso a «Ver preparación», confirmado por Javier el 10/10/2026; desde el
+detalle se configura o consulta el programa.
 Una única entrada permite consultar el catálogo antes de añadir, sin duplicar
 el destino con otra sección ni convertir las tarjetas actuales en resúmenes
 genéricos. Una futura ficha explica qué prepara, qué datos necesita y cómo

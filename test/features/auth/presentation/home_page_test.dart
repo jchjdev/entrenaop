@@ -109,6 +109,10 @@ void main() {
           builder: (_, _) => const Scaffold(body: Text('Resultado')),
         ),
         GoRoute(
+          path: '/plan/goal/:id',
+          builder: (_, _) => const Scaffold(body: Text('Preparación elegida')),
+        ),
+        GoRoute(
           path: '/plan/goal/:id/training',
           builder: (_, _) => const Scaffold(body: Text('Revisión')),
         ),
@@ -154,10 +158,27 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
         expect(find.text('PAEF / PAFAS'), findsOneWidget);
+        expect(find.text('Herramientas'), findsOneWidget);
+        expect(find.text('Biblioteca de entrenamientos'), findsNothing);
+        expect(find.text('Ver todas'), findsNothing);
         expect(tester.takeException(), isNull);
       },
     );
   }
+  testWidgets('la tarjeta de preparación abre su detalle como única entrada', (
+    tester,
+  ) async {
+    final router = await mount(tester, overview());
+    await tester.scrollUntilVisible(
+      find.text('Ver preparación →'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Ver preparación →'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/plan/goal/goal-1');
+    expect(find.text('Preparación elegida'), findsOneWidget);
+  });
   testWidgets('la sesión diaria abre su agenda sin iniciar una ejecución', (
     tester,
   ) async {

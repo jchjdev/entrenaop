@@ -182,38 +182,6 @@ class _DashboardContentState extends State<_DashboardContent> {
                   const SizedBox(height: 24),
                   const HomeToolsSection(),
                   const SizedBox(height: 24),
-                  EntrenaCard(
-                    onTap: () => _open('/library'),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.menu_book_outlined,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Biblioteca de entrenamientos',
-                                style: TextStyle(fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Explora sesiones y ejercicios',
-                                style: TextStyle(
-                                  color: context.visuals.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   HomeFavorites(
                     key: ValueKey(widget.userId),
                     repository: widget.favoritesRepository,
@@ -626,7 +594,7 @@ class _PreparationCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Gestionar preparación →',
+            'Ver preparación →',
             style: TextStyle(
               color: Theme.of(context).colorScheme.secondary,
               fontWeight: FontWeight.w700,

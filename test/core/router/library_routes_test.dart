@@ -1,4 +1,6 @@
 import 'package:entrenaop/core/di/injection_container.dart';
+import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
+import 'package:entrenaop/features/dashboard/presentation/widgets/home_favorites.dart';
 import 'package:entrenaop/core/router/app_router.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
@@ -120,9 +122,9 @@ void main() {
   for (final (route, content) in [
     ('/library', 'Sesiones EntrenaOP'),
     ('/library/exercises', 'Sentadilla de catálogo'),
-    ('/library/exercises?tab=personal', 'Ejercicio privado'),
+    (HomeShortcut.personalExercises.route, 'Ejercicio privado'),
     ('/plan/library', 'Sesiones de EntrenaOP'),
-    ('/plan/library?tab=personal', 'Tus sesiones'),
+    (HomeShortcut.personalSessions.route, 'Tus sesiones'),
   ]) {
     testWidgets('$route pertenece a Biblioteca y conserva el enlace', (
       tester,

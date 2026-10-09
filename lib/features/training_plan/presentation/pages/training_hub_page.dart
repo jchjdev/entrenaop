@@ -392,7 +392,7 @@ class _CurrentProgramCard extends StatelessWidget {
         ),
         TextButton(
           onPressed: () => context.push('/plan/goal/${program.goalId}'),
-          child: const Text('Gestionar esta preparación'),
+          child: const Text('Ver preparación'),
         ),
       ],
     ),
@@ -482,17 +482,8 @@ class _SavedPreparationCard extends StatelessWidget {
           onPressed: goal.id == null
               ? null
               : () => context.push('/plan/goal/${goal.id}'),
-          child: const Text('Gestionar preparación'),
+          child: const Text('Ver preparación'),
         ),
-        if (goal.id != null && progress?.status != 'complete')
-          TextButton(
-            onPressed: () => context.push('/plan/goal/${goal.id}/training'),
-            child: Text(
-              progress?.isPaused == true
-                  ? 'Retomar programa'
-                  : 'Configurar programa',
-            ),
-          ),
       ],
     ),
   );

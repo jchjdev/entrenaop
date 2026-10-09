@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**UI-026, 10/10/2026 · accesos y mensajes depurados:** una única entrada
+Ver preparación desde sus tarjetas, conservando fotos, estados y detalle de
+programa/fecha/marcas/resultados. Favoritos personales sin destinos duplicados,
+con migración del antiguo Crear ejercicio a Mis ejercicios y orden por cuenta.
+Herramientas sin Ver todas repetido; Biblioteca conserva su pestaña y retira
+Perfil duplicado. Errores de autenticación en castellano sin mensajes técnicos,
+con los estados de confirmación/recuperación existentes. Análisis limpio,
+153 pruebas relacionadas y 717 pruebas completas correctas con la omisión web
+existente. [Recorrido y límites](UX_REVIEW_2026_10_09.md).
+Sin cambios de datos, motores, negocio, admin o producción. No acredita un
+nuevo recorrido autenticado ni físico. El único siguiente bloque recomendado
+sigue siendo la revisión de Javier de preparación → Mi plan → Hoy.
+
 **UI-024, 09/10/2026 · gesto de volver verificado:** páginas explícitas de Flutter
 y gesto desde el borde en Android/iOS/web, manteniendo flecha, scroll y pestañas. Sesiones
 y formularios consultan sus protecciones antes de salir; cancelar permite repetir

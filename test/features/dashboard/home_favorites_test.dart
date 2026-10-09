@@ -38,47 +38,57 @@ void main() {
     await mount(tester, repository);
     await tester.tap(find.text('Editar'));
     await tester.pumpAndSettle();
-    await tester.tap(checkbox(HomeShortcut.week));
+    await tester.tap(checkbox(HomeShortcut.personalSessions));
     await tester.pumpAndSettle();
-    await tester.tap(checkbox(HomeShortcut.runningPace));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byTooltip('Subir Ritmos de carrera'));
-    await tester.tap(find.byTooltip('Subir Ritmos de carrera'));
+    await tester.ensureVisible(find.byTooltip('Subir Disponibilidad'));
+    await tester.tap(find.byTooltip('Subir Disponibilidad'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar favoritos'));
     await tester.tap(find.text('Guardar favoritos'));
     await tester.pumpAndSettle();
     expect(repository.savedUser, 'user-a');
     expect(repository.items, [
-      HomeShortcut.personalSessions,
-      HomeShortcut.marks,
-      HomeShortcut.runningPace,
       HomeShortcut.availability,
+      HomeShortcut.personalExercises,
     ]);
     await tester.pumpWidget(const SizedBox());
     await mount(tester, repository);
-    expect(find.text('Mi semana'), findsNothing);
-    expect(find.text('Ritmos de carrera'), findsOneWidget);
+    expect(find.text('Mis sesiones'), findsNothing);
+    expect(find.text('Mis ejercicios'), findsOneWidget);
   });
-  testWidgets('cancelar y superar el máximo no alteran lo guardado', (
-    tester,
-  ) async {
-    final repository = _Repository();
-    await mount(tester, repository);
-    await tester.tap(find.text('Editar'));
-    await tester.pumpAndSettle();
-    await tester.tap(checkbox(HomeShortcut.runningPace));
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<CheckboxListTile>(checkbox(HomeShortcut.runningPace)).value,
-      isFalse,
-    );
-    await tester.ensureVisible(find.text('Cancelar'));
-    await tester.tap(find.text('Cancelar'));
-    await tester.pumpAndSettle();
-    expect(repository.items, defaultHomeFavorites);
-    expect(repository.savedUser, isNull);
-  });
+  testWidgets(
+    'el selector no ofrece duplicados y cancelar conserva la selección',
+    (tester) async {
+      final repository = _Repository();
+      await mount(tester, repository);
+      await tester.tap(find.text('Editar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CheckboxListTile), findsNWidgets(3));
+      for (final label in [
+        'Mi semana',
+        'Marcas y pruebas',
+        'Ritmos de carrera',
+        'PAEF / PAFAS',
+        'Biblioteca',
+        'Crear ejercicio',
+      ]) {
+        expect(find.widgetWithText(CheckboxListTile, label), findsNothing);
+      }
+      await tester.tap(checkbox(HomeShortcut.personalExercises));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<CheckboxListTile>(checkbox(HomeShortcut.personalExercises))
+            .value,
+        isFalse,
+      );
+      await tester.ensureVisible(find.text('Cancelar'));
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(repository.items, defaultHomeFavorites);
+      expect(repository.savedUser, isNull);
+    },
+  );
   testWidgets('un fallo al guardar conserva los accesos anteriores', (
     tester,
   ) async {
@@ -86,11 +96,11 @@ void main() {
     await mount(tester, repository);
     await tester.tap(find.text('Editar'));
     await tester.pumpAndSettle();
-    await tester.tap(checkbox(HomeShortcut.week));
+    await tester.tap(checkbox(HomeShortcut.personalSessions));
     await tester.ensureVisible(find.text('Guardar favoritos'));
     await tester.tap(find.text('Guardar favoritos'));
     await tester.pumpAndSettle();
-    expect(find.text('Mi semana'), findsOneWidget);
+    expect(find.text('Mis sesiones'), findsOneWidget);
     expect(find.textContaining('Se conservan los anteriores'), findsOneWidget);
   });
 }

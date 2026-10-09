@@ -14,13 +14,7 @@ class HomeToolsSection extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       if (showHeading) ...[
-        HomeSectionHeading(
-          title: 'Para tus pruebas',
-          action: TextButton(
-            onPressed: () => context.push('/tools'),
-            child: const Text('Ver todas'),
-          ),
-        ),
+        const HomeSectionHeading(title: 'Herramientas'),
         const SizedBox(height: 10),
       ],
       LayoutBuilder(

@@ -56,6 +56,15 @@ consulta mantiene la pantalla y permite reintentar.
 
 ## Preparaciones y programa
 
+UI-026 (10/10/2026) simplifica el acceso acordado con Javier: cada tarjeta de
+preparación de Inicio/Mi plan ofrece **Ver preparación**, sin un segundo botón
+que salte directamente al asistente. El detalle conserva fecha, marcas y
+resultados; **Programa de entrenamiento** abre la pantalla existente, que
+muestra configuración, revisión, pausa o finalización según el estado real.
+No se consulta una preparación diferente ni se activa automáticamente nada.
+La tarjeta del programa en curso mantiene su acción contextual Ver mi programa
+o Revisar lo pendiente; la simplificación afecta a las tarjetas de preparación.
+
 | Estado real | Qué muestra Mi plan | Acción principal |
 | --- | --- | --- |
 | Sin programa en curso | Elige una preparación, antes de la semana | Configurar o retomar la preparación elegida |

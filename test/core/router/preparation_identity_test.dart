@@ -74,6 +74,27 @@ void main() {
   });
   tearDown(() async => sl.reset());
 
+  testWidgets('preparación abre su programa y vuelve al mismo detalle', (
+    t,
+  ) async {
+    final router = AppRouter(_Auth());
+    addTearDown(router.dispose);
+    router.config.go('/plan/goal/troop');
+    await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
+    await t.pumpAndSettle();
+    expect(find.text('Ingreso · Tropa'), findsOneWidget);
+    await t.tap(find.text('Programa de entrenamiento'));
+    await t.pumpAndSettle();
+    expect(router.config.state.uri.path, '/plan/goal/troop/training');
+    expect(find.text('Paso 1 de 4 · Tu programa'), findsOneWidget);
+    router.config.pop();
+    await t.pumpAndSettle();
+    expect(router.config.state.uri.path, '/plan/goal/troop');
+    expect(find.text('Ingreso · Tropa'), findsOneWidget);
+    expect(find.text('Programa de entrenamiento'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+
   for (final suffix in [
     '',
     '/training',

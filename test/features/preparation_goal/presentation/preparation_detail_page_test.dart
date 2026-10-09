@@ -146,7 +146,7 @@ void main() {
 
     expect(find.text('Datos para empezar'), findsNothing);
     expect(find.text('Plan y preferencias de carrera'), findsNothing);
-    expect(find.text('Mi programa'), findsOneWidget);
+    expect(find.text('Programa de entrenamiento'), findsOneWidget);
   });
 
   testWidgets('una fecha lejana conserva el objetivo y aclara el horizonte', (

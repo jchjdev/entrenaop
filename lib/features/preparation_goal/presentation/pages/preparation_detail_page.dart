@@ -100,9 +100,9 @@ class _Content extends StatelessWidget {
                     Card(
                       child: ListTile(
                         leading: const Icon(Icons.fitness_center),
-                        title: const Text('Mi programa'),
+                        title: const Text('Programa de entrenamiento'),
                         subtitle: const Text(
-                          'Objetivos, punto de partida y sesiones adaptadas a tu evolución.',
+                          'Configura o revisa tus objetivos, punto de partida y propuesta de entrenamiento.',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {

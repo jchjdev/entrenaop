@@ -1,22 +1,12 @@
-enum HomeShortcut {
-  week,
-  personalSessions,
-  marks,
-  availability,
-  runningPace,
-  fasCalculator,
-  library,
-  createExercise,
-}
+enum HomeShortcut { personalSessions, personalExercises, availability }
 
 const defaultHomeFavorites = [
-  HomeShortcut.week,
   HomeShortcut.personalSessions,
-  HomeShortcut.marks,
+  HomeShortcut.personalExercises,
   HomeShortcut.availability,
 ];
 
-const maxHomeFavorites = 4;
+const maxHomeFavorites = 3;
 
 /// Preferencias de navegación, sin relación con la prescripción deportiva.
 abstract interface class HomeFavoritesRepository {

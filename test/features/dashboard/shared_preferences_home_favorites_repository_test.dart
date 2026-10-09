@@ -16,12 +16,12 @@ void main() {
   });
   test('guarda orden y mantiene separadas las cuentas', () async {
     await repository.save('user-a', [
-      HomeShortcut.library,
-      HomeShortcut.runningPace,
+      HomeShortcut.availability,
+      HomeShortcut.personalExercises,
     ]);
     expect(await repository.load('user-a'), [
-      HomeShortcut.library,
-      HomeShortcut.runningPace,
+      HomeShortcut.availability,
+      HomeShortcut.personalExercises,
     ]);
     expect(await repository.load('user-b'), defaultHomeFavorites);
   });
@@ -33,25 +33,52 @@ void main() {
     'tolera destinos desconocidos y duplicados de una versión anterior',
     () async {
       SharedPreferences.setMockInitialValues({
-        'home_favorites.v1.user-a': ['future', 'library', 'library', 'week'],
+        'home_favorites.v1.user-a': [
+          'future',
+          'library',
+          'week',
+          'marks',
+          'runningPace',
+          'fasCalculator',
+          'createExercise',
+          'personalExercises',
+          'availability',
+          'personalSessions',
+        ],
       });
       repository = SharedPreferencesHomeFavoritesRepository(
         await SharedPreferences.getInstance(),
       );
       expect(await repository.load('user-a'), [
-        HomeShortcut.library,
-        HomeShortcut.week,
+        HomeShortcut.personalExercises,
+        HomeShortcut.availability,
+        HomeShortcut.personalSessions,
       ]);
     },
   );
-  test('rechaza más de cuatro favoritos y no pisa lo guardado', () async {
-    await repository.save('user-a', [HomeShortcut.week]);
+  test('rechaza selecciones inválidas y no pisa lo guardado', () async {
+    await repository.save('user-a', [HomeShortcut.personalSessions]);
     await expectLater(
-      repository.save('user-a', HomeShortcut.values.take(5).toList()),
+      repository.save('user-a', [
+        ...HomeShortcut.values,
+        HomeShortcut.personalSessions,
+      ]),
       throwsArgumentError,
     );
-    expect(await repository.load('user-a'), [HomeShortcut.week]);
+    expect(await repository.load('user-a'), [HomeShortcut.personalSessions]);
   });
+  test(
+    'retirar todos los antiguos duplicados no rellena la selección',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'home_favorites.v1.user-a': ['week', 'marks', 'runningPace', 'library'],
+      });
+      repository = SharedPreferencesHomeFavoritesRepository(
+        await SharedPreferences.getInstance(),
+      );
+      expect(await repository.load('user-a'), isEmpty);
+    },
+  );
   test('no guarda preferencias sin una cuenta', () async {
     await expectLater(repository.save('', []), throwsArgumentError);
   });

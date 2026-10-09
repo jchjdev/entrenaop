@@ -19,8 +19,14 @@ class SharedPreferencesHomeFavoritesRepository
     if (saved == null) return List.of(defaultHomeFavorites);
     return saved
         .map(
+          // El antiguo creador pasa a su colección; los accesos duplicados
+          // desaparecen sin rellenar huecos ni cambiar el orden del usuario.
           (name) => HomeShortcut.values
-              .where((item) => item.name == name)
+              .where(
+                (item) =>
+                    item.name ==
+                    (name == 'createExercise' ? 'personalExercises' : name),
+              )
               .firstOrNull,
         )
         .whereType<HomeShortcut>()
@@ -33,7 +39,7 @@ class SharedPreferencesHomeFavoritesRepository
   Future<void> save(String userId, List<HomeShortcut> favorites) async {
     if (favorites.length > maxHomeFavorites ||
         favorites.toSet().length != favorites.length) {
-      throw ArgumentError('Selecciona hasta cuatro destinos distintos.');
+      throw ArgumentError('Selecciona hasta tres destinos distintos.');
     }
     final saved = await _preferences.setStringList(
       _key(userId),

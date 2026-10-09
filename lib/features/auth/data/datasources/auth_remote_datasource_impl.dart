@@ -40,24 +40,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           .eq('id', user.id)
           .single();
 
-      try {
-        final model = UserModel.fromJson({
-          ...profile,
-          'email': user.email ?? '',
-        });
-        return model;
-      } catch (e) {
-        throw ServerException(e.toString());
-      }
+      return UserModel.fromJson({...profile, 'email': user.email ?? ''});
     } on AuthException catch (e) {
       if (e.code == 'email_not_confirmed') {
         throw EmailConfirmationException(email);
       }
-      throw ServerException(e.message);
+      throw ServerException(_authMessage(e));
     } on ServerException {
       rethrow;
-    } catch (e) {
-      throw ServerException(e.toString());
+    } catch (_) {
+      throw const ServerException(
+        'No se ha podido iniciar sesión. Comprueba tu conexión y reintenta.',
+      );
     }
   }
 
@@ -89,11 +83,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel.fromJson({...profile, 'email': user.email ?? email});
     } on AuthException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(_authMessage(e));
     } on ServerException {
       rethrow;
-    } catch (e) {
-      throw ServerException(e.toString());
+    } catch (_) {
+      throw const ServerException(
+        'No se ha podido crear la cuenta. Comprueba tu conexión y reintenta.',
+      );
     }
   }
 
@@ -102,9 +98,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await supabaseClient.auth.signOut();
     } on AuthException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException(_authMessage(e));
+    } catch (_) {
+      throw const ServerException(
+        'No se ha podido cerrar sesión. Comprueba tu conexión y reintenta.',
+      );
     }
   }
 
@@ -122,9 +120,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel.fromJson({...profile, 'email': user.email ?? ''});
     } on AuthException catch (e) {
-      throw ServerException(e.message);
-    } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException(_authMessage(e));
+    } catch (_) {
+      throw const ServerException(
+        'No se ha podido validar la sesión. Comprueba tu conexión y reintenta.',
+      );
     }
   }
 
@@ -168,9 +168,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
               UserModel.fromJson({...profile, 'email': user.email ?? ''}),
             );
           } on AuthException catch (error) {
-            throw ServerException(error.message);
-          } catch (error) {
-            throw ServerException(error.toString());
+            throw ServerException(_authMessage(error));
+          } catch (_) {
+            throw const ServerException(
+              'No se ha podido validar la sesión. Comprueba la conexión y reintenta.',
+            );
           }
         })
         .where(
@@ -247,18 +249,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       ].contains(error.code)) {
         throw const AuthLinkException();
       }
-      final message = switch (error.code) {
-        'over_email_send_rate_limit' || 'over_request_rate_limit' =>
-          'Espera un minuto antes de volver a solicitar el correo.',
-        'same_password' => 'Elige una contraseña diferente a la anterior.',
-        'weak_password' => 'La contraseña no cumple los requisitos. Utiliza al menos 8 caracteres.',
-        _ => 'No se ha podido completar la solicitud. Puedes reintentarlo.',
-      };
-      throw ServerException(message);
+      throw ServerException(_authMessage(error));
     } catch (_) {
       throw const ServerException(
         'No se ha podido conectar. Comprueba tu conexión y reintenta.',
       );
     }
+  }
+
+  String _authMessage(AuthException error) {
+    // El código del servidor decide el mensaje. No mostramos textos técnicos
+    // ni distinguimos si falló el correo o la contraseña al iniciar sesión.
+    final code =
+        error.code ??
+        (error.message.toLowerCase() == 'invalid login credentials'
+            ? 'invalid_credentials'
+            : null);
+    return switch (code) {
+      'invalid_credentials' => 'El correo o la contraseña no son correctos.',
+      'email_not_confirmed' => 'Confirma tu correo antes de entrar.',
+      'over_email_send_rate_limit' =>
+        'Espera un minuto antes de volver a solicitar el correo.',
+      'over_request_rate_limit' || 'over_password_rate_limit' => 'Has realizado demasiados intentos. Espera un poco y vuelve a intentarlo.',
+      'same_password' => 'Elige una contraseña diferente a la anterior.',
+      'weak_password' => 'La contraseña no cumple los requisitos. Utiliza al menos 8 caracteres.',
+      'email_address_invalid' =>
+        'Revisa el correo e introduce una dirección válida.',
+      'email_address_not_authorized' =>
+        'No se ha podido enviar el correo. Inténtalo más tarde.',
+      'user_already_exists' || 'email_exists' => 'No se ha podido crear la cuenta. Si ya tienes una, inicia sesión o recupera tu contraseña.',
+      'signup_disabled' =>
+        'El registro de nuevas cuentas no está disponible ahora.',
+      _ => 'No se ha podido completar la solicitud. Puedes reintentarlo.',
+    };
   }
 }

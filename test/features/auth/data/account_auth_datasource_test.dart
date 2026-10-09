@@ -14,6 +14,122 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  for (final code in ['invalid_credentials', null]) {
+    test('credenciales incorrectas en castellano, código $code', () async {
+      final fixture = await _fixture(
+        authFailure: (_) => http.Response(
+          jsonEncode({
+            'error_code': ?code,
+            'message': 'Invalid login credentials',
+          }),
+          400,
+        ),
+      );
+      await expectLater(
+        fixture.source.signIn(
+          email: 'persona@example.com',
+          password: 'incorrecta',
+        ),
+        throwsA(
+          isA<ServerException>().having(
+            (error) => error.message,
+            'mensaje',
+            'El correo o la contraseña no son correctos.',
+          ),
+        ),
+      );
+      expect(
+        fixture.requests.every((r) => r.url.path != '/rest/v1/profiles'),
+        true,
+      );
+    });
+  }
+  test('confirmar correo mantiene el recorrido existente', () async {
+    final fixture = await _fixture(
+      authFailure: (_) => http.Response(
+        jsonEncode({
+          'error_code': 'email_not_confirmed',
+          'message': 'Email not confirmed',
+        }),
+        400,
+      ),
+    );
+    await expectLater(
+      fixture.source.signIn(
+        email: 'persona@example.com',
+        password: 'una-clave',
+      ),
+      throwsA(
+        isA<EmailConfirmationException>().having(
+          (error) => error.email,
+          'correo',
+          'persona@example.com',
+        ),
+      ),
+    );
+  });
+  for (final (code, message) in [
+    (
+      'weak_password',
+      'La contraseña no cumple los requisitos. Utiliza al menos 8 caracteres.',
+    ),
+    (
+      'over_request_rate_limit',
+      'Has realizado demasiados intentos. Espera un poco y vuelve a intentarlo.',
+    ),
+    (
+      'email_address_invalid',
+      'Revisa el correo e introduce una dirección válida.',
+    ),
+    (
+      'unknown_future_code',
+      'No se ha podido completar la solicitud. Puedes reintentarlo.',
+    ),
+  ]) {
+    test('registro traduce $code sin mostrar el mensaje técnico', () async {
+      final fixture = await _fixture(
+        authFailure: (_) => http.Response(
+          jsonEncode({
+            'error_code': code,
+            'message': 'Internal English diagnostic',
+          }),
+          400,
+        ),
+      );
+      await expectLater(
+        fixture.source.signUp(
+          email: 'persona@example.com',
+          password: 'una-clave',
+          fullName: 'Persona',
+        ),
+        throwsA(
+          isA<ServerException>().having(
+            (error) => error.message,
+            'mensaje',
+            message,
+          ),
+        ),
+      );
+    });
+  }
+  test('un fallo de conexión no muestra su excepción en inglés', () async {
+    final fixture = await _fixture(
+      authFailure: (_) => throw StateError('Failed to fetch'),
+    );
+    await expectLater(
+      fixture.source.signIn(
+        email: 'persona@example.com',
+        password: 'una-clave',
+      ),
+      throwsA(
+        isA<ServerException>().having(
+          (error) => error.message,
+          'mensaje',
+          isNot(contains('Failed to fetch')),
+        ),
+      ),
+    );
+  });
   test(
     'web vuelve al mismo origen y retira código, tokens y fragmento de la URL',
     () {
@@ -286,6 +402,7 @@ Future<
 _fixture({
   bool failUpdate = false,
   Completer<http.Response>? pendingUpdate,
+  http.Response Function(http.Request)? authFailure,
 }) async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
@@ -299,6 +416,9 @@ _fixture({
     ),
     httpClient: MockClient((request) async {
       requests.add(request);
+      if (authFailure != null && request.url.path.startsWith('/auth/v1/')) {
+        return authFailure(request);
+      }
       if (request.method == 'PUT' && pendingUpdate != null) {
         return pendingUpdate.future;
       }

@@ -204,7 +204,7 @@ void main() {
   );
 
   for (final status in ['training', 'needs_review', 'paused']) {
-    testWidgets('$status abre el programa directamente sin pasar por gestión', (
+    testWidgets('$status abre su siguiente paso y refresca al volver', (
       tester,
     ) async {
       final result = await mount(
@@ -215,7 +215,7 @@ void main() {
           ? 'Ver mi programa'
           : status == 'needs_review'
           ? 'Revisar lo pendiente'
-          : 'Retomar programa';
+          : 'Ver preparación';
       if (status == 'paused') {
         expect(find.text('No hay programa en curso'), findsOneWidget);
         expect(find.textContaining('PROGRAMA EN CURSO'), findsNothing);
@@ -223,7 +223,14 @@ void main() {
       await show(tester, find.text(label));
       await tester.tap(find.text(label));
       await tester.pumpAndSettle();
-      expect(find.text('Destino: /plan/goal/g/training'), findsOneWidget);
+      expect(
+        find.text(
+          status == 'paused'
+              ? 'Destino: /plan/goal/g'
+              : 'Destino: /plan/goal/g/training',
+        ),
+        findsOneWidget,
+      );
       result.router.pop();
       await tester.pumpAndSettle();
       expect(result.source.calls, 2); // Carga inicial y una sola al regresar.
@@ -323,7 +330,7 @@ void main() {
     PreparationProgramIds.fasPeriodicAssessment,
     'generic',
   ]) {
-    testWidgets('configurar $programId no escoge una evaluación implícita', (
+    testWidgets('ver $programId no escoge una evaluación implícita', (
       tester,
     ) async {
       final goal = PreparationGoal(
@@ -336,10 +343,11 @@ void main() {
       );
       final result = await mount(tester, _overview(goals: [goal]));
       expect(find.text('Registrar marcas'), findsNothing);
-      await show(tester, find.text('Configurar programa'));
-      await tester.tap(find.text('Configurar programa'));
+      expect(find.text('Configurar programa'), findsNothing);
+      await show(tester, find.text('Ver preparación'));
+      await tester.tap(find.text('Ver preparación'));
       await tester.pumpAndSettle();
-      expect(result.router.state.uri.path, '/plan/goal/g/training');
+      expect(result.router.state.uri.path, '/plan/goal/g');
     });
   }
 
@@ -410,11 +418,11 @@ void main() {
         tester.getTopLeft(find.text('Otra preparación')).dy,
         lessThan(tester.getTopLeft(find.text('Esta semana')).dy),
       );
-      final configure = find.text('Configurar programa').last;
+      final configure = find.text('Ver preparación').last;
       await show(tester, configure);
       await tester.tap(configure);
       await tester.pumpAndSettle();
-      expect(result.router.state.uri.path, '/plan/goal/second/training');
+      expect(result.router.state.uri.path, '/plan/goal/second');
     },
   );
 

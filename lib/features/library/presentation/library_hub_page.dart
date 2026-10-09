@@ -26,17 +26,7 @@ class LibraryHubPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const EntrenaWordmark(width: 164),
-      actions: [
-        IconButton(
-          tooltip: 'Mi perfil',
-          onPressed: () => context.go('/profile'),
-          icon: const Icon(Icons.person_outline_rounded),
-        ),
-        const SizedBox(width: 8),
-      ],
-    ),
+    appBar: AppBar(title: const EntrenaWordmark(width: 164)),
     body: SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
       child: Center(

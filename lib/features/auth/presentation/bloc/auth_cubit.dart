@@ -71,7 +71,7 @@ class AuthCubit extends Cubit<AuthState> {
           AuthError(
             message: error is ServerException
                 ? error.message
-                : error.toString(),
+                : _accountError(error),
           ),
         );
       },
@@ -103,7 +103,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (e is ServerException) {
         emit(AuthError(message: e.message));
       } else {
-        emit(AuthError(message: e.toString()));
+        emit(AuthError(message: _accountError(e)));
       }
     }
   }
@@ -142,7 +142,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (e is ServerException) {
         emit(AuthError(message: e.message));
       } else {
-        emit(AuthError(message: e.toString()));
+        emit(AuthError(message: _accountError(e)));
       }
     }
   }
@@ -160,7 +160,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (e is ServerException) {
         emit(AuthError(message: e.message));
       } else {
-        emit(AuthError(message: e.toString()));
+        emit(AuthError(message: _accountError(e)));
       }
     }
   }
@@ -190,7 +190,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (e is ServerException) {
         emit(AuthError(message: e.message));
       } else {
-        emit(AuthError(message: e.toString()));
+        emit(AuthError(message: _accountError(e)));
       }
     }
   }

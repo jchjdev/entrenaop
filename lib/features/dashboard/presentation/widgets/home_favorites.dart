@@ -6,36 +6,21 @@ import 'package:go_router/go_router.dart';
 
 extension HomeShortcutPresentation on HomeShortcut {
   String get label => switch (this) {
-    HomeShortcut.week => 'Mi semana',
     HomeShortcut.personalSessions => 'Mis sesiones',
-    HomeShortcut.marks => 'Marcas y pruebas',
+    HomeShortcut.personalExercises => 'Mis ejercicios',
     HomeShortcut.availability => 'Disponibilidad',
-    HomeShortcut.runningPace => 'Ritmos de carrera',
-    HomeShortcut.fasCalculator => 'PAEF / PAFAS',
-    HomeShortcut.library => 'Biblioteca',
-    HomeShortcut.createExercise => 'Crear ejercicio',
   };
 
   String get route => switch (this) {
-    HomeShortcut.week => '/plan/week',
     HomeShortcut.personalSessions => '/plan/library?tab=personal',
-    HomeShortcut.marks => '/assessment/history',
+    HomeShortcut.personalExercises => '/library/exercises?tab=personal',
     HomeShortcut.availability => '/profile/preferences',
-    HomeShortcut.runningPace => '/tools/running-pace-calculator',
-    HomeShortcut.fasCalculator => '/assessment/fas-calculator',
-    HomeShortcut.library => '/library',
-    HomeShortcut.createExercise => '/exercises/new',
   };
 
   IconData get icon => switch (this) {
-    HomeShortcut.week => Icons.calendar_month_outlined,
     HomeShortcut.personalSessions => Icons.fitness_center_rounded,
-    HomeShortcut.marks => Icons.insights_outlined,
+    HomeShortcut.personalExercises => Icons.sports_gymnastics_outlined,
     HomeShortcut.availability => Icons.schedule_outlined,
-    HomeShortcut.runningPace => Icons.timer_outlined,
-    HomeShortcut.fasCalculator => Icons.calculate_outlined,
-    HomeShortcut.library => Icons.menu_book_outlined,
-    HomeShortcut.createExercise => Icons.add_circle_outline,
   };
 }
 
@@ -136,7 +121,7 @@ class _HomeFavoritesState extends State<HomeFavorites> {
         LayoutBuilder(
           builder: (context, constraints) {
             final columns = constraints.maxWidth >= 680
-                ? 4
+                ? _favorites.length
                 : constraints.maxWidth < 260 ||
                       MediaQuery.textScalerOf(context).scale(14) > 23
                 ? 1
@@ -199,7 +184,7 @@ class _FavoritesEditorState extends State<_FavoritesEditor> {
       _selected.add(item);
     } else {
       _message =
-          'Quita un favorito antes de añadir otro. Puedes tener hasta cuatro.';
+          'Quita un favorito antes de añadir otro. Puedes tener hasta tres.';
     }
   });
 
@@ -225,7 +210,7 @@ class _FavoritesEditorState extends State<_FavoritesEditor> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Elige hasta 4 accesos. Las funciones siguen en su sitio aunque las quites.',
+              'Elige tus accesos y ordénalos como prefieras. Las funciones siguen en su sitio aunque las quites.',
             ),
             const SizedBox(height: 12),
             for (final item in HomeShortcut.values)
