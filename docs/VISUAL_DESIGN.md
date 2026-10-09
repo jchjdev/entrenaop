@@ -1,5 +1,19 @@
 # Identidad visual de EntrenaOP
 
+## Gesto de volver · UI-024 · 09/10/2026
+
+Javier confirma el gesto habitual desde el borde como alternativa al botón de
+volver, que se mantiene. Las consultas deben conservar scroll y selección al
+regresar. Las sesiones y formularios deben respetar las opciones de salida,
+los borradores y el bloqueo mientras se guarda. Android conserva el gesto del
+sistema; no se acuerda un detector horizontal global que compita con tarjetas
+deslizables o controles.
+
+Es un criterio acordado pendiente de comprobar por rutas y plataformas antes
+de implementarlo donde falte. No acredita el gesto en iPhone físico ni modifica
+la navegación actual. Javier continúa personalmente la revisión pausada del
+recorrido preparación → Mi plan → Hoy.
+
 UI-021, 08/10/2026: [Mi plan, elección de preparación y formularios](PLAN_COHERENCE_2026_10_08.md).
 Preparaciones sustituye Tus preparaciones; sin programa, Elige una preparación.
 Se conserva la identidad fotográfica y se corrigen separación/legibilidad de
