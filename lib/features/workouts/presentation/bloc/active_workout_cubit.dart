@@ -18,6 +18,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required SkipWorkoutSetUseCase skipSet,
     required FinishWorkoutExecutionUseCase finishExecution,
     required AbandonWorkoutExecutionUseCase abandonExecution,
+    required DiscardWorkoutExecutionUseCase discardExecution,
     required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
     required WorkoutTimerStore timerStore,
     required WorkoutCueService cueService,
@@ -27,6 +28,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
        _skipSet = skipSet,
        _finishExecution = finishExecution,
        _abandonExecution = abandonExecution,
+       _discardExecution = discardExecution,
        _getPendingMutationCount = getPendingMutationCount,
        _timerStore = timerStore,
        _cueService = cueService,
@@ -39,6 +41,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final SkipWorkoutSetUseCase _skipSet;
   final FinishWorkoutExecutionUseCase _finishExecution;
   final AbandonWorkoutExecutionUseCase _abandonExecution;
+  final DiscardWorkoutExecutionUseCase _discardExecution;
   final GetPendingWorkoutMutationCountUseCase _getPendingMutationCount;
   final WorkoutTimerStore _timerStore;
   final WorkoutCueService _cueService;
@@ -106,6 +109,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     WorkoutSetResultInput result, {
     int? restSecondsOverride,
   }) async {
+    if (state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
@@ -159,6 +163,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> completeCurrentAmrap(WorkoutAmrapResultInput result) async {
+    if (state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null ||
@@ -217,6 +222,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> skipCurrentSet({int? restSecondsOverride}) async {
+    if (state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
@@ -274,6 +280,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     int? totalSeconds,
   }) {
     final total = totalSeconds ?? seconds;
+    _restTotalSeconds = total;
     _restTimer?.cancel();
     unawaited(
       _timerStore.write(
@@ -351,6 +358,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
   }) async {
+    if (state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null || execution.currentSet != null) return;
     emit(
@@ -400,6 +408,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> abandon(WorkoutAbandonmentReason reason) async {
+    if (state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress) {
@@ -449,7 +458,74 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
 
   String _timerId(String resultId) => '$executionId:$resultId';
 
+  Future<bool> discard() async {
+    final previous = state;
+    final execution = previous.execution;
+    if (execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress ||
+        previous.status == ActiveWorkoutStatus.saving) {
+      return false;
+    }
+    _restTimer?.cancel();
+    final elapsed = Stopwatch()..start();
+    emit(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.saving,
+        execution: execution,
+        pendingSyncCount: previous.pendingSyncCount,
+      ),
+    );
+    try {
+      await _discardExecution(executionId);
+    } catch (_) {
+      if (isClosed) return false;
+      final remaining =
+          previous.restSecondsRemaining - elapsed.elapsed.inSeconds;
+      final resumeRest =
+          previous.status == ActiveWorkoutStatus.resting && remaining > 0;
+      if (resumeRest) {
+        _startRest(
+          execution,
+          remaining,
+          previous.pendingSyncCount,
+          canBeSkipped: previous.restCanBeSkipped,
+          totalSeconds: _restTotalSeconds,
+        );
+      }
+      emit(
+        ActiveWorkoutState(
+          status: previous.status == ActiveWorkoutStatus.resting
+              ? (resumeRest
+                    ? ActiveWorkoutStatus.resting
+                    : ActiveWorkoutStatus.ready)
+              : previous.status,
+          execution: execution,
+          restSecondsRemaining: resumeRest ? remaining : 0,
+          restCanBeSkipped: previous.restCanBeSkipped,
+          pendingSyncCount: previous.pendingSyncCount,
+          errorMessage: 'No se ha podido confirmar el descarte. Comprueba la conexión y vuelve a intentarlo.',
+        ),
+      );
+      return false;
+    }
+    _restTimer?.cancel();
+    // Una limpieza local fallida no puede deshacer un descarte remoto confirmado.
+    try {
+      await _timerStore.clear(_restTimerId);
+      for (final set in execution.sets) {
+        await _timerStore.clear(_timerId(set.id));
+        await _timerStore.clear(_amrapTimerId(set.blockOrder));
+      }
+    } catch (_) {}
+    if (!isClosed) {
+      emit(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
+    }
+    return true;
+  }
+
   String get _restTimerId => '$executionId:rest';
+
+  int _restTotalSeconds = 0;
 
   String _amrapTimerId(int blockOrder) => '$executionId:amrap:$blockOrder';
 

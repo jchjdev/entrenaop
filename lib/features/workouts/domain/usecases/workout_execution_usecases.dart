@@ -107,3 +107,10 @@ class GetPendingWorkoutMutationCountUseCase {
 
   Future<int> call() => _repository.getPendingMutationCount();
 }
+
+class DiscardWorkoutExecutionUseCase {
+  const DiscardWorkoutExecutionUseCase(this._repository);
+  final WorkoutRepository _repository;
+  Future<void> call(String executionId) =>
+      _repository.discardExecution(executionId);
+}

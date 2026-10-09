@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**UI-022, 09/10/2026 · cinco ajustes cotidianos:** Salir sin guardar descarta,
+con confirmación y conexión, la ejecución en curso y sus series; su cita vuelve
+a pendiente. Retomar y abandonar conservando resultados siguen siendo opciones
+distintas; las sesiones cerradas no se eliminan mediante este recorrido.
+Inicio conserva Perfil en la barra inferior y retira su acceso duplicado.
+Mi semana usa Añadir entrenamiento; Disponibilidad separa días y minutos.
+FAS ofrece reintento ante fallo/espera de carga, conservando lo escrito.
+Análisis limpio, 685 pruebas correctas con una omisión web existente y tres
+pruebas SQL con ROLLBACK; 134 migraciones coincidentes en desarrollo.
+[Contrato, evidencia y límites](UX_REVIEW_2026_10_09.md).
+
 **UI-021, 08/10/2026 · Mi plan y formularios:** Preparaciones y Elige una
 preparación distinguen objetivos guardados de un programa iniciado. Sin programa,
 Mi plan ofrece elegir antes de la agenda y no parece asignar Tropa por defecto.
@@ -17,7 +28,7 @@ La flecha ofrece seguir aquí, salir y retomar después, o abandonar conservando
 lo realizado con motivo. Cancelar o fallar conserva la sesión y el borrador.
 Los diálogos admiten desplazamiento con texto grande. Análisis limpio en app,
 admin y UI compartida; 630/91/6 pruebas correctas con las omisiones existentes.
-Eliminar resultados ya guardados sigue fuera de este recorrido.
+UI-022 incorpora después el descarte explícito de una sesión en curso.
 [Contrato y regresiones](SESSION_CONTROLS_2026_10_08.md).
 
 **UI-019, 08/10/2026 · sesión y Mi semana:** abandono disponible mientras la
@@ -27,7 +38,7 @@ texto ampliado y pantallas estrechas permiten desplazamiento legible. Javier
 confirma pitidos a tres, dos y un segundo del final de trabajo, seguidos del
 sonido de final. Análisis limpio y 621 pruebas correctas con una omisión web
 existente. UI-020 incorpora retomar/abandonar desde la flecha; el posible
-descarte de resultados sigue pendiente de contrato.
+descarte de resultados se incorpora después en UI-022, con contrato propio.
 [Recorrido y límites](SESSION_CONTROLS_2026_10_08.md).
 
 **UI-018, 08/10/2026 · avisos reales del temporizador:** el ejecutor incluye
@@ -754,7 +765,8 @@ Las secciones de consulta conservan dónde estaba el usuario. Configurar el
 programa o contexto, registrar una marca, crear ejercicios, editar sesiones y
 entrenar utilizan pantallas dedicadas sin barra de secciones. Los cambios sin
 guardar tienen salida confirmada; los borradores válidos y las series ya
-confirmadas se conservan. Salir de una sesión permite retomarla, sin abandonarla.
+confirmadas se conservan al salir para retomar. UI-022 añade la opción explícita
+de descartar una ejecución en curso y sus series, con confirmación del servidor.
 
 Perfil y «Mi programa» comparten disponibilidad y material exacto. Guardar los
 datos actualiza el contexto para la siguiente adaptación y conserva el historial.

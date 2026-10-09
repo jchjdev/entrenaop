@@ -39,11 +39,6 @@ class HomePage extends StatelessWidget {
         title: const EntrenaWordmark(width: 148),
         actions: [
           IconButton(
-            tooltip: 'Abrir perfil',
-            onPressed: () => context.go('/profile'),
-            icon: const Icon(Icons.person_outline_rounded),
-          ),
-          IconButton(
             tooltip: 'Actualizar resumen',
             onPressed: () => context.read<DashboardCubit>().load(),
             icon: const Icon(Icons.refresh_rounded),

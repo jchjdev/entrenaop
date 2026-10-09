@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-09",
+  "decision": "UI-022",
+  "method": "Widget actual con fixture de tres días consecutivos; Arial y tema real, pixelRatio 2. Recorte superior de 720x2400 de la captura 720x4800. Sin cuenta, datos personales ni servidor.",
+  "test": "test/features/training_plan/presentation/training_context_page_test.dart",
+  "captures": [
+    {
+      "file": "disponibilidad-dias-consecutivos.webp",
+      "dimensions": [
+        720,
+        2400
+      ],
+      "sha256": "76564d9f9542811cf0e80b314b46e491c4f5bb22463b549f9102e2337f9018e1"
+    }
+  ]
+}

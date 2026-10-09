@@ -9,6 +9,7 @@ enum ActiveWorkoutStatus {
   resting,
   completed,
   abandoned,
+  discarded,
   failure,
 }
 

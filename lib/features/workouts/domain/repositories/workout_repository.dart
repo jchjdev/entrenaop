@@ -55,5 +55,8 @@ abstract class WorkoutRepository {
 
   Future<int> getPendingMutationCount();
 
+  /// Descarta la ejecución en curso y sus resultados solo tras confirmación remota.
+  Future<void> discardExecution(String executionId);
+
   Future<void> syncPendingMutations();
 }

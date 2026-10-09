@@ -39,6 +39,7 @@ class ActiveWorkoutPage extends StatelessWidget {
           !const [
             ActiveWorkoutStatus.completed,
             ActiveWorkoutStatus.abandoned,
+            ActiveWorkoutStatus.discarded,
           ].contains(state.status);
     },
     isBusy: () =>
@@ -59,8 +60,8 @@ class ActiveWorkoutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Las series confirmadas se conservan. Puedes retomar la sesión '
-              'después o cerrarla definitivamente. Los datos que no hayas '
+              'Puedes retomar después, cerrar conservando lo realizado o '
+              'descartar esta sesión y sus series. Los datos que no hayas '
               'confirmado en pantalla no se registran al salir.',
             ),
             const SizedBox(height: 20),
@@ -82,6 +83,11 @@ class ActiveWorkoutPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _SessionExitAction.discard),
+              child: const Text('Salir sin guardar'),
+            ),
           ],
         ),
         actions: [
@@ -96,6 +102,7 @@ class ActiveWorkoutPage extends StatelessWidget {
     return switch (action) {
       _SessionExitAction.resumeLater => true,
       _SessionExitAction.abandon => _requestWorkoutAbandonment(context),
+      _SessionExitAction.discard => _requestWorkoutDiscard(context),
       null => false,
     };
   }
@@ -114,6 +121,7 @@ class ActiveWorkoutPage extends StatelessWidget {
           builder: (context, state) => Text(switch (state.status) {
             ActiveWorkoutStatus.completed => 'Sesión completada',
             ActiveWorkoutStatus.abandoned => 'Sesión cerrada',
+            ActiveWorkoutStatus.discarded => 'Sesión descartada',
             _
                 when state.execution?.sets.any(
                       (set) => set.blockFormat == WorkoutBlockFormat.running,
@@ -132,6 +140,23 @@ class ActiveWorkoutPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           final execution = state.execution;
+          if (state.status == ActiveWorkoutStatus.discarded) {
+            return WorkoutClosureLayout(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Sesión descartada. Si estaba en tu agenda, vuelve a estar pendiente.',
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () => _leaveDiscardedWorkout(context),
+                    child: const Text('Volver'),
+                  ),
+                ],
+              ),
+            );
+          }
           if (execution == null) {
             return _Failure(
               message: state.errorMessage ?? 'No hemos podido abrir la sesión.',
@@ -294,8 +319,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                         onChanged: (value) => setState(() => _finalRpe = value),
                         onFinish: _finish,
                       ),
-                    if (state.status == ActiveWorkoutStatus.failure &&
-                        state.errorMessage != null) ...[
+                    if (state.errorMessage != null) ...[
                       const SizedBox(height: 12),
                       Text(
                         state.errorMessage!,
@@ -321,6 +345,19 @@ class _ActiveContentState extends State<_ActiveContent> {
                         label: const Text(
                           'Abandonar la sesión definitivamente',
                         ),
+                      ),
+                      TextButton(
+                        onPressed: saving
+                            ? null
+                            : () async {
+                                final discarded = await _requestWorkoutDiscard(
+                                  context,
+                                );
+                                if (discarded && context.mounted) {
+                                  _leaveDiscardedWorkout(context);
+                                }
+                              },
+                        child: const Text('Salir sin guardar'),
                       ),
                     ],
                   ],
@@ -367,7 +404,43 @@ class _ActiveContentState extends State<_ActiveContent> {
   }
 }
 
-enum _SessionExitAction { resumeLater, abandon }
+enum _SessionExitAction { resumeLater, abandon, discard }
+
+void _leaveDiscardedWorkout(BuildContext context) {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go('/plan/week');
+  }
+}
+
+Future<bool> _requestWorkoutDiscard(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      scrollable: true,
+      title: const Text('¿Descartar esta sesión?'),
+      content: const Text(
+        'Se eliminarán también las series que ya hayas registrado en esta sesión. '
+        'No quedará en el historial. Si estaba en tu agenda, volverá a estar '
+        'pendiente para empezar de nuevo.\n\n'
+        'Esta acción no se puede deshacer y necesita conexión.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Seguir aquí'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Descartar y salir'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return false;
+  return context.read<ActiveWorkoutCubit>().discard();
+}
 
 Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
   final reason = await showDialog<WorkoutAbandonmentReason>(

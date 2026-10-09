@@ -241,8 +241,8 @@ class _PlanContent extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           overview.weeklyWorkouts.isEmpty
-                              ? 'No hay sesiones programadas esta semana. Puedes consultar la agenda y añadir entrenamientos extra.'
-                              : 'Incluye las sesiones de tu programa y los entrenamientos extra que has añadido.',
+                              ? 'No hay sesiones programadas esta semana. Puedes consultar la agenda y añadir entrenamientos a los días que elijas.'
+                              : 'Incluye las sesiones programadas y los entrenamientos que has añadido a la agenda.',
                           style: TextStyle(color: context.visuals.textMuted),
                         ),
                         const SizedBox(height: 14),

@@ -1,5 +1,24 @@
 # Arquitectura de EntrenaOP
 
+## Descarte confirmado de una sesión en curso · UI-022 · 09/10/2026
+
+`discard_workout_execution(uuid,text)` valida cuenta, propiedad, confirmación y
+estado en servidor. Bloquea los recursos, restaura la cita a `planned` con
+ejecución nula y elimina la ejecución y sus resultados dependientes. Conserva
+la cita, plantilla, preparación y pauta; rechaza resultados ya cerrados.
+La tabla privada de descartes retiene únicamente identificadores y fecha para
+repetir peticiones y acreditar el descarte de colas tardías de la misma cuenta.
+No concede borrado directo ni lectura de esa tabla al cliente.
+
+El repositorio requiere confirmación remota antes de limpiar la cola propia;
+no encola el descarte ni sincroniza previamente los datos descartables. Una
+mutación tardía fallida se retira solo si la RPC de consulta acredita ese
+recurso descartado para la cuenta actual. El cubit conserva la sesión/borrador
+ante error y limpia temporizadores al confirmar. La navegación mantiene el
+guard y `go_router`. Migración `20261009000000`, solo desarrollo: 134
+coincidentes y tres pruebas SQL transaccionales con `ROLLBACK` correctas.
+[Contrato completo y límites](UX_REVIEW_2026_10_09.md).
+
 ## Retorno a la propuesta y contexto común · UI-021 · 08/10/2026
 
 El repositorio de entrenamiento consulta la ejecución `in_progress` de la cuenta
@@ -362,7 +381,8 @@ deja las pendientes sin falsearlas como omitidas y registra un motivo
 estructurado. Esta diferencia será una entrada auditable para la adaptación.
 UI-019 corrige la visibilidad del abandono: depende de la ejecución en curso,
 no de que queden series pendientes, y sigue disponible esperando el cierre final.
-Salir sin guardar campos no confirmados no elimina series ya registradas.
+UI-022 añade Salir sin guardar como descarte explícito de la ejecución en curso,
+incluidas sus series registradas, mediante una RPC distinta del abandono.
 UI-020 ofrece desde la flecha seguir, retomar o abandonar con la misma operación
 y motivo que el botón inferior. `WorkflowDraftGuard.confirmExit` es opcional y
 se ejecuta después de los controles existentes de guardado/borrador; los demás

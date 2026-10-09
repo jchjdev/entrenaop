@@ -34,8 +34,8 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   final _controllers = <String, TextEditingController>{
     for (final test in _calculatorTests) test.id: TextEditingController(),
   };
-  late final Future<FasPeriodic2027Reference> _reference;
-  late Future<DateTime?> _birthDate;
+  late Future<FasPeriodic2027Reference> _reference;
+  Future<DateTime?>? _birthDate;
   AssessmentCategory _category = AssessmentCategory.men;
   final Map<String, PeriodicScoreResult> _results = {};
   bool _savingBirthDate = false;
@@ -48,11 +48,18 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   void initState() {
     super.initState();
     _assessmentDate = _calculationDate;
-    _reference = widget.reference == null
-        ? FasPeriodic2027Reference.load()
-        : Future.value(widget.reference);
-    _birthDate = widget.birthDateRepository.get();
+    _reference = _loadReference();
   }
+
+  // Acotar solo lecturas permite reintentar sin duplicar un test guardado.
+  Future<FasPeriodic2027Reference> _loadReference() =>
+      (widget.reference == null
+              ? FasPeriodic2027Reference.load()
+              : Future.value(widget.reference!))
+          .timeout(const Duration(seconds: 15));
+
+  Future<DateTime?> _loadBirthDate() =>
+      widget.birthDateRepository.get().timeout(const Duration(seconds: 15));
 
   @override
   void dispose() {
@@ -70,7 +77,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       await widget.birthDateRepository.save(chosen);
       if (!mounted) return;
       setState(() {
-        _birthDate = widget.birthDateRepository.get();
+        _birthDate = _loadBirthDate();
         _results.clear();
       });
     } catch (_) {
@@ -157,12 +164,27 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
       future: _reference,
       builder: (context, referenceSnapshot) {
         if (referenceSnapshot.hasError) {
-          return const Center(child: Text('No se pudo cargar el baremo.'));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('No se pudo cargar el baremo.'),
+                TextButton(
+                  onPressed: () =>
+                      setState(() => _reference = _loadReference()),
+                  child: const Text('Reintentar cargar el baremo'),
+                ),
+              ],
+            ),
+          );
         }
         if (!referenceSnapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
         final reference = referenceSnapshot.data!;
+        // Empezar esta lectura cuando su FutureBuilder ya se va a montar evita
+        // perder errores rápidos mientras todavía se carga el baremo.
+        _birthDate ??= _loadBirthDate();
         return ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -210,10 +232,10 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                         if (birthSnapshot.hasError) {
                           return _BirthDateCard(
                             title: 'No se pudo cargar tu fecha de nacimiento',
-                            subtitle: 'Toca para volver a intentarlo.',
+                            subtitle: 'Comprueba la conexión y toca para reintentar. Las marcas que hayas escrito se conservan.',
                             icon: Icons.refresh,
                             onTap: () => setState(() {
-                              _birthDate = widget.birthDateRepository.get();
+                              _birthDate = _loadBirthDate();
                             }),
                           );
                         }

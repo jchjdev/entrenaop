@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
@@ -6,8 +8,75 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
   late FasPeriodic2027Reference reference;
+  testWidgets(
+    'la carga inicial lenta acaba en reintento y una respuesta vieja no reemplaza la nueva',
+    (tester) async {
+      final profile = _BirthDateRepository(DateTime(2001, 1, 1));
+      final oldRequest = Completer<DateTime?>();
+      profile.loader = () => oldRequest.future;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FasPeriodicCalculatorPage(
+            birthDateRepository: profile,
+            repository: _Repository(),
+            reference: reference,
+            today: DateTime(2027, 2, 3),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      await tester.pump(const Duration(seconds: 16));
+      await tester.pump();
+      expect(
+        find.text('No se pudo cargar tu fecha de nacimiento'),
+        findsOneWidget,
+      );
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      profile.loader = null;
+      await tester.tap(find.text('No se pudo cargar tu fecha de nacimiento'));
+      await tester.pumpAndSettle();
+      final field = find.byKey(
+        const ValueKey('fas-mark-upper_body_push_ups_2_min'),
+      );
+      await tester.enterText(field, '14');
+      oldRequest.complete(DateTime(1980, 1, 1));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('fas-mark-agility_speed_circuit')),
+        findsOneWidget,
+      );
+      expect(tester.widget<TextFormField>(field).controller!.text, '14');
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('un error inmediato al abrir FAS permite volver a cargar', (
+    tester,
+  ) async {
+    final profile = _BirthDateRepository(DateTime(2001, 1, 1))
+      ..loader = () => Future.error(StateError('Sin conexión'));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicCalculatorPage(
+          birthDateRepository: profile,
+          repository: _Repository(),
+          reference: reference,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('No se pudo cargar tu fecha de nacimiento'),
+      findsOneWidget,
+    );
+    profile.loader = null;
+    await tester.tap(find.text('No se pudo cargar tu fecha de nacimiento'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fas-mark-run_2000_m')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async => reference = await FasPeriodic2027Reference.load());
 
   testWidgets('calcula cuatro puntuaciones sin guardar un intento', (
@@ -208,9 +277,10 @@ class _BirthDateRepository implements ProfileBirthDateRepository {
 
   DateTime? value;
   int saveCalls = 0;
+  Future<DateTime?> Function()? loader;
 
   @override
-  Future<DateTime?> get() async => value;
+  Future<DateTime?> get() async => loader == null ? value : await loader!();
 
   @override
   Future<void> save(DateTime birthDate) async {

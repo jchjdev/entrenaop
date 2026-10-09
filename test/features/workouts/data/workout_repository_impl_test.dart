@@ -6,6 +6,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_template.dar
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_mutation_queue.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/performance_set.dart';
 
 void main() {
@@ -22,6 +23,76 @@ void main() {
       currentUserId: () => 'user-A',
     );
   });
+
+  PendingWorkoutMutation pending(String resourceId, {String user = 'user-A'}) =>
+      PendingWorkoutMutation(
+        userId: user,
+        operationId: '$user-$resourceId',
+        type: WorkoutMutationType.completeSet,
+        resourceId: resourceId,
+        values: {'p_result_id': resourceId, 'p_actual_reps': 8},
+        createdAt: DateTime.utc(2026, 10, 9),
+      );
+
+  test(
+    'descartar elimina solo la cola de sus recursos y su propietario',
+    () async {
+      mutationQueue.mutations.addAll([
+        pending('set-1'),
+        pending('set-2'),
+        pending('other'),
+        pending('set-1', user: 'user-B'),
+      ]);
+      dataSource.discardedResources = ['execution-1', 'set-1', 'set-2'];
+      await repository.discardExecution('execution-1');
+      expect(mutationQueue.mutations.map((m) => m.operationId), [
+        'user-A-other',
+        'user-B-set-1',
+      ]);
+      expect(dataSource.completedOperationIds, isEmpty);
+    },
+  );
+  test('un fallo al descartar conserva toda la cola', () async {
+    mutationQueue.mutations.add(pending('set-1'));
+    dataSource.failDiscard = true;
+    await expectLater(
+      repository.discardExecution('execution-1'),
+      throwsStateError,
+    );
+    expect(mutationQueue.mutations.single.resourceId, 'set-1');
+  });
+  test(
+    'la sincronización retira solo descartes confirmados por el servidor',
+    () async {
+      mutationQueue.mutations.addAll([pending('set-1'), pending('other')]);
+      dataSource.rejectDeletedResults = true;
+      dataSource.discardedResources = ['set-1'];
+      await expectLater(
+        repository.syncPendingMutations(),
+        throwsA(isA<PostgrestException>()),
+      );
+      expect(mutationQueue.mutations.single.resourceId, 'other');
+    },
+  );
+  test(
+    'cambiar de cuenta durante el descarte impide retirar datos locales',
+    () async {
+      var user = 'user-A';
+      final switching = WorkoutRepositoryImpl(
+        remoteDataSource: dataSource,
+        mutationQueue: mutationQueue,
+        currentUserId: () => user,
+      );
+      mutationQueue.mutations.add(pending('set-1'));
+      dataSource.discardedResources = ['execution-1', 'set-1'];
+      dataSource.afterDiscard = () => user = 'user-B';
+      await expectLater(
+        switching.discardExecution('execution-1'),
+        throwsA(isA<AuthException>()),
+      );
+      expect(mutationQueue.mutations, hasLength(1));
+    },
+  );
 
   test('envía el resultado real sin sustituirlo por la prescripción', () async {
     const result = WorkoutSetResultInput(
@@ -369,6 +440,21 @@ void main() {
 }
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
+  bool failDiscard = false;
+  List<String> discardedResources = [];
+  bool rejectDeletedResults = false;
+  void Function()? afterDiscard;
+  @override
+  Future<List<String>> discardExecution(String executionId) async {
+    if (failDiscard) throw StateError('Sin conexión');
+    afterDiscard?.call();
+    return discardedResources;
+  }
+
+  @override
+  Future<List<String>> getDiscardedResourceIds(
+    List<String> resourceIds,
+  ) async => resourceIds.where(discardedResources.contains).toList();
   Map<String, dynamic>? completedValues;
   Map<String, dynamic>? completedAmrapValues;
   Map<String, dynamic>? correctedValues;
@@ -432,6 +518,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     Map<String, dynamic> values,
   ) async {
     completedOperationIds.add(operationId);
+    if (rejectDeletedResults) {
+      throw const PostgrestException(message: 'Resultado no disponible');
+    }
     if (failComplete) throw Exception('sin conexión');
     completedValues = values;
   }

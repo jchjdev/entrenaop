@@ -228,11 +228,43 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       (await mutationQueue.readAll()).length;
 
   @override
+  Future<void> discardExecution(String executionId) async {
+    final userId = currentUserId();
+    if (userId == null) throw const AuthException('No hay sesión activa.');
+    // No sincronizar primero: las series locales también se quieren descartar.
+    // Sin confirmación del servidor la cola y la pantalla se conservan.
+    // Si se pierde la respuesta, repetir es seguro: el servidor reconoce el ID.
+    final resources =
+        (await remoteDataSource
+                .discardExecution(executionId)
+                .timeout(const Duration(seconds: 20)))
+            .toSet();
+    _requireAccount(userId);
+    for (final mutation in await mutationQueue.readAll()) {
+      _requireAccount(userId);
+      if (mutation.userId == userId &&
+          resources.contains(mutation.resourceId)) {
+        await mutationQueue.remove(mutation.operationId, userId: userId);
+      }
+    }
+  }
+
+  @override
   Future<void> syncPendingMutations() async {
     final pending = await mutationQueue.readAll();
     for (final mutation in pending) {
       _requireAccount(mutation.userId);
-      await _sendPending(mutation);
+      try {
+        await _sendPending(mutation);
+      } on PostgrestException {
+        // Otro dispositivo pudo descartar la ejecución. Solo retirar la cola
+        // cuando el servidor acredita el descarte de este recurso y propietario.
+        final discarded = await remoteDataSource.getDiscardedResourceIds([
+          mutation.resourceId,
+        ]);
+        _requireAccount(mutation.userId);
+        if (!discarded.contains(mutation.resourceId)) rethrow;
+      }
       await mutationQueue.remove(mutation.operationId, userId: mutation.userId);
     }
   }

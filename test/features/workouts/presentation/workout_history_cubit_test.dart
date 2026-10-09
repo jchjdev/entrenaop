@@ -141,6 +141,9 @@ WorkoutExecution _execution({
 );
 
 class _FakeWorkoutRepository implements WorkoutRepository {
+  @override
+  Future<void> discardExecution(String executionId) async =>
+      throw UnimplementedError();
   _FakeWorkoutRepository({this.history = const [], this.execution});
 
   final List<WorkoutExecution> history;

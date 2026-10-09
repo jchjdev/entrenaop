@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**UI-022, 09/10/2026 · ajustes cotidianos cerrados:** descarte confirmado de
+ejecución en curso y series, con cita restaurada e historial cerrado protegido;
+Perfil sin acceso duplicado; Añadir entrenamiento en agenda; días/minutos
+separados; FAS con carga acotada y reintento. Análisis limpio, 685 pruebas
+completas correctas con una omisión web existente, captura de Disponibilidad
+y tres pruebas SQL con `ROLLBACK`. 134 migraciones coincidentes en desarrollo.
+[Recorridos, contrato y límites](UX_REVIEW_2026_10_09.md).
+
+El único siguiente bloque recomendado continúa siendo la revisión pausada de
+Javier del recorrido preparación → Mi plan → Hoy, por estados reales. Este
+cierre no acredita gimnasio, iPhone físico ni recorrido Flutter autenticado
+nuevo. Los pendientes de negocio, motores, vídeo y comparativas siguen aparte.
+
 **UI-021, 08/10/2026 · coherencia localizada cerrada:** referencias y meta de
 carrera mantienen campos separados, selección completa y ayudas legibles.
 Mi plan sin programa ofrece Elige una preparación antes de la semana, diferencia

@@ -50,4 +50,8 @@ abstract class WorkoutRemoteDataSource {
     String executionId,
     String reason,
   );
+
+  Future<List<String>> discardExecution(String executionId);
+
+  Future<List<String>> getDiscardedResourceIds(List<String> resourceIds);
 }

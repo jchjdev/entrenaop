@@ -159,6 +159,9 @@ class _AmrapRepository extends _Repository {
 }
 
 class _Repository implements WorkoutRepository {
+  @override
+  Future<void> discardExecution(String executionId) async =>
+      throw UnimplementedError();
   final execution = WorkoutExecution(
     id: 'execution-1',
     templateId: 'template-1',

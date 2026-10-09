@@ -5,6 +5,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/workout_template_query.dart';
 
 class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
+  @override
+  Future<List<String>> discardExecution(String executionId) async =>
+      (await supabaseClient.rpc(
+        'discard_workout_execution',
+        params: {'p_execution_id': executionId, 'p_confirmation': 'DESCARTAR'},
+      ) as List).cast<String>();
+
+  @override
+  Future<List<String>> getDiscardedResourceIds(
+    List<String> resourceIds,
+  ) async => (await supabaseClient.rpc(
+    'get_discarded_workout_resource_ids',
+    params: {'p_resource_ids': resourceIds},
+  ) as List).cast<String>();
+
   const WorkoutRemoteDataSourceImpl({required this.supabaseClient});
 
   final SupabaseClient supabaseClient;

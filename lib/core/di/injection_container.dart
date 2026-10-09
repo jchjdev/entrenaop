@@ -299,6 +299,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => SkipWorkoutSetUseCase(sl()));
   sl.registerLazySingleton(() => FinishWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => AbandonWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton(() => DiscardWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetPendingWorkoutMutationCountUseCase(sl()));
   sl.registerFactoryParam<WorkoutPreviewCubit, String, void>(
     (templateId, _) => WorkoutPreviewCubit(
@@ -341,6 +342,7 @@ Future<void> initDependencies() async {
       skipSet: sl(),
       finishExecution: sl(),
       abandonExecution: sl(),
+      discardExecution: sl(),
       getPendingMutationCount: sl(),
       timerStore: sl(),
       cueService: sl(),

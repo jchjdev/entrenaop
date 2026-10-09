@@ -257,8 +257,8 @@ void main() {
         find.textContaining('No tienes un programa en curso'),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.text('Ver mis preparaciones'));
-      await tester.tap(find.text('Ver mis preparaciones'));
+      await tester.ensureVisible(find.text('Ver preparaciones'));
+      await tester.tap(find.text('Ver preparaciones'));
       await tester.pumpAndSettle();
       expect(find.text('Mis preparaciones'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -315,7 +315,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('no tienes que crearla'), findsOneWidget);
       expect(find.text('Preparar esta semana'), findsNothing);
-      expect(find.text('Elegir mi preparación'), findsNothing);
+      expect(find.text('Elegir una preparación'), findsNothing);
       expect(tester.takeException(), isNull);
       await capturePerformanceWidget(tester, 'agenda-programa-activo');
       await cubit.changeWeek(1);
@@ -359,8 +359,8 @@ void main() {
     addTearDown(cubit.close);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Elegir mi preparación'));
-    await tester.tap(find.text('Elegir mi preparación'));
+    await tester.ensureVisible(find.text('Elegir una preparación'));
+    await tester.tap(find.text('Elegir una preparación'));
     await tester.pumpAndSettle();
     expect(find.text('Preparación null'), findsOneWidget);
     expect(tester.takeException(), isNull);

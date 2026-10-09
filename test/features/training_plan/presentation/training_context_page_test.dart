@@ -9,6 +9,68 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  for (final scale in [1.0, 2.0]) {
+    testWidgets(
+      'los selectores de días consecutivos no se solapan con escala $scale',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 2400);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final repository = _ContextRepository()
+          ..saved = TrainingContext(
+            availability: {'1': 45, '2': 45, '3': 45},
+            equipment: {'cones'},
+            reportsPain: false,
+            capacityConfirmed: true,
+          );
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: EntrenaTheme.dark,
+              home: MediaQuery(
+                data: MediaQueryData(
+                  size: const Size(360, 2400),
+                  textScaler: TextScaler.linear(scale),
+                ),
+                child: TrainingContextPage(repository: repository),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final monday = find.byKey(const ValueKey('minutes_1_45'));
+        final tuesday = find.byKey(const ValueKey('minutes_2_45'));
+        final wednesday = find.byKey(const ValueKey('minutes_3_45'));
+        expect(
+          tester.getRect(monday).bottom + 16,
+          lessThan(tester.getRect(tuesday).top),
+        );
+        expect(
+          tester.getRect(tuesday).bottom + 16,
+          lessThan(tester.getRect(wednesday).top),
+        );
+        if (scale == 1) {
+          await capturePerformanceWidget(
+            tester,
+            'disponibilidad_dias_consecutivos',
+          );
+        }
+        await tester.tap(tuesday);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('60').last);
+        await tester.pumpAndSettle();
+        final save = find.text('Guardar disponibilidad y material');
+        await tester.ensureVisible(save);
+        await tester.tap(save);
+        await tester.pumpAndSettle();
+        expect(repository.saved!.availability, {'1': 45, '2': 60, '3': 45});
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   for (final width in [320.0, 360.0, 1000.0]) {
     testWidgets('disponibilidad y material se pueden editar a $width px', (
       tester,

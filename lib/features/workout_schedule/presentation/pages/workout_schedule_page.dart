@@ -39,13 +39,13 @@ class WorkoutSchedulePage extends StatelessWidget {
               builder: (context, state) => state.currentProgram != null
                   ? FloatingActionButton.small(
                       onPressed: () => _showTemplatePicker(context, state),
-                      tooltip: 'Añadir un entrenamiento extra',
+                      tooltip: 'Añadir entrenamiento al día',
                       child: const Icon(Icons.add_rounded),
                     )
                   : FloatingActionButton.extended(
                       onPressed: () => _showTemplatePicker(context, state),
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('Entrenamiento extra'),
+                      label: const Text('Añadir entrenamiento'),
                     ),
             ),
         body: BlocConsumer<WorkoutScheduleCubit, WorkoutScheduleState>(
@@ -840,15 +840,15 @@ class _EmptyDay extends StatelessWidget {
               icon: const Icon(Icons.auto_awesome_outlined),
               label: Text(
                 hasSavedPreparations
-                    ? 'Ver mis preparaciones'
-                    : 'Elegir mi preparación',
+                    ? 'Ver preparaciones'
+                    : 'Elegir una preparación',
               ),
             ),
             const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Entrenamiento extra'),
+              label: const Text('Añadir entrenamiento al día'),
             ),
           ],
         ),

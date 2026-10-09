@@ -35,79 +35,85 @@ class TrainingContextFields extends StatelessWidget {
       ),
       const SizedBox(height: 16),
       for (var day = 1; day <= 7; day++)
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final stack =
-                constraints.maxWidth < 360 &&
-                MediaQuery.textScalerOf(context).scale(14) > 20;
-            final dayField = CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                const [
-                  'Lunes',
-                  'Martes',
-                  'Miércoles',
-                  'Jueves',
-                  'Viernes',
-                  'Sábado',
-                  'Domingo',
-                ][day - 1],
-              ),
-              value: (availability['$day'] ?? 0) > 0,
-              onChanged: enabled
-                  ? (value) =>
-                        onAvailability('$day', value! ? defaultMinutes : 0)
-                  : null,
-            );
-            final active = (availability['$day'] ?? 0) > 0;
-            final minutesField = active
-                ? SizedBox(
-                    width: stack ? 200 : 125,
-                    child: DropdownButtonFormField<int>(
-                      key: ValueKey('minutes_${day}_${availability['$day']}'),
-                      initialValue: availability['$day'],
-                      decoration: const InputDecoration(labelText: 'Minutos'),
-                      items: [
-                        for (final minutes in ({
-                          15,
-                          20,
-                          25,
-                          30,
-                          45,
-                          60,
-                          75,
-                          90,
-                          120,
-                          150,
-                          180,
-                          availability['$day']!,
-                        }.toList()..sort()))
-                          DropdownMenuItem(
-                            value: minutes,
-                            child: Text('$minutes'),
-                          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final stack =
+                  constraints.maxWidth < 320 ||
+                  MediaQuery.textScalerOf(context).scale(14) > 20;
+              final dayField = CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  const [
+                    'Lunes',
+                    'Martes',
+                    'Miércoles',
+                    'Jueves',
+                    'Viernes',
+                    'Sábado',
+                    'Domingo',
+                  ][day - 1],
+                ),
+                value: (availability['$day'] ?? 0) > 0,
+                onChanged: enabled
+                    ? (value) =>
+                          onAvailability('$day', value! ? defaultMinutes : 0)
+                    : null,
+              );
+              final active = (availability['$day'] ?? 0) > 0;
+              final minutesField = active
+                  ? SizedBox(
+                      width: stack ? 200 : 125,
+                      child: DropdownButtonFormField<int>(
+                        key: ValueKey('minutes_${day}_${availability['$day']}'),
+                        initialValue: availability['$day'],
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'Minutos'),
+                        items: [
+                          for (final minutes in ({
+                            15,
+                            20,
+                            25,
+                            30,
+                            45,
+                            60,
+                            75,
+                            90,
+                            120,
+                            150,
+                            180,
+                            availability['$day']!,
+                          }.toList()..sort()))
+                            DropdownMenuItem(
+                              value: minutes,
+                              child: Text('$minutes'),
+                            ),
+                        ],
+                        onChanged: enabled
+                            ? (value) => onAvailability('$day', value!)
+                            : null,
+                      ),
+                    )
+                  : null;
+              return stack
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        dayField,
+                        if (minutesField != null) const SizedBox(height: 12),
+                        ?minutesField,
                       ],
-                      onChanged: enabled
-                          ? (value) => onAvailability('$day', value!)
-                          : null,
-                    ),
-                  )
-                : null;
-            return stack
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      dayField,
-                      ?minutesField,
-                    ],
-                  )
-                : Row(
-                    children: [
-                      Expanded(child: dayField),
-                      ?minutesField,
-                    ],
-                  );
-          },
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: dayField),
+                        if (minutesField != null) const SizedBox(width: 12),
+                        ?minutesField,
+                      ],
+                    );
+            },
+          ),
         ),
       const SizedBox(height: 20),
       Text(

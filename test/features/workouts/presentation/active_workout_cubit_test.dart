@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrenaop/features/workouts/domain/entities/pending_workout_mutation.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -16,6 +18,131 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets(
+    'un descarte pendiente no permite otra mutación ni pierde el descanso si falla',
+    (tester) async {
+      final repository = _Repository();
+      final response = Completer<void>();
+      repository.discardResponse = () => response.future;
+      final store = _TimerStore();
+      final cubit = _cubit(repository, timerStore: store);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.completeCurrentSet(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 8),
+      );
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      final pending = cubit.discard();
+      await tester.pump(const Duration(seconds: 3));
+      expect(cubit.state.status, ActiveWorkoutStatus.saving);
+      expect(await cubit.discard(), false);
+      await cubit.completeCurrentSet(
+        const WorkoutSetResultInput(resultId: 'set-2', actualReps: 9),
+      );
+      await cubit.skipCurrentSet();
+      await cubit.abandon(WorkoutAbandonmentReason.lackOfTime);
+      await cubit.finish(finalRpe: 6);
+      expect(cubit.state.status, ActiveWorkoutStatus.saving);
+      expect(repository.lastSetResult!.resultId, 'set-1');
+      expect(repository.abandonAttempts, 0);
+      response.completeError(StateError('Sin conexión'));
+      expect(await pending, false);
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.execution!.completedSetCount, 1);
+      expect(store.snapshot, isNotNull);
+      repository.discardResponse = null;
+      expect(await cubit.discard(), true);
+      expect(store.snapshot, isNull);
+      await tester.pump(const Duration(seconds: 61));
+      expect(cubit.state.status, ActiveWorkoutStatus.discarded);
+    },
+  );
+  for (final statuses in [
+    [WorkoutSetStatus.pending, WorkoutSetStatus.pending],
+    [WorkoutSetStatus.completed, WorkoutSetStatus.pending],
+    [WorkoutSetStatus.completed, WorkoutSetStatus.completed],
+  ]) {
+    testWidgets('descarta desde atrás con series $statuses', (tester) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses(statuses);
+      final (cubit, router) = await _mountSession(tester, repository);
+      await tester.tap(find.byTooltip('Salir de la sesión'));
+      await tester.pumpAndSettle();
+      final discard = find.widgetWithText(TextButton, 'Salir sin guardar').last;
+      await tester.ensureVisible(discard);
+      await tester.tap(discard);
+      await tester.pumpAndSettle();
+      expect(find.text('¿Descartar esta sesión?'), findsOneWidget);
+      await tester.tap(find.text('Descartar y salir'));
+      await tester.pumpAndSettle();
+      expect(repository.discardAttempts, 1);
+      expect(repository.abandonAttempts, 0);
+      expect(cubit.state.execution, isNull);
+      expect(cubit.state.status, ActiveWorkoutStatus.discarded);
+      expect(router.state.matchedLocation, '/');
+      expect(tester.takeException(), isNull);
+    });
+  }
+  testWidgets(
+    'cancelar y fallar el descarte conserva series y borrador; permite reintentar',
+    (tester) async {
+      final repository = _Repository()
+        ..execution = _executionWithStatuses([
+          WorkoutSetStatus.completed,
+          WorkoutSetStatus.completed,
+        ])
+        ..failDiscard = true;
+      final (cubit, router) = await _mountSession(tester, repository);
+      final notes = find.widgetWithText(
+        TextField,
+        '¿Cómo te has sentido? (opcional)',
+      );
+      await tester.ensureVisible(notes);
+      await tester.enterText(notes, 'Conservar si falla');
+      Future<void> open() async {
+        final button = find.widgetWithText(TextButton, 'Salir sin guardar');
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+      }
+
+      await open();
+      await tester.tap(find.text('Seguir aquí'));
+      await tester.pumpAndSettle();
+      expect(repository.discardAttempts, 0);
+      await open();
+      await tester.tap(find.text('Descartar y salir'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.execution!.completedSetCount, 2);
+      expect(router.state.matchedLocation, '/session');
+      expect(
+        tester.widget<TextField>(notes).controller!.text,
+        'Conservar si falla',
+      );
+      expect(
+        find.textContaining('No se ha podido confirmar el descarte'),
+        findsOneWidget,
+      );
+      repository.failDiscard = false;
+      await open();
+      await tester.tap(find.text('Descartar y salir'));
+      await tester.pumpAndSettle();
+      expect(repository.discardAttempts, 2);
+      expect(router.state.matchedLocation, '/');
+      expect(tester.takeException(), isNull);
+    },
+  );
+  test('no ofrece descarte de una ejecución ya cerrada', () async {
+    final repository = _Repository()
+      ..execution = _execution().copyWith(
+        status: WorkoutExecutionStatus.completed,
+      );
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    expect(await cubit.discard(), false);
+    expect(repository.discardAttempts, 0);
+  });
   for (final queued in [false, true]) {
     testWidgets(
       'la flecha permite abandonar y volver con sincronización pendiente $queued',
@@ -822,6 +949,7 @@ ActiveWorkoutCubit _cubit(
   skipSet: SkipWorkoutSetUseCase(repository),
   finishExecution: FinishWorkoutExecutionUseCase(repository),
   abandonExecution: AbandonWorkoutExecutionUseCase(repository),
+  discardExecution: DiscardWorkoutExecutionUseCase(repository),
   getPendingMutationCount: GetPendingWorkoutMutationCountUseCase(repository),
   timerStore: timerStore ?? _TimerStore(),
   cueService: cueService ?? _CueService(),
@@ -832,6 +960,17 @@ class _Repository implements WorkoutRepository {
   WorkoutSetResultInput? lastSetResult;
   bool failAbandonment = false;
   int abandonAttempts = 0;
+  int discardAttempts = 0;
+  bool failDiscard = false;
+  Future<void> Function()? discardResponse;
+
+  @override
+  Future<void> discardExecution(String executionId) async {
+    discardAttempts++;
+    if (failDiscard) throw StateError('Sin conexión');
+    await discardResponse?.call();
+  }
+
   int pendingMutationCount = 0;
   WorkoutMutationDisposition abandonmentDisposition =
       WorkoutMutationDisposition.synced;

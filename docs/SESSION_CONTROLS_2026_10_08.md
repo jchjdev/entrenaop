@@ -1,5 +1,11 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+**Ampliación UI-022, 09/10/2026:** Javier confirma descartar también series
+registradas de una sesión en curso. Flecha y botón inferior ofrecen Salir sin
+guardar, con confirmación/conexión y restauración de la cita a pendiente.
+El historial cerrado está protegido. Retomar y abandonar conservando resultados
+mantienen su contrato. [Implementación y pruebas](UX_REVIEW_2026_10_09.md).
+
 ## Ampliación UI-020: tiempo realizado y flecha
 
 Javier muestra un reloj de 20 segundos finalizado que escribe `20` en Tiempo
@@ -76,11 +82,10 @@ del estado y del motivo; no se cambian sus políticas en esta tarea.
 
 Javier propuso valorar una salida más clara con opciones de retomar, abandonar
 conservando resultados y salir sin guardar. UI-020 incorpora seguir, retomar y
-abandonar desde la flecha. **Pendiente de contrato:** «Sin guardar» distingue descartar
-campos no confirmados de eliminar series ya guardadas. La segunda operación
-afectaría historial y entradas de los planes y requiere su propio contrato; no
-se trata como un abandono ordinario. La eliminación no está implementada ni
-se registra como una autorización para borrar datos.
+abandonar desde la flecha. Ese cierre dejó pendiente el contrato de Salir sin
+guardar. UI-022 lo implementa después de que Javier autorice incluir las series
+registradas: descarta únicamente la ejecución en curso, protege el historial
+cerrado y devuelve su cita a pendiente. No se trata como un abandono ordinario.
 
 ## Mi semana: ancho disponible
 
@@ -147,4 +152,4 @@ el usuario ni garantizar reproducción con la aplicación suspendida.
 IOS-002 completa después la comprobación del audio en Mac/simulador. El siguiente
 recorrido es comprobar sonido/vibración en dispositivo físico cuando esté
 disponible. UI-020 cierra las opciones de la flecha, conservando separado el
-posible borrado de historial.
+descarte de sesión en curso, ampliado después mediante UI-022.
