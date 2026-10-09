@@ -40,9 +40,12 @@ incluyendo cancelar/repetir, scroll, borradores y ocupación. También comprueba
 el botón Atrás del sistema y salir/retomar una sesión con series en Android.
 Análisis limpio, 51 regresiones relacionadas y 706 pruebas completas correctas,
 con una omisión web existente, tras incorporar Android. El comportamiento web
-conserva el mismo adaptador comprobado anteriormente en Chrome. El gesto propio
-en Android físico queda por comprobar con Javier; tampoco acredita iPhone físico
-ni un nuevo recorrido autenticado. La nueva configuración
+conserva el mismo adaptador comprobado anteriormente en Chrome. Javier confirma
+el 09/10/2026 que el gesto va muy fluido en su Android físico al ejecutar la
+configuración de VS Code «EntrenaOP App · rendimiento (profile)». El tirón leve
+observado en debug no se reproduce en esa prueba. Es una comprobación manual,
+sin medición de tiempos de fotograma; no acredita iPhone físico ni una auditoría
+de todos los recorridos autenticados. La nueva configuración
 de rutas requiere hot restart para probarla. Javier continúa personalmente
 la revisión pausada de preparación → Mi plan → Hoy.
 

@@ -9,9 +9,10 @@ Análisis limpio, 706 pruebas completas correctas con la omisión web existente;
 51 regresiones relacionadas incluyen ambos móviles. La primera verificación
 acreditó además nueve regresiones en Chrome. El banco web necesitó normalizar en memoria
 dos rutas generadas por Flutter en Windows; no se modificó el SDK. Requiere hot
-restart. [Implementación y límites](VISUAL_DESIGN.md). Nuevo gesto Android físico,
-iPhone físico y un nuevo
-recorrido autenticado siguen pendientes. El único siguiente bloque recomendado
+restart. Javier confirma que el gesto va muy fluido en Android físico con la
+configuración profile el 09/10/2026; sin medición de fotogramas.
+[Implementación y límites](VISUAL_DESIGN.md). iPhone físico y un nuevo recorrido
+autenticado completo siguen pendientes. El único siguiente bloque recomendado
 continúa siendo la revisión de Javier de preparación → Mi plan → Hoy.
 
 **UI-022, 09/10/2026 · ajustes cotidianos cerrados:** descarte confirmado de
