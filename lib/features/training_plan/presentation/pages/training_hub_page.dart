@@ -76,11 +76,12 @@ class TrainingHubPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Mi plan'),
         actions: [
-          IconButton(
-            tooltip: 'Actualizar mi plan',
-            onPressed: context.read<DashboardCubit>().load,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
+          if (MediaQuery.sizeOf(context).width >= 840)
+            IconButton(
+              tooltip: 'Actualizar mi plan',
+              onPressed: context.read<DashboardCubit>().load,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
         ],
       ),
       body: SafeArea(

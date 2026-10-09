@@ -38,12 +38,14 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const EntrenaWordmark(width: 148),
         actions: [
-          IconButton(
-            tooltip: 'Actualizar resumen',
-            onPressed: () => context.read<DashboardCubit>().load(),
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-          const SizedBox(width: 8),
+          if (MediaQuery.sizeOf(context).width >= 840) ...[
+            IconButton(
+              tooltip: 'Actualizar resumen',
+              onPressed: () => context.read<DashboardCubit>().load(),
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+            const SizedBox(width: 8),
+          ],
         ],
       ),
       body: BlocConsumer<DashboardCubit, DashboardState>(
