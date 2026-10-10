@@ -427,6 +427,20 @@ pertenecen a Pro. Este reparto está confirmado, pero no describe restricciones
 actuales implementadas en servidor. Tener un algoritmo implementado no convierte
 su recorrido en una función comercial Pro ya disponible.
 
+### Criterio de precio inicial · COM-004 · 10/10/2026
+
+Javier confirma que Pro debe salir con un precio accesible y considera elevado
+un importe inicial de 8,99 €/mes para el alcance actual. Plantea como referencia
+un rango de 2,99–4,99 €/mes. El criterio de lanzamiento está confirmado; el rango
+no constituye una tarifa definitiva ni acredita viabilidad económica.
+
+**Propuesta pendiente de validación y aprobación:** 3,99 €/mes y 29,99 €/año por
+el mismo acceso Pro. Los importes exactos, la modalidad de contratación y las
+condiciones de una posible tarifa protegida para primeros suscriptores siguen
+pendientes. La validación debe contemplar costes del servicio y soporte,
+impuestos, comisiones y el alcance Pro que pueda entregarse con fiabilidad.
+Este acuerdo documental no implementa cobros, derechos ni restricciones.
+
 ### Retirada del bloque de simulación · COM-003 · 07/10/2026
 
 Javier solicita volver al estado anterior a `308ae18` tras considerar que el
