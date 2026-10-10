@@ -1,6 +1,6 @@
 # Identidad visual de EntrenaOP
 
-## Pro: propuesta de contratación · COM-004 · 10/10/2026
+## Pro: propuesta de recorrido y contratación · COM-004 · 10/10/2026
 
 Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 29,99 €/año
 por el mismo acceso Pro. La composición y los recorridos siguientes son una
@@ -28,14 +28,30 @@ El diseño de ejemplo plantea renovación automática como propuesta; no la da
 por acordada ni acredita integración con una tienda.
 
 Desde una función Pro, el usuario podrá entender qué ofrece antes de contratar.
+La propuesta conserva una sola app y las cinco secciones actuales. Mi plan
+permite consultar las preparaciones y usar la agenda incluida; el acceso al
+programa adaptativo lleva la etiqueta «Pro» y el candado en su acción. La ficha
+mantiene la fotografía y los datos propios de la preparación. Consultarla no
+obliga a contratar. «Ver un ejemplo» muestra contenido didáctico identificado,
+sin presentar una semana generada para ese usuario ni iniciar un programa.
+
+«Crear mi plan · Pro» abre directamente la pantalla común de contratación,
+conservando la preparación y el punto de origen, sin encadenar otro diálogo de
+venta. Cerrar o seguir con Free devuelve a ese punto. Con Pro verificado, la
+misma acción continúa la configuración existente y la venta desaparece; comprar
+no sustituye completar los datos y aceptar la propuesta de entrenamiento.
+Perfil ofrece el estado de suscripción y su gestión. Una compra pendiente o un
+fallo al comprobar el acceso muestra su estado y permite reintentar o restaurar,
+sin clasificar automáticamente al usuario como Free ni pedirle pagar otra vez.
+
 La generación y adaptación se protegerán en servidor; el candado es su señal
 visual. Mi semana, sesiones manuales incluidas e historial no quedan cubiertos
 por un bloqueo global de Mi plan. Una contratación confirmada devolverá al punto
 de origen para continuar la revisión; no activará ni sustituirá un programa sin
 la aceptación correspondiente. Este recorrido sigue pendiente de aprobación.
 
-El posible descuento militar de COM-005 no aparece como disponible hasta
-resolver su oferta y acreditación. La propuesta visual no prueba código real,
+El posible descuento militar de COM-005 queda aplazado expresamente por Javier
+y fuera del diseño inicial. La propuesta visual no prueba código real,
 accesibilidad, derechos comerciales ni compras. No se ejecuta ni modifica la app.
 
 ## Accesos depurados · UI-026 · 10/10/2026

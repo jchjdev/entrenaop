@@ -453,7 +453,9 @@ cobros, derechos ni restricciones. La propuesta de contratación se describe en
 Javier propone estudiar un descuento a militares, acreditando su condición con
 la TMI y aplicándolo mediante cupón u otro mecanismo. Aclara expresamente que
 debe valorarlo: no están aprobados el descuento, sus importes, beneficiarios,
-vigencia, renovación ni método de acreditación. No se anuncia como disponible.
+vigencia, renovación ni método de acreditación. Javier confirma después dejarlo
+pendiente al pasar al diseño de Pro; queda fuera de la contratación inicial y no
+se anuncia como disponible ni se solicita documentación.
 
 La recomendación inicial es utilizar el correo solo para solicitar información,
 sin adjuntar documentos. Si se aprueba el servicio, se estudiará una comprobación
