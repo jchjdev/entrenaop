@@ -19,6 +19,8 @@ import 'package:entrenaop/features/exercises/domain/usecases/update_exercise_use
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
+import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
+import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,6 +33,68 @@ void main() {
       ProAccessFixture(isPro: true),
     ),
   );
+  for (final width in [390.0, 1000.0]) {
+    for (final path in [
+      '/plan/starter-session',
+      '/plan/library/session-test',
+    ]) {
+      testWidgets(
+        'vista de sesión dedicada y regreso al origen: $path, $width',
+        (tester) async {
+          await tester.binding.setSurfaceSize(Size(width, 950));
+          addTearDown(() => tester.binding.setSurfaceSize(null));
+          _register(_Exercises());
+          addTearDown(sl.reset);
+          final auth = _Auth();
+          final router = AppRouter(auth);
+          addTearDown(router.dispose);
+          router.config.go('/library/exercises?tab=personal');
+          await tester.pumpWidget(_app(auth, router));
+          await tester.pumpAndSettle();
+          await tester.enterText(find.byType(TextField), 'privado');
+          await tester.pumpAndSettle();
+          router.config.push(path);
+          await tester.pumpAndSettle();
+          expect(find.text('Vista de la sesión'), findsOneWidget);
+          expect(find.byType(NavigationBar), findsNothing);
+          expect(find.byType(NavigationRail), findsNothing);
+          await tester.tap(find.byTooltip('Volver'));
+          await tester.pumpAndSettle();
+          expect(
+            router.config.routeInformationProvider.value.uri.toString(),
+            '/library/exercises?tab=personal',
+          );
+          expect(
+            tester.widget<TextField>(find.byType(TextField)).controller!.text,
+            'privado',
+          );
+          expect(find.text('Ejercicio privado'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          // Un enlace directo también debe abrir sin navegación de secciones.
+          router.config.go(path);
+          await tester.pumpAndSettle();
+          expect(find.text('Vista de la sesión'), findsOneWidget);
+          expect(find.byType(NavigationBar), findsNothing);
+          expect(find.byType(NavigationRail), findsNothing);
+          expect(tester.takeException(), isNull);
+          await tester.tap(find.byTooltip('Volver'));
+          await tester.pumpAndSettle();
+          expect(
+            router.config.routeInformationProvider.value.uri.path,
+            path == '/plan/starter-session' ? '/library' : '/plan/library',
+          );
+          expect(
+            width < 840
+                ? find.byType(NavigationBar)
+                : find.byType(NavigationRail),
+            findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
   testWidgets('la colección se renueva al cambiar de cuenta en la misma ruta', (
     tester,
   ) async {
@@ -251,6 +315,13 @@ void _register(_Exercises repository) {
   sl.registerSingleton(GetExerciseByIdUseCase(repository));
   sl.registerSingleton(UpdateExerciseUseCase(repository));
   final workouts = _Workouts();
+  sl.registerFactoryParam<WorkoutPreviewCubit, String, void>(
+    (id, _) => WorkoutPreviewCubit(
+      templateId: id,
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(workouts),
+      startExecution: StartWorkoutExecutionUseCase(workouts),
+    )..load(),
+  );
   sl.registerFactory(
     () => WorkoutLibraryCubit(
       getPublicWorkouts: GetPublicWorkoutsUseCase(workouts),
@@ -348,6 +419,8 @@ class _SwitchableAuth extends Cubit<AuthState> implements AuthCubit {
 }
 
 class _Workouts implements WorkoutRepository {
+  @override
+  Future<WorkoutTemplate?> getTemplateById(String id) async => null;
   @override
   Future<List<WorkoutTemplateSummary>> getPublicTemplates() async => [];
   @override

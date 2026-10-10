@@ -1,9 +1,66 @@
 import 'package:entrenaop/core/navigation/app_shell.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  for (final width in [320.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('etiquetas completas y separadas: $width px, texto $scale', (
+        tester,
+      ) async {
+        tester.view.physicalSize = Size(width, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final router = _createRouter();
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          MaterialApp.router(
+            theme: EntrenaTheme.dark,
+            routerConfig: router,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: child!,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        for (final selected in ['Biblioteca', 'Evolución']) {
+          await tester.tap(find.text(selected));
+          await tester.pumpAndSettle();
+          Rect? previous;
+          for (final label in [
+            'Inicio',
+            'Mi plan',
+            'Biblioteca',
+            'Evolución',
+            'Perfil',
+          ]) {
+            final finder = find.text(label);
+            final paragraph = tester.renderObject<RenderParagraph>(finder);
+            final boxes = paragraph.getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: label.length),
+            );
+            expect(
+              boxes,
+              hasLength(1),
+              reason: '$label debe quedar en una línea',
+            );
+            final rect = tester.getRect(finder);
+            if (previous != null) {
+              expect(rect.left - previous.right, greaterThanOrEqualTo(12));
+            }
+            previous = rect;
+          }
+          expect(tester.takeException(), isNull);
+        }
+      });
+    }
+  }
   testWidgets('usa la barra inferior y cambia de sección en móvil', (
     tester,
   ) async {

@@ -48,9 +48,12 @@ class AppShell extends StatelessWidget {
           );
         }
 
+        final labelStyle = _barLabelStyle(context, constraints.maxWidth);
         return Scaffold(
           body: navigationShell,
           bottomNavigationBar: NavigationBar(
+            labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+            labelTextStyle: labelStyle,
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: _selectDestination,
             destinations: _barDestinations,
@@ -59,6 +62,39 @@ class AppShell extends StatelessWidget {
       },
     );
   }
+}
+
+WidgetStateProperty<TextStyle> _barLabelStyle(
+  BuildContext context,
+  double width,
+) {
+  final theme = Theme.of(context);
+  TextStyle style(Set<WidgetState> states) => theme.textTheme.labelMedium!
+      .merge(theme.navigationBarTheme.labelTextStyle?.resolve(states))
+      .copyWith(letterSpacing: 0);
+  final selected = style({WidgetState.selected});
+  final baseSize = selected.fontSize!;
+  final available = width / _barDestinations.length - 12;
+  final painter = TextPainter(
+    textDirection: Directionality.of(context),
+    // Mantener el límite nativo de NavigationBar sin reducir el texto de
+    // las páginas. Reservar margen evita que las etiquetas se toquen.
+    textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3),
+    maxLines: 1,
+  );
+  var widest = 0.0;
+  for (final destination in _barDestinations) {
+    painter.text = TextSpan(text: destination.label, style: selected);
+    painter.layout();
+    if (painter.width > widest) widest = painter.width;
+  }
+  painter.dispose();
+  final fontSize = widest > available
+      ? baseSize * (available - 1) / widest
+      : baseSize;
+  return WidgetStateProperty.resolveWith(
+    (states) => style(states).copyWith(fontSize: fontSize),
+  );
 }
 
 const _barDestinations = [
