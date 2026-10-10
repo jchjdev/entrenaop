@@ -155,12 +155,23 @@ class AccountLinkErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocBuilder<AuthCubit, AuthState>(
     builder: (context, state) => AuthPageShell(
-      title: 'Necesitas un enlace nuevo',
+      title: 'No se ha podido abrir el enlace',
       subtitle: state is AuthLinkError ? state.message : 'Abre el enlace de recuperación recibido por correo. Si ha caducado o ya se usó, solicita uno nuevo.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Text(
+            'Si estabas confirmando una cuenta, el correo puede haber quedado confirmado aunque el acceso automático fallara. Prueba a iniciar sesión con tu correo y contraseña.',
+          ),
+          const SizedBox(height: 20),
           FilledButton(
+            onPressed: () {
+              context.read<AuthCubit>().dismissAccountNotice();
+              context.go('/');
+            },
+            child: const Text('Iniciar sesión'),
+          ),
+          OutlinedButton(
             onPressed: () {
               context.read<AuthCubit>().dismissAccountNotice();
               context.go('/forgot-password');
@@ -170,9 +181,9 @@ class AccountLinkErrorPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               context.read<AuthCubit>().dismissAccountNotice();
-              context.go('/');
+              context.go('/confirm-email');
             },
-            child: const Text('Volver al acceso'),
+            child: const Text('Reenviar confirmación de cuenta'),
           ),
         ],
       ),

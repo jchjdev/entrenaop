@@ -479,6 +479,12 @@ retornos de desarrollo y conserva las demás propiedades remotas. No se cambia
 RLS, rol, derechos comerciales ni producción. Pruebas del SDK con HTTP simulado
 y configuración remota comprobada. Compilación y arranque iOS comprobados en
 IOS-001; el recorrido de correo real en iOS y dispositivo físico sigue pendiente.
+MAIL-002 añade la plantilla española de confirmación en Dev, conservando
+`ConfirmationURL` y PKCE. Confirmar el correo en servidor puede completarse
+antes de que falle el canje de sesión en otro perfil de navegador. El aviso de
+enlace rechazado ofrece acceso, recuperación y reenvío de confirmación; este
+último muestra una respuesta condicional y no acredita entrega. No se añade
+una consulta pública del estado de confirmación ni se cambia la autenticación.
 Alcance y límites en
 [REFRESH_ACCOUNT_2026_10_08.md](REFRESH_ACCOUNT_2026_10_08.md).
 

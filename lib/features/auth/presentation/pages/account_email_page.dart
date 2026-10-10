@@ -98,7 +98,9 @@ class _AccountEmailPageState extends State<AccountEmailPage> {
         onBack: busy ? null : _back,
         footer: TextButton(
           onPressed: busy ? null : _back,
-          child: const Text('Volver al acceso'),
+          child: Text(
+            widget.confirmation ? 'Iniciar sesión' : 'Volver al acceso',
+          ),
         ),
         child: Form(
           key: _form,
@@ -111,6 +113,12 @@ class _AccountEmailPageState extends State<AccountEmailPage> {
                 const Text(
                   'Revisa también la carpeta de spam. Abre el enlace en el mismo navegador o dispositivo donde solicitaste el correo. Si pediste varios, utiliza el más reciente.',
                 ),
+                if (widget.confirmation) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Si abriste el enlace en otro navegador y apareció un error, tu correo puede estar confirmado. Prueba a iniciar sesión con tu contraseña antes de pedir otro correo.',
+                  ),
+                ],
                 const SizedBox(height: 20),
               ],
               AuthTextField(

@@ -2,7 +2,7 @@
 from copy import deepcopy
 import unittest
 
-from apply_recovery_template import unexpected_properties
+from apply_recovery_template import CONFIRMATION_MARKERS, unexpected_properties
 
 
 class RecoveryTemplateVerificationTests(unittest.TestCase):
@@ -48,6 +48,19 @@ class RecoveryTemplateVerificationTests(unittest.TestCase):
         self.after["mailer_templates_custom_contents"] = "unexpected"
         self.assertEqual(unexpected_properties(self.before, self.after, self.expected),
                          ["mailer_templates_custom_contents"])
+
+    def test_accepts_confirmation_markers_only_when_confirmation_is_selected(self):
+        after = deepcopy(self.before)
+        for key, marker in CONFIRMATION_MARKERS.items():
+            after[key][marker] = True
+        self.assertEqual(unexpected_properties(self.before, after, {}, CONFIRMATION_MARKERS), [])
+        self.assertEqual(unexpected_properties(self.before, after, {}),
+                         ["mailer_subjects_custom_contents", "mailer_templates_custom_contents"])
+
+    def test_confirmation_cannot_change_recovery_or_smtp(self):
+        self.after["smtp_pass"] = "fixture-secret"
+        self.assertEqual(unexpected_properties(self.before, self.after, self.expected, CONFIRMATION_MARKERS),
+                         ["mailer_subjects_custom_contents", "mailer_templates_custom_contents", "smtp_pass"])
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# Configuración parcial: retornos y plantilla de recuperación de desarrollo.
+# Configuración parcial: retornos y correos de acceso de desarrollo.
 # No usar el config.toml de supabase init para sobrescribir Auth remoto.
 project_id = "entrenaop-account-access-dev"
 
@@ -12,3 +12,7 @@ additional_redirect_urls = [
 [auth.email.template.recovery]
 subject = "Restablece tu contraseña de EntrenaOP"
 content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.confirmation]
+subject = "Confirma tu correo de EntrenaOP"
+content_path = "./supabase/templates/confirmation.html"

@@ -8,8 +8,13 @@ import '../widgets/pro_access_widgets.dart';
 import '../../domain/pro_access.dart';
 
 class ProOfferPage extends StatefulWidget {
-  const ProOfferPage({this.offerContext = const ProOfferContext(), super.key});
+  const ProOfferPage({
+    this.offerContext = const ProOfferContext(),
+    this.loadAccess,
+    super.key,
+  });
   final ProOfferContext offerContext;
+  final LoadProAccess? loadAccess;
 
   @override
   State<ProOfferPage> createState() => _ProOfferPageState();
@@ -22,83 +27,108 @@ class _ProOfferPageState extends State<ProOfferPage> {
   Widget build(BuildContext context) => _ProScaffold(
     title: 'EntrenaOP Pro',
     brandTitle: true,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _Headline(
-          eyebrow: 'ENTRENAOP PRO',
-          title: 'Tu preparación, con un plan que se adapta a ti.',
-          description: widget.offerContext.preparationName == null
-              ? 'Un plan adaptativo según tu objetivo y lo que vas consiguiendo.'
-              : 'Para tu preparación: ${widget.offerContext.preparationName}.',
-        ),
-        const SizedBox(height: 24),
-        const _Benefit(
-          Icons.flag_outlined,
-          'Entrenamientos según tus marcas y objetivo.',
-        ),
-        const _Benefit(
-          Icons.autorenew_rounded,
-          'Las siguientes sesiones se ajustan con tus resultados.',
-        ),
-        const _Benefit(
-          Icons.calendar_month_outlined,
-          'Tu disponibilidad y material, tenidos en cuenta.',
-        ),
-        const _Benefit(
-          Icons.add_circle_outline_rounded,
-          'Más ejercicios y sesiones propios, sin las cuotas de Free.',
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'El mismo Pro. Elige cómo pagar.',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 12),
-        RadioGroup<ProBillingPeriod>(
-          groupValue: _period,
-          onChanged: (value) {
-            if (value != null) setState(() => _period = value);
-          },
-          child: Column(
-            children: [
-              for (final period in ProBillingPeriod.values) ...[
-                _BillingChoice(period: period, selected: _period == period),
-                const SizedBox(height: 12),
-              ],
-            ],
+    child: widget.loadAccess == null
+        ? _offer(context)
+        : ProAccessBuilder(
+            load: widget.loadAccess!,
+            builder: (context, access) => access.isPro
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _Headline(
+                        eyebrow: 'ENTRENAOP PRO',
+                        title: 'Ya tienes Pro',
+                        description: 'Tu acceso está activo. Puedes continuar con tu preparación.',
+                      ),
+                      const SizedBox(height: 24),
+                      _AccessDetails(access, offerContext: widget.offerContext),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => _close(context),
+                        child: const Text('Volver'),
+                      ),
+                    ],
+                  )
+                : _offer(context),
           ),
-        ),
-        const _UnavailableNotice(),
-        const SizedBox(height: 16),
-        // Hasta recibir productos reales y verificar derechos en servidor,
-        // no existe una acción que cobre o conceda Pro desde esta pantalla.
-        FilledButton(onPressed: null, child: Text(_period.subscribeLabel)),
-        const SizedBox(height: 12),
-        Text(
-          '${_period.renewal} Puedes cancelar la renovación y conservar el acceso hasta finalizar el periodo contratado.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => _close(context),
-          child: const Text('Seguir con Free'),
-        ),
-        const OutlinedButton(onPressed: null, child: Text('Restaurar compras')),
-        const Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 12,
+  );
+
+  Widget _offer(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _Headline(
+        eyebrow: 'ENTRENAOP PRO',
+        title: 'Tu preparación, con un plan que se adapta a ti.',
+        description: widget.offerContext.preparationName == null
+            ? 'Un plan adaptativo según tu objetivo y lo que vas consiguiendo.'
+            : 'Para tu preparación: ${widget.offerContext.preparationName}.',
+      ),
+      const SizedBox(height: 24),
+      const _Benefit(
+        Icons.flag_outlined,
+        'Entrenamientos según tus marcas y objetivo.',
+      ),
+      const _Benefit(
+        Icons.autorenew_rounded,
+        'Las siguientes sesiones se ajustan con tus resultados.',
+      ),
+      const _Benefit(
+        Icons.calendar_month_outlined,
+        'Tu disponibilidad y material, tenidos en cuenta.',
+      ),
+      const _Benefit(
+        Icons.add_circle_outline_rounded,
+        'Más ejercicios y sesiones propios, sin las cuotas de Free.',
+      ),
+      const SizedBox(height: 12),
+      Text(
+        'El mismo Pro. Elige cómo pagar.',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 12),
+      RadioGroup<ProBillingPeriod>(
+        groupValue: _period,
+        onChanged: (value) {
+          if (value != null) setState(() => _period = value);
+        },
+        child: Column(
           children: [
-            TextButton(onPressed: null, child: Text('Condiciones')),
-            TextButton(onPressed: null, child: Text('Privacidad')),
+            for (final period in ProBillingPeriod.values) ...[
+              _BillingChoice(period: period, selected: _period == period),
+              const SizedBox(height: 12),
+            ],
           ],
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'La restauración, las condiciones de contratación y la información de privacidad estarán disponibles antes de habilitar los pagos.',
-        ),
-      ],
-    ),
+      ),
+      const _UnavailableNotice(),
+      const SizedBox(height: 16),
+      // Hasta recibir productos reales y verificar derechos en servidor,
+      // no existe una acción que cobre o conceda Pro desde esta pantalla.
+      FilledButton(onPressed: null, child: Text(_period.subscribeLabel)),
+      const SizedBox(height: 12),
+      Text(
+        '${_period.renewal} Puedes cancelar la renovación y conservar el acceso hasta finalizar el periodo contratado.',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      const SizedBox(height: 8),
+      TextButton(
+        onPressed: () => _close(context),
+        child: const Text('Seguir con Free'),
+      ),
+      const OutlinedButton(onPressed: null, child: Text('Restaurar compras')),
+      const Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 12,
+        children: [
+          TextButton(onPressed: null, child: Text('Condiciones')),
+          TextButton(onPressed: null, child: Text('Privacidad')),
+        ],
+      ),
+      const SizedBox(height: 8),
+      const Text(
+        'La restauración, las condiciones de contratación y la información de privacidad estarán disponibles antes de habilitar los pagos.',
+      ),
+    ],
   );
 }
 
@@ -296,10 +326,11 @@ class ProSubscriptionPage extends StatelessWidget {
         else
           const _UnavailableNotice(),
         const SizedBox(height: 24),
-        FilledButton(
-          onPressed: () => context.push('/pro'),
-          child: const Text('Conocer Pro'),
-        ),
+        if (loadAccess == null)
+          FilledButton(
+            onPressed: () => context.push('/pro'),
+            child: const Text('Conocer Pro'),
+          ),
         const SizedBox(height: 16),
         const Text('Tus preparaciones, resultados e historial se conservan.'),
       ],
@@ -308,8 +339,12 @@ class ProSubscriptionPage extends StatelessWidget {
 }
 
 class _AccessDetails extends StatelessWidget {
-  const _AccessDetails(this.access);
+  const _AccessDetails(
+    this.access, {
+    this.offerContext = const ProOfferContext(),
+  });
   final ProAccess access;
+  final ProOfferContext offerContext;
   @override
   Widget build(BuildContext context) {
     final expiry = access.validUntil?.toLocal();
@@ -342,9 +377,22 @@ class _AccessDetails extends StatelessWidget {
             'La contratación y restauración de compras todavía no están disponibles.',
           ),
           TextButton(
-            onPressed: () => context.push('/plan'),
-            child: const Text('Ir a Mi plan'),
+            onPressed: () => context.push(
+              access.isPro && offerContext.goalId != null
+                  ? '/plan/goal/${offerContext.goalId}/training'
+                  : '/plan',
+            ),
+            child: Text(
+              access.isPro && offerContext.goalId != null
+                  ? 'Continuar con mi preparación'
+                  : 'Ir a Mi plan',
+            ),
           ),
+          if (!access.isPro)
+            FilledButton(
+              onPressed: () => context.push(offerContext.location()),
+              child: const Text('Conocer Pro'),
+            ),
         ],
       ),
     );

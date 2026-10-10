@@ -13,11 +13,13 @@ móvil. Antes de aplicar, inspeccionar el diff:
 supabase config diff --workdir tools/account_access_dev --project-ref sxbxfjqgoddzhtcyhalw --output-format json
 ```
 
-## Correo de recuperación
+## Correos de recuperación y confirmación
 
 Javier acuerda utilizar **EntrenaOP <acceso@entrenaop.es>**, una dirección propia
 para el acceso, separada de su correo personal de empresa. El asunto y HTML de
 recuperación están en `supabase/config.toml` y `supabase/templates/recovery.html`.
+La confirmación de alta utiliza `supabase/templates/confirmation.html` y su
+asunto propio en el mismo TOML.
 El HTML conserva `{{ .ConfirmationURL }}` para botón y enlace alternativo; no
 recibe ni solicita contraseñas, no añade seguimiento ni fija la duración del
 enlace. Utiliza el logotipo público actual de la web, con texto alternativo.
@@ -33,7 +35,15 @@ Gmail: asunto español, remitente acordado y logotipo visibles. La recepción y
 esa representación quedan comprobadas. Tras repetir la prueba desde el mismo
 perfil, Javier confirma «funciona perfectamente»: la recuperación web queda
 confirmada por él. La comprobación nativa y de producción sigue abierta.
-Confirmación de alta y otras plantillas no se modifican en este tramo.
+Confirmación de alta y otras plantillas no se modificaron en aquel tramo.
+
+**Actualización MAIL-002, 10/10/2026:** asunto y HTML de confirmación españoles
+aplicados únicamente en Dev, con coincidencia exacta comprobada por consulta
+posterior. Se conserva `{{ .ConfirmationURL }}` y el flujo PKCE. El texto explica
+que el acceso automático exige el mismo perfil/origen y que, si el correo ya se
+confirmó antes de fallar el canje, puede iniciarse sesión con contraseña. La
+recuperación permanece intacta y no cambian otras propiedades remotas. Falta
+comprobar la recepción del nuevo HTML; el agente no ha enviado correos.
 
 Javier confirma el 08/10/2026 que ha cambiado la contraseña del buzón y guardado
 los cambios; la credencial vigente es distinta de la que apareció en la captura.
@@ -42,7 +52,7 @@ sí sola el transporte SMTP; el correo real recibido posteriormente sí acredita
 la entrega de esa solicitud. Javier confirma posteriormente que la recuperación
 funciona al completar el enlace en el mismo perfil de navegador y origen.
 
-El CLI instalado 2.117.0 compara el `subject` de esta plantilla, pero no carga
+El CLI instalado 2.117.0 compara el `subject` de la plantilla, pero no carga
 su `content_path` en ese recorrido remoto. No basta un diff limpio del CLI para
 afirmar que el HTML está aplicado. `apply_recovery_template.py` utiliza la
 Management API oficial, dirige la operación únicamente al proyecto de
@@ -55,17 +65,22 @@ Requiere Python 3.11 o posterior; utiliza únicamente la biblioteca estándar.
 # nunca escrito en el código, el historial del terminal o un archivo versionado.
 python tools/account_access_dev/apply_recovery_template.py
 python tools/account_access_dev/apply_recovery_template.py --apply
+python tools/account_access_dev/apply_recovery_template.py --template confirmation
+python tools/account_access_dev/apply_recovery_template.py --template confirmation --apply
 ```
 
-Sin `--apply` solo consulta. Al aplicar envía únicamente
-`mailer_subjects_recovery` y `mailer_templates_recovery_content`. Comprueba el
-contenido exacto y que las demás propiedades no cambien. No imprime la
+Sin `--apply` solo consulta. La selección predeterminada sigue siendo
+recuperación; `--template confirmation` elige confirmación. Al aplicar envía
+únicamente `mailer_subjects_<plantilla>` y
+`mailer_templates_<plantilla>_content`. Comprueba el contenido exacto y que las
+demás propiedades no cambien. No imprime la
 configuración completa, credenciales ni tokens. No guarda claves en Flutter.
 
 La API actualiza automáticamente sus dos mapas de indicadores de personalización.
-La comprobación admite únicamente el indicador de recuperación dentro de cada
-mapa; cualquier cambio en los indicadores de otros correos, permisos, cuotas o
-configuración SMTP sigue provocando fallo. Hay cinco regresiones locales:
+La comprobación admite únicamente el indicador de la plantilla elegida dentro
+de cada mapa; cualquier cambio en los indicadores de otros correos, permisos,
+cuotas o configuración SMTP sigue provocando fallo. Hay siete regresiones
+locales, incluida la protección mutua de los indicadores de ambas plantillas:
 
 ```powershell
 python -B -m unittest discover -s tools/account_access_dev -p test_recovery_template.py
@@ -95,8 +110,15 @@ funcional de recuperación web; no es una auditoría del servicio ni una prueba
 de caducidad o reutilización contra Auth real. Quedan por comprobar la
 firma/alineación del mensaje y el recorrido en dispositivos nativos. El agente
 no ha enviado correos ni cambiado la contraseña de Javier. El remitente SMTP de
-Supabase es común a los correos de Auth, aunque aquí solo se ha traducido
-recuperación. Las credenciales permanecen en servidor y no se versionan.
+Supabase es común a los correos de Auth; desde MAIL-002 están traducidos
+recuperación y confirmación. Las credenciales permanecen en servidor y no se
+versionan.
+
+Para un alta abierta en otro perfil, el fallo del acceso automático no implica
+que siga pendiente de confirmar. Supabase acepta el reenvío sin enviar si la
+cuenta ya está confirmada; el mensaje de la app no afirma que se entregó correo.
+Probar primero el acceso con la contraseña del registro. La comprobación de una
+cuenta concreta por el operador no se incorpora como consulta pública en Flutter.
 
 Comprobaciones del 08/10/2026:
 

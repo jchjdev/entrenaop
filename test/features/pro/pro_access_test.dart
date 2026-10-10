@@ -87,6 +87,23 @@ void main() {
   }
 
   for (final pro in [false, true]) {
+    testWidgets('la oferta con acceso $pro no invita a cambiar un Pro a Free', (
+      tester,
+    ) async {
+      final repository = ProAccessFixture(isPro: pro);
+      await mount(tester, ProOfferPage(loadAccess: repository.load));
+      await tester.pumpAndSettle();
+      expect(find.text('Ya tienes Pro'), pro ? findsOneWidget : findsNothing);
+      expect(find.text('Seguir con Free'), pro ? findsNothing : findsOneWidget);
+      expect(
+        find.text('El mismo Pro. Elige cómo pagar.'),
+        pro ? findsNothing : findsOneWidget,
+      );
+      await capturePerformanceWidget(
+        tester,
+        pro ? 'pro-oferta-cuenta-activa' : 'pro-oferta-cuenta-free',
+      );
+    });
     testWidgets('el acceso $pro protege incluso la URL directa del programa', (
       tester,
     ) async {
@@ -112,6 +129,7 @@ void main() {
       await mount(tester, ProSubscriptionPage(loadAccess: repository.load));
       await tester.pumpAndSettle();
       expect(find.text(pro ? 'Pro activo' : 'Cuenta Free'), findsOneWidget);
+      expect(find.text('Conocer Pro'), pro ? findsNothing : findsOneWidget);
       if (pro) {
         expect(
           find.textContaining('No es una suscripción de pago'),
@@ -146,6 +164,52 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Configuración real'), findsOneWidget);
   });
+  testWidgets(
+    'una oferta sin acceso comprobado permite reintentar sin mostrar Free',
+    (tester) async {
+      final pending = Completer<ProAccess>();
+      var attempt = 0;
+      Future<ProAccess> load() => attempt++ == 0
+          ? pending.future
+          : ProAccessFixture(isPro: true).load();
+      await mount(tester, ProOfferPage(loadAccess: load));
+      await tester.pump();
+      expect(find.text('Seguir con Free'), findsNothing);
+      pending.completeError(StateError('Sin conexión'));
+      await tester.pumpAndSettle();
+      expect(find.text('Seguir con Free'), findsNothing);
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ya tienes Pro'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'la oferta de una cuenta Pro continúa en su preparación de origen',
+    (tester) async {
+      final repository = ProAccessFixture(isPro: true);
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => ProOfferPage(
+              loadAccess: repository.load,
+              offerContext: const ProOfferContext(goalId: 'goal'),
+            ),
+          ),
+          GoRoute(
+            path: '/plan/goal/goal/training',
+            builder: (_, _) => const Scaffold(body: Text('Programa')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continuar con mi preparación'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/plan/goal/goal/training');
+    },
+  );
   testWidgets(
     'el acceso Pro contextual abre configuración sin volver a pagar',
     (tester) async {

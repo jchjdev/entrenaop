@@ -157,8 +157,11 @@ void main() {
       await auth.resendConfirmation('persona@example.com');
       await tester.pumpAndSettle();
       expect(find.textContaining('recibirás un nuevo correo'), findsOneWidget);
-      await tester.tap(find.text('Volver al acceso'));
+      expect(find.textContaining('prueba a iniciar sesión'), findsOneWidget);
+      await tester.ensureVisible(find.text('Iniciar sesión'));
+      await tester.tap(find.text('Iniciar sesión'));
       await tester.pumpAndSettle();
+      expect(_path(router), '/');
       await auth.signIn(email: 'persona@example.com', password: 'clave-segura');
       await tester.pumpAndSettle();
       expect(_path(router), '/confirm-email');
@@ -213,11 +216,32 @@ void main() {
     },
   );
   testWidgets(
+    'un error al confirmar permite entrar sin forzar recuperación ni reenviar',
+    (tester) async {
+      final repo = AccountAuthFixture();
+      final (auth, router) = await _mount(tester, repo, '/confirm-email');
+      repo.changes.addError(const AuthLinkException());
+      await tester.pumpAndSettle();
+      expect(_path(router), '/auth-link-error');
+      expect(
+        find.textContaining('puede haber quedado confirmado'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Iniciar sesión'));
+      await tester.pumpAndSettle();
+      expect(_path(router), '/');
+      expect(auth.state, isA<AuthUnauthenticated>());
+      expect(repo.resetCalls, 0);
+      expect(repo.resendCalls, 0);
+      expect(repo.updateCalls, 0);
+    },
+  );
+  testWidgets(
     'un enlace caducado ofrece recuperación sin permitir editar contraseña',
     (tester) async {
       final repo = AccountAuthFixture();
       final (_, router) = await _mount(tester, repo, '/reset-password');
-      expect(find.text('Necesitas un enlace nuevo'), findsOneWidget);
+      expect(find.text('No se ha podido abrir el enlace'), findsOneWidget);
       expect(find.byType(TextFormField), findsNothing);
       repo.changes.addError(const AuthLinkException());
       await tester.pumpAndSettle();

@@ -278,7 +278,7 @@ class AuthCubit extends Cubit<AuthState> {
         AuthEmailConfirmationRequired(
           email: email,
           retryAt: _emailRetryAt,
-          message: 'Si la cuenta está pendiente de confirmación, recibirás un nuevo correo.',
+          message: 'Si la cuenta está pendiente de confirmación, recibirás un nuevo correo. Si ya abriste el enlace, prueba a iniciar sesión con tu contraseña: el correo puede haber quedado confirmado aunque el acceso automático fallara.',
         ),
       );
     } catch (error) {

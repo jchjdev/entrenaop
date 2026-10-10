@@ -15,6 +15,24 @@ las operaciones de confianza o las RPC administrativas autorizadas escriben.
 Una configuración de servidor cerrada por defecto habilita estas RPC en Dev;
 el panel de producción omite la herramienta. No se cambia producción.
 
+### Presentación según el acceso · COM-009
+
+La ruta `/pro`, también desde URL directa o el ejemplo, vuelve a consultar el
+acceso del servidor. Free conserva la oferta mensual/anual y «Seguir con Free».
+Pro ve «Ya tienes Pro», su vigencia y contadores, con acceso a Mi plan o a la
+preparación desde la que llegó. No se muestran precios ni invitaciones a pagar
+o pasar a Free. «Volver» mantiene el retorno al origen. Mi suscripción muestra
+«Conocer Pro» únicamente a Free. Durante carga o error de verificación no se
+presupone Free: se conserva el reintento.
+
+La consulta de solo lectura del 10/10 confirma dos cuentas con correo validado:
+la principal conserva Pro de prueba y la segunda indicada por Javier es Free.
+El acceso de esta última con su contraseña queda pendiente de su prueba.
+
+Esta corrección de interfaz no concede ni retira derechos, modifica cuotas o
+habilita cobros. La pantalla incluida por una guarda ya comprobada como Free
+puede reutilizar la oferta; el servidor sigue autorizando cada operación.
+
 ### Cómo probar
 
 1. Registrar una segunda cuenta en EntrenaOP Dev: nace Free. La cuenta elegida
@@ -142,7 +160,18 @@ Referencias oficiales consultadas el 10/10/2026:
 - [Acuerdos de App Store Connect](https://developer.apple.com/help/app-store-connect/manage-agreements/sign-and-update-agreements/).
 - [Suscripciones en Google Play](https://support.google.com/googleplay/android-developer/answer/140504?hl=es).
 
-## Verificación actual · COM-008
+## Verificación de interfaz · COM-009
+
+Verificado el 10/10/2026: análisis de raíz limpio y batería completa con 742
+pruebas correctas y la omisión web existente. Las regresiones distinguen la
+oferta Free del acceso Pro, verifican que Mi suscripción no ofrezca comprar a
+Pro, el retorno a la preparación y carga/error/reintento sin suponer Free.
+Captura real de la oferta de una cuenta Pro revisada a 390 px en
+`build/performance_v2_review/pro-oferta-cuenta-activa.png`, con datos ficticios;
+no acredita inicio de sesión real ni dispositivos físicos. Admin, migraciones,
+derechos, cuotas, dependencias y producción permanecen sin cambios en COM-009.
+
+## Verificación de derechos · COM-008
 
 Verificado el 10/10/2026 contra EntrenaOP Dev: 138 migraciones locales/remotas
 coincidentes, incluidas `20261010000000`, `20261010001000`, `20261010002000`

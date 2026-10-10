@@ -148,8 +148,10 @@ class AppRouter {
       routes: [
         materialAppRoute(
           path: '/pro',
-          builder: (_, state) =>
-              ProOfferPage(offerContext: ProOfferContext.fromUri(state.uri)),
+          builder: (_, state) => ProOfferPage(
+            offerContext: ProOfferContext.fromUri(state.uri),
+            loadAccess: sl<ProAccessRepository>().load,
+          ),
         ),
         materialAppRoute(
           path: '/pro/example',

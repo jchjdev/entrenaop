@@ -8,13 +8,51 @@ una auditoría de seguridad de todo el login o de la aplicación.
 
 ## Recorrido implementado
 
+### Corrección de confirmación de alta · MAIL-002 · 10/10/2026
+
+Javier aporta el correo de alta aún en inglés y un error al abrir su enlace en
+otro navegador seguido de reenvío sin recibir otro mensaje. La consulta de solo
+lectura en Dev comprueba que la cuenta indicada quedó confirmada a las 10:10
+(Europe/Madrid), sin inicio de sesión posterior. El correo puede confirmarse
+antes de que falle el canje PKCE del acceso automático en otro perfil.
+
+El asunto «Confirma tu correo de EntrenaOP» y el HTML español están aplicados en
+Dev y coinciden exactamente con la plantilla versionada. El botón conserva
+`{{ .ConfirmationURL }}` y las instrucciones explican el mismo navegador/origen
+y la alternativa de iniciar sesión con contraseña si la dirección ya se confirmó.
+La comparación remota no encuentra cambios ajenos y la recuperación sigue
+coincidiendo con su plantilla anterior. No se modifican SMTP, cuotas, retornos,
+confirmación obligatoria, MFA ni producción. La recepción del nuevo HTML aún
+requiere un registro pendiente de confirmar; no se envían correos desde el agente.
+
+El reenvío mantiene una respuesta condicional: el SDK no acredita entrega.
+Supabase devuelve éxito sin generar un correo para cuentas ya confirmadas,
+según su [implementación de reenvío](https://github.com/supabase/auth/blob/master/internal/api/resend.go).
+La app explica que se pruebe a iniciar sesión con la contraseña antes de pedir
+otro enlace. El aviso de enlace rechazado permite iniciar sesión, solicitar
+recuperación o acceder al reenvío de confirmación. Solo abre ese formulario;
+no envía nada al pulsar esta última opción. No revela si una cuenta existe ni
+consulta su estado públicamente, y no habilita un cambio de contraseña sin la
+sesión de recuperación correspondiente.
+
+Verificación de MAIL-002: análisis de raíz limpio; 742 pruebas completas
+correctas y la omisión web existente. La regresión de un enlace rechazado
+vuelve al acceso sin iniciar recuperación, reenviar ni actualizar contraseña;
+también se conserva la salida explícita para pedir recuperación. Siete pruebas
+del verificador de configuración correctas, incluida la protección de las
+plantillas no seleccionadas y SMTP. Las comprobaciones usan fixtures o lectura
+remota: no acreditan acceso real con la contraseña de la cuenta indicada.
+
+Las capturas y cifras de UI-013 que siguen describen la entrega del 08/10;
+el aviso de enlace rechazado y los textos de confirmación se amplían aquí.
+
 | Situación | Comportamiento |
 |---|---|
 | Olvidé mi contraseña | El acceso abre el formulario con el correo ya escrito. |
 | Solicitud aceptada | «Revisa tu correo» permanece visible; no confirma si existe la cuenta. |
 | Fallo de envío | Conserva el correo y muestra un error con reintento. |
 | Alta pendiente de confirmar | «Confirma tu correo», instrucciones y reenvío; también desde un acceso rechazado por correo sin confirmar. |
-| Reenvío | Desactiva solicitudes simultáneas y espera un minuto tras una solicitud aceptada; el servidor mantiene sus propios límites. |
+| Reenvío | Respuesta condicional y acceso con contraseña si el correo ya se confirmó. Desactiva solicitudes simultáneas y espera un minuto tras una solicitud aceptada; el servidor mantiene sus propios límites. |
 | Enlace de recuperación validado por el SDK | Abre «Crea una nueva contraseña»; intentar navegar a otra sección mantiene este recorrido. |
 | URL de recuperación sin sesión correspondiente | No muestra el formulario de cambio; permite solicitar otro enlace. |
 | Contraseña inválida o distinta de su repetición | Valida el formulario antes de enviar. Mínimo de interfaz: ocho caracteres; Auth conserva su validación independiente. |

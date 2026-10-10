@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**COM-009 y MAIL-002, 10/10/2026 · correcciones de Pro y confirmación:** `/pro`
+consulta acceso real y una cuenta Pro ve «Ya tienes Pro», vigencia y continuidad,
+sin «Seguir con Free» ni oferta de compra. Mi suscripción anuncia Pro solo a
+Free; carga/error conservan el reintento. Confirmación de alta traducida y
+aplicada en Dev, con recuperación intacta y sin cambios ajenos en Auth.
+La cuenta indicada ya estaba confirmada: se aclara que un error de canje en otro
+navegador puede permitir entrar con contraseña y que reenvío aceptado no asegura
+envío. PKCE se conserva. Análisis limpio, 742 pruebas de raíz correctas y la
+omisión web existente; siete pruebas del verificador correctas. Captura Pro
+revisada; recepción del nuevo HTML y acceso real de la segunda cuenta pendientes.
+Sin cambios en admin, SQL, derechos, cuotas, dependencias ni producción. El
+siguiente bloque Pro sigue siendo conectar tiendas a los derechos, antes de
+habilitar cobros. Detalles en [Pro](PRO_LAUNCH.md) y
+[Cuenta](REFRESH_ACCOUNT_2026_10_08.md).
+
 **COM-008, 10/10/2026 · derechos y cuotas en desarrollo:** Javier pide cuentas
 reales para probar Free/Pro y retoma la propuesta 8 ejercicios/4 sesiones. La
 app consulta derechos de Supabase, presenta contadores y conserva borradores al

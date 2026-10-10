@@ -1,4 +1,4 @@
-"""Comprueba o aplica solo el asunto y el HTML de recuperación en desarrollo."""
+"""Comprueba o aplica solo el asunto y HTML de un correo de acceso en Dev."""
 import argparse
 import hashlib
 import json
@@ -16,16 +16,20 @@ RECOVERY_MARKERS = {
     "mailer_subjects_custom_contents": "MAILER_SUBJECTS_RECOVERY",
     "mailer_templates_custom_contents": "MAILER_TEMPLATES_RECOVERY_CONTENT",
 }
+CONFIRMATION_MARKERS = {
+    "mailer_subjects_custom_contents": "MAILER_SUBJECTS_CONFIRMATION",
+    "mailer_templates_custom_contents": "MAILER_TEMPLATES_CONFIRMATION_CONTENT",
+}
 
 
-def unexpected_properties(before, after, expected):
+def unexpected_properties(before, after, expected, markers=RECOVERY_MARKERS):
     unexpected = []
     for key in sorted(set(before) | set(after)):
         if key in expected or before.get(key) == after.get(key):
             continue
-        marker = RECOVERY_MARKERS.get(key)
+        marker = markers.get(key)
         previous, current = before.get(key), after.get(key)
-        # La API marca la recuperación como personalizada automáticamente.
+        # La API marca el correo elegido como personalizado automáticamente.
         # Solo se admite ese indicador; los de otros correos deben conservarse.
         if marker and isinstance(previous, dict) and isinstance(current, dict):
             if current.get(marker) is True and {
@@ -39,21 +43,23 @@ def unexpected_properties(before, after, expected):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--template", choices=("recovery", "confirmation"), default="recovery")
     args = parser.parse_args()
     token = os.environ.get("SUPABASE_ACCESS_TOKEN")
     if not token:
         raise RuntimeError("Falta SUPABASE_ACCESS_TOKEN; nunca pegarlo en el código.")
     config = tomllib.loads((ROOT / "supabase/config.toml").read_text(encoding="utf-8"))
-    recovery = config["auth"]["email"]["template"]["recovery"]
-    html = (ROOT / recovery["content_path"]).resolve()
+    template = config["auth"]["email"]["template"][args.template]
+    markers = RECOVERY_MARKERS if args.template == "recovery" else CONFIRMATION_MARKERS
+    html = (ROOT / template["content_path"]).resolve()
     if not html.is_relative_to(ROOT):
         raise RuntimeError("La plantilla debe pertenecer a esta configuración.")
     content = html.read_text(encoding="utf-8")
     if '{{ .ConfirmationURL }}' not in content:
         raise RuntimeError("La plantilla debe conservar el enlace de Supabase.")
     expected = {
-        "mailer_subjects_recovery": recovery["subject"],
-        "mailer_templates_recovery_content": content,
+        f"mailer_subjects_{args.template}": template["subject"],
+        f"mailer_templates_{args.template}_content": content,
     }
 
     def request(method="GET", data=None):
@@ -70,23 +76,24 @@ def main():
     matches_before = all(before.get(k) == v for k, v in expected.items())
     after = before
     if args.apply and not matches_before:
-        # Dos propiedades explícitas: no cambia SMTP, permisos ni confirmación.
+        # Solo asunto y HTML: conserva SMTP, permisos y la confirmación obligatoria.
         request("PATCH", expected)
         after = request()
-    unexpected = unexpected_properties(before, after, expected)
+    unexpected = unexpected_properties(before, after, expected, markers)
     matches_after = all(after.get(k) == v for k, v in expected.items())
     # Solo información del trabajo: no imprimir Auth completo ni credenciales.
     print(json.dumps({
         "project_ref": PROJECT_REF,
+        "template": args.template,
         "applied": args.apply and not matches_before,
-        "subject_matches": after.get("mailer_subjects_recovery") == recovery["subject"],
-        "content_matches": after.get("mailer_templates_recovery_content") == content,
+        "subject_matches": after.get(f"mailer_subjects_{args.template}") == template["subject"],
+        "content_matches": after.get(f"mailer_templates_{args.template}_content") == content,
         "html_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
         "custom_smtp_configured": bool(after.get("smtp_host")),
-        "recovery_custom_markers": {
+        f"{args.template}_custom_markers": {
             key: after.get(key, {}).get(marker) is True
             if isinstance(after.get(key), dict) else False
-            for key, marker in RECOVERY_MARKERS.items()
+            for key, marker in markers.items()
         },
         "unexpected_changed_properties": unexpected,
     }, ensure_ascii=False))
