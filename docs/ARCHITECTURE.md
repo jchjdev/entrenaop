@@ -803,7 +803,13 @@ y audioplayers 6.8.1. Un adaptador de audio reutiliza el reproductor, precarga,
 evita acumulación y aísla fallos. HAPT-001 sustituye en Android los efectos de
 teclado de HapticFeedback por pulsos finitos del motor mediante un canal nativo,
 con permiso normal VIBRATE, ajustes de notificación/No molestar y cancelación al
-salir de primer plano. iOS/web conservan HapticFeedback de Flutter.
+salir de primer plano. HAPT-002 usa el mismo canal en iOS con Core Haptics y
+pulsos continuos finitos, sin permiso de notificaciones ni paquetes nuevos.
+El motor y su player se conservan durante la sesión, se recrea el player tras
+interrupciones y se cancelan al perder primer plano; no se repiten avisos al
+volver. Solo se generan eventos hápticos, separados del reproductor de audio.
+Web conserva HapticFeedback de Flutter. Un dispositivo sin motor compatible
+comunica indisponibilidad; no se simula éxito con un toque de interfaz.
 El ejecutor emite hitos de preparación, inicio, mitad, diez segundos y final;
 UI-019 añade un pitido breve a tres, dos y un segundo del final del trabajo,
 reutilizando el WAV de preparación, sin reproducir segundos pasados al restaurar;

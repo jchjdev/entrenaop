@@ -182,3 +182,15 @@ ajustes y sin acreditar el conjunto de avisos del temporizador. Los
 inventar reproducciones. El arranque no acredita login, recuperación por
 correo, una sesión de gimnasio ni funcionamiento con auriculares o en
 segundo plano. [Seguimiento de avisos](WORKOUT_AUDIO_2026_10_08.md).
+
+## Corrección de vibración física · HAPT-002 · 10/10/2026
+
+Se sustituye la ruta de efectos de interfaz iOS por pulsos finitos de Core
+Haptics, sin paquetes ni permisos nuevos. Xcode instala la corrección en el
+mismo iPhone 12 con Supabase de desarrollo. Javier confirma los dos pulsos
+de «Probar vibración» y la consola registra el patrón de 420 ms sin error.
+El análisis, las 744 pruebas Flutter (una exclusiva web omitida) y tres
+pruebas nativas de los patrones pasan. El esquema vuelve a Debug tras la
+instalación Release sin depurador. Quedan pendientes la sesión real con
+todos sus hitos, auriculares y los «colapsos» todavía no descritos.
+[Contrato, implementación y límites](WORKOUT_AUDIO_2026_10_08.md).

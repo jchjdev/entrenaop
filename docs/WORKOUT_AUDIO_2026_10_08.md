@@ -384,3 +384,52 @@ patrones, permisos, sonido o reloj ni atribuir la causa sin evidencia.
 Javier anuncia además «colapsos» que aportará después; sus pasos y logs
 todavía no están disponibles. No se da por validado el recorrido de avisos
 en iPhone. [Preparación y límites de la instalación](IOS_DEVELOPMENT.md).
+
+## HAPT-002 · pulsos nativos en iPhone · 10/10/2026
+
+Javier pide corregir ahora la ausencia de vibración física registrada en
+IOS-003. Se comprueba que iOS seguía enviando selectionClick, lightImpact y
+mediumImpact mediante HapticFeedback: son efectos de interfaz, no patrones
+de duración controlada. Esto identifica la ruta anterior, pero no acredita
+por sí solo la causa de la ausencia de percepción en el iPhone.
+
+El adaptador iOS usa Core Haptics por el canal existente
+`es.entrenaop/workout_vibration`, registrado al inicializar el motor implícito
+de Flutter. No se añaden paquetes ni permisos de notificación en iOS.
+La prueba manual y todos los hitos pasan por esta ruta; Android conserva
+su motor y su contrato de permisos, y web conserva los efectos anteriores.
+
+Se solicitan pulsos continuos de intensidad 1 y nitidez 0,5: 60 ms para
+preparación y 3/2/1, 120 ms para mitad/diez segundos, 200 ms al comenzar
+y dos de 160 ms separados por 100 ms al finalizar trabajo o descanso.
+El engine solo genera hápticos; no modifica la categoría de audio ni los WAV.
+Motor y player permanecen retenidos, con apagado automático durante la
+inactividad. Se arranca el motor y se crea un player nuevo para cada aviso,
+incluidos los posteriores a una interrupción o reinicio del servidor háptico.
+El pulso anterior se detiene antes del siguiente; no se acumulan ni repiten
+avisos al regresar. Se cancela al perder primer plano y se rechazan
+solicitudes fuera de él. Sin hardware compatible o ante un error nativo,
+la prueba comunica el fallo sin un efecto alternativo que aparente éxito;
+el servicio continúa aislando el error del sonido y del entrenamiento.
+
+La API requiere iOS 13, dentro del mínimo iOS 15 vigente. La capacidad real
+se consulta con capabilitiesForHardware; el simulador no acredita vibración.
+Diagnósticos de desarrollo y trazas nativas indican capacidad, visibilidad,
+estado del motor, aviso y duración solicitada, sin datos de cuenta.
+[API de Core Haptics](https://developer.apple.com/documentation/corehaptics).
+
+Validación: análisis limpio, 30 pruebas relevantes y 744 pruebas completas
+correctas con la omisión web existente. Tres XCTest nativas pasan en
+iPhone 17 Pro/iOS 26.3.1: patrones cortos y finitos, doble pulso separado
+sin eventos de audio, y rechazo de avisos desconocidos. Las pruebas Dart
+acreditan el canal para todos los hitos y la prueba manual iOS, ausencia de
+petición de permiso, indisponibilidad y propagación de errores sin recurrir
+a efectos de interfaz.
+
+La versión corregida se compila, firma e instala desde Xcode en el iPhone 12
+de Javier con iOS 27.0.1 y Supabase de desarrollo. Javier confirma que nota
+los dos pulsos al pulsar «Probar vibración»; la consola registra
+`iOS aviso=workFinished enviada=true duración=0.420`. Esto acredita la prueba
+manual física, no todos los hitos durante una sesión de gimnasio ni la
+sincronía percibida con sonido, música o auriculares. Se restaura el esquema
+compartido a Debug después de instalar la versión Release sin depurador.

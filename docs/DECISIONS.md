@@ -595,3 +595,19 @@ permisos ni patrones para justificar una causa aún desconocida.
 
 Configuración y comprobaciones: `docs/IOS_DEVELOPMENT.md`. Incidencia y
 límites de avisos: `docs/WORKOUT_AUDIO_2026_10_08.md`.
+
+## HAPT-002 · Avisos iOS mediante Core Haptics · 10/10/2026
+
+Javier pide resolver ahora la ausencia de vibración en el iPhone. Los avisos
+y su prueba manual iOS sustituyen los efectos de interfaz de Flutter por
+patrones finitos de Core Haptics, a través del canal nativo ya existente.
+Se mantienen las duraciones acordadas en Android, la separación del sonido,
+el funcionamiento solo en primer plano y la ausencia de repetición al volver.
+No se añaden paquetes, permisos de notificación iOS ni cambios en Android,
+web, datos o producción. Una falta de motor o un error se comunica como
+fallo, sin acreditar percepción física por la mera aceptación de la API.
+
+Implementación y verificaciones automáticas completas. Javier confirma los
+dos pulsos de la prueba manual en su iPhone 12, tras instalar la versión
+corregida con Supabase de desarrollo. Contrato, pruebas y comprobación física
+en `docs/WORKOUT_AUDIO_2026_10_08.md`.
