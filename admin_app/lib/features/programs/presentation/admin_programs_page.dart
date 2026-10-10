@@ -15,6 +15,7 @@ class AdminProgramsPage extends StatefulWidget {
     required this.exerciseRepository,
     required this.onSignOut,
     this.coverRepository,
+    this.showDevelopmentAccounts = false,
   });
 
   final AdminProgramRepository repository;
@@ -22,6 +23,7 @@ class AdminProgramsPage extends StatefulWidget {
   final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
   final ProgramCoverRepository? coverRepository;
+  final bool showDevelopmentAccounts;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -140,6 +142,12 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           ],
         ),
         actions: [
+          if (_authorized && widget.showDevelopmentAccounts)
+            IconButton(
+              tooltip: 'Cuentas de prueba',
+              icon: const Icon(Icons.manage_accounts_outlined),
+              onPressed: () => context.push('/development-accounts'),
+            ),
           IconButton(
             tooltip: 'Cerrar sesión',
             onPressed: widget.onSignOut,

@@ -3,17 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/pro_offer.dart';
+import 'pro_access_widgets.dart';
 
 class ProDiscoveryCard extends StatelessWidget {
   const ProDiscoveryCard({
     this.offerContext = const ProOfferContext(),
+    this.loadAccess,
     super.key,
   });
 
   final ProOfferContext offerContext;
+  final LoadProAccess? loadAccess;
 
   @override
-  Widget build(BuildContext context) => EntrenaCard(
+  Widget build(BuildContext context) => loadAccess == null
+      ? _card(context, false)
+      : ProAccessBuilder(
+          load: loadAccess!,
+          builder: (context, access) => _card(context, access.isPro),
+        );
+
+  Widget _card(BuildContext context, bool isPro) => EntrenaCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -35,16 +45,32 @@ class ProDiscoveryCard extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         FilledButton.icon(
-          onPressed: () => context.push(offerContext.location()),
-          icon: const Icon(Icons.lock_outline_rounded),
-          label: const Text('Crear mi plan · Pro'),
+          onPressed: () => context.push(
+            isPro
+                ? offerContext.goalId == null
+                      ? '/plan/goal'
+                      : '/plan/goal/${offerContext.goalId}/training'
+                : offerContext.location(),
+          ),
+          icon: Icon(
+            isPro ? Icons.play_arrow_rounded : Icons.lock_outline_rounded,
+          ),
+          label: Text(
+            isPro
+                ? offerContext.goalId == null
+                      ? 'Elegir preparación'
+                      : 'Configurar mi plan'
+                : 'Crear mi plan · Pro',
+          ),
         ),
         TextButton(
           onPressed: () => context.push(offerContext.location(example: true)),
           child: const Text('Ver un ejemplo'),
         ),
         Text(
-          'Contratación próximamente disponible.',
+          isPro
+              ? 'Pro activo en tu cuenta.'
+              : 'Contratación próximamente disponible.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],

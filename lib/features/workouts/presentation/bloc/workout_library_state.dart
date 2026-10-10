@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:equatable/equatable.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 
 enum WorkoutLibraryStatus { initial, loading, ready, failure }
 
@@ -10,6 +11,7 @@ class WorkoutLibraryState extends Equatable {
     this.personalWorkouts = const [],
     this.busyTemplateId,
     this.errorMessage,
+    this.accessDenied,
   });
 
   final WorkoutLibraryStatus status;
@@ -17,6 +19,7 @@ class WorkoutLibraryState extends Equatable {
   final List<WorkoutTemplateSummary> personalWorkouts;
   final String? busyTemplateId;
   final String? errorMessage;
+  final ProAccessDenied? accessDenied;
 
   WorkoutLibraryState copyWith({
     WorkoutLibraryStatus? status,
@@ -26,6 +29,7 @@ class WorkoutLibraryState extends Equatable {
     bool clearBusyTemplate = false,
     String? errorMessage,
     bool clearError = false,
+    ProAccessDenied? accessDenied,
   }) => WorkoutLibraryState(
     status: status ?? this.status,
     workouts: workouts ?? this.workouts,
@@ -34,6 +38,7 @@ class WorkoutLibraryState extends Equatable {
         ? null
         : busyTemplateId ?? this.busyTemplateId,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    accessDenied: clearError ? null : accessDenied ?? this.accessDenied,
   );
 
   @override
@@ -43,5 +48,6 @@ class WorkoutLibraryState extends Equatable {
     personalWorkouts,
     busyTemplateId,
     errorMessage,
+    accessDenied,
   ];
 }

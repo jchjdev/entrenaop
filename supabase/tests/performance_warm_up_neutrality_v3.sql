@@ -1,10 +1,20 @@
 -- Ejecuciones reales: igual trabajo, distinta elección de calentamiento.
 begin;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
 create function pg_temp.perform_week_v3(omit_warm boolean) returns jsonb language plpgsql as $$
 declare u uuid; g uuid; wk date:=current_date+1-extract(isodow from current_date)::int;
  obj record; s record; es record; e uuid; ref jsonb; p jsonb; r jsonb; value numeric; measurement text;
 begin
  insert into auth.users(id,email) values(gen_random_uuid(),'warm-'||omit_warm||'@example.invalid') returning id into u;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
  perform set_config('request.jwt.claim.sub',u::text,true);
  update public.profiles set fecha_nacimiento='1996-01-01' where id=u;
  insert into public.preparation_goals(user_id,program_id,target_date) values(u,'fas_periodic_assessment',current_date+90) returning id into g;

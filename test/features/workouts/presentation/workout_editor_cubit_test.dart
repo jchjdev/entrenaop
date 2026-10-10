@@ -8,6 +8,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/running_workout_editor_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,34 @@ import '../../exercises/domain/strength_exercise_catalog_test.dart'
     show readCatalogJson;
 
 void main() {
+  test(
+    'una cuota rechazada conserva el borrador y devuelve el motivo comercial',
+    () async {
+      final repository = _WorkoutRepository()..denyCreation = true;
+      final draftStore = _DraftStore();
+      final cubit = WorkoutEditorCubit(
+        getExercises: GetExercisesUseCase(_ExerciseRepository()),
+        createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+        draftStore: draftStore,
+        createWorkout: CreatePersonalWorkoutUseCase(repository),
+        getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+        reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.persistDraft(_input);
+      final savedDraft = draftStore.draft;
+      await cubit.save(_input);
+      expect(cubit.state.status, WorkoutEditorStatus.ready);
+      expect(cubit.state.accessDenied?.restriction, ProRestriction.sessions);
+      expect(cubit.state.createdTemplateId, isNull);
+      expect(draftStore.draft, same(savedDraft));
+      repository.denyCreation = false;
+      await cubit.save(_input);
+      expect(cubit.state.status, WorkoutEditorStatus.saved);
+      expect(draftStore.draft, isNull);
+    },
+  );
   for (final save in [false, true]) {
     testWidgets(
       'el editor devuelve el control al router al salir, guardado $save',
@@ -732,6 +761,14 @@ class _DraftStore implements WorkoutEditorDraftStore {
 
 class _WorkoutRepository implements WorkoutRepository {
   String? revisedTemplateId;
+  bool denyCreation = false;
+  @override
+  Future<String> createPersonalTemplate(
+    CreatePersonalWorkoutInput input,
+  ) async {
+    if (denyCreation) throw ProAccessDenied.fromDetails('free_session_limit')!;
+    return 'created-template';
+  }
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String id) async =>

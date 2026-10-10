@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 import 'dart:async';
@@ -82,6 +84,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           previous.status != current.status ||
           previous.errorMessage != current.errorMessage,
       listener: (context, state) {
+        if (state.accessDenied case final denied?) {
+          unawaited(showProRestriction(context, denied));
+          return;
+        }
         if (state.status == WorkoutEditorStatus.saved) {
           _autosaveTimer?.cancel();
           setState(() => _allowPop = true);
@@ -1927,6 +1933,10 @@ class _ExercisePickerState extends State<_ExercisePicker> {
         image: submission.image,
       );
       if (mounted) Navigator.of(context).pop(created);
+    } on ProAccessDenied catch (error) {
+      if (!mounted) return;
+      setState(() => _creating = false);
+      await showProRestriction(context, error);
     } on FormatException catch (error) {
       if (!mounted) return;
       setState(() => _creating = false);

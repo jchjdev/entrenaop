@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
@@ -130,7 +131,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
 
   @override
   Future<String> createPersonalTemplate(Map<String, dynamic> payload) async {
-    final response = await supabaseClient.rpc(
+    final response = await _commercialRpc(
       'create_personal_workout_template',
       params: {'p_payload': payload},
     );
@@ -139,7 +140,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
 
   @override
   Future<String> duplicatePersonalTemplate(String templateId) async {
-    final response = await supabaseClient.rpc(
+    final response = await _commercialRpc(
       'duplicate_personal_workout_template',
       params: {'p_template_id': templateId},
     );
@@ -151,11 +152,24 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     String templateId,
     Map<String, dynamic> payload,
   ) async {
-    final response = await supabaseClient.rpc(
+    final response = await _commercialRpc(
       'revise_personal_workout_template',
       params: {'p_template_id': templateId, 'p_payload': payload},
     );
     return response as String;
+  }
+
+  Future<dynamic> _commercialRpc(
+    String name, {
+    required Map<String, dynamic> params,
+  }) async {
+    try {
+      return await supabaseClient.rpc(name, params: params);
+    } on PostgrestException catch (error) {
+      final denied = ProAccessDenied.fromDetails(error.details);
+      if (denied != null) throw denied;
+      rethrow;
+    }
   }
 
   @override

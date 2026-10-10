@@ -1,5 +1,10 @@
 -- Ejecuciones reales con cuentas ficticias: cada alcance continúa automáticamente.
 begin;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
 do $$
 declare u uuid; g uuid; a uuid; e uuid; old_execution uuid; second_goal uuid; control_id uuid; scope text; obj record; s record; es record;
  wk date:=current_date+1-extract(isodow from current_date)::int;
@@ -7,6 +12,11 @@ declare u uuid; g uuid; a uuid; e uuid; old_execution uuid; second_goal uuid; co
 begin
  for scope in select unnest(array['running','performance','full']) loop
   insert into auth.users(id,email) values(gen_random_uuid(),'follow-'||scope||'@example.invalid') returning id into u;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
   perform set_config('request.jwt.claim.sub',u::text,true);
   update public.profiles set fecha_nacimiento='1996-01-01' where id=u;
   insert into public.preparation_goals(user_id,program_id,target_date)

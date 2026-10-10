@@ -15,6 +15,8 @@ import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_edi
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
+import 'package:entrenaop_admin/features/pro_access/presentation/admin_pro_access_page.dart';
 
 /// Las URLs contienen identidad, nunca una entidad que solo exista en `extra`.
 /// Recargar resuelve el contenido mediante los repositorios actuales y sus RLS.
@@ -24,6 +26,7 @@ GoRouter createAdminRouter({
   required AdminExerciseRepository exercises,
   required VoidCallback onSignOut,
   ProgramCoverRepository? covers,
+  AdminProAccessRepository? proAccess,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -164,6 +167,14 @@ GoRouter createAdminRouter({
     errorBuilder: (context, state) =>
         const _RouteMessage('Esta página no existe.'),
     routes: [
+      if (proAccess != null)
+        GoRoute(
+          path: '/development-accounts',
+          builder: (_, _) => load(
+            () async => proAccess,
+            (repository) => AdminProAccessPage(repository: repository),
+          ),
+        ),
       GoRoute(path: '/', redirect: (_, _) => '/programs'),
       if (loginBuilder != null)
         GoRoute(path: '/login', builder: (context, _) => loginBuilder(context)),
@@ -175,6 +186,7 @@ GoRouter createAdminRouter({
           exerciseRepository: exercises,
           coverRepository: covers,
           onSignOut: onSignOut,
+          showDevelopmentAccounts: proAccess != null,
         ),
         routes: [
           GoRoute(

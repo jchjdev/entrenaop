@@ -9,10 +9,16 @@ import 'package:entrenaop/features/library/presentation/widgets/library_search_c
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 
 class ExerciseLibraryPage extends StatelessWidget {
-  const ExerciseLibraryPage({this.initialPersonalTab = false, super.key});
+  const ExerciseLibraryPage({
+    this.initialPersonalTab = false,
+    this.loadProAccess,
+    super.key,
+  });
   final bool initialPersonalTab;
+  final LoadProAccess? loadProAccess;
 
   Future<bool> _create(BuildContext tabContext) async {
     final created = await tabContext.push<String>('/library/exercises/new');
@@ -65,6 +71,7 @@ class ExerciseLibraryPage extends StatelessWidget {
                 _ExerciseCollection(
                   state: state,
                   personal: true,
+                  loadProAccess: loadProAccess,
                   onCreate: () => _create(tabContext),
                 ),
               ],
@@ -81,10 +88,12 @@ class _ExerciseCollection extends StatefulWidget {
     required this.state,
     required this.personal,
     required this.onCreate,
+    this.loadProAccess,
   });
   final ExerciseLibraryState state;
   final bool personal;
   final Future<bool> Function() onCreate;
+  final LoadProAccess? loadProAccess;
   @override
   State<_ExerciseCollection> createState() => _ExerciseCollectionState();
 }
@@ -149,6 +158,12 @@ class _ExerciseCollectionState extends State<_ExerciseCollection>
                     style: TextStyle(color: context.visuals.textMuted),
                   ),
                   if (personal) ...[
+                    if (widget.loadProAccess != null)
+                      PersonalQuotaBanner(
+                        key: ValueKey(allExercises.length),
+                        load: widget.loadProAccess!,
+                        sessions: false,
+                      ),
                     const SizedBox(height: 18),
                     Align(
                       alignment: Alignment.centerLeft,

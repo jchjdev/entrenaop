@@ -52,6 +52,22 @@ historial remoto antes de cualquier publicación.
 
 ## Verificación
 
+**COM-008 · 10/10/2026:** 138 migraciones coincidentes en EntrenaOP Dev, hasta
+`20261010003000`. Las cuatro nuevas migraciones incorporan derechos temporales
+Pro, cuotas Free 8/4, guardas comerciales con propiedad comprobada primero y
+creación oficial fuera de la cuota personal y conservación del estado de los
+programas terminados o pausados por el usuario. La gestión administrativa de prueba
+requiere permiso y una habilitación de servidor cerrada por defecto; se habilita
+expresamente en Dev. No hay proveedor de cobro, eventos ni suscripciones de tienda.
+
+Dieciséis pruebas SQL transaccionales con `ROLLBACK` correctas: nueva cobertura
+comercial, trece regresiones de programas/semanas/carrera y los smoke tests de
+edición de ejercicios personales y borradores oficiales. Los fixtures deportivos
+conceden derechos temporales dentro de su transacción; la prueba comercial
+comprueba Free, Pro, cuotas, caducidad, RLS y administración. No dejan datos de
+prueba. [Contrato, verificación y recorrido](../docs/PRO_LAUNCH.md).
+Esta comprobación acredita desarrollo, no producción ni una reconstrucción vacía.
+
 A 6 de octubre de 2026, las 131 migraciones locales coinciden con el historial
 del proyecto enlazado de **desarrollo**, hasta `20261006005000`. En el inicio de
 la auditoría, solo 50 estaban en el commit de Git y 81 estaban sin seguimiento.

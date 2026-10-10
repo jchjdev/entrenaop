@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/pro_offer.dart';
 import '../widgets/pro_brand_title.dart';
+import '../widgets/pro_access_widgets.dart';
+import '../../domain/pro_access.dart';
 
 class ProOfferPage extends StatefulWidget {
   const ProOfferPage({this.offerContext = const ProOfferContext(), super.key});
@@ -42,6 +44,10 @@ class _ProOfferPageState extends State<ProOfferPage> {
         const _Benefit(
           Icons.calendar_month_outlined,
           'Tu disponibilidad y material, tenidos en cuenta.',
+        ),
+        const _Benefit(
+          Icons.add_circle_outline_rounded,
+          'Más ejercicios y sesiones propios, sin las cuotas de Free.',
         ),
         const SizedBox(height: 12),
         Text(
@@ -266,7 +272,8 @@ class ProExamplePage extends StatelessWidget {
 }
 
 class ProSubscriptionPage extends StatelessWidget {
-  const ProSubscriptionPage({super.key});
+  const ProSubscriptionPage({this.loadAccess, super.key});
+  final LoadProAccess? loadAccess;
 
   @override
   Widget build(BuildContext context) => _ProScaffold(
@@ -280,7 +287,14 @@ class ProSubscriptionPage extends StatelessWidget {
           description: 'Aquí podrás consultar y gestionar tu suscripción.',
         ),
         const SizedBox(height: 24),
-        const _UnavailableNotice(),
+        if (loadAccess != null)
+          ProAccessBuilder(
+            load: loadAccess!,
+            showRefresh: true,
+            builder: (_, access) => _AccessDetails(access),
+          )
+        else
+          const _UnavailableNotice(),
         const SizedBox(height: 24),
         FilledButton(
           onPressed: () => context.push('/pro'),
@@ -291,6 +305,50 @@ class ProSubscriptionPage extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _AccessDetails extends StatelessWidget {
+  const _AccessDetails(this.access);
+  final ProAccess access;
+  @override
+  Widget build(BuildContext context) {
+    final expiry = access.validUntil?.toLocal();
+    final date = expiry == null
+        ? ''
+        : '${expiry.day.toString().padLeft(2, '0')}/${expiry.month.toString().padLeft(2, '0')}/${expiry.year}';
+    return EntrenaCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            access.isPro ? 'Pro activo' : 'Cuenta Free',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            access.isPro
+                ? 'Acceso de prueba hasta el $date. No es una suscripción de pago.'
+                : 'Incluye 8 ejercicios propios y 4 sesiones propias guardadas.',
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Ejercicios propios: ${access.personalExercises}${access.isPro ? '' : '/8'}',
+          ),
+          Text(
+            'Sesiones propias: ${access.personalSessions}${access.isPro ? '' : '/4'}',
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'La contratación y restauración de compras todavía no están disponibles.',
+          ),
+          TextButton(
+            onPressed: () => context.push('/plan'),
+            child: const Text('Ir a Mi plan'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _UnavailableNotice extends StatelessWidget {

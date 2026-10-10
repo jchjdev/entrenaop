@@ -37,6 +37,8 @@ import 'package:entrenaop/features/physical_assessment/data/repositories/fas_per
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
 import 'package:entrenaop/features/pro/domain/pro_offer.dart';
 import 'package:entrenaop/features/pro/presentation/pages/pro_pages.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
 import 'package:entrenaop/features/program_assessment/presentation/program_assessment_page.dart';
@@ -156,7 +158,8 @@ class AppRouter {
         ),
         materialAppRoute(
           path: '/pro/subscription',
-          builder: (_, _) => const ProSubscriptionPage(),
+          builder: (_, _) =>
+              ProSubscriptionPage(loadAccess: sl<ProAccessRepository>().load),
         ),
         materialAppRoute(
           path: '/forgot-password',
@@ -227,6 +230,7 @@ class AppRouter {
                           return TrainingHubEntry(
                             key: ValueKey('plan-${auth.user.id}'),
                             createCubit: () => sl<DashboardCubit>(),
+                            loadProAccess: sl<ProAccessRepository>().load,
                           );
                         },
                       ),
@@ -288,6 +292,7 @@ class AppRouter {
                               param1: state.pathParameters['goalId']!,
                             ),
                             child: PreparationDetailPage(
+                              loadProAccess: sl<ProAccessRepository>().load,
                               hasRunningContext: (goalId, programId) async =>
                                   await sl<RunningIntakeContextRepository>()
                                       .get(
@@ -309,43 +314,50 @@ class AppRouter {
                           routes: [
                             _workflowRoute(
                               path: 'training',
-                              builder: (context, state) => PreparationTrainingPage(
-                                key: ValueKey(
-                                  'training-${state.pathParameters['goalId']}',
+                              builder: (context, state) => ProAccessGate(
+                                load: sl<ProAccessRepository>().load,
+                                offerContext: ProOfferContext(
+                                  goalId: state.pathParameters['goalId'],
                                 ),
-                                goalId: state.pathParameters['goalId']!,
-                                runningStepBuilder: (context, next, back) => BlocProvider(
+                                child: PreparationTrainingPage(
                                   key: ValueKey(
-                                    'training-running-${state.pathParameters['goalId']}',
+                                    'training-${state.pathParameters['goalId']}',
                                   ),
-                                  create: (_) => sl<PreparationDetailCubit>(
-                                    param1: state.pathParameters['goalId']!,
+                                  goalId: state.pathParameters['goalId']!,
+                                  runningStepBuilder: (context, next, back) => BlocProvider(
+                                    key: ValueKey(
+                                      'training-running-${state.pathParameters['goalId']}',
+                                    ),
+                                    create: (_) => sl<PreparationDetailCubit>(
+                                      param1: state.pathParameters['goalId']!,
+                                    ),
+                                    child: RunningIntakePage(
+                                      dataOnly: true,
+                                      embedded: true,
+                                      onContinue: next,
+                                      onBack: back,
+                                      loadContext:
+                                          sl<RunningIntakeContextRepository>()
+                                              .get,
+                                      loadSelectionState:
+                                          sl<ManageRunningReferenceSelectionUseCase>()
+                                              .current,
+                                      chooseReference:
+                                          sl<ManageRunningReferenceSelectionUseCase>()
+                                              .choose,
+                                      clearReference:
+                                          sl<ManageRunningReferenceSelectionUseCase>()
+                                              .clear,
+                                      loadScheduledWorkouts:
+                                          sl<WorkoutScheduleRepository>()
+                                              .getRange,
+                                    ),
                                   ),
-                                  child: RunningIntakePage(
-                                    dataOnly: true,
-                                    embedded: true,
-                                    onContinue: next,
-                                    onBack: back,
-                                    loadContext:
-                                        sl<RunningIntakeContextRepository>()
-                                            .get,
-                                    loadSelectionState:
-                                        sl<ManageRunningReferenceSelectionUseCase>()
-                                            .current,
-                                    chooseReference:
-                                        sl<ManageRunningReferenceSelectionUseCase>()
-                                            .choose,
-                                    clearReference:
-                                        sl<ManageRunningReferenceSelectionUseCase>()
-                                            .clear,
-                                    loadScheduledWorkouts:
-                                        sl<WorkoutScheduleRepository>()
-                                            .getRange,
+                                  repository:
+                                      sl<PreparationTrainingRepository>(),
+                                  initialWeek: DateTime.tryParse(
+                                    state.uri.queryParameters['week'] ?? '',
                                   ),
-                                ),
-                                repository: sl<PreparationTrainingRepository>(),
-                                initialWeek: DateTime.tryParse(
-                                  state.uri.queryParameters['week'] ?? '',
                                 ),
                               ),
                             ),
@@ -538,6 +550,7 @@ class AppRouter {
                                   userId: auth.user.id,
                                 )..load(),
                                 child: ExerciseLibraryPage(
+                                  loadProAccess: sl<ProAccessRepository>().load,
                                   initialPersonalTab: personal,
                                 ),
                               );
@@ -610,6 +623,7 @@ class AppRouter {
                   builder: (context, state) => BlocProvider(
                     create: (_) => sl<WorkoutLibraryCubit>(),
                     child: WorkoutLibraryPage(
+                      loadProAccess: sl<ProAccessRepository>().load,
                       key: ValueKey(state.uri.queryParameters['tab']),
                       initialPersonalTab:
                           state.uri.queryParameters['tab'] == 'personal',

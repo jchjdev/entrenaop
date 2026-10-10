@@ -1,5 +1,12 @@
 # EntrenaOP Admin
 
+En desarrollo, **Cuentas de prueba** (icono de cuentas en la cabecera de Programas
+o `/development-accounts`) busca una cuenta registrada por correo y concede Pro
+durante 1/7/30/90 días, o retira sus concesiones de prueba. Requiere permiso
+administrativo y habilitación de servidor por el operador; no se publica su
+entrada en producción. Conserva los datos y no cobra ni cancela compras de tienda.
+El usuario consulta el resultado en Perfil → Mi suscripción → Actualizar acceso.
+
 Aplicación Flutter exclusiva de web para crear contenido oficial. No importa
 pantallas ni servicios de la aplicación del opositor. Ambas aplicaciones usan
 `packages/workout_core/` para el modelo y la validación de sesiones y

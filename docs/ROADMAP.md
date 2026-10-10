@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**COM-008, 10/10/2026 · derechos y cuotas en desarrollo:** Javier pide cuentas
+reales para probar Free/Pro y retoma la propuesta 8 ejercicios/4 sesiones. La
+app consulta derechos de Supabase, presenta contadores y conserva borradores al
+alcanzar una cuota. Pro autoriza cálculo/adaptación; al perderlo se conservan
+sesiones, edición, uso e historial. Admin Dev concede/retira Pro temporal, con
+permiso y habilitación de servidor; administración y suscripción siguen separadas.
+Los contratos de propiedad y el contenido oficial se mantienen. Verificación:
+análisis de ambas apps limpio, 737 pruebas del deportista y 94 del admin correctas,
+con una omisión web existente en cada batería; 16 SQL transaccionales con
+ROLLBACK y 138 migraciones coincidentes en Dev. Capturas de Free/Pro revisadas.
+La cuenta indicada por Javier recibe 30 días de Pro de prueba, hasta el 09/11/2026.
+No hay compras, SDK, producción ni dispositivos físicos verificados.
+El único siguiente bloque de Pro es conectar productos/eventos de tienda a estos
+derechos, antes de habilitar cobros. [Recorrido de prueba](PRO_LAUNCH.md).
+
 **COM-006, 10/10/2026 · interfaz inicial Pro verificada:** Javier aprueba el
 recorrido y pide primero código, después conectar pagos. Mi plan sin programa
 y las fichas Tropa/FAS ofrecen descubrimiento con candado; ejemplo didáctico,
@@ -724,7 +739,7 @@ El ciclo objetivo continúa siendo:
 | Adaptación posterior | Continuidad automática en desarrollo | Resultados versionados, publicación al resolver las sesiones, recuperación, pausa/reanudación y revisión cuando corresponde; no exige publicar manualmente cada semana. |
 | Carrera especializada | Terminada en V1 manual | Creador de carrera continua, series y pirámides; repeticiones agrupadas al prescribir, registro individual obligatorio de parciales y recuperaciones, ritmo calculado, RPE, FC opcional, clasificación de cumplimiento e historial. No incluye GPS, mapas, zonas ni integraciones. |
 | Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
-| Derechos y monetización | No existe | La separación conceptual está decidida, pero no hay suscripciones ni concesión fiable de derechos comerciales. |
+| Derechos y monetización | Accesos de prueba y cuotas en desarrollo | COM-008 verifica derechos temporales de servidor, cuotas Free 8/4 y gestión administrativa de pruebas. Contratación, eventos y suscripciones de tienda siguen pendientes. |
 
 ## Base completada
 

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_state.dart';
 
@@ -55,6 +56,16 @@ class WorkoutLibraryCubit extends Cubit<WorkoutLibraryState> {
       await _duplicatePersonalWorkout(templateId);
       await load();
       return true;
+    } on ProAccessDenied catch (error) {
+      emit(
+        state.copyWith(
+          status: WorkoutLibraryStatus.failure,
+          clearBusyTemplate: true,
+          errorMessage: error.message,
+          accessDenied: error,
+        ),
+      );
+      return false;
     } catch (_) {
       emit(
         state.copyWith(

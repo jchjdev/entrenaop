@@ -1,4 +1,5 @@
 abstract final class AppConfig {
+  static bool get isDevelopment => _environment == 'development';
   static const _environment = String.fromEnvironment(
     'APP_ENV',
     defaultValue: 'development',

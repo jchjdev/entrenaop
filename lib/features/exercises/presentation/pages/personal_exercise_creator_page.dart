@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 
 class PersonalExerciseCreatorPage extends StatefulWidget {
   const PersonalExerciseCreatorPage({
@@ -98,6 +100,13 @@ class _PersonalExerciseCreatorPageState
           content: Text('${draft.name} se ha guardado en tus ejercicios.'),
         ),
       );
+    } on ProAccessDenied catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.message;
+        _saving = false;
+      });
+      await showProRestriction(context, error);
     } on FormatException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.message);

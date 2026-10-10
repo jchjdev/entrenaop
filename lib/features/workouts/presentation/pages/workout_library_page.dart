@@ -7,11 +7,17 @@ import 'package:entrenaop/features/library/presentation/widgets/library_search_c
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 
 class WorkoutLibraryPage extends StatefulWidget {
-  const WorkoutLibraryPage({super.key, this.initialPersonalTab = false});
+  const WorkoutLibraryPage({
+    super.key,
+    this.initialPersonalTab = false,
+    this.loadProAccess,
+  });
 
   final bool initialPersonalTab;
+  final LoadProAccess? loadProAccess;
 
   @override
   State<WorkoutLibraryPage> createState() => _WorkoutLibraryPageState();
@@ -96,6 +102,7 @@ class _WorkoutLibraryPageState extends State<WorkoutLibraryPage> {
                     state: state,
                     workouts: state.personalWorkouts,
                     personal: true,
+                    loadProAccess: widget.loadProAccess,
                   ),
                 ],
               );
@@ -113,11 +120,13 @@ class _LibraryContent extends StatefulWidget {
     required this.state,
     required this.workouts,
     required this.personal,
+    this.loadProAccess,
   });
 
   final WorkoutLibraryState state;
   final List<WorkoutTemplateSummary> workouts;
   final bool personal;
+  final LoadProAccess? loadProAccess;
 
   @override
   State<_LibraryContent> createState() => _LibraryContentState();
@@ -185,6 +194,12 @@ class _LibraryContentState extends State<_LibraryContent>
                     style: TextStyle(color: Colors.white60, height: 1.4),
                   ),
                   const SizedBox(height: 22),
+                  if (personal && widget.loadProAccess != null)
+                    PersonalQuotaBanner(
+                      key: ValueKey(state.personalWorkouts.length),
+                      load: widget.loadProAccess!,
+                      sessions: true,
+                    ),
                   LibrarySearchControls(
                     controller: _search,
                     searchLabel: 'Buscar sesiones',
@@ -315,6 +330,11 @@ class _LibraryContentState extends State<_LibraryContent>
       workout.id,
     );
     if (!context.mounted) return;
+    final denied = context.read<WorkoutLibraryCubit>().state.accessDenied;
+    if (!success && denied != null) {
+      await showProRestriction(context, denied);
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

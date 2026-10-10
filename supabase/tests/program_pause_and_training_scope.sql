@@ -1,5 +1,10 @@
 -- Cuenta ficticia aislada: altas parciales, cambio, pausa, reanudación y permisos.
 begin;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
 do $$
 declare u uuid; stranger uuid; run_goal uuid; force_goal uuid; assessment uuid;
  wk date:=current_date+8-extract(isodow from current_date)::int;
@@ -7,7 +12,17 @@ declare u uuid; stranger uuid; run_goal uuid; force_goal uuid; assessment uuid;
  ref jsonb; exercise text; measure text; protocol text; n numeric; e uuid;
 begin
  insert into auth.users(id,email) values(gen_random_uuid(),'program-mode-fixture@example.invalid') returning id into u;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
  insert into auth.users(id,email) values(gen_random_uuid(),'program-mode-other@example.invalid') returning id into stranger;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
  perform set_config('request.jwt.claim.sub',u::text,true);
  update public.profiles set fecha_nacimiento='1996-01-01' where id=u;
  insert into public.preparation_goals(user_id,program_id,target_date) values(u,'fas_periodic_assessment',current_date+90) returning id into run_goal;

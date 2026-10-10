@@ -1,3 +1,7 @@
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+
+import '../../support/pro_access_fixture.dart';
+
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_favorites.dart';
@@ -22,6 +26,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_image.dart';
 
 void main() {
+  setUp(
+    () => sl.registerSingleton<ProAccessRepository>(
+      ProAccessFixture(isPro: true),
+    ),
+  );
   testWidgets('la colección se renueva al cambiar de cuenta en la misma ruta', (
     tester,
   ) async {

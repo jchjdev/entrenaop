@@ -1,5 +1,44 @@
 # Arquitectura de EntrenaOP
 
+## Derechos y cuotas Free/Pro · COM-008 · 10/10/2026
+
+`pro_access_grants` registra propietario, origen de prueba, vigencia, actor y
+motivo de concesión/retirada. RLS permite consultar concesiones propias; los
+clientes no tienen permisos de escritura, ni siquiera por ser administradores.
+`get_my_pro_access()` resuelve acceso y recuentos mediante `auth.uid()` y el reloj
+del servidor. No utiliza `profiles.role`, metadata editable o preferencias locales.
+Un fallo de consulta se presenta como error y nunca como una cuenta Free.
+
+La administración gestiona accesos de prueba mediante RPC que comprueban
+`is_admin()` y una configuración de servidor cerrada por defecto. Solo el
+operador habilita esta gestión en Dev. El panel además omite su entrada en una
+compilación de producción; esa condición visual no sustituye el permiso SQL.
+Las concesiones son temporales, auditadas y ajenas a una suscripción de tienda.
+
+Los triggers cuentan 8 ejercicios propios y 4 familias personales no archivadas
+en Free y toman un candado de perfil para serializar nuevas plazas. El creador
+de revisiones fija un contexto interno que el trigger valida contra una familia
+propia existente y vincula a esa familia antes del recuento; no omite la cuota.
+El creador administrativo comprueba su permiso y fija un contexto interno para
+que sus filas nazcan oficiales, privadas y en borrador, sin contar como personales.
+Ninguno de esos contextos es un parámetro de una RPC accesible desde Flutter.
+
+Catorce entradas de cálculo/publicación conservan sus motores privados y
+comprueban propiedad activa antes del derecho Pro. Sus bases no son ejecutables
+por clientes. `advance_adaptive_program` deja de generar sin derecho, sin alterar
+decisiones, sesiones o la intención de continuidad guardada. El resumen presenta
+la continuidad automática como pausada por acceso; los programas terminados y
+las pausas elegidas por el usuario conservan su estado y motivo. Recuperar Pro
+permite continuar el programa anterior al refrescar, sin iniciar otra preparación
+automáticamente.
+
+Flutter consulta mediante `ProAccessRepository`; la URL directa del programa
+usa una guarda y las RPC mantienen la protección final. Mi suscripción permite
+actualizar la instantánea y el acceso se reconsulta al volver del segundo plano.
+Las cuentas se separan y el repositorio rechaza respuestas de una identidad
+anterior. No hay SDK ni eventos/recibos de tienda aún.
+[Recorrido de pruebas y límites](PRO_LAUNCH.md).
+
 ## Interfaz Pro · COM-006 · 10/10/2026
 
 `features/pro` contiene oferta de lanzamiento, contexto de presentación,
@@ -9,10 +48,10 @@ autenticación global; `push/pop` conserva el origen. La modalidad elegida es
 estado efímero de presentación, no un derecho comercial. No se interpreta
 `role` como suscripción ni se guarda una concesión Pro local.
 
-La primera fase mantiene los accesos de desarrollo a programas y deshabilita
-compras/restauración. No añade SDK, migraciones ni permisos. La fase siguiente
-deberá proporcionar productos de tienda y derechos verificables del servidor
-antes de habilitar ventas o protección comercial de generación/adaptación.
+La primera fase COM-006 mantuvo los accesos de desarrollo a programas y
+deshabilitó compras/restauración, sin SDK, migraciones ni permisos nuevos.
+COM-008 añade los derechos y la protección de servidor descritos arriba. La
+fase siguiente debe conectar productos/eventos de tienda antes de habilitar ventas.
 [Contrato y límites de la entrega](PRO_LAUNCH.md).
 
 ## Descarte confirmado de una sesión en curso · UI-022 · 09/10/2026

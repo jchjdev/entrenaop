@@ -1,3 +1,7 @@
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+
+import '../../support/pro_access_fixture.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/core/di/injection_container.dart';
@@ -45,6 +49,11 @@ const _fas = PreparationGoal(
 );
 
 void main() {
+  setUp(
+    () => sl.registerSingleton<ProAccessRepository>(
+      ProAccessFixture(isPro: true),
+    ),
+  );
   setUp(() {
     final goals = _Goals();
     final schedule = _Schedule();
@@ -77,6 +86,7 @@ void main() {
   testWidgets('Pro abre desde la preparación y vuelve a su ficha real', (
     t,
   ) async {
+    (sl<ProAccessRepository>() as ProAccessFixture).isPro = false;
     final router = AppRouter(_Auth());
     addTearDown(router.dispose);
     router.config.go('/plan/goal/troop');

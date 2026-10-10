@@ -2,6 +2,7 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:equatable/equatable.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 
 enum WorkoutEditorStatus { initial, loading, ready, saving, saved, failure }
 
@@ -13,6 +14,7 @@ class WorkoutEditorState extends Equatable {
     this.draft,
     this.createdTemplateId,
     this.errorMessage,
+    this.accessDenied,
   });
 
   final WorkoutEditorStatus status;
@@ -21,6 +23,7 @@ class WorkoutEditorState extends Equatable {
   final WorkoutEditorDraftSnapshot? draft;
   final String? createdTemplateId;
   final String? errorMessage;
+  final ProAccessDenied? accessDenied;
 
   @override
   List<Object?> get props => [
@@ -30,5 +33,6 @@ class WorkoutEditorState extends Equatable {
     draft,
     createdTemplateId,
     errorMessage,
+    accessDenied,
   ];
 }

@@ -417,18 +417,18 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 ## Free y Pro: reparto confirmado, interfaz inicial y pagos pendientes
 
-**Aclaración de Javier · 07/10/2026:** existen pruebas y algoritmos en desarrollo,
-pero Pro todavía no está diseñado ni implementado como producto comercial.
-No hay contratación, suscripciones o concesión de derechos Pro verificada.
-Los precios de lanzamiento se acuerdan después en COM-004 y el diseño se aprueba
-en COM-006. Su interfaz inicial está implementada, con contratación y derechos
-de servidor pendientes; [alcance y conexión de pagos](PRO_LAUNCH.md).
+**Estado actual · COM-008 · 10/10/2026:** existen derechos Pro temporales y cuotas
+Free verificadas en Supabase de desarrollo. Los precios de lanzamiento se
+acuerdan en COM-004 y el diseño se aprueba en COM-006. La contratación y las
+suscripciones de tienda siguen pendientes; [alcance y conexión de pagos](PRO_LAUNCH.md).
+La aclaración de Javier del 07/10 distinguió el desarrollo deportivo del producto
+comercial; COM-008 implementa ahora su frontera de acceso para pruebas reales.
 Javier concreta a continuación la frontera
 comercial: las herramientas y el entrenamiento manual limitado pertenecen a
 Free; los programas que generan/adaptan entrenamientos con los algoritmos
-pertenecen a Pro. Este reparto está confirmado, pero no describe restricciones
-actuales implementadas en servidor. Tener un algoritmo implementado no convierte
-su recorrido en una función comercial Pro ya disponible.
+pertenecen a Pro. Las cuotas y la generación/adaptación se protegen en servidor.
+Una concesión de prueba no acredita una compra ni la eficacia deportiva de un
+algoritmo.
 
 ### Criterio de precio inicial · COM-004 · 10/10/2026
 
@@ -496,35 +496,33 @@ esa experiencia ni acredita funciones comerciales implementadas.
 
 ### Reparto confirmado por Javier · COM-001
 
-**Propuesta posterior · COM-007 · 10/10/2026:** Javier plantea 7–9 ejercicios
-propios y unas 4 sesiones propias en Free, e invita a valorar Pro para crear más.
-La recomendación inicial es **8 ejercicios propios y 4 plantillas personales
-activas**, pendiente de confirmar. Las cantidades siguientes de COM-001
-describen el planteamiento anterior, no una cuota implementada.
+**COM-008 · 10/10/2026:** Javier retoma la propuesta COM-007 para probar el
+negocio con cuentas reales. Free incluye **8 ejercicios propios y 4 familias
+de sesiones personales activas**. Pro no tiene esas cuotas comerciales y permite
+generar/adaptar programas. Los derechos y las cuotas se aplican en Supabase;
+la conexión de pagos sigue pendiente. COM-007 conserva el origen de la propuesta.
 
-El límite propuesto se refiere a recursos propios guardados en la biblioteca,
+El límite se refiere a recursos propios guardados en la biblioteca,
 no al número de entrenamientos que el usuario puede realizar o registrar. Los
 ejercicios del catálogo, las sesiones oficiales o generadas, las citas de agenda,
 el historial y las revisiones de la misma plantilla no consumen esas plazas.
-Las cuatro plantillas abarcarían fuerza, carrera o mixtas conjuntamente; duplicar
+Las cuatro plantillas abarcan fuerza, carrera o mixtas conjuntamente; duplicar
 una plantilla sí crea otro recurso y consume una plaza. Archivar una plantilla
-liberaría su plaza sin borrar el historial. La forma de liberar plazas de
-ejercicios requiere concretar su ciclo de vida; no se presupone una operación
-de archivado hoy implementada.
+libera su plaza sin borrar el historial. Los ejercicios cuentan por identidad
+propia; no se introduce archivado de ejercicios ni se eliminan datos para
+rebajar el contador. Su eliminación existente conserva sus restricciones de uso.
 
-Se recomienda mostrar «Ejercicios propios: 6/8» y «Sesiones propias: 3/4» antes
-de alcanzar el límite. Intentar crear el noveno ejercicio o la quinta plantilla
-abriría la oferta Pro con un motivo concreto, cierre visible y borrador
-conservado, sin bloquear recursos ya existentes. Al vencer Pro se recomienda
-mantener consulta, uso, edición e historial de los recursos propios, limitando
-nuevas creaciones mientras se supere la cuota Free. Este comportamiento sigue
-pendiente de aprobación, igual que las cifras.
+Las bibliotecas y Mi suscripción muestran los contadores de servidor. Intentar
+guardar el noveno ejercicio o la quinta plantilla abre una invitación contextual
+a Pro con «Ver Pro» y «Volver», conservando el borrador. Al vencer Pro se mantienen
+consulta, uso, edición e historial de los recursos propios, limitando
+nuevas creaciones mientras se alcance o supere la cuota Free.
 
-Pro ampliaría la creación sin estas cuotas comerciales además de los programas
-adaptativos. No se añade todavía ese beneficio a la oferta como disponible ni
-se aplican límites en Flutter o SQL. Crear, duplicar y cualquier futura
-reactivación/importación deberán validar cuotas y derechos en servidor, con
-control atómico de creaciones concurrentes y cobertura transaccional. El diseño
+Pro amplía la creación sin estas cuotas comerciales además de los programas
+adaptativos; la oferta incorpora ese beneficio. Los triggers validan creación,
+duplicado y transiciones que incorporen recursos, serializando mediante el perfil
+del propietario. Las revisiones se vinculan a su familia antes de contar plazas.
+La administración crea contenido oficial sin consumir plazas personales. El diseño
 de creación de sesiones ya distingue plantilla, revisión y ejecución; la cuota
 no debe mezclar esos conceptos.
 
@@ -538,17 +536,16 @@ garantice conversión o sea óptima para EntrenaOP.
 | --- | --- | --- |
 | Herramientas de ritmos | Free | No se convierten en Pro por utilizar cálculos. |
 | Calculadora PAEF/PAFAS | Free | Conserva su acceso gratuito. |
-| Crear sesiones propias | Free con límite | Javier plantea dos o tres; la cifra definitiva está pendiente. |
-| Ejercicios | Free con límite pendiente | Falta concretar cantidad y qué operación o colección limita. |
+| Crear sesiones propias | Free con límite | 4 familias personales activas en total; Pro amplía la creación. |
+| Ejercicios | Free con límite | 8 ejercicios propios; catálogo excluido y Pro amplía la creación. |
 | Algunas sesiones de EntrenaOP | Free | Falta elegir las sesiones incluidas y el criterio de acceso. |
-| Programas con algoritmos de generación/adaptación | Pro | Generación y continuidad adaptativa requieren derechos Pro de servidor cuando se implemente el producto comercial. |
+| Programas con algoritmos de generación/adaptación | Pro | Generación y continuidad adaptativa requieren derechos Pro de servidor. |
 
 La frontera utiliza «programa adaptativo» como concepto de producto: no implica
-cobrar por cualquier cálculo matemático de una herramienta. No se introducen
-ahora cuotas, candados funcionales o cobros. Los precios iniciales se acuerdan en
-COM-004 y el recorrido de descubrimiento/contratación se aprueba en COM-006.
-Su interfaz está implementada sin compras; derechos, conexión de pagos y
-restricciones comerciales de servidor siguen pendientes.
+cobrar por cualquier cálculo matemático de una herramienta. COM-004 mantiene
+los precios y COM-006 el recorrido. COM-008 añade derechos, cuotas y protección
+de servidor en desarrollo; compra, restauración y conciliación de pagos siguen
+pendientes. Las concesiones manuales de prueba no representan pagos.
 
 Las listas siguientes conservan detalles del borrador anterior. COM-001 tiene
 prioridad: los puntos que no aparecen en el reparto confirmado, como asignar

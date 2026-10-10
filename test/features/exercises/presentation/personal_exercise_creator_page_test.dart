@@ -5,15 +5,19 @@ import 'package:entrenaop/features/exercises/presentation/pages/personal_exercis
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_image.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:go_router/go_router.dart';
 
 class _ExerciseRepository implements ExerciseRepository {
   PersonalExerciseDraft? created;
+  bool denyCreation = false;
 
   @override
   Future<ExerciseEntity> createExercise(
     PersonalExerciseDraft exercise, {
     ExerciseImageUpload? image,
   }) async {
+    if (denyCreation) throw ProAccessDenied.fromDetails('free_exercise_limit')!;
     created = exercise;
     return ExerciseEntity(
       id: 'exercise-id',
@@ -35,6 +39,59 @@ class _ExerciseRepository implements ExerciseRepository {
 }
 
 void main() {
+  testWidgets(
+    'rechazar el noveno ejercicio invita a Pro y conserva nombre y material',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _ExerciseRepository()..denyCreation = true;
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => PersonalExerciseCreatorPage(
+              createExercise: CreateExerciseUseCase(repository),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.enterText(
+        find.byKey(const ValueKey('personal-exercise-name')),
+        'Remo propio',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('personal-exercise-muscles')),
+        'espalda',
+      );
+      await tester.ensureVisible(find.text('Guardar ejercicio'));
+      await tester.tap(find.text('Guardar ejercicio'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ver Pro'), findsOneWidget);
+      await tester.tap(find.text('Volver'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextFormField>(
+              find.byKey(const ValueKey('personal-exercise-name')),
+            )
+            .controller
+            ?.text,
+        'Remo propio',
+      );
+      expect(
+        tester
+            .widget<TextFormField>(
+              find.byKey(const ValueKey('personal-exercise-muscles')),
+            )
+            .controller
+            ?.text,
+        'espalda',
+      );
+      expect(repository.created, isNull);
+    },
+  );
   testWidgets('crea un ejercicio personal sin iniciar una sesión', (
     tester,
   ) async {

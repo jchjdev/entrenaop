@@ -4,6 +4,7 @@ import 'package:entrenaop/features/exercises/data/models/exercise_model.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/exercise_image.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 
 class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   final SupabaseClient supabaseClient;
@@ -87,6 +88,10 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
         throw const ServerException('El ejercicio creado no está disponible.');
       }
       return created;
+    } on PostgrestException catch (e) {
+      final denied = ProAccessDenied.fromDetails(e.details);
+      if (denied != null) throw denied;
+      throw ServerException(e.message);
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(e.toString());

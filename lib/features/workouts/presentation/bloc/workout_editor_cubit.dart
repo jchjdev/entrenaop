@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
@@ -138,6 +139,17 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
           exercises: state.exercises,
           originalTemplate: state.originalTemplate,
           createdTemplateId: savedTemplateId,
+        ),
+      );
+    } on ProAccessDenied catch (error) {
+      emit(
+        WorkoutEditorState(
+          status: WorkoutEditorStatus.ready,
+          exercises: state.exercises,
+          originalTemplate: state.originalTemplate,
+          draft: state.draft,
+          errorMessage: error.message,
+          accessDenied: error,
         ),
       );
     } on FormatException catch (error) {

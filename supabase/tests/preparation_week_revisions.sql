@@ -1,5 +1,10 @@
 -- Recálculo con datos reales de entrada, sin borrar historial. Todo se revierte.
 begin;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
 select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 update public.profiles set fecha_nacimiento='1996-01-01' where id=auth.uid();
 update public.preparation_goals set status='archived',archived_at=now() where user_id=auth.uid() and status='active';

@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 import 'dart:async';
@@ -57,6 +58,10 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
   Widget _buildContent(BuildContext context) {
     return BlocConsumer<WorkoutEditorCubit, WorkoutEditorState>(
       listener: (context, state) {
+        if (state.accessDenied case final denied?) {
+          unawaited(showProRestriction(context, denied));
+          return;
+        }
         if (state.status == WorkoutEditorStatus.saved) {
           _autosaveTimer?.cancel();
           setState(() => _allowPop = true);

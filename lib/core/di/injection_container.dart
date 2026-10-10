@@ -84,6 +84,8 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cub
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:entrenaop/features/pro/data/supabase_pro_access_repository.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -96,6 +98,9 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton<ProAccessRepository>(
+    () => SupabaseProAccessRepository(sl()),
+  );
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<HomeFavoritesRepository>(
     () => SharedPreferencesHomeFavoritesRepository(sharedPreferences),

@@ -15,6 +15,7 @@ import 'package:entrenaop/features/preparation_goal/presentation/widgets/prepara
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -22,8 +23,13 @@ import 'package:intl/intl.dart';
 /// Una URL directa de preparación no necesita cargar el resumen de su raíz.
 /// Tras visitarla se conserva el Cubit al abrir sus rutas hijas.
 class TrainingHubEntry extends StatefulWidget {
-  const TrainingHubEntry({required this.createCubit, super.key});
+  const TrainingHubEntry({
+    required this.createCubit,
+    this.loadProAccess,
+    super.key,
+  });
   final DashboardCubit Function() createCubit;
+  final LoadProAccess? loadProAccess;
 
   @override
   State<TrainingHubEntry> createState() => _TrainingHubEntryState();
@@ -60,14 +66,15 @@ class _TrainingHubEntryState extends State<TrainingHubEntry> {
   Widget build(BuildContext context) => _visited
       ? BlocProvider(
           create: (_) => widget.createCubit(),
-          child: const TrainingHubPage(),
+          child: TrainingHubPage(loadProAccess: widget.loadProAccess),
         )
       : const SizedBox.shrink();
 }
 
 /// Resumen del programa y de sesiones ya asignadas; no prescribe entrenamiento.
 class TrainingHubPage extends StatelessWidget {
-  const TrainingHubPage({super.key});
+  const TrainingHubPage({this.loadProAccess, super.key});
+  final LoadProAccess? loadProAccess;
 
   @override
   Widget build(BuildContext context) => SectionRefreshBoundary(
@@ -99,7 +106,11 @@ class TrainingHubPage extends StatelessWidget {
                 ),
               );
             }
-            return _PlanContent(overview: overview, state: state);
+            return _PlanContent(
+              overview: overview,
+              state: state,
+              loadProAccess: loadProAccess,
+            );
           },
         ),
       ),
@@ -108,7 +119,12 @@ class TrainingHubPage extends StatelessWidget {
 }
 
 class _PlanContent extends StatelessWidget {
-  const _PlanContent({required this.overview, required this.state});
+  const _PlanContent({
+    required this.overview,
+    required this.state,
+    this.loadProAccess,
+  });
+  final LoadProAccess? loadProAccess;
   final PreparationOverview overview;
   final DashboardState state;
 
@@ -221,7 +237,7 @@ class _PlanContent extends StatelessWidget {
                     const SizedBox(height: 16),
                     ...preparations,
                     const SizedBox(height: 16),
-                    const ProDiscoveryCard(),
+                    ProDiscoveryCard(loadAccess: loadProAccess),
                   ],
                   const SizedBox(height: 24),
                   const HomeSectionHeading(title: 'Esta semana'),

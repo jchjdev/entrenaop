@@ -7,6 +7,7 @@ import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_wo
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/pro/domain/pro_offer.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,12 +19,14 @@ class PreparationDetailPage extends StatelessWidget {
     super.key,
     this.hasRunningContext,
     this.saveTargetDate,
+    this.loadProAccess,
   });
 
   final Future<bool> Function(String goalId, String programId)?
   hasRunningContext;
   final Future<void> Function(PreparationGoal goal, DateTime date)?
   saveTargetDate;
+  final LoadProAccess? loadProAccess;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +63,7 @@ class PreparationDetailPage extends StatelessWidget {
             state: state,
             hasRunningContext: hasRunningContext,
             saveTargetDate: saveTargetDate,
+            loadProAccess: loadProAccess,
           );
         },
       ),
@@ -72,9 +76,11 @@ class _Content extends StatelessWidget {
     required this.state,
     required this.hasRunningContext,
     required this.saveTargetDate,
+    this.loadProAccess,
   });
 
   final PreparationDetailState state;
+  final LoadProAccess? loadProAccess;
   final Future<bool> Function(String goalId, String programId)?
   hasRunningContext;
   final Future<void> Function(PreparationGoal goal, DateTime date)?
@@ -167,6 +173,7 @@ class _Content extends StatelessWidget {
                           goal.programId ==
                               PreparationProgramIds.fasPeriodicAssessment)) ...[
                     ProDiscoveryCard(
+                      loadAccess: loadProAccess,
                       offerContext: ProOfferContext(
                         goalId: goal.id,
                         preparationName: goal.program.name,

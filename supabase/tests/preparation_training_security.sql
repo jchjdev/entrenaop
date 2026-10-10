@@ -1,4 +1,9 @@
 begin;
+-- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
+insert into public.pro_access_grants(user_id,source,ends_at,reason)
+select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
+from public.profiles candidate where not public.has_pro_access(candidate.id);
+
 select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 select set_config('test.performance_owner',auth.uid()::text,true);
 do $$
