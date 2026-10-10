@@ -419,8 +419,9 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 **Aclaración de Javier · 07/10/2026:** existen pruebas y algoritmos en desarrollo,
 pero Pro todavía no está diseñado ni implementado como producto comercial.
-No hay oferta cerrada, pantallas de contratación, precios, suscripciones o
-concesión de derechos Pro verificada. Javier concreta a continuación la frontera
+No hay contratación, suscripciones o concesión de derechos Pro verificada.
+Los precios de lanzamiento se acuerdan después en COM-004; el diseño comercial
+y la implementación siguen pendientes. Javier concreta a continuación la frontera
 comercial: las herramientas y el entrenamiento manual limitado pertenecen a
 Free; los programas que generan/adaptan entrenamientos con los algoritmos
 pertenecen a Pro. Este reparto está confirmado, pero no describe restricciones
@@ -430,16 +431,46 @@ su recorrido en una función comercial Pro ya disponible.
 ### Criterio de precio inicial · COM-004 · 10/10/2026
 
 Javier confirma que Pro debe salir con un precio accesible y considera elevado
-un importe inicial de 8,99 €/mes para el alcance actual. Plantea como referencia
-un rango de 2,99–4,99 €/mes. El criterio de lanzamiento está confirmado; el rango
-no constituye una tarifa definitiva ni acredita viabilidad económica.
+un importe inicial de 8,99 €/mes para el alcance actual. Tras plantear un rango
+de 2,99–4,99 €/mes, confirma **3,99 €/mes** y toma **29,99 €/año** como precio para
+diseñar la oferta inicial. Las dos modalidades conceden el mismo acceso Pro.
 
-**Propuesta pendiente de validación y aprobación:** 3,99 €/mes y 29,99 €/año por
-el mismo acceso Pro. Los importes exactos, la modalidad de contratación y las
-condiciones de una posible tarifa protegida para primeros suscriptores siguen
-pendientes. La validación debe contemplar costes del servicio y soporte,
-impuestos, comisiones y el alcance Pro que pueda entregarse con fiabilidad.
-Este acuerdo documental no implementa cobros, derechos ni restricciones.
+Doce mensualidades suman 47,88 €. El anual ahorra 17,89 €, un 37,36 % respecto
+a ese importe, y equivale aproximadamente a 2,50 €/mes. El total anual debe
+mostrarse con más relevancia que su equivalente mensual; el ahorro puede
+redondearse a «37 %», indicando que se compara con doce mensualidades.
+
+Son precios de lanzamiento acordados, no una garantía de viabilidad económica
+ni de mantenimiento indefinido. Condiciones de renovación, protección de tarifas,
+proveedor de cobro y diseño definitivo siguen pendientes. La validación económica
+debe contemplar costes del servicio y soporte, impuestos y comisiones. El alcance
+Pro debe poder entregarse con fiabilidad. Este acuerdo documental no implementa
+cobros, derechos ni restricciones. La propuesta de contratación se describe en
+`docs/VISUAL_DESIGN.md`, sin sustituir las pantallas actuales.
+
+### Posible descuento militar · COM-005 · 10/10/2026
+
+Javier propone estudiar un descuento a militares, acreditando su condición con
+la TMI y aplicándolo mediante cupón u otro mecanismo. Aclara expresamente que
+debe valorarlo: no están aprobados el descuento, sus importes, beneficiarios,
+vigencia, renovación ni método de acreditación. No se anuncia como disponible.
+
+La recomendación inicial es utilizar el correo solo para solicitar información,
+sin adjuntar documentos. Si se aprueba el servicio, se estudiará una comprobación
+manual por un canal seguro, limitada a los datos necesarios, y una oferta
+vinculada a la cuenta verificada. Conservar la acreditación mínima y su vigencia
+es distinto de conservar una imagen de la tarjeta. El procedimiento, los datos
+y plazos deben definirse antes de recoger documentación; una fotografía no
+constituye una validación oficial ni garantiza autenticidad o titularidad.
+
+La [AEPD](https://www.aepd.es/preguntas-frecuentes/1-tus-derechos/3-identificacion-con-dni/FAQ-0116-que-puedo-hacer-si-me-solicitan-una-copia-del-dni)
+recomienda, para copias del DNI, ocultar los datos innecesarios y evitar su envío
+por correo electrónico. Aplicar esa prudencia a la TMI es una recomendación de
+diseño, no una acreditación de cumplimiento de un procedimiento aún inexistente.
+La referencia a Renfe no implica acceso de EntrenaOP a sistemas de Defensa.
+El mecanismo de descuento deberá ser compatible con el proveedor y la tienda
+elegidos; un cupón genérico no prueba la condición militar ni concede derechos
+por sí solo. No se implementa recogida de documentos, descuentos o integración.
 
 ### Retirada del bloque de simulación · COM-003 · 07/10/2026
 
@@ -470,8 +501,9 @@ esa experiencia ni acredita funciones comerciales implementadas.
 
 La frontera utiliza «programa adaptativo» como concepto de producto: no implica
 cobrar por cualquier cálculo matemático de una herramienta. No se introducen
-ahora cuotas, candados funcionales o cobros. Precios, contratación, derechos,
-cancelación y experiencias sin Pro siguen pendientes de diseño e implementación.
+ahora cuotas, candados funcionales o cobros. Los precios iniciales se acuerdan en
+COM-004; contratación, derechos, cancelación y experiencias sin Pro siguen
+pendientes de diseño e implementación.
 
 Las listas siguientes conservan detalles del borrador anterior. COM-001 tiene
 prioridad: los puntos que no aparecen en el reparto confirmado, como asignar

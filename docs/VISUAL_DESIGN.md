@@ -1,5 +1,43 @@
 # Identidad visual de EntrenaOP
 
+## Pro: propuesta de contratación · COM-004 · 10/10/2026
+
+Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 29,99 €/año
+por el mismo acceso Pro. La composición y los recorridos siguientes son una
+propuesta pendiente de aprobación e implementación; no cambian las pantallas,
+tarjetas fotográficas ni navegación actuales ni recuperan COM-002/003.
+
+La oferta explicará el beneficio de la planificación adaptativa con las marcas,
+objetivo, disponibilidad, material y resultados del usuario. No anunciará como
+incluidas capacidades cuyo reparto comercial esté pendiente, seguimiento humano
+ni pruebas gratuitas que no se hayan acordado.
+
+Se propone una pantalla dedicada con cierre visible, tres beneficios breves y
+dos opciones legibles: mensual a 3,99 €/mes y anual a 29,99 €/año. Destacar el anual
+por ahorro no debe ocultar la alternativa mensual. El anual mostrará «Ahorra
+37 % respecto a 12 mensualidades», con 2,50 €/mes como dato secundario; doce
+mensualidades suman 47,88 €, por lo que el ahorro exacto es 17,89 €. El total
+anual será más relevante que su equivalente mensual. Referencia:
+[instrucciones de Apple](https://developer.apple.com/app-store/subscriptions/).
+
+El botón y las condiciones deben corresponder a la modalidad elegida. Si se
+acuerda renovación automática, se explicarán su importe y periodicidad, y que
+cancelar la renovación conserva el acceso durante el periodo contratado. La
+pantalla deberá ofrecer restauración de compras, condiciones y privacidad.
+El diseño de ejemplo plantea renovación automática como propuesta; no la da
+por acordada ni acredita integración con una tienda.
+
+Desde una función Pro, el usuario podrá entender qué ofrece antes de contratar.
+La generación y adaptación se protegerán en servidor; el candado es su señal
+visual. Mi semana, sesiones manuales incluidas e historial no quedan cubiertos
+por un bloqueo global de Mi plan. Una contratación confirmada devolverá al punto
+de origen para continuar la revisión; no activará ni sustituirá un programa sin
+la aceptación correspondiente. Este recorrido sigue pendiente de aprobación.
+
+El posible descuento militar de COM-005 no aparece como disponible hasta
+resolver su oferta y acreditación. La propuesta visual no prueba código real,
+accesibilidad, derechos comerciales ni compras. No se ejecuta ni modifica la app.
+
 ## Accesos depurados · UI-026 · 10/10/2026
 
 Las tarjetas fotográficas de preparación mantienen su diseño y ofrecen una
