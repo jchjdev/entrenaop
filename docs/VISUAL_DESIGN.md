@@ -153,6 +153,30 @@ navegación ni reglas de entrenamiento.
 
 ## Marca
 
+**UI-027 · 10/10/2026:** Javier pide sustituir el texto normal «EntrenaOP Pro»
+de la cabecera de contratación por el wordmark existente, con «Pro» plateado e
+inclinado como distintivo independiente. Precisa que la tipografía de marca
+se reserva para referencias a EntrenaOP, no para todos los textos. Precios,
+botones, explicaciones y títulos funcionales mantienen el tema actual.
+
+`ProBrandTitle` reutiliza `EntrenaWordmark`, adapta su variante al fondo y
+escala la composición al espacio de la cabecera. «Pro» usa cursiva y un tono
+plateado, con una variante más oscura para conservar contraste en fondo claro.
+La composición tiene una única etiqueta accesible «EntrenaOP Pro».
+No se modifica el paquete compartido ni el PNG de marca. En el repositorio no
+se ha encontrado una fuente instalable de la marca: los recursos disponibles
+son imágenes, no un alfabeto tipográfico. Javier intentará localizar la fuente;
+su incorporación futura quedaría restringida a usos de marca y requerirá
+comprobar el archivo y su licencia. No se atribuye un nombre de fuente a partir
+de la apariencia del logo ni se presenta la cursiva de Pro como esa fuente.
+
+Las ocho pruebas de Pro existentes verifican navegación y ausencia de
+desbordamiento a 320 px con texto doble; se revisa la captura real de la cabecera,
+esperando la decodificación del PNG antes de capturar. Análisis limpio y 726
+pruebas completas correctas con la omisión web existente. El cambio se limita a
+presentación en la app del deportista, sin modificar fuentes globales, paquetes,
+admin, algoritmos, datos o derechos comerciales.
+
 - La cabecera de la aplicación usa solo el wordmark `EntrenaOP` derivado del
   logotipo entregado por Javier.
 - No incluye el corredor ni el texto «Preparación física para oposiciones».

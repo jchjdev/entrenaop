@@ -78,6 +78,24 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> capturePro(WidgetTester tester, String name) async {
+    if (capturePerformanceReview) {
+      // La captura necesita esperar también la decodificación del PNG;
+      // pumpAndSettle no garantiza que una imagen de asset esté lista.
+      await tester.runAsync(
+        () => precacheImage(
+          const AssetImage(
+            'assets/branding/entrenaop_wordmark_on_dark.png',
+            package: 'entrena_ui',
+          ),
+          tester.element(find.byType(Scaffold).last),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+    await capturePerformanceWidget(tester, name);
+  }
+
   testWidgets('el candado conserva el contexto y cerrar devuelve al origen', (
     tester,
   ) async {
@@ -90,7 +108,7 @@ void main() {
       find.text('Para tu preparación: Ingreso · Tropa y marinería.'),
       findsOneWidget,
     );
-    await capturePerformanceWidget(tester, 'pro-contratacion-anual');
+    await capturePro(tester, 'pro-contratacion-anual');
     await tester.tap(find.byTooltip('Cerrar'));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, '/plan');
@@ -150,7 +168,7 @@ void main() {
         find.text('Ejemplo didáctico. No es una pauta personalizada.'),
         findsOneWidget,
       );
-      await capturePerformanceWidget(tester, 'pro-ejemplo');
+      await capturePro(tester, 'pro-ejemplo');
       await show(tester, find.text('Ver modalidades de Pro'));
       await tester.tap(find.text('Ver modalidades de Pro'));
       await tester.pumpAndSettle();
@@ -181,7 +199,7 @@ void main() {
     expect(find.text('Contratación próximamente disponible.'), findsOneWidget);
     expect(find.text('Free'), findsNothing);
     expect(find.text('Pro activo'), findsNothing);
-    await capturePerformanceWidget(tester, 'pro-suscripcion');
+    await capturePro(tester, 'pro-suscripcion');
   });
 
   for (final path in ['/pro', '/pro/example', '/pro/subscription']) {

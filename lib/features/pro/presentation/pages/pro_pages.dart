@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/pro_offer.dart';
+import '../widgets/pro_brand_title.dart';
 
 class ProOfferPage extends StatefulWidget {
   const ProOfferPage({this.offerContext = const ProOfferContext(), super.key});
@@ -18,6 +19,7 @@ class _ProOfferPageState extends State<ProOfferPage> {
   @override
   Widget build(BuildContext context) => _ProScaffold(
     title: 'EntrenaOP Pro',
+    brandTitle: true,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -354,14 +356,19 @@ void _close(BuildContext context) {
 }
 
 class _ProScaffold extends StatelessWidget {
-  const _ProScaffold({required this.title, required this.child});
+  const _ProScaffold({
+    required this.title,
+    required this.child,
+    this.brandTitle = false,
+  });
   final String title;
   final Widget child;
+  final bool brandTitle;
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text(title),
+      title: brandTitle ? const ProBrandTitle() : Text(title),
       leading: IconButton(
         tooltip: 'Cerrar',
         onPressed: () => _close(context),
