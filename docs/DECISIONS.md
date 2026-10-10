@@ -580,3 +580,18 @@ Una entrada debe ser concreta y comprobable. Si todavía faltan datos, se
 registra la pregunta como pendiente en lugar de completar huecos con una
 suposición. Los detalles, fórmulas, fuentes y límites pertenecen al documento de
 dominio enlazado; este índice debe seguir siendo breve.
+
+## IOS-003 · Instalación en iPhone y límite de HAPT-001 · 10/10/2026
+
+Javier pide instalar en su iPhone la versión incorporada desde Windows.
+Se configura su equipo personal de Apple y se instala en Release con
+Supabase de desarrollo, manteniendo el esquema compartido de desarrollo
+en Debug. La instalación y ejecución física no cierran la validación de
+los avisos: Javier comunica ausencia de vibración en el iPhone 12.
+Se conserva como incidencia pendiente de diagnóstico; la confirmación
+física de Samsung en HAPT-001 no acredita iOS. Los «colapsos» anunciados
+requieren todavía descripción o logs. No se modifican producción, datos,
+permisos ni patrones para justificar una causa aún desconocida.
+
+Configuración y comprobaciones: `docs/IOS_DEVELOPMENT.md`. Incidencia y
+límites de avisos: `docs/WORKOUT_AUDIO_2026_10_08.md`.

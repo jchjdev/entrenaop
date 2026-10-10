@@ -369,3 +369,18 @@ registrados, sin impedir continuar con las incoherencias de la app que Javier
 quiere revisar. Se conservan los límites de segundo plano y de convivencia con
 música/auriculares; no se presentan las observaciones parciales como una auditoría
 autenticada completa.
+
+### Primera comprobación en iPhone físico · 10/10/2026
+
+EntrenaOP se instala en Release con entorno de desarrollo en el iPhone 12
+de Javier, iOS 27.0.1, desde la copia actualizada del Mac (`b590295` antes
+de configurar la firma). La compilación y ejecución quedan acreditadas
+en Xcode, pero Javier comunica que **la vibración no funciona**. La
+confirmación anterior de Samsung no se extiende a iOS: este conserva el
+adaptador háptico de Flutter y no el canal nativo Android de HAPT-001.
+
+Se registra la incidencia pendiente de diagnóstico, sin modificar ahora
+patrones, permisos, sonido o reloj ni atribuir la causa sin evidencia.
+Javier anuncia además «colapsos» que aportará después; sus pasos y logs
+todavía no están disponibles. No se da por validado el recorrido de avisos
+en iPhone. [Preparación y límites de la instalación](IOS_DEVELOPMENT.md).

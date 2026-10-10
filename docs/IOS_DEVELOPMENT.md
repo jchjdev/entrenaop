@@ -20,7 +20,7 @@
   `UIScene`. El callback configurado se define en `AuthRedirect`.
 
 No hace falta configurar un equipo de firma para ejecutar en un simulador.
-La firma y distribución a dispositivos físicos se preparan por separado.
+La instalación en dispositivos físicos requiere la firma descrita más abajo.
 
 ## Ejecutar con Supabase de desarrollo
 
@@ -43,6 +43,39 @@ Para compilar sin arrancar el simulador:
 ```sh
 flutter build ios --simulator --debug --dart-define=APP_ENV=development
 ```
+
+## Instalar en un iPhone físico
+
+1. Conectar el iPhone al Mac, desbloquearlo y confiar en el ordenador. El modo
+   desarrollador debe estar activado en Ajustes → Privacidad y seguridad.
+2. Completar la licencia y preparación inicial de Xcode. Añadir la cuenta Apple
+   en Xcode → Settings → Accounts.
+3. Abrir `ios/Runner.xcworkspace`, seleccionar el target Runner y revisar
+   Signing & Capabilities: firma automática y el equipo personal de Javier.
+   El identificador de equipo del proyecto no es una credencial; los
+   certificados, claves privadas y perfiles permanecen fuera del repositorio.
+4. Preparar las dependencias con el lockfile y comprobar `flutter devices`.
+
+Para instalar una versión que pueda abrirse desde el icono sin el depurador ni
+el Mac conectado, usar release **con el entorno de desarrollo explícito**:
+
+```sh
+flutter pub get --enforce-lockfile
+flutter run --release -d <identificador-del-iphone> --dart-define=APP_ENV=development
+```
+
+Si macOS solicita acceso de `codesign` al llavero, Javier introduce la contraseña
+directamente en el Mac. Un rechazo de acceso a la clave puede producir
+`errSecInternalComponent`; no copiar contraseñas al chat ni modificar los
+controles del llavero para evitar el aviso. La ejecución desde Xcode permite
+completar los avisos interactivos: seleccionar temporalmente Release en
+Product → Scheme → Edit Scheme → Run y desactivar Debug executable. Después,
+devolver el esquema compartido a Debug para conservar el flujo de desarrollo.
+
+El equipo personal gratuito de Apple tiene perfiles de siete días: renovar la
+instalación desde el Mac cuando caduque. No se necesita publicar en App Store
+para esta prueba. Si el iPhone solicita confiar en el desarrollador, hacerlo
+en Ajustes → General → VPN y gestión de dispositivos.
 
 ## Verificación
 
@@ -118,3 +151,34 @@ La causa comprobada fue la versión antigua ejecutada, no la configuración
 playback/mixWithOthers. Mantener actualizados Git y el ejecutable: hot reload no
 incorpora un plugin nuevo. La escucha y vibración en dispositivo real, volumen/
 silencio, música, auriculares y una sesión de entrenamiento siguen pendientes.
+
+## Instalación física · IOS-003 · 10/10/2026
+
+Tras incorporar los cambios de Windows hasta `b590295`, se comprueba Xcode
+27.0 (27A266a), licencia y preparación inicial completadas. Flutter detecta
+el iPhone 12 de Javier con iOS 27.0.1, conectado por cable, emparejado y con
+modo desarrollador activado. Javier inicia sesión en Apple y selecciona su
+equipo personal; se comprueba un certificado Apple Development válido.
+
+Xcode actualiza el formato del proyecto y conserva SPM. La firma automática
+usa el equipo personal en Debug, Release y Profile. No se añaden paquetes ni
+se cambian lockfiles, certificados o claves en Git. El esquema compartido
+vuelve a Debug tras instalar la app en Release sin depurador y con
+`APP_ENV=development`. Xcode acredita la ejecución en el iPhone y CoreDevice
+lista EntrenaOP entre sus aplicaciones instaladas.
+
+La primera compilación desde la herramienta de terminal falló al firmar por
+`errSecInternalComponent`; la ejecución interactiva desde Xcode compiló,
+firmó e instaló correctamente. No se modificaron los controles del llavero.
+El análisis está limpio, las 742 pruebas de la raíz pasan con una exclusiva
+web omitida y la compilación de desarrollo para simulador es correcta. La
+misma versión arranca en el simulador iPhone 17 Pro/iOS 26.3.1; Device Hub
+muestra Inicio, con la sesión de desarrollo ya conservada en ese dispositivo.
+
+Javier comunica que **la vibración no funciona en el iPhone**. Queda como
+incidencia física pendiente, sin atribuir todavía la causa a permisos ni
+ajustes y sin acreditar el conjunto de avisos del temporizador. Los
+«colapsos» que anuncia quedan pendientes de descripción o logs, sin
+inventar reproducciones. El arranque no acredita login, recuperación por
+correo, una sesión de gimnasio ni funcionamiento con auriculares o en
+segundo plano. [Seguimiento de avisos](WORKOUT_AUDIO_2026_10_08.md).
