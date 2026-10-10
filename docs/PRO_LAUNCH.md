@@ -40,6 +40,13 @@ siguiente fase.
 
 ## Único siguiente bloque: pagos y derechos verificados
 
+COM-007 propone incorporar cuotas de creación propias (recomendación inicial:
+8 ejercicios y 4 plantillas activas en Free), pendientes de confirmar con Javier.
+La oferta implementada no anuncia aún esa ampliación como beneficio disponible.
+Su [contrato propuesto](PRODUCT.md) distingue recursos propios, revisiones,
+agenda e historial; al confirmarlo se integrará con los derechos de servidor,
+sin convertir un contador local en autorización.
+
 Se recomiendan compras de App Store/Google Play y RevenueCat para coordinar
 productos y estados. Supabase seguirá autorizando generación y continuidad
 adaptativa. RevenueCat es una recomendación pendiente de elección/configuración,

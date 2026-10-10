@@ -496,6 +496,44 @@ esa experiencia ni acredita funciones comerciales implementadas.
 
 ### Reparto confirmado por Javier · COM-001
 
+**Propuesta posterior · COM-007 · 10/10/2026:** Javier plantea 7–9 ejercicios
+propios y unas 4 sesiones propias en Free, e invita a valorar Pro para crear más.
+La recomendación inicial es **8 ejercicios propios y 4 plantillas personales
+activas**, pendiente de confirmar. Las cantidades siguientes de COM-001
+describen el planteamiento anterior, no una cuota implementada.
+
+El límite propuesto se refiere a recursos propios guardados en la biblioteca,
+no al número de entrenamientos que el usuario puede realizar o registrar. Los
+ejercicios del catálogo, las sesiones oficiales o generadas, las citas de agenda,
+el historial y las revisiones de la misma plantilla no consumen esas plazas.
+Las cuatro plantillas abarcarían fuerza, carrera o mixtas conjuntamente; duplicar
+una plantilla sí crea otro recurso y consume una plaza. Archivar una plantilla
+liberaría su plaza sin borrar el historial. La forma de liberar plazas de
+ejercicios requiere concretar su ciclo de vida; no se presupone una operación
+de archivado hoy implementada.
+
+Se recomienda mostrar «Ejercicios propios: 6/8» y «Sesiones propias: 3/4» antes
+de alcanzar el límite. Intentar crear el noveno ejercicio o la quinta plantilla
+abriría la oferta Pro con un motivo concreto, cierre visible y borrador
+conservado, sin bloquear recursos ya existentes. Al vencer Pro se recomienda
+mantener consulta, uso, edición e historial de los recursos propios, limitando
+nuevas creaciones mientras se supere la cuota Free. Este comportamiento sigue
+pendiente de aprobación, igual que las cifras.
+
+Pro ampliaría la creación sin estas cuotas comerciales además de los programas
+adaptativos. No se añade todavía ese beneficio a la oferta como disponible ni
+se aplican límites en Flutter o SQL. Crear, duplicar y cualquier futura
+reactivación/importación deberán validar cuotas y derechos en servidor, con
+control atómico de creaciones concurrentes y cobertura transaccional. El diseño
+de creación de sesiones ya distingue plantilla, revisión y ejecución; la cuota
+no debe mezclar esos conceptos.
+
+Como referencia de mercado, [Hevy](https://help.hevyapp.com/hc/en-us/articles/33106320824727-Everything-You-Need-to-Know-About-the-Hevy-App-2026-Features-Guide)
+ofrece 7 ejercicios propios y 4 rutinas en Free, y amplía ambos en Pro.
+[Strong](https://help.strongapp.io/article/105-about-templates) documenta 3
+plantillas gratuitas. Esto acredita el uso del patrón, no que una cifra concreta
+garantice conversión o sea óptima para EntrenaOP.
+
 | Capacidad | Nivel acordado | Límite o pendiente |
 | --- | --- | --- |
 | Herramientas de ritmos | Free | No se convierten en Pro por utilizar cálculos. |
