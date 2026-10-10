@@ -415,13 +415,15 @@ Una variante para academias podría incorporar organizaciones, grupos, alumnos y
 varios entrenadores. Es una dirección futura, no alcance del MVP. El modelo
 actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
-## Free y Pro: reparto confirmado, diseño comercial pendiente
+## Free y Pro: reparto confirmado, interfaz inicial y pagos pendientes
 
 **Aclaración de Javier · 07/10/2026:** existen pruebas y algoritmos en desarrollo,
 pero Pro todavía no está diseñado ni implementado como producto comercial.
 No hay contratación, suscripciones o concesión de derechos Pro verificada.
-Los precios de lanzamiento se acuerdan después en COM-004; el diseño comercial
-y la implementación siguen pendientes. Javier concreta a continuación la frontera
+Los precios de lanzamiento se acuerdan después en COM-004 y el diseño se aprueba
+en COM-006. Su interfaz inicial está implementada, con contratación y derechos
+de servidor pendientes; [alcance y conexión de pagos](PRO_LAUNCH.md).
+Javier concreta a continuación la frontera
 comercial: las herramientas y el entrenamiento manual limitado pertenecen a
 Free; los programas que generan/adaptan entrenamientos con los algoritmos
 pertenecen a Pro. Este reparto está confirmado, pero no describe restricciones
@@ -441,12 +443,14 @@ mostrarse con más relevancia que su equivalente mensual; el ahorro puede
 redondearse a «37 %», indicando que se compara con doce mensualidades.
 
 Son precios de lanzamiento acordados, no una garantía de viabilidad económica
-ni de mantenimiento indefinido. Condiciones de renovación, protección de tarifas,
-proveedor de cobro y diseño definitivo siguen pendientes. La validación económica
+ni de mantenimiento indefinido. COM-006 acepta el diseño con renovación automática;
+protección de tarifas, proveedor de cobro y condiciones contractuales definitivas
+siguen pendientes. La validación económica
 debe contemplar costes del servicio y soporte, impuestos y comisiones. El alcance
 Pro debe poder entregarse con fiabilidad. Este acuerdo documental no implementa
 cobros, derechos ni restricciones. La propuesta de contratación se describe en
-`docs/VISUAL_DESIGN.md`, sin sustituir las pantallas actuales.
+`docs/VISUAL_DESIGN.md`; COM-006 incorpora la interfaz sin habilitar cobros,
+derechos ni restricciones de servidor.
 
 ### Posible descuento militar · COM-005 · 10/10/2026
 
@@ -504,8 +508,9 @@ esa experiencia ni acredita funciones comerciales implementadas.
 La frontera utiliza «programa adaptativo» como concepto de producto: no implica
 cobrar por cualquier cálculo matemático de una herramienta. No se introducen
 ahora cuotas, candados funcionales o cobros. Los precios iniciales se acuerdan en
-COM-004; contratación, derechos, cancelación y experiencias sin Pro siguen
-pendientes de diseño e implementación.
+COM-004 y el recorrido de descubrimiento/contratación se aprueba en COM-006.
+Su interfaz está implementada sin compras; derechos, conexión de pagos y
+restricciones comerciales de servidor siguen pendientes.
 
 Las listas siguientes conservan detalles del borrador anterior. COM-001 tiene
 prioridad: los puntos que no aparecen en el reparto confirmado, como asignar

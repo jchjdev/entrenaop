@@ -1,5 +1,20 @@
 # Arquitectura de EntrenaOP
 
+## Interfaz Pro · COM-006 · 10/10/2026
+
+`features/pro` contiene oferta de lanzamiento, contexto de presentación,
+descubrimiento, ejemplo y pantallas de oferta/suscripción. Las rutas `/pro`,
+`/pro/example` y `/pro/subscription` usan las páginas Material existentes y la
+autenticación global; `push/pop` conserva el origen. La modalidad elegida es
+estado efímero de presentación, no un derecho comercial. No se interpreta
+`role` como suscripción ni se guarda una concesión Pro local.
+
+La primera fase mantiene los accesos de desarrollo a programas y deshabilita
+compras/restauración. No añade SDK, migraciones ni permisos. La fase siguiente
+deberá proporcionar productos de tienda y derechos verificables del servidor
+antes de habilitar ventas o protección comercial de generación/adaptación.
+[Contrato y límites de la entrega](PRO_LAUNCH.md).
+
 ## Descarte confirmado de una sesión en curso · UI-022 · 09/10/2026
 
 `discard_workout_execution(uuid,text)` valida cuenta, propiedad, confirmación y

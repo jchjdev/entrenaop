@@ -74,6 +74,27 @@ void main() {
   });
   tearDown(() async => sl.reset());
 
+  testWidgets('Pro abre desde la preparación y vuelve a su ficha real', (
+    t,
+  ) async {
+    final router = AppRouter(_Auth());
+    addTearDown(router.dispose);
+    router.config.go('/plan/goal/troop');
+    await t.pumpWidget(MaterialApp.router(routerConfig: router.config));
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.text('Crear mi plan · Pro'));
+    await t.tap(find.text('Crear mi plan · Pro'));
+    await t.pumpAndSettle();
+    expect(router.config.state.uri.path, '/pro');
+    expect(router.config.state.uri.queryParameters['goal'], 'troop');
+    expect(find.text('Para tu preparación: Ingreso · Tropa.'), findsOneWidget);
+    await t.tap(find.byTooltip('Cerrar'));
+    await t.pumpAndSettle();
+    expect(router.config.state.uri.path, '/plan/goal/troop');
+    expect(find.text('Programa de entrenamiento'), findsOneWidget);
+    expect(t.takeException(), isNull);
+  });
+
   testWidgets('preparación abre su programa y vuelve al mismo detalle', (
     t,
   ) async {

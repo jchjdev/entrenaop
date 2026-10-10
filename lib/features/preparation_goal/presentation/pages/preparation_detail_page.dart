@@ -5,6 +5,8 @@ import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparatio
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/pro/domain/pro_offer.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -159,6 +161,19 @@ class _Content extends StatelessWidget {
                       'Objetivo a largo plazo: la fecha se conserva, pero el plan de carrera se revisa semana a semana con tus datos actuales.',
                     ),
                   const SizedBox(height: 22),
+                  if (goal.id != null &&
+                      (goal.programId ==
+                              PreparationProgramIds.armedForcesTroopEntry ||
+                          goal.programId ==
+                              PreparationProgramIds.fasPeriodicAssessment)) ...[
+                    ProDiscoveryCard(
+                      offerContext: ProOfferContext(
+                        goalId: goal.id,
+                        preparationName: goal.program.name,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                  ],
                   if (goal.programId !=
                           PreparationProgramIds.fasPeriodicAssessment &&
                       goal.program.currentAssessmentCatalogVersion == null &&

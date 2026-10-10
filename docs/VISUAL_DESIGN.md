@@ -1,11 +1,13 @@
 # Identidad visual de EntrenaOP
 
-## Pro: propuesta de recorrido y contratación · COM-004 · 10/10/2026
+## Pro: recorrido y contratación · COM-004/006 · 10/10/2026
 
 Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 29,99 €/año
-por el mismo acceso Pro. La composición y los recorridos siguientes son una
-propuesta pendiente de aprobación e implementación; no cambian las pantallas,
-tarjetas fotográficas ni navegación actuales ni recuperan COM-002/003.
+por el mismo acceso Pro. Javier aprueba la composición y el recorrido y pide
+implementar primero la interfaz, después conectar pagos. La fase inicial se
+describe en [Pro y pagos](PRO_LAUNCH.md): añade descubrimiento y oferta con compra
+deshabilitada, conserva tarjetas fotográficas y accesos de desarrollo y no
+recupera COM-002/003. La autorización comercial de servidor queda pendiente.
 
 La oferta explicará el beneficio de la planificación adaptativa con las marcas,
 objetivo, disponibilidad, material y resultados del usuario. No anunciará como
@@ -21,11 +23,12 @@ anual será más relevante que su equivalente mensual. Referencia:
 [instrucciones de Apple](https://developer.apple.com/app-store/subscriptions/).
 
 El botón y las condiciones deben corresponder a la modalidad elegida. Si se
-acuerda renovación automática, se explicarán su importe y periodicidad, y que
-cancelar la renovación conserva el acceso durante el periodo contratado. La
+habilita la renovación automática aceptada en el diseño, se explicarán importe,
+periodicidad y que cancelar la renovación conserva el acceso durante el periodo
+contratado. La
 pantalla deberá ofrecer restauración de compras, condiciones y privacidad.
-El diseño de ejemplo plantea renovación automática como propuesta; no la da
-por acordada ni acredita integración con una tienda.
+El diseño aceptado incluye renovación automática; no acredita integración con
+una tienda ni sustituye sus condiciones contractuales definitivas.
 
 Desde una función Pro, el usuario podrá entender qué ofrece antes de contratar.
 La propuesta conserva una sola app y las cinco secciones actuales. Mi plan
@@ -48,11 +51,13 @@ La generación y adaptación se protegerán en servidor; el candado es su señal
 visual. Mi semana, sesiones manuales incluidas e historial no quedan cubiertos
 por un bloqueo global de Mi plan. Una contratación confirmada devolverá al punto
 de origen para continuar la revisión; no activará ni sustituirá un programa sin
-la aceptación correspondiente. Este recorrido sigue pendiente de aprobación.
+la aceptación correspondiente. Este recorrido está aprobado; la conexión y los
+derechos de servidor quedan para la fase siguiente.
 
 El posible descuento militar de COM-005 queda aplazado expresamente por Javier
-y fuera del diseño inicial. La propuesta visual no prueba código real,
-accesibilidad, derechos comerciales ni compras. No se ejecuta ni modifica la app.
+y fuera del diseño inicial. Las maquetas de conversación no prueban código real,
+accesibilidad, derechos comerciales ni compras. COM-006 incorpora la interfaz
+Flutter, con su alcance y verificación en PRO_LAUNCH.md.
 
 ## Accesos depurados · UI-026 · 10/10/2026
 

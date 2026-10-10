@@ -14,6 +14,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
+import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -219,6 +220,8 @@ class _PlanContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     ...preparations,
+                    const SizedBox(height: 16),
+                    const ProDiscoveryCard(),
                   ],
                   const SizedBox(height: 24),
                   const HomeSectionHeading(title: 'Esta semana'),

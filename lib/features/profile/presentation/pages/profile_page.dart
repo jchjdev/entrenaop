@@ -324,6 +324,18 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 22),
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.workspace_premium_outlined,
+                            ),
+                            title: const Text('Mi suscripción'),
+                            subtitle: const Text('Descubre EntrenaOP Pro.'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open('/pro/subscription'),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
                         OutlinedButton.icon(
                           onPressed: () => context.read<AuthCubit>().signOut(),
                           icon: const Icon(Icons.logout_rounded),

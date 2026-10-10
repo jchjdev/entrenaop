@@ -35,6 +35,8 @@ import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_pe
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_history_page.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/profile/presentation/pages/profile_page.dart';
+import 'package:entrenaop/features/pro/domain/pro_offer.dart';
+import 'package:entrenaop/features/pro/presentation/pages/pro_pages.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
 import 'package:entrenaop/features/program_assessment/presentation/program_assessment_page.dart';
@@ -142,6 +144,20 @@ class AppRouter {
         return null;
       },
       routes: [
+        materialAppRoute(
+          path: '/pro',
+          builder: (_, state) =>
+              ProOfferPage(offerContext: ProOfferContext.fromUri(state.uri)),
+        ),
+        materialAppRoute(
+          path: '/pro/example',
+          builder: (_, state) =>
+              ProExamplePage(offerContext: ProOfferContext.fromUri(state.uri)),
+        ),
+        materialAppRoute(
+          path: '/pro/subscription',
+          builder: (_, _) => const ProSubscriptionPage(),
+        ),
         materialAppRoute(
           path: '/forgot-password',
           builder: (_, state) => AccountEmailPage(

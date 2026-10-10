@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**COM-006, 10/10/2026 · interfaz inicial Pro verificada:** Javier aprueba el
+recorrido y pide primero código, después conectar pagos. Mi plan sin programa
+y las fichas Tropa/FAS ofrecen descubrimiento con candado; ejemplo didáctico,
+oferta mensual/anual y Mi suscripción en Perfil. Tarjetas/fotos, agenda,
+resultados y accesos de desarrollo conservados. Contratación/restauración
+deshabilitadas y explicadas, sin cobro simulado ni derechos locales.
+Análisis limpio; 53 pruebas relacionadas y 726 completas correctas con la
+omisión web existente; capturas de widgets y recorrido a 320 px con texto doble.
+No modifica Supabase, producción, admin, paquetes o dependencias. No acredita
+compras, derechos, bloqueo comercial ni dispositivos físicos.
+[Alcance y requisitos](PRO_LAUNCH.md). El único siguiente bloque recomendado
+para Pro es conectar tiendas/proveedor y derechos verificables de servidor
+antes de habilitar el cobro. La revisión deportiva de Javier continúa aparte.
+
 **UI-026, 10/10/2026 · accesos y mensajes depurados:** una única entrada
 Ver preparación desde sus tarjetas, conservando fotos, estados y detalle de
 programa/fecha/marcas/resultados. Favoritos personales sin destinos duplicados,
