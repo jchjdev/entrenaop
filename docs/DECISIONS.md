@@ -609,5 +609,6 @@ fallo, sin acreditar percepción física por la mera aceptación de la API.
 
 Implementación y verificaciones automáticas completas. Javier confirma los
 dos pulsos de la prueba manual en su iPhone 12, tras instalar la versión
-corregida con Supabase de desarrollo. Contrato, pruebas y comprobación física
+corregida con Supabase de desarrollo, y confirma después la sincronía
+percibida entre vibración y sonido en su prueba. Contrato y comprobaciones
 en `docs/WORKOUT_AUDIO_2026_10_08.md`.

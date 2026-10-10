@@ -189,6 +189,8 @@ Se sustituye la ruta de efectos de interfaz iOS por pulsos finitos de Core
 Haptics, sin paquetes ni permisos nuevos. Xcode instala la corrección en el
 mismo iPhone 12 con Supabase de desarrollo. Javier confirma los dos pulsos
 de «Probar vibración» y la consola registra el patrón de 420 ms sin error.
+En una prueba posterior, Javier confirma también que la vibración y el
+sonido se perciben sincronizados en el iPhone.
 El análisis, las 744 pruebas Flutter (una exclusiva web omitida) y tres
 pruebas nativas de los patrones pasan. El esquema vuelve a Debug tras la
 instalación Release sin depurador. Quedan pendientes la sesión real con

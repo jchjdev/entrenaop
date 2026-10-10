@@ -430,6 +430,8 @@ La versión corregida se compila, firma e instala desde Xcode en el iPhone 12
 de Javier con iOS 27.0.1 y Supabase de desarrollo. Javier confirma que nota
 los dos pulsos al pulsar «Probar vibración»; la consola registra
 `iOS aviso=workFinished enviada=true duración=0.420`. Esto acredita la prueba
-manual física, no todos los hitos durante una sesión de gimnasio ni la
-sincronía percibida con sonido, música o auriculares. Se restaura el esquema
-compartido a Debug después de instalar la versión Release sin depurador.
+manual física. Javier confirma después que, en su prueba en el iPhone,
+la vibración va sincronizada con el sonido. No se han descrito todos los
+hitos probados ni una sesión completa de gimnasio, música o auriculares.
+Se restaura el esquema compartido a Debug después de instalar la versión
+Release sin depurador.
