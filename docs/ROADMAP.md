@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**COM-010/011, aclaración y preparación al 13/10/2026 · bloque abierto:** Javier
+rechaza el cierre provisional de Free/Pro: este chat incluye conectar los pagos
+a los derechos de servidor. El producto para entrenadores se estudia aparte.
+Confirma Apple Developer con membresía caducada; se propone comenzar con un
+proyecto RevenueCat de desarrollo y Test Store, y después validar las tiendas
+reales. Se documentan catálogo y contrato de integración; aún no hay configuración
+externa verificada, SDK instalado, webhook o compra habilitada. El siguiente paso
+es crear el proyecto de pruebas para integrar Flutter y Supabase Dev. Las
+comprobaciones anteriores conservan sus fechas y límites; no se declaran pruebas
+de compras realizadas. [Preparación y alcance](PRO_LAUNCH.md).
+
 **COM-009 y MAIL-002, 10/10/2026 · correcciones de Pro y confirmación:** `/pro`
 consulta acceso real y una cuenta Pro ve «Ya tienes Pro», vigencia y continuidad,
 sin «Seguir con Free» ni oferta de compra. Mi suscripción anuncia Pro solo a

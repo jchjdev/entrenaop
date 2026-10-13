@@ -2,6 +2,14 @@
 
 ## Estado actual · COM-008 · 10/10/2026
 
+**Bloque abierto · COM-010, aclarado por Javier.** Este chat continúa dedicado
+a Free/Pro del deportista e incluye la conexión de pagos. Javier rechaza el cierre
+provisional interpretado por el agente. El producto para entrenadores se estudiará
+en otro chat; enseñarles la beta no decide su modelo comercial. Accesos, cuotas,
+interfaz y gestión administrativa de pruebas están verificados en desarrollo;
+las compras siguen pendientes dentro de este mismo trabajo. La recepción del
+nuevo correo de alta y las pruebas reales en móvil conservan sus límites conocidos.
+
 Javier pide probar el negocio con cuentas reales y retoma Free con 8 ejercicios
 propios y 4 sesiones personales activas. Esta fase implementa derechos de
 servidor, las cuotas y los accesos de la app. Pro se concede temporalmente en
@@ -107,7 +115,7 @@ se recupera la simulación retirada en COM-003. Los precios son la oferta
 acordada, no productos obtenidos de una tienda. No habilitar cobros sin la
 siguiente fase.
 
-## Único siguiente bloque: conectar pagos a los derechos de servidor
+## Siguiente tramo del bloque abierto: conectar pagos a los derechos de servidor
 
 COM-008 concreta e implementa las cuotas propuestas en COM-007. El
 [contrato vigente](PRODUCT.md) distingue recursos propios, revisiones, agenda e
@@ -140,6 +148,77 @@ Los cobros web requieren configuración propia; el navegador no procesa compras
 nativas móviles. No se añaden ahora pagos web ni una segunda app.
 
 ## Qué tendrá que configurar Javier
+
+### Primer paso preparado · COM-011 · 13/10/2026
+
+Javier confirma que su membresía Apple Developer está caducada. Para la primera
+integración se propone RevenueCat Test Store; el proyecto externo todavía no
+se ha creado o verificado en esta tarea. No hay SDK instalado ni compras activas.
+
+1. Entrar en [RevenueCat](https://app.revenuecat.com/) y crear **EntrenaOP Dev**.
+2. En **Apps & providers**, utilizar **Test Store**; puede venir creada en el
+   asistente. No conectar Apple ni Google en este primer paso.
+3. En **Product catalog**, preparar un único derecho **`pro`**, dos productos
+   de prueba y una oferta **`default`** que contenga ambos paquetes:
+
+| Producto propuesto de prueba | Duración | Paquete | Precio de lanzamiento de referencia |
+| --- | --- | --- | --- |
+| `entrenaop_pro_monthly` | Un mes | Monthly | 3,99 €/mes |
+| `entrenaop_pro_annual` | Un año | Annual | 29,99 €/año |
+
+Ambos productos deben conceder `pro`. La moneda y el precio que ofrezca el
+catálogo de prueba se comprobarán en el panel; los euros anteriores no acreditan
+productos reales de las tiendas. La app utilizará los precios localizados del
+proveedor y no impondrá un símbolo de moneda sobre una cantidad distinta.
+
+Test Store utiliza una clave pública de SDK propia y compras marcadas sandbox.
+Se probará en compilaciones **debug**: el SDK Flutter no permite usar esa clave
+en release y no se utilizará para la beta profile, TestFlight o pistas de Play.
+La prueba inicial no sustituye la validación posterior de las tiendas nativas.
+[Test Store y restricciones de compilación](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
+
+### Contrato técnico propuesto antes de implementarlo
+
+- Flutter inicia compras únicamente con una cuenta autenticada y su UUID de
+  Supabase como App User ID. No se envían marcas, historial o datos deportivos
+  al proveedor. Un cambio de cuenta debe descartar respuestas de la anterior.
+- RevenueCat coordina las compras; Supabase conserva la autorización comercial.
+  El resultado del SDK no concede Pro por sí solo: se confirma mediante backend.
+- Se necesitan una función de servidor para recibir eventos autenticados y una
+  consulta de conciliación con el proveedor. Los identificadores de evento evitan
+  procesar duplicados; la conciliación resuelve demoras y desorden de entrega.
+- Las suscripciones se almacenarán separadas de `development_manual`, con
+  proveedor, cuenta, entorno y vigencia. La autorización combinará las fuentes
+  válidas; retirar un acceso administrativo no cancelará una compra de tienda.
+- Sandbox solo autorizará en Dev. El webhook validará proyecto/app y entorno;
+  los secretos de API y del webhook permanecerán en servidor. Todavía no se han
+  definido estos valores ni desplegado funciones.
+- Cancelar la renovación conserva el acceso hasta su vencimiento. Caducar no
+  borra recursos ni historial. Restauración, cambios de cuenta, período de gracia
+  y transferencias se concretarán antes de implementar sus reglas; no se adopta
+  silenciosamente la política predeterminada del proveedor.
+
+El SDK oficial permitirá compra/restauración y lectura del catálogo. Antes de
+añadirlo se comprobarán versión, resolución y requisitos reales con Flutter,
+Android e iOS actuales. Se conservará la oferta propia de EntrenaOP. El navegador
+no se habilitará como nuevo canal de venta en este primer tramo.
+
+La aceptación requiere probar compra mensual/anual, cancelación del diálogo,
+fallo, renovación/caducidad, restauración, cambio de cuenta, eventos duplicados
+y derechos confirmados en servidor. Se necesitará una cuenta Free sin concesión
+manual para observar la transición; el Pro de prueba vigente puede ocultarla.
+Estas comprobaciones y la integración siguen pendientes: este documento no
+acredita que funcionen compras.
+
+Referencias oficiales revisadas el 13/10/2026:
+
+- [Catálogo de derechos](https://www.revenuecat.com/docs/getting-started/entitlements).
+- [Ofertas y paquetes](https://www.revenuecat.com/docs/offerings/overview).
+- [Configuración e identidad del SDK](https://www.revenuecat.com/docs/getting-started/configuring-sdk).
+- [Eventos autenticados y duplicados](https://www.revenuecat.com/docs/integrations/webhooks).
+- [Restauración y asociación de cuentas](https://www.revenuecat.com/docs/projects/restore-behavior).
+
+### Conexión posterior de tiendas y venta real
 
 - Cuentas de Play Console y App Store Connect, acuerdos e información comercial,
   bancaria y fiscal que soliciten las tiendas.
