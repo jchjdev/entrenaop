@@ -7,6 +7,11 @@ Selecciona una cuenta, elige plazo, fecha o sin
 fecha de fin, indica motivo y confirma. Dev tiene `gift_management_enabled=true`;
 no se modifica producción. El deportista debe actualizar la beta para regalos
 indefinidos y puede reconsultar Perfil → Mi suscripción → Actualizar acceso.
+Tras cambios del contrato de acceso hay que recompilar/actualizar también la app
+del móvil; reiniciar una APK antigua no incorpora el código nuevo. El 13/10 a
+las 22:51 (Madrid) se actualiza por reemplazo la APK debug Dev del Samsung,
+conservando datos, después de comprobar un regalo indefinido en el RPC propio.
+La pantalla en esa versión todavía debe confirmarse en el móvil.
 Retirar el regalo conserva la compra vigente. La prueba SQL
 `supabase/tests/administrative_pro_gifts.sql` cubre permisos, caducidad,
 auditoría y fuentes simultáneas con ROLLBACK. La ampliación no utiliza promociones

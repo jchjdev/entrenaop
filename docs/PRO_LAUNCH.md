@@ -53,6 +53,19 @@ La app debe actualizarse antes de utilizar regalos indefinidos: una beta
 anterior todavía exige fecha final para Pro. El deportista consulta el resultado
 desde Perfil → Mi suscripción → Actualizar acceso.
 
+**Compatibilidad en Android físico, 13/10 a las 22:51 (Madrid):** Javier comunica
+error persistente al consultar acceso con `jvr.trainer@gmail.com` después de
+cambiarlo en admin. El RPC propio autenticado devuelve correctamente Pro de
+origen `administrative_gift`, sin fecha final y sin cuotas. La APK instalada
+en el Samsung tenía fecha de actualización 21:27, anterior al soporte de
+regalos indefinidos añadido en COM-016; la versión anterior rechaza esa vigencia.
+Pasan las 15 pruebas de interpretación/presentación de acceso, incluida esa
+instantánea. Se recompila la APK debug Dev con la configuración Test Store y
+se instala con reemplazo, sin desinstalación ni borrado de datos; Android confirma
+instalación a las 22:51. No se modifica ni retira el regalo ni se cambian compras.
+La comprobación de la pantalla por Javier después de abrir esta APK sigue
+pendiente. Actualizar el admin no actualiza automáticamente las apps instaladas.
+
 Comprobación previa de COM-016 al 13/10: análisis limpio en ambas apps,
 770 pruebas de raíz y 98 de admin correctas, con sus omisiones web preexistentes;
 39 pruebas Pro.
