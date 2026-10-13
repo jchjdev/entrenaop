@@ -74,8 +74,8 @@ No hay compras, restauraciones, webhooks, recibos, reembolsos ni estados de tien
 implementados. Los botones de cobro siguen deshabilitados. La recepción fiable
 de pagos deberá incorporar una fuente y referencias verificables al modelo de
 derechos, con idempotencia y conciliación, y nunca permitir que las concesiones
-manuales cancelen o editen una suscripción de tienda. RevenueCat sigue siendo
-una recomendación pendiente de configuración y elección definitiva.
+manuales cancelen o editen una suscripción de tienda. RevenueCat es
+el proveedor elegido en COM-012, pendiente de configuración e integración.
 
 ## Acuerdo · COM-006 · 10/10/2026
 
@@ -121,10 +121,34 @@ COM-008 concreta e implementa las cuotas propuestas en COM-007. El
 [contrato vigente](PRODUCT.md) distingue recursos propios, revisiones, agenda e
 historial; el contador visual refleja el servidor y no concede autorizaciones.
 
-Se recomiendan compras de App Store/Google Play y RevenueCat para coordinar
-productos y estados. Supabase seguirá autorizando generación y continuidad
-adaptativa. RevenueCat es una recomendación pendiente de elección/configuración,
-no una dependencia añadida en esta entrega.
+Javier elige compras de App Store/Google Play y RevenueCat para coordinar
+productos y estados (COM-012). Supabase seguirá autorizando generación y
+continuidad adaptativa. Configuración e integración de RevenueCat siguen
+pendientes; no es aún una dependencia instalada.
+
+### Coste y crecimiento acordados · COM-012 · 13/10/2026
+
+Se conserva Supabase y su PostgreSQL, autenticación, permisos y funciones de
+servidor existentes. La elección busca reducir mantenimiento y coste total;
+no afirma que un proveedor sea el mejor para cualquier aplicación. Cambiar
+alojamiento exigiría comprobar también los contratos de acceso e integración,
+además de comparar el precio de una base de datos aislada.
+
+RevenueCat estándar es gratuito por debajo de 2.500 USD de ingresos mensuales
+registrados; si no hay ingresos, su cargo es cero. Al superar el umbral cobra
+el 1 % del total registrado antes de comisiones e impuestos; si se vuelve a
+quedar por debajo, vuelve a ser gratuito. Esta tarifa no elimina las comisiones
+de tiendas o los costes de otros servicios.
+[Facturación de RevenueCat](https://www.revenuecat.com/docs/welcome/set-up-revenuecat/account-management).
+
+Se comienza con pruebas gratuitas. Para lanzamiento se recomienda presupuestar
+Supabase Pro desde 25 USD/mes, con una instancia básica incluida y copias diarias
+de base de datos; potencia, proyectos o consumo adicionales pueden aumentar
+el coste. Es una previsión: no se contrata ni cambia ningún plan en esta tarea.
+El precio de Supabase es independiente de los ingresos de EntrenaOP. La cuota
+de usuarios activos incluida no acredita rendimiento con ese número de usuarios;
+el dimensionamiento requiere pruebas de carga y medidas del algoritmo real.
+[Precios de Supabase](https://supabase.com/pricing).
 
 Antes de abrir ventas hay que:
 
@@ -152,8 +176,9 @@ nativas móviles. No se añaden ahora pagos web ni una segunda app.
 ### Primer paso preparado · COM-011 · 13/10/2026
 
 Javier confirma que su membresía Apple Developer está caducada. Para la primera
-integración se propone RevenueCat Test Store; el proyecto externo todavía no
-se ha creado o verificado en esta tarea. No hay SDK instalado ni compras activas.
+integración se prepara RevenueCat Test Store tras la elección de COM-012;
+el proyecto externo todavía no se ha creado o verificado en esta tarea.
+No hay SDK instalado ni compras activas.
 
 1. Entrar en [RevenueCat](https://app.revenuecat.com/) y crear **EntrenaOP Dev**.
 2. En **Apps & providers**, utilizar **Test Store**; puede venir creada en el
@@ -223,7 +248,7 @@ Referencias oficiales revisadas el 13/10/2026:
 - Cuentas de Play Console y App Store Connect, acuerdos e información comercial,
   bancaria y fiscal que soliciten las tiendas.
 - Dos modalidades de suscripción con precios y disponibilidad.
-- Si se elige RevenueCat, su cuenta/proyecto, conexión a tiendas y un acceso Pro
+- Cuenta/proyecto RevenueCat, conexión a tiendas y un acceso Pro
   común a ambas modalidades.
 
 Flutter/Supabase, recepción de eventos y pruebas serán el trabajo técnico

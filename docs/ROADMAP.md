@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**COM-012, 13/10/2026 · proveedor elegido:** Javier acepta stores + RevenueCat
+para las suscripciones y conservar Supabase/PostgreSQL para datos y autorización.
+Se mantiene el inicio con pruebas gratuitas y se dimensionará el servidor con
+mediciones antes de vender. Supabase Pro es una previsión de lanzamiento;
+no se contrata ahora. Crear/verificar el proyecto RevenueCat Dev sigue siendo
+el primer paso para la integración. No hay SDK, webhook ni compras implementados.
+[Elección, coste y preparación](PRO_LAUNCH.md).
+
 **COM-010/011, aclaración y preparación al 13/10/2026 · bloque abierto:** Javier
 rechaza el cierre provisional de Free/Pro: este chat incluye conectar los pagos
 a los derechos de servidor. El producto para entrenadores se estudia aparte.

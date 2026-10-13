@@ -865,8 +865,8 @@ redefine sus reglas. Detalle en `PROGRAMA_ADAPTATIVO.md` y `VISUAL_DESIGN.md`.
 
 ## Integraciones futuras
 
-- Suscripciones: RevenueCat o solución equivalente, después de validar iOS,
-  Android, web y Windows.
+- Suscripciones: RevenueCat elegido en COM-012; integración y pruebas de iOS
+  y Android pendientes. Venta web y Windows quedan fuera de este primer tramo.
 - Salud móvil: Health Connect y las APIs vigentes del ecosistema Apple/Google;
   no diseñar una integración nueva alrededor del antiguo Google Fit.
 - Garmin Connect y Strava se investigarán más adelante y no deben bloquear el
