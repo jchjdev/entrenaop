@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../../helpers/admin_test_app.dart';
 
 import 'package:entrenaop_admin/core/admin_router.dart';
+import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
@@ -411,6 +412,55 @@ Future<void> _retrySave(
 }
 
 void main() {
+  for (final allowed in [false, true]) {
+    testWidgets(
+      'gestión de cuentas visible solo con permiso específico: $allowed',
+      (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: AdminProgramsPage(
+              repository: _FakeRepository(allowed: true),
+              workoutRepository: _FakeWorkouts(),
+              exerciseRepository: _FakeExercises(),
+              onSignOut: () {},
+              canManageAccounts: () async => allowed,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          find.text('Cuentas y Pro'),
+          allowed ? findsOneWidget : findsNothing,
+        );
+        expect(find.text('¿Qué quieres gestionar?'), findsOneWidget);
+      },
+    );
+  }
+  for (final path in ['/accounts', '/development-accounts']) {
+    testWidgets('URL $path no permite que un editor consulte cuentas', (
+      tester,
+    ) async {
+      final accounts = _DeniedAccounts();
+      final router = createAdminRouter(
+        programs: _FakeRepository(allowed: true),
+        workouts: _FakeWorkouts(),
+        exercises: _FakeExercises(),
+        proAccess: accounts,
+        onSignOut: () {},
+        initialLocation: path,
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
+        ),
+        findsOneWidget,
+      );
+      expect(accounts.listCalls, 0);
+    });
+  }
   for (final (label, kind) in [
     ('Acceso u oposición', 'access'),
     ('Evaluación interna', 'internal_assessment'),
@@ -1697,4 +1747,29 @@ void main() {
     expect(repository.programs.single.enabled, true);
     expect(find.text('Publicado'), findsOneWidget);
   });
+}
+
+class _DeniedAccounts implements AdminProAccessRepository {
+  int listCalls = 0;
+  @override
+  Future<bool> canManageAccounts() async => false;
+  @override
+  Future<AdminAccountDirectory> list({
+    String search = '',
+    String? afterId,
+  }) async {
+    listCalls++;
+    return const AdminAccountDirectory([]);
+  }
+
+  @override
+  Future<AdminAccountAccess> find(String email) =>
+      throw StateError('No debe consultar fichas');
+  @override
+  Future<AdminAccountAccess> setAccess(
+    String userId, {
+    required bool enabled,
+    DateTime? validUntil,
+    required String reason,
+  }) => throw StateError('No debe conceder acceso');
 }

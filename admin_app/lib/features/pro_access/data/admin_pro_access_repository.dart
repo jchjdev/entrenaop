@@ -46,6 +46,8 @@ class AdminAccountAccess {
 }
 
 abstract class AdminProAccessRepository {
+  Future<bool> canManageAccounts();
+  Future<AdminAccountDirectory> list({String search = '', String? afterId});
   Future<AdminAccountAccess> find(String email);
   Future<AdminAccountAccess> setAccess(
     String userId, {
@@ -58,6 +60,23 @@ abstract class AdminProAccessRepository {
 class SupabaseAdminProAccessRepository implements AdminProAccessRepository {
   const SupabaseAdminProAccessRepository(this.client);
   final SupabaseClient client;
+  @override
+  Future<bool> canManageAccounts() async =>
+      await client.rpc('can_manage_pro_accounts') == true;
+  @override
+  Future<AdminAccountDirectory> list({
+    String search = '',
+    String? afterId,
+  }) async {
+    final result = await client.rpc(
+      'admin_list_pro_accounts',
+      params: {'p_search': search, 'p_after_id': afterId, 'p_limit': 25},
+    );
+    return AdminAccountDirectory.fromJson(
+      Map<String, dynamic>.from(result as Map),
+    );
+  }
+
   Future<AdminAccountAccess> _call(
     String name,
     Map<String, dynamic> params,
@@ -83,4 +102,56 @@ class SupabaseAdminProAccessRepository implements AdminProAccessRepository {
     'p_valid_until': validUntil?.toUtc().toIso8601String(),
     'p_reason': reason,
   });
+}
+
+class AdminAccountSummary {
+  const AdminAccountSummary({
+    required this.userId,
+    required this.email,
+    required this.isPro,
+    this.freeProActive = false,
+    this.subscriptionActive = false,
+    this.subscriptionEnvironment,
+  });
+  final String userId, email;
+  final bool isPro, freeProActive, subscriptionActive;
+  final String? subscriptionEnvironment;
+  String get description {
+    if (!isPro) return 'Free';
+    final sources = [
+      if (freeProActive) 'Pro gratuito',
+      if (subscriptionActive)
+        subscriptionEnvironment == 'SANDBOX'
+            ? 'Suscripción de prueba'
+            : 'Suscripción',
+    ];
+    return sources.isEmpty ? 'Pro' : sources.join(' · ');
+  }
+
+  factory AdminAccountSummary.fromJson(Map<String, dynamic> json) =>
+      AdminAccountSummary(
+        userId: json['user_id'] as String,
+        email: json['email'] as String,
+        isPro: json['tier'] == 'pro',
+        freeProActive: json['free_pro_active'] == true,
+        subscriptionActive: json['subscription_active'] == true,
+        subscriptionEnvironment: json['subscription_environment'] as String?,
+      );
+}
+
+class AdminAccountDirectory {
+  const AdminAccountDirectory(this.accounts, {this.nextCursor});
+  final List<AdminAccountSummary> accounts;
+  final String? nextCursor;
+  factory AdminAccountDirectory.fromJson(Map<String, dynamic> json) =>
+      AdminAccountDirectory(
+        (json['accounts'] as List)
+            .map(
+              (item) => AdminAccountSummary.fromJson(
+                Map<String, dynamic>.from(item as Map),
+              ),
+            )
+            .toList(),
+        nextCursor: json['next_cursor'] as String?,
+      );
 }

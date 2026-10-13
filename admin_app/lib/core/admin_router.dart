@@ -170,10 +170,14 @@ GoRouter createAdminRouter({
       if (proAccess != null)
         GoRoute(
           path: '/accounts',
-          builder: (_, _) => load(
-            () async => proAccess,
-            (repository) => AdminProAccessPage(repository: repository),
-          ),
+          builder: (_, _) => load(() async {
+            if (!await proAccess.canManageAccounts()) {
+              throw const _RouteUnavailable(
+                'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
+              );
+            }
+            return proAccess;
+          }, (repository) => AdminProAccessPage(repository: repository)),
         ),
       if (proAccess != null)
         GoRoute(path: '/development-accounts', redirect: (_, _) => '/accounts'),
@@ -188,7 +192,7 @@ GoRouter createAdminRouter({
           exerciseRepository: exercises,
           coverRepository: covers,
           onSignOut: onSignOut,
-          showAccounts: proAccess != null,
+          canManageAccounts: proAccess?.canManageAccounts,
         ),
         routes: [
           GoRoute(

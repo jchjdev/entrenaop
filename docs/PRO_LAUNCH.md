@@ -1,5 +1,33 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Directorio y responsable único · COM-017 · 13/10/2026
+
+Javier pide una lista de cuentas y confirma que él será el único responsable
+de su administración. Cuentas y Pro muestra correo y un resumen de Free/Pro,
+regalo y suscripción (incluido el entorno de prueba). Se carga al entrar, permite
+búsqueda parcial sin distinguir mayúsculas y navega por páginas de 25 cuentas.
+Al pulsar una fila abre la ficha de COM-016; volver conserva búsqueda y página
+y actualiza el resumen tras los cambios. No incluye metadata de Auth, datos
+bancarios, entrenamientos ni recuentos de recursos en el listado.
+
+`account_manager_user_id`, privado en la configuración comercial de servidor,
+identifica un único responsable; la migración empieza sin asignar a nadie.
+`can_manage_pro_accounts()` exige identidad coincidente y permiso administrativo.
+Lista, consulta y concesión/retirada —incluidas las RPC antiguas— comprueban
+ese permiso. Otros administradores pueden editar contenido sin ver ni gestionar
+cuentas. La entrada visual y ambas rutas administrativas también lo consultan.
+Solo operaciones de confianza pueden cambiar el responsable; no hay un selector
+para autoasignarse desde Flutter.
+
+Dev asigna la cuenta administrativa existente `jcharjim@gmail.com`, con regalos
+habilitados y compras SANDBOX conservadas. Verificación: análisis limpio,
+108 pruebas admin y 770 raíz correctas, con las omisiones web existentes;
+compilación web correcta y capturas de listado/ficha a 900/390/320 px revisadas.
+SQL de directorio/permisos, regalos y cuotas con ROLLBACK antes y después del
+despliegue; 141 migraciones coincidentes y consulta real del listado como Javier
+verificada sin cambiar cuentas. Producción no se despliega ni activa; el bloque
+de pagos sigue abierto.
+
 ## Pro gratuito administrado por Javier · COM-016 · 13/10/2026
 
 Javier confirma Pro gratis para familiares, pareja y beta testers, administrado
@@ -8,15 +36,16 @@ y administración no concede Pro por sí misma. Retirar un regalo deja Free solo
 si no hay otra fuente vigente de Pro, como una compra.
 
 Javier autoriza implementar la ampliación. **Cuentas y Pro**, accesible desde
-Programas o `/accounts`, busca por correo exacto y muestra por separado regalo
+Programas o `/accounts`, resuelve la ficha por correo exacto y muestra por separado regalo
 y suscripción vigente, sus fechas y los recursos propios. Permite regalar Pro
 durante 1/7/30/90/365 días, hasta una fecha elegida o sin fecha de fin, con motivo
 y confirmación. Retirar el acceso gratuito también retira las concesiones
 manuales antiguas de Dev, conservando su auditoría; nunca cambia compras.
 
 `pro_gift_grants` registra concesión y retirada, actor y motivo. No admite
-lectura ni escritura directa del cliente. Las RPC comprueban `is_admin()` y,
-para modificar, `gift_management_enabled`, cerrado por defecto. Dev lo tiene
+lectura ni escritura directa del cliente. Las RPC comprueban `is_admin()` y
+el responsable único añadido en COM-017. Para modificar regalos exigen también
+`gift_management_enabled`, cerrado por defecto. Dev lo tiene
 habilitado; producción no se despliega ni activa. El acceso del servidor combina
 regalos, concesiones de prueba anteriores y compras vigentes. Solo una fuente
 `administrative_gift` permite fecha final nula en el contrato de Flutter.
@@ -24,11 +53,12 @@ La app debe actualizarse antes de utilizar regalos indefinidos: una beta
 anterior todavía exige fecha final para Pro. El deportista consulta el resultado
 desde Perfil → Mi suscripción → Actualizar acceso.
 
-Comprobación al 13/10: análisis limpio en ambas apps, 770 pruebas de raíz y
-98 de admin correctas, con sus omisiones web preexistentes; 39 pruebas Pro.
+Comprobación previa de COM-016 al 13/10: análisis limpio en ambas apps,
+770 pruebas de raíz y 98 de admin correctas, con sus omisiones web preexistentes;
+39 pruebas Pro.
 Compilación web del admin correcta y capturas de escritorio y móvil revisadas.
-Las pruebas SQL de regalos,
-cuotas y conciliación pasan con ROLLBACK tras desplegar en Dev; el historial
+Las pruebas SQL de regalos, cuotas y conciliación pasan con ROLLBACK tras
+desplegar en Dev; el historial
 contiene 140 migraciones coincidentes. No se concede ni retira ningún regalo
 a una cuenta real durante esta implementación. No cierra el bloque de pagos.
 
@@ -154,9 +184,10 @@ puede reutilizar la oferta; el servidor sigue autorizando cada operación.
 2. Abrir Perfil → Mi suscripción para consultar acceso, vigencia y contadores.
    «Actualizar acceso» reconsulta al servidor; después de actualizar código se
    necesita un reinicio de la app para registrar el nuevo repositorio.
-3. En admin Dev, abrir **Cuentas y Pro** desde el botón de Programas o `/accounts`.
-   `/development-accounts` redirige a esa ruta. Buscar el correo exacto, elegir
-   duración o fecha y escribir el motivo. Confirmar la concesión o retirada.
+3. En admin Dev, con la cuenta responsable, abrir **Cuentas y Pro** desde el botón
+   de Programas o `/accounts`. `/development-accounts` redirige a esa ruta.
+   Elegir una cuenta de la lista, usando búsqueda parcial y páginas si hace falta.
+   En la ficha, elegir duración o fecha y escribir motivo; confirmar la acción.
    Solo modifica acceso gratuito y conserva auditoría, datos y compras vigentes.
 4. En Free, guardar ocho ejercicios propios y cuatro sesiones de cualquier tipo.
    El noveno ejercicio o la quinta sesión/duplicado debe invitar a Pro conservando

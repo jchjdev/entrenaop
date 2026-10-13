@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**COM-017, 13/10/2026 · listado de cuentas y responsable único:** Cuentas y Pro
+lista correos, Free/Pro y fuentes, con búsqueda parcial y páginas de 25; pulsar
+una fila conserva la ficha de gestión. Javier es el único responsable configurado
+en Dev; editar contenido no concede consulta ni gestión de cuentas. Se protegen
+las RPC actuales y antiguas y las rutas directas. Análisis limpio, 108 pruebas
+admin y 770 raíz correctas con sus omisiones existentes, compilación web y
+capturas revisadas. SQL con ROLLBACK antes/después, consulta real como Javier
+y 141 migraciones coincidentes. Producción no cambia. Free/Pro sigue abierto;
+el siguiente tramo recomendado continúa siendo la aceptación móvil de compras,
+cancelación/error y restauración, verificando moneda e importes del proveedor.
+[Detalle](PRO_LAUNCH.md).
+
 **COM-016, 13/10/2026 · Pro gratuito desde el admin:** Cuentas y Pro busca por
 correo y distingue regalo y suscripción. Concesión temporal o indefinida,
 modificación y retirada con confirmación, actor y motivo, autorizadas en servidor.

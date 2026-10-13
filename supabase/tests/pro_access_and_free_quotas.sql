@@ -14,7 +14,7 @@ begin
   insert into public.preparation_goals(user_id,program_id,target_date)
     values(u,'fas_periodic_assessment',current_date+90) returning id into goal;
   perform set_config('test.pro_goal',goal::text,true);
-  update public.commercial_access_settings set development_manual_access_enabled=false;
+  update public.commercial_access_settings set development_manual_access_enabled=false,account_manager_user_id=a;
 end $$;
 set local role authenticated;
 do $$

@@ -1,5 +1,29 @@
 # Arquitectura de EntrenaOP
 
+## Directorio administrativo y responsable único · COM-017 · 13/10/2026
+
+`commercial_access_settings.account_manager_user_id` identifica al único
+responsable de cuentas. Es privado, nullable por defecto y con FK a Auth;
+borrar esa identidad cierra el acceso. `can_manage_pro_accounts` exige sesión,
+`is_admin` e identidad coincidente. Es distinto del permiso para editar contenido
+y no se concede desde Flutter. Dev configura al administrador existente de Javier.
+
+`admin_list_pro_accounts` comprueba ese permiso antes de consultar Auth, une
+solo usuarios con perfil y devuelve correo, UUID, Free/Pro y fuentes activas.
+Su consulta por cursor UUID evita offsets crecientes: 25 filas desde el cliente,
+máximo 50 en servidor y una fila adicional para decidir continuidad. El resumen
+no calcula recuentos de ejercicios/sesiones ni lee metadata privada. La búsqueda
+es parcial literal por correo; no utiliza comodines SQL ni devuelve un total global.
+El orden estable es por UUID, sin prometer orden alfabético o antigüedad.
+
+La ficha reconsulta por correo y contrasta el UUID seleccionado, evitando abrir
+otra identidad si el correo cambia de dueño. Volver conserva página y búsqueda
+y actualiza la lista. Rechazar permiso retira los datos visibles. Portada y ruta
+consultan la capacidad específica; lista, ficha, regalos y rutas RPC antiguas
+la vuelven a comprobar en PostgreSQL. No se alteran compras, RLS de recursos
+del deportista ni permisos de contenido. Dev tiene 141 migraciones coincidentes;
+producción no se despliega ni configura.
+
 ## Compras de prueba y conciliación · COM-013 · 13/10/2026
 
 `ProPurchaseRepository` separa dominio y proveedor. La adaptación de RevenueCat
@@ -42,7 +66,7 @@ combinan regalos, concesiones anteriores y compras vigentes. Solo el origen
 `administrative_gift` acepta fecha final nula en Flutter; las compras siguen
 requiriendo vigencia. La comprobación comercial permanece en PostgreSQL.
 
-`admin_find_pro_account` comprueba `is_admin()` y resuelve correo exacto contra
+`admin_find_pro_account` comprueba `can_manage_pro_accounts()` (COM-017) y resuelve correo exacto contra
 Auth. `admin_set_free_pro_access` vuelve a comprobar ese permiso, exige motivo
 y la habilitación `gift_management_enabled` (cerrada por defecto), serializa el
 perfil y registra el actor autenticado. Retirar acceso gratuito revoca regalos
@@ -50,7 +74,8 @@ y las concesiones manuales anteriores; no escribe `revenuecat_pro_state`.
 El helper de ficha no es ejecutable por clientes. La ficha distingue ambas
 fuentes aunque un regalo indefinido sea el acceso dominante. Cuentas y Pro
 usa `/accounts`; la ruta anterior redirige. Dev tiene la gestión habilitada y
-140 migraciones coincidentes; producción no se despliega ni activa. Las betas
+140 migraciones coincidentes en la comprobación de COM-016, ampliadas a 141
+por COM-017; producción no se despliega ni activa. Las betas
 anteriores deben actualizarse antes de utilizar regalos sin fecha final.
 
 Los triggers cuentan 8 ejercicios propios y 4 familias personales no archivadas

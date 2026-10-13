@@ -15,7 +15,7 @@ class AdminProgramsPage extends StatefulWidget {
     required this.exerciseRepository,
     required this.onSignOut,
     this.coverRepository,
-    this.showAccounts = false,
+    this.canManageAccounts,
   });
 
   final AdminProgramRepository repository;
@@ -23,7 +23,7 @@ class AdminProgramsPage extends StatefulWidget {
   final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
   final ProgramCoverRepository? coverRepository;
-  final bool showAccounts;
+  final Future<bool> Function()? canManageAccounts;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -32,6 +32,7 @@ class AdminProgramsPage extends StatefulWidget {
 class _AdminProgramsPageState extends State<AdminProgramsPage> {
   bool _loading = true;
   bool _authorized = false;
+  bool _accountsAllowed = false;
   bool _saving = false;
   String? _error;
   List<AdminProgram> _programs = const [];
@@ -73,10 +74,17 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
         });
         return;
       }
+      var accountsAllowed = false;
+      try {
+        accountsAllowed = await widget.canManageAccounts?.call() ?? false;
+      } catch (_) {
+        // Un fallo comercial no impide trabajar en contenido ni revela cuentas.
+      }
       final programs = await widget.repository.listPrograms();
       if (!mounted) return;
       setState(() {
         _authorized = true;
+        _accountsAllowed = accountsAllowed;
         _programs = programs;
         _loading = false;
       });
@@ -142,7 +150,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           ],
         ),
         actions: [
-          if (_authorized && widget.showAccounts)
+          if (_authorized && _accountsAllowed)
             IconButton(
               tooltip: 'Cuentas y Pro',
               icon: const Icon(Icons.manage_accounts_outlined),
@@ -179,7 +187,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           '¿Qué quieres gestionar?',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
-        if (widget.showAccounts) ...[
+        if (_accountsAllowed) ...[
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerLeft,

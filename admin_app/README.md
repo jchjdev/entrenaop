@@ -1,10 +1,15 @@
 # EntrenaOP Admin
 
-**Cuentas y Pro** (botón e icono en Programas, o `/accounts`) busca una cuenta
-registrada por correo y muestra por separado Pro gratuito y suscripción vigente.
+**Cuentas y Pro** (botón e icono en Programas, o `/accounts`) muestra al entrar
+una lista de cuentas con correo, Free/Pro y origen del acceso. Hay búsqueda
+parcial por correo y páginas de 25. Pulsar una cuenta abre la ficha que muestra
+por separado Pro gratuito y suscripción vigente; volver conserva búsqueda/página.
 Permite conceder regalos por 1/7/30/90/365 días, hasta una fecha elegida o sin
 fecha de fin; cambiar o retirar acceso gratuito exige motivo y confirmación.
-Requiere permiso administrativo y habilitación del servidor. Dev está habilitado;
+Requiere ser el responsable único configurado en servidor, además del permiso
+administrativo, y habilitación del servidor para modificar regalos. En Dev es
+la cuenta administrativa de Javier (`jcharjim@gmail.com`); otros editores de
+contenido no ven ni gestionan cuentas. Dev está habilitado;
 producción no se despliega ni activa. Conserva datos y auditoría y no cobra ni
 cancela compras de tienda. `/development-accounts` redirige a la nueva entrada.
 El usuario consulta el resultado en Perfil → Mi suscripción → Actualizar acceso.

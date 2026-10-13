@@ -13,6 +13,11 @@ class AdminProAccessPage extends StatefulWidget {
 class _AdminProAccessPageState extends State<AdminProAccessPage> {
   final _email = TextEditingController();
   final _reason = TextEditingController(text: 'Acceso Pro gratuito');
+  final _scroll = ScrollController();
+  AdminAccountDirectory? _directory;
+  String _appliedSearch = '';
+  String? _cursor;
+  List<String?> _previousCursors = [];
   AdminAccountAccess? _account;
   String? _resolvedEmail, _error;
   bool _busy = false;
@@ -20,9 +25,170 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
   DateTime? _customDate;
 
   @override
+  void initState() {
+    super.initState();
+    _loadDirectory();
+  }
+
+  void _scrollToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients) _scroll.jumpTo(0);
+    });
+  }
+
+  Future<void> _loadDirectory({
+    String? search,
+    String? cursor,
+    List<String?>? previous,
+  }) async {
+    if (_busy) return;
+    final query = search ?? _appliedSearch;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final directory = await widget.repository.list(
+        search: query,
+        afterId: cursor,
+      );
+      if (!mounted) return;
+      setState(() {
+        _directory = directory;
+        _cursor = cursor;
+        _appliedSearch = query;
+        _previousCursors = previous ?? _previousCursors;
+      });
+      _scrollToTop();
+    } on PostgrestException catch (error) {
+      if (mounted) {
+        setState(() {
+          if (error.code == '42501') _directory = null;
+          _error = ['42501', '22023'].contains(error.code)
+              ? error.message
+              : 'No se han podido cargar las cuentas. Vuelve a intentarlo.';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'No se han podido cargar las cuentas. Vuelve a intentarlo.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _openAccount(AdminAccountSummary summary) async {
+    if (_busy) return;
+    _resolvedEmail = summary.email;
+    await _perform(() async {
+      final account = await widget.repository.find(summary.email);
+      // Un correo cambiado/reasignado no debe abrir otra identidad de la lista.
+      if (account.userId != summary.userId) {
+        throw const PostgrestException(
+          message:
+              'La cuenta ha cambiado. Actualiza la lista antes de continuar.',
+          code: '22023',
+        );
+      }
+      return account;
+    });
+    _scrollToTop();
+  }
+
+  List<Widget> _directoryWidgets() => [
+    TextField(
+      controller: _email,
+      enabled: !_busy,
+      keyboardType: TextInputType.emailAddress,
+      decoration: const InputDecoration(
+        labelText: 'Buscar por correo',
+        hintText: 'Puedes escribir solo una parte',
+      ),
+      onSubmitted: (_) =>
+          _loadDirectory(search: _email.text.trim(), previous: []),
+    ),
+    const SizedBox(height: 12),
+    Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      children: [
+        FilledButton.icon(
+          onPressed: _busy
+              ? null
+              : () => _loadDirectory(search: _email.text.trim(), previous: []),
+          icon: const Icon(Icons.search),
+          label: const Text('Buscar'),
+        ),
+        OutlinedButton.icon(
+          onPressed: _busy ? null : () => _loadDirectory(cursor: _cursor),
+          icon: const Icon(Icons.refresh),
+          label: const Text('Actualizar lista'),
+        ),
+      ],
+    ),
+    const SizedBox(height: 20),
+    if (_directory case final directory?) ...[
+      if (directory.accounts.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text('No hay cuentas que coincidan con la búsqueda.'),
+        ),
+      for (final account in directory.accounts)
+        Card(
+          child: ListTile(
+            enabled: !_busy,
+            leading: Icon(
+              account.isPro
+                  ? Icons.workspace_premium_outlined
+                  : Icons.person_outline,
+            ),
+            title: Text(account.email),
+            subtitle: Text(account.description),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openAccount(account),
+          ),
+        ),
+      const SizedBox(height: 16),
+      Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          OutlinedButton(
+            onPressed: _busy || _previousCursors.isEmpty
+                ? null
+                : () => _loadDirectory(
+                    cursor: _previousCursors.last,
+                    previous: _previousCursors
+                        .take(_previousCursors.length - 1)
+                        .toList(),
+                  ),
+            child: const Text('Anterior'),
+          ),
+          Text('Página ${_previousCursors.length + 1}'),
+          OutlinedButton(
+            onPressed: _busy || directory.nextCursor == null
+                ? null
+                : () => _loadDirectory(
+                    cursor: directory.nextCursor,
+                    previous: [..._previousCursors, _cursor],
+                  ),
+            child: const Text('Siguiente'),
+          ),
+        ],
+      ),
+    ],
+  ];
+
+  @override
   void dispose() {
     _email.dispose();
     _reason.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -42,11 +208,16 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
       if (mounted) setState(() => _account = account);
     } on PostgrestException catch (error) {
       if (mounted) {
-        setState(
-          () => _error = const ['42501', '22023'].contains(error.code)
+        setState(() {
+          if (error.code == '42501') {
+            _account = null;
+            _directory = null;
+            _resolvedEmail = null;
+          }
+          _error = const ['42501', '22023'].contains(error.code)
               ? error.message
-              : 'No se ha podido gestionar el acceso. Vuelve a intentarlo.',
-        );
+              : 'No se ha podido gestionar el acceso. Vuelve a intentarlo.';
+        });
       }
     } catch (_) {
       if (mounted) {
@@ -168,44 +339,42 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 680),
         child: ListView(
+          controller: _scroll,
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              'Gestiona el acceso de una cuenta',
+              _account == null
+                  ? 'Cuentas registradas'
+                  : 'Gestiona el acceso de una cuenta',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Busca por correo para consultar el acceso y conceder o retirar Pro gratuito. Las compras se gestionan por separado.',
+            Text(
+              _account == null
+                  ? 'Consulta el acceso de cada cuenta. Pulsa una para ver su ficha y administrar Pro gratuito.'
+                  : 'Las compras se gestionan por separado del acceso gratuito.',
             ),
             const SizedBox(height: 24),
-            TextField(
-              controller: _email,
-              enabled: !_busy,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Correo de una cuenta registrada',
+            if (_account == null)
+              ..._directoryWidgets()
+            else
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _busy
+                      ? null
+                      : () {
+                          setState(() {
+                            _account = null;
+                            _resolvedEmail = null;
+                            _error = null;
+                          });
+                          _loadDirectory(cursor: _cursor);
+                        },
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Volver a las cuentas'),
+                ),
               ),
-              onChanged: (_) => setState(() {
-                _account = null;
-                _resolvedEmail = null;
-                _error = null;
-              }),
-            ),
-            const SizedBox(height: 12),
-            FilledButton(
-              onPressed: _busy
-                  ? null
-                  : () {
-                      final email = _email.text.trim();
-                      setState(() {
-                        _account = null;
-                        _resolvedEmail = email;
-                      });
-                      _perform(() => widget.repository.find(email));
-                    },
-              child: const Text('Buscar cuenta'),
-            ),
             if (_busy)
               const Padding(
                 padding: EdgeInsets.all(16),

@@ -11,11 +11,10 @@ Future<void> searchAccount(
   await tester.pumpWidget(
     MaterialApp(home: AdminProAccessPage(repository: repository)),
   );
-  await tester.enterText(
-    find.widgetWithText(TextField, 'Correo de una cuenta registrada'),
-    'test@example.com',
-  );
-  await tester.tap(find.text('Buscar cuenta'));
+  await tester.pumpAndSettle();
+  if (find.text('test@example.com').evaluate().isNotEmpty) {
+    await tester.tap(find.text('test@example.com'));
+  }
   await tester.pumpAndSettle();
 }
 
@@ -30,6 +29,114 @@ Future<void> press(WidgetTester tester, String text) async {
 }
 
 void main() {
+  testWidgets('revocar el permiso elimina la lista al volver a consultar', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    await tester.pumpWidget(
+      MaterialApp(home: AdminProAccessPage(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+    repository.denied = true;
+    await tester.tap(find.text('Actualizar lista'));
+    await tester.pumpAndSettle();
+    expect(find.text('test@example.com'), findsNothing);
+    expect(
+      find.text('Solo administración puede gestionar Cuentas y Pro.'),
+      findsOneWidget,
+    );
+  });
+  testWidgets('un correo reasignado no abre la ficha de otra identidad', (
+    tester,
+  ) async {
+    final repository = _Repository()..mismatchedFind = true;
+    await searchAccount(tester, repository);
+    expect(
+      find.text(
+        'La cuenta ha cambiado. Actualiza la lista antes de continuar.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Conceder Pro gratuito'), findsNothing);
+    expect(repository.owner, isNull);
+  });
+  testWidgets(
+    'lista cuentas al entrar y abre su ficha sin recordar el correo',
+    (tester) async {
+      final repository = _Repository();
+      await tester.pumpWidget(
+        MaterialApp(home: AdminProAccessPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('test@example.com'), findsOneWidget);
+      expect(find.text('Free'), findsOneWidget);
+      expect(repository.email, isNull);
+      await tester.tap(find.text('test@example.com'));
+      await tester.pumpAndSettle();
+      expect(find.text('Cuenta Free'), findsOneWidget);
+      expect(repository.owner, isNull);
+    },
+  );
+  testWidgets(
+    'paginación vuelve al cursor anterior y buscar reinicia la página',
+    (tester) async {
+      final repository = _Repository()..paginate = true;
+      await tester.pumpWidget(
+        MaterialApp(home: AdminProAccessPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      await press(tester, 'Siguiente');
+      expect(find.text('second@example.com'), findsOneWidget);
+      expect(find.text('Página 2'), findsOneWidget);
+      await press(tester, 'Anterior');
+      expect(find.text('test@example.com'), findsOneWidget);
+      await press(tester, 'Siguiente');
+      await tester.scrollUntilVisible(
+        find.text('Buscar por correo'),
+        -250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.enterText(find.byType(TextField), 'test@');
+      await tester.tap(find.text('Buscar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Página 1'), findsOneWidget);
+      expect(repository.search, 'test@');
+      expect(repository.after, isNull);
+    },
+  );
+  testWidgets(
+    'fallo de carga permite reintentar sin presentar un listado vacío como real',
+    (tester) async {
+      final repository = _Repository()..failList = true;
+      await tester.pumpWidget(
+        MaterialApp(home: AdminProAccessPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('No se han podido cargar las cuentas. Vuelve a intentarlo.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('No hay cuentas que coincidan con la búsqueda.'),
+        findsNothing,
+      );
+      repository.failList = false;
+      await tester.tap(find.text('Actualizar lista'));
+      await tester.pumpAndSettle();
+      expect(find.text('test@example.com'), findsOneWidget);
+    },
+  );
+  test('resumen muestra regalo y compra simultáneos sin ocultar la fuente de prueba', () {
+    final summary = AdminAccountSummary.fromJson({
+      'user_id': 'owner',
+      'email': 'test@example.com',
+      'tier': 'pro',
+      'free_pro_active': true,
+      'subscription_active': true,
+      'subscription_environment': 'SANDBOX',
+    });
+    expect(summary.description, 'Pro gratuito · Suscripción de prueba');
+  });
   testWidgets(
     'admin confirma un regalo temporal y lo retira conservando la cuenta',
     (tester) async {
@@ -106,12 +213,23 @@ void main() {
       isNull,
     );
   });
-  testWidgets('cambiar el correo descarta la cuenta resuelta', (tester) async {
+  testWidgets('volver conserva la lista y buscar no modifica accesos', (
+    tester,
+  ) async {
     final repository = _Repository();
     await searchAccount(tester, repository);
-    await tester.enterText(find.byType(TextField).first, 'other@example.com');
+    await press(tester, 'Volver a las cuentas');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Buscar por correo'),
+      'other@example.com',
+    );
+    await tester.tap(find.text('Buscar'));
     await tester.pumpAndSettle();
     expect(find.text('Conceder Pro gratuito'), findsNothing);
+    expect(
+      find.text('No hay cuentas que coincidan con la búsqueda.'),
+      findsOneWidget,
+    );
     expect(repository.owner, isNull);
   });
   testWidgets('gestión deshabilitada por servidor impide conceder y retirar', (
@@ -180,9 +298,54 @@ void main() {
 class _Repository implements AdminProAccessRepository {
   String? email, owner;
   DateTime? until;
-  bool enabled = false, denied = false, paid = false, management = true;
+  bool enabled = false,
+      denied = false,
+      paid = false,
+      management = true,
+      paginate = false,
+      failList = false,
+      mismatchedFind = false;
+  String? search, after;
+  @override
+  Future<bool> canManageAccounts() async => !denied;
+  @override
+  Future<AdminAccountDirectory> list({
+    String search = '',
+    String? afterId,
+  }) async {
+    this.search = search;
+    after = afterId;
+    if (failList) throw StateError('Sin conexión');
+    if (denied) {
+      throw const PostgrestException(
+        message: 'Solo administración puede gestionar Cuentas y Pro.',
+        code: '42501',
+      );
+    }
+    if (paginate && afterId != null) {
+      return const AdminAccountDirectory([
+        AdminAccountSummary(
+          userId: 'second',
+          email: 'second@example.com',
+          isPro: true,
+          freeProActive: true,
+        ),
+      ]);
+    }
+    return AdminAccountDirectory([
+      if (search.isEmpty || 'test@example.com'.contains(search))
+        AdminAccountSummary(
+          userId: 'owner',
+          email: 'test@example.com',
+          isPro: enabled || paid,
+          freeProActive: enabled,
+          subscriptionActive: paid,
+        ),
+    ], nextCursor: paginate ? 'next' : null);
+  }
+
   AdminAccountAccess get account => AdminAccountAccess(
-    userId: 'owner',
+    userId: mismatchedFind ? 'different-user' : 'owner',
     isPro: enabled || paid,
     exercises: 9,
     sessions: 5,

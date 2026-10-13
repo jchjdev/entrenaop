@@ -9,7 +9,7 @@ begin
   perform set_config('test.gift_user',u::text,true);
   perform set_config('test.gift_admin',a::text,true);
   perform set_config('test.gift_other',other_user::text,true);
-  update public.commercial_access_settings set gift_management_enabled=false;
+  update public.commercial_access_settings set gift_management_enabled=false,account_manager_user_id=a;
   update public.revenuecat_access_settings set environment='SANDBOX';
   perform set_config('request.jwt.claim.sub',u::text,true);
 end $$;

@@ -434,6 +434,12 @@ habilitación del servidor pueden modificarlo. El regalo no cobra ni crea una
 suscripción; retirarlo conserva compras vigentes, recursos e historial. Dev
 está habilitado; producción no se despliega ni activa. La beta del deportista
 debe actualizarse para aceptar el contrato de regalos indefinidos.
+COM-017 agrega listado paginado y búsqueda parcial por correo, manteniendo la
+ficha al seleccionar una cuenta. Javier será el único responsable de cuentas y
+Pro: el permiso de editar contenido por sí solo no permite leer ni gestionar
+este directorio. Esa separación se aplica también a los accesos antiguos en
+servidor. El listado muestra únicamente identificación y resumen de acceso;
+no expone datos deportivos ni bancarios. Configurado exclusivamente en Dev.
 La aclaración de Javier del 07/10 distinguió el desarrollo deportivo del producto
 comercial; COM-008 implementa ahora su frontera de acceso para pruebas reales.
 Javier concreta a continuación la frontera

@@ -1,7 +1,9 @@
 # Compras de prueba · COM-013/014
 
 COM-016 agrega **Cuentas y Pro** en el admin (`/accounts`) para regalos gratuitos,
-separados de las compras del proveedor. Busca correo, elige plazo, fecha o sin
+separados de las compras del proveedor. COM-017 agrega lista paginada y búsqueda
+parcial, con gestión exclusiva del responsable de cuentas (Javier en Dev).
+Selecciona una cuenta, elige plazo, fecha o sin
 fecha de fin, indica motivo y confirma. Dev tiene `gift_management_enabled=true`;
 no se modifica producción. El deportista debe actualizar la beta para regalos
 indefinidos y puede reconsultar Perfil → Mi suscripción → Actualizar acceso.
