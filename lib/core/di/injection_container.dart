@@ -86,6 +86,9 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cu
 import 'package:get_it/get_it.dart';
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/pro/data/supabase_pro_access_repository.dart';
+import 'package:entrenaop/features/pro/data/revenuecat_pro_purchase_repository.dart';
+import 'package:entrenaop/features/pro/domain/pro_purchases.dart';
+import 'package:flutter/foundation.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/preparation_training_repository_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -98,6 +101,23 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton<ProPurchaseRepository>(
+    () => RevenueCatProPurchaseRepository(
+      configuration: ProPurchaseConfiguration(
+        key: AppConfig.revenuecatTestKey,
+        development: AppConfig.environment == AppEnvironment.development,
+        debug: kDebugMode,
+        mobile:
+            !kIsWeb &&
+            (defaultTargetPlatform == TargetPlatform.android ||
+                defaultTargetPlatform == TargetPlatform.iOS),
+      ),
+      store: RevenueCatStoreGateway(AppConfig.revenuecatTestKey),
+      owner: () => sl<SupabaseClient>().auth.currentUser?.id,
+      confirm: (userId) =>
+          RevenueCatProPurchaseRepository.confirmWithSupabase(sl(), userId),
+    ),
+  );
   sl.registerLazySingleton<ProAccessRepository>(
     () => SupabaseProAccessRepository(sl()),
   );

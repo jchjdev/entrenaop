@@ -1,5 +1,27 @@
 # Arquitectura de EntrenaOP
 
+## Compras de prueba y conciliación · COM-013 · 13/10/2026
+
+`ProPurchaseRepository` separa dominio y proveedor. La adaptación de RevenueCat
+serializa identidad/catálogo/compra/restauración, utiliza el UUID autenticado y
+descarta respuestas si cambia la cuenta. El Cubit diferencia operación, compra
+pendiente y acceso confirmado; una confirmación pendiente impide repetir compra.
+Test Store solo se configura en móvil debug Dev; el SDK no autoriza Pro.
+
+`revenuecat-sync` comprueba el JWT contra Auth y que coincida la cuenta esperada;
+`revenuecat-webhook` exige un Bearer específico, app y entorno. Ambas consultan
+el estado canónico con la clave privada en servidor. `verify_jwt=false` evita
+la comprobación de JWT legado de la plataforma, pero no elimina estas
+autenticaciones obligatorias dentro de las funciones.
+
+La migración preparada registra estado por cuenta, vigencia, entorno y eventos
+idempotentes; sus RPC de escritura solo permiten `service_role`. El reloj del
+servidor combina compras vigentes y concesiones manuales sin mezclarlas.
+Las escrituras serializan el perfil y rechazan instantáneas anteriores. Cancelar
+no adelanta la caducidad; una gracia requiere fecha explícita del proveedor.
+La integración empieza deshabilitada y todavía no está desplegada: las pruebas
+SQL de Dev terminan con ROLLBACK. Producción y los algoritmos se conservan.
+
 ## Derechos y cuotas Free/Pro · COM-008 · 10/10/2026
 
 `pro_access_grants` registra propietario, origen de prueba, vigencia, actor y

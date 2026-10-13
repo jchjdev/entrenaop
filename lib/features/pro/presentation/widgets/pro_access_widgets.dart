@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/pro_access.dart';
 import '../../domain/pro_offer.dart';
+import '../../domain/pro_purchases.dart';
 import '../pages/pro_pages.dart';
 
 typedef LoadProAccess = Future<ProAccess> Function();
@@ -98,18 +99,25 @@ class ProAccessGate extends StatelessWidget {
     required this.load,
     required this.child,
     this.offerContext = const ProOfferContext(),
+    this.purchases,
     super.key,
   });
   final LoadProAccess load;
   final Widget child;
   final ProOfferContext offerContext;
+  final ProPurchaseRepository? purchases;
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
       child: ProAccessBuilder(
         load: load,
-        builder: (_, access) =>
-            access.isPro ? child : ProOfferPage(offerContext: offerContext),
+        builder: (_, access) => access.isPro
+            ? child
+            : ProOfferPage(
+                offerContext: offerContext,
+                purchases: purchases,
+                loadAccess: load,
+              ),
       ),
     ),
   );

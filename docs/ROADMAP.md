@@ -1,11 +1,25 @@
 # Roadmap de EntrenaOP
 
+**COM-013, 13/10/2026 · primera integración de compras preparada:** SDK oficial
+10.15.2, precios del catálogo, compra/restauración y confirmación de servidor
+implementados para Test Store móvil debug. Se descartan respuestas de otra
+cuenta y se evita repetir una compra pendiente. Las funciones y la migración
+se comprueban con pruebas de contrato; el SQL se ejecuta en Dev con ROLLBACK,
+sin despliegue. Análisis limpio, 766 pruebas de raíz correctas y la omisión web
+existente; 18 pruebas de funciones correctas. Free/Pro sigue abierto. El único
+siguiente tramo es conectar el backend del proyecto **EntrenaOP** y comprobar
+una compra/restauración completa antes de preparar las tiendas reales.
+El CLI oficial ya está autorizado y conectado únicamente a este proyecto;
+oferta y acceso `pro` están enlazados a mensual/anual. Precios EUR 3,99/29,99
+configurados y devueltos por el catálogo del SDK con configuración española.
+[Configuración y límites](../tools/payments_dev/README.md).
+
 **COM-012, 13/10/2026 · proveedor elegido:** Javier acepta stores + RevenueCat
 para las suscripciones y conservar Supabase/PostgreSQL para datos y autorización.
 Se mantiene el inicio con pruebas gratuitas y se dimensionará el servidor con
 mediciones antes de vender. Supabase Pro es una previsión de lanzamiento;
-no se contrata ahora. Crear/verificar el proyecto RevenueCat Dev sigue siendo
-el primer paso para la integración. No hay SDK, webhook ni compras implementados.
+no se contrata ahora. COM-013 concreta la implementación y la configuración
+posterior del proyecto externo; el backend sigue pendiente.
 [Elección, coste y preparación](PRO_LAUNCH.md).
 
 **COM-010/011, aclaración y preparación al 13/10/2026 · bloque abierto:** Javier
@@ -13,9 +27,8 @@ rechaza el cierre provisional de Free/Pro: este chat incluye conectar los pagos
 a los derechos de servidor. El producto para entrenadores se estudia aparte.
 Confirma Apple Developer con membresía caducada; se propone comenzar con un
 proyecto RevenueCat de desarrollo y Test Store, y después validar las tiendas
-reales. Se documentan catálogo y contrato de integración; aún no hay configuración
-externa verificada, SDK instalado, webhook o compra habilitada. El siguiente paso
-es crear el proyecto de pruebas para integrar Flutter y Supabase Dev. Las
+reales. COM-013 añade el SDK, el backend preparado y el catálogo externo
+verificado; la compra y su conciliación completa siguen pendientes. Las
 comprobaciones anteriores conservan sus fechas y límites; no se declaran pruebas
 de compras realizadas. [Preparación y alcance](PRO_LAUNCH.md).
 
@@ -773,7 +786,7 @@ El ciclo objetivo continúa siendo:
 | Adaptación posterior | Continuidad automática en desarrollo | Resultados versionados, publicación al resolver las sesiones, recuperación, pausa/reanudación y revisión cuando corresponde; no exige publicar manualmente cada semana. |
 | Carrera especializada | Terminada en V1 manual | Creador de carrera continua, series y pirámides; repeticiones agrupadas al prescribir, registro individual obligatorio de parciales y recuperaciones, ritmo calculado, RPE, FC opcional, clasificación de cumplimiento e historial. No incluye GPS, mapas, zonas ni integraciones. |
 | Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
-| Derechos y monetización | Accesos de prueba y cuotas en desarrollo | COM-008 verifica derechos temporales de servidor, cuotas Free 8/4 y gestión administrativa de pruebas. Contratación, eventos y suscripciones de tienda siguen pendientes. |
+| Derechos y monetización | Accesos y cuotas Dev; primera integración de compras preparada | COM-008 verifica derechos temporales, cuotas Free 8/4 y gestión manual. COM-013 añade SDK Test Store y conciliación en código, comprobados sin despliegue. Conexión externa, compra completa y sandboxes nativos siguen pendientes. |
 
 ## Base completada
 

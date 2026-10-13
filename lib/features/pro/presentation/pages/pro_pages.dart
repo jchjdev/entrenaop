@@ -6,15 +6,19 @@ import '../../domain/pro_offer.dart';
 import '../widgets/pro_brand_title.dart';
 import '../widgets/pro_access_widgets.dart';
 import '../../domain/pro_access.dart';
+import '../../domain/pro_purchases.dart';
+import '../widgets/pro_purchase_panel.dart';
 
 class ProOfferPage extends StatefulWidget {
   const ProOfferPage({
     this.offerContext = const ProOfferContext(),
     this.loadAccess,
+    this.purchases,
     super.key,
   });
   final ProOfferContext offerContext;
   final LoadProAccess? loadAccess;
+  final ProPurchaseRepository? purchases;
 
   @override
   State<ProOfferPage> createState() => _ProOfferPageState();
@@ -22,6 +26,7 @@ class ProOfferPage extends StatefulWidget {
 
 class _ProOfferPageState extends State<ProOfferPage> {
   ProBillingPeriod _period = ProBillingPeriod.annual;
+  int _accessVersion = 0;
 
   @override
   Widget build(BuildContext context) => _ProScaffold(
@@ -30,6 +35,7 @@ class _ProOfferPageState extends State<ProOfferPage> {
     child: widget.loadAccess == null
         ? _offer(context)
         : ProAccessBuilder(
+            key: ValueKey(_accessVersion),
             load: widget.loadAccess!,
             builder: (context, access) => access.isPro
                 ? Column(
@@ -41,7 +47,11 @@ class _ProOfferPageState extends State<ProOfferPage> {
                         description: 'Tu acceso está activo. Puedes continuar con tu preparación.',
                       ),
                       const SizedBox(height: 24),
-                      _AccessDetails(access, offerContext: widget.offerContext),
+                      _AccessDetails(
+                        access,
+                        offerContext: widget.offerContext,
+                        showUnavailable: !(widget.purchases?.enabled ?? false),
+                      ),
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () => _close(context),
@@ -86,36 +96,44 @@ class _ProOfferPageState extends State<ProOfferPage> {
         style: Theme.of(context).textTheme.titleMedium,
       ),
       const SizedBox(height: 12),
-      RadioGroup<ProBillingPeriod>(
-        groupValue: _period,
-        onChanged: (value) {
-          if (value != null) setState(() => _period = value);
-        },
-        child: Column(
-          children: [
-            for (final period in ProBillingPeriod.values) ...[
-              _BillingChoice(period: period, selected: _period == period),
-              const SizedBox(height: 12),
-            ],
-          ],
+      if (widget.purchases?.enabled ?? false) ...[
+        ProPurchasePanel(
+          repository: widget.purchases!,
+          onVerified: () => setState(() => _accessVersion++),
         ),
-      ),
-      const _UnavailableNotice(),
-      const SizedBox(height: 16),
-      // Hasta recibir productos reales y verificar derechos en servidor,
-      // no existe una acción que cobre o conceda Pro desde esta pantalla.
-      FilledButton(onPressed: null, child: Text(_period.subscribeLabel)),
-      const SizedBox(height: 12),
-      Text(
-        '${_period.renewal} Puedes cancelar la renovación y conservar el acceso hasta finalizar el periodo contratado.',
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
+      ] else ...[
+        RadioGroup<ProBillingPeriod>(
+          groupValue: _period,
+          onChanged: (value) {
+            if (value != null) setState(() => _period = value);
+          },
+          child: Column(
+            children: [
+              for (final period in ProBillingPeriod.values) ...[
+                _BillingChoice(period: period, selected: _period == period),
+                const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        ),
+        const _UnavailableNotice(),
+        const SizedBox(height: 16),
+        // Hasta recibir productos reales y verificar derechos en servidor,
+        // no existe una acción que cobre o conceda Pro desde esta pantalla.
+        FilledButton(onPressed: null, child: Text(_period.subscribeLabel)),
+        const SizedBox(height: 12),
+        Text(
+          '${_period.renewal} Puedes cancelar la renovación y conservar el acceso hasta finalizar el periodo contratado.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
       const SizedBox(height: 8),
       TextButton(
         onPressed: () => _close(context),
         child: const Text('Seguir con Free'),
       ),
-      const OutlinedButton(onPressed: null, child: Text('Restaurar compras')),
+      if (!(widget.purchases?.enabled ?? false))
+        const OutlinedButton(onPressed: null, child: Text('Restaurar compras')),
       const Wrap(
         alignment: WrapAlignment.center,
         spacing: 12,
@@ -125,8 +143,10 @@ class _ProOfferPageState extends State<ProOfferPage> {
         ],
       ),
       const SizedBox(height: 8),
-      const Text(
-        'La restauración, las condiciones de contratación y la información de privacidad estarán disponibles antes de habilitar los pagos.',
+      Text(
+        widget.purchases?.enabled ?? false
+            ? 'Estás probando suscripciones sin cobros. Las condiciones de contratación y privacidad se completarán antes de habilitar ventas.'
+            : 'La restauración, las condiciones de contratación y la información de privacidad estarán disponibles antes de habilitar los pagos.',
       ),
     ],
   );
@@ -301,9 +321,16 @@ class ProExamplePage extends StatelessWidget {
   );
 }
 
-class ProSubscriptionPage extends StatelessWidget {
-  const ProSubscriptionPage({this.loadAccess, super.key});
+class ProSubscriptionPage extends StatefulWidget {
+  const ProSubscriptionPage({this.loadAccess, this.purchases, super.key});
   final LoadProAccess? loadAccess;
+  final ProPurchaseRepository? purchases;
+  @override
+  State<ProSubscriptionPage> createState() => _ProSubscriptionPageState();
+}
+
+class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
+  int _accessVersion = 0;
 
   @override
   Widget build(BuildContext context) => _ProScaffold(
@@ -317,20 +344,32 @@ class ProSubscriptionPage extends StatelessWidget {
           description: 'Aquí podrás consultar y gestionar tu suscripción.',
         ),
         const SizedBox(height: 24),
-        if (loadAccess != null)
+        if (widget.loadAccess != null)
           ProAccessBuilder(
-            load: loadAccess!,
+            key: ValueKey(_accessVersion),
+            load: widget.loadAccess!,
             showRefresh: true,
-            builder: (_, access) => _AccessDetails(access),
+            builder: (_, access) => _AccessDetails(
+              access,
+              showUnavailable: !(widget.purchases?.enabled ?? false),
+            ),
           )
         else
           const _UnavailableNotice(),
         const SizedBox(height: 24),
-        if (loadAccess == null)
+        if (widget.loadAccess == null)
           FilledButton(
             onPressed: () => context.push('/pro'),
             child: const Text('Conocer Pro'),
           ),
+        if (widget.purchases?.enabled ?? false) ...[
+          const SizedBox(height: 16),
+          ProPurchasePanel(
+            repository: widget.purchases!,
+            showPlans: false,
+            onVerified: () => setState(() => _accessVersion++),
+          ),
+        ],
         const SizedBox(height: 16),
         const Text('Tus preparaciones, resultados e historial se conservan.'),
       ],
@@ -342,8 +381,10 @@ class _AccessDetails extends StatelessWidget {
   const _AccessDetails(
     this.access, {
     this.offerContext = const ProOfferContext(),
+    this.showUnavailable = true,
   });
   final ProAccess access;
+  final bool showUnavailable;
   final ProOfferContext offerContext;
   @override
   Widget build(BuildContext context) {
@@ -362,7 +403,11 @@ class _AccessDetails extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             access.isPro
-                ? 'Acceso de prueba hasta el $date. No es una suscripción de pago.'
+                ? access.source == 'revenuecat'
+                      ? access.billingEnvironment == 'SANDBOX'
+                            ? 'Suscripción de prueba hasta el $date. No se realizará ningún cobro.'
+                            : 'Acceso por suscripción hasta el $date.'
+                      : 'Acceso de prueba hasta el $date. No es una suscripción de pago.'
                 : 'Incluye 8 ejercicios propios y 4 sesiones propias guardadas.',
           ),
           const SizedBox(height: 12),
@@ -373,9 +418,10 @@ class _AccessDetails extends StatelessWidget {
             'Sesiones propias: ${access.personalSessions}${access.isPro ? '' : '/4'}',
           ),
           const SizedBox(height: 12),
-          const Text(
-            'La contratación y restauración de compras todavía no están disponibles.',
-          ),
+          if (showUnavailable)
+            const Text(
+              'La contratación y restauración de compras todavía no están disponibles.',
+            ),
           TextButton(
             onPressed: () => context.push(
               access.isPro && offerContext.goalId != null

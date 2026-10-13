@@ -1,6 +1,23 @@
 # Pro: interfaz inicial y conexión de pagos
 
-## Estado actual · COM-008 · 10/10/2026
+## Estado actual · COM-013 · 13/10/2026
+
+La integración inicial de Test Store existe en código: SDK móvil, catálogo,
+compra/restauración y confirmación por servidor. Se han comprobado los contratos
+con pruebas automatizadas y SQL transaccional en Dev. No está conectada todavía
+al backend del proyecto RevenueCat de Javier ni desplegada en Supabase; no acredita una
+compra completa del proveedor. La configuración queda cerrada por defecto.
+El [recorrido de configuración](../tools/payments_dev/README.md) concreta el
+siguiente paso. El proyecto **EntrenaOP** (`bb91cf72`), Test Store y el acceso
+`pro` con su catálogo están verificados. Javier autoriza el CLI oficial y su
+sesión local limitada a este proyecto; no se conecta Gmail. Los productos
+canónicos mensual/anual tienen **3,99 EUR y 29,99 EUR** y el catálogo público
+utilizado por el SDK devuelve estos precios con configuración española. La
+oferta `default` conserva los dos paquetes correctos y el producto auxiliar
+sin asociaciones está archivado. Los precios USD de ejemplo permanecen como
+alternativa en Test Store; no son tarifas comerciales aprobadas. Falta verificar
+la compra nativa y la conciliación externa. Las comprobaciones anteriores
+conservan sus fechas y alcance.
 
 **Bloque abierto · COM-010, aclarado por Javier.** Este chat continúa dedicado
 a Free/Pro del deportista e incluye la conexión de pagos. Javier rechaza el cierre
@@ -68,14 +85,13 @@ Las respuestas comerciales de servidor mantienen códigos estables para que los
 editores distingan cuota de errores de red o permisos. Pro contextual abre la
 configuración existente y Free abre la oferta. Las tarjetas y fotos se conservan.
 
-### Límite pendiente: cobros
+### Límite pendiente: conexión externa y cobros
 
-No hay compras, restauraciones, webhooks, recibos, reembolsos ni estados de tienda
-implementados. Los botones de cobro siguen deshabilitados. La recepción fiable
-de pagos deberá incorporar una fuente y referencias verificables al modelo de
-derechos, con idempotencia y conciliación, y nunca permitir que las concesiones
-manuales cancelen o editen una suscripción de tienda. RevenueCat es
-el proveedor elegido en COM-012, pendiente de configuración e integración.
+COM-013 añade compra, restauración y conciliación de Test Store en código,
+con una fuente de derechos separada e idempotencia por evento y cuenta. Las
+concesiones manuales no cancelan ni editan una compra. Sin la configuración
+externa, los botones siguen deshabilitados. Tiendas reales, renovaciones y
+reembolsos completos conservan su validación pendiente; no se habilitan cobros.
 
 ## Acuerdo · COM-006 · 10/10/2026
 
@@ -123,8 +139,8 @@ historial; el contador visual refleja el servidor y no concede autorizaciones.
 
 Javier elige compras de App Store/Google Play y RevenueCat para coordinar
 productos y estados (COM-012). Supabase seguirá autorizando generación y
-continuidad adaptativa. Configuración e integración de RevenueCat siguen
-pendientes; no es aún una dependencia instalada.
+continuidad adaptativa. COM-013 instala el SDK y prepara la integración inicial;
+la configuración externa y su prueba completa siguen pendientes.
 
 ### Coste y crecimiento acordados · COM-012 · 13/10/2026
 
@@ -135,7 +151,7 @@ alojamiento exigiría comprobar también los contratos de acceso e integración,
 además de comparar el precio de una base de datos aislada.
 
 RevenueCat estándar es gratuito por debajo de 2.500 USD de ingresos mensuales
-registrados; si no hay ingresos, su cargo es cero. Al superar el umbral cobra
+registrados; si no hay ingresos, su cargo es cero. Al alcanzar el umbral cobra
 el 1 % del total registrado antes de comisiones e impuestos; si se vuelve a
 quedar por debajo, vuelve a ser gratuito. Esta tarifa no elimina las comisiones
 de tiendas o los costes de otros servicios.
@@ -177,10 +193,14 @@ nativas móviles. No se añaden ahora pagos web ni una segunda app.
 
 Javier confirma que su membresía Apple Developer está caducada. Para la primera
 integración se prepara RevenueCat Test Store tras la elección de COM-012;
-el proyecto externo todavía no se ha creado o verificado en esta tarea.
-No hay SDK instalado ni compras activas.
+el proyecto externo se ha creado como **EntrenaOP**, con Test Store. COM-013 añade el
+SDK, pero no activa compras externas. En el registro de RevenueCat, la pantalla
+de tarjeta permite **Add it later**: no hace falta añadirla para estas pruebas.
+La tarjeta pagaría el servicio de RevenueCat; Apple/Google recibirán por separado
+la información bancaria para sus ingresos cuando se preparen ventas.
 
-1. Entrar en [RevenueCat](https://app.revenuecat.com/) y crear **EntrenaOP Dev**.
+1. Entrar en [RevenueCat](https://app.revenuecat.com/). El proyecto de pruebas
+   creado se llama **EntrenaOP**, `bb91cf72`; no crear otro duplicado.
 2. En **Apps & providers**, utilizar **Test Store**; puede venir creada en el
    asistente. No conectar Apple ni Google en este primer paso.
 3. En **Product catalog**, preparar un único derecho **`pro`**, dos productos
@@ -202,7 +222,7 @@ en release y no se utilizará para la beta profile, TestFlight o pistas de Play.
 La prueba inicial no sustituye la validación posterior de las tiendas nativas.
 [Test Store y restricciones de compilación](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
 
-### Contrato técnico propuesto antes de implementarlo
+### Contrato técnico de la integración inicial · COM-013
 
 - Flutter inicia compras únicamente con una cuenta autenticada y su UUID de
   Supabase como App User ID. No se envían marcas, historial o datos deportivos
@@ -212,28 +232,32 @@ La prueba inicial no sustituye la validación posterior de las tiendas nativas.
 - Se necesitan una función de servidor para recibir eventos autenticados y una
   consulta de conciliación con el proveedor. Los identificadores de evento evitan
   procesar duplicados; la conciliación resuelve demoras y desorden de entrega.
-- Las suscripciones se almacenarán separadas de `development_manual`, con
+- La migración preparada almacena suscripciones separadas de `development_manual`, con
   proveedor, cuenta, entorno y vigencia. La autorización combinará las fuentes
   válidas; retirar un acceso administrativo no cancelará una compra de tienda.
 - Sandbox solo autorizará en Dev. El webhook validará proyecto/app y entorno;
   los secretos de API y del webhook permanecerán en servidor. Todavía no se han
   definido estos valores ni desplegado funciones.
 - Cancelar la renovación conserva el acceso hasta su vencimiento. Caducar no
-  borra recursos ni historial. Restauración, cambios de cuenta, período de gracia
-  y transferencias se concretarán antes de implementar sus reglas; no se adopta
-  silenciosamente la política predeterminada del proveedor.
+  borra recursos ni historial. El período de gracia solo conserva acceso hasta
+  una fecha explícita del proveedor, sin añadir días propios. Un evento TRANSFER
+  concilia origen y destino. Antes de las tiendas reales se debe acordar y
+  configurar su política de restauración/transferencia; no se considera decidida
+  por probar la conciliación técnica.
 
-El SDK oficial permitirá compra/restauración y lectura del catálogo. Antes de
-añadirlo se comprobarán versión, resolución y requisitos reales con Flutter,
-Android e iOS actuales. Se conservará la oferta propia de EntrenaOP. El navegador
-no se habilitará como nuevo canal de venta en este primer tramo.
+El SDK oficial 10.15.2 permite compra/restauración y lectura del catálogo. La
+resolución añade únicamente este paquete y sus mínimos son compatibles con
+Flutter 3.47.5, Dart 3.13.4 e iOS 15 del proyecto. Se conserva la oferta propia
+de EntrenaOP, con tarjetas y precios localizados. El navegador no se habilita
+como nuevo canal de venta en este primer tramo. La compilación iOS y la prueba
+nativa siguen requiriendo el Mac y sus tiendas.
 
 La aceptación requiere probar compra mensual/anual, cancelación del diálogo,
 fallo, renovación/caducidad, restauración, cambio de cuenta, eventos duplicados
 y derechos confirmados en servidor. Se necesitará una cuenta Free sin concesión
 manual para observar la transición; el Pro de prueba vigente puede ocultarla.
-Estas comprobaciones y la integración siguen pendientes: este documento no
-acredita que funcionen compras.
+La aceptación completa con RevenueCat y los sandboxes sigue pendiente: las
+pruebas automatizadas del contrato no acreditan una compra real del proveedor.
 
 Referencias oficiales revisadas el 13/10/2026:
 
@@ -263,6 +287,36 @@ Referencias oficiales consultadas el 10/10/2026:
 - [Configurar compras en App Store Connect](https://developer.apple.com/help/app-store-connect/configure-in-app-purchase-settings/overview-for-configuring-in-app-purchases/).
 - [Acuerdos de App Store Connect](https://developer.apple.com/help/app-store-connect/manage-agreements/sign-and-update-agreements/).
 - [Suscripciones en Google Play](https://support.google.com/googleplay/android-developer/answer/140504?hl=es).
+
+## Verificación de la integración preparada · COM-013 · 13/10/2026
+
+Análisis limpio y batería completa de raíz con **766 pruebas correctas**, además
+de la omisión web existente. Se comprueban confirmación exclusiva de servidor,
+cancelación, compra pendiente, fallo de confirmación, no repetición del recibo
+activo y cambio de cuenta en la oferta y Mi suscripción. Restaurar sin compras
+vigentes conserva la posibilidad de suscribirse. La preparación también vuelve
+a comprobar el acceso al cambiar de identidad.
+
+Dieciocho pruebas de funciones correctas; `deno check`, formato y lint limpios
+para ambas entradas, código compartido y pruebas. Android debug y web compilan.
+Android emite avisos del toolchain XML/Java; no impiden la compilación.
+Los mínimos iOS/SPM son compatibles por inspección, pero no se ha compilado iOS
+desde Windows. El SDK añade una sola dependencia resuelta; admin y paquetes
+compartidos no consumen este paquete y no se modifican.
+
+Historial Dev: 138 migraciones aplicadas y solo la nueva `20261013000000` local
+pendiente. Dos ejecuciones SQL correctas combinan su esquema y las pruebas
+`revenuecat_pro_reconciliation.sql` y `pro_access_and_free_quotas.sql` dentro de
+transacciones que terminan en ROLLBACK. Se verifican permisos, aislamiento,
+idempotencia, instantáneas antiguas, vigencia, cuotas y fuentes independientes.
+La consulta posterior confirma ausencia de la tabla nueva y cero usuarios de
+los fixtures. No se ha desplegado ni activado la integración.
+
+Capturas de widgets reales revisadas a 390 y 320 px, con precios USD ficticios,
+sin desbordamientos, en `build/visual-atlas-20261007/raw/` con prefijo
+`build_purchases_review_capture_test_dart`. Conservan marca, tarjetas y moneda
+del catálogo; no acreditan cuenta autenticada, SDK real ni compra del proveedor.
+La configuración externa y aceptación completa siguen pendientes en este bloque.
 
 ## Verificación de interfaz · COM-009
 

@@ -32,12 +32,14 @@ class ProAccess {
     required this.personalSessions,
     this.validUntil,
     this.source,
+    this.billingEnvironment,
   });
   final String userId;
   final bool isPro;
   final DateTime checkedAt;
   final DateTime? validUntil;
   final String? source;
+  final String? billingEnvironment;
   final int personalExercises, personalSessions;
   int? get exerciseLimit => isPro ? null : 8;
   int? get sessionLimit => isPro ? null : 4;
@@ -60,6 +62,7 @@ class ProAccess {
       checkedAt: checked,
       validUntil: expiry,
       source: json['source'] as String?,
+      billingEnvironment: json['billing_environment'] as String?,
       personalExercises: (json['personal_exercises'] as num).toInt(),
       personalSessions: (json['personal_sessions'] as num).toInt(),
     );

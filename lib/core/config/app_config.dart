@@ -4,6 +4,9 @@ import 'package:entrenaop/core/config/auth_redirect.dart';
 enum AppEnvironment { development, production }
 
 abstract final class AppConfig {
+  static const revenuecatTestKey = String.fromEnvironment(
+    'REVENUECAT_TEST_API_KEY',
+  );
   static const _environmentName = String.fromEnvironment(
     'APP_ENV',
     defaultValue: 'development',

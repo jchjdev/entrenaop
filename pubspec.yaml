@@ -47,6 +47,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   cached_network_image: ^4.0.0
 
+  # Compras nativas: primera integración limitada a Test Store móvil debug Dev.
+  purchases_flutter: 10.15.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
