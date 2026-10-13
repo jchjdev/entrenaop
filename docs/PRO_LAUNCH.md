@@ -1,5 +1,24 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Pro gratuito administrado por Javier · COM-016 · 13/10/2026
+
+Javier confirma Pro gratis para familiares, pareja y beta testers, administrado
+desde su propio panel. Una concesión gratuita no crea una suscripción ni cobra,
+y administración no concede Pro por sí misma. Retirar un regalo deja Free solo
+si no hay otra fuente vigente de Pro, como una compra.
+
+El panel actual de Cuentas de prueba concede únicamente accesos temporales de
+desarrollo. Su ampliación comercial está pendiente: mostrar origen y vigencia,
+gestionar regalos con permisos de servidor y registrar actor, motivo y cambios.
+Se propone duración temporal o sin vencimiento hasta retirada; la opción
+indefinida requiere adaptar el contrato actual, que exige fecha final para Pro.
+No se implementa ni despliega esta ampliación en esta comprobación.
+
+RevenueCat conserva el control de compras y eventos de las tiendas. Nuestro
+backend actual solo acepta productos de suscripción configurados; el botón
+Grant de RevenueCat crea promociones independientes y no debe presentarse
+como equivalente al Pro manual ya implementado en EntrenaOP.
+
 ## Estado actual · COM-013/014 · 13/10/2026
 
 La integración inicial de Test Store existe en código: SDK móvil, catálogo,
