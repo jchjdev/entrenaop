@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**Aceptación manual, 13/10/2026 · fechas administrativas:** Javier confirma que
+cambiar fechas parece funcionar bien. Aclara que el error posterior al retirar
+Pro se observó en un iPhone sin actualizar; la consulta propia de servidor tras
+retirar devuelve Free y cuotas 8/4. No se considera una regresión confirmada
+del Android actualizado ni una aceptación completa de compras. Free/Pro sigue
+abierto: cuotas/continuidad, compra mensual/anual, moneda, cancelación/error,
+restauración/cambio de cuenta e iOS actualizado pendientes de aceptación móvil.
+Ventas reales mantienen su configuración y validación pendientes. El único
+siguiente recorrido recomendado sigue siendo Android debug desde Free sin
+regalo, compra → Pro → Mi plan → restauración/caducidad. [Detalle](PRO_LAUNCH.md).
+
 **COM-017, 13/10/2026 · listado de cuentas y responsable único:** Cuentas y Pro
 lista correos, Free/Pro y fuentes, con búsqueda parcial y páginas de 25; pulsar
 una fila conserva la ficha de gestión. Javier es el único responsable configurado

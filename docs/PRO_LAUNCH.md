@@ -1,5 +1,30 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Aceptación manual y pendientes de cierre · 13/10/2026
+
+Javier confirma que modificar fechas desde el admin parece funcionar bien.
+El aviso comunicado después de retirar el regalo se atribuye por su aclaración
+a un iPhone cuya app todavía no había actualizado; no acredita una regresión
+de la APK Android nueva. La consulta propia realizada tras esa retirada devuelve
+Free, sin fuente, con cuotas 8/4. No se cambia el acceso para esta comprobación.
+La confirmación de fechas no identifica expresamente plataforma ni acredita
+por sí sola la batería completa de compras.
+
+El cierre técnico todavía requiere aceptación móvil de cuotas 8/4 y conservación
+del borrador, continuidad de recursos/historial al retirar Pro, compra mensual y
+anual desde Free sin regalo vigente, retorno a Mi plan sin reinicio, cancelación,
+fallo, restauración y cambio de cuenta. Deben comprobarse 3,99 €/mes y
+29,99 €/año en el catálogo mostrado por el móvil. Falta actualizar iPhone y
+repetir allí los recorridos pertinentes. SQL y pruebas automatizadas anteriores
+conservan su alcance y no sustituyen la confirmación física de esos estados.
+
+Ventas reales siguen sin habilitar: productos y configuración de App Store y
+Google Play, política de restauración/transferencia, sandboxes nativos,
+recuperación ante eventos perdidos e información contractual conservan sus
+pendientes. No se presenta el cierre de pruebas de beta como autorización para
+cobrar. El siguiente recorrido recomendado continúa siendo Android debug:
+Free → compra de prueba → Pro → Mi plan → restauración/caducidad.
+
 ## Directorio y responsable único · COM-017 · 13/10/2026
 
 Javier pide una lista de cuentas y confirma que él será el único responsable
