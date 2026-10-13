@@ -1,5 +1,45 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Anual y confirmación tardía · COM-018 · 13/10/2026
+
+Javier realiza la compra anual de Test Store como Free y comunica que permanece
+en la oferta; al restaurar aparece Pro hasta el día siguiente. Dev registra
+INITIAL_PURCHASE el 13/10 a las 23:01:45 (Madrid) para `jvr.trainer@gmail.com`,
+producto `entrenaop_pro_annual`. La consulta posterior acredita Pro de origen
+RevenueCat, SANDBOX y primera vigencia hasta el 14/10 a las 00:01:43.
+La respuesta inicial no se conserva: el retraso entre compra y confirmación
+es compatible con la única consulta anterior, pero no se da por trazado su
+error concreto. No se modifica la compra ni se concede un regalo para ocultarlo.
+
+Después de comprar, o detectar un recibo activo, el repositorio comprueba acceso
+hasta tres veces, con seis segundos entre intentos y doce segundos de límite
+por respuesta. Una respuesta Free o un fallo temporal de confirmación no emite
+otra compra. Rechazar identidad corta los reintentos. Solo el servidor confirma
+Pro; agotarlos mantiene pendiente y ofrece comprobar después. La regresión
+Free → confirmación tardía Pro cambia la oferta a «Ya tienes Pro» automáticamente,
+sin restaurar ni reiniciar. No se altera la cadencia de servidor de cinco segundos.
+
+Mi suscripción muestra fecha y hora locales para SANDBOX y explica que tiene
+todas las funciones Pro, con periodos acelerados y sin cobro. El anual de Test
+Store renueva cada hora, hasta su ciclo acelerado; una anual comercial tendrá
+su periodo de un año. No se transforma la vigencia del proveedor ni se añade
+un año en el cliente. [Documentación oficial de Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
+
+Test Store no acredita restauración desde el historial de una cuenta de tienda:
+su simulador Android devuelve historial vacío. El botón puede consultar/conciliar
+el estado de esa cuenta en nuestro servidor, como ocurrió aquí; las restauraciones
+de Apple/Google y transferencias mantienen su aceptación en sandboxes nativos.
+[Implementación del simulador](https://github.com/RevenueCat/purchases-android/blob/main/purchases/src/main/kotlin/com/revenuecat/purchases/simulatedstore/SimulatedStoreBillingWrapper.kt).
+
+Verificación: análisis limpio, 45 pruebas Pro y 776 completas de raíz correctas,
+con la omisión web existente. Se comprueban retraso, fallo temporal, pérdida de
+identidad, límite de intentos y respuesta que no llega, sin duplicar compras.
+Capturas de 390/320 px revisadas. APK debug Dev compilada e instalada por reemplazo
+en Samsung a las 23:11 (Madrid), conservando datos. La anual actual permanece
+activa; repetir compra desde Free en el móvil actualizado todavía es pendiente.
+No hay cambios en admin, SQL, funciones, dependencias ni producción. Free/Pro
+sigue abierto; la prueba no acredita restauración real ni cobros comerciales.
+
 ## Aceptación manual y pendientes de cierre · 13/10/2026
 
 Javier confirma que modificar fechas desde el admin parece funcionar bien.

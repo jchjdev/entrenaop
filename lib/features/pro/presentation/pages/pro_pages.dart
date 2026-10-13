@@ -392,6 +392,11 @@ class _AccessDetails extends StatelessWidget {
     final date = expiry == null
         ? ''
         : '${expiry.day.toString().padLeft(2, '0')}/${expiry.month.toString().padLeft(2, '0')}/${expiry.year}';
+    final time = expiry == null
+        ? ''
+        : '${expiry.hour.toString().padLeft(2, '0')}:${expiry.minute.toString().padLeft(2, '0')}';
+    final testSubscription =
+        access.source == 'revenuecat' && access.billingEnvironment == 'SANDBOX';
     return EntrenaCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -409,11 +414,17 @@ class _AccessDetails extends StatelessWidget {
                             : 'Pro gratuito concedido por administración hasta el $date. No es una suscripción de pago.'
                       : access.source == 'revenuecat'
                       ? access.billingEnvironment == 'SANDBOX'
-                            ? 'Suscripción de prueba hasta el $date. No se realizará ningún cobro.'
+                            ? 'Suscripción de prueba hasta el $date a las $time (hora local). No se realizará ningún cobro.'
                             : 'Acceso por suscripción hasta el $date.'
                       : 'Acceso de prueba hasta el $date. No es una suscripción de pago.'
                 : 'Incluye 8 ejercicios propios y 4 sesiones propias guardadas.',
           ),
+          if (access.isPro && testSubscription) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'Tienes acceso a todas las funciones Pro. En estas pruebas los periodos se aceleran; una compra anual real dura un año.',
+            ),
+          ],
           const SizedBox(height: 12),
           Text(
             'Ejercicios propios: ${access.personalExercises}${access.isPro ? '' : '/8'}',

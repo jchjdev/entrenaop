@@ -1,5 +1,13 @@
 # Compras de prueba · COM-013/014
 
+COM-018: después de comprar, la app confirma hasta tres veces en servidor,
+separadas seis segundos y con doce segundos de timeout por respuesta; no repite
+la compra ni concede acceso por resultado SDK. Si no confirma, mantiene pendiente
+y permite comprobar. La pantalla muestra fecha/hora local y explica la duración
+acelerada de Test Store: anual renueva cada hora sin cobro, no equivale a un año
+real. APK actual instalada en Samsung a las 23:11 del 13/10; repetir el cambio
+automático desde Free en esa versión sigue pendiente.
+
 COM-016 agrega **Cuentas y Pro** en el admin (`/accounts`) para regalos gratuitos,
 separados de las compras del proveedor. COM-017 agrega lista paginada y búsqueda
 parcial, con gestión exclusiva del responsable de cuentas (Javier en Dev).
@@ -196,7 +204,9 @@ vigente de la cuenta principal puede ocultarlo. Comprobar en móvil debug:
    preparación de origen sin crear ni sustituir automáticamente un programa.
 3. Comprar con confirmación fallida: mostrar pendiente y comprobar acceso sin
    volver a comprar. Reabrir con recibo activo también debe conciliarlo.
-4. Restaurar una compra existente; restaurar sin compras permite suscribirse.
+4. Comprobar el botón de restaurar y la conciliación del estado de Test Store;
+   sin compras vigentes permite suscribirse. La restauración completa del
+   historial de cuenta de tienda se valida después en sandboxes Apple/Google.
 5. Cambiar de cuenta antes/durante una operación: no trasladar el estado anterior.
 6. Eventos repetidos, renovación, cancelación hasta vencimiento, caducidad,
    incidencia/gracia explícita, devolución y transferencia, contrastando servidor.

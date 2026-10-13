@@ -99,11 +99,16 @@ class RevenueCatProPurchaseRepository implements ProPurchaseRepository {
     required this.store,
     required this.owner,
     required this.confirm,
-  });
+    Future<void> Function()? waitBeforeConfirmationRetry,
+  }) : _waitBeforeConfirmationRetry =
+           waitBeforeConfirmationRetry ?? _waitForConfirmation;
   final ProPurchaseConfiguration configuration;
   final ProStoreGateway store;
   final String? Function() owner;
   final Future<ProAccess> Function(String userId) confirm;
+  final Future<void> Function() _waitBeforeConfirmationRetry;
+  static Future<void> _waitForConfirmation() =>
+      Future<void>.delayed(const Duration(seconds: 6));
   Future<void> _queue = Future.value();
   @override
   bool get enabled => configuration.enabled;
@@ -161,7 +166,7 @@ class RevenueCatProPurchaseRepository implements ProPurchaseRepository {
   Future<ProAccess> _confirm(String userId) async {
     _checkOwner(userId);
     try {
-      final access = await confirm(userId);
+      final access = await confirm(userId).timeout(const Duration(seconds: 12));
       _checkOwner(userId);
       if (access.userId != userId) {
         throw const ProPurchaseException('La cuenta ha cambiado.');
@@ -177,6 +182,25 @@ class RevenueCatProPurchaseRepository implements ProPurchaseRepository {
     }
   }
 
+  Future<ProAccess> _confirmPurchase(String userId) async {
+    // El proveedor y el webhook pueden llegar después de cerrar el diálogo.
+    // Se supera la ventana de 5 s del servidor sin emitir otra compra.
+    ProAccess? lastAccess;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await _waitBeforeConfirmationRetry();
+        _checkOwner(userId);
+      }
+      try {
+        lastAccess = await _confirm(userId);
+        if (lastAccess.isPro) return lastAccess;
+      } on ProPurchaseException catch (error) {
+        if (!error.pending || attempt == 2) rethrow;
+      }
+    }
+    return lastAccess!;
+  }
+
   @override
   Future<List<ProStoreProduct>> products() => _run((_) => store.products());
   @override
@@ -184,9 +208,9 @@ class RevenueCatProPurchaseRepository implements ProPurchaseRepository {
     // Un recibo ya activo debe conciliarse, no comprarse de nuevo.
     final active = await store.hasActivePro();
     _checkOwner(userId);
-    if (active) return _confirm(userId);
+    if (active) return _confirmPurchase(userId);
     await store.purchase(period);
-    return _confirm(userId);
+    return _confirmPurchase(userId);
   });
   @override
   Future<ProAccess> restore() => _run((userId) async {

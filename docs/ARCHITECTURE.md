@@ -32,6 +32,14 @@ descarta respuestas si cambia la cuenta. El Cubit diferencia operación, compra
 pendiente y acceso confirmado; una confirmación pendiente impide repetir compra.
 Test Store solo se configura en móvil debug Dev; el SDK no autoriza Pro.
 
+COM-018 añade confirmación limitada después de compra o recibo ya activo:
+tres consultas como máximo, seis segundos entre ellas y timeout de doce segundos
+por respuesta. Respeta la cadencia de conciliación del servidor de cinco segundos.
+Free o fallo temporal no disparan otra compra ni conceden Pro local; al agotar
+mantiene pendiente. Cada espera conserva y revalida la identidad de la operación.
+Restaurar y comprobar explícitamente siguen consultando servidor sin comprar.
+Los periodos SANDBOX muestran hora local y se explican sin alterar la fecha canónica.
+
 `revenuecat-sync` comprueba el JWT contra Auth y que coincida la cuenta esperada;
 `revenuecat-webhook` exige un Bearer específico, app y entorno. Ambas consultan
 el estado canónico con la clave privada en servidor. `verify_jwt=false` evita

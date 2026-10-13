@@ -81,6 +81,145 @@ class Store extends ProStoreGateway {
 }
 
 void main() {
+  testWidgets(
+    'una confirmación sin respuesta termina pendiente con un único intento de compra',
+    (tester) async {
+      final store = Store();
+      final unanswered = Completer<ProAccess>();
+      final repository = RevenueCatProPurchaseRepository(
+        configuration: configuration,
+        store: store,
+        owner: () => 'a',
+        confirm: (_) => unanswered.future,
+        waitBeforeConfirmationRetry: () async {},
+      );
+      final cubit = ProPurchaseCubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      final operation = cubit.buy(ProBillingPeriod.annual);
+      await tester.pump();
+      for (var attempt = 0; attempt < 3; attempt++) {
+        await tester.pump(const Duration(seconds: 12));
+      }
+      await operation;
+      expect(cubit.state.phase, ProPurchasePhase.pending);
+      expect(store.purchases, 1);
+    },
+  );
+  test(
+    'una anual con confirmación tardía activa Pro sin restaurar ni recomprar',
+    () async {
+      final store = Store();
+      var confirmations = 0;
+      var waits = 0;
+      final repository = RevenueCatProPurchaseRepository(
+        configuration: configuration,
+        store: store,
+        owner: () => 'a',
+        confirm: (_) async => access(pro: ++confirmations >= 2),
+        waitBeforeConfirmationRetry: () async {
+          waits++;
+        },
+      );
+      expect((await repository.purchase(ProBillingPeriod.annual)).isPro, true);
+      expect(confirmations, 2);
+      expect(waits, 1);
+      expect(store.purchases, 1);
+      expect(store.restorations, 0);
+    },
+  );
+  test('un fallo transitorio después de comprar se vuelve a comprobar sin pagar otra vez', () async {
+    final store = Store();
+    var confirmations = 0;
+    final repository = RevenueCatProPurchaseRepository(
+      configuration: configuration,
+      store: store,
+      owner: () => 'a',
+      confirm: (_) async {
+        if (++confirmations == 1) {
+          throw StateError('Confirmación temporalmente no disponible');
+        }
+        return access();
+      },
+      waitBeforeConfirmationRetry: () async {},
+    );
+    expect((await repository.purchase(ProBillingPeriod.monthly)).isPro, true);
+    expect(store.purchases, 1);
+    expect(confirmations, 2);
+  });
+  test('cambiar de cuenta durante la espera corta los reintentos', () async {
+    var owner = 'a';
+    var confirmations = 0;
+    final wait = Completer<void>();
+    final waiting = Completer<void>();
+    final repository = RevenueCatProPurchaseRepository(
+      configuration: configuration,
+      store: Store(),
+      owner: () => owner,
+      confirm: (_) async {
+        confirmations++;
+        return access(pro: false);
+      },
+      waitBeforeConfirmationRetry: () {
+        waiting.complete();
+        return wait.future;
+      },
+    );
+    final operation = repository.purchase(ProBillingPeriod.annual);
+    final rejected = expectLater(
+      operation,
+      throwsA(isA<ProPurchaseException>()),
+    );
+    await waiting.future;
+    owner = 'b';
+    wait.complete();
+    await rejected;
+    expect(confirmations, 1);
+  });
+  testWidgets(
+    'confirmación retrasada cambia la oferta a Ya tienes Pro automáticamente',
+    (tester) async {
+      final store = Store();
+      var confirmed = false;
+      var confirmations = 0;
+      final wait = Completer<void>();
+      final repository = RevenueCatProPurchaseRepository(
+        configuration: configuration,
+        store: store,
+        owner: () => 'a',
+        confirm: (_) async {
+          confirmed = ++confirmations >= 2;
+          return access(pro: confirmed);
+        },
+        waitBeforeConfirmationRetry: () => wait.future,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProOfferPage(
+            purchases: repository,
+            loadAccess: () async => access(pro: confirmed),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final buy = find.text('Probar por 29,99 US\$/año');
+      await tester.ensureVisible(buy);
+      await tester.tap(buy);
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.text('Comprobando el acceso con el servidor…'),
+        findsOneWidget,
+      );
+      expect(find.text('Ya tienes Pro'), findsNothing);
+      wait.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('Ya tienes Pro'), findsOneWidget);
+      expect(find.text('Seguir con Free'), findsNothing);
+      expect(store.purchases, 1);
+      expect(store.restorations, 0);
+    },
+  );
   for (final path in ['/pro', '/pro/subscription']) {
     testWidgets(
       'volver a Mi plan desde $path no duplica la navegación principal',
@@ -236,15 +375,21 @@ void main() {
     'el resultado de tienda no concede Pro si el servidor devuelve Free',
     () async {
       final store = Store();
+      var confirmations = 0;
       final repository = RevenueCatProPurchaseRepository(
         configuration: configuration,
         store: store,
         owner: () => 'a',
-        confirm: (_) async => access(pro: false),
+        confirm: (_) async {
+          confirmations++;
+          return access(pro: false);
+        },
+        waitBeforeConfirmationRetry: () async {},
       );
       final result = await repository.purchase(ProBillingPeriod.monthly);
       expect(store.purchases, 1);
       expect(result.isPro, false);
+      expect(confirmations, 3);
     },
   );
   test(
@@ -381,6 +526,7 @@ void main() {
       store: Store(),
       owner: () => 'a',
       confirm: (_) async => throw StateError('Sin conexión'),
+      waitBeforeConfirmationRetry: () async {},
     );
     final cubit = ProPurchaseCubit(repository);
     addTearDown(cubit.close);

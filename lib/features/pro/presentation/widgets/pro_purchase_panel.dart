@@ -58,7 +58,16 @@ class _ProPurchasePanelState extends State<ProPurchasePanel> {
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
-            if (busy) const Center(child: CircularProgressIndicator()),
+            if (busy) ...[
+              const Center(child: CircularProgressIndicator()),
+              const SizedBox(height: 12),
+              Text(
+                state.phase == ProPurchasePhase.working
+                    ? 'Comprobando el acceso con el servidor…'
+                    : 'Cargando las modalidades…',
+              ),
+              const SizedBox(height: 12),
+            ],
             if (state.message != null) ...[
               Text(state.message!, semanticsLabel: state.message!),
               const SizedBox(height: 12),

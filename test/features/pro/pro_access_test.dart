@@ -94,6 +94,34 @@ void main() {
       expect(find.textContaining('Suscripción de prueba'), findsNothing);
     },
   );
+  testWidgets(
+    'el periodo sandbox muestra hora local y explica su duración acelerada',
+    (tester) async {
+      final expiry = DateTime.utc(2026, 10, 13, 22, 1);
+      final local = expiry.toLocal();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProSubscriptionPage(
+            loadAccess: () async => ProAccess.fromJson({
+              ...snapshot(tier: 'pro'),
+              'source': 'revenuecat',
+              'billing_environment': 'SANDBOX',
+              'valid_until': expiry.toIso8601String(),
+            }),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining(
+          'a las ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')} (hora local)',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('los periodos se aceleran'), findsOneWidget);
+      expect(find.text('Pro activo'), findsOneWidget);
+    },
+  );
   test('solo códigos comerciales conocidos abren la oferta', () {
     expect(
       ProAccessDenied.fromDetails('free_exercise_limit')?.restriction,

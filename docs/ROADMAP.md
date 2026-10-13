@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**COM-018, 13/10/2026 · anual y confirmación tardía:** compra anual Test Store
+acreditada en Dev; Javier observa oferta persistente y Pro al restaurar. El
+repositorio añade confirmación automática limitada, sin recomprar y sin conceder
+derechos locales, y explica fecha/hora y periodos acelerados de prueba. Análisis
+limpio, 45 pruebas Pro y 776 raíz correctas con la omisión existente; capturas
+revisadas y APK debug Dev instalada por reemplazo a las 23:11 en Samsung.
+Sin cambios SQL, admin, dependencias o producción. El siguiente tramo recomendado
+es repetir Free → compra → Pro → Mi plan en la versión actual; restauración de
+historial de tienda requiere sandboxes nativos y no queda acreditada por Test
+Store. No se retira ni reinicia la anual activa. Free/Pro sigue abierto.
+[Alcance y límites](PRO_LAUNCH.md).
+
 **Aceptación manual, 13/10/2026 · fechas administrativas:** Javier confirma que
 cambiar fechas parece funcionar bien. Aclara que el error posterior al retirar
 Pro se observó en un iPhone sin actualizar; la consulta propia de servidor tras
