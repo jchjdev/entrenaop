@@ -15,7 +15,7 @@ class AdminProgramsPage extends StatefulWidget {
     required this.exerciseRepository,
     required this.onSignOut,
     this.coverRepository,
-    this.showDevelopmentAccounts = false,
+    this.showAccounts = false,
   });
 
   final AdminProgramRepository repository;
@@ -23,7 +23,7 @@ class AdminProgramsPage extends StatefulWidget {
   final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
   final ProgramCoverRepository? coverRepository;
-  final bool showDevelopmentAccounts;
+  final bool showAccounts;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -142,11 +142,11 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           ],
         ),
         actions: [
-          if (_authorized && widget.showDevelopmentAccounts)
+          if (_authorized && widget.showAccounts)
             IconButton(
-              tooltip: 'Cuentas de prueba',
+              tooltip: 'Cuentas y Pro',
               icon: const Icon(Icons.manage_accounts_outlined),
-              onPressed: () => context.push('/development-accounts'),
+              onPressed: () => context.push('/accounts'),
             ),
           IconButton(
             tooltip: 'Cerrar sesión',
@@ -179,6 +179,17 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           '¿Qué quieres gestionar?',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
+        if (widget.showAccounts) ...[
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.tonalIcon(
+              onPressed: () => context.push('/accounts'),
+              icon: const Icon(Icons.manage_accounts_outlined),
+              label: const Text('Cuentas y Pro'),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           'Elige el catálogo de contenido de EntrenaOP en el que quieres trabajar.',

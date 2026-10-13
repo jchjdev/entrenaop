@@ -54,6 +54,46 @@ void main() {
       throwsFormatException,
     );
   });
+  test('solo un regalo administrativo admite Pro sin fecha de fin', () {
+    final gift = ProAccess.fromJson({
+      ...snapshot(tier: 'pro'),
+      'source': 'administrative_gift',
+      'valid_until': null,
+    });
+    expect(gift.isPro, true);
+    expect(gift.validUntil, isNull);
+    expect(gift.exerciseLimit, isNull);
+    for (final source in ['revenuecat', 'development_manual', null]) {
+      expect(
+        () => ProAccess.fromJson({
+          ...snapshot(tier: 'pro'),
+          'source': source,
+          'valid_until': null,
+        }),
+        throwsFormatException,
+      );
+    }
+  });
+  testWidgets(
+    'el regalo indefinido no se presenta como una suscripción ni una prueba temporal',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProSubscriptionPage(
+            loadAccess: () async => ProAccess.fromJson({
+              ...snapshot(tier: 'pro'),
+              'source': 'administrative_gift',
+              'valid_until': null,
+            }),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Pro activo'), findsOneWidget);
+      expect(find.textContaining('sin fecha de fin'), findsOneWidget);
+      expect(find.textContaining('Suscripción de prueba'), findsNothing);
+    },
+  );
   test('solo códigos comerciales conocidos abren la oferta', () {
     expect(
       ProAccessDenied.fromDetails('free_exercise_limit')?.restriction,

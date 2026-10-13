@@ -427,6 +427,13 @@ El catálogo EUR y el backend Dev están conectados tras autorización específi
 Una transacción simulada verifica receipt, webhook y conciliación en servidor;
 compra/restauración desde la interfaz nativa siguen pendientes. Profile y ventas
 reales permanecen deshabilitados.
+COM-016 (13/10) implementa Pro gratuito administrado por Javier para familiares,
+pareja y beta testers. Cuentas y Pro permite duración temporal o sin fecha de
+fin, con motivo, confirmación y auditoría. Solo administración autorizada y la
+habilitación del servidor pueden modificarlo. El regalo no cobra ni crea una
+suscripción; retirarlo conserva compras vigentes, recursos e historial. Dev
+está habilitado; producción no se despliega ni activa. La beta del deportista
+debe actualizarse para aceptar el contrato de regalos indefinidos.
 La aclaración de Javier del 07/10 distinguió el desarrollo deportivo del producto
 comercial; COM-008 implementa ahora su frontera de acceso para pruebas reales.
 Javier concreta a continuación la frontera

@@ -1,5 +1,15 @@
 # Compras de prueba · COM-013/014
 
+COM-016 agrega **Cuentas y Pro** en el admin (`/accounts`) para regalos gratuitos,
+separados de las compras del proveedor. Busca correo, elige plazo, fecha o sin
+fecha de fin, indica motivo y confirma. Dev tiene `gift_management_enabled=true`;
+no se modifica producción. El deportista debe actualizar la beta para regalos
+indefinidos y puede reconsultar Perfil → Mi suscripción → Actualizar acceso.
+Retirar el regalo conserva la compra vigente. La prueba SQL
+`supabase/tests/administrative_pro_gifts.sql` cubre permisos, caducidad,
+auditoría y fuentes simultáneas con ROLLBACK. La ampliación no utiliza promociones
+de RevenueCat ni hace falta un pago de prueba para regalar Pro.
+
 El código está preparado para RevenueCat Test Store y Supabase Dev. El proyecto
 externo **EntrenaOP**, `bb91cf72`, está creado y conectado a Supabase Dev. La
 migración y las dos funciones están desplegadas; SANDBOX está habilitado solo

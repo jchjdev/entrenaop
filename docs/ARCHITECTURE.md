@@ -36,11 +36,22 @@ clientes no tienen permisos de escritura, ni siquiera por ser administradores.
 del servidor. No utiliza `profiles.role`, metadata editable o preferencias locales.
 Un fallo de consulta se presenta como error y nunca como una cuenta Free.
 
-La administración gestiona accesos de prueba mediante RPC que comprueban
-`is_admin()` y una configuración de servidor cerrada por defecto. Solo el
-operador habilita esta gestión en Dev. El panel además omite su entrada en una
-compilación de producción; esa condición visual no sustituye el permiso SQL.
-Las concesiones son temporales, auditadas y ajenas a una suscripción de tienda.
+COM-016 (13/10) agrega `pro_gift_grants`, privado para los clientes, con fecha
+final opcional y auditoría de concesión/retirada. `has_pro_access` y la ficha
+combinan regalos, concesiones anteriores y compras vigentes. Solo el origen
+`administrative_gift` acepta fecha final nula en Flutter; las compras siguen
+requiriendo vigencia. La comprobación comercial permanece en PostgreSQL.
+
+`admin_find_pro_account` comprueba `is_admin()` y resuelve correo exacto contra
+Auth. `admin_set_free_pro_access` vuelve a comprobar ese permiso, exige motivo
+y la habilitación `gift_management_enabled` (cerrada por defecto), serializa el
+perfil y registra el actor autenticado. Retirar acceso gratuito revoca regalos
+y las concesiones manuales anteriores; no escribe `revenuecat_pro_state`.
+El helper de ficha no es ejecutable por clientes. La ficha distingue ambas
+fuentes aunque un regalo indefinido sea el acceso dominante. Cuentas y Pro
+usa `/accounts`; la ruta anterior redirige. Dev tiene la gestión habilitada y
+140 migraciones coincidentes; producción no se despliega ni activa. Las betas
+anteriores deben actualizarse antes de utilizar regalos sin fecha final.
 
 Los triggers cuentan 8 ejercicios propios y 4 familias personales no archivadas
 en Free y toman un candado de perfil para serializar nuevas plazas. El creador

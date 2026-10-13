@@ -169,12 +169,14 @@ GoRouter createAdminRouter({
     routes: [
       if (proAccess != null)
         GoRoute(
-          path: '/development-accounts',
+          path: '/accounts',
           builder: (_, _) => load(
             () async => proAccess,
             (repository) => AdminProAccessPage(repository: repository),
           ),
         ),
+      if (proAccess != null)
+        GoRoute(path: '/development-accounts', redirect: (_, _) => '/accounts'),
       GoRoute(path: '/', redirect: (_, _) => '/programs'),
       if (loginBuilder != null)
         GoRoute(path: '/login', builder: (context, _) => loginBuilder(context)),
@@ -186,7 +188,7 @@ GoRouter createAdminRouter({
           exerciseRepository: exercises,
           coverRepository: covers,
           onSignOut: onSignOut,
-          showDevelopmentAccounts: proAccess != null,
+          showAccounts: proAccess != null,
         ),
         routes: [
           GoRoute(

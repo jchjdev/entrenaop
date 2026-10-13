@@ -403,7 +403,11 @@ class _AccessDetails extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             access.isPro
-                ? access.source == 'revenuecat'
+                ? access.source == 'administrative_gift'
+                      ? expiry == null
+                            ? 'Pro gratuito concedido por administración, sin fecha de fin. No es una suscripción de pago.'
+                            : 'Pro gratuito concedido por administración hasta el $date. No es una suscripción de pago.'
+                      : access.source == 'revenuecat'
                       ? access.billingEnvironment == 'SANDBOX'
                             ? 'Suscripción de prueba hasta el $date. No se realizará ningún cobro.'
                             : 'Acceso por suscripción hasta el $date.'

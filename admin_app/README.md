@@ -1,10 +1,12 @@
 # EntrenaOP Admin
 
-En desarrollo, **Cuentas de prueba** (icono de cuentas en la cabecera de Programas
-o `/development-accounts`) busca una cuenta registrada por correo y concede Pro
-durante 1/7/30/90 días, o retira sus concesiones de prueba. Requiere permiso
-administrativo y habilitación de servidor por el operador; no se publica su
-entrada en producción. Conserva los datos y no cobra ni cancela compras de tienda.
+**Cuentas y Pro** (botón e icono en Programas, o `/accounts`) busca una cuenta
+registrada por correo y muestra por separado Pro gratuito y suscripción vigente.
+Permite conceder regalos por 1/7/30/90/365 días, hasta una fecha elegida o sin
+fecha de fin; cambiar o retirar acceso gratuito exige motivo y confirmación.
+Requiere permiso administrativo y habilitación del servidor. Dev está habilitado;
+producción no se despliega ni activa. Conserva datos y auditoría y no cobra ni
+cancela compras de tienda. `/development-accounts` redirige a la nueva entrada.
 El usuario consulta el resultado en Perfil → Mi suscripción → Actualizar acceso.
 
 Aplicación Flutter exclusiva de web para crear contenido oficial. No importa
@@ -66,6 +68,6 @@ Sin `--dart-define` se conecta a EntrenaOP Dev. Una compilación de producción
 requiere `APP_ENV=production`, `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`
 explícitos. No se guardan secretos administrativos en el cliente.
 
-El [chequeo del 06/10/2026](../docs/AUDIT_2026_10_06.md) recoge análisis,
-pruebas, compilación web y limitaciones actuales. El admin todavía utiliza
-`Navigator`/`MaterialPageRoute`; su adopción de `go_router` queda pendiente.
+El [chequeo del 06/10/2026](../docs/AUDIT_2026_10_06.md) conserva su alcance
+histórico. El admin utiliza `go_router` para sus páginas, incluida Cuentas y Pro;
+las rutas protegidas comprueban la sesión y el permiso administrativo.

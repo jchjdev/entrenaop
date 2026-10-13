@@ -7,12 +7,30 @@ desde su propio panel. Una concesión gratuita no crea una suscripción ni cobra
 y administración no concede Pro por sí misma. Retirar un regalo deja Free solo
 si no hay otra fuente vigente de Pro, como una compra.
 
-El panel actual de Cuentas de prueba concede únicamente accesos temporales de
-desarrollo. Su ampliación comercial está pendiente: mostrar origen y vigencia,
-gestionar regalos con permisos de servidor y registrar actor, motivo y cambios.
-Se propone duración temporal o sin vencimiento hasta retirada; la opción
-indefinida requiere adaptar el contrato actual, que exige fecha final para Pro.
-No se implementa ni despliega esta ampliación en esta comprobación.
+Javier autoriza implementar la ampliación. **Cuentas y Pro**, accesible desde
+Programas o `/accounts`, busca por correo exacto y muestra por separado regalo
+y suscripción vigente, sus fechas y los recursos propios. Permite regalar Pro
+durante 1/7/30/90/365 días, hasta una fecha elegida o sin fecha de fin, con motivo
+y confirmación. Retirar el acceso gratuito también retira las concesiones
+manuales antiguas de Dev, conservando su auditoría; nunca cambia compras.
+
+`pro_gift_grants` registra concesión y retirada, actor y motivo. No admite
+lectura ni escritura directa del cliente. Las RPC comprueban `is_admin()` y,
+para modificar, `gift_management_enabled`, cerrado por defecto. Dev lo tiene
+habilitado; producción no se despliega ni activa. El acceso del servidor combina
+regalos, concesiones de prueba anteriores y compras vigentes. Solo una fuente
+`administrative_gift` permite fecha final nula en el contrato de Flutter.
+La app debe actualizarse antes de utilizar regalos indefinidos: una beta
+anterior todavía exige fecha final para Pro. El deportista consulta el resultado
+desde Perfil → Mi suscripción → Actualizar acceso.
+
+Comprobación al 13/10: análisis limpio en ambas apps, 770 pruebas de raíz y
+98 de admin correctas, con sus omisiones web preexistentes; 39 pruebas Pro.
+Compilación web del admin correcta y capturas de escritorio y móvil revisadas.
+Las pruebas SQL de regalos,
+cuotas y conciliación pasan con ROLLBACK tras desplegar en Dev; el historial
+contiene 140 migraciones coincidentes. No se concede ni retira ningún regalo
+a una cuenta real durante esta implementación. No cierra el bloque de pagos.
 
 RevenueCat conserva el control de compras y eventos de las tiendas. Nuestro
 backend actual solo acepta productos de suscripción configurados; el botón
@@ -105,8 +123,9 @@ La cuenta sin concesión vigente es Free. Tener permiso de administración no
 la convierte en Pro. `profiles.role` sigue siendo heredado y no se modifica.
 Las concesiones del origen `development_manual` tienen fechas y actores; solo
 las operaciones de confianza o las RPC administrativas autorizadas escriben.
-Una configuración de servidor cerrada por defecto habilita estas RPC en Dev;
-el panel de producción omite la herramienta. No se cambia producción.
+Una configuración de servidor cerrada por defecto habilita estas RPC en Dev.
+COM-016 sustituye su entrada por Cuentas y Pro y agrega regalos independientes;
+la autorización sigue en servidor. No se cambia producción.
 
 ### Presentación según el acceso · COM-009
 
@@ -135,10 +154,10 @@ puede reutilizar la oferta; el servidor sigue autorizando cada operación.
 2. Abrir Perfil → Mi suscripción para consultar acceso, vigencia y contadores.
    «Actualizar acceso» reconsulta al servidor; después de actualizar código se
    necesita un reinicio de la app para registrar el nuevo repositorio.
-3. En admin Dev, abrir **Cuentas de prueba** desde el icono de cuentas de la
-   cabecera de Programas, o `/development-accounts`. Buscar el correo exacto,
-   elegir 1/7/30/90 días y escribir el motivo. Conceder/renovar o retirar el
-   acceso modifica solo concesiones de prueba y conserva sus filas de auditoría.
+3. En admin Dev, abrir **Cuentas y Pro** desde el botón de Programas o `/accounts`.
+   `/development-accounts` redirige a esa ruta. Buscar el correo exacto, elegir
+   duración o fecha y escribir el motivo. Confirmar la concesión o retirada.
+   Solo modifica acceso gratuito y conserva auditoría, datos y compras vigentes.
 4. En Free, guardar ocho ejercicios propios y cuatro sesiones de cualquier tipo.
    El noveno ejercicio o la quinta sesión/duplicado debe invitar a Pro conservando
    el borrador. Editar mantiene la plaza; archivar una sesión la libera. El

@@ -69,9 +69,7 @@ class _AdminAppState extends State<AdminApp> {
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(client),
       covers: SupabaseProgramCoverRepository(client),
-      proAccess: AppConfig.isDevelopment
-          ? SupabaseAdminProAccessRepository(client)
-          : null,
+      proAccess: SupabaseAdminProAccessRepository(client),
       onSignOut: () => unawaited(client.auth.signOut()),
       authChanges: _authChanges,
       isAuthenticated: () => client.auth.currentSession != null,

@@ -53,7 +53,11 @@ class ProAccess {
         ? null
         : DateTime.parse(json['valid_until'] as String);
     final checked = DateTime.parse(json['checked_at'] as String);
-    if (tier == 'pro' && (expiry == null || !expiry.isAfter(checked))) {
+    final indefiniteGift =
+        json['source'] == 'administrative_gift' && expiry == null;
+    if (tier == 'pro' &&
+        !indefiniteGift &&
+        (expiry == null || !expiry.isAfter(checked))) {
       throw const FormatException('Vigencia Pro no válida.');
     }
     return ProAccess(

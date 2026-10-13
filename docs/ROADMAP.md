@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**COM-016, 13/10/2026 · Pro gratuito desde el admin:** Cuentas y Pro busca por
+correo y distingue regalo y suscripción. Concesión temporal o indefinida,
+modificación y retirada con confirmación, actor y motivo, autorizadas en servidor.
+Retirar el regalo conserva una compra vigente. Dev habilitado, 140 migraciones
+coincidentes y pruebas SQL de regalos/cuotas/conciliación correctas con ROLLBACK.
+Análisis limpio, 770 pruebas raíz y 98 admin correctas, con las omisiones web
+existentes, y capturas revisadas. Las betas anteriores necesitan actualizarse
+para regalos indefinidos. Producción no cambia. Este tramo está verificado;
+Free/Pro sigue abierto. El único siguiente tramo recomendado es la aceptación
+móvil de compra, cancelación/error y restauración, comprobando los importes del
+proveedor antes de preparar tiendas reales. [Alcance](PRO_LAUNCH.md).
+
 **COM-015, 13/10/2026 · compra física y retorno a Mi plan:** Javier prueba Test
 Store en Android físico; compra mensual y Pro RevenueCat se acreditan en
 servidor. El reinicio confirma Pro y se identifica una aserción de Navigator
