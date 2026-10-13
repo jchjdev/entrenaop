@@ -423,7 +423,9 @@ class _AccessDetails extends StatelessWidget {
               'La contratación y restauración de compras todavía no están disponibles.',
             ),
           TextButton(
-            onPressed: () => context.push(
+            // Mi plan pertenece a la navegación principal ya abierta: apilarla
+            // de nuevo duplica la página del shell y sus claves de Navigator.
+            onPressed: () => context.go(
               access.isPro && offerContext.goalId != null
                   ? '/plan/goal/${offerContext.goalId}/training'
                   : '/plan',

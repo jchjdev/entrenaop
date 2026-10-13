@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**COM-015, 13/10/2026 · compra física y retorno a Mi plan:** Javier prueba Test
+Store en Android físico; compra mensual y Pro RevenueCat se acreditan en
+servidor. El reinicio confirma Pro y se identifica una aserción de Navigator
+al pulsar «Ir a Mi plan» desde Mi suscripción. Se reproduce en pruebas y se
+corrige: `go` regresa a la navegación principal sin apilar otro shell. Análisis
+limpio, 37 pruebas Pro y 768 de raíz correctas con la omisión web existente.
+Incluye compra confirmada → «Ya tienes Pro» → Mi plan. El único siguiente
+tramo continúa siendo la aceptación móvil: repetir retorno con el arreglo,
+comprobar respuestas de cancelación/error y restaurar. Free/Pro sigue abierto.
+[Estado y límites](PRO_LAUNCH.md).
+
 **COM-013, 13/10/2026 · primera integración de compras preparada:** SDK oficial
 10.15.2, precios del catálogo, compra/restauración y confirmación de servidor
 implementados para Test Store móvil debug. Se descartan respuestas de otra
@@ -9,13 +20,19 @@ Javier autoriza después el despliegue Dev: migración aplicada, dos funciones y
 webhook sandbox conectados, secretos solo en Supabase. TEST responde 200 y
 sin autorización ambas funciones responden 401. Una compra mensual simulada
 del proveedor verifica el evento INITIAL_PURCHASE y Pro canónico en servidor;
-se conservan los accesos manuales y la segunda cuenta Free. 139 migraciones
+se conservan los accesos manuales y, en ese primer ensayo, la segunda cuenta Free.
+La prueba posterior de Javier en Android físico genera INITIAL_PURCHASE para
+la secundaria a las 21:08 (Madrid), con Pro RevenueCat confirmado en servidor.
+También se comprueban RENEWAL y EXPIRATION de la compra inicial del CLI,
+conservando el Pro manual. El diálogo inglés corresponde al SDK Test Store.
+139 migraciones
 coincidentes y pruebas SQL de conciliación/cuotas correctas tras desplegar.
 Análisis limpio, 766 pruebas de raíz correctas y la omisión web
 existente; 18 pruebas de funciones correctas. Free/Pro sigue abierto. El único
 siguiente tramo es comprobar una compra/restauración desde la interfaz móvil
-debug antes de preparar las tiendas reales. No hay móvil conectado en Windows;
-la beta profile no utiliza Test Store.
+debug, incluidas respuesta visible de cancelación/error y restauración, antes
+de preparar las tiendas reales. El Android ya está conectado y se acredita
+la compra mensual en servidor; la beta profile no utiliza Test Store.
 El CLI oficial ya está autorizado y conectado únicamente a este proyecto;
 oferta y acceso `pro` están enlazados a mensual/anual. Precios EUR 3,99/29,99
 configurados y devueltos por el catálogo del SDK con configuración española.

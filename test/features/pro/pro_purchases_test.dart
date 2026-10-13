@@ -11,10 +11,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/core/router/app_router.dart';
+import 'package:entrenaop/core/router/material_app_route.dart';
+import 'package:entrenaop/features/pro/presentation/pages/pro_pages.dart';
 import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
 import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../support/account_auth_fixture.dart';
 
@@ -78,6 +81,78 @@ class Store extends ProStoreGateway {
 }
 
 void main() {
+  for (final path in ['/pro', '/pro/subscription']) {
+    testWidgets(
+      'volver a Mi plan desde $path no duplica la navegación principal',
+      (tester) async {
+        final repository = _Repository();
+        final rootKey = GlobalKey<NavigatorState>();
+        final router = GoRouter(
+          navigatorKey: rootKey,
+          initialLocation: '/profile',
+          routes: [
+            StatefulShellRoute.indexedStack(
+              pageBuilder: (_, state, shell) =>
+                  MaterialPage<Object?>(key: state.pageKey, child: shell),
+              branches: [
+                StatefulShellBranch(
+                  routes: [
+                    materialAppRoute(
+                      path: '/plan',
+                      builder: (_, _) =>
+                          const Scaffold(body: Text('Mi plan abierto')),
+                    ),
+                  ],
+                ),
+                StatefulShellBranch(
+                  routes: [
+                    materialAppRoute(
+                      path: '/profile',
+                      builder: (_, _) =>
+                          const Scaffold(body: Text('Perfil abierto')),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            materialAppRoute(
+              path: '/pro',
+              builder: (_, _) => ProOfferPage(
+                purchases: repository,
+                loadAccess: () async => access(pro: repository.buys > 0),
+              ),
+            ),
+            materialAppRoute(
+              path: '/pro/subscription',
+              builder: (_, _) =>
+                  ProSubscriptionPage(loadAccess: () async => access()),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        router.push<void>(path);
+        await tester.pumpAndSettle();
+        if (path == '/pro') {
+          final buy = find.text('Probar por 29,99 US\$/año');
+          await tester.ensureVisible(buy);
+          await tester.tap(buy);
+          await tester.pumpAndSettle();
+          expect(find.text('Ya tienes Pro'), findsOneWidget);
+          expect(find.text('Seguir con Free'), findsNothing);
+          expect(find.text('Probar por 29,99 US\$/año'), findsNothing);
+        }
+        final returnToPlan = find.text('Ir a Mi plan');
+        await tester.ensureVisible(returnToPlan);
+        await tester.tap(returnToPlan);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(router.state.uri.path, '/plan');
+        expect(find.text('Mi plan abierto'), findsOneWidget);
+      },
+    );
+  }
   for (final path in ['/pro', '/pro/subscription']) {
     testWidgets('cambiar cuenta en $path descarta el estado Pro anterior', (
       tester,

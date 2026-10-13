@@ -35,11 +35,27 @@ La beta profile conserva los accesos manuales y contratación deshabilitada.
 - Una compra mensual simulada con el CLI oficial para la cuenta principal de
   pruebas genera `INITIAL_PURCHASE` y el servidor guarda `active=true`,
   `environment=SANDBOX`, `store=test_store` y la vigencia canónica del proveedor.
-  La concesión manual principal se conserva; la segunda cuenta sigue Free.
+  La concesión manual principal se conserva; en ese primer ensayo la segunda
+  cuenta sigue Free.
   No acredita compra/restauración desde la interfaz nativa ni ventas reales.
 - Al vencer los cinco minutos de la compra mensual simulada, el reloj SQL deja
   de contar esa compra como fuente válida; la cuenta conserva su Pro manual.
   Esto comprueba vencimiento por fecha, no entrega de un evento EXPIRATION.
+- En la comprobación posterior llegan RENEWAL y EXPIRATION de la compra inicial:
+  la fuente RevenueCat queda inactiva y se conserva el Pro manual.
+- Javier ejecuta después la app en Android físico (Samsung SM-A326B, Android 13)
+  y utiliza las tres opciones del simulador. INITIAL_PURCHASE de la cuenta
+  secundaria llega el 13/10 a las 21:08 (Madrid); el servidor confirma Pro por
+  RevenueCat, SANDBOX, producto mensual. No hay cobro real. El texto pegado solo
+  contiene logs de ventanas Android: respuesta visible de error/cancelación,
+  pantalla final de Pro y restauración aún no quedan verificadas.
+- Javier confirma Pro tras reiniciar y concreta el error rojo en Perfil →
+  Mi suscripción → Ir a Mi plan. COM-015 reproduce la clave de Navigator
+  duplicada y corrige el acceso para usar `go` sin apilar otro shell. Análisis
+  limpio, 37 pruebas Pro y 768 de raíz correctas, con la omisión web existente.
+  La regresión incluye compra confirmada y actualización de oferta a Pro.
+  Repetir ese retorno en el móvil tras reiniciar con el código actualizado;
+  cancelación/error visibles y restauración continúan pendientes.
 - Historial Dev: 139 migraciones coincidentes. Las pruebas SQL de conciliación
   y cuotas se repiten tras desplegar, con ROLLBACK.
 
@@ -127,8 +143,8 @@ La configuración local Windows está preparada en `.env.revenuecat-dev.json`,
 ignorada por Git, con `APP_ENV=development` y la clave pública Test Store.
 No incluye claves privadas. En otro ordenador debe configurarse allí también.
 La APK debug con esta configuración compila correctamente y queda en
-`build/app/outputs/flutter-apk/app-debug.apk`; no se ha instalado ni ejecutado
-en un móvil. La compilación iOS requiere el Mac.
+`build/app/outputs/flutter-apk/app-debug.apk`. Javier realiza posteriormente
+la prueba en Android físico. La compilación iOS requiere el Mac.
 
 Ejemplo, conservando además la configuración Supabase Dev del proyecto:
 
@@ -141,8 +157,8 @@ configuración **EntrenaOP Compras · móvil debug Dev** en Ejecutar y depurar;
 F5 arranca en debug con ese archivo de configuración. Elegir Chrome o el
 perfil de rendimiento mantiene las compras deshabilitadas. En la comprobación
 Windows del 13/10, Flutter no detecta móviles conectados ni emuladores Android
-creados: Chrome no representa un emulador Android. Se necesita conectar un
-móvil o crear/arrancar un AVD antes de completar la prueba.
+creados; posteriormente se conecta el Samsung para la compra. Chrome no
+representa un emulador Android.
 
 El SDK no se configura en web, profile, release o producción aunque exista la
 clave. Test Store no sirve para la beta profile, TestFlight ni pistas Play.
@@ -167,8 +183,10 @@ vigente de la cuenta principal puede ocultarlo. Comprobar en móvil debug:
 
 El recorrido de receipt Test Store → webhook → consulta canónica → SQL está
 comprobado con una compra simulada, pero no reemplaza este recorrido nativo.
-El ordenador Windows no tiene ningún móvil conectado en la comprobación del
-13/10/2026. Antes de las tiendas reales, acordar la política de
+La prueba móvil posterior acredita compra mensual y estado del servidor, pero
+todavía no restaura ni documenta las respuestas visibles de todas las opciones.
+El diálogo inglés de tres botones pertenece al SDK Test Store; los mensajes
+posteriores de la app son españoles. Antes de las tiendas reales, acordar la política de
 restauración/transferencia y validar sus sandboxes con SDK/configuración nativos.
 No hay reconciliación periódica implementada: este tramo concilia por
 compra/restauración, comprobación explícita y eventos autenticados. La estrategia

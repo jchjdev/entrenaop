@@ -10,7 +10,14 @@ dos funciones están desplegadas; Dev habilita SANDBOX. El webhook autenticado
 responde HTTP 200 y las peticiones sin autorización HTTP 401. Una compra mensual
 simulada con el CLI oficial genera INITIAL_PURCHASE y el servidor verifica
 su estado canónico y guarda Pro de Test Store, sin cobro. El recorrido de
-compra/restauración desde la interfaz nativa sigue pendiente.
+aceptación nativa completa sigue pendiente. En la prueba posterior de Android
+físico, Javier utiliza los tres botones del simulador y se acredita en servidor
+una compra mensual para la cuenta secundaria, ahora Pro de origen RevenueCat.
+El registro aportado no acredita por separado las respuestas visibles de
+cancelación/error ni la pantalla final; tampoco acredita restauración. Javier
+confirma Pro tras reiniciar y aporta un error de navegación al pulsar «Ir a
+Mi plan» desde Mi suscripción; COM-015 lo reproduce y corrige, como se detalla
+a continuación.
 El [recorrido de configuración](../tools/payments_dev/README.md) concreta el
 siguiente paso. El proyecto **EntrenaOP** (`bb91cf72`), Test Store y el acceso
 `pro` con su catálogo están verificados. Javier autoriza el CLI oficial y su
@@ -19,8 +26,8 @@ canónicos mensual/anual tienen **3,99 EUR y 29,99 EUR** y el catálogo público
 utilizado por el SDK devuelve estos precios con configuración española. La
 oferta `default` conserva los dos paquetes correctos y el producto auxiliar
 sin asociaciones está archivado. Los precios USD de ejemplo permanecen como
-alternativa en Test Store; no son tarifas comerciales aprobadas. Falta verificar
-la compra nativa. Las comprobaciones anteriores
+alternativa en Test Store; no son tarifas comerciales aprobadas. Falta completar
+la aceptación nativa. Las comprobaciones anteriores
 conservan sus fechas y alcance.
 
 **Bloque abierto · COM-010, aclarado por Javier.** Este chat continúa dedicado
@@ -31,12 +38,39 @@ interfaz y gestión administrativa de pruebas están verificados en desarrollo;
 la aceptación nativa de compras sigue pendiente dentro de este mismo trabajo. La recepción del
 nuevo correo de alta y las pruebas reales en móvil conservan sus límites conocidos.
 La cuenta principal conserva su Pro manual y recibe la transacción sandbox de
-verificación; la secundaria sigue Free. La compra mensual de Test Store dura
-cinco minutos en esta comprobación; no representa un mes de acceso real.
-Tras esos cinco minutos se comprueba que el reloj SQL descarta la compra
-caducada, conservando el Pro manual. No acredita un evento EXPIRATION.
-La APK debug con clave pública Test Store compila correctamente; no hay
-dispositivo conectado para instalarla y completar la aceptación nativa.
+verificación. La secundaria nace Free y su prueba física posterior genera
+INITIAL_PURCHASE el 13/10 a las 21:08, hora de Madrid; la consulta posterior
+confirma Pro de origen RevenueCat, SANDBOX y el producto mensual. El móvil
+conectado es un Samsung SM-A326B con Android 13. No se realiza ningún cobro.
+La compra mensual de Test Store renueva cada cinco minutos hasta finalizar su
+ciclo acelerado; no representa un mes de acceso real. La comprobación inicial
+del reloj SQL descartó una vigencia vencida. Posteriormente también se reciben
+RENEWAL y EXPIRATION de esa compra inicial; el estado queda inactivo y el Pro
+manual se conserva. La APK debug con clave pública Test Store compila y Javier
+ejecuta después la app en el móvil. Restauración, respuesta visible de cada
+opción y aceptación completa de tiendas reales siguen pendientes.
+
+La ventana «Test Store Purchase» tiene textos ingleses literales en el SDK
+Android de RevenueCat: «Test valid purchase», «Test failed purchase» y «Cancel».
+Es el simulador del proveedor; no se modifica el SDK ni se cambia la traducción
+del producto para ocultarlo. Los estados posteriores de EntrenaOP son españoles.
+[Implementación oficial del diálogo](https://github.com/RevenueCat/purchases-android/blob/main/purchases/src/main/kotlin/com/revenuecat/purchases/simulatedstore/SimulatedStoreBillingWrapper.kt).
+
+### Retorno a Mi plan · COM-015 · 13/10/2026
+
+«Ir a Mi plan» apilaba otra navegación principal mediante `push`, duplicando
+la clave de página de `StatefulShellRoute` y provocando la aserción
+`!keyReservation.contains(key)` de Navigator. El acceso de servidor estaba
+conservado: el reinicio mostraba Pro. El botón usa ahora `go` para acceder a la
+navegación principal o a la preparación contextual, sin apilar otro shell.
+
+La regresión reproduce la aserción antes del arreglo y pasa después desde
+Mi suscripción y desde la oferta. El segundo recorrido compra como Free,
+actualiza a «Ya tienes Pro» después de confirmar en servidor, retira los
+controles de compra y abre Mi plan sin reiniciar. Análisis limpio, 37 pruebas
+Pro y 768 de raíz correctas, con una omisión web preexistente. El arreglo debe
+repetirse en el Android físico; no acredita todavía restauración ni todos los
+estados visibles del simulador.
 
 Javier pide probar el negocio con cuentas reales y retoma Free con 8 ejercicios
 propios y 4 sesiones personales activas. Esta fase implementa derechos de
