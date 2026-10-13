@@ -136,6 +136,14 @@ Ejemplo, conservando además la configuración Supabase Dev del proyecto:
 flutter run --debug --dart-define-from-file=.env.revenuecat-dev.json
 ```
 
+En VS Code, seleccionar un Android/iPhone en el selector de dispositivos y la
+configuración **EntrenaOP Compras · móvil debug Dev** en Ejecutar y depurar;
+F5 arranca en debug con ese archivo de configuración. Elegir Chrome o el
+perfil de rendimiento mantiene las compras deshabilitadas. En la comprobación
+Windows del 13/10, Flutter no detecta móviles conectados ni emuladores Android
+creados: Chrome no representa un emulador Android. Se necesita conectar un
+móvil o crear/arrancar un AVD antes de completar la prueba.
+
 El SDK no se configura en web, profile, release o producción aunque exista la
 clave. Test Store no sirve para la beta profile, TestFlight ni pistas Play.
 La compra utiliza el UUID de Supabase como App User ID, nunca el correo.

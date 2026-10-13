@@ -20,6 +20,16 @@
       "program": "lib/main.dart"
     },
     {
+      "name": "EntrenaOP Compras · móvil debug Dev",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "toolArgs": [
+        "--dart-define-from-file=${workspaceFolder}/.env.revenuecat-dev.json"
+      ]
+    },
+    {
       "name": "EntrenaOP App · rendimiento (profile)",
       "type": "dart",
       "request": "launch",
