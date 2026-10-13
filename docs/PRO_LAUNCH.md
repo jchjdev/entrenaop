@@ -42,6 +42,10 @@ verificación. La secundaria nace Free y su prueba física posterior genera
 INITIAL_PURCHASE el 13/10 a las 21:08, hora de Madrid; la consulta posterior
 confirma Pro de origen RevenueCat, SANDBOX y el producto mensual. El móvil
 conectado es un Samsung SM-A326B con Android 13. No se realiza ningún cobro.
+Javier pide después dejar esa cuenta Free para repetir la prueba. A las 21:33
+vence su último periodo y no habrá más renovaciones; la consulta de servidor
+posterior devuelve `tier=free`, sin fuente de Pro. No se borran compras ni
+historial ni se sustituye el estado canónico con una revocación SQL manual.
 La compra mensual de Test Store renueva cada cinco minutos hasta finalizar su
 ciclo acelerado; no representa un mes de acceso real. La comprobación inicial
 del reloj SQL descartó una vigencia vencida. Posteriormente también se reciben

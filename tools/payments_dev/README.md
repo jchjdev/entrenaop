@@ -56,6 +56,10 @@ La beta profile conserva los accesos manuales y contratación deshabilitada.
   La regresión incluye compra confirmada y actualización de oferta a Pro.
   Repetir ese retorno en el móvil tras reiniciar con el código actualizado;
   cancelación/error visibles y restauración continúan pendientes.
+- Javier solicita devolver la cuenta secundaria a Free. La vigencia de su
+  compra mensual termina el 13/10 a las 21:33 (Madrid), sin más renovaciones;
+  el servidor confirma `tier=free` y fuente nula después del vencimiento.
+  Se conserva el historial y no se modifica a mano una compra aún vigente.
 - Historial Dev: 139 migraciones coincidentes. Las pruebas SQL de conciliación
   y cuotas se repiten tras desplegar, con ROLLBACK.
 
