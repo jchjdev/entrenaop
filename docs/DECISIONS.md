@@ -29,6 +29,7 @@ La selección de nuevas semanas de carrera se revisa en PLAN-022, sobre PLAN-020
 | COM-012 | 2026-10-13 | Proveedor de suscripciones y continuidad de datos | Acordada; configuración e integración pendientes | Javier acepta stores + RevenueCat para suscripciones y mantener Supabase para los datos, buscando eficiencia, bajo coste inicial y crecimiento medido. RevenueCat estándar no cobra por debajo del umbral de 2.500 USD mensuales registrados; al superarlo cobra el 1 % del total antes de comisiones e impuestos. Se empieza con pruebas gratuitas; Supabase Pro desde 25 USD/mes es una previsión para lanzamiento, no una contratación autorizada ahora. PostgreSQL y los contratos existentes se conservan; capacidad y consumo se comprobarán antes de dimensionar producción. La elección sustituye la recomendación pendiente del proveedor en COM-011. No hay cuentas externas verificadas, SDK instalado ni cobros activos. | `docs/PRO_LAUNCH.md` |
 | COM-011 | 2026-10-13 | Preparación de la integración de compras | Preparación documentada; configuración e implementación pendientes | Javier pide preparar los pagos y confirma que tiene una cuenta Apple Developer con la membresía caducada. Se propone comenzar con un proyecto RevenueCat de desarrollo y Test Store, sin conectar tiendas todavía, y después validar sus sandboxes reales. El contrato propuesto conserva los derechos de Supabase, vincula compras al UUID de cuenta y separa compras de las concesiones administrativas de prueba. No hay proyecto externo verificado, SDK instalado, webhook desplegado ni cobros habilitados. | `docs/PRO_LAUNCH.md` |
 | COM-010 | 2026-10-10; corregida 2026-10-13 | Alcance de Free/Pro y pagos | Bloque abierto; cierre provisional rechazado | Javier reserva el producto para entrenadores a otro chat y rechaza expresamente dar por cerrado Free/Pro o aplazar los pagos a otro bloque. La integración de compras pertenece al trabajo actual de este chat. Los accesos, cuotas e interfaz anteriores están implementados, pero no completan las suscripciones. La preparación técnica puede comenzar con pruebas mientras se aclaran los trámites para vender; no hay cobros reales ni validación de tiendas implementados. | `docs/PRO_LAUNCH.md`, `docs/ROADMAP.md` |
+| UI-028 | 2026-10-10 | Barra móvil y vista de sesión dedicada | Implementada y verificada | Javier señala que Biblioteca y Evolución se tocan en su iPhone 12 y pide ocultar los accesos inferiores en la vista de sesión. La barra reserva margen y adapta solo sus etiquetas al ancho/texto ampliado, conservando nombres completos, cinco destinos, áreas táctiles y semántica. Las vistas previas de sesiones de biblioteca e inicial se abren en el navegador raíz, igual que el ejecutor, conservando URLs y retorno al origen; una entrada directa de la sesión inicial ofrece Biblioteca al volver. Análisis limpio y 752 pruebas completas correctas, con la omisión web existente; capturas con fuentes/iconos reales revisadas a 390 y 320 px. Sin cambios compartidos, admin, datos, permisos, entrenamiento, sonido o vibración. | `docs/VISUAL_DESIGN.md` |
 | COM-009 | 2026-10-10 | Oferta según acceso vigente | Implementada en desarrollo | Javier señala que «Seguir con Free» es incoherente para una cuenta Pro. La ruta /pro consulta los derechos de servidor: Pro ve «Ya tienes Pro», vigencia y acceso a Mi plan o a su preparación de origen, sin precios ni invitación a pagar o seguir en Free. Mi suscripción ofrece «Conocer Pro» solo a Free; carga y error no se interpretan como Free. No se alteran precios, cuotas, concesiones ni pagos. | `docs/PRO_LAUNCH.md` |
 | MAIL-002 | 2026-10-10 | Confirmación de alta y error entre navegadores | Plantilla aplicada y comprobada en desarrollo; recepción del nuevo HTML pendiente | Javier aporta un correo de alta en inglés y un error seguido de reenvío sin correo. Se traducen asunto y HTML de confirmación en Dev conservando ConfirmationURL y PKCE; consulta remota acredita coincidencia exacta y recuperación intacta. La cuenta indicada ya estaba confirmada, aunque no había iniciado sesión. El reenvío aceptado no garantiza envío si la cuenta ya está confirmada; la interfaz explica esta posibilidad y permite iniciar sesión, recuperar contraseña o solicitar confirmación según el caso. No se consulta públicamente el estado de otras cuentas ni se cambian SMTP, límites, MFA o producción. El agente no envía correos ni utiliza la contraseña del usuario. | `docs/REFRESH_ACCOUNT_2026_10_08.md`, `tools/account_access_dev/README.md` |
 | COM-008 | 2026-10-10 | Acceso real Free/Pro y pruebas administrativas | Implementada y verificada en desarrollo | Javier pide distinguir cuentas reales para probar el negocio y retoma la propuesta 8 ejercicios/4 sesiones para Free. Solicita usar su cuenta registrada para Pro y plantea gestionar accesos desde admin. Se implementan concesiones temporales de servidor, separadas de admin y de profiles.role; Free admite 8 ejercicios propios y 4 familias personales activas, Pro amplía esas cuotas y autoriza generación/adaptación. Caducar conserva datos, edición, uso e historial y detiene nuevas generaciones. Admin puede conceder/retirar únicamente accesos de prueba en un entorno habilitado por el operador; no hay selector local, compra simulada, suscripción de tienda ni cobros. Se conserva propiedad antes de comprobar Pro y el catálogo oficial no consume cuotas personales. Análisis de ambas apps limpio; 737 pruebas del deportista, 94 del admin y 16 SQL transaccionales correctas; 138 migraciones coincidentes en Dev. La cuenta solicitada recibe 30 días de Pro de prueba. La conexión de pagos sigue pendiente. | `docs/PRO_LAUNCH.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` |
@@ -583,3 +584,35 @@ Una entrada debe ser concreta y comprobable. Si todavía faltan datos, se
 registra la pregunta como pendiente en lugar de completar huecos con una
 suposición. Los detalles, fórmulas, fuentes y límites pertenecen al documento de
 dominio enlazado; este índice debe seguir siendo breve.
+
+## IOS-003 · Instalación en iPhone y límite de HAPT-001 · 10/10/2026
+
+Javier pide instalar en su iPhone la versión incorporada desde Windows.
+Se configura su equipo personal de Apple y se instala en Release con
+Supabase de desarrollo, manteniendo el esquema compartido de desarrollo
+en Debug. La instalación y ejecución física no cierran la validación de
+los avisos: Javier comunica ausencia de vibración en el iPhone 12.
+Se conserva como incidencia pendiente de diagnóstico; la confirmación
+física de Samsung en HAPT-001 no acredita iOS. Los «colapsos» anunciados
+requieren todavía descripción o logs. No se modifican producción, datos,
+permisos ni patrones para justificar una causa aún desconocida.
+
+Configuración y comprobaciones: `docs/IOS_DEVELOPMENT.md`. Incidencia y
+límites de avisos: `docs/WORKOUT_AUDIO_2026_10_08.md`.
+
+## HAPT-002 · Avisos iOS mediante Core Haptics · 10/10/2026
+
+Javier pide resolver ahora la ausencia de vibración en el iPhone. Los avisos
+y su prueba manual iOS sustituyen los efectos de interfaz de Flutter por
+patrones finitos de Core Haptics, a través del canal nativo ya existente.
+Se mantienen las duraciones acordadas en Android, la separación del sonido,
+el funcionamiento solo en primer plano y la ausencia de repetición al volver.
+No se añaden paquetes, permisos de notificación iOS ni cambios en Android,
+web, datos o producción. Una falta de motor o un error se comunica como
+fallo, sin acreditar percepción física por la mera aceptación de la API.
+
+Implementación y verificaciones automáticas completas. Javier confirma los
+dos pulsos de la prueba manual en su iPhone 12, tras instalar la versión
+corregida con Supabase de desarrollo, y confirma después la sincronía
+percibida entre vibración y sonido en su prueba. Contrato y comprobaciones
+en `docs/WORKOUT_AUDIO_2026_10_08.md`.

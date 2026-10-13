@@ -17,7 +17,13 @@ class WorkoutPreviewPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           tooltip: 'Volver',
-          onPressed: context.pop,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/library');
+            }
+          },
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         title: const Text('Vista de la sesión'),

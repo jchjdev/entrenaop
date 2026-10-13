@@ -189,6 +189,26 @@ class AppRouter {
           path: '/sign-up',
           builder: (context, state) => const SignUpPage(),
         ),
+        materialAppRoute(
+          path: '/plan/starter-session',
+          builder: (context, state) => BlocProvider(
+            create: (_) => sl<WorkoutPreviewCubit>(
+              param1: GetStarterWorkoutUseCase.starterTemplateId,
+            ),
+            child: const WorkoutPreviewPage(routeBase: '/plan/starter-session'),
+          ),
+          routes: [
+            _workflowRoute(
+              path: 'active/:executionId',
+              builder: (context, state) => BlocProvider(
+                create: (_) => sl<ActiveWorkoutCubit>(
+                  param1: state.pathParameters['executionId']!,
+                ),
+                child: ActiveWorkoutPage(timerStore: sl(), cueService: sl()),
+              ),
+            ),
+          ],
+        ),
         StatefulShellRoute.indexedStack(
           pageBuilder: (context, state, navigationShell) =>
               MaterialPage<Object?>(
@@ -596,31 +616,6 @@ class AppRouter {
                   ],
                 ),
                 materialAppRoute(
-                  path: '/plan/starter-session',
-                  builder: (context, state) => BlocProvider(
-                    create: (_) => sl<WorkoutPreviewCubit>(
-                      param1: GetStarterWorkoutUseCase.starterTemplateId,
-                    ),
-                    child: const WorkoutPreviewPage(
-                      routeBase: '/plan/starter-session',
-                    ),
-                  ),
-                  routes: [
-                    _workflowRoute(
-                      path: 'active/:executionId',
-                      builder: (context, state) => BlocProvider(
-                        create: (_) => sl<ActiveWorkoutCubit>(
-                          param1: state.pathParameters['executionId']!,
-                        ),
-                        child: ActiveWorkoutPage(
-                          timerStore: sl(),
-                          cueService: sl(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                materialAppRoute(
                   path: '/plan/library',
                   builder: (context, state) => BlocProvider(
                     create: (_) => sl<WorkoutLibraryCubit>(),
@@ -649,6 +644,7 @@ class AppRouter {
                     ),
                     materialAppRoute(
                       path: ':templateId',
+                      parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) {
                         final templateId = state.pathParameters['templateId']!;
                         return BlocProvider(

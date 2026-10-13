@@ -59,6 +59,36 @@ y fuera del diseño inicial. Las maquetas de conversación no prueban código re
 accesibilidad, derechos comerciales ni compras. COM-006 incorpora la interfaz
 Flutter, con su alcance y verificación en PRO_LAUNCH.md.
 
+## Barra móvil y vista de sesión dedicada · UI-028 · 10/10/2026
+
+Javier aporta una captura de su iPhone 12 donde Biblioteca y Evolución casi
+se tocan. Las cinco pestañas conservan sus nombres, iconos, selección y
+destinos. La barra reserva 6 px a cada lado de cada etiqueta y mide la más
+ancha con el estilo seleccionado para adaptar el tamaño solo cuando falta
+espacio. Se conserva el límite de ampliación propio de NavigationBar; el
+texto del contenido no se reduce. Los nombres permanecen completos en una
+línea, con las mismas áreas táctiles, etiquetas accesibles y tooltips.
+
+La petición de ocultar la barra se aplica a «Vista de la sesión», tanto en
+Biblioteca como en la sesión inicial. Estas consultas se abren en el navegador
+raíz mediante go_router, conservando sus URLs y los hijos de edición/ejecución.
+No muestran barra inferior ni rail. «Volver» recupera el origen de la pila;
+una entrada directa de la sesión inicial, sin página anterior, abre Biblioteca.
+El ejecutor ya era una pantalla dedicada y conserva su protección de salida.
+Este criterio amplía UI-007 a la vista previa sin añadir un aviso de cambios
+pendientes a una consulta ni modificar datos o reglas del entrenamiento.
+
+Verificación: análisis limpio, 65 pruebas relacionadas y 752 completas correctas
+con la omisión web existente. Regresiones a 320/390 px y texto 1×/2× comprueban
+etiquetas completas y separadas al seleccionar Biblioteca/Evolución. El router
+real verifica vista previa sin barra/rail, enlaces directos y retorno conservando
+búsqueda en móvil/escritorio. Tres capturas adicionales de widgets actuales con
+fuentes e iconos reales se revisan a 390 px (1×/1,3×) y 320 px (2×), sin cuentas
+ni red. Xcode compila, instala y ejecuta también la versión Release sin depurador
+en el iPhone 12 de Javier con Supabase de desarrollo; el esquema compartido
+vuelve a Debug después. La revisión visual de estos dos ajustes en el dispositivo
+por Javier queda pendiente; no se confunde con las capturas de widgets.
+
 ## Accesos depurados · UI-026 · 10/10/2026
 
 Las tarjetas fotográficas de preparación mantienen su diseño y ofrecen una

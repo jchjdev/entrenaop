@@ -108,25 +108,53 @@ void main() {
     },
   );
 
-  test('iOS conserva los efectos del sistema sin canal Android', () async {
+  test(
+    'iOS usa el motor nativo para todos los hitos sin pedir permiso',
+    () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final cues = <String>[];
+      messenger.setMockMethodCallHandler(native, (call) async {
+        expect(call.method, 'signal');
+        cues.add(call.arguments as String);
+        return true;
+      });
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (_) async {
+        fail('Los avisos iOS no deben volver a los toques de interfaz');
+      });
+      expect(await PlatformWorkoutCueHaptics.needsPermission(), isFalse);
+      expect(await PlatformWorkoutCueHaptics.requestPermission(), isTrue);
+      for (final cue in WorkoutCue.values) {
+        await PlatformWorkoutCueHaptics.signal(cue);
+      }
+      await PlatformWorkoutCueHaptics.preview();
+      expect(cues, [
+        ...WorkoutCue.values.map((cue) => cue.name),
+        WorkoutCue.workFinished.name,
+      ]);
+    },
+  );
+
+  test('iOS sin motor comunica que la prueba no está disponible', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    final effects = <String>[];
+    messenger.setMockMethodCallHandler(native, (_) async => false);
+    await expectLater(
+      PlatformWorkoutCueHaptics.preview(),
+      throwsUnsupportedError,
+    );
+  });
+
+  test('un error de Core Haptics se propaga sin simular éxito', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     messenger.setMockMethodCallHandler(native, (_) async {
-      fail('iOS no debe usar el adaptador Android');
+      throw PlatformException(code: 'haptics_failed');
     });
-    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      expect(call.method, 'HapticFeedback.vibrate');
-      effects.add(call.arguments as String);
-      return null;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (_) async {
+      fail('No se debe ocultar el error con otro efecto de interfaz');
     });
-    await PlatformWorkoutCueHaptics.signal(WorkoutCue.preparationTick);
-    await PlatformWorkoutCueHaptics.preview();
-    await PlatformWorkoutCueHaptics.signal(WorkoutCue.halfway);
-    expect(effects, [
-      'HapticFeedbackType.selectionClick',
-      'HapticFeedbackType.mediumImpact',
-      'HapticFeedbackType.lightImpact',
-    ]);
+    await expectLater(
+      PlatformWorkoutCueHaptics.preview(),
+      throwsA(isA<PlatformException>()),
+    );
   });
 
   test('un diagnóstico ausente no impide emitir el aviso de Android', () async {

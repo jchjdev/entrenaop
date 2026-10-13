@@ -29,12 +29,18 @@ class PlatformWorkoutCueHaptics {
     debugPrint(
       'EntrenaOPVibration: plataforma=${defaultTargetPlatform.name}, web=$kIsWeb',
     );
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
+      return;
+    }
     try {
       final info = await _channel
           .invokeMapMethod<String, dynamic>('diagnostics')
           .timeout(const Duration(seconds: 2));
-      debugPrint('EntrenaOPVibration: diagnóstico Android=$info');
+      debugPrint(
+        'EntrenaOPVibration: diagnóstico ${defaultTargetPlatform.name}=$info',
+      );
     } catch (error) {
       // El diagnóstico nunca impide probar el motor, incluso en un APK que
       // aún conserve el canal nativo anterior.
@@ -43,9 +49,12 @@ class PlatformWorkoutCueHaptics {
   }
 
   static Future<void> signal(WorkoutCue cue) async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       // Los avisos del reloj necesitan pulsos perceptibles, no los efectos
-      // de teclado de HapticFeedback, sujetos al ajuste de respuesta táctil.
+      // de interfaz de HapticFeedback. Cada plataforma conserva su motor y
+      // sus permisos; iOS usa Core Haptics sin pedir notificaciones.
       final available = await _channel.invokeMethod<bool>('signal', cue.name);
       if (kDebugMode) {
         debugPrint(
