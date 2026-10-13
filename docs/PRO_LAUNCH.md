@@ -1,12 +1,16 @@
 # Pro: interfaz inicial y conexión de pagos
 
-## Estado actual · COM-013 · 13/10/2026
+## Estado actual · COM-013/014 · 13/10/2026
 
 La integración inicial de Test Store existe en código: SDK móvil, catálogo,
 compra/restauración y confirmación por servidor. Se han comprobado los contratos
-con pruebas automatizadas y SQL transaccional en Dev. No está conectada todavía
-al backend del proyecto RevenueCat de Javier ni desplegada en Supabase; no acredita una
-compra completa del proveedor. La configuración queda cerrada por defecto.
+con pruebas automatizadas y SQL transaccional en Dev. Javier autoriza después
+crear la clave privada y conectar exclusivamente desarrollo. La migración y las
+dos funciones están desplegadas; Dev habilita SANDBOX. El webhook autenticado
+responde HTTP 200 y las peticiones sin autorización HTTP 401. Una compra mensual
+simulada con el CLI oficial genera INITIAL_PURCHASE y el servidor verifica
+su estado canónico y guarda Pro de Test Store, sin cobro. El recorrido de
+compra/restauración desde la interfaz nativa sigue pendiente.
 El [recorrido de configuración](../tools/payments_dev/README.md) concreta el
 siguiente paso. El proyecto **EntrenaOP** (`bb91cf72`), Test Store y el acceso
 `pro` con su catálogo están verificados. Javier autoriza el CLI oficial y su
@@ -16,7 +20,7 @@ utilizado por el SDK devuelve estos precios con configuración española. La
 oferta `default` conserva los dos paquetes correctos y el producto auxiliar
 sin asociaciones está archivado. Los precios USD de ejemplo permanecen como
 alternativa en Test Store; no son tarifas comerciales aprobadas. Falta verificar
-la compra nativa y la conciliación externa. Las comprobaciones anteriores
+la compra nativa. Las comprobaciones anteriores
 conservan sus fechas y alcance.
 
 **Bloque abierto · COM-010, aclarado por Javier.** Este chat continúa dedicado
@@ -24,8 +28,15 @@ a Free/Pro del deportista e incluye la conexión de pagos. Javier rechaza el cie
 provisional interpretado por el agente. El producto para entrenadores se estudiará
 en otro chat; enseñarles la beta no decide su modelo comercial. Accesos, cuotas,
 interfaz y gestión administrativa de pruebas están verificados en desarrollo;
-las compras siguen pendientes dentro de este mismo trabajo. La recepción del
+la aceptación nativa de compras sigue pendiente dentro de este mismo trabajo. La recepción del
 nuevo correo de alta y las pruebas reales en móvil conservan sus límites conocidos.
+La cuenta principal conserva su Pro manual y recibe la transacción sandbox de
+verificación; la secundaria sigue Free. La compra mensual de Test Store dura
+cinco minutos en esta comprobación; no representa un mes de acceso real.
+Tras esos cinco minutos se comprueba que el reloj SQL descarta la compra
+caducada, conservando el Pro manual. No acredita un evento EXPIRATION.
+La APK debug con clave pública Test Store compila correctamente; no hay
+dispositivo conectado para instalarla y completar la aceptación nativa.
 
 Javier pide probar el negocio con cuentas reales y retoma Free con 8 ejercicios
 propios y 4 sesiones personales activas. Esta fase implementa derechos de
@@ -85,12 +96,13 @@ Las respuestas comerciales de servidor mantienen códigos estables para que los
 editores distingan cuota de errores de red o permisos. Pro contextual abre la
 configuración existente y Free abre la oferta. Las tarjetas y fotos se conservan.
 
-### Límite pendiente: conexión externa y cobros
+### Límite pendiente: aceptación móvil y cobros
 
 COM-013 añade compra, restauración y conciliación de Test Store en código,
 con una fuente de derechos separada e idempotencia por evento y cuenta. Las
-concesiones manuales no cancelan ni editan una compra. Sin la configuración
-externa, los botones siguen deshabilitados. Tiendas reales, renovaciones y
+concesiones manuales no cancelan ni editan una compra. COM-014 conecta el backend
+Dev; los botones de prueba requieren móvil debug con clave pública configurada.
+Tiendas reales, renovaciones y
 reembolsos completos conservan su validación pendiente; no se habilitan cobros.
 
 ## Acuerdo · COM-006 · 10/10/2026
@@ -131,7 +143,7 @@ se recupera la simulación retirada en COM-003. Los precios son la oferta
 acordada, no productos obtenidos de una tienda. No habilitar cobros sin la
 siguiente fase.
 
-## Siguiente tramo del bloque abierto: conectar pagos a los derechos de servidor
+## Siguiente tramo del bloque abierto: comprobar compras desde el móvil
 
 COM-008 concreta e implementa las cuotas propuestas en COM-007. El
 [contrato vigente](PRODUCT.md) distingue recursos propios, revisiones, agenda e
@@ -140,7 +152,8 @@ historial; el contador visual refleja el servidor y no concede autorizaciones.
 Javier elige compras de App Store/Google Play y RevenueCat para coordinar
 productos y estados (COM-012). Supabase seguirá autorizando generación y
 continuidad adaptativa. COM-013 instala el SDK y prepara la integración inicial;
-la configuración externa y su prueba completa siguen pendientes.
+COM-014 conecta Dev y verifica una transacción del proveedor hasta SQL. La
+aceptación de compra/restauración desde la interfaz móvil sigue pendiente.
 
 ### Coste y crecimiento acordados · COM-012 · 13/10/2026
 
@@ -194,7 +207,8 @@ nativas móviles. No se añaden ahora pagos web ni una segunda app.
 Javier confirma que su membresía Apple Developer está caducada. Para la primera
 integración se prepara RevenueCat Test Store tras la elección de COM-012;
 el proyecto externo se ha creado como **EntrenaOP**, con Test Store. COM-013 añade el
-SDK, pero no activa compras externas. En el registro de RevenueCat, la pantalla
+SDK y COM-014 verifica después una compra simulada, sin ventas reales. En el
+registro de RevenueCat, la pantalla
 de tarjeta permite **Add it later**: no hace falta añadirla para estas pruebas.
 La tarjeta pagaría el servicio de RevenueCat; Apple/Google recibirán por separado
 la información bancaria para sus ingresos cuando se preparen ventas.
@@ -235,9 +249,9 @@ La prueba inicial no sustituye la validación posterior de las tiendas nativas.
 - La migración preparada almacena suscripciones separadas de `development_manual`, con
   proveedor, cuenta, entorno y vigencia. La autorización combinará las fuentes
   válidas; retirar un acceso administrativo no cancelará una compra de tienda.
-- Sandbox solo autorizará en Dev. El webhook validará proyecto/app y entorno;
-  los secretos de API y del webhook permanecerán en servidor. Todavía no se han
-  definido estos valores ni desplegado funciones.
+- Sandbox solo autoriza en Dev. El webhook valida app y entorno; los secretos
+  de API y del webhook permanecen en servidor. COM-014 configura estos valores
+  y despliega ambas funciones únicamente en el proyecto de desarrollo.
 - Cancelar la renovación conserva el acceso hasta su vencimiento. Caducar no
   borra recursos ni historial. El período de gracia solo conserva acceso hasta
   una fecha explícita del proveedor, sin añadir días propios. Un evento TRANSFER
@@ -256,8 +270,9 @@ La aceptación requiere probar compra mensual/anual, cancelación del diálogo,
 fallo, renovación/caducidad, restauración, cambio de cuenta, eventos duplicados
 y derechos confirmados en servidor. Se necesitará una cuenta Free sin concesión
 manual para observar la transición; el Pro de prueba vigente puede ocultarla.
-La aceptación completa con RevenueCat y los sandboxes sigue pendiente: las
-pruebas automatizadas del contrato no acreditan una compra real del proveedor.
+La aceptación móvil completa y los sandboxes reales siguen pendientes. La
+transacción Test Store de COM-014 acredita receipt y conciliación del proveedor,
+pero no el diálogo de compra/restauración de la interfaz nativa.
 
 Referencias oficiales revisadas el 13/10/2026:
 
@@ -304,19 +319,22 @@ Los mínimos iOS/SPM son compatibles por inspección, pero no se ha compilado iO
 desde Windows. El SDK añade una sola dependencia resuelta; admin y paquetes
 compartidos no consumen este paquete y no se modifican.
 
-Historial Dev: 138 migraciones aplicadas y solo la nueva `20261013000000` local
+Antes del despliegue de COM-014: 138 migraciones aplicadas y solo la nueva `20261013000000` local
 pendiente. Dos ejecuciones SQL correctas combinan su esquema y las pruebas
 `revenuecat_pro_reconciliation.sql` y `pro_access_and_free_quotas.sql` dentro de
 transacciones que terminan en ROLLBACK. Se verifican permisos, aislamiento,
 idempotencia, instantáneas antiguas, vigencia, cuotas y fuentes independientes.
 La consulta posterior confirma ausencia de la tabla nueva y cero usuarios de
-los fixtures. No se ha desplegado ni activado la integración.
+los fixtures. En esa comprobación aún no se había desplegado ni activado la
+integración. COM-014 acredita después 139 migraciones coincidentes, repite
+ambas pruebas con ROLLBACK y verifica el webhook y el estado canónico real.
 
 Capturas de widgets reales revisadas a 390 y 320 px, con precios USD ficticios,
 sin desbordamientos, en `build/visual-atlas-20261007/raw/` con prefijo
 `build_purchases_review_capture_test_dart`. Conservan marca, tarjetas y moneda
 del catálogo; no acreditan cuenta autenticada, SDK real ni compra del proveedor.
-La configuración externa y aceptación completa siguen pendientes en este bloque.
+Estas capturas se realizan antes de configurar el catálogo EUR y el backend
+de COM-014. La aceptación nativa completa sigue pendiente en este bloque.
 
 ## Verificación de interfaz · COM-009
 

@@ -423,8 +423,10 @@ acuerdan en COM-004 y el diseño se aprueba en COM-006. La contratación y las
 suscripciones de tienda siguen pendientes; [alcance y conexión de pagos](PRO_LAUNCH.md).
 COM-013 (13/10) añade código de compra/restauración Test Store y conciliación
 de servidor, comprobado con pruebas automatizadas y SQL con ROLLBACK en Dev.
-La configuración externa, despliegue y compra completa siguen pendientes;
-profile y ventas reales permanecen deshabilitados.
+El catálogo EUR y el backend Dev están conectados tras autorización específica.
+Una transacción simulada verifica receipt, webhook y conciliación en servidor;
+compra/restauración desde la interfaz nativa siguen pendientes. Profile y ventas
+reales permanecen deshabilitados.
 La aclaración de Javier del 07/10 distinguió el desarrollo deportivo del producto
 comercial; COM-008 implementa ahora su frontera de acceso para pruebas reales.
 Javier concreta a continuación la frontera
@@ -870,7 +872,7 @@ redefine sus reglas. Detalle en `PROGRAMA_ADAPTATIVO.md` y `VISUAL_DESIGN.md`.
 ## Integraciones futuras
 
 - Suscripciones: RevenueCat elegido en COM-012; COM-013 añade la integración
-  inicial de Test Store. Conexión externa y pruebas completas de iOS/Android
+  inicial de Test Store conectada en Dev. Pruebas completas de iOS/Android
   pendientes. Venta web y Windows quedan fuera de este primer tramo.
 - Salud móvil: Health Connect y las APIs vigentes del ecosistema Apple/Google;
   no diseñar una integración nueva alrededor del antiguo Google Fit.

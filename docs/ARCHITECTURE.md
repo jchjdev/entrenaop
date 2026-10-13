@@ -19,8 +19,13 @@ idempotentes; sus RPC de escritura solo permiten `service_role`. El reloj del
 servidor combina compras vigentes y concesiones manuales sin mezclarlas.
 Las escrituras serializan el perfil y rechazan instantáneas anteriores. Cancelar
 no adelanta la caducidad; una gracia requiere fecha explícita del proveedor.
-La integración empieza deshabilitada y todavía no está desplegada: las pruebas
-SQL de Dev terminan con ROLLBACK. Producción y los algoritmos se conservan.
+La migración empieza deshabilitada. Tras la autorización específica de Javier,
+se despliega en Dev junto con ambas funciones y se habilita SANDBOX. Las claves
+privadas quedan solo en el servidor; el cliente utiliza la clave pública Test
+Store en configuración local ignorada. Una transacción simulada del proveedor
+verifica webhook, consulta canónica y escritura del estado; las pruebas SQL se
+repiten con ROLLBACK y las 139 migraciones coinciden. La interfaz nativa completa
+sigue pendiente. Producción y los algoritmos se conservan.
 
 ## Derechos y cuotas Free/Pro · COM-008 · 10/10/2026
 

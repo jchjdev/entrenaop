@@ -4,11 +4,18 @@
 10.15.2, precios del catálogo, compra/restauración y confirmación de servidor
 implementados para Test Store móvil debug. Se descartan respuestas de otra
 cuenta y se evita repetir una compra pendiente. Las funciones y la migración
-se comprueban con pruebas de contrato; el SQL se ejecuta en Dev con ROLLBACK,
-sin despliegue. Análisis limpio, 766 pruebas de raíz correctas y la omisión web
+se comprueban con pruebas de contrato; el SQL se ejecuta en Dev con ROLLBACK.
+Javier autoriza después el despliegue Dev: migración aplicada, dos funciones y
+webhook sandbox conectados, secretos solo en Supabase. TEST responde 200 y
+sin autorización ambas funciones responden 401. Una compra mensual simulada
+del proveedor verifica el evento INITIAL_PURCHASE y Pro canónico en servidor;
+se conservan los accesos manuales y la segunda cuenta Free. 139 migraciones
+coincidentes y pruebas SQL de conciliación/cuotas correctas tras desplegar.
+Análisis limpio, 766 pruebas de raíz correctas y la omisión web
 existente; 18 pruebas de funciones correctas. Free/Pro sigue abierto. El único
-siguiente tramo es conectar el backend del proyecto **EntrenaOP** y comprobar
-una compra/restauración completa antes de preparar las tiendas reales.
+siguiente tramo es comprobar una compra/restauración desde la interfaz móvil
+debug antes de preparar las tiendas reales. No hay móvil conectado en Windows;
+la beta profile no utiliza Test Store.
 El CLI oficial ya está autorizado y conectado únicamente a este proyecto;
 oferta y acceso `pro` están enlazados a mensual/anual. Precios EUR 3,99/29,99
 configurados y devueltos por el catálogo del SDK con configuración española.
@@ -19,7 +26,7 @@ para las suscripciones y conservar Supabase/PostgreSQL para datos y autorizació
 Se mantiene el inicio con pruebas gratuitas y se dimensionará el servidor con
 mediciones antes de vender. Supabase Pro es una previsión de lanzamiento;
 no se contrata ahora. COM-013 concreta la implementación y la configuración
-posterior del proyecto externo; el backend sigue pendiente.
+posterior del proyecto externo y su backend Dev.
 [Elección, coste y preparación](PRO_LAUNCH.md).
 
 **COM-010/011, aclaración y preparación al 13/10/2026 · bloque abierto:** Javier
@@ -786,7 +793,7 @@ El ciclo objetivo continúa siendo:
 | Adaptación posterior | Continuidad automática en desarrollo | Resultados versionados, publicación al resolver las sesiones, recuperación, pausa/reanudación y revisión cuando corresponde; no exige publicar manualmente cada semana. |
 | Carrera especializada | Terminada en V1 manual | Creador de carrera continua, series y pirámides; repeticiones agrupadas al prescribir, registro individual obligatorio de parciales y recuperaciones, ritmo calculado, RPE, FC opcional, clasificación de cumplimiento e historial. No incluye GPS, mapas, zonas ni integraciones. |
 | Seguimiento profesional | No existe | No hay relación entrenador-cliente, asignación, anulación manual, panel profesional ni chat. |
-| Derechos y monetización | Accesos y cuotas Dev; primera integración de compras preparada | COM-008 verifica derechos temporales, cuotas Free 8/4 y gestión manual. COM-013 añade SDK Test Store y conciliación en código, comprobados sin despliegue. Conexión externa, compra completa y sandboxes nativos siguen pendientes. |
+| Derechos y monetización | Accesos y cuotas Dev; Test Store conectado al servidor | COM-008 verifica derechos temporales, cuotas Free 8/4 y gestión manual. COM-013 añade SDK Test Store y COM-014 despliega Dev y verifica receipt, webhook y Pro canónico con compra simulada. Aceptación móvil completa y sandboxes reales siguen pendientes. |
 
 ## Base completada
 

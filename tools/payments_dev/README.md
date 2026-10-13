@@ -1,8 +1,9 @@
-# Compras de prueba · COM-013
+# Compras de prueba · COM-013/014
 
 El código está preparado para RevenueCat Test Store y Supabase Dev. El proyecto
-externo **EntrenaOP**, `bb91cf72`, está creado y verificado. No hay
-funciones/migración desplegadas ni cobros activos.
+externo **EntrenaOP**, `bb91cf72`, está creado y conectado a Supabase Dev. La
+migración y las dos funciones están desplegadas; SANDBOX está habilitado solo
+en Dev. No hay cobros reales activos.
 La beta profile conserva los accesos manuales y contratación deshabilitada.
 
 ## Estado externo comprobado el 13/10/2026
@@ -25,7 +26,22 @@ La beta profile conserva los accesos manuales y contratación deshabilitada.
 - Javier autoriza OAuth del CLI oficial 0.1.4 y guardar su sesión local,
   limitado al proyecto EntrenaOP. La sesión está conectada y los precios EUR
   actualizados. El identificador API es `projbb91cf72`, distinto del ID del panel.
-  No hay conexión ni lectura de Gmail. La conciliación del servidor sigue pendiente.
+  No hay conexión ni lectura de Gmail.
+- Javier autoriza crear la clave privada y conectar exclusivamente Supabase Dev.
+  La clave y el secreto independiente del webhook se transfieren directamente
+  al formulario seguro de Supabase, sin copia local ni contenido en Git.
+- Webhook `whintgrf014797801`: Test Store, Sandbox only, todos los eventos.
+  Evento TEST autenticado: HTTP 200; ambas funciones sin autorización: HTTP 401.
+- Una compra mensual simulada con el CLI oficial para la cuenta principal de
+  pruebas genera `INITIAL_PURCHASE` y el servidor guarda `active=true`,
+  `environment=SANDBOX`, `store=test_store` y la vigencia canónica del proveedor.
+  La concesión manual principal se conserva; la segunda cuenta sigue Free.
+  No acredita compra/restauración desde la interfaz nativa ni ventas reales.
+- Al vencer los cinco minutos de la compra mensual simulada, el reloj SQL deja
+  de contar esa compra como fuente válida; la cuenta conserva su Pro manual.
+  Esto comprueba vencimiento por fecha, no entrega de un evento EXPIRATION.
+- Historial Dev: 139 migraciones coincidentes. Las pruebas SQL de conciliación
+  y cuotas se repiten tras desplegar, con ROLLBACK.
 
 Se conservan los identificadores canónicos del contrato del código.
 [Gestión oficial de precios por moneda](https://www.revenuecat.com/docs/tools/cli/commands).
@@ -61,7 +77,8 @@ Antes de desplegar, verificar el proyecto enlazado:
 `sxbxfjqgoddzhtcyhalw`, nunca producción. La migración
 `20261013000000_revenuecat_pro_reconciliation.sql` empieza en `DISABLED`.
 Despliegue y activación requieren autorización propia; el acuerdo de guardar
-Git no los autoriza. Esta preparación no ejecuta esos pasos.
+Git no los autoriza. Javier concede esa autorización para Dev el 13/10/2026;
+la migración ya está aplicada y el entorno de servidor es SANDBOX.
 
 Las funciones necesitan estas variables privadas en la configuración segura
 de Supabase Edge Functions:
@@ -76,10 +93,11 @@ de Supabase Edge Functions:
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` los proporciona
 el entorno de las funciones. La función rechaza SANDBOX si la URL no corresponde
 exactamente al proyecto Dev indicado. No guardar claves privadas en Flutter,
-Git, capturas ni mensajes; un archivo local de secretos debe quedar ignorado.
+Git, capturas ni mensajes. En esta configuración se transfieren directamente
+al formulario de Supabase; no se prepara un archivo local de secretos.
 
-Una vez autorizado el despliegue, aplicar solo la migración pendiente revisada
-y desplegar `revenuecat-sync` y `revenuecat-webhook`. El `config.toml` declara
+Se aplica solo la migración revisada y se despliegan `revenuecat-sync` y
+`revenuecat-webhook`, sin podar otras funciones. El `config.toml` declara
 `verify_jwt=false`: la primera verifica el JWT en Auth; la segunda verifica
 `Authorization: Bearer <REVENUECAT_WEBHOOK_TOKEN>`. No son rutas anónimas.
 
@@ -105,10 +123,17 @@ Usar exclusivamente la clave **pública de SDK Test Store**, que comienza por
 `test_`, mediante `REVENUECAT_TEST_API_KEY`. Se configura como el resto de
 `dart-define` de desarrollo y se ejecuta **debug** en Android/iOS.
 
+La configuración local Windows está preparada en `.env.revenuecat-dev.json`,
+ignorada por Git, con `APP_ENV=development` y la clave pública Test Store.
+No incluye claves privadas. En otro ordenador debe configurarse allí también.
+La APK debug con esta configuración compila correctamente y queda en
+`build/app/outputs/flutter-apk/app-debug.apk`; no se ha instalado ni ejecutado
+en un móvil. La compilación iOS requiere el Mac.
+
 Ejemplo, conservando además la configuración Supabase Dev del proyecto:
 
 ```powershell
-flutter run --debug --dart-define=APP_ENV=development --dart-define=REVENUECAT_TEST_API_KEY=<clave_publica_test_store>
+flutter run --debug --dart-define-from-file=.env.revenuecat-dev.json
 ```
 
 El SDK no se configura en web, profile, release o producción aunque exista la
@@ -116,7 +141,7 @@ clave. Test Store no sirve para la beta profile, TestFlight ni pistas Play.
 La compra utiliza el UUID de Supabase como App User ID, nunca el correo.
 [Restricciones de Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
 
-## 4. Aceptación completa pendiente
+## 4. Aceptación nativa completa pendiente
 
 Usar una cuenta Free sin concesión manual para observar el cambio; el Pro manual
 vigente de la cuenta principal puede ocultarlo. Comprobar en móvil debug:
@@ -132,8 +157,10 @@ vigente de la cuenta principal puede ocultarlo. Comprobar en móvil debug:
    incidencia/gracia explícita, devolución y transferencia, contrastando servidor.
 7. Probar cuotas Free y continuidad al caducar, conservando historial y uso previo.
 
-Las pruebas automatizadas cubren contratos y errores, pero no reemplazan este
-recorrido externo. Antes de las tiendas reales, acordar la política de
+El recorrido de receipt Test Store → webhook → consulta canónica → SQL está
+comprobado con una compra simulada, pero no reemplaza este recorrido nativo.
+El ordenador Windows no tiene ningún móvil conectado en la comprobación del
+13/10/2026. Antes de las tiendas reales, acordar la política de
 restauración/transferencia y validar sus sandboxes con SDK/configuración nativos.
 No hay reconciliación periódica implementada: este tramo concilia por
 compra/restauración, comprobación explícita y eventos autenticados. La estrategia
