@@ -1,5 +1,28 @@
 # Roadmap de EntrenaOP
 
+**Integración Windows/macOS, 14/10/2026:** Javier autoriza reunir los cuatro
+commits que habían divergido desde `d5016de`. Se conservan `c6dd045` (tiempos)
+y `c1e97cb` (fotos y acción fija), junto con `9aedb1f` (arranque de compras
+en macOS) y `a24ac6d` (instalación Release Dev y sincronización). La integración
+entra sin conflictos y conserva la historia de ambas líneas.
+
+Comprobación de la combinación: `flutter analyze --no-pub` sin incidencias en
+raíz, admin y `workout_editor_ui`; baterías completas correctas con 791 pruebas
+de raíz, 109 de admin y nueve del editor compartido. Se mantienen las dos
+omisiones web optativas preexistentes. Las regresiones cubren autoformato,
+fracciones, conversión a segundos/milisegundos, regalos Pro indefinidos,
+confirmación tardía sin recomprar, cambio de cuenta y retorno a Mi plan.
+Se conserva fuera del commit el archivo local previo `devtools_options.yaml`.
+No cambia el código de Pro, las dependencias, SQL ni las funciones del servidor.
+
+Límite: esta integración no actualiza las apps ya instaladas ni acredita una
+compra física nueva o el cierre de Free/Pro. El siguiente recorrido recomendado
+es sincronizar el Mac con el commit integrado, reinstalar el iPhone y comprobar
+los tiempos; las compras Test Store requieren el lanzamiento móvil debug Dev,
+mientras Release Dev permite abrir desde el icono y consultar el acceso Pro.
+La elección de trabajo en la nube queda para después de este punto de guardado.
+[Sincronización e instalación](IOS_DEVELOPMENT.md).
+
 **UI-030, 14/10/2026 · fotos y acción fija en la vista de sesión:** recorrido
 cerrado en código. La vista previa resuelve fotos por ejercicio con el caso
 de uso existente, sin retrasar la sesión; mantiene orden y usa fallback ante
