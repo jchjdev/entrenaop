@@ -83,10 +83,13 @@ descargar desde el Mac.
 Si macOS solicita acceso de `codesign` al llavero, Javier introduce la contraseña
 directamente en el Mac. Un rechazo de acceso a la clave puede producir
 `errSecInternalComponent`; no copiar contraseñas al chat ni modificar los
-controles del llavero para evitar el aviso. La ejecución desde Xcode permite
-completar los avisos interactivos: seleccionar temporalmente Release en
-Product → Scheme → Edit Scheme → Run y desactivar Debug executable. Después,
-devolver el esquema compartido a Debug para conservar el flujo de desarrollo.
+controles del llavero para evitar el aviso. Para instalar desde Xcode se usa
+el esquema compartido **Runner iPhone**, cuyo Run es Release sin depurador;
+seleccionar Iphone-JVR y pulsar ⌘R. **Runner** conserva Debug para desarrollo
+y pruebas de compras. Antes de compilar desde Xcode hay que preparar Flutter
+con `APP_ENV=development` explícito, como en los comandos de esta guía:
+el esquema elige el modo de compilación, no cambia los parámetros de entorno
+que Flutter deja en `Generated.xcconfig`. No usar configuración de producción.
 
 El equipo personal gratuito de Apple tiene perfiles de siete días: renovar la
 instalación desde el Mac cuando caduque. No se necesita publicar en App Store
@@ -415,3 +418,40 @@ Dev a las 21:27, con cero errores; firma y snapshot AOT verificados, instalació
 y estado Running Runner on Iphone-JVR comprobados. Los ajustes temporales del
 esquema vuelven a Debug. La aceptación visual de esta distribución final en el
 iPhone sigue pendiente; no se confunde con la confirmación funcional anterior.
+
+## Runner pausado y esquema estable de iPhone · IOS-007 · 14/10/2026
+
+Tras la instalación anterior Javier comunica pantalla blanca y «Paused Runner
+on Iphone-JVR». Xcode acredita otra ejecución Debug/JIT, detenida en
+`NOTIFY_DEBUGGER_ABOUT_RX_PAGES`, breakpoint 1.1. No hay una excepción de la
+calculadora en esa observación. El esquema Runner había vuelto a Debug tras
+la instalación temporal Release: una ejecución posterior puede reemplazar
+la app del teléfono con Debug.
+
+Se detiene esa sesión y se reinstala por reemplazo la Release firmada del
+código `3ac58e9`; `devicectl` la arranca sin depurador y Device Hub muestra
+Inicio renderizado en el iPhone. Se añade **Runner iPhone**, esquema compartido
+que conserva las acciones de construcción y usa Run Release/PosixSpawn sin
+LLDB. Se selecciona en Xcode y se verifica con Run: compilación con cero
+errores, instalación y estado Running. Flutter apunta a esta raíz y
+`lib/main.dart`, con `APP_ENV=development`; el binario incluye el campo de la
+cuadrícula final (`_buildMarkField`). Runner mantiene Debug y no se desactivan
+los breakpoints internos necesarios para depurarlo. La comprobación del
+arranque y del esquema es nativa.
+
+Javier señala que FAS aún aparece sin cuadrícula. Device Hub muestra las
+tarjetas y H/M apilados: el umbral anterior de texto 1,2 activa esa distribución
+en su iPhone, aunque el binario ya incluye el campo final. Se mide la escala
+sobre una fuente de 16 puntos y se conserva la cuadrícula por debajo de 1,6,
+incluida ampliación moderada 1,3. La misma regla mantiene H/M horizontales.
+Análisis limpio, 799 pruebas raíz correctas con la omisión web existente,
+13 pruebas de calculadora y cuatro capturas de widgets revisadas. Xcode
+compila e instala el ajuste en Release Dev con Runner iPhone a las 21:41;
+firma y AOT correctos. No cambia datos, paquetes, baremos ni producción.
+
+Device Hub muestra después la calculadora FAS en el iPhone físico con cuatro
+tarjetas en dos columnas, H/M horizontales y valores completos de plancha y
+carrera `05:50`, además de agilidad `12,05 s`. El teclado está cerrado en esa
+observación. La distribución final está acreditada visualmente; la aceptación
+estética de Javier y la repetición completa de guardar un test siguen siendo
+comprobaciones distintas, no realizadas por el agente.

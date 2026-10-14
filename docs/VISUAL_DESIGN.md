@@ -44,22 +44,28 @@ dos columnas en el ancho del iPhone 12 y las unidades dentro del campo. Los
 valores parten de tamaño 20 y se ajustan al ancho real disponible tras reservar
 la unidad, el cursor y el padding; puntos por prueba 16 y resumen 28. Se conserva
 la proporción anterior de las tarjetas en dos columnas. Solo se usa una columna
-con menos de 330 px disponibles o texto ampliado por encima de 1,2.
+con menos de 330 px disponibles o texto ampliado a 1,6 o más. La escala
+se mide sobre una fuente de 16 puntos, conservando dos columnas y H/M
+horizontales con ampliación moderada. El umbral anterior de 1,2 activaba una
+columna en el iPhone físico de Javier y se corrige en IOS-007.
 
 Al volver, abrir historial, seleccionar fecha, guardar o usar un deslizador se
 cierra el teclado; arrastrar la lista o tocar fuera del campo también permite
 descartarlo.
 
-Verificación: análisis limpio y 798 pruebas de raíz correctas, con la omisión
+Verificación: análisis limpio y 799 pruebas de raíz correctas, con la omisión
 web existente. Las regresiones comprueban escritura decimal por dígitos y
 corrección intermedia sin mover el cursor, guardado en milisegundos en Tropa/FAS,
 tarjetas en dos columnas a 390 px, campos sin desplazamiento horizontal en
-390/320/800 px y con texto al doble,
-y retorno mediante `go_router` con el teclado oculto. Tres capturas de widgets
-con fuentes reales revisadas en 390/320 px y texto al doble; compilación iOS
+390/320/800 px, texto a 1,3 (dos columnas) y al doble,
+y retorno mediante `go_router` con el teclado oculto. Cuatro capturas de widgets
+con fuentes reales revisadas en 390/320 px, texto a 1,3 y al doble; compilación iOS
 Release de desarrollo sin firma correcta. Posteriormente Xcode firma la
 versión, se instala por reemplazo y arranca sin depurador en Iphone-JVR
-(`docs/IOS_DEVELOPMENT.md`). Falta la confirmación física de este recorrido.
+(`docs/IOS_DEVELOPMENT.md`). En IOS-007 Device Hub acredita en el iPhone
+físico cuatro tarjetas en dos columnas, H/M horizontales y valores completos
+de plancha/carrera `05:50` y agilidad `12,05 s`. La aceptación estética de
+Javier sigue pendiente; la distribución y el arranque están observados.
 Se conservan baremos, cálculo,
 contratos de datos y el formato de las demás duraciones.
 

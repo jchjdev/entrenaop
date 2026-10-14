@@ -323,7 +323,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
         ),
         const SizedBox(height: 10),
         SegmentedButton<AssessmentCategory>(
-          direction: MediaQuery.textScalerOf(context).scale(1) > 1.2
+          direction: MediaQuery.textScalerOf(context).scale(16) / 16 >= 1.6
               ? Axis.vertical
               : Axis.horizontal,
           segments: const [
@@ -353,9 +353,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                 for (final test in _calculatorTests)
                   if (test.id != 'agility_speed_circuit' || age < 45) test,
               ];
-              final textScale = MediaQuery.textScalerOf(context).scale(1);
+              final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
               final useTwoColumns =
-                  constraints.maxWidth >= 330 && textScale <= 1.2;
+                  constraints.maxWidth >= 330 && textScale < 1.6;
               final cardWidth = useTwoColumns
                   ? (constraints.maxWidth - 10) / 2
                   : constraints.maxWidth;

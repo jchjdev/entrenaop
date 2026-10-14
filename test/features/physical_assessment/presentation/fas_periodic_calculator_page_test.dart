@@ -210,6 +210,7 @@ void main() {
 
   for (final viewport in [
     (width: 390.0, scale: 1.0),
+    (width: 390.0, scale: 1.3),
     (width: 320.0, scale: 1.0),
     (width: 390.0, scale: 2.0),
     (width: 800.0, scale: 1.0),
@@ -253,6 +254,23 @@ void main() {
           );
           expect(editable.renderEditable.maxScrollExtent, 0);
           expect(tester.takeException(), isNull);
+        }
+        if (viewport.width >= 370 && viewport.scale < 1.6) {
+          final first = find.ancestor(
+            of: find.byKey(
+              const ValueKey('fas-mark-upper_body_push_ups_2_min'),
+            ),
+            matching: find.byType(Card),
+          );
+          final second = find.ancestor(
+            of: find.byKey(const ValueKey('fas-mark-abdominal_plank')),
+            matching: find.byType(Card),
+          );
+          expect(tester.getTopLeft(first).dy, tester.getTopLeft(second).dy);
+          expect(
+            tester.getTopLeft(second).dx,
+            greaterThan(tester.getTopLeft(first).dx),
+          );
         }
       },
     );
