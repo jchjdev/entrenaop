@@ -52,8 +52,10 @@ corrección intermedia sin mover el cursor, guardado en milisegundos en Tropa/FA
 campos sin desplazamiento horizontal en 390/320/800 px y con texto al doble,
 y retorno mediante `go_router` con el teclado oculto. Tres capturas de widgets
 con fuentes reales revisadas en 390/320 px y texto al doble; compilación iOS
-Release de desarrollo sin firma correcta. No acredita todavía la repetición
-en el iPhone físico con esta versión instalada. Se conservan baremos, cálculo,
+Release de desarrollo sin firma correcta. Posteriormente Xcode firma la
+versión, se instala por reemplazo y arranca sin depurador en Iphone-JVR
+(`docs/IOS_DEVELOPMENT.md`). Falta la confirmación física de este recorrido.
+Se conservan baremos, cálculo,
 contratos de datos y el formato de las demás duraciones.
 
 ## Entrada uniforme de tiempos · UI-029 · 14/10/2026

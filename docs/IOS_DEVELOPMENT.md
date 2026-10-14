@@ -383,3 +383,24 @@ visual sigue pendiente de respuesta. Release consulta el acceso Pro de Supabase
 Dev; una compra nueva o restauración de Test Store sigue requiriendo debug Dev
 y no se acredita por esta instalación. No se modifican datos de cuentas,
 compras ni producción.
+
+## Corrección de agilidad y calculadora FAS · UI-031 · 14/10/2026
+
+El código `1e6273e` corrige la entrada de agilidad de Tropa y FAS a segundos
+decimales, reduce los números de la calculadora y cierra el teclado al volver.
+Análisis limpio, 798 pruebas raíz correctas con la omisión web existente y
+17 pruebas específicas correctas sobre el código final. Tres capturas de
+widgets con fuentes reales revisadas en 390/320 px y texto al doble.
+
+Xcode compiló Release de desarrollo a las 21:19 (hora local), con cero errores.
+Se verificó la firma completa del paquete y el snapshot Dart AOT. El paquete
+firmado se instaló por reemplazo con `devicectl` en Iphone-JVR y se relanzó
+correctamente sin depurador. `Generated.xcconfig` conserva `APP_ENV=development`
+sin clave de Test Store; Pro continúa consultándose en Supabase Dev y no se
+habilitan compras Release. Los tres ajustes temporales del esquema se
+restauraron a Debug, preservando los cambios locales anteriores del proyecto
+y los lockfiles SPM. No se desinstaló la app ni se modificó producción.
+
+Queda la confirmación física de escritura/corrección de agilidad, tamaño de los
+campos y teclado cerrado al volver al menú; la instalación y el arranque sí
+están comprobados. El detalle de la corrección está en `docs/VISUAL_DESIGN.md`.
