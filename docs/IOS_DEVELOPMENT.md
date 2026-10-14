@@ -64,6 +64,22 @@ flutter pub get --enforce-lockfile
 flutter run --release -d <identificador-del-iphone> --dart-define=APP_ENV=development
 ```
 
+Si aparece la pantalla negra que indica que las apps Flutter debug solo pueden
+arrancar desde las herramientas, la app instalada sigue siendo debug. La
+instalación permanece en el teléfono, pero hay que sustituirla por Release para
+abrirla sin depurador. Lanzar después la configuración de compras debug vuelve
+a sustituir la misma app: Git y la selección de modo no actualizan por sí solos
+la versión instalada. Reinstalar con el mismo identificador conserva normalmente
+los datos locales; no desinstalar para cambiar de modo. El acceso Pro se consulta
+en Supabase también en Release; la compra Test Store solo se prueba en debug.
+
+Para trasladar cambios de Windows al iPhone: guardar y subir a GitHub desde
+Windows; en GitHub Desktop del Mac, usar Fetch origin y Pull origin; finalmente,
+reinstalar en Release con `APP_ENV=development`. Si la subida de Windows se
+rechaza porque el remoto tiene commits del Mac, integrar allí `origin/main`, conservar ambos trabajos y
+subir sin force push. Un commit que solo existe en Windows todavía no se puede
+descargar desde el Mac.
+
 Si macOS solicita acceso de `codesign` al llavero, Javier introduce la contraseña
 directamente en el Mac. Un rechazo de acceso a la clave puede producir
 `errSecInternalComponent`; no copiar contraseñas al chat ni modificar los
@@ -288,3 +304,29 @@ compras ni producción. Los archivos locales de resolución de Swift Package
 Manager se conservan separados del ajuste de lanzamiento/documentación.
 Esta comprobación acredita preparación, compilación y arranque; la compra,
 restauración y conciliación desde este iPhone quedan pendientes de aceptación.
+
+## Uso desde el icono del iPhone · IOS-005 · 14/10/2026
+
+Javier muestra la pantalla de Flutter que impide arrancar una app debug desde
+el icono. Se instala Release con `APP_ENV=development`, sin incluir la clave de
+Test Store. La configuración de compras debug se conserva.
+
+La compilación por SSH encuentra `errSecInternalComponent` al firmar. La
+compilación interactiva desde Xcode termina correctamente, instala y ejecuta
+Release en el iPhone 12. Se cierra la ejecución de Xcode y CoreDevice vuelve a
+abrir el mismo bundle sin LLDB: Device Hub muestra Inicio. Se verifica el
+snapshot AOT y la firma estricta fuera del sandbox; la comprobación inicial
+dentro del sandbox no podía leer la cadena del certificado. El esquema
+compartido vuelve íntegramente a Debug, sin cambios de firma ni de llavero.
+
+La comprobación adicional de F5 en Release compila en 99,7 s, pero queda en
+«Installing and launching…»; se detiene la sesión y no se incorpora esa nueva
+configuración como un flujo validado. Para esta instalación se acredita el
+recorrido interactivo desde Xcode y el arranque posterior sin depurador.
+
+El análisis está limpio y pasan las 45 pruebas de Pro, incluido el contrato
+que deshabilita Test Store fuera de debug. No se cambian paquetes, derechos
+de cuentas ni producción. La fuente instalada en esta comprobación es
+`9aedb1f`: el cambio de contadores `00:00`, que Javier identifica como el
+commit local de Windows `c6dd045`, todavía no está publicado en GitHub al
+comprobarlo. Su incorporación y reinstalación quedan pendientes de esa subida.
