@@ -77,6 +77,64 @@ instalación desde el Mac cuando caduque. No se necesita publicar en App Store
 para esta prueba. Si el iPhone solicita confiar en el desarrollador, hacerlo
 en Ajustes → General → VPN y gestión de dispositivos.
 
+## Compras de prueba en iPhone · RevenueCat Test Store
+
+Las compras de COM-013/014 se prueban en **móvil debug con Supabase Dev**.
+La versión Release instalada para abrir desde el icono mantiene estas compras
+deshabilitadas. Test Store de RevenueCat no equivale a App Store ni procesa
+cobros reales; la integración Flutter requiere una compilación debug para esa
+clave. [Restricciones oficiales de Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store).
+
+Git transporta el código, `pubspec.lock` y la configuración de lanzamiento de
+VS Code, pero `.gitignore` excluye `.env.*`. Hay que copiar también el archivo
+local `.env.revenuecat-dev.json` de Windows a la raíz del proyecto del Mac.
+Contiene `APP_ENV=development` y `REVENUECAT_TEST_API_KEY`, la clave pública
+de SDK de Test Store; no debe contener claves privadas del proveedor ni la
+clave de servicio de Supabase. No guardar el archivo real en Git.
+
+Si la consola de Windows está conectada al Mac por SSH, usar `exit` o abrir
+otra PowerShell **de Windows** antes de copiar. La ruta `E:\Dev\Flutter\...`
+solo existe en Windows. En la configuración de Javier:
+
+```powershell
+scp "E:\Dev\Flutter\entrenaop\.env.revenuecat-dev.json" jvrmini@javiers-mac-mini.local:/Users/jvrmini/development/projects/entrenaop/.env.revenuecat-dev.json
+```
+
+Usar el mismo destino SSH que permite entrar en el Mac. Una conexión
+Windows → Mac no permite al Mac leer automáticamente los archivos de Windows.
+Conservar el punto inicial del nombre y la extensión `.json`, sin `.txt`.
+Finder oculta los archivos con punto: `⌘⇧.` permite verlos.
+
+Después de incorporar el código y copiar el archivo:
+
+1. En el Mac, ejecutar `flutter pub get --enforce-lockfile` desde la raíz.
+2. Seleccionar el **iPhone físico**, no el simulador, en la barra de VS Code.
+3. Elegir **EntrenaOP Compras · móvil debug Dev** y pulsar F5.
+4. Mantener el iPhone desbloqueado durante la instalación y aceptar, si aparece,
+   el acceso a red local necesario para conectar el depurador de Flutter.
+5. Abrir Perfil → Mi suscripción para comprobar el catálogo y acceso propio.
+   Una cuenta con Pro gratuito puede ocultar la transición Free → compra.
+
+La configuración de compras selecciona, **solo en macOS**, el arranque a través
+de Xcode mediante `FLUTTER_LLDB_DEBUGGING=false`. Es una opción soportada por
+Flutter 3.47.5; no cambia Windows, el modo debug ni la firma. El arranque directo
+con LLDB se cerró antes de entrar en Flutter en la comprobación IOS-004.
+
+Si aparece `Timed out waiting for CONFIGURATION_BUILD_DIR to update`, detener
+la sesión, cerrar Xcode y volver a pulsar F5. Flutter lo abre de nuevo con la
+configuración generada. Esta secuencia permitió completar el arranque comprobado;
+no se fijan rutas de salida a mano en el proyecto ni se cambia a Release.
+Si la pila de llamadas muestra un hilo detenido **en entry**, usar Continuar
+para reanudarlo; comprobar también el hilo auxiliar `_compute` si aparece pausado.
+Esto es distinto de una excepción de la aplicación, que debe investigarse.
+
+La primera compilación resuelve y descarga el SDK nativo mediante Swift Package
+Manager; puede tardar varios minutos. No crear un Podfile ni actualizar paquetes
+para resolver una descarga pendiente. Detener y lanzar de nuevo incorpora el
+plugin; hot reload por sí solo no lo registra. No cambiar a Release ni reutilizar
+el procedimiento anterior de instalación sin depurador para probar Test Store.
+[Contrato de compras y aceptación pendiente](PRO_LAUNCH.md).
+
 ## Verificación
 
 El **08/10/2026** se comprobó en este Mac:
@@ -196,3 +254,37 @@ pruebas nativas de los patrones pasan. El esquema vuelve a Debug tras la
 instalación Release sin depurador. Quedan pendientes la sesión real con
 todos sus hitos, auriculares y los «colapsos» todavía no descritos.
 [Contrato, implementación y límites](WORKOUT_AUDIO_2026_10_08.md).
+
+## Preparación de compras en el Mac · IOS-004 · 14/10/2026
+
+El Mac está en `d5016de`, coincidente con GitHub al comenzar, con un archivo
+de resolución SPM local previo conservado. Falta inicialmente el JSON de
+compras y VS Code tiene seleccionado el simulador. Javier copia el archivo
+desde Windows por SCP; se verifican sus dos campos, entorno development,
+clave pública Test Store y exclusión de Git, sin mostrar su valor.
+
+`flutter pub get --enforce-lockfile` prepara los paquetes resueltos, sin
+actualizar `pubspec` ni lockfiles. El plugin purchases_flutter 10.15.2 usa
+SPM con PurchasesHybridCommon 19.10.0 y RevenueCat iOS 5.94.0; su mínimo
+iOS 13 queda dentro del mínimo iOS 15 del proyecto. El iPhone 12/iOS 27.0.1
+está emparejado, conectado y con modo desarrollador habilitado. Se conserva
+Flutter 3.47.5, Dart 3.13.4 y Xcode 27.0, así como el equipo y la firma existentes.
+
+La primera compilación debug firma e instala, pero el lanzador LLDB directo
+se cierra con SIGKILL en dyld antes de ejecutar Flutter. La firma local supera
+la comprobación estricta y permite depuración. No se obtiene un informe Runner
+que permita atribuir la causa del SIGKILL. La vía Xcode conecta en otro intento,
+pero un arranque posterior agota la espera de CONFIGURATION_BUILD_DIR. Se
+selecciona Xcode para esta configuración macOS y se reabre el IDE: F5 compila
+en 15,9 s, conecta con el servicio de Dart y se acredita la inicialización de
+Supabase Dev. Se reanudan los hilos detenidos en entry. Device Hub muestra
+Inicio de la app actual en el iPhone físico, con la sesión conservada.
+Javier confirma que Perfil → Mi suscripción muestra su acceso Pro existente.
+Esto acredita la carga del panel, sin probar una nueva compra.
+
+Análisis limpio, 45 pruebas Pro y 776 pruebas completas correctas, con la
+omisión web existente. No se modifican código de la app, SDK, datos de cuentas,
+compras ni producción. Los archivos locales de resolución de Swift Package
+Manager se conservan separados del ajuste de lanzamiento/documentación.
+Esta comprobación acredita preparación, compilación y arranque; la compra,
+restauración y conciliación desde este iPhone quedan pendientes de aceptación.

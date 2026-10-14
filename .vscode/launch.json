@@ -25,6 +25,11 @@
       "request": "launch",
       "program": "lib/main.dart",
       "flutterMode": "debug",
+      "osx": {
+        "env": {
+          "FLUTTER_LLDB_DEBUGGING": "false"
+        }
+      },
       "toolArgs": [
         "--dart-define-from-file=${workspaceFolder}/.env.revenuecat-dev.json"
       ]
