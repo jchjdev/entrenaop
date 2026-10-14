@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+## Entorno de Codex Cloud · DEV-003 · 14/10/2026
+
+Javier autoriza un entorno privado para el único repositorio EntrenaOP, con
+SDK fijado y resolución de los dos lockfiles de app/admin. La configuración
+y las cachés viven en el entorno, separados del checkout de cada tarea.
+Las pruebas utilizan fixtures locales y no requieren credenciales ni acceso
+a Supabase o RevenueCat. El Mac conserva las comprobaciones nativas de iPhone.
+La preparación no cambia contratos de producto, datos, despliegues ni DEV-002.
+SDK, lockfiles, análisis y pruebas comprobados; entorno privado publicado.
+Estado real, comandos y límites en [CLOUD_DEVELOPMENT.md](CLOUD_DEVELOPMENT.md).
+
 ## Fotos accesorias de la vista de sesión · UI-030 · 14/10/2026
 
 `WorkoutPreviewCubit` reutiliza `GetExerciseByIdUseCase` para resolver las
