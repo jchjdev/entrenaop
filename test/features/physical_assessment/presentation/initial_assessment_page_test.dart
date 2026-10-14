@@ -48,7 +48,7 @@ void main() {
       );
       expect(
         tester.widget<TextFormField>(fields.at(3)).controller!.text,
-        '00:15.250',
+        '15,250',
       );
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pumpAndSettle();

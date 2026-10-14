@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
+import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/fas_periodic_calculator_page.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   late FasPeriodic2027Reference reference;
@@ -154,7 +157,7 @@ void main() {
     );
   });
 
-  testWidgets('agrupa el resumen y las cuatro pruebas en dos columnas', (
+  testWidgets('conserva el resumen y separa las tarjetas sin solaparlas', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -174,12 +177,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final grid = tester.widget<GridView>(
-      find.byKey(const ValueKey('fas-tests-grid')),
+    final first = tester.getTopLeft(
+      find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
     );
-    final delegate =
-        grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-    expect(delegate.crossAxisCount, 2);
+    final second = tester.getTopLeft(
+      find.byKey(const ValueKey('fas-mark-abdominal_plank')),
+    );
+    expect(second.dy, greaterThan(first.dy));
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('fas-official-criteria'))).dy,
       lessThan(
@@ -194,6 +198,157 @@ void main() {
         tester.getTopLeft(find.byKey(const ValueKey('fas-tests-grid'))).dy,
       ),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final viewport in [
+    (width: 390.0, scale: 1.0),
+    (width: 320.0, scale: 1.0),
+    (width: 390.0, scale: 2.0),
+    (width: 800.0, scale: 1.0),
+  ]) {
+    testWidgets(
+      'los tiempos completos caben en ${viewport.width} px con texto ${viewport.scale}',
+      (tester) async {
+        tester.view.physicalSize = Size(viewport.width, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(viewport.scale)),
+              child: child!,
+            ),
+            home: FasPeriodicCalculatorPage(
+              birthDateRepository: _BirthDateRepository(DateTime(2001, 1, 1)),
+              repository: _Repository(),
+              reference: reference,
+              today: DateTime(2027, 2, 3),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        for (final entry in {
+          'upper_body_push_ups_2_min': '56',
+          'abdominal_plank': '103',
+          'run_2000_m': '626',
+          'agility_speed_circuit': '15,250',
+        }.entries) {
+          final field = find.byKey(ValueKey('fas-mark-${entry.key}'));
+          await tester.ensureVisible(field);
+          await tester.enterText(field, entry.value);
+          await tester.pumpAndSettle();
+          final editable = tester.state<EditableTextState>(
+            find.descendant(of: field, matching: find.byType(EditableText)),
+          );
+          expect(editable.renderEditable.maxScrollExtent, 0);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+  }
+
+  testWidgets('agilidad conserva el tiempo al escribir y corregir decimales', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: FasPeriodicCalculatorPage(
+          birthDateRepository: _BirthDateRepository(DateTime(2001, 1, 1)),
+          repository: _Repository(),
+          reference: reference,
+          today: DateTime(2027, 2, 3),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final field = find.byKey(const ValueKey('fas-mark-agility_speed_circuit'));
+    await tester.ensureVisible(field);
+    await tester.pumpAndSettle();
+    await tester.tap(field);
+    final controller = tester.widget<TextFormField>(field).controller!;
+    for (final digit in '15,29'.split('')) {
+      final text = '${controller.text}$digit';
+      tester.testTextInput.updateEditingValue(
+        TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        ),
+      );
+      await tester.pump();
+    }
+    expect(controller.text, '15,29');
+    final expectedPoints = reference
+        .scoreFor(
+          testId: 'agility_speed_circuit',
+          category: AssessmentCategory.men,
+          age: 26,
+          mark: 15290,
+        )!
+        .points;
+    expect(find.text('$expectedPoints pt'), findsOneWidget);
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '15,39',
+        selection: TextSelection.collapsed(offset: 4),
+      ),
+    );
+    await tester.pump();
+    expect(controller.selection.baseOffset, 4);
+    tester.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '15,359',
+        selection: TextSelection.collapsed(offset: 5),
+      ),
+    );
+    await tester.pump();
+    expect(controller.text, '15,359');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('volver al menú cierra el teclado numérico de la calculadora', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const Scaffold(body: Text('Menú principal')),
+        ),
+        GoRoute(
+          path: '/calculator',
+          builder: (_, _) => FasPeriodicCalculatorPage(
+            birthDateRepository: _BirthDateRepository(DateTime(2001, 1, 1)),
+            repository: _Repository(),
+            reference: reference,
+            today: DateTime(2027, 2, 3),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: EntrenaTheme.dark.copyWith(platform: TargetPlatform.iOS),
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+    router.push('/calculator');
+    await tester.pumpAndSettle();
+    final field = find.byKey(const ValueKey('fas-mark-agility_speed_circuit'));
+    await tester.ensureVisible(field);
+    await tester.pumpAndSettle();
+    await tester.enterText(field, '15,29');
+    expect(tester.testTextInput.isVisible, isTrue);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Menú principal'), findsOneWidget);
+    expect(tester.testTextInput.isVisible, isFalse);
     expect(tester.takeException(), isNull);
   });
 

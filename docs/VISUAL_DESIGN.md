@@ -29,6 +29,33 @@ Las capturas de distribución no incluyen fotos reales; la conexión de URL
 y el fallback se prueban con datos ficticios. Queda la aceptación en un
 dispositivo actualizado con ejercicios oficiales y propios que tengan foto.
 
+## Agilidad y calculadora FAS en iPhone · UI-031 · 14/10/2026
+
+Javier corrige la uniformidad de UI-029: la agilidad de Tropa y FAS se introduce
+siempre en segundos decimales. El ejemplo es `00,00`; `15,27` representa
+15,27 segundos. Se admite también punto decimal y se conservan las cifras
+introducidas y el cursor al corregirlas. No se convierte a reloj ni se fuerza
+un redondeo de la marca original. El control deslizante de FAS sigue trabajando
+con décimas, conforme a su resolución anterior.
+
+En la calculadora FAS los valores editables tienen tamaño normal (16), los
+puntos por prueba 16 y el resumen 28. Las unidades aparecen debajo del campo
+para reservar el ancho a la marca. Las tarjetas tienen altura según su contenido:
+dos columnas cuando caben completas y una con poco ancho o texto ampliado.
+No se reduce la escala de accesibilidad del usuario. Al volver, abrir historial,
+seleccionar fecha, guardar o usar un deslizador se cierra el teclado; arrastrar
+la lista o tocar fuera del campo también permite descartarlo.
+
+Verificación: análisis limpio y 798 pruebas de raíz correctas, con la omisión
+web existente. Las regresiones comprueban escritura decimal por dígitos y
+corrección intermedia sin mover el cursor, guardado en milisegundos en Tropa/FAS,
+campos sin desplazamiento horizontal en 390/320/800 px y con texto al doble,
+y retorno mediante `go_router` con el teclado oculto. Tres capturas de widgets
+con fuentes reales revisadas en 390/320 px y texto al doble; compilación iOS
+Release de desarrollo sin firma correcta. No acredita todavía la repetición
+en el iPhone físico con esta versión instalada. Se conservan baremos, cálculo,
+contratos de datos y el formato de las demás duraciones.
+
 ## Entrada uniforme de tiempos · UI-029 · 14/10/2026
 
 Los campos de duración/ritmo expresados en segundos utilizan reloj `00:00`
@@ -44,7 +71,8 @@ no se pasa por la máscara abreviada como si fuese texto tecleado.
 
 Áreas cubiertas:
 
-- Tropa: plancha, carrera y agilidad; FAS: cálculo y registro periódico.
+- Tropa: plancha y carrera; FAS: duración de plancha y tiempo de carrera en
+  cálculo y registro periódico. Agilidad conserva segundos decimales (UI-031).
 - Evaluaciones de cualquier programa y sus intentos, conservando resolución.
 - Referencias, metas y resultados de rendimiento, contacto y penalizaciones.
 - Carrera: meta, margen oficial, control 2 km y parciales, calculadora de ritmos,

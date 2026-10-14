@@ -10,6 +10,42 @@ void main() {
   late FasPeriodic2027Reference reference;
   setUpAll(() async => reference = await FasPeriodic2027Reference.load());
 
+  testWidgets('agilidad se edita en segundos y se guarda en milisegundos', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FasPeriodicAssessmentPage(
+          goalId: 'goal-fas',
+          repository: repository,
+          birthDateRepository: _FakeBirthDateRepository(DateTime(2001, 1, 1)),
+          reference: reference,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final fields = find.byType(TextFormField);
+    for (final entry in [(0, '14'), (1, '40'), (2, '1146'), (3, '15,250')]) {
+      await tester.ensureVisible(fields.at(entry.$1));
+      await tester.enterText(fields.at(entry.$1), entry.$2);
+    }
+    expect(
+      tester.widget<TextFormField>(fields.last).controller!.text,
+      '15,250',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    final save = find.text('Guardar resultado del test');
+    await tester.ensureVisible(save);
+    await tester.pumpAndSettle();
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(repository.savedMarks!['agility_speed_circuit'], 15250);
+    expect(repository.savedMarks!['run_2000_m'], 706000);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('pide nacimiento antes de mostrar el baremo', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

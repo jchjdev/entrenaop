@@ -4,6 +4,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_state.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/utils/seconds_input_formatter.dart';
 import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -292,14 +293,14 @@ class _AssessmentForm extends StatelessWidget {
                   ),
                   controller: agilityController,
                   label: 'Tiempo',
-                  hint: '00:15.2',
-                  suffix: 'min:seg',
+                  hint: '00,00',
+                  suffix: 's',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   validator: (value) =>
                       parseSecondsToMilliseconds(value ?? '') == null
-                      ? 'Introduce un tiempo válido; por ejemplo, 00:15.2.'
+                      ? 'Introduce segundos decimales; por ejemplo, 15,27.'
                       : null,
                 ),
                 const SizedBox(height: 8),
@@ -413,9 +414,11 @@ class _MarkFieldCard extends StatelessWidget {
               keyboardType: suffix == 'rep'
                   ? keyboardType
                   : const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: suffix == 'rep'
-                  ? null
-                  : [DurationInputFormatter(allowFraction: suffix != 'mm:ss')],
+              inputFormatters: switch (suffix) {
+                'rep' => null,
+                's' => [const SecondsInputFormatter()],
+                _ => [DurationInputFormatter(allowFraction: suffix != 'mm:ss')],
+              },
               validator: validator,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(

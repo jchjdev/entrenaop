@@ -287,7 +287,10 @@ género del usuario.
 - En flexiones y plancha una marca mayor es mejor; en carrera y agilidad un
   tiempo menor es mejor.
 - Los tiempos se almacenan internamente en milisegundos para conservar décimas
-  en agilidad sin usar números decimales.
+  en agilidad sin usar números decimales. En los formularios de Tropa y FAS
+  la agilidad se escribe en segundos decimales (UI-031): `15,27` se guarda como
+  15.270 ms. El ejemplo `00,00` no es una máscara de minutos. La edición no
+  redondea la medición ni altera la eliminación de centésimas del baremo FAS.
 - La prueba acuática pertenece a determinados accesos de oficiales y
   suboficiales; no forma parte de este primer catálogo de tropa y marinería.
 - Los baremos de evaluación periódica de la nueva orden entran en vigor el 1 de

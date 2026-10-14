@@ -2,11 +2,13 @@ import 'package:entrenaop/features/physical_assessment/data/repositories/fas_per
 import 'package:entrenaop/features/physical_assessment/domain/catalogs/fas_periodic_2027_reference.dart';
 import 'package:entrenaop/features/physical_assessment/domain/entities/physical_assessment.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
+import 'package:entrenaop/features/physical_assessment/presentation/utils/seconds_input_formatter.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -42,6 +44,12 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   bool _savingAssessment = false;
   late DateTime _assessmentDate;
 
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    // El teclado decimal de iOS no tiene «Hecho» y puede sobrevivir al pop.
+    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+  }
+
   DateTime get _calculationDate => widget.today ?? DateTime.now();
 
   @override
@@ -70,6 +78,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   }
 
   Future<void> _editBirthDate(DateTime? current) async {
+    _dismissKeyboard();
     final chosen = await chooseBirthDate(context, current: current);
     if (chosen == null || !mounted) return;
     setState(() => _savingBirthDate = true);
@@ -116,6 +125,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
     FasPeriodic2027Reference reference,
     DateTime birthDate,
   ) async {
+    _dismissKeyboard();
     final chosen = await showDatePicker(
       context: context,
       initialDate: _assessmentDate,
@@ -128,6 +138,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   }
 
   Future<void> _saveAssessment(int age) async {
+    _dismissKeyboard();
     if (!_formKey.currentState!.validate()) return;
     setState(() => _savingAssessment = true);
     try {
@@ -158,7 +169,14 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => PopScope<Object?>(
+    onPopInvokedWithResult: (didPop, _) {
+      if (didPop) _dismissKeyboard();
+    },
+    child: _buildPage(context),
+  );
+
+  Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Calculadora FAS 2027')),
     body: FutureBuilder<FasPeriodic2027Reference>(
       future: _reference,
@@ -186,6 +204,7 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
         // perder errores rápidos mientras todavía se carga el baremo.
         _birthDate ??= _loadBirthDate();
         return ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(20),
           children: [
             Center(
@@ -304,6 +323,9 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
         ),
         const SizedBox(height: 10),
         SegmentedButton<AssessmentCategory>(
+          direction: MediaQuery.textScalerOf(context).scale(1) > 1.2
+              ? Axis.vertical
+              : Axis.horizontal,
           segments: const [
             ButtonSegment(
               value: AssessmentCategory.men,
@@ -331,44 +353,62 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                 for (final test in _calculatorTests)
                   if (test.id != 'agility_speed_circuit' || age < 45) test,
               ];
-              final useTwoColumns = constraints.maxWidth >= 330;
-              return GridView.builder(
-                key: const ValueKey('fas-tests-grid'),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: tests.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: useTwoColumns ? 2 : 1,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: useTwoColumns
-                      ? (constraints.maxWidth < 500 ? 0.82 : 1.55)
-                      : 1.65,
+              final textScale = MediaQuery.textScalerOf(context).scale(1);
+              final clock = TextPainter(
+                text: TextSpan(
+                  text: '00:00.000',
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.merge(_markTextStyle),
                 ),
-                itemBuilder: (context, index) {
-                  final test = tests[index];
-                  return _MarkControl(
-                    test: test,
-                    controller: _controllers[test.id]!,
-                    range: reference.markRangeFor(testId: test.id, age: age),
-                    passMark: reference
-                        .passMarkFor(
+                textScaler: MediaQuery.textScalerOf(context),
+                textDirection: Directionality.of(context),
+              )..layout();
+              // Reservar la marca completa, el cursor y ambos márgenes.
+              final minimumCardWidth = clock.width + 48;
+              clock.dispose();
+              final useTwoColumns =
+                  constraints.maxWidth >= 330 &&
+                  (constraints.maxWidth - 10) / 2 >= minimumCardWidth &&
+                  textScale <= 1.2;
+              final cardWidth = useTwoColumns
+                  ? (constraints.maxWidth - 10) / 2
+                  : constraints.maxWidth;
+              return Wrap(
+                key: const ValueKey('fas-tests-grid'),
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final test in tests)
+                    SizedBox(
+                      width: cardWidth,
+                      child: _MarkControl(
+                        test: test,
+                        controller: _controllers[test.id]!,
+                        range: reference.markRangeFor(
                           testId: test.id,
-                          category: _category,
                           age: age,
-                        )
-                        ?.threshold,
-                    result: _results[test.id],
-                    onChanged: () => _recalculate(reference, age),
-                    onSliderChanged: (mark) {
-                      _controllers[test.id]!.text = _formatMarkForInput(
-                        test.id,
-                        mark,
-                      );
-                      _recalculate(reference, age);
-                    },
-                  );
-                },
+                        ),
+                        passMark: reference
+                            .passMarkFor(
+                              testId: test.id,
+                              category: _category,
+                              age: age,
+                            )
+                            ?.threshold,
+                        result: _results[test.id],
+                        onChanged: () => _recalculate(reference, age),
+                        onDismissKeyboard: _dismissKeyboard,
+                        onSliderChanged: (mark) {
+                          _dismissKeyboard();
+                          _controllers[test.id]!.text = _formatMarkForInput(
+                            test.id,
+                            mark,
+                          );
+                          _recalculate(reference, age);
+                        },
+                      ),
+                    ),
+                ],
               );
             },
           ),
@@ -385,7 +425,10 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => context.push('/assessment/fas-history'),
+                onPressed: () {
+                  _dismissKeyboard();
+                  context.push('/assessment/fas-history');
+                },
                 child: const Text('Historial'),
               ),
             ),
@@ -418,6 +461,7 @@ class _MarkControl extends StatelessWidget {
     required this.passMark,
     required this.result,
     required this.onChanged,
+    required this.onDismissKeyboard,
     required this.onSliderChanged,
   });
 
@@ -435,6 +479,7 @@ class _MarkControl extends StatelessWidget {
   final int? passMark;
   final PeriodicScoreResult? result;
   final VoidCallback onChanged;
+  final VoidCallback onDismissKeyboard;
   final ValueChanged<int> onSliderChanged;
 
   @override
@@ -467,6 +512,7 @@ class _MarkControl extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white70,
                       fontWeight: FontWeight.w700,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -477,48 +523,42 @@ class _MarkControl extends StatelessWidget {
                     color: result == null
                         ? Colors.white54
                         : const Color(0xFFFF8A50),
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
             ),
-            Expanded(
-              child: Center(
-                child: TextFormField(
-                  key: ValueKey('fas-mark-${test.id}'),
-                  controller: controller,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: test.id != 'upper_body_push_ups_2_min'
-                      ? [
-                          DurationInputFormatter(
-                            allowFraction: test.id == 'agility_speed_circuit',
-                          ),
-                        ]
-                      : null,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: _inputLabel(test.id),
-                    hintText: test.hint,
-                    suffixText: _inputUnit(test.id),
-                    suffixStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    contentPadding: const EdgeInsets.only(bottom: 8),
-                  ),
-                  validator: (value) => _parseMark(test.id, value ?? '') == null
-                      ? test.error
-                      : null,
-                  onChanged: (_) => onChanged(),
+            const SizedBox(height: 12),
+            TextFormField(
+              key: ValueKey('fas-mark-${test.id}'),
+              controller: controller,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: switch (test.id) {
+                'upper_body_push_ups_2_min' => null,
+                'agility_speed_circuit' => [const SecondsInputFormatter()],
+                _ => [const DurationInputFormatter()],
+              },
+              style: _markTextStyle,
+              decoration: InputDecoration(
+                labelText: _inputLabel(test.id),
+                hintText: test.hint,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 12,
                 ),
               ),
+              validator: (value) =>
+                  _parseMark(test.id, value ?? '') == null ? test.error : null,
+              onChanged: (_) => onChanged(),
+              onTapOutside: (_) => onDismissKeyboard(),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _inputUnit(test.id),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             if (limits != null) ...[
               SliderTheme(
@@ -611,10 +651,12 @@ class _AssessmentContext extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(
-            onPressed: onEditAssessmentDate,
-            child: Text(
-              'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
+          Flexible(
+            child: TextButton(
+              onPressed: onEditAssessmentDate,
+              child: Text(
+                'Test ${DateFormat('dd/MM/yyyy').format(assessmentDate)}',
+              ),
             ),
           ),
         ],
@@ -688,7 +730,7 @@ class _Results extends StatelessWidget {
                     results.isEmpty ? '—' : '$total puntos',
                     style: const TextStyle(
                       color: Color(0xFFFF8A50),
-                      fontSize: 42,
+                      fontSize: 28,
                       fontWeight: FontWeight.w900,
                       height: 1.05,
                     ),
@@ -724,6 +766,12 @@ class _Results extends StatelessWidget {
   }
 }
 
+const _markTextStyle = TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.w800,
+  height: 1,
+);
+
 int? _parseMark(String testId, String value) => switch (testId) {
   'upper_body_push_ups_2_min' => parseRepetitions(value),
   'abdominal_plank' => parseWholeSecondsDuration(value),
@@ -744,7 +792,7 @@ String _inputUnit(String testId) => switch (testId) {
   'upper_body_push_ups_2_min' => 'rep',
   'abdominal_plank' => 'min:seg',
   'run_2000_m' => 'min:seg',
-  'agility_speed_circuit' => 'min:seg',
+  'agility_speed_circuit' => 'segundos',
   _ => '',
 };
 
@@ -758,7 +806,8 @@ String _formatMarkForInput(String testId, int mark) => switch (testId) {
   'upper_body_push_ups_2_min' => '$mark',
   'abdominal_plank' => _formatClock(mark),
   'run_2000_m' => _formatClock(mark),
-  'agility_speed_circuit' => formatDurationSeconds(mark / 1000),
+  'agility_speed_circuit' =>
+    (mark / 1000).toStringAsFixed(1).replaceAll('.', ','),
   _ => '$mark',
 };
 
@@ -806,8 +855,8 @@ const _calculatorTests = [
     id: 'agility_speed_circuit',
     label: 'Circuito de agilidad-velocidad',
     shortLabel: 'Agilidad-velocidad',
-    hint: '00:00.00',
-    helper: 'Minutos:segundos con decimales; las centésimas se eliminan según el anexo I',
-    error: 'Introduce un tiempo, por ejemplo 00:15.27.',
+    hint: '00,00',
+    helper: 'Segundos decimales; las centésimas se eliminan según el anexo I',
+    error: 'Introduce segundos decimales, por ejemplo 15,27.',
   ),
 ];
