@@ -1,5 +1,26 @@
 # Roadmap de EntrenaOP
 
+**UI-030, 14/10/2026 · fotos y acción fija en la vista de sesión:** recorrido
+cerrado en código. La vista previa resuelve fotos por ejercicio con el caso
+de uso existente, sin retrasar la sesión; mantiene orden y usa fallback ante
+fallo. La acción principal queda fija en una franja que reserva espacio, con
+estado ocupado y reintento. Se protege la navegación de fotos tardías y el
+listado admite pantalla estrecha/texto ampliado sin desbordar sus etiquetas.
+
+Comprobación: análisis limpio, 791 pruebas de raíz correctas con la omisión
+web existente y compilación web. Capturas actuales de inicio/final a 390 px,
+320 px con texto al doble y escritorio a 1000 px. Regresiones de Cubit y
+widgets incluyen doble inicio, fallo, cierre, recarga y retorno sin duplicar
+el ejecutor. No cambia admin, paquetes compartidos, datos, algoritmo ni
+producción; se conserva fuera del bloque `devtools_options.yaml` previo.
+
+Límites: las capturas de distribución usan una sesión ficticia sin fotos;
+URL/fallback se comprueban en pruebas, no mediante imágenes autenticadas en
+móvil. El único siguiente recorrido UX recomendado es biblioteca → vista
+con fotos oficiales/propias → empezar → volver, en dispositivo actualizado.
+Este tramo no cierra Free/Pro ni sustituye las verificaciones deportivas o
+de entrada de tiempos pendientes. Detalle en `VISUAL_DESIGN.md`.
+
 **UI-029, 14/10/2026 · entrada de tiempos uniforme:** se revisan los campos
 de segundos/ritmos del deportista, admin y controles compartidos. Se muestra
 `00:00` y se añaden separadores al teclear dígitos, con fracciones en mediciones

@@ -7,12 +7,19 @@ import 'package:go_router/go_router.dart';
 
 class WorkoutPreviewPage extends StatelessWidget {
   const WorkoutPreviewPage({required this.routeBase, super.key});
-
   final String routeBase;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(
+    BuildContext context,
+  ) => BlocConsumer<WorkoutPreviewCubit, WorkoutPreviewState>(
+    // Una foto que llega después del inicio no debe volver a abrir el ejecutor.
+    listenWhen: (previous, current) =>
+        current.executionId != null &&
+        previous.executionId != current.executionId,
+    listener: (context, state) =>
+        context.push('$routeBase/active/${state.executionId}'),
+    builder: (context, state) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -28,120 +35,165 @@ class WorkoutPreviewPage extends StatelessWidget {
         ),
         title: const Text('Vista de la sesión'),
       ),
-      body: BlocConsumer<WorkoutPreviewCubit, WorkoutPreviewState>(
-        listener: (context, state) {
-          final executionId = state.executionId;
-          if (executionId != null) {
-            context.push('$routeBase/active/$executionId');
-          }
-        },
-        builder: (context, state) => switch (state.status) {
-          WorkoutPreviewStatus.initial || WorkoutPreviewStatus.loading =>
-            const Center(child: CircularProgressIndicator()),
-          WorkoutPreviewStatus.empty => const _Message(
-            icon: Icons.fitness_center_outlined,
-            text: 'La sesión todavía no está disponible.',
+      body: switch (state.status) {
+        WorkoutPreviewStatus.initial || WorkoutPreviewStatus.loading =>
+          const Center(child: CircularProgressIndicator()),
+        WorkoutPreviewStatus.empty => const _Message(
+          icon: Icons.fitness_center_outlined,
+          text: 'La sesión todavía no está disponible.',
+        ),
+        WorkoutPreviewStatus.failure when state.workout == null => _Message(
+          icon: Icons.cloud_off_outlined,
+          text: state.errorMessage ?? 'No hemos podido cargar la sesión.',
+          action: FilledButton(
+            onPressed: context.read<WorkoutPreviewCubit>().load,
+            child: const Text('Reintentar'),
           ),
-          WorkoutPreviewStatus.failure when state.workout == null => _Message(
-            icon: Icons.cloud_off_outlined,
-            text: state.errorMessage ?? 'No hemos podido cargar la sesión.',
-            action: FilledButton(
-              onPressed: context.read<WorkoutPreviewCubit>().load,
-              child: const Text('Reintentar'),
+        ),
+        WorkoutPreviewStatus.ready ||
+        WorkoutPreviewStatus.starting ||
+        WorkoutPreviewStatus.failure => _WorkoutContent(
+          workout: state.workout!,
+          thumbnails: state.exerciseThumbnails,
+          errorMessage: state.errorMessage,
+        ),
+      },
+      // Scaffold reserva el espacio: el botón permanece visible y nunca tapa
+      // las últimas instrucciones ni el área del gesto del sistema.
+      bottomNavigationBar: state.workout == null
+          ? null
+          : _SessionAction(
+              running: _isRunning(state.workout!),
+              starting: state.status == WorkoutPreviewStatus.starting,
+              failed: state.status == WorkoutPreviewStatus.failure,
             ),
+    ),
+  );
+}
+
+bool _isRunning(WorkoutTemplate workout) =>
+    workout.blocks.any((block) => block.format == WorkoutBlockFormat.running);
+
+class _SessionAction extends StatelessWidget {
+  const _SessionAction({
+    required this.running,
+    required this.starting,
+    required this.failed,
+  });
+  final bool running, starting, failed;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    elevation: 8,
+    color: Theme.of(context).colorScheme.surface,
+    child: SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      child: Align(
+        heightFactor: 1,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (failed) ...[
+                const Text(
+                  'No se pudo preparar la sesión. Puedes volver a intentarlo.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+                const SizedBox(height: 8),
+              ],
+              FilledButton.icon(
+                key: const ValueKey('workout-preview-start'),
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
+                onPressed: starting
+                    ? null
+                    : context.read<WorkoutPreviewCubit>().start,
+                icon: starting
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        running
+                            ? Icons.edit_note_rounded
+                            : Icons.play_arrow_rounded,
+                      ),
+                label: Text(
+                  starting
+                      ? (running
+                            ? 'Preparando registro…'
+                            : 'Preparando sesión…')
+                      : (running ? 'Registrar resultado' : 'Empezar sesión'),
+                ),
+              ),
+            ],
           ),
-          WorkoutPreviewStatus.ready ||
-          WorkoutPreviewStatus.starting ||
-          WorkoutPreviewStatus.failure => _WorkoutContent(
-            workout: state.workout!,
-            starting: state.status == WorkoutPreviewStatus.starting,
-            errorMessage: state.errorMessage,
-          ),
-        },
+        ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _WorkoutContent extends StatelessWidget {
   const _WorkoutContent({
     required this.workout,
-    required this.starting,
+    required this.thumbnails,
     this.errorMessage,
   });
-
   final WorkoutTemplate workout;
-  final bool starting;
+  final Map<String, String> thumbnails;
   final String? errorMessage;
 
   @override
-  Widget build(BuildContext context) {
-    final isRunning = workout.blocks.any(
-      (block) => block.format == WorkoutBlockFormat.running,
-    );
-    return SafeArea(
-      child: Center(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _Header(workout: workout),
-                    const SizedBox(height: 18),
-                    for (final (index, block) in workout.blocks.indexed) ...[
-                      _BlockCard(number: index + 1, block: block),
-                      const SizedBox(height: 12),
-                    ],
-                    const SizedBox(height: 6),
-                    if (errorMessage case final message?) ...[
-                      Text(
-                        message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.redAccent),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                    FilledButton.icon(
-                      onPressed: starting
-                          ? null
-                          : context.read<WorkoutPreviewCubit>().start,
-                      icon: starting
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.play_arrow_rounded),
-                      label: Text(
-                        starting
-                            ? isRunning
-                                  ? 'Preparando registro…'
-                                  : 'Preparando sesión…'
-                            : isRunning
-                            ? 'Registrar resultado'
-                            : 'Empezar sesión',
-                      ),
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: Center(
+      child: ListView(
+        key: const PageStorageKey('workout-preview-content'),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _Header(workout: workout),
+                  const SizedBox(height: 18),
+                  for (final (index, block) in workout.blocks.indexed) ...[
+                    _BlockCard(
+                      number: index + 1,
+                      block: block,
+                      thumbnails: thumbnails,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (errorMessage case final message?) ...[
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.redAccent),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      isRunning
-                          ? 'Registra después del entrenamiento el resultado real de cada tramo.'
-                          : 'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white54),
-                    ),
                   ],
-                ),
+                  Text(
+                    _isRunning(workout)
+                        ? 'Registra después del entrenamiento el resultado real de cada tramo.'
+                        : 'Comprueba la sesión antes de empezar. Durante el entrenamiento podrás registrar el resultado real de cada serie.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white54),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -220,7 +272,9 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: Colors.white60),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: Colors.white70)),
+          Flexible(
+            child: Text(label, style: const TextStyle(color: Colors.white70)),
+          ),
         ],
       ),
     );
@@ -228,10 +282,15 @@ class _InfoChip extends StatelessWidget {
 }
 
 class _BlockCard extends StatelessWidget {
-  const _BlockCard({required this.number, required this.block});
+  const _BlockCard({
+    required this.number,
+    required this.block,
+    required this.thumbnails,
+  });
 
   final int number;
   final WorkoutBlock block;
+  final Map<String, String> thumbnails;
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +354,12 @@ class _BlockCard extends StatelessWidget {
             const SizedBox(height: 14),
             for (final (index, item) in block.items.indexed) ...[
               if (index > 0) const Divider(height: 24),
-              _ExerciseRow(block: block, index: index, item: item),
+              _ExerciseRow(
+                block: block,
+                index: index,
+                item: item,
+                imageUrl: thumbnails[item.exerciseId],
+              ),
             ],
           ],
         ),
@@ -348,11 +412,13 @@ class _ExerciseRow extends StatelessWidget {
     required this.block,
     required this.index,
     required this.item,
+    this.imageUrl,
   });
 
   final WorkoutBlock block;
   final int index;
   final WorkoutItem item;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -362,23 +428,13 @@ class _ExerciseRow extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              constraints: const BoxConstraints(minWidth: 34),
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0x33FF8A50),
-                borderRadius: BorderRadius.circular(7),
-              ),
-              child: Text(
-                _positionLabel(block.format, index),
-                style: const TextStyle(
-                  color: Color(0xFFFFA06F),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
+            if (imageUrl case final url?)
+              _ExerciseThumbnail(
+                url: url,
+                position: _positionLabel(block.format, index),
+              )
+            else
+              _ExercisePosition(label: _positionLabel(block.format, index)),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -404,6 +460,68 @@ class _ExerciseRow extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ExercisePosition extends StatelessWidget {
+  const _ExercisePosition({required this.label});
+  final String label;
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minWidth: 34),
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: const Color(0xCC3A2118),
+      borderRadius: BorderRadius.circular(7),
+    ),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFFFA06F),
+        fontSize: 12,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
+}
+
+class _ExerciseThumbnail extends StatelessWidget {
+  const _ExerciseThumbnail({required this.url, required this.position});
+  final String url, position;
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 64,
+    child: Stack(
+      children: [
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              url,
+              key: ValueKey('workout-exercise-photo:$url'),
+              fit: BoxFit.cover,
+              cacheWidth: (64 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+              excludeFromSemantics: true,
+              loadingBuilder: (_, child, progress) =>
+                  progress == null ? child : _placeholder(),
+              errorBuilder: (_, _, _) => _placeholder(),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: _ExercisePosition(label: position),
+        ),
+      ],
+    ),
+  );
+  Widget _placeholder() => const ColoredBox(
+    color: Color(0xFF24272B),
+    child: Center(
+      child: Icon(Icons.fitness_center_outlined, color: Colors.white38),
+    ),
+  );
 }
 
 class _PrescriptionDetails extends StatelessWidget {
@@ -593,10 +711,14 @@ String _setPrescription(
   if (set.performancePrescription case final p?) {
     return [
       '${_number(p.targetValue)} ${p.unit}',
-      if (p.fixedDurationSeconds != null) 'en ${_number(p.fixedDurationSeconds!)} s',
-      if (p.fixedDistanceMeters != null) 'sobre ${_number(p.fixedDistanceMeters!)} m',
-      if (p.externalLoadKg != null) '${_number(p.externalLoadKg!)} kg ${p.loadMode == 'assisted' ? 'de asistencia' : 'externos'}',
-      if (p.targetRir != null) 'margen de ${_number(p.targetRir!)} repeticiones',
+      if (p.fixedDurationSeconds != null)
+        'en ${_number(p.fixedDurationSeconds!)} s',
+      if (p.fixedDistanceMeters != null)
+        'sobre ${_number(p.fixedDistanceMeters!)} m',
+      if (p.externalLoadKg != null)
+        '${_number(p.externalLoadKg!)} kg ${p.loadMode == 'assisted' ? 'de asistencia' : 'externos'}',
+      if (p.targetRir != null)
+        'margen de ${_number(p.targetRir!)} repeticiones',
       if (includeRest) '${_duration(set.restAfterSeconds)} de descanso',
     ].join(' · ');
   }

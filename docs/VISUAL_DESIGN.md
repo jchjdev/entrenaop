@@ -1,5 +1,34 @@
 # Identidad visual de EntrenaOP
 
+## Fotos de ejercicios y acción fija · UI-030 · 14/10/2026
+
+Javier pide adaptar dos comportamientos de su referencia de Calisthenia App,
+conservando la identidad de EntrenaOP. La vista previa de una sesión muestra
+una miniatura de 64 × 64 junto al nombre cuando el ejercicio tiene foto. La
+numeración y las posiciones de circuito/superserie siguen visibles; sin foto
+se conserva el indicador de posición. Una descarga fallida utiliza un icono
+neutro, sin impedir consultar instrucciones ni empezar.
+
+La acción principal permanece en una franja inferior fija con área segura.
+El contenido reserva su espacio: no es un botón superpuesto al último ejercicio.
+Se conserva «Empezar sesión» para fuerza y «Registrar resultado» para carrera.
+Durante el inicio se deshabilita para evitar doble pulsación y, si falla,
+ofrece reintentar sin perder la sesión. Las vistas dedicadas y el retorno
+al origen de UI-028 no cambian.
+
+Las fotos son información accesoria del catálogo actual, no parte de la
+prescripción histórica. Se consultan por ejercicio sin retrasar la sesión,
+reutilizando los permisos y las URLs públicas/firmadas existentes. No se
+añaden fotos a ejercicios que todavía no las tengan ni se modifica el admin.
+
+Verificación: análisis sin incidencias, 791 pruebas de raíz correctas y una
+omisión web existente; web compilada. Regresiones de carga tardía/fallida,
+reintento, doble inicio y navegación; capturas de la vista actual al inicio
+y al final en 390 px, 320 px con texto al doble y escritorio de 1000 px.
+Las capturas de distribución no incluyen fotos reales; la conexión de URL
+y el fallback se prueban con datos ficticios. Queda la aceptación en un
+dispositivo actualizado con ejercicios oficiales y propios que tengan foto.
+
 ## Entrada uniforme de tiempos · UI-029 · 14/10/2026
 
 Los campos de duración/ritmo expresados en segundos utilizan reloj `00:00`

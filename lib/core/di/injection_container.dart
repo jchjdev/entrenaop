@@ -331,6 +331,7 @@ Future<void> initDependencies() async {
       templateId: templateId,
       getWorkoutTemplate: sl(),
       startExecution: sl(),
+      getExercise: sl(),
     )..load(),
   );
   sl.registerFactory(

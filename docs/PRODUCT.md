@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**UI-030, 14/10/2026 · revisión de sesión:** los ejercicios con foto muestran
+su miniatura junto al nombre, conservando orden, series e instrucciones. La
+acción de empezar permanece visible al recorrer el contenido sin taparlo;
+carrera conserva su acción de registrar resultado. Fotos ausentes o fallidas
+no bloquean el entrenamiento. Se mantiene el diseño propio, el retorno al
+origen y las reglas existentes. Alcance y aceptación móvil pendiente en
+`VISUAL_DESIGN.md`.
+
 **UI-029, 14/10/2026 · tiempos editables:** los campos de segundos y ritmos
 comparten formato `00:00` con separadores automáticos, también en admin.
 Los tiempos precisos conservan fracciones, los datos anteriores mantienen sus

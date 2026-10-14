@@ -9,13 +9,21 @@ class WorkoutPreviewState extends Equatable {
     this.workout,
     this.executionId,
     this.errorMessage,
+    this.exerciseThumbnails = const {},
   });
 
   final WorkoutPreviewStatus status;
   final WorkoutTemplate? workout;
   final String? executionId;
   final String? errorMessage;
+  final Map<String, String> exerciseThumbnails;
 
   @override
-  List<Object?> get props => [status, workout, executionId, errorMessage];
+  List<Object?> get props => [
+    status,
+    workout,
+    executionId,
+    errorMessage,
+    exerciseThumbnails,
+  ];
 }

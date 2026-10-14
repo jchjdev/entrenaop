@@ -1,5 +1,23 @@
 # Arquitectura de EntrenaOP
 
+## Fotos accesorias de la vista de sesión · UI-030 · 14/10/2026
+
+`WorkoutPreviewCubit` reutiliza `GetExerciseByIdUseCase` para resolver las
+miniaturas de los identificadores únicos de la plantilla. El repositorio
+existente conserva la resolución pública/firmada y los permisos del recurso.
+Las consultas son accesorias, en grupos de cuatro con diez segundos de límite
+por respuesta: no retrasan `ready` ni el inicio de una ejecución. No se
+consulta el catálogo completo ni se añade acceso a Supabase desde widgets.
+
+Las URLs permanecen en `WorkoutPreviewState`, sin cambiar `WorkoutTemplate`,
+los modelos compartidos ni las instantáneas de ejecución. Respuestas antiguas
+o posteriores al cierre del Cubit no publican estado. Una foto tardía conserva
+el estado de inicio/error y `executionId`; `BlocConsumer.listenWhen` navega
+con `go_router` solo al cambiar ese identificador, evitando abrir dos veces
+el ejecutor. `Scaffold.bottomNavigationBar` reserva la acción fija, con área
+segura y sin tapar el listado. La vista sigue siendo declarativa y sin reglas
+de negocio. No cambian SQL, permisos, entrenamiento ni dependencias.
+
 ## Entrada temporal compartida · UI-029 · 14/10/2026
 
 `DurationInputFormatter` de `workout_editor_ui` presenta relojes con minutos
