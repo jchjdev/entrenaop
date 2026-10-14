@@ -354,61 +354,52 @@ class _FasPeriodicCalculatorPageState extends State<FasPeriodicCalculatorPage> {
                   if (test.id != 'agility_speed_circuit' || age < 45) test,
               ];
               final textScale = MediaQuery.textScalerOf(context).scale(1);
-              final clock = TextPainter(
-                text: TextSpan(
-                  text: '00:00.000',
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.merge(_markTextStyle),
-                ),
-                textScaler: MediaQuery.textScalerOf(context),
-                textDirection: Directionality.of(context),
-              )..layout();
-              // Reservar la marca completa, el cursor y ambos márgenes.
-              final minimumCardWidth = clock.width + 48;
-              clock.dispose();
               final useTwoColumns =
-                  constraints.maxWidth >= 330 &&
-                  (constraints.maxWidth - 10) / 2 >= minimumCardWidth &&
-                  textScale <= 1.2;
+                  constraints.maxWidth >= 330 && textScale <= 1.2;
               final cardWidth = useTwoColumns
                   ? (constraints.maxWidth - 10) / 2
                   : constraints.maxWidth;
-              return Wrap(
+              return GridView.builder(
                 key: const ValueKey('fas-tests-grid'),
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final test in tests)
-                    SizedBox(
-                      width: cardWidth,
-                      child: _MarkControl(
-                        test: test,
-                        controller: _controllers[test.id]!,
-                        range: reference.markRangeFor(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: tests.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: useTwoColumns ? 2 : 1,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: useTwoColumns
+                      ? (constraints.maxWidth < 500
+                            ? cardWidth / 0.82
+                            : cardWidth / 1.55)
+                      : 220 * textScale,
+                ),
+                itemBuilder: (context, index) {
+                  final test = tests[index];
+                  return _MarkControl(
+                    test: test,
+                    controller: _controllers[test.id]!,
+                    range: reference.markRangeFor(testId: test.id, age: age),
+                    passMark: reference
+                        .passMarkFor(
                           testId: test.id,
+                          category: _category,
                           age: age,
-                        ),
-                        passMark: reference
-                            .passMarkFor(
-                              testId: test.id,
-                              category: _category,
-                              age: age,
-                            )
-                            ?.threshold,
-                        result: _results[test.id],
-                        onChanged: () => _recalculate(reference, age),
-                        onDismissKeyboard: _dismissKeyboard,
-                        onSliderChanged: (mark) {
-                          _dismissKeyboard();
-                          _controllers[test.id]!.text = _formatMarkForInput(
-                            test.id,
-                            mark,
-                          );
-                          _recalculate(reference, age);
-                        },
-                      ),
-                    ),
-                ],
+                        )
+                        ?.threshold,
+                    result: _results[test.id],
+                    onChanged: () => _recalculate(reference, age),
+                    onDismissKeyboard: _dismissKeyboard,
+                    onSliderChanged: (mark) {
+                      _dismissKeyboard();
+                      _controllers[test.id]!.text = _formatMarkForInput(
+                        test.id,
+                        mark,
+                      );
+                      _recalculate(reference, age);
+                    },
+                  );
+                },
               );
             },
           ),
@@ -529,37 +520,7 @@ class _MarkControl extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              key: ValueKey('fas-mark-${test.id}'),
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: switch (test.id) {
-                'upper_body_push_ups_2_min' => null,
-                'agility_speed_circuit' => [const SecondsInputFormatter()],
-                _ => [const DurationInputFormatter()],
-              },
-              style: _markTextStyle,
-              decoration: InputDecoration(
-                labelText: _inputLabel(test.id),
-                hintText: test.hint,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 12,
-                ),
-              ),
-              validator: (value) =>
-                  _parseMark(test.id, value ?? '') == null ? test.error : null,
-              onChanged: (_) => onChanged(),
-              onTapOutside: (_) => onDismissKeyboard(),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _inputUnit(test.id),
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
+            Expanded(child: Center(child: _buildMarkField(context))),
             if (limits != null) ...[
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
@@ -599,6 +560,66 @@ class _MarkControl extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildMarkField(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final textScaler = MediaQuery.textScalerOf(context);
+      final baseStyle = Theme.of(context).textTheme.titleMedium!
+          .merge(_markTextStyle);
+      final unitStyle = baseStyle.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+      );
+      double measure(String text, TextStyle style) {
+        final painter = TextPainter(
+          text: TextSpan(text: text, style: style),
+          textScaler: textScaler,
+          textDirection: Directionality.of(context),
+        )..layout();
+        final width = painter.width;
+        painter.dispose();
+        return width;
+      }
+
+      // Mantener valor y unidad dentro del campo, reservando padding y cursor.
+      final available =
+          (constraints.maxWidth - measure(_inputUnit(test.id), unitStyle) - 28)
+              .clamp(1.0, double.infinity);
+      final width = measure(
+        controller.text.isEmpty ? test.hint : controller.text,
+        baseStyle,
+      );
+      final fontSize =
+          _markTextStyle.fontSize! * (available / width).clamp(0.0, 1.0);
+      return TextFormField(
+        key: ValueKey('fas-mark-${test.id}'),
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: switch (test.id) {
+          'upper_body_push_ups_2_min' => null,
+          'agility_speed_circuit' => [const SecondsInputFormatter()],
+          _ => [const DurationInputFormatter()],
+        },
+        style: baseStyle.copyWith(fontSize: fontSize),
+        decoration: InputDecoration(
+          labelText: _inputLabel(test.id),
+          hintText: test.hint,
+          suffixText: _inputUnit(test.id),
+          suffixStyle: unitStyle,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 12,
+          ),
+          errorMaxLines: 2,
+          errorStyle: const TextStyle(fontSize: 11),
+        ),
+        validator: (value) =>
+            _parseMark(test.id, value ?? '') == null ? test.error : null,
+        onChanged: (_) => onChanged(),
+        onTapOutside: (_) => onDismissKeyboard(),
+      );
+    },
+  );
 }
 
 class _AssessmentContext extends StatelessWidget {
@@ -767,7 +788,7 @@ class _Results extends StatelessWidget {
 }
 
 const _markTextStyle = TextStyle(
-  fontSize: 16,
+  fontSize: 20,
   fontWeight: FontWeight.w800,
   height: 1,
 );
@@ -792,7 +813,7 @@ String _inputUnit(String testId) => switch (testId) {
   'upper_body_push_ups_2_min' => 'rep',
   'abdominal_plank' => 'min:seg',
   'run_2000_m' => 'min:seg',
-  'agility_speed_circuit' => 'segundos',
+  'agility_speed_circuit' => 's',
   _ => '',
 };
 

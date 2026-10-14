@@ -157,7 +157,7 @@ void main() {
     );
   });
 
-  testWidgets('conserva el resumen y separa las tarjetas sin solaparlas', (
+  testWidgets('conserva el resumen y las cuatro tarjetas en dos columnas', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -178,12 +178,19 @@ void main() {
     await tester.pumpAndSettle();
 
     final first = tester.getTopLeft(
-      find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
+      find.ancestor(
+        of: find.byKey(const ValueKey('fas-mark-upper_body_push_ups_2_min')),
+        matching: find.byType(Card),
+      ),
     );
     final second = tester.getTopLeft(
-      find.byKey(const ValueKey('fas-mark-abdominal_plank')),
+      find.ancestor(
+        of: find.byKey(const ValueKey('fas-mark-abdominal_plank')),
+        matching: find.byType(Card),
+      ),
     );
-    expect(second.dy, greaterThan(first.dy));
+    expect(second.dy, first.dy);
+    expect(second.dx, greaterThan(first.dx));
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('fas-official-criteria'))).dy,
       lessThan(

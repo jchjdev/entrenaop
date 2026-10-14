@@ -38,18 +38,23 @@ introducidas y el cursor al corregirlas. No se convierte a reloj ni se fuerza
 un redondeo de la marca original. El control deslizante de FAS sigue trabajando
 con décimas, conforme a su resolución anterior.
 
-En la calculadora FAS los valores editables tienen tamaño normal (16), los
-puntos por prueba 16 y el resumen 28. Las unidades aparecen debajo del campo
-para reservar el ancho a la marca. Las tarjetas tienen altura según su contenido:
-dos columnas cuando caben completas y una con poco ancho o texto ampliado.
-No se reduce la escala de accesibilidad del usuario. Al volver, abrir historial,
-seleccionar fecha, guardar o usar un deslizador se cierra el teclado; arrastrar
-la lista o tocar fuera del campo también permite descartarlo.
+Javier confirma el funcionamiento corregido pero pide conservar la distribución
+anterior mostrada en Android. La calculadora recupera las cuatro tarjetas en
+dos columnas en el ancho del iPhone 12 y las unidades dentro del campo. Los
+valores parten de tamaño 20 y se ajustan al ancho real disponible tras reservar
+la unidad, el cursor y el padding; puntos por prueba 16 y resumen 28. Se conserva
+la proporción anterior de las tarjetas en dos columnas. Solo se usa una columna
+con menos de 330 px disponibles o texto ampliado por encima de 1,2.
+
+Al volver, abrir historial, seleccionar fecha, guardar o usar un deslizador se
+cierra el teclado; arrastrar la lista o tocar fuera del campo también permite
+descartarlo.
 
 Verificación: análisis limpio y 798 pruebas de raíz correctas, con la omisión
 web existente. Las regresiones comprueban escritura decimal por dígitos y
 corrección intermedia sin mover el cursor, guardado en milisegundos en Tropa/FAS,
-campos sin desplazamiento horizontal en 390/320/800 px y con texto al doble,
+tarjetas en dos columnas a 390 px, campos sin desplazamiento horizontal en
+390/320/800 px y con texto al doble,
 y retorno mediante `go_router` con el teclado oculto. Tres capturas de widgets
 con fuentes reales revisadas en 390/320 px y texto al doble; compilación iOS
 Release de desarrollo sin firma correcta. Posteriormente Xcode firma la

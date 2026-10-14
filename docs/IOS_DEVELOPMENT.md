@@ -404,3 +404,14 @@ y los lockfiles SPM. No se desinstaló la app ni se modificó producción.
 Queda la confirmación física de escritura/corrección de agilidad, tamaño de los
 campos y teclado cerrado al volver al menú; la instalación y el arranque sí
 están comprobados. El detalle de la corrección está en `docs/VISUAL_DESIGN.md`.
+
+Javier confirma que el funcionamiento corregido es correcto, pero aporta la
+referencia de Android y rechaza cambiar la disposición. Se recuperan las
+cuatro tarjetas en dos columnas en 390 px y las unidades dentro del campo,
+ajustando el tamaño de la marca al espacio disponible. Se conserva el arreglo
+de segundos decimales y teclado. Análisis limpio, 798 pruebas de raíz correctas
+con la omisión web y tres capturas nuevas revisadas. Xcode recompila Release
+Dev a las 21:27, con cero errores; firma y snapshot AOT verificados, instalación
+y estado Running Runner on Iphone-JVR comprobados. Los ajustes temporales del
+esquema vuelven a Debug. La aceptación visual de esta distribución final en el
+iPhone sigue pendiente; no se confunde con la confirmación funcional anterior.
