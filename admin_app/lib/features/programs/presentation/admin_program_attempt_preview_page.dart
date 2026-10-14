@@ -1,5 +1,7 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
+import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
 
 class AdminProgramAttemptPreviewPage extends StatefulWidget {
@@ -172,18 +174,22 @@ class _AdminProgramAttemptPreviewPageState
           TextFormField(
             controller: _controller(test, index),
             decoration: InputDecoration(
+              hintText: test.unit == 'seconds' ? '00:00' : null,
               labelText:
                   'Marca (${test.unit == 'seconds'
-                      ? 'segundos'
+                      ? 'min:seg'
                       : test.unit == 'meters'
                       ? 'metros'
                       : 'repeticiones'})',
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: test.unit == 'seconds'
+                ? const [DurationInputFormatter(allowFraction: true)]
+                : null,
             validator: (value) {
-              final mark = double.tryParse(
-                (value ?? '').trim().replaceAll(',', '.'),
-              );
+              final mark = test.unit == 'seconds'
+                  ? parsePerformanceTime(value ?? '')
+                  : double.tryParse((value ?? '').trim().replaceAll(',', '.'));
               return mark == null ||
                       !mark.isFinite ||
                       mark < 0 ||
@@ -231,12 +237,16 @@ class _AdminProgramAttemptPreviewPageState
                     valid: !(_nullAttempts[_attemptKey(test, index)] ?? false),
                     mark: _nullAttempts[_attemptKey(test, index)] == true
                         ? null
-                        : double.parse(
-                            _controller(
-                              test,
-                              index,
-                            ).text.trim().replaceAll(',', '.'),
-                          ),
+                        : (test.unit == 'seconds'
+                              ? parsePerformanceTime(
+                                  _controller(test, index).text,
+                                )
+                              : double.tryParse(
+                                  _controller(
+                                    test,
+                                    index,
+                                  ).text.trim().replaceAll(',', '.'),
+                                ))!,
                   ),
               ],
             ),

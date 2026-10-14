@@ -5,6 +5,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_i
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:intl/intl.dart';
@@ -329,10 +330,29 @@ class _FasPeriodicAssessmentPageState extends State<FasPeriodicAssessmentPage> {
                                           controller: _fields[test.id],
                                           decoration: InputDecoration(
                                             labelText: test.label,
+                                            hintText: test.hint,
+                                            suffixText:
+                                                test.id ==
+                                                    'upper_body_push_ups_2_min'
+                                                ? 'rep'
+                                                : 'min:seg',
                                             helperText:
                                                 'Mínimo: ${_display(reference.passMarkFor(testId: test.id, category: _category, age: age)!.threshold, test.id)}',
                                           ),
-                                          keyboardType: TextInputType.number,
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                          inputFormatters:
+                                              test.id ==
+                                                  'upper_body_push_ups_2_min'
+                                              ? null
+                                              : [
+                                                  DurationInputFormatter(
+                                                    allowFraction:
+                                                        test.id != 'run_2000_m',
+                                                  ),
+                                                ],
                                           validator: (value) {
                                             final parsed = switch (test.id) {
                                               'upper_body_push_ups_2_min' =>
@@ -485,11 +505,7 @@ const _tests = [
     label: 'Flexo-extensiones en 2 min',
     hint: 'Repeticiones',
   ),
-  (id: 'abdominal_plank', label: 'Plancha', hint: 'Segundos'),
-  (id: 'run_2000_m', label: 'Carrera 2.000 m', hint: 'Tiempo m:ss'),
-  (
-    id: 'agility_speed_circuit',
-    label: 'Circuito de agilidad',
-    hint: 'Segundos con décimas',
-  ),
+  (id: 'abdominal_plank', label: 'Plancha', hint: '00:00'),
+  (id: 'run_2000_m', label: 'Carrera 2.000 m', hint: '00:00'),
+  (id: 'agility_speed_circuit', label: 'Circuito de agilidad', hint: '00:00.0'),
 ];

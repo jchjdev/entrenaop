@@ -8,6 +8,7 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_state.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -641,7 +642,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           key: ValueKey(
                             'rest-${block.identity}-${block.format}',
                           ),
-                          initialValue: block.restAfterSeconds.toString(),
+                          initialValue: formatDurationSeconds(
+                            block.restAfterSeconds,
+                          ),
                           enabled: !saving,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
@@ -649,17 +652,18 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                                 block.format == WorkoutBlockFormat.intervals
                                 ? 'Recuperación'
                                 : 'Descanso entre rondas',
-                            suffixText: 's',
+                            suffixText: 'min:seg',
+                            hintText: '00:00',
                             prefixIcon: const Icon(Icons.timer_outlined),
                           ),
-                          validator: (value) => _integerValidator(
-                            value,
-                            min: 0,
-                            max: 3600,
-                            label: 'descanso',
-                          ),
+                          inputFormatters: const [DurationInputFormatter()],
+                          validator: (value) =>
+                              parseDurationInput(value ?? '') == null ||
+                                  parseDurationInput(value ?? '')! > 3600
+                              ? 'Entre 00:00 y 60:00'
+                              : null,
                           onChanged: (value) {
-                            final seconds = int.tryParse(value);
+                            final seconds = parseDurationInput(value);
                             if (seconds != null) {
                               block.restAfterSeconds = seconds;
                               _scheduleAutosave();
@@ -697,24 +701,32 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   key: ValueKey(
                     'time-cap-${block.identity}-${block.timeCapSeconds}',
                   ),
-                  initialValue: (block.timeCapSeconds ~/ 60).toString(),
+                  initialValue: formatDurationSeconds(block.timeCapSeconds),
                   enabled: !saving,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Límite de tiempo',
-                    suffixText: 'min',
+                    suffixText: 'min:seg',
+                    hintText: '00:00',
                     prefixIcon: Icon(Icons.hourglass_bottom_rounded),
                   ),
-                  validator: (value) => _integerValidator(
-                    value,
-                    min: 1,
-                    max: 60,
-                    label: 'límite de tiempo',
-                  ),
+                  inputFormatters: const [DurationInputFormatter()],
+                  validator: (value) {
+                    final seconds = parseDurationInput(value ?? '');
+                    return seconds == null ||
+                            seconds < 60 ||
+                            seconds > 3600 ||
+                            seconds % 60 != 0
+                        ? 'Entre 01:00 y 60:00, en minutos completos'
+                        : null;
+                  },
                   onChanged: (value) {
-                    final minutes = int.tryParse(value);
-                    if (minutes != null && minutes >= 1 && minutes <= 60) {
-                      block.timeCapSeconds = minutes * 60;
+                    final seconds = parseDurationInput(value);
+                    if (seconds != null &&
+                        seconds >= 60 &&
+                        seconds <= 3600 &&
+                        seconds % 60 == 0) {
+                      block.timeCapSeconds = seconds;
                       _scheduleAutosave();
                     }
                   },
@@ -1844,13 +1856,24 @@ class _NumberField extends StatelessWidget {
     return SizedBox(
       width: 145,
       child: TextFormField(
-        initialValue: initialValue,
+        initialValue: suffix == 's'
+            ? formatDurationSeconds(num.parse(initialValue))
+            : initialValue,
         enabled: enabled,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(labelText: label, suffixText: suffix),
+        inputFormatters: suffix == 's'
+            ? const [DurationInputFormatter()]
+            : null,
+        decoration: InputDecoration(
+          labelText: label,
+          suffixText: suffix == 's' ? 'min:seg' : suffix,
+          hintText: suffix == 's' ? '00:00' : null,
+        ),
         validator: (value) {
           final normalized = value?.trim().replaceAll(',', '.') ?? '';
-          final number = double.tryParse(normalized);
+          final number = suffix == 's'
+              ? parseDurationInput(normalized)?.toDouble()
+              : double.tryParse(normalized);
           if (number == null || number < min || number > max) {
             return 'Entre ${_numberText(min)} y ${_numberText(max)}';
           }
@@ -1861,7 +1884,9 @@ class _NumberField extends StatelessWidget {
         },
         onChanged: (value) {
           final normalized = value.trim().replaceAll(',', '.');
-          final number = double.tryParse(normalized);
+          final number = suffix == 's'
+              ? parseDurationInput(normalized)?.toDouble()
+              : double.tryParse(normalized);
           if (number != null) onChanged(number);
         },
       ),

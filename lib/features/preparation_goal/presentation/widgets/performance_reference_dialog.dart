@@ -1,6 +1,7 @@
 import 'preparation_select_field.dart';
 import 'performance_equipment_labels.dart';
 
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:workout_core/strength_exercise_catalog.dart';
@@ -157,22 +158,29 @@ class _PerformanceReferenceDialogState
     final savedSetup = task?['setup_key'] as String? ?? '';
     _setup.text = savedSetup.startsWith('standard:') ? '' : savedSetup;
     _rir.text = old?['reported_rir']?.toString() ?? '';
-    _rest.text = old?['rest_seconds']?.toString() ?? '';
+    _rest.text = old?['rest_seconds'] == null
+        ? ''
+        : formatDurationSeconds(old!['rest_seconds'] as num);
     _load.text = task?['external_load_kg']?.toString() ?? '';
     _mass.text = task?['body_mass_kg']?.toString() ?? '';
     _increment.text = old?['load_step_kg']?.toString() ?? '';
-    _window.text =
-        (_parameters['fixed_duration_seconds'] ??
-                task?['fixed_duration_seconds'])
-            ?.toString() ??
-        '';
+    final window =
+        _parameters['fixed_duration_seconds'] ??
+        task?['fixed_duration_seconds'];
+    _window.text = window == null ? '' : formatDurationSeconds(window as num);
     _distance.text =
         (_parameters['fixed_distance_meters'] ?? task?['fixed_distance_meters'])
             ?.toString() ??
         '';
     _frequency = old?['frequency'] as int? ?? 1;
     for (final value in old?['targets'] as List? ?? ['']) {
-      _series.add(TextEditingController(text: value.toString()));
+      _series.add(
+        TextEditingController(
+          text: _isTimeMeasurement && value is num
+              ? formatDurationSeconds(value)
+              : value.toString(),
+        ),
+      );
     }
   }
 
@@ -196,6 +204,13 @@ class _PerformanceReferenceDialogState
     super.dispose();
   }
 
+  bool get _isTimeMeasurement => const [
+    StrengthMeasurement.duration,
+    StrengthMeasurement.timeForDistance,
+    StrengthMeasurement.timeForCourse,
+    StrengthMeasurement.reactiveMetrics,
+  ].contains(_mode);
+
   double? _n(TextEditingController c) => parsePerformanceTime(c.text);
   Widget _numeric(
     TextEditingController c,
@@ -213,14 +228,18 @@ class _PerformanceReferenceDialogState
       autovalidateMode: AutovalidateMode.onUserInteraction,
       enabled: enabled,
       keyboardType: time
-          ? TextInputType.datetime
+          ? const TextInputType.numberWithOptions(decimal: true)
           : TextInputType.numberWithOptions(decimal: !integer),
+      inputFormatters: time
+          ? const [DurationInputFormatter(allowFraction: true)]
+          : null,
       decoration: InputDecoration(
         labelText: label,
+        hintText: time ? '00:00' : null,
         errorMaxLines: 3,
         helper: helperText != null || time
             ? Text(
-                helperText ?? 'Minutos:segundos (1:30) o segundos (90).',
+                helperText ?? 'Minutos:segundos. Teclea 130 para 01:30; se admiten decimales.',
                 style: Theme.of(context).textTheme.bodySmall,
               )
             : null,
@@ -660,6 +679,7 @@ class _PerformanceReferenceDialogState
                                       StrengthMeasurement.duration,
                                       StrengthMeasurement.timeForCourse,
                                       StrengthMeasurement.timeForDistance,
+                                      StrengthMeasurement.reactiveMetrics,
                                     ].contains(_mode),
                                     integer: const [
                                       StrengthMeasurement.reps,

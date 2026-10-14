@@ -5,6 +5,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_initial_context.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_preferences.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -168,12 +169,11 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
           _qualityWeeksLastFour = existing.qualityWeeksLastFour;
           if (existing.targetTwoKilometreSeconds case final seconds?) {
             _goalMode = 'time';
-            _target.text =
-                '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+            _target.text = formatDurationSeconds(seconds);
           }
           if (existing.officialMarginSeconds case final seconds?) {
             _goalMode = 'official_margin';
-            _margin.text = '$seconds';
+            _margin.text = formatDurationSeconds(seconds);
           }
           final distinctDurations = existing.availableMinutesByWeekday.values
               .toSet();
@@ -231,7 +231,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
       }
     }
     final margin = _goalMode == 'official_margin'
-        ? int.tryParse(_margin.text.trim())
+        ? parseDurationInput(_margin.text.trim())
         : null;
     if (_goalMode == 'official_margin' &&
         (margin == null || margin < 0 || margin > 120)) {
@@ -455,9 +455,11 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                   const SizedBox(height: 20),
                   TextField(
                     controller: _target,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
                       labelText: 'Meta de 2 km',
-                      hintText: 'Por ejemplo, 7:45',
+                      hintText: '00:00',
                       helperText: 'La meta no fija tus ritmos actuales.',
                     ),
                   ),
@@ -471,10 +473,12 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                   TextField(
                     controller: _margin,
                     keyboardType: TextInputType.number,
+                    inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
-                      labelText: 'Segundos por debajo del umbral',
+                      labelText: 'Margen por debajo del umbral · min:seg',
+                      hintText: '00:00',
                       helperMaxLines: 4,
-                      helperText: 'Elige un margen de 0 a 120 s. Verás el tiempo resultante antes de publicar.',
+                      helperText: 'Elige un margen entre 00:00 y 02:00. Verás el tiempo resultante antes de publicar.',
                     ),
                   ),
                 ],

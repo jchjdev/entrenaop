@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'duration_input_formatter.dart';
+
 import 'package:workout_core/workout_template.dart';
 
 /// Objetivo, descanso, carga y RIR de una serie o de su valor por defecto.
@@ -138,26 +141,32 @@ class StrengthSetFields extends StatelessWidget {
   }) => SizedBox(
     width: 155,
     child: TextFormField(
-      initialValue: value,
+      key: ValueKey('$label:$clock:$suffix'),
+      initialValue: suffix == 's' && num.tryParse(value) != null
+          ? formatDurationSeconds(num.parse(value))
+          : value,
       enabled: enabled,
-      keyboardType: clock
-          ? TextInputType.datetime
+      keyboardType: clock || suffix == 's'
+          ? TextInputType.number
           : const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(labelText: label, suffixText: suffix),
+      inputFormatters: clock || suffix == 's'
+          ? const [DurationInputFormatter()]
+          : null,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: clock || suffix == 's' ? 'min:seg' : suffix,
+        hintText: clock || suffix == 's' ? '00:00' : null,
+      ),
       validator: !validateNumbers
           ? null
           : (text) {
               final normalized = text?.trim().replaceAll(',', '.') ?? '';
               if (normalized.isEmpty && optional) return null;
-              if (clock) {
-                final parts = normalized.split(':').map(int.tryParse).toList();
-                if (parts.length != 2 ||
-                    parts.any((part) => part == null) ||
-                    parts[1]! > 59 ||
-                    parts[0]! < 0) {
-                  return 'Usa min:seg';
-                }
-                return null;
+              if (clock || suffix == 's') {
+                final seconds = parseDurationInput(normalized);
+                return seconds == null || seconds < min || seconds > max
+                    ? 'Usa un tiempo entre ${formatDurationSeconds(min)} y ${formatDurationSeconds(max)}'
+                    : null;
               }
               final number = double.tryParse(normalized);
               if (number == null || number < min || number > max) {
@@ -168,7 +177,11 @@ class StrengthSetFields extends StatelessWidget {
               }
               return null;
             },
-      onChanged: onChanged,
+      // Conserva el contrato del editor: los controles antes expresados en
+      // segundos entregan segundos, aunque la interfaz muestre un reloj.
+      onChanged: suffix == 's' && !clock
+          ? (text) => onChanged(parseDurationInput(text)?.toString() ?? text)
+          : onChanged,
     ),
   );
 }

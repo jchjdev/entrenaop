@@ -43,7 +43,7 @@ void main() {
             .widget<TextFormField>(find.byType(TextFormField).first)
             .controller!
             .text,
-        '7:10',
+        '07:10',
       );
       final quality = find.text(
         'Completé la pauta con buena técnica, mismas condiciones y sin molestias',

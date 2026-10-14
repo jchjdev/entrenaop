@@ -189,10 +189,13 @@ class RunningStepFields extends StatelessWidget {
   }) => TextFormField(
     controller: controller,
     keyboardType: clock
-        ? TextInputType.datetime
+        ? TextInputType.number
         : const TextInputType.numberWithOptions(decimal: true),
     inputFormatters: clock ? const [DurationInputFormatter()] : null,
-    decoration: InputDecoration(labelText: label, hintText: hint),
+    decoration: InputDecoration(
+      labelText: label,
+      hintText: clock ? '00:00' : hint,
+    ),
     onChanged: (_) => onEdited(),
     validator: validator,
   );

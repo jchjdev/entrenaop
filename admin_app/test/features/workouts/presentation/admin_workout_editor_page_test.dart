@@ -219,7 +219,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
-      TextInputType.datetime,
+      TextInputType.number,
     );
     await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
     await tester.enterText(_field('Distancia (m)'), '400');
@@ -255,12 +255,12 @@ void main() {
     await tester.enterText(_field('Ritmo (m:ss/km)'), '555');
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).controller!.text,
-      '5:55',
+      '05:55',
     );
     await tester.enterText(_field('Hasta (m:ss/km)'), '600');
     expect(
       tester.widget<TextField>(_field('Hasta (m:ss/km)')).controller!.text,
-      '6:00',
+      '06:00',
     );
   });
 
@@ -466,7 +466,7 @@ void main() {
     expect(block.exercises.single.sets, hasLength(3));
   });
 
-  testWidgets('el límite AMRAP usa minutos y se guarda en segundos', (
+  testWidgets('el límite AMRAP usa reloj y se guarda en segundos', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1200));
@@ -486,7 +486,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('AMRAP · máximas vueltas').last);
     await tester.pumpAndSettle();
-    await tester.enterText(_field('Límite global (min)'), '15');
+    await tester.enterText(_field('Límite global (m:ss)'), '15:00');
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Flexiones').last);
@@ -544,7 +544,7 @@ void main() {
   });
 
   testWidgets(
-    'fuerza edita segundos sin reloj y conserva una sesión anterior',
+    'fuerza edita reloj conservando los segundos de una sesión anterior',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1200));
       final repository = _FakeWorkouts();
@@ -590,13 +590,16 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(tester.widget<TextField>(_field('Tiempo')).controller!.text, '30');
+      expect(
+        tester.widget<TextField>(_field('Tiempo')).controller!.text,
+        '00:30',
+      );
       expect(
         tester.widget<TextField>(_field('Descanso')).controller!.text,
-        '60',
+        '01:00',
       );
       await tester.enterText(_field('Tiempo'), '45');
-      await tester.enterText(_field('Descanso'), '90');
+      await tester.enterText(_field('Descanso'), '130');
       await tester.scrollUntilVisible(
         find.text('Guardar revisión como borrador'),
         300,

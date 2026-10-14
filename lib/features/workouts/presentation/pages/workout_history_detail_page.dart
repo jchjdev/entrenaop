@@ -922,7 +922,7 @@ String _result(WorkoutExecutionSet set) {
 }
 
 String _pace(int seconds) =>
-    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+    '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 
 String _shortDuration(int seconds) => seconds < 60
     ? '$seconds s'

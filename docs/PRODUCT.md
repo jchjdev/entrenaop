@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**UI-029, 14/10/2026 · tiempos editables:** los campos de segundos y ritmos
+comparten formato `00:00` con separadores automáticos, también en admin.
+Los tiempos precisos conservan fracciones, los datos anteriores mantienen sus
+unidades y disponibilidad sigue expresándose en minutos completos. No cambia
+la programación deportiva. Alcance en `VISUAL_DESIGN.md`.
+
 **UI-022, 09/10/2026 · cinco ajustes cotidianos:** Salir sin guardar descarta,
 con confirmación y conexión, la ejecución en curso y sus series; su cita vuelve
 a pendiente. Retomar y abandonar conservando resultados siguen siendo opciones

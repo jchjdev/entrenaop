@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:entrenaop/features/training_plan/presentation/widgets/training_context_fields.dart';
 
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/config/app_config.dart';
 import 'package:workout_core/performance_time.dart';
@@ -876,15 +877,18 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                 initialValue: targetValue == null
                     ? ''
                     : timed
-                    ? formatPerformanceTime(targetValue)
+                    ? formatDurationSeconds(targetValue)
                     : targetValue.toString(),
+                inputFormatters: timed
+                    ? const [DurationInputFormatter(allowFraction: true)]
+                    : null,
                 keyboardType: timed
-                    ? TextInputType.datetime
+                    ? const TextInputType.numberWithOptions(decimal: true)
                     : const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: 'Marca que quieres conseguir (opcional)',
-                  suffixText: timed ? 'min:s' : _unit(measurement),
-                  hintText: timed ? 'Por ejemplo, 1:30' : null,
+                  suffixText: timed ? 'min:seg' : _unit(measurement),
+                  hintText: timed ? '00:00' : null,
                   helperText: 'Deja vacío para mejorar sin fijar una marca.',
                 ),
                 onChanged: (text) {

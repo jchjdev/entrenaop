@@ -5,6 +5,8 @@ import 'package:entrenaop_admin/features/programs/data/admin_program_repository.
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
+import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_performance_strategy_section.dart';
@@ -740,7 +742,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
                 builder: (context, modulesSnapshot) {
                   if (testsSnapshot.hasError || modulesSnapshot.hasError) {
                     return TextButton(
-                    onPressed: _reloadTests,
+                      onPressed: _reloadTests,
                       child: const Text(
                         'No se pudieron cargar los módulos. Reintentar',
                       ),
@@ -1061,7 +1063,9 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
     _name.text = test.name;
     _protocol.text = test.protocolNotes;
     _order.text = test.displayOrder.toString();
-    _step.text = formatMark(test.markStep);
+    _step.text = test.unit == 'seconds'
+        ? formatDurationSeconds(test.markStep)
+        : formatMark(test.markStep);
     _minAge.text = test.minAge == 0 ? '' : test.minAge.toString();
     _maxAge.text = test.maxAge == 120 ? '' : test.maxAge.toString();
     _unit = test.unit;
@@ -1209,7 +1213,18 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                     child: Text('Distancia en metros'),
                   ),
                 ],
-                onChanged: (value) => _change(() => _unit = value ?? _unit),
+                onChanged: (value) => _change(() {
+                  if (value == null || value == _unit) return;
+                  final step = _unit == 'seconds'
+                      ? parsePerformanceTime(_step.text)
+                      : double.tryParse(_step.text.replaceAll(',', '.'));
+                  _unit = value;
+                  _step.text = step == null
+                      ? ''
+                      : value == 'seconds'
+                      ? formatDurationSeconds(step)
+                      : formatMark(step);
+                }),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -1268,16 +1283,26 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _step,
-                decoration: const InputDecoration(
+                inputFormatters: _unit == 'seconds'
+                    ? const [DurationInputFormatter(allowFraction: true)]
+                    : null,
+                decoration: InputDecoration(
                   labelText: 'Resolución de la marca',
-                  hintText:
-                      'Ej.: 0,1 para décimas; 1 para segundos o repeticiones',
+                  hintText: _unit == 'seconds'
+                      ? '00:00.1 para décimas; 00:01 para segundos'
+                      : 'Ej.: 0,1 para décimas; 1 para repeticiones',
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 validator: (v) =>
-                    (double.tryParse((v ?? '').replaceAll(',', '.')) ?? 0) <= 0
+                    ((_unit == 'seconds'
+                                ? parsePerformanceTime(v ?? '')
+                                : double.tryParse(
+                                    (v ?? '').replaceAll(',', '.'),
+                                  )) ??
+                            0) <=
+                        0
                     ? 'Introduce una resolución positiva.'
                     : null,
               ),
@@ -1376,7 +1401,9 @@ class _NewProgramTestDialogState extends State<_NewProgramTestDialog> {
                   (_variantAt(int.parse(_order.text))?.groupCode ??
                       'exercise_${_order.text}'),
               displayOrder: int.parse(_order.text),
-              markStep: double.parse(_step.text.replaceAll(',', '.')),
+              markStep: (_unit == 'seconds'
+                  ? parsePerformanceTime(_step.text)
+                  : double.tryParse(_step.text.replaceAll(',', '.')))!,
               minAge: minAge,
               maxAge: maxAge,
               maxAttempts: _retryPolicy == 'none'

@@ -1253,6 +1253,12 @@ void main() {
     expect(rows.first.maxMark, 8.2);
     expect(rows.last.category, 'women');
     expect(rows.last.maxMark, isNull);
+    final clocks = parseScoreBandsTable(
+      'H;18;34;00:00;01:30;10\nM;35;60;00:15.2;*;0',
+      exercise,
+    );
+    expect(clocks.first.maxMark, 90);
+    expect(clocks.last.minMark, 15.2);
     expect(
       () => parseScoreBandsTable('H;61;70;0;8;10', exercise),
       throwsFormatException,
@@ -1623,7 +1629,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Suspensión en barra'), findsOneWidget);
     expect(find.textContaining('Dominadas'), findsNothing);
-    await tester.enterText(find.byType(TextFormField), '95');
+    await tester.enterText(find.byType(TextFormField), '01:35');
     await tester.tap(find.text('Evaluar marcas'));
     await tester.pumpAndSettle();
     expect(find.textContaining('6 puntos'), findsOneWidget);
@@ -1677,7 +1683,7 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Marca máxima para aprobar'),
-      '320',
+      '05:20',
     );
     await tester.tap(find.text('Guardar mínimo'));
     await tester.pumpAndSettle();
@@ -1690,7 +1696,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Marca máxima para aprobar'),
-      '310',
+      '05:10',
     );
     await tester.tap(find.text('Guardar mínimo'));
     await tester.pumpAndSettle();

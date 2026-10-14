@@ -1801,7 +1801,7 @@ String _target(WorkoutExecutionSet set) {
 String _clock(int seconds) {
   final minutes = seconds ~/ 60;
   final remainder = seconds % 60;
-  return '$minutes:${remainder.toString().padLeft(2, '0')}';
+  return '${minutes.toString().padLeft(2, '0')}:${remainder.toString().padLeft(2, '0')}';
 }
 
 String _number(double value) =>

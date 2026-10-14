@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/performance_set.dart';
 import 'package:workout_core/performance_time.dart';
@@ -57,7 +58,15 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
       'reason': null,
     };
     for (final e in values.entries) {
-      _fields[e.key] = TextEditingController(text: e.value?.toString() ?? '');
+      final time =
+          e.key == 'window' ||
+          e.key == 'penalty' ||
+          e.key == 'value' && _timeValue;
+      _fields[e.key] = TextEditingController(
+        text: time && e.value is num
+            ? formatDurationSeconds(e.value as num)
+            : e.value?.toString() ?? '',
+      );
     }
     _technique = r?.techniqueValid;
     _succeeded = r?.succeeded;
@@ -79,6 +88,7 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
     'DURATION',
     'TIME_FOR_DISTANCE',
     'TIME_FOR_COURSE',
+    'REACTIVE_METRICS',
   ].contains(p.measurement);
   Widget _number(
     String key,
@@ -89,14 +99,18 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
     padding: const EdgeInsets.only(bottom: 12),
     child: TextFormField(
       controller: _fields[key],
+      inputFormatters: time
+          ? const [DurationInputFormatter(allowFraction: true)]
+          : null,
       decoration: InputDecoration(
         labelText: label,
+        hintText: time ? '00:00' : null,
         helperText: time
-            ? 'Minutos:segundos (1:30) o segundos (90). Vacío si no lo sabes.'
+            ? 'Minutos:segundos. Teclea 130 para 01:30. Vacío si no lo sabes.'
             : 'Déjalo vacío si no lo sabes.',
       ),
       keyboardType: time
-          ? TextInputType.datetime
+          ? const TextInputType.numberWithOptions(decimal: true)
           : TextInputType.numberWithOptions(decimal: !integer),
       validator: (s) {
         if (s == null || s.trim().isEmpty) return null;
@@ -211,7 +225,7 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
                       _fields[p.measurement == 'REPS_IN_TIME'
                               ? 'window'
                               : 'value']!
-                          .text = formatPerformanceTime(
+                          .text = formatDurationSeconds(
                         seconds,
                       );
                     },
@@ -266,7 +280,7 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           _number('rpe', 'Esfuerzo que has sentido · 1 a 10'),
         ],
         if (_penalties)
-          _number('penalty', 'Penalización del protocolo · segundos'),
+          _number('penalty', 'Penalización del protocolo', time: true),
         if (p.measurement == 'REACTIVE_METRICS') ...[
           _number('height', 'Altura medida del salto · metros'),
           TextFormField(

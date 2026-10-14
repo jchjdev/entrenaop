@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:workout_editor_ui/duration_input_formatter.dart';
+import 'package:workout_core/performance_time.dart';
+
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
@@ -193,9 +196,7 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
               valid: !(_nullAttempts[_attemptKey(test, index)] ?? false),
               mark: _nullAttempts[_attemptKey(test, index)] == true
                   ? null
-                  : double.parse(
-                      _controller(test, index).text.trim().replaceAll(',', '.'),
-                    ),
+                  : _parseMark(test, _controller(test, index).text)!,
             ),
         ],
       ),
@@ -255,19 +256,21 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
             controller: _controller(test, index),
             decoration: InputDecoration(
               labelText: 'Marca',
-              suffixText: _unit(test.unit),
+              suffixText: test.unit == 'seconds' ? 'min:seg' : _unit(test.unit),
+              hintText: test.unit == 'seconds' ? '00:00' : null,
               helperText:
                   'Precisión: ${_mark(test.markStep)} ${_unit(test.unit)}',
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: test.unit == 'seconds'
+                ? const [DurationInputFormatter(allowFraction: true)]
+                : null,
             onChanged: (_) => setState(() {
               _result = null;
               _saved = false;
             }),
             validator: (raw) {
-              final value = double.tryParse(
-                (raw ?? '').trim().replaceAll(',', '.'),
-              );
+              final value = _parseMark(test, raw ?? '');
               if (value == null ||
                   !value.isFinite ||
                   value < 0 ||
@@ -606,6 +609,11 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
     ),
   );
 }
+
+double? _parseMark(ProgramAssessmentTest test, String text) =>
+    test.unit == 'seconds'
+    ? parsePerformanceTime(text)
+    : double.tryParse(text.trim().replaceAll(',', '.'));
 
 String _unit(String unit) => switch (unit) {
   'seconds' => 's',

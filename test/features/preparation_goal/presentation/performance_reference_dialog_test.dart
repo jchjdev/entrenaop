@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/performance_reference_dialog.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
@@ -70,7 +71,9 @@ void main() {
                           data: data,
                           onSave: (_) async {
                             saveCalls++;
-                            if (saveCalls == 1) throw StateError('Sin conexión');
+                            if (saveCalls == 1) {
+                              throw StateError('Sin conexión');
+                            }
                           },
                           objective: {
                             'name': 'Prueba',
@@ -144,7 +147,14 @@ void main() {
         expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
         await t.tap(find.text('Atrás'));
         await t.pumpAndSettle();
-        expect(t.widget<TextFormField>(field).controller!.text, scenario.$4);
+        expect(
+          t.widget<TextFormField>(field).controller!.text,
+          scenario.$2 == 'MAX_LOAD'
+              ? scenario.$4
+              : formatDurationSeconds(
+                  num.parse(scenario.$4.replaceAll(',', '.')),
+                ),
+        );
         await t.tap(find.text('Continuar'));
         await t.pumpAndSettle();
         await t.tap(find.text('Guardar referencia'));

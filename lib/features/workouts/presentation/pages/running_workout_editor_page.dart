@@ -656,9 +656,9 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                     data.recoveryController.clear();
                   } else if (value == RunningRecoveryType.passive) {
                     data.recoveryByDistance = false;
-                    data.recoveryController.text = '1:00';
+                    data.recoveryController.text = '01:00';
                   } else if (data.recoveryController.text.isEmpty) {
-                    data.recoveryController.text = '1:00';
+                    data.recoveryController.text = '01:00';
                   }
                 });
                 widget.onChanged();
@@ -926,7 +926,7 @@ double _positiveNumber(String value) {
 }
 
 String _clock(int seconds) =>
-    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+    '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 
 String _number(double value) => value == value.roundToDouble()
     ? value.round().toString()

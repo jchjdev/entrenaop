@@ -1,5 +1,47 @@
 # Identidad visual de EntrenaOP
 
+## Entrada uniforme de tiempos · UI-029 · 14/10/2026
+
+Los campos de duración/ritmo expresados en segundos utilizan reloj `00:00`
+(minutos:segundos). Teclear `30` muestra `00:30`; `130` muestra `01:30`;
+`1130` muestra `11:30`. No se necesita escribir dos puntos en el teclado móvil.
+Los dos puntos explícitos y el pegado siguen admitidos. La entrada larga
+conserva el soporte de horas del control existente.
+
+Las mediciones precisas admiten coma o punto en la fracción, por ejemplo
+`00:15.250`. No se redondea el valor deportivo al presentarlo. Los valores
+precargados se convierten desde segundos reales: 90 se muestra como `01:30`,
+no se pasa por la máscara abreviada como si fuese texto tecleado.
+
+Áreas cubiertas:
+
+- Tropa: plancha, carrera y agilidad; FAS: cálculo y registro periódico.
+- Evaluaciones de cualquier programa y sus intentos, conservando resolución.
+- Referencias, metas y resultados de rendimiento, contacto y penalizaciones.
+- Carrera: meta, margen oficial, control 2 km y parciales, calculadora de ritmos,
+  simulador, creación de sesiones, trabajo/recuperación y corrección de historial.
+- Fuerza: duración de serie, descanso de serie/estación/ronda y límite AMRAP.
+- Admin: los mismos editores, simulación de evaluación, mínimos, extremos de
+  baremos y resolución temporal de pruebas; registros/referencias del laboratorio.
+  La importación de baremos acepta reloj además de segundos numéricos antiguos.
+
+El componente compartido vive en `workout_editor_ui`. `StrengthSetFields`
+conserva su contrato de callbacks en segundos cuando ese era su contrato:
+la máscara es de presentación. No se cambian motor, esquema, RPC, permisos,
+datos anteriores ni unidades almacenadas. Se mantienen límites y restricciones
+enteras previas, incluida la plancha entera de la calculadora y los minutos
+completos del límite AMRAP personal. Disponibilidad y estimaciones que preguntan
+minutos completos siguen preguntando minutos; no son campos de segundos.
+
+Verificación del 14/10/2026: análisis limpio en deportista y admin; 781 pruebas
+de raíz, 109 del admin y nueve de `workout_editor_ui` correctas, con las dos
+omisiones optativas existentes. Ambas webs compilan. Las pruebas nuevas
+comprueban escritura por dígitos, borrado completo, pegado/reemplazo, fracciones,
+equivalencia del resultado real de Tropa y del editor compartido, importación
+de relojes y corrección de una entrada inválida sin colapsar el laboratorio.
+No acredita teclado físico Android/iOS ni instalación de una versión nueva
+en el móvil. Sin cambios SQL, no se ejecutan baterías SQL nuevas.
+
 ## Pro: recorrido y contratación · COM-004/006 · 10/10/2026
 
 Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 29,99 €/año

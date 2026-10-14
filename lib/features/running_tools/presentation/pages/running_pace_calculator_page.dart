@@ -29,7 +29,7 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
   ];
   static const _splitOptions = [100, 200, 400, 500, 1000];
 
-  final _paceController = TextEditingController(text: '3:40');
+  final _paceController = TextEditingController(text: '03:40');
   final _distanceController = TextEditingController(text: '400');
   int? _selectedDistance = 400;
   int? _selectedSplit;
@@ -115,7 +115,7 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                             inputFormatters: const [DurationInputFormatter()],
                             decoration: const InputDecoration(
                               labelText: 'Ritmo objetivo (min:seg/km)',
-                              hintText: '3:40',
+                              hintText: '00:00',
                               helperText: 'Escribe, por ejemplo, 3:40',
                               prefixIcon: Icon(Icons.speed_rounded),
                             ),

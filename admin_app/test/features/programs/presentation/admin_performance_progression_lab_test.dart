@@ -251,6 +251,29 @@ void main() {
     },
   );
 
+  testWidgets(
+    'un reloj inválido no colapsa al añadir una serie y permite corregirlo',
+    (tester) async {
+      await mount(tester);
+      await example(tester);
+      await next(tester);
+      await next(tester);
+      await next(tester);
+      final field = seriesField('plank', 0);
+      await tester.ensureVisible(field);
+      await tester.enterText(field, '00:99');
+      await tap(tester, find.text('Añadir serie'));
+      expect(tester.takeException(), isNull);
+      expect(seriesValue(tester, 'plank', 0), '00:99');
+      await tester.ensureVisible(field);
+      await tester.enterText(field, '130');
+      expect(seriesValue(tester, 'plank', 0), '01:30');
+      await next(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('targets_bench')), findsOneWidget);
+    },
+  );
+
   testWidgets('añadir y quitar una serie intermedia conserva las demás', (
     tester,
   ) async {

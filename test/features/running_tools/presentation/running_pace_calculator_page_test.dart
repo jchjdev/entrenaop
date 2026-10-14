@@ -10,7 +10,7 @@ void main() {
       const MaterialApp(home: RunningPaceCalculatorPage()),
     );
 
-    expect(find.text('3:40'), findsWidgets);
+    expect(find.text('03:40'), findsWidgets);
     expect(
       tester
           .widget<Text>(find.byKey(const ValueKey('running-total-time')))
@@ -34,7 +34,7 @@ void main() {
     await tester.enterText(pace, '415');
     await tester.pump();
 
-    expect(find.text('4:15'), findsWidgets);
+    expect(find.text('04:15'), findsWidgets);
     expect(
       tester
           .widget<Text>(find.byKey(const ValueKey('running-total-time')))

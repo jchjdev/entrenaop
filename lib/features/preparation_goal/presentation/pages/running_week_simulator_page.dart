@@ -119,7 +119,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
       _recentRunningDays = 2;
       _sessionMinutes = 45;
       _testTime.text = '10:00';
-      _targetTime.text = '9:30';
+      _targetTime.text = '09:30';
       _reportsPain = false;
       _requiresReview = false;
       _hasOfficialWeek = false;
@@ -335,7 +335,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           inputFormatters: const [DurationInputFormatter()],
                           decoration: const InputDecoration(
                             labelText: 'Marca de 2 km (escenario)',
-                            hintText: 'Ejemplo: 10:00',
+                            hintText: '00:00',
                             helperText:
                                 'Puedes escribir solo dígitos: 1000 → 10:00.',
                           ),
@@ -356,7 +356,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           inputFormatters: const [DurationInputFormatter()],
                           decoration: const InputDecoration(
                             labelText: 'Objetivo de 2 km (opcional)',
-                            hintText: 'Ejemplo: 9:30',
+                            hintText: '00:00',
                             helperText: 'Solo para comparar la meta con la marca actual.',
                           ),
                           onChanged: (_) => setState(() => _decision = null),

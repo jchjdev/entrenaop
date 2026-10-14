@@ -1,5 +1,23 @@
 # Roadmap de EntrenaOP
 
+**UI-029, 14/10/2026 · entrada de tiempos uniforme:** se revisan los campos
+de segundos/ritmos del deportista, admin y controles compartidos. Se muestra
+`00:00` y se añaden separadores al teclear dígitos, con fracciones en mediciones
+precisas. Valores precargados y callbacks conservan segundos/milisegundos;
+no cambian datos anteriores, restricciones, algoritmos, SQL ni producción.
+Alcance detallado e inventario por recorrido en `VISUAL_DESIGN.md`.
+
+Comprobación: análisis de ambas apps sin incidencias, 781 pruebas de raíz,
+109 del admin y nueve de `workout_editor_ui` correctas, con las omisiones
+optativas existentes. Ambas webs compiladas. El teclado numérico se prueba
+mediante widgets/formatter, no mediante instalación en Android/iOS físico.
+Se conserva sin incluir el archivo previo `devtools_options.yaml`.
+
+Este recorrido de entrada queda cerrado en código. El único siguiente paso
+UX recomendado es comprobar Tropa → FAS → sesión → corrección de resultado
+en los dispositivos actualizados. No sustituye los siguientes tramos de
+negocio o entrenamiento definidos en sus documentos responsables.
+
 **COM-018, 13/10/2026 · anual y confirmación tardía:** compra anual Test Store
 acreditada en Dev; Javier observa oferta persistente y Pro al restaurar. El
 repositorio añade confirmación automática limitada, sin recomprar y sin conceder

@@ -1,4 +1,5 @@
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/performance_progression_policy.dart';
 import 'package:workout_core/performance_training_contract.dart';
@@ -536,7 +537,7 @@ class _AdminPerformanceProgressionLabState
   Widget _seriesEditor(_LabSpec spec) {
     final input = _inputs[spec.id]!;
     final unit = spec.model == PerformanceProgressionModel.duration
-        ? 'segundos'
+        ? 'min:seg'
         : 'repeticiones';
     return Column(
       key: ValueKey('targets_${spec.id}'),
@@ -558,15 +559,29 @@ class _AdminPerformanceProgressionLabState
               children: [
                 Expanded(
                   child: TextFormField(
-                    initialValue: series.value,
+                    initialValue:
+                        spec.model == PerformanceProgressionModel.duration &&
+                            num.tryParse(series.value) != null
+                        ? formatDurationSeconds(num.parse(series.value))
+                        : series.value,
                     decoration: InputDecoration(
                       labelText: 'Serie ${i + 1}',
                       suffixText: unit,
                     ),
                     keyboardType: TextInputType.number,
-                    onChanged: (value) => series.value = value,
+                    inputFormatters:
+                        spec.model == PerformanceProgressionModel.duration
+                        ? const [DurationInputFormatter()]
+                        : null,
+                    onChanged: (value) => series.value =
+                        spec.model == PerformanceProgressionModel.duration
+                        ? parseDurationInput(value)?.toString() ?? value
+                        : value,
                     validator: (value) {
-                      final target = int.tryParse((value ?? '').trim());
+                      final target =
+                          spec.model == PerformanceProgressionModel.duration
+                          ? parseDurationInput(value ?? '')
+                          : int.tryParse((value ?? '').trim());
                       return target == null || target < 1 || target > 3600
                           ? 'Introduce un entero entre 1 y 3600.'
                           : null;

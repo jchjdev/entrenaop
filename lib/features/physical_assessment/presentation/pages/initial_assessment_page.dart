@@ -4,6 +4,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/bloc/physica
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_state.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/assessment_formatters.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/utils/mark_input_parser.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -253,14 +254,14 @@ class _AssessmentForm extends StatelessWidget {
                   ),
                   controller: plankController,
                   label: 'Tiempo',
-                  hint: 'Ej. 45',
-                  suffix: 'seg',
+                  hint: '00:45',
+                  suffix: 'min:seg',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   validator: (value) =>
                       parseSecondsToMilliseconds(value ?? '') == null
-                      ? 'Introduce los segundos; por ejemplo, 45.'
+                      ? 'Introduce un tiempo válido, por ejemplo 00:45.'
                       : null,
                 ),
                 _MarkFieldCard(
@@ -273,9 +274,9 @@ class _AssessmentForm extends StatelessWidget {
                   ),
                   controller: runController,
                   label: 'Tiempo',
-                  hint: 'Ej. 11:30',
+                  hint: '00:00',
                   suffix: 'mm:ss',
-                  keyboardType: TextInputType.datetime,
+                  keyboardType: TextInputType.number,
                   validator: (value) =>
                       parseClockToMilliseconds(value ?? '') == null
                       ? 'Usa el formato minutos:segundos; por ejemplo, 11:30.'
@@ -291,14 +292,14 @@ class _AssessmentForm extends StatelessWidget {
                   ),
                   controller: agilityController,
                   label: 'Tiempo',
-                  hint: 'Ej. 15,2',
-                  suffix: 'seg',
+                  hint: '00:15.2',
+                  suffix: 'min:seg',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   validator: (value) =>
                       parseSecondsToMilliseconds(value ?? '') == null
-                      ? 'Introduce un tiempo válido; por ejemplo, 15,2.'
+                      ? 'Introduce un tiempo válido; por ejemplo, 00:15.2.'
                       : null,
                 ),
                 const SizedBox(height: 8),
@@ -409,7 +410,12 @@ class _MarkFieldCard extends StatelessWidget {
             const SizedBox(height: 16),
             TextFormField(
               controller: controller,
-              keyboardType: keyboardType,
+              keyboardType: suffix == 'rep'
+                  ? keyboardType
+                  : const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: suffix == 'rep'
+                  ? null
+                  : [DurationInputFormatter(allowFraction: suffix != 'mm:ss')],
               validator: validator,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(

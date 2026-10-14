@@ -259,8 +259,8 @@ void main() {
   });
 
   for (final (seconds, expectedText) in [
-    (20, '0:20'),
-    (90, '1:30'),
+    (20, '00:20'),
+    (90, '01:30'),
     (3601, '60:01'),
   ]) {
     testWidgets(
@@ -302,7 +302,7 @@ void main() {
         TextFormField,
         'Tiempo realizado (min:seg)',
       );
-      expect(tester.widget<TextFormField>(field).controller!.text, '0:20');
+      expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
       final save = find.text('Guardar serie');
       await tester.ensureVisible(save);
       await tester.pumpAndSettle();
@@ -323,7 +323,7 @@ void main() {
     );
     await tester.ensureVisible(field);
     await tester.enterText(field, '20');
-    expect(tester.widget<TextFormField>(field).controller!.text, '0:20');
+    expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
     final save = find.text('Guardar serie');
     await tester.ensureVisible(save);
     await tester.tap(save);

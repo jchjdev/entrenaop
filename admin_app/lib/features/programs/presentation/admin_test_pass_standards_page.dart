@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
+import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
 
 class AdminTestPassStandardsPage extends StatefulWidget {
@@ -227,7 +229,11 @@ class _StandardDialogState extends State<_StandardDialog> {
     text: (widget.current?.maxAge ?? widget.test.maxAge).toString(),
   );
   late final _threshold = TextEditingController(
-    text: widget.current == null ? '' : formatMark(widget.current!.threshold),
+    text: widget.current == null
+        ? ''
+        : widget.test.unit == 'seconds'
+        ? formatDurationSeconds(widget.current!.threshold)
+        : formatMark(widget.current!.threshold),
   );
   late String _category =
       widget.current?.category ??
@@ -308,19 +314,25 @@ class _StandardDialogState extends State<_StandardDialog> {
             ),
             TextFormField(
               controller: _threshold,
+              inputFormatters: widget.test.unit == 'seconds'
+                  ? const [DurationInputFormatter(allowFraction: true)]
+                  : null,
               decoration: InputDecoration(
                 labelText: widget.test.betterDirection == 'higher'
                     ? 'Marca mínima para aprobar'
                     : 'Marca máxima para aprobar',
-                suffixText: _unit(widget.test.unit),
+                suffixText: widget.test.unit == 'seconds'
+                    ? 'min:seg'
+                    : _unit(widget.test.unit),
+                hintText: widget.test.unit == 'seconds' ? '00:00' : null,
               ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
               validator: (value) {
-                final mark = double.tryParse(
-                  (value ?? '').replaceAll(',', '.'),
-                );
+                final mark = widget.test.unit == 'seconds'
+                    ? parsePerformanceTime(value ?? '')
+                    : double.tryParse((value ?? '').replaceAll(',', '.'));
                 return mark == null || !mark.isFinite || mark < 0
                     ? 'Introduce una marca válida.'
                     : null;
@@ -355,7 +367,9 @@ class _StandardDialogState extends State<_StandardDialog> {
               category: _category,
               minAge: from,
               maxAge: to,
-              threshold: double.parse(_threshold.text.replaceAll(',', '.')),
+              threshold: (widget.test.unit == 'seconds'
+                  ? parsePerformanceTime(_threshold.text)
+                  : double.tryParse(_threshold.text.replaceAll(',', '.')))!,
             ),
           );
         },

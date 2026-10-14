@@ -1,12 +1,12 @@
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:convert';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/services.dart';
 import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
@@ -234,10 +234,10 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           : format == WorkoutBlockFormat.emom
           ? 60
           : usesRounds
-          ? int.tryParse(block.rest.text.trim())
+          ? _clock(block.rest.text.trim())
           : 0;
       final cap = format == WorkoutBlockFormat.amrap
-          ? _minutesToSeconds(block.cap.text)
+          ? _clock(block.cap.text)
           : null;
       if (rounds == null ||
           rounds < 1 ||
@@ -645,10 +645,10 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                     _segments[i].recovery = value;
                     if (value == RunningRecoveryType.passive) {
                       _segments[i].recoveryByDistance = false;
-                      _segments[i].recoveryTime.text = '1:00';
+                      _segments[i].recoveryTime.text = '01:00';
                     } else if (value != null &&
                         _segments[i].recoveryTime.text.isEmpty) {
-                      _segments[i].recoveryTime.text = '1:00';
+                      _segments[i].recoveryTime.text = '01:00';
                     }
                   }),
                   onRecoveryMeasureChanged: (value) => setState(() {
@@ -771,9 +771,9 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             if (format == WorkoutBlockFormat.superset ||
                 format == WorkoutBlockFormat.circuit ||
                 format == WorkoutBlockFormat.intervals)
-              _field(block.rest, 'Descanso entre rondas (s)', 230),
+              _field(block.rest, 'Descanso entre rondas (m:ss)', 230),
             if (format == WorkoutBlockFormat.amrap)
-              _field(block.cap, 'Límite global (min)', 190),
+              _field(block.cap, 'Límite global (m:ss)', 190),
           ],
         ),
         const SizedBox(height: 8),
@@ -1084,13 +1084,15 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        keyboardType: clock || text
+        keyboardType: text
             ? TextInputType.text
             : const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: clock
-            ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9:]'))]
-            : null,
-        decoration: InputDecoration(labelText: label),
+        inputFormatters: clock ? const [DurationInputFormatter()] : null,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: clock ? '00:00' : null,
+          suffixText: clock ? 'min:seg' : null,
+        ),
       ),
     );
   }
@@ -1147,7 +1149,7 @@ class _Segment {
   final target = TextEditingController();
   final pace = TextEditingController();
   final paceMax = TextEditingController();
-  final recoveryTime = TextEditingController(text: '1:00');
+  final recoveryTime = TextEditingController(text: '01:00');
   bool byDistance = true;
   bool recoveryByDistance = false;
   RunningRecoveryType? recovery;
@@ -1169,8 +1171,8 @@ class _StrengthBlock {
     block.name.text = source.name;
     block.format = source.format;
     block.rounds.text = source.rounds.toString();
-    block.rest.text = source.restAfterSeconds.toString();
-    block.cap.text = _number((source.timeCapSeconds ?? 600) / 60);
+    block.rest.text = formatDurationSeconds(source.restAfterSeconds);
+    block.cap.text = formatDurationSeconds(source.timeCapSeconds ?? 600);
     for (final exercise in block.exercises) {
       exercise.dispose();
     }
@@ -1182,8 +1184,8 @@ class _StrengthBlock {
 
   final name = TextEditingController(text: 'Fuerza');
   final rounds = TextEditingController(text: '3');
-  final rest = TextEditingController(text: '60');
-  final cap = TextEditingController(text: '10');
+  final rest = TextEditingController(text: '01:00');
+  final cap = TextEditingController(text: '10:00');
   final exercises = <_Exercise>[_Exercise()];
   WorkoutBlockFormat format = WorkoutBlockFormat.straightSets;
 
@@ -1262,19 +1264,11 @@ class _Exercise {
   }
 }
 
-String _time(int seconds) =>
-    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+String _time(int seconds) => formatDurationSeconds(seconds);
 
 String _number(double value) => value == value.roundToDouble()
     ? value.round().toString()
     : value.toString();
-
-// El editor de fuerza muestra minutos para el límite global, pero la plantilla
-// conserva segundos. El resto de objetivos y descansos de fuerza ya son segundos.
-int? _minutesToSeconds(String value) {
-  final minutes = double.tryParse(value.trim().replaceAll(',', '.'));
-  return minutes == null ? null : (minutes * 60).round();
-}
 
 class _SetVariation {
   final target = TextEditingController();

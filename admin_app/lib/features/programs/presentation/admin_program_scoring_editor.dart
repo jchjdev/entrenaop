@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
+import 'package:workout_editor_ui/duration_input_formatter.dart';
+import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
 
 String categoryLabel(String category) => switch (category) {
@@ -428,6 +430,8 @@ List<AdminScoreBand> parseScoreBandsTable(String text, AdminProgramTest test) {
     final maxAge = int.tryParse(parts[2].trim());
     double? mark(String raw) => raw.trim().isEmpty || raw.trim() == '*'
         ? null
+        : test.unit == 'seconds'
+        ? parsePerformanceTime(raw)
         : double.tryParse(raw.trim().replaceAll(',', '.'));
     final minMark = mark(parts[3]);
     final maxMark = mark(parts[4]);
@@ -950,8 +954,16 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
       return;
     }
     _category = band.category;
-    _min.text = band.minMark == null ? '' : formatMark(band.minMark);
-    _max.text = band.maxMark == null ? '' : formatMark(band.maxMark);
+    _min.text = band.minMark == null
+        ? ''
+        : widget.test.unit == 'seconds'
+        ? formatDurationSeconds(band.minMark!)
+        : formatMark(band.minMark);
+    _max.text = band.maxMark == null
+        ? ''
+        : widget.test.unit == 'seconds'
+        ? formatDurationSeconds(band.maxMark!)
+        : formatMark(band.maxMark);
     _points.text = formatMark(band.points);
     _minAge.text = band.minAge.toString();
     _maxAge.text = band.maxAge.toString();
@@ -1044,7 +1056,11 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _min,
-                decoration: const InputDecoration(
+                inputFormatters: widget.test.unit == 'seconds'
+                    ? const [DurationInputFormatter(allowFraction: true)]
+                    : null,
+                decoration: InputDecoration(
+                  hintText: widget.test.unit == 'seconds' ? '00:00' : null,
                   labelText: 'Desde (vacío = sin mínimo)',
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
@@ -1053,7 +1069,11 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
               ),
               TextFormField(
                 controller: _max,
-                decoration: const InputDecoration(
+                inputFormatters: widget.test.unit == 'seconds'
+                    ? const [DurationInputFormatter(allowFraction: true)]
+                    : null,
+                decoration: InputDecoration(
+                  hintText: widget.test.unit == 'seconds' ? '00:00' : null,
                   labelText: 'Hasta (vacío = sin máximo)',
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
@@ -1072,7 +1092,7 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
               const SizedBox(height: 8),
               Text(
                 'Introduce marcas en ${widget.test.unit == 'seconds'
-                    ? 'segundos'
+                    ? 'minutos:segundos (00:00), con decimales cuando corresponda'
                     : widget.test.unit == 'meters'
                     ? 'metros'
                     : 'repeticiones'}; resolución ${formatMark(widget.test.markStep)}.',
@@ -1090,8 +1110,16 @@ class _ScoreBandDialogState extends State<_ScoreBandDialog> {
       FilledButton(
         onPressed: () {
           if (!_form.currentState!.validate()) return;
-          final min = _min.text.trim().isEmpty ? null : _number(_min.text);
-          final max = _max.text.trim().isEmpty ? null : _number(_max.text);
+          final min = _min.text.trim().isEmpty
+              ? null
+              : widget.test.unit == 'seconds'
+              ? parsePerformanceTime(_min.text)
+              : _number(_min.text);
+          final max = _max.text.trim().isEmpty
+              ? null
+              : widget.test.unit == 'seconds'
+              ? parsePerformanceTime(_max.text)
+              : _number(_max.text);
           if ((_min.text.trim().isNotEmpty && min == null) ||
               (_max.text.trim().isNotEmpty && max == null) ||
               (min == null && max == null) ||

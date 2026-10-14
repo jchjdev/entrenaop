@@ -488,9 +488,15 @@ class _MarkControl extends StatelessWidget {
                 child: TextFormField(
                   key: ValueKey('fas-mark-${test.id}'),
                   controller: controller,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: test.id == 'run_2000_m'
-                      ? const [DurationInputFormatter()]
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: test.id != 'upper_body_push_ups_2_min'
+                      ? [
+                          DurationInputFormatter(
+                            allowFraction: test.id == 'agility_speed_circuit',
+                          ),
+                        ]
                       : null,
                   style: const TextStyle(
                     fontSize: 28,
@@ -736,9 +742,9 @@ String _inputLabel(String testId) => switch (testId) {
 
 String _inputUnit(String testId) => switch (testId) {
   'upper_body_push_ups_2_min' => 'rep',
-  'abdominal_plank' => 'min',
-  'run_2000_m' => 'min',
-  'agility_speed_circuit' => 's',
+  'abdominal_plank' => 'min:seg',
+  'run_2000_m' => 'min:seg',
+  'agility_speed_circuit' => 'min:seg',
   _ => '',
 };
 
@@ -752,8 +758,7 @@ String _formatMarkForInput(String testId, int mark) => switch (testId) {
   'upper_body_push_ups_2_min' => '$mark',
   'abdominal_plank' => _formatClock(mark),
   'run_2000_m' => _formatClock(mark),
-  'agility_speed_circuit' =>
-    (mark / 1000).toStringAsFixed(1).replaceAll('.', ','),
+  'agility_speed_circuit' => formatDurationSeconds(mark / 1000),
   _ => '$mark',
 };
 
@@ -769,7 +774,7 @@ String _formatRangeLabel(String testId, int mark) => switch (testId) {
 String _formatClock(int milliseconds) {
   final seconds = milliseconds ~/ 1000;
   final minutes = seconds ~/ 60;
-  return '$minutes:${(seconds % 60).toString().padLeft(2, '0')}';
+  return '${minutes.toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 }
 
 const _calculatorTests = [
@@ -785,15 +790,15 @@ const _calculatorTests = [
     id: 'abdominal_plank',
     label: 'Plancha isométrica',
     shortLabel: 'Plancha isométrica',
-    hint: 'Ej.: 1:20 o 80',
-    helper: 'Minutos:segundos o segundos completos',
-    error: 'Usa m:ss o segundos completos, por ejemplo 1:20.',
+    hint: '00:00',
+    helper: 'Teclea 120 para 01:20; los dos puntos se añaden solos',
+    error: 'Usa minutos:segundos, por ejemplo 01:20.',
   ),
   (
     id: 'run_2000_m',
     label: 'Carrera 2.000 m',
     shortLabel: 'Carrera 2.000 m',
-    hint: 'Ej.: 11:46',
+    hint: '00:00',
     helper: 'Teclea 1146 y se convertirá en 11:46',
     error: 'Introduce los minutos y segundos, por ejemplo 1146.',
   ),
@@ -801,8 +806,8 @@ const _calculatorTests = [
     id: 'agility_speed_circuit',
     label: 'Circuito de agilidad-velocidad',
     shortLabel: 'Agilidad-velocidad',
-    hint: 'Ej.: 15,27',
-    helper: 'Segundos; las centésimas se eliminan según el anexo I',
-    error: 'Introduce segundos, por ejemplo 15,27.',
+    hint: '00:00.00',
+    helper: 'Minutos:segundos con decimales; las centésimas se eliminan según el anexo I',
+    error: 'Introduce un tiempo, por ejemplo 00:15.27.',
   ),
 ];

@@ -1,5 +1,17 @@
 # Arquitectura de EntrenaOP
 
+## Entrada temporal compartida · UI-029 · 14/10/2026
+
+`DurationInputFormatter` de `workout_editor_ui` presenta relojes con minutos
+y segundos de dos cifras y añade separadores al escribir dígitos. La opción
+`allowFraction` se utiliza en mediciones decimales, no en descansos enteros.
+`formatDurationSeconds` convierte valores precargados desde sus unidades reales;
+no se aplica la máscara abreviada a valores persistidos. Las páginas convierten
+el texto a segundos/milisegundos mediante los contratos actuales antes de
+evaluar o guardar. `StrengthSetFields` conserva los callbacks existentes en
+segundos para los consumidores que ya esperaban ese formato. No se trasladan
+reglas deportivas, permisos ni acceso a datos al formateador.
+
 ## Directorio administrativo y responsable único · COM-017 · 13/10/2026
 
 `commercial_access_settings.account_manager_user_id` identifica al único

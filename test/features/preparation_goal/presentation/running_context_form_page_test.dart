@@ -189,7 +189,7 @@ void main() {
     await tester.tap(find.text('Umbral del catálogo con margen').last);
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.widgetWithText(TextField, 'Segundos por debajo del umbral'),
+      find.widgetWithText(TextField, 'Margen por debajo del umbral · min:seg'),
       '10',
     );
     FocusManager.instance.primaryFocus?.unfocus();

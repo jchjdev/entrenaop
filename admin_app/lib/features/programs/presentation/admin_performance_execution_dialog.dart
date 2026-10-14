@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/performance_progression_policy.dart';
 import 'package:workout_core/strength_exercise_catalog.dart';
@@ -54,7 +55,11 @@ class _AdminPerformanceExecutionDialogState
     _units = [
       for (var i = 0; i < widget.dose.targets.length; i++)
         TextEditingController(
-          text: i < sets.length ? '${sets[i].validUnits ?? ''}' : '',
+          text: i < sets.length && sets[i].validUnits != null
+              ? _isDuration
+                    ? formatDurationSeconds(sets[i].validUnits!)
+                    : '${sets[i].validUnits}'
+              : '',
         ),
     ];
     _loads = [
@@ -108,7 +113,9 @@ class _AdminPerformanceExecutionDialogState
         sets: [
           for (var i = 0; i < _units.length; i++)
             PerformanceProgressionSet(
-              validUnits: int.tryParse(_units[i].text.trim()),
+              validUnits: _isDuration
+                  ? parseDurationInput(_units[i].text)
+                  : int.tryParse(_units[i].text.trim()),
               techniqueValid: _technique[i],
               rir: _isDuration ? null : _rir[i],
               actualLoadKg: _isLoad ? _decimal(_loads[i].text) : null,
@@ -179,14 +186,19 @@ class _AdminPerformanceExecutionDialogState
                   controller: _units[i],
                   decoration: InputDecoration(
                     labelText: _isDuration
-                        ? 'Segundos mantenidos'
+                        ? 'Tiempo mantenido · min:seg'
                         : 'Repeticiones realizadas',
-                    hintText: 'Sin informar',
+                    hintText: _isDuration ? '00:00' : 'Sin informar',
                   ),
                   keyboardType: TextInputType.number,
+                  inputFormatters: _isDuration
+                      ? const [DurationInputFormatter()]
+                      : null,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return null;
-                    final number = int.tryParse(value.trim());
+                    final number = _isDuration
+                        ? parseDurationInput(value)
+                        : int.tryParse(value.trim());
                     return number == null || number < 0 || number > 3600
                         ? 'Introduce un entero entre 0 y 3600.'
                         : null;
