@@ -354,3 +354,32 @@ los tiempos y las fotos. Release con `APP_ENV=development` permite abrir desde
 el icono y consultar Pro; la configuración de compras móvil debug Dev permite
 probar Test Store. Esta validación en Windows no acredita una reinstalación ni
 una compra nueva en el iPhone. Free/Pro mantiene su aceptación física pendiente.
+
+## Actualización del Mac y del iPhone · IOS-006 · 14/10/2026
+
+Se contrasta GitHub y se actualiza `main` del Mac desde `a24ac6d` hasta
+`d7d16aa` mediante fast-forward. Ya incorpora `c6dd045` (entrada `00:00`),
+`c1e97cb` (fotos y acción fija) y los dos commits previos de macOS. Se conserva
+sin cambios la configuración local previa de `project.pbxproj` y los dos
+archivos de resolución de Swift Package Manager; no se incluyen en este punto
+documental ni se sustituye trabajo ajeno.
+
+En el Mac pasan los tres análisis y las baterías completas: 791 pruebas de
+la app, 109 del admin y nueve del editor compartido, con las dos omisiones web
+preexistentes. Se mantienen los lockfiles de las apps; el editor, que no versiona
+su lockfile, prepara sus dependencias solo desde la caché existente.
+
+La firma por SSH vuelve a fallar con `errSecInternalComponent`. Se prepara
+temporalmente Runner en Release sin depurador, con `APP_ENV=development` y sin
+clave Test Store, y Javier ejecuta desde Xcode y confirma que la app abre.
+La nueva aplicación supera la verificación estricta de firma y contiene el
+snapshot AOT; CoreDevice termina el proceso anterior y vuelve a abrir el bundle
+sin LLDB. El esquema compartido vuelve íntegramente a su estado Debug previo.
+
+El iPhone ya tiene el código integrado `d7d16aa`, en lugar de la instalación
+anterior que no incluía los tiempos y las fotos. Se solicita comprobar la
+entrada `130` → `01:30` y el panel de acceso Pro en el teléfono; esa comprobación
+visual sigue pendiente de respuesta. Release consulta el acceso Pro de Supabase
+Dev; una compra nueva o restauración de Test Store sigue requiriendo debug Dev
+y no se acredita por esta instalación. No se modifican datos de cuentas,
+compras ni producción.
