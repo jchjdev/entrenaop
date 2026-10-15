@@ -1,4 +1,6 @@
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrena_ui/entrena_ui.dart'
+    show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 
 import 'dart:async';
 
@@ -52,50 +54,54 @@ class ActiveWorkoutPage extends StatelessWidget {
   Future<bool> _confirmExit(BuildContext context) async {
     final action = await showDialog<_SessionExitAction>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        scrollable: true,
+      builder: (dialogContext) => EntrenaDialog(
         title: const Text('¿Salir de la sesión?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Puedes retomar después, cerrar conservando lo realizado o '
-              'descartar esta sesión y sus series. Los datos que no hayas '
-              'confirmado en pantalla no se registran al salir.',
+              'Puedes retomar después o finalizar conservando lo realizado. '
+              'Descartar elimina la sesión y sus series. Los datos sin '
+              'confirmar no se guardan al salir.',
             ),
             const SizedBox(height: 20),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, _SessionExitAction.resumeLater),
-              child: const Text(
-                'Salir y retomar después',
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, _SessionExitAction.abandon),
-              icon: const Icon(Icons.flag_outlined),
-              label: const Text(
-                'Abandonar y conservar lo realizado',
-                textAlign: TextAlign.center,
-              ),
-            ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, _SessionExitAction.discard),
-              child: const Text('Salir sin guardar'),
+            EntrenaDialogActions(
+              primaryLabel: 'Continuar',
+              onPrimary: () => Navigator.pop(dialogContext),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(
+                    dialogContext,
+                    _SessionExitAction.resumeLater,
+                  ),
+                  child: const Text(
+                    'Salir y retomar después',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: () =>
+                      Navigator.pop(dialogContext, _SessionExitAction.abandon),
+                  child: const Text(
+                    'Finalizar y conservar lo realizado',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: () =>
+                      Navigator.pop(dialogContext, _SessionExitAction.discard),
+                  style: EntrenaButtonStyles.destructive(dialogContext),
+                  child: const Text(
+                    'Descartar sesión',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Seguir aquí'),
-          ),
-        ],
+        actions: const [],
       ),
     );
     if (!context.mounted) return false;
@@ -337,13 +343,13 @@ class _ActiveContentState extends State<_ActiveContent> {
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white54),
                       ),
-                      TextButton.icon(
+                      TextButton(
                         onPressed: saving
                             ? null
                             : () => _requestWorkoutAbandonment(context),
-                        icon: const Icon(Icons.flag_outlined),
-                        label: const Text(
-                          'Abandonar la sesión definitivamente',
+                        child: const Text(
+                          'Finalizar y conservar lo realizado',
+                          textAlign: TextAlign.center,
                         ),
                       ),
                       TextButton(
@@ -357,7 +363,10 @@ class _ActiveContentState extends State<_ActiveContent> {
                                   _leaveDiscardedWorkout(context);
                                 }
                               },
-                        child: const Text('Salir sin guardar'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                        child: const Text('Descartar sesión'),
                       ),
                     ],
                   ],
@@ -417,23 +426,27 @@ void _leaveDiscardedWorkout(BuildContext context) {
 Future<bool> _requestWorkoutDiscard(BuildContext context) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      scrollable: true,
+    builder: (dialogContext) => EntrenaDialog(
       title: const Text('¿Descartar esta sesión?'),
       content: const Text(
-        'Se eliminarán también las series que ya hayas registrado en esta sesión. '
-        'No quedará en el historial. Si estaba en tu agenda, volverá a estar '
-        'pendiente para empezar de nuevo.\n\n'
-        'Esta acción no se puede deshacer y necesita conexión.',
+        'Se eliminarán esta sesión y sus series registradas. No quedará en el '
+        'historial. Si estaba en tu agenda, volverá a estar pendiente.\n\n'
+        'No se puede deshacer y necesita conexión.',
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Seguir aquí'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Descartar y salir'),
+        EntrenaDialogActions(
+          primaryLabel: 'Continuar',
+          onPrimary: () => Navigator.pop(dialogContext, false),
+          secondary: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: EntrenaButtonStyles.destructive(dialogContext),
+              child: const Text(
+                'Descartar y salir',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ],
     ),
@@ -448,9 +461,8 @@ Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
     builder: (dialogContext) {
       WorkoutAbandonmentReason? selected;
       return StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          scrollable: true,
-          title: const Text('Abandonar sesión'),
+        builder: (context, setDialogState) => EntrenaDialog(
+          title: const Text('Finalizar antes de tiempo'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,15 +489,20 @@ Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Seguir entrenando'),
-            ),
-            FilledButton(
-              onPressed: selected == null
-                  ? null
-                  : () => Navigator.pop(dialogContext, selected),
-              child: const Text('Confirmar abandono'),
+            EntrenaDialogActions(
+              primaryLabel: 'Continuar',
+              onPrimary: () => Navigator.pop(dialogContext),
+              secondary: [
+                OutlinedButton(
+                  onPressed: selected == null
+                      ? null
+                      : () => Navigator.pop(dialogContext, selected),
+                  child: const Text(
+                    'Finalizar y conservar',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

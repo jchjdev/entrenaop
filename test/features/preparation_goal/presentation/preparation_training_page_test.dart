@@ -777,10 +777,10 @@ void main() {
       expect(repo.resets, 0);
       await _tap(t, 'Reiniciar ensayos de este programa');
       final button = find.widgetWithText(
-        FilledButton,
+        OutlinedButton,
         'Borrar ensayos y reiniciar',
       );
-      expect(t.widget<FilledButton>(button).onPressed, isNull);
+      expect(t.widget<OutlinedButton>(button).onPressed, isNull);
       await capturePerformanceWidget(t, 'programa-reiniciar-ensayos');
       await t.enterText(find.byType(TextField), 'REINICIAR');
       await t.pumpAndSettle();

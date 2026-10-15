@@ -1,3 +1,5 @@
+import 'package:entrena_ui/entrena_ui.dart'
+    show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -181,19 +183,25 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           await showDialog<bool>(
             context: context,
             barrierDismissible: false,
-            builder: (dialogContext) => AlertDialog(
+            builder: (dialogContext) => EntrenaDialog(
               title: const Text('Borrador encontrado'),
               content: Text(
                 'Guardamos cambios sin finalizar el ${_draftDateText(draft.savedAt)}. ¿Quieres continuar donde lo dejaste?',
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Descartar'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: const Text('Recuperar'),
+                EntrenaDialogActions(
+                  primaryLabel: 'Recuperar',
+                  onPrimary: () => Navigator.of(dialogContext).pop(true),
+                  secondary: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(false),
+                      style: EntrenaButtonStyles.destructive(dialogContext),
+                      child: const Text(
+                        'Descartar',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1010,19 +1018,22 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     if (_blocks[index].rows.isNotEmpty) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (dialogContext) => AlertDialog(
+        builder: (dialogContext) => EntrenaDialog(
           title: const Text('Eliminar bloque'),
           content: const Text(
             'También se quitarán del borrador los ejercicios de este bloque.',
           ),
           actions: [
-            TextButton(
-              onPressed: () => dialogContext.pop(false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => dialogContext.pop(true),
-              child: const Text('Eliminar'),
+            EntrenaDialogActions(
+              primaryLabel: 'Cancelar',
+              onPrimary: () => dialogContext.pop(false),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => dialogContext.pop(true),
+                  style: EntrenaButtonStyles.destructive(dialogContext),
+                  child: const Text('Eliminar', textAlign: TextAlign.center),
+                ),
+              ],
             ),
           ],
         ),

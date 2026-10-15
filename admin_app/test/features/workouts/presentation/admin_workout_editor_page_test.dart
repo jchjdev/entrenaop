@@ -92,7 +92,7 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-    await tester.tap(find.text('Seguir aquí'));
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(_field('Nombre de la sesión')).controller!.text,

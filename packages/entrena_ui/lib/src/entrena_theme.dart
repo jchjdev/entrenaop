@@ -193,26 +193,34 @@ abstract final class EntrenaTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: brandOrange,
-          foregroundColor: const Color(0xFF220B03),
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+          foregroundColor: colorScheme.onPrimary,
+          disabledBackgroundColor: EntrenaVisuals.dark.surfaceHigh,
+          disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
+          minimumSize: const Size(48, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           textStyle: textTheme.labelLarge?.copyWith(
+            fontSize: 15,
             fontWeight: FontWeight.w800,
           ),
+          iconSize: 20,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: EntrenaVisuals.dark.surfaceHigh,
-          foregroundColor: brandOrangeLight,
+          foregroundColor: textPrimary,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
-          minimumSize: const Size(48, 48),
+          minimumSize: const Size(48, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
+          iconSize: 20,
+          side: const BorderSide(color: Color(0xFF3A414C)),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
@@ -225,23 +233,39 @@ abstract final class EntrenaTheme {
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: brandOrangeLight,
-          minimumSize: const Size(48, 48),
-          side: const BorderSide(color: Color(0xFF4E332A)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
+        style:
+            OutlinedButton.styleFrom(
+              foregroundColor: textPrimary,
+              backgroundColor: EntrenaVisuals.dark.surfaceHigh,
+              disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
+              minimumSize: const Size(48, 52),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
+              iconSize: 20,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith(
+                (states) => BorderSide(
+                  color: states.contains(WidgetState.disabled)
+                      ? EntrenaVisuals.dark.outline
+                      : states.contains(WidgetState.focused)
+                      ? brandOrangeLight
+                      : EntrenaVisuals.dark.outlineStrong,
+                ),
+              ),
+            ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: brandOrangeLight,
-          textStyle: textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          foregroundColor: textPrimary,
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          textStyle: textTheme.labelLarge,
+          iconSize: 20,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),

@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
+
+import 'package:entrena_ui/entrena_ui.dart';
 
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:flutter/foundation.dart';
@@ -83,78 +86,147 @@ class _CueSettingsDialogState extends State<_CueSettingsDialog> {
     });
   }
 
+  Widget _buildPreviewButtons(BuildContext context) {
+    final theme = Theme.of(context);
+    final buttonTheme = theme.outlinedButtonTheme.style;
+    final direction = Directionality.of(context);
+    final labelStyle =
+        buttonTheme?.textStyle?.resolve({}) ?? theme.textTheme.labelLarge!;
+    final padding =
+        buttonTheme?.padding?.resolve({})?.resolve(direction) ??
+        const EdgeInsets.symmetric(horizontal: 24, vertical: 12);
+    final iconSize = buttonTheme?.iconSize?.resolve({}) ?? 20;
+    final minimumHeight = buttonTheme?.minimumSize?.resolve({})?.height ?? 48;
+    final availableWidth = EntrenaDialog.contentWidthOf(context);
+    var height = minimumHeight;
+    // Reservar la etiqueta más alta evita tamaños distintos al ampliar texto
+    // o cambiar temporalmente a «Probando…», sin recortar ninguna línea.
+    for (final label in ['Probar sonido', 'Probar vibración', 'Probando…']) {
+      final painter =
+          TextPainter(
+            text: TextSpan(text: label, style: labelStyle),
+            textDirection: direction,
+            textScaler: MediaQuery.textScalerOf(context),
+            locale: Localizations.maybeLocaleOf(context),
+          )..layout(
+            maxWidth: math.max(
+              1,
+              availableWidth - padding.horizontal - iconSize - 8,
+            ),
+          );
+      height = math.max(height, painter.height + padding.vertical);
+      painter.dispose();
+    }
+    final style = OutlinedButton.styleFrom(
+      minimumSize: Size(48, height),
+      textStyle: labelStyle,
+      padding: padding,
+      iconSize: iconSize,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        OutlinedButton.icon(
+          style: style,
+          onPressed: _sound && !_testingSound && !_testingHaptics
+              ? _preview
+              : null,
+          icon: const Icon(Icons.volume_up_outlined),
+          label: Text(
+            _testingSound ? 'Probando…' : 'Probar sonido',
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          style: style,
+          onPressed: _haptics && !_testingHaptics && !_testingSound
+              ? _previewHaptics
+              : null,
+          icon: const Icon(Icons.vibration),
+          label: Text(
+            _testingHaptics ? 'Probando…' : 'Probar vibración',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Avisos del temporizador'),
-    content: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _sound,
-            title: const Text('Sonido'),
-            subtitle: const Text(
+  Widget build(BuildContext context) => EntrenaDialog(
+    title: const Text('Sonido y vibración'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: _sound,
+          title: const Text('Sonido'),
+          subtitle: const Text('Señales en cada fase del temporizador.'),
+          onChanged: (value) => setState(() => _sound = value),
+        ),
+        const SizedBox(height: 8),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: _haptics,
+          title: const Text('Vibración'),
+          subtitle: const Text('En dispositivos compatibles.'),
+          onChanged: (value) => setState(() => _haptics = value),
+        ),
+        const SizedBox(height: 16),
+        _buildPreviewButtons(context),
+        const SizedBox(height: 16),
+        Text(
+          'Mantén la sesión en pantalla y ajusta el volumen multimedia.',
+          style: TextStyle(color: context.visuals.textMuted),
+        ),
+        const SizedBox(height: 8),
+        ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 12),
+          title: const Text('Cómo funcionan los avisos'),
+          children: [
+            const Text(
               'Preparación, inicio, mitad y final. Últimos 10 segundos de '
-              'trabajo y descanso; 3, 2, 1 al terminar el trabajo.',
+              'trabajo y descanso; 3, 2, 1 al terminar el trabajo. '
+              'Los intervalos cortos tienen menos avisos; '
+              'los que coinciden suenan una sola vez.',
             ),
-            onChanged: (value) => setState(() => _sound = value),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _haptics,
-            title: const Text('Vibración'),
-            subtitle: Text(
-              !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-                  ? 'Pulsa Probar vibración y permite las notificaciones de '
-                        'EntrenaOP. Si las bloqueaste, actívalas en Ajustes → '
-                        'Aplicaciones → EntrenaOP → Notificaciones.'
-                  : 'Se aplicará cuando el dispositivo sea compatible.',
-            ),
-            onChanged: (value) => setState(() => _haptics = value),
-          ),
-          OutlinedButton.icon(
-            onPressed: _sound && !_testingSound && !_testingHaptics
-                ? _preview
-                : null,
-            icon: const Icon(Icons.volume_up_outlined),
-            label: Text(_testingSound ? 'Probando…' : 'Probar sonido'),
-          ),
-          OutlinedButton.icon(
-            onPressed: _haptics && !_testingHaptics && !_testingSound
-                ? _previewHaptics
-                : null,
-            icon: const Icon(Icons.vibration),
-            label: Text(_testingHaptics ? 'Probando…' : 'Probar vibración'),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Usa el volumen multimedia. Mantén la sesión en pantalla para '
-            'recibir los avisos. Los intervalos cortos tienen menos avisos; '
-            'los que coinciden suenan una sola vez.',
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Pulsa Probar vibración y permite las notificaciones de '
+                'EntrenaOP. Si las bloqueaste, actívalas en Ajustes → '
+                'Aplicaciones → EntrenaOP → Notificaciones.',
+              ),
+            ],
           ],
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            _error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
         ],
-      ),
+      ],
     ),
     actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
-      ),
-      FilledButton(
-        onPressed: () => Navigator.pop(
+      EntrenaDialogActions(
+        primaryLabel: 'Guardar',
+        onPrimary: () => Navigator.pop(
           context,
           WorkoutCuePreferences(soundEnabled: _sound, hapticsEnabled: _haptics),
         ),
-        child: const Text('Guardar'),
+        secondary: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', textAlign: TextAlign.center),
+          ),
+        ],
       ),
     ],
   );

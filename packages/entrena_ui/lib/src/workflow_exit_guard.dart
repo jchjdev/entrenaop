@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'entrena_dialog_actions.dart';
+
 /// Vive en el router de cada aplicación. Cada pantalla registra su salida real;
 /// no se guardan widgets ni borradores en una instancia global de dominio.
 class WorkflowExitRegistry {
@@ -107,17 +109,20 @@ class _WorkflowDraftGuardState extends State<WorkflowDraftGuard> {
     }
     return await showDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
+          builder: (dialogContext) => EntrenaDialog(
             title: Text(widget.title),
             content: Text(widget.message),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Seguir aquí'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: Text(widget.exitLabel),
+              EntrenaDialogActions(
+                primaryLabel: 'Continuar',
+                onPrimary: () => Navigator.pop(dialogContext, false),
+                secondary: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    style: EntrenaButtonStyles.destructive(dialogContext),
+                    child: Text(widget.exitLabel, textAlign: TextAlign.center),
+                  ),
+                ],
               ),
             ],
           ),

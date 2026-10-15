@@ -60,19 +60,22 @@ class _AdminTestPassStandardsPageState
   Future<void> _delete(AdminPassStandard standard) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => EntrenaDialog(
         title: const Text('Borrar mínimo'),
         content: Text(
           '¿Borrar el mínimo para ${categoryLabel(standard.category)}, ${standard.minAge}–${standard.maxAge} años?',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Borrar'),
+          EntrenaDialogActions(
+            primaryLabel: 'Cancelar',
+            onPrimary: () => Navigator.pop(context, false),
+            secondary: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: EntrenaButtonStyles.destructive(context),
+                child: const Text('Borrar', textAlign: TextAlign.center),
+              ),
+            ],
           ),
         ],
       ),

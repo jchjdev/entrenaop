@@ -290,7 +290,7 @@ void main() {
     await tester.tap(find.byTooltip('Cerrar editor'));
     await tester.pumpAndSettle();
     expect(find.text('¿Descartar cambios de portada?'), findsOneWidget);
-    await tester.tap(find.text('Seguir editando'));
+    await tester.tap(find.text('Continuar editando'));
     await tester.pumpAndSettle();
     expect(find.byType(ProgramCoverEditor), findsOneWidget);
     await tester.tap(find.byTooltip('Cerrar editor'));

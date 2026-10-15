@@ -169,7 +169,7 @@ void main() {
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-      await tester.tap(find.text('Seguir editando'));
+      await tester.tap(find.text('Continuar editando'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,

@@ -1,9 +1,60 @@
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets('avisos con botones separados y accesibles a $width / $scale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 780);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final service = _Cues();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scale)),
+            child: child!,
+          ),
+          home: Scaffold(body: WorkoutCueSettingsButton(cueService: service)),
+        ),
+      );
+      await tester.tap(find.byTooltip('Avisos del temporizador'));
+      await tester.pumpAndSettle();
+      final sound = find.widgetWithText(OutlinedButton, 'Probar sonido');
+      final haptics = find.widgetWithText(OutlinedButton, 'Probar vibración');
+      await tester.ensureVisible(haptics);
+      await tester.pumpAndSettle();
+      expect(tester.getSize(sound).width, tester.getSize(haptics).width);
+      expect(tester.getSize(sound).height, tester.getSize(haptics).height);
+      expect(
+        tester.getTopLeft(haptics).dy - tester.getBottomLeft(sound).dy,
+        greaterThanOrEqualTo(10),
+      );
+      await tester.tap(haptics);
+      await tester.pump();
+      expect(service.hapticPreviews, 1);
+      expect(service.saves, 0);
+      await tester.ensureVisible(find.text('Cómo funcionan los avisos'));
+      await tester.tap(find.text('Cómo funcionan los avisos'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Los intervalos cortos tienen menos avisos'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      expect(service.saves, 1);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('probar y cancelar no modifica las preferencias guardadas', (
     tester,
   ) async {

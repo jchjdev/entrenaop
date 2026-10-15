@@ -22,6 +22,43 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets('Continuar encabeza la salida y conserva la sesión activa', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final (cubit, router) = await _mountSession(tester, repository);
+    final execution = cubit.state.execution;
+    await tester.tap(find.byTooltip('Salir de la sesión'));
+    await tester.pumpAndSettle();
+    final continueButton = find.widgetWithText(FilledButton, 'Continuar');
+    final resume = find.widgetWithText(
+      OutlinedButton,
+      'Salir y retomar después',
+    );
+    final close = find.widgetWithText(
+      OutlinedButton,
+      'Finalizar y conservar lo realizado',
+    );
+    final discard = find.widgetWithText(OutlinedButton, 'Descartar sesión');
+    expect(
+      tester.getTopLeft(continueButton).dy,
+      lessThan(tester.getTopLeft(resume).dy),
+    );
+    expect(tester.getTopLeft(resume).dy, lessThan(tester.getTopLeft(close).dy));
+    expect(
+      tester.getTopLeft(close).dy,
+      lessThan(tester.getTopLeft(discard).dy),
+    );
+    expect(tester.getSize(continueButton).width, tester.getSize(resume).width);
+    await tester.tap(continueButton);
+    await tester.pumpAndSettle();
+    expect(router.state.matchedLocation, '/session');
+    expect(cubit.state.execution, execution);
+    expect(repository.discardAttempts, 0);
+    expect(repository.abandonAttempts, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'un descarte pendiente no permite otra mutación ni pierde el descanso si falla',
     (tester) async {
@@ -72,7 +109,9 @@ void main() {
       final (cubit, router) = await _mountSession(tester, repository);
       await tester.tap(find.byTooltip('Salir de la sesión'));
       await tester.pumpAndSettle();
-      final discard = find.widgetWithText(TextButton, 'Salir sin guardar').last;
+      final discard = find
+          .widgetWithText(OutlinedButton, 'Descartar sesión')
+          .last;
       await tester.ensureVisible(discard);
       await tester.tap(discard);
       await tester.pumpAndSettle();
@@ -104,14 +143,14 @@ void main() {
       await tester.ensureVisible(notes);
       await tester.enterText(notes, 'Conservar si falla');
       Future<void> open() async {
-        final button = find.widgetWithText(TextButton, 'Salir sin guardar');
+        final button = find.widgetWithText(TextButton, 'Descartar sesión');
         await tester.ensureVisible(button);
         await tester.tap(button);
         await tester.pumpAndSettle();
       }
 
       await open();
-      await tester.tap(find.text('Seguir aquí'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       expect(repository.discardAttempts, 0);
       await open();
@@ -164,7 +203,7 @@ void main() {
         await _chooseExitAbandonment(tester);
         await tester.tap(find.text('Falta de tiempo'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Confirmar abandono'));
+        await tester.tap(find.text('Finalizar y conservar'));
         await tester.pumpAndSettle();
         expect(repository.abandonAttempts, 1);
         expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
@@ -198,7 +237,7 @@ void main() {
       await tester.ensureVisible(notes);
       await tester.enterText(notes, 'Borrador que quiero conservar');
       await _chooseExitAbandonment(tester);
-      await tester.tap(find.text('Seguir entrenando'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       expect(repository.abandonAttempts, 0);
       expect(router.state.matchedLocation, '/session');
@@ -209,7 +248,7 @@ void main() {
       await _chooseExitAbandonment(tester);
       await tester.tap(find.text('Falta de tiempo'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Confirmar abandono'));
+      await tester.tap(find.text('Finalizar y conservar'));
       await tester.pumpAndSettle();
       expect(cubit.state.status, ActiveWorkoutStatus.failure);
       expect(router.state.matchedLocation, '/session');
@@ -222,7 +261,7 @@ void main() {
       await _chooseExitAbandonment(tester);
       await tester.tap(find.text('Falta de tiempo'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Confirmar abandono'));
+      await tester.tap(find.text('Finalizar y conservar'));
       await tester.pumpAndSettle();
       expect(repository.abandonAttempts, 2);
       expect(cubit.state.status, ActiveWorkoutStatus.abandoned);
@@ -246,13 +285,16 @@ void main() {
     );
     await tester.tap(find.byTooltip('Salir de la sesión'));
     await tester.pumpAndSettle();
-    final abandon = find.text('Abandonar y conservar lo realizado');
+    final abandon = find.widgetWithText(
+      OutlinedButton,
+      'Finalizar y conservar lo realizado',
+    );
     await tester.ensureVisible(abandon);
     await tester.pumpAndSettle();
     await tester.tap(abandon);
     await tester.pumpAndSettle();
-    expect(find.text('Abandonar sesión'), findsOneWidget);
-    await tester.tap(find.text('Seguir entrenando'));
+    expect(find.text('Finalizar antes de tiempo'), findsOneWidget);
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/session');
     expect(tester.takeException(), isNull);
@@ -361,13 +403,13 @@ void main() {
       await _openAbandonment(tester);
       expect(
         tester
-            .widget<FilledButton>(
-              find.widgetWithText(FilledButton, 'Confirmar abandono'),
+            .widget<OutlinedButton>(
+              find.widgetWithText(OutlinedButton, 'Finalizar y conservar'),
             )
             .onPressed,
         isNull,
       );
-      await tester.tap(find.text('Seguir entrenando'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       expect(repository.abandonAttempts, 0);
       expect(cubit.state.execution!.status, WorkoutExecutionStatus.inProgress);
@@ -385,7 +427,7 @@ void main() {
         find.text('Lo realizado se conserva para tu historial.'),
         findsOneWidget,
       );
-      expect(find.text('Abandonar la sesión definitivamente'), findsNothing);
+      expect(find.text('Finalizar y conservar lo realizado'), findsNothing);
 
       await tester.tap(find.text('Volver'));
       await tester.pumpAndSettle();
@@ -611,7 +653,7 @@ void main() {
       }
       await tester.pumpAndSettle();
       expect(find.text('¿Salir de la sesión?'), findsOneWidget);
-      await tester.tap(find.text('Seguir aquí'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       expect(router.state.matchedLocation, '/session');
       if (bySwipe) {
@@ -931,6 +973,7 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   addTearDown(router.dispose);
   await tester.pumpWidget(
     MaterialApp.router(
+      theme: EntrenaTheme.dark,
       routerConfig: router,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: textScaler),
@@ -946,12 +989,17 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
 Future<void> _chooseExitAbandonment(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Salir de la sesión'));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Abandonar y conservar lo realizado'));
+  await tester.tap(
+    find.widgetWithText(OutlinedButton, 'Finalizar y conservar lo realizado'),
+  );
   await tester.pumpAndSettle();
 }
 
 Future<void> _openAbandonment(WidgetTester tester) async {
-  final abandon = find.text('Abandonar la sesión definitivamente');
+  final abandon = find.widgetWithText(
+    TextButton,
+    'Finalizar y conservar lo realizado',
+  );
   expect(abandon, findsOneWidget);
   await tester.ensureVisible(abandon);
   await tester.pumpAndSettle();
@@ -963,7 +1011,7 @@ Future<void> _confirmAbandonment(WidgetTester tester) async {
   await _openAbandonment(tester);
   await tester.tap(find.text('Falta de tiempo'));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Confirmar abandono'));
+  await tester.tap(find.text('Finalizar y conservar'));
   await tester.pumpAndSettle();
 }
 

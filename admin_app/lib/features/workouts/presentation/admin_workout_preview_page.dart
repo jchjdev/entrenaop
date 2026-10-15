@@ -1,3 +1,5 @@
+import 'package:entrena_ui/entrena_ui.dart'
+    show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -84,7 +86,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     final draft = widget.workout.status == 'draft';
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => EntrenaDialog(
         title: Text(draft ? 'Borrar borrador' : 'Retirar sesión'),
         content: Text(
           draft
@@ -92,13 +94,19 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
               : '«${widget.workout.name}» dejará de estar disponible para nuevas asignaciones. Si hay entrenamientos pendientes o en curso, tendrás que reprogramarlos antes. El historial se conservará.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(draft ? 'Borrar borrador' : 'Retirar sesión'),
+          EntrenaDialogActions(
+            primaryLabel: 'Cancelar',
+            onPrimary: () => Navigator.of(dialogContext).pop(false),
+            secondary: [
+              OutlinedButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                style: EntrenaButtonStyles.destructive(dialogContext),
+                child: Text(
+                  draft ? 'Borrar borrador' : 'Retirar sesión',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ],
       ),

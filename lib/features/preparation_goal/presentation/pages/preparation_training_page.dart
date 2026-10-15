@@ -1,3 +1,5 @@
+import 'package:entrena_ui/entrena_ui.dart'
+    show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 import '../widgets/program_phase_section.dart';
@@ -1625,7 +1627,7 @@ class _TrialResetDialogState extends State<_TrialResetDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => EntrenaDialog(
     title: const Text('Reiniciar los ensayos de este programa'),
     content: SingleChildScrollView(
       child: Column(
@@ -1649,18 +1651,24 @@ class _TrialResetDialogState extends State<_TrialResetDialog> {
       ),
     ),
     actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
-      ),
-      ValueListenableBuilder<TextEditingValue>(
-        valueListenable: _input,
-        builder: (_, value, _) => FilledButton(
-          onPressed: value.text == 'REINICIAR'
-              ? () => Navigator.pop(context, value.text)
-              : null,
-          child: const Text('Borrar ensayos y reiniciar'),
-        ),
+      EntrenaDialogActions(
+        primaryLabel: 'Cancelar',
+        onPrimary: () => Navigator.pop(context),
+        secondary: [
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _input,
+            builder: (_, value, _) => OutlinedButton(
+              onPressed: value.text == 'REINICIAR'
+                  ? () => Navigator.pop(context, value.text)
+                  : null,
+              style: EntrenaButtonStyles.destructive(context),
+              child: const Text(
+                'Borrar ensayos y reiniciar',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
       ),
     ],
   );

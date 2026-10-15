@@ -70,19 +70,25 @@ class _ProgramCoverEditorState extends State<ProgramCoverEditor> {
       !_dirty ||
       await showDialog<bool>(
             context: context,
-            builder: (context) => AlertDialog(
+            builder: (context) => EntrenaDialog(
               title: const Text('¿Descartar cambios de portada?'),
               content: const Text(
                 'La imagen y el encuadre todavía no se han guardado.',
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Seguir editando'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Descartar'),
+                EntrenaDialogActions(
+                  primaryLabel: 'Continuar editando',
+                  onPrimary: () => Navigator.pop(context, false),
+                  secondary: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: EntrenaButtonStyles.destructive(context),
+                      child: const Text(
+                        'Descartar',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -143,7 +143,7 @@ void main() {
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-      await tester.tap(find.text('Seguir aquí'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       final save = find.text('Guardar ejercicio');
       await tester.ensureVisible(save);
@@ -256,7 +256,7 @@ void main() {
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-      await tester.tap(find.text('Seguir aquí'));
+      await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
       expect(find.text('Mi remo'), findsOneWidget);
       await tester.enterText(

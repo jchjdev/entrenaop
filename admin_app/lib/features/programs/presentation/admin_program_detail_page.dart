@@ -152,7 +152,7 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Seguir editando'),
+                child: const Text('Continuar editando'),
               ),
             ],
           ),
@@ -342,19 +342,22 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
     if (!mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => EntrenaDialog(
         title: const Text('Borrar prueba'),
         content: Text(
           '¿Borrar ${test.name}, sus ${bands.length} tramos y ${standards.length} mínimos del borrador?',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Borrar prueba'),
+          EntrenaDialogActions(
+            primaryLabel: 'Cancelar',
+            onPrimary: () => Navigator.pop(context, false),
+            secondary: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: EntrenaButtonStyles.destructive(context),
+                child: const Text('Borrar prueba', textAlign: TextAlign.center),
+              ),
+            ],
           ),
         ],
       ),

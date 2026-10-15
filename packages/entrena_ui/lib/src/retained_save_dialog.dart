@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'entrena_dialog_actions.dart';
+
 /// Una revisión previa cancelada conserva el formulario sin simular un fallo.
 class RetainedSaveCancelled implements Exception {
   const RetainedSaveCancelled();
@@ -72,19 +74,25 @@ class _RetainedSaveDialogState<T> extends State<RetainedSaveDialog<T>> {
     _confirming = true;
     final leave = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => EntrenaDialog(
         title: const Text('¿Salir sin guardar?'),
         content: const Text(
           'Los cambios de este formulario se perderán. Lo que ya estaba guardado se conserva.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Seguir editando'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Salir sin guardar'),
+          EntrenaDialogActions(
+            primaryLabel: 'Continuar editando',
+            onPrimary: () => Navigator.pop(context, false),
+            secondary: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: EntrenaButtonStyles.destructive(context),
+                child: const Text(
+                  'Salir sin guardar',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ],
       ),

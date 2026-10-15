@@ -240,9 +240,6 @@ class _CollectionCard extends StatelessWidget {
               );
               final create = OutlinedButton.icon(
                 onPressed: onCreate,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.secondary,
-                ),
                 icon: const Icon(Icons.add_rounded, size: 18),
                 label: Text(createLabel!),
               );

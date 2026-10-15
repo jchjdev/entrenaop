@@ -515,6 +515,51 @@ El pequeño trazo inclinado de las tarjetas de marca recoge la sensación de
 avance del wordmark. No se añaden diagonales, gradientes ni naranja a todos los
 elementos: la repetición excesiva eliminaría la jerarquía que se quiere crear.
 
+## Botones y decisiones de continuidad (15/10/2026 · UI-036)
+
+Javier confirma que continuar el entrenamiento debe ser la acción más visible
+en las decisiones de salida. `entrena_ui` mantiene Material 3 como base de
+interacción y accesibilidad y define una familia común para deportista y admin:
+radio de 16 px, iconos de 20 px y espaciados coherentes. Las acciones rellenas y
+con borde tienen altura mínima de 52 px; el texto puede aumentar su altura.
+Los enlaces conservan un objetivo táctil mínimo de 48 px.
+
+El naranja sólido identifica la acción principal. Los secundarios usan texto
+claro, superficie oscura y borde neutro; dejan de repetir el naranja del botón
+principal. El foco de teclado sigue visible. El descarte usa el color semántico
+de error en texto/borde y un fondo tenue, con estado deshabilitado diferenciado.
+No se añaden paquetes, efectos ornamentales ni colores por pantalla.
+
+`EntrenaDialog` limita las decisiones a 480 px de ancho en escritorio, deja
+márgenes laterales de 20 px en móvil y permite desplazar el contenido con texto
+ampliado. `EntrenaDialogActions` presenta la acción principal primero, con
+altura mínima de 56 px; las alternativas comparten ancho y separación de 10 px.
+Los formularios administrativos grandes conservan su composición propia.
+
+En fuerza y carrera, la salida ofrece **Continuar**, **Salir y retomar después**,
+**Finalizar y conservar lo realizado** y **Descartar sesión**, en ese orden.
+Se retira la bandera. El descarte y el cierre anticipado vuelven a ofrecer
+Continuar como acción principal; el cierre anticipado sigue exigiendo un motivo.
+Cambian los textos y la presentación, pero el cierre no se convierte en sesión
+completada y el descarte mantiene su confirmación y requisito de conexión.
+Se conservan las series, borradores y descansos al cancelar o ante un fallo.
+UI-036 actualiza los textos visuales anteriores de UI-020/UI-022.
+
+Los avisos de **Sonido y vibración** muestran dos pruebas con igual tamaño y
+separación. Se mantiene el resumen de primer plano/volumen y el detalle de
+intervalos y permisos Android pasa a «Cómo funcionan los avisos». Probar sigue
+sin guardar preferencias; cancelar no cambia las guardadas. Patrones, permisos
+y sincronización de avisos se conservan.
+
+La misma jerarquía se aplica a la salida protegida de formularios, recuperar
+borradores, eliminar bloques, reiniciar ensayos y los descartes/borrados de
+portadas, pruebas, mínimos y sesiones del admin. Biblioteca hereda los botones
+secundarios sin una excepción local naranja. Las rutas, autorizaciones y
+operaciones de servidor se mantienen.
+
+Validación final en curso. La aceptación en dispositivos actualizados queda
+pendiente; las capturas usan widgets reales y datos ficticios, sin cuentas remotas.
+
 ## Criterios de aplicación
 
 - Una pantalla debe tener una acción visual principal como máximo.
@@ -726,7 +771,7 @@ Mi plan, **Biblioteca**, Evolución y Perfil. En móvil Biblioteca es el tercer
 icono, con la misma jerarquía que los otros destinos; no es un botón global de
 creación. En escritorio ocupa el mismo orden en la navegación lateral.
 
-Desde UI-032 (15/10/2026), la portada `/library` presenta dos pestañas:
+Desde UI-035 (15/10/2026), la portada `/library` presenta dos pestañas:
 **Sesiones** a la izquierda, seleccionada al abrir, y **Ejercicios** a la derecha.
 Usan el mismo componente y estilo que EntrenaOP/Mis sesiones, con indicador
 naranja. Se cambia tocando el título o deslizando lateralmente, sin recorrer las
@@ -775,7 +820,7 @@ también capturas de Flutter con fuentes e iconos reales: portada a 320/390 y
 1100 px, catálogo de ejercicios y colección personal. Las 423 pruebas de la
 raíz pasan en esta comprobación; el análisis no presenta incidencias.
 
-Verificación de UI-032 (15/10/2026): `flutter analyze` sin incidencias y 800
+Verificación de UI-035 (15/10/2026): `flutter analyze` sin incidencias y 800
 pruebas de raíz correctas, con una omisión web preexistente. Se comprueban el
 cambio por toque y deslizamiento, móvil de 320 px, escritorio de 1100 px, texto
 al doble, los cuatro accesos a colecciones y crear/cancelar/guardar ejercicios y

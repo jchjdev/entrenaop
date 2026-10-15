@@ -678,7 +678,7 @@ void main() {
       await tester.enterText(source, 'Fuente pendiente');
       await _tapVisible(tester, 'Cancelar');
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-      await _tapVisible(tester, 'Seguir editando');
+      await _tapVisible(tester, 'Continuar editando');
       expect(
         tester.widget<TextFormField>(source).controller!.text,
         'Fuente pendiente',
@@ -1743,7 +1743,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Falta un mínimo'), findsOneWidget);
     expect(repository.programs.single.enabled, false);
-    await tester.tap(find.text('Seguir editando'));
+    await tester.tap(find.text('Continuar editando'));
     await tester.pumpAndSettle();
     repository.issues.clear();
     await tester.tap(find.text('Revisar y publicar'));

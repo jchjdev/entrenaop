@@ -87,7 +87,7 @@ void main() {
       await tester.pumpAndSettle();
       if (!saveDraft) {
         expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-        await tester.tap(find.text('Seguir aquí'));
+        await tester.tap(find.text('Continuar'));
         await tester.pumpAndSettle();
         expect(find.text('dato sin guardar'), findsOneWidget);
         // Una navegación directa (incluido el historial web) pasa por el mismo guard.

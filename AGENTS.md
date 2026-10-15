@@ -165,6 +165,14 @@ En resumen:
 
 ## Puntos de guardado en Git · acuerdo del 06/10/2026
 
+Desde el 15/10/2026, Javier confirma un único flujo compartido en **main** para
+Windows, Mac y cloud: no crear ni publicar ramas de trabajo salvo petición
+expresa. Antes de integrar, descargar y cotejar el main remoto, conservar los
+cambios de los demás equipos y resolver los solapamientos por contenido y
+criterios vigentes. GitHub Desktop del Mac se actualiza con Fetch origin y Pull
+origin sobre main. La rama local inicial del entorno cloud puede llamarse work;
+ese nombre de arranque no autoriza publicar una rama adicional.
+
 - Al comenzar, comprobar directorio, rama, estado de Git y cambios pendientes.
   El árbol local de esta consolidación es la versión actual confirmada por
   Javier; una rama o un chat anterior no autoriza sustituirlo. Contrastar cualquier

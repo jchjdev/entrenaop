@@ -96,7 +96,7 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-    await tester.tap(find.text('Seguir aquí'));
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(router.state.uri.path, '/plan/detail');
     await tester.binding.handlePopRoute();
@@ -185,7 +185,7 @@ void _testBackGestures(TargetPlatform platform) {
         await tester.pumpAndSettle();
         await _back(tester);
         expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-        await tester.tap(find.text('Seguir aquí'));
+        await tester.tap(find.text('Continuar'));
         await tester.pumpAndSettle();
         expect(router.state.uri.path, '/plan/detail');
         expect(find.text('dato pendiente'), findsOneWidget);
