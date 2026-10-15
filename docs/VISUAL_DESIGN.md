@@ -1,5 +1,45 @@
 # Identidad visual de EntrenaOP
 
+## Calculadora de ritmos: series y carreras · UI-032 · 15/10/2026
+
+Javier aprueba ampliar la herramienta conservando entrada libre y atajos.
+«Series» es el grupo inicial y conserva todas las distancias anteriores, de
+100 a 2.000 m, con el ejemplo de 400 m a 3:40/km. «Carreras» muestra 5 km,
+10 km, Media maratón y Maratón. Se utilizan 21.097,5 m y 42.195 m exactos,
+incluido el último tramo incompleto; no se redondean a 21 o 42 km.
+
+El campo permite metros o kilómetros, coma o punto decimal, con resolución de
+0,1 m (cuatro decimales en km). Cambiar la unidad o el grupo convierte el valor
+sin cambiar la distancia; editarlo sigue funcionando aunque no coincida con un
+atajo. El límite operativo elegido para esta ampliación es de 1 m a 100 km,
+mostrado en la ayuda y validado también en el dominio.
+
+Los parciales automáticos de pista se conservan hasta 2.000 m; por encima se
+utiliza 1 km, con selección manual cada 1 o 5 km cuando cabe un paso intermedio.
+Al cambiar la distancia se descarta un parcial manual incompatible. Los tiempos
+se muestran en minutos y segundos y pasan a horas:minutos:segundos desde una
+hora; se redondea cada paso acumulado para que los tramos sumen el tiempo final.
+El resultado se llama «Tiempo total» y los textos abarcan tanto series como
+carreras. La herramienta calcula un tiempo a ritmo constante: no predice una
+marca posible ni prescribe ritmos de entrenamiento.
+
+El cálculo, la validación de distancia y la selección automática de parciales
+permanecen en dominio, sin dependencias de Flutter. La presentación conserva
+entrada, conversión de unidades y formato. Con poco ancho o texto ampliado,
+los parciales pasan de tres columnas a bloques verticales para conservar
+la lectura de etiquetas y tiempos.
+
+Verificación en Linux cloud: `flutter analyze --no-pub` limpio y
+`flutter test --no-pub --reporter expanded` con 816 pruebas correctas y la
+omisión web existente (código 0 en ambos). Las 22 pruebas de ritmos cubren las
+cuatro distancias, la suma de tramos redondeados, el último medio metro de la
+media maratón, límites, entrada libre, cambios de unidad/parcial y distribución
+en 320/390/1.000 px. Capturas de widgets reales con el tema y fuentes
+disponibles en Linux revisadas en 390 px y en 320 px con texto al doble.
+
+La comprobación física en Android/iPhone se realiza después de traer el commit
+y volver a instalar desde cada equipo, según `docs/CLOUD_DEVELOPMENT.md`.
+
 ## Fotos de ejercicios y acción fija · UI-030 · 14/10/2026
 
 Javier pide adaptar dos comportamientos de su referencia de Calisthenia App,

@@ -1,9 +1,19 @@
 class RunningPaceCalculator {
   const RunningPaceCalculator();
 
+  static const maxDistanceMeters = 100000;
+
+  int automaticSplitMeters(double distanceMeters) {
+    if (distanceMeters <= 200) return distanceMeters.ceil();
+    if (distanceMeters <= 500) return 100;
+    if (distanceMeters <= 1000) return 200;
+    if (distanceMeters <= 2000) return 400;
+    return 1000;
+  }
+
   RunningPaceCalculation calculate({
     required int paceSecondsPerKilometer,
-    required int distanceMeters,
+    required double distanceMeters,
     required int splitMeters,
   }) {
     if (paceSecondsPerKilometer <= 0) {
@@ -13,11 +23,13 @@ class RunningPaceCalculator {
         'El ritmo debe ser mayor que cero.',
       );
     }
-    if (distanceMeters < 1 || distanceMeters > 2000) {
+    if (!distanceMeters.isFinite ||
+        distanceMeters < 1 ||
+        distanceMeters > maxDistanceMeters) {
       throw ArgumentError.value(
         distanceMeters,
         'distanceMeters',
-        'La distancia debe estar entre 1 y 2000 metros.',
+        'La distancia debe estar entre 1 m y 100 km.',
       );
     }
     if (splitMeters <= 0) {
@@ -28,16 +40,16 @@ class RunningPaceCalculator {
       );
     }
 
-    final distances = <int>[
+    final distances = <double>[
       for (
         var distance = splitMeters;
         distance < distanceMeters;
         distance += splitMeters
       )
-        distance,
+        distance.toDouble(),
       distanceMeters,
     ];
-    var previousDistance = 0;
+    var previousDistance = 0.0;
     var previousCumulativeSeconds = 0;
     final splits = distances
         .map((distance) {
@@ -77,7 +89,7 @@ class RunningPaceCalculation {
   });
 
   final int paceSecondsPerKilometer;
-  final int distanceMeters;
+  final double distanceMeters;
   final int splitMeters;
   final int totalSeconds;
   final List<RunningPaceSplit> splits;
@@ -91,8 +103,8 @@ class RunningPaceSplit {
     required this.cumulativeSeconds,
   });
 
-  final int distanceMeters;
-  final int segmentMeters;
+  final double distanceMeters;
+  final double segmentMeters;
   final int segmentSeconds;
   final int cumulativeSeconds;
 }
