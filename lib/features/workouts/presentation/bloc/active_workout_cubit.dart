@@ -1,3 +1,8 @@
+import 'package:entrenaop/features/workouts/domain/services/workout_execution_rest_policy.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
+
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
@@ -12,6 +17,9 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_sta
 class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   ActiveWorkoutCubit({
     required this.executionId,
+    required WorkoutSessionDraftStore sessionDraftStore,
+    CorrectWorkoutSetUseCase? correctSet,
+    GetExerciseByIdUseCase? getExercise,
     required GetWorkoutExecutionUseCase getExecution,
     required CompleteWorkoutSetUseCase completeSet,
     required CompleteAmrapBlockUseCase completeAmrap,
@@ -22,7 +30,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
     required WorkoutTimerStore timerStore,
     required WorkoutCueService cueService,
-  }) : _getExecution = getExecution,
+  }) : _draftStore = sessionDraftStore,
+       _correctSet = correctSet,
+       _getExercise = getExercise,
+       _getExecution = getExecution,
        _completeSet = completeSet,
        _completeAmrap = completeAmrap,
        _skipSet = skipSet,
@@ -46,14 +57,324 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final WorkoutTimerStore _timerStore;
   final WorkoutCueService _cueService;
   Timer? _restTimer;
+  final WorkoutSessionDraftStore _draftStore;
+  final CorrectWorkoutSetUseCase? _correctSet;
+  final GetExerciseByIdUseCase? _getExercise;
+  final _drafts = <String, WorkoutSessionSetDraft>{};
+  final _exercises = <String, ExerciseEntity>{};
+  final _savedSetIds = <String>{};
+  bool _draftBusy = false;
+
+  // La proyección local permite seguir entrenando; nunca se envía al motor
+  // una serie sin confirmar ni se altera su prescripción histórica.
+  WorkoutExecution _projectExecution(WorkoutExecution execution) {
+    if (execution.status != WorkoutExecutionStatus.inProgress) return execution;
+    var projected = execution;
+    for (final draft in _drafts.values.where((d) => d.endedAt != null)) {
+      projected = _completeLocally(
+        projected,
+        draft.result.resultId,
+        draft.result,
+        completedAt: draft.endedAt,
+      );
+    }
+    return projected;
+  }
+
+  Future<WorkoutExecution?> _readProjectedExecution() async {
+    final execution = await _getExecution(executionId);
+    return execution == null ? null : _projectExecution(execution);
+  }
+
+  void _publish(ActiveWorkoutState next) {
+    if (isClosed) return;
+    final execution = next.execution == null
+        ? null
+        : _projectExecution(next.execution!);
+    emit(
+      ActiveWorkoutState(
+        status: next.status,
+        execution: execution,
+        restSecondsRemaining: next.restSecondsRemaining,
+        restCanBeSkipped: next.restCanBeSkipped,
+        pendingSyncCount: next.pendingSyncCount,
+        errorMessage: next.errorMessage,
+        drafts: Map.unmodifiable(_drafts),
+        exercises: Map.unmodifiable(_exercises),
+        draftBusy: _draftBusy,
+      ),
+    );
+  }
+
+  void _refresh({String? error}) => _publish(
+    ActiveWorkoutState(
+      status: state.status,
+      execution: state.execution,
+      restSecondsRemaining: state.restSecondsRemaining,
+      restCanBeSkipped: state.restCanBeSkipped,
+      pendingSyncCount: state.pendingSyncCount,
+      errorMessage: error,
+    ),
+  );
+
+  Future<void> _loadExercises(WorkoutExecution execution) async {
+    final getExercise = _getExercise;
+    if (getExercise == null) return;
+    final ids = execution.sets.map((s) => s.exerciseId).toSet().toList();
+    for (var offset = 0; offset < ids.length; offset += 4) {
+      if (isClosed) return;
+      await Future.wait(
+        ids.skip(offset).take(4).map((id) async {
+          try {
+            final exercise = await getExercise(id);
+            if (!isClosed && exercise != null) _exercises[id] = exercise;
+          } catch (_) {
+            /* Una foto fallida no bloquea el entrenamiento. */
+          }
+        }),
+      );
+      if (!isClosed) _refresh(error: state.errorMessage);
+    }
+  }
+
+  Future<void> updateDraft(
+    WorkoutSetResultInput result,
+    Map<String, String> fields,
+  ) async {
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
+    final execution = state.execution;
+    if (execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress) {
+      return;
+    }
+    final matches = execution.sets.where((s) => s.id == result.resultId);
+    if (matches.isEmpty || matches.first.performancePrescription != null) {
+      return;
+    }
+    final set = matches.first;
+    final old = _drafts[result.resultId];
+    _drafts[result.resultId] = WorkoutSessionSetDraft(
+      result: result,
+      fields: Map.unmodifiable(fields),
+      endedAt:
+          old?.endedAt ??
+          (set.status == WorkoutSetStatus.completed ? set.completedAt : null),
+      saved: old?.saved ?? _savedSetIds.contains(set.id),
+      needsCorrection: (old?.saved ?? _savedSetIds.contains(set.id)),
+    );
+    try {
+      await _draftStore.write(executionId, Map.of(_drafts));
+      _refresh();
+    } catch (_) {
+      _refresh(
+        error: 'No se ha podido guardar el borrador en este dispositivo. Reintenta antes de salir.',
+      );
+    }
+  }
+
+  Future<void> endCurrentSet({int? elapsedSeconds}) async {
+    if (_draftBusy ||
+        state.status == ActiveWorkoutStatus.saving ||
+        state.status == ActiveWorkoutStatus.resting) {
+      return;
+    }
+    final execution = state.execution;
+    final set = execution?.currentSet;
+    if (execution == null ||
+        set == null ||
+        set.performancePrescription != null ||
+        set.blockFormat == WorkoutBlockFormat.amrap) {
+      return;
+    }
+    _draftBusy = true;
+    _refresh();
+    final old = _drafts[set.id];
+    _drafts[set.id] =
+        (old ??
+                WorkoutSessionSetDraft(
+                  result: WorkoutSetResultInput(resultId: set.id),
+                ))
+            .copyWith(endedAt: DateTime.now().toUtc());
+    try {
+      await _draftStore.write(executionId, Map.of(_drafts));
+      await _timerStore.clear(_timerId(set.id));
+      var updated = _completeLocally(
+        execution,
+        set.id,
+        _drafts[set.id]!.result,
+      );
+      _draftBusy = false;
+      final rest = workoutRestAfterSet(set, elapsedSeconds: elapsedSeconds);
+      if (updated.currentSet != null && rest > 0) {
+        _startRest(
+          updated,
+          rest,
+          state.pendingSyncCount,
+          canBeSkipped: set.blockFormat != WorkoutBlockFormat.emom,
+        );
+      } else {
+        _publish(
+          ActiveWorkoutState(
+            status: ActiveWorkoutStatus.ready,
+            execution: updated,
+            pendingSyncCount: state.pendingSyncCount,
+          ),
+        );
+      }
+    } catch (_) {
+      if (old == null) {
+        _drafts.remove(set.id);
+      } else {
+        _drafts[set.id] = old;
+      }
+      _draftBusy = false;
+      _refresh(
+        error:
+            'No se ha podido conservar la serie. Reintenta antes de continuar.',
+      );
+    }
+  }
+
+  /// Confirma una serie pendiente sin reiniciar ni detener su descanso.
+  /// Los retoques de una serie ya enviada se consolidan una vez al cerrar.
+  Future<bool> confirmDraft(
+    WorkoutSetResultInput result,
+    Map<String, String> fields,
+  ) async {
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return false;
+    final set = state.execution?.sets
+        .where((s) => s.id == result.resultId)
+        .firstOrNull;
+    if (set == null ||
+        !WorkoutSessionSetDraft(result: result).canConfirm(set)) {
+      _refresh(
+        error:
+            'Revisa los datos: faltan valores válidos para confirmar la serie.',
+      );
+      return false;
+    }
+    final old =
+        _drafts[result.resultId] ??
+        (set.status == WorkoutSetStatus.completed
+            ? WorkoutSessionSetDraft(
+                result: result,
+                endedAt: set.completedAt ?? DateTime.now().toUtc(),
+                saved: true,
+                needsCorrection: true,
+              )
+            : null);
+    if (old?.endedAt == null) return false;
+    _draftBusy = true;
+    _refresh();
+    try {
+      var draft = old!.copyWith(
+        result: result,
+        fields: Map.unmodifiable(fields),
+        confirmed: true,
+      );
+      _drafts[result.resultId] = draft;
+      await _draftStore.write(executionId, Map.of(_drafts));
+      if (!draft.saved) {
+        await _completeSet(result);
+        _savedSetIds.add(result.resultId);
+        draft = draft.copyWith(saved: true, needsCorrection: false);
+        _drafts[result.resultId] = draft;
+        await _draftStore.write(executionId, Map.of(_drafts));
+      }
+      _draftBusy = false;
+      _publish(
+        ActiveWorkoutState(
+          status: state.status,
+          execution: state.execution,
+          restSecondsRemaining: state.restSecondsRemaining,
+          restCanBeSkipped: state.restCanBeSkipped,
+          pendingSyncCount: await _getPendingMutationCount(),
+        ),
+      );
+      return true;
+    } catch (_) {
+      // La respuesta remota puede ser incierta: se conserva el dato y se
+      // reintenta mediante el registro idempotente existente.
+      _drafts[result.resultId] = _drafts[result.resultId]!.copyWith(
+        confirmed: false,
+      );
+      await _draftStore
+          .write(executionId, Map.of(_drafts))
+          .catchError((Object _) {});
+      _draftBusy = false;
+      _refresh(
+        error: 'No se han podido confirmar los datos. Se conserva el borrador para reintentar.',
+      );
+      return false;
+    }
+  }
+
+  Future<void> _flushSessionEdits() async {
+    for (final draft in _drafts.values.toList()) {
+      if (draft.endedAt == null) continue;
+      if (!draft.confirmed) {
+        throw StateError('Hay series con datos pendientes de confirmar.');
+      }
+      if (!draft.saved) {
+        await _completeSet(draft.result);
+        _drafts[draft.result.resultId] = draft.copyWith(saved: true);
+      } else if (draft.needsCorrection) {
+        final correct = _correctSet;
+        if (correct == null) {
+          throw StateError('La corrección no está disponible.');
+        }
+        // Sincroniza antes el registro inicial, también si estaba en cola.
+        await _getExecution(executionId);
+        final r = draft.result;
+        await correct(
+          WorkoutSetCorrectionInput(
+            resultId: r.resultId,
+            reason: 'Revisión de datos durante el entrenamiento',
+            actualReps: r.actualReps,
+            actualDurationSeconds: r.actualDurationSeconds,
+            actualDistanceMeters: r.actualDistanceMeters,
+            actualLoadKg: r.actualLoadKg,
+            actualRpe: r.actualRpe,
+            actualRir: r.actualRir,
+            actualRecoveryDurationSeconds: r.actualRecoveryDurationSeconds,
+            actualRecoveryDistanceMeters: r.actualRecoveryDistanceMeters,
+            performanceResult: r.performanceResult,
+          ),
+        );
+        _drafts[r.resultId] = draft.copyWith(needsCorrection: false);
+      }
+      await _draftStore.write(executionId, Map.of(_drafts));
+    }
+  }
 
   Future<void> load() async {
-    emit(const ActiveWorkoutState(status: ActiveWorkoutStatus.loading));
+    _publish(const ActiveWorkoutState(status: ActiveWorkoutStatus.loading));
     try {
-      final execution = await _getExecution(executionId);
+      var execution = await _getExecution(executionId);
+      if (execution != null) {
+        _savedSetIds.addAll(
+          execution.sets
+              .where((s) => s.status == WorkoutSetStatus.completed)
+              .map((s) => s.id),
+        );
+        final loaded = await _draftStore.read(executionId);
+        final ids = execution.sets.map((s) => s.id).toSet();
+        _drafts.addAll(
+          Map.fromEntries(loaded.entries.where((e) => ids.contains(e.key))),
+        );
+        for (final entry in _drafts.entries.toList()) {
+          if (_savedSetIds.contains(entry.key) && !entry.value.saved) {
+            _drafts[entry.key] = entry.value.copyWith(
+              saved: true,
+              needsCorrection: true,
+            );
+          }
+        }
+        unawaited(_loadExercises(execution));
+      }
       final pendingSyncCount = await _getPendingMutationCount();
       if (execution == null) {
-        emit(
+        _publish(
           const ActiveWorkoutState(
             status: ActiveWorkoutStatus.failure,
             errorMessage: 'No encontramos esta ejecución.',
@@ -61,9 +382,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         );
         return;
       }
+      if (execution.status == WorkoutExecutionStatus.inProgress) {
+        for (final draft in _drafts.values.where((d) => d.endedAt != null)) {
+          execution = _completeLocally(
+            execution!,
+            draft.result.resultId,
+            draft.result,
+          );
+        }
+      } else {
+        _drafts.clear();
+        await _draftStore.clear(executionId).catchError((Object _) {});
+      }
+      final activeExecution = execution!;
       final restSnapshot = await _timerStore.read(_restTimerId);
-      if (execution.status == WorkoutExecutionStatus.inProgress &&
-          execution.currentSet != null &&
+      if (activeExecution.status == WorkoutExecutionStatus.inProgress &&
+          activeExecution.currentSet != null &&
           restSnapshot?.phase == WorkoutTimerPhase.running) {
         final elapsedSinceWrite = DateTime.now().toUtc().difference(
           restSnapshot!.phaseStartedAt,
@@ -74,7 +408,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         final remaining = restSnapshot.targetSeconds - elapsed.inSeconds;
         if (remaining > 0) {
           _startRest(
-            execution,
+            activeExecution,
             remaining,
             pendingSyncCount,
             canBeSkipped: restSnapshot.restCanBeSkipped,
@@ -84,19 +418,19 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         }
       }
       if (restSnapshot != null) await _timerStore.clear(_restTimerId);
-      emit(
+      _publish(
         ActiveWorkoutState(
-          status: switch (execution.status) {
+          status: switch (activeExecution.status) {
             WorkoutExecutionStatus.completed => ActiveWorkoutStatus.completed,
             WorkoutExecutionStatus.abandoned => ActiveWorkoutStatus.abandoned,
             WorkoutExecutionStatus.inProgress => ActiveWorkoutStatus.ready,
           },
-          execution: execution,
+          execution: activeExecution,
           pendingSyncCount: pendingSyncCount,
         ),
       );
     } catch (_) {
-      emit(
+      _publish(
         const ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           errorMessage: 'No hemos podido recuperar la sesión.',
@@ -109,12 +443,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     WorkoutSetResultInput result, {
     int? restSecondsOverride,
   }) async {
-    if (state.status == ActiveWorkoutStatus.saving) return;
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
 
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -123,10 +457,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     try {
       final disposition = await _completeSet(result);
+      _savedSetIds.add(result.resultId);
       await _timerStore.clear(_timerId(currentSet.id));
       final updated = disposition == WorkoutMutationDisposition.queued
           ? _completeLocally(execution, currentSet.id, result)
-          : await _getExecution(executionId);
+          : await _readProjectedExecution();
       if (updated == null) throw StateError('Execution disappeared');
       final pendingSyncCount = await _getPendingMutationCount();
       final restSeconds = (restSecondsOverride ?? currentSet.restAfterSeconds)
@@ -134,7 +469,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           .toInt();
       if (updated.currentSet == null || restSeconds == 0) {
         await _timerStore.clear(_restTimerId);
-        emit(
+        _publish(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,
             execution: updated,
@@ -150,7 +485,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         canBeSkipped: currentSet.blockFormat != WorkoutBlockFormat.emom,
       );
     } catch (_) {
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
@@ -163,7 +498,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> completeCurrentAmrap(WorkoutAmrapResultInput result) async {
-    if (state.status == ActiveWorkoutStatus.saving) return;
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null ||
@@ -172,7 +507,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         currentSet.blockOrder != result.blockOrder) {
       return;
     }
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -184,9 +519,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       await _timerStore.clear(_amrapTimerId(result.blockOrder));
       final updated = disposition == WorkoutMutationDisposition.queued
           ? _completeAmrapLocally(execution, result)
-          : await _getExecution(executionId);
+          : await _readProjectedExecution();
       if (updated == null) throw StateError('Execution disappeared');
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.ready,
           execution: updated,
@@ -194,7 +529,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
     } catch (_) {
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
@@ -222,12 +557,12 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }
 
   Future<void> skipCurrentSet({int? restSecondsOverride}) async {
-    if (state.status == ActiveWorkoutStatus.saving) return;
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     final currentSet = execution?.currentSet;
     if (execution == null || currentSet == null) return;
 
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -239,7 +574,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       await _timerStore.clear(_timerId(currentSet.id));
       final updated = disposition == WorkoutMutationDisposition.queued
           ? _skipLocally(execution, currentSet.id)
-          : await _getExecution(executionId);
+          : await _readProjectedExecution();
       if (updated == null) throw StateError('Execution disappeared');
       final pendingSyncCount = await _getPendingMutationCount();
       final restSeconds = (restSecondsOverride ?? 0).clamp(0, 3600).toInt();
@@ -253,7 +588,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         return;
       }
       await _timerStore.clear(_restTimerId);
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.ready,
           execution: updated,
@@ -261,7 +596,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
     } catch (_) {
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
@@ -295,7 +630,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       ),
     );
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.resting,
         execution: execution,
@@ -310,7 +645,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         timer.cancel();
         unawaited(_timerStore.clear(_restTimerId));
         unawaited(_cueService.signal(WorkoutCue.restFinished));
-        emit(
+        _publish(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.ready,
             execution: state.execution,
@@ -323,7 +658,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         } else if (total >= 20 && remaining == total ~/ 2) {
           unawaited(_cueService.signal(WorkoutCue.halfway));
         }
-        emit(
+        _publish(
           ActiveWorkoutState(
             status: ActiveWorkoutStatus.resting,
             execution: state.execution,
@@ -343,7 +678,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
     _restTimer?.cancel();
     unawaited(_timerStore.clear(_restTimerId));
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.ready,
         execution: state.execution,
@@ -358,10 +693,16 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
   }) async {
-    if (state.status == ActiveWorkoutStatus.saving) return;
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null || execution.currentSet != null) return;
-    emit(
+    if (state.unconfirmedDraftCount > 0) {
+      _refresh(
+        error: 'Revisa las series con datos pendientes antes de finalizar.',
+      );
+      return;
+    }
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -369,6 +710,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       ),
     );
     try {
+      await _flushSessionEdits();
       final disposition = await _finishExecution(
         executionId,
         finalRpe: finalRpe,
@@ -386,9 +728,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               maxHeartRateBpm: maxHeartRateBpm,
               resultSource: WorkoutResultSource.manual,
             )
-          : await _getExecution(executionId);
+          : await _readProjectedExecution();
+      _drafts.clear();
+      await _draftStore.clear(executionId).catchError((Object _) {});
       final pendingSyncCount = await _getPendingMutationCount();
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.completed,
           execution: updated ?? execution,
@@ -396,26 +740,32 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
     } catch (_) {
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
           pendingSyncCount: state.pendingSyncCount,
-          errorMessage: 'No hemos podido finalizar la sesión.',
+          errorMessage: 'No hemos podido finalizar la sesión. Si hay correcciones pendientes, comprueba la conexión y reintenta; tus datos se conservan.',
         ),
       );
     }
   }
 
   Future<void> abandon(WorkoutAbandonmentReason reason) async {
-    if (state.status == ActiveWorkoutStatus.saving) return;
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress) {
       return;
     }
+    if (state.unconfirmedDraftCount > 0) {
+      _refresh(
+        error: 'Confirma los datos pendientes antes de cerrar conservando lo realizado. Puedes salir y retomar después.',
+      );
+      return;
+    }
     _restTimer?.cancel();
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -424,6 +774,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     );
     try {
       await _timerStore.clear(_restTimerId);
+      await _flushSessionEdits();
       final disposition = await _abandonExecution(executionId, reason);
       final currentSet = execution.currentSet;
       if (currentSet != null) {
@@ -435,9 +786,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               completedAt: DateTime.now().toUtc(),
               abandonmentReason: reason,
             )
-          : await _getExecution(executionId);
+          : await _readProjectedExecution();
+      _drafts.clear();
+      await _draftStore.clear(executionId).catchError((Object _) {});
       final pendingSyncCount = await _getPendingMutationCount();
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.abandoned,
           execution: updated ?? execution,
@@ -445,7 +798,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         ),
       );
     } catch (_) {
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
@@ -463,12 +816,13 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final execution = previous.execution;
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress ||
-        previous.status == ActiveWorkoutStatus.saving) {
+        previous.status == ActiveWorkoutStatus.saving ||
+        _draftBusy) {
       return false;
     }
     _restTimer?.cancel();
     final elapsed = Stopwatch()..start();
-    emit(
+    _publish(
       ActiveWorkoutState(
         status: ActiveWorkoutStatus.saving,
         execution: execution,
@@ -492,7 +846,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           totalSeconds: _restTotalSeconds,
         );
       }
-      emit(
+      _publish(
         ActiveWorkoutState(
           status: previous.status == ActiveWorkoutStatus.resting
               ? (resumeRest
@@ -517,8 +871,10 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         await _timerStore.clear(_amrapTimerId(set.blockOrder));
       }
     } catch (_) {}
+    _drafts.clear();
+    await _draftStore.clear(executionId).catchError((Object _) {});
     if (!isClosed) {
-      emit(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
+      _publish(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
     }
     return true;
   }
@@ -532,13 +888,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   WorkoutExecution _completeLocally(
     WorkoutExecution execution,
     String resultId,
-    WorkoutSetResultInput result,
-  ) => execution.copyWith(
+    WorkoutSetResultInput result, {
+    DateTime? completedAt,
+  }) => execution.copyWith(
     sets: execution.sets
         .map(
           (set) => set.id == resultId
               ? set.copyWith(
                   status: WorkoutSetStatus.completed,
+                  replaceResult: true,
                   actualReps: result.actualReps,
                   actualDurationSeconds: result.actualDurationSeconds,
                   actualDistanceMeters: result.actualDistanceMeters,
@@ -551,7 +909,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
                   actualRecoveryDistanceMeters:
                       result.actualRecoveryDistanceMeters,
                   resultSource: result.resultSource,
-                  completedAt: DateTime.now().toUtc(),
+                  completedAt:
+                      completedAt ?? set.completedAt ?? DateTime.now().toUtc(),
                 )
               : set,
         )

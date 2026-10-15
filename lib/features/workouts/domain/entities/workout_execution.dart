@@ -375,6 +375,7 @@ class WorkoutExecutionSet extends Equatable {
   }
 
   WorkoutExecutionSet copyWith({
+    bool replaceResult = false,
     PerformanceSetResult? performanceResult,
     WorkoutSetStatus? status,
     int? actualReps,
@@ -414,17 +415,27 @@ class WorkoutExecutionSet extends Equatable {
     restAfterSeconds: restAfterSeconds,
     status: status ?? this.status,
     performancePrescription: performancePrescription,
-    performanceResult: performanceResult ?? this.performanceResult,
-    actualReps: actualReps ?? this.actualReps,
-    actualDurationSeconds: actualDurationSeconds ?? this.actualDurationSeconds,
-    actualDistanceMeters: actualDistanceMeters ?? this.actualDistanceMeters,
-    actualLoadKg: actualLoadKg ?? this.actualLoadKg,
-    actualRpe: actualRpe ?? this.actualRpe,
-    actualRir: actualRir ?? this.actualRir,
-    actualRecoveryDurationSeconds:
-        actualRecoveryDurationSeconds ?? this.actualRecoveryDurationSeconds,
-    actualRecoveryDistanceMeters:
-        actualRecoveryDistanceMeters ?? this.actualRecoveryDistanceMeters,
+    performanceResult: replaceResult
+        ? performanceResult
+        : performanceResult ?? this.performanceResult,
+    actualReps: replaceResult ? actualReps : actualReps ?? this.actualReps,
+    actualDurationSeconds: replaceResult
+        ? actualDurationSeconds
+        : actualDurationSeconds ?? this.actualDurationSeconds,
+    actualDistanceMeters: replaceResult
+        ? actualDistanceMeters
+        : actualDistanceMeters ?? this.actualDistanceMeters,
+    actualLoadKg: replaceResult
+        ? actualLoadKg
+        : actualLoadKg ?? this.actualLoadKg,
+    actualRpe: replaceResult ? actualRpe : actualRpe ?? this.actualRpe,
+    actualRir: replaceResult ? actualRir : actualRir ?? this.actualRir,
+    actualRecoveryDurationSeconds: replaceResult
+        ? actualRecoveryDurationSeconds
+        : actualRecoveryDurationSeconds ?? this.actualRecoveryDurationSeconds,
+    actualRecoveryDistanceMeters: replaceResult
+        ? actualRecoveryDistanceMeters
+        : actualRecoveryDistanceMeters ?? this.actualRecoveryDistanceMeters,
     resultSource: resultSource ?? this.resultSource,
     completedAt: completedAt ?? this.completedAt,
   );

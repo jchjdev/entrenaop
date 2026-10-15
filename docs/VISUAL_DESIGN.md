@@ -1,5 +1,74 @@
 # Identidad visual de EntrenaOP
 
+## Pantalla de entrenamiento modular · UI-035 · 15/10/2026
+
+Javier autoriza implementar UI-032/033/034 y precisa que «repetir» significa
+conservar la posibilidad de reiniciar el temporizador, no repetir su objetivo
+en varios bloques grandes. Exige Clean Architecture y facilidad para rediseñar,
+retirar o sustituir componentes. Implementación y comprobación técnica terminadas;
+aceptación en móvil actualizado pendiente.
+
+La pantalla usa «Entrenamiento en curso», cabecera/progreso compactos, foto
+cuando existe y acceso a técnica. El formulario ordinario se separa en
+`WorkoutSetEntry`; distribución, cabecera y descanso en
+`workout_execution_layout.dart`; campos en `workout_result_fields.dart`, esfuerzo
+en `workout_effort_field.dart` y listado agrupado en `WorkoutSessionRecords`.
+Estos widgets no acceden a preferencias ni a Supabase. Los textos de
+presentación se comparten en `workout_execution_labels.dart`.
+
+`ExerciseDetailSheet` reutiliza la ficha de biblioteca: ofrece edición solo
+cuando el llamador proporciona esa acción. Desde el entrenamiento se abre como
+consulta, sin abandonar la sesión ni cambiar los controles del reloj. Respeta
+nombre/descripción/vídeo de la prescripción y usa el catálogo para la imagen y
+metadatos accesorios. El reproductor existente sigue bajo demanda; no se
+implementan subida, alojamiento ni creación de vídeos.
+
+En repeticiones se mantiene un resultado compacto visible; durante el trabajo
+por tiempo se prioriza el reloj y el resultado se revisa al terminar. La acción
+«Terminar serie» queda en una franja fija que reserva espacio. Con poco alto,
+teclado o ampliación extrema, la zona de acciones también permite desplazarse
+sin desbordar. Inicio, pausa, reinicio y repetición del reloj se conservan; el
+reinicio compacto devuelve a cero la medición propuesta, sin acreditar el
+objetivo como realizado. El final del reloj no confirma automáticamente la serie.
+
+Terminar una serie ordinaria crea primero un borrador recuperable del
+dispositivo y empieza el descanso cuando corresponde. El progreso distingue
+series terminadas de datos por confirmar. El descanso anticipa el siguiente
+paso y los registros muestran su tiempo restante al editar. Confirmar valida
+los valores y utiliza el registro idempotente/cola existente, sin reiniciar el
+descanso. No se permite finalizar o abandonar conservando lo realizado mientras
+haya series terminadas con datos sin confirmar; salir para retomar conserva los
+borradores. Los formularios específicos de rendimiento y el agregado AMRAP
+conservan sus contratos y reglas; el panel no ofrece corrección por serie de un
+agregado AMRAP inmutable.
+
+Los retoques posteriores a un resultado ya enviado se mantienen como borrador
+local y se consolidan al cerrar con un motivo de revisión durante el
+entrenamiento. Cada escritura en un campo no consume una corrección. Se
+conservan el corrector auditable, su necesidad de conexión y sus límites de
+24 horas/tres cambios. Un fallo impide el cierre y conserva lo editado para
+reintentar. Los datos sin confirmar y los retoques todavía no sincronizados se
+recuperan en el mismo dispositivo; no se promete recuperarlos desde otro.
+
+Las capturas de `tools/visual_workout_execution_capture.dart` usan el ejecutor
+real con repositorios ficticios, fuentes e iconos reales, móvil de 390 px,
+320 px con texto al doble y escritorio. La imagen opcional se proporciona por
+`WORKOUT_CAPTURE_IMAGE` y no se incorpora al catálogo ni a los recursos de la
+aplicación. No acreditan una sesión autenticada ni instalación en iPhone.
+
+Verificación del 15/10/2026: `flutter analyze --no-pub` sin incidencias y batería
+completa de raíz con 811 pruebas correctas y una omisión web preexistente.
+Regresiones de terminar sin datos, validación, confirmación sin reiniciar
+descanso, recuperación local, esfuerzo cero/ausente, consolidación de retoques,
+fallo y reintento del cierre, consulta de técnica y edición al acabar el
+descanso. La mezcla de registro diferido/directo no crea un descanso tras la
+última serie. Compilación web correcta; cuatro escenarios de captura correctos
+con vistas de repeticiones, tiempo, descanso, técnica, registros, edición,
+teclado simulado, texto ampliado y escritorio. No se modifican paquetes
+compartidos, dependencias, SQL, motores ni producción. El único siguiente
+recorrido recomendado de este bloque es comprobar estas vistas con fotos
+propias/oficiales y una sesión autenticada en móvil actualizado.
+
 ## Descansar y completar los datos · UI-034 · 15/10/2026
 
 Javier responde «sí, eso puede ser una opción» a terminar la serie, empezar el

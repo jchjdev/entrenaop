@@ -14,6 +14,7 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.preparationSeconds = 3,
     this.enabled = true,
     this.autoStart = false,
+    this.compact = false,
     this.title = 'TEMPORIZADOR DE LA SERIE',
     this.clock,
     this.wallClock,
@@ -35,6 +36,7 @@ class WorkoutSetCountdown extends StatefulWidget {
   final int preparationSeconds;
   final bool enabled;
   final bool autoStart;
+  final bool compact;
   final String title;
 
   /// Fuente de tiempo inyectable para comprobar el temporizador sin esperas
@@ -205,9 +207,11 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
     _isPreparing = false;
     _preparationRemaining = 0;
     _clearPersistedTimer();
-    // Al reiniciar recuperamos el objetivo como resultado propuesto. Asi el
-    // usuario todavia puede registrar una medicion hecha con otro reloj.
-    if (notify) widget.onElapsedChanged(widget.targetSeconds);
+    // En el ejecutor compacto reiniciar borra la medición, sin acreditar el
+    // objetivo. El modo anterior conserva su propuesta para otro reloj.
+    if (notify) {
+      widget.onElapsedChanged(widget.compact ? 0 : widget.targetSeconds);
+    }
     if (mounted) setState(() {});
   }
 
@@ -335,18 +339,19 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
         border: Border.all(color: Colors.white12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(widget.compact ? 12 : 18),
         child: Column(
           children: [
-            Text(
-              widget.title,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
+            if (!widget.compact)
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                ),
               ),
-            ),
             const SizedBox(height: 8),
             Semantics(
               liveRegion: true,
@@ -358,7 +363,7 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
                     ? '$_preparationRemaining'
                     : _formatClock(_remainingSeconds),
                 style: TextStyle(
-                  fontSize: 52,
+                  fontSize: widget.compact ? 46 : 52,
                   fontWeight: FontWeight.w900,
                   color: _isFinished
                       ? Colors.greenAccent
@@ -367,19 +372,26 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              _isPreparing
-                  ? 'Prepárate…'
-                  : _isFinished
-                  ? 'Tiempo completado'
-                  : 'Realizado: $_elapsedSeconds s',
-              style: const TextStyle(color: Colors.white60),
-            ),
+            if (!widget.compact || _isPreparing || _isFinished)
+              Text(
+                _isPreparing
+                    ? 'Prepárate…'
+                    : _isFinished
+                    ? 'Tiempo completado'
+                    : 'Realizado: $_elapsedSeconds s',
+                style: const TextStyle(color: Colors.white60),
+              ),
             const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
                   child: FilledButton.icon(
+                    style: widget.compact
+                        ? FilledButton.styleFrom(
+                            backgroundColor: Colors.white12,
+                            foregroundColor: Colors.white,
+                          )
+                        : null,
                     onPressed: widget.enabled
                         ? (_isPreparing ? _reset : _toggle)
                         : null,

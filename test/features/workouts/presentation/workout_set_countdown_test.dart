@@ -4,6 +4,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'reiniciar el reloj compacto permite repetir sin inventar tiempo realizado',
+    (tester) async {
+      var now = Duration.zero;
+      var elapsed = -1;
+      var finished = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: WorkoutSetCountdown(
+              targetSeconds: 20,
+              preparationSeconds: 0,
+              compact: true,
+              clock: () => now,
+              onElapsedChanged: (value) => elapsed = value,
+              onFinished: () => finished++,
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Iniciar temporizador'));
+      now = const Duration(seconds: 4);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(elapsed, 4);
+      await tester.tap(find.byTooltip('Reiniciar temporizador'));
+      await tester.pump();
+      expect(elapsed, 0);
+      expect(finished, 0);
+      expect(find.text('0:20'), findsOneWidget);
+      await tester.tap(find.text('Iniciar temporizador'));
+      now = const Duration(seconds: 24);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(finished, 1);
+      await tester.tap(find.text('Repetir'));
+      expect(finished, 1);
+      expect(elapsed, 0);
+    },
+  );
+
   testWidgets('los últimos tres segundos avisan una vez al pausar y repetir', (
     tester,
   ) async {

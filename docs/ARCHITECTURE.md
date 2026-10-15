@@ -530,6 +530,27 @@ máximo de tres cambios. La operación exige un motivo y conserva en una tabla d
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos
 para modificar directamente el resultado ni su registro de correcciones.
 
+UI-035 añade un borrador de registro durante una ejecución abierta sin modificar
+ese contrato SQL. `WorkoutSessionSetDraft` vive en dominio y valida que se pueda
+confirmar la métrica, sin dependencias de Flutter, JSON ni preferencias.
+`WorkoutSessionDraftStore` es el puerto de persistencia; su implementación y el
+modelo JSON viven en datos. Las claves locales incluyen cuenta y ejecución,
+fijadas al crear el ejecutor; las escrituras se serializan y un contenido
+ilegible no se sobrescribe como vacío. GetIt conecta estas piezas.
+
+`ActiveWorkoutCubit` coordina los casos de uso y la recuperación de borradores.
+`workout_execution_rest_policy.dart` calcula la recuperación según el formato;
+la vista solo proporciona el tiempo medido, también en EMOM.
+Una serie terminada sin confirmar es una proyección local para permitir el
+avance y el descanso; no se envía como resultado al servidor ni al algoritmo.
+Confirmarla utiliza `CompleteWorkoutSetUseCase`, con la idempotencia y cola
+vigentes. Los ajustes posteriores se conservan localmente y se consolidan una
+vez al cerrar mediante `CorrectWorkoutSetUseCase`; no se elude su auditoría,
+conexión o límites. El cierre exige revisar los datos pendientes. Las vistas y
+componentes sustituibles solo presentan estados y acciones. La ficha de técnica
+es compartida con biblioteca, con edición opcional según el contexto. Detalle
+visual y límites de recuperación en `docs/VISUAL_DESIGN.md`, UI-035.
+
 Salir de la pantalla mantiene la ejecución en curso y permite recuperarla. El
 abandono es una transición terminal distinta que conserva las series resueltas,
 deja las pendientes sin falsearlas como omitidas y registra un motivo

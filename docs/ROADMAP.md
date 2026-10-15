@@ -1,5 +1,30 @@
 # Roadmap de EntrenaOP
 
+**UI-035, 15/10/2026 · pantalla de entrenamiento:** recorrido cerrado en código
+y verificación técnica, con aceptación física pendiente. La distribución
+compacta conserva el reinicio del reloj, muestra las fotos existentes y abre la
+ficha de técnica compartida como consulta. Acciones fijas, descanso con siguiente
+paso y registros agrupados. Las series ordinarias pueden terminar y descansar
+con datos pendientes recuperables del dispositivo; confirmar utiliza el registro
+existente y los retoques posteriores se consolidan al cerrar con auditoría.
+Dominio, puertos de persistencia, modelo/almacenamiento de datos y componentes
+visuales permanecen separados; no hay preferencias ni Supabase en los widgets.
+
+Comprobación: análisis limpio, 811 pruebas completas correctas y una omisión
+preexistente, compilación web correcta y cuatro escenarios de capturas reales
+de widgets revisados. Incluyen móvil de 390 px, 320 px con texto al doble,
+teclado simulado y escritorio. La imagen de referencia solo se usa en capturas;
+no se publica en el catálogo. Sin cambios admin, compartidos, dependencias, SQL,
+motores ni producción.
+
+Límites: los datos sin confirmar y los retoques aún no sincronizados pertenecen
+al dispositivo; las correcciones de registros enviados requieren conexión y
+mantienen 24 horas/tres cambios. Vídeo pendiente de su gestión de contenido;
+AMRAP y rendimiento conservan sus contratos específicos. El único siguiente
+recorrido recomendado de este bloque es instalar la versión en móvil y probar
+una sesión autenticada con fotos propias/oficiales, reinicio, descanso,
+corrección, salida y retorno. Detalle en `VISUAL_DESIGN.md`, UI-035.
+
 **Integración Windows/macOS, 14/10/2026:** Javier autoriza reunir los cuatro
 commits que habían divergido desde `d5016de`. Se conservan `c6dd045` (tiempos)
 y `c1e97cb` (fotos y acción fija), junto con `9aedb1f` (arranque de compras
