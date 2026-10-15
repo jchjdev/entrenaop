@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**DEV-003, 14/10/2026 · entorno cloud de preparación:** EntrenaOP Dev queda
+privado, limitado a `jchjdev/entrenaop` y publicado, con Flutter 3.47.5 stable
+y Dart 3.13.4. Se comprueba `7b2ebb2`, que incluye la integración y los arreglos
+posteriores de FAS/iPhone. Tres análisis limpios, 799 pruebas de raíz, 109 de
+admin y nueve del editor compartido correctas, con las dos omisiones existentes.
+Los seis comandos y la repetición completa del instalador terminan con código 0.
+Lockfiles y archivos versionados intactos en el checkout cloud; sin acceso ni
+operaciones contra Supabase, RevenueCat o producción.
+
+La publicación está acreditada por la interfaz. El único siguiente recorrido
+cloud recomendado es abrir el primer trabajo en EntrenaOP Dev y comprobar la
+restauración/activación del SDK antes de un cambio pequeño. Esta preparación
+no cierra Free/Pro ni sustituye las pruebas físicas de Android/iPhone o SQL de
+la matriz. DEV-002 conserva su alcance y no se da por migrado todo el desarrollo.
+[Configuración, resultados y límites](CLOUD_DEVELOPMENT.md).
+
 **Integración Windows/macOS, 14/10/2026:** Javier autoriza reunir los cuatro
 commits que habían divergido desde `d5016de`. Se conservan `c6dd045` (tiempos)
 y `c1e97cb` (fotos y acción fija), junto con `9aedb1f` (arranque de compras

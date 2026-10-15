@@ -1,5 +1,122 @@
 # Identidad visual de EntrenaOP
 
+## Series originales; ampliaciones solo en Carreras · UI-034 · 15/10/2026
+
+Javier corrige el alcance de UI-032/033: quiere Series como antes y las
+ampliaciones exclusivamente bajo Carreras. Series continúa siendo el grupo
+inicial y conserva ritmo objetivo, distancia de serie en metros enteros entre
+1 y 2.000, atajos originales y parciales. No muestra selector m/km, selector de
+cálculo ni campo de tiempo objetivo. Ritmo va primero; el resultado recupera
+«Tiempo de la serie» y los pasos/tramos se expresan en metros. Se conserva el
+ejemplo inicial de 400 m a 3:40/km → 1:28.
+
+Carreras conserva distancias libres hasta 100 km, 5 km/10 km/media/maratón,
+unidades m/km y Calcular tiempo/Calcular ritmo con horas y precisión exacta de
+objetivo. El selector Series/Carreras va al principio de la tarjeta. Ambos grupos
+conservan por separado distancia, ritmo y parcial; la selección de unidades y
+modo inverso pertenece solo a Carreras. Cambiar de grupo no arrastra kilómetros
+o un objetivo inverso a Series, ni borra la serie que el usuario estaba usando.
+Carreras abre con 5 km; Series mantiene sus 400 m originales.
+
+El cambio es de presentación y estado temporal de formulario. Se reutiliza el
+servicio de dominio ya probado sin modificar el cálculo, las dependencias,
+paquetes compartidos, admin, SQL o producción. La precisión del inverso de
+Carreras y el redondeo acumulado de los parciales se conservan.
+
+Verificación: análisis limpio, 37 pruebas específicas y 831 de raíz correctas,
+con la omisión web existente y código 0. Se comprueban ausencia de ambos
+selectores en Series, límite de 2.000 m, entrada original, campos y parciales
+independientes, regreso desde Carreras en modo inverso y conservación del
+inverso/unidades de Carreras. Capturas de widgets reales con el tema y fuentes
+disponibles en Linux revisadas en 390 px y 320 px con texto al doble. Queda
+pendiente la aceptación del recorrido corregido en el dispositivo actualizado.
+
+## Calculadora de ritmos: tiempo objetivo · UI-033 · 15/10/2026
+
+UI-034 limita esta ampliación a Carreras; Series vuelve al funcionamiento original.
+
+Tras actualizar Windows, Javier confirma que aparecen Series/Carreras y pide
+obtener el ritmo a partir de una distancia y un tiempo final. Aprueba mostrar
+un selector «Cálculo», con «Calcular tiempo» como opción inicial y
+«Calcular ritmo» como alternativa. La distancia y sus atajos van primero;
+después aparece el selector y un único campo activo: ritmo o tiempo objetivo.
+
+El modo inicial conserva el ejemplo de 400 m a 3:40/km y destaca el tiempo final.
+El inverso empieza con el tiempo vacío, sin error ni resultado hasta completarlo,
+y destaca «Ritmo necesario». Solo el campo activo alimenta el cálculo; cambiar
+el modo conserva ambos borradores y cierra el teclado. No se sincronizan dos
+campos editables entre sí. Las distancias y los parciales de UI-032 se conservan.
+
+Tiempo objetivo utiliza la entrada de reloj existente: `4500` → `45:00`,
+`620` → `06:20`, `33000` → `03:30:00`; también se permite escribir o pegar los
+dos puntos. La ayuda explica min:seg y horas:min:seg. Vaciar el campo deja el
+resultado pendiente; cero o segundos/minutos internos inválidos muestran error.
+Ejemplos: 10 km en 45:00 → 4:30/km; 2 km en 6:20 → 3:10/km.
+
+La operación inversa reside en `RunningPaceCalculator`, independiente de Flutter.
+El resultado conserva el ritmo como segundos por kilómetro con decimales;
+los parciales se calculan proporcionalmente desde los segundos objetivo y la
+última meta conserva ese entero exacto. Redondear el ritmo para mostrarlo no
+recalcula el tiempo final. Cuando corresponde, se muestra «≈» y una nota breve
+que explica que el ritmo está aproximado al segundo y que los parciales
+conservan el objetivo. El resumen muestra distancia y tiempo objetivo.
+No se prescriben ritmos ni se predice rendimiento; no cambia el backend.
+
+Verificación en Linux cloud: análisis sin incidencias y 830 pruebas de raíz
+correctas, con la omisión web existente y código 0. Las 36 pruebas específicas
+incluyen ambos ejemplos, horas, redondeo de ritmo con conservación del objetivo,
+media maratón con tramo final decimal, entradas inválidas, borradores, cambio
+de distancia/unidad y ambos modos en 320/390/1.000 px. Capturas de widgets reales
+con el tema de EntrenaOP y fuentes disponibles en Linux revisadas en 390 px y
+320 px con texto al doble; el selector permite varias líneas cuando hace falta.
+No cambian dependencias, paquetes compartidos, admin, SQL ni producción.
+La aceptación física del modo nuevo queda pendiente tras actualizar la app.
+
+## Calculadora de ritmos: series y carreras · UI-032 · 15/10/2026
+
+UI-034 conserva las ampliaciones de este apartado solo en Carreras y restablece
+el límite y la entrada originales de Series.
+
+Javier aprueba ampliar la herramienta conservando entrada libre y atajos.
+«Series» es el grupo inicial y conserva todas las distancias anteriores, de
+100 a 2.000 m, con el ejemplo de 400 m a 3:40/km. «Carreras» muestra 5 km,
+10 km, Media maratón y Maratón. Se utilizan 21.097,5 m y 42.195 m exactos,
+incluido el último tramo incompleto; no se redondean a 21 o 42 km.
+
+El campo permite metros o kilómetros, coma o punto decimal, con resolución de
+0,1 m (cuatro decimales en km). Cambiar la unidad o el grupo convierte el valor
+sin cambiar la distancia; editarlo sigue funcionando aunque no coincida con un
+atajo. El límite operativo elegido para esta ampliación es de 1 m a 100 km,
+mostrado en la ayuda y validado también en el dominio.
+
+Los parciales automáticos de pista se conservan hasta 2.000 m; por encima se
+utiliza 1 km, con selección manual cada 1 o 5 km cuando cabe un paso intermedio.
+Al cambiar la distancia se descarta un parcial manual incompatible. Los tiempos
+se muestran en minutos y segundos y pasan a horas:minutos:segundos desde una
+hora; se redondea cada paso acumulado para que los tramos sumen el tiempo final.
+El resultado se llama «Tiempo total» y los textos abarcan tanto series como
+carreras. La herramienta calcula un tiempo a ritmo constante: no predice una
+marca posible ni prescribe ritmos de entrenamiento.
+
+El cálculo, la validación de distancia y la selección automática de parciales
+permanecen en dominio, sin dependencias de Flutter. La presentación conserva
+entrada, conversión de unidades y formato. Con poco ancho o texto ampliado,
+los parciales pasan de tres columnas a bloques verticales para conservar
+la lectura de etiquetas y tiempos.
+
+Verificación en Linux cloud: `flutter analyze --no-pub` limpio y
+`flutter test --no-pub --reporter expanded` con 816 pruebas correctas y la
+omisión web existente (código 0 en ambos). Las 22 pruebas de ritmos cubren las
+cuatro distancias, la suma de tramos redondeados, el último medio metro de la
+media maratón, límites, entrada libre, cambios de unidad/parcial y distribución
+en 320/390/1.000 px. Capturas de widgets reales con el tema y fuentes
+disponibles en Linux revisadas en 390 px y en 320 px con texto al doble.
+
+Javier confirma que aparecen Series/Carreras tras incorporar `0d3f436` desde
+Windows; esa confirmación no acredita todavía el nuevo modo inverso UI-033.
+La comprobación física en Android/iPhone se realiza después de traer el commit
+y volver a instalar desde cada equipo, según `docs/CLOUD_DEVELOPMENT.md`.
+
 ## Fotos de ejercicios y acción fija · UI-030 · 14/10/2026
 
 Javier pide adaptar dos comportamientos de su referencia de Calisthenia App,

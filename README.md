@@ -40,6 +40,9 @@ pruebas transaccionales se documentan en
 
 ## Entornos
 
+El trabajo en la nube y los pasos para actualizar Windows, Mac y la app instalada
+se explican en [docs/CLOUD_DEVELOPMENT.md](docs/CLOUD_DEVELOPMENT.md).
+
 La preparación de Xcode y la ejecución en un simulador iOS se explican en
 [docs/IOS_DEVELOPMENT.md](docs/IOS_DEVELOPMENT.md).
 
