@@ -1,5 +1,25 @@
 # Identidad visual de EntrenaOP
 
+## Descansar y completar los datos · UI-034 · 15/10/2026
+
+Javier responde «sí, eso puede ser una opción» a terminar la serie, empezar el
+descanso y poder completar o corregir sus datos durante ese tiempo, y reafirma
+que los datos deben poder modificarse. Se recoge como dirección de diseño;
+no se interpreta como cierre de todos los detalles ni como flujo implementado.
+
+El recorrido propuesto conserva el resultado editable antes de terminar y
+permite completar/corregir después durante la sesión. El reloj de descanso debe
+seguir visible al editar. Se distinguirá el objetivo de lo realmente declarado:
+los datos pendientes no pueden tratarse silenciosamente como resultados
+confirmados. Queda por concretar su persistencia y recuperación, cuándo se
+confirman, cómo se revisan al cerrar y qué datos puede usar la adaptación.
+
+También sigue pendiente definir la edición habitual de una sesión abierta
+frente al corrector auditable del historial y sus límites actuales. Los formatos
+de intervalos, EMOM y AMRAP requieren sus reglas propias; esta dirección no
+aprueba completar una serie por el mero final del reloj ni avanzar
+automáticamente. No se cambia código ni SQL en esta anotación.
+
 ## Nombre y distribución del entrenamiento · UI-033 · 15/10/2026
 
 Javier aprueba el nombre de trabajo «pantalla de entrenamiento» y el título
@@ -24,7 +44,8 @@ una sesión todavía está por implementar y contrastar.
 
 Quedan por concretar dimensiones finales y adaptación para repeticiones,
 tiempo, descanso y los demás formatos existentes. El esquema no cierra las
-reglas de avance con datos pendientes ni cambia cuándo empieza el descanso.
+reglas de avance con datos pendientes. UI-034 concreta posteriormente la
+dirección de diseño para empezar el descanso antes de confirmar todos los datos.
 Esta anotación registra las aprobaciones y no modifica la aplicación.
 
 ### Contraste con los cuatro clips aportados el 15/10/2026
@@ -77,8 +98,9 @@ reflejado en el repositorio de entrenamientos, las migraciones y
 resuelve conectando ese corrector sin cambios de criterio. Igualmente, terminar
 una serie con la métrica principal pendiente requeriría revisar el contrato de
 registro, recuperación de borradores, cola offline y qué datos usa la adaptación.
-Separar «terminar y descansar» de «confirmar datos» es una propuesta pendiente
-de respuesta de Javier; no se cambian las reglas existentes en esta revisión.
+Separar «terminar y descansar» de «confirmar datos» era la propuesta pendiente
+al revisar los clips; UI-034 recoge después la respuesta de Javier. El detalle
+del contrato y su implementación siguen pendientes.
 
 ## Ficha durante el entrenamiento y registro corregible · UI-032 · 15/10/2026
 
@@ -102,9 +124,9 @@ También pide poder registrar los datos al momento y completarlos o corregirlos
 después, para evitar que un error quede registrado sin posibilidad de arreglo.
 El código ya ofrece correcciones en el historial; queda por concretar cómo
 acceder a la revisión durante una sesión en curso y qué datos pueden quedar
-pendientes. Esta dirección no acredita ni autoriza como comportamiento acordado
-el avance automático, iniciar el descanso antes de guardar o completar una serie
-solo porque termine el reloj.
+pendientes. UI-034 concreta posteriormente la dirección de diseño para iniciar
+el descanso antes de confirmar todos los datos. No se acuerda el avance
+automático ni completar una serie solo porque termine el reloj.
 
 Propuesta confirmada posteriormente en UI-033: reutilizar el panel desde la
 imagen o un acceso de técnica, mostrar el vídeo cuando exista y conservar los campos y el
