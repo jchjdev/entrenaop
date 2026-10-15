@@ -177,6 +177,211 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets(
+    '10 km en 45 minutos muestra solo tiempo de entrada y ritmo de salida',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: RunningPaceCalculatorPage()),
+      );
+      await tapVisible(tester, find.text('Carreras'));
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, '10 km'));
+      await selectCalculation(tester, 'Calcular ritmo');
+      expect(find.byKey(const ValueKey('running-pace-input')), findsNothing);
+      expect(find.byKey(const ValueKey('running-required-pace')), findsNothing);
+      expect(
+        find.text('Introduce un tiempo válido mayor que cero'),
+        findsNothing,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('running-target-time-input')),
+        '4500',
+      );
+      await tester.pump();
+      expect(requiredPace(tester), '4:30/km');
+      expect(find.text('Tiempo total'), findsNothing);
+      expect(find.text('10 km en 45:00'), findsOneWidget);
+      expect(find.text('45:00'), findsWidgets);
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, '5 km').last);
+      expect(requiredPace(tester), '4:30/km');
+      expect(find.text('22:30 / 5 km'), findsWidgets);
+    },
+  );
+
+  testWidgets('2 km en 6:20 calcula 3:10/km y mantiene pasos de 400 m', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: RunningPaceCalculatorPage()),
+    );
+    await tapVisible(tester, find.widgetWithText(ChoiceChip, '2 km'));
+    await selectCalculation(tester, 'Calcular ritmo');
+    await tester.enterText(
+      find.byKey(const ValueKey('running-target-time-input')),
+      '630',
+    );
+    await tester.pump();
+    expect(requiredPace(tester), '3:15/km');
+    await tester.enterText(
+      find.byKey(const ValueKey('running-target-time-input')),
+      '6:20',
+    );
+    await tester.pump();
+    expect(requiredPace(tester), '3:10/km');
+    expect(find.text('1:16 / 400 m'), findsWidgets);
+    expect(find.text('2 km en 6:20'), findsOneWidget);
+    expect(find.text('6:20'), findsOneWidget);
+  });
+
+  testWidgets('admite horas y avisa del ritmo aproximado sin alterar la meta', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: RunningPaceCalculatorPage()),
+    );
+    await tapVisible(tester, find.text('Carreras'));
+    await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Maratón'));
+    await selectCalculation(tester, 'Calcular ritmo');
+    await tester.enterText(
+      find.byKey(const ValueKey('running-target-time-input')),
+      '33000',
+    );
+    await tester.pump();
+    expect(requiredPace(tester), '≈ 4:59/km');
+    expect(find.text('42,195 km en 3:30:00'), findsOneWidget);
+    expect(find.text('3:30:00'), findsOneWidget);
+    expect(
+      find.text(
+        'Ritmo aproximado al segundo. Los parciales conservan tu tiempo objetivo.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'cambiar el modo conserva ambos borradores y solo valida el campo activo',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: RunningPaceCalculatorPage()),
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('running-pace-input')),
+        '0',
+      );
+      await tester.pump();
+      expect(find.byKey(const ValueKey('running-total-time')), findsNothing);
+      await selectCalculation(tester, 'Calcular ritmo');
+      await tester.enterText(
+        find.byKey(const ValueKey('running-target-time-input')),
+        '120',
+      );
+      await tester.pump();
+      expect(requiredPace(tester), '3:20/km');
+      await selectCalculation(tester, 'Calcular tiempo');
+      expect(
+        find.byKey(const ValueKey('running-target-time-input')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('running-total-time')), findsNothing);
+      await tester.enterText(
+        find.byKey(const ValueKey('running-pace-input')),
+        '400',
+      );
+      await tester.pump();
+      expect(totalText(tester), '1:36');
+      await selectCalculation(tester, 'Calcular ritmo');
+      expect(requiredPace(tester), '3:20/km');
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const ValueKey('running-target-time-input')),
+            )
+            .controller!
+            .text,
+        '01:20',
+      );
+    },
+  );
+
+  testWidgets(
+    'tiempo vacío o inválido no calcula y permite corregir sin afectar el otro modo',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: RunningPaceCalculatorPage()),
+      );
+      await selectCalculation(tester, 'Calcular ritmo');
+      final input = find.byKey(const ValueKey('running-target-time-input'));
+      for (final value in ['0', '6:99', '']) {
+        await tester.enterText(input, value);
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('running-required-pace')),
+          findsNothing,
+        );
+        expect(
+          find.text('Introduce un tiempo válido mayor que cero'),
+          value.isEmpty ? findsNothing : findsOneWidget,
+        );
+      }
+      await selectCalculation(tester, 'Calcular tiempo');
+      expect(totalText(tester), '1:28');
+    },
+  );
+
+  testWidgets(
+    'al cambiar distancia y unidad se recalcula el ritmo conservando el objetivo',
+    (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: RunningPaceCalculatorPage()),
+      );
+      await tapVisible(tester, find.text('Carreras'));
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, '10 km'));
+      await selectCalculation(tester, 'Calcular ritmo');
+      await tester.enterText(
+        find.byKey(const ValueKey('running-target-time-input')),
+        '4500',
+      );
+      await tester.pump();
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, '5 km').first);
+      expect(requiredPace(tester), '9:00/km');
+      await tapVisible(tester, find.text('Series'));
+      expect(distanceText(tester), '5000');
+      expect(requiredPace(tester), '9:00/km');
+    },
+  );
+
+  for (final (width, scale) in [(320.0, 2.0), (390.0, 1.0), (1000.0, 1.0)]) {
+    testWidgets('modo inverso sin desbordar a $width px y texto $scale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, 850);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scale)),
+            child: child!,
+          ),
+          home: const RunningPaceCalculatorPage(),
+        ),
+      );
+      await selectCalculation(tester, 'Calcular ritmo');
+      await tester.enterText(
+        find.byKey(const ValueKey('running-target-time-input')),
+        '120',
+      );
+      await tester.pump();
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('running-required-pace')),
+      );
+      await tester.pumpAndSettle();
+      expect(requiredPace(tester), '3:20/km');
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
@@ -193,3 +398,15 @@ String? distanceText(WidgetTester tester) => tester
 
 String? totalText(WidgetTester tester) =>
     tester.widget<Text>(find.byKey(const ValueKey('running-total-time'))).data;
+
+Future<void> selectCalculation(WidgetTester tester, String label) async {
+  await tapVisible(
+    tester,
+    find.byKey(const ValueKey('running-calculation-mode')),
+  );
+  await tapVisible(tester, find.text(label).last);
+}
+
+String? requiredPace(WidgetTester tester) => tester
+    .widget<Text>(find.byKey(const ValueKey('running-required-pace')))
+    .data;

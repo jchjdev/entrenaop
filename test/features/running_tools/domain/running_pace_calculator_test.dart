@@ -140,4 +140,102 @@ void main() {
       expect(calculator.automaticSplitMeters(distance), split);
     }
   });
+
+  test('obtiene 4:30/km para 10 km en 45 minutos', () {
+    final result = calculator.calculateFromTime(
+      totalSeconds: 2700,
+      distanceMeters: 10000,
+      splitMeters: 1000,
+    );
+    expect(result.paceSecondsPerKilometer, 270);
+    expect(result.totalSeconds, 2700);
+    expect(
+      result.splits.map((split) => split.segmentSeconds),
+      everyElement(270),
+    );
+  });
+
+  test('obtiene 3:10/km para 2 km en 6:20 con pasos de pista', () {
+    final result = calculator.calculateFromTime(
+      totalSeconds: 380,
+      distanceMeters: 2000,
+      splitMeters: 400,
+    );
+    expect(result.paceSecondsPerKilometer, 190);
+    expect(result.splits.map((split) => split.cumulativeSeconds), [
+      76,
+      152,
+      228,
+      304,
+      380,
+    ]);
+  });
+
+  test('conserva los segundos objetivo aunque el ritmo no sea entero', () {
+    final result = calculator.calculateFromTime(
+      totalSeconds: 2701,
+      distanceMeters: 10000,
+      splitMeters: 1000,
+    );
+    expect(result.paceSecondsPerKilometer, closeTo(270.1, 1e-10));
+    expect(result.totalSeconds, 2701);
+    expect(result.splits.last.cumulativeSeconds, 2701);
+    expect(
+      result.splits.fold<int>(0, (sum, split) => sum + split.segmentSeconds),
+      2701,
+    );
+    expect(result.splits[4].cumulativeSeconds, 1351);
+  });
+
+  test(
+    'mantiene la media maratón exacta y su último tramo con tiempo objetivo',
+    () {
+      final result = calculator.calculateFromTime(
+        totalSeconds: 5400,
+        distanceMeters: 21097.5,
+        splitMeters: 1000,
+      );
+      expect(result.paceSecondsPerKilometer * 21.0975, closeTo(5400, 1e-8));
+      expect(result.splits.last.segmentMeters, 97.5);
+      expect(result.splits.last.segmentSeconds, 25);
+      expect(result.totalSeconds, 5400);
+      expect(
+        result.splits.fold<int>(0, (sum, split) => sum + split.segmentSeconds),
+        5400,
+      );
+    },
+  );
+
+  test('valida tiempo, distancia y parcial también en el cálculo inverso', () {
+    for (final seconds in [0, -1]) {
+      expect(
+        () => calculator.calculateFromTime(
+          totalSeconds: seconds,
+          distanceMeters: 10000,
+          splitMeters: 1000,
+        ),
+        throwsArgumentError,
+      );
+    }
+    for (final distance in [0.0, 100000.1, double.nan, double.infinity]) {
+      expect(
+        () => calculator.calculateFromTime(
+          totalSeconds: 2700,
+          distanceMeters: distance,
+          splitMeters: 1000,
+        ),
+        throwsArgumentError,
+      );
+    }
+    for (final split in [0, -1]) {
+      expect(
+        () => calculator.calculateFromTime(
+          totalSeconds: 2700,
+          distanceMeters: 10000,
+          splitMeters: split,
+        ),
+        throwsArgumentError,
+      );
+    }
+  });
 }

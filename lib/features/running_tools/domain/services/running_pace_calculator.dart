@@ -23,6 +23,38 @@ class RunningPaceCalculator {
         'El ritmo debe ser mayor que cero.',
       );
     }
+    return _calculate(
+      paceSecondsPerKilometer: paceSecondsPerKilometer.toDouble(),
+      distanceMeters: distanceMeters,
+      splitMeters: splitMeters,
+    );
+  }
+
+  RunningPaceCalculation calculateFromTime({
+    required int totalSeconds,
+    required double distanceMeters,
+    required int splitMeters,
+  }) {
+    if (totalSeconds <= 0) {
+      throw ArgumentError.value(
+        totalSeconds,
+        'totalSeconds',
+        'El tiempo objetivo debe ser mayor que cero.',
+      );
+    }
+    return _calculate(
+      targetTotalSeconds: totalSeconds,
+      distanceMeters: distanceMeters,
+      splitMeters: splitMeters,
+    );
+  }
+
+  RunningPaceCalculation _calculate({
+    double? paceSecondsPerKilometer,
+    int? targetTotalSeconds,
+    required double distanceMeters,
+    required int splitMeters,
+  }) {
     if (!distanceMeters.isFinite ||
         distanceMeters < 1 ||
         distanceMeters > maxDistanceMeters) {
@@ -40,6 +72,8 @@ class RunningPaceCalculator {
       );
     }
 
+    final pace =
+        paceSecondsPerKilometer ?? targetTotalSeconds! * 1000 / distanceMeters;
     final distances = <double>[
       for (
         var distance = splitMeters;
@@ -55,8 +89,13 @@ class RunningPaceCalculator {
         .map((distance) {
           // Redondear cada paso acumulado reparte los segundos sobrantes sin que
           // la suma de los tramos deje de coincidir con el tiempo final.
-          final cumulativeSeconds = (paceSecondsPerKilometer * distance / 1000)
-              .round();
+          // El cálculo inverso parte del tiempo exacto, no del ritmo mostrado
+          // redondeado: así la meta y la suma de parciales conservan el objetivo.
+          final cumulativeSeconds = targetTotalSeconds == null
+              ? (pace * distance / 1000).round()
+              : distance == distanceMeters
+              ? targetTotalSeconds
+              : (targetTotalSeconds * distance / distanceMeters).round();
           final split = RunningPaceSplit(
             distanceMeters: distance,
             segmentMeters: distance - previousDistance,
@@ -70,7 +109,7 @@ class RunningPaceCalculator {
         .toList(growable: false);
 
     return RunningPaceCalculation(
-      paceSecondsPerKilometer: paceSecondsPerKilometer,
+      paceSecondsPerKilometer: pace,
       distanceMeters: distanceMeters,
       splitMeters: splitMeters,
       totalSeconds: splits.last.cumulativeSeconds,
@@ -88,7 +127,7 @@ class RunningPaceCalculation {
     required this.splits,
   });
 
-  final int paceSecondsPerKilometer;
+  final double paceSecondsPerKilometer;
   final double distanceMeters;
   final int splitMeters;
   final int totalSeconds;
