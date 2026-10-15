@@ -38,18 +38,38 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
   static const _seriesSplitOptions = [100, 200, 400, 500, 1000];
   static const _raceSplitOptions = [1000, 5000];
 
-  final _paceController = TextEditingController(text: '03:40');
-  final _distanceController = TextEditingController(text: '400');
+  final _seriesPaceController = TextEditingController(text: '03:40');
+  final _racePaceController = TextEditingController(text: '03:40');
+  final _seriesDistanceController = TextEditingController(text: '400');
+  final _raceDistanceController = TextEditingController(text: '5');
   final _targetTimeController = TextEditingController();
   _CalculationMode _mode = _CalculationMode.time;
   bool _showRaces = false;
-  bool _useKilometers = false;
-  int? _selectedSplit;
+  bool _useKilometers = true;
+  int? _seriesSplit;
+  int? _raceSplit;
+
+  TextEditingController get _paceController =>
+      _showRaces ? _racePaceController : _seriesPaceController;
+  TextEditingController get _distanceController =>
+      _showRaces ? _raceDistanceController : _seriesDistanceController;
+  bool get _distanceInKilometers => _showRaces && _useKilometers;
+  bool get _calculatingPace => _showRaces && _mode == _CalculationMode.pace;
+  int? get _selectedSplit => _showRaces ? _raceSplit : _seriesSplit;
+  set _selectedSplit(int? value) {
+    if (_showRaces) {
+      _raceSplit = value;
+    } else {
+      _seriesSplit = value;
+    }
+  }
 
   @override
   void dispose() {
-    _paceController.dispose();
-    _distanceController.dispose();
+    _seriesPaceController.dispose();
+    _racePaceController.dispose();
+    _seriesDistanceController.dispose();
+    _raceDistanceController.dispose();
     _targetTimeController.dispose();
     super.dispose();
   }
@@ -60,13 +80,14 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
     );
     if (value == null || !value.isFinite) return null;
     // La entrada admite décimas de metro, también al convertir desde kilómetros.
-    return (value * (_useKilometers ? 1000 : 1) * 10).roundToDouble() / 10;
+    return (value * (_distanceInKilometers ? 1000 : 1) * 10).roundToDouble() /
+        10;
   }
 
   bool _validDistance(double? distance) =>
       distance != null &&
       distance >= 1 &&
-      distance <= RunningPaceCalculator.maxDistanceMeters;
+      distance <= (_showRaces ? RunningPaceCalculator.maxDistanceMeters : 2000);
 
   Iterable<int> _splitOptions(double distance) =>
       (distance > 2000 ? _raceSplitOptions : _seriesSplitOptions).where(
@@ -92,7 +113,7 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
     final distance = _distance;
     if (!_validDistance(distance)) return null;
     final split = _selectedSplit ?? _calculator.automaticSplitMeters(distance!);
-    if (_mode == _CalculationMode.pace) {
+    if (_calculatingPace) {
       final target = parseDurationInput(_targetTimeController.text);
       if (target == null || target <= 0) return null;
       return _calculator.calculateFromTime(
@@ -113,11 +134,28 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
   void _selectDistance(double distance) {
     setState(() {
       _distanceController.text = _number(
-        distance / (_useKilometers ? 1000 : 1),
+        distance / (_distanceInKilometers ? 1000 : 1),
       );
       _resetUnavailableSplit();
     });
   }
+
+  Widget _paceInput() => TextField(
+    key: const ValueKey('running-pace-input'),
+    controller: _paceController,
+    keyboardType: TextInputType.number,
+    inputFormatters: const [DurationInputFormatter()],
+    decoration: const InputDecoration(
+      labelText: 'Ritmo objetivo (min:seg/km)',
+      hintText: '00:00',
+      helperText: 'Escribe, por ejemplo, 3:40',
+      prefixIcon: Icon(Icons.speed_rounded),
+    ),
+    onChanged: (_) => setState(() {}),
+  );
+
+  String _splitLabel(int meters) =>
+      _showRaces ? _formatDistance(meters.toDouble()) : '$meters m';
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +178,11 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Elige la distancia y calcula tu tiempo final o el ritmo para llegar a tu objetivo, con todos los parciales.',
-                    style: TextStyle(color: Colors.white70, height: 1.4),
+                  Text(
+                    _showRaces
+                        ? 'Elige la distancia y calcula tu tiempo final o el ritmo para llegar a tu objetivo, con todos los parciales.'
+                        : 'Introduce el ritmo por kilómetro y la distancia de la serie. Verás el tiempo final y los pasos acumulados que debes marcar en pista.',
+                    style: const TextStyle(color: Colors.white70, height: 1.4),
                   ),
                   const SizedBox(height: 18),
                   Card(
@@ -151,61 +191,6 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          TextField(
-                            key: const ValueKey('running-distance-input'),
-                            controller: _distanceController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              TextInputFormatter.withFunction((
-                                oldValue,
-                                newValue,
-                              ) {
-                                final pattern = _useKilometers
-                                    ? r'^\d{0,6}([,.]\d{0,4})?$'
-                                    : r'^\d{0,6}([,.]\d{0,1})?$';
-                                return RegExp(pattern).hasMatch(newValue.text)
-                                    ? newValue
-                                    : oldValue;
-                              }),
-                            ],
-                            decoration: InputDecoration(
-                              labelText: 'Distancia',
-                              suffixIcon: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                child: DropdownButton<bool>(
-                                  key: const ValueKey('running-distance-unit'),
-                                  value: _useKilometers,
-                                  underline: const SizedBox.shrink(),
-                                  items: const [
-                                    DropdownMenuItem(
-                                      value: false,
-                                      child: Text('m'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: true,
-                                      child: Text('km'),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      setState(() => _setUnit(value));
-                                    }
-                                  },
-                                ),
-                              ),
-                              helperText: 'Entre 1 m y 100 km',
-                              errorText: !_validDistance(distance)
-                                  ? 'Introduce una distancia válida'
-                                  : null,
-                              prefixIcon: const Icon(Icons.straighten_rounded),
-                            ),
-                            onChanged: (_) => setState(_resetUnavailableSplit),
-                          ),
-                          const SizedBox(height: 18),
                           SegmentedButton<bool>(
                             segments: const [
                               ButtonSegment(
@@ -218,10 +203,86 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                               ),
                             ],
                             selected: {_showRaces},
-                            onSelectionChanged: (selection) => setState(() {
-                              _showRaces = selection.single;
-                              _setUnit(_showRaces);
-                            }),
+                            onSelectionChanged: (selection) {
+                              FocusScope.of(context).unfocus();
+                              setState(() => _showRaces = selection.single);
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          if (!_showRaces) ...[
+                            _paceInput(),
+                            const SizedBox(height: 18),
+                          ],
+                          TextField(
+                            key: const ValueKey('running-distance-input'),
+                            controller: _distanceController,
+                            keyboardType: _showRaces
+                                ? const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  )
+                                : TextInputType.number,
+                            inputFormatters: !_showRaces
+                                ? [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(4),
+                                  ]
+                                : [
+                                    TextInputFormatter.withFunction((
+                                      oldValue,
+                                      newValue,
+                                    ) {
+                                      final pattern = _useKilometers
+                                          ? r'^\d{0,6}([,.]\d{0,4})?$'
+                                          : r'^\d{0,6}([,.]\d{0,1})?$';
+                                      return RegExp(pattern)
+                                              .hasMatch(newValue.text)
+                                          ? newValue
+                                          : oldValue;
+                                    }),
+                                  ],
+                            decoration: InputDecoration(
+                              labelText: _showRaces
+                                  ? 'Distancia'
+                                  : 'Distancia de la serie',
+                              suffixText: _showRaces ? null : 'm',
+                              suffixIcon: !_showRaces
+                                  ? null
+                                  : Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: DropdownButton<bool>(
+                                        key: const ValueKey(
+                                          'running-distance-unit',
+                                        ),
+                                        value: _useKilometers,
+                                        underline: const SizedBox.shrink(),
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: false,
+                                            child: Text('m'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: true,
+                                            child: Text('km'),
+                                          ),
+                                        ],
+                                        onChanged: (value) {
+                                          if (value != null) {
+                                            setState(() => _setUnit(value));
+                                          }
+                                        },
+                                      ),
+                                    ),
+                              helperText: _showRaces
+                                  ? 'Entre 1 m y 100 km'
+                                  : 'Entre 1 y 2000 m',
+                              errorText: !_validDistance(distance)
+                                  ? 'Introduce una distancia válida'
+                                  : null,
+                              prefixIcon: const Icon(Icons.straighten_rounded),
+                            ),
+                            onChanged: (_) => setState(_resetUnavailableSplit),
                           ),
                           const SizedBox(height: 14),
                           Wrap(
@@ -246,72 +307,66 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                                     )
                                     .toList(growable: false),
                           ),
-                          const SizedBox(height: 22),
-                          DropdownButtonFormField<_CalculationMode>(
-                            key: const ValueKey('running-calculation-mode'),
-                            initialValue: _mode,
-                            isExpanded: true,
-                            isDense: false,
-                            itemHeight: null,
-                            decoration: const InputDecoration(
-                              labelText: 'Cálculo',
-                              prefixIcon: Icon(Icons.calculate_outlined),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: _CalculationMode.time,
-                                child: Text('Calcular tiempo'),
-                              ),
-                              DropdownMenuItem(
-                                value: _CalculationMode.pace,
-                                child: Text('Calcular ritmo'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) return;
-                              FocusScope.of(context).unfocus();
-                              setState(() => _mode = value);
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          if (_mode == _CalculationMode.time)
-                            TextField(
-                              key: const ValueKey('running-pace-input'),
-                              controller: _paceController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: const [DurationInputFormatter()],
+                          if (_showRaces) ...[
+                            const SizedBox(height: 22),
+                            DropdownButtonFormField<_CalculationMode>(
+                              key: const ValueKey('running-calculation-mode'),
+                              initialValue: _mode,
+                              isExpanded: true,
+                              isDense: false,
+                              itemHeight: null,
                               decoration: const InputDecoration(
-                                labelText: 'Ritmo objetivo (min:seg/km)',
-                                hintText: '00:00',
-                                helperText: 'Escribe, por ejemplo, 3:40',
-                                prefixIcon: Icon(Icons.speed_rounded),
+                                labelText: 'Cálculo',
+                                prefixIcon: Icon(Icons.calculate_outlined),
                               ),
-                              onChanged: (_) => setState(() {}),
-                            )
-                          else
-                            TextField(
-                              key: const ValueKey('running-target-time-input'),
-                              controller: _targetTimeController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: const [DurationInputFormatter()],
-                              decoration: InputDecoration(
-                                labelText: 'Tiempo objetivo',
-                                hintText: '00:00',
-                                helperText: 'Min:seg, por ejemplo 6:20. Para horas: 1:30:00',
-                                helperMaxLines: 4,
-                                errorText:
-                                    _targetTimeController.text.isNotEmpty &&
-                                        (parseDurationInput(
-                                                  _targetTimeController.text,
-                                                ) ??
-                                                0) <=
-                                            0
-                                    ? 'Introduce un tiempo válido mayor que cero'
-                                    : null,
-                                prefixIcon: const Icon(Icons.timer_outlined),
-                              ),
-                              onChanged: (_) => setState(() {}),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: _CalculationMode.time,
+                                  child: Text('Calcular tiempo'),
+                                ),
+                                DropdownMenuItem(
+                                  value: _CalculationMode.pace,
+                                  child: Text('Calcular ritmo'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+                                FocusScope.of(context).unfocus();
+                                setState(() => _mode = value);
+                              },
                             ),
+                            const SizedBox(height: 18),
+                            if (_mode == _CalculationMode.time)
+                              _paceInput()
+                            else
+                              TextField(
+                                key: const ValueKey(
+                                  'running-target-time-input',
+                                ),
+                                controller: _targetTimeController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: const [
+                                  DurationInputFormatter(),
+                                ],
+                                decoration: InputDecoration(
+                                  labelText: 'Tiempo objetivo',
+                                  hintText: '00:00',
+                                  helperText: 'Min:seg, por ejemplo 6:20. Para horas: 1:30:00',
+                                  helperMaxLines: 4,
+                                  errorText:
+                                      _targetTimeController.text.isNotEmpty &&
+                                          (parseDurationInput(
+                                                    _targetTimeController.text,
+                                                  ) ??
+                                                  0) <=
+                                              0
+                                      ? 'Introduce un tiempo válido mayor que cero'
+                                      : null,
+                                  prefixIcon: const Icon(Icons.timer_outlined),
+                                ),
+                                onChanged: (_) => setState(() {}),
+                              ),
+                          ],
                           if (_validDistance(distance) && distance! > 100) ...[
                             const SizedBox(height: 22),
                             const Text(
@@ -321,8 +376,8 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                             const SizedBox(height: 4),
                             Text(
                               _selectedSplit == null
-                                  ? 'Automático · cada ${_formatDistance(_calculator.automaticSplitMeters(distance).toDouble())}'
-                                  : 'Cada ${_formatDistance(_selectedSplit!.toDouble())}',
+                                  ? 'Automático · cada ${_splitLabel(_calculator.automaticSplitMeters(distance))}'
+                                  : 'Cada ${_splitLabel(_selectedSplit!)}',
                               style: const TextStyle(
                                 color: Colors.white60,
                                 fontSize: 12,
@@ -341,9 +396,7 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                                 ),
                                 ..._splitOptions(distance).map(
                                   (split) => ChoiceChip(
-                                    label: Text(
-                                      _formatDistance(split.toDouble()),
-                                    ),
+                                    label: Text(_splitLabel(split)),
                                     selected: _selectedSplit == split,
                                     onSelected: (_) =>
                                         setState(() => _selectedSplit = split),
@@ -360,14 +413,17 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
                   if (calculation != null)
                     _ResultCard(
                       calculation: calculation,
-                      showPace: _mode == _CalculationMode.pace,
+                      showPace: _calculatingPace,
+                      isSeries: !_showRaces,
                     )
                   else
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Text(
-                          _mode == _CalculationMode.time
+                          !_showRaces
+                              ? 'Revisa el ritmo y la distancia para calcular la serie.'
+                              : _mode == _CalculationMode.time
                               ? 'Revisa el ritmo y la distancia para calcular el tiempo.'
                               : 'Introduce la distancia y el tiempo objetivo para calcular el ritmo.',
                           style: const TextStyle(color: Colors.white70),
@@ -385,14 +441,21 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.calculation, required this.showPace});
+  const _ResultCard({
+    required this.calculation,
+    required this.showPace,
+    required this.isSeries,
+  });
 
   final RunningPaceCalculation calculation;
   final bool showPace;
+  final bool isSeries;
 
   @override
   Widget build(BuildContext context) {
     final hasIntermediateSplits = calculation.splits.length > 1;
+    String distanceLabel(double meters) =>
+        isSeries ? '${_number(meters)} m' : _formatDistance(meters);
     return Card(
       key: const ValueKey('running-pace-result'),
       color: const Color(0xFF21130E),
@@ -402,7 +465,11 @@ class _ResultCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              showPace ? 'Ritmo necesario' : 'Tiempo total',
+              showPace
+                  ? 'Ritmo necesario'
+                  : isSeries
+                  ? 'Tiempo de la serie'
+                  : 'Tiempo total',
               style: const TextStyle(
                 color: Colors.white70,
                 fontWeight: FontWeight.w700,
@@ -431,8 +498,8 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               showPace
-                  ? '${_formatDistance(calculation.distanceMeters)} en ${_clock(calculation.totalSeconds)}'
-                  : '${_formatDistance(calculation.distanceMeters)} a ${_paceLabel(calculation.paceSecondsPerKilometer)}',
+                  ? '${distanceLabel(calculation.distanceMeters)} en ${_clock(calculation.totalSeconds)}'
+                  : '${distanceLabel(calculation.distanceMeters)} a ${_paceLabel(calculation.paceSecondsPerKilometer)}',
               style: const TextStyle(color: Colors.white60),
             ),
             if (showPace &&
@@ -487,10 +554,10 @@ class _ResultCard extends StatelessWidget {
                       ...calculation.splits.map((split) {
                         final step =
                             split.distanceMeters == calculation.distanceMeters
-                            ? '${_formatDistance(split.distanceMeters)} · meta'
-                            : _formatDistance(split.distanceMeters);
+                            ? '${distanceLabel(split.distanceMeters)} · meta'
+                            : distanceLabel(split.distanceMeters);
                         final segment =
-                            '${_clock(split.segmentSeconds)} / ${_formatDistance(split.segmentMeters)}';
+                            '${_clock(split.segmentSeconds)} / ${distanceLabel(split.segmentMeters)}';
                         final cumulative = _clock(split.cumulativeSeconds);
                         const cumulativeStyle = TextStyle(
                           fontWeight: FontWeight.w800,

@@ -1,6 +1,39 @@
 # Identidad visual de EntrenaOP
 
+## Series originales; ampliaciones solo en Carreras · UI-034 · 15/10/2026
+
+Javier corrige el alcance de UI-032/033: quiere Series como antes y las
+ampliaciones exclusivamente bajo Carreras. Series continúa siendo el grupo
+inicial y conserva ritmo objetivo, distancia de serie en metros enteros entre
+1 y 2.000, atajos originales y parciales. No muestra selector m/km, selector de
+cálculo ni campo de tiempo objetivo. Ritmo va primero; el resultado recupera
+«Tiempo de la serie» y los pasos/tramos se expresan en metros. Se conserva el
+ejemplo inicial de 400 m a 3:40/km → 1:28.
+
+Carreras conserva distancias libres hasta 100 km, 5 km/10 km/media/maratón,
+unidades m/km y Calcular tiempo/Calcular ritmo con horas y precisión exacta de
+objetivo. El selector Series/Carreras va al principio de la tarjeta. Ambos grupos
+conservan por separado distancia, ritmo y parcial; la selección de unidades y
+modo inverso pertenece solo a Carreras. Cambiar de grupo no arrastra kilómetros
+o un objetivo inverso a Series, ni borra la serie que el usuario estaba usando.
+Carreras abre con 5 km; Series mantiene sus 400 m originales.
+
+El cambio es de presentación y estado temporal de formulario. Se reutiliza el
+servicio de dominio ya probado sin modificar el cálculo, las dependencias,
+paquetes compartidos, admin, SQL o producción. La precisión del inverso de
+Carreras y el redondeo acumulado de los parciales se conservan.
+
+Verificación: análisis limpio, 37 pruebas específicas y 831 de raíz correctas,
+con la omisión web existente y código 0. Se comprueban ausencia de ambos
+selectores en Series, límite de 2.000 m, entrada original, campos y parciales
+independientes, regreso desde Carreras en modo inverso y conservación del
+inverso/unidades de Carreras. Capturas de widgets reales con el tema y fuentes
+disponibles en Linux revisadas en 390 px y 320 px con texto al doble. Queda
+pendiente la aceptación del recorrido corregido en el dispositivo actualizado.
+
 ## Calculadora de ritmos: tiempo objetivo · UI-033 · 15/10/2026
+
+UI-034 limita esta ampliación a Carreras; Series vuelve al funcionamiento original.
 
 Tras actualizar Windows, Javier confirma que aparecen Series/Carreras y pide
 obtener el ritmo a partir de una distancia y un tiempo final. Aprueba mostrar
@@ -40,6 +73,9 @@ No cambian dependencias, paquetes compartidos, admin, SQL ni producción.
 La aceptación física del modo nuevo queda pendiente tras actualizar la app.
 
 ## Calculadora de ritmos: series y carreras · UI-032 · 15/10/2026
+
+UI-034 conserva las ampliaciones de este apartado solo en Carreras y restablece
+el límite y la entrada originales de Series.
 
 Javier aprueba ampliar la herramienta conservando entrada libre y atajos.
 «Series» es el grupo inicial y conserva todas las distancias anteriores, de
