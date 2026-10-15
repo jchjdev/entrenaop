@@ -1,5 +1,32 @@
 # Identidad visual de EntrenaOP
 
+## Nombre y distribución del entrenamiento · UI-033 · 15/10/2026
+
+Javier aprueba el nombre de trabajo «pantalla de entrenamiento» y el título
+«Entrenamiento en curso» dentro de la aplicación. La aprobación es de diseño;
+el título y la distribución todavía no se han cambiado en código.
+
+También aprueba como base el esquema presentado en la conversación:
+
+- Cabecera compacta con nombre de sesión, progreso y opciones.
+- Nombre del ejercicio y posición dentro del entrenamiento.
+- Imagen visible y acceso a la ficha de técnica de UI-032.
+- Objetivo y esfuerzo prescrito, con una indicación específica si existe.
+- Resultado en una zona compacta, sin declarar automáticamente el esfuerzo real.
+- Acción «Guardar serie» fija abajo, reservando su espacio.
+
+Se confirma asimismo la propuesta de UI-032: panel de consulta desde la imagen
+o el acceso de técnica, conservación de campos y del estado del temporizador al
+cerrarlo, edición de ejercicios propios desde la biblioteca y vídeo pendiente.
+Corregir resultados durante la sesión y después es un requisito distinto de
+editar la definición del ejercicio. El mecanismo concreto de corrección durante
+una sesión todavía está por implementar y contrastar.
+
+Quedan por concretar dimensiones finales y adaptación para repeticiones,
+tiempo, descanso y los demás formatos existentes. El esquema no cierra las
+reglas de avance con datos pendientes ni cambia cuándo empieza el descanso.
+Esta anotación registra las aprobaciones y no modifica la aplicación.
+
 ## Ficha durante el entrenamiento y registro corregible · UI-032 · 15/10/2026
 
 Dirección confirmada por Javier; implementación pendiente. La captura de su
@@ -26,13 +53,13 @@ pendientes. Esta dirección no acredita ni autoriza como comportamiento acordado
 el avance automático, iniciar el descanso antes de guardar o completar una serie
 solo porque termine el reloj.
 
-Propuesta pendiente de concretar: reutilizar el panel desde la imagen o un
-acceso de técnica, mostrar el vídeo cuando exista y conservar los campos y el
+Propuesta confirmada posteriormente en UI-033: reutilizar el panel desde la
+imagen o un acceso de técnica, mostrar el vídeo cuando exista y conservar los campos y el
 estado del entrenamiento al cerrarlo. Si falta material multimedia, la consulta
-debe seguir siendo útil con el contenido disponible. El tamaño de la imagen en
-el entrenamiento, la disposición del registro y las transiciones entre trabajo,
-registro y descanso siguen en revisión. No se modifica código, SQL ni motores
-en este acuerdo documental.
+debe seguir siendo útil con el contenido disponible. UI-033 confirma una
+distribución base del registro; el tamaño final de la imagen y las transiciones
+entre trabajo, registro y descanso siguen en revisión. No se modifica código,
+SQL ni motores en este acuerdo documental.
 
 ## Fotos de ejercicios y acción fija · UI-030 · 14/10/2026
 
