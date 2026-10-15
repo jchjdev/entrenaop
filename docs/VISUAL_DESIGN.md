@@ -674,8 +674,22 @@ portadas, pruebas, mínimos y sesiones del admin. Biblioteca hereda los botones
 secundarios sin una excepción local naranja. Las rutas, autorizaciones y
 operaciones de servidor se mantienen.
 
-Validación final en curso. La aceptación en dispositivos actualizados queda
-pendiente; las capturas usan widgets reales y datos ficticios, sin cuentas remotas.
+Validación del resultado consolidado: análisis limpio en raíz y admin; 850
+pruebas correctas en la ejecución conjunta de app (835), entrena_ui (6) y editor
+(9), y 109 correctas en admin. Se conservan una omisión web de raíz y una captura
+optativa omitida del admin. Se comprueban navegación, continuación, descarte,
+fallos/reintentos, guardado de preferencias, recuperación de borradores y texto
+al doble. Los botones de prueba reservan la altura de la etiqueta más larga,
+también durante «Probando…», para mantener el mismo tamaño sin cortar texto.
+
+Revisados doce renders con fuentes e iconos reales a 390 px, 320 px con texto al
+doble y 1100 px. Se conservan [salida](visual-audit/buttons-2026-10-15/salida-390.png),
+[descarte](visual-audit/buttons-2026-10-15/descarte-390.png),
+[cierre anticipado](visual-audit/buttons-2026-10-15/finalizar-390.png),
+[avisos](visual-audit/buttons-2026-10-15/avisos-390.png) y
+[escritorio](visual-audit/buttons-2026-10-15/salida-1100.png), con manifiesto de
+procedencia y huellas de código. La aceptación en dispositivos actualizados
+queda pendiente; las capturas usan widgets reales y datos ficticios, sin cuentas remotas.
 
 ## Criterios de aplicación
 

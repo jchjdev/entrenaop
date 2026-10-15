@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-15",
+  "source_commit": "c93af2e",
+  "provenance": "Widgets reales de ActiveWorkoutPage y avisos, repositorio/temporizador/avisos ficticios de las pruebas; sin cuentas ni peticiones a servidor. Roboto e iconos Material del SDK Flutter; tema EntrenaTheme.dark.",
+  "reviewed_viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "text_scale": 1
+    },
+    {
+      "width": 320,
+      "height": 780,
+      "text_scale": 2
+    },
+    {
+      "width": 1100,
+      "height": 850,
+      "text_scale": 1
+    }
+  ],
+  "reviewed_renders": 12,
+  "sources": {
+    "packages/entrena_ui/lib/src/entrena_theme.dart": "4518f764fc7fd7129fc141c61b4a39f4f7e547900c32f67b347879965755e28a",
+    "packages/entrena_ui/lib/src/entrena_dialog_actions.dart": "1d93b642c95e1fa085f3e05ed1faa4440726afc2057b2e50c7c75a2480db9000",
+    "lib/features/workouts/presentation/pages/active_workout_page.dart": "d58f4385dc5585de020ea0213a861523a136168b12fd9cb1d49584695fd917cb",
+    "lib/features/workouts/presentation/widgets/workout_cue_settings_button.dart": "3b9b9e8e7846c057a41963ca0b5e7c7c3c2b297093e5d185b92b02cfdde1f13d",
+    "test/features/workouts/presentation/active_workout_cubit_test.dart": "64d82b527f5b4a9695fbe7348caa9e0e29ae8b4738cdf00eb3d513eaeef6ab7f"
+  },
+  "captures": [
+    {
+      "file": "avisos-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "352eaa9679e33058a21f1172395eaccbdd4af1188ab83a905c3751ad0af1eb01"
+    },
+    {
+      "file": "descarte-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "08c87ae3ca977141e2098f4b16519833c79af5bc9695f72c4653faf5d5fef455"
+    },
+    {
+      "file": "finalizar-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "cebfe48eee873582d08d1be2137f101e045043121f8b6a872fb0ea13162e2677"
+    },
+    {
+      "file": "salida-1100.png",
+      "width": 1100,
+      "height": 850,
+      "sha256": "78c69a94abc4dbb846da1253a807d69590571202b74312f89050799e5bb2945f"
+    },
+    {
+      "file": "salida-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "f55c41c6859c71418b8904d7647f7501f82a2e36fd738cd62ac88d94d25eb899"
+    }
+  ]
+}

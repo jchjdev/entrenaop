@@ -119,7 +119,8 @@ En **cada equipo** que vaya a seguir desarrollando o instalar la app:
    revisar primero cualquier cambio local; no descartarlo para actualizar.
 2. Seleccionar `main`, pulsar **Fetch origin** y después **Pull origin** si hay
    cambios. Comprobar en History que aparece el commit indicado al entregar el
-   trabajo. Si se entrega en una rama/PR, integrar primero ese trabajo en `main`.
+   trabajo. Desde DEV-004 el trabajo habitual se entrega en `main`; solo se
+   crea una rama/PR si Javier lo solicita expresamente.
 3. Desde la raíz del proyecto, con Flutter 3.47.5 y Dart 3.13.4, ejecutar:
 
    ```sh
