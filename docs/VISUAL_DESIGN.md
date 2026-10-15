@@ -9,6 +9,15 @@ este formato sin ocupar toda la pantalla. Se conserva como referencia para
 consultar el ejercicio desde el entrenamiento; no se sustituye por una pantalla
 completa obligatoria. Javier indica que la ficha todavía está incompleta.
 
+Javier aclara que, al abrirse desde una sesión, el panel será exclusivamente de
+consulta y no ofrecerá editar el ejercicio, aunque sea personal. El botón de
+la captura pertenece al acceso desde la biblioteca y a un ejercicio creado por
+el usuario; no se extiende esa edición a los ejercicios oficiales de EntrenaOP.
+También aclara que el vídeo es una tarea futura todavía sin resolver. Los
+campos y componentes presentes en el código no acreditan que la carga y
+reproducción estén resueltas en el recorrido real. Esta revisión no cierra ni
+implementa la gestión de vídeo.
+
 También pide poder registrar los datos al momento y completarlos o corregirlos
 después, para evitar que un error quede registrado sin posibilidad de arreglo.
 El código ya ofrece correcciones en el historial; queda por concretar cómo
