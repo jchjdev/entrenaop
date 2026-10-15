@@ -25,67 +25,89 @@ class LibraryHubPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const EntrenaWordmark(width: 164)),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-      child: Center(
+  Widget build(BuildContext context) => DefaultTabController(
+    length: 2,
+    child: Scaffold(
+      appBar: AppBar(title: const EntrenaWordmark(width: 164)),
+      body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 920),
+          constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Biblioteca',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Encuentra sesiones y ejercicios. Haz espacio para los tuyos.',
-                style: TextStyle(color: context.visuals.textMuted),
-              ),
-              const SizedBox(height: 26),
-              _LibraryGroup(
-                title: 'Sesiones',
-                icon: Icons.layers_outlined,
-                official: _CollectionCard(
-                  title: 'Sesiones EntrenaOP',
-                  description: 'Un buen punto de partida para entrenar.',
-                  icon: Icons.layers_outlined,
-                  primary: true,
-                  onBrowse: () => context.push('/plan/library'),
-                  browseLabel: 'Explorar sesiones',
-                ),
-                personal: _CollectionCard(
-                  title: 'Mis sesiones',
-                  description: 'Diseña y guarda tus propias sesiones.',
-                  icon: Icons.edit_calendar_outlined,
-                  onBrowse: () => context.push('/plan/library?tab=personal'),
-                  browseLabel: 'Ver los míos',
-                  createLabel: 'Crear sesión',
-                  onCreate: () => _createSession(context),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Biblioteca',
+                      style: Theme.of(context).textTheme.headlineLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Encuentra sesiones y ejercicios. Haz espacio para los tuyos.',
+                      style: TextStyle(color: context.visuals.textMuted),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 28),
-              _LibraryGroup(
-                title: 'Ejercicios',
-                icon: Icons.fitness_center_outlined,
-                official: _CollectionCard(
-                  title: 'Ejercicios EntrenaOP',
-                  description: 'Movimientos y técnica, en un mismo lugar.',
-                  icon: Icons.fitness_center_outlined,
-                  onBrowse: () => context.push('/library/exercises'),
-                  browseLabel: 'Explorar ejercicios',
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: TabBar(
+                  tabs: [
+                    Tab(text: 'Sesiones'),
+                    Tab(text: 'Ejercicios'),
+                  ],
                 ),
-                personal: _CollectionCard(
-                  title: 'Mis ejercicios',
-                  description: 'Crea ejercicios y úsalos en tus sesiones.',
-                  icon: Icons.fitness_center_outlined,
-                  onBrowse: () =>
-                      context.push('/library/exercises?tab=personal'),
-                  browseLabel: 'Ver los míos',
-                  createLabel: 'Crear ejercicio',
-                  onCreate: () => _createExercise(context),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _LibraryGroup(
+                      storageKey: 'library-sessions',
+                      official: _CollectionCard(
+                        title: 'Sesiones EntrenaOP',
+                        description: 'Un buen punto de partida para entrenar.',
+                        icon: Icons.layers_outlined,
+                        primary: true,
+                        onBrowse: () => context.push('/plan/library'),
+                        browseLabel: 'Explorar sesiones',
+                      ),
+                      personal: _CollectionCard(
+                        title: 'Mis sesiones',
+                        description: 'Diseña y guarda tus propias sesiones.',
+                        icon: Icons.edit_calendar_outlined,
+                        onBrowse: () =>
+                            context.push('/plan/library?tab=personal'),
+                        browseLabel: 'Ver los míos',
+                        createLabel: 'Crear sesión',
+                        onCreate: () => _createSession(context),
+                      ),
+                    ),
+                    _LibraryGroup(
+                      storageKey: 'library-exercises',
+                      official: _CollectionCard(
+                        title: 'Ejercicios EntrenaOP',
+                        description:
+                            'Movimientos y técnica, en un mismo lugar.',
+                        icon: Icons.fitness_center_outlined,
+                        onBrowse: () => context.push('/library/exercises'),
+                        browseLabel: 'Explorar ejercicios',
+                      ),
+                      personal: _CollectionCard(
+                        title: 'Mis ejercicios',
+                        description:
+                            'Crea ejercicios y úsalos en tus sesiones.',
+                        icon: Icons.fitness_center_outlined,
+                        onBrowse: () =>
+                            context.push('/library/exercises?tab=personal'),
+                        browseLabel: 'Ver los míos',
+                        createLabel: 'Crear ejercicio',
+                        onCreate: () => _createExercise(context),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -98,52 +120,39 @@ class LibraryHubPage extends StatelessWidget {
 
 class _LibraryGroup extends StatelessWidget {
   const _LibraryGroup({
-    required this.title,
-    required this.icon,
+    required this.storageKey,
     required this.official,
     required this.personal,
   });
-  final String title;
-  final IconData icon;
+  final String storageKey;
   final Widget official;
   final Widget personal;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Row(
-        children: [
-          Icon(icon, size: 20, color: context.visuals.textMuted),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-          ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < 680 ||
-              MediaQuery.textScalerOf(context).scale(14) > 22) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [official, const SizedBox(height: 12), personal],
-            );
-          }
-          return IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: official),
-                const SizedBox(width: 14),
-                Expanded(child: personal),
-              ],
-            ),
+  Widget build(BuildContext context) => SingleChildScrollView(
+    key: PageStorageKey(storageKey),
+    padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 680 ||
+            MediaQuery.textScalerOf(context).scale(14) > 22) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [official, const SizedBox(height: 12), personal],
           );
-        },
-      ),
-    ],
+        }
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: official),
+              const SizedBox(width: 14),
+              Expanded(child: personal),
+            ],
+          ),
+        );
+      },
+    ),
   );
 }
 

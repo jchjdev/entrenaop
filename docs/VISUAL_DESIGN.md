@@ -726,8 +726,14 @@ Mi plan, **Biblioteca**, Evolución y Perfil. En móvil Biblioteca es el tercer
 icono, con la misma jerarquía que los otros destinos; no es un botón global de
 creación. En escritorio ocupa el mismo orden en la navegación lateral.
 
-La portada `/library` presenta dos secciones, Sesiones y Ejercicios. Cada una
-separa el catálogo EntrenaOP de la colección del usuario. Solo sesiones EntrenaOP
+Desde UI-032 (15/10/2026), la portada `/library` presenta dos pestañas:
+**Sesiones** a la izquierda, seleccionada al abrir, y **Ejercicios** a la derecha.
+Usan el mismo componente y estilo que EntrenaOP/Mis sesiones, con indicador
+naranja. Se cambia tocando el título o deslizando lateralmente, sin recorrer las
+tarjetas de sesiones para llegar a ejercicios. La cabecera y el selector
+permanecen visibles; cada panel conserva su desplazamiento vertical de forma
+independiente. Cada pestaña separa el catálogo EntrenaOP de la colección del
+usuario. Solo sesiones EntrenaOP
 lleva la acción principal acentuada; las tarjetas personales mantienen botones
 visibles «Ver los míos» y «Crear sesión» / «Crear ejercicio», con disposición
 vertical cuando el ancho o la escala de texto lo requieren. En escritorio las
@@ -768,6 +774,13 @@ repositorios simulados; no acreditan catálogo remoto ni producción. Revisadas
 también capturas de Flutter con fuentes e iconos reales: portada a 320/390 y
 1100 px, catálogo de ejercicios y colección personal. Las 423 pruebas de la
 raíz pasan en esta comprobación; el análisis no presenta incidencias.
+
+Verificación de UI-032 (15/10/2026): `flutter analyze` sin incidencias y 800
+pruebas de raíz correctas, con una omisión web preexistente. Se comprueban el
+cambio por toque y deslizamiento, móvil de 320 px, escritorio de 1100 px, texto
+al doble, los cuatro accesos a colecciones y crear/cancelar/guardar ejercicios y
+sesiones. La prueba de rutas usa también el creador real de ejercicios.
+La aceptación visual en el móvil actualizado queda pendiente.
 
 ### Búsqueda y filtros de Biblioteca (05/10/2026)
 

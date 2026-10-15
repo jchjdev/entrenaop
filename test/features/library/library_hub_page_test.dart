@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 void main() {
   for (final size in [const Size(320, 780), const Size(1100, 850)]) {
-    testWidgets('Biblioteca muestra sus cuatro colecciones a ${size.width}', (
+    testWidgets('Biblioteca cambia de contenido sin bajar a ${size.width}', (
       tester,
     ) async {
       await tester.binding.setSurfaceSize(size);
@@ -15,20 +15,38 @@ void main() {
         MaterialApp(theme: EntrenaTheme.dark, home: const LibraryHubPage()),
       );
       await tester.pumpAndSettle();
-      for (final label in [
-        'Sesiones EntrenaOP',
-        'Mis sesiones',
-        'Ejercicios EntrenaOP',
-        'Mis ejercicios',
-        'Crear sesión',
-        'Crear ejercicio',
-      ]) {
-        expect(find.text(label), findsOneWidget);
-      }
+      expect(find.text('Sesiones EntrenaOP').hitTestable(), findsOneWidget);
+      expect(find.text('Mis sesiones'), findsOneWidget);
+      expect(find.text('Explorar ejercicios').hitTestable(), findsNothing);
+
+      await tester.tap(find.text('Ejercicios'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ejercicios EntrenaOP').hitTestable(), findsOneWidget);
+      expect(find.text('Mis ejercicios'), findsOneWidget);
+      expect(find.text('Explorar sesiones').hitTestable(), findsNothing);
       await tester.ensureVisible(find.text('Crear ejercicio'));
+      expect(find.text('Crear ejercicio').hitTestable(), findsOneWidget);
+
+      await tester.tap(find.text('Sesiones'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sesiones EntrenaOP').hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('deslizar cambia entre sesiones y ejercicios', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(theme: EntrenaTheme.dark, home: const LibraryHubPage()),
+    );
+    await tester.pumpAndSettle();
+    await tester.fling(find.byType(TabBarView), const Offset(-600, 0), 1000);
+    await tester.pumpAndSettle();
+    expect(find.text('Ejercicios EntrenaOP').hitTestable(), findsOneWidget);
+    await tester.fling(find.byType(TabBarView), const Offset(600, 0), 1000);
+    await tester.pumpAndSettle();
+    expect(find.text('Sesiones EntrenaOP').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('cabe en móvil con el texto ampliado al doble', (tester) async {
     await tester.binding.setSurfaceSize(const Size(320, 780));
@@ -44,6 +62,9 @@ void main() {
         home: const LibraryHubPage(),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Crear sesión'));
+    await tester.tap(find.text('Ejercicios'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Crear ejercicio'));
     expect(tester.takeException(), isNull);
@@ -61,11 +82,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     final cases = [
-      ('Explorar sesiones', '/plan/library', ''),
-      ('Ver los míos', '/plan/library', 'personal'),
-      ('Explorar ejercicios', '/library/exercises', ''),
+      ('Sesiones', 'Explorar sesiones', '/plan/library', ''),
+      ('Sesiones', 'Ver los míos', '/plan/library', 'personal'),
+      ('Ejercicios', 'Explorar ejercicios', '/library/exercises', ''),
+      ('Ejercicios', 'Ver los míos', '/library/exercises', 'personal'),
     ];
-    for (final (label, path, tab) in cases) {
+    for (final (section, label, path, tab) in cases) {
+      await tester.tap(find.text(section));
+      await tester.pumpAndSettle();
       final finder = find.text(label).first;
       await tester.ensureVisible(finder);
       await tester.tap(finder);
@@ -78,13 +102,6 @@ void main() {
       router.pop();
       await tester.pumpAndSettle();
     }
-    await tester.ensureVisible(find.text('Ver los míos').last);
-    await tester.tap(find.text('Ver los míos').last);
-    await tester.pumpAndSettle();
-    expect(
-      router.routeInformationProvider.value.uri.toString(),
-      '/library/exercises?tab=personal',
-    );
   });
 
   testWidgets(
@@ -125,6 +142,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ejercicios'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Crear ejercicio'));
     await tester.tap(find.text('Crear ejercicio'));

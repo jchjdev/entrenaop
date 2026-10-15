@@ -240,6 +240,8 @@ void main() {
       router.config.go('/library');
       await tester.pumpWidget(_app(auth, router));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Ejercicios'));
+      await tester.pumpAndSettle();
       final create = find.text('Crear ejercicio');
       await tester.ensureVisible(create);
       await tester.pumpAndSettle();
