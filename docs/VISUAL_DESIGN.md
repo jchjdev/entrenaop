@@ -27,6 +27,59 @@ tiempo, descanso y los demás formatos existentes. El esquema no cierra las
 reglas de avance con datos pendientes ni cambia cuándo empieza el descanso.
 Esta anotación registra las aprobaciones y no modifica la aplicación.
 
+### Contraste con los cuatro clips aportados el 15/10/2026
+
+Evidencia revisada, sin nuevas decisiones de implementación. Se han podido
+descargar las dos partes recortadas de Calisteniapp
+(`20-12-57_1_1_1(1)`, 97,64 s; `20-12-57_1_2(1)`, 87,60 s) y los vídeos de
+EntrenaOP `22` (52,72 s, ejercicio por tiempo) y `21` (26,69 s, repeticiones).
+Las referencias temporales siguientes corresponden a cada clip recortado,
+no al reloj global de la sesión mostrado dentro de la grabación.
+
+- Calisteniapp, primera parte, 00:58–01:12: imagen protagonista, objetivo y
+  reloj próximos, posición de serie y acceso a información; el panel de
+  registros permanece accesible abajo. Desde 01:14 se abre el detalle técnico
+  y después su vídeo. La descripción no ocupa la pantalla de ejecución.
+- Calisteniapp, segunda parte, 00:12–00:26: el panel muestra las series del
+  ejercicio y permite introducir peso y esfuerzo mientras el descanso sigue
+  contando en su cabecera. Se ve pasar el peso a 50 kg y el esfuerzo a 90 %RM.
+  Esto acredita edición durante el descanso; no demuestra la política completa
+  de corrección de sesiones cerradas, persistencia, offline o límites internos.
+- Calisteniapp, segunda parte, 00:26–00:34 y 01:14–01:26: los ejercicios se
+  pliegan en el panel de registros y se puede consultar la técnica de otro
+  ejercicio. La pantalla de descanso anticipa el siguiente ejercicio/serie.
+  El clip incluye gestos de navegación; no se atribuye cada avance a una
+  transición automática ni se deduce la política de autoplay.
+- EntrenaOP `22`, 00:10–00:16 y 00:44–00:50: se necesita desplazar el contenido
+  para alcanzar los controles y el registro, también al llegar al siguiente
+  intervalo. Se repiten objetivo de 20 s, reloj y tiempo realizado en bloques
+  separados. En 00:26–00:32 el selector de RIR ocupa casi toda la pantalla.
+- EntrenaOP `22`, 00:34–00:42, y `21`, desde 00:12: el descanso muestra el reloj
+  y las salidas de sesión, sin imagen/objetivo del siguiente paso ni acceso
+  visible a revisar las series realizadas. `21`, 00:00–00:10, confirma el mismo
+  desplazamiento para registrar repeticiones y esfuerzo.
+
+La comparación refuerza la estructura aprobada y añade una recomendación aún
+pendiente: acceso persistente a «Series y registros», con panel ampliable para
+consultar/corregir resultados y un reloj de descanso visible al editar. Los
+campos de la serie actual pueden seguir compactos en la pantalla principal;
+no es necesario trasladar toda la interacción a un panel obligatorio. Se
+conserva la ficha de consulta de UI-032 y se propone mantener la imagen sin
+superponer texto sobre ella. RIR/RPE se mostrarían según la prescripción, sin
+introducir el selector intercambiable RIR/RPE/%RM del referente como nueva
+regla deportiva. La modalidad guiada de intervalos debe concretarse por
+separado; no se adopta el avance automático como consecuencia del diseño.
+
+Límite técnico comprobado: el corrector actual de resultados completados exige
+motivo, opera en línea y admite hasta tres correcciones en 24 horas. Está
+reflejado en el repositorio de entrenamientos, las migraciones y
+`docs/ARCHITECTURE.md`. Facilitar edición habitual durante una sesión no se
+resuelve conectando ese corrector sin cambios de criterio. Igualmente, terminar
+una serie con la métrica principal pendiente requeriría revisar el contrato de
+registro, recuperación de borradores, cola offline y qué datos usa la adaptación.
+Separar «terminar y descansar» de «confirmar datos» es una propuesta pendiente
+de respuesta de Javier; no se cambian las reglas existentes en esta revisión.
+
 ## Ficha durante el entrenamiento y registro corregible · UI-032 · 15/10/2026
 
 Dirección confirmada por Javier; implementación pendiente. La captura de su
