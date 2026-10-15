@@ -1,5 +1,30 @@
 # Identidad visual de EntrenaOP
 
+## Ficha durante el entrenamiento y registro corregible · UI-032 · 15/10/2026
+
+Dirección confirmada por Javier; implementación pendiente. La captura de su
+ejercicio personal muestra la ficha existente como panel inferior con esquinas
+redondeadas, título, cierre, imagen y descripción. Javier confirma que le gusta
+este formato sin ocupar toda la pantalla. Se conserva como referencia para
+consultar el ejercicio desde el entrenamiento; no se sustituye por una pantalla
+completa obligatoria. Javier indica que la ficha todavía está incompleta.
+
+También pide poder registrar los datos al momento y completarlos o corregirlos
+después, para evitar que un error quede registrado sin posibilidad de arreglo.
+El código ya ofrece correcciones en el historial; queda por concretar cómo
+acceder a la revisión durante una sesión en curso y qué datos pueden quedar
+pendientes. Esta dirección no acredita ni autoriza como comportamiento acordado
+el avance automático, iniciar el descanso antes de guardar o completar una serie
+solo porque termine el reloj.
+
+Propuesta pendiente de concretar: reutilizar el panel desde la imagen o un
+acceso de técnica, mostrar el vídeo cuando exista y conservar los campos y el
+estado del entrenamiento al cerrarlo. Si falta material multimedia, la consulta
+debe seguir siendo útil con el contenido disponible. El tamaño de la imagen en
+el entrenamiento, la disposición del registro y las transiciones entre trabajo,
+registro y descanso siguen en revisión. No se modifica código, SQL ni motores
+en este acuerdo documental.
+
 ## Fotos de ejercicios y acción fija · UI-030 · 14/10/2026
 
 Javier pide adaptar dos comportamientos de su referencia de Calisthenia App,
