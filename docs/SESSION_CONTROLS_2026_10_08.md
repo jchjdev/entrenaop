@@ -168,3 +168,29 @@ expresamente ese RPE; editar otro dato no los redondea. No redefine reglas
 deportivas ni modifica la escala de RIR. Análisis limpio, 85 pruebas relacionadas
 y 896 completas correctas, con una omisión existente. Detalle en
 [VISUAL_DESIGN.md](VISUAL_DESIGN.md), UI-047.
+
+## RIR entero y sujeciones · acuerdo del 16/10/2026 (STR-035)
+
+Javier confirma introducir RIR enteros de 0 a 10, con «No lo sé» como ausencia
+de dato, distinta de cero. El RIR solicitado y el realmente declarado siguen
+siendo datos diferentes. La decisión amplía STR-034 sin modificar los umbrales
+del motor ni redondear silenciosamente históricos o borradores con decimales.
+No exige convertir todas las columnas/tipos numéricos en enteros.
+
+El chat que rediseña el ejecutor recibe también la corrección de pertinencia:
+una sujeción por duración no solicita RIR ni segundos hipotéticos de reserva;
+se conservan duración válida, postura y RPE cuando lo contemple el protocolo.
+No se convierte un RIR antiguo en RPE ni se inventa una respuesta faltante.
+Un bloque con reloj puede contener repeticiones dinámicas donde sí proceda RIR:
+la decisión depende de la medición e intención, no solo de tener temporizador.
+
+La revisión debe alcanzar los controles y validaciones afectados de registro,
+calibración, edición y corrección, según el alcance real de cada tarea. Los
+datos heredados incompatibles se identifican antes de decidir su tratamiento;
+ocultar un campo no acredita que el contrato esté corregido. La implementación
+y sus regresiones corresponden al trabajo del ejecutor; esta entrega solo
+registra el acuerdo y no acredita código modificado o pruebas nuevas.
+
+Javier plantea revisar después el algoritmo. Se mantiene como revisión
+separada del contrato de entradas, calibración, adaptación y coordinación con
+carrera; no autoriza reescribir progresiones mientras se corrigen los controles.
