@@ -1,5 +1,41 @@
 # Identidad visual de EntrenaOP
 
+## Foto adaptable al alto disponible · UI-041 · 16/10/2026
+
+Javier aporta una captura del ejecutor en iPhone 12: la foto tiene poca altura
+y queda una zona vacía entre el reloj y la acción fija. La causa es la altura
+fija de 110 px en series por tiempo y 140 px en repeticiones, sin asignación del
+espacio restante. El criterio pasa a reservar primero el contenido y las
+acciones, y entregar el hueco libre a la imagen.
+
+`WorkoutExecutionFrame` permite que su contenido ocupe el alto útil real y
+`WorkoutExerciseHeader` expande su imagen dentro de ese espacio. El formulario
+activa esta distribución solo cuando hay una foto en la serie en curso. No se
+usan nombres de dispositivos ni estimaciones de la altura de campos o textos.
+La medida intrínseca se limita a este contenido con imagen flexible; el resto
+de paneles conserva su distribución. En pantallas pequeñas se conserva un
+mínimo visual de 128 px y se permite desplazar el contenido. Las acciones
+permanecen accesibles con teclado o texto ampliado.
+
+La imagen mantiene su proporción y se muestra completa. Tocar la foto o ⓘ
+continúa abriendo la ficha compartida de consulta. Solo cambian componentes de
+presentación; dominio, persistencia, registro diferido, controles y estado de
+los relojes conservan sus contratos.
+
+Las comprobaciones de distribución cubren crecimiento de la imagen con 100 px
+adicionales de alto, proximidad del reloj a la acción, título largo/texto doble
+y teclado. Las capturas del ejecutor real usan 390 × 844 con áreas reservadas
+de 47/34 px y texto normal/ampliado, 412 × 915, 320 px con texto doble y
+escritorio; incluyen tiempo, repeticiones y consulta/edición de datos. Son
+renders con datos ficticios y la imagen local de referencia, sin publicación
+de contenido. No acreditan instalación ni prueba física en Samsung/iPhone.
+
+Verificación del 16/10/2026: análisis limpio, tres regresiones de distribución,
+siete escenarios de capturas revisados y batería completa de raíz con 850
+pruebas correctas y la omisión web preexistente. Sin cambios en paquetes
+compartidos, admin, dependencias, SQL, motores o producción. El siguiente paso
+es actualizar desde main y comprobar la misma sesión en el iPhone de Javier.
+
 ## Pantalla de entrenamiento modular · UI-040 · 15/10/2026
 
 Javier autoriza implementar UI-037/038/039 y precisa que «repetir» significa

@@ -19,6 +19,7 @@ import 'package:entrenaop/features/workouts/domain/services/workout_cue_service.
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
@@ -26,17 +27,24 @@ import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_
 import '../test/helpers/memory_workout_session_draft_store.dart';
 
 void main() {
-  for (final (name, timed, width, scale) in [
-    ('repeticiones', false, 390.0, 1.0),
-    ('tiempo', true, 390.0, 1.0),
-    ('estrecho', false, 320.0, 2.0),
-    ('escritorio', false, 1000.0, 1.0),
+  for (final (name, timed, width, height, scale) in [
+    ('repeticiones', false, 390.0, 844.0, 1.0),
+    ('tiempo', true, 390.0, 844.0, 1.0),
+    ('tiempo-iphone-texto', true, 390.0, 844.0, 1.2),
+    ('tiempo-alto', true, 412.0, 915.0, 1.0),
+    ('tiempo-ampliado', true, 320.0, 700.0, 2.0),
+    ('estrecho', false, 320.0, 844.0, 2.0),
+    ('escritorio', false, 1000.0, 844.0, 1.0),
   ]) {
     testWidgets('captura $name', (t) async {
-      t.view.physicalSize = Size(width, 844);
+      t.view.physicalSize = Size(width, height);
       t.view.devicePixelRatio = 1;
       addTearDown(t.view.resetPhysicalSize);
       addTearDown(t.view.resetDevicePixelRatio);
+      if (width < 600) {
+        t.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+        addTearDown(t.view.resetPadding);
+      }
       await t.runAsync(() async {
         const fonts =
             '/workspace/toolchains/flutter/bin/cache/artifacts/material_fonts';
@@ -56,7 +64,11 @@ void main() {
         debugNetworkImageHttpClientProvider = () => _ImageClient(bytes);
         addTearDown(() => debugNetworkImageHttpClientProvider = null);
       }
-      final repository = _Workouts(timed);
+      final repository = _Workouts(
+        timed,
+        includeInstructions:
+            name != 'tiempo-iphone-texto' && name != 'tiempo-alto',
+      );
       final timer = _TimerStore();
       final cues = _Cues();
       final cubit = ActiveWorkoutCubit(
@@ -102,6 +114,14 @@ void main() {
       );
       await t.pumpAndSettle();
       expect(t.takeException(), isNull);
+      if (timed && scale <= 1.2) {
+        final timerBottom = t
+            .getBottomRight(find.byType(WorkoutSetCountdown))
+            .dy;
+        final finishTop = t.getTopLeft(find.text('Terminar serie')).dy;
+        expect(timerBottom, lessThan(finishTop));
+        expect(find.text('Iniciar temporizador').hitTestable(), findsOneWidget);
+      }
       await _capture(t, boundaryKey, name);
       if (name == 'repeticiones') {
         await t.tap(find.byTooltip('Técnica del ejercicio'));
@@ -154,7 +174,7 @@ Future<void> _capture(WidgetTester t, GlobalKey key, String name) async {
 }
 
 class _Workouts implements WorkoutRepository {
-  _Workouts(bool timed)
+  _Workouts(bool timed, {bool includeInstructions = true})
     : execution = WorkoutExecution(
         id: 'preview',
         templateId: 'template',
@@ -175,7 +195,9 @@ class _Workouts implements WorkoutRepository {
               exerciseId: 'exercise',
               exerciseName: 'Dominada isométrica',
               exerciseDescription: 'Mantén la barbilla a la altura de la barra y controla la posición.',
-              itemInstructions: 'Mantén el cuerpo estable.',
+              itemInstructions: includeInstructions
+                  ? 'Mantén el cuerpo estable.'
+                  : null,
               setOrder: i,
               targetReps: timed ? null : 8,
               targetDurationSeconds: timed ? 20 : null,

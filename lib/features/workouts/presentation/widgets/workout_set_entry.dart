@@ -344,7 +344,22 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
         ),
       );
     }
+    final imageUrl = context
+        .read<ActiveWorkoutCubit>()
+        .state
+        .exercises[set.exerciseId]
+        ?.thumbnailUrl;
+    final expandImage = !widget.review && imageUrl?.trim().isNotEmpty == true;
+    final header = WorkoutExerciseHeader(
+      name: set.exerciseName,
+      position:
+          '${set.blockName} · ${set.isGrouped ? workoutPositionLabel(set) : 'Serie ${set.setOrder + 1}'}',
+      expandImage: expandImage,
+      imageUrl: imageUrl,
+      onTechnique: () => showWorkoutTechnique(context, set),
+    );
     return WorkoutExecutionFrame(
+      fillViewport: expandImage,
       actions: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -383,18 +398,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (!widget.review)
-              WorkoutExerciseHeader(
-                name: set.exerciseName,
-                position:
-                    '${set.blockName} · ${set.isGrouped ? workoutPositionLabel(set) : 'Serie ${set.setOrder + 1}'}',
-                imageHeight: set.targetDurationSeconds == null ? 140 : 110,
-                imageUrl: context
-                    .read<ActiveWorkoutCubit>()
-                    .state
-                    .exercises[set.exerciseId]
-                    ?.thumbnailUrl,
-                onTechnique: () => showWorkoutTechnique(context, set),
-              )
+              if (expandImage) Expanded(child: header) else header
             else
               Text(
                 set.exerciseName,

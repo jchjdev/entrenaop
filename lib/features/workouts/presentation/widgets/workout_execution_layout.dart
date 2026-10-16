@@ -6,17 +6,34 @@ class WorkoutExecutionFrame extends StatelessWidget {
     super.key,
     required this.child,
     required this.actions,
+    this.fillViewport = false,
   });
   final Widget child, actions;
+  final bool fillViewport;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: child,
+          child: LayoutBuilder(
+            builder: (context, viewport) => SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: fillViewport
+                  ? ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (viewport.maxHeight - 20).clamp(
+                          0,
+                          double.infinity,
+                        ),
+                      ),
+                      // Solo el contenido con foto flexible solicita esta
+                      // medida: crece con el hueco real, pero puede desplazarse
+                      // si campos, teclado o texto ampliado necesitan más alto.
+                      child: IntrinsicHeight(child: child),
+                    )
+                  : child,
+            ),
           ),
         ),
         ConstrainedBox(
@@ -48,11 +65,11 @@ class WorkoutExerciseHeader extends StatelessWidget {
     required this.position,
     required this.onTechnique,
     this.imageUrl,
-    this.imageHeight = 140,
+    this.expandImage = false,
   });
   final String name, position;
   final String? imageUrl;
-  final double imageHeight;
+  final bool expandImage;
   final VoidCallback onTechnique;
   @override
   Widget build(BuildContext context) => Column(
@@ -81,35 +98,46 @@ class WorkoutExerciseHeader extends StatelessWidget {
           ),
         ],
       ),
-      if (imageUrl?.trim().isNotEmpty == true) ...[
-        const SizedBox(height: 10),
-        Semantics(
-          button: true,
-          label: 'Ver técnica de $name',
-          child: InkWell(
-            onTap: onTechnique,
+      if (imageUrl?.trim().isNotEmpty == true)
+        if (expandImage)
+          Expanded(child: _buildImage(context))
+        else
+          _buildImage(context),
+    ],
+  );
+
+  Widget _buildImage(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 128),
+      child: Semantics(
+        button: true,
+        label: 'Ver técnica de $name',
+        child: InkWell(
+          onTap: onTechnique,
+          borderRadius: BorderRadius.circular(16),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: ColoredBox(
-                color: const Color(0xFF15191E),
-                child: Image.network(
-                  imageUrl!,
-                  height: imageHeight,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) => const SizedBox(
-                    height: 76,
-                    child: Center(
-                      child: Icon(Icons.fitness_center_rounded, size: 36),
-                    ),
+            child: ColoredBox(
+              color: const Color(0xFF15191E),
+              child: Image.network(
+                imageUrl!,
+                // Base para medir el contenido; el padre amplía esta altura
+                // con el espacio real que dejan el reloj y las acciones.
+                height: 128,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox(
+                  height: 76,
+                  child: Center(
+                    child: Icon(Icons.fitness_center_rounded, size: 36),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ],
-    ],
+      ),
+    ),
   );
 }
 
