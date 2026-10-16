@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
@@ -11,7 +13,99 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../helpers/performance_visual_review.dart';
+import '../../../helpers/review_image_http_client.dart';
+
 void main() {
+  setUpAll(loadReviewFont);
+  for (final personal in [false, true]) {
+    testWidgets(
+      'lista y ficha comparten la foto, colección personal $personal',
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        const url = 'https://example.invalid/exercise.jpg';
+        final reviewPath = Platform.environment['REVIEW_EXERCISE_IMAGE'];
+        final bytes = reviewPath == null
+            ? base64Decode(
+                'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGP8HyXCgA0wYRUdtBIAIlABfcyTUMcAAAAASUVORK5CYII=',
+              )
+            : (await tester.runAsync(() => File(reviewPath).readAsBytes()))!;
+        debugNetworkImageHttpClientProvider = () =>
+            reviewImageHttpClient(bytes);
+        addTearDown(() {
+          debugNetworkImageHttpClientProvider = null;
+          PaintingBinding.instance.imageCache.clear();
+          PaintingBinding.instance.imageCache.clearLiveImages();
+        });
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: _app(
+              load: () async => [
+                _exercise(
+                  'Ejercicio con foto',
+                  owner: personal ? 'me' : null,
+                  public: !personal,
+                  thumbnail: url,
+                ),
+              ],
+              personal: personal,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 100)),
+        );
+        await tester.pumpAndSettle();
+        final image = tester.widget<Image>(find.byType(Image));
+        expect((image.image as NetworkImage).url, url);
+        expect(tester.getSize(find.byType(Image)), const Size(72, 72));
+        expect(tester.widget<RawImage>(find.byType(RawImage)).image, isNotNull);
+        expect(find.text('Ver ejercicio').hitTestable(), findsOneWidget);
+        await capturePerformanceWidget(
+          tester,
+          'ejercicios-miniatura-$personal',
+        );
+        await tester.tap(find.text('Ejercicio con foto'));
+        await tester.pumpAndSettle();
+        expect(
+          (tester.widgetList<Image>(find.byType(Image)).last.image
+                  as NetworkImage)
+              .url,
+          url,
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        debugNetworkImageHttpClientProvider = null;
+      },
+    );
+  }
+  testWidgets('una foto que falla conserva la tarjeta y el acceso al detalle', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        load: () async => [
+          _exercise(
+            'Foto no disponible',
+            owner: 'me',
+            thumbnail: 'https://example.invalid/missing.jpg',
+          ),
+        ],
+        personal: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.fitness_center_rounded), findsWidgets);
+    await tester.tap(find.text('Foto no disponible'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Cerrar detalle'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'busca por músculo sin tildes y combina opciones reales del catálogo',
     (tester) async {
@@ -233,7 +327,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Mis ejercicios'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), 'No coincide con el nuevo ejercicio');
+      await tester.enterText(
+        find.byType(TextField),
+        'No coincide con el nuevo ejercicio',
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Crear ejercicio'));
       await tester.pumpAndSettle();
@@ -298,19 +395,24 @@ class _Repository implements ExerciseRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-ExerciseEntity _exercise(String name, {String? owner, bool public = false}) =>
-    ExerciseEntity(
-      id: name,
-      name: name,
-      description: 'Descripción del movimiento.',
-      muscleGroups: const ['piernas'],
-      equipment: const ['mancuernas'],
-      difficulty: 'beginner',
-      exerciseType: 'strength',
-      isPublic: public,
-      origin: owner == null ? ExerciseOrigin.system : ExerciseOrigin.user,
-      createdBy: owner,
-    );
+ExerciseEntity _exercise(
+  String name, {
+  String? owner,
+  bool public = false,
+  String? thumbnail,
+}) => ExerciseEntity(
+  id: name,
+  name: name,
+  description: 'Descripción del movimiento.',
+  muscleGroups: const ['piernas'],
+  equipment: const ['mancuernas'],
+  difficulty: 'beginner',
+  exerciseType: 'strength',
+  isPublic: public,
+  origin: owner == null ? ExerciseOrigin.system : ExerciseOrigin.user,
+  createdBy: owner,
+  thumbnailUrl: thumbnail,
+);
 final _catalog = [
   _exercise('Sentadilla oficial', public: true),
   _exercise('Sistema privado'),

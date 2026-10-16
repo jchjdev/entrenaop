@@ -1,5 +1,58 @@
 # Identidad visual de EntrenaOP
 
+## Semanas por gesto y Biblioteca ajustada · UI-043 · 16/10/2026
+
+Javier pide cuatro correcciones a partir de tres grabaciones cortas y una
+captura del iPhone. En el primer vídeo (00:00–00:08) la semana permanece en
+19–25 oct al deslizar la fila de días; el domingo queda fuera del ancho visible.
+El segundo (00:00–00:06) muestra desplazamiento vertical en las dos pestañas de
+la portada de Biblioteca. El tercero (00:00–00:08) muestra iconos en las listas
+y la foto existente al abrir Sonrisa feliz. La captura confirma «Ver los míos»
+en la tarjeta Mis sesiones.
+
+`WeekSwipeRegion` separa el gesto de presentación de los datos: izquierda avanza
+una semana, derecha retrocede y ambos reutilizan `changeWeek`, igual que las
+flechas. Requiere desplazamiento suficiente o una pasada rápida; mover en
+vertical no cambia de semana. Los primeros/últimos 24 px quedan fuera para
+conservar volver desde el borde. La fila de días deja de tener un scroll
+horizontal competidor: los siete ocupan el ancho y, si el texto ampliado no
+cabe, pasan a filas adicionales sin reducir la letra. Se mantienen selección,
+flechas, recarga y protección existente frente a respuestas fuera de orden.
+
+Biblioteca conserva Sesiones/Ejercicios, los gestos entre pestañas y los
+destinos oficiales/personales. Se acorta el texto de cabecera y las frases
+decorativas, se retira el rótulo EntrenaOP repetido sobre Sesiones EntrenaOP y
+se ajustan márgenes. Las dos tarjetas comparten el alto útil real de la pestaña
+mediante `SliverFillRemaining`; en escritorio siguen en columnas paralelas.
+No se calculan alturas a partir del nombre de un móvil; se conserva la escala
+de texto elegida por el usuario y la cabecera usa una jerarquía más compacta.
+Cuando caben no existe recorrido vertical; texto doble o un espacio muy corto
+conservan desplazamiento para acceder a todos los controles. La tarjeta personal
+de sesiones usa «Ver las mías»; la de ejercicios conserva «Ver los míos».
+
+Cada entrada de las listas de ejercicios, tanto personal como oficial, muestra
+la misma `thumbnailUrl` ya utilizada por su ficha en una miniatura de 72 px.
+Mantiene proporción y muestra un icono durante carga, ante error o si no existe
+foto. Tocar la tarjeta conserva el panel compartido, con permisos de edición
+intactos. No se inventan fotos ni se publica contenido en el catálogo.
+
+Las regresiones comprueban gesto en ambas direcciones, flechas, selección de
+domingo, scroll vertical y exclusión del borde; los días ampliados continúan
+accesibles. Biblioteca se comprueba con AppShell y áreas reservadas reales a
+390 × 844 y 412 × 915 con texto 1,2: todos los botones son pulsables y la
+extensión vertical es cero. Incluye texto doble y escritorio, rutas personales
+y creación. Las fotos se decodifican desde un cliente HTTP local de prueba y
+se comprueba también el error de imagen, sin acceso externo ni escrituras.
+Las capturas opcionales usan fuentes reales y una imagen local de referencia.
+Queda repetir los recorridos en el iPhone/Samsung actualizados desde main.
+
+Verificación del 16/10/2026: análisis limpio, 37 pruebas relacionadas correctas,
+857 pruebas completas de raíz correctas con la omisión web preexistente y cinco
+escenarios de captura verificados con fuentes reales. Se revisan ambos tamaños
+con AppShell, ambas pestañas, semana tras el gesto y miniaturas oficiales y
+personales. Sin cambios en paquetes compartidos, admin, dependencias, SQL,
+motores ni producción; publicación directamente en main.
+
 ## Calentamiento visible y salida del teclado · UI-042 · 16/10/2026
 
 Javier comparte capturas del iPhone: durante «Prepárate…» los controles del

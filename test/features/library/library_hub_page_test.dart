@@ -3,8 +3,68 @@ import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/core/navigation/app_shell.dart';
+
+import '../../helpers/performance_visual_review.dart';
 
 void main() {
+  setUpAll(loadReviewFont);
+  for (final size in [const Size(390, 844), const Size(412, 915)]) {
+    testWidgets('las dos tarjetas caben sin scroll con navegación a $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+      addTearDown(tester.view.reset);
+      final router = _shellRouter();
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: EntrenaTheme.dark,
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.2)),
+            child: child!,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (final (tab, browse, create) in [
+        ('Sesiones', 'Ver las mías', 'Crear sesión'),
+        ('Ejercicios', 'Ver los míos', 'Crear ejercicio'),
+      ]) {
+        await tester.tap(find.text(tab));
+        await tester.pumpAndSettle();
+        expect(find.text(browse).hitTestable(), findsOneWidget);
+        expect(find.text(create).hitTestable(), findsOneWidget);
+        for (final scroll in tester.stateList<ScrollableState>(
+          find.byType(Scrollable),
+        )) {
+          if (scroll.position.axis == Axis.vertical) {
+            expect(
+              scroll.position.maxScrollExtent,
+              lessThanOrEqualTo(.5),
+              reason: tab,
+            );
+          }
+        }
+        if (capturePerformanceReview) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 100)),
+          );
+          await tester.pumpAndSettle();
+        }
+        await capturePerformanceWidget(
+          tester,
+          'biblioteca-${tab.toLowerCase()}-${size.width.toInt()}',
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
   for (final size in [const Size(320, 780), const Size(1100, 850)]) {
     testWidgets('Biblioteca cambia de contenido sin bajar a ${size.width}', (
       tester,
@@ -63,10 +123,22 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Crear sesión'));
+    final vertical = find.byWidgetPredicate(
+      (widget) =>
+          widget is Scrollable && widget.axisDirection == AxisDirection.down,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Crear sesión'),
+      150,
+      scrollable: vertical,
+    );
     await tester.tap(find.text('Ejercicios'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Crear ejercicio'));
+    await tester.scrollUntilVisible(
+      find.text('Crear ejercicio'),
+      150,
+      scrollable: vertical,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -83,7 +155,7 @@ void main() {
     await tester.pumpAndSettle();
     final cases = [
       ('Sesiones', 'Explorar sesiones', '/plan/library', ''),
-      ('Sesiones', 'Ver los míos', '/plan/library', 'personal'),
+      ('Sesiones', 'Ver las mías', '/plan/library', 'personal'),
       ('Ejercicios', 'Explorar ejercicios', '/library/exercises', ''),
       ('Ejercicios', 'Ver los míos', '/library/exercises', 'personal'),
     ];
@@ -162,6 +234,37 @@ void main() {
     );
   });
 }
+
+GoRouter _shellRouter() => GoRouter(
+  initialLocation: '/library',
+  routes: [
+    StatefulShellRoute.indexedStack(
+      builder: (_, _, shell) => RepaintBoundary(
+        key: const ValueKey('review-boundary'),
+        child: AppShell(navigationShell: shell),
+      ),
+      branches: [
+        for (final path in [
+          '/home',
+          '/plan',
+          '/library',
+          '/evolution',
+          '/profile',
+        ])
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: path,
+                builder: (_, _) => path == '/library'
+                    ? const LibraryHubPage()
+                    : const Scaffold(),
+              ),
+            ],
+          ),
+      ],
+    ),
+  ],
+);
 
 GoRouter _router() {
   GoRouter.optionURLReflectsImperativeAPIs = true;

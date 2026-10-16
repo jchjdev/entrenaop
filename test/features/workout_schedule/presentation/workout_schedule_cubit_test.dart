@@ -16,11 +16,76 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/widgets/week_swipe_region.dart';
 
 import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  testWidgets(
+    'deslizar cambia semanas y conserva flechas, selección y scroll vertical',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final cubit = _cubit(_FakeScheduleRepository(), _FakeWorkoutRepository());
+      addTearDown(cubit.close);
+      await cubit.load();
+      final originalWeek = cubit.state.weekStart;
+      final router = GoRouter(
+        initialLocation: '/plan/week',
+        routes: [
+          GoRoute(
+            path: '/plan/week',
+            builder: (_, _) => RepaintBoundary(
+              key: const ValueKey('review-boundary'),
+              child: BlocProvider.value(
+                value: cubit,
+                child: const WorkoutSchedulePage(),
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: EntrenaTheme.dark,
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.2)),
+            child: child!,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final region = find.byType(WeekSwipeRegion);
+      await tester.drag(region, const Offset(-150, 0));
+      await tester.pumpAndSettle();
+      expect(cubit.state.weekStart, originalWeek.add(const Duration(days: 7)));
+      await capturePerformanceWidget(tester, 'semana-tras-deslizar');
+      await tester.drag(region, const Offset(150, 0));
+      await tester.pumpAndSettle();
+      expect(cubit.state.weekStart, originalWeek);
+      expect(find.text('DOM').hitTestable(), findsOneWidget);
+      await tester.tap(find.text('DOM'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.selectedDay, cubit.state.weekEnd);
+      await tester.drag(region, const Offset(0, -120));
+      await tester.pumpAndSettle();
+      expect(cubit.state.weekStart, originalWeek);
+      await tester.dragFrom(const Offset(4, 220), const Offset(140, 0));
+      await tester.pumpAndSettle();
+      expect(cubit.state.weekStart, originalWeek);
+      await tester.ensureVisible(find.byTooltip('Semana siguiente'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Semana siguiente'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.weekStart, originalWeek.add(const Duration(days: 7)));
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final hasProgram in [false, true]) {
     testWidgets(
       'añadir usa la card vacía y después el flotante, con programa $hasProgram',
@@ -219,8 +284,8 @@ void main() {
             widget is SingleChildScrollView &&
             widget.scrollDirection == Axis.horizontal,
       );
-      await tester.drag(strip, const Offset(-700, 0));
-      await tester.pumpAndSettle();
+      expect(strip, findsNothing);
+      await tester.ensureVisible(find.text('DOM'));
       await tester.tap(find.text('DOM'));
       await tester.pumpAndSettle();
       expect(cubit.state.selectedDay, cubit.state.weekEnd);

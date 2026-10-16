@@ -9,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 
+import '../widgets/week_swipe_region.dart';
+
 class WorkoutSchedulePage extends StatelessWidget {
   const WorkoutSchedulePage({super.key, this.focusedWorkoutId});
 
@@ -75,9 +77,12 @@ class WorkoutSchedulePage extends StatelessWidget {
                 onRetry: context.read<WorkoutScheduleCubit>().load,
               );
             }
-            return _ScheduleContent(
-              state: state,
-              focusedWorkoutId: focusedWorkoutId,
+            return WeekSwipeRegion(
+              onChangeWeek: context.read<WorkoutScheduleCubit>().changeWeek,
+              child: _ScheduleContent(
+                state: state,
+                focusedWorkoutId: focusedWorkoutId,
+              ),
             );
           },
         ),
@@ -356,85 +361,89 @@ class _DaySelector extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 6.0;
-        // La semana llena el contenido disponible. Solo se desplaza cuando
-        // el ancho o el texto ampliado no permiten días legibles.
-        final dayWidth = ((constraints.maxWidth - 6 * spacing) / 7).clamp(
-          MediaQuery.textScalerOf(context).scale(44),
-          double.infinity,
-        );
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(7, (index) {
-              final day = state.weekStart.add(Duration(days: index));
-              final selected = _sameDate(day, state.selectedDay);
-              final count = state.items
-                  .where((item) => _sameDate(item.scheduledDate, day))
-                  .length;
-              return Padding(
-                padding: EdgeInsets.only(right: index == 6 ? 0 : spacing),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(17),
-                  onTap: () =>
-                      context.read<WorkoutScheduleCubit>().selectDay(day),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: dayWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
+        // Evitar un segundo gesto horizontal: si no caben siete días legibles,
+        // se distribuyen en filas y deslizar sigue cambiando de semana.
+        final minWidth = MediaQuery.textScalerOf(context)
+            .scale(36)
+            .clamp(44.0, double.infinity);
+        final columns =
+            ((constraints.maxWidth + spacing) / (minWidth + spacing))
+                .floor()
+                .clamp(1, 7);
+        final dayWidth =
+            (constraints.maxWidth - (columns - 1) * spacing) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: List.generate(7, (index) {
+            final day = state.weekStart.add(Duration(days: index));
+            final selected = _sameDate(day, state.selectedDay);
+            final count = state.items
+                .where((item) => _sameDate(item.scheduledDate, day))
+                .length;
+            return SizedBox(
+              width: dayWidth,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(17),
+                onTap: () =>
+                    context.read<WorkoutScheduleCubit>().selectDay(day),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: dayWidth,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? Theme.of(context).colorScheme.primary
+                        : context.visuals.surface,
+                    borderRadius: BorderRadius.circular(17),
+                    border: Border.all(
                       color: selected
-                          ? Theme.of(context).colorScheme.primary
-                          : context.visuals.surface,
-                      borderRadius: BorderRadius.circular(17),
-                      border: Border.all(
-                        color: selected
-                            ? Colors.transparent
-                            : context.visuals.outline,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          _weekdays[index],
-                          style: TextStyle(
-                            color: selected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : context.visuals.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${day.day}',
-                          style: TextStyle(
-                            color: selected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context).colorScheme.onSurface,
-                            fontSize: 21,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: count == 0
-                                ? Colors.transparent
-                                : selected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context).colorScheme.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
+                          ? Colors.transparent
+                          : context.visuals.outline,
                     ),
                   ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _weekdays[index],
+                        style: TextStyle(
+                          color: selected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : context.visuals.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${day.day}',
+                        style: TextStyle(
+                          color: selected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: count == 0
+                              ? Colors.transparent
+                              : selected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.secondary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
         );
       },
     );

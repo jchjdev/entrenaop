@@ -36,17 +36,17 @@ class LibraryHubPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Biblioteca',
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      'Encuentra sesiones y ejercicios. Haz espacio para los tuyos.',
+                      'Todo para entrenar.',
                       style: TextStyle(color: context.visuals.textMuted),
                     ),
                   ],
@@ -68,7 +68,7 @@ class LibraryHubPage extends StatelessWidget {
                       storageKey: 'library-sessions',
                       official: _CollectionCard(
                         title: 'Sesiones EntrenaOP',
-                        description: 'Un buen punto de partida para entrenar.',
+                        description: 'Listas para entrenar.',
                         icon: Icons.layers_outlined,
                         primary: true,
                         onBrowse: () => context.push('/plan/library'),
@@ -76,11 +76,11 @@ class LibraryHubPage extends StatelessWidget {
                       ),
                       personal: _CollectionCard(
                         title: 'Mis sesiones',
-                        description: 'Diseña y guarda tus propias sesiones.',
+                        description: 'Creadas por ti.',
                         icon: Icons.edit_calendar_outlined,
                         onBrowse: () =>
                             context.push('/plan/library?tab=personal'),
-                        browseLabel: 'Ver los míos',
+                        browseLabel: 'Ver las mías',
                         createLabel: 'Crear sesión',
                         onCreate: () => _createSession(context),
                       ),
@@ -89,16 +89,14 @@ class LibraryHubPage extends StatelessWidget {
                       storageKey: 'library-exercises',
                       official: _CollectionCard(
                         title: 'Ejercicios EntrenaOP',
-                        description:
-                            'Movimientos y técnica, en un mismo lugar.',
+                        description: 'Técnica y práctica.',
                         icon: Icons.fitness_center_outlined,
                         onBrowse: () => context.push('/library/exercises'),
                         browseLabel: 'Explorar ejercicios',
                       ),
                       personal: _CollectionCard(
                         title: 'Mis ejercicios',
-                        description:
-                            'Crea ejercicios y úsalos en tus sesiones.',
+                        description: 'Creados por ti.',
                         icon: Icons.fitness_center_outlined,
                         onBrowse: () =>
                             context.push('/library/exercises?tab=personal'),
@@ -129,30 +127,42 @@ class _LibraryGroup extends StatelessWidget {
   final Widget personal;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    key: PageStorageKey(storageKey),
-    padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < 680 ||
-            MediaQuery.textScalerOf(context).scale(14) > 22) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [official, const SizedBox(height: 12), personal],
-          );
-        }
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: official),
-              const SizedBox(width: 14),
-              Expanded(child: personal),
-            ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final vertical =
+          constraints.maxWidth < 680 ||
+          MediaQuery.textScalerOf(context).scale(14) > 22;
+      return CustomScrollView(
+        key: PageStorageKey(storageKey),
+        slivers: [
+          SliverFillRemaining(
+            // Las dos tarjetas comparten el alto útil. Solo hay recorrido
+            // vertical si su contenido legible supera realmente la pestaña.
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              child: vertical
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: official),
+                        const SizedBox(height: 12),
+                        Expanded(child: personal),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: official),
+                        const SizedBox(width: 14),
+                        Expanded(child: personal),
+                      ],
+                    ),
+            ),
           ),
-        );
-      },
-    ),
+        ],
+      );
+    },
   );
 }
 
@@ -179,6 +189,7 @@ class _CollectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => EntrenaCard(
     tone: primary ? EntrenaCardTone.accent : EntrenaCardTone.quiet,
+    padding: const EdgeInsets.all(16),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -186,18 +197,6 @@ class _CollectionCard extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (primary) ...[
-              Text(
-                'ENTRENAOP',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -218,7 +217,7 @@ class _CollectionCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 8),
         if (primary)
           FilledButton.icon(
             onPressed: onBrowse,

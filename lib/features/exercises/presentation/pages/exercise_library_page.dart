@@ -319,7 +319,7 @@ class _ExerciseTile extends StatelessWidget {
     },
     child: Row(
       children: [
-        Icon(Icons.fitness_center_rounded, color: context.visuals.textMuted),
+        _ExerciseThumbnail(url: exercise.thumbnailUrl),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -353,6 +353,41 @@ class _ExerciseTile extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _ExerciseThumbnail extends StatelessWidget {
+  const _ExerciseThumbnail({this.url});
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final placeholder = ColoredBox(
+      color: context.visuals.surface,
+      child: Center(
+        child: Icon(
+          Icons.fitness_center_rounded,
+          color: context.visuals.textMuted,
+        ),
+      ),
+    );
+    return ExcludeSemantics(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox.square(
+          dimension: 72,
+          child: url?.trim().isNotEmpty != true
+              ? placeholder
+              : Image.network(
+                  url!,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (_, image, progress) =>
+                      progress == null ? image : placeholder,
+                  errorBuilder: (_, _, _) => placeholder,
+                ),
+        ),
+      ),
+    );
+  }
 }
 
 class _LoadFailure extends StatelessWidget {
