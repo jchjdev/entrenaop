@@ -36,14 +36,26 @@ void main() {
     await (FontLoader(
       'Roboto',
     )..addFont(Future.value(ByteData.sublistView(bytes)))).load();
+    final icons = await File(
+      '${directory.path}/material_fonts/MaterialIcons-Regular.otf',
+    ).readAsBytes();
+    await (FontLoader(
+      'MaterialIcons',
+    )..addFont(Future.value(ByteData.sublistView(icons)))).load();
   });
   Future<WorkoutHistoryCubit> mount(
     WidgetTester t, {
     double width = 390,
+    double height = 900,
     double scale = 1,
+    bool safeInsets = false,
     WorkoutRepository? repository,
   }) async {
-    t.view.physicalSize = Size(width, 900);
+    t.view.physicalSize = Size(width, height);
+    if (safeInsets) {
+      t.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+      addTearDown(t.view.resetPadding);
+    }
     t.view.devicePixelRatio = 1;
     addTearDown(t.view.resetPhysicalSize);
     addTearDown(t.view.resetDevicePixelRatio);
@@ -56,15 +68,16 @@ void main() {
       RepaintBoundary(
         key: const ValueKey('review-boundary'),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: EntrenaTheme.dark.copyWith(
             textTheme: EntrenaTheme.dark.textTheme.apply(fontFamily: 'Roboto'),
           ),
           locale: const Locale('es', 'ES'),
           supportedLocales: const [Locale('es', 'ES')],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          builder: (_, child) => MediaQuery(
-            data: MediaQueryData(
-              size: Size(width, 900),
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: Size(width, height),
               textScaler: TextScaler.linear(scale),
             ),
             child: child!,
@@ -80,6 +93,110 @@ void main() {
     );
     await t.pumpAndSettle();
     return cubit;
+  }
+
+  for (final (width, scale) in [(390.0, 1.0), (390.0, 1.2), (320.0, 2.0)]) {
+    testWidgets(
+      'las etiquetas de filtros quedan completas a $width px y texto $scale',
+      (t) async {
+        await mount(
+          t,
+          width: width,
+          height: 844,
+          scale: scale,
+          safeInsets: true,
+        );
+        await t.ensureVisible(find.text('Filtrar historial'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Filtrar historial'));
+        await t.pumpAndSettle();
+        for (final label in [
+          'Preparación',
+          'Tipo de entrenamiento',
+          'Estado de la sesión',
+        ]) {
+          await t.ensureVisible(find.text(label));
+          await t.pumpAndSettle();
+          expectTextUnclipped(t, find.text(label));
+        }
+        await t.ensureVisible(find.text('Preparación'));
+        await t.pumpAndSettle();
+        await capturePerformanceWidget(
+          t,
+          'evolution-filter-labels-$width-$scale',
+        );
+        expect(t.takeException(), isNull);
+      },
+    );
+    testWidgets(
+      'Guardar y el rango caben en el calendario a $width px y texto $scale',
+      (t) async {
+        await mount(
+          t,
+          width: width,
+          height: 844,
+          scale: scale,
+          safeInsets: true,
+        );
+        await t.ensureVisible(find.text('Filtrar historial'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Filtrar historial'));
+        await t.pumpAndSettle();
+        await t.ensureVisible(find.text('Elegir fechas'));
+        await t.pumpAndSettle();
+        await t.tap(find.text('Elegir fechas'));
+        await t.pumpAndSettle();
+        expectCalendarHeaderFits(t);
+        expectTextUnclipped(t, find.text('Guardar'));
+        expectBoxUnclipped(
+          t.renderObject<RenderBox>(find.widgetWithText(TextButton, 'Guardar')),
+        );
+        await capturePerformanceWidget(
+          t,
+          'evolution-calendar-header-$width-$scale',
+        );
+        await t.tap(find.text('1').last);
+        await t.pumpAndSettle();
+        await t.tap(find.text('${DateTime.now().day}').last);
+        await t.pumpAndSettle();
+        expectCalendarHeaderFits(t);
+        expectTextUnclipped(t, find.text('Guardar'));
+        expectBoxUnclipped(
+          t.renderObject<RenderBox>(find.widgetWithText(TextButton, 'Guardar')),
+        );
+        final save = t.widget<TextButton>(
+          find.widgetWithText(TextButton, 'Guardar'),
+        );
+        expect(save.onPressed, isNotNull);
+        final header = t.widget<AppBar>(
+          find.descendant(
+            of: find.byType(DateRangePickerDialog),
+            matching: find.byType(AppBar),
+          ),
+        );
+        final headerTexts = find.descendant(
+          of: find.byWidget(header.bottom!),
+          matching: find.byType(RichText),
+        );
+        for (final paragraph in t.renderObjectList<RenderParagraph>(
+          headerTexts,
+        )) {
+          expect(
+            paragraph.didExceedMaxLines,
+            isFalse,
+            reason: 'La fecha seleccionada debe mostrarse completa',
+          );
+        }
+        await capturePerformanceWidget(
+          t,
+          'evolution-calendar-selected-$width-$scale',
+        );
+        await t.tap(find.text('Guardar'));
+        await t.pumpAndSettle();
+        expect(find.byType(DateRangePickerDialog), findsNothing);
+        expect(t.takeException(), isNull);
+      },
+    );
   }
 
   for (final fails in [false, true]) {
@@ -340,4 +457,55 @@ class _PendingRepository implements WorkoutRepository {
   }) async => query.hasFilters ? pending.future : evolutionSessions(count: 1);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Comprueba el rectángulo pintado, incluida la escala de etiquetas flotantes.
+void expectTextUnclipped(WidgetTester tester, Finder finder) {
+  expectBoxUnclipped(tester.renderObject<RenderParagraph>(finder));
+}
+
+void expectBoxUnclipped(RenderBox paragraph) {
+  final textBounds = MatrixUtils.transformRect(
+    paragraph.getTransformTo(null),
+    Offset.zero & paragraph.size,
+  );
+  RenderObject child = paragraph;
+  while (child.parent != null) {
+    final parent = child.parent!;
+    final clip = parent.describeApproximatePaintClip(child);
+    if (clip != null) {
+      final clipBounds = MatrixUtils.transformRect(
+        parent.getTransformTo(null),
+        clip,
+      ).inflate(.5);
+      expect(
+        clipBounds.contains(textBounds.topLeft),
+        isTrue,
+        reason:
+            'Texto recortado por arriba/izquierda en $parent: $textBounds fuera de $clipBounds',
+      );
+      expect(
+        clipBounds.contains(textBounds.bottomRight),
+        isTrue,
+        reason:
+            'Texto recortado por abajo/derecha en $parent: $textBounds fuera de $clipBounds',
+      );
+    }
+    child = parent;
+  }
+}
+
+void expectCalendarHeaderFits(WidgetTester tester) {
+  final bar = tester.widget<AppBar>(
+    find.descendant(
+      of: find.byType(DateRangePickerDialog),
+      matching: find.byType(AppBar),
+    ),
+  );
+  final header = bar.bottom!;
+  expect(
+    tester.getSize(find.byWidget(header)).height,
+    lessThanOrEqualTo(header.preferredSize.height),
+    reason: 'La cabecera del rango no debe invadir la fila de Guardar',
+  );
 }

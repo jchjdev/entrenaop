@@ -20,6 +20,8 @@ class WorkoutHistoryFilters extends StatelessWidget {
     // El panel guarda un bool; el ListView padre guarda un double de scroll.
     key: const PageStorageKey('evolution-history-filters-expansion'),
     tilePadding: EdgeInsets.zero,
+    // La etiqueta flotante sobresale del campo; el panel recorta sus hijos.
+    childrenPadding: const EdgeInsets.only(top: 16),
     title: const Text('Filtrar historial'),
     subtitle: query.hasFilters ? const Text('Filtros aplicados') : null,
     children: [
@@ -160,6 +162,34 @@ class WorkoutHistoryFilters extends StatelessWidget {
                 initialDateRange: query.from == null || query.through == null
                     ? null
                     : DateTimeRange(start: query.from!, end: query.through!),
+                builder: (context, child) {
+                  final theme = Theme.of(context);
+                  return Theme(
+                    // La cabecera nativa reserva 64 px para el rango. Su texto
+                    // no debe restar espacio a la fila de cerrar/guardar.
+                    data: theme.copyWith(
+                      appBarTheme: theme.appBarTheme.copyWith(
+                        toolbarHeight: 72,
+                      ),
+                      datePickerTheme: theme.datePickerTheme.copyWith(
+                        rangePickerHeaderHeadlineStyle: theme
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontSize: 14, height: 1),
+                        rangePickerHeaderHelpStyle: theme.textTheme.bodySmall
+                            ?.copyWith(fontSize: 12, height: 1),
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                        style: theme.textButtonTheme.style?.copyWith(
+                          padding: const WidgetStatePropertyAll(
+                            EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
               if (range != null && context.mounted) {
                 onChanged(

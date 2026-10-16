@@ -1,5 +1,36 @@
 # Identidad visual de EntrenaOP
 
+## Evolución: etiquetas y acciones sin recortar · UI-045 · 16/10/2026
+
+Javier aporta dos capturas del iPhone que muestran problemas de presentación
+pendientes tras UI-044: la parte superior de Preparación desaparece al abrir
+los filtros y Guardar queda recortado en el calendario. La revisión anterior
+comprobó el idioma y la excepción al consultar, pero no detectó esos recortes.
+
+El primer campo no reservaba espacio para su etiqueta flotante fuera del borde;
+el recorte del panel expandido la cortaba. Los filtros añaden margen superior
+para que la etiqueta completa quede dentro de su área pintada. El calendario
+usa un tema local: la tipografía del rango cabe en los 64 px reservados por
+Flutter, la barra de acciones dispone de 72 px y el botón reduce únicamente
+su relleno vertical. La cabecera deja de invadir Guardar. Se mantienen colores,
+escala nativa del calendario, entrada manual, elección/cancelación y consultas.
+No cambia el tema compartido, dependencias, navegación, dominio ni datos.
+
+Las nuevas regresiones comprueban etiquetas flotantes transformadas contra los
+recortes reales de sus ancestros, el área completa de Guardar y el alto pintado
+de la cabecera frente a su reserva. También comprueban que las fechas elegidas
+no se eliden y que Guardar permite aplicar el rango. Se usan áreas seguras de
+47/34 px, alto 844 px y escenarios de 390 px con texto normal y 1,2, y 320 px con
+texto doble. Las capturas del widget real incluyen fuentes e iconos del SDK;
+no equivalen a una nueva comprobación física del iPhone.
+
+Verificación del 16/10/2026: análisis limpio, 17 pruebas de filtros y 867 pruebas
+completas de raíz correctas, con la omisión web preexistente. Las regresiones
+fallan contra la versión anterior: Preparación sobresale del recorte del panel
+y la cabecera mide 82 px frente a los 64 reservados con texto 1,2. Se revisan
+capturas de filtros, calendario inicial y rango seleccionado en los tres
+escenarios. No hay cambios en paquetes compartidos ni admin.
+
 ## Evolución: idioma y pantalla gris al filtrar · UI-044 · 16/10/2026
 
 La grabación de Javier muestra el calendario en inglés y, tras seleccionar
