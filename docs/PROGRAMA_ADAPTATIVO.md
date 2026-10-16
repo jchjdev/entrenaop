@@ -1,5 +1,32 @@
 # Programa adaptativo
 
+## Frecuencia desde los resultados · STR-037 · 16/10/2026
+
+Javier confirma que la adaptación debe usar los entrenamientos registrados sin
+exigir repetir el alta ni volver a introducir la carga que el sistema ya conoce.
+La disponibilidad limita la pauta; no obliga a aumentar hasta ocupar todos sus
+días. Aumentar dosis tampoco implica necesariamente aumentar días.
+
+**Estado comprobado:** carrera v5 conserva presupuesto y resultados anteriores,
+puede aumentar volumen fácil y permite añadir como máximo una salida por
+adaptación cuando sus condiciones lo admiten. Rendimiento v3 progresa dosis,
+pero obtiene su frecuencia de la referencia inicial (una o dos exposiciones),
+con reducción en puesta a punto y límites del coordinador; no promueve por sí
+solo una referencia de frecuencia uno a frecuencia dos. La reparación STR-036
+no completa esa política de frecuencia.
+
+**Pendiente:** definir y verificar la revisión de frecuencia de rendimiento con
+evidencia observada, objetivo, tiempo y recuperación, sin sustituirla por una
+escalera automática de días. Completar las semanas recientes desde resultados
+conocidos debe distinguirse de confirmar salud o cambios de disponibilidad.
+La caducidad actual del contexto puede pedir una revisión: no se presenta el
+recorrido como completamente libre de confirmaciones.
+
+Preguntar primero el máximo de días y la duración habitual, y después confirmar
+un calendario propuesto con excepciones por día, es una recomendación de entrada
+simplificada pendiente de aprobación. No se ha cambiado la disponibilidad
+vigente ni se atribuye la limitación de frecuencia a falta de sesiones base.
+
 ## Evidencia y encaje compartido · STR-036 · 16/10/2026
 
 La reparación `adaptive_evidence_v1` conserva carrera v5, rendimiento v3 y el
