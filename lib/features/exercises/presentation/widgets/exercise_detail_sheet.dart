@@ -11,12 +11,13 @@ class ExerciseDetailSheet extends StatelessWidget {
     this.imageUrl,
     this.videoUrl,
     this.subtitle,
+    this.sessionInstructions,
     this.muscleGroups = const [],
     this.equipment = const [],
     this.onEdit,
   });
   final String name;
-  final String? description, imageUrl, videoUrl, subtitle;
+  final String? description, imageUrl, videoUrl, subtitle, sessionInstructions;
   final List<String> muscleGroups, equipment;
   final VoidCallback? onEdit;
 
@@ -75,6 +76,15 @@ class ExerciseDetailSheet extends StatelessWidget {
                   : 'Este ejercicio aún no tiene una descripción.',
               style: const TextStyle(height: 1.5),
             ),
+            if (sessionInstructions?.trim().isNotEmpty == true) ...[
+              const SizedBox(height: 18),
+              Text(
+                'Indicaciones de esta serie',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 5),
+              Text(sessionInstructions!, style: const TextStyle(height: 1.5)),
+            ],
             if (muscleGroups.isNotEmpty) ...[
               const SizedBox(height: 18),
               Text(

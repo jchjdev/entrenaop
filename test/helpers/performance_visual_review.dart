@@ -12,12 +12,19 @@ const capturePerformanceReview = bool.fromEnvironment(
 );
 Future<void> loadReviewFont() async {
   if (!capturePerformanceReview) return;
-  final bytes = await File('C:/Windows/Fonts/arial.ttf').readAsBytes();
+  final fontDirectory = Platform.environment['PERFORMANCE_REVIEW_FONT_DIR'];
+  final bytes = await File(
+    fontDirectory == null
+        ? 'C:/Windows/Fonts/arial.ttf'
+        : '$fontDirectory/Roboto-Regular.ttf',
+  ).readAsBytes();
   await (FontLoader(
     'Roboto',
   )..addFont(Future.value(ByteData.sublistView(bytes)))).load();
   final iconFile = File(
-    'E:/Dev/SDK/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    fontDirectory == null
+        ? 'E:/Dev/SDK/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'
+        : '$fontDirectory/MaterialIcons-Regular.otf',
   );
   if (await iconFile.exists()) {
     final icons = await iconFile.readAsBytes();

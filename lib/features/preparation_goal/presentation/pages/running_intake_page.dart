@@ -10,6 +10,7 @@ import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparatio
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/core/presentation/dismiss_keyboard.dart';
 
 /// Vista común del recorrido de entrada; elegir una marca no crea sesiones.
 class RunningIntakePage extends StatefulWidget {
@@ -100,9 +101,11 @@ class _RunningIntakePageState extends State<RunningIntakePage> {
   }
 
   Future<void> _resetPlan(String goalId) async {
+    dismissKeyboard();
     final proceed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        scrollable: true,
         title: const Text('Reiniciar planificación'),
         content: const Text(
           'Se borrarán las semanas automáticas de esta preparación, incluidas '
@@ -127,6 +130,7 @@ class _RunningIntakePageState extends State<RunningIntakePage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, update) => AlertDialog(
+          scrollable: true,
           title: const Text('Confirmar reinicio'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -136,6 +140,8 @@ class _RunningIntakePageState extends State<RunningIntakePage> {
               TextField(
                 controller: confirmation,
                 autofocus: true,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => dismissKeyboard(),
                 onChanged: (_) => update(() {}),
                 decoration: const InputDecoration(labelText: 'Confirmación'),
               ),
@@ -143,12 +149,18 @@ class _RunningIntakePageState extends State<RunningIntakePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => dialogContext.pop(false),
+              onPressed: () {
+                dismissKeyboard();
+                dialogContext.pop(false);
+              },
               child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: confirmation.text.trim() == 'REINICIAR'
-                  ? () => dialogContext.pop(true)
+                  ? () {
+                      dismissKeyboard();
+                      dialogContext.pop(true);
+                    }
                   : null,
               child: const Text('Reiniciar plan'),
             ),
@@ -156,6 +168,7 @@ class _RunningIntakePageState extends State<RunningIntakePage> {
         ),
       ),
     );
+    dismissKeyboard();
     // El diálogo mantiene el campo durante su animación de salida.
     WidgetsBinding.instance.addPostFrameCallback((_) => confirmation.dispose());
     if (confirmed != true || !mounted) return;

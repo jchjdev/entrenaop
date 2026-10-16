@@ -1,6 +1,7 @@
 import 'package:entrena_ui/entrena_ui.dart'
     show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/core/presentation/dismiss_keyboard.dart';
 
 import '../widgets/program_phase_section.dart';
 
@@ -86,7 +87,11 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
       ? _steps.indexOf('Carrera')
       : 1;
   int get _previewStep => _steps.length - 1;
-  void _goStep(int step) => setState(() => _step = step);
+  void _goStep(int step) {
+    dismissKeyboard();
+    setState(() => _step = step);
+  }
+
   int _issueStep(Map<String, dynamic> issue) {
     final status = issue['status'] as String? ?? '';
     if (status == 'needs_target_date') return 0;
@@ -426,11 +431,15 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
   }
 
   Future<void> _resetTrial() async {
+    dismissKeyboard();
     final confirmation = await showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (_) => const _TrialResetDialog(),
     );
+    // El diálogo puede restaurar el foco anterior al cerrarse. El nuevo paso
+    // no debe heredar ni ese campo ni el teclado de confirmación.
+    dismissKeyboard();
     if (confirmation == null || !mounted) return;
     await _run(() async {
       await widget.repository.resetTrial(widget.goalId, confirmation);
@@ -568,6 +577,8 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                       }, () => _goStep(1))
                     : SingleChildScrollView(
                         key: ValueKey('program-step-$_step'),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                         child: Center(
                           child: ConstrainedBox(
@@ -1620,6 +1631,12 @@ class _TrialResetDialog extends StatefulWidget {
 
 class _TrialResetDialogState extends State<_TrialResetDialog> {
   final _input = TextEditingController();
+
+  void _close([String? confirmation]) {
+    dismissKeyboard();
+    Navigator.pop(context, confirmation);
+  }
+
   @override
   void dispose() {
     _input.dispose();
@@ -1629,37 +1646,37 @@ class _TrialResetDialogState extends State<_TrialResetDialog> {
   @override
   Widget build(BuildContext context) => EntrenaDialog(
     title: const Text('Reiniciar los ensayos de este programa'),
-    content: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Se borrarán las semanas automáticas de carrera y fuerza de esta preparación y sus resultados de entrenamiento, incluidos los ensayos ya completados. Esta acción no se puede deshacer.',
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Se conservan la fecha, los objetivos, la disponibilidad, las referencias actuales y las marcas de las pruebas. Verás una primera propuesta con esos datos antes de activar de nuevo el programa.',
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _input,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Escribe REINICIAR'),
-          ),
-        ],
-      ),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Se borrarán las semanas automáticas de carrera y fuerza de esta preparación y sus resultados de entrenamiento, incluidos los ensayos ya completados. Esta acción no se puede deshacer.',
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Se conservan la fecha, los objetivos, la disponibilidad, las referencias actuales y las marcas de las pruebas. Verás una primera propuesta con esos datos antes de activar de nuevo el programa.',
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _input,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => dismissKeyboard(),
+          decoration: const InputDecoration(labelText: 'Escribe REINICIAR'),
+        ),
+        const SizedBox(height: 12),
+      ],
     ),
     actions: [
       EntrenaDialogActions(
         primaryLabel: 'Cancelar',
-        onPrimary: () => Navigator.pop(context),
+        onPrimary: _close,
         secondary: [
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _input,
             builder: (_, value, _) => OutlinedButton(
               onPressed: value.text == 'REINICIAR'
-                  ? () => Navigator.pop(context, value.text)
+                  ? () => _close(value.text)
                   : null,
               style: EntrenaButtonStyles.destructive(context),
               child: const Text(

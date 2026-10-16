@@ -773,8 +773,16 @@ void main() {
       );
       await t.pumpAndSettle();
       await _tap(t, 'Reiniciar ensayos de este programa');
+      await t.ensureVisible(find.byType(TextField));
+      await t.enterText(find.byType(TextField), 'REI');
+      await t.testTextInput.receiveAction(TextInputAction.done);
+      await t.pumpAndSettle();
+      expect(t.testTextInput.isVisible, isFalse);
+      expect(repo.resets, 0);
+      await t.showKeyboard(find.byType(TextField));
       await _tap(t, 'Cancelar');
       expect(repo.resets, 0);
+      expect(t.testTextInput.isVisible, isFalse);
       await _tap(t, 'Reiniciar ensayos de este programa');
       final button = find.widgetWithText(
         OutlinedButton,
@@ -783,14 +791,37 @@ void main() {
       expect(t.widget<OutlinedButton>(button).onPressed, isNull);
       await capturePerformanceWidget(t, 'programa-reiniciar-ensayos');
       await t.enterText(find.byType(TextField), 'REINICIAR');
+      expect(t.testTextInput.isVisible, isTrue);
+      t.view.viewInsets = const FakeViewPadding(bottom: 336);
+      addTearDown(t.view.resetViewInsets);
       await t.pumpAndSettle();
+      await t.ensureVisible(find.byType(TextField));
+      await t.pumpAndSettle();
+      expect(t.takeException(), isNull);
+      final fieldBottom = t.getBottomRight(find.byType(TextField)).dy;
+      final cancelTop = t
+          .getTopLeft(find.widgetWithText(FilledButton, 'Cancelar'))
+          .dy;
+      expect(fieldBottom, lessThan(cancelTop));
+      await capturePerformanceWidget(t, 'programa-reiniciar-con-teclado');
       await _tap(t, 'Borrar ensayos y reiniciar');
+      expect(t.testTextInput.isVisible, isFalse);
+      expect(
+        FocusManager.instance.primaryFocus?.context?.widget,
+        isNot(isA<EditableText>()),
+      );
+      t.view.resetViewInsets();
+      await t.pumpAndSettle();
       expect(repo.resets, 1);
       expect(repo.publications, 0);
       expect(repo.data.context?['availability'], {'1': 60, '4': 60});
       expect(repo.data.targetDate!.difference(originalDate!).inSeconds, 0);
       expect(find.text('Activar mi programa'), findsOneWidget);
       expect(find.textContaining('Ensayos reiniciados.'), findsOneWidget);
+      await _tap(t, 'Volver a los movimientos');
+      expect(find.text('Lo que necesitas preparar'), findsOneWidget);
+      expect(t.testTextInput.isVisible, isFalse);
+      await capturePerformanceWidget(t, 'programa-movimientos-sin-teclado');
       expect(t.takeException(), isNull);
     },
   );

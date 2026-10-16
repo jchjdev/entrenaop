@@ -1,5 +1,48 @@
 # Identidad visual de EntrenaOP
 
+## Calentamiento visible y salida del teclado · UI-042 · 16/10/2026
+
+Javier comparte capturas del iPhone: durante «Prepárate…» los controles del
+calentamiento quedan parcialmente fuera del área desplazable, el campo de
+reinicio toca las acciones y el teclado REINICIAR permanece sobre Movimientos.
+Confirma que la distribución de Sonrisa feliz ya le encaja.
+
+El reloj compacto reserva una línea de estado en reposo, preparación, trabajo,
+pausa, final y repetición. El paso de un estado a otro no añade alto a la tarjeta.
+El botón reserva el espacio de su etiqueta más larga, también cuando necesita
+dos líneas con texto ampliado; Cancelar y Repetir no reducen su altura.
+Las indicaciones específicas extensas se muestran en dos líneas con acceso al
+panel existente; allí se conservan completas bajo «Indicaciones de esta serie»,
+separadas de la descripción del ejercicio. Se reduce el espacio antes del reloj.
+La foto mantiene el crecimiento adaptable de UI-041 y las acciones siguen fijas.
+
+El diálogo de reinicio de ensayos elimina el desplazamiento anidado dentro de
+EntrenaDialog y añade separación bajo el campo. No abre el teclado hasta tocar
+el campo; Hecho solo lo cierra, sin ejecutar un reinicio. Cancelar y confirmar
+retiran el foco y ocultan el teclado nativo antes de cerrar el diálogo; se repite
+la retirada tras el cierre para evitar restaurar un campo anterior. Cambiar de
+paso en Mi programa también cierra el teclado, y desplazar sus formularios lo
+descarta. El reinicio de planificación de carrera reutiliza el mismo cierre.
+Se mantienen las confirmaciones explícitas, los datos conservados y las
+operaciones existentes; no hay cambios de reglas de programa ni de servidor.
+
+Todo el cambio reside en presentación, incluido `dismiss_keyboard.dart`. Las
+regresiones cubren alto del reloj antes/durante/después de preparación, reinicio
+y repetición, y cierre del teclado con Hecho, cancelar y confirmar antes de
+volver a «Lo que necesitas preparar». Se simula el área del teclado en el
+diálogo y se comprueba que el campo y las acciones no se solapan. Las capturas
+incluyen calentamiento sin foto, sesión combinada con carrera, preparación a
+un segundo, reinicio, indicaciones completas y texto doble; no equivalen a una
+prueba del teclado nativo en iPhone. Queda repetir el recorrido físico actualizado.
+
+Verificación final del 16/10/2026: análisis limpio, 851 pruebas completas
+correctas con la omisión web preexistente, diez escenarios de captura del
+ejecutor y el recorrido de reinicio/Movimientos capturado con fuentes reales.
+La regresión del reloj comprueba su tamaño natural dentro de un desplazamiento,
+incluyendo etiquetas de dos líneas. No se modifican paquetes compartidos,
+admin, dependencias, SQL, motores ni producción. Publicación directamente en
+main conforme al acuerdo de sincronización.
+
 ## Foto adaptable al alto disponible · UI-041 · 16/10/2026
 
 Javier aporta una captura del ejecutor en iPhone 12: la foto tiene poca altura

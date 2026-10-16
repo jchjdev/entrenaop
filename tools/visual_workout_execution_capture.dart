@@ -33,6 +33,9 @@ void main() {
     ('tiempo-iphone-texto', true, 390.0, 844.0, 1.2),
     ('tiempo-alto', true, 412.0, 915.0, 1.0),
     ('tiempo-ampliado', true, 320.0, 700.0, 2.0),
+    ('calentamiento', true, 390.0, 844.0, 1.2),
+    ('calentamiento-carrera', true, 390.0, 844.0, 1.2),
+    ('calentamiento-ampliado', true, 320.0, 700.0, 2.0),
     ('estrecho', false, 320.0, 844.0, 2.0),
     ('escritorio', false, 1000.0, 844.0, 1.0),
   ]) {
@@ -64,8 +67,11 @@ void main() {
         debugNetworkImageHttpClientProvider = () => _ImageClient(bytes);
         addTearDown(() => debugNetworkImageHttpClientProvider = null);
       }
+      final warmUp = name.startsWith('calentamiento');
       final repository = _Workouts(
         timed,
+        warmUp: warmUp,
+        mixedRunning: name == 'calentamiento-carrera',
         includeInstructions:
             name != 'tiempo-iphone-texto' && name != 'tiempo-alto',
       );
@@ -74,7 +80,9 @@ void main() {
       final cubit = ActiveWorkoutCubit(
         executionId: 'preview',
         sessionDraftStore: MemoryWorkoutSessionDraftStore(),
-        getExercise: GetExerciseByIdUseCase(_Exercises(imagePath != null)),
+        getExercise: GetExerciseByIdUseCase(
+          _Exercises(imagePath != null && !warmUp),
+        ),
         getExecution: GetWorkoutExecutionUseCase(repository),
         completeSet: CompleteWorkoutSetUseCase(repository),
         completeAmrap: CompleteAmrapBlockUseCase(repository),
@@ -123,6 +131,35 @@ void main() {
         expect(find.text('Iniciar temporizador').hitTestable(), findsOneWidget);
       }
       await _capture(t, boundaryKey, name);
+      if (warmUp) {
+        await t.ensureVisible(find.text('Iniciar temporizador'));
+        await t.tap(find.text('Iniciar temporizador'));
+        await t.pump(const Duration(seconds: 2));
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text('Cancelar').hitTestable(), findsOneWidget);
+        expect(
+          find.byTooltip('Reiniciar temporizador').hitTestable(),
+          findsOneWidget,
+        );
+        if (scale <= 1.2) {
+          expect(
+            t.getBottomRight(find.byType(WorkoutSetCountdown)).dy,
+            lessThan(t.getTopLeft(find.text('Terminar serie')).dy),
+          );
+        }
+        await _capture(t, boundaryKey, '$name-preparacion');
+        await t.tap(find.byTooltip('Reiniciar temporizador'));
+        await t.pumpAndSettle();
+        expect(find.text('Iniciar temporizador').hitTestable(), findsOneWidget);
+        await _capture(t, boundaryKey, '$name-reinicio');
+        await t.ensureVisible(find.byTooltip('Técnica del ejercicio'));
+        await t.tap(find.byTooltip('Técnica del ejercicio'));
+        await t.pumpAndSettle();
+        expect(find.text('Indicaciones de esta serie'), findsOneWidget);
+        await _capture(t, boundaryKey, '$name-indicaciones');
+        await t.tap(find.byTooltip('Cerrar detalle'));
+        await t.pumpAndSettle();
+      }
       if (name == 'repeticiones') {
         await t.tap(find.byTooltip('Técnica del ejercicio'));
         await t.pumpAndSettle();
@@ -174,39 +211,57 @@ Future<void> _capture(WidgetTester t, GlobalKey key, String name) async {
 }
 
 class _Workouts implements WorkoutRepository {
-  _Workouts(bool timed, {bool includeInstructions = true})
-    : execution = WorkoutExecution(
-        id: 'preview',
-        templateId: 'template',
-        templateName: timed
-            ? 'Fuerza · Control isométrico'
-            : 'Fuerza · Tren superior',
-        templateVersion: 1,
-        status: WorkoutExecutionStatus.inProgress,
-        startedAt: DateTime.utc(2026, 10, 15),
-        sets: [
-          for (var i = 0; i < 3; i++)
-            WorkoutExecutionSet(
-              id: 'set-$i',
-              blockOrder: 0,
-              blockName: 'Principal',
-              blockFormat: WorkoutBlockFormat.straightSets,
-              itemOrder: 0,
-              exerciseId: 'exercise',
-              exerciseName: 'Dominada isométrica',
-              exerciseDescription: 'Mantén la barbilla a la altura de la barra y controla la posición.',
-              itemInstructions: includeInstructions
-                  ? 'Mantén el cuerpo estable.'
-                  : null,
-              setOrder: i,
-              targetReps: timed ? null : 8,
-              targetDurationSeconds: timed ? 20 : null,
-              targetRir: 2,
-              restAfterSeconds: 45,
-              status: WorkoutSetStatus.pending,
-            ),
-        ],
-      );
+  _Workouts(
+    bool timed, {
+    bool includeInstructions = true,
+    bool warmUp = false,
+    bool mixedRunning = false,
+  }) : execution = WorkoutExecution(
+         id: 'preview',
+         templateId: 'template',
+         templateName: warmUp
+             ? 'Entrenamiento combinado'
+             : timed
+             ? 'Fuerza · Control isométrico'
+             : 'Fuerza · Tren superior',
+         templateVersion: 1,
+         status: WorkoutExecutionStatus.inProgress,
+         startedAt: DateTime.utc(2026, 10, 15),
+         sets: [
+           for (var i = 0; i < 3; i++)
+             WorkoutExecutionSet(
+               id: 'set-$i',
+               blockOrder: 0,
+               blockName: warmUp && i == 0 ? 'Calentamiento' : 'Principal',
+               blockFormat: warmUp && i == 0
+                   ? WorkoutBlockFormat.warmUp
+                   : mixedRunning
+                   ? WorkoutBlockFormat.running
+                   : WorkoutBlockFormat.straightSets,
+               itemOrder: 0,
+               exerciseId: 'exercise',
+               exerciseName: warmUp && i == 0
+                   ? 'Calentamiento para fuerza y rendimiento'
+                   : 'Dominada isométrica',
+               exerciseDescription: 'Mantén la barbilla a la altura de la barra y controla la posición.',
+               itemInstructions: warmUp && i == 0
+                   ? 'Activación suave\nCamina o trota suavemente. Aumenta el movimiento de forma gradual, a un ritmo que te permita hablar con comodidad.'
+                   : includeInstructions
+                   ? 'Mantén el cuerpo estable.'
+                   : null,
+               setOrder: i,
+               targetReps: timed ? null : 8,
+               targetDurationSeconds: warmUp && i == 0
+                   ? 180
+                   : timed
+                   ? 20
+                   : null,
+               targetRir: warmUp ? null : 2,
+               restAfterSeconds: 45,
+               status: WorkoutSetStatus.pending,
+             ),
+         ],
+       );
   WorkoutExecution execution;
   @override
   Future<WorkoutExecution?> getExecution(String id) async => execution;

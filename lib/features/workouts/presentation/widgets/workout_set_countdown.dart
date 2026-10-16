@@ -372,15 +372,24 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
               ),
             ),
             const SizedBox(height: 4),
-            if (!widget.compact || _isPreparing || _isFinished)
-              Text(
-                _isPreparing
-                    ? 'Prepárate…'
-                    : _isFinished
-                    ? 'Tiempo completado'
-                    : 'Realizado: $_elapsedSeconds s',
-                style: const TextStyle(color: Colors.white60),
-              ),
+            // Reservar la misma línea evita desplazar los controles al pasar
+            // por preparación, pausa, final y reinicio.
+            Text(
+              _isPreparing
+                  ? 'Prepárate…'
+                  : _isFinished
+                  ? 'Tiempo completado'
+                  : !widget.compact
+                  ? 'Realizado: $_elapsedSeconds s'
+                  : !_hasStarted
+                  ? 'Listo para empezar'
+                  : _isRunning
+                  ? 'En curso'
+                  : 'En pausa',
+              maxLines: widget.compact ? 1 : null,
+              overflow: widget.compact ? TextOverflow.ellipsis : null,
+              style: const TextStyle(color: Colors.white60, height: 1.3),
+            ),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -402,7 +411,34 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
                           ? Icons.pause_rounded
                           : Icons.play_arrow_rounded,
                     ),
-                    label: Text(actionLabel),
+                    label: widget.compact
+                        ? Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // La etiqueta más larga reserva también el alto
+                              // de dos líneas con texto ampliado; Cancelar o
+                              // Repetir no encogen el botón al cambiar de fase.
+                              ExcludeSemantics(
+                                child: Opacity(
+                                  opacity: 0,
+                                  child: Builder(
+                                    builder: (labelContext) => RichText(
+                                      textScaler: MediaQuery.textScalerOf(
+                                        labelContext,
+                                      ),
+                                      text: TextSpan(
+                                        text: 'Iniciar temporizador',
+                                        style: DefaultTextStyle.of(labelContext)
+                                            .style,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(actionLabel),
+                            ],
+                          )
+                        : Text(actionLabel),
                   ),
                 ),
                 const SizedBox(width: 8),

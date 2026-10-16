@@ -20,6 +20,7 @@ Future<void> showWorkoutTechnique(
     builder: (_) => ExerciseDetailSheet(
       name: set.exerciseName,
       description: set.exerciseDescription ?? exercise?.description,
+      sessionInstructions: set.itemInstructions,
       imageUrl: exercise?.thumbnailUrl,
       videoUrl: set.exerciseVideoUrl ?? exercise?.videoUrl,
       muscleGroups: exercise?.muscleGroups ?? const [],

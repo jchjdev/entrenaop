@@ -96,6 +96,7 @@ void main() {
     await tester.tap(find.text('Reiniciar plan'));
     await tester.pumpAndSettle();
     expect(resetCalls, 1);
+    expect(tester.testTextInput.isVisible, isFalse);
     expect(
       find.text('Plan reiniciado. Ya puedes pautar de nuevo.'),
       findsOneWidget,

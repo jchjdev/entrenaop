@@ -406,9 +406,32 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
               ),
             if (set.itemInstructions?.trim().isNotEmpty == true) ...[
               const SizedBox(height: 10),
-              Text(
-                set.itemInstructions!,
-                style: const TextStyle(color: Colors.white70, height: 1.35),
+              InkWell(
+                onTap: () => showWorkoutTechnique(context, set),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          set.itemInstructions!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.open_in_new_rounded,
+                        size: 18,
+                        semanticLabel: 'Ver indicaciones completas',
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
             if (set.blockFormat == WorkoutBlockFormat.warmUp && !widget.review)
@@ -477,7 +500,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
             ],
             if (!widget.review &&
                 set.blockFormat == WorkoutBlockFormat.emom) ...[
-              const SizedBox(height: 22),
+              const SizedBox(height: 12),
               WorkoutSetCountdown(
                 targetSeconds: 60,
                 compact: true,
@@ -510,7 +533,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 ),
               ),
             ] else if (!widget.review && set.targetDurationSeconds != null) ...[
-              const SizedBox(height: 22),
+              const SizedBox(height: 12),
               WorkoutSetCountdown(
                 targetSeconds: set.targetDurationSeconds!,
                 compact: true,
