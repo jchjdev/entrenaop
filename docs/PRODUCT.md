@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**STR-039, 16/10/2026 · apoyos autónomos:** el motor selecciona un apoyo
+pertinente, aprovecha resultados propios compatibles y puede introducir una
+práctica guiada opcional si faltan datos. El usuario no necesita calibrar la
+biblioteca ni escoger su rutina. La práctica reserva tiempo y no inventa carga;
+su resultado permite personalizar el apoyo después. Carrera, cobertura y
+recuperación conservan prioridad. Las recetas disponibles, validación y límites
+figuran en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-038, 16/10/2026 · frecuencia por estímulo:** el programa puede superar
 dos exposiciones cuando la dosis acreditada, fase, recuperación y calendario
 lo permiten. Puede mantener dosis por sesión diferentes al repartir intentos.

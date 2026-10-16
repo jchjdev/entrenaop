@@ -1,5 +1,24 @@
 # Arquitectura de EntrenaOP
 
+## Entrada autónoma de apoyos · STR-039 · 16/10/2026
+
+El coordinador añade candidatos mediante recetas deportivas explícitas y busca
+evidencia reciente del propietario. Una propuesta puede contener una referencia
+prospectiva: calcular no la persiste y publicar solo guarda las de los bloques
+realmente colocados. `guided_pending` distingue familiarización de capacidad
+acreditada; el resultado conserva procedencia y se reutiliza en publicaciones
+posteriores con las estrategias existentes. Se preservan todos los vínculos
+cuando una tarea cubre varios objetivos. Corregir el origen o retirar una
+variante se respeta en la selección; la interfaz no presenta referencias
+pendientes o invalidadas como marcas medidas.
+
+Se reutilizan tablas, repositorios, ejecución y registro existentes. La excepción
+de kilos desconocidos solo admite recetas versionadas de familiarización;
+prescripciones ordinarias conservan su validación. Los helpers que leen o
+escriben datos son privados y comprueban propiedad; Flutter explica y registra.
+Sin dependencias nuevas ni cambios en carrera v5. Contrato y comprobaciones en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 ## Frecuencia por estímulo y dosis por exposición · STR-038 · 16/10/2026
 
 Rendimiento v5 conserva el núcleo v3 y amplía la frecuencia con una política

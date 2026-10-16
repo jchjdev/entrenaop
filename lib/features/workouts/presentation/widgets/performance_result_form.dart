@@ -35,6 +35,8 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
   String _stop = 'unknown';
   String? _error;
   PerformanceSetPrescription get p => widget.prescription;
+  bool get _familiarization =>
+      p.policyVersion == 'support_familiarization_v1' && !widget.correction;
   bool get _responses =>
       p.recordsStimulusResponses ||
       widget.initialResult?.correctResponses != null ||
@@ -185,8 +187,29 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (_familiarization) ...[
+          Text(
+            'Conoce este apoyo',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Primera práctica opcional. No busques tu máximo. '
+            'Tienes tiempo reservado para prepararla. '
+            'Puedes omitir este ejercicio y continuar con la sesión.',
+          ),
+          if (p.usesLoad)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                'Empieza con una carga ligera que controles; '
+                'hoy no hay kilos obligatorios.',
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
         Text(
-          'Objetivo: ${_targetLabel()}',
+          '${_familiarization ? 'Hasta' : 'Objetivo:'} ${_targetLabel()}',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         if (p.fixedDurationSeconds != null)
@@ -266,6 +289,14 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
                 : 'Carga externa real · kg',
           ),
         if (p.needsBodyMass) _number('body', 'Masa corporal actual · kg'),
+        if (_familiarization)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Puedes guardar información incompleta. Solo ajustaremos '
+              'este apoyo cuando tengamos datos suficientes.',
+            ),
+          ),
         if (p.usesRir) ...[
           Text(
             'Al terminar, ¿cuántas repeticiones más podrías haber hecho con la misma técnica? '

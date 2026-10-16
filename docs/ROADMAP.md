@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**STR-039, 16/10/2026 · entrada autónoma de accesorios:** recorrido implementado
+y verificado en desarrollo. El motor elige apoyos revisados, reutiliza datos
+propios y propone una práctica guiada opcional cuando faltan. Publicación,
+origen del registro, incertidumbre, material, retirada y tiempo quedan cubiertos.
+Análisis limpio, 914 pruebas de raíz, 22 baterías SQL, 148 migraciones
+coincidentes y trece cuerpos instalados contrastados, incluida carrera v5
+original. FAS combinado pasa nueve semanas con respuestas completas,
+incompletas y omisiones; un programa independiente creado desde ADMIN pasa
+26 semanas de carrera/flexiones con apoyo automático. El ensayo de seis meses
+con todos los bloques FAS supera el límite HTTP y no se declara validado; se
+conservan los demás límites de seguridad, anualidad y concurrencia del contrato.
+El único siguiente bloque recomendado es la aceptación física en móvil de
+selección, primera práctica, registro y adaptación del apoyo dentro del programa.
+Detalle en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-038, 16/10/2026 · frecuencia por estímulo y apoyos reales:** bloque
 cerrado en código y Supabase de desarrollo. Sin techo universal dos: la dosis
 practicable, respuesta, fase, recuperación y calendario delimitan el reparto.

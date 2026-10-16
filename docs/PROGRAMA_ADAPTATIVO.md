@@ -1,5 +1,127 @@
 # Programa adaptativo
 
+## Entrada autónoma de accesorios · STR-039 · 16/10/2026
+
+Javier confirma que la selección corresponde al motor y que no debe convertirse
+en una calibración manual de la biblioteca. Esta ampliación completa la entrada
+de apoyos de STR-038 y está aplicada y verificada en desarrollo. La aceptación
+física en móvil sigue pendiente.
+
+### Selección, registros y primera práctica
+
+El servidor conserva principal y un apoyo opcional por objetivo en desarrollo,
+con relación deportiva revisada, material disponible y sin reducción del
+principal. Primero utiliza un apoyo calibrado ya practicable. Si falta, compara
+las opciones de la estrategia y prefiere una que tenga trabajo propio reciente
+antes que introducir otra desconocida. El desempate es estable, sin rotación
+aleatoria de ejercicios. La prioridad de carrera, la cobertura de las pruebas,
+la recuperación y el tiempo siguen siendo condiciones del coordinador.
+
+La entrada automática está definida para banca y flexiones con lastre como
+apoyos de flexiones, dead bug junto a plancha y split squat sin carga para
+shuttle 5-10-5. No habilita automáticamente todas las relaciones del catálogo:
+cada futura estrategia necesita una receta de entrada y pruebas propias.
+
+Se pueden reutilizar ejecuciones propias de cualquier preparación o entrenamiento
+y referencias manuales vigentes de la misma variante, versión, medición y modo de
+carga. La ventana de entrada es de catorce días. Se exigen repeticiones reales,
+margen conocido, técnica y condiciones válidas, sin molestias y una carga real
+cuando corresponda. Un máximo, un RIR desconocido, una carga ausente o datos de
+otro usuario no se convierten en referencia. Una referencia automática no se
+utiliza como prueba de sí misma; conserva la ejecución/serie o referencia manual
+de origen. Corregir ese origen obliga a reconsiderar la referencia derivada.
+Los resultados antiguos y las decisiones publicadas no se reescriben.
+
+Sin datos utilizables se propone una única primera práctica de hasta ocho
+repeticiones, con margen de al menos tres y sin kilos prescritos. La receta
+explica preparación, técnica, conteo, cuándo detenerse y qué registrar. En los
+movimientos alternos, ocho son cuatro por lado. Se reservan seis minutos para
+preparar, practicar y registrar, no solo el tiempo de las repeticiones. Se puede
+omitir y continuar; una omisión o resultado incompleto nunca acredita capacidad.
+No se pide practicar los demás ejercicios del banco.
+
+La práctica es opcional y desaparece si desplaza la cobertura prioritaria o no
+cabe. Una práctica reciente no utilizable deja una ventana antes de reconsiderar
+otra novedad de ese objetivo; no se cambia al siguiente accesorio para terminar
+calibrando la biblioteca. El contexto y la fase vuelven a evaluarse. Dejar de
+utilizar explícitamente una variante impide su reactivación automática.
+
+### Persistencia y presentación
+
+Calcular no escribe referencias. Una propuesta incluye su referencia prospectiva
+y solo publicar un bloque colocado la persiste, con identidad estable y origen.
+`guided_pending` indica una práctica pendiente: no tiene fecha, resultados ni
+confirmación de capacidad inventados y no se muestra como marca en Movimientos.
+Si un bloque sirve a varios objetivos se conservan todas sus referencias sin
+duplicar el trabajo ni perder claves foráneas.
+
+Al disponer de una práctica utilizable, una nueva publicación guarda una
+referencia de trabajo derivada de esos datos y aplica las dosis/frecuencias
+existentes. No se infieren RM, masa corporal ni escalones de carga. El registro
+mantiene repeticiones, carga, margen y técnica; la pantalla explica la primera
+práctica y permite dejar datos desconocidos. Registrar una referencia manual
+sigue siendo una opción para quien ya dispone de ella, no un requisito de alta.
+
+La excepción de carga desconocida se limita a las recetas de familiarización
+versionadas. Las prescripciones ordinarias siguen exigiendo kilos y masa cuando
+correspondan. La identidad numérica admite la representación equivalente del
+serializador (por ejemplo, `8` y `8.0`), sin cambiar las dosis ni los selectores
+enteros de esfuerzo. No se añaden tablas, dependencias ni decisiones deportivas en
+Flutter. Los helpers de lectura/escritura son privados y comprueban propietario;
+los dos helpers puros usados por el CHECK solo exponen política estática.
+
+### Evidencia y límites
+
+Se mantiene la base deportiva de STR-038 y el banco aportado. La revisión
+[ACSM 2026](https://doi.org/10.1249/mss.0000000000003897) es una referencia general
+para entrenamiento de fuerza; no valida este algoritmo ni demuestra que ocho
+repeticiones, seis minutos o catorce días sean óptimos universales. Son parámetros
+operativos conservadores y auditables. Una simulación comprueba integración,
+prescripción y respuesta al registro; no demuestra mejoras fisiológicas.
+
+### Verificación STR-039 · 16/10/2026
+
+- Migraciones `20261016170709` y `20261016174445` aplicadas únicamente a desarrollo;
+  148 migraciones
+  coincidentes. Trece definiciones contrastadas con su fuente, incluida la
+  definición original de `running_plan_v5` sin cambios.
+- `flutter analyze` limpio y batería completa de raíz: 914 pruebas correctas,
+  con la omisión web existente. Formularios reales verificados a 390 px y
+  capturados con el tema de la app; no acredita una sesión física de gimnasio.
+- Veintidós baterías SQL correctas sobre funciones instaladas, con `ROLLBACK`:
+  entrada de apoyos, frecuencia, contexto observado, evidencias, integración,
+  revisión/publicación, fases, ejecución, pausa, seguridad y regresiones de
+  carrera v5/horizontes. El ensayo nuevo prueba también el rol autenticado,
+  cargas desconocidas acotadas, correcciones del origen, retirada expresa y
+  reutilización de una referencia propia de otra preparación.
+- FAS combinado ensayado durante nueve semanas con práctica registrada, datos
+  incompletos y omisión. Los dos últimos casos conservan la continuidad sin
+  inventar una capacidad; no repiten una práctica pendiente cada semana.
+- Programa independiente creado mediante los RPC de ADMIN, con módulo 2 km y
+  objetivos de flexiones compartidos, completado durante 26 semanas desde una
+  exposición inicial. Publica familiarización sin kilos, deriva después banca
+  de la carga registrada y conserva continuidad y dosis por exposición. Se
+  observan hasta tres exposiciones, tres salidas y tres días físicos de fuerza;
+  no son cuotas universales. Cinco revisiones contextuales explícitas en la
+  fixture conservan la caducidad y no fuerzan a reescribir carga conocida.
+- El ensayo de seis meses con todos los bloques FAS y accesorios superó el
+  límite HTTP 524 de la herramienta. El caso completo FAS de nueve semanas y
+  el programa de 26 semanas anterior pasan; no se presenta como validado el
+  ensayo más pesado. Persiste el límite del ensayo anual conjunto ya anotado.
+- Los asesores de seguridad mantienen los avisos anteriores: siete INFO de
+  RLS sin política, dos WARN de funciones definidoras accesibles a anónimos,
+  114 a autenticados y uno de protección de contraseñas filtradas. Ninguno de
+  los nuevos helpers definidores está expuesto. Contexto y remedios del
+  [asesor de funciones](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable).
+
+Reproducción: `tools/build_adaptive_regression_suite.py` admite la batería
+`automatic_support_familiarization`; el generador longitudinal ofrece
+`--automatic-support`, `--support-result unknown|skipped` y `--focus-push`.
+Este último crea su propio programa mediante ADMIN; no sustituye las baterías
+FAS. Todos los ensayos terminan en `ROLLBACK` y no dejan programas de prueba en
+cuentas reales. La auditoría generada por
+`tools/build_support_familiarization_migration.py` contrasta cuerpos instalados.
+
 ## Frecuencia por estímulo y apoyos reales · STR-038 · 16/10/2026
 
 Javier autoriza retirar el techo universal de dos exposiciones. No se sustituye

@@ -14,8 +14,13 @@ parser.add_argument('--migration', type=Path)
 parser.add_argument('--initial-frequency-one', action='store_true')
 parser.add_argument('--expect-expanded-frequency', action='store_true')
 parser.add_argument('--with-support', action='store_true')
+parser.add_argument('--automatic-support', action='store_true')
+parser.add_argument('--focus-push', action='store_true', help='Programa ficticio independiente: 2 km y flexiones')
+parser.add_argument('--support-result', choices=['complete', 'unknown', 'skipped'], default='complete')
 parser.add_argument('--months', type=int, choices=[1, 2, 3, 4, 6, 12], default=6)
 args = parser.parse_args()
+assert not (args.with_support and args.automatic_support), 'Elegir apoyo calibrado o entrada automática'
+assert args.support_result == 'complete' or args.automatic_support
 parts = ["begin;", "set local statement_timeout='240s';"]
 if args.migration:
     source = args.migration.read_text(encoding='utf-8-sig')
@@ -56,6 +61,37 @@ prefix = prefix.replace('(select user_id::text from public.admin_permissions lim
 prefix = prefix.replace('p jsonb; again jsonb;', 'iteration int:=0; renewed boolean; renewed_count int:=0; p jsonb; again jsonb;')
 prefix = prefix.replace('current_date+90', f"(current_date+interval '{args.months} months')::date")
 prefix = prefix.replace("now()+interval '1 day'", "now()+interval '2 years'")
+if args.focus_push:
+    # Caso adicional, no sustituto de las baterías FAS: un programa propio
+    # configurado con carrera y flexiones. Todo su catálogo se revierte al final.
+    focus = """
+do $$ declare program text; test uuid; begin
+ program:=public.create_admin_preparation_program('Fixture: carrera y flexiones','access');
+ perform public.save_admin_program_scoring_rule_v3(program,'lab_generic_v1','https://www.boe.es/',
+  'Fuente ficticia de ensayo','pass_fail','none',1,0,0,'assessment_date',null,'Ingreso',null,null);
+ test:=public.create_admin_program_assessment_test_v5(program,'run2k','Carrera 2 km','seconds','lower',
+  'Carrera continua cronometrada en pista.','both','run2k',1,1,18,60,1,'none',2000,'run_2000m_v1');
+ perform public.save_admin_program_pass_standard(test,null,'men',18,60,475);
+ perform public.save_admin_program_pass_standard(test,null,'women',18,60,510);
+ perform public.set_admin_program_training_module(test,'running_2000m_v1');
+ perform public.publish_admin_program_assessment(program);
+ insert into public.performance_legacy_objectives
+  select (jsonb_populate_record(null::public.performance_legacy_objectives,to_jsonb(o)||
+   jsonb_build_object('program_id',program))).* from public.performance_legacy_objectives o
+  where program_id='fas_periodic_assessment' and objective_key='legacy:upper_body_push_ups_2_min';
+ perform set_config('entrenaop.fixture_program',program,true);
+ perform set_config('entrenaop.fixture_running_test',test::text,true);
+end $$;
+"""
+    at = prefix.index('do $$')
+    prefix = prefix[:at] + focus + prefix[at:]
+    prefix = prefix.replace("values(auth.uid(),'fas_periodic_assessment'", "values(auth.uid(),current_setting('entrenaop.fixture_program')")
+    prefix = re.sub(r" insert into public.fas_periodic_assessments.*?returning id into a;\s*insert into public.fas_periodic_marks.*?;\s*insert into public.running_reference_selections.*?;\n", " a:=public.save_program_assessment_attempt(g,'men','1996-01-01',current_date,jsonb_build_array(jsonb_build_object('test_id',current_setting('entrenaop.fixture_running_test'),'mark',478)));\n", prefix, flags=re.S)
+    prefix = prefix.replace(" update public.running_reference_selections set reference_source='trainingControl',reference_record_id=control_id::text where preparation_goal_id=g;", " insert into public.running_reference_selections(preparation_goal_id,reference_source,reference_record_id) values(g,'trainingControl',control_id::text);")
+    prefix = re.sub(r" perform public.save_performance_reference\(g,jsonb_build_object\('goal_code','(?:front_plank_forearms|slalom_ball_course_16m)'.*?\)\);\n", '', prefix, flags=re.S)
+    prefix = prefix.replace("jsonb_array_length(p->'sessions')<>2", "jsonb_array_length(p->'sessions')<1")
+    prefix = prefix.replace("jsonb_array_length(public.get_preparation_training_setup(g)->'objectives')<>3", "jsonb_array_length(public.get_preparation_training_setup(g)->'objectives')<>1")
+    prefix = prefix.replace('No reconoce las tres pruebas FAS', 'No reconoce el objetivo único del programa ficticio')
 if args.initial_frequency_one:
     prefix = prefix.replace("'rest_seconds',120,'frequency',2", "'rest_seconds',120,'frequency',1")
     prefix = prefix.replace("jsonb_array_length(p->'sessions')<>2", "jsonb_array_length(p->'sessions')<1")
@@ -69,10 +105,25 @@ if args.with_support:
   'reported_rir',3,'rest_seconds',180,'frequency',1,'rep_min',4,'rep_max',6,'load_step_kg',2,'equipment_confirmed',true));
  p:=public.calculate_preparation_week(g,wk);""")
 
+if args.automatic_support:
+    prefix = prefix.replace(' p:=public.calculate_preparation_week(g,wk);', """
+ update public.performance_training_contexts set equipment=equipment||array['bench','barbell','plates'] where user_id=auth.uid();
+ p:=public.calculate_preparation_week(g,wk);""")
+
 loop = fixture[fixture.index(marker):fixture.index(' if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>2')]
 loop = loop.replace("   if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>1 then raise exception 'Adapta antes de cerrar todas las sesiones'; end if;", "   update adaptive_clock set value=s.scheduled_date+time '12:00';")
 loop = loop.replace("   perform public.finish_workout_execution(e,6,null,null,null,'manual');", "   perform public.finish_workout_observed_idempotent(gen_random_uuid(),e,6,now(),0);")
 loop = loop.replace("r:=jsonb_build_object('value'", "r:=jsonb_build_object('load_kg',es.performance_prescription->'external_load_kg','body_mass_kg',es.performance_prescription->'body_mass_kg','value'")
+if args.automatic_support:
+    # Cuarenta kilos es un resultado declarado por ESTA fixture. No se añade
+    # como carga prescrita ni como regla de entrada en el motor.
+    loop = loop.replace("'load_kg',es.performance_prescription->'external_load_kg'", "'load_kg',case when es.performance_prescription->>'policy_version'='support_familiarization_v1' and es.performance_prescription->>'load_mode'='external_load' then '40'::jsonb else es.performance_prescription->'external_load_kg' end")
+    if args.support_result == 'unknown':
+        loop = loop.replace('       perform public.complete_performance_set_idempotent(gen_random_uuid(),es.id,r);',
+            "       if es.performance_prescription->>'policy_version'='support_familiarization_v1' then r:=r-'rir'-'load_kg'; end if;\n       perform public.complete_performance_set_idempotent(gen_random_uuid(),es.id,r);")
+    elif args.support_result == 'skipped':
+        loop = loop.replace('       perform public.complete_performance_set_idempotent(gen_random_uuid(),es.id,r);',
+            "       if es.performance_prescription->>'policy_version'='support_familiarization_v1' then perform public.skip_workout_set(es.id);\n       else perform public.complete_performance_set_idempotent(gen_random_uuid(),es.id,r); end if;")
 loop = re.sub(r'   -- Fechas sintéticas.*?where id=e;\n', '', loop, flags=re.S)
 tail = """
   -- El mismo lector que usa Flutter recupera cuatro semanas sin reescribirlas.
@@ -150,11 +201,49 @@ if args.with_support:
         and observed_set.performance_result->'load_kg'=pw.dose->'task'->'external_load_kg') then
       raise exception 'Apoyo publicado sin ejecución con carga registrada'; end if;
  if iteration<4""")
+if args.automatic_support:
+    tail = tail.replace(' if iteration<4', """
+ if not exists(select 1 from public.performance_week_work pw join public.preparation_week_decisions wd on wd.id=pw.decision_id
+   where wd.preparation_goal_id=g and pw.dose->'task'->>'exercise_code'='bench_press_barbell'
+    and pw.dose->'task'->>'policy_version'='support_familiarization_v1'
+    and not pw.dose->'task' ? 'external_load_kg') then raise exception 'No publica familiarización sin inventar kilos'; end if;
+ if not exists(select 1 from public.performance_week_work pw join public.preparation_week_decisions wd on wd.id=pw.decision_id
+   where wd.preparation_goal_id=g and pw.dose->'task'->>'exercise_code'='bench_press_barbell'
+    and pw.dose->'task'->>'policy_version'='performance_v3'
+    and pw.dose->'task'->>'external_load_kg'='40') then raise exception 'No transforma registro guiado en apoyo personalizado'; end if;
+ if not exists(select 1 from public.performance_training_references ref where ref.preparation_goal_id=g
+   and ref.reference->'task'->>'exercise_code'='bench_press_barbell' and ref.reference->>'reference_kind'='performed_set'
+   and ref.reference->'automatic_support'->'observation'->>'source'='execution') then raise exception 'Pierde origen real del apoyo'; end if;
+ if exists(select 1 from public.performance_week_work pw join public.preparation_week_decisions wd on wd.id=pw.decision_id
+   join public.performance_week_work prior_work on prior_work.reference_id=pw.reference_id
+   join public.scheduled_workouts prior_schedule on prior_schedule.id=prior_work.scheduled_workout_id
+   join public.workout_executions prior_execution on prior_execution.id=prior_schedule.execution_id
+   join public.workout_execution_sets prior_set on prior_set.execution_id=prior_execution.id and prior_set.block_order=prior_work.block_order
+   where wd.preparation_goal_id=g and pw.dose->'task'->>'policy_version'='support_familiarization_v1'
+    and public.workout_performed_on_v1(prior_execution) between wd.week_start-14 and wd.week_start-1
+    and prior_set.status='completed' and prior_set.performance_result->>'technique_valid'='true'
+    and prior_set.performance_result->>'conditions_confirmed'='true' and prior_set.performance_result->>'tolerated'='true'
+    and prior_set.performance_result->>'stop_reason'='none' and (prior_set.performance_result->>'rir')::numeric>=2
+    and (prior_set.performance_result->>'load_kg')::numeric>0) then raise exception 'Repite práctica teniendo datos recientes'; end if;
+ if iteration<4""")
+    if args.support_result != 'complete':
+        start = tail.index(" if not exists(select 1 from public.performance_week_work pw", tail.index("No publica familiarización"))
+        end = tail.index(' if iteration<4', start)
+        tail = tail[:start] + """
+ if exists(select 1 from public.performance_training_references ref where ref.preparation_goal_id=g
+   and ref.reference ? 'automatic_support' and ref.reference->>'reference_kind'='performed_set') then raise exception 'Inventa capacidad desde omisión o datos incompletos'; end if;
+ if exists(select 1 from public.performance_week_work first_work join public.preparation_week_decisions first_week on first_week.id=first_work.decision_id
+   join public.performance_week_work other_work on first_work.reference_id=other_work.reference_id
+   join public.preparation_week_decisions other_week on other_week.id=other_work.decision_id
+   where first_week.preparation_goal_id=g and first_work.dose->'task'->>'policy_version'='support_familiarization_v1'
+    and other_work.dose->'task'->>'policy_version'='support_familiarization_v1' and other_week.week_start>first_week.week_start
+    and other_week.week_start-first_week.week_start<21) then raise exception 'Repite práctica pendiente cada semana'; end if;
+""" + tail[end:]
 longitudinal = prefix + '\n loop\n iteration:=iteration+1;\n' + loop + tail
 longitudinal = re.sub(r'\bcurrent_date\b', 'pg_temp.program_today()', longitudinal, flags=re.I)
 longitudinal = re.sub(r'\bnow\(\)', 'pg_temp.program_now()', longitudinal, flags=re.I)
 parts.append(longitudinal)
-target = ROOT / f'build/adaptive-longitudinal-{args.months}{"-frequency-one" if args.initial_frequency_one else ""}{"-expanded" if args.expect_expanded_frequency else ""}{"-support" if args.with_support else ""}.sql'
+target = ROOT / f'build/adaptive-longitudinal-{args.months}{"-frequency-one" if args.initial_frequency_one else ""}{"-expanded" if args.expect_expanded_frequency else ""}{"-support" if args.with_support else ""}{"-automatic-support" if args.automatic_support else ""}{"-" + args.support_result if args.support_result != "complete" else ""}{"-focus-push" if args.focus_push else ""}.sql'
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text('\n\n'.join(parts), encoding='utf-8')
 print(target)

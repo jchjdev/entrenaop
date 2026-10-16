@@ -1192,15 +1192,15 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                       _data!.calibrationOptions.isNotEmpty)
                     ExpansionTile(
                       leading: const Icon(Icons.add_task),
-                      title: const Text('Preparar opciones de apoyo'),
+                      title: const Text('¿Ya has practicado algún apoyo?'),
                       subtitle: const Text(
-                        'Opcional · el motor elige cuándo utilizarlas',
+                        'Opcional · aprovecha una referencia que ya tengas',
                       ),
                       children: [
                         const Padding(
                           padding: EdgeInsets.all(16),
                           child: Text(
-                            'Estos ejercicios pueden complementar tu objetivo. Primero necesitamos una práctica real de cada variante; no deducimos su carga o sus repeticiones de otra prueba.',
+                            'El programa elige los apoyos y puede introducir una primera práctica guiada cuando haga falta. No tienes que calibrarlos todos. Si ya tienes un resultado reciente de uno de estos ejercicios, puedes registrarlo aquí para aprovecharlo.',
                           ),
                         ),
                         for (final option in _data!.calibrationOptions)
