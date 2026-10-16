@@ -962,7 +962,8 @@ class _Completed extends StatelessWidget {
               style: const TextStyle(color: Colors.white60),
             ),
           ],
-          if (execution.notes case final notes?) ...[
+          if (execution.notes case final notes?
+              when notes.trim().isNotEmpty) ...[
             const SizedBox(height: 14),
             Text(
               '“$notes”',

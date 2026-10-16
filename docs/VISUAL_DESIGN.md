@@ -1,5 +1,16 @@
 # Identidad visual de EntrenaOP
 
+## Cierre sin notas vacías · 16/10/2026
+
+Javier confirma que el RPE se ve bien y aporta un cierre con comillas vacías.
+El bloque de sensaciones se mostraba para una cadena vacía porque solo se
+comprobaba ausencia (`null`). El cierre y el detalle del historial ahora exigen
+texto no vacío tras ignorar espacios. Se conservan las notas almacenadas y el
+registro de tiempos y esfuerzo. La captura corresponde al cierre; no confirma
+por sí sola todos los recorridos de RIR ni la repetición del incidente EMOM.
+Análisis limpio y 58 pruebas relacionadas correctas para esta corrección.
+
+
 ## RIR entero y sujeciones sin RIR · UI-048 · 16/10/2026
 
 El selector de esfuerzo existente se comparte entre deportista y ADMIN. RIR

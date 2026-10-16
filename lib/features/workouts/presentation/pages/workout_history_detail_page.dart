@@ -88,7 +88,8 @@ class _DetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SummaryCard(execution: execution),
-                if (execution.notes case final notes?) ...[
+                if (execution.notes case final notes?
+                    when notes.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Card(
                     child: ListTile(
