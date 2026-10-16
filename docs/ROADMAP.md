@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**STR-038, 16/10/2026 · frecuencia por estímulo y apoyos reales:** bloque
+cerrado en código y Supabase de desarrollo. Sin techo universal dos: la dosis
+practicable, respuesta, fase, recuperación y calendario delimitan el reparto.
+Cada exposición conserva su dosis; se corrigen el alta y selección de apoyos y
+se permite declarar una frecuencia habitual mayor. Carrera v5 conserva su cuerpo.
+Análisis limpio, 912 pruebas correctas con una omisión web, 21 baterías SQL,
+146 migraciones coincidentes y trayectorias conjuntas de 26 semanas y nueve
+semanas con accesorio calibrado. Las simulaciones verifican reglas y continuidad,
+no resultados fisiológicos. Persisten los límites anual/seguridad/concurrencia
+indicados en el contrato. El único siguiente bloque recomendado es la aceptación
+móvil del programa combinado con accesorio: entrada, pauta, registro y adaptación.
+Detalle en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-037, 16/10/2026 · frecuencia autónoma y disponibilidad:** bloque cerrado
 en código y Supabase de desarrollo. Rendimiento puede pasar de una a dos
 exposiciones desde respuestas comparables, repartiendo el volumen conocido;

@@ -1,5 +1,17 @@
 # Arquitectura de EntrenaOP
 
+## Frecuencia por estímulo y dosis por exposición · STR-038 · 16/10/2026
+
+Rendimiento v5 conserva el núcleo v3 y amplía la frecuencia con una política
+pura por estímulo. El selector y repartidor v4 no limitan a dos rondas; el
+coordinador compara las distribuciones y conserva `exposure_doses` e índices.
+Los bloques publicados reutilizan las tablas/prescripciones existentes, cada
+uno con su dosis. Claves de objetivos cubiertos evitan duplicar trabajo compartido
+y conservan la relación de su apoyo. No se añaden tablas, dependencias ni reglas
+deportivas en Flutter. Carrera v5 permanece intacta. Se resuelven las consultas
+ambiguas de alta/selección de accesorios y se conserva su autorización previa.
+Contrato y límites en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 ## Frecuencia observada · STR-037 · 16/10/2026
 
 `performance_task_v4` envuelve las estrategias v3 con una política pura de

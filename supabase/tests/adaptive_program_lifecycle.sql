@@ -96,8 +96,12 @@ begin
    raise exception 'No prepara la siguiente semana al cerrar la última sesión: %',public.get_preparation_training_setup(g)->'program_state'; end if;
  next_plan:=public.calculate_preparation_week(g,wk+7);
  if next_plan->>'decision_id' is null then raise exception 'Semana siguiente no publicada'; end if;
- if not exists(select 1 from jsonb_array_elements(next_plan->'proposals') x where x->>'outcome'='progress'
-   and x->'dose'->'targets'='[7,6]'::jsonb) then raise exception 'Resultados de fuerza: %',(select jsonb_agg(jsonb_build_object('name',x->'name','outcome',x->'outcome','reason',x->'reason','evidence_count',jsonb_array_length(x->'evidence'),'targets',x->'dose'->'targets')) from jsonb_array_elements(next_plan->'proposals') x); end if;
+ if not exists(select 1 from jsonb_array_elements(next_plan->'proposals') x where x->>'exercise_code'='push_up_standard' and (
+   (x->>'outcome'='progress' and x->'dose'->'targets'='[7,6]'::jsonb)
+   or (x->>'outcome'='redistribute' and (x->>'frequency')::int>2
+     and jsonb_array_length(x->'exposure_doses')=(x->>'frequency')::int
+     and (select sum(v::numeric) from jsonb_array_elements(x->'exposure_doses') d,jsonb_array_elements_text(d->'targets') v)=24
+     and (select count(*) from jsonb_array_elements(next_plan->'sessions') ss,jsonb_array_elements(ss->'work') w where w->>'reference_id'=x->>'reference_id')=(x->>'frequency')::int))) then raise exception 'Resultados de fuerza: %',(select jsonb_agg(jsonb_build_object('name',x->'name','outcome',x->'outcome','reason',x->'reason','evidence_count',jsonb_array_length(x->'evidence'),'targets',x->'dose'->'targets')) from jsonb_array_elements(next_plan->'proposals') x); end if;
  perform public.advance_adaptive_program(g);
  if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>2 then raise exception 'Reintento duplicado'; end if;
  if exists(select 1 from public.scheduled_workouts where preparation_goal_id=g and scheduled_date>=wk+7 and status<>'cancelled' group by scheduled_date having count(*)>1) then raise exception 'Sesiones duplicadas'; end if;

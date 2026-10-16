@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--migration', type=Path)
 parser.add_argument('--initial-frequency-one', action='store_true')
+parser.add_argument('--expect-expanded-frequency', action='store_true')
+parser.add_argument('--with-support', action='store_true')
 parser.add_argument('--months', type=int, choices=[1, 2, 3, 4, 6, 12], default=6)
 args = parser.parse_args()
 parts = ["begin;", "set local statement_timeout='240s';"]
@@ -58,9 +60,19 @@ if args.initial_frequency_one:
     prefix = prefix.replace("'rest_seconds',120,'frequency',2", "'rest_seconds',120,'frequency',1")
     prefix = prefix.replace("jsonb_array_length(p->'sessions')<>2", "jsonb_array_length(p->'sessions')<1")
 
+if args.with_support:
+    prefix = prefix.replace(' p:=public.calculate_preparation_week(g,wk);', """
+ perform public.save_performance_reference(g,jsonb_build_object('goal_code','push_up_standard','goal_version',1,
+  'goal_measurement','REPS_IN_TIME','program_objective_key','legacy:upper_body_push_ups_2_min',
+  'task','{"exercise_code":"bench_press_barbell","exercise_version":1,"protocol_key":"bench_work","protocol_version":1,"setup_key":"standard:bench_work","measurement":"LOAD_REPS","load_mode":"external_load","external_load_kg":40,"target_value":8,"intent":"work"}'::jsonb,
+  'reference_kind','repeated_work','targets','[8,8]'::jsonb,'observed_on',wk-1,'current_capacity_confirmed',true,
+  'reported_rir',3,'rest_seconds',180,'frequency',1,'rep_min',4,'rep_max',6,'load_step_kg',2,'equipment_confirmed',true));
+ p:=public.calculate_preparation_week(g,wk);""")
+
 loop = fixture[fixture.index(marker):fixture.index(' if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>2')]
 loop = loop.replace("   if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>1 then raise exception 'Adapta antes de cerrar todas las sesiones'; end if;", "   update adaptive_clock set value=s.scheduled_date+time '12:00';")
 loop = loop.replace("   perform public.finish_workout_execution(e,6,null,null,null,'manual');", "   perform public.finish_workout_observed_idempotent(gen_random_uuid(),e,6,now(),0);")
+loop = loop.replace("r:=jsonb_build_object('value'", "r:=jsonb_build_object('load_kg',es.performance_prescription->'external_load_kg','body_mass_kg',es.performance_prescription->'body_mass_kg','value'")
 loop = re.sub(r'   -- Fechas sintéticas.*?where id=e;\n', '', loop, flags=re.S)
 tail = """
   -- El mismo lector que usa Flutter recupera cuatro semanas sin reescribirlas.
@@ -76,14 +88,21 @@ tail = """
   if exists(select 1 from public.preparation_week_decisions wd,
     jsonb_array_elements(wd.decision->'sessions') ss,jsonb_array_elements(ss->'work') work
     where wd.preparation_goal_id=g and wd.week_start=wk and work->>'outcome'='redistribute'
-    group by work->>'reference_id' having count(*)<>2) then raise exception 'Publica media redistribución'; end if;
+    group by work->>'reference_id' having count(*)<>max((work->>'frequency')::int)) then raise exception 'Publica media redistribución'; end if;
+  if exists(select 1 from public.preparation_week_decisions wd,
+    jsonb_array_elements(wd.decision->'sessions') ss,jsonb_array_elements(ss->'work') work,
+    jsonb_array_elements(wd.decision->'proposals') prop
+    where wd.preparation_goal_id=g and wd.week_start=wk and prop->>'reference_id'=work->>'reference_id'
+      and prop ? 'exposure_doses'
+      and work->'dose' is distinct from prop->'exposure_doses'->((work->>'exposure_index')::int)) then
+    raise exception 'Pierde la dosis propia de cada exposición'; end if;
   renewed:=false;
   -- Se conserva la caducidad y se comprueba su salida de revisión. Solo este
   -- deportista simulado confirma explícitamente el contexto o aporta un control.
   if (select status='needs_review' from public.adaptive_program_states where preparation_goal_id=g) then
    if (select observed_at<now()-interval '30 days' from public.performance_training_contexts where user_id=auth.uid())
      or (select updated_at::date<current_date-30 or health_observed_at::date<current_date-30 from public.running_intake_contexts where preparation_goal_id=g) then
-    perform public.save_performance_context('{"1":60,"3":60,"5":60}',array['cones','tennis_ball','chalk','measuring_tape'],false,true);
+    perform public.save_performance_context('{"1":60,"3":60,"5":60}',(select equipment from public.performance_training_contexts where user_id=auth.uid()),false,true);
     -- Solo confirma situación actual; la carga se recupera desde registros.
     update public.running_intake_contexts set updated_at=now(),health_observed_at=now() where preparation_goal_id=g;
     renewed:=true; renewed_count:=renewed_count+1;
@@ -118,11 +137,24 @@ rollback;
 """
 if args.initial_frequency_one:
     tail = tail.replace(' if iteration<4', " if not exists(select 1 from adaptive_trajectory where maximum_frequency=2) then raise exception 'Nunca aumenta frecuencia desde uno'; end if;\n if iteration<4")
+if args.expect_expanded_frequency:
+    tail = tail.replace(' if iteration<4', " if not exists(select 1 from adaptive_trajectory where maximum_frequency>2) then raise exception 'Persiste techo de dos'; end if;\n if iteration<4")
+if args.with_support:
+    tail = tail.replace(' if iteration<4', " if not exists(select 1 from public.performance_week_work pw join public.preparation_week_decisions wd on wd.id=pw.decision_id where wd.preparation_goal_id=g and pw.dose->'task'->>'exercise_code'='bench_press_barbell') then raise exception 'Nunca publica apoyo calibrado'; end if;\n if iteration<4")
+    tail = tail.replace(' if iteration<4', """ if not exists(select 1 from public.performance_week_work pw
+      join public.scheduled_workouts sw on sw.id=pw.scheduled_workout_id
+      join public.workout_executions closed_execution on closed_execution.id=sw.execution_id
+      join public.workout_execution_sets observed_set on observed_set.execution_id=closed_execution.id and observed_set.block_order=pw.block_order
+      where sw.preparation_goal_id=g and closed_execution.status='completed' and observed_set.status='completed'
+        and pw.dose->'task'->>'exercise_code'='bench_press_barbell'
+        and observed_set.performance_result->'load_kg'=pw.dose->'task'->'external_load_kg') then
+      raise exception 'Apoyo publicado sin ejecución con carga registrada'; end if;
+ if iteration<4""")
 longitudinal = prefix + '\n loop\n iteration:=iteration+1;\n' + loop + tail
 longitudinal = re.sub(r'\bcurrent_date\b', 'pg_temp.program_today()', longitudinal, flags=re.I)
 longitudinal = re.sub(r'\bnow\(\)', 'pg_temp.program_now()', longitudinal, flags=re.I)
 parts.append(longitudinal)
-target = ROOT / f'build/adaptive-longitudinal-{args.months}{"-frequency-one" if args.initial_frequency_one else ""}.sql'
+target = ROOT / f'build/adaptive-longitudinal-{args.months}{"-frequency-one" if args.initial_frequency_one else ""}{"-expanded" if args.expect_expanded_frequency else ""}{"-support" if args.with_support else ""}.sql'
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text('\n\n'.join(parts), encoding='utf-8')
 print(target)

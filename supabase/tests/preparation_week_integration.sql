@@ -87,8 +87,12 @@ begin
    update public.workout_executions set completed_at=s.scheduled_date+time '12:00' where id=e;
  end loop;
  next_plan:=public.calculate_preparation_week(g,wk+7);
- if not exists(select 1 from jsonb_array_elements(next_plan->'proposals') x where x->>'outcome'='progress'
-   and x->'dose'->'targets'='[7,6]'::jsonb) then raise exception 'No interpreta ejecuciones reales: %',next_plan; end if;
+ if not exists(select 1 from jsonb_array_elements(next_plan->'proposals') x where x->>'exercise_code'='push_up_standard' and (
+   (x->>'outcome'='progress' and x->'dose'->'targets'='[7,6]'::jsonb)
+   or (x->>'outcome'='redistribute' and (x->>'frequency')::int>2
+     and jsonb_array_length(x->'exposure_doses')=(x->>'frequency')::int
+     and (select sum(v::numeric) from jsonb_array_elements(x->'exposure_doses') d,jsonb_array_elements_text(d->'targets') v)=24
+     and (select count(*) from jsonb_array_elements(next_plan->'sessions') ss,jsonb_array_elements(ss->'work') w where w->>'reference_id'=x->>'reference_id')=(x->>'frequency')::int))) then raise exception 'No interpreta ejecuciones reales: %',next_plan; end if;
  if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>1 then raise exception 'La vista previa publica'; end if;
  if has_function_privilege('authenticated','public.materialize_running_week_plan(uuid,date,jsonb)','execute') then raise exception 'Materializador expuesto'; end if;
  perform set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);

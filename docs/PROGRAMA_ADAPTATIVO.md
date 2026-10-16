@@ -1,6 +1,144 @@
 # Programa adaptativo
 
+## Frecuencia por estímulo y apoyos reales · STR-038 · 16/10/2026
+
+Javier autoriza retirar el techo universal de dos exposiciones. No se sustituye
+por tres ni por otro máximo deportivo global. STR-038 amplía STR-037: la versión
+activa usa `performance_task_v5`, `performance_frequency_v2`, selector v4 y
+repartidor v4. Las versiones anteriores conservan su significado histórico.
+
+### Qué determina la frecuencia
+
+- Parte de la frecuencia realmente entregada, no de la del alta. Para valorar
+  otra exposición exige completar y tolerar la semana anterior de ese movimiento,
+  con al menos dos respuestas recientes, técnica y condiciones comparables. Una
+  sola exposición inicial necesita dos semanas comparables separadas; para una
+  frecuencia mayor se verifica cada exposición entregada de la última semana.
+  Falta de tiempo, carga distinta o datos desconocidos no acreditan tolerancia.
+- No amplía durante los últimos catorce días ni al introducir otro estímulo. Un
+  estímulo nuevo vuelve a la frecuencia de entrada calibrada. El alta recoge de una a siete sesiones
+  semanales ya toleradas, coherente con la representación de un día por sesión;
+  ese dato no obliga al motor a pautarlas. En puesta a punto
+  reduce desde la frecuencia conocida, en lugar de devolver siempre uno. Dos
+  dificultades recientes pueden reducir frecuencia; las molestias mantienen el
+  bloqueo y la revisión contextual. Las referencias y registros siguen separados.
+- Valora una exposición adicional por adaptación; el distribuidor puede mantener
+  o reducir según el calendario. La representación actual admite una sesión por
+  día y siete días naturales: ese límite del calendario no es una prescripción
+  clínica ni una frecuencia que el motor intente alcanzar siempre.
+- Repeticiones, repeticiones con carga, isometría y fragmentos temporales reparten
+  el volumen semanal acreditado sin subir simultáneamente carga, velocidad o
+  volumen. Las cantidades enteras pueden redondear el total hacia abajo. Se
+  conserva una magnitud mínima practicable de la entrada calibrada: la horquilla
+  cargada o la dosis submáxima inicial de esa modalidad. Esa guarda reutiliza la
+  política de entrada v3; no afirma un umbral fisiológico universal. Impide dividir
+  una serie de trabajo en cantidades testimoniales para ocupar más días.
+- Intentos de circuitos, cuerda, potencia y habilidades se reparten completos,
+  conservando trayecto, carga y medición. Tres intentos pueden ser `2 + 1` y luego
+  `1 + 1 + 1`; no se exige inventar un cuarto ni dividir el tiempo objetivo para
+  ir más rápido. Cada exposición guarda su propia dosis. Un número de intentos
+  insuficiente puede limitar la frecuencia sin constituir un techo universal.
+- Si otra exposición no cabe, continúa disponible la progresión normal de dosis.
+  No se restaura indefinidamente una dosis sin progresar por intentar una frecuencia
+  imposible. Menos exposiciones por disponibilidad no aumentan la intensidad para
+  compensar ni pretenden recuperar todo el volumen perdido en un único día.
+
+### Coordinación y recuperación
+
+La práctica controlada de frenada/sectores (`COD-T01`, `COD-SP01`) admite días
+consecutivos. Trabajo regional, carga, isometría, circuito completo, potencia,
+cuerda y práctica no caracterizada mantienen la guarda conservadora de evitar
+fechas consecutivas sobre regiones compartidas. Se aplica la mayor separación
+entre ambos estímulos, también con apoyos y cargas conocidas de carrera.
+Son separaciones de días de calendario: sin una hora prevista no se anuncian
+como garantías de 24/48 horas biológicas. No se deduce menor recuperación por
+el nombre del ejercicio o por tener huecos libres.
+
+El reparto examina las exposiciones propuestas, no solo dos rondas. Usa fechas
+reales en los bordes: domingo previo y lunes actual sí son contiguos; lunes y
+domingo de la misma semana no. Carrera mantiene su selector v5, sus guardas de
+calidad/piernas y su coste conjunto. La cobertura específica y carrera preceden
+a trabajo opcional. Una redistribución no se publica incompleta; se compara su
+alternativa de dosis conocida. Se reserva el mayor coste cuando un escalón de
+carga pudiera aplazarse y volver a más repeticiones.
+
+Las decisiones guardan `exposure_doses` y cada bloque su `exposure_index`. La
+publicación existente conserva la dosis concreta en `performance_week_work` y
+en la prescripción ejecutable. El historial compara cada exposición contra su
+propio trabajo, sin convertir `2 + 1` en `2 + 2`. Una misma tarea que sirve a
+varios objetivos conserva sus referencias y claves de objetivos cubiertos para
+no duplicar la carga ni tratar su accesorio como un objetivo principal separado.
+No se añaden tablas ni lógica deportiva en Flutter.
+
+### Qué progresa y cómo usa accesorios
+
+El motor no se limita a aumentar frecuencia. Las estrategias v3 conservan su
+adaptación de repeticiones, duración, carga dentro de la horquilla y escalón
+conocido, o técnica y componentes del circuito según fase y respuesta. Progresar
+no obliga a cambiar ejercicio: conservar una tarea permite comparar resultados.
+
+Puede añadir un apoyo con relación deportiva revisada y referencia propia:
+flexiones con lastre o press banca para flexiones; dead bug como trabajo de
+control junto a plancha. El selector mantiene principal y un apoyo opcional
+pertinente durante desarrollo; consolidación, dificultad y especificidad pueden
+retirar ese apoyo. La referencia debe seguir vigente cuando se introduce: si
+quedó sin usarse y perdió vigencia, puede requerir una práctica actual. Su frecuencia también procede de su respuesta y del encaje,
+sin forzar una única exposición de accesorio. No se inventan kilos, variantes ni
+resultados desde el ejercicio principal y no se elige al azar en toda la biblioteca.
+
+Se corrigen dos fallos reproducidos: `save_performance_reference` tenía una
+referencia ambigua a `goal_code` al buscar una relación con otra variante; y el
+`EXISTS` del selector resolvía un `p` interno donde debía comparar el candidato
+exterior. El primero impedía dar de alta ciertos apoyos; el segundo podía
+excluirlos junto a un principal específico. La consulta nueva califica ambos
+lados y preserva propietario, catálogo, material, protocolos y permisos.
+
+### Evidencia y alcance
+
+[La revisión de Pelland et al. (2026)](https://pubmed.ncbi.nlm.nih.gov/41343037/)
+relaciona frecuencia y fuerza con rendimientos decrecientes y distingue trabajo
+directo e indirecto. No demuestra un máximo de dos ni valida cada umbral de este
+motor para resistencia de flexiones, isometría o habilidades. La
+[revisión de entrenamiento concurrente](https://pubmed.ncbi.nlm.nih.gov/34757594/)
+justifica considerar conjuntamente fuerza, carrera y cualidad explosiva; no
+implica que cualquier combinación sea equivalente. Calendario, dosis mínima y
+separaciones son reglas operativas auditables que necesitan seguimiento de
+resultados, no un algoritmo presentado como fisiología perfecta.
+
+### Verificación STR-038 · 16/10/2026
+
+- Análisis de la aplicación sin incidencias y 912 pruebas correctas, con una
+  omisión web existente. El diálogo permite guardar frecuencia tres y conserva
+  esa elección al fallar/reintentar y al volver entre pasos; la batería incluye
+  tamaños estrechos y texto ampliado. No cambia el ejecutor ni sus mediciones.
+- Las 21 baterías SQL pasan sobre las funciones instaladas con `ROLLBACK`:
+  dosis mínima, frecuencia superior a dos, quinta práctica técnica, separación
+  regional, semana incompleta, dificultad repetida, taper desde frecuencia
+  conocida, reparto de intentos, reserva para aplazar carga, apoyos pertinentes,
+  alta sin techo dos, permisos y regresiones de carrera/programa.
+- Trayectoria conjunta de 26 semanas desde frecuencia uno, controles y cinco
+  revisiones contextuales: alcanza tres exposiciones observadas por movimiento
+  con carrera y mantiene dosis individual, calendario sin duplicados y lectura
+  automática de semanas registradas. Ensayo de nueve semanas con press banca
+  calibrado: el apoyo se publica, ejecuta y participa en la adaptación conjunta.
+  No se exige aumentar frecuencia en todos los escenarios: el calendario y los
+  apoyos pueden mantener una distribución menor. Son respuestas sintéticas,
+  no predicciones de mejora humana.
+- Diez funciones nuevas/modificadas coinciden con la migración normalizando
+  CRLF; `running_plan_v5` coincide con su fuente anterior. Las 146 migraciones
+  coinciden en desarrollo. No se cambian cuentas existentes ni semanas publicadas.
+- Advisors conserva los mismos avisos de STR-037: siete informativos, dos
+  funciones anónimas, 114 autenticadas y protección de contraseñas filtradas
+  desactivada. No se expone otro RPC de planificación; los helpers nuevos son
+  privados y las funciones autenticadas existentes mantienen propietario/permisos.
+  Este bloque no cierra esos avisos globales ni una prueba de estrés concurrente.
+- Sigue pendiente aceptación móvil del programa combinado con apoyo: datos de
+  entrada, sesiones diferentes por exposición y adaptación después de cierres
+  reales/offline. El ensayo anual conjunto conserva su límite HTTP conocido.
+
 ## Frecuencia desde los resultados · STR-037 · 16/10/2026
+
+Estado anterior ampliado por STR-038. Los límites de dos de este apartado ya no describen la política activa.
 
 Javier confirma que la adaptación debe usar los entrenamientos registrados sin
 exigir repetir el alta ni volver a introducir la carga que el sistema ya conoce.

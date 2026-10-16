@@ -780,16 +780,29 @@ class _PerformanceReferenceDialogState
                       initialValue: _frequency,
                       decoration: const InputDecoration(
                         labelText: 'Sesiones por semana que ya toleras',
+                        helperText: 'Describe lo que ya haces con esta variante, no los días que quieres que te pautemos.',
+                        helperMaxLines: 3,
                       ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 1,
-                          child: Text('Una sesión por semana'),
-                        ),
-                        DropdownMenuItem(
-                          value: 2,
-                          child: Text('Dos sesiones por semana'),
-                        ),
+                      items: [
+                        for (
+                          var count = 1;
+                          count <= DateTime.daysPerWeek;
+                          count++
+                        )
+                          DropdownMenuItem(
+                            value: count,
+                            child: Text(
+                              const [
+                                'Una sesión por semana',
+                                'Dos sesiones por semana',
+                                '3 sesiones por semana',
+                                '4 sesiones por semana',
+                                '5 sesiones por semana',
+                                '6 sesiones por semana',
+                                '7 sesiones por semana',
+                              ][count - 1],
+                            ),
+                          ),
                       ],
                       onChanged: (v) => _frequency = v!,
                     ),

@@ -133,6 +133,15 @@ void main() {
         await capturePerformanceWidget(t, '${scenario.$1}_dato');
         await t.tap(find.text('Continuar'));
         await t.pumpAndSettle();
+        final frequency = find.widgetWithText(
+          DropdownButtonFormField<int>,
+          'Sesiones por semana que ya toleras',
+        );
+        await t.ensureVisible(frequency);
+        await t.tap(frequency);
+        await t.pumpAndSettle();
+        await t.tap(find.text('3 sesiones por semana').last);
+        await t.pumpAndSettle();
         final checkboxCount = find.byType(CheckboxListTile).evaluate().length;
         await capturePerformanceWidget(t, '${scenario.$1}_contexto');
         for (var i = 0; i < checkboxCount; i++) {
@@ -165,6 +174,7 @@ void main() {
           double.parse(scenario.$4.replaceAll(',', '.')),
         ]);
         expect(result!.reference['rest_seconds'], 0);
+        expect(result!.reference['frequency'], 3);
         expect(
           (result!.reference['task'] as Map)['setup_key'],
           startsWith('standard:'),

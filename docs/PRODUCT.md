@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**STR-038, 16/10/2026 · frecuencia por estímulo:** el programa puede superar
+dos exposiciones cuando la dosis acreditada, fase, recuperación y calendario
+lo permiten. Puede mantener dosis por sesión diferentes al repartir intentos.
+La frecuencia no sustituye la progresión de repeticiones, tiempo o carga ni los
+apoyos calibrados pertinentes. Se corrigen el alta y selección que podían
+bloquear esos accesorios. El formulario recoge la frecuencia ya tolerada sin
+confundirla con disponibilidad. Carrera y semanas publicadas se conservan.
+Contrato y validación en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-037, 16/10/2026 · frecuencia desde resultados:** fuerza puede repartir el
 trabajo tolerado en dos exposiciones por movimiento sin repetir el alta. Se
 recupera carrera registrada para revisar el contexto y se simplifica la entrada
