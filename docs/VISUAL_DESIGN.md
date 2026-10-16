@@ -1,5 +1,102 @@
 # Identidad visual de EntrenaOP
 
+## Circuito AMRAP y revisión del resultado · UI-046 · 16/10/2026
+
+Javier aporta una grabación y una captura: AMRAP conserva la tarjeta anterior,
+sus movimientos son texto sin foto ni acceso a técnica, el selector del parcial
+desborda con nombres largos y el guardado devuelve un error genérico. Confirma
+que tocar el móvil después de cada ejercicio sería inaceptable. Aprueba un
+contador **opcional de vueltas completas**, visible junto a toda la secuencia,
+y un registro manual al terminar para quien prefiera no tocar durante el bloque.
+
+`WorkoutAmrapEntry` sustituye la tarjeta privada de la página. Presenta el
+reloj compacto en horizontal, cada movimiento con foto, objetivo/carga/RIR y
+consulta mediante la ficha compartida `ExerciseDetailSheet`. No señala un
+ejercicio actual que la app no conoce ni exige marcas por movimiento. En el
+formato móvil habitual el reloj queda visible y los controles +1/restar,
+Terminar AMRAP y registros permanecen accesibles. Con pantalla baja o texto
+ampliado también el reloj se desplaza; se conserva el tamaño del texto.
+
+El modo horizontal es una opción de presentación de `WorkoutSetCountdown`;
+reutiliza el reloj, persistencia, preparación, avisos, pausa, reinicio y
+repetición existentes. Reiniciar el reloj no borra la cuenta de vueltas.
+`WorkoutAmrapExerciseTile` se comparte entre circuito y selector del parcial.
+Las fotos proceden del catálogo ya cargado por el Cubit, con alternativa si no
+existen o fallan. Abrir la técnica conserva el circuito y no ofrece edición.
+
+`WorkoutAmrapReview` abre un panel al terminar. Permite introducir o corregir
+vueltas, indicar si empezó otra y elegir el movimiento con foto y nombre
+completo; desaparece el desplegable de ancho insuficiente. El resumen explica
+que los movimientos anteriores de esa vuelta están completos y declara las
+repeticiones del seleccionado. Por ejemplo, cinco vueltas y cuatro sentadillas
+conservan las flexiones y plancha de la sexta. Si acaba justo entre movimientos,
+se elige el siguiente con cero; cero en el primero equivale a ninguna vuelta
+adicional. Terminar el tiempo no confirma automáticamente ningún resultado.
+Cerrar el panel conserva la revisión y vuelve al circuito. El teclado pertenece
+al panel y se retira con Hecho, cerrar y guardar; no contrae además el circuito
+de fondo. Los errores se muestran en zonas desplazables para no colapsar la
+cabecera con texto ampliado.
+
+`WorkoutAmrapDraft` es dominio puro: valida enteros, límites y parcial contra
+la prescripción. `WorkoutAmrapDraftStore` es el puerto local y su adaptador de
+preferencias/codec vive en datos, separado de los widgets. Cuenta, ejecución y
+bloque delimitan las claves. Conserva incluso campos a medio escribir, serializa
+las escrituras y no sustituye contenido ilegible por un cero. El Cubit calcula
+los incrementos desde su último estado para no perder pulsaciones consecutivas;
+los toques nunca envían series ni resultados al motor. Salir para retomar
+conserva el borrador. Cerrar conservando lo realizado exige revisar antes una
+cuenta AMRAP pendiente; descartar conserva la confirmación destructiva vigente.
+
+Los registros agrupan AMRAP por bloque, con secuencia y resultado conjunto,
+en lugar de presentar cada movimiento como una serie que debe resolverse. La
+cabecera del bloque activo explica ejercicios por vuelta y el historial conserva
+también el caso de terminar entre movimientos. En sesiones que incluyen AMRAP,
+la barra de progreso y los cierres cuentan bloques resueltos; los movimientos de
+un AMRAP no se anuncian como series independientes. Las sesiones sin AMRAP
+conservan su progreso por series o tramos. **No se añade un corrector del
+agregado ya confirmado**: la revisión es editable antes de guardar, y el contrato
+de corrección posterior requiere su propio diseño auditable.
+
+El guardado valida antes de enviar y distingue el rechazo remoto de una pérdida
+de conexión que usa la cola vigente. Un resultado aceptado o encolado se proyecta
+sin exigir una segunda lectura remota; fallar al limpiar reloj/borrador o contar
+pendientes no lo transforma en «no guardado» ni permite volver a enviarlo.
+`WorkoutAmrapSaveFailure` mantiene la referencia del rechazo remoto sin filtrar
+SQL a la interfaz; el adaptador registra código y mensaje técnico sin el payload.
+La migración `20261016000000_amrap_review_and_retry.sql` admite parciales de cero,
+serializa por ejecución y reconoce el mismo resultado repetido incluso con un
+recibo nuevo. Un resultado diferente no sobrescribe el agregado confirmado.
+
+La función anterior **sí acepta 5 vueltas y 4/10** en el banco PostgreSQL local.
+No se atribuye por tanto el incidente físico de Javier a una causa remota no
+observada. Se corrigen los fallos comprobables del flujo y se añade diagnóstico
+para distinguir el rechazo restante si persiste en el dispositivo.
+
+Verificación local: regresiones de dominio y preferencias, envío/cola, recuperación
+del contador, pulsaciones consecutivas, fallo y reintento sin perder datos,
+lectura/limpieza fallidas tras aceptación, fichas sin editar, teclado y nombres
+largos. Capturas de widgets reales en 390×844 y 412×915 con escala 1,2 y áreas
+seguras 47/34; también 320×568 con texto doble. En las dos medidas habituales
+se comprueba que las tres tarjetas completas caben sobre el contador. Las fotos
+de las capturas son una referencia local repetida, no cambios al catálogo.
+La prueba `supabase/tests/amrap_review_and_retry.sql` comprueba guardado,
+parciales de cero, normalización, reintentos, rechazos y permisos con ROLLBACK
+en PostgreSQL aislado mediante PGlite, cargando las migraciones del núcleo de
+entrenamiento y esquemas de autenticación ficticios. No acredita las migraciones
+ni los datos del servidor enlazado.
+
+Cierre técnico local del 16/10/2026: `flutter analyze --no-pub` limpio y
+`flutter test --no-pub` completo con **886 pruebas correctas** y la omisión web
+preexistente. El recorrido de selección repetida conserva las repeticiones
+introducidas; no restablece el parcial por volver a tocar el mismo movimiento.
+Se revisa el diff completo, incluidos archivos nuevos, y su formato. Sin cambios
+en dependencias de la aplicación, paquetes compartidos ni admin.
+
+Pendiente: aplicar la nueva migración y ejecutar esa prueba en **Supabase de
+desarrollo**, cotejar `supabase migration list` y repetir en iPhone/Samsung.
+Este entorno cloud no tiene CLI/credenciales ni acceso de red configurado a ese
+proyecto. No se aplica ninguna migración remota ni se modifica producción.
+
 ## Evolución: etiquetas y acciones sin recortar · UI-045 · 16/10/2026
 
 Javier aporta dos capturas del iPhone que muestran problemas de presentación

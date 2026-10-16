@@ -1,3 +1,4 @@
+import '../../domain/entities/workout_amrap_draft.dart';
 import '../../domain/entities/workout_execution.dart';
 import '../../domain/entities/workout_template.dart';
 import 'duration_input_formatter.dart';
@@ -32,6 +33,16 @@ double? parseWorkoutDecimal(String value) =>
     double.tryParse(value.trim().replaceAll(',', '.'));
 
 String workoutProgressLabel(WorkoutExecution execution) {
+  if (workoutHasAmrap(execution)) {
+    final blocks = _progressBlocks(execution);
+    final resolved = blocks.values
+        .where(
+          (sets) => sets.every((set) => set.status != WorkoutSetStatus.pending),
+        )
+        .length;
+    return '$resolved de ${blocks.length} '
+        '${blocks.length == 1 ? 'bloque resuelto' : 'bloques resueltos'}';
+  }
   final completed = execution.completedSetCount;
   final skipped = execution.skippedSetCount;
   if (skipped == 0) {
@@ -45,6 +56,52 @@ String workoutProgressLabel(WorkoutExecution execution) {
   }
   return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
       '($completed completadas, $skipped omitidas)';
+}
+
+bool workoutHasAmrap(WorkoutExecution execution) =>
+    execution.sets.any((set) => set.blockFormat == WorkoutBlockFormat.amrap);
+
+Map<int, List<WorkoutExecutionSet>> _progressBlocks(
+  WorkoutExecution execution,
+) {
+  final blocks = <int, List<WorkoutExecutionSet>>{};
+  for (final set in execution.sets) {
+    blocks.putIfAbsent(set.blockOrder, () => []).add(set);
+  }
+  return blocks;
+}
+
+double workoutProgressValue(WorkoutExecution execution) {
+  if (execution.sets.isEmpty) return 0;
+  if (!workoutHasAmrap(execution)) {
+    return execution.resolvedSetCount / execution.sets.length;
+  }
+  final blocks = _progressBlocks(execution);
+  return blocks.values
+          .where(
+            (sets) =>
+                sets.every((set) => set.status != WorkoutSetStatus.pending),
+          )
+          .length /
+      blocks.length;
+}
+
+String workoutAmrapResultLabel(
+  WorkoutAmrapResult result,
+  List<WorkoutExecutionSet> sequence, {
+  bool includeRounds = true,
+}) {
+  final base =
+      '${result.completedRounds} '
+      '${result.completedRounds == 1 ? 'vuelta completa' : 'vueltas completas'}';
+  final index = sequence.indexWhere(
+    (s) => s.itemOrder == result.partialItemOrder,
+  );
+  if (index < 0) return base;
+  final previous = sequence.take(index).map((s) => s.exerciseName).join(', ');
+  return '${includeRounds ? '$base. En la siguiente: ' : 'En la siguiente vuelta: '}'
+      '${previous.isEmpty ? '' : 'completaste $previous; '}'
+      '${result.partialReps} repeticiones de ${sequence[index].exerciseName}.';
 }
 
 String workoutBlockFormatLabel(WorkoutBlockFormat format) => switch (format) {
@@ -136,4 +193,21 @@ String workoutResultLabel(WorkoutExecutionSet set) {
   return values.isEmpty
       ? 'Resultado específico registrado'
       : values.join(' · ');
+}
+
+String workoutAmrapDraftSummary(
+  WorkoutAmrapDraft draft,
+  List<WorkoutExecutionSet> sets,
+) {
+  final count = int.tryParse(draft.rounds);
+  if (count == null) return 'Revisa las vueltas antes de guardar.';
+  final base = '$count ${count == 1 ? 'vuelta completa' : 'vueltas completas'}';
+  if (!draft.hasPartial) return base;
+  final index = sets.indexWhere((s) => s.itemOrder == draft.partialItemOrder);
+  if (index < 0) return base;
+  final reps = int.tryParse(draft.partialReps);
+  final previous = sets.take(index).map((s) => s.exerciseName).join(', ');
+  return '$base. En la siguiente: '
+      '${previous.isEmpty ? '' : 'completaste $previous; '}'
+      '${reps ?? '…'} repeticiones de ${sets[index].exerciseName}.';
 }

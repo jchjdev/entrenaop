@@ -1,7 +1,25 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
+import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
+import 'package:entrenaop/features/exercises/presentation/widgets/exercise_detail_sheet.dart';
+import 'package:entrenaop/features/workouts/domain/services/workout_amrap_draft_store.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_amrap_sequence.dart';
+
+import '../../../helpers/workout_amrap_fixture.dart';
+
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_amrap_review.dart';
+
+import '../../../helpers/performance_visual_review.dart';
+import '../../../helpers/review_image_http_client.dart';
+
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_effort_field.dart';
 
 import '../../../helpers/memory_workout_session_draft_store.dart';
+import '../../../helpers/memory_workout_amrap_draft_store.dart';
 
 import 'dart:async';
 
@@ -27,6 +45,9 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  // Estas regresiones miden tarjetas completas en dispositivos; Ahem tiene
+  // métricas distintas a las fuentes de la aplicación.
+  setUpAll(() => loadReviewFont(always: true));
   testWidgets('Continuar encabeza la salida y conserva la sesión activa', (
     tester,
   ) async {
@@ -1072,6 +1093,255 @@ void main() {
     expect(result?.partialItemOrder, 1);
     expect(result?.partialReps, 3);
   });
+  test('AMRAP recupera vueltas sin escribir resultados deportivos', () async {
+    final repository = _Repository()..execution = _amrapExecution();
+    final store = MemoryWorkoutAmrapDraftStore();
+    final first = _cubit(repository, amrapDraftStore: store);
+    await first.load();
+    await first.updateAmrapDraft(
+      0,
+      const WorkoutAmrapDraft(
+        rounds: '5',
+        hasPartial: true,
+        partialItemOrder: 1,
+        partialReps: '',
+      ),
+    );
+    expect(repository.amrapAttempts, 0);
+    await first.abandon(WorkoutAbandonmentReason.lackOfTime);
+    expect(repository.abandonAttempts, 0);
+    expect(first.state.errorMessage, contains('Revisa el resultado AMRAP'));
+    await Future.wait([
+      first.changeAmrapRounds(0, 1),
+      first.changeAmrapRounds(0, 1),
+    ]);
+    expect(first.state.amrapDrafts[0]?.rounds, '7');
+    await first.close();
+    final resumed = _cubit(repository, amrapDraftStore: store);
+    addTearDown(resumed.close);
+    await resumed.load();
+    expect(resumed.state.amrapDrafts[0]?.rounds, '7');
+    expect(resumed.state.amrapDrafts[0]?.partialReps, '');
+    expect(resumed.state.execution?.currentSet, isNotNull);
+    store.failWrite = true;
+    await resumed.updateAmrapDraft(0, const WorkoutAmrapDraft(rounds: '6'));
+    expect(resumed.state.amrapDrafts[0]?.rounds, '6');
+    expect(resumed.state.errorMessage, contains('este dispositivo'));
+  });
+
+  test('AMRAP guardado no depende de releer ni de limpiar el reloj', () async {
+    final repository = _Repository()
+      ..execution = _amrapExecution()
+      ..failReadAfterAmrap = true
+      ..failPendingAfterAmrap = true;
+    final timer = _TimerStore()..failClear = true;
+    final cubit = _cubit(repository, timerStore: timer);
+    addTearDown(cubit.close);
+    await cubit.load();
+    const input = WorkoutAmrapResultInput(
+      executionId: 'execution-1',
+      blockOrder: 0,
+      completedRounds: 5,
+      partialItemOrder: 1,
+      partialReps: 4,
+    );
+    expect(await cubit.completeCurrentAmrap(input), true);
+    expect(cubit.state.execution?.currentSet, isNull);
+    expect(cubit.state.execution?.amrapResults.single.completedRounds, 5);
+    expect(cubit.state.status, ActiveWorkoutStatus.ready);
+    expect(await cubit.completeCurrentAmrap(input), false);
+    expect(repository.amrapAttempts, 1);
+  });
+
+  test(
+    'AMRAP rechaza otra ejecución y parciales inválidos antes de enviar',
+    () async {
+      final repository = _Repository()..execution = _amrapExecution();
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      for (final input in [
+        const WorkoutAmrapResultInput(
+          executionId: 'otra',
+          blockOrder: 0,
+          completedRounds: 5,
+        ),
+        const WorkoutAmrapResultInput(
+          executionId: 'execution-1',
+          blockOrder: 0,
+          completedRounds: -1,
+        ),
+        const WorkoutAmrapResultInput(
+          executionId: 'execution-1',
+          blockOrder: 0,
+          completedRounds: 5,
+          partialItemOrder: 1,
+          partialReps: 8,
+        ),
+      ]) {
+        expect(await cubit.completeCurrentAmrap(input), false);
+      }
+      expect(repository.amrapAttempts, 0);
+    },
+  );
+
+  for (final (width, height, scale) in [
+    (390.0, 844.0, 1.2),
+    (412.0, 915.0, 1.2),
+    (320.0, 568.0, 2.0),
+  ]) {
+    testWidgets('AMRAP circuito, ficha y revisión a $width px texto $scale', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(width, height);
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+      addTearDown(tester.view.reset);
+      final imagePath = Platform.environment['REVIEW_EXERCISE_IMAGE'];
+      final bytes = imagePath == null
+          ? base64Decode(
+              'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGP8HyXCgA0wYRUdtBIAIlABfcyTUMcAAAAASUVORK5CYII=',
+            )
+          : (await tester.runAsync(() => File(imagePath).readAsBytes()))!;
+      debugNetworkImageHttpClientProvider = () => reviewImageHttpClient(bytes);
+      addTearDown(() {
+        debugNetworkImageHttpClientProvider = null;
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      });
+      final repository = _Repository()
+        ..execution = amrapFixture(executionId: 'execution-1');
+      final (cubit, _) = await _mountSession(
+        tester,
+        repository,
+        textScaler: TextScaler.linear(scale),
+        getExercise: GetExerciseByIdUseCase(_AmrapExercises()),
+      );
+      await tester.runAsync(
+        () async => Future<void>.delayed(const Duration(milliseconds: 60)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutAmrapExerciseTile), findsNWidgets(3));
+      expect(find.byType(Image), findsNWidgets(3));
+      if (width >= 390) {
+        expect(
+          find.text('Sentadilla con peso corporal').hitTestable(),
+          findsOneWidget,
+        );
+        final lastCard = tester.getRect(
+          find.byType(WorkoutAmrapExerciseTile).last,
+        );
+        final counter = tester.getRect(find.text('1 vuelta'));
+        expect(lastCard.bottom, lessThan(counter.top));
+      }
+
+      expect(find.text('0 de 3 series completadas'), findsNothing);
+      await tester.ensureVisible(find.text('1 vuelta'));
+      await tester.tap(find.text('1 vuelta'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.amrapDrafts[0]?.rounds, '1');
+      expect(repository.amrapAttempts, 0);
+      await tester.ensureVisible(
+        (scale > 1.3
+            ? find.text('Iniciar temporizador')
+            : find.byTooltip('Iniciar temporizador')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        (scale > 1.3
+            ? find.text('Iniciar temporizador')
+            : find.byTooltip('Iniciar temporizador')),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      await tester.ensureVisible(find.byTooltip('Reiniciar temporizador'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Reiniciar temporizador'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.amrapDrafts[0]?.rounds, '1');
+      await tester.ensureVisible(find.byTooltip('Restar una vuelta'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Restar una vuelta'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.amrapDrafts[0]?.rounds, '0');
+      await tester.ensureVisible(find.text('Flexiones'));
+      await tester.tap(find.text('Flexiones'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ExerciseDetailSheet), findsOneWidget);
+      expect(find.text('Editar ejercicio'), findsNothing);
+      await tester.tap(find.byTooltip('Cerrar detalle'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byTooltip('Series y registros'));
+      await tester.tap(find.byTooltip('Series y registros'));
+      await tester.pumpAndSettle();
+      expect(find.text('Principal · AMRAP'), findsOneWidget);
+      expect(find.text('Serie · ronda 1'), findsNothing);
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
+      await capturePerformanceWidget(tester, 'amrap-circuito-${width.toInt()}');
+      await tester.ensureVisible(find.text('Terminar AMRAP'));
+      await tester.tap(find.text('Terminar AMRAP'));
+      await tester.pumpAndSettle();
+      final rounds = find.byKey(const ValueKey('amrap-rounds-0'));
+      await tester.ensureVisible(rounds);
+      await tester.enterText(rounds, '5');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(tester.testTextInput.isVisible, false);
+      await tester.ensureVisible(find.text('¿Empezaste otra vuelta?'));
+      await tester.tap(find.text('¿Empezaste otra vuelta?'));
+      await tester.pumpAndSettle();
+      final selected = find.descendant(
+        of: find.byType(WorkoutAmrapReview),
+        matching: find.text('Sentadilla con peso corporal'),
+      );
+      await tester.ensureVisible(selected);
+      await tester.tap(selected);
+      await tester.pumpAndSettle();
+      final reps = find.byKey(const ValueKey('amrap-reps-2'));
+      await tester.ensureVisible(reps);
+      await tester.enterText(reps, '4');
+      // Volver a tocar la selección actual no debe borrar lo ya introducido.
+      await tester.ensureVisible(selected);
+      await tester.pumpAndSettle();
+      await tester.tap(selected);
+      await tester.pumpAndSettle();
+      expect(cubit.state.amrapDrafts[0]?.partialReps, '4');
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Guardar resultado'));
+      expect(find.text('Guardar resultado').hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(reps);
+      await capturePerformanceWidget(tester, 'amrap-parcial-${width.toInt()}');
+      repository.failAmrap = true;
+      await tester.ensureVisible(find.text('Guardar resultado'));
+      await tester.tap(find.text('Guardar resultado'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.amrapDrafts[0]?.rounds, '5');
+      expect(cubit.state.amrapDrafts[0]?.partialReps, '4');
+      expect(
+        find.textContaining('Tus datos se conservan').last,
+        findsOneWidget,
+      );
+      repository.failAmrap = false;
+      await tester.ensureVisible(find.text('Guardar resultado'));
+      await tester.tap(find.text('Guardar resultado'));
+      await tester.pumpAndSettle();
+      final saved = cubit.state.execution!.amrapResults.single;
+      expect(saved.completedRounds, 5);
+      expect(saved.partialItemOrder, 2);
+      expect(saved.partialReps, 4);
+      expect(cubit.state.amrapDrafts, isEmpty);
+      expect(find.byType(WorkoutAmrapReview), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      debugNetworkImageHttpClientProvider = null;
+    });
+  }
 }
 
 WorkoutExecution _executionWithStatuses(List<WorkoutSetStatus> statuses) {
@@ -1112,8 +1382,9 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   WidgetTester tester,
   _Repository repository, {
   TextScaler textScaler = TextScaler.noScaling,
+  GetExerciseByIdUseCase? getExercise,
 }) async {
-  final cubit = _cubit(repository);
+  final cubit = _cubit(repository, getExercise: getExercise);
   addTearDown(cubit.close);
   await cubit.load();
   final registry = WorkflowExitRegistry();
@@ -1146,7 +1417,10 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
       routerConfig: router,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: textScaler),
-        child: child!,
+        child: RepaintBoundary(
+          key: const ValueKey('review-boundary'),
+          child: child!,
+        ),
       ),
     ),
   );
@@ -1209,8 +1483,12 @@ ActiveWorkoutCubit _cubit(
   _TimerStore? timerStore,
   _CueService? cueService,
   WorkoutSessionDraftStore? sessionDraftStore,
+  WorkoutAmrapDraftStore? amrapDraftStore,
+  GetExerciseByIdUseCase? getExercise,
 }) => ActiveWorkoutCubit(
   sessionDraftStore: sessionDraftStore ?? MemoryWorkoutSessionDraftStore(),
+  amrapDraftStore: amrapDraftStore ?? MemoryWorkoutAmrapDraftStore(),
+  getExercise: getExercise,
   correctSet: CorrectWorkoutSetUseCase(repository),
   executionId: 'execution-1',
   getExecution: GetWorkoutExecutionUseCase(repository),
@@ -1228,6 +1506,10 @@ ActiveWorkoutCubit _cubit(
 class _Repository implements WorkoutRepository {
   WorkoutExecution execution = _execution();
   WorkoutSetResultInput? lastSetResult;
+  int amrapAttempts = 0;
+  bool failAmrap = false;
+  bool failReadAfterAmrap = false;
+  bool failPendingAfterAmrap = false;
   bool failAbandonment = false;
   int correctionCount = 0;
   bool failCorrection = false;
@@ -1248,7 +1530,12 @@ class _Repository implements WorkoutRepository {
       WorkoutMutationDisposition.synced;
 
   @override
-  Future<WorkoutExecution?> getExecution(String executionId) async => execution;
+  Future<WorkoutExecution?> getExecution(String executionId) async {
+    if (failReadAfterAmrap && amrapAttempts > 0) {
+      throw StateError('Lectura fallida');
+    }
+    return execution;
+  }
 
   @override
   Future<WorkoutMutationDisposition> completeSet(
@@ -1271,6 +1558,8 @@ class _Repository implements WorkoutRepository {
   Future<WorkoutMutationDisposition> completeAmrap(
     WorkoutAmrapResultInput result,
   ) async {
+    amrapAttempts++;
+    if (failAmrap) throw StateError('Guardado fallido');
     final completedAt = DateTime.utc(2026, 9, 21, 20, 10);
     execution = execution.copyWith(
       sets: execution.sets
@@ -1330,7 +1619,12 @@ class _Repository implements WorkoutRepository {
   }
 
   @override
-  Future<int> getPendingMutationCount() async => pendingMutationCount;
+  Future<int> getPendingMutationCount() async {
+    if (failPendingAfterAmrap && amrapAttempts > 0) {
+      throw StateError('Disco fallido');
+    }
+    return pendingMutationCount;
+  }
 
   @override
   Future<void> correctSet(WorkoutSetCorrectionInput correction) async {
@@ -1452,9 +1746,13 @@ class _TimerStore implements WorkoutTimerStore {
   _TimerStore([this.snapshot]);
 
   WorkoutTimerSnapshot? snapshot;
+  bool failClear = false;
 
   @override
-  Future<void> clear(String timerId) async => snapshot = null;
+  Future<void> clear(String timerId) async {
+    if (failClear) throw StateError('Disco lleno');
+    snapshot = null;
+  }
 
   @override
   Future<WorkoutTimerSnapshot?> read(String timerId) async => snapshot;
@@ -1495,4 +1793,22 @@ class _CueService implements WorkoutCueService {
 
   @override
   Future<void> signal(WorkoutCue cue) async => cues.add(cue);
+}
+
+class _AmrapExercises implements ExerciseRepository {
+  @override
+  Future<ExerciseEntity?> getExerciseById(String id) async => ExerciseEntity(
+    id: id,
+    name: id,
+    thumbnailUrl: 'https://example.invalid/$id.png',
+    muscleGroups: const ['Core'],
+    equipment: const [],
+    difficulty: 'inicial',
+    exerciseType: 'repeticiones',
+    isPublic: false,
+    origin: ExerciseOrigin.user,
+    createdBy: 'owner',
+  );
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

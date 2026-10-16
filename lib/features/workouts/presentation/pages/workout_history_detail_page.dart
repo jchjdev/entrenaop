@@ -1,4 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
+
+import '../widgets/workout_execution_labels.dart';
+
 import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_history_cubit.dart';
@@ -193,11 +196,14 @@ class _AmrapResultCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              if (partialExercise != null && result!.partialReps > 0) ...[
+              if (partialExercise != null) ...[
                 const SizedBox(height: 4),
                 Text(
-                  'Parcial · ${partialExercise.exerciseName}: '
-                  '${result!.partialReps} rep',
+                  workoutAmrapResultLabel(
+                    result!,
+                    block.exercises,
+                    includeRounds: false,
+                  ),
                   style: const TextStyle(color: Colors.white70),
                 ),
               ],

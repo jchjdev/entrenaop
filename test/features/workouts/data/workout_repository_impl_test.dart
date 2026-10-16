@@ -1,3 +1,4 @@
+import 'package:entrenaop/features/workouts/domain/entities/workout_amrap_save_failure.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
 import 'package:entrenaop/features/workouts/data/repositories/workout_repository_impl.dart';
@@ -388,6 +389,53 @@ void main() {
     });
   });
 
+  test(
+    'un rechazo AMRAP conserva referencia y no se oculta como cola offline',
+    () async {
+      dataSource.amrapError = const PostgrestException(
+        message: 'Fallo remoto de prueba',
+        code: 'P0001',
+      );
+      await expectLater(
+        repository.completeAmrap(
+          const WorkoutAmrapResultInput(
+            executionId: 'execution-1',
+            blockOrder: 0,
+            completedRounds: 5,
+          ),
+        ),
+        throwsA(
+          isA<WorkoutAmrapSaveFailure>().having(
+            (e) => e.code,
+            'referencia',
+            'P0001',
+          ),
+        ),
+      );
+      expect(await repository.getPendingMutationCount(), 0);
+    },
+  );
+
+  test('una pérdida de conexión AMRAP se encola con el mismo recibo', () async {
+    dataSource.amrapError = StateError('Conexión interrumpida');
+    final disposition = await repository.completeAmrap(
+      const WorkoutAmrapResultInput(
+        executionId: 'execution-1',
+        blockOrder: 0,
+        completedRounds: 5,
+        partialItemOrder: 2,
+        partialReps: 0,
+      ),
+    );
+    expect(disposition, WorkoutMutationDisposition.queued);
+    expect(await repository.getPendingMutationCount(), 1);
+    final sent = dataSource.completedOperationIds.last;
+    dataSource.amrapError = null;
+    await repository.syncPendingMutations();
+    expect(dataSource.completedOperationIds.last, sent);
+    expect(await repository.getPendingMutationCount(), 0);
+  });
+
   test('envía el esfuerzo y las sensaciones al finalizar', () async {
     await repository.finishExecution(
       'execution-1',
@@ -457,6 +505,7 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   ) async => resourceIds.where(discardedResources.contains).toList();
   Map<String, dynamic>? completedValues;
   Map<String, dynamic>? completedAmrapValues;
+  Object? amrapError;
   Map<String, dynamic>? correctedValues;
   String? skippedResultId;
   String? abandonedExecutionId;
@@ -530,6 +579,8 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     String operationId,
     Map<String, dynamic> values,
   ) async {
+    completedOperationIds.add(operationId);
+    if (amrapError != null) throw amrapError!;
     completedAmrapValues = values;
   }
 

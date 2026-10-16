@@ -15,6 +15,7 @@ class WorkoutSetCountdown extends StatefulWidget {
     this.enabled = true,
     this.autoStart = false,
     this.compact = false,
+    this.inlineControls = false,
     this.title = 'TEMPORIZADOR DE LA SERIE',
     this.clock,
     this.wallClock,
@@ -37,6 +38,7 @@ class WorkoutSetCountdown extends StatefulWidget {
   final bool enabled;
   final bool autoStart;
   final bool compact;
+  final bool inlineControls;
   final String title;
 
   /// Fuente de tiempo inyectable para comprobar el temporizador sin esperas
@@ -332,6 +334,42 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _ => 'Iniciar temporizador',
     };
 
+    final timerDisplay = Semantics(
+      liveRegion: true,
+      label: _isPreparing
+          ? 'Prepárate, $_preparationRemaining'
+          : 'Quedan $_remainingSeconds segundos',
+      child: Text(
+        _isPreparing
+            ? '$_preparationRemaining'
+            : _formatClock(_remainingSeconds),
+        style: TextStyle(
+          fontSize: widget.compact ? 46 : 52,
+          fontWeight: FontWeight.w900,
+          color: _isFinished ? Colors.greenAccent : const Color(0xFFFFA06F),
+        ),
+      ),
+    );
+    final statusDisplay = Text(
+      _isPreparing
+          ? 'Prepárate…'
+          : _isFinished
+          ? 'Tiempo completado'
+          : !widget.compact
+          ? 'Realizado: $_elapsedSeconds s'
+          : !_hasStarted
+          ? 'Listo para empezar'
+          : _isRunning
+          ? 'En curso'
+          : 'En pausa',
+      maxLines: widget.compact ? 1 : null,
+      overflow: widget.compact ? TextOverflow.ellipsis : null,
+      style: const TextStyle(color: Colors.white60, height: 1.3),
+    );
+    final inline =
+        widget.inlineControls &&
+        MediaQuery.textScalerOf(context).scale(14) <= 19;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFF101010),
@@ -340,67 +378,21 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       ),
       child: Padding(
         padding: EdgeInsets.all(widget.compact ? 12 : 18),
-        child: Column(
-          children: [
-            if (!widget.compact)
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  color: Colors.white60,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ),
-            const SizedBox(height: 8),
-            Semantics(
-              liveRegion: true,
-              label: _isPreparing
-                  ? 'Prepárate, $_preparationRemaining'
-                  : 'Quedan $_remainingSeconds segundos',
-              child: Text(
-                _isPreparing
-                    ? '$_preparationRemaining'
-                    : _formatClock(_remainingSeconds),
-                style: TextStyle(
-                  fontSize: widget.compact ? 46 : 52,
-                  fontWeight: FontWeight.w900,
-                  color: _isFinished
-                      ? Colors.greenAccent
-                      : const Color(0xFFFFA06F),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Reservar la misma línea evita desplazar los controles al pasar
-            // por preparación, pausa, final y reinicio.
-            Text(
-              _isPreparing
-                  ? 'Prepárate…'
-                  : _isFinished
-                  ? 'Tiempo completado'
-                  : !widget.compact
-                  ? 'Realizado: $_elapsedSeconds s'
-                  : !_hasStarted
-                  ? 'Listo para empezar'
-                  : _isRunning
-                  ? 'En curso'
-                  : 'En pausa',
-              maxLines: widget.compact ? 1 : null,
-              overflow: widget.compact ? TextOverflow.ellipsis : null,
-              style: const TextStyle(color: Colors.white60, height: 1.3),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    style: widget.compact
-                        ? FilledButton.styleFrom(
-                            backgroundColor: Colors.white12,
-                            foregroundColor: Colors.white,
-                          )
-                        : null,
+        child: inline
+            ? Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        timerDisplay,
+                        const SizedBox(height: 4),
+                        statusDisplay,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filledTonal(
+                    tooltip: actionLabel,
                     onPressed: widget.enabled
                         ? (_isPreparing ? _reset : _toggle)
                         : null,
@@ -411,46 +403,95 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
                           ? Icons.pause_rounded
                           : Icons.play_arrow_rounded,
                     ),
-                    label: widget.compact
-                        ? Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // La etiqueta más larga reserva también el alto
-                              // de dos líneas con texto ampliado; Cancelar o
-                              // Repetir no encogen el botón al cambiar de fase.
-                              ExcludeSemantics(
-                                child: Opacity(
-                                  opacity: 0,
-                                  child: Builder(
-                                    builder: (labelContext) => RichText(
-                                      textScaler: MediaQuery.textScalerOf(
-                                        labelContext,
-                                      ),
-                                      text: TextSpan(
-                                        text: 'Iniciar temporizador',
-                                        style: DefaultTextStyle.of(labelContext)
-                                            .style,
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.outlined(
+                    tooltip: 'Reiniciar temporizador',
+                    onPressed: widget.enabled && _hasStarted ? _reset : null,
+                    icon: const Icon(Icons.replay_rounded),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  if (!widget.compact)
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  timerDisplay,
+                  const SizedBox(height: 4),
+                  statusDisplay,
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          style: widget.compact
+                              ? FilledButton.styleFrom(
+                                  backgroundColor: Colors.white12,
+                                  foregroundColor: Colors.white,
+                                )
+                              : null,
+                          onPressed: widget.enabled
+                              ? (_isPreparing ? _reset : _toggle)
+                              : null,
+                          icon: Icon(
+                            _isPreparing
+                                ? Icons.close_rounded
+                                : _isRunning
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                          ),
+                          label: widget.compact
+                              ? Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // La etiqueta más larga reserva también el alto
+                                    // de dos líneas con texto ampliado; Cancelar o
+                                    // Repetir no encogen el botón al cambiar de fase.
+                                    ExcludeSemantics(
+                                      child: Opacity(
+                                        opacity: 0,
+                                        child: Builder(
+                                          builder: (labelContext) => RichText(
+                                            textScaler: MediaQuery.textScalerOf(
+                                              labelContext,
+                                            ),
+                                            text: TextSpan(
+                                              text: 'Iniciar temporizador',
+                                              style: DefaultTextStyle.of(
+                                                labelContext,
+                                              ).style,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                              Text(actionLabel),
-                            ],
-                          )
-                        : Text(actionLabel),
+                                    Text(actionLabel),
+                                  ],
+                                )
+                              : Text(actionLabel),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.outlined(
+                        tooltip: 'Reiniciar temporizador',
+                        onPressed: widget.enabled && _hasStarted
+                            ? _reset
+                            : null,
+                        icon: const Icon(Icons.replay_rounded),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.outlined(
-                  tooltip: 'Reiniciar temporizador',
-                  onPressed: widget.enabled && _hasStarted ? _reset : null,
-                  icon: const Icon(Icons.replay_rounded),
-                ),
-              ],
-            ),
-          ],
-        ),
+                ],
+              ),
       ),
     );
   }

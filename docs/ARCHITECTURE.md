@@ -536,6 +536,26 @@ completas, ejercicio parcial y repeticiones parciales. La ejecución conserva
 también una instantánea del límite para que cambios posteriores en la plantilla
 no reinterpreten el historial.
 
+UI-046 añade un contador manual opcional por bloque, separado del resultado:
+`WorkoutAmrapDraft` contiene campos de revisión y valida su conversión al
+agregado; `WorkoutAmrapDraftStore` abstrae la persistencia local por cuenta y
+ejecución. El codec y el adaptador de preferencias viven en datos y el Cubit
+orquesta los incrementos, recuperación y envío. La secuencia, contador/reloj y
+panel de revisión son widgets sustituibles sin acceso directo a almacenamiento
+ni Supabase. Las marcas por ejercicio no forman parte del flujo.
+
+El ejercicio parcial señala dónde termina la vuelta adicional; todos los
+anteriores se consideran completos. La migración del 16/10 admite cero en ese
+ejercicio para representar una parada justo entre movimientos; cero en el
+primero se normaliza como ausencia de vuelta adicional. Esa migración sigue
+pendiente de aplicar/verificar contra desarrollo desde el entorno con acceso.
+El contrato remoto serializa por ejecución, reconoce un resultado idéntico
+reintentado y rechaza un agregado diferente. Una escritura aceptada/encolada
+avanza la proyección sin depender de releer; los fallos posteriores de limpieza
+se muestran como advertencias y no como rechazo del guardado. Un rechazo
+PostgREST se traduce en datos a `WorkoutAmrapSaveFailure`; la presentación no
+depende de tipos de Supabase. El agregado confirmado conserva su inmutabilidad.
+
 Una serie completada puede corregirse durante las 24 horas siguientes, con un
 máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos

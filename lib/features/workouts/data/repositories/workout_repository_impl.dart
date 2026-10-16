@@ -12,6 +12,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workout_core/workout_draft_codec.dart';
 
+import 'dart:developer' as developer;
+
+import '../../domain/entities/workout_amrap_save_failure.dart';
+
 class WorkoutRepositoryImpl implements WorkoutRepository {
   WorkoutRepositoryImpl({
     required this.remoteDataSource,
@@ -122,7 +126,7 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
   @override
   Future<WorkoutMutationDisposition> completeAmrap(
     WorkoutAmrapResultInput result,
-  ) {
+  ) async {
     final values = <String, dynamic>{
       'p_execution_id': result.executionId,
       'p_block_order': result.blockOrder,
@@ -135,10 +139,27 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       result.executionId,
       values,
     );
-    return _performOrQueue(
-      mutation,
-      () => remoteDataSource.completeAmrap(mutation.operationId, values),
-    );
+    try {
+      return await _performOrQueue(
+        mutation,
+        () => remoteDataSource.completeAmrap(mutation.operationId, values),
+      );
+    } on PostgrestException catch (error) {
+      developer.log(
+        'Guardado AMRAP: ${error.code} · ${error.message}',
+        name: 'EntrenaOP.AMRAP',
+      );
+      final message = switch (error.message) {
+        'AMRAP block already has a different result' => 'Este bloque ya tiene otro resultado guardado. Vuelve a abrir la sesión para consultarlo.',
+        'Partial repetitions must be below the exercise target' =>
+          'Revisa el ejercicio y las repeticiones de la vuelta incompleta.',
+        'AMRAP block is not current' => 'Este bloque ya no es el actual. Vuelve a abrir la sesión para actualizarla.',
+        _ =>
+          'No hemos podido confirmar el guardado AMRAP'
+              '${error.code == null ? '' : ' (referencia ${error.code})'}.',
+      };
+      throw WorkoutAmrapSaveFailure(message, code: error.code);
+    }
   }
 
   @override

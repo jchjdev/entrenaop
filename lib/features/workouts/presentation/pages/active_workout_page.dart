@@ -1,3 +1,5 @@
+import '../widgets/workout_amrap_entry.dart';
+import '../../domain/entities/workout_amrap_draft.dart';
 import '../widgets/workout_session_records.dart';
 import '../widgets/workout_set_entry.dart';
 import '../widgets/workout_execution_labels.dart';
@@ -17,7 +19,6 @@ import 'package:entrenaop/features/workouts/domain/services/running_execution_as
 import 'package:entrenaop/features/workouts/domain/services/workout_timer_store.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
-import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_permission_prompt.dart';
 import 'package:flutter/material.dart';
@@ -118,6 +119,13 @@ class ActiveWorkoutPage extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     return Scaffold(
+      // AMRAP introduce datos en su propio panel, que gestiona el teclado.
+      // Reducir también el circuito de fondo puede colapsarlo en móviles bajos.
+      resizeToAvoidBottomInset: context.select(
+        (ActiveWorkoutCubit cubit) =>
+            cubit.state.execution?.currentSet?.blockFormat !=
+            WorkoutBlockFormat.amrap,
+      ),
       appBar: AppBar(
         titleTextStyle: Theme.of(context).textTheme.titleMedium
             ?.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
@@ -298,19 +306,27 @@ class _ActiveContentState extends State<_ActiveContent> {
         ),
       );
     } else if (current?.blockFormat == WorkoutBlockFormat.amrap) {
-      body = WorkoutExecutionFrame(
-        actions: records,
-        child: _AmrapCard(
-          key: ValueKey('amrap-${current!.blockOrder}'),
-          executionId: execution.id,
-          sets: execution.sets
-              .where((set) => set.blockOrder == current.blockOrder)
-              .toList(),
-          timerStore: widget.timerStore,
-          cueService: widget.cueService,
-          saving: saving,
-          onComplete: cubit.completeCurrentAmrap,
+      body = WorkoutAmrapEntry(
+        key: ValueKey('amrap-${current!.blockOrder}'),
+        executionId: execution.id,
+        sets: execution.sets
+            .where((set) => set.blockOrder == current.blockOrder)
+            .toList(),
+        draft:
+            state.amrapDrafts[current.blockOrder] ?? const WorkoutAmrapDraft(),
+        exercises: state.exercises,
+        timerStore: widget.timerStore,
+        cueService: widget.cueService,
+        saving: saving,
+        records: IconButton(
+          tooltip: 'Series y registros',
+          onPressed: saving ? null : () => _openRecords(context),
+          icon: const Icon(Icons.format_list_numbered_rounded),
         ),
+        errorMessage: state.errorMessage,
+        onRoundsChanged: (delta) =>
+            cubit.changeAmrapRounds(current.blockOrder, delta),
+        onComplete: cubit.completeCurrentAmrap,
       );
     } else if (current != null) {
       final card = WorkoutSetEntry(
@@ -361,6 +377,7 @@ class _ActiveContentState extends State<_ActiveContent> {
                 ),
               )
             : _FinishCard(
+                hasAmrap: workoutHasAmrap(execution),
                 rpe: _finalRpe,
                 notesController: _notesController,
                 averageHeartRateController: _averageHeartRateController,
@@ -397,15 +414,18 @@ class _ActiveContentState extends State<_ActiveContent> {
                     ),
                     const SizedBox(height: 6),
                     LinearProgressIndicator(
-                      value: execution.sets.isEmpty
-                          ? 0
-                          : execution.resolvedSetCount / execution.sets.length,
+                      value: workoutProgressValue(execution),
                       minHeight: 4,
                       borderRadius: BorderRadius.circular(999),
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      state.drafts.values.any((d) => d.endedAt != null)
+                      current?.blockFormat == WorkoutBlockFormat.amrap
+                          ? 'Bloque AMRAP · ${execution.sets.where((s) => s.blockOrder == current!.blockOrder).length} ejercicios por vuelta'
+                          : !workoutHasAmrap(execution) &&
+                                state.drafts.values.any(
+                                  (d) => d.endedAt != null,
+                                )
                           ? '${execution.resolvedSetCount} de ${execution.sets.length} series terminadas · ${state.unconfirmedDraftCount} por confirmar'
                           : workoutProgressLabel(execution),
                       style: const TextStyle(
@@ -418,7 +438,8 @@ class _ActiveContentState extends State<_ActiveContent> {
                         '${state.pendingSyncCount} cambios pendientes de sincronizar',
                         style: const TextStyle(fontSize: 12),
                       ),
-                    if (state.errorMessage != null)
+                    if (state.errorMessage != null &&
+                        current?.blockFormat != WorkoutBlockFormat.amrap)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
@@ -501,6 +522,8 @@ class _ActiveContentState extends State<_ActiveContent> {
                         drafts: state.drafts,
                         enabled: !state.draftBusy,
                         onEdit: (set) => _openResultEditor(context, set),
+                        onTechnique: (set) =>
+                            showWorkoutTechnique(context, set),
                       ),
                     ),
                   ],
@@ -728,197 +751,6 @@ Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
   return cubit.state.status == ActiveWorkoutStatus.abandoned;
 }
 
-class _AmrapCard extends StatefulWidget {
-  const _AmrapCard({
-    super.key,
-    required this.executionId,
-    required this.sets,
-    required this.timerStore,
-    required this.cueService,
-    required this.saving,
-    required this.onComplete,
-  });
-
-  final String executionId;
-  final List<WorkoutExecutionSet> sets;
-  final WorkoutTimerStore timerStore;
-  final WorkoutCueService cueService;
-  final bool saving;
-  final ValueChanged<WorkoutAmrapResultInput> onComplete;
-
-  @override
-  State<_AmrapCard> createState() => _AmrapCardState();
-}
-
-class _AmrapCardState extends State<_AmrapCard> {
-  final _formKey = GlobalKey<FormState>();
-  final _roundsController = TextEditingController(text: '0');
-  final _partialRepsController = TextEditingController(text: '0');
-  int? _partialItemOrder;
-
-  WorkoutExecutionSet get first => widget.sets.first;
-
-  @override
-  void dispose() {
-    _roundsController.dispose();
-    _partialRepsController.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    final partialReps = int.parse(_partialRepsController.text);
-    widget.onComplete(
-      WorkoutAmrapResultInput(
-        executionId: widget.executionId,
-        blockOrder: first.blockOrder,
-        completedRounds: int.parse(_roundsController.text),
-        partialItemOrder: partialReps == 0
-            ? null
-            : (_partialItemOrder ?? widget.sets.first.itemOrder),
-        partialReps: partialReps,
-      ),
-    );
-  }
-
-  String? _validatePartialReps(String? value) {
-    final parsed = int.tryParse(value ?? '');
-    if (parsed == null || parsed < 0) {
-      return 'Introduce un número entero válido';
-    }
-    if (parsed == 0) return null;
-    final selectedOrder = _partialItemOrder ?? widget.sets.first.itemOrder;
-    final target = widget.sets
-        .firstWhere((set) => set.itemOrder == selectedOrder)
-        .targetReps;
-    if (target != null && parsed >= target) {
-      return 'Si completas el objetivo, cuenta una vuelta o pasa al siguiente ejercicio';
-    }
-    return null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final seconds = first.blockTimeCapSeconds ?? 600;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                first.blockName.toUpperCase(),
-                style: const TextStyle(
-                  color: Color(0xFFFF8A50),
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'AMRAP',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 14),
-              for (final set in widget.sets)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 7),
-                  child: Text(
-                    '${set.itemOrder + 1}. ${set.exerciseName} · ${set.targetReps} reps',
-                    style: const TextStyle(fontSize: 17),
-                  ),
-                ),
-              const SizedBox(height: 18),
-              WorkoutSetCountdown(
-                targetSeconds: seconds,
-                title: 'RELOJ GLOBAL AMRAP',
-                timerId: '${widget.executionId}:amrap:${first.blockOrder}',
-                timerStore: widget.timerStore,
-                enabled: !widget.saving,
-                onElapsedChanged: (_) {},
-                onPreparationTick: () => unawaited(
-                  widget.cueService.signal(WorkoutCue.preparationTick),
-                ),
-                onStarted: () =>
-                    unawaited(widget.cueService.signal(WorkoutCue.workStarted)),
-                onHalfway: () =>
-                    unawaited(widget.cueService.signal(WorkoutCue.halfway)),
-                onTenSecondsRemaining: () => unawaited(
-                  widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
-                ),
-                onEndingTick: (_) => unawaited(
-                  widget.cueService.signal(WorkoutCue.workEndingTick),
-                ),
-                onFinished: () => unawaited(
-                  widget.cueService.signal(WorkoutCue.workFinished),
-                ),
-              ),
-              const SizedBox(height: 22),
-              const Text(
-                'Resultado',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _roundsController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Vueltas completas',
-                ),
-                validator: _nonNegativeIntegerValidator,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: _partialItemOrder,
-                decoration: const InputDecoration(
-                  labelText: 'Último ejercicio parcial (opcional)',
-                ),
-                items: widget.sets
-                    .map(
-                      (set) => DropdownMenuItem(
-                        value: set.itemOrder,
-                        child: Text(set.exerciseName),
-                      ),
-                    )
-                    .toList(growable: false),
-                onChanged: widget.saving
-                    ? null
-                    : (value) => setState(() => _partialItemOrder = value),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _partialRepsController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Repeticiones parciales',
-                ),
-                validator: _validatePartialReps,
-              ),
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: widget.saving ? null : _save,
-                icon: const Icon(Icons.check_rounded),
-                label: Text(
-                  widget.saving ? 'Guardando…' : 'Guardar resultado AMRAP',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-String? _nonNegativeIntegerValidator(String? value) {
-  final parsed = int.tryParse(value ?? '');
-  return parsed == null || parsed < 0
-      ? 'Introduce un número entero válido'
-      : null;
-}
-
 class _PendingSyncBanner extends StatelessWidget {
   const _PendingSyncBanner({required this.count});
 
@@ -958,6 +790,7 @@ class _FinishCard extends StatelessWidget {
     required this.saving,
     required this.onChanged,
     required this.onFinish,
+    this.hasAmrap = false,
   });
 
   final int? rpe;
@@ -968,6 +801,7 @@ class _FinishCard extends StatelessWidget {
   final bool saving;
   final ValueChanged<int> onChanged;
   final VoidCallback onFinish;
+  final bool hasAmrap;
 
   @override
   Widget build(BuildContext context) {
@@ -983,10 +817,10 @@ class _FinishCard extends StatelessWidget {
               color: Color(0xFFFF8A50),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Todas las series completadas',
+            Text(
+              hasAmrap ? 'Bloques terminados' : 'Todas las series completadas',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 18),
             Text(
@@ -1104,8 +938,8 @@ class _Completed extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${execution.completedSetCount} completadas'
-            '${execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
+            '${workoutHasAmrap(execution) ? workoutProgressLabel(execution) : '${execution.completedSetCount} completadas'}'
+            '${workoutHasAmrap(execution) || execution.skippedSetCount == 0 ? '' : ' · ${execution.skippedSetCount} omitidas'}'
             ' · RPE ${execution.finalRpe ?? '-'}',
             style: const TextStyle(color: Colors.white60),
           ),
@@ -1172,8 +1006,8 @@ class _Abandoned extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${execution.completedSetCount} '
-            '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'
+            '${workoutHasAmrap(execution) ? workoutProgressLabel(execution) : '${execution.completedSetCount} '
+                      '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'}'
             '${reason == null ? '' : ' · ${workoutAbandonmentReasonLabel(reason)}'}',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60),

@@ -13,37 +13,76 @@ class WorkoutSessionRecords extends StatelessWidget {
     required this.drafts,
     required this.onEdit,
     this.enabled = true,
+    this.onTechnique,
   });
   final WorkoutExecution execution;
   final Map<String, WorkoutSessionSetDraft> drafts;
   final ValueChanged<WorkoutExecutionSet> onEdit;
   final bool enabled;
+  final ValueChanged<WorkoutExecutionSet>? onTechnique;
   @override
   Widget build(BuildContext context) {
     final groups = <String, List<WorkoutExecutionSet>>{};
     for (final set in execution.sets) {
       groups
-          .putIfAbsent('${set.blockOrder}:${set.exerciseId}', () => [])
+          .putIfAbsent(
+            set.blockFormat == WorkoutBlockFormat.amrap
+                ? 'amrap:${set.blockOrder}'
+                : '${set.blockOrder}:${set.exerciseId}',
+            () => [],
+          )
           .add(set);
     }
     return ListView(
       children: [
         for (final entry in groups.entries)
-          ExpansionTile(
-            key: PageStorageKey('records-${entry.key}'),
-            initiallyExpanded: entry.value.any(
-              (s) =>
-                  s.id == execution.currentSet?.id ||
-                  (drafts[s.id]?.endedAt != null && !drafts[s.id]!.confirmed),
+          if (entry.value.first.blockFormat == WorkoutBlockFormat.amrap)
+            _amrapBlock(entry.value)
+          else
+            ExpansionTile(
+              key: PageStorageKey('records-${entry.key}'),
+              initiallyExpanded: entry.value.any(
+                (s) =>
+                    s.id == execution.currentSet?.id ||
+                    (drafts[s.id]?.endedAt != null && !drafts[s.id]!.confirmed),
+              ),
+              title: Text(
+                entry.value.first.exerciseName,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                '${entry.value.first.blockName} · ${entry.value.length} ${entry.value.length == 1 ? 'serie' : 'series'}',
+              ),
+              children: [for (final set in entry.value) _row(set)],
             ),
-            title: Text(
-              entry.value.first.exerciseName,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            subtitle: Text(
-              '${entry.value.first.blockName} · ${entry.value.length} ${entry.value.length == 1 ? 'serie' : 'series'}',
-            ),
-            children: [for (final set in entry.value) _row(set)],
+      ],
+    );
+  }
+
+  Widget _amrapBlock(List<WorkoutExecutionSet> sets) {
+    final first = sets.first;
+    final result = execution.amrapResultFor(first.blockOrder);
+    return ExpansionTile(
+      key: PageStorageKey('records-amrap-${first.blockOrder}'),
+      initiallyExpanded: result == null,
+      title: Text(
+        '${first.blockName} · AMRAP',
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text(
+        result == null
+            ? '${sets.length} ejercicios por vuelta · resultado al terminar'
+            : workoutAmrapResultLabel(result, sets),
+      ),
+      children: [
+        for (final set in sets)
+          ListTile(
+            title: Text(set.exerciseName),
+            subtitle: Text('${set.targetReps} repeticiones por vuelta'),
+            trailing: onTechnique == null
+                ? null
+                : const Icon(Icons.info_outline_rounded),
+            onTap: onTechnique == null ? null : () => onTechnique!(set),
           ),
       ],
     );
@@ -53,8 +92,7 @@ class WorkoutSessionRecords extends StatelessWidget {
     final draft = drafts[set.id];
     final pending = draft?.endedAt != null && !draft!.confirmed;
     final completed = set.status == WorkoutSetStatus.completed;
-    final amrap = set.blockFormat == WorkoutBlockFormat.amrap;
-    final editable = completed && !amrap;
+    final editable = completed;
     final status = pending
         ? 'Datos por confirmar'
         : completed
@@ -80,7 +118,7 @@ class WorkoutSessionRecords extends StatelessWidget {
       ),
       title: Text(workoutPositionLabel(set)),
       subtitle: Text(
-        'Objetivo · ${workoutTargetLabel(set)}\n$status${completed && !pending ? '\n${amrap ? '${execution.amrapResultFor(set.blockOrder)?.completedRounds ?? 0} vueltas en el bloque' : workoutResultLabel(set)}' : ''}',
+        'Objetivo · ${workoutTargetLabel(set)}\n$status${completed && !pending ? '\n${workoutResultLabel(set)}' : ''}',
       ),
       trailing: editable ? const Icon(Icons.edit_outlined) : null,
       onTap: enabled && editable ? () => onEdit(set) : null,

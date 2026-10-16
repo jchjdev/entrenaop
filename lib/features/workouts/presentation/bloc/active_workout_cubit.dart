@@ -1,5 +1,9 @@
 import 'package:entrenaop/features/workouts/domain/services/workout_execution_rest_policy.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+
+import '../../domain/services/workout_amrap_draft_store.dart';
+import '../../domain/entities/workout_amrap_save_failure.dart';
+
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
 
@@ -18,6 +22,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   ActiveWorkoutCubit({
     required this.executionId,
     required WorkoutSessionDraftStore sessionDraftStore,
+    required WorkoutAmrapDraftStore amrapDraftStore,
     CorrectWorkoutSetUseCase? correctSet,
     GetExerciseByIdUseCase? getExercise,
     required GetWorkoutExecutionUseCase getExecution,
@@ -30,7 +35,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     required GetPendingWorkoutMutationCountUseCase getPendingMutationCount,
     required WorkoutTimerStore timerStore,
     required WorkoutCueService cueService,
-  }) : _draftStore = sessionDraftStore,
+  }) : _amrapDraftStore = amrapDraftStore,
+       _draftStore = sessionDraftStore,
        _correctSet = correctSet,
        _getExercise = getExercise,
        _getExecution = getExecution,
@@ -58,6 +64,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   final WorkoutCueService _cueService;
   Timer? _restTimer;
   final WorkoutSessionDraftStore _draftStore;
+  final WorkoutAmrapDraftStore _amrapDraftStore;
+  final _amrapDrafts = <int, WorkoutAmrapDraft>{};
   final CorrectWorkoutSetUseCase? _correctSet;
   final GetExerciseByIdUseCase? _getExercise;
   final _drafts = <String, WorkoutSessionSetDraft>{};
@@ -102,6 +110,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         drafts: Map.unmodifiable(_drafts),
         exercises: Map.unmodifiable(_exercises),
         draftBusy: _draftBusy,
+        amrapDrafts: Map.unmodifiable(_amrapDrafts),
       ),
     );
   }
@@ -358,6 +367,22 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
               .map((s) => s.id),
         );
         final loaded = await _draftStore.read(executionId);
+        final amrapLoaded = await _amrapDraftStore.read(executionId);
+        final pendingAmrap = execution.sets
+            .where(
+              (s) =>
+                  s.blockFormat == WorkoutBlockFormat.amrap &&
+                  s.status == WorkoutSetStatus.pending,
+            )
+            .map((s) => s.blockOrder)
+            .toSet();
+        _amrapDrafts.addAll(
+          Map.fromEntries(
+            amrapLoaded.entries.where(
+              (entry) => pendingAmrap.contains(entry.key),
+            ),
+          ),
+        );
         final ids = execution.sets.map((s) => s.id).toSet();
         _drafts.addAll(
           Map.fromEntries(loaded.entries.where((e) => ids.contains(e.key))),
@@ -393,6 +418,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       } else {
         _drafts.clear();
         await _draftStore.clear(executionId).catchError((Object _) {});
+        _amrapDrafts.clear();
+        await _amrapDraftStore.clear(executionId).catchError((Object _) {});
       }
       final activeExecution = execution!;
       final restSnapshot = await _timerStore.read(_restTimerId);
@@ -497,15 +524,54 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
-  Future<void> completeCurrentAmrap(WorkoutAmrapResultInput result) async {
+  Future<void> changeAmrapRounds(int blockOrder, int delta) => updateAmrapDraft(
+    blockOrder,
+    (_amrapDrafts[blockOrder] ?? const WorkoutAmrapDraft()).changeRounds(delta),
+  );
+
+  Future<void> updateAmrapDraft(int blockOrder, WorkoutAmrapDraft draft) async {
     if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
-    final execution = state.execution;
-    final currentSet = execution?.currentSet;
-    if (execution == null ||
-        currentSet == null ||
-        currentSet.blockFormat != WorkoutBlockFormat.amrap ||
-        currentSet.blockOrder != result.blockOrder) {
+    final current = state.execution?.currentSet;
+    if (current?.blockFormat != WorkoutBlockFormat.amrap ||
+        current?.blockOrder != blockOrder) {
       return;
+    }
+    _amrapDrafts[blockOrder] = draft;
+    _refresh();
+    try {
+      await _amrapDraftStore.write(executionId, Map.of(_amrapDrafts));
+    } catch (_) {
+      _refresh(
+        error: 'No se ha podido guardar la cuenta en este dispositivo. Conservamos los datos abiertos; reintenta antes de salir.',
+      );
+    }
+  }
+
+  Future<bool> completeCurrentAmrap(WorkoutAmrapResultInput result) async {
+    if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return false;
+    final execution = state.execution;
+    final current = execution?.currentSet;
+    if (execution == null ||
+        result.executionId != executionId ||
+        current == null ||
+        current.blockFormat != WorkoutBlockFormat.amrap ||
+        current.blockOrder != result.blockOrder) {
+      return false;
+    }
+    final sequence = execution.sets
+        .where((s) => s.blockOrder == result.blockOrder)
+        .toList();
+    final draft = WorkoutAmrapDraft(
+      rounds: '${result.completedRounds}',
+      hasPartial: result.partialItemOrder != null,
+      partialItemOrder: result.partialItemOrder,
+      partialReps: '${result.partialReps}',
+    );
+    final error = draft.validate(sequence);
+    if (error != null ||
+        (result.partialItemOrder == null && result.partialReps != 0)) {
+      _refresh(error: error ?? 'Selecciona el ejercicio del parcial.');
+      return false;
     }
     _publish(
       ActiveWorkoutState(
@@ -514,30 +580,51 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         pendingSyncCount: state.pendingSyncCount,
       ),
     );
+    var disposition = WorkoutMutationDisposition.synced;
     try {
-      final disposition = await _completeAmrap(result);
-      await _timerStore.clear(_amrapTimerId(result.blockOrder));
-      final updated = disposition == WorkoutMutationDisposition.queued
-          ? _completeAmrapLocally(execution, result)
-          : await _readProjectedExecution();
-      if (updated == null) throw StateError('Execution disappeared');
-      _publish(
-        ActiveWorkoutState(
-          status: ActiveWorkoutStatus.ready,
-          execution: updated,
-          pendingSyncCount: await _getPendingMutationCount(),
-        ),
-      );
-    } catch (_) {
+      disposition = await _completeAmrap(result);
+    } catch (error) {
       _publish(
         ActiveWorkoutState(
           status: ActiveWorkoutStatus.failure,
           execution: execution,
           pendingSyncCount: state.pendingSyncCount,
-          errorMessage: 'No hemos podido guardar el resultado AMRAP.',
+          errorMessage: error is WorkoutAmrapSaveFailure
+              ? '${error.message} Tus datos se conservan.'
+              : 'No hemos podido guardar el resultado AMRAP. Tus datos se conservan; comprueba la conexión y reintenta.',
         ),
       );
+      return false;
     }
+    // Una escritura aceptada o encolada no depende de otra lectura para tener
+    // éxito. Tampoco se vuelve a enviar si falla la limpieza del reloj/disco.
+    final updated = _completeAmrapLocally(execution, result);
+    _amrapDrafts.remove(result.blockOrder);
+    String? warning;
+    try {
+      await _timerStore.clear(_amrapTimerId(result.blockOrder));
+      await _amrapDraftStore.write(executionId, Map.of(_amrapDrafts));
+    } catch (_) {
+      warning =
+          'Resultado registrado. No se ha podido limpiar el borrador local.';
+    }
+    var pending =
+        state.pendingSyncCount +
+        (disposition == WorkoutMutationDisposition.queued ? 1 : 0);
+    try {
+      pending = await _getPendingMutationCount();
+    } catch (_) {
+      warning = 'Resultado registrado. No hemos podido actualizar el estado de sincronización.';
+    }
+    _publish(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.ready,
+        execution: updated,
+        pendingSyncCount: pending,
+        errorMessage: warning,
+      ),
+    );
+    return true;
   }
 
   /// Omitir el guiado no escribe resultados de capacidad ni omite trabajo.
@@ -731,6 +818,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           : await _readProjectedExecution();
       _drafts.clear();
       await _draftStore.clear(executionId).catchError((Object _) {});
+      _amrapDrafts.clear();
+      await _amrapDraftStore.clear(executionId).catchError((Object _) {});
       final pendingSyncCount = await _getPendingMutationCount();
       _publish(
         ActiveWorkoutState(
@@ -756,6 +845,14 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     final execution = state.execution;
     if (execution == null ||
         execution.status != WorkoutExecutionStatus.inProgress) {
+      return;
+    }
+    if (_amrapDrafts.values.any(
+      (draft) => draft.rounds != '0' || draft.hasPartial,
+    )) {
+      _refresh(
+        error: 'Revisa el resultado AMRAP antes de cerrar conservando lo realizado. Puedes salir y retomar después.',
+      );
       return;
     }
     if (state.unconfirmedDraftCount > 0) {
@@ -789,6 +886,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           : await _readProjectedExecution();
       _drafts.clear();
       await _draftStore.clear(executionId).catchError((Object _) {});
+      _amrapDrafts.clear();
+      await _amrapDraftStore.clear(executionId).catchError((Object _) {});
       final pendingSyncCount = await _getPendingMutationCount();
       _publish(
         ActiveWorkoutState(
@@ -873,6 +972,8 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     } catch (_) {}
     _drafts.clear();
     await _draftStore.clear(executionId).catchError((Object _) {});
+    _amrapDrafts.clear();
+    await _amrapDraftStore.clear(executionId).catchError((Object _) {});
     if (!isClosed) {
       _publish(const ActiveWorkoutState(status: ActiveWorkoutStatus.discarded));
     }

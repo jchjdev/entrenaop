@@ -10,9 +10,13 @@ import 'package:flutter_test/flutter_test.dart';
 const capturePerformanceReview = bool.fromEnvironment(
   'CAPTURE_PERFORMANCE_REVIEW',
 );
-Future<void> loadReviewFont() async {
-  if (!capturePerformanceReview) return;
-  final fontDirectory = Platform.environment['PERFORMANCE_REVIEW_FONT_DIR'];
+Future<void> loadReviewFont({bool always = false}) async {
+  if (!capturePerformanceReview && !always) return;
+  final fontDirectory =
+      Platform.environment['PERFORMANCE_REVIEW_FONT_DIR'] ??
+      (always
+          ? '${File(Platform.resolvedExecutable).parent.parent.parent.path}/material_fonts'
+          : null);
   final bytes = await File(
     fontDirectory == null
         ? 'C:/Windows/Fonts/arial.ttf'

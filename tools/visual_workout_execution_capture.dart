@@ -25,6 +25,7 @@ import 'package:entrenaop/features/exercises/domain/repositories/exercise_reposi
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercise_by_id_usecase.dart';
 
 import '../test/helpers/memory_workout_session_draft_store.dart';
+import '../test/helpers/memory_workout_amrap_draft_store.dart';
 
 void main() {
   for (final (name, timed, width, height, scale) in [
@@ -80,6 +81,7 @@ void main() {
       final cubit = ActiveWorkoutCubit(
         executionId: 'preview',
         sessionDraftStore: MemoryWorkoutSessionDraftStore(),
+        amrapDraftStore: MemoryWorkoutAmrapDraftStore(),
         getExercise: GetExerciseByIdUseCase(
           _Exercises(imagePath != null && !warmUp),
         ),

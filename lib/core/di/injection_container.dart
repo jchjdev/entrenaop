@@ -1,4 +1,8 @@
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+
+import '../../features/workouts/domain/services/workout_amrap_draft_store.dart';
+import '../../features/workouts/data/services/shared_preferences_workout_amrap_draft_store.dart';
+
 import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_session_draft_store.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource_impl.dart';
@@ -144,6 +148,12 @@ Future<void> initDependencies() async {
   );
   sl.registerFactory<WorkoutSessionDraftStore>(
     () => SharedPreferencesWorkoutSessionDraftStore(
+      sharedPreferences,
+      userId: sl<SupabaseClient>().auth.currentUser?.id,
+    ),
+  );
+  sl.registerFactory<WorkoutAmrapDraftStore>(
+    () => SharedPreferencesWorkoutAmrapDraftStore(
       sharedPreferences,
       userId: sl<SupabaseClient>().auth.currentUser?.id,
     ),
@@ -379,6 +389,7 @@ Future<void> initDependencies() async {
       discardExecution: sl(),
       getPendingMutationCount: sl(),
       sessionDraftStore: sl(),
+      amrapDraftStore: sl(),
       correctSet: sl(),
       getExercise: sl(),
       timerStore: sl(),

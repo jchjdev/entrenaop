@@ -5,50 +5,63 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 
 void main() {
-  testWidgets(
-    'el reloj compacto no cambia de alto al preparar, reiniciar o terminar',
-    (tester) async {
-      var now = Duration.zero;
-      var elapsed = -1;
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: EntrenaTheme.dark,
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: SizedBox(
-                width: 350,
-                child: WorkoutSetCountdown(
-                  targetSeconds: 3,
-                  compact: true,
-                  clock: () => now,
-                  onElapsedChanged: (value) => elapsed = value,
+  for (final inline in [false, true]) {
+    testWidgets(
+      'el reloj compacto mantiene su alto con controles en línea: $inline',
+      (tester) async {
+        var now = Duration.zero;
+        var elapsed = -1;
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: SizedBox(
+                  width: 350,
+                  child: WorkoutSetCountdown(
+                    targetSeconds: 3,
+                    compact: true,
+                    inlineControls: inline,
+                    clock: () => now,
+                    onElapsedChanged: (value) => elapsed = value,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-      final initial = tester.getSize(find.byType(WorkoutSetCountdown));
-      await tester.tap(find.text('Iniciar temporizador'));
-      await tester.pump(const Duration(seconds: 2));
-      expect(find.text('1'), findsOneWidget);
-      expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
-      await tester.tap(find.byTooltip('Reiniciar temporizador'));
-      await tester.pump();
-      expect(elapsed, 0);
-      expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
-      await tester.tap(find.text('Iniciar temporizador'));
-      await tester.pump(const Duration(seconds: 3));
-      now = const Duration(seconds: 3);
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(find.text('Tiempo completado'), findsOneWidget);
-      expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
-      await tester.tap(find.text('Repetir'));
-      await tester.pump();
-      expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
-      expect(tester.takeException(), isNull);
-    },
-  );
+        );
+        final initial = tester.getSize(find.byType(WorkoutSetCountdown));
+        await tester.tap(
+          (inline
+              ? find.byTooltip('Iniciar temporizador')
+              : find.text('Iniciar temporizador')),
+        );
+        await tester.pump(const Duration(seconds: 2));
+        expect(find.text('1'), findsOneWidget);
+        expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
+        await tester.tap(find.byTooltip('Reiniciar temporizador'));
+        await tester.pump();
+        expect(elapsed, 0);
+        expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
+        await tester.tap(
+          (inline
+              ? find.byTooltip('Iniciar temporizador')
+              : find.text('Iniciar temporizador')),
+        );
+        await tester.pump(const Duration(seconds: 3));
+        now = const Duration(seconds: 3);
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(find.text('Tiempo completado'), findsOneWidget);
+        expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
+        await tester.tap(
+          (inline ? find.byTooltip('Repetir') : find.text('Repetir')),
+        );
+        await tester.pump();
+        expect(tester.getSize(find.byType(WorkoutSetCountdown)), initial);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets(
     'reiniciar el reloj compacto permite repetir sin inventar tiempo realizado',

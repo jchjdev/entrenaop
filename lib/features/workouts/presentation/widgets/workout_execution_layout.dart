@@ -7,13 +7,16 @@ class WorkoutExecutionFrame extends StatelessWidget {
     required this.child,
     required this.actions,
     this.fillViewport = false,
+    this.header,
   });
   final Widget child, actions;
   final bool fillViewport;
+  final Widget? header;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => Column(
       children: [
+        ?header,
         Expanded(
           child: LayoutBuilder(
             builder: (context, viewport) => SingleChildScrollView(

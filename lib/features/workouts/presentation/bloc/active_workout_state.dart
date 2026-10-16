@@ -3,6 +3,8 @@ import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dar
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../domain/services/workout_amrap_draft_store.dart';
+
 enum ActiveWorkoutStatus {
   initial,
   loading,
@@ -26,6 +28,7 @@ class ActiveWorkoutState extends Equatable {
     this.drafts = const {},
     this.exercises = const {},
     this.draftBusy = false,
+    this.amrapDrafts = const {},
   });
 
   final ActiveWorkoutStatus status;
@@ -37,6 +40,7 @@ class ActiveWorkoutState extends Equatable {
   final Map<String, WorkoutSessionSetDraft> drafts;
   final Map<String, ExerciseEntity> exercises;
   final bool draftBusy;
+  final Map<int, WorkoutAmrapDraft> amrapDrafts;
   int get unconfirmedDraftCount =>
       drafts.values.where((d) => d.endedAt != null && !d.confirmed).length;
 
@@ -51,5 +55,6 @@ class ActiveWorkoutState extends Equatable {
     drafts,
     exercises,
     draftBusy,
+    amrapDrafts,
   ];
 }
