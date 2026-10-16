@@ -184,6 +184,7 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'build/fas-six-month-case.json')
     parser.add_argument('--weeks', type=int, default=26)
     parser.add_argument('--migration',type=Path,help='Ensayar una migración pendiente sin aplicarla permanentemente')
+    parser.add_argument('--automatic-controls',action='store_true',help='Responder a controles pautados; no aportar controles manuales desde la fixture')
     args = parser.parse_args()
     if not 1 <= args.weeks <= 26:
         parser.error('--weeks debe estar entre 1 y 26')
@@ -194,6 +195,24 @@ def main():
                           'fictional_capacity_push':PUSH,'fictional_capacity_plank':PLANK},
               'weeks': [], 'events': [], 'rolled_back':False}
     c = connect(args.cli)
+    execute_week=EXECUTE_WEEK
+    if args.automatic_controls:
+        marker="   if es.block_format='running' then"
+        assert execute_week.count(marker)==1
+        execute_week=execute_week.replace(marker,"""   if es.performance_prescription->>'policy_version'='adaptive_protocol_control_v1' then
+    -- Resultados de prueba ficticios, separados de las dosis ordinarias.
+    v:=case es.performance_prescription->>'measurement'
+      when 'TIME_FOR_DISTANCE' then round(595-95*least(1,(i+1)/26.0))
+      when 'DURATION' then least(plank_cap,(es.performance_prescription->>'target_value')::numeric)
+      when 'TIME_FOR_COURSE' then round((14-1.5*least(1,(i+1)/26.0))::numeric,2)
+      else push_cap end;
+    r:=jsonb_build_object('value',v,'rpe',9,'technique_valid',true,
+     'conditions_confirmed',true,'tolerated',true,'stop_reason','none');
+    if es.performance_prescription->>'measurement'='REPS_IN_TIME' then
+     r:=r||jsonb_build_object('actual_duration_seconds',(es.performance_prescription->>'fixed_duration_seconds')::numeric);
+    end if;
+    perform public.complete_performance_set_idempotent(gen_random_uuid(),es.id,r);
+   elsif es.block_format='running' then""")
     original = one(c, "select md5(string_agg(p.oid::text||p.prosrc,'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prokind='f'")
     try:
         if args.migration:
@@ -223,7 +242,7 @@ def main():
                 assert str(date.fromisoformat(s['scheduled_date']).isoweekday()) in AVAILABILITY
             assert len(schedules)<=4
             c.execute("select set_config('entrenaop.case_week',%s,true),set_config('entrenaop.case_index',%s,true),set_config('entrenaop.push_cap',%s,true),set_config('entrenaop.plank_cap',%s,true)", (str(wk),str(i),str(PUSH[i]),str(PLANK[i])))
-            c.execute(EXECUTE_WEEK)
+            c.execute(execute_week)
             state = one(c, 'select to_jsonb(a) from public.adaptive_program_states a where preparation_goal_id=%s', (g,))
             if state['status']=='needs_review':
                 output['events'].append({'week':i+1,'before':state})
@@ -236,7 +255,7 @@ def main():
                 # aporta un control. No implica bloqueo obligatorio a los 28
                 # días ni se presenta como un test pautado por el motor.
                 current = one(c, 'select pg_temp.program_today()')
-                if running_age is None or (current-running_age).days>28:
+                if not args.automatic_controls and (running_age is None or (current-running_age).days>28):
                     mark = round(595-95*min(1,(i+1)/26))
                     control = one(c, 'insert into public.preparation_running_tests(user_id,preparation_goal_id,completed_at,duration_seconds,rpe) values(auth.uid(),%s,pg_temp.program_now(),%s,8) returning id', (g,mark))
                     c.execute("update public.running_reference_selections set reference_source='trainingControl',reference_record_id=%s where preparation_goal_id=%s", (str(control),g))

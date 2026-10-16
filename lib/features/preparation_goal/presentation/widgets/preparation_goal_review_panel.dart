@@ -54,7 +54,7 @@ class PreparationGoalReviewPanel extends StatelessWidget {
                     ),
                   if (review['last_protocol_mark'] case final num mark)
                     Text(
-                      'Última marca del protocolo: ${_value(mark, review['measurement'] as String)}'
+                      'Última marca del protocolo: ${review['lower_bound'] == true ? 'al menos ' : ''}${_value(mark, review['measurement'] as String)}'
                       '${_date(review['observed_on'])}',
                     )
                   else
@@ -65,6 +65,45 @@ class PreparationGoalReviewPanel extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// El servidor explica la decisión y la fecha; la interfaz no agenda pruebas.
+class PreparationControlSchedule extends StatelessWidget {
+  const PreparationControlSchedule({required this.schedule, super.key});
+
+  final Map<String, dynamic> schedule;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheduled = (schedule['scheduled'] as List? ?? []).cast<Map>();
+    if (scheduled.isEmpty) return const SizedBox.shrink();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Control previsto',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            for (final control in scheduled) ...[
+              const SizedBox(height: 8),
+              Text(control['name'] as String? ?? 'Control del protocolo'),
+              if (DateTime.tryParse(control['date'] as String? ?? '')
+                  case final DateTime date)
+                Text(DateFormat('dd/MM/yyyy').format(date)),
+              Text(control['question'] as String? ?? ''),
+            ],
+            const SizedBox(height: 8),
+            const Text(
+              'Sustituye trabajo de esta semana. No añadas otro test ni repitas intentos para buscar un récord. Si no estás recuperado, puedes omitirlo.',
+            ),
+          ],
+        ),
       ),
     );
   }

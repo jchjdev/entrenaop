@@ -1,5 +1,23 @@
 # Roadmap de EntrenaOP
 
+**STR-041, 16/10/2026 · controles automáticos:** recorrido incorporado en
+desarrollo para flexiones, plancha, circuito de 16 m y carrera de 2 km. Selección
+por necesidad, respuesta y fase; sustitución de trabajo y recuperación común;
+resultados válidos reutilizados con procedencia, sin duplicar ni crear una
+evaluación oficial. El caso FAS completa seis meses sin controles manuales
+aportados por la fixture: 26 semanas, 102 sesiones, 679 registros y doce controles
+de protocolo. No demuestra eficacia fisiológica ni consecución de metas.
+Análisis limpio, 923 pruebas de raíz y una omisión web, 25 baterías SQL,
+152 migraciones coincidentes y 22 cuerpos instalados cotejados.
+La aceptación en móvil, anualidad conjunta y estrés de concurrencia siguen
+pendientes. El diagnóstico de variedad de carrera conserva los formatos y
+progresiones ordinarios, sin ejecutar una corrección no autorizada.
+**Único siguiente bloque recomendado:** acordar con Javier la revisión de los
+formatos y su progresión de carrera partiendo del diagnóstico reproducible,
+antes de ampliar el catálogo o modificar el selector. Contrato y ensayos en
+[CONTROLES_ADAPTATIVOS.md](CONTROLES_ADAPTATIVOS.md) y
+[VARIEDAD_CARRERA_2026_10_16.md](audits/VARIEDAD_CARRERA_2026_10_16.md).
+
 **STR-040, 16/10/2026 · continuidad, metas y catálogo:** correcciones aplicadas
 y verificadas en desarrollo. Se elimina el bloqueo regional de flexiones,
 plancha conserva trabajo compatible al cambiar de fase y el adaptador de carrera
@@ -12,8 +30,9 @@ Análisis limpio, 917 pruebas de raíz y una omisión web, 23 baterías SQL,
 El mismo FAS de seis meses completa 26 semanas, 102 sesiones y 788 registros sin
 forzar marcas finales, exceder disponibilidad ni dejar datos. La transcripción
 anterior se conserva y se compara con la nueva. La simulación verifica software,
-no eficacia fisiológica; siguen abiertos el planificador autónomo completo de
-tests máximos, la aceptación física y los límites previos anual/concurrencia.
+no eficacia fisiológica. La programación de tests máximos se completa después
+en STR-041; la aceptación física y los límites previos anual/concurrencia siguen
+abiertos.
 **Único siguiente bloque recomendado:** aceptación en móvil del programa
 combinado, revisando selección/función de los ejercicios, primera práctica,
 registro y transición/adaptación con el repertorio actual, antes de ampliarlo.

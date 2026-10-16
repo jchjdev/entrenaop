@@ -1,5 +1,39 @@
 # Programa adaptativo
 
+## Controles autónomos y diagnóstico de carrera · STR-041 · 16/10/2026
+
+El coordinador incorpora controles de los protocolos actuales según necesidad
+de información, evolución, fase y oportunidad real antes del examen. Sustituyen
+trabajo, se colocan en días ya disponibles y se reservan tiempo y recuperación;
+no se activan cada N semanas. Salud vigente, práctica tolerada nueva y ausencia
+de respuesta adversa siguen siendo necesarias. Las marcas válidas actualizan
+la revisión de objetivos; los 2 km se reutilizan automáticamente como referencia
+de entrenamiento, con origen y correcciones. No se crean evaluaciones oficiales.
+
+El [contrato de controles](CONTROLES_ADAPTATIVOS.md) recoge protocolos, guardas
+operativas, diferencias entre máximo/techo/práctica y límites de evidencia.
+La recuperación común distingue trabajo fácil de calidad; una reducción global,
+reentrada o revisión pendiente aplaza los máximos sin cambiar el entrenamiento
+ordinario. Un control conocido que sustituyó una salida no se interpreta como
+datos perdidos. Cuatro semanas realmente registradas acreditan continuidad de
+carrera dentro de la ventana existente; no renuevan salud ni una marca caducada.
+
+El [ensayo con controles automáticos](audits/CONTROLES_AUTOMATICOS_SEIS_MESES_2026_10_16.md)
+completa 26 semanas, 102 sesiones físicas y 679 registros, con cuatro controles
+de flexiones, tres de plancha, cuatro de 2 km y uno de agilidad. No se añaden
+marcas manuales de carrera para avanzar. La fixture confirma salud/contexto
+cuando corresponde; no simula que el sistema conozca salud nueva sin preguntar.
+Las metas siguen sin darse por conseguidas porque se inventen respuestas.
+
+La variedad ordinaria de carrera **solo se diagnostica**: el motor y catálogo
+mantienen sus cuerpos, incluidos los diez minutos de calentamiento de calidad.
+El [diagnóstico reproducible](audits/VARIEDAD_CARRERA_2026_10_16.md) identifica
+45 E, seis T, seis V y cuatro S en el ensayo anterior; casi todos los escalones
+quedan al principio. Explica referencias, incrementos y rechazos de encaje.
+No autoriza ampliar o corregir formatos ni conectar más sesiones sin revisar
+esa decisión con Javier. La aceptación física y los límites anual/concurrencia
+previos siguen abiertos.
+
 ## Continuidad, metas y repertorio · STR-040 · 16/10/2026
 
 Corrección aplicada y verificada en Supabase de desarrollo. El coordinador
@@ -52,7 +86,8 @@ revisiones de rendimiento.
 
 Los controles submáximos de transición sustituyen una exposición ordinaria y
 conservan su dosis; no añaden un máximo. **No queda implementado un planificador
-autónomo completo de tests de examen.** La práctica temporal compatible sigue
+autónomo completo de tests de examen en STR-040; STR-041 incorpora el recorrido
+para los protocolos actuales.** La práctica temporal compatible sigue
 necesitando sus propios datos; el trabajo libre no acredita ritmo de dos minutos.
 Este límite se conserva visible y no se oculta con resultados inventados.
 
@@ -71,8 +106,9 @@ alcanza 20 + 19 en tres exposiciones antes de puesta a punto; plancha pasa a
 especificidad manteniendo 76 + 75 y llega a 82 + 81; carrera alcanza semanas de
 85 minutos y tres salidas. Son dosis publicadas, **no máximos ni metas logradas**.
 El ensayo usa ROLLBACK, verifica restauración de funciones y no deja usuarios
-ficticios. La aceptación física en móvil y el planificador de máximos siguen
-pendientes; no se abre otra ampliación de repertorio antes de revisar este flujo.
+ficticios. La aceptación física en móvil sigue pendiente. El planificador de
+controles se completa en STR-041; no se abre otra ampliación de repertorio antes
+de revisar este flujo.
 
 ## Ensayo dirigido de seis meses · 16/10/2026
 

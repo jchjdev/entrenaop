@@ -1345,6 +1345,11 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
         ),
         Text(p['reason'] as String? ?? 'Revisa los datos pendientes.'),
         PreparationGoalReviewPanel(reviews: _rows(p['goal_reviews'])),
+        PreparationControlSchedule(
+          schedule:
+              (p['control_schedule'] as Map?)?.cast<String, dynamic>() ??
+              const {},
+        ),
         if (!published && p['status'] != 'ready') ...[
           const SizedBox(height: 16),
           const Text(

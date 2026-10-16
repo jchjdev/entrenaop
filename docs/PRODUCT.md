@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**STR-041, 16/10/2026 · controles por necesidad:** el programa decide qué
+protocolo conviene medir, sustituye trabajo y explica el propósito. Los datos
+válidos del entrenamiento actualizan marcas de seguimiento y la referencia de
+2 km automáticamente; no se presentan como evaluaciones oficiales. No hay una
+cadencia fija de máximos, ni se añaden durante recuperación global o cerca del
+examen. La revisión de variedad de carrera queda documentada sin cambiar sus
+formatos ordinarios. Contrato en [CONTROLES_ADAPTATIVOS.md](CONTROLES_ADAPTATIVOS.md).
+
 **STR-040, 16/10/2026 · continuidad y repertorio:** flexiones y plancha pueden
 progresar dentro de sus límites sin un veto general por compartir tronco.
 Plancha conserva trabajo compatible al cambiar de fase; carrera utiliza rodajes
@@ -7,8 +15,8 @@ fáciles registrados para un siguiente ensayo acotado, sin alterar el núcleo v5
 Dead bug deja de seleccionarse automáticamente y plancha alta tiene entrada y
 esfuerzo propios. La propuesta distingue metas de marcas y series submáximas.
 El caso de seis meses se repite sin cambiar las respuestas ficticias; no prueba
-que una persona alcance los objetivos. Aceptación física y programación autónoma
-completa de tests máximos pendientes. Contrato y evidencia en
+que una persona alcance los objetivos. Aceptación física pendiente; programación
+autónoma de tests completada después en STR-041. Contrato y evidencia en
 [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
 
 **STR-039, 16/10/2026 · apoyos autónomos:** el motor selecciona un apoyo

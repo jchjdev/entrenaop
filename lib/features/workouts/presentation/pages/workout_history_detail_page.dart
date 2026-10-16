@@ -832,6 +832,11 @@ List<_ExerciseGroup> _groupSets(List<WorkoutExecutionSet> sets) {
 
 String _target(WorkoutExecutionSet set) {
   if (set.performancePrescription case final p?) {
+    if (p.intent == 'control') {
+      return p.measurement == 'DURATION'
+          ? 'Control con techo de ${_number(p.targetValue)} ${p.unit}'
+          : 'Control del protocolo, sin marca obligatoria';
+    }
     return '${_number(p.targetValue)} ${p.unit}';
   }
   final parts = <String>[];

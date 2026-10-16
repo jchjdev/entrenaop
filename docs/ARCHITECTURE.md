@@ -1,5 +1,31 @@
 # Arquitectura de EntrenaOP
 
+## Controles por necesidad de información · STR-041 · 16/10/2026
+
+La propuesta normal v4 y su colocación se mantienen separadas de
+`apply_adaptive_protocol_controls_v1`. La decisión pura usa necesidad, respuesta,
+fase y horizonte; los helpers privados leen evidencia del propietario y el
+postprocesador sustituye bloques sin crear días ni superar presupuesto. El coste
+compartido se recalcula al adelantar un control respecto a un rodaje. La guarda
+de recuperación aplaza máximos durante reducción global/reentrada o revisión
+real de datos/esfuerzo, sin rehacer las sesiones ordinarias.
+
+El control conserva metadatos en la dosis o prescripción de carrera. Un resultado
+de rendimiento se consulta desde su ejecución cerrada; 2 km reutiliza la tabla de
+controles con un vínculo único a la serie de origen. Ese origen se valida también
+al insertar, se corrige sin duplicados y una invalidación impide reutilizarlo.
+No se crean tablas, derechos ni evaluaciones oficiales. La excepción al CHECK de
+registro de carrera se limita al contrato tipado del control de 2 km; los tramos
+ordinarios mantienen tiempo/distancia obligatorios. El JSON conserva el dato y
+sus condiciones; no se inventa distancia para un intento no confirmado.
+
+El adaptador excluye máximos de la comparación de series ordinarias y observa
+continuidad sin renovar salud. Núcleo v5, catálogos y constructores de sesiones
+ordinarias de carrera permanecen intactos. La interfaz presenta fecha, propósito,
+techo explícito y resultado real, usando los modelos y repositorios existentes;
+no agenda ni decide progresiones. Contrato en
+[CONTROLES_ADAPTATIVOS.md](CONTROLES_ADAPTATIVOS.md).
+
 ## Continuidad por movimiento y evidencia de metas · STR-040 · 16/10/2026
 
 El coordinador v4 utiliza `performance_coordinate_progression_v3` para conservar

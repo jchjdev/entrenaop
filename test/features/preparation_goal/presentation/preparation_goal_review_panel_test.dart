@@ -4,6 +4,33 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
+    'el control previsto explica cuándo y por qué sustituye trabajo',
+    (t) async {
+      await t.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: PreparationControlSchedule(
+              schedule: {
+                'scheduled': [
+                  {
+                    'name': 'Plancha',
+                    'date': '2026-11-06',
+                    'question': 'Comprobar transferencia.',
+                  },
+                ],
+              },
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Control previsto'), findsOneWidget);
+      expect(find.text('06/11/2026'), findsOneWidget);
+      expect(find.text('Comprobar transferencia.'), findsOneWidget);
+      expect(find.textContaining('Sustituye trabajo'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    },
+  );
+  testWidgets(
     'distingue objetivos, marcas del protocolo y referencia ausente',
     (t) async {
       await t.pumpWidget(

@@ -213,7 +213,18 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           const SizedBox(height: 12),
         ],
         Text(
-          '${_familiarization ? 'Hasta' : 'Objetivo:'} ${_targetLabel()}',
+          p.intent == 'control'
+              ? switch (p.measurement) {
+                  'REPS_IN_TIME' =>
+                    'Control de ${formatPerformanceTime(p.fixedDurationSeconds!)} min',
+                  'TIME_FOR_DISTANCE' =>
+                    'Control de ${p.fixedDistanceMeters!.toInt()} m',
+                  'DURATION' => 'Control con techo de ${_targetLabel()}',
+                  'TIME_FOR_COURSE' => 'Un intento del recorrido completo',
+                  'REPS' || 'LOAD_REPS' => 'Control de repeticiones válidas',
+                  _ => 'Control del protocolo',
+                }
+              : '${_familiarization ? 'Hasta' : 'Objetivo:'} ${_targetLabel()}',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         if (p.fixedDurationSeconds != null)
@@ -320,7 +331,9 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
         ],
         if (p.usesRpe) ...[
           Text(
-            'Esfuerzo al mantener la postura: 1 muy fácil, 5 moderado, 7 difícil pero controlado, 10 tu límite. Hoy no superes ${p.targetRpe?.toInt() ?? 7}/10.',
+            p.intent == 'control'
+                ? 'Registra el esfuerzo real: 1 muy fácil, 5 moderado, 10 tu límite. No necesitas llegar a 10; detente si pierdes la técnica o aparecen molestias.'
+                : 'Esfuerzo al mantener la postura: 1 muy fácil, 5 moderado, 7 difícil pero controlado, 10 tu límite. Hoy no superes ${p.targetRpe?.toInt() ?? 7}/10.',
           ),
           WorkoutEffortField(
             label: 'Esfuerzo que has sentido · 1 a 10',
@@ -394,22 +407,36 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           key: ValueKey('stop_$_stop'),
           initialValue: _stop,
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Cómo terminó la serie',
-            helperText: 'Indica si acabaste lo previsto o qué te hizo parar.',
+          decoration: InputDecoration(
+            labelText: p.intent == 'control'
+                ? 'Cómo terminó el control'
+                : 'Cómo terminó la serie',
+            helperText: p.intent == 'control'
+                ? 'Llegar al límite técnico previsto completa el control. Una interrupción por tiempo no mide tu máximo.'
+                : 'Indica si acabaste lo previsto o qué te hizo parar.',
           ),
-          items: const [
-            DropdownMenuItem(value: 'unknown', child: Text('Sin indicar')),
-            DropdownMenuItem(value: 'none', child: Text('Terminé lo previsto')),
+          items: [
+            const DropdownMenuItem(
+              value: 'unknown',
+              child: Text('Sin indicar'),
+            ),
             DropdownMenuItem(
+              value: 'none',
+              child: Text(
+                p.intent == 'control'
+                    ? 'Completé el protocolo o alcancé el límite técnico'
+                    : 'Terminé lo previsto',
+              ),
+            ),
+            const DropdownMenuItem(
               value: 'time',
               child: Text('Me faltó tiempo disponible'),
             ),
-            DropdownMenuItem(
+            const DropdownMenuItem(
               value: 'difficulty',
               child: Text('No pude continuar'),
             ),
-            DropdownMenuItem(
+            const DropdownMenuItem(
               value: 'discomfort',
               child: Text('Paré por molestias'),
             ),

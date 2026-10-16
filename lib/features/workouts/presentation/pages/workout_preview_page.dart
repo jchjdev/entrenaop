@@ -710,7 +710,12 @@ String _setPrescription(
   final parts = <String>[];
   if (set.performancePrescription case final p?) {
     return [
-      '${_number(p.targetValue)} ${p.unit}',
+      if (p.intent == 'control')
+        p.measurement == 'DURATION'
+            ? 'Control con techo de ${_duration(p.targetValue.toInt())}'
+            : 'Control del protocolo, sin marca obligatoria'
+      else
+        '${_number(p.targetValue)} ${p.unit}',
       if (p.fixedDurationSeconds != null)
         'en ${_number(p.fixedDurationSeconds!)} s',
       if (p.fixedDistanceMeters != null)
