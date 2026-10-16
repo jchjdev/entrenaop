@@ -1,5 +1,24 @@
 # Arquitectura de EntrenaOP
 
+## Selección de carrera v6 · PLAN-026 · 16/10/2026
+
+El adaptador existente `calculate_running_week_constrained` usa
+`running_plan_v6` para propuestas nuevas y reconoce evidencia v1–v6. V5 y sus
+constructores/catálogos se conservan. No se reescriben decisiones publicadas ni
+se añade otro planificador en Flutter o en el coordinador de fuerza.
+
+El helper puro y privado `running_dose_evidence_v6` contrasta ejecuciones reales
+con una receta actual de igual familia y escalón. La dosis conserva las muestras
+que justifican progresar. El selector comprueba el encaje de calidad antes de
+ampliar frecuencia o reservar una pareja y busca un hueco posterior ya elegido
+antes de volver al formato anterior. Se conservan tiempo, recuperación,
+ejecutor, controles y límites del coordinador. No hay tablas, dependencias ni
+permisos nuevos. `running_previous_evidence_v6` normaliza la rotación si un
+control sustituyó la única calidad: el test no acredita esa práctica. Se audita
+como `running_control_evidence_v1`, sin modificar la política pura ni el pasado.
+Contrato y evidencia en
+[MOTOR_CARRERA_2K_V6.md](MOTOR_CARRERA_2K_V6.md).
+
 ## Controles por necesidad de información · STR-041 · 16/10/2026
 
 La propuesta normal v4 y su colocación se mantienen separadas de

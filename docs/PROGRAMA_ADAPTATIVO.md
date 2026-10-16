@@ -1,5 +1,22 @@
 # Programa adaptativo
 
+## Selección y progresión de carrera · PLAN-026 · 16/10/2026
+
+Javier autoriza corregir los bloqueos del diagnóstico de STR-041. Las nuevas
+propuestas pasan a carrera v6; las semanas publicadas, fuerza y controles
+conservan sus contratos. La política compara los parciales realizados con la
+receta vigente, prioriza dosis antes de acelerar por una meta, protege la
+calidad conocida al ampliar días, evita reservas inviables de otra calidad y
+prueba un hueco posterior antes de bajar al formato anterior. S tiene prioridad
+en desarrollo/especificidad, sin saltarse tolerancia o recuperación.
+El adaptador distingue el turno de trabajo sustituido por un control de 2 km:
+la rotación no lo da por realizado y puede retomarlo en la siguiente decisión.
+
+Se conserva el catálogo conectado: la repetición del caso no obliga a que un
+principiante reciba 800 m ni representa la importación de todas las sesiones
+candidatas. Contrato, evidencia deportiva y verificación en
+[MOTOR_CARRERA_2K_V6.md](MOTOR_CARRERA_2K_V6.md).
+
 ## Controles autónomos y diagnóstico de carrera · STR-041 · 16/10/2026
 
 El coordinador incorpora controles de los protocolos actuales según necesidad

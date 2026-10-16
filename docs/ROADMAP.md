@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**PLAN-026, 16/10/2026 · selección y progresión de carrera:** v6 conserva los
+datos compatibles ante una referencia nueva, prioriza dosis antes del bonus de
+velocidad por meta, evita que más días o una pareja inviable bloqueen calidad
+conocida y comprueba huecos posteriores antes de bajar de formato. Se mantienen
+el catálogo, los constructores, v5 reproducible, semanas publicadas y contratos
+de fuerza/controles. Las regresiones y la repetición instalada del mismo caso
+FAS se detallan en [MOTOR_CARRERA_2K_V6.md](MOTOR_CARRERA_2K_V6.md).
+Verificado en desarrollo: análisis limpio, 923 pruebas de raíz y una omisión
+web, 29 baterías SQL, 154 migraciones coincidentes y 25 cuerpos instalados
+cotejados. El mismo FAS completa 26 semanas, 101 sesiones y 689 registros con
+doce controles automáticos, sin forzar formatos/resultados ni exceder tiempo.
+La aceptación física y los ensayos conjuntos anual/concurrencia siguen abiertos.
+**Único siguiente bloque recomendado:** aceptación del recorrido combinado en
+móvil, contrastando la pauta y sus explicaciones con la transcripción real,
+antes de ampliar el catálogo candidato.
+
 **STR-041, 16/10/2026 · controles automáticos:** recorrido incorporado en
 desarrollo para flexiones, plancha, circuito de 16 m y carrera de 2 km. Selección
 por necesidad, respuesta y fase; sustitución de trabajo y recuperación común;
@@ -12,9 +28,8 @@ Análisis limpio, 923 pruebas de raíz y una omisión web, 25 baterías SQL,
 La aceptación en móvil, anualidad conjunta y estrés de concurrencia siguen
 pendientes. El diagnóstico de variedad de carrera conserva los formatos y
 progresiones ordinarios, sin ejecutar una corrección no autorizada.
-**Único siguiente bloque recomendado:** acordar con Javier la revisión de los
-formatos y su progresión de carrera partiendo del diagnóstico reproducible,
-antes de ampliar el catálogo o modificar el selector. Contrato y ensayos en
+La revisión de formatos recomendada en este cierre se ejecuta después en
+PLAN-026, por autorización de Javier. Contrato y ensayos en
 [CONTROLES_ADAPTATIVOS.md](CONTROLES_ADAPTATIVOS.md) y
 [VARIEDAD_CARRERA_2026_10_16.md](audits/VARIEDAD_CARRERA_2026_10_16.md).
 

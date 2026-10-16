@@ -35,7 +35,7 @@ begin
  current_date-extract(isodow from current_date)::int,false,false,now(),60,'official_margin',10);
  p:=public.calculate_running_week(g,wk);
  if (p->'goal'->>'seconds')::numeric<>465 or p->'goal'->'standard'->>'scope'<>'test_minimum_not_global_pass'
-   or p->>'policy_version'<>'running_2k_v5' or jsonb_array_length(p->'sessions')<>2 then
+   or p->>'policy_version'<>'running_2k_v6' or jsonb_array_length(p->'sessions')<>2 then
    raise exception 'Programa genérico no resuelve su pauta y mínimo: %',p; end if;
  p:=public.publish_running_week(g,wk);
  perform public.save_performance_context('{"1":45,"4":45}','{}',false,true);

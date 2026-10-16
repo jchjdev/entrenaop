@@ -1,10 +1,16 @@
 -- Publicación real, RPC del ejecutor, lectura de resultados e aislamiento.
 -- Todas las modificaciones, incluidas las del usuario de ensayo, se revierten.
+-- fixture-clock: adaptive_clock
+-- Ejecutar mediante build_adaptive_regression_suite.py: cada sesión avanza el
+-- reloj; completar una semana futura hoy no prueba progresión de esa semana.
 begin;
 -- El ensayo deportivo necesita derechos Pro explícitos, siempre con ROLLBACK.
-insert into public.pro_access_grants(user_id,source,ends_at,reason)
-select candidate.id,'development_manual',now()+interval '1 day','Fixture SQL de programa adaptativo'
-from public.profiles candidate where not public.has_pro_access(candidate.id);
+-- Los derechos usan reloj comercial real; la progresión usa el reloj deportivo.
+insert into public.pro_access_grants(user_id,source,starts_at,ends_at,reason)
+select candidate.id,'development_manual',statement_timestamp()-interval '1 day',
+ greatest(now(),statement_timestamp())+interval '30 days','Fixture SQL de programa adaptativo'
+from public.profiles candidate where candidate.id=current_setting('entrenaop.fixture_user')::uuid
+ and not public.has_pro_access(candidate.id);
 
 select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 update public.profiles set fecha_nacimiento=date '1996-01-01' where id=auth.uid();
@@ -35,12 +41,13 @@ declare g uuid; wk date:=current_date+8-extract(isodow from current_date)::integ
 begin
  select id into g from public.preparation_goals where user_id=auth.uid() and status='active' and program_id='fas_periodic_assessment';
  p:=public.publish_fas_running_week(g,wk);
- if p->>'policy_version'<>'running_2k_v5' or jsonb_array_length(p->'sessions')<>3 then raise exception 'No publica v5 tres sesiones: %',p; end if;
+ if p->>'policy_version'<>'running_2k_v6' or jsonb_array_length(p->'sessions')<>3 then raise exception 'No publica v6 tres sesiones: %',p; end if;
  again:=public.publish_fas_running_week(g,wk);
  if again->>'decision_id'<>p->>'decision_id' or (again->>'already_published')::boolean is not true then raise exception 'No idempotente'; end if;
- for sw in select w.id,rs.prescription from public.scheduled_workouts w
+ for sw in select w.id,w.scheduled_date,rs.prescription from public.scheduled_workouts w
    join public.running_week_sessions rs on rs.scheduled_workout_id=w.id
-   where rs.decision_id=(p->>'decision_id')::uuid loop
+   where rs.decision_id=(p->>'decision_id')::uuid order by w.scheduled_date loop
+   update pg_temp.adaptive_clock set value=sw.scheduled_date+time '12:00';
    e:=public.start_scheduled_workout(sw.id);
    if (select count(*) from public.workout_execution_sets where execution_id=e)<>jsonb_array_length(sw.prescription->'segments') then
      raise exception 'Se perdieron tramos al iniciar'; end if;

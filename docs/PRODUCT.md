@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**PLAN-026, 16/10/2026 · progresión de carrera:** una nueva marca no descarta
+automáticamente parciales que todavía cumplen el trabajo actual. El motor
+prioriza progresión justificada de dosis y especificidad, conserva una calidad
+conocida al ampliar días y busca otro hueco ya previsto cuando el primero no
+permite el escalón completo. No añade formatos por variedad ni prescribe el
+ritmo de la meta como capacidad actual. Las semanas guardadas conservan su
+versión. Detalle en [MOTOR_CARRERA_2K_V6.md](MOTOR_CARRERA_2K_V6.md).
+
 **STR-041, 16/10/2026 · controles por necesidad:** el programa decide qué
 protocolo conviene medir, sustituye trabajo y explica el propósito. Los datos
 válidos del entrenamiento actualizan marcas de seguimiento y la referencia de

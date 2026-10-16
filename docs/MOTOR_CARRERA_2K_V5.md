@@ -1,5 +1,9 @@
 # Motor de carrera 2 km: progresión fácil con dos calidades
 
+> PLAN-026 (16/10/2026) conserva v5 reproducible y emplea
+> [v6](MOTOR_CARRERA_2K_V6.md) para propuestas nuevas. Las secciones siguientes
+> documentan v5 y su verificación histórica, sin sustituir el contrato vigente.
+
 Aplicado en Supabase de desarrollo el 01/10/2026. La [v4](MOTOR_CARRERA_2K_V4.md)
 conserva las decisiones ya publicadas; v5 rige las nuevas propuestas de FAS,
 Tropa y programas que vinculan una prueba compatible de 2 km.
