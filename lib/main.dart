@@ -8,6 +8,7 @@ import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -60,6 +61,9 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
       child: MaterialApp.router(
         title: 'EntrenaOP',
         debugShowCheckedModeBanner: false,
+        locale: const Locale('es', 'ES'),
+        supportedLocales: const [Locale('es', 'ES')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         theme: withAppBackGesture(EntrenaTheme.dark),
         routerConfig: _appRouter.config,
       ),

@@ -1,5 +1,37 @@
 # Identidad visual de EntrenaOP
 
+## Evolución: idioma y pantalla gris al filtrar · UI-044 · 16/10/2026
+
+La grabación de Javier muestra el calendario en inglés y, tras seleccionar
+11–16 de octubre y guardar, un bloque gris que sustituye el contenido de
+Evolución (aproximadamente desde el segundo 20). Se reproduce con una consulta
+pendiente, después de desplazar la pantalla y aplicar el rango: los desplegables
+sin clave propia leen la posición del ListView como si fuera un booleano de
+apertura (`double` no convertible a `bool?`). El cambio de estado de carga
+reconstruía los paneles y hacía visible esa colisión de `PageStorage`.
+
+Otros historiales y Filtrar historial guardan su apertura en claves distintas
+de la posición del scroll; el contenedor de filtros conserva su identidad al
+cambiar entre carga, resultados y error. El calendario y los controles oficiales
+de la aplicación del deportista usan castellano de España, aunque el dispositivo
+esté en inglés. `flutter_localizations` pasa de transitiva a dependencia directa
+del SDK: no cambia ninguna versión ni añade un plugin nativo. No se modifican
+los criterios de consulta, paginación, reglas deportivas, datos ni permisos.
+
+Las regresiones recorren abrir/cancelar calendario, seleccionar y guardar fechas
+con red pendiente o fallida, conservar filtros abiertos, limpiar un resultado
+vacío o fallido y recargar con los dos paneles abiertos de forma independiente.
+Otra prueba monta la app real con idioma del dispositivo en inglés y comprueba
+los controles y meses en castellano. El calendario se verifica con la fuente
+real incluida en el SDK; se mantienen las comprobaciones de texto doble y
+pantalla estrecha. Queda repetir el recorrido en el iPhone con la app actualizada.
+
+Verificación del 16/10/2026: `flutter analyze` limpio en raíz y admin;
+18 pruebas específicas correctas, 861 pruebas completas de raíz y 109 del admin
+correctas, con una omisión preexistente en cada batería. Se revisa una captura
+del calendario en castellano con fuente real. El lockfile conserva todas las
+versiones y solo cambia el carácter directo de la dependencia del SDK.
+
 ## Semanas por gesto y Biblioteca ajustada · UI-043 · 16/10/2026
 
 Javier pide cuatro correcciones a partir de tres grabaciones cortas y una

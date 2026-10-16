@@ -164,6 +164,7 @@ class _HistoryContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   ExpansionTile(
+                    key: const PageStorageKey('evolution-other-histories'),
                     title: const Text('Otros historiales'),
                     children: [
                       _DestinationCard(
@@ -205,6 +206,7 @@ class _HistoryContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   FutureBuilder<List<PreparationGoal>>(
+                    key: const ValueKey('evolution-history-filters'),
                     future: preparations,
                     builder: (context, snapshot) => WorkoutHistoryFilters(
                       query: state.query,

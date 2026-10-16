@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Traducciones oficiales de los controles; ya presente de forma transitiva.
+  flutter_localizations:
+    sdk: flutter
 
   # Estado
   flutter_bloc: ^9.1.1

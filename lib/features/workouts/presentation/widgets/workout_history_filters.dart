@@ -17,6 +17,8 @@ class WorkoutHistoryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ExpansionTile(
+    // El panel guarda un bool; el ListView padre guarda un double de scroll.
+    key: const PageStorageKey('evolution-history-filters-expansion'),
     tilePadding: EdgeInsets.zero,
     title: const Text('Filtrar historial'),
     subtitle: query.hasFilters ? const Text('Filtros aplicados') : null,
