@@ -19,12 +19,12 @@ class WorkoutAmrapExerciseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 8),
+    margin: const EdgeInsets.only(bottom: 6),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             ExcludeSemantics(
@@ -33,8 +33,8 @@ class WorkoutAmrapExerciseTile extends StatelessWidget {
                 child: ColoredBox(
                   color: const Color(0xFF20252B),
                   child: SizedBox(
-                    width: 76,
-                    height: 76,
+                    width: 56,
+                    height: 56,
                     child: imageUrl?.trim().isNotEmpty == true
                         ? Image.network(
                             imageUrl!,
@@ -46,7 +46,7 @@ class WorkoutAmrapExerciseTile extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class WorkoutAmrapExerciseTile extends StatelessWidget {
                     set.exerciseName,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     '${set.targetReps} repeticiones'
                     '${set.targetLoadKg == null ? '' : ' · ${workoutNumber(set.targetLoadKg!)} kg'}'

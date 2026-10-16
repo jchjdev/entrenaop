@@ -124,7 +124,7 @@ class WorkoutAmrapEntry extends StatelessWidget {
             final stacked =
                 constraints.maxWidth < 340 ||
                 MediaQuery.textScalerOf(context).scale(14) > 20;
-            final add = FilledButton.icon(
+            final add = OutlinedButton.icon(
               onPressed: saving ? null : () => onRoundsChanged(1),
               icon: const Icon(Icons.add_rounded),
               label: const Text('1 vuelta'),
@@ -164,14 +164,29 @@ class WorkoutAmrapEntry extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: TextButton(
+              child: FilledButton.icon(
                 onPressed: saving ? null : () => _review(context),
-                child: const Text('Terminar AMRAP'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 56),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  textStyle: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                icon: const Icon(Icons.check_rounded),
+                label: const Text(
+                  'Terminar AMRAP',
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             records,
           ],
         ),

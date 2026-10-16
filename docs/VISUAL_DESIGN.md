@@ -24,6 +24,25 @@ repetición existentes. Reiniciar el reloj no borra la cuenta de vueltas.
 Las fotos proceden del catálogo ya cargado por el Cubit, con alternativa si no
 existen o fallan. Abrir la técnica conserva el circuito y no ofrece edición.
 
+Javier pide después compactar las tarjetas y destacar Terminar AMRAP. La foto
+pasa de 76 a 56 píxeles lógicos, con menos relleno y separación. La altura sigue
+el contenido: nombres, repeticiones/carga/RIR pueden ocupar varias líneas sin
+recortarse ni reducir la letra. La misma tarjeta compacta sirve en la revisión.
+Terminar AMRAP usa el botón principal relleno, con icono de confirmación y al
+menos 56 píxeles de alto; sumar una vuelta pasa a botón secundario de contorno.
+El acceso a registros conserva su icono junto a la acción principal. Son cambios
+de presentación, sin alterar el contador opcional ni el contrato de guardado.
+La batería general pasa con 886 pruebas y una omisión existente; tras conservar
+la tipografía del tema en el botón se repiten las siete regresiones AMRAP y el
+análisis, correctos. Las capturas finales de 390/412 px y 320 px con texto doble
+mantienen las acciones accesibles y el acceso a técnica/revisión.
+
+Para aplicar el SQL, Javier instala y habilita después la integración Supabase.
+La instalación se confirma en el catálogo, pero las operaciones SQL/migraciones
+no se exponen todavía entre las herramientas de este turno. No se confunde ese
+estado con una conexión consultada ni con migraciones aplicadas; la verificación
+remota sigue pendiente hasta poder consultar el proyecto de desarrollo.
+
 `WorkoutAmrapReview` abre un panel al terminar. Permite introducir o corregir
 vueltas, indicar si empezó otra y elegir el movimiento con foto y nombre
 completo; desaparece el desplegable de ancho insuficiente. El resumen explica
