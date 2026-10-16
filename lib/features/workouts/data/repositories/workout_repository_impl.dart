@@ -210,8 +210,12 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) {
+    // Se captura al pulsar finalizar, antes del envío y de cualquier reintento.
+    final performedAt = DateTime.now();
     final values = <String, dynamic>{
       'p_final_rpe': finalRpe,
+      'p_performed_at': performedAt.toUtc().toIso8601String(),
+      'p_utc_offset_minutes': performedAt.timeZoneOffset.inMinutes,
       'p_notes': notes,
       'p_average_heart_rate_bpm': averageHeartRateBpm,
       'p_max_heart_rate_bpm': maxHeartRateBpm,
@@ -228,6 +232,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         averageHeartRateBpm: averageHeartRateBpm,
         maxHeartRateBpm: maxHeartRateBpm,
         resultSource: resultSource,
+        performedAt: performedAt,
+        utcOffsetMinutes: performedAt.timeZoneOffset.inMinutes,
       ),
     );
   }
@@ -238,8 +244,11 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
     WorkoutAbandonmentReason reason,
   ) {
     final reasonValue = _reasonValue(reason);
+    final performedAt = DateTime.now();
     final mutation = _mutation(WorkoutMutationType.abandon, executionId, {
       'p_reason': reasonValue,
+      'p_performed_at': performedAt.toUtc().toIso8601String(),
+      'p_utc_offset_minutes': performedAt.timeZoneOffset.inMinutes,
     });
     return _performOrQueue(
       mutation,
@@ -247,6 +256,8 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
         mutation.operationId,
         executionId,
         reasonValue,
+        performedAt: performedAt,
+        utcOffsetMinutes: performedAt.timeZoneOffset.inMinutes,
       ),
     );
   }
@@ -363,6 +374,12 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
           mutation.operationId,
           mutation.resourceId,
           finalRpe: mutation.values['p_final_rpe'] as int,
+          // Los cierres antiguos ya encolados no conocían este reloj. No se
+          // fabrica una fecha local ni se sustituye por la del reintento.
+          performedAt: DateTime.tryParse(
+            mutation.values['p_performed_at'] as String? ?? '',
+          ),
+          utcOffsetMinutes: mutation.values['p_utc_offset_minutes'] as int?,
           notes: mutation.values['p_notes'] as String?,
           averageHeartRateBpm:
               mutation.values['p_average_heart_rate_bpm'] as int?,
@@ -375,6 +392,10 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
           mutation.operationId,
           mutation.resourceId,
           mutation.values['p_reason'] as String,
+          performedAt: DateTime.tryParse(
+            mutation.values['p_performed_at'] as String? ?? '',
+          ),
+          utcOffsetMinutes: mutation.values['p_utc_offset_minutes'] as int?,
         ),
       };
 }

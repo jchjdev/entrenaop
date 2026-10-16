@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**STR-036, 16/10/2026 · evidencia de carrera/fuerza y encaje conjunto:**
+reparación de los seis defectos confirmados por Astra, aplicada solo en
+desarrollo sin reescribir sesiones/resultados. Caso real 5×60/5×90 reproducido:
+dos carreras y una exposición de rendimiento compartida, coherentes con sus
+datos iniciales; se comprueba también una frecuencia mayor con carga reciente.
+Fechas observadas y cola offline, abandonos por bloque, falta de tiempo,
+RIR dinámico temporal, capacidad baja con carga y coste compartido exacto.
+Análisis limpios, 909 pruebas de raíz y 109 de admin correctas, con sus omisiones
+existentes; 18 baterías SQL instaladas y ciclo conjunto de 26 semanas correctos.
+144 migraciones coincidentes. El ensayo anual conjunto supera el límite HTTP;
+los horizontes anuales por motor pasan y ese límite queda explícito, junto con
+los avisos previos de seguridad y la concurrencia no sometida a estrés.
+El único siguiente bloque recomendado es la aceptación del programa combinado
+en móvil: cierre offline, reanudación y revisión contextual cuando corresponda.
+Detalle reproducible en [la auditoría](AUDITORIA_ADAPTATIVA_2026_10_16.md).
+
 **UI-047 / STR-034, 16/10/2026 · RPE entero y repetición de sesiones:** se
 reutiliza el selector de esfuerzo en entrenamiento, rendimiento y corrección;
 nuevas elecciones RPE del 1 al 10, sin redondear históricos/borradores ni cambiar

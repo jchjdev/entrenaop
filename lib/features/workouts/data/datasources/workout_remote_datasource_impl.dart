@@ -310,8 +310,12 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
   }) => supabaseClient.rpc(
-    'finish_workout_execution_idempotent',
+    performedAt == null
+        ? 'finish_workout_execution_idempotent'
+        : 'finish_workout_observed_idempotent',
     params: {
       'p_operation_id': operationId,
       'p_execution_id': executionId,
@@ -320,6 +324,10 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       'p_average_heart_rate_bpm': averageHeartRateBpm,
       'p_max_heart_rate_bpm': maxHeartRateBpm,
       'p_result_source': resultSource.name,
+      if (performedAt != null) ...{
+        'p_performed_at': performedAt.toUtc().toIso8601String(),
+        'p_utc_offset_minutes': utcOffsetMinutes ?? 0,
+      },
     },
   );
 
@@ -327,13 +335,21 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
   Future<void> abandonExecution(
     String operationId,
     String executionId,
-    String reason,
-  ) => supabaseClient.rpc(
-    'abandon_workout_execution_idempotent',
+    String reason, {
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
+  }) => supabaseClient.rpc(
+    performedAt == null
+        ? 'abandon_workout_execution_idempotent'
+        : 'abandon_workout_observed_idempotent',
     params: {
       'p_operation_id': operationId,
       'p_execution_id': executionId,
       'p_reason': reason,
+      if (performedAt != null) ...{
+        'p_performed_at': performedAt.toUtc().toIso8601String(),
+        'p_utc_offset_minutes': utcOffsetMinutes ?? 0,
+      },
     },
   );
 }

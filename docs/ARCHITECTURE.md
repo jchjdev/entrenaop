@@ -1,5 +1,20 @@
 # Arquitectura de EntrenaOP
 
+## Evidencia adaptativa · STR-036 · 16/10/2026
+
+El repositorio de entrenamientos captura el instante de cierre y su offset
+local antes del envío; la cola los conserva en cada reintento. Dos RPC observados
+validan propietario/reloj y serializan el cierre antes de sus recibos y de los
+disparadores de continuación. Los RPC anteriores conservan compatibilidad.
+SQL separa estado global y evidencia por bloque, y usa realización para carga
+reciente/recuperación. El coordinador compara reservas compartidas con coste
+exacto; su caché solo vive durante una llamada y reutiliza consultas con las
+mismas restricciones. Carrera v5 y rendimiento v3 conservan la selección
+deportiva, con las reparaciones documentadas de interpretación y calibración.
+No se trasladan reglas deportivas a widgets ni se reescriben decisiones previas.
+Contrato, validación y límites en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md)
+y [la auditoría](AUDITORIA_ADAPTATIVA_2026_10_16.md).
+
 ## Entorno de Codex Cloud · DEV-003 · 14/10/2026
 
 Javier autoriza un entorno privado para el único repositorio EntrenaOP, con

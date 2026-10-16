@@ -43,13 +43,17 @@ abstract class WorkoutRemoteDataSource {
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
   });
 
   Future<void> abandonExecution(
     String operationId,
     String executionId,
-    String reason,
-  );
+    String reason, {
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
+  });
 
   Future<List<String>> discardExecution(String executionId);
 

@@ -550,6 +550,51 @@ void main() {
     expect(dataSource.maxHeartRateBpm, 181);
   });
 
+  for (final abandoning in [false, true]) {
+    test(
+      'el cierre offline conserva el instante y la zona al reintentar: $abandoning',
+      () async {
+        dataSource.failFinish = true;
+        dataSource.failAbandon = true;
+        final disposition = abandoning
+            ? await repository.abandonExecution(
+                'execution-1',
+                WorkoutAbandonmentReason.lackOfTime,
+              )
+            : await repository.finishExecution('execution-1', finalRpe: 4);
+        expect(disposition, WorkoutMutationDisposition.queued);
+        final queued = mutationQueue.mutations.single;
+        final at = DateTime.parse(queued.values['p_performed_at'] as String);
+        final offset = queued.values['p_utc_offset_minutes'] as int;
+        expect(at.isUtc, isTrue);
+        expect(dataSource.performedAt?.toUtc(), at);
+        expect(dataSource.utcOffsetMinutes, offset);
+        dataSource.failFinish = false;
+        dataSource.failAbandon = false;
+        await repository.syncPendingMutations();
+        expect(dataSource.performedAt?.toUtc(), at);
+        expect(dataSource.utcOffsetMinutes, offset);
+        expect(mutationQueue.mutations, isEmpty);
+      },
+    );
+  }
+
+  test('una cola antigua no inventa fecha local al sincronizar', () async {
+    mutationQueue.mutations.add(
+      PendingWorkoutMutation(
+        userId: 'user-A',
+        operationId: 'legacy',
+        type: WorkoutMutationType.finish,
+        resourceId: 'execution-1',
+        values: const {'p_final_rpe': 4},
+        createdAt: DateTime.utc(2026, 10, 14),
+      ),
+    );
+    await repository.syncPendingMutations();
+    expect(dataSource.performedAt, isNull);
+    expect(dataSource.utcOffsetMinutes, isNull);
+  });
+
   test(
     'traduce el motivo de abandono al valor estable de base de datos',
     () async {
@@ -611,6 +656,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   String? skippedResultId;
   String? abandonedExecutionId;
   String? abandonmentReason;
+  bool failAbandon = false;
+  DateTime? performedAt;
+  int? utcOffsetMinutes;
   String? finishedExecutionId;
   int? finalRpe;
   String? finalNotes;
@@ -656,10 +704,15 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Future<void> abandonExecution(
     String operationId,
     String executionId,
-    String reason,
-  ) async {
+    String reason, {
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
+  }) async {
     abandonedExecutionId = executionId;
     abandonmentReason = reason;
+    this.performedAt = performedAt;
+    this.utcOffsetMinutes = utcOffsetMinutes;
+    if (failAbandon) throw StateError('Sin conexión');
   }
 
   @override
@@ -704,8 +757,12 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     int? averageHeartRateBpm,
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
+    DateTime? performedAt,
+    int? utcOffsetMinutes,
   }) async {
     events.add('finish');
+    this.performedAt = performedAt;
+    this.utcOffsetMinutes = utcOffsetMinutes;
     if (failFinish) throw StateError('Sin conexión');
     afterFinish?.call();
     finishedExecutionId = executionId;

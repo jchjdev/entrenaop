@@ -1,5 +1,62 @@
 # Programa adaptativo
 
+## Evidencia y encaje compartido · STR-036 · 16/10/2026
+
+La reparación `adaptive_evidence_v1` conserva carrera v5, rendimiento v3 y el
+gestor del programa. No añade un motor paralelo ni un catálogo de sesiones.
+Las decisiones ya publicadas no se recalculan ni se editan retrospectivamente.
+
+- Los días disponibles son huecos, no una frecuencia obligatoria. En el caso
+  reproducido de Javier, cero carga reciente de carrera origina dos salidas
+  fáciles de treinta minutos. Cada referencia de rendimiento declara una
+  exposición semanal y puede compartir día con carrera. Cinco huecos no
+  acreditan capacidad para cinco carreras; con carga reciente de cinco salidas
+  el coordinador puede pautar más de dos.
+- `lack_of_time` genera una señal temporal, conserva la carga realmente
+  realizada y no acredita dosis tolerada ni dificultad fisiológica.
+- Un cierre conserva su estado/motivo global para historial. Para adaptar,
+  cada bloque recibe su propia proyección: terminado, interrumpido o sin
+  evidencia suficiente. El bloque de interrupción es el primer bloque con
+  trabajo pendiente, coherente con el ejecutor secuencial actual. No se deduce
+  retrospectivamente para abandonos antiguos. Las molestias siguen siendo una
+  guarda global, aunque otra modalidad estuviera completada.
+- `performed_at` y `performed_utc_offset_minutes` representan el cierre en el
+  dispositivo; viajan sin cambios en los reintentos offline. `completed_at`
+  conserva la recepción del cierre en el servidor; `scheduled_date`, su cita.
+  Se valida propietario, estado, reloj finito, offset UTC entre −14 y +14 horas,
+  cierre posterior al inicio y ausencia de adelanto mayor de cinco minutos.
+  La tolerancia de cinco minutos admite pequeños desfases del dispositivo,
+  no permite fechar entrenamientos en semanas futuras.
+- Evidencia, ventanas y recuperación de sesiones realizadas usan su día local
+  de realización. Las pendientes ocupan su fecha de agenda. Sin reloj nuevo,
+  se conserva la recepción histórica en UTC como referencia conocida; no se
+  inventa una zona ni se reescriben resultados anteriores. Las colas anteriores
+  siguen siendo compatibles con los RPC existentes.
+- La búsqueda compara reservas sin ahorro, con hasta cuatro minutos de
+  activación compartida y con hasta siete incluyendo cierre. Antes de puntuar
+  exige que la suma real quepa. El orden y los segmentos presentes determinan
+  el ahorro; una carrera fácil sin preparación/cierre separados no aporta por
+  sí sola siete minutos. No se recortan descansos ni se rellenan días.
+- Una capacidad máxima de tres/cuatro repeticiones con carga solicita una
+  referencia de trabajo compatible si la dosis dejaría menos de RIR 3; no
+  calcula un 1RM ni inventa kilos. Trabajo repetido con margen y máximo medido
+  conservan su significado distinto.
+- Flutter y SQL coinciden al admitir RIR en repeticiones de trabajo dentro de
+  una ventana temporal. Esto no lo activa en todas las tareas con reloj ni
+  altera la conservación de decimales históricos.
+
+Los nuevos cierres observados bloquean la ejecución antes de comprobar el
+recibo idempotente y guardan su reloj antes de disparar la continuación. La
+validación, interpretación y planificación permanecen en PostgreSQL; el
+repositorio de Flutter recoge el instante, lo conserva y lo transporta.
+
+La caducidad del contexto y la vigencia de controles siguen activas. Una
+simulación debe representar confirmaciones y mediciones nuevas explícitas;
+completar entrenamientos no renueva automáticamente una declaración de salud.
+La validación técnica no demuestra mejoras fisiológicas ni completa estrategias
+de trepa, salto u otros objetivos aún parciales. Detalle reproducible en
+[la auditoría](AUDITORIA_ADAPTATIVA_2026_10_16.md).
+
 ## Ampliación aprobada · STR-029 · 05/10/2026
 
 **Estado al 06/10/2026: primer tramo v3 implementado en desarrollo.** El
