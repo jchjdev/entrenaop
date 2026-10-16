@@ -1,5 +1,30 @@
 # Programa adaptativo
 
+## Ensayo dirigido de seis meses · 16/10/2026
+
+Javier solicita una transcripción de lo que pauta realmente el programa FAS:
+2 km en 9:55, diez flexiones, plancha de 1:20 y circuito en 14 segundos; cuatro
+días de 60–75 minutos, con metas 8:20, cincuenta flexiones, 4:00 y 12,5 segundos.
+El [ensayo completo](audits/FAS_SEIS_MESES_2026_10_16.md) conserva los supuestos,
+las 26 semanas, las 98 sesiones publicadas y los resultados inventados, separados
+de las prescripciones. Incluye 746 registros de series/tramos y su evidencia JSON.
+
+Se han ejecutado los RPC instalados de desarrollo por conexión PostgreSQL larga,
+con reloj transaccional y `ROLLBACK`; las funciones originales se han contrastado
+tras deshacer el ensayo. No se han cambiado motores, cuentas reales ni producción.
+El caso de cuatro días completa seis meses y evita el límite HTTP anterior; no
+equivale a repetir el anterior fixture de tres días con todas sus entradas.
+
+La continuidad técnica pasa; el caso **no cierra la aceptación deportiva**.
+Flexiones libres, clasificadas como apoyo de la prueba cronometrada, quedan casi
+estancadas mientras la plancha consume la progresión regional. Al pasar a
+especificidad, plancha vuelve a una dosis muy inferior sin dificultad previa.
+Los controles de carrera añadidos al superar la ventana de revisión son entradas
+ficticias del ensayo, no tests pautados automáticamente. Las metas de fuerza
+siguen sin orientar cuantitativamente dosis/prioridades. Estos límites y las
+restricciones de volumen de carrera se describen en la transcripción; no se
+atribuye al motor alcanzar los objetivos porque se invente una mejora del usuario.
+
 ## Entrada autónoma de accesorios · STR-039 · 16/10/2026
 
 Javier confirma que la selección corresponde al motor y que no debe convertirse
