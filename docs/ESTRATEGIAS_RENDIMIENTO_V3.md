@@ -1,5 +1,12 @@
 # Estrategias de rendimiento v3
 
+**Actualización STR-040, 16/10/2026:** el núcleo v3 se conserva con las
+correcciones de continuidad y el coordinador v4 descritos en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md). El repertorio vigente y su
+revisión están en [CATALOGO_ACTIVO_RENDIMIENTO.md](CATALOGO_ACTIVO_RENDIMIENTO.md).
+Las políticas SQL originales mantienen el contenido histórico; el adaptador
+de carrera sí tiene ampliaciones posteriores, sin modificar `running_plan_v5`.
+
 ## Alcance de esta entrega · 06/10/2026
 
 Amplía STR-029 para flexiones libres/cronometradas, plancha y cambios de dirección.
@@ -42,7 +49,7 @@ semanal de dosis y el cambio de énfasis según respuesta/fecha.
 | --- | --- | --- |
 | Flexiones libres | Estándar; inclinadas como regresión si la específica no es practicable | Flexión lastrada o banca calibrada en desarrollo. |
 | Flexiones cronometradas | Fragmentos de ritmo desde medición temporal compatible; serie libre como apoyo mientras falta esa medición | Trabajo libre o carga calibrada; nunca convertir una serie con RIR en una marca temporal. |
-| Plancha | Misma postura/protocolo, dosis submáxima y progresión de segundos válidos | `dead_bug` conocido como práctica de control, subordinada; no acredita tiempo de plancha. |
+| Plancha | Misma postura/protocolo, dosis submáxima y progresión de segundos válidos | Plancha alta con referencia propia o primera práctica por segundos/RPE; no acredita tiempo de antebrazos. STR-040 retira dead bug de la selección automática. |
 | COD | Frenada → sectores/giro → recorrido integrado, con calidad previa | Fuerza unilateral calibrada, cuando la relación deportiva y recuperación lo permiten. |
 
 Se elige una práctica principal y como máximo un complemento por objetivo.

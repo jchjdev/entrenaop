@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**STR-040, 16/10/2026 · continuidad, metas y catálogo:** correcciones aplicadas
+y verificadas en desarrollo. Se elimina el bloqueo regional de flexiones,
+plancha conserva trabajo compatible al cambiar de fase y el adaptador de carrera
+aprovecha dos rodajes fáciles observados para un ensayo acotado. Núcleo carrera
+v5 intacto. Dead bug sale del selector y plancha alta tiene primera práctica
+propia, por duración/RPE. Metas y marcas compatibles se distinguen y orientan el
+desempate; no se infieren máximos desde series.
+Análisis limpio, 917 pruebas de raíz y una omisión web, 23 baterías SQL,
+149 migraciones coincidentes y veinte definiciones instaladas cotejadas.
+El mismo FAS de seis meses completa 26 semanas, 102 sesiones y 788 registros sin
+forzar marcas finales, exceder disponibilidad ni dejar datos. La transcripción
+anterior se conserva y se compara con la nueva. La simulación verifica software,
+no eficacia fisiológica; siguen abiertos el planificador autónomo completo de
+tests máximos, la aceptación física y los límites previos anual/concurrencia.
+**Único siguiente bloque recomendado:** aceptación en móvil del programa
+combinado, revisando selección/función de los ejercicios, primera práctica,
+registro y transición/adaptación con el repertorio actual, antes de ampliarlo.
+Detalle en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md) y
+[CATALOGO_ACTIVO_RENDIMIENTO.md](CATALOGO_ACTIVO_RENDIMIENTO.md).
+
 **STR-039, 16/10/2026 · entrada autónoma de accesorios:** recorrido implementado
 y verificado en desarrollo. El motor elige apoyos revisados, reutiliza datos
 propios y propone una práctica guiada opcional cuando faltan. Publicación,

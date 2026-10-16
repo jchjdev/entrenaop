@@ -1,6 +1,82 @@
 # Programa adaptativo
 
+## Continuidad, metas y repertorio · STR-040 · 16/10/2026
+
+Corrección aplicada y verificada en Supabase de desarrollo. El coordinador
+`preparation_coordinator_v4` conserva las estrategias y los límites reales de
+tiempo, recuperación y series compartidas, pero retira el veto general que
+impedía progresar a dos objetivos por compartir una región anatómica. Cada
+estrategia sigue limitando su propio incremento y no aumenta dosis y frecuencia
+a la vez. Una flexión libre puede seguir siendo cobertura esencial de la prueba
+cronometrada, sin convertirse en una marca de dos minutos.
+
+### Cambio de fase y capacidad observada
+
+Plancha conserva dosis y frecuencia al pasar de desarrollo a especificidad
+cuando variante, versión, protocolo, apoyos, carga y esfuerzo son iguales, el
+descanso no disminuye y existe respuesta propia reciente. Cambiar la etiqueta
+no acredita un incremento adicional. La dificultad sigue reduciendo desde la
+dosis conocida; una variante o montaje diferente no hereda esos segundos.
+
+Carrera v5 conserva su definición original. El adaptador diferencia capacidad
+declarada, duración continua observada y margen para el siguiente ensayo. Dos
+rodajes fáciles comparables en días distintos, con esfuerzo conocido, permiten
+probar hasta cinco minutos más que la menor duración acreditada, con límite
+operativo de sesenta minutos. Se mantienen los demás límites de carrera. Salud
+vigente, ausencia de respuesta adversa reciente y más de catorce días hasta la
+prueba son condiciones; datos desconocidos no amplían capacidad. No se sobrescribe
+la declaración inicial ni se renueva salud desde entrenamientos. El margen de
+cinco minutos es una decisión operativa acotada, no capacidad ya conseguida ni
+una dosis universal demostrada.
+
+### Ejercicios, metas y controles
+
+Dead bug sale de la selección automática para plancha, conservando biblioteca,
+referencias e históricos. La plancha alta entra como apoyo opcional con su propia
+primera práctica: hasta quince segundos, RPE máximo seis, sin RIR y sin convertir
+sus tiempos a antebrazos. El motor utiliza sus registros compatibles después.
+La revisión de funciones, alternativas y pendientes está en
+[CATALOGO_ACTIVO_RENDIMIENTO.md](CATALOGO_ACTIVO_RENDIMIENTO.md). Flexiones
+inclinadas son una regresión del empuje; rodillas y boat hold necesitan protocolo
+y relación revisados antes de incorporarse a la selección.
+
+Las metas de rendimiento se comparan con marcas completas compatibles del
+protocolo. FAS convierte milisegundos a segundos para plancha/circuito, conservando
+repeticiones. Una meta pendiente reciente precede a otra ya alcanzada entre
+opciones de la misma prioridad deportiva; ninguna obliga a prescribir el máximo
+deseado. La ventana de cuarenta y dos días solo clasifica vigencia de esa
+comparación: **no es una frecuencia de tests**. Sin marca compatible se conserva
+incertidumbre. Objetivos y controles muestra la evidencia usada en la propuesta,
+sin deducir máximos desde RIR, series o sectores. Carrera sola no incluye estas
+revisiones de rendimiento.
+
+Los controles submáximos de transición sustituyen una exposición ordinaria y
+conservan su dosis; no añaden un máximo. **No queda implementado un planificador
+autónomo completo de tests de examen.** La práctica temporal compatible sigue
+necesitando sus propios datos; el trabajo libre no acredita ritmo de dos minutos.
+Este límite se conserva visible y no se oculta con resultados inventados.
+
+### Verificación y repetición del caso
+
+Análisis limpio; 917 pruebas de raíz correctas y la omisión web existente;
+23 baterías SQL transaccionales; 149 migraciones local/remoto coincidentes y
+veinte cuerpos instalados cotejados, incluida carrera v5 original. Los avisos
+previos de seguridad de desarrollo no se han ampliado por estas funciones.
+No se modifican tablas, dependencias, sesiones publicadas ni producción.
+
+El [mismo caso de seis meses, repetido y comparado](audits/FAS_SEIS_MESES_CORREGIDO_2026_10_16.md)
+completa 26 semanas, 102 sesiones físicas y 788 registros. Conserva las entradas,
+disponibilidad y regla de respuestas ficticias del ensayo anterior. Flexiones
+alcanza 20 + 19 en tres exposiciones antes de puesta a punto; plancha pasa a
+especificidad manteniendo 76 + 75 y llega a 82 + 81; carrera alcanza semanas de
+85 minutos y tres salidas. Son dosis publicadas, **no máximos ni metas logradas**.
+El ensayo usa ROLLBACK, verifica restauración de funciones y no deja usuarios
+ficticios. La aceptación física en móvil y el planificador de máximos siguen
+pendientes; no se abre otra ampliación de repertorio antes de revisar este flujo.
+
 ## Ensayo dirigido de seis meses · 16/10/2026
+
+Estado anterior a STR-040, conservado para comparar los defectos y su corrección.
 
 Javier solicita una transcripción de lo que pauta realmente el programa FAS:
 2 km en 9:55, diez flexiones, plancha de 1:20 y circuito en 14 segundos; cuatro
@@ -42,9 +118,10 @@ antes que introducir otra desconocida. El desempate es estable, sin rotación
 aleatoria de ejercicios. La prioridad de carrera, la cobertura de las pruebas,
 la recuperación y el tiempo siguen siendo condiciones del coordinador.
 
-La entrada automática está definida para banca y flexiones con lastre como
+La entrada automática inicial de STR-039 estaba definida para banca y flexiones con lastre como
 apoyos de flexiones, dead bug junto a plancha y split squat sin carga para
-shuttle 5-10-5. No habilita automáticamente todas las relaciones del catálogo:
+shuttle 5-10-5. STR-040 sustituye dead bug por plancha alta con dosis propia por
+duración y esfuerzo. No habilita automáticamente todas las relaciones del catálogo:
 cada futura estrategia necesita una receta de entrada y pruebas propias.
 
 Se pueden reutilizar ejecuciones propias de cualquier preparación o entrenamiento

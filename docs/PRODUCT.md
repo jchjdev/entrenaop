@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**STR-040, 16/10/2026 · continuidad y repertorio:** flexiones y plancha pueden
+progresar dentro de sus límites sin un veto general por compartir tronco.
+Plancha conserva trabajo compatible al cambiar de fase; carrera utiliza rodajes
+fáciles registrados para un siguiente ensayo acotado, sin alterar el núcleo v5.
+Dead bug deja de seleccionarse automáticamente y plancha alta tiene entrada y
+esfuerzo propios. La propuesta distingue metas de marcas y series submáximas.
+El caso de seis meses se repite sin cambiar las respuestas ficticias; no prueba
+que una persona alcance los objetivos. Aceptación física y programación autónoma
+completa de tests máximos pendientes. Contrato y evidencia en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-039, 16/10/2026 · apoyos autónomos:** el motor selecciona un apoyo
 pertinente, aprovecha resultados propios compatibles y puede introducir una
 práctica guiada opcional si faltan datos. El usuario no necesita calibrar la

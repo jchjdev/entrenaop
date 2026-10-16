@@ -183,6 +183,7 @@ def main():
     parser.add_argument('--cli', default=os.environ.get('SUPABASE_CLI', 'supabase'))
     parser.add_argument('--output', type=Path, default=ROOT / 'build/fas-six-month-case.json')
     parser.add_argument('--weeks', type=int, default=26)
+    parser.add_argument('--migration',type=Path,help='Ensayar una migración pendiente sin aplicarla permanentemente')
     args = parser.parse_args()
     if not 1 <= args.weeks <= 26:
         parser.error('--weeks debe estar entre 1 y 26')
@@ -195,6 +196,12 @@ def main():
     c = connect(args.cli)
     original = one(c, "select md5(string_agg(p.oid::text||p.prosrc,'' order by p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prokind='f'")
     try:
+        if args.migration:
+            c.execute('set local role postgres')
+            source=args.migration.read_text(encoding='utf-8-sig')
+            source=re.sub(r'(?im)^begin;\s*','',source,count=1)
+            source=re.sub(r'(?i)commit;\s*$','',source)
+            c.execute(source)
         c.execute(CLOCK)
         c.execute(SETUP)
         g = one(c, "select current_setting('entrenaop.fixture_goal')::uuid")

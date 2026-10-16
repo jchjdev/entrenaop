@@ -8,6 +8,50 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  testWidgets('primera plancha alta pide segundos y esfuerzo, sin RIR', (
+    t,
+  ) async {
+    PerformanceSetResult? saved;
+    await t.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: PerformanceResultForm(
+              prescription: const PerformanceSetPrescription(
+                exerciseCode: 'front_plank_high',
+                exerciseVersion: 1,
+                protocolKey: 'support_work_v2:front_plank_high',
+                protocolVersion: 1,
+                setupKey: 'standard:support_v2:front_plank_high',
+                measurement: 'DURATION',
+                loadMode: 'bodyweight',
+                policyVersion: 'support_familiarization_v2',
+                targetValue: 15,
+                effortMode: 'rpe',
+                targetRpe: 6,
+              ),
+              onSave: (r, _) => saved = r,
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Conoce este apoyo'), findsOneWidget);
+    expect(find.textContaining('Repeticiones que te quedaban'), findsNothing);
+    expect(find.textContaining('no hay kilos obligatorios'), findsNothing);
+    final field = find.widgetWithText(
+      TextFormField,
+      'Tiempo válido realizado',
+    );
+    await t.enterText(field, '0:15');
+    await t.ensureVisible(find.text('Guardar resultado'));
+    await t.tap(find.text('Guardar resultado'));
+    await t.pumpAndSettle();
+    expect(saved?.value, 15);
+    expect(saved?.rir, isNull);
+    expect(t.takeException(), isNull);
+  });
   for (final loadMode in ['external_load', 'bodyweight_plus_external']) {
     testWidgets('primera práctica explica y registra carga real: $loadMode', (
       t,

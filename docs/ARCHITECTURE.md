@@ -1,5 +1,26 @@
 # Arquitectura de EntrenaOP
 
+## Continuidad por movimiento y evidencia de metas · STR-040 · 16/10/2026
+
+El coordinador v4 utiliza `performance_coordinate_progression_v3` para conservar
+incrementos ya limitados por estrategia, y el colocador mantiene tiempo,
+recuperación y coste compartido. La comparación pura de trabajo isométrico
+permite conservar dosis/frecuencia en una transición compatible sin transferir
+capacidad a otra variante. `running_capacity_observed_v1` comprueba propietario,
+datos y salud; entrega capacidad declarada, observada y margen de ensayo al
+adaptador. `running_plan_v5` conserva exactamente su cuerpo instalado original.
+
+Recetas y observaciones de apoyos v2 añaden plancha alta por duración/RPE y
+excluyen dead bug de nuevas selecciones, preservando validación e históricos v1.
+`performance_goal_reviews_v1` contrasta metas con marcas completas compatibles;
+su prioridad solo desempata después de las prioridades deportivas existentes.
+Los helpers de datos son privados y verifican el propietario; los dos helpers
+puros de receta/validación solo exponen política estática al usuario autenticado.
+No se crean tablas ni dependencias. Flutter presenta la instantánea en un panel
+independiente y reconoce la práctica v2 en el formulario existente; no decide
+dosis, fases ni controles. Contrato y límites en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 ## Entrada autónoma de apoyos · STR-039 · 16/10/2026
 
 El coordinador añade candidatos mediante recetas deportivas explícitas y busca

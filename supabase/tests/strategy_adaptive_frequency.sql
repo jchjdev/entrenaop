@@ -108,9 +108,9 @@ begin
  placement:=public.performance_select_v4(jsonb_build_array(p||'{"outcome":"reduce"}',candidate));
  if jsonb_array_length(placement)<>1 then raise exception 'Añade apoyo mientras se reduce principal'; end if;
  p:=p||'{"objective_key":"plank","exercise_code":"front_plank_forearms"}';
- candidate:=candidate||'{"objective_key":"plank","exercise_code":"dead_bug","role":"regression"}';
+ candidate:=candidate||'{"objective_key":"plank","exercise_code":"front_plank_high","role":"support"}';
  placement:=public.performance_select_v4(jsonb_build_array(p,candidate));
- if jsonb_array_length(placement)<>2 then raise exception 'Compara dead bug con el propio principal y lo pierde'; end if;
+ if jsonb_array_length(placement)<>2 then raise exception 'Compara el apoyo isométrico con el propio principal y lo pierde'; end if;
 
  -- La coordinación regional puede aplazar un escalón de carga. Reservar el
  -- mayor coste impide que al volver a más repeticiones se exceda el tiempo.

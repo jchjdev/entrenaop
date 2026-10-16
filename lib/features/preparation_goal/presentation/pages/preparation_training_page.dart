@@ -4,6 +4,7 @@ import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/core/presentation/dismiss_keyboard.dart';
 
 import '../widgets/program_phase_section.dart';
+import '../widgets/preparation_goal_review_panel.dart';
 
 import 'dart:convert';
 
@@ -1343,6 +1344,7 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         Text(p['reason'] as String? ?? 'Revisa los datos pendientes.'),
+        PreparationGoalReviewPanel(reviews: _rows(p['goal_reviews'])),
         if (!published && p['status'] != 'ready') ...[
           const SizedBox(height: 16),
           const Text(

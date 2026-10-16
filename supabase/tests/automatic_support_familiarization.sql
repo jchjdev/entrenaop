@@ -113,9 +113,10 @@ begin
   'targets','[20]'::jsonb,'frequency',1,
   'task','{"exercise_code":"front_plank_forearms","exercise_version":1,"protocol_key":"fixture","protocol_version":1,"setup_key":"standard:fixture","measurement":"DURATION","load_mode":"bodyweight","target_value":20,"intent":"work"}'::jsonb));
  main:=main||jsonb_build_object('reference_id',rid,'objective_key','front_plank_forearms:DURATION','exercise_code','front_plank_forearms','model','isometric');
- all_proposals:=public.performance_select_v4(public.performance_support_candidates_v1(g,wk,jsonb_build_array(main)));
- if not exists(select 1 from jsonb_array_elements(all_proposals) p where p->>'exercise_code'='dead_bug'
-    and p->'dose'->'task'->>'measurement'='REPS') then raise exception 'No introduce control de tronco'; end if;
+ all_proposals:=public.performance_select_v4(public.performance_support_candidates_v2(g,wk,jsonb_build_array(main)));
+ if not exists(select 1 from jsonb_array_elements(all_proposals) p where p->>'exercise_code'='front_plank_high'
+    and p->'dose'->'task'->>'measurement'='DURATION' and p->'dose'->'task'->>'effort_mode'='rpe'
+    and not (p->'dose'->'task') ? 'target_rir') then raise exception 'No introduce el apoyo isométrico con su propia unidad'; end if;
  rid:=public.save_performance_reference(g,jsonb_build_object('goal_code','shuttle_5_10_5','goal_version',1,
   'goal_measurement','TIME_FOR_COURSE','reference_kind','performed_set','observed_on',current_date,'current_capacity_confirmed',true,
   'targets','[10]'::jsonb,'frequency',1,

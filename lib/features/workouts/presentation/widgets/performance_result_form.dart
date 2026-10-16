@@ -36,7 +36,11 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
   String? _error;
   PerformanceSetPrescription get p => widget.prescription;
   bool get _familiarization =>
-      p.policyVersion == 'support_familiarization_v1' && !widget.correction;
+      const {
+        'support_familiarization_v1',
+        'support_familiarization_v2',
+      }.contains(p.policyVersion) &&
+      !widget.correction;
   bool get _responses =>
       p.recordsStimulusResponses ||
       widget.initialResult?.correctResponses != null ||
