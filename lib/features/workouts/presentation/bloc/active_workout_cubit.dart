@@ -782,7 +782,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
   }) async {
     if (_draftBusy || state.status == ActiveWorkoutStatus.saving) return;
     final execution = state.execution;
-    if (execution == null || execution.currentSet != null) return;
+    if (execution == null ||
+        execution.status != WorkoutExecutionStatus.inProgress ||
+        execution.currentSet != null) {
+      return;
+    }
     if (state.unconfirmedDraftCount > 0) {
       _refresh(
         error: 'Revisa las series con datos pendientes antes de finalizar.',
@@ -796,37 +800,15 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
         pendingSyncCount: state.pendingSyncCount,
       ),
     );
+    var disposition = WorkoutMutationDisposition.synced;
     try {
       await _flushSessionEdits();
-      final disposition = await _finishExecution(
+      disposition = await _finishExecution(
         executionId,
         finalRpe: finalRpe,
         notes: notes,
         averageHeartRateBpm: averageHeartRateBpm,
         maxHeartRateBpm: maxHeartRateBpm,
-      );
-      final updated = disposition == WorkoutMutationDisposition.queued
-          ? execution.copyWith(
-              status: WorkoutExecutionStatus.completed,
-              completedAt: DateTime.now().toUtc(),
-              finalRpe: finalRpe,
-              notes: notes?.trim(),
-              averageHeartRateBpm: averageHeartRateBpm,
-              maxHeartRateBpm: maxHeartRateBpm,
-              resultSource: WorkoutResultSource.manual,
-            )
-          : await _readProjectedExecution();
-      _drafts.clear();
-      await _draftStore.clear(executionId).catchError((Object _) {});
-      _amrapDrafts.clear();
-      await _amrapDraftStore.clear(executionId).catchError((Object _) {});
-      final pendingSyncCount = await _getPendingMutationCount();
-      _publish(
-        ActiveWorkoutState(
-          status: ActiveWorkoutStatus.completed,
-          execution: updated ?? execution,
-          pendingSyncCount: pendingSyncCount,
-        ),
       );
     } catch (_) {
       _publish(
@@ -837,7 +819,44 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
           errorMessage: 'No hemos podido finalizar la sesión. Si hay correcciones pendientes, comprueba la conexión y reintenta; tus datos se conservan.',
         ),
       );
+      return;
     }
+    // El cierre aceptado o encolado no depende de otra consulta ni de limpiar
+    // el disco. Un fallo posterior no puede volver a abrir el formulario.
+    final updated = execution.copyWith(
+      status: WorkoutExecutionStatus.completed,
+      completedAt: DateTime.now().toUtc(),
+      finalRpe: finalRpe,
+      notes: notes?.trim(),
+      averageHeartRateBpm: averageHeartRateBpm,
+      maxHeartRateBpm: maxHeartRateBpm,
+      resultSource: WorkoutResultSource.manual,
+    );
+    _drafts.clear();
+    _amrapDrafts.clear();
+    String? warning;
+    try {
+      await _draftStore.clear(executionId);
+      await _amrapDraftStore.clear(executionId);
+    } catch (_) {
+      warning = 'Sesión finalizada. No se ha podido limpiar el borrador local.';
+    }
+    var pending =
+        state.pendingSyncCount +
+        (disposition == WorkoutMutationDisposition.queued ? 1 : 0);
+    try {
+      pending = await _getPendingMutationCount();
+    } catch (_) {
+      warning = 'Sesión finalizada. No hemos podido actualizar el estado de sincronización.';
+    }
+    _publish(
+      ActiveWorkoutState(
+        status: ActiveWorkoutStatus.completed,
+        execution: updated,
+        pendingSyncCount: pending,
+        errorMessage: warning,
+      ),
+    );
   }
 
   Future<void> abandon(WorkoutAbandonmentReason reason) async {

@@ -635,6 +635,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                       ? 'Esfuerzo de carrera · 1 fácil, 10 máximo'
                       : 'RPE real',
                   minimum: 1,
+                  wholeNumbersOnly: true,
                   enabled: !widget.saving,
                   onChanged: (value) {
                     setState(() => _actualRpe = value);

@@ -564,6 +564,16 @@ general de fuente introducida por carrera (`23514`). Las pruebas SQL del flujo
 deben ejecutarse con esa restricción y el contrato de rendimiento presentes;
 un esquema del núcleo anterior no acredita la integración vigente.
 
+UI-047 limita la nueva selección de RPE real a enteros en presentación; los
+modelos y el almacenamiento conservan precisión decimal para no reescribir el
+historial o los borradores. Reutiliza el selector de esfuerzo en registro común,
+resultado deportivo y corrección; no modifica RIR, prescripciones ni algoritmos.
+El cierre de ejecución aceptado/encolado se proyecta sin una segunda lectura
+obligatoria. Las tareas de limpieza y contador no transforman una aceptación en
+rechazo. Antes de crear o retomar una ejecución, el repositorio sincroniza las
+mutaciones pendientes y comprueba la identidad para que un cierre en cola no se
+recupere como una sesión activa. La pantalla no accede a preferencias ni RPC.
+
 Una serie completada puede corregirse durante las 24 horas siguientes, con un
 máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos

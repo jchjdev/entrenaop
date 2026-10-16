@@ -4,6 +4,61 @@ import 'package:workout_core/performance_set.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
 
 void main() {
+  for (final (previous, selection) in <(double?, int?)>[
+    (null, 8),
+    (7.5, null),
+    (7.5, 8),
+  ]) {
+    testWidgets(
+      'RPE entero al elegir y decimal histórico intacto: $previous → $selection',
+      (t) async {
+        PerformanceSetResult? saved;
+        const prescription = PerformanceSetPrescription(
+          exerciseCode: 'plank',
+          exerciseVersion: 1,
+          protocolKey: 'fixture',
+          protocolVersion: 1,
+          setupKey: 'standard:fixture',
+          measurement: 'DURATION',
+          loadMode: 'bodyweight',
+          policyVersion: 'performance_v2',
+          targetValue: 30,
+          effortMode: 'rpe',
+          targetRpe: 7,
+        );
+        await t.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: PerformanceResultForm(
+                  prescription: prescription,
+                  initialResult: previous == null
+                      ? null
+                      : PerformanceSetResult(value: 30, rpe: previous),
+                  onSave: (r, _) => saved = r,
+                ),
+              ),
+            ),
+          ),
+        );
+        await t.enterText(find.byType(TextFormField).first, '40');
+        if (selection != null) {
+          final effort = find.text('Esfuerzo que has sentido · 1 a 10');
+          await t.ensureVisible(effort);
+          await t.tap(effort);
+          await t.pumpAndSettle();
+          expect(find.widgetWithText(ChoiceChip, '7.5'), findsNothing);
+          await t.tap(find.widgetWithText(ChoiceChip, '$selection'));
+          await t.pumpAndSettle();
+        }
+        await t.ensureVisible(find.text('Guardar resultado'));
+        await t.tap(find.text('Guardar resultado'));
+        await t.pumpAndSettle();
+        expect(saved?.value, 40);
+        expect(saved?.rpe, selection?.toDouble() ?? previous);
+      },
+    );
+  }
   testWidgets(
     'el reloj propone tiempo medido; confirmar calidad no inventa resultado ni esfuerzo',
     (t) async {

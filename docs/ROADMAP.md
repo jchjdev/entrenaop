@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**UI-047 / STR-034, 16/10/2026 · RPE entero y repetición de sesiones:** se
+reutiliza el selector de esfuerzo en entrenamiento, rendimiento y corrección;
+nuevas elecciones RPE del 1 al 10, sin redondear históricos/borradores ni cambiar
+RIR o motores. El cierre aceptado no depende de otra lectura o de limpieza, y
+el inicio sincroniza primero los cierres pendientes. Análisis limpio, 85 pruebas
+relacionadas y 896 completas correctas, con una omisión existente. Dos fallos
+técnicos relacionados están reproducidos y corregidos; el episodio intermitente
+de EMOM no tiene una causa física confirmada. El siguiente recorrido es probar
+RPE entero y finalizar/repetir un EMOM en móvil. Detalle en `VISUAL_DESIGN.md`.
+
 **UI-046, 16/10/2026 · circuito AMRAP y guardado:** código y verificación técnica
 completados; repetición física pendiente. Circuito con tarjetas compactas y ficha
 de consulta, contador opcional, reloj protagonista y revisión recuperable.

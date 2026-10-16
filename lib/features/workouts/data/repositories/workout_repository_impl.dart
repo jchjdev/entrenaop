@@ -74,8 +74,15 @@ class WorkoutRepositoryImpl implements WorkoutRepository {
       remoteDataSource.archivePersonalTemplate(templateId);
 
   @override
-  Future<String> startExecution(String templateId) =>
-      remoteDataSource.startExecution(templateId);
+  Future<String> startExecution(String templateId) async {
+    final userId = currentUserId();
+    if (userId == null) throw const AuthException('No hay sesión activa.');
+    // El servidor retoma ejecuciones abiertas: enviar primero un cierre en cola
+    // evita recuperar como activa la sesión que acabamos de finalizar.
+    await syncPendingMutations();
+    _requireAccount(userId);
+    return remoteDataSource.startExecution(templateId);
+  }
 
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async {

@@ -25,6 +25,67 @@ void main() {
     );
   });
 
+  for (final fail in [false, true]) {
+    test(
+      'repetir sesión sincroniza primero el cierre anterior: fallo=$fail',
+      () async {
+        mutationQueue.mutations.add(
+          PendingWorkoutMutation(
+            userId: 'user-A',
+            operationId: 'finish-previous',
+            type: WorkoutMutationType.finish,
+            resourceId: 'execution-1',
+            values: const {'p_final_rpe': 6},
+            createdAt: DateTime.utc(2026, 10, 16),
+          ),
+        );
+        dataSource.failFinish = fail;
+        if (fail) {
+          await expectLater(
+            repository.startExecution('template-1'),
+            throwsStateError,
+          );
+          expect(mutationQueue.mutations, hasLength(1));
+          expect(dataSource.events, ['finish']);
+        } else {
+          expect(
+            await repository.startExecution('template-1'),
+            'execution-new',
+          );
+          expect(mutationQueue.mutations, isEmpty);
+          expect(dataSource.events, ['finish', 'start']);
+        }
+      },
+    );
+  }
+  test(
+    'no inicia otra ejecución si cambia la cuenta durante la sincronización',
+    () async {
+      var user = 'user-A';
+      final changing = WorkoutRepositoryImpl(
+        remoteDataSource: dataSource,
+        mutationQueue: mutationQueue,
+        currentUserId: () => user,
+      );
+      mutationQueue.mutations.add(
+        PendingWorkoutMutation(
+          userId: 'user-A',
+          operationId: 'finish-previous',
+          type: WorkoutMutationType.finish,
+          resourceId: 'execution-1',
+          values: const {'p_final_rpe': 6},
+          createdAt: DateTime.utc(2026, 10, 16),
+        ),
+      );
+      dataSource.afterFinish = () => user = 'user-B';
+      await expectLater(
+        changing.startExecution('template-1'),
+        throwsA(isA<AuthException>()),
+      );
+      expect(dataSource.events, ['finish']);
+    },
+  );
+
   PendingWorkoutMutation pending(String resourceId, {String user = 'user-A'}) =>
       PendingWorkoutMutation(
         userId: user,
@@ -488,6 +549,9 @@ void main() {
 }
 
 class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
+  final events = <String>[];
+  bool failFinish = false;
+  void Function()? afterFinish;
   bool failDiscard = false;
   List<String> discardedResources = [];
   bool rejectDeletedResults = false;
@@ -604,6 +668,9 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) async {
+    events.add('finish');
+    if (failFinish) throw StateError('Sin conexión');
+    afterFinish?.call();
     finishedExecutionId = executionId;
     this.finalRpe = finalRpe;
     finalNotes = notes;
@@ -630,7 +697,10 @@ class _RecordingWorkoutRemoteDataSource implements WorkoutRemoteDataSource {
   Future<List<Map<String, dynamic>>> getPersonalTemplates() async => const [];
 
   @override
-  Future<String> startExecution(String templateId) async => 'execution-1';
+  Future<String> startExecution(String templateId) async {
+    events.add('start');
+    return finishedExecutionId == null ? 'execution-1' : 'execution-new';
+  }
 }
 
 class _MemoryMutationQueue implements WorkoutMutationQueue {

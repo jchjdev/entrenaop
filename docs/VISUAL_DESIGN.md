@@ -1,5 +1,42 @@
 # Identidad visual de EntrenaOP
 
+## RPE real entero y cierre de sesiones · UI-047 · 16/10/2026
+
+Javier acuerda simplificar el RPE real a enteros del 1 al 10 en las pantallas de
+entrenamiento. Se reutiliza `WorkoutEffortField` con una opción para elegir
+enteros: serie ordinaria/carrera, resultado deportivo y corrección del historial.
+La ausencia de esfuerzo sigue siendo un estado válido y no se preselecciona la
+prescripción. RIR conserva su escala previa; los campos de calibración y edición
+de prescripciones no forman parte de este cambio del ejecutor.
+
+Los tipos numéricos de dominio y base de datos, las reglas de los motores y sus
+umbrales permanecen vigentes. No se redondea en repositorios, codecs ni al guardar
+otro campo. Un RPE histórico o borrador de 7,5 se sigue mostrando y se conserva
+al corregir repeticiones/tiempo; elegir expresamente otro RPE ofrece solo enteros.
+No se migra ni reinterpreta el historial. El RPE global de sesión ya era entero.
+
+Javier comunica que, tras guardar un EMOM y verlo en historial, al repetirlo una
+vez apareció la pantalla de registro anterior; no consigue reproducirlo después.
+La revisión detecta dos condiciones comprobables relacionadas, sin afirmar que
+sean la causa exacta de ese incidente:
+
+- El cierre remoto aceptado dependía de releer la ejecución y de consultar el
+  contador de cola. Fallar después de guardar devolvía la pantalla al formulario.
+  `ActiveWorkoutCubit.finish` proyecta ahora el cierre aceptado/encolado y trata
+  los fallos de limpieza o contador como advertencias. Un cierre ya confirmado
+  no vuelve a enviarse; un rechazo real conserva el registro para reintentar.
+- `startExecution` llamaba al servidor antes de sincronizar un cierre en cola.
+  Como la RPC retoma ejecuciones abiertas, podía devolver el identificador de la
+  sesión anterior. El repositorio sincroniza primero y comprueba que siga siendo
+  la misma cuenta. Un fallo conserva la cola y no inicia otra ejecución.
+
+Verificación: análisis limpio, 896 pruebas completas correctas con una omisión
+existente y 85 específicas de ejecutor, formulario deportivo y repositorio. Incluyen elección entera, conservación de 7,5 al cambiar solo el
+tiempo, rechazo real de cierre, fallo de lectura/limpieza/contador tras aceptación,
+reapertura completada, orden cierre→inicio y cambio de cuenta. Sin cambios SQL,
+paquetes compartidos, admin ni dependencias. La repetición física del incidente
+EMOM queda pendiente.
+
 ## Circuito AMRAP y revisión del resultado · UI-046 · 16/10/2026
 
 Javier aporta una grabación y una captura: AMRAP conserva la tarjeta anterior,
@@ -141,9 +178,9 @@ Se revisa el diff completo, incluidos archivos nuevos, y su formato. Sin cambios
 en dependencias de la aplicación, paquetes compartidos ni admin.
 
 Verificación remota del 16/10/2026: migraciones aplicadas y prueba SQL con
-ROLLBACK correcta en **Supabase de desarrollo**. Falta repetir el guardado desde
-el iPhone y comprobar el balance visual en dispositivo. No se consulta ni
-modifica producción.
+ROLLBACK correcta en **Supabase de desarrollo**. Javier confirma después que
+el balance visual ya se ve muy bien en el iPhone. Falta confirmar el guardado
+AMRAP desde el dispositivo. No se consulta ni modifica producción.
 
 ## Evolución: etiquetas y acciones sin recortar · UI-045 · 16/10/2026
 

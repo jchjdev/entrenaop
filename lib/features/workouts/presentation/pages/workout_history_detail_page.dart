@@ -1,6 +1,7 @@
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 
 import '../widgets/workout_execution_labels.dart';
+import '../widgets/workout_effort_field.dart';
 
 import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -628,19 +629,13 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                     label: 'Metros reales de recuperación',
                   ),
                 if (set.targetRpe != null || set.actualRpe != null) ...[
-                  Text(
-                    'RPE real · ${_rpe == null ? 'Sin declarar' : _number(_rpe!)}',
-                  ),
-                  Slider(
-                    value: _rpe ?? 1,
-                    min: 1,
-                    max: 10,
-                    divisions: 18,
+                  WorkoutEffortField(
+                    label: 'RPE real',
+                    minimum: 1,
+                    wholeNumbersOnly: true,
+                    value: _rpe,
+                    enabled: true,
                     onChanged: (value) => setState(() => _rpe = value),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => _rpe = null),
-                    child: const Text('No sé estimar el RPE'),
                   ),
                 ],
                 if (set.targetRir != null || set.actualRir != null) ...[

@@ -48,6 +48,47 @@ void main() {
   // Estas regresiones miden tarjetas completas en dispositivos; Ahem tiene
   // métricas distintas a las fuentes de la aplicación.
   setUpAll(() => loadReviewFont(always: true));
+  for (final failure in ['read', 'pending', 'clear', 'rejected']) {
+    test(
+      'cierre EMOM ante fallo $failure no confunde guardado y limpieza',
+      () async {
+        final repository = _Repository();
+        repository.execution = repository.execution.copyWith(
+          sets: repository.execution.sets
+              .map((s) => s.copyWith(status: WorkoutSetStatus.completed))
+              .toList(),
+        );
+        final store = _FailingClearDraftStore();
+        final cubit = _cubit(repository, sessionDraftStore: store);
+        addTearDown(cubit.close);
+        await cubit.load();
+        repository.failReadAfterFinish = failure == 'read';
+        repository.failPendingAfterFinish = failure == 'pending';
+        repository.failFinish = failure == 'rejected';
+        store.failClear = failure == 'clear';
+        await cubit.finish(finalRpe: 6);
+        if (failure == 'rejected') {
+          expect(cubit.state.status, ActiveWorkoutStatus.failure);
+          expect(
+            repository.execution.status,
+            WorkoutExecutionStatus.inProgress,
+          );
+          return;
+        }
+        expect(cubit.state.status, ActiveWorkoutStatus.completed);
+        expect(cubit.state.execution!.status, WorkoutExecutionStatus.completed);
+        expect(cubit.state.execution!.finalRpe, 6);
+        await cubit.finish(finalRpe: 8);
+        expect(repository.finishAttempts, 1);
+        repository.failReadAfterFinish = false;
+        repository.failPendingAfterFinish = false;
+        final reopened = _cubit(repository);
+        addTearDown(reopened.close);
+        await reopened.load();
+        expect(reopened.state.status, ActiveWorkoutStatus.completed);
+      },
+    );
+  }
   testWidgets('Continuar encabeza la salida y conserva la sesión activa', (
     tester,
   ) async {
@@ -1510,6 +1551,10 @@ class _Repository implements WorkoutRepository {
   bool failAmrap = false;
   bool failReadAfterAmrap = false;
   bool failPendingAfterAmrap = false;
+  int finishAttempts = 0;
+  bool failReadAfterFinish = false;
+  bool failPendingAfterFinish = false;
+  bool failFinish = false;
   bool failAbandonment = false;
   int correctionCount = 0;
   bool failCorrection = false;
@@ -1531,6 +1576,9 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<WorkoutExecution?> getExecution(String executionId) async {
+    if (failReadAfterFinish && finishAttempts > 0) {
+      throw StateError('Lectura fallida');
+    }
     if (failReadAfterAmrap && amrapAttempts > 0) {
       throw StateError('Lectura fallida');
     }
@@ -1620,6 +1668,9 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<int> getPendingMutationCount() async {
+    if (failPendingAfterFinish && finishAttempts > 0) {
+      throw StateError('Disco fallido');
+    }
     if (failPendingAfterAmrap && amrapAttempts > 0) {
       throw StateError('Disco fallido');
     }
@@ -1655,6 +1706,8 @@ class _Repository implements WorkoutRepository {
     int? maxHeartRateBpm,
     WorkoutResultSource resultSource = WorkoutResultSource.manual,
   }) async {
+    finishAttempts++;
+    if (failFinish) throw StateError('Cierre rechazado');
     execution = execution.copyWith(
       status: WorkoutExecutionStatus.completed,
       finalRpe: finalRpe,
@@ -1664,6 +1717,15 @@ class _Repository implements WorkoutRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FailingClearDraftStore extends MemoryWorkoutSessionDraftStore {
+  bool failClear = false;
+  @override
+  Future<void> clear(String executionId) async {
+    if (failClear) throw StateError('Disco lleno');
+    await super.clear(executionId);
+  }
 }
 
 WorkoutExecution _execution() => WorkoutExecution(

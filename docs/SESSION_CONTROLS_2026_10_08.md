@@ -161,8 +161,10 @@ usuario, incluido el esfuerzo por serie o tramo. Se retiran las opciones de
 medios puntos en la experiencia de registro. El RPE global de sesión y el de
 un control de 2 km ya utilizaban enteros; se busca coherencia en la interacción.
 
-La implementación corresponde al trabajo que está rediseñando las pantallas de
-entrenamiento en curso. Esta anotación solo registra el criterio acordado: no
-acredita el cambio de controles o validaciones, no redefine reglas deportivas
-ni autoriza reescribir los resultados históricos con decimales. El acuerdo es
-sobre RPE; no cambia por extensión la escala de RIR.
+UI-047 implementa el acuerdo en las pantallas de entrenamiento en curso,
+resultado deportivo y corrección del historial reutilizando el selector existente.
+Los decimales históricos y borradores se conservan hasta que el usuario cambie
+expresamente ese RPE; editar otro dato no los redondea. No redefine reglas
+deportivas ni modifica la escala de RIR. Análisis limpio, 85 pruebas relacionadas
+y 896 completas correctas, con una omisión existente. Detalle en
+[VISUAL_DESIGN.md](VISUAL_DESIGN.md), UI-047.

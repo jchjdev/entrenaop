@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:workout_core/performance_set.dart';
 import 'package:workout_core/performance_time.dart';
 
+import 'workout_effort_field.dart';
+
 /// Captura manual: nunca rellena un resultado con la prescripción.
 class PerformanceResultForm extends StatefulWidget {
   const PerformanceResultForm({
@@ -277,7 +279,16 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           Text(
             'Esfuerzo al mantener la postura: 1 muy fácil, 5 moderado, 7 difícil pero controlado, 10 tu límite. Hoy no superes ${p.targetRpe?.toInt() ?? 7}/10.',
           ),
-          _number('rpe', 'Esfuerzo que has sentido · 1 a 10'),
+          WorkoutEffortField(
+            label: 'Esfuerzo que has sentido · 1 a 10',
+            minimum: 1,
+            wholeNumbersOnly: true,
+            value: _n('rpe'),
+            enabled: !widget.saving,
+            onChanged: (value) => setState(() {
+              _fields['rpe']!.text = value?.toString() ?? '';
+            }),
+          ),
         ],
         if (_penalties)
           _number('penalty', 'Penalización del protocolo', time: true),

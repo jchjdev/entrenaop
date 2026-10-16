@@ -8,12 +8,14 @@ class WorkoutEffortField extends StatelessWidget {
     required this.value,
     required this.enabled,
     required this.onChanged,
+    this.wholeNumbersOnly = false,
   });
   final String label;
   final int minimum;
   final double? value;
   final bool enabled;
   final ValueChanged<double?> onChanged;
+  final bool wholeNumbersOnly;
   static String _number(double n) =>
       n == n.roundToDouble() ? '${n.toInt()}' : '$n';
   @override
@@ -49,7 +51,11 @@ class WorkoutEffortField extends StatelessWidget {
                           spacing: 6,
                           runSpacing: 4,
                           children: [
-                            for (var step = minimum * 2; step <= 20; step++)
+                            for (
+                              var step = minimum * 2;
+                              step <= 20;
+                              step += wholeNumbersOnly ? 2 : 1
+                            )
                               ChoiceChip(
                                 label: Text(_number(step / 2)),
                                 selected: value == step / 2,
