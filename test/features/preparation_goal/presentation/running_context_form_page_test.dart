@@ -9,6 +9,87 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  testWidgets(
+    'recupera semanas registradas y no declara cero las desconocidas',
+    (tester) async {
+      const goal = PreparationGoal(
+        id: 'goal',
+        program: PreparationProgram(
+          id: PreparationProgramIds.fasPeriodicAssessment,
+          name: 'FAS',
+          kind: PreparationProgramKind.internalAssessment,
+        ),
+      );
+      final today = DateTime.now();
+      final monday = DateTime(
+        today.year,
+        today.month,
+        today.day,
+      ).subtract(Duration(days: today.weekday + 6));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RunningContextFormPage(
+            goalId: 'goal',
+            goals: const _Goals(goal),
+            loadContext: ({required goalId, required programId}) async =>
+                RunningInitialContext(
+                  goalId: goalId,
+                  programId: programId,
+                  collectedAt: today,
+                  availableMinutesByWeekday: {1: 60},
+                  reservedStrengthWeekdays: {},
+                  recentRunningWeeks: [
+                    for (var i = 0; i < 4; i++)
+                      RecentRunningWeek(
+                        weekStart: monday.subtract(Duration(days: i * 7)),
+                        runningDays: i == 0 ? 3 : 0,
+                        runningMinutes: i == 0 ? 95 : 0,
+                      ),
+                  ],
+                  recentLoadSources: [
+                    'observed',
+                    'unknown',
+                    'declared',
+                    'declared',
+                  ],
+                  comfortableContinuousMinutes: 30,
+                  health: RunningHealthCheck(
+                    observedAt: today,
+                    reportsPain: false,
+                    requiresProfessionalReview: false,
+                  ),
+                  reference: null,
+                ),
+            saveContext: (_) async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.textContaining('Ya hemos recuperado tu carrera registrada'),
+        180,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.textContaining('Ya hemos recuperado tu carrera registrada'),
+        findsOneWidget,
+      );
+      for (final entry in {
+        'recent-days-0': '3',
+        'recent-minutes-0': '95',
+        'recent-days-1': '',
+        'recent-days-2': '0',
+      }.entries) {
+        final field = find.byKey(Key(entry.key));
+        await tester.scrollUntilVisible(
+          field,
+          100,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(tester.widget<TextField>(field).controller!.text, entry.value);
+      }
+    },
+  );
   testWidgets('el bloque de carrera reutiliza la disponibilidad común', (
     tester,
   ) async {

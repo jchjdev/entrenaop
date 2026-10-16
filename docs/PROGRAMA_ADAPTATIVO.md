@@ -7,25 +7,106 @@ exigir repetir el alta ni volver a introducir la carga que el sistema ya conoce.
 La disponibilidad limita la pauta; no obliga a aumentar hasta ocupar todos sus
 días. Aumentar dosis tampoco implica necesariamente aumentar días.
 
-**Estado comprobado:** carrera v5 conserva presupuesto y resultados anteriores,
-puede aumentar volumen fácil y permite añadir como máximo una salida por
-adaptación cuando sus condiciones lo admiten. Rendimiento v3 progresa dosis,
-pero obtiene su frecuencia de la referencia inicial (una o dos exposiciones),
-con reducción en puesta a punto y límites del coordinador; no promueve por sí
-solo una referencia de frecuencia uno a frecuencia dos. La reparación STR-036
-no completa esa política de frecuencia.
+**Implementación STR-037:** `performance_task_v4` conserva las estrategias v3
+como base y añade `performance_frequency_v1`. Carrera sigue seleccionando con
+`running_plan_v5`, sin modificar su cuerpo. El coordinador aplica ambas políticas;
+no nace un segundo planificador ni se regeneran semanas ya publicadas.
 
-**Pendiente:** definir y verificar la revisión de frecuencia de rendimiento con
-evidencia observada, objetivo, tiempo y recuperación, sin sustituirla por una
-escalera automática de días. Completar las semanas recientes desde resultados
-conocidos debe distinguirse de confirmar salud o cambios de disponibilidad.
-La caducidad actual del contexto puede pedir una revisión: no se presenta el
-recorrido como completamente libre de confirmaciones.
+### Frecuencia y dosis
 
-Preguntar primero el máximo de días y la duración habitual, y después confirmar
-un calendario propuesto con excepciones por día, es una recomendación de entrada
-simplificada pendiente de aprobación. No se ha cambiado la disponibilidad
-vigente ni se atribuye la limitación de frecuencia a falta de sesiones base.
+- La frecuencia es por movimiento/objetivo, no el número total de días de fuerza.
+  Continúa la frecuencia efectivamente entregada en la semana anterior, entre una
+  y dos exposiciones. La referencia inicial deja de reiniciarla en cada adaptación.
+- Para pasar de una a dos se requieren las dos últimas respuestas comparables
+  toleradas en fechas distintas, separadas al menos siete días, dentro de los
+  últimos 21, con la última en los siete días anteriores. No se escogen solo
+  éxitos descartando una dificultad, falta de tiempo o respuesta desconocida.
+- No se promueve un apoyo, un estímulo recién cambiado ni durante los últimos
+  catorce días. La puesta a punto conserva su reducción a una exposición.
+- Repeticiones, carga/repeticiones, isometría y repeticiones temporales reparten
+  la dosis semanal tolerada entre dos exposiciones iguales. Se redondea hacia
+  abajo el total semanal; no se suben a la vez kilos, repeticiones, segundos ni
+  ventana temporal. Cada exposición mantiene una o dos series según la dosis
+  anterior y respeta mínimos de tres segundos o la horquilla cargada calibrada.
+  Si no resulta divisible, mantiene la frecuencia y continúa su adaptación de dosis.
+- En los circuitos compatibles se distribuyen intentos pares iguales, conservando
+  la medición y el tiempo de referencia. Nunca se divide el tiempo del circuito
+  para exigir más velocidad. Cuerda, potencia, transportes y habilidades conservan
+  la frecuencia conocida: esta entrega no inventa su política de expansión.
+- El coordinador conserva recuperación, cobertura de objetivos, carrera y coste
+  completo. Una redistribución solo puede publicarse con sus dos exposiciones;
+  si no caben, compara la dosis completa anterior en una exposición. La alternativa
+  compacta existente sigue disponible si tampoco cabe la completa y se identifica
+  como tal. No se entrega media redistribución como si estuviera completa.
+- Las adaptaciones siguientes usan la nueva dosis y sus registros. No se fuerza
+  una escalera hasta ocupar todos los días, ni se infiere capacidad de la disponibilidad.
+
+Estos umbrales son guardas operativas explícitas, no un óptimo universal demostrado.
+La literatura apoya distinguir frecuencia, volumen y especificidad, pero no valida
+por sí sola estos umbrales ni permite trasladar resultados de fuerza máxima a una
+plancha o circuito sin condiciones propias. Referencias contrastadas:
+[Grgic et al., 2018](https://pubmed.ncbi.nlm.nih.gov/29470825/),
+[Ralston et al., 2018](https://link.springer.com/article/10.1186/s40798-018-0149-9) y
+[Pelland et al., 2025/2026](https://pubmed.ncbi.nlm.nih.gov/41343037/).
+
+### Datos conocidos y disponibilidad
+
+`running_context_observed_v1` proyecta las cuatro últimas semanas completas desde
+cierres reales del deportista, incluidos los parciales con segundos registrados.
+Agrupa días locales distintos y suma duración de carrera; no suma descansos. Se
+reutiliza para la entrada del motor y para precargar el formulario mediante un RPC
+con comprobación de propietario. Las marcas siguen ligadas a su preparación.
+
+Las declaraciones previas se alinean por fechas. Para una misma semana se conserva
+el mayor valor entre declaración y registro, sin sumarlos dos veces; el usuario
+puede completar entrenamiento externo. Cada semana indica procedencia observada,
+declarada, combinada o desconocida. Las desconocidas se muestran vacías, sin
+convertirlas en una declaración de inactividad. Esta proyección no sobrescribe
+las declaraciones originales ni renueva salud, capacidad cómoda o controles.
+
+Confirmar salud/disponibilidad o aportar un control cuando corresponde sigue
+siendo distinto de repetir el alta. Los datos conocidos se precargan: guardar
+la confirmación actual no exige teclear de nuevo esas semanas. No se presenta
+el recorrido como completamente libre de confirmaciones.
+
+Javier autoriza simplificar la entrada: máximo de días y duración habitual,
+calendario propuesto que debe revisar y excepciones opcionales por día. Cambiar
+el máximo conserva los días y duraciones existentes mientras quepan; añadir días
+no obliga al motor a usarlos. Elegir duración aplica explícitamente a todos los
+marcados. Perfil y programa usan el mismo componente y el mismo contexto, sin
+nuevos campos duplicados ni cálculo deportivo en Flutter. No se amplía el banco.
+
+### Verificación STR-037 · 16/10/2026
+
+- `flutter analyze`: sin incidencias. Batería completa: 912 correctas y una
+  omisión web preexistente. Se verifican precarga/procedencia, desconocidos sin
+  ceros ficticios, conservación de calendario y excepciones, edición de duración
+  individual y tamaños 320/360/1000, incluyendo texto ampliado. Captura real del
+  componente a 360 px revisada; no sustituye la aceptación física en móvil.
+- Veinte baterías SQL pasan sobre las funciones instaladas con `ROLLBACK`:
+  frecuencia de repeticiones, carga, ventana temporal, isometría y circuito;
+  guardas de respuesta y fase, alternativa completa, permisos del lector,
+  regresiones de carrera v5, coordinación, ejecutor, revisiones y ciclo de programa.
+- Trayectorias combinadas de cinco semanas instaladas y 26 semanas en preflight
+  con la misma migración: arrancan con una exposición; llegan a dos observadas,
+  hasta tres días físicos de rendimiento y tres carreras en esa disponibilidad.
+  Las cinco renovaciones del caso de seis meses confirman salud/contexto sin
+  volver a escribir arrays de carga. No hay redistribuciones a medias ni sesiones
+  duplicadas. Son respuestas sintéticas para probar el sistema, no usuarios ni
+  predicciones de mejora. La caducidad de controles se mantiene.
+- 145 migraciones coinciden en desarrollo. Las seis definiciones nuevas/cambiadas
+  coinciden con la migración normalizando CRLF; el cuerpo de `running_plan_v5`
+  coincide con su fuente previa. No se han modificado datos de cuentas existentes.
+- Advisors mantiene avisos globales anteriores: siete informativos, dos avisos de
+  funciones anónimas, 114 funciones autenticadas y protección de contraseñas filtradas
+  desactivada. El nuevo lector está entre las autenticadas: `SECURITY DEFINER`
+  intencionado con comprobación de propietario, sin acceso anónimo y helper privado;
+  se prueba el rechazo cruzado. Este bloque no cierra una auditoría global de seguridad.
+  [Detalle del aviso](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
+- Límites: expansión hasta dos por objetivo en los modelos indicados; estrategias
+  restantes conservan frecuencia. No hay nueva validación fisiológica, estrés de
+  concurrencia ni aceptación física del recorrido. Se conserva el límite HTTP del
+  ensayo anual conjunto documentado en STR-036; no se anuncia como superado.
 
 ## Evidencia y encaje compartido · STR-036 · 16/10/2026
 

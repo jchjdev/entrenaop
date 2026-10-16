@@ -11,6 +11,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--migration', type=Path)
+parser.add_argument('--initial-frequency-one', action='store_true')
 parser.add_argument('--months', type=int, choices=[1, 2, 3, 4, 6, 12], default=6)
 args = parser.parse_args()
 parts = ["begin;", "set local statement_timeout='240s';"]
@@ -43,7 +44,7 @@ do $$ declare f record; definition text; u uuid:=gen_random_uuid(); begin
  insert into public.admin_permissions(user_id,reason) values(u,'Fixture longitudinal transaccional');
  perform set_config('entrenaop.fixture_user',u::text,true);
 end $$;
-create temp table adaptive_trajectory(week_start date,status text,running_count int,performance_count int,reviewed boolean);
+create temp table adaptive_trajectory(week_start date,status text,running_count int,performance_count int,reviewed boolean,maximum_frequency int);
 """)
 fixture = (ROOT / 'supabase/tests/adaptive_program_lifecycle.sql').read_text(encoding='utf-8-sig')
 marker = ' for s in select sw.id,sw.scheduled_date'
@@ -53,11 +54,29 @@ prefix = prefix.replace('(select user_id::text from public.admin_permissions lim
 prefix = prefix.replace('p jsonb; again jsonb;', 'iteration int:=0; renewed boolean; renewed_count int:=0; p jsonb; again jsonb;')
 prefix = prefix.replace('current_date+90', f"(current_date+interval '{args.months} months')::date")
 prefix = prefix.replace("now()+interval '1 day'", "now()+interval '2 years'")
+if args.initial_frequency_one:
+    prefix = prefix.replace("'rest_seconds',120,'frequency',2", "'rest_seconds',120,'frequency',1")
+    prefix = prefix.replace("jsonb_array_length(p->'sessions')<>2", "jsonb_array_length(p->'sessions')<1")
+
 loop = fixture[fixture.index(marker):fixture.index(' if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>2')]
 loop = loop.replace("   if (select count(*) from public.preparation_week_decisions where preparation_goal_id=g)<>1 then raise exception 'Adapta antes de cerrar todas las sesiones'; end if;", "   update adaptive_clock set value=s.scheduled_date+time '12:00';")
 loop = loop.replace("   perform public.finish_workout_execution(e,6,null,null,null,'manual');", "   perform public.finish_workout_observed_idempotent(gen_random_uuid(),e,6,now(),0);")
 loop = re.sub(r'   -- Fechas sintéticas.*?where id=e;\n', '', loop, flags=re.S)
 tail = """
+  -- El mismo lector que usa Flutter recupera cuatro semanas sin reescribirlas.
+  if iteration>=5 and (public.get_running_intake_context_observed(g)->'recent_load_sources') ? 'unknown' then
+    raise exception 'Pierde semanas registradas y vuelve a pedirlas'; end if;
+  if exists(select 1 from public.preparation_week_decisions wd,
+    jsonb_array_elements(wd.decision->'proposals') prop
+    where wd.preparation_goal_id=g and wd.week_start=wk and prop->>'status'='ready'
+      and prop->>'allocation_status' is distinct from 'not_scheduled'
+      and (prop->>'frequency')::int<>(select count(*) from jsonb_array_elements(wd.decision->'sessions') ss,
+        jsonb_array_elements(ss->'work') work where work->>'reference_id'=prop->>'reference_id')) then
+    raise exception 'Conserva una frecuencia que no se ha entregado'; end if;
+  if exists(select 1 from public.preparation_week_decisions wd,
+    jsonb_array_elements(wd.decision->'sessions') ss,jsonb_array_elements(ss->'work') work
+    where wd.preparation_goal_id=g and wd.week_start=wk and work->>'outcome'='redistribute'
+    group by work->>'reference_id' having count(*)<>2) then raise exception 'Publica media redistribución'; end if;
   renewed:=false;
   -- Se conserva la caducidad y se comprueba su salida de revisión. Solo este
   -- deportista simulado confirma explícitamente el contexto o aporta un control.
@@ -65,17 +84,8 @@ tail = """
    if (select observed_at<now()-interval '30 days' from public.performance_training_contexts where user_id=auth.uid())
      or (select updated_at::date<current_date-30 or health_observed_at::date<current_date-30 from public.running_intake_contexts where preparation_goal_id=g) then
     perform public.save_performance_context('{"1":60,"3":60,"5":60}',array['cones','tennis_ball','chalk','measuring_tape'],false,true);
-    update public.running_intake_contexts set updated_at=now(),health_observed_at=now(),recent_weeks_end_on=current_date-extract(isodow from current_date)::int,
-     running_days_last_four_weeks=array(select (select count(distinct public.workout_performed_on_v1(exe))::int
-       from public.workout_executions exe where exe.user_id=auth.uid() and exe.status='completed'
-         and public.workout_performed_on_v1(exe) between current_date-extract(isodow from current_date)::int-6-n*7 and current_date-extract(isodow from current_date)::int-n*7
-         and exists(select 1 from public.workout_execution_sets rs where rs.execution_id=exe.id and rs.block_format='running' and rs.status='completed'))
-       from generate_series(0,3) n order by n),
-     running_minutes_last_four_weeks=array(select (select coalesce(ceil(sum(rs.actual_duration_seconds+coalesce(rs.actual_recovery_duration_seconds,0))/60.0),0)::int
-       from public.workout_executions exe join public.workout_execution_sets rs on rs.execution_id=exe.id
-       where exe.user_id=auth.uid() and exe.status='completed' and rs.block_format='running' and rs.status='completed'
-         and public.workout_performed_on_v1(exe) between current_date-extract(isodow from current_date)::int-6-n*7 and current_date-extract(isodow from current_date)::int-n*7)
-       from generate_series(0,3) n order by n) where preparation_goal_id=g;
+    -- Solo confirma situación actual; la carga se recupera desde registros.
+    update public.running_intake_contexts set updated_at=now(),health_observed_at=now() where preparation_goal_id=g;
     renewed:=true; renewed_count:=renewed_count+1;
    end if;
    if (select now()-completed_at>interval '28 days' from public.preparation_running_tests where id=control_id) then
@@ -86,7 +96,10 @@ tail = """
    end if;
    perform public.advance_adaptive_program(g);
   end if;
-  insert into adaptive_trajectory select wk,ps.status,jsonb_array_length(wd.decision->'running'->'sessions'),jsonb_array_length(wd.decision->'sessions'),renewed
+  insert into adaptive_trajectory select wk,ps.status,jsonb_array_length(wd.decision->'running'->'sessions'),jsonb_array_length(wd.decision->'sessions'),renewed,
+   (select max((select count(*) from jsonb_array_elements(wd.decision->'sessions') ss,
+     jsonb_array_elements(ss->'work') work where work->>'reference_id'=prop->>'reference_id'))
+    from jsonb_array_elements(wd.decision->'proposals') prop where prop->>'status'='ready')
    from public.preparation_week_decisions wd join public.adaptive_program_states ps on ps.preparation_goal_id=wd.preparation_goal_id
    where wd.preparation_goal_id=g and wd.week_start=wk and wd.superseded_at is null;
   exit when (select status='complete' from public.adaptive_program_states where preparation_goal_id=g);
@@ -100,14 +113,16 @@ tail = """
  if iteration>6 and renewed_count=0 then raise exception 'No comprueba la caducidad del contexto'; end if;
  if exists(select 1 from public.scheduled_workouts where preparation_goal_id=g and status<>'cancelled' group by scheduled_date having count(*)>1) then raise exception 'Duplica sesiones'; end if;
 end $$;
-select count(*) weeks,count(*) filter(where reviewed) reviewed_weeks,max(running_count) maximum_runs,max(performance_count) maximum_performance_days from adaptive_trajectory;
+select max(maximum_frequency) maximum_observed_frequency,count(*) weeks,count(*) filter(where reviewed) reviewed_weeks,max(running_count) maximum_runs,max(performance_count) maximum_performance_days from adaptive_trajectory;
 rollback;
 """
+if args.initial_frequency_one:
+    tail = tail.replace(' if iteration<4', " if not exists(select 1 from adaptive_trajectory where maximum_frequency=2) then raise exception 'Nunca aumenta frecuencia desde uno'; end if;\n if iteration<4")
 longitudinal = prefix + '\n loop\n iteration:=iteration+1;\n' + loop + tail
 longitudinal = re.sub(r'\bcurrent_date\b', 'pg_temp.program_today()', longitudinal, flags=re.I)
 longitudinal = re.sub(r'\bnow\(\)', 'pg_temp.program_now()', longitudinal, flags=re.I)
 parts.append(longitudinal)
-target = ROOT / f'build/adaptive-longitudinal-{args.months}.sql'
+target = ROOT / f'build/adaptive-longitudinal-{args.months}{"-frequency-one" if args.initial_frequency_one else ""}.sql'
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text('\n\n'.join(parts), encoding='utf-8')
 print(target)

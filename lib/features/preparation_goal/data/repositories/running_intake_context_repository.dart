@@ -10,11 +10,10 @@ class RunningIntakeContextRepository {
     required String goalId,
     required String programId,
   }) async {
-    final row = await _client
-        .from('running_intake_contexts')
-        .select()
-        .eq('preparation_goal_id', goalId)
-        .maybeSingle();
+    final row = await _client.rpc(
+      'get_running_intake_context_observed',
+      params: {'p_goal_id': goalId},
+    );
     if (row == null) return null;
     final availability = (row['available_minutes_by_weekday'] as Map).map(
       (key, value) =>
@@ -49,6 +48,8 @@ class RunningIntakeContextRepository {
         requiresProfessionalReview: row['requires_professional_review'] as bool,
       ),
       reference: null,
+      recentLoadSources: (row['recent_load_sources'] as List? ?? const [])
+          .cast<String>(),
       targetTwoKilometreSeconds: (row['target_2k_seconds'] as num?)?.toInt(),
       officialMarginSeconds: (row['official_margin_seconds'] as num?)?.toInt(),
       comfortableContinuousMinutes:

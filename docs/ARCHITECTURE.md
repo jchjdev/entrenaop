@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+## Frecuencia observada · STR-037 · 16/10/2026
+
+`performance_task_v4` envuelve las estrategias v3 con una política pura de
+frecuencia. El coordinador compara redistribución y alternativa de una exposición,
+persiste la frecuencia entregada y conserva los contratos de publicación.
+`running_context_observed_v1` proyecta carga del propietario sin escribir contexto;
+el adaptador y el repositorio usan esa proyección. Carrera v5 permanece intacta.
+El componente compartido de disponibilidad solo edita huecos, calendario y minutos;
+la autoridad deportiva sigue en PostgreSQL. Contrato y límites en
+[PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 ## Evidencia adaptativa · STR-036 · 16/10/2026
 
 El repositorio de entrenamientos captura el instante de cierre y su offset

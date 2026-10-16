@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'training_equipment_labels.dart';
+import 'training_availability_fields.dart';
 
 /// Formulario común de disponibilidad real; no calcula ni reserva dosis.
 class TrainingContextFields extends StatelessWidget {
@@ -30,91 +31,12 @@ class TrainingContextFields extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const Text(
-        'Indica el tiempo total para entrenar cada día. Incluye carrera, fuerza, calentamiento y descansos; la app reparte el trabajo.',
+      TrainingAvailabilityFields(
+        availability: availability,
+        onChanged: onAvailability,
+        enabled: enabled,
+        defaultMinutes: defaultMinutes,
       ),
-      const SizedBox(height: 16),
-      for (var day = 1; day <= 7; day++)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final stack =
-                  constraints.maxWidth < 320 ||
-                  MediaQuery.textScalerOf(context).scale(14) > 20;
-              final dayField = CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  const [
-                    'Lunes',
-                    'Martes',
-                    'Miércoles',
-                    'Jueves',
-                    'Viernes',
-                    'Sábado',
-                    'Domingo',
-                  ][day - 1],
-                ),
-                value: (availability['$day'] ?? 0) > 0,
-                onChanged: enabled
-                    ? (value) =>
-                          onAvailability('$day', value! ? defaultMinutes : 0)
-                    : null,
-              );
-              final active = (availability['$day'] ?? 0) > 0;
-              final minutesField = active
-                  ? SizedBox(
-                      width: stack ? 200 : 125,
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey('minutes_${day}_${availability['$day']}'),
-                        initialValue: availability['$day'],
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Minutos'),
-                        items: [
-                          for (final minutes in ({
-                            15,
-                            20,
-                            25,
-                            30,
-                            45,
-                            60,
-                            75,
-                            90,
-                            120,
-                            150,
-                            180,
-                            availability['$day']!,
-                          }.toList()..sort()))
-                            DropdownMenuItem(
-                              value: minutes,
-                              child: Text('$minutes'),
-                            ),
-                        ],
-                        onChanged: enabled
-                            ? (value) => onAvailability('$day', value!)
-                            : null,
-                      ),
-                    )
-                  : null;
-              return stack
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        dayField,
-                        if (minutesField != null) const SizedBox(height: 12),
-                        ?minutesField,
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: dayField),
-                        if (minutesField != null) const SizedBox(width: 12),
-                        ?minutesField,
-                      ],
-                    );
-            },
-          ),
-        ),
       const SizedBox(height: 20),
       Text(
         'Material disponible',

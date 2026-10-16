@@ -61,6 +61,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
   bool _loading = true;
   bool _saving = false;
   bool _oldHistory = false;
+  List<String> _recentLoadSources = const [];
   bool? _pain;
   bool? _review;
   int? _comfortableMinutes;
@@ -135,6 +136,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
       setState(() {
         _goal = goal;
         if (existing != null) {
+          _recentLoadSources = existing.recentLoadSources;
           _available.addAll(existing.availableMinutesByWeekday.keys);
           _strength.addAll(existing.reservedStrengthWeekdays);
           for (final entry in existing.availableMinutesByWeekday.entries) {
@@ -150,6 +152,10 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
               i < existing.recentRunningWeeks.length && i < 4;
               i++
             ) {
+              if (_recentLoadSources.length > i &&
+                  _recentLoadSources[i] == 'unknown') {
+                continue;
+              }
               _daysByWeek[i].text =
                   '${existing.recentRunningWeeks[i].runningDays}';
               _minutesByWeek[i].text =
@@ -157,6 +163,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
             }
             _noRecentRunning =
                 existing.recentRunningWeeks.length == 4 &&
+                !_recentLoadSources.contains('unknown') &&
                 existing.recentRunningWeeks.every(
                   (week) => week.runningDays == 0 && week.runningMinutes == 0,
                 );
@@ -521,6 +528,19 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
               const Text(
                 'En cada semana indica los días en que corriste y los minutos TOTALES de carrera sumando todos esos días. Esto describe lo que hiciste, no el tiempo que estás dispuesto a entrenar ahora. El plan te recomendará una primera dosis para revisarla antes de añadirla a la agenda.',
               ),
+              if (_recentLoadSources.any(
+                (source) => source.startsWith('observed'),
+              ))
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Ya hemos recuperado tu carrera registrada. Revisa solo si falta entrenamiento que hiciste fuera de la app; no lo sumes otra vez si ya está incluido.',
+                  ),
+                ),
+              if (_recentLoadSources.contains('unknown'))
+                const Text(
+                  'Las semanas sin datos conocidos quedan vacías. Completa solo esas semanas; si no corriste, indica cero.',
+                ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('No he corrido en estas cuatro semanas'),

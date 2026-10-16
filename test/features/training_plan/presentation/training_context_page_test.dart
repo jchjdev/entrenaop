@@ -41,6 +41,11 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.ensureVisible(
+          find.text('Ajustar minutos de un día concreto'),
+        );
+        await tester.tap(find.text('Ajustar minutos de un día concreto'));
+        await tester.pumpAndSettle();
         final monday = find.byKey(const ValueKey('minutes_1_45'));
         final tuesday = find.byKey(const ValueKey('minutes_2_45'));
         final wednesday = find.byKey(const ValueKey('minutes_3_45'));
@@ -177,11 +182,40 @@ void main() {
           .every((tile) => tile.value == false),
       isTrue,
     );
-    final monday = find.widgetWithText(CheckboxListTile, 'Lunes');
+    final monday = find.widgetWithText(FilterChip, 'Lunes');
+    await tester.ensureVisible(monday);
     await tester.tap(monday);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Ajustar minutos de un día concreto'));
+    await tester.tap(find.text('Ajustar minutos de un día concreto'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(DropdownMenuItem<int>, '45'), findsWidgets);
   });
+  testWidgets(
+    'ampliar huecos conserva días y excepciones sin pautar entrenos',
+    (tester) async {
+      final repository = _ContextRepository();
+      await tester.pumpWidget(
+        MaterialApp(home: TrainingContextPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('available_day_count_2')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('5 días').last);
+      await tester.pumpAndSettle();
+      final save = find.text('Guardar disponibilidad y material');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(repository.saved!.availability.length, 5);
+      expect(repository.saved!.availability['1'], 45);
+      expect(repository.saved!.availability['4'], 60);
+      expect(
+        find.textContaining('El motor puede usar menos días'),
+        findsOneWidget,
+      );
+    },
+  );
 }
 
 class _ContextRepository implements TrainingContextRepository {

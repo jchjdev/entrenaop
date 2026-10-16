@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**STR-037, 16/10/2026 · frecuencia autónoma y disponibilidad:** bloque cerrado
+en código y Supabase de desarrollo. Rendimiento puede pasar de una a dos
+exposiciones desde respuestas comparables, repartiendo el volumen conocido;
+el coordinador conserva una exposición completa cuando no caben dos y guarda
+la frecuencia entregada. Carrera v5 conserva su cuerpo. La carga registrada
+precarga las semanas recientes, sin renovar salud ni inventar inactividad.
+Máximo de días, duración habitual y calendario con excepciones usan el mismo
+contexto. Análisis limpio, 912 pruebas de raíz correctas y una omisión web
+existente; veinte baterías SQL instaladas, 145 migraciones coincidentes y
+trayectorias combinadas de cinco y 26 semanas. Desde frecuencia uno se observan
+dos exposiciones por movimiento y hasta tres días físicos de fuerza en el caso
+simulado. No acredita mejoras fisiológicas ni cierra el ensayo anual conjunto.
+El único siguiente bloque recomendado es la aceptación móvil del programa
+combinado: disponibilidad, precarga contextual y adaptación tras cierres reales.
+Contrato y límites en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **STR-036, 16/10/2026 · evidencia de carrera/fuerza y encaje conjunto:**
 reparación de los seis defectos confirmados por Astra, aplicada solo en
 desarrollo sin reescribir sesiones/resultados. Caso real 5×60/5×90 reproducido:

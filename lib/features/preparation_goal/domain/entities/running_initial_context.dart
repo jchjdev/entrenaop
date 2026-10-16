@@ -1,4 +1,4 @@
-/// Datos declarados para preparar carrera dentro de una preparación concreta.
+/// Contexto declarado y carga observada para una preparación de carrera.
 /// Este contrato no decide la vigencia de los tests, convierte tests en ritmos
 /// ni autoriza publicar sesiones.
 class RunningInitialContext {
@@ -15,6 +15,7 @@ class RunningInitialContext {
     this.targetTwoKilometreSeconds,
     this.officialMarginSeconds,
     this.qualityWeeksLastFour = 0,
+    this.recentLoadSources = const [],
   });
 
   static const version = 'running_initial_context_v3';
@@ -27,6 +28,9 @@ class RunningInitialContext {
   final Map<int, int> availableMinutesByWeekday;
   final Set<int> reservedStrengthWeekdays;
   final List<RecentRunningWeek> recentRunningWeeks;
+
+  /// Procedencia de la proyección; unknown no equivale a declarar inactividad.
+  final List<String> recentLoadSources;
   final RunningHealthCheck? health;
   final InitialRunningReference? reference;
 

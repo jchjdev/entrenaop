@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**STR-037, 16/10/2026 · frecuencia desde resultados:** fuerza puede repartir el
+trabajo tolerado en dos exposiciones por movimiento sin repetir el alta. Se
+recupera carrera registrada para revisar el contexto y se simplifica la entrada
+con máximo de días, duración habitual y excepciones. No se prometen todos los
+días ocupados ni se renueva salud por ausencia de incidencias. Contrato vigente
+en [PROGRAMA_ADAPTATIVO.md](PROGRAMA_ADAPTATIVO.md).
+
 **UI-030, 14/10/2026 · revisión de sesión:** los ejercicios con foto muestran
 su miniatura junto al nombre, conservando orden, series e instrucciones. La
 acción de empezar permanece visible al recorrer el contenido sin taparlo;
