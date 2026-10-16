@@ -31,6 +31,14 @@ y la cabecera mide 82 px frente a los 64 reservados con texto 1,2. Se revisan
 capturas de filtros, calendario inicial y rango seleccionado en los tres
 escenarios. No hay cambios en paquetes compartidos ni admin.
 
+Instalación del 16/10/2026: el código `2690d7b` se compila en Release con
+`APP_ENV=development` y se instala por reemplazo en Iphone-JVR (iPhone 12),
+sin desinstalar ni cambiar su identificador. Firma estricta y binario AOT
+verificados; `devicectl` confirma el arranque sin la sesión de Flutter. No se
+incluye clave Test Store ni configuración de producción. Se conservan los
+cambios locales previos de Xcode/SPM. Javier dispone de esta versión para
+comprobar Preparación y Guardar; la aceptación visual sigue pendiente.
+
 ## Evolución: idioma y pantalla gris al filtrar · UI-044 · 16/10/2026
 
 La grabación de Javier muestra el calendario en inglés y, tras seleccionar
