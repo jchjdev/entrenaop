@@ -1,3 +1,4 @@
+import 'package:workout_core/workout_draft_codec.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_amrap_save_failure.dart';
 import 'package:entrenaop/features/workouts/data/datasources/workout_remote_datasource.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
@@ -25,6 +26,42 @@ void main() {
     );
   });
 
+  test(
+    'publicar omite RIR de duración o distancia y conserva el borrador decimal',
+    () {
+      for (final type in WorkoutTargetType.values) {
+        final set = WorkoutSetDraft(
+          targetType: type,
+          targetValue: 10,
+          restAfterSeconds: 60,
+          targetRir: 2.5,
+        );
+        final payload = workoutDraftToJson(
+          CreatePersonalWorkoutInput(
+            name: 'Prueba',
+            blocks: [
+              WorkoutBlockDraft(
+                name: 'Trabajo',
+                exercises: [
+                  WorkoutExerciseDraft(exerciseId: 'exercise-1', sets: [set]),
+                ],
+              ),
+            ],
+          ),
+        );
+        final encoded =
+            ((payload['blocks'] as List).single['exercises'] as List)
+                    .single['sets']
+                    .single
+                as Map;
+        expect(
+          encoded['target_rir'],
+          type == WorkoutTargetType.repetitions ? 2.5 : null,
+        );
+        expect(set.targetRir, 2.5);
+      }
+    },
+  );
   for (final fail in [false, true]) {
     test(
       'repetir sesión sincroniza primero el cierre anterior: fallo=$fail',
@@ -304,7 +341,7 @@ void main() {
                     'target_duration_seconds': null,
                     'target_distance_meters': 400.0,
                     'target_load_kg': null,
-                    'target_rir': 2.0,
+                    'target_rir': null,
                     'target_pace_min_seconds_per_km': null,
                     'target_pace_max_seconds_per_km': null,
                     'recovery_type': null,

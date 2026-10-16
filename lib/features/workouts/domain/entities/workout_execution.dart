@@ -357,6 +357,19 @@ class WorkoutExecutionSet extends Equatable {
   final WorkoutResultSource? resultSource;
   final DateTime? completedAt;
 
+  /// Los objetivos heredados de duración no habilitan nuevos registros de RIR.
+  bool get usesRir =>
+      performancePrescription?.usesRir ??
+      supportsRirForTask(
+        measurement:
+            targetReps != null &&
+                targetDurationSeconds == null &&
+                targetDistanceMeters == null
+            ? 'REPS'
+            : 'DURATION',
+        intent: blockFormat == WorkoutBlockFormat.running ? 'practice' : 'work',
+      );
+
   bool get isGrouped =>
       blockFormat == WorkoutBlockFormat.superset ||
       blockFormat == WorkoutBlockFormat.circuit ||

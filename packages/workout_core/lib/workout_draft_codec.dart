@@ -50,7 +50,7 @@ Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
       ? set.targetValue
       : null,
   'target_load_kg': set.targetLoadKg,
-  'target_rir': set.targetRir,
+  'target_rir': set.applicableTargetRir,
   'target_pace_min_seconds_per_km': set.targetPaceMinSecondsPerKm,
   'target_pace_max_seconds_per_km': set.targetPaceMaxSecondsPerKm,
   'recovery_type': switch (set.recoveryType) {

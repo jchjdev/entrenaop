@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'duration_input_formatter.dart';
+import 'workout_effort_field.dart';
 
 import 'package:workout_core/workout_template.dart';
 
@@ -101,15 +102,17 @@ class StrengthSetFields extends StatelessWidget {
           max: 1000,
           suffix: 'kg',
         ),
-      if (showRir)
-        _input(
-          label: rirLabel,
-          value: rirText,
-          onChanged: onRirChanged,
-          enabled: enabled,
-          optional: true,
-          min: 0,
-          max: 10,
+      if (showRir && targetType.supportsRir)
+        SizedBox(
+          width: 185,
+          child: WorkoutEffortField(
+            label: rirLabel,
+            minimum: 0,
+            value: double.tryParse(rirText.replaceAll(',', '.')),
+            enabled: enabled,
+            onChanged: (value) =>
+                onRirChanged(value == null ? '' : _number(value)),
+          ),
         ),
       if (showRest)
         _input(

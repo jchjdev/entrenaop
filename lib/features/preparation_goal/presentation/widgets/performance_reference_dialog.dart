@@ -1,4 +1,8 @@
 import 'preparation_select_field.dart';
+
+import 'package:workout_editor_ui/workout_effort_field.dart';
+import 'package:workout_core/performance_set.dart';
+
 import 'performance_equipment_labels.dart';
 
 import 'package:workout_editor_ui/duration_input_formatter.dart';
@@ -67,14 +71,14 @@ class _PerformanceReferenceDialogState
         'kettlebell_swing',
         'medicine_ball_chest_throw',
       ].contains(_work.code);
-  bool get _rirRelevant =>
-      !_maximum &&
-      !_practice &&
-      const [
-        StrengthMeasurement.reps,
-        StrengthMeasurement.loadReps,
-        StrengthMeasurement.repsInTime,
-      ].contains(_mode);
+  bool get _rirRelevant => supportsRirForTask(
+    measurement: _mode.code,
+    intent: _maximum
+        ? 'control'
+        : _practice
+        ? 'practice'
+        : 'work',
+  );
   bool get _specific => _goal.code == _work.code;
   bool get _supportsOfficial =>
       _specific && _workOptions.any((option) => option.mode == _goalMode);
@@ -718,12 +722,14 @@ class _PerformanceReferenceDialogState
                         'RIR: cuántas repeticiones más crees que podrías haber hecho con la misma técnica. '
                         'Por ejemplo: hiciste 8 y calculas que quedaban 3; registra 8 en la serie y 3 aquí. No es un máximo de 11 medido.',
                       ),
-                      _numeric(
-                        _rir,
-                        'Repeticiones que quedaban',
-                        helperText: 'De 0 a 10. Opcional.',
-                        required: false,
-                        allowZero: true,
+                      WorkoutEffortField(
+                        label: 'Repeticiones que quedaban',
+                        minimum: 0,
+                        value: _n(_rir),
+                        enabled: !_saving,
+                        onChanged: (value) => setState(() {
+                          _rir.text = value?.toString() ?? '';
+                        }),
                       ),
                     ],
                     if (!_maximum && _mode == StrengthMeasurement.duration) ...[

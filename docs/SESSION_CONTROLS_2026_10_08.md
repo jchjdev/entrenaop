@@ -188,9 +188,57 @@ La revisión debe alcanzar los controles y validaciones afectados de registro,
 calibración, edición y corrección, según el alcance real de cada tarea. Los
 datos heredados incompatibles se identifican antes de decidir su tratamiento;
 ocultar un campo no acredita que el contrato esté corregido. La implementación
-y sus regresiones corresponden al trabajo del ejecutor; esta entrega solo
-registra el acuerdo y no acredita código modificado o pruebas nuevas.
+y sus regresiones se desarrollan en UI-048, descrita a continuación; el acuerdo
+original no acreditaba todavía código modificado ni pruebas nuevas.
 
 Javier plantea revisar después el algoritmo. Se mantiene como revisión
 separada del contrato de entradas, calibración, adaptación y coordinación con
 carrera; no autoriza reescribir progresiones mientras se corrigen los controles.
+
+## RIR entero y aplicación por tarea · UI-048 · 16/10/2026
+
+Javier confirma RIR enteros de 0 a 10. «No lo sé» sigue siendo `null`; cero
+significa que no quedaban repeticiones completas. La interfaz nueva no ofrece
+medios puntos, pero un decimal histórico o restaurado se conserva hasta que el
+usuario lo cambie expresamente. Los tipos numéricos y los motores no se redondean.
+
+`supportsRirForTask`, en workout_core, alinea medición e intención: REPS,
+LOAD_REPS y REPS_IN_TIME de trabajo pueden usar RIR si el protocolo no selecciona
+otro esfuerzo. Control, práctica, duración, distancia y circuitos cronometrados
+no reciben RIR por tener reloj. No se infiere una equivalencia en segundos ni
+se añade RPE automáticamente. Duración válida, postura y RPE continúan según el
+protocolo tipado existente.
+
+El control ya existente de esfuerzo se comparte desde workout_editor_ui entre
+calibración, editores personal/ADMIN, ejecutor, rendimiento y corrección. El
+serializador de nuevas prescripciones descarta RIR incompatible sin mutar el
+borrador local; las plantillas y resultados antiguos no se migran. En una sesión
+heredada de duración no se pide ni se envía RIR nuevo, y la validación de
+confirmación rechaza RIR incompatible sin mutar el borrador. Corregir otro campo de un
+resultado histórico conserva su RIR anterior, incluso si pertenece a una tarea
+que ya no debe solicitarlo. No se exige esfuerzo inventado para cerrar una serie.
+
+Se conservan las comparaciones del servidor: estar por debajo del RIR pautado
+contribuye a dificultad; la regla adicional de volumen requiere exposiciones
+comparables muy fáciles (RIR al menos 6), junto al resto de condiciones. Los datos
+desconocidos siguen sin acreditar tolerancia ni justificar una progresión.
+No se modifica el coordinador ni el motor de carrera.
+
+
+Contraste en entrenaop-dev mediante SELECT sobre las funciones existentes, sin
+escrituras: para trabajo válido y objetivo RIR 3, cero y dos clasifican como
+dificultad, tres y seis como tolerado, y `null` como desconocido. El decimal
+heredado 2,5 sigue siendo válido y no se redondea. La validación tipada rechaza
+RIR en DURATION, admite RPE en la sujeción que lo prescribe y admite RIR en
+REPS_IN_TIME. No se necesita migración para esta alineación de las apps.
+
+
+Validación del bloque: análisis sin incidencias en deportista y ADMIN, 906
+pruebas completas del deportista y 109 de ADMIN correctas (una omisión existente
+en cada batería), más 11 pruebas de controles compartidos. La ejecución final
+del deportista recompila desde caché vacía y sin procesos de pruebas solapados;
+se descartan los registros mezclados de una ejecución anterior cancelada.
+Las regresiones cubren cero/ausencia, decimales heredados, RIR de duración no
+confirmable, repeticiones con reloj, corrección de otros datos y ancho estrecho
+con texto ampliado. Aceptación visual en iPhone pendiente. Se conserva STR-035,
+incorporada desde el acuerdo del otro chat, y se implementa mediante UI-048.

@@ -71,6 +71,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final duration in [false, true]) {
+    testWidgets(
+      'corregir otro dato conserva RIR 2.5 antiguo: duración=$duration',
+      (tester) async {
+        final repository = _CorrectionRepository(duration);
+        final cubit = WorkoutHistoryDetailCubit(
+          executionId: 'execution-1',
+          getExecution: GetWorkoutExecutionUseCase(repository),
+          correctSet: CorrectWorkoutSetUseCase(repository),
+        );
+        await cubit.load();
+        addTearDown(cubit.close);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider.value(
+              value: cubit,
+              child: const WorkoutHistoryDetailPage(),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byTooltip('Corregir resultado'));
+        await tester.tap(find.byTooltip('Corregir resultado'));
+        await tester.pumpAndSettle();
+        expect(find.text('RIR real'), duration ? findsNothing : findsOneWidget);
+        final reason = find.widgetWithText(
+          TextFormField,
+          'Motivo de la corrección',
+        );
+        await tester.ensureVisible(reason);
+        await tester.enterText(reason, 'Corregir anotación');
+        await tester.tap(find.text('Guardar corrección'));
+        await tester.pumpAndSettle();
+        expect(repository.lastCorrection?.actualRir, 2.5);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   for (final partialReps in [0, 3]) {
     testWidgets(
       'el detalle conserva el agregado AMRAP con $partialReps repeticiones parciales',
@@ -276,4 +314,37 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';
+}
+
+class _CorrectionRepository extends _Repository {
+  _CorrectionRepository(this.duration);
+  final bool duration;
+  WorkoutSetCorrectionInput? lastCorrection;
+  @override
+  Future<WorkoutExecution?> getExecution(String executionId) async =>
+      execution.copyWith(
+        sets: [
+          WorkoutExecutionSet(
+            id: 'set-1',
+            blockOrder: 0,
+            blockName: 'Principal',
+            itemOrder: 0,
+            exerciseId: 'exercise-1',
+            exerciseName: 'Ejercicio',
+            setOrder: 0,
+            targetReps: duration ? null : 10,
+            targetDurationSeconds: duration ? 30 : null,
+            targetRir: 3,
+            actualReps: duration ? null : 8,
+            actualDurationSeconds: duration ? 30 : null,
+            actualRir: 2.5,
+            restAfterSeconds: 0,
+            status: WorkoutSetStatus.completed,
+            completedAt: DateTime.now(),
+          ),
+        ],
+      );
+  @override
+  Future<void> correctSet(WorkoutSetCorrectionInput correction) async =>
+      lastCorrection = correction;
 }

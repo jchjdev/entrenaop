@@ -992,11 +992,13 @@ void main() {
     },
   );
   Future<(_Repository, ActiveWorkoutCubit)> mountEffortSet(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    bool duration = false,
+    double? previousRir,
+  }) async {
     final repository = _Repository();
     repository.execution = repository.execution.copyWith(
-      sets: const [
+      sets: [
         WorkoutExecutionSet(
           id: 'effort-set',
           blockOrder: 0,
@@ -1005,7 +1007,8 @@ void main() {
           exerciseId: 'push-up',
           exerciseName: 'Flexiones',
           setOrder: 0,
-          targetReps: 8,
+          targetReps: duration ? null : 8,
+          targetDurationSeconds: duration ? 30 : null,
           targetRir: 3,
           targetRpe: 7,
           restAfterSeconds: 0,
@@ -1016,6 +1019,17 @@ void main() {
     final cubit = _cubit(repository);
     addTearDown(cubit.close);
     await cubit.load();
+    if (previousRir != null) {
+      await cubit.updateDraft(
+        WorkoutSetResultInput(
+          resultId: 'effort-set',
+          actualRir: previousRir,
+          actualReps: duration ? null : 8,
+          actualDurationSeconds: duration ? 30 : null,
+        ),
+        {'reps': duration ? '' : '8', 'duration': duration ? '00:30' : ''},
+      );
+    }
     await tester.pumpWidget(
       MaterialApp(
         home: BlocProvider.value(
@@ -1049,6 +1063,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(field);
       await tester.pumpAndSettle();
+      expect(find.widgetWithText(ChoiceChip, '2.5'), findsNothing);
       await tester.tap(find.text('0').last);
       await tester.pumpAndSettle();
       await _finishAndConfirmCurrent(tester);
@@ -1056,6 +1071,25 @@ void main() {
       expect(repository.lastSetResult?.actualRpe, isNull);
     },
   );
+  testWidgets('una duración heredada no pide ni envía RIR nuevo', (
+    tester,
+  ) async {
+    final (repository, cubit) = await mountEffortSet(
+      tester,
+      duration: true,
+      previousRir: 2.5,
+    );
+    expect(find.widgetWithText(WorkoutEffortField, 'RIR real'), findsNothing);
+    expect(find.text('RIR 3'), findsNothing);
+    await _openCurrentResult(tester);
+    expect(find.widgetWithText(WorkoutEffortField, 'RIR real'), findsNothing);
+    await tester.enterText(find.byType(TextFormField).first, '0035');
+    await tester.pumpAndSettle();
+    expect(cubit.state.drafts['effort-set']?.result.actualRir, 2.5);
+    await _confirmOpenResult(tester);
+    expect(repository.lastSetResult?.actualDurationSeconds, 35);
+    expect(repository.lastSetResult?.actualRir, isNull);
+  });
   test('un EMOM descansa solo hasta el siguiente minuto', () async {
     final repository = _Repository();
     final cubit = _cubit(repository);

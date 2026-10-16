@@ -300,7 +300,7 @@ class _ActiveContentState extends State<_ActiveContent> {
           onSkip: cubit.skipRest,
           nextName: current.exerciseName,
           nextTarget:
-              '${workoutPositionLabel(current)} · ${workoutTargetLabel(current)}${current.targetRir == null ? '' : ' · RIR ${workoutNumber(current.targetRir!)}'}',
+              '${workoutPositionLabel(current)} · ${workoutTargetLabel(current)}${!current.usesRir || current.targetRir == null ? '' : ' · RIR ${workoutNumber(current.targetRir!)}'}',
           nextImageUrl: state.exercises[current.exerciseId]?.thumbnailUrl,
           onNextTechnique: () => showWorkoutTechnique(context, current),
         ),

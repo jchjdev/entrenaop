@@ -4,6 +4,66 @@ import 'package:workout_core/performance_set.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
 
 void main() {
+  for (final (previous, selection) in <(double?, String?)>[
+    (null, '0'),
+    (2.5, null),
+    (2.5, '3'),
+    (2.5, 'No lo sé · Sin registrar'),
+  ]) {
+    testWidgets(
+      'RIR entero, cero y desconocido sin redondear el anterior: $previous → $selection',
+      (t) async {
+        PerformanceSetResult? saved;
+        const p = PerformanceSetPrescription(
+          exerciseCode: 'push_up',
+          exerciseVersion: 1,
+          protocolKey: 'fixture',
+          protocolVersion: 1,
+          setupKey: 'fixture',
+          measurement: 'REPS_IN_TIME',
+          fixedDurationSeconds: 60,
+          loadMode: 'bodyweight',
+          policyVersion: 'v1',
+          targetValue: 10,
+          targetRir: 3,
+          effortMode: 'rir',
+        );
+        await t.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: PerformanceResultForm(
+                  prescription: p,
+                  initialResult: PerformanceSetResult(value: 10, rir: previous),
+                  onSave: (r, _) => saved = r,
+                ),
+              ),
+            ),
+          ),
+        );
+        if (selection != null) {
+          await t.ensureVisible(
+            find.text('Repeticiones que te quedaban · 0 a 10'),
+          );
+          await t.tap(find.text('Repeticiones que te quedaban · 0 a 10'));
+          await t.pumpAndSettle();
+          expect(find.widgetWithText(ChoiceChip, '2.5'), findsNothing);
+          final option = selection == 'No lo sé · Sin registrar'
+              ? find.text(selection)
+              : find.widgetWithText(ChoiceChip, selection);
+          await t.tap(option);
+          await t.pumpAndSettle();
+        }
+        await t.ensureVisible(find.text('Guardar resultado'));
+        await t.tap(find.text('Guardar resultado'));
+        await t.pumpAndSettle();
+        expect(
+          saved?.rir,
+          selection == null ? previous : double.tryParse(selection),
+        );
+      },
+    );
+  }
   for (final (previous, selection) in <(double?, int?)>[
     (null, 8),
     (7.5, null),

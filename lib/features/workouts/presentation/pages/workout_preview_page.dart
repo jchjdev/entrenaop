@@ -717,7 +717,7 @@ String _setPrescription(
         'sobre ${_number(p.fixedDistanceMeters!)} m',
       if (p.externalLoadKg != null)
         '${_number(p.externalLoadKg!)} kg ${p.loadMode == 'assisted' ? 'de asistencia' : 'externos'}',
-      if (p.targetRir != null)
+      if (p.usesRir && p.targetRir != null)
         'margen de ${_number(p.targetRir!)} repeticiones',
       if (includeRest) '${_duration(set.restAfterSeconds)} de descanso',
     ].join(' · ');
@@ -736,7 +736,9 @@ String _setPrescription(
   if (set.targetLoadKg case final load?) {
     parts.add('${_number(load)} kg');
   }
-  if (set.targetRir case final rir?) parts.add('RIR ${_number(rir)}');
+  if (set.usesRir && set.targetRir != null) {
+    parts.add('RIR ${_number(set.targetRir!)}');
+  }
   if (set.targetRpe case final rpe?) parts.add('RPE ${_number(rpe)}');
   if (set.targetPaceMinSecondsPerKm case final fastest?) {
     final slowest = set.targetPaceMaxSecondsPerKm!;

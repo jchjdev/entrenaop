@@ -1,5 +1,16 @@
 import 'package:equatable/equatable.dart';
 
+/// El reloj no descarta el RIR: cuentan la medición y la intención deportiva.
+/// La compatibilidad numérica de los datos antiguos no cambia esta regla.
+bool supportsRirForTask({
+  required String measurement,
+  String intent = 'work',
+  String? effortMode,
+}) =>
+    intent == 'work' &&
+    const ['REPS', 'LOAD_REPS', 'REPS_IN_TIME'].contains(measurement) &&
+    (effortMode == null || effortMode == 'rir');
+
 /// Instantánea deportiva entregada por el planificador. La presentación no
 /// deduce identidad, objetivos ni progresiones a partir del nombre del ejercicio.
 class PerformanceSetPrescription extends Equatable {
@@ -51,10 +62,11 @@ class PerformanceSetPrescription extends Equatable {
   final bool recordsStimulusResponses;
   final bool recordsPenaltySeconds;
 
-  bool get usesRir => effortMode == null
-      ? intent == 'work' &&
-            const ['REPS', 'LOAD_REPS', 'REPS_IN_TIME'].contains(measurement)
-      : effortMode == 'rir';
+  bool get usesRir => supportsRirForTask(
+    measurement: measurement,
+    intent: intent,
+    effortMode: effortMode,
+  );
   bool get usesRpe => effortMode == 'rpe';
   bool get usesLoad =>
       loadMode != 'bodyweight' &&

@@ -42,6 +42,9 @@ class WorkoutSessionSetDraft extends Equatable {
     if (set.performancePrescription != null) {
       return result.performanceResult != null;
     }
+    // Conservar un borrador heredado no autoriza confirmar RIR nuevo
+    // para una tarea donde esa métrica no corresponde.
+    if (result.actualRir != null && !set.usesRir) return false;
     bool number(double? n) => n == null || (n.isFinite && n >= 0);
     bool effort(double? n, double minimum) =>
         n == null ||

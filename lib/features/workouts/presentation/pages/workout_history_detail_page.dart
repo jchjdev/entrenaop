@@ -561,7 +561,8 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
             ? null
             : _parseDecimal(_load.text),
         actualRpe: set.targetRpe == null && set.actualRpe == null ? null : _rpe,
-        actualRir: set.targetRir == null && set.actualRir == null ? null : _rir,
+        // Corregir otro dato no elimina ni redondea un esfuerzo antiguo.
+        actualRir: set.usesRir ? _rir : set.actualRir,
         actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
             ? null
             : parseDurationInput(_recoveryDuration.text),
@@ -638,22 +639,15 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                     onChanged: (value) => setState(() => _rpe = value),
                   ),
                 ],
-                if (set.targetRir != null || set.actualRir != null) ...[
-                  Text(
-                    'RIR real · ${_rir == null ? 'Sin declarar' : _number(_rir!)}',
-                  ),
-                  Slider(
-                    value: _rir ?? 0,
-                    min: 0,
-                    max: 10,
-                    divisions: 20,
+                if (set.usesRir &&
+                    (set.targetRir != null || set.actualRir != null))
+                  WorkoutEffortField(
+                    label: 'RIR real',
+                    minimum: 0,
+                    value: _rir,
+                    enabled: true,
                     onChanged: (value) => setState(() => _rir = value),
                   ),
-                  TextButton(
-                    onPressed: () => setState(() => _rir = null),
-                    child: const Text('No sé estimar el RIR'),
-                  ),
-                ],
                 TextFormField(
                   controller: _reason,
                   maxLength: 300,

@@ -16,6 +16,42 @@ PerformanceSetPrescription prescription(String mode) =>
     );
 
 void main() {
+  test('RIR depende de repeticiones de trabajo, incluso con reloj', () {
+    for (final (measurement, intent, effort, allowed)
+        in <(String, String, String?, bool)>[
+          ('REPS', 'work', null, true),
+          ('LOAD_REPS', 'work', 'rir', true),
+          ('REPS_IN_TIME', 'work', 'rir', true),
+          ('REPS', 'control', 'rir', false),
+          ('REPS', 'practice', 'rir', false),
+          ('REPS', 'work', 'none', false),
+          ('REPS', 'work', 'rpe', false),
+          ('DURATION', 'work', 'rir', false),
+          ('TIME_FOR_COURSE', 'work', 'rir', false),
+          ('TIME_FOR_DISTANCE', 'work', null, false),
+        ]) {
+      expect(
+        supportsRirForTask(
+          measurement: measurement,
+          intent: intent,
+          effortMode: effort,
+        ),
+        allowed,
+        reason: '$measurement · $intent · $effort',
+      );
+    }
+    const legacy = PerformanceSetResult(value: 8, rir: 2.5);
+    final restored = PerformanceSetCodec.result(
+      PerformanceSetCodec.encodeResult(legacy),
+    );
+    expect(restored.rir, 2.5);
+    expect(restored.validate(prescription('REPS')), isNull);
+    expect(
+      const PerformanceSetResult(rir: 0).validate(prescription('REPS')),
+      isNull,
+    );
+    expect(const PerformanceSetResult().rir, isNull);
+  });
   test('el protocolo conserva sus capacidades sin convertir un circuito fijo en reactivo', () {
     final json = <String, dynamic>{
       'schema_version': 1,

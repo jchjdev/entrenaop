@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/workout_effort_field.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
 import 'package:flutter/material.dart';
@@ -410,16 +411,17 @@ void main() {
       await next(tester);
       await executionExamples(tester, 'push');
       await tap(tester, find.byTooltip('Editar registro 1 de Flexiones'));
-      await choose(tester, 'actual_rir_0', 'No sé estimarlo');
+      await tap(tester, find.byKey(const ValueKey('actual_rir_0')));
+      await tap(tester, find.text('No lo sé · Sin registrar'));
       await tap(tester, find.text('Guardar registro'));
       await tap(tester, find.byTooltip('Editar registro 1 de Flexiones'));
       expect(
         tester
-            .widget<DropdownButtonFormField<double>>(
+            .widget<WorkoutEffortField>(
               find.byKey(const ValueKey('actual_rir_0')),
             )
-            .initialValue,
-        -1,
+            .value,
+        isNull,
       );
       await tap(tester, find.text('Cancelar'));
       await finish(tester);

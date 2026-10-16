@@ -574,6 +574,17 @@ rechazo. Antes de crear o retomar una ejecución, el repositorio sincroniza las
 mutaciones pendientes y comprueba la identidad para que un cierre en cola no se
 recupere como una sesión activa. La pantalla no accede a preferencias ni RPC.
 
+UI-048 amplía la selección entera a RIR y mueve el mismo control a
+workout_editor_ui; la ruta anterior lo reexporta para mantener sus consumidores.
+La regla pura supportsRirForTask vive en workout_core y depende de medición,
+intención y modo de esfuerzo, no del temporizador. El serializador compartido
+publica únicamente el RIR aplicable, sin alterar el DTO guardado localmente.
+El ejecutor conserva borradores decimales heredados pero no envía RIR nuevo
+incompatible; la confirmación de borradores también valida esa aplicabilidad,
+sin borrar el contenido heredado. La corrección histórica conserva el dato anterior
+al editar otros campos. Las validaciones tipadas coinciden con el contrato del servidor, sin
+cambiar tablas, RPC de adaptación ni umbrales.
+
 Una serie completada puede corregirse durante las 24 horas siguientes, con un
 máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos

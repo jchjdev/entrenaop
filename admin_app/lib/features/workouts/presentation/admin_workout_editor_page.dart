@@ -943,7 +943,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 onTargetChanged: (value) => item.target.text = value,
                 onRestChanged: (value) => item.rest.text = value,
                 onLoadChanged: (value) => item.load.text = value,
-                onRirChanged: (value) => item.rir.text = value,
+                onRirChanged: (value) => setState(() => item.rir.text = value),
               ),
             ),
           if (!tabata && !amrap) ...[
@@ -1001,7 +1001,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             onTargetChanged: (value) => variation.target.text = value,
             onRestChanged: (value) => variation.rest.text = value,
             onLoadChanged: (value) => variation.load.text = value,
-            onRirChanged: (value) => variation.rir.text = value,
+            onRirChanged: (value) => setState(() => variation.rir.text = value),
           ),
         ],
       ),

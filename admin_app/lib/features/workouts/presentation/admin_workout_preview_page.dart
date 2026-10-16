@@ -343,7 +343,7 @@ String _setText(WorkoutSet set, WorkoutBlockFormat format) {
     );
   }
   if (set.targetLoadKg != null) details.add('${set.targetLoadKg} kg');
-  if (set.targetRir != null) details.add('RIR ${set.targetRir}');
+  if (set.usesRir && set.targetRir != null) details.add('RIR ${set.targetRir}');
   if (set.recoveryType != null) {
     final measure = set.recoveryDurationSeconds != null
         ? _time(set.recoveryDurationSeconds!)

@@ -688,6 +688,11 @@ contrato permitirá carga, repeticiones, duración, distancia, descanso,
 asistencia, intención de ejecución y esfuerzo objetivo, según la tarea.
 
 - `RIR`: solo cuando tiene sentido estimar repeticiones dinámicas restantes.
+  UI-048 ofrece enteros 0–10 y ausencia explícita, conservando datos anteriores
+  con decimales. REPS_IN_TIME no pierde RIR por tener reloj; DURATION no lo
+  adquiere de un target_rir heredado. La regla compartida también exige intención
+  de trabajo y respeta el modo de esfuerzo del protocolo. No equivale a segundos
+  restantes ni se convierte automáticamente en RPE.
 - `RPE`: especificar escala y si corresponde a serie, tarea o sesión.
 - `MAX_TEST`: intención de test máximo bajo protocolo; no exige un RIR ficticio.
 - `NONE`: ausencia de objetivo de esfuerzo, distinta de un dato faltante.

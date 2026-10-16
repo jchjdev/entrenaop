@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/workout_effort_field.dart';
 import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/performance_progression_policy.dart';
@@ -239,25 +240,13 @@ class _AdminPerformanceExecutionDialogState
                       : value == 'true',
                 ),
                 if (!_isDuration)
-                  DropdownButtonFormField<double>(
+                  WorkoutEffortField(
                     key: ValueKey('actual_rir_$i'),
-                    initialValue: _rir[i] ?? -1,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Repeticiones que te quedaban (RIR real)',
-                    ),
-                    items: [
-                      const DropdownMenuItem(
-                        value: -1,
-                        child: Text('No sé estimarlo'),
-                      ),
-                      for (var value = 0; value <= 20; value++)
-                        DropdownMenuItem(
-                          value: value / 2,
-                          child: Text('${value / 2}'),
-                        ),
-                    ],
-                    onChanged: (value) => _rir[i] = value == -1 ? null : value,
+                    label: 'Repeticiones que te quedaban (RIR real)',
+                    minimum: 0,
+                    value: _rir[i],
+                    enabled: true,
+                    onChanged: (value) => setState(() => _rir[i] = value),
                   ),
               ],
               const Divider(height: 24),

@@ -167,8 +167,9 @@ void validateWorkoutDraft(CreatePersonalWorkoutInput input) {
           );
         }
         if ((set.targetLoadKg ?? 0) < 0 ||
-            (set.targetRir != null &&
-                (set.targetRir! < 0 || set.targetRir! > 10))) {
+            (set.applicableTargetRir != null &&
+                (set.applicableTargetRir! < 0 ||
+                    set.applicableTargetRir! > 10))) {
           throw const FormatException(
             'Revisa la carga y el RIR de las series.',
           );
@@ -215,7 +216,7 @@ void validateWorkoutDraft(CreatePersonalWorkoutInput input) {
             );
           }
           if (set.targetLoadKg != null ||
-              set.targetRir != null ||
+              set.applicableTargetRir != null ||
               set.restAfterSeconds != 0) {
             throw const FormatException(
               'Los tramos de carrera usan su recuperación propia.',

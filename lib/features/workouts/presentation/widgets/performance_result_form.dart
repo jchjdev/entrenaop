@@ -273,7 +273,15 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
             'Detén la serie si alcanzas ese esfuerzo antes del número pautado; no fuerces repeticiones con mala técnica. '
             'Si no sabes estimarlo, deja el campo vacío.',
           ),
-          _number('rir', 'Repeticiones que te quedaban · 0 a 10'),
+          WorkoutEffortField(
+            label: 'Repeticiones que te quedaban · 0 a 10',
+            minimum: 0,
+            value: _n('rir'),
+            enabled: !widget.saving,
+            onChanged: (value) => setState(() {
+              _fields['rir']!.text = value?.toString() ?? '';
+            }),
+          ),
         ],
         if (p.usesRpe) ...[
           Text(

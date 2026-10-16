@@ -1,5 +1,21 @@
 # Identidad visual de EntrenaOP
 
+## RIR entero y sujeciones sin RIR · UI-048 · 16/10/2026
+
+El selector de esfuerzo existente se comparte entre deportista y ADMIN. RIR
+ofrece 0–10 enteros y «No lo sé · Sin registrar», conservando el valor decimal
+antiguo hasta una nueva elección. Se usa también en calibración, objetivos de
+sesiones, rendimiento y corrección del historial.
+
+Las tareas genéricas de duración no muestran ni generan RIR nuevo: el editor
+lo excluye al publicar y el ejecutor al formar el resultado. Los borradores y
+los resultados históricos se conservan sin transformaciones; la corrección de
+otro dato mantiene cualquier RIR previo. El temporizador de una serie por
+repeticiones no suprime RIR. No se incorpora RPE a sujeciones sin un protocolo
+que lo defina. Reglas deportivas y adaptación conservadas; aceptación física
+pendiente tras las pruebas automatizadas.
+
+
 ## RPE real entero y cierre de sesiones · UI-047 · 16/10/2026
 
 Javier acuerda simplificar el RPE real a enteros del 1 al 10 en las pantallas de

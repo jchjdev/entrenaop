@@ -123,7 +123,9 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('actual_units_0')), '6');
     await tester.enterText(find.byKey(const ValueKey('actual_load_0')), '35,5');
     await choose(tester, 'technique_0', 'Sí');
-    await choose(tester, 'actual_rir_0', '2.5');
+    await tap(tester, find.byKey(const ValueKey('actual_rir_0')));
+    expect(find.widgetWithText(ChoiceChip, '2.5'), findsNothing);
+    await tap(tester, find.widgetWithText(ChoiceChip, '2'));
     await tap(tester, find.byKey(const ValueKey('execution_conditions')));
     await choose(tester, 'execution_tolerance', 'Sí, tolerable');
     await choose(tester, 'execution_stop', 'Sin interrupción');
@@ -132,7 +134,7 @@ void main() {
     expect(saved!.dose.targetRir, 3);
     expect(saved!.sets.single.validUnits, 6);
     expect(saved!.sets.single.actualLoadKg, 35.5);
-    expect(saved!.sets.single.rir, 2.5);
+    expect(saved!.sets.single.rir, 2);
     expect(saved!.sets.single.techniqueValid, isTrue);
     expect(saved!.tolerated, isTrue);
     expect(saved!.conditionsConfirmed, isTrue);

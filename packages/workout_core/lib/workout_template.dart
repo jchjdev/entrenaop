@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import 'performance_set.dart';
 
 enum WorkoutBlockFormat {
@@ -17,6 +18,13 @@ enum WorkoutBlockFormat {
 enum WorkoutTemplateOrigin { system, user, coach, algorithm }
 
 enum WorkoutTargetType { repetitions, duration, distance }
+
+extension WorkoutTargetEffort on WorkoutTargetType {
+  bool get supportsRir => switch (this) {
+    WorkoutTargetType.repetitions => supportsRirForTask(measurement: 'REPS'),
+    _ => false,
+  };
+}
 
 enum RunningRecoveryType { passive, walking, jogging }
 
@@ -42,6 +50,9 @@ class WorkoutSetDraft extends Equatable {
   final int restAfterSeconds;
   final double? targetLoadKg;
   final double? targetRir;
+
+  /// Al publicar se descarta el RIR incompatible; el borrador original se conserva.
+  double? get applicableTargetRir => targetType.supportsRir ? targetRir : null;
   final int? targetPaceMinSecondsPerKm;
   final int? targetPaceMaxSecondsPerKm;
   final RunningRecoveryType? recoveryType;
@@ -267,6 +278,17 @@ class WorkoutSet extends Equatable {
 
   final String id;
   final PerformanceSetPrescription? performancePrescription;
+  bool get usesRir =>
+      performancePrescription?.usesRir ??
+      supportsRirForTask(
+        measurement:
+            targetReps != null &&
+                targetDurationSeconds == null &&
+                targetDistanceMeters == null
+            ? 'REPS'
+            : 'DURATION',
+      );
+
   final int order;
   final int? targetReps;
   final int? targetDurationSeconds;

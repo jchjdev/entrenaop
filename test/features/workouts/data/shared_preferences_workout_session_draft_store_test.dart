@@ -18,6 +18,40 @@ void main() {
     confirmed: false,
   );
   test(
+    'confirmar respeta la tarea sin borrar el RIR heredado del borrador',
+    () {
+      for (final timedReps in [false, true]) {
+        final set = WorkoutExecutionSet(
+          id: 'set',
+          blockOrder: 0,
+          blockName: 'Principal',
+          blockFormat: WorkoutBlockFormat.emom,
+          itemOrder: 0,
+          exerciseId: 'exercise',
+          exerciseName: 'Ejercicio',
+          setOrder: 0,
+          targetReps: timedReps ? 10 : null,
+          targetDurationSeconds: timedReps ? null : 30,
+          targetRir: 3,
+          restAfterSeconds: 0,
+          status: WorkoutSetStatus.pending,
+        );
+        for (final rir in <double?>[null, 0, 2, 2.5, 3, 10]) {
+          final draft = WorkoutSessionSetDraft(
+            result: WorkoutSetResultInput(
+              resultId: 'set',
+              actualReps: timedReps ? 10 : null,
+              actualDurationSeconds: timedReps ? null : 30,
+              actualRir: rir,
+            ),
+          );
+          expect(draft.canConfirm(set), timedReps || rir == null);
+          expect(draft.result.actualRir, rir);
+        }
+      }
+    },
+  );
+  test(
     'recupera un resultado pendiente y conserva el texto sin reinterpretarlo',
     () async {
       final preferences = await SharedPreferences.getInstance();

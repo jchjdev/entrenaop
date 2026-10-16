@@ -1451,6 +1451,7 @@ class _ExerciseRowData {
         setCount,
         (_) => _SetRowData(
           targetValue: type == WorkoutTargetType.duration ? 30 : 10,
+          rir: type.supportsRir ? 2 : null,
         ),
       ),
     );

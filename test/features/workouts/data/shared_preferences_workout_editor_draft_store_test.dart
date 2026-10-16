@@ -34,7 +34,7 @@ void main() {
                     targetValue: 10,
                     restAfterSeconds: 15,
                     targetLoadKg: 20,
-                    targetRir: 2,
+                    targetRir: 2.5,
                   ),
                 ],
               ),

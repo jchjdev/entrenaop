@@ -158,37 +158,51 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
   Map<String, String> get _fields => {
     for (final e in _controllers.entries) e.key: e.value.text,
   };
-  WorkoutSetResultInput get _input => WorkoutSetResultInput(
-    resultId: set.id,
-    actualReps: set.targetReps == null
-        ? null
-        : parseWorkoutReps(_repsController.text),
-    actualDurationSeconds:
-        set.targetDurationSeconds == null &&
-            set.blockFormat != WorkoutBlockFormat.running
-        ? null
-        : parseDurationInput(_durationController.text),
-    actualDistanceMeters:
-        set.targetDistanceMeters == null &&
-            set.blockFormat != WorkoutBlockFormat.running
-        ? null
-        : parseWorkoutDecimal(_distanceController.text),
-    actualLoadKg: set.targetLoadKg == null
-        ? null
-        : parseWorkoutDecimal(_loadController.text),
-    actualRir: set.targetRir == null ? null : _actualRir,
-    actualRpe: set.targetRpe == null ? null : _actualRpe,
-    actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
-        ? null
-        : parseDurationInput(_recoveryDurationController.text),
-    actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
-        ? null
-        : parseWorkoutDecimal(_recoveryDistanceController.text),
-  );
+  WorkoutSetResultInput get _input => _resultInput();
+
+  WorkoutSetResultInput _resultInput({bool forDraft = false}) =>
+      WorkoutSetResultInput(
+        resultId: set.id,
+        actualReps: set.targetReps == null
+            ? null
+            : parseWorkoutReps(_repsController.text),
+        actualDurationSeconds:
+            set.targetDurationSeconds == null &&
+                set.blockFormat != WorkoutBlockFormat.running
+            ? null
+            : parseDurationInput(_durationController.text),
+        actualDistanceMeters:
+            set.targetDistanceMeters == null &&
+                set.blockFormat != WorkoutBlockFormat.running
+            ? null
+            : parseWorkoutDecimal(_distanceController.text),
+        actualLoadKg: set.targetLoadKg == null
+            ? null
+            : parseWorkoutDecimal(_loadController.text),
+        // El borrador puede conservar un dato heredado que ya no corresponde
+        // enviar como resultado nuevo de esta tarea.
+        actualRir: forDraft
+            ? _actualRir
+            : !set.usesRir || set.targetRir == null
+            ? null
+            : _actualRir,
+        actualRpe: set.targetRpe == null ? null : _actualRpe,
+        actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
+            ? null
+            : parseDurationInput(_recoveryDurationController.text),
+        actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
+            ? null
+            : parseWorkoutDecimal(_recoveryDistanceController.text),
+      );
 
   void _persistDraft() {
     if (set.performancePrescription != null) return;
-    unawaited(context.read<ActiveWorkoutCubit>().updateDraft(_input, _fields));
+    unawaited(
+      context.read<ActiveWorkoutCubit>().updateDraft(
+        _resultInput(forDraft: true),
+        _fields,
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -209,7 +223,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
 
   Future<void> _end() async {
     final cubit = context.read<ActiveWorkoutCubit>();
-    await cubit.updateDraft(_input, _fields);
+    await cubit.updateDraft(_resultInput(forDraft: true), _fields);
     await cubit.endCurrentSet(elapsedSeconds: _emomElapsedSeconds);
   }
 
@@ -455,7 +469,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                         : Colors.white70,
                   ),
                 ),
-                if (set.targetRir != null)
+                if (set.usesRir && set.targetRir != null)
                   Text(
                     'RIR ${workoutNumber(set.targetRir!)}',
                     style: const TextStyle(color: Colors.white60),
@@ -642,7 +656,7 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                     _persistDraft();
                   },
                 ),
-              if (set.targetRir != null)
+              if (set.usesRir && set.targetRir != null)
                 WorkoutEffortField(
                   value: _actualRir,
                   label: 'RIR real',

@@ -59,7 +59,7 @@ class WorkoutAmrapExerciseTile extends StatelessWidget {
                   Text(
                     '${set.targetReps} repeticiones'
                     '${set.targetLoadKg == null ? '' : ' · ${workoutNumber(set.targetLoadKg!)} kg'}'
-                    '${set.targetRir == null ? '' : ' · RIR ${workoutNumber(set.targetRir!)}'}',
+                    '${!set.usesRir || set.targetRir == null ? '' : ' · RIR ${workoutNumber(set.targetRir!)}'}',
                     style: const TextStyle(color: Colors.white60, fontSize: 13),
                   ),
                 ],
