@@ -1,5 +1,28 @@
 # Avisos del ejecutor · UI-018 · 08/10/2026
 
+## Diagnóstico aportado desde iPhone · 16/10/2026
+
+Javier consigue abrir la app desde Xcode y aporta avisos de consola. La ruta
+nativa de `audioplayers_darwin` 6.5.0 invoca `AVAudioSession.setActive` desde
+`controlAudioSession`, aislado a `@MainActor`; coincide con el aviso de posible
+bloqueo del hilo de interfaz. Un `await` en Dart no desplaza esa llamada nativa
+a otro hilo. Queda pendiente corregir/verificar esa integración en Mac con
+compilación y escucha física, sin ocultar avisos ni actualizar paquetes a ciegas.
+El aviso por sí solo no acredita un bloqueo observado.
+
+`FlutterSemanticsScrollView ... focusItemsInRect` es diagnóstico del sistema de
+foco/accesibilidad; no identifica por sí solo un fallo de scroll o teclado.
+`EntrenaOPVibration ... enviada=true` informa de una solicitud aceptada por el
+adaptador, sin probar percepción física. `PlayerRemoteXPC err=-12860` procede
+del subsistema multimedia; los logs no permiten atribuirle una causa exacta ni
+garantizar su inocuidad sin contrastar si falta o se retrasa algún sonido.
+
+El texto de compilación adjunto contiene artefactos obsoletos (`Stale file`),
+deprecaciones de dependencias y avisos de aislamiento Swift del reproductor;
+no incluye diagnósticos explícitos de error de compilación. No se cambian
+dependencias ni la implementación de audio durante la reparación del guardado
+AMRAP; este último reproduce una restricción PostgreSQL independiente.
+
 ## Problema comprobado y criterio
 
 Javier comunica ausencia de sonido en localhost, Android físico y el simulador

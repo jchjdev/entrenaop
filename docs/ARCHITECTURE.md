@@ -556,6 +556,13 @@ se muestran como advertencias y no como rechazo del guardado. Un rechazo
 PostgREST se traduce en datos a `WorkoutAmrapSaveFailure`; la presentación no
 depende de tipos de Supabase. El agregado confirmado conserva su inmutabilidad.
 
+Al resolver AMRAP se declaran manuales también las filas de ejecución que pasan
+a completadas (`result_source='manual'`), sin rellenar marcas individuales.
+La migración `20261016001000` corrige esa omisión, que infringía la restricción
+general de fuente introducida por carrera (`23514`). Las pruebas SQL del flujo
+deben ejecutarse con esa restricción y el contrato de rendimiento presentes;
+un esquema del núcleo anterior no acredita la integración vigente.
+
 Una serie completada puede corregirse durante las 24 horas siguientes, con un
 máximo de tres cambios. La operación exige un motivo y conserva en una tabla de
 auditoría los valores anteriores y posteriores; Flutter no dispone de permisos

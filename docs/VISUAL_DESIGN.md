@@ -67,10 +67,19 @@ La migración `20261016000000_amrap_review_and_retry.sql` admite parciales de ce
 serializa por ejecución y reconoce el mismo resultado repetido incluso con un
 recibo nuevo. Un resultado diferente no sobrescribe el agregado confirmado.
 
-La función anterior **sí acepta 5 vueltas y 4/10** en el banco PostgreSQL local.
-No se atribuye por tanto el incidente físico de Javier a una causa remota no
-observada. Se corrigen los fallos comprobables del flujo y se añade diagnóstico
-para distinguir el rechazo restante si persiste en el dispositivo.
+La primera prueba aislada aceptaba 5 vueltas y 4/10, pero omitía las migraciones
+posteriores de carrera y su restricción de fuente. Por ello no acreditaba el
+guardado sobre el esquema vigente. Javier aporta después el rechazo `23514` en
+iPhone, seleccionando el segundo movimiento con 13/30. Al cargar también las
+migraciones de carrera se reproduce `workout_execution_sets_completed_source_check`:
+la función AMRAP completaba sus filas sin rellenar `result_source`.
+
+`20261016001000_amrap_manual_result_source.sql` sustituye la función para
+declarar `result_source='manual'` en las filas resueltas, manteniendo el agregado
+como única marca deportiva. No elimina la restricción, inventa repeticiones por
+movimiento ni modifica permisos. Conserva serialización y reintentos. Se añade
+una migración nueva para respetar el historial de entornos donde la anterior
+ya esté aplicada.
 
 Verificación local: regresiones de dominio y preferencias, envío/cola, recuperación
 del contador, pulsaciones consecutivas, fallo y reintento sin perder datos,
@@ -81,9 +90,13 @@ se comprueba que las tres tarjetas completas caben sobre el contador. Las fotos
 de las capturas son una referencia local repetida, no cambios al catálogo.
 La prueba `supabase/tests/amrap_review_and_retry.sql` comprueba guardado,
 parciales de cero, normalización, reintentos, rechazos y permisos con ROLLBACK
-en PostgreSQL aislado mediante PGlite, cargando las migraciones del núcleo de
-entrenamiento y esquemas de autenticación ficticios. No acredita las migraciones
-ni los datos del servidor enlazado.
+en PostgreSQL aislado mediante PGlite, con autenticación ficticia. La regresión
+ampliada incluye las migraciones reales de carrera `20260922003000` a
+`20260922008000`, el contrato de rendimiento `20261003004000` y las dos
+migraciones AMRAP del 16/10. Antes de la segunda migración reproduce `23514`;
+después pasa también 13/30, exige fuente manual y comprueba que no se inventan
+resultados individuales. No acredita las migraciones ni los datos del servidor
+enlazado.
 
 Cierre técnico local del 16/10/2026: `flutter analyze --no-pub` limpio y
 `flutter test --no-pub` completo con **886 pruebas correctas** y la omisión web
@@ -92,10 +105,11 @@ introducidas; no restablece el parcial por volver a tocar el mismo movimiento.
 Se revisa el diff completo, incluidos archivos nuevos, y su formato. Sin cambios
 en dependencias de la aplicación, paquetes compartidos ni admin.
 
-Pendiente: aplicar la nueva migración y ejecutar esa prueba en **Supabase de
+Pendiente: aplicar las migraciones nuevas y ejecutar esa prueba en **Supabase de
 desarrollo**, cotejar `supabase migration list` y repetir en iPhone/Samsung.
-Este entorno cloud no tiene CLI/credenciales ni acceso de red configurado a ese
-proyecto. No se aplica ninguna migración remota ni se modifica producción.
+La herramienta de ejecución disponible en esta revisión no tiene enlace ni
+credenciales a ese proyecto. La corrección local no equivale a una reparación
+remota: no se ha aplicado ninguna migración al servidor ni modificado producción.
 
 ## Evolución: etiquetas y acciones sin recortar · UI-045 · 16/10/2026
 
