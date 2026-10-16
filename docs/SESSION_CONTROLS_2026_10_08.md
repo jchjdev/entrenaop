@@ -153,3 +153,16 @@ IOS-002 completa después la comprobación del audio en Mac/simulador. El siguie
 recorrido es comprobar sonido/vibración en dispositivo físico cuando esté
 disponible. UI-020 cierra las opciones de la flecha, conservando separado el
 descarte de sesión en curso, ampliado después mediante UI-022.
+
+## RPE entero · acuerdo del 16/10/2026 (STR-034)
+
+Javier confirma usar valores enteros del 1 al 10 para el RPE que introduce el
+usuario, incluido el esfuerzo por serie o tramo. Se retiran las opciones de
+medios puntos en la experiencia de registro. El RPE global de sesión y el de
+un control de 2 km ya utilizaban enteros; se busca coherencia en la interacción.
+
+La implementación corresponde al trabajo que está rediseñando las pantallas de
+entrenamiento en curso. Esta anotación solo registra el criterio acordado: no
+acredita el cambio de controles o validaciones, no redefine reglas deportivas
+ni autoriza reescribir los resultados históricos con decimales. El acuerdo es
+sobre RPE; no cambia por extensión la escala de RIR.
