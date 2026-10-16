@@ -171,13 +171,13 @@ class WorkoutAmrapEntry extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: saving ? null : () => _review(context),
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size(0, 56),
+                  minimumSize: const Size(0, 48),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+                    horizontal: 14,
+                    vertical: 10,
                   ),
                   textStyle: Theme.of(context).textTheme.labelLarge
-                      ?.copyWith(fontSize: 18, fontWeight: FontWeight.w700),
+                      ?.copyWith(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
                 icon: const Icon(Icons.check_rounded),
                 label: const Text(

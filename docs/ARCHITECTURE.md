@@ -547,8 +547,9 @@ ni Supabase. Las marcas por ejercicio no forman parte del flujo.
 El ejercicio parcial señala dónde termina la vuelta adicional; todos los
 anteriores se consideran completos. La migración del 16/10 admite cero en ese
 ejercicio para representar una parada justo entre movimientos; cero en el
-primero se normaliza como ausencia de vuelta adicional. Esa migración sigue
-pendiente de aplicar/verificar contra desarrollo desde el entorno con acceso.
+primero se normaliza como ausencia de vuelta adicional. Las migraciones
+`20261016090723` y `20261016090736` se aplican y verifican el 16/10/2026 en
+Supabase de desarrollo, con prueba transaccional y ROLLBACK.
 El contrato remoto serializa por ejecución, reconoce un resultado idéntico
 reintentado y rechaza un agregado diferente. Una escritura aceptada/encolada
 avanza la proyección sin depender de releer; los fallos posteriores de limpieza
@@ -558,7 +559,7 @@ depende de tipos de Supabase. El agregado confirmado conserva su inmutabilidad.
 
 Al resolver AMRAP se declaran manuales también las filas de ejecución que pasan
 a completadas (`result_source='manual'`), sin rellenar marcas individuales.
-La migración `20261016001000` corrige esa omisión, que infringía la restricción
+La migración `20261016090736` corrige esa omisión, que infringía la restricción
 general de fuente introducida por carrera (`23514`). Las pruebas SQL del flujo
 deben ejecutarse con esa restricción y el contrato de rendimiento presentes;
 un esquema del núcleo anterior no acredita la integración vigente.

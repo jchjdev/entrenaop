@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**UI-046, 16/10/2026 · circuito AMRAP y guardado:** código y verificación técnica
+completados; repetición física pendiente. Circuito con tarjetas compactas y ficha
+de consulta, contador opcional, reloj protagonista y revisión recuperable.
+Se conecta Supabase y se aplican las dos migraciones a entrenaop-dev: fuente
+manual obligatoria, parcial entre movimientos y reintentos sin duplicados.
+Las 143 migraciones coinciden con Git, conservando los identificadores generados
+por el servidor. La prueba SQL transaccional pasa, incluidos 13/30 y cuatro
+vueltas sin parcial; no deja datos ficticios. Análisis limpio, 64 pruebas
+específicas y 886 completas correctas, con una omisión existente.
+El siguiente recorrido es reintentar el borrador del iPhone y revisar el balance
+reloj/cierre en móvil; sin cambios en producción. Detalle en `VISUAL_DESIGN.md`.
+
 **Integración en main, 16/10/2026:** el entrenamiento UI-040 se combina con
 Biblioteca, botones y ritmos de main sin sustituir los cambios de otros equipos.
 Análisis limpio, 41 pruebas de sesión y 847 completas correctas, con la omisión

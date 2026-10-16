@@ -28,20 +28,36 @@ Javier pide después compactar las tarjetas y destacar Terminar AMRAP. La foto
 pasa de 76 a 56 píxeles lógicos, con menos relleno y separación. La altura sigue
 el contenido: nombres, repeticiones/carga/RIR pueden ocupar varias líneas sin
 recortarse ni reducir la letra. La misma tarjeta compacta sirve en la revisión.
-Terminar AMRAP usa el botón principal relleno, con icono de confirmación y al
-menos 56 píxeles de alto; sumar una vuelta pasa a botón secundario de contorno.
+Terminar AMRAP usa el botón principal relleno, con icono de confirmación, letra
+de 15 y un mínimo de 48 píxeles de alto; sumar una vuelta usa un botón secundario
+de contorno. Javier pide recuperar el protagonismo del reloj: sus dígitos en
+línea pasan de 46 a 60, con ajuste al ancho disponible que reserva la misma
+medida también durante la preparación. El texto ampliado conserva el formato
+apilado anterior. Los nombres de los ejercicios mantienen su tamaño.
 El acceso a registros conserva su icono junto a la acción principal. Son cambios
 de presentación, sin alterar el contador opcional ni el contrato de guardado.
-La batería general pasa con 886 pruebas y una omisión existente; tras conservar
-la tipografía del tema en el botón se repiten las siete regresiones AMRAP y el
-análisis, correctos. Las capturas finales de 390/412 px y 320 px con texto doble
+Con el balance final de reloj y cierre, la batería general pasa con 886 pruebas
+y una omisión existente; análisis limpio y 64 pruebas específicas correctas de
+ejecutor y temporizador. Se comprueba también que el reloj conserva su alto al
+pasar por preparación, reinicio y repetición. Las capturas finales de 390/412 px y 320 px con texto doble
 mantienen las acciones accesibles y el acceso a técnica/revisión.
 
-Para aplicar el SQL, Javier instala y habilita después la integración Supabase.
-La instalación se confirma en el catálogo, pero las operaciones SQL/migraciones
-no se exponen todavía entre las herramientas de este turno. No se confunde ese
-estado con una conexión consultada ni con migraciones aplicadas; la verificación
-remota sigue pendiente hasta poder consultar el proyecto de desarrollo.
+El 16/10/2026 se conecta Supabase y se aplican ambas migraciones únicamente a
+`entrenaop-dev` (`sxbxfjqgoddzhtcyhalw`). Los identificadores generados por el
+servidor son `20261016090723` y `20261016090736`; se renombran los dos archivos
+locales para conservar un historial idéntico, sin reparar ni borrar registros
+remotos. No cambia su SQL. La prueba transaccional pasa en ese proyecto, incluido
+13/30 en el segundo movimiento y cuatro vueltas sin parcial. Al terminar quedan
+cero usuarios y plantillas de prueba. Se comprueban fuente manual, ausencia de
+marcas individuales inventadas, reintentos, inmutabilidad y rechazo entre cuentas;
+`anon` no tiene ejecución y `authenticated` conserva el acceso protegido por
+propiedad. Queda pendiente repetir el guardado desde el iPhone tras aplicar
+la corrección.
+
+Se consulta el asesor de seguridad. La advertencia de función SECURITY DEFINER
+accesible por autenticados es esperada para esta RPC con propiedad comprobada;
+no se amplían grants. El asesor también enumera avisos ajenos a esta corrección,
+sin convertir este cambio en una auditoría global. [Referencia del aviso del asesor](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
 
 `WorkoutAmrapReview` abre un panel al terminar. Permite introducir o corregir
 vueltas, indicar si empezó otra y elegir el movimiento con foto y nombre
@@ -82,7 +98,7 @@ sin exigir una segunda lectura remota; fallar al limpiar reloj/borrador o contar
 pendientes no lo transforma en «no guardado» ni permite volver a enviarlo.
 `WorkoutAmrapSaveFailure` mantiene la referencia del rechazo remoto sin filtrar
 SQL a la interfaz; el adaptador registra código y mensaje técnico sin el payload.
-La migración `20261016000000_amrap_review_and_retry.sql` admite parciales de cero,
+La migración `20261016090723_amrap_review_and_retry.sql` admite parciales de cero,
 serializa por ejecución y reconoce el mismo resultado repetido incluso con un
 recibo nuevo. Un resultado diferente no sobrescribe el agregado confirmado.
 
@@ -93,7 +109,7 @@ iPhone, seleccionando el segundo movimiento con 13/30. Al cargar también las
 migraciones de carrera se reproduce `workout_execution_sets_completed_source_check`:
 la función AMRAP completaba sus filas sin rellenar `result_source`.
 
-`20261016001000_amrap_manual_result_source.sql` sustituye la función para
+`20261016090736_amrap_manual_result_source.sql` sustituye la función para
 declarar `result_source='manual'` en las filas resueltas, manteniendo el agregado
 como única marca deportiva. No elimina la restricción, inventa repeticiones por
 movimiento ni modifica permisos. Conserva serialización y reintentos. Se añade
@@ -114,8 +130,8 @@ ampliada incluye las migraciones reales de carrera `20260922003000` a
 `20260922008000`, el contrato de rendimiento `20261003004000` y las dos
 migraciones AMRAP del 16/10. Antes de la segunda migración reproduce `23514`;
 después pasa también 13/30, exige fuente manual y comprueba que no se inventan
-resultados individuales. No acredita las migraciones ni los datos del servidor
-enlazado.
+resultados individuales. Ese banco local se completa después con la prueba
+transaccional remota descrita arriba.
 
 Cierre técnico local del 16/10/2026: `flutter analyze --no-pub` limpio y
 `flutter test --no-pub` completo con **886 pruebas correctas** y la omisión web
@@ -124,11 +140,10 @@ introducidas; no restablece el parcial por volver a tocar el mismo movimiento.
 Se revisa el diff completo, incluidos archivos nuevos, y su formato. Sin cambios
 en dependencias de la aplicación, paquetes compartidos ni admin.
 
-Pendiente: aplicar las migraciones nuevas y ejecutar esa prueba en **Supabase de
-desarrollo**, cotejar `supabase migration list` y repetir en iPhone/Samsung.
-La herramienta de ejecución disponible en esta revisión no tiene enlace ni
-credenciales a ese proyecto. La corrección local no equivale a una reparación
-remota: no se ha aplicado ninguna migración al servidor ni modificado producción.
+Verificación remota del 16/10/2026: migraciones aplicadas y prueba SQL con
+ROLLBACK correcta en **Supabase de desarrollo**. Falta repetir el guardado desde
+el iPhone y comprobar el balance visual en dispositivo. No se consulta ni
+modifica producción.
 
 ## Evolución: etiquetas y acciones sin recortar · UI-045 · 16/10/2026
 

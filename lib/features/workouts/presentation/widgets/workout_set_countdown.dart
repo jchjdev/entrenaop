@@ -334,21 +334,45 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       _ => 'Iniciar temporizador',
     };
 
+    final inline =
+        widget.inlineControls &&
+        MediaQuery.textScalerOf(context).scale(14) <= 19;
+    final clockStyle = TextStyle(
+      fontSize: inline ? 60 : (widget.compact ? 46 : 52),
+      fontWeight: FontWeight.w900,
+      color: _isFinished ? Colors.greenAccent : const Color(0xFFFFA06F),
+    );
+    final clockText = Text(
+      _isPreparing ? '$_preparationRemaining' : _formatClock(_remainingSeconds),
+      style: clockStyle,
+    );
     final timerDisplay = Semantics(
       liveRegion: true,
       label: _isPreparing
           ? 'Prepárate, $_preparationRemaining'
           : 'Quedan $_remainingSeconds segundos',
-      child: Text(
-        _isPreparing
-            ? '$_preparationRemaining'
-            : _formatClock(_remainingSeconds),
-        style: TextStyle(
-          fontSize: widget.compact ? 46 : 52,
-          fontWeight: FontWeight.w900,
-          color: _isFinished ? Colors.greenAccent : const Color(0xFFFFA06F),
-        ),
-      ),
+      child: inline
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Reserva el ancho del reloj completo también al preparar:
+                  // ajusta los dígitos al espacio sin saltos entre fases.
+                  ExcludeSemantics(
+                    child: Opacity(
+                      opacity: 0,
+                      child: Text(
+                        _formatClock(widget.targetSeconds),
+                        style: clockStyle,
+                      ),
+                    ),
+                  ),
+                  clockText,
+                ],
+              ),
+            )
+          : clockText,
     );
     final statusDisplay = Text(
       _isPreparing
@@ -366,10 +390,6 @@ class _WorkoutSetCountdownState extends State<WorkoutSetCountdown> {
       overflow: widget.compact ? TextOverflow.ellipsis : null,
       style: const TextStyle(color: Colors.white60, height: 1.3),
     );
-    final inline =
-        widget.inlineControls &&
-        MediaQuery.textScalerOf(context).scale(14) <= 19;
-
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFF101010),

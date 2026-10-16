@@ -16,6 +16,7 @@ declare
   v_scenario integer;
   v_partial_order integer;
   v_partial_reps integer;
+  v_rounds integer;
 begin
   insert into auth.users(id,email) values
     (v_owner,v_owner||'@amrap.example.invalid'),
@@ -33,7 +34,7 @@ begin
       values(v_item,0,case when v_index=1 then 30 else 10 end,0);
   end loop;
 
-  for v_scenario in 0..3 loop
+  for v_scenario in 0..4 loop
     perform set_config('request.jwt.claim.sub',v_owner::text,true);
     set local role authenticated;
     v_execution := public.start_workout_execution(v_template);
@@ -66,19 +67,20 @@ begin
     exception when insufficient_privilege then null; end;
     perform set_config('request.jwt.claim.sub',v_owner::text,true);
     v_operation := gen_random_uuid();
-    -- El cuarto caso reproduce la captura del iPhone: segundo ejercicio, 13/30.
-    v_partial_order := case when v_scenario=2 then 0 when v_scenario=3 then 1 else 2 end;
+    -- Casos del iPhone: segundo ejercicio 13/30 y cuatro vueltas sin parcial.
+    v_rounds := case when v_scenario=4 then 4 else 5 end;
+    v_partial_order := case when v_scenario=2 then 0 when v_scenario=3 then 1 when v_scenario=4 then null else 2 end;
     v_partial_reps := case when v_scenario=0 then 4 when v_scenario=3 then 13 else 0 end;
-    perform public.complete_amrap_block_idempotent(v_operation,v_execution,0,5,
+    perform public.complete_amrap_block_idempotent(v_operation,v_execution,0,v_rounds,
       v_partial_order,v_partial_reps);
     -- Reintento con el mismo recibo y con otro tras una respuesta perdida.
-    perform public.complete_amrap_block_idempotent(v_operation,v_execution,0,5,
+    perform public.complete_amrap_block_idempotent(v_operation,v_execution,0,v_rounds,
       v_partial_order,v_partial_reps);
-    perform public.complete_amrap_block_idempotent(gen_random_uuid(),v_execution,0,5,
+    perform public.complete_amrap_block_idempotent(gen_random_uuid(),v_execution,0,v_rounds,
       v_partial_order,v_partial_reps);
     select a.* into v_result from public.workout_amrap_results a where a.execution_id=v_execution;
-    if v_result.completed_rounds<>5 or v_result.partial_reps<>v_partial_reps
-      or v_result.partial_item_order is distinct from (case when v_scenario=2 then null else v_partial_order end)
+    if v_result.completed_rounds<>v_rounds or v_result.partial_reps<>v_partial_reps
+      or v_result.partial_item_order is distinct from (case when v_scenario in (2,4) then null else v_partial_order end)
       or (select count(*) from public.workout_amrap_results a where a.execution_id=v_execution)<>1
       or (select count(*) from public.workout_execution_sets s where s.execution_id=v_execution and s.status='completed')<>3 then
       raise exception 'Resultado, parcial o reintento incorrectos';
