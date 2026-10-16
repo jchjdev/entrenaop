@@ -1,3 +1,9 @@
+import '../widgets/workout_session_records.dart';
+import '../widgets/workout_set_entry.dart';
+import '../widgets/workout_execution_labels.dart';
+import '../widgets/workout_exercise_technique.dart';
+
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_execution_layout.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrena_ui/entrena_ui.dart'
     show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
@@ -14,13 +20,9 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_sta
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_settings_button.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_cue_permission_prompt.dart';
-import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop/features/workouts/presentation/widgets/performance_result_form.dart';
-import 'package:entrenaop/features/workouts/presentation/widgets/performance_stopwatch.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:video_player/video_player.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_closure.dart';
 
 class ActiveWorkoutPage extends StatelessWidget {
@@ -45,8 +47,9 @@ class ActiveWorkoutPage extends StatelessWidget {
           ].contains(state.status);
     },
     isBusy: () =>
+        context.read<ActiveWorkoutCubit>().state.draftBusy ||
         context.read<ActiveWorkoutCubit>().state.status ==
-        ActiveWorkoutStatus.saving,
+            ActiveWorkoutStatus.saving,
     confirmExit: _confirmExit,
     child: _buildContent(context),
   );
@@ -62,8 +65,8 @@ class ActiveWorkoutPage extends StatelessWidget {
           children: [
             const Text(
               'Puedes retomar después o finalizar conservando lo realizado. '
-              'Descartar elimina la sesión y sus series. Los datos sin '
-              'confirmar no se guardan al salir.',
+              'Descartar elimina la sesión y sus series. Los datos que no hayas '
+              'confirmado quedan como borrador en este dispositivo para retomar.',
             ),
             const SizedBox(height: 20),
             EntrenaDialogActions(
@@ -116,6 +119,8 @@ class ActiveWorkoutPage extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleTextStyle: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           tooltip: 'Salir de la sesión',
@@ -134,10 +139,32 @@ class ActiveWorkoutPage extends StatelessWidget {
                     ) ??
                     false =>
               'Registrar carrera',
-            _ => 'Sesión en curso',
+            _ => 'Entrenamiento en curso',
           }),
         ),
-        actions: [WorkoutCueSettingsButton(cueService: cueService)],
+        actions: [
+          WorkoutCueSettingsButton(cueService: cueService),
+          PopupMenuButton<String>(
+            tooltip: 'Opciones de sesión',
+            onSelected: (action) async {
+              if (action == 'abandon') {
+                await _requestWorkoutAbandonment(context);
+              }
+              if (action == 'discard' && context.mounted) {
+                if (await _requestWorkoutDiscard(context) && context.mounted) {
+                  _leaveDiscardedWorkout(context);
+                }
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'abandon',
+                child: Text('Finalizar y conservar lo realizado'),
+              ),
+              PopupMenuItem(value: 'discard', child: Text('Descartar sesión')),
+            ],
+          ),
+        ],
       ),
       body: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
         builder: (context, state) {
@@ -231,149 +258,333 @@ class _ActiveContentState extends State<_ActiveContent> {
     final state = widget.state;
     final execution = state.execution!;
     final current = execution.currentSet;
-    final saving = state.status == ActiveWorkoutStatus.saving;
-    final isRunning =
-        execution.sets.isNotEmpty &&
-        execution.sets.every(
-          (set) => set.blockFormat == WorkoutBlockFormat.running,
-        );
-
+    final saving =
+        state.status == ActiveWorkoutStatus.saving || state.draftBusy;
+    final cubit = context.read<ActiveWorkoutCubit>();
+    final records = TextButton.icon(
+      onPressed: saving ? null : () => _openRecords(context),
+      icon: const Icon(Icons.format_list_numbered_rounded),
+      label: Text(
+        state.unconfirmedDraftCount == 0
+            ? 'Series y registros'
+            : 'Series y registros · ${state.unconfirmedDraftCount} por confirmar',
+        textAlign: TextAlign.center,
+      ),
+    );
+    Widget body;
+    if (state.status == ActiveWorkoutStatus.resting && current != null) {
+      body = WorkoutExecutionFrame(
+        actions: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (state.unconfirmedDraftCount > 0)
+              FilledButton.icon(
+                onPressed: saving ? null : () => _openRecords(context),
+                icon: const Icon(Icons.edit_note_rounded),
+                label: const Text('Completar datos de la serie'),
+              ),
+            records,
+          ],
+        ),
+        child: WorkoutRestPanel(
+          seconds: state.restSecondsRemaining,
+          canSkip: state.restCanBeSkipped,
+          onSkip: cubit.skipRest,
+          nextName: current.exerciseName,
+          nextTarget:
+              '${workoutPositionLabel(current)} · ${workoutTargetLabel(current)}${current.targetRir == null ? '' : ' · RIR ${workoutNumber(current.targetRir!)}'}',
+          nextImageUrl: state.exercises[current.exerciseId]?.thumbnailUrl,
+          onNextTechnique: () => showWorkoutTechnique(context, current),
+        ),
+      );
+    } else if (current?.blockFormat == WorkoutBlockFormat.amrap) {
+      body = WorkoutExecutionFrame(
+        actions: records,
+        child: _AmrapCard(
+          key: ValueKey('amrap-${current!.blockOrder}'),
+          executionId: execution.id,
+          sets: execution.sets
+              .where((set) => set.blockOrder == current.blockOrder)
+              .toList(),
+          timerStore: widget.timerStore,
+          cueService: widget.cueService,
+          saving: saving,
+          onComplete: cubit.completeCurrentAmrap,
+        ),
+      );
+    } else if (current != null) {
+      final card = WorkoutSetEntry(
+        key: ValueKey(current.id),
+        set: current,
+        executionId: execution.id,
+        timerStore: widget.timerStore,
+        cueService: widget.cueService,
+        saving: saving,
+        onComplete: cubit.completeCurrentSet,
+        onSkip: cubit.skipCurrentSet,
+        onSkipWarmUp: cubit.skipWarmUp,
+        records: records,
+      );
+      body = current.performancePrescription != null
+          ? WorkoutExecutionFrame(actions: records, child: card)
+          : card;
+    } else {
+      body = WorkoutExecutionFrame(
+        actions: records,
+        child: state.unconfirmedDraftCount > 0
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 28),
+                child: Column(
+                  children: [
+                    const Icon(Icons.fact_check_outlined, size: 48),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Trabajo terminado',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Revisa los datos pendientes antes de confirmar la sesión.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Los borradores se conservan en este dispositivo.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () => _openRecords(context),
+                      child: const Text('Revisar series'),
+                    ),
+                  ],
+                ),
+              )
+            : _FinishCard(
+                rpe: _finalRpe,
+                notesController: _notesController,
+                averageHeartRateController: _averageHeartRateController,
+                maxHeartRateController: _maxHeartRateController,
+                showHeartRate:
+                    execution.sets.isNotEmpty &&
+                    execution.sets.every(
+                      (s) => s.blockFormat == WorkoutBlockFormat.running,
+                    ),
+                saving: saving,
+                onChanged: (v) => setState(() => _finalRpe = v),
+                onFinish: _finish,
+              ),
+      );
+    }
     return SafeArea(
       child: Center(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          children: [
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 680),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (state.pendingSyncCount > 0) ...[
-                      _PendingSyncBanner(count: state.pendingSyncCount),
-                      const SizedBox(height: 14),
-                    ],
                     Text(
                       execution.templateName,
                       style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     LinearProgressIndicator(
                       value: execution.sets.isEmpty
                           ? 0
                           : execution.resolvedSetCount / execution.sets.length,
-                      minHeight: 8,
+                      minHeight: 4,
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 5),
                     Text(
-                      _progressLabel(execution),
-                      style: const TextStyle(color: Colors.white60),
+                      state.drafts.values.any((d) => d.endedAt != null)
+                          ? '${execution.resolvedSetCount} de ${execution.sets.length} series terminadas · ${state.unconfirmedDraftCount} por confirmar'
+                          : workoutProgressLabel(execution),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white60,
+                      ),
                     ),
-                    const SizedBox(height: 22),
-                    if (state.status == ActiveWorkoutStatus.resting)
-                      _RestCard(
-                        seconds: state.restSecondsRemaining,
-                        canSkip: state.restCanBeSkipped,
-                        onSkip: context.read<ActiveWorkoutCubit>().skipRest,
-                      )
-                    else if (current?.blockFormat == WorkoutBlockFormat.amrap)
-                      _AmrapCard(
-                        key: ValueKey('amrap-${current!.blockOrder}'),
-                        executionId: execution.id,
-                        sets: execution.sets
-                            .where(
-                              (set) => set.blockOrder == current.blockOrder,
-                            )
-                            .toList(growable: false),
-                        timerStore: widget.timerStore,
-                        cueService: widget.cueService,
-                        saving: saving,
-                        onComplete: context
-                            .read<ActiveWorkoutCubit>()
-                            .completeCurrentAmrap,
-                      )
-                    else if (current != null)
-                      _CurrentSetCard(
-                        key: ValueKey(current.id),
-                        set: current,
-                        executionId: execution.id,
-                        timerStore: widget.timerStore,
-                        cueService: widget.cueService,
-                        saving: saving,
-                        onComplete: context
-                            .read<ActiveWorkoutCubit>()
-                            .completeCurrentSet,
-                        onSkip: context
-                            .read<ActiveWorkoutCubit>()
-                            .skipCurrentSet,
-                        onSkipWarmUp: context
-                            .read<ActiveWorkoutCubit>()
-                            .skipWarmUp,
-                      )
-                    else
-                      _FinishCard(
-                        rpe: _finalRpe,
-                        notesController: _notesController,
-                        averageHeartRateController: _averageHeartRateController,
-                        maxHeartRateController: _maxHeartRateController,
-                        showHeartRate: isRunning,
-                        saving: saving,
-                        onChanged: (value) => setState(() => _finalRpe = value),
-                        onFinish: _finish,
-                      ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: 12),
+                    if (state.pendingSyncCount > 0)
                       Text(
-                        state.errorMessage!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.redAccent),
+                        '${state.pendingSyncCount} cambios pendientes de sincronizar',
+                        style: const TextStyle(fontSize: 12),
                       ),
-                    ],
-                    // Resolver las series no cierra la sesión: se puede
-                    // abandonar también antes de confirmar el cierre final.
-                    if (execution.status ==
-                        WorkoutExecutionStatus.inProgress) ...[
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Puedes salir y continuar después: el progreso guardado no se pierde.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                      TextButton(
-                        onPressed: saving
-                            ? null
-                            : () => _requestWorkoutAbandonment(context),
-                        child: const Text(
-                          'Finalizar y conservar lo realizado',
-                          textAlign: TextAlign.center,
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          state.errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent),
                         ),
                       ),
-                      TextButton(
-                        onPressed: saving
-                            ? null
-                            : () async {
-                                final discarded = await _requestWorkoutDiscard(
-                                  context,
-                                );
-                                if (discarded && context.mounted) {
-                                  _leaveDiscardedWorkout(context);
-                                }
-                              },
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                        child: const Text('Descartar sesión'),
+                  ],
+                ),
+              ),
+              Expanded(child: body),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openRecords(BuildContext context) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => BlocProvider.value(
+        value: cubit,
+        child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
+          builder: (context, state) {
+            final execution = state.execution!;
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.sizeOf(context).height * .78,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Series y registros',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Cerrar registros',
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                    if (state.status == ActiveWorkoutStatus.resting)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                        child: Text(
+                          'Descanso · ${workoutClock(state.restSecondsRemaining)}',
+                          style: const TextStyle(color: Color(0xFFFFA06F)),
+                        ),
+                      ),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      child: Text(
+                        'Los datos pendientes y los retoques se conservan en este dispositivo hasta confirmarlos.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          state.errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    Expanded(
+                      child: WorkoutSessionRecords(
+                        execution: execution,
+                        drafts: state.drafts,
+                        enabled: !state.draftBusy,
+                        onEdit: (set) => _openResultEditor(context, set),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openResultEditor(
+    BuildContext context,
+    WorkoutExecutionSet set,
+  ) async {
+    final cubit = context.read<ActiveWorkoutCubit>();
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => BlocProvider.value(
+        value: cubit,
+        child: BlocBuilder<ActiveWorkoutCubit, ActiveWorkoutState>(
+          builder: (context, state) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: SafeArea(
+              child: SizedBox(
+                height:
+                    (MediaQuery.sizeOf(context).height * .86 -
+                            MediaQuery.viewInsetsOf(context).bottom)
+                        .clamp(120.0, MediaQuery.sizeOf(context).height),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              state.status == ActiveWorkoutStatus.resting
+                                  ? 'Descanso · ${workoutClock(state.restSecondsRemaining)}'
+                                  : 'Revisar resultado',
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Cerrar resultado',
+                            onPressed: state.draftBusy
+                                ? null
+                                : () => Navigator.pop(context),
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (state.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          state.errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    Expanded(
+                      child: WorkoutSetEntry(
+                        key: ValueKey('review-${set.id}'),
+                        set: set,
+                        executionId: state.execution!.id,
+                        timerStore: widget.timerStore,
+                        cueService: widget.cueService,
+                        saving: state.draftBusy,
+                        onComplete: cubit.completeCurrentSet,
+                        onSkip: cubit.skipCurrentSet,
+                        onSkipWarmUp: cubit.skipWarmUp,
+                        review: true,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -477,7 +688,7 @@ Future<bool> _requestWorkoutAbandonment(BuildContext context) async {
                 children: WorkoutAbandonmentReason.values
                     .map(
                       (reason) => ChoiceChip(
-                        label: Text(_abandonmentReasonLabel(reason)),
+                        label: Text(workoutAbandonmentReasonLabel(reason)),
                         selected: selected == reason,
                         onSelected: (_) {
                           setDialogState(() => selected = reason);
@@ -737,805 +948,6 @@ class _PendingSyncBanner extends StatelessWidget {
   }
 }
 
-class _CurrentSetCard extends StatefulWidget {
-  const _CurrentSetCard({
-    super.key,
-    required this.set,
-    required this.executionId,
-    required this.timerStore,
-    required this.cueService,
-    required this.saving,
-    required this.onComplete,
-    required this.onSkip,
-    required this.onSkipWarmUp,
-  });
-
-  final WorkoutExecutionSet set;
-  final String executionId;
-  final WorkoutTimerStore timerStore;
-  final WorkoutCueService cueService;
-  final bool saving;
-  final void Function(WorkoutSetResultInput result, {int? restSecondsOverride})
-  onComplete;
-  final void Function({int? restSecondsOverride}) onSkip;
-  final VoidCallback onSkipWarmUp;
-
-  @override
-  State<_CurrentSetCard> createState() => _CurrentSetCardState();
-}
-
-class _CurrentSetCardState extends State<_CurrentSetCard> {
-  final _performanceElapsed = ValueNotifier<double>(0);
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _repsController;
-  late final TextEditingController _durationController;
-  late final TextEditingController _distanceController;
-  late final TextEditingController _recoveryDurationController;
-  late final TextEditingController _recoveryDistanceController;
-  late final TextEditingController _loadController;
-  double? _actualRpe;
-  double? _actualRir;
-  int _emomElapsedSeconds = 0;
-
-  WorkoutExecutionSet get set => widget.set;
-
-  @override
-  void initState() {
-    super.initState();
-    // El objetivo sirve como valor inicial, pero el usuario confirma o corrige
-    // el resultado real antes de enviarlo.
-    _repsController = TextEditingController(text: _integer(set.targetReps));
-    _durationController = TextEditingController(
-      text:
-          const [
-            WorkoutBlockFormat.running,
-            WorkoutBlockFormat.warmUp,
-            WorkoutBlockFormat.coolDown,
-          ].contains(set.blockFormat)
-          ? ''
-          : set.targetDurationSeconds == null
-          ? ''
-          : _clock(set.targetDurationSeconds!),
-    );
-    _distanceController = TextEditingController(
-      text:
-          set.blockFormat == WorkoutBlockFormat.running &&
-              set.targetDurationSeconds != null
-          ? ''
-          : _nullableNumber(set.targetDistanceMeters),
-    );
-    _recoveryDurationController = TextEditingController();
-    _recoveryDistanceController = TextEditingController(
-      text: _nullableNumber(set.recoveryDistanceMeters),
-    );
-    _loadController = TextEditingController(
-      text: _nullableNumber(set.targetLoadKg),
-    );
-    // El esfuerzo prescrito no acredita una percepción realmente declarada.
-    // Si el usuario no lo conoce, guardamos ausencia de dato, nunca el objetivo.
-  }
-
-  @override
-  void dispose() {
-    _performanceElapsed.dispose();
-    _repsController.dispose();
-    _durationController.dispose();
-    _distanceController.dispose();
-    _recoveryDurationController.dispose();
-    _recoveryDistanceController.dispose();
-    _loadController.dispose();
-    super.dispose();
-  }
-
-  void _save() {
-    if (!_formKey.currentState!.validate()) return;
-    widget.onComplete(
-      WorkoutSetResultInput(
-        resultId: set.id,
-        actualReps: set.targetReps == null
-            ? null
-            : _parseDecimal(_repsController.text)!.toInt(),
-        actualDurationSeconds:
-            set.targetDurationSeconds == null &&
-                set.blockFormat != WorkoutBlockFormat.running
-            ? null
-            : parseDurationInput(_durationController.text)!,
-        actualDistanceMeters:
-            set.targetDistanceMeters == null &&
-                set.blockFormat != WorkoutBlockFormat.running
-            ? null
-            : _parseDecimal(_distanceController.text),
-        actualLoadKg: set.targetLoadKg == null
-            ? null
-            : _parseDecimal(_loadController.text),
-        actualRpe: set.targetRpe == null ? null : _actualRpe,
-        actualRir: set.targetRir == null ? null : _actualRir,
-        actualRecoveryDurationSeconds: set.recoveryDurationSeconds == null
-            ? null
-            : parseDurationInput(_recoveryDurationController.text),
-        actualRecoveryDistanceMeters: set.recoveryDistanceMeters == null
-            ? null
-            : _parseDecimal(_recoveryDistanceController.text),
-      ),
-      restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
-          ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
-          : set.blockFormat == WorkoutBlockFormat.running
-          ? 0
-          : null,
-    );
-  }
-
-  Future<void> _confirmSkip() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Saltar esta serie?'),
-        content: const Text(
-          'Quedará registrada como omitida y no contará como completada.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Saltar serie'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      widget.onSkip(
-        restSecondsOverride: set.blockFormat == WorkoutBlockFormat.emom
-            ? (60 - _emomElapsedSeconds).clamp(0, 60).toInt()
-            : null,
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final actualPace = set.blockFormat == WorkoutBlockFormat.running
-        ? _actualPaceLabel(_distanceController.text, _durationController.text)
-        : null;
-    if (set.performancePrescription case final prescription?) {
-      final clockSeconds = prescription.measurement == 'DURATION'
-          ? prescription.targetValue
-          : prescription.fixedDurationSeconds;
-      final useStopwatch = const [
-        'TIME_FOR_COURSE',
-        'TIME_FOR_DISTANCE',
-      ].contains(prescription.measurement);
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                set.exerciseName,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              Text('Serie ${set.setOrder + 1}'),
-              const SizedBox(height: 16),
-              PerformanceResultForm(
-                prescription: prescription,
-                saving: widget.saving,
-                elapsedSeconds: clockSeconds == null && !useStopwatch
-                    ? null
-                    : _performanceElapsed,
-                timer: clockSeconds == null
-                    ? (useStopwatch
-                          ? PerformanceStopwatch(
-                              onElapsed: (seconds) =>
-                                  _performanceElapsed.value = seconds,
-                            )
-                          : null)
-                    : WorkoutSetCountdown(
-                        targetSeconds: clockSeconds.ceil(),
-                        timerId: '${widget.executionId}:${set.id}',
-                        timerStore: widget.timerStore,
-                        enabled: !widget.saving,
-                        onElapsedChanged: (elapsed) =>
-                            _performanceElapsed.value = elapsed.toDouble(),
-                        onPreparationTick: () => unawaited(
-                          widget.cueService.signal(WorkoutCue.preparationTick),
-                        ),
-                        onStarted: () => unawaited(
-                          widget.cueService.signal(WorkoutCue.workStarted),
-                        ),
-                        onHalfway: () => unawaited(
-                          widget.cueService.signal(WorkoutCue.halfway),
-                        ),
-                        onTenSecondsRemaining: () => unawaited(
-                          widget.cueService.signal(
-                            WorkoutCue.tenSecondsRemaining,
-                          ),
-                        ),
-                        onEndingTick: (_) => unawaited(
-                          widget.cueService.signal(WorkoutCue.workEndingTick),
-                        ),
-                        onFinished: () => unawaited(
-                          widget.cueService.signal(WorkoutCue.workFinished),
-                        ),
-                      ),
-                onSave: (result, _) => widget.onComplete(
-                  WorkoutSetResultInput(
-                    resultId: set.id,
-                    performanceResult: result,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: widget.saving ? null : _confirmSkip,
-                child: const Text('Omitir esta serie'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                set.blockName.toUpperCase(),
-                style: const TextStyle(
-                  color: Color(0xFFFF8A50),
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                set.blockFormat == WorkoutBlockFormat.warmUp
-                    ? _warmUpHeading(set) ?? set.exerciseName
-                    : set.exerciseName,
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                set.blockFormat == WorkoutBlockFormat.warmUp
-                    ? 'Calentamiento · paso ${set.itemOrder + 1}'
-                    : set.isGrouped
-                    ? _executionPositionLabel(set)
-                    : set.blockFormat == WorkoutBlockFormat.running
-                    ? 'Tramo ${set.setOrder + 1}'
-                    : 'Serie ${set.setOrder + 1}',
-                style: const TextStyle(color: Colors.white60, fontSize: 17),
-              ),
-              if (set.blockFormat == WorkoutBlockFormat.warmUp) ...[
-                const SizedBox(height: 10),
-                const Text(
-                  'Puedes seguir el guiado u omitirlo. Esta elección no cambia por sí sola la progresión.',
-                ),
-                OutlinedButton.icon(
-                  onPressed: widget.saving ? null : widget.onSkipWarmUp,
-                  icon: const Icon(Icons.skip_next_rounded),
-                  label: const Text('Omitir calentamiento'),
-                ),
-              ],
-              if (set.exerciseDescription != null ||
-                  set.exerciseVideoUrl != null ||
-                  set.itemInstructions != null) ...[
-                const SizedBox(height: 18),
-                _ExerciseGuidance(set: set),
-              ],
-              const SizedBox(height: 28),
-              Text(
-                _target(set),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFFFA06F),
-                ),
-              ),
-              if (set.targetRir case final rir?) ...[
-                const SizedBox(height: 7),
-                Text(
-                  'Objetivo: RIR ${_number(rir)}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white60),
-                ),
-              ],
-              if (set.targetPaceMinSecondsPerKm case final fastest?) ...[
-                const SizedBox(height: 7),
-                Text(
-                  fastest == set.targetPaceMaxSecondsPerKm
-                      ? 'Ritmo objetivo: ${_clock(fastest)}/km'
-                      : 'Ritmo objetivo: ${_clock(fastest)}–${_clock(set.targetPaceMaxSecondsPerKm!)}/km',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-              if (_targetTimeLabel(set) case final targetTime?) ...[
-                const SizedBox(height: 7),
-                Text(
-                  targetTime,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white60),
-                ),
-              ],
-              if (set.recoveryType case final recovery?) ...[
-                const SizedBox(height: 7),
-                Text(
-                  'Después: ${_runningRecovery(recovery, set)}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFFFFC2A3)),
-                ),
-              ],
-              if (set.blockFormat == WorkoutBlockFormat.emom) ...[
-                const SizedBox(height: 22),
-                WorkoutSetCountdown(
-                  targetSeconds: 60,
-                  preparationSeconds: set.itemOrder == 0 && set.setOrder == 0
-                      ? 3
-                      : 0,
-                  autoStart: true,
-                  title: 'RELOJ EMOM · VUELTA ${set.roundNumber}',
-                  timerId: '${widget.executionId}:${set.id}',
-                  timerStore: widget.timerStore,
-                  enabled: !widget.saving,
-                  onElapsedChanged: (elapsed) {
-                    _emomElapsedSeconds = elapsed;
-                  },
-                  onPreparationTick: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.preparationTick),
-                  ),
-                  onStarted: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.workStarted),
-                  ),
-                  onHalfway: () =>
-                      unawaited(widget.cueService.signal(WorkoutCue.halfway)),
-                  onTenSecondsRemaining: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
-                  ),
-                  onEndingTick: (_) => unawaited(
-                    widget.cueService.signal(WorkoutCue.workEndingTick),
-                  ),
-                  onFinished: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.workFinished),
-                  ),
-                ),
-              ] else if (set.targetDurationSeconds case final seconds?) ...[
-                const SizedBox(height: 22),
-                WorkoutSetCountdown(
-                  targetSeconds: seconds,
-                  timerId: '${widget.executionId}:${set.id}',
-                  timerStore: widget.timerStore,
-                  enabled: !widget.saving,
-                  onElapsedChanged: (elapsed) {
-                    _durationController.text = _clock(elapsed);
-                  },
-                  onPreparationTick: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.preparationTick),
-                  ),
-                  onStarted: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.workStarted),
-                  ),
-                  onHalfway: () =>
-                      unawaited(widget.cueService.signal(WorkoutCue.halfway)),
-                  onTenSecondsRemaining: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.tenSecondsRemaining),
-                  ),
-                  onEndingTick: (_) => unawaited(
-                    widget.cueService.signal(WorkoutCue.workEndingTick),
-                  ),
-                  onFinished: () => unawaited(
-                    widget.cueService.signal(WorkoutCue.workFinished),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 16),
-              const Text(
-                '¿Qué has hecho realmente?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 14),
-              if (set.targetReps != null)
-                _ResultField(
-                  controller: _repsController,
-                  label: 'Repeticiones realizadas',
-                  decimal: false,
-                ),
-              if (set.targetDurationSeconds != null ||
-                  set.blockFormat == WorkoutBlockFormat.running)
-                set.blockFormat == WorkoutBlockFormat.running
-                    ? _DurationResultField(
-                        controller: _durationController,
-                        label: 'Tiempo real',
-                        onChanged: (_) => setState(() {}),
-                      )
-                    : _DurationResultField(
-                        controller: _durationController,
-                        label: 'Tiempo realizado',
-                      ),
-              if (set.targetDistanceMeters != null ||
-                  set.blockFormat == WorkoutBlockFormat.running)
-                _ResultField(
-                  controller: _distanceController,
-                  label: 'Metros realizados',
-                  onChanged: set.blockFormat == WorkoutBlockFormat.running
-                      ? (_) => setState(() {})
-                      : null,
-                ),
-              if (actualPace != null) ...[
-                Text(
-                  'Ritmo calculado · $actualPace/km',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFFFFA06F),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 14),
-              ],
-              if (set.recoveryDurationSeconds != null)
-                _DurationResultField(
-                  controller: _recoveryDurationController,
-                  label: 'Recuperación real',
-                ),
-              if (set.recoveryDistanceMeters != null)
-                _ResultField(
-                  controller: _recoveryDistanceController,
-                  label: 'Metros reales de recuperación',
-                ),
-              if (set.targetLoadKg != null)
-                _ResultField(
-                  controller: _loadController,
-                  label: 'Carga utilizada (kg)',
-                ),
-              if (set.targetRpe != null)
-                _ReportedEffortField(
-                  label: set.blockFormat == WorkoutBlockFormat.running
-                      ? 'Esfuerzo de carrera · 1 fácil, 10 máximo'
-                      : 'RPE real',
-                  minimum: 1,
-                  enabled: !widget.saving,
-                  onChanged: (value) => _actualRpe = value,
-                ),
-              if (set.targetRir != null)
-                _ReportedEffortField(
-                  label: 'RIR real',
-                  minimum: 0,
-                  enabled: !widget.saving,
-                  onChanged: (value) => _actualRir = value,
-                ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: widget.saving ? null : _save,
-                icon: widget.saving
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check_rounded),
-                label: Text(
-                  widget.saving
-                      ? 'Guardando…'
-                      : set.blockFormat == WorkoutBlockFormat.emom
-                      ? 'Guardar y esperar al siguiente minuto'
-                      : set.blockFormat == WorkoutBlockFormat.running
-                      ? 'Guardar resultado del tramo'
-                      : set.blockFormat == WorkoutBlockFormat.warmUp
-                      ? 'Terminar este paso'
-                      : 'Guardar serie',
-                ),
-              ),
-              if (set.blockFormat != WorkoutBlockFormat.warmUp)
-                TextButton(
-                  onPressed: widget.saving ? null : _confirmSkip,
-                  child: const Text('No he podido hacerla · Saltar serie'),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExerciseGuidance extends StatefulWidget {
-  const _ExerciseGuidance({required this.set});
-
-  final WorkoutExecutionSet set;
-
-  @override
-  State<_ExerciseGuidance> createState() => _ExerciseGuidanceState();
-}
-
-String? _warmUpHeading(WorkoutExecutionSet set) {
-  if (set.blockFormat != WorkoutBlockFormat.warmUp) return null;
-  final instructions = set.itemInstructions;
-  if (instructions == null) return null;
-  final end = instructions.indexOf('\n');
-  return end > 0 && end <= 80 ? instructions.substring(0, end) : null;
-}
-
-class _ExerciseGuidanceState extends State<_ExerciseGuidance> {
-  VideoPlayerController? _controller;
-  bool _loading = false;
-  String? _error;
-
-  Future<void> _openVideo() async {
-    final url = widget.set.exerciseVideoUrl;
-    if (url == null || _loading) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
-      await controller.initialize();
-      await controller.setLooping(true);
-      if (!mounted) {
-        await controller.dispose();
-        return;
-      }
-      setState(() {
-        _controller = controller;
-        _loading = false;
-      });
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = 'No hemos podido cargar el vídeo.';
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = _controller;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.set.itemInstructions case final instructions?) ...[
-              Text(
-                _warmUpHeading(widget.set) == null
-                    ? instructions
-                    : instructions.substring(instructions.indexOf('\n') + 1),
-                style: const TextStyle(height: 1.4),
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (widget.set.exerciseDescription case final description?)
-              if (widget.set.itemInstructions == null ||
-                  widget.set.blockFormat != WorkoutBlockFormat.warmUp)
-                Text(description, style: const TextStyle(height: 1.4)),
-            if (widget.set.exerciseVideoUrl != null) ...[
-              if (widget.set.exerciseDescription != null)
-                const SizedBox(height: 12),
-              if (controller == null)
-                OutlinedButton.icon(
-                  onPressed: _loading ? null : _openVideo,
-                  icon: _loading
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.play_circle_outline_rounded),
-                  label: Text(
-                    _loading ? 'Cargando demostración…' : 'Ver demostración',
-                  ),
-                )
-              else ...[
-                AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: VideoPlayer(controller),
-                  ),
-                ),
-                IconButton.filledTonal(
-                  tooltip: controller.value.isPlaying ? 'Pausar' : 'Reproducir',
-                  onPressed: () {
-                    setState(() {
-                      controller.value.isPlaying
-                          ? controller.pause()
-                          : controller.play();
-                    });
-                  },
-                  icon: Icon(
-                    controller.value.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                  ),
-                ),
-              ],
-              if (_error case final error?) ...[
-                const SizedBox(height: 8),
-                Text(error, style: const TextStyle(color: Colors.redAccent)),
-              ],
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ReportedEffortField extends StatelessWidget {
-  const _ReportedEffortField({
-    required this.label,
-    required this.minimum,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final String label;
-  final int minimum;
-  final bool enabled;
-  final ValueChanged<double?> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: DropdownButtonFormField<double>(
-      decoration: InputDecoration(labelText: label),
-      hint: const Text('Sin registrar'),
-      items: [
-        const DropdownMenuItem(value: null, child: Text('No lo sé')),
-        for (var step = minimum * 2; step <= 20; step++)
-          DropdownMenuItem(value: step / 2, child: Text(_number(step / 2))),
-      ],
-      onChanged: enabled ? onChanged : null,
-    ),
-  );
-}
-
-class _ResultField extends StatelessWidget {
-  const _ResultField({
-    required this.controller,
-    required this.label,
-    this.decimal = true,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final bool decimal;
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        decoration: InputDecoration(labelText: label),
-        onChanged: onChanged,
-        validator: (value) {
-          final parsed = _parseDecimal(value ?? '');
-          if (parsed == null) return 'Introduce un número válido';
-          if (parsed < 0) return 'El valor no puede ser negativo';
-          if (!decimal && parsed != parsed.roundToDouble()) {
-            return 'Introduce un número entero';
-          }
-          return null;
-        },
-      ),
-    );
-  }
-}
-
-class _DurationResultField extends StatelessWidget {
-  const _DurationResultField({
-    required this.controller,
-    required this.label,
-    this.onChanged,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        inputFormatters: const [DurationInputFormatter()],
-        decoration: InputDecoration(
-          labelText: '$label (min:seg)',
-          helperText: 'Escribe solo números: 128 se convierte en 1:28.',
-        ),
-        onChanged: onChanged,
-        validator: (value) {
-          final seconds = parseDurationInput(value ?? '');
-          return seconds == null || seconds <= 0
-              ? 'Introduce un tiempo válido'
-              : null;
-        },
-      ),
-    );
-  }
-}
-
-class _RestCard extends StatelessWidget {
-  const _RestCard({
-    required this.seconds,
-    required this.canSkip,
-    required this.onSkip,
-  });
-
-  final int seconds;
-  final bool canSkip;
-  final VoidCallback onSkip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.timer_outlined,
-              size: 44,
-              color: Color(0xFFFF8A50),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              canSkip ? 'Descanso' : 'Siguiente minuto',
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _clock(seconds),
-              style: const TextStyle(fontSize: 58, fontWeight: FontWeight.w900),
-            ),
-            if (canSkip)
-              TextButton(
-                onPressed: onSkip,
-                child: const Text('Saltar descanso'),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  'El siguiente ejercicio comenzará al llegar a cero.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white60),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _FinishCard extends StatelessWidget {
   const _FinishCard({
     required this.rpe,
@@ -1762,7 +1174,7 @@ class _Abandoned extends StatelessWidget {
           Text(
             '${execution.completedSetCount} '
             '${execution.completedSetCount == 1 ? 'serie completada' : 'series completadas'}'
-            '${reason == null ? '' : ' · ${_abandonmentReasonLabel(reason)}'}',
+            '${reason == null ? '' : ' · ${workoutAbandonmentReasonLabel(reason)}'}',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white60),
           ),
@@ -1802,115 +1214,3 @@ class _Failure extends StatelessWidget {
     );
   }
 }
-
-String _target(WorkoutExecutionSet set) {
-  if (set.targetReps != null) return '${set.targetReps} repeticiones';
-  if (set.targetDurationSeconds != null) {
-    final seconds = set.targetDurationSeconds!;
-    return seconds < 60 ? '$seconds segundos' : '${_clock(seconds)} min';
-  }
-  if (set.targetDistanceMeters != null) {
-    return '${_number(set.targetDistanceMeters!)} metros';
-  }
-  return 'Objetivo configurado';
-}
-
-String _clock(int seconds) {
-  final minutes = seconds ~/ 60;
-  final remainder = seconds % 60;
-  return '${minutes.toString().padLeft(2, '0')}:${remainder.toString().padLeft(2, '0')}';
-}
-
-String _number(double value) =>
-    value == value.roundToDouble() ? value.toInt().toString() : '$value';
-
-String _integer(int? value) => value?.toString() ?? '';
-
-String _nullableNumber(double? value) => value == null ? '' : _number(value);
-
-double? _parseDecimal(String value) =>
-    double.tryParse(value.trim().replaceAll(',', '.'));
-
-String _progressLabel(WorkoutExecution execution) {
-  final completed = execution.completedSetCount;
-  final skipped = execution.skippedSetCount;
-  if (skipped == 0) {
-    final unit =
-        execution.sets.every(
-          (set) => set.blockFormat == WorkoutBlockFormat.running,
-        )
-        ? 'tramos completados'
-        : 'series completadas';
-    return '$completed de ${execution.sets.length} $unit';
-  }
-  return '${execution.resolvedSetCount} de ${execution.sets.length} resueltas '
-      '($completed completadas, $skipped omitidas)';
-}
-
-String _executionBlockFormatLabel(WorkoutBlockFormat format) =>
-    switch (format) {
-      WorkoutBlockFormat.superset => 'Superserie',
-      WorkoutBlockFormat.circuit => 'Circuito',
-      WorkoutBlockFormat.intervals => 'Intervalo',
-      WorkoutBlockFormat.tabata => 'Tabata',
-      WorkoutBlockFormat.emom => 'EMOM',
-      WorkoutBlockFormat.running => 'Carrera',
-      _ => 'Serie',
-    };
-
-String _executionPositionLabel(
-  WorkoutExecutionSet set,
-) => switch (set.blockFormat) {
-  WorkoutBlockFormat.superset =>
-    'A${set.itemOrder + 1} · ronda ${set.roundNumber}',
-  WorkoutBlockFormat.circuit =>
-    'Estación ${set.itemOrder + 1} · ronda ${set.roundNumber}',
-  WorkoutBlockFormat.intervals => 'Intervalo ${set.roundNumber}',
-  WorkoutBlockFormat.tabata => 'Intervalo ${set.itemOrder + 1} de 8',
-  WorkoutBlockFormat.emom =>
-    'Minuto ${set.itemOrder + 1} · vuelta ${set.roundNumber}',
-  WorkoutBlockFormat.running => 'Tramo ${set.setOrder + 1}',
-  _ =>
-    '${_executionBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}',
-};
-
-String _runningRecovery(RunningRecoveryType recovery, WorkoutExecutionSet set) {
-  final mode = switch (recovery) {
-    RunningRecoveryType.passive => 'recuperación pasiva',
-    RunningRecoveryType.walking => 'recuperación andando',
-    RunningRecoveryType.jogging => 'recuperación trotando',
-  };
-  final measure = set.recoveryDurationSeconds != null
-      ? _clock(set.recoveryDurationSeconds!)
-      : '${_number(set.recoveryDistanceMeters!)} m';
-  return '$measure de $mode';
-}
-
-String? _targetTimeLabel(WorkoutExecutionSet set) {
-  final distance = set.targetDistanceMeters;
-  final fastest = set.targetPaceMinSecondsPerKm;
-  final slowest = set.targetPaceMaxSecondsPerKm;
-  if (distance == null || fastest == null || slowest == null) return null;
-  final fastestTime = (distance / 1000 * fastest).round();
-  final slowestTime = (distance / 1000 * slowest).round();
-  return fastestTime == slowestTime
-      ? 'Tiempo objetivo: ${_clock(fastestTime)}'
-      : 'Tiempo objetivo: ${_clock(fastestTime)}–${_clock(slowestTime)}';
-}
-
-String? _actualPaceLabel(String distanceText, String durationText) {
-  final distance = _parseDecimal(distanceText);
-  final duration = parseDurationInput(durationText);
-  if (distance == null || distance <= 0 || duration == null || duration <= 0) {
-    return null;
-  }
-  return _clock((duration * 1000 / distance).round());
-}
-
-String _abandonmentReasonLabel(WorkoutAbandonmentReason reason) =>
-    switch (reason) {
-      WorkoutAbandonmentReason.lackOfTime => 'Falta de tiempo',
-      WorkoutAbandonmentReason.tooDifficult => 'Demasiada dificultad',
-      WorkoutAbandonmentReason.discomfort => 'Molestias',
-      WorkoutAbandonmentReason.other => 'Otro motivo',
-    };

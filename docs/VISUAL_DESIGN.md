@@ -1,5 +1,210 @@
 # Identidad visual de EntrenaOP
 
+## Pantalla de entrenamiento modular · UI-040 · 15/10/2026
+
+Javier autoriza implementar UI-037/038/039 y precisa que «repetir» significa
+conservar la posibilidad de reiniciar el temporizador, no repetir su objetivo
+en varios bloques grandes. Exige Clean Architecture y facilidad para rediseñar,
+retirar o sustituir componentes. Implementación y comprobación técnica terminadas;
+aceptación en móvil actualizado pendiente.
+
+La pantalla usa «Entrenamiento en curso», cabecera/progreso compactos, foto
+cuando existe y acceso a técnica. El formulario ordinario se separa en
+`WorkoutSetEntry`; distribución, cabecera y descanso en
+`workout_execution_layout.dart`; campos en `workout_result_fields.dart`, esfuerzo
+en `workout_effort_field.dart` y listado agrupado en `WorkoutSessionRecords`.
+Estos widgets no acceden a preferencias ni a Supabase. Los textos de
+presentación se comparten en `workout_execution_labels.dart`.
+
+`ExerciseDetailSheet` reutiliza la ficha de biblioteca: ofrece edición solo
+cuando el llamador proporciona esa acción. Desde el entrenamiento se abre como
+consulta, sin abandonar la sesión ni cambiar los controles del reloj. Respeta
+nombre/descripción/vídeo de la prescripción y usa el catálogo para la imagen y
+metadatos accesorios. El reproductor existente sigue bajo demanda; no se
+implementan subida, alojamiento ni creación de vídeos.
+
+En repeticiones se mantiene un resultado compacto visible; durante el trabajo
+por tiempo se prioriza el reloj y el resultado se revisa al terminar. La acción
+«Terminar serie» queda en una franja fija que reserva espacio. Con poco alto,
+teclado o ampliación extrema, la zona de acciones también permite desplazarse
+sin desbordar. Inicio, pausa, reinicio y repetición del reloj se conservan; el
+reinicio compacto devuelve a cero la medición propuesta, sin acreditar el
+objetivo como realizado. El final del reloj no confirma automáticamente la serie.
+
+Terminar una serie ordinaria crea primero un borrador recuperable del
+dispositivo y empieza el descanso cuando corresponde. El progreso distingue
+series terminadas de datos por confirmar. El descanso anticipa el siguiente
+paso y los registros muestran su tiempo restante al editar. Confirmar valida
+los valores y utiliza el registro idempotente/cola existente, sin reiniciar el
+descanso. No se permite finalizar o abandonar conservando lo realizado mientras
+haya series terminadas con datos sin confirmar; salir para retomar conserva los
+borradores. Los formularios específicos de rendimiento y el agregado AMRAP
+conservan sus contratos y reglas; el panel no ofrece corrección por serie de un
+agregado AMRAP inmutable.
+
+Los retoques posteriores a un resultado ya enviado se mantienen como borrador
+local y se consolidan al cerrar con un motivo de revisión durante el
+entrenamiento. Cada escritura en un campo no consume una corrección. Se
+conservan el corrector auditable, su necesidad de conexión y sus límites de
+24 horas/tres cambios. Un fallo impide el cierre y conserva lo editado para
+reintentar. Los datos sin confirmar y los retoques todavía no sincronizados se
+recuperan en el mismo dispositivo; no se promete recuperarlos desde otro.
+
+Las capturas de `tools/visual_workout_execution_capture.dart` usan el ejecutor
+real con repositorios ficticios, fuentes e iconos reales, móvil de 390 px,
+320 px con texto al doble y escritorio. La imagen opcional se proporciona por
+`WORKOUT_CAPTURE_IMAGE` y no se incorpora al catálogo ni a los recursos de la
+aplicación. No acreditan una sesión autenticada ni instalación en iPhone.
+
+Verificación del 15/10/2026: `flutter analyze --no-pub` sin incidencias y batería
+completa de raíz con 811 pruebas correctas y una omisión web preexistente.
+Regresiones de terminar sin datos, validación, confirmación sin reiniciar
+descanso, recuperación local, esfuerzo cero/ausente, consolidación de retoques,
+fallo y reintento del cierre, consulta de técnica y edición al acabar el
+descanso. La mezcla de registro diferido/directo no crea un descanso tras la
+última serie. Compilación web correcta; cuatro escenarios de captura correctos
+con vistas de repeticiones, tiempo, descanso, técnica, registros, edición,
+teclado simulado, texto ampliado y escritorio. No se modifican paquetes
+compartidos, dependencias, SQL, motores ni producción. El único siguiente
+recorrido recomendado de este bloque es comprobar estas vistas con fotos
+propias/oficiales y una sesión autenticada en móvil actualizado.
+
+## Descansar y completar los datos · UI-039 · 15/10/2026
+
+Javier responde «sí, eso puede ser una opción» a terminar la serie, empezar el
+descanso y poder completar o corregir sus datos durante ese tiempo, y reafirma
+que los datos deben poder modificarse. Se recoge como dirección de diseño;
+no se interpreta como cierre de todos los detalles ni como flujo implementado.
+
+El recorrido propuesto conserva el resultado editable antes de terminar y
+permite completar/corregir después durante la sesión. El reloj de descanso debe
+seguir visible al editar. Se distinguirá el objetivo de lo realmente declarado:
+los datos pendientes no pueden tratarse silenciosamente como resultados
+confirmados. Queda por concretar su persistencia y recuperación, cuándo se
+confirman, cómo se revisan al cerrar y qué datos puede usar la adaptación.
+
+También sigue pendiente definir la edición habitual de una sesión abierta
+frente al corrector auditable del historial y sus límites actuales. Los formatos
+de intervalos, EMOM y AMRAP requieren sus reglas propias; esta dirección no
+aprueba completar una serie por el mero final del reloj ni avanzar
+automáticamente. No se cambia código ni SQL en esta anotación.
+
+## Nombre y distribución del entrenamiento · UI-038 · 15/10/2026
+
+Javier aprueba el nombre de trabajo «pantalla de entrenamiento» y el título
+«Entrenamiento en curso» dentro de la aplicación. La aprobación es de diseño;
+el título y la distribución todavía no se han cambiado en código.
+
+También aprueba como base el esquema presentado en la conversación:
+
+- Cabecera compacta con nombre de sesión, progreso y opciones.
+- Nombre del ejercicio y posición dentro del entrenamiento.
+- Imagen visible y acceso a la ficha de técnica de UI-037.
+- Objetivo y esfuerzo prescrito, con una indicación específica si existe.
+- Resultado en una zona compacta, sin declarar automáticamente el esfuerzo real.
+- Acción «Guardar serie» fija abajo, reservando su espacio.
+
+Se confirma asimismo la propuesta de UI-037: panel de consulta desde la imagen
+o el acceso de técnica, conservación de campos y del estado del temporizador al
+cerrarlo, edición de ejercicios propios desde la biblioteca y vídeo pendiente.
+Corregir resultados durante la sesión y después es un requisito distinto de
+editar la definición del ejercicio. El mecanismo concreto de corrección durante
+una sesión todavía está por implementar y contrastar.
+
+Quedan por concretar dimensiones finales y adaptación para repeticiones,
+tiempo, descanso y los demás formatos existentes. El esquema no cierra las
+reglas de avance con datos pendientes. UI-039 concreta posteriormente la
+dirección de diseño para empezar el descanso antes de confirmar todos los datos.
+Esta anotación registra las aprobaciones y no modifica la aplicación.
+
+### Contraste con los cuatro clips aportados el 15/10/2026
+
+Evidencia revisada, sin nuevas decisiones de implementación. Se han podido
+descargar las dos partes recortadas de Calisteniapp
+(`20-12-57_1_1_1(1)`, 97,64 s; `20-12-57_1_2(1)`, 87,60 s) y los vídeos de
+EntrenaOP `22` (52,72 s, ejercicio por tiempo) y `21` (26,69 s, repeticiones).
+Las referencias temporales siguientes corresponden a cada clip recortado,
+no al reloj global de la sesión mostrado dentro de la grabación.
+
+- Calisteniapp, primera parte, 00:58–01:12: imagen protagonista, objetivo y
+  reloj próximos, posición de serie y acceso a información; el panel de
+  registros permanece accesible abajo. Desde 01:14 se abre el detalle técnico
+  y después su vídeo. La descripción no ocupa la pantalla de ejecución.
+- Calisteniapp, segunda parte, 00:12–00:26: el panel muestra las series del
+  ejercicio y permite introducir peso y esfuerzo mientras el descanso sigue
+  contando en su cabecera. Se ve pasar el peso a 50 kg y el esfuerzo a 90 %RM.
+  Esto acredita edición durante el descanso; no demuestra la política completa
+  de corrección de sesiones cerradas, persistencia, offline o límites internos.
+- Calisteniapp, segunda parte, 00:26–00:34 y 01:14–01:26: los ejercicios se
+  pliegan en el panel de registros y se puede consultar la técnica de otro
+  ejercicio. La pantalla de descanso anticipa el siguiente ejercicio/serie.
+  El clip incluye gestos de navegación; no se atribuye cada avance a una
+  transición automática ni se deduce la política de autoplay.
+- EntrenaOP `22`, 00:10–00:16 y 00:44–00:50: se necesita desplazar el contenido
+  para alcanzar los controles y el registro, también al llegar al siguiente
+  intervalo. Se repiten objetivo de 20 s, reloj y tiempo realizado en bloques
+  separados. En 00:26–00:32 el selector de RIR ocupa casi toda la pantalla.
+- EntrenaOP `22`, 00:34–00:42, y `21`, desde 00:12: el descanso muestra el reloj
+  y las salidas de sesión, sin imagen/objetivo del siguiente paso ni acceso
+  visible a revisar las series realizadas. `21`, 00:00–00:10, confirma el mismo
+  desplazamiento para registrar repeticiones y esfuerzo.
+
+La comparación refuerza la estructura aprobada y añade una recomendación aún
+pendiente: acceso persistente a «Series y registros», con panel ampliable para
+consultar/corregir resultados y un reloj de descanso visible al editar. Los
+campos de la serie actual pueden seguir compactos en la pantalla principal;
+no es necesario trasladar toda la interacción a un panel obligatorio. Se
+conserva la ficha de consulta de UI-037 y se propone mantener la imagen sin
+superponer texto sobre ella. RIR/RPE se mostrarían según la prescripción, sin
+introducir el selector intercambiable RIR/RPE/%RM del referente como nueva
+regla deportiva. La modalidad guiada de intervalos debe concretarse por
+separado; no se adopta el avance automático como consecuencia del diseño.
+
+Límite técnico comprobado: el corrector actual de resultados completados exige
+motivo, opera en línea y admite hasta tres correcciones en 24 horas. Está
+reflejado en el repositorio de entrenamientos, las migraciones y
+`docs/ARCHITECTURE.md`. Facilitar edición habitual durante una sesión no se
+resuelve conectando ese corrector sin cambios de criterio. Igualmente, terminar
+una serie con la métrica principal pendiente requeriría revisar el contrato de
+registro, recuperación de borradores, cola offline y qué datos usa la adaptación.
+Separar «terminar y descansar» de «confirmar datos» era la propuesta pendiente
+al revisar los clips; UI-039 recoge después la respuesta de Javier. El detalle
+del contrato y su implementación siguen pendientes.
+
+## Ficha durante el entrenamiento y registro corregible · UI-037 · 15/10/2026
+
+Dirección confirmada por Javier; implementación pendiente. La captura de su
+ejercicio personal muestra la ficha existente como panel inferior con esquinas
+redondeadas, título, cierre, imagen y descripción. Javier confirma que le gusta
+este formato sin ocupar toda la pantalla. Se conserva como referencia para
+consultar el ejercicio desde el entrenamiento; no se sustituye por una pantalla
+completa obligatoria. Javier indica que la ficha todavía está incompleta.
+
+Javier aclara que, al abrirse desde una sesión, el panel será exclusivamente de
+consulta y no ofrecerá editar el ejercicio, aunque sea personal. El botón de
+la captura pertenece al acceso desde la biblioteca y a un ejercicio creado por
+el usuario; no se extiende esa edición a los ejercicios oficiales de EntrenaOP.
+También aclara que el vídeo es una tarea futura todavía sin resolver. Los
+campos y componentes presentes en el código no acreditan que la carga y
+reproducción estén resueltas en el recorrido real. Esta revisión no cierra ni
+implementa la gestión de vídeo.
+
+También pide poder registrar los datos al momento y completarlos o corregirlos
+después, para evitar que un error quede registrado sin posibilidad de arreglo.
+El código ya ofrece correcciones en el historial; queda por concretar cómo
+acceder a la revisión durante una sesión en curso y qué datos pueden quedar
+pendientes. UI-039 concreta posteriormente la dirección de diseño para iniciar
+el descanso antes de confirmar todos los datos. No se acuerda el avance
+automático ni completar una serie solo porque termine el reloj.
+
+Propuesta confirmada posteriormente en UI-038: reutilizar el panel desde la
+imagen o un acceso de técnica, mostrar el vídeo cuando exista y conservar los campos y el
+estado del entrenamiento al cerrarlo. Si falta material multimedia, la consulta
+debe seguir siendo útil con el contenido disponible. UI-038 confirma una
+distribución base del registro; el tamaño final de la imagen y las transiciones
+entre trabajo, registro y descanso siguen en revisión. No se modifica código,
+SQL ni motores en este acuerdo documental.
+
 ## Series originales; ampliaciones solo en Carreras · UI-034 · 15/10/2026
 
 Javier corrige el alcance de UI-032/033: quiere Series como antes y las

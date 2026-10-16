@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:equatable/equatable.dart';
 
@@ -21,6 +23,9 @@ class ActiveWorkoutState extends Equatable {
     this.restCanBeSkipped = true,
     this.pendingSyncCount = 0,
     this.errorMessage,
+    this.drafts = const {},
+    this.exercises = const {},
+    this.draftBusy = false,
   });
 
   final ActiveWorkoutStatus status;
@@ -29,6 +34,11 @@ class ActiveWorkoutState extends Equatable {
   final bool restCanBeSkipped;
   final int pendingSyncCount;
   final String? errorMessage;
+  final Map<String, WorkoutSessionSetDraft> drafts;
+  final Map<String, ExerciseEntity> exercises;
+  final bool draftBusy;
+  int get unconfirmedDraftCount =>
+      drafts.values.where((d) => d.endedAt != null && !d.confirmed).length;
 
   @override
   List<Object?> get props => [
@@ -38,5 +48,8 @@ class ActiveWorkoutState extends Equatable {
     restCanBeSkipped,
     pendingSyncCount,
     errorMessage,
+    drafts,
+    exercises,
+    draftBusy,
   ];
 }

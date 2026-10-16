@@ -364,6 +364,13 @@ FAS 2027:
 - La sesión guiada conserva objetivos y resultados por serie, descripciones y
   vídeos, pausas y temporizadores recuperables. Registra omisiones, abandono con
   motivo, esfuerzo final, notas y el resultado agregado propio de AMRAP.
+- UI-040 reorganiza el entrenamiento con foto y técnica bajo demanda, acciones
+  accesibles y registros agrupados. En series ordinarias se puede terminar y
+  descansar con datos pendientes de confirmar; estos se recuperan en el mismo
+  dispositivo. Confirmar usa el registro existente. Los retoques de resultados
+  ya enviados se consolidan al cerrar con el corrector auditable, que requiere
+  conexión y mantiene sus límites. No se confirma una sesión con datos pendientes
+  ni se convierte automáticamente el objetivo en resultado realizado.
 - Una cola local permite continuar las mutaciones de una ejecución ya cargada
   durante cortes de red; Supabase las aplica de forma idempotente. Las
   correcciones del historial permanecen en línea y se auditan durante 24 horas,

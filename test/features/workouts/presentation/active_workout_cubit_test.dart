@@ -1,3 +1,8 @@
+import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_effort_field.dart';
+
+import '../../../helpers/memory_workout_session_draft_store.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/core/navigation/app_back_gesture.dart';
@@ -58,6 +63,189 @@ void main() {
     expect(repository.abandonAttempts, 0);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'terminar inicia descanso sin inventar datos y confirmar no lo reinicia',
+    (tester) async {
+      final repository = _Repository();
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.endCurrentSet();
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.execution!.currentSet!.id, 'set-2');
+      expect(repository.lastSetResult, isNull);
+      expect(cubit.state.unconfirmedDraftCount, 1);
+      await tester.pump(const Duration(seconds: 8));
+      final remaining = cubit.state.restSecondsRemaining;
+      expect(
+        await cubit.confirmDraft(
+          const WorkoutSetResultInput(resultId: 'set-1'),
+          const {},
+        ),
+        false,
+      );
+      expect(repository.lastSetResult, isNull);
+      expect(
+        await cubit.confirmDraft(
+          const WorkoutSetResultInput(
+            resultId: 'set-1',
+            actualReps: 6,
+            actualRir: 0,
+          ),
+          const {'reps': '6'},
+        ),
+        true,
+      );
+      expect(repository.lastSetResult!.actualReps, 6);
+      expect(repository.lastSetResult!.actualRir, 0);
+      expect(cubit.state.restSecondsRemaining, remaining);
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.unconfirmedDraftCount, 0);
+      await tester.pump(const Duration(seconds: 61));
+    },
+  );
+
+  testWidgets(
+    'retomar recupera series pendientes y el descanso del dispositivo',
+    (tester) async {
+      final repository = _Repository();
+      final store = MemoryWorkoutSessionDraftStore();
+      final timerStore = _TimerStore();
+      final first = _cubit(
+        repository,
+        sessionDraftStore: store,
+        timerStore: timerStore,
+      );
+      await first.load();
+      await first.updateDraft(
+        const WorkoutSetResultInput(resultId: 'set-1', actualReps: 5),
+        const {'reps': '5', 'duration': ''},
+      );
+      await first.endCurrentSet();
+      await first.close();
+      final second = _cubit(
+        repository,
+        sessionDraftStore: store,
+        timerStore: timerStore,
+      );
+      addTearDown(second.close);
+      await second.load();
+      expect(second.state.status, ActiveWorkoutStatus.resting);
+      expect(second.state.execution!.currentSet!.id, 'set-2');
+      expect(second.state.drafts['set-1']!.fields['reps'], '5');
+      expect(second.state.unconfirmedDraftCount, 1);
+      expect(repository.lastSetResult, isNull);
+      await tester.pump(const Duration(seconds: 61));
+    },
+  );
+
+  testWidgets(
+    'los retoques se consolidan una vez y borrar esfuerzo conserva ausencia',
+    (tester) async {
+      final repository = _Repository();
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.endCurrentSet();
+      await cubit.confirmDraft(
+        const WorkoutSetResultInput(
+          resultId: 'set-1',
+          actualReps: 8,
+          actualRir: 3,
+        ),
+        const {'reps': '8'},
+      );
+      for (final reps in [7, 6, 5, 4]) {
+        final result = WorkoutSetResultInput(
+          resultId: 'set-1',
+          actualReps: reps,
+        );
+        await cubit.updateDraft(result, {'reps': '$reps'});
+        await cubit.confirmDraft(result, {'reps': '$reps'});
+      }
+      expect(repository.correctionCount, 0);
+      expect(cubit.state.execution!.sets.first.actualRir, isNull);
+      await tester.pump(const Duration(seconds: 61));
+      await cubit.skipCurrentSet();
+      repository.failCorrection = true;
+      await cubit.finish(finalRpe: 6);
+      expect(cubit.state.status, ActiveWorkoutStatus.failure);
+      expect(cubit.state.drafts['set-1']!.result.actualReps, 4);
+      repository.failCorrection = false;
+      await cubit.finish(finalRpe: 6);
+      expect(cubit.state.status, ActiveWorkoutStatus.completed);
+      expect(repository.correctionCount, 1);
+      expect(repository.execution.sets.first.actualReps, 4);
+      expect(repository.execution.sets.first.actualRir, isNull);
+      await tester.pump(const Duration(seconds: 61));
+    },
+  );
+
+  testWidgets('no permite finalizar con resultados sin confirmar', (
+    tester,
+  ) async {
+    final repository = _Repository();
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    await cubit.endCurrentSet();
+    await tester.pump(const Duration(seconds: 61));
+    await cubit.endCurrentSet();
+    expect(cubit.state.execution!.currentSet, isNull);
+    await cubit.finish(finalRpe: 6);
+    expect(cubit.state.status, isNot(ActiveWorkoutStatus.completed));
+    expect(repository.execution.status, WorkoutExecutionStatus.inProgress);
+    expect(cubit.state.unconfirmedDraftCount, 2);
+    await tester.pump(const Duration(seconds: 61));
+  });
+
+  testWidgets(
+    'editar durante descanso conserva los campos al llegar a cero y no edita el ejercicio',
+    (tester) async {
+      final repository = _Repository();
+      final (cubit, _) = await _mountSession(tester, repository);
+      await tester.tap(find.byTooltip('Técnica del ejercicio'));
+      await tester.pumpAndSettle();
+      expect(find.text('Editar ejercicio'), findsNothing);
+      expect(find.text('¿Salir de la sesión?'), findsNothing);
+      await tester.tap(find.byTooltip('Cerrar detalle'));
+      await tester.pumpAndSettle();
+      await _openCurrentResult(tester);
+      final field = find.descendant(
+        of: find.byKey(const ValueKey('review-set-1')),
+        matching: find.widgetWithText(TextFormField, 'Repeticiones realizadas'),
+      );
+      await tester.enterText(field, '6');
+      await tester.pump(const Duration(seconds: 61));
+      expect(tester.widget<TextFormField>(field).controller!.text, '6');
+      expect(find.text('Revisar resultado'), findsOneWidget);
+      expect(cubit.state.drafts['set-1']!.result.actualReps, 6);
+      await _confirmOpenResult(tester);
+      expect(repository.lastSetResult!.actualReps, 6);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'mezclar registro diferido y directo no crea un descanso tras la última serie',
+    (tester) async {
+      final repository = _Repository();
+      final cubit = _cubit(repository);
+      addTearDown(cubit.close);
+      await cubit.load();
+      await cubit.endCurrentSet();
+      await tester.pump(const Duration(seconds: 61));
+      await cubit.completeCurrentSet(
+        const WorkoutSetResultInput(resultId: 'set-2', actualReps: 8),
+      );
+      expect(cubit.state.execution!.currentSet, isNull);
+      expect(cubit.state.status, ActiveWorkoutStatus.ready);
+      await tester.pump(const Duration(seconds: 61));
+      expect(cubit.state.status, ActiveWorkoutStatus.ready);
+      expect(cubit.state.unconfirmedDraftCount, 1);
+    },
+  );
 
   testWidgets(
     'un descarte pendiente no permite otra mutación ni pierde el descanso si falla',
@@ -143,9 +331,9 @@ void main() {
       await tester.ensureVisible(notes);
       await tester.enterText(notes, 'Conservar si falla');
       Future<void> open() async {
-        final button = find.widgetWithText(TextButton, 'Descartar sesión');
-        await tester.ensureVisible(button);
-        await tester.tap(button);
+        await tester.tap(find.byTooltip('Opciones de sesión'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Descartar sesión'));
         await tester.pumpAndSettle();
       }
 
@@ -310,6 +498,7 @@ void main() {
       (tester) async {
         final repository = _Repository()..execution = _timedExecution(seconds);
         await _mountSession(tester, repository);
+        await _openCurrentResult(tester);
         final field = find.widgetWithText(
           TextFormField,
           'Tiempo realizado (min:seg)',
@@ -318,11 +507,7 @@ void main() {
           tester.widget<TextFormField>(field).controller!.text,
           expectedText,
         );
-        final save = find.text('Guardar serie');
-        await tester.ensureVisible(save);
-        await tester.pumpAndSettle();
-        await tester.tap(save);
-        await tester.pumpAndSettle();
+        await _confirmOpenResult(tester);
         expect(repository.lastSetResult?.actualDurationSeconds, seconds);
         expect(find.text('Introduce un tiempo válido'), findsNothing);
         expect(tester.takeException(), isNull);
@@ -340,16 +525,13 @@ void main() {
       );
       timer.onElapsedChanged(20);
       await tester.pump();
+      await _openCurrentResult(tester);
       final field = find.widgetWithText(
         TextFormField,
         'Tiempo realizado (min:seg)',
       );
       expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
-      final save = find.text('Guardar serie');
-      await tester.ensureVisible(save);
-      await tester.pumpAndSettle();
-      await tester.tap(save);
-      await tester.pumpAndSettle();
+      await _confirmOpenResult(tester);
       expect(repository.lastSetResult?.actualDurationSeconds, 20);
       expect(find.text('Introduce un tiempo válido'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -359,6 +541,7 @@ void main() {
   testWidgets('escribir 20 manualmente guarda veinte segundos', (tester) async {
     final repository = _Repository()..execution = _timedExecution(90);
     await _mountSession(tester, repository);
+    await _openCurrentResult(tester);
     final field = find.widgetWithText(
       TextFormField,
       'Tiempo realizado (min:seg)',
@@ -366,10 +549,7 @@ void main() {
     await tester.ensureVisible(field);
     await tester.enterText(field, '20');
     expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
-    final save = find.text('Guardar serie');
-    await tester.ensureVisible(save);
-    await tester.tap(save);
-    await tester.pumpAndSettle();
+    await _confirmOpenResult(tester);
     expect(repository.lastSetResult?.actualDurationSeconds, 20);
     expect(tester.takeException(), isNull);
   });
@@ -581,7 +761,7 @@ void main() {
     await tester.tap(find.text('Ahora no'));
     await tester.pumpAndSettle();
     expect(cues.offerPermission, isFalse);
-    expect(find.text('Sesión en curso'), findsOneWidget);
+    expect(find.text('Entrenamiento en curso'), findsOneWidget);
     expect(cubit.state.execution, isNotNull);
   });
 
@@ -745,7 +925,7 @@ void main() {
         isTrue,
       );
       expect(repository.lastSetResult, isNull);
-      expect(find.text('Guardar serie'), findsOneWidget);
+      expect(find.text('Terminar serie'), findsOneWidget);
       expect(find.byType(AlertDialog), findsNothing);
     },
   );
@@ -793,11 +973,7 @@ void main() {
     tester,
   ) async {
     final (repository, _) = await mountEffortSet(tester);
-    final save = find.text('Guardar serie');
-    await tester.ensureVisible(save);
-    await tester.pumpAndSettle();
-    await tester.tap(save);
-    await tester.pumpAndSettle();
+    await _finishAndConfirmCurrent(tester);
     expect(repository.lastSetResult?.actualReps, 8);
     expect(repository.lastSetResult?.actualRir, isNull);
     expect(repository.lastSetResult?.actualRpe, isNull);
@@ -806,21 +982,14 @@ void main() {
     'RIR cero declarado llega al repositorio y no se sustituye por el objetivo',
     (tester) async {
       final (repository, _) = await mountEffortSet(tester);
-      final field = find.widgetWithText(
-        DropdownButtonFormField<double>,
-        'RIR real',
-      );
+      final field = find.widgetWithText(WorkoutEffortField, 'RIR real');
       await tester.ensureVisible(field);
       await tester.pumpAndSettle();
       await tester.tap(field);
       await tester.pumpAndSettle();
       await tester.tap(find.text('0').last);
       await tester.pumpAndSettle();
-      final save = find.text('Guardar serie');
-      await tester.ensureVisible(save);
-      await tester.pumpAndSettle();
-      await tester.tap(save);
-      await tester.pumpAndSettle();
+      await _finishAndConfirmCurrent(tester);
       expect(repository.lastSetResult?.actualRir, 0);
       expect(repository.lastSetResult?.actualRpe, isNull);
     },
@@ -986,6 +1155,27 @@ Future<(ActiveWorkoutCubit, GoRouter)> _mountSession(
   return (cubit, router);
 }
 
+Future<void> _finishAndConfirmCurrent(WidgetTester tester) async {
+  await _openCurrentResult(tester);
+  await _confirmOpenResult(tester);
+}
+
+Future<void> _openCurrentResult(WidgetTester tester) async {
+  await tester.tap(find.text('Terminar serie'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.textContaining('Series y registros').last);
+  await tester.pumpAndSettle();
+  await tester.tap(find.textContaining('Datos por confirmar').first);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _confirmOpenResult(WidgetTester tester) async {
+  await tester.tap(find.text('Confirmar datos'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byTooltip('Cerrar registros'));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _chooseExitAbandonment(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Salir de la sesión'));
   await tester.pumpAndSettle();
@@ -996,10 +1186,9 @@ Future<void> _chooseExitAbandonment(WidgetTester tester) async {
 }
 
 Future<void> _openAbandonment(WidgetTester tester) async {
-  final abandon = find.widgetWithText(
-    TextButton,
-    'Finalizar y conservar lo realizado',
-  );
+  await tester.tap(find.byTooltip('Opciones de sesión'));
+  await tester.pumpAndSettle();
+  final abandon = find.text('Finalizar y conservar lo realizado');
   expect(abandon, findsOneWidget);
   await tester.ensureVisible(abandon);
   await tester.pumpAndSettle();
@@ -1019,7 +1208,10 @@ ActiveWorkoutCubit _cubit(
   _Repository repository, {
   _TimerStore? timerStore,
   _CueService? cueService,
+  WorkoutSessionDraftStore? sessionDraftStore,
 }) => ActiveWorkoutCubit(
+  sessionDraftStore: sessionDraftStore ?? MemoryWorkoutSessionDraftStore(),
+  correctSet: CorrectWorkoutSetUseCase(repository),
   executionId: 'execution-1',
   getExecution: GetWorkoutExecutionUseCase(repository),
   completeSet: CompleteWorkoutSetUseCase(repository),
@@ -1037,6 +1229,8 @@ class _Repository implements WorkoutRepository {
   WorkoutExecution execution = _execution();
   WorkoutSetResultInput? lastSetResult;
   bool failAbandonment = false;
+  int correctionCount = 0;
+  bool failCorrection = false;
   int abandonAttempts = 0;
   int discardAttempts = 0;
   bool failDiscard = false;
@@ -1137,6 +1331,42 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<int> getPendingMutationCount() async => pendingMutationCount;
+
+  @override
+  Future<void> correctSet(WorkoutSetCorrectionInput correction) async {
+    if (failCorrection) throw StateError('Sin conexión');
+    correctionCount++;
+    execution = execution.copyWith(
+      sets: execution.sets
+          .map(
+            (set) => set.id != correction.resultId
+                ? set
+                : set.copyWith(
+                    replaceResult: true,
+                    actualReps: correction.actualReps,
+                    actualRir: correction.actualRir,
+                    actualRpe: correction.actualRpe,
+                  ),
+          )
+          .toList(),
+    );
+  }
+
+  @override
+  Future<WorkoutMutationDisposition> finishExecution(
+    String executionId, {
+    required int finalRpe,
+    String? notes,
+    int? averageHeartRateBpm,
+    int? maxHeartRateBpm,
+    WorkoutResultSource resultSource = WorkoutResultSource.manual,
+  }) async {
+    execution = execution.copyWith(
+      status: WorkoutExecutionStatus.completed,
+      finalRpe: finalRpe,
+    );
+    return WorkoutMutationDisposition.synced;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

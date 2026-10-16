@@ -1,3 +1,5 @@
+import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+import 'package:entrenaop/features/workouts/data/services/shared_preferences_workout_session_draft_store.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:entrenaop/features/auth/data/datasources/auth_remote_datasource_impl.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/running_week_plan_repository.dart';
@@ -138,6 +140,12 @@ Future<void> initDependencies() async {
       sharedPreferences,
       currentUserId: () => sl<SupabaseClient>().auth.currentUser?.id,
       ownsLegacyMutation: WorkoutLegacyMutationOwner(sl()).owns,
+    ),
+  );
+  sl.registerFactory<WorkoutSessionDraftStore>(
+    () => SharedPreferencesWorkoutSessionDraftStore(
+      sharedPreferences,
+      userId: sl<SupabaseClient>().auth.currentUser?.id,
     ),
   );
   sl.registerFactory<WorkoutEditorDraftStore>(
@@ -370,6 +378,9 @@ Future<void> initDependencies() async {
       abandonExecution: sl(),
       discardExecution: sl(),
       getPendingMutationCount: sl(),
+      sessionDraftStore: sl(),
+      correctSet: sl(),
+      getExercise: sl(),
       timerStore: sl(),
       cueService: sl(),
     )..load(),

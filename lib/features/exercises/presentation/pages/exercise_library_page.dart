@@ -3,7 +3,7 @@ import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:entrenaop/features/exercises/presentation/bloc/exercise_library_cubit.dart';
 import 'package:entrenaop/features/exercises/presentation/exercise_library_filter.dart';
-import 'package:entrenaop/features/exercises/presentation/widgets/exercise_reference_video.dart';
+import 'package:entrenaop/features/exercises/presentation/widgets/exercise_detail_sheet.dart';
 import 'package:entrenaop/features/library/presentation/library_search.dart';
 import 'package:entrenaop/features/library/presentation/widgets/library_search_controls.dart';
 import 'package:flutter/material.dart';
@@ -296,87 +296,19 @@ class _ExerciseTile extends StatelessWidget {
       final action = await showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
-        builder: (context) => SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        exercise.name,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Cerrar detalle',
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
-                Text(
-                  exercise.origin == ExerciseOrigin.system
-                      ? 'EntrenaOP'
-                      : 'Tu ejercicio personal',
-                  style: TextStyle(color: context.visuals.textMuted),
-                ),
-                if (exercise.thumbnailUrl case final image?) ...[
-                  const SizedBox(height: 20),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      image,
-                      height: 180,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-                Text(
-                  exercise.description?.trim().isNotEmpty == true
-                      ? exercise.description!
-                      : 'Este ejercicio aún no tiene una descripción.',
-                ),
-                if (exercise.muscleGroups.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  Text(
-                    'Grupos musculares',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(exercise.muscleGroups.join(' · ')),
-                ],
-                if (exercise.equipment.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  Text(
-                    'Material',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(exercise.equipment.join(' · ')),
-                ],
-                if (exercise.videoUrl case final video?
-                    when video.trim().isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  ExerciseReferenceVideo(url: video),
-                ],
-                if (personal && !exercise.isPublic) ...[
-                  const SizedBox(height: 24),
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.of(context).pop('edit'),
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Editar ejercicio'),
-                  ),
-                ],
-              ],
-            ),
-          ),
+        builder: (context) => ExerciseDetailSheet(
+          name: exercise.name,
+          description: exercise.description,
+          imageUrl: exercise.thumbnailUrl,
+          videoUrl: exercise.videoUrl,
+          subtitle: exercise.origin == ExerciseOrigin.system
+              ? 'EntrenaOP'
+              : 'Tu ejercicio personal',
+          muscleGroups: exercise.muscleGroups,
+          equipment: exercise.equipment,
+          onEdit: personal && !exercise.isPublic
+              ? () => Navigator.pop(context, 'edit')
+              : null,
         ),
       );
       if (action != 'edit' || !context.mounted || cubit.isClosed) return;
