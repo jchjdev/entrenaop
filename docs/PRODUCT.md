@@ -396,6 +396,12 @@ FAS 2027:
   HTTPS del ejercicio; la base de datos guarda el enlace y el archivo permanece
   en su alojamiento original. El reproductor no incorpora una subida de vídeos
   ni supone que se haya elegido proveedor.
+- Duración confirmada para los vídeos de ejercicios (VID-002, 17/10/2026):
+  como máximo 5 segundos. La comparación de alojamiento debe usar esta duración
+  y explicitar calidad, tamaño y transferencia real. Repetir desde memoria o
+  caché no equivale necesariamente a descargar de nuevo. Proveedor, subidas,
+  reproducción automática y bucle siguen pendientes; no existe una validación
+  implementada de este máximo.
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
   recuperación pasiva, andando o trotando por duración o distancia. Repetir un
@@ -1058,9 +1064,9 @@ RPE/RIR, modificaciones, pruebas y simulacros.
 - Fondo histórico de referencia `#0A0A0A`.
 - Calisteniapp es una inspiración de experiencia, especialmente durante la
   sesión, pero no una plantilla que deba copiarse.
-- Vídeos previstos: MP4/H.264, normalmente cortos y hasta 720p; esta política se
-  validará con costes, accesibilidad y necesidades reales antes de cerrar la
-  implementación.
+- Vídeos de ejercicios: máximo de 5 segundos confirmado por Javier (VID-002).
+  MP4/H.264 y hasta 720p siguen como orientación técnica por validar con costes,
+  accesibilidad y necesidades reales antes de cerrar la implementación.
 
 ## Consulta y tareas de entrenamiento · 06/10/2026
 
