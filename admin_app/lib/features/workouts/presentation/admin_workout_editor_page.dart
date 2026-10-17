@@ -22,12 +22,16 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     required this.repository,
     this.originalTemplate,
     this.revisionId,
+    this.warmup = false,
+    this.saveInput,
   });
 
   final AdminProgram? program;
   final AdminWorkoutRepository repository;
   final WorkoutTemplate? originalTemplate;
   final String? revisionId;
+  final bool warmup;
+  final Future<void> Function(CreatePersonalWorkoutInput)? saveInput;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -93,6 +97,12 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   void initState() {
     super.initState();
     if (widget.originalTemplate case final original?) _populate(original);
+    if (widget.warmup) {
+      _running = false;
+      for (final block in _blocks) {
+        block.format = WorkoutBlockFormat.straightSets;
+      }
+    }
     _savedStamp = _draftStamp;
     widget.repository
         .listPublicExercises()
@@ -386,7 +396,9 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         _busy = true;
         _error = null;
       });
-      if (widget.revisionId case final id?) {
+      if (widget.saveInput case final save?) {
+        await save(input);
+      } else if (widget.revisionId case final id?) {
         await widget.repository.revise(id, input);
       } else {
         await widget.repository.createDraft(widget.program?.id, input);
@@ -498,7 +510,9 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text(
-        '${widget.revisionId == null ? 'Nueva sesión' : 'Revisar sesión'} · ${widget.program?.name ?? 'EntrenaOP'}',
+        widget.warmup
+            ? 'Crear calentamiento'
+            : '${widget.revisionId == null ? 'Nueva sesión' : 'Revisar sesión'} · ${widget.program?.name ?? 'EntrenaOP'}',
       ),
     ),
     body: Center(
@@ -508,14 +522,18 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              widget.program == null
+              widget.warmup
+                  ? 'Calentamiento reutilizable'
+                  : widget.program == null
                   ? 'Sesión general en borrador'
                   : 'Sesión del programa en borrador',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              widget.program == null
+              widget.warmup
+                  ? 'Guarda una versión para adjuntarla a las sesiones. El deportista podrá omitirla.'
+                  : widget.program == null
                   ? 'Se guarda en la biblioteca general. No será visible hasta que la publiques.'
                   : 'Se vincula al programa, no a la biblioteca general. Publicar no la asigna a ningún alumno.',
             ),
@@ -537,15 +555,19 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               ),
             ),
             const SizedBox(height: 12),
-            SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: true, label: Text('Carrera')),
-                ButtonSegment(value: false, label: Text('Fuerza convencional')),
-              ],
-              selected: {_running},
-              onSelectionChanged: (selection) =>
-                  setState(() => _running = selection.first),
-            ),
+            if (!widget.warmup)
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(value: true, label: Text('Carrera')),
+                  ButtonSegment(
+                    value: false,
+                    label: Text('Fuerza convencional'),
+                  ),
+                ],
+                selected: {_running},
+                onSelectionChanged: (selection) =>
+                    setState(() => _running = selection.first),
+              ),
             const SizedBox(height: 20),
             if (_running) _runningEditor() else _strengthEditor(),
             if (_error != null) ...[
@@ -564,6 +586,8 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 label: Text(
                   _busy
                       ? 'Guardando…'
+                      : widget.warmup
+                      ? 'Guardar calentamiento'
                       : widget.revisionId == null
                       ? 'Guardar borrador'
                       : 'Guardar revisión como borrador',
@@ -739,28 +763,29 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           runSpacing: 12,
           children: [
             _field(block.name, 'Nombre del bloque', 230),
-            SizedBox(
-              width: 265,
-              child: WorkoutFormatField(
-                format: format,
-                exerciseCount: block.exercises.length,
-                label: 'Formato',
-                onChanged: (value) {
-                  setState(() {
-                    block.format = value;
-                    final minimum = value == WorkoutBlockFormat.tabata
-                        ? 8
-                        : value == WorkoutBlockFormat.superset ||
-                              value == WorkoutBlockFormat.circuit
-                        ? 2
-                        : 1;
-                    while (block.exercises.length < minimum) {
-                      block.exercises.add(_Exercise());
-                    }
-                  });
-                },
+            if (!widget.warmup)
+              SizedBox(
+                width: 265,
+                child: WorkoutFormatField(
+                  format: format,
+                  exerciseCount: block.exercises.length,
+                  label: 'Formato',
+                  onChanged: (value) {
+                    setState(() {
+                      block.format = value;
+                      final minimum = value == WorkoutBlockFormat.tabata
+                          ? 8
+                          : value == WorkoutBlockFormat.superset ||
+                                value == WorkoutBlockFormat.circuit
+                          ? 2
+                          : 1;
+                      while (block.exercises.length < minimum) {
+                        block.exercises.add(_Exercise());
+                      }
+                    });
+                  },
+                ),
               ),
-            ),
             if (usesRounds)
               _field(
                 block.rounds,

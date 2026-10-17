@@ -16,6 +16,7 @@ class AdminProgramsPage extends StatefulWidget {
     required this.onSignOut,
     this.coverRepository,
     this.canManageAccounts,
+    this.hasGuidedPrograms = false,
   });
 
   final AdminProgramRepository repository;
@@ -24,6 +25,7 @@ class AdminProgramsPage extends StatefulWidget {
   final VoidCallback onSignOut;
   final ProgramCoverRepository? coverRepository;
   final Future<bool> Function()? canManageAccounts;
+  final bool hasGuidedPrograms;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -216,6 +218,25 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
               spacing: 12,
               runSpacing: 12,
               children: [
+                if (widget.hasGuidedPrograms)
+                  _AdminAreaCard(
+                    width: width,
+                    icon: Icons.auto_stories_outlined,
+                    title: 'Programas guiados',
+                    description: 'Guías repetibles y recorridos por fases.',
+                    action: 'Abrir creador',
+                    onTap: () => context.push('/guided-programs'),
+                  ),
+                if (widget.hasGuidedPrograms)
+                  _AdminAreaCard(
+                    width: width,
+                    icon: Icons.self_improvement,
+                    title: 'Calentamientos',
+                    description:
+                        'Crear y asignar calentamientos reutilizables.',
+                    action: 'Abrir calentamientos',
+                    onTap: () => context.push('/warmups'),
+                  ),
                 _AdminAreaCard(
                   width: width,
                   icon: Icons.account_tree_outlined,

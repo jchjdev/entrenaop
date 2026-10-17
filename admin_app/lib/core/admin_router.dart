@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
 import 'package:entrenaop_admin/features/pro_access/presentation/admin_pro_access_page.dart';
+import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
+import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
 
 /// Las URLs contienen identidad, nunca una entidad que solo exista en `extra`.
 /// Recargar resuelve el contenido mediante los repositorios actuales y sus RLS.
@@ -27,6 +29,7 @@ GoRouter createAdminRouter({
   required VoidCallback onSignOut,
   ProgramCoverRepository? covers,
   AdminProAccessRepository? proAccess,
+  AdminGuidedRepository? guided,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -167,6 +170,90 @@ GoRouter createAdminRouter({
     errorBuilder: (context, state) =>
         const _RouteMessage('Esta página no existe.'),
     routes: [
+      if (guided != null)
+        GoRoute(
+          path: '/guided-programs',
+          builder: (_, _) => load(
+            () async => true,
+            (_) => AdminGuidedCatalogPage(repository: guided),
+          ),
+          routes: [
+            workflow(
+              'new',
+              (_, _) => load(
+                () async => true,
+                (_) => AdminGuidedEditorPage(
+                  repository: guided,
+                  workouts: workouts,
+                ),
+              ),
+            ),
+            workflow(
+              ':guidedId/edit',
+              (_, state) => load(
+                () => guided.program(state.pathParameters['guidedId']!),
+                (p) => AdminGuidedEditorPage(
+                  repository: guided,
+                  workouts: workouts,
+                  original: p,
+                ),
+              ),
+            ),
+          ],
+        ),
+      if (guided != null)
+        GoRoute(
+          path: '/warmups',
+          builder: (_, _) => load(
+            () async => true,
+            (_) => AdminGuidedCatalogPage(repository: guided, warmups: true),
+          ),
+          routes: [
+            workflow(
+              'new',
+              (_, _) => load(
+                () async => true,
+                (_) => AdminWorkoutEditorPage(
+                  program: null,
+                  repository: workouts,
+                  warmup: true,
+                  saveInput: (input) async {
+                    await guided.saveWarmup(input);
+                  },
+                ),
+              ),
+            ),
+            workflow(
+              ':warmupId/edit',
+              (_, state) => load(
+                () async {
+                  final id = state.pathParameters['warmupId']!;
+                  final warmup = (await guided.warmups())
+                      .where((w) => w.id == id)
+                      .first;
+                  final template = await workouts.getTemplateById(
+                    warmup.templateId,
+                  );
+                  if (template == null) {
+                    throw const _RouteUnavailable(
+                      'No se encuentra el calentamiento.',
+                    );
+                  }
+                  return (warmup, template);
+                },
+                (data) => AdminWorkoutEditorPage(
+                  program: null,
+                  repository: workouts,
+                  warmup: true,
+                  originalTemplate: data.$2,
+                  saveInput: (input) async {
+                    await guided.saveWarmup(input, previousId: data.$1.id);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       if (proAccess != null)
         GoRoute(
           path: '/accounts',
@@ -193,6 +280,7 @@ GoRouter createAdminRouter({
           coverRepository: covers,
           onSignOut: onSignOut,
           canManageAccounts: proAccess?.canManageAccounts,
+          hasGuidedPrograms: guided != null,
         ),
         routes: [
           GoRoute(

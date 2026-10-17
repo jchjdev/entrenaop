@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**PRG-001, 17/10/2026 · programas guiados, bloque 1:** autorizados creador común
+de guías/fases, calentamientos reutilizables y descansos configurables, conservando
+Biblioteca y ejecutores. Autoría ADMIN implementada y comprobada: análisis limpios,
+927 pruebas raíz y 111 ADMIN correctas con sus omisiones existentes, SQL instalado
+con ROLLBACK y migración aplicada solo en desarrollo. No cierra el uso del deportista.
+**Único siguiente bloque de este recorrido:** Biblioteca y seguimiento, preparación
+de sesiones y confirmación de fases sobre el ejecutor actual. Detalle y límites en
+[PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PLAN-026, 16/10/2026 · selección y progresión de carrera:** v6 conserva los
 datos compatibles ante una referencia nueva, prioriza dosis antes del bonus de
 velocidad por meta, evita que más días o una pareja inviable bloqueen calidad

@@ -886,8 +886,10 @@ social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
 
 ## Programas guiados oficiales · PRG-001 · 17/10/2026
 
-**Dirección de producto y confirmación de fase acordadas; diseño e implementación
-pendientes.** Javier respalda incorporar programas oficiales de biblioteca con
+**Implementación autorizada por bloques; autoría ADMIN implementada y comprobada
+en desarrollo.** El recorrido del deportista continúa en el siguiente bloque;
+contrato y límites en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+Javier respalda incorporar programas oficiales de biblioteca con
 dos formas dentro del mismo concepto:
 
 - **Guía estable:** agrupa sesiones ordenadas que el usuario ejecuta y repite
@@ -907,18 +909,18 @@ los bloques que ya organizan ejercicios dentro de una sesión.
 
 ### Autoría común en ADMIN
 
-La dirección propuesta es un único creador de programas guiados para ambas
-formas. Compartiría datos descriptivos, objetivo, destinatarios, requisitos,
+El creador de programas guiados implementado sirve para ambas
+formas. Comparte datos descriptivos, objetivo, destinatarios, requisitos,
 material, indicaciones, selección/edición de sesiones, revisión y publicación.
-La organización por fases añadiría sus duraciones, orden e instrucciones sin
+La organización por fases añade sus duraciones, orden e instrucciones sin
 crear otro editor de ejercicios o sesiones. La cantidad de sesiones depende
 del contenido; cinco o seis son ejemplos, no un límite acordado.
 
 El admin actual ya edita sesiones generales o vinculadas a programas y comparte
 contratos y campos de sesión con la aplicación del deportista. Sin embargo,
 sus programas actuales pertenecen al catálogo de preparaciones con pruebas,
-baremos y módulos de entrenamiento. No existe todavía el creador de programas
-guiados con fases: reutilizar componentes no implica convertir una rutina de
+baremos y módulos de entrenamiento. El nuevo creador de programas
+guiados es independiente: reutilizar componentes no implica convertir una rutina de
 hipertrofia en una oposición ni exigirle pruebas o baremos.
 
 ### Personalización y límites
@@ -957,7 +959,8 @@ preparar y adjuntar opcionalmente a las sesiones de estos programas. El usuario
 puede omitir el calentamiento guiado y realizar el trabajo principal. El
 ejecutor actual ya reconoce bloques de calentamiento y permite omitirlos;
 STR-031 conserva esa elección separada de los resultados de entrenamiento.
-La autoría y selección de calentamientos reutilizables en ADMIN siguen pendientes.
+La autoría y selección de calentamientos reutilizables en ADMIN están implementadas
+en el bloque 1; su uso por el deportista continúa en el siguiente bloque.
 
 Como propuesta de diseño, un pequeño catálogo por finalidad permite reutilizar
 calentamientos pertinentes sin aplicar uno idéntico a todas las sesiones. La
@@ -966,10 +969,10 @@ o retirable en cada sesión. Este detalle de autoría sigue en valoración. La
 sesión conserva la versión adjunta; revisar un calentamiento no debe cambiar
 lo ya entrenado. Las dosis y contenidos concretos requieren revisión propia.
 
-### Ajustes de descanso en valoración
+### Ajustes de descanso confirmados; configuración ADMIN implementada
 
-Javier plantea permitir cambios antes de entrenar. La propuesta pendiente de
-confirmación es que el autor distinga descansos ajustables y descansos fijados
+Javier confirma permitir cambios antes de entrenar. El autor distingue
+descansos ajustables y descansos fijados
 por la pauta, con una duración recomendada y límites cuando proceda. Un acceso
 opcional a los ajustes de la sesión evita añadir un formulario obligatorio.
 
@@ -981,10 +984,10 @@ tiempo restante hasta el minuto. Los ajustes propuestos para programas guiados
 no amplían las reglas del plan adaptativo.
 
 La pauta oficial y el descanso aplicado a la ejecución deben distinguirse.
-Modificar el ajuste personal no edita la plantilla pública; este nuevo contrato
-de guardado y recuperación aún no está implementado ni confirmado en detalle.
+Modificar el ajuste personal no edita la plantilla pública. ADMIN ya guarda
+los límites; la preparación y recuperación de la ejecución sigue en el bloque 2.
 
-### Biblioteca: propuesta de distribución pendiente de valoración
+### Biblioteca: distribución aceptada; implementación en el bloque 2
 
 Javier pide conservar la identidad y la comodidad actuales, con descubrimiento
 claro de programas y sin una portada de desplazamiento interminable. La propuesta

@@ -542,6 +542,13 @@ los límites descritos en `PROGRAMA_ADAPTATIVO.md`.
 
 ## Clean Architecture aplicada a EntrenaOP
 
+PRG-001 incorpora un catálogo editorial separado de preparaciones con baremos.
+El bloque de autoría implementa contratos puros y codecs compartidos, versiones
+de contenido y enlaces con claves foráneas a sesiones/calentamientos. ADMIN
+escribe mediante RPC administrativas; la lectura usa RLS. No modifica motores
+ni ejecutores. Contrato, comprobaciones y fronteras pendientes en
+[`PROGRAMAS_GUIADOS.md`](PROGRAMAS_GUIADOS.md).
+
 Javier reafirma el 03/10/2026 que este es el criterio permanente del proyecto.
 Los contratos deportivos compartidos conservan entidades y validaciones puras;
 sus codecs JSON y adaptadores de Supabase pertenecen a la capa de datos.
