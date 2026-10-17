@@ -1,4 +1,6 @@
 import 'package:entrenaop/features/workouts/domain/services/workout_session_draft_store.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:entrenaop/features/guided_programs/data/supabase_guided_program_repository.dart';
 
 import '../../features/workouts/domain/services/workout_amrap_draft_store.dart';
 import '../../features/workouts/data/services/shared_preferences_workout_amrap_draft_store.dart';
@@ -334,6 +336,9 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DuplicatePersonalWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => ArchivePersonalWorkoutUseCase(sl()));
   sl.registerLazySingleton(() => StartWorkoutExecutionUseCase(sl()));
+  sl.registerLazySingleton<GuidedProgramRepository>(
+    () => SupabaseGuidedProgramRepository(sl()),
+  );
   sl.registerLazySingleton(() => GetWorkoutExecutionUseCase(sl()));
   sl.registerLazySingleton(() => GetWorkoutHistoryUseCase(sl()));
   sl.registerLazySingleton(() => CompleteWorkoutSetUseCase(sl()));

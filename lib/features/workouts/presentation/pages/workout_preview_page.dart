@@ -6,8 +6,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class WorkoutPreviewPage extends StatelessWidget {
-  const WorkoutPreviewPage({required this.routeBase, super.key});
+  const WorkoutPreviewPage({
+    required this.routeBase,
+    this.sessionOptions,
+    this.canStart = true,
+    this.onExecutionReturned,
+    super.key,
+  });
   final String routeBase;
+  final Widget? sessionOptions;
+  final bool canStart;
+  final Future<void> Function()? onExecutionReturned;
 
   @override
   Widget build(
@@ -17,8 +26,10 @@ class WorkoutPreviewPage extends StatelessWidget {
     listenWhen: (previous, current) =>
         current.executionId != null &&
         previous.executionId != current.executionId,
-    listener: (context, state) =>
-        context.push('$routeBase/active/${state.executionId}'),
+    listener: (context, state) async {
+      await context.push('$routeBase/active/${state.executionId}');
+      if (context.mounted) await onExecutionReturned?.call();
+    },
     builder: (context, state) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -66,6 +77,8 @@ class WorkoutPreviewPage extends StatelessWidget {
               running: _isRunning(state.workout!),
               starting: state.status == WorkoutPreviewStatus.starting,
               failed: state.status == WorkoutPreviewStatus.failure,
+              sessionOptions: sessionOptions,
+              enabled: canStart,
             ),
     ),
   );
@@ -79,8 +92,12 @@ class _SessionAction extends StatelessWidget {
     required this.running,
     required this.starting,
     required this.failed,
+    this.sessionOptions,
+    this.enabled = true,
   });
   final bool running, starting, failed;
+  final Widget? sessionOptions;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -97,6 +114,7 @@ class _SessionAction extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              ?sessionOptions,
               if (failed) ...[
                 const Text(
                   'No se pudo preparar la sesión. Puedes volver a intentarlo.',
@@ -108,7 +126,7 @@ class _SessionAction extends StatelessWidget {
               FilledButton.icon(
                 key: const ValueKey('workout-preview-start'),
                 style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
-                onPressed: starting
+                onPressed: starting || !enabled
                     ? null
                     : context.read<WorkoutPreviewCubit>().start,
                 icon: starting

@@ -21,6 +21,12 @@ import 'package:entrenaop/features/exercises/presentation/pages/personal_exercis
 import 'package:entrenaop/features/exercises/presentation/bloc/exercise_library_cubit.dart';
 import 'package:entrenaop/features/exercises/presentation/pages/exercise_library_page.dart';
 import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:entrenaop/features/guided_programs/presentation/guided_program_cubits.dart';
+import 'package:entrenaop/features/guided_programs/presentation/guided_program_page.dart';
+import 'package:entrenaop/features/guided_programs/presentation/guided_session_page.dart';
+import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
+import 'package:entrenaop/features/workouts/domain/repositories/workout_repository.dart';
 import 'package:entrenaop/features/exercises/presentation/pages/personal_exercise_creator_page.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/bloc/physical_assessment_cubit.dart';
@@ -581,8 +587,71 @@ class AppRouter {
               routes: [
                 materialAppRoute(
                   path: '/library',
-                  builder: (context, state) => const LibraryHubPage(),
+                  builder: (context, state) =>
+                      BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => LibraryHubPage(
+                          key: ValueKey(
+                            auth is AuthAuthenticated
+                                ? auth.user.id
+                                : 'library',
+                          ),
+                          guided: sl.isRegistered<GuidedProgramRepository>()
+                              ? sl<GuidedProgramRepository>()
+                              : null,
+                        ),
+                      ),
                   routes: [
+                    materialAppRoute(
+                      path: 'programs/:guidedId',
+                      builder: (_, state) => BlocProvider(
+                        key: ValueKey(state.pathParameters['guidedId']),
+                        create: (_) => GuidedDetailCubit(
+                          sl<GuidedProgramRepository>(),
+                          state.pathParameters['guidedId']!,
+                        )..load(),
+                        child: const GuidedProgramPage(),
+                      ),
+                      routes: [
+                        materialAppRoute(
+                          path: 'session/:phaseIndex/:sessionIndex',
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (_, state) => GuidedSessionPage(
+                            key: ValueKey(state.uri.path),
+                            repository: sl<GuidedProgramRepository>(),
+                            workouts: sl<WorkoutRepository>(),
+                            programId: state.pathParameters['guidedId']!,
+                            phaseIndex:
+                                int.tryParse(
+                                  state.pathParameters['phaseIndex']!,
+                                ) ??
+                                -1,
+                            sessionIndex:
+                                int.tryParse(
+                                  state.pathParameters['sessionIndex']!,
+                                ) ??
+                                -1,
+                            getTemplate: sl<GetWorkoutTemplateUseCase>(),
+                            startDefault: sl<StartWorkoutExecutionUseCase>(),
+                            getExercise: sl<GetExerciseByIdUseCase>(),
+                          ),
+                          routes: [
+                            _workflowRoute(
+                              path: 'active/:executionId',
+                              builder: (_, state) => BlocProvider(
+                                create: (_) => sl<ActiveWorkoutCubit>(
+                                  param1: state.pathParameters['executionId']!,
+                                ),
+                                child: ActiveWorkoutPage(
+                                  timerStore: sl(),
+                                  cueService: sl(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                     materialAppRoute(
                       path: 'exercises',
                       builder: (context, state) =>

@@ -14,14 +14,17 @@ class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
     required GetWorkoutTemplateUseCase getWorkoutTemplate,
     required StartWorkoutExecutionUseCase startExecution,
     GetExerciseByIdUseCase? getExercise,
+    Future<String> Function(String templateId)? startOverride,
   }) : _getWorkoutTemplate = getWorkoutTemplate,
        _getExercise = getExercise,
        _startExecution = startExecution,
+       _startOverride = startOverride,
        super(const WorkoutPreviewState());
 
   final String templateId;
   final GetWorkoutTemplateUseCase _getWorkoutTemplate;
   final StartWorkoutExecutionUseCase _startExecution;
+  final Future<String> Function(String)? _startOverride;
   final GetExerciseByIdUseCase? _getExercise;
   int _loadRequest = 0;
 
@@ -107,7 +110,9 @@ class WorkoutPreviewCubit extends Cubit<WorkoutPreviewState> {
       ),
     );
     try {
-      final executionId = await _startExecution(workout.id);
+      final executionId =
+          await (_startOverride?.call(workout.id) ??
+              _startExecution(workout.id));
       if (isClosed) return;
       emit(
         WorkoutPreviewState(

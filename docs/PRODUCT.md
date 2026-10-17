@@ -886,9 +886,9 @@ social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
 
 ## Programas guiados oficiales · PRG-001 · 17/10/2026
 
-**Implementación autorizada por bloques; autoría ADMIN implementada y comprobada
-en desarrollo.** El recorrido del deportista continúa en el siguiente bloque;
-contrato y límites en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+**Autoría y recorrido del deportista implementados y comprobados en desarrollo;
+aceptación en dispositivos pendiente.**
+Contrato y límites en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
 Javier respalda incorporar programas oficiales de biblioteca con
 dos formas dentro del mismo concepto:
 
@@ -948,9 +948,10 @@ internas. Se utiliza como referencia de experiencia, no como contrato deportivo.
 El autor indica la duración y las condiciones de cada fase, y el usuario
 confirma cuándo pasa a la siguiente. El mero transcurso del calendario no
 provoca el avance: una interrupción no debe consumir etapas sin entrenarlas.
-Falta concretar cómo se presentan y comprueban las condiciones, los casos de
-sesiones incompletas y la reanudación. La pauta de la siguiente fase es la
-definida por el autor; esta confirmación no activa un motor adaptativo.
+La ficha muestra duración/condiciones y pide confirmación. No comprueba su
+cumplimiento como un algoritmo deportivo y rechaza el avance con una sesión
+en curso. Reenviar una confirmación no consume otra fase. La pauta siguiente
+es la definida por el autor; esta confirmación no activa un motor adaptativo.
 
 ### Calentamientos reutilizables solicitados
 
@@ -960,16 +961,15 @@ puede omitir el calentamiento guiado y realizar el trabajo principal. El
 ejecutor actual ya reconoce bloques de calentamiento y permite omitirlos;
 STR-031 conserva esa elección separada de los resultados de entrenamiento.
 La autoría y selección de calentamientos reutilizables en ADMIN están implementadas
-en el bloque 1; su uso por el deportista continúa en el siguiente bloque.
+en el bloque 1; el bloque 2 permite ejecutarlos u omitirlos en la sesión real.
 
-Como propuesta de diseño, un pequeño catálogo por finalidad permite reutilizar
+Un pequeño catálogo por finalidad permite reutilizar
 calentamientos pertinentes sin aplicar uno idéntico a todas las sesiones. La
-selección podría tener un valor predeterminado para el programa, sustituible
-o retirable en cada sesión. Este detalle de autoría sigue en valoración. La
+selección implementada se realiza por sesión, sin exigir calentamiento. La
 sesión conserva la versión adjunta; revisar un calentamiento no debe cambiar
 lo ya entrenado. Las dosis y contenidos concretos requieren revisión propia.
 
-### Ajustes de descanso confirmados; configuración ADMIN implementada
+### Ajustes de descanso implementados
 
 Javier confirma permitir cambios antes de entrenar. El autor distingue
 descansos ajustables y descansos fijados
@@ -985,29 +985,31 @@ no amplían las reglas del plan adaptativo.
 
 La pauta oficial y el descanso aplicado a la ejecución deben distinguirse.
 Modificar el ajuste personal no edita la plantilla pública. ADMIN ya guarda
-los límites; la preparación y recuperación de la ejecución sigue en el bloque 2.
+los límites; la ejecución privada guarda el ajuste aplicado y conserva la pauta
+oficial. El servidor valida el rango y los reintentos conservan los ajustes.
 
-### Biblioteca: distribución aceptada; implementación en el bloque 2
+### Biblioteca: distribución implementada en el bloque 2
 
 Javier pide conservar la identidad y la comodidad actuales, con descubrimiento
-claro de programas y sin una portada de desplazamiento interminable. La propuesta
-es ampliar el selector existente a Programas, Sesiones y Ejercicios, con cambio
+claro de programas y sin una portada de desplazamiento interminable. El selector
+incorpora Programas, Sesiones y Ejercicios, con cambio
 por toque o deslizamiento y conservación de la posición y filtros por sección.
 Sesiones y Ejercicios mantienen su separación EntrenaOP/propios y sus accesos
 de creación. Dentro de Programas se distinguen guía repetible y recorrido por
 fases mediante etiquetas y filtros, no mediante catálogos independientes.
 
-La propuesta utiliza búsqueda y resultados por páginas para crecer sin acumular
-carruseles y secciones en la portada. La cantidad de tarjetas y el aspecto final
-se valoran mediante una maqueta; no son pantallas implementadas ni una aceptación
-de dosis. El programa adaptativo conserva su recorrido en Mi plan, sin duplicar
+Programas utiliza búsqueda, filtros y dos resultados por página. Mantiene la
+entrada inicial en Sesiones y el estilo de tarjetas existente. Se han revisado
+capturas de widgets reales, incluido texto ampliado; la aceptación física sigue
+pendiente. El programa adaptativo conserva su recorrido en Mi plan, sin duplicar
 otro catálogo EVO ni renombrar las preparaciones actuales por esta propuesta.
 
-Antes de implementar quedan por concretar la experiencia exacta del creador,
-condiciones operativas de avance, repeticiones, pausa/reanudación, relación con
-agenda, convivencia con el programa adaptativo y acceso comercial. Calentamientos,
-ajustes y Biblioteca se desarrollan arriba con su estado explícito. Esta decisión
-no aprueba todavía dosis, pantallas finales ni un nuevo generador automático.
+El seguimiento queda fijado a su versión, conserva resultados y permite repetir
+un programa terminado sin borrar el anterior. La vista previa permite entrenar
+solo la fase actual del programa seguido; las demás son de consulta. No añade
+coordinación adaptativa, agenda automática, progresión de cargas ni política
+comercial nueva. El siguiente bloque es la aceptación del recorrido en móvil
+y ADMIN con contenido editorial real; no se han publicado planes ficticios.
 
 ## Plataformas
 

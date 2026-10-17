@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**PRG-001, 17/10/2026 · programas guiados, bloque 2:** Biblioteca incorpora
+catálogo paginado y conserva estilo, sesiones y ejercicios. Seguimiento propio
+versionado, confirmación de fases, repetición con historial y preparación de
+sesiones con calentamiento/descanso sobre los ejecutores existentes. Análisis
+limpio, 937 pruebas raíz correctas con la omisión existente, capturas revisadas
+y seis baterías SQL relacionadas con ROLLBACK; web compilada y 157 migraciones
+coincidentes en desarrollo. ADMIN queda validado en el bloque anterior. Sin contenido deportivo
+ficticio publicado ni cambios de producción.
+**Único siguiente bloque recomendado de este recorrido:** aceptación móvil y
+ADMIN con un programa editorial real, antes de ampliar catálogo o adaptación.
+Detalle y límites en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-001, 17/10/2026 · programas guiados, bloque 1:** autorizados creador común
 de guías/fases, calentamientos reutilizables y descansos configurables, conservando
 Biblioteca y ejecutores. Autoría ADMIN implementada y comprobada: análisis limpios,

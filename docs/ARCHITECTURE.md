@@ -543,10 +543,12 @@ los límites descritos en `PROGRAMA_ADAPTATIVO.md`.
 ## Clean Architecture aplicada a EntrenaOP
 
 PRG-001 incorpora un catálogo editorial separado de preparaciones con baremos.
-El bloque de autoría implementa contratos puros y codecs compartidos, versiones
-de contenido y enlaces con claves foráneas a sesiones/calentamientos. ADMIN
-escribe mediante RPC administrativas; la lectura usa RLS. No modifica motores
-ni ejecutores. Contrato, comprobaciones y fronteras pendientes en
+Autoría usa contratos puros y codecs compartidos, versiones de contenido y
+enlaces con claves foráneas a sesiones/calentamientos. ADMIN escribe mediante
+RPC administrativas; seguimiento y ejecuciones preparadas tienen propiedad
+comprobada en servidor. La lectura usa RLS. Biblioteca y sus Cubit reutilizan
+la vista previa y el ejecutor, con ajustes opcionales y retorno verificable.
+No modifica motores ni lógica de ejecución. Contrato y comprobaciones en
 [`PROGRAMAS_GUIADOS.md`](PROGRAMAS_GUIADOS.md).
 
 Javier reafirma el 03/10/2026 que este es el criterio permanente del proyecto.

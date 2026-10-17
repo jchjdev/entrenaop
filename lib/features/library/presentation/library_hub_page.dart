@@ -5,8 +5,12 @@ import 'package:entrenaop/features/workouts/presentation/widgets/session_creatio
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../guided_programs/domain/guided_program_repository.dart';
+import '../../guided_programs/presentation/guided_catalog_panel.dart';
+
 class LibraryHubPage extends StatelessWidget {
-  const LibraryHubPage({super.key});
+  const LibraryHubPage({super.key, this.guided});
+  final GuidedProgramRepository? guided;
 
   Future<void> _createSession(BuildContext context) async {
     final route = await chooseSessionEditor(context);
@@ -26,7 +30,8 @@ class LibraryHubPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DefaultTabController(
-    length: 2,
+    length: guided == null ? 2 : 3,
+    initialIndex: guided == null ? 0 : 1,
     child: Scaffold(
       appBar: AppBar(title: const EntrenaWordmark(width: 164)),
       body: Center(
@@ -52,18 +57,29 @@ class LibraryHubPage extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TabBar(
+                  isScrollable:
+                      guided != null &&
+                      MediaQuery.textScalerOf(context).scale(14) > 20,
+                  tabAlignment:
+                      guided != null &&
+                          MediaQuery.textScalerOf(context).scale(14) > 20
+                      ? TabAlignment.start
+                      : TabAlignment.fill,
                   tabs: [
-                    Tab(text: 'Sesiones'),
-                    Tab(text: 'Ejercicios'),
+                    if (guided != null) const Tab(text: 'Programas'),
+                    const Tab(text: 'Sesiones'),
+                    const Tab(text: 'Ejercicios'),
                   ],
                 ),
               ),
               Expanded(
                 child: TabBarView(
                   children: [
+                    if (guided case final repository?)
+                      GuidedCatalogPanel(repository: repository),
                     _LibraryGroup(
                       storageKey: 'library-sessions',
                       official: _CollectionCard(

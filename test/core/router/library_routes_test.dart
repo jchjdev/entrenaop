@@ -1,4 +1,7 @@
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+
+import '../../support/guided_program_fixture.dart';
 
 import '../../support/pro_access_fixture.dart';
 
@@ -299,6 +302,33 @@ void main() {
       await tester.pumpAndSettle();
       expect(router.config.routeInformationProvider.value.uri.path, '/library');
       expect(find.text('Sesiones EntrenaOP'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'la sesión de un programa usa la vista dedicada y vuelve al programa',
+    (tester) async {
+      _register(_Exercises());
+      addTearDown(sl.reset);
+      final workouts = GuidedTestWorkouts();
+      sl.registerSingleton<GuidedProgramRepository>(GuidedTestRepository());
+      sl.registerSingleton<WorkoutRepository>(workouts);
+      sl.registerSingleton(GetWorkoutTemplateUseCase(workouts));
+      sl.registerSingleton(StartWorkoutExecutionUseCase(workouts));
+      final auth = _Auth(), router = AppRouter(_Auth());
+      addTearDown(router.dispose);
+      router.config.go('/library/programs/program/session/0/0');
+      await tester.pumpWidget(_app(auth, router));
+      await tester.pumpAndSettle();
+      expect(find.text('Vista de la sesión'), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.text('Ajustes de esta sesión'), findsOneWidget);
+      await tester.tap(find.byTooltip('Volver'));
+      await tester.pumpAndSettle();
+      expect(
+        router.config.routeInformationProvider.value.uri.path,
+        '/library/programs/program',
+      );
+      expect(tester.takeException(), isNull);
     },
   );
 }
