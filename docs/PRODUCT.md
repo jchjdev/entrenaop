@@ -880,11 +880,12 @@ social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
 
 ## Programas guiados oficiales · PRG-001 · 17/10/2026
 
-**Dirección de producto acordada; diseño e implementación pendientes.** Javier
-respalda incorporar programas oficiales de biblioteca con dos formas dentro del
-mismo concepto:
+**Dirección de producto y confirmación de fase acordadas; diseño e implementación
+pendientes.** Javier respalda incorporar programas oficiales de biblioteca con
+dos formas dentro del mismo concepto:
 
-- **Guía estable:** agrupa sesiones ordenadas que el usuario consulta y repite.
+- **Guía estable:** agrupa sesiones ordenadas que el usuario ejecuta y repite
+  con el entrenamiento guiado y registro real de la aplicación.
   Puede mantener ejercicios, series y pautas de esfuerzo mientras el usuario
   registra sus cargas y repeticiones. No exige rotar ejercicios cada semana ni
   un plazo de finalización artificial.
@@ -926,19 +927,78 @@ Estos programas se distinguen de sesiones sueltas, sesiones propias y planes
 adaptativos. No redefinen las preparaciones actuales ni STR-026/027. Seguir una
 guía junto a una preparación no acredita coordinación de carga entre ambas.
 Los desafíos quedan fuera de este alcance. La revisión deportiva debe cubrir
-el programa completo, sus requisitos y su evolución; ni la referencia visual
-ni la estructura técnica acreditan eficacia o garantizan ausencia de dolor.
+el programa completo, sus requisitos y su evolución; la referencia visual y
+la estructura técnica no sustituyen esa revisión.
 
 La referencia de Calisteniapp muestra catálogo, información, fases y sesiones,
 así como pautas por esfuerzo sin kilos prescritos en el programa consultado.
 El vídeo no acredita su funcionamiento tras iniciar un programa ni sus reglas
 internas. Se utiliza como referencia de experiencia, no como contrato deportivo.
 
+### Avance de fase confirmado por Javier
+
+El autor indica la duración y las condiciones de cada fase, y el usuario
+confirma cuándo pasa a la siguiente. El mero transcurso del calendario no
+provoca el avance: una interrupción no debe consumir etapas sin entrenarlas.
+Falta concretar cómo se presentan y comprueban las condiciones, los casos de
+sesiones incompletas y la reanudación. La pauta de la siguiente fase es la
+definida por el autor; esta confirmación no activa un motor adaptativo.
+
+### Calentamientos reutilizables solicitados
+
+Javier solicita calentamientos básicos y homogéneos que el administrador pueda
+preparar y adjuntar opcionalmente a las sesiones de estos programas. El usuario
+puede omitir el calentamiento guiado y realizar el trabajo principal. El
+ejecutor actual ya reconoce bloques de calentamiento y permite omitirlos;
+STR-031 conserva esa elección separada de los resultados de entrenamiento.
+La autoría y selección de calentamientos reutilizables en ADMIN siguen pendientes.
+
+Como propuesta de diseño, un pequeño catálogo por finalidad permite reutilizar
+calentamientos pertinentes sin aplicar uno idéntico a todas las sesiones. La
+selección podría tener un valor predeterminado para el programa, sustituible
+o retirable en cada sesión. Este detalle de autoría sigue en valoración. La
+sesión conserva la versión adjunta; revisar un calentamiento no debe cambiar
+lo ya entrenado. Las dosis y contenidos concretos requieren revisión propia.
+
+### Ajustes de descanso en valoración
+
+Javier plantea permitir cambios antes de entrenar. La propuesta pendiente de
+confirmación es que el autor distinga descansos ajustables y descansos fijados
+por la pauta, con una duración recomendada y límites cuando proceda. Un acceso
+opcional a los ajustes de la sesión evita añadir un formulario obligatorio.
+
+No debe aplicarse un único cambio global a series, transiciones de circuito,
+pausas entre rondas y recuperaciones temporizadas. En EMOM, Tabata, intervalos
+y carrera, las recuperaciones forman parte del formato o de la dosis; no se
+desbloquean desde un ajuste genérico. La política actual de EMOM calcula el
+tiempo restante hasta el minuto. Los ajustes propuestos para programas guiados
+no amplían las reglas del plan adaptativo.
+
+La pauta oficial y el descanso aplicado a la ejecución deben distinguirse.
+Modificar el ajuste personal no edita la plantilla pública; este nuevo contrato
+de guardado y recuperación aún no está implementado ni confirmado en detalle.
+
+### Biblioteca: propuesta de distribución pendiente de valoración
+
+Javier pide conservar la identidad y la comodidad actuales, con descubrimiento
+claro de programas y sin una portada de desplazamiento interminable. La propuesta
+es ampliar el selector existente a Programas, Sesiones y Ejercicios, con cambio
+por toque o deslizamiento y conservación de la posición y filtros por sección.
+Sesiones y Ejercicios mantienen su separación EntrenaOP/propios y sus accesos
+de creación. Dentro de Programas se distinguen guía repetible y recorrido por
+fases mediante etiquetas y filtros, no mediante catálogos independientes.
+
+La propuesta utiliza búsqueda y resultados por páginas para crecer sin acumular
+carruseles y secciones en la portada. La cantidad de tarjetas y el aspecto final
+se valoran mediante una maqueta; no son pantallas implementadas ni una aceptación
+de dosis. El programa adaptativo conserva su recorrido en Mi plan, sin duplicar
+otro catálogo EVO ni renombrar las preparaciones actuales por esta propuesta.
+
 Antes de implementar quedan por concretar la experiencia exacta del creador,
-avance entre fases (duración, sesiones resueltas o confirmación), repeticiones,
-pausa/reanudación, relación con agenda, convivencia con el programa adaptativo
-y acceso comercial. Esta decisión no aprueba todavía reglas de avance, dosis,
-pantallas finales ni un nuevo generador automático.
+condiciones operativas de avance, repeticiones, pausa/reanudación, relación con
+agenda, convivencia con el programa adaptativo y acceso comercial. Calentamientos,
+ajustes y Biblioteca se desarrollan arriba con su estado explícito. Esta decisión
+no aprueba todavía dosis, pantallas finales ni un nuevo generador automático.
 
 ## Plataformas
 
