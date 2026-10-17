@@ -44,7 +44,8 @@ previas. No se adjunta otro calentamiento a una sesión que ya incluya uno.
 Migración `20261017101000_guided_program_authoring.sql`, aplicada únicamente
 a `entrenaop-dev`. Prueba instalada `guided_program_authoring.sql` con ROLLBACK:
 autoría, guía/fases, descansos inválidos, referencias, versiones y permisos.
-Sin contenido de prueba persistido ni ejemplos publicados.
+La prueba no persiste datos. Las demos autorizadas posteriormente se detallan
+al final de este documento.
 
 Validación: análisis de raíz y ADMIN limpios; 927 pruebas raíz y 111 ADMIN
 correctas, con sus omisiones existentes. Los avisos del asesor para las tres
@@ -123,14 +124,39 @@ Git y desarrollo.
 Los avisos de RPC autenticadas del asesor son los accesos de servidor previstos,
 con propiedad/permisos comprobados; no hay concesión de ejecución anónima nueva.
 
-No se han publicado programas deportivos de ejemplo: el catálogo se llena desde
-ADMIN con contenido revisado. No añade progresión automática de cargas,
+El catálogo definitivo se llena desde ADMIN con contenido revisado. Por petición
+de Javier se publican dos programas demo solo en desarrollo, descritos más abajo.
+No añade progresión automática de cargas,
 coordinación con preparaciones adaptativas, generación de agenda ni política
 comercial nueva. Retirar un programa conserva seguimiento e historial; retirar
 también sus sesiones puede impedir nuevas vistas previas de ese contenido.
 La eficacia deportiva y la aceptación en dispositivos no quedan acreditadas
 por las pruebas técnicas. Sin cambios en producción.
 
-**Único siguiente bloque recomendado:** aceptación del recorrido con un programa
-editorial real en móvil y ADMIN, incluyendo calentamiento, ajuste de descanso,
+**Único siguiente bloque recomendado:** aceptación del recorrido en móvil con
+las demos y revisión de autoría en ADMIN, incluyendo calentamiento, ajuste de descanso,
 retorno/reanudación, cierre y confirmación de fase, antes de ampliar el catálogo.
+
+### Demos publicadas para aceptación · 17/10/2026
+
+Javier solicita dos programas sencillos para probar la app sin acceso a ADMIN.
+Solo en `entrenaop-dev` se publican **Demo · Empuje, tirón y pierna**, guía
+repetible de tres sesiones, y **Demo · Mejora de dominadas**, tres fases con una
+sesión cada una: Base, Progreso y Consolidación. Las duraciones de dos semanas
+son orientativas y el usuario confirma el avance. Se reutilizan ejercicios
+públicos existentes; no se añaden movimientos ni se prescriben pesos fijos.
+Ambos permiten calentamiento opcional y descanso de 60 a 180 segundos.
+
+La carga reproducible e idempotente queda en
+`tools/guided_programs_demo/`, fuera de migraciones y seeds globales, con destino
+de desarrollo fijo y RPC de autoría/publicación existentes. No cambia el código
+de las aplicaciones, sus ejecutores, cuentas, permisos o seguimientos reales.
+Los nombres y descripciones identifican el carácter de demostración; no
+acreditan revisión deportiva definitiva.
+
+Comprobados autoría con ROLLBACK, publicación, repetición sin duplicados y
+catálogo visible como deportista. La batería `verify.sql` inicia y termina las
+seis sesiones, alterna calentamiento incluido/omitido, aplica descanso elegido,
+conserva las sesiones fuente y confirma las tres fases; termina con ROLLBACK.
+157 migraciones coincidentes; sin cambios en producción. La aceptación física
+queda a cargo de las pruebas que Javier va a realizar.

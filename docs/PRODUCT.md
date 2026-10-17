@@ -1009,7 +1009,11 @@ un programa terminado sin borrar el anterior. La vista previa permite entrenar
 solo la fase actual del programa seguido; las demás son de consulta. No añade
 coordinación adaptativa, agenda automática, progresión de cargas ni política
 comercial nueva. El siguiente bloque es la aceptación del recorrido en móvil
-y ADMIN con contenido editorial real; no se han publicado planes ficticios.
+y ADMIN. Por petición de Javier se publican solo en desarrollo dos demos de
+tres sesiones: guía de empuje/tirón/pierna y dominadas con tres fases. Permiten
+probar calentamientos opcionales, descansos y confirmación de avance sin acceso
+actual a ADMIN. Son contenido de aceptación funcional, pendiente de revisión
+deportiva antes de convertirse en programas definitivos.
 
 ## Plataformas
 

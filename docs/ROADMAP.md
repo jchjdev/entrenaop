@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**PRG-001, 17/10/2026 · contenido demo solicitado por Javier:** publicados solo
+en desarrollo «Demo · Empuje, tirón y pierna» (guía, tres sesiones) y «Demo ·
+Mejora de dominadas» (tres fases, una sesión por fase), con ejercicios existentes,
+calentamientos opcionales y descansos configurables. Carga atómica, idempotente
+y separada de migraciones/producción. Comprobados catálogo como deportista,
+inicio, registro y cierre de las seis sesiones y confirmación de fases con
+ROLLBACK; 157 migraciones coincidentes. Sin cambios de Flutter ni historiales
+reales. Contenido para aceptación, pendiente de revisión deportiva definitiva.
+**Único siguiente bloque recomendado de este recorrido:** pruebas de Javier
+en móvil con estas demos y revisión del creador en ADMIN antes de ampliar catálogo.
+Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-001, 17/10/2026 · programas guiados, bloque 2:** Biblioteca incorpora
 catálogo paginado y conserva estilo, sesiones y ejercicios. Seguimiento propio
 versionado, confirmación de fases, repetición con historial y preparación de
