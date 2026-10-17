@@ -878,6 +878,68 @@ insuficiente de movimientos para aparentar una progresión de fuerza validada.
 Quedan fuera de esta primera validación el chat, nutrición, desafíos, red
 social, Garmin, Strava y la cobertura simultánea de todas las oposiciones.
 
+## Programas guiados oficiales · PRG-001 · 17/10/2026
+
+**Dirección de producto acordada; diseño e implementación pendientes.** Javier
+respalda incorporar programas oficiales de biblioteca con dos formas dentro del
+mismo concepto:
+
+- **Guía estable:** agrupa sesiones ordenadas que el usuario consulta y repite.
+  Puede mantener ejercicios, series y pautas de esfuerzo mientras el usuario
+  registra sus cargas y repeticiones. No exige rotar ejercicios cada semana ni
+  un plazo de finalización artificial.
+- **Recorrido por fases:** organiza sesiones en etapas con finalidad, duración
+  y pautas propias, por ejemplo preparación inicial, desarrollo y consecución
+  del objetivo. La evolución puede estar escrita por el autor; no requiere que
+  un algoritmo seleccione ejercicios o cambie dosis desde los resultados.
+
+Una guía estable puede representarse como una sola fase repetible, sin obligar
+al autor o al deportista a gestionar esa fase en pantalla. Un recorrido puede
+añadir varias fases sobre la misma estructura. Las fases del programa no son
+los bloques que ya organizan ejercicios dentro de una sesión.
+
+### Autoría común en ADMIN
+
+La dirección propuesta es un único creador de programas guiados para ambas
+formas. Compartiría datos descriptivos, objetivo, destinatarios, requisitos,
+material, indicaciones, selección/edición de sesiones, revisión y publicación.
+La organización por fases añadiría sus duraciones, orden e instrucciones sin
+crear otro editor de ejercicios o sesiones. La cantidad de sesiones depende
+del contenido; cinco o seis son ejemplos, no un límite acordado.
+
+El admin actual ya edita sesiones generales o vinculadas a programas y comparte
+contratos y campos de sesión con la aplicación del deportista. Sin embargo,
+sus programas actuales pertenecen al catálogo de preparaciones con pruebas,
+baremos y módulos de entrenamiento. No existe todavía el creador de programas
+guiados con fases: reutilizar componentes no implica convertir una rutina de
+hipertrofia en una oposición ni exigirle pruebas o baremos.
+
+### Personalización y límites
+
+El contenido oficial prescribe la estructura y el esfuerzo aplicable; el usuario
+ajusta su carga y registra lo realizado. Prescripción, resultados y seguimiento
+personal deben distinguirse, conservando la versión realizada cuando se revise
+el contenido editorial. La recuperación de cargas previas es una ayuda de
+registro propuesta, no una regla de progresión automática ya implementada.
+
+Estos programas se distinguen de sesiones sueltas, sesiones propias y planes
+adaptativos. No redefinen las preparaciones actuales ni STR-026/027. Seguir una
+guía junto a una preparación no acredita coordinación de carga entre ambas.
+Los desafíos quedan fuera de este alcance. La revisión deportiva debe cubrir
+el programa completo, sus requisitos y su evolución; ni la referencia visual
+ni la estructura técnica acreditan eficacia o garantizan ausencia de dolor.
+
+La referencia de Calisteniapp muestra catálogo, información, fases y sesiones,
+así como pautas por esfuerzo sin kilos prescritos en el programa consultado.
+El vídeo no acredita su funcionamiento tras iniciar un programa ni sus reglas
+internas. Se utiliza como referencia de experiencia, no como contrato deportivo.
+
+Antes de implementar quedan por concretar la experiencia exacta del creador,
+avance entre fases (duración, sesiones resueltas o confirmación), repeticiones,
+pausa/reanudación, relación con agenda, convivencia con el programa adaptativo
+y acceso comercial. Esta decisión no aprueba todavía reglas de avance, dosis,
+pantallas finales ni un nuevo generador automático.
+
 ## Plataformas
 
 - Android e iPhone son prioritarios para la experiencia del opositor.
