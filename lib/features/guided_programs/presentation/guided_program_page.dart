@@ -137,7 +137,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                         FilledButton(
                           onPressed: state.busy ? null : cubit.follow,
                           child: Text(
-                            state.busy ? 'Guardando…' : 'Seguir programa',
+                            state.busy ? 'Guardando…' : 'Iniciar programa',
                           ),
                         ),
                       if (d.follow?.completed == true) ...[

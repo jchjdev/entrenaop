@@ -9,10 +9,14 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_pro
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:workout_core/guided_program.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../support/guided_program_fixture.dart';
 
 void main() {
   final today = DateUtils.dateOnly(DateTime.now());
@@ -67,6 +71,7 @@ void main() {
     double textScale = 1,
     _Favorites? favorites,
     _Overview? source,
+    GuidedProgramRepository? guided,
   }) async {
     tester.view.physicalSize = Size(width, 900);
     tester.view.devicePixelRatio = 1;
@@ -85,8 +90,13 @@ void main() {
             child: HomePage(
               favoritesRepository: favorites ?? _Favorites(),
               userId: 'user-1',
+              guidedPrograms: guided,
             ),
           ),
+        ),
+        GoRoute(
+          path: '/library/programs/:id',
+          builder: (_, _) => const Scaffold(body: Text('Ficha del programa')),
         ),
         GoRoute(
           path: '/plan',
@@ -179,6 +189,73 @@ void main() {
     expect(router.state.uri.path, '/plan/goal/goal-1');
     expect(find.text('Preparación elegida'), findsOneWidget);
   });
+  testWidgets(
+    'Inicio muestra programas iniciados y actualiza su fase al volver',
+    (tester) async {
+      final repo = _HomePrograms();
+      final router = await mount(
+        tester,
+        overview(),
+        guided: repo,
+        width: 320,
+        textScale: 2,
+      );
+      await tester.ensureVisible(find.text('Hipertrofia básica'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tus programas'), findsOneWidget);
+      await tester.tap(find.text('Hipertrofia básica'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/library/programs/program');
+      expect(find.text('Ficha del programa'), findsOneWidget);
+      repo.items = [
+        const StartedGuidedProgram(
+          program: GuidedProgram(
+            id: 'phased',
+            name: 'Dominadas',
+            mode: GuidedProgramMode.phased,
+            phases: [
+              GuidedPhase(name: 'Base', sessions: []),
+              GuidedPhase(name: 'Progreso', sessions: []),
+            ],
+          ),
+          phaseIndex: 1,
+        ),
+      ];
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(repo.calls, 2);
+      expect(find.text('Hipertrofia básica'), findsNothing);
+      await tester.ensureVisible(find.text('Dominadas'));
+      expect(find.text('Fase 2 de 2 · Progreso'), findsOneWidget);
+      expect(repo.starts, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'Inicio descubre un programa iniciado y oculta los completados al refrescar',
+    (tester) async {
+      final repo = _HomePrograms()..items = [];
+      final router = await mount(tester, overview(), guided: repo);
+      expect(find.text('Tus programas'), findsNothing);
+      final firstVisit = router.push<void>('/library/programs/program');
+      await tester.pumpAndSettle();
+      repo.items = [
+        const StartedGuidedProgram(program: guidedFixture, phaseIndex: 0),
+      ];
+      router.pop();
+      await firstVisit;
+      await tester.pumpAndSettle();
+      expect(find.text('Tus programas'), findsOneWidget);
+      final secondVisit = router.push<void>('/library/programs/program');
+      await tester.pumpAndSettle();
+      repo.items = [];
+      router.pop();
+      await secondVisit;
+      await tester.pumpAndSettle();
+      expect(repo.calls, 3);
+      expect(find.text('Tus programas'), findsNothing);
+    },
+  );
   testWidgets('la sesión diaria abre su agenda sin iniciar una ejecución', (
     tester,
   ) async {
@@ -300,6 +377,18 @@ class _Overview implements GetPreparationOverviewUseCase {
   Future<PreparationOverview> call() async {
     calls++;
     return overview;
+  }
+}
+
+class _HomePrograms extends GuidedTestRepository {
+  int calls = 0;
+  List<StartedGuidedProgram> items = [
+    const StartedGuidedProgram(program: guidedFixture, phaseIndex: 0),
+  ];
+  @override
+  Future<List<StartedGuidedProgram>> startedPrograms() async {
+    calls++;
+    return List.of(items);
   }
 }
 

@@ -892,7 +892,7 @@ Contrato y límites en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
 Javier respalda incorporar programas oficiales de biblioteca con
 dos formas dentro del mismo concepto:
 
-- **Guía estable:** agrupa sesiones ordenadas que el usuario ejecuta y repite
+- **Rutina:** agrupa sesiones ordenadas que el usuario ejecuta y repite
   con el entrenamiento guiado y registro real de la aplicación.
   Puede mantener ejercicios, series y pautas de esfuerzo mientras el usuario
   registra sus cargas y repeticiones. No exige rotar ejercicios cada semana ni
@@ -995,10 +995,11 @@ claro de programas y sin una portada de desplazamiento interminable. El selector
 incorpora Programas, Sesiones y Ejercicios, con cambio
 por toque o deslizamiento y conservación de la posición y filtros por sección.
 Sesiones y Ejercicios mantienen su separación EntrenaOP/propios y sus accesos
-de creación. Dentro de Programas se distinguen guía repetible y recorrido por
-fases mediante etiquetas y filtros, no mediante catálogos independientes.
+de creación. Dentro de Programas se distinguen **Rutinas** y **Por fases**;
+la etiqueta singular en las tarjetas es **Rutina**, según acuerdo del 18/10/2026.
 
-Programas utiliza búsqueda, filtros y dos resultados por página. Mantiene la
+Programas utiliza búsqueda, filtros y dos resultados por página; los controles
+de página se ocultan cuando solo existe una. Mantiene la
 entrada inicial en Sesiones y el estilo de tarjetas existente. Se han revisado
 capturas de widgets reales, incluido texto ampliado; la aceptación física sigue
 pendiente. El programa adaptativo conserva su recorrido en Mi plan, sin duplicar
@@ -1014,6 +1015,12 @@ tres sesiones: guía de empuje/tirón/pierna y dominadas con tres fases. Permite
 probar calentamientos opcionales, descansos y confirmación de avance sin acceso
 actual a ADMIN. Son contenido de aceptación funcional, pendiente de revisión
 deportiva antes de convertirse en programas definitivos.
+
+Javier confirma el 18/10/2026 mantener **Iniciar programa** como paso explícito
+para ambas modalidades. Crea el seguimiento y permite después elegir sesión.
+Inicio/Hoy muestra **Tus programas**, los tres últimos iniciados sin completar,
+con fase actual y acceso a la ficha. Se actualiza al volver/refrescar, sin crear
+sesiones por fecha ni mezclar la rutina con la agenda adaptativa.
 
 ## Plataformas
 

@@ -313,7 +313,7 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   follow == null
-                      ? 'Sigue el programa desde su ficha para entrenar con seguimiento.'
+                      ? 'Inicia el programa desde su ficha para entrenar con seguimiento.'
                       : follow.completed
                       ? 'Programa completado. Puedes repetirlo desde su ficha.'
                       : 'Vista previa: esta sesión pertenece a otra fase.',
@@ -337,9 +337,7 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
                 onPressed: _attempted ? null : _settings,
                 icon: const Icon(Icons.tune, size: 18),
                 label: Text(
-                  _attempted
-                    ? 'Ajustes conservados'
-                      : 'Ajustes de esta sesión',
+                  _attempted ? 'Ajustes conservados' : 'Ajustes de esta sesión',
                 ),
               ),
           ],

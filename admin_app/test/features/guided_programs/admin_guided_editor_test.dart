@@ -124,14 +124,14 @@ void main() {
       await tester.ensureVisible(find.text('Añadir fase'));
       await tester.tap(find.text('Añadir fase'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guía repetible'));
-      await tester.tap(find.text('Guía repetible'));
+      await tester.ensureVisible(find.text('Rutina'));
+      await tester.tap(find.text('Rutina'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(
-        find.text('Conserva una sola fase antes de convertirla en guía.'),
+        find.text('Conserva una sola fase antes de convertirlo en rutina.'),
       );
       expect(
-        find.text('Conserva una sola fase antes de convertirla en guía.'),
+        find.text('Conserva una sola fase antes de convertirlo en rutina.'),
         findsOneWidget,
       );
     },

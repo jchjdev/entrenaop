@@ -19,21 +19,38 @@ import 'package:flutter/material.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:entrenaop/features/guided_programs/presentation/home_guided_programs.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     required this.favoritesRepository,
     required this.userId,
+    this.guidedPrograms,
   });
 
   final HomeFavoritesRepository favoritesRepository;
   final String userId;
+  final GuidedProgramRepository? guidedPrograms;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // La recarga de programas también debe ocurrir si el resumen responde en el mismo frame.
+  int _guidedRefreshVersion = 0;
+
+  Future<void> _refresh() {
+    setState(() => _guidedRefreshVersion++);
+    return context.read<DashboardCubit>().load();
+  }
 
   @override
   Widget build(BuildContext context) => SectionRefreshBoundary(
     location: '/home',
-    onVisible: () => context.read<DashboardCubit>().load(),
+    onVisible: _refresh,
     child: Scaffold(
       appBar: AppBar(
         title: const EntrenaWordmark(width: 148),
@@ -41,7 +58,7 @@ class HomePage extends StatelessWidget {
           if (MediaQuery.sizeOf(context).width >= 840) ...[
             IconButton(
               tooltip: 'Actualizar resumen',
-              onPressed: () => context.read<DashboardCubit>().load(),
+              onPressed: _refresh,
               icon: const Icon(Icons.refresh_rounded),
             ),
             const SizedBox(width: 8),
@@ -66,7 +83,7 @@ class HomePage extends StatelessWidget {
           if (overview == null) {
             return Center(
               child: FilledButton.icon(
-                onPressed: () => context.read<DashboardCubit>().load(),
+                onPressed: _refresh,
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Reintentar cargar Inicio'),
               ),
@@ -75,8 +92,11 @@ class HomePage extends StatelessWidget {
           return _DashboardContent(
             overview: overview,
             refreshing: state.status == DashboardStatus.loading,
-            favoritesRepository: favoritesRepository,
-            userId: userId,
+            favoritesRepository: widget.favoritesRepository,
+            userId: widget.userId,
+            guidedPrograms: widget.guidedPrograms,
+            guidedRefreshVersion: _guidedRefreshVersion,
+            onRefresh: _refresh,
           );
         },
       ),
@@ -90,11 +110,17 @@ class _DashboardContent extends StatefulWidget {
     required this.refreshing,
     required this.favoritesRepository,
     required this.userId,
+    required this.guidedPrograms,
+    required this.guidedRefreshVersion,
+    required this.onRefresh,
   });
   final PreparationOverview overview;
   final bool refreshing;
   final HomeFavoritesRepository favoritesRepository;
   final String userId;
+  final GuidedProgramRepository? guidedPrograms;
+  final int guidedRefreshVersion;
+  final Future<void> Function() onRefresh;
 
   @override
   State<_DashboardContent> createState() => _DashboardContentState();
@@ -141,7 +167,7 @@ class _DashboardContentState extends State<_DashboardContent> {
         )
         .length;
     return RefreshIndicator(
-      onRefresh: () => context.read<DashboardCubit>().load(),
+      onRefresh: widget.onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 6, 20, 32),
@@ -178,6 +204,13 @@ class _DashboardContentState extends State<_DashboardContent> {
                     onOpen: _open,
                   ),
                   const SizedBox(height: 24),
+                  if (widget.guidedPrograms case final repository?)
+                    HomeGuidedPrograms(
+                      key: ValueKey('guided-${widget.userId}'),
+                      repository: repository,
+                      refreshVersion: widget.guidedRefreshVersion,
+                      onOpen: _open,
+                    ),
                   _PreparationsSection(overview: overview, onOpen: _open),
                   const SizedBox(height: 24),
                   const HomeToolsSection(),

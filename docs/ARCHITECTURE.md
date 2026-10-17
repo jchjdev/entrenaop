@@ -548,6 +548,9 @@ enlaces con claves foráneas a sesiones/calentamientos. ADMIN escribe mediante
 RPC administrativas; seguimiento y ejecuciones preparadas tienen propiedad
 comprobada en servidor. La lectura usa RLS. Biblioteca y sus Cubit reutilizan
 la vista previa y el ejecutor, con ajustes opcionales y retorno verificable.
+Inicio recibe el repositorio de programas por inyección y muestra un resumen
+acotado de seguimientos propios activos; la selección y el límite se aplican
+en datos usando las RLS existentes. Abrir una ficha no inicia una ejecución.
 No modifica motores ni lógica de ejecución. Contrato y comprobaciones en
 [`PROGRAMAS_GUIADOS.md`](PROGRAMAS_GUIADOS.md).
 

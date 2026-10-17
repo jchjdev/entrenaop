@@ -223,7 +223,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
                     width: width,
                     icon: Icons.auto_stories_outlined,
                     title: 'Programas guiados',
-                    description: 'Guías repetibles y recorridos por fases.',
+                    description: 'Rutinas y programas por fases.',
                     action: 'Abrir creador',
                     onTap: () => context.push('/guided-programs'),
                   ),

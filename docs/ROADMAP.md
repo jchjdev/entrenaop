@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**PRG-002, 18/10/2026 · nombres y acceso desde Inicio:** Biblioteca y ADMIN
+utilizan Rutinas/Rutina y Por fases. Iniciar programa conserva el seguimiento
+explícito. Inicio/Hoy muestra los tres últimos programas propios iniciados sin
+completar con acceso a su ficha y fase actual; se refrescan al volver. El paginador
+se oculta si solo hay una página y conserva el regreso desde la última. Análisis
+limpios, 943 pruebas raíz y 111 ADMIN correctas con sus omisiones anteriores.
+Sin cambios de SQL, dependencias, agenda, ejecutores o producción.
+**Único siguiente bloque recomendado de este recorrido:** aceptación de Javier
+en móvil de las dos demos, incluyendo entrada desde Inicio y retorno de sesión,
+antes de ampliar el catálogo. Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-001, 17/10/2026 · contenido demo solicitado por Javier:** publicados solo
 en desarrollo «Demo · Empuje, tirón y pierna» (guía, tres sesiones) y «Demo ·
 Mejora de dominadas» (tres fases, una sesión por fase), con ejercicios existentes,

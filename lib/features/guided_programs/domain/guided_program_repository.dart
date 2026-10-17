@@ -29,6 +29,12 @@ class GuidedRun {
   final String? executionId;
 }
 
+class StartedGuidedProgram {
+  const StartedGuidedProgram({required this.program, required this.phaseIndex});
+  final GuidedProgram program;
+  final int phaseIndex;
+}
+
 class GuidedProgramDetail {
   const GuidedProgramDetail(this.program, {this.follow, this.runs = const []});
   final GuidedProgram program;
@@ -52,6 +58,7 @@ class GuidedProgramDetail {
 
 abstract class GuidedProgramRepository {
   String? get currentUserId;
+  Future<List<StartedGuidedProgram>> startedPrograms();
   Future<GuidedCatalogPage> catalog({
     String query = '',
     GuidedProgramMode? mode,

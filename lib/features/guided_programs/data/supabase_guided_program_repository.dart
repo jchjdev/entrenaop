@@ -10,6 +10,30 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   @override
   String? get currentUserId => client.auth.currentUser?.id;
   @override
+  Future<List<StartedGuidedProgram>> startedPrograms() async {
+    final owner = currentUserId;
+    if (owner == null) return const [];
+    final rows = await client
+        .from('guided_program_follows')
+        .select('phase_index,guided_programs!inner(*)')
+        .eq('user_id', owner)
+        .isFilter('completed_at', null)
+        .order('started_at', ascending: false)
+        .order('id', ascending: false)
+        .limit(3);
+    if (owner != currentUserId) return const [];
+    return [
+      for (final row in rows)
+        StartedGuidedProgram(
+          program: guidedProgramFromJson(
+            Map<String, dynamic>.from(row['guided_programs'] as Map),
+          ),
+          phaseIndex: row['phase_index'] as int,
+        ),
+    ];
+  }
+
+  @override
   Future<GuidedCatalogPage> catalog({
     String query = '',
     GuidedProgramMode? mode,

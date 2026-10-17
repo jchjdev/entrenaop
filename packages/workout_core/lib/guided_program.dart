@@ -59,7 +59,7 @@ class GuidedProgram {
   final String equipment;
   int get sessionCount => phases.fold(0, (n, p) => n + p.sessions.length);
   String get modeLabel =>
-      mode == GuidedProgramMode.guide ? 'Guía repetible' : 'Por fases';
+      mode == GuidedProgramMode.guide ? 'Rutina' : 'Por fases';
 }
 
 class GuidedWarmup {

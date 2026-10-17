@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_program_cubits.dart';
+import 'package:entrenaop/features/guided_programs/presentation/guided_catalog_panel.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_program_page.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_session_page.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
@@ -47,6 +48,7 @@ void main() {
         await tester.tap(find.text('Programas'));
         await tester.pumpAndSettle();
         expect(find.text('Hipertrofia básica'), findsOneWidget);
+        expect(find.text('Rutina'), findsOneWidget);
         if (capturePerformanceReview) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 150)),
@@ -71,6 +73,46 @@ void main() {
       },
     );
   }
+  testWidgets('un catálogo de una página no muestra el paginador', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GuidedCatalogPanel(
+            repository: GuidedTestRepository()..morePages = false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Hipertrofia básica'), findsOneWidget);
+    expect(find.text('Página 1'), findsNothing);
+    expect(find.byTooltip('Página siguiente'), findsNothing);
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    expect(find.text('Rutinas'), findsWidgets);
+    expect(find.text('Por fases'), findsWidgets);
+  });
+  testWidgets('la última página conserva la vuelta a la anterior', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GuidedCatalogPanel(repository: GuidedTestRepository()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byTooltip('Página siguiente'));
+    await tester.tap(find.byTooltip('Página siguiente'));
+    await tester.pumpAndSettle();
+    expect(find.text('Página 2'), findsOneWidget);
+    await tester.tap(find.byTooltip('Página anterior'));
+    await tester.pumpAndSettle();
+    expect(find.text('Página 1'), findsOneWidget);
+  });
   testWidgets('seguir un programa conserva el acceso para entrenar', (
     tester,
   ) async {
@@ -86,13 +128,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Seguir programa'));
+    await tester.tap(find.text('Iniciar programa'));
     await tester.pumpAndSettle();
     expect(
       find.text('Siguiente en la secuencia · Calentamiento opcional'),
       findsOneWidget,
     );
-    expect(find.text('Seguir programa'), findsNothing);
+    expect(find.text('Iniciar programa'), findsNothing);
   });
   testWidgets(
     'la vista previa sin seguimiento no inicia una sesión suelta por accidente',
@@ -123,7 +165,7 @@ void main() {
       );
       expect(
         find.text(
-          'Sigue el programa desde su ficha para entrenar con seguimiento.',
+          'Inicia el programa desde su ficha para entrenar con seguimiento.',
         ),
         findsOneWidget,
       );

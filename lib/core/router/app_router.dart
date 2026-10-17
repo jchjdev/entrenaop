@@ -258,6 +258,10 @@ class AppRouter {
                       child: HomePage(
                         favoritesRepository: sl(),
                         userId: auth.user.id,
+                        guidedPrograms:
+                            sl.isRegistered<GuidedProgramRepository>()
+                            ? sl<GuidedProgramRepository>()
+                            : null,
                       ),
                     );
                   },

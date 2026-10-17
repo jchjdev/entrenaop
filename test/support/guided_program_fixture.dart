@@ -61,9 +61,13 @@ class GuidedTestRepository extends Fake implements GuidedProgramRepository {
   String? owner = 'owner';
   @override
   String? get currentUserId => owner;
-  bool followed = true, failFirst = false;
+  bool followed = true, failFirst = false, morePages = true;
   final starts = <({String operation, bool omit, int? rest})>[];
   final events = <String>[];
+  @override
+  Future<List<StartedGuidedProgram>> startedPrograms() async => followed
+      ? [const StartedGuidedProgram(program: guidedFixture, phaseIndex: 0)]
+      : [];
   @override
   Future<GuidedCatalogPage> catalog({
     String query = '',
@@ -76,7 +80,7 @@ class GuidedTestRepository extends Fake implements GuidedProgramRepository {
       query.isEmpty || guidedFixture.name.contains(query)
           ? [guidedFixture]
           : [],
-      hasMore: page == 0,
+      hasMore: morePages && page == 0,
     );
   }
 

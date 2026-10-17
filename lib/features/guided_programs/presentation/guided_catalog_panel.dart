@@ -59,7 +59,7 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               DropdownMenuItem(
                 value: 'guide',
                 child: Text(
-                  'Guías repetibles',
+                  'Rutinas',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -67,7 +67,7 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               DropdownMenuItem(
                 value: 'phased',
                 child: Text(
-                  'Recorridos por fases',
+                  'Por fases',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -75,7 +75,7 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               DropdownMenuItem(
                 value: 'following',
                 child: Text(
-                  'Programas que sigo',
+                  'Programas iniciados',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -158,7 +158,7 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
                   ),
                 ),
               ),
-          if (state.error == null)
+          if (state.error == null && (state.page > 0 || state.hasMore))
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Row(

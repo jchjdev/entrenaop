@@ -94,7 +94,7 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
             Text(
               widget.warmups
                   ? 'Calentamientos reutilizables'
-                  : 'Guías repetibles y recorridos por fases',
+                  : 'Rutinas y programas por fases',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 12),
@@ -420,7 +420,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                           segments: const [
                             ButtonSegment(
                               value: GuidedProgramMode.guide,
-                              label: Text('Guía repetible'),
+                              label: Text('Rutina'),
                             ),
                             ButtonSegment(
                               value: GuidedProgramMode.phased,
@@ -432,7 +432,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                             if (v.first == GuidedProgramMode.guide &&
                                 _phases.length > 1) {
                               setState(
-                                () => _error = 'Conserva una sola fase antes de convertirla en guía.',
+                                () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
                               );
                               return;
                             }

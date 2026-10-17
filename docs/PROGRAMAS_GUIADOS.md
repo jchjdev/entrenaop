@@ -3,7 +3,7 @@
 ## Acuerdo e implementación por bloques · 17/10/2026
 
 Javier autoriza implementar PRG-001 conservando Biblioteca, preparaciones
-adaptativas y ejecutores actuales. ADMIN elige guía repetible o recorrido por
+adaptativas y ejecutores actuales. ADMIN elige rutina o recorrido por
 fases en el mismo creador. Ambos contienen sesiones para entrenar y registrar
 resultados. El autor define duración y condiciones de cada fase; el usuario
 confirma el avance, sin consumo automático de etapas por calendario.
@@ -61,7 +61,7 @@ descrito debajo, completa el recorrido del deportista sobre este contrato.
 Biblioteca incorpora Programas, Sesiones y Ejercicios. Conserva Sesiones como
 entrada inicial, las colecciones oficiales/propias, sus accesos de creación y
 los componentes visuales existentes. Programas ofrece búsqueda, filtro por
-guía/fases o seguidos y dos resultados por página, sin carga infinita. El
+rutinas/fases o iniciados y dos resultados por página, sin carga infinita. El
 selector admite desplazamiento cuando el texto ampliado no cabe.
 
 La ficha permite seguir una versión, ver información/material, explorar fases,
@@ -78,6 +78,34 @@ sesión y el ejecutor usan el navegador raíz, sin barra de secciones. La vista
 previa existente incorpora puntos opcionales para ajustes e inicio guiado. Una
 sesión de otra fase o de un programa todavía no seguido se puede consultar,
 pero no iniciar como entrenamiento de ese programa.
+
+### Nombres e Inicio · PRG-002 · acuerdo del 18/10/2026
+
+Javier confirma **Rutinas** para el filtro, **Rutina** para la etiqueta de la
+tarjeta y **Por fases** para la otra modalidad. ADMIN utiliza los mismos nombres.
+Se conservan los identificadores persistidos `guide`/`phased`, las versiones y
+las sesiones publicadas. El botón se llama **Iniciar programa** y sigue creando
+el seguimiento explícito antes de permitir entrenar; no arranca una sesión.
+
+Inicio/Hoy incorpora **Tus programas**, con acceso a las fichas de los tres
+últimos programas iniciados y no completados, mostrando la fase actual cuando
+corresponda. La consulta pasa por `GuidedProgramRepository`, filtra propietario
+y seguimiento activo en servidor, tiene orden estable y límite de tres, y usa
+las RLS existentes. No agenda sesiones ni cambia el calendario o los ejecutores.
+Se actualiza al volver a Inicio y al refrescar, incluso si el resumen principal
+responde antes del siguiente frame. Un cambio de cuenta descarta respuestas
+anteriores y el componente se identifica por usuario. Sin programas se oculta;
+un fallo ofrece reintento sin bloquear el resumen de preparaciones.
+
+El paginador de Biblioteca solo aparece si hay otra página o se está más allá
+de la primera. En la última página conserva el acceso de vuelta. No se añade
+desplazamiento infinito.
+
+Verificado el 18/10/2026: análisis limpios en raíz y ADMIN, 943 pruebas completas
+de la app y 111 de ADMIN correctas, con sus omisiones anteriores. Regresiones
+de navegación/actualización, fase, texto 2× a 320 px, paginación y consulta por
+propietario con respuesta pendiente al cambiar de cuenta. Sin cambios de SQL,
+dependencias o producción; queda la aceptación física de Javier.
 
 ### Preparación de la ejecución
 
