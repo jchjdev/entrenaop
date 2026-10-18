@@ -69,11 +69,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ProgramCoverEditor), findsOneWidget);
       expect(find.text('Imagen del programa'), findsOneWidget);
+      final card = find.byType(EntrenaProgramCard);
+      final preview = tester.widget<EntrenaProgramCard>(card);
       expect(
         tester
-            .widget<EntrenaProgramCard>(find.byType(EntrenaProgramCard))
-            .square,
-        isTrue,
+                .getTopLeft(
+                  find.descendant(
+                    of: card,
+                    matching: find.text(preview.detail),
+                  ),
+                )
+                .dy -
+            tester
+                .getBottomLeft(
+                  find.descendant(of: card, matching: find.text(preview.title)),
+                )
+                .dy,
+        closeTo(6, 0.01),
       );
       expect(repo.saved, isNull);
     },

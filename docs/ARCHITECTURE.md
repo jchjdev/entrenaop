@@ -331,6 +331,11 @@ reutiliza optimización, subida, revisión y limpieza. El proveedor de caché pa
 a `core/presentation/images/editorial_cover_provider.dart` conservando su
 comportamiento web/móvil. `EditorialCover` es un valor puro compartido.
 
+PRG-006 elimina la variante cuadrada y su selector administrativo: el componente
+editorial tiene una sola composición compacta y altura según contenido. Los
+adaptadores de Inicio/Biblioteca limitan el ancho, sin imponer otro reparto
+vertical. Se conserva el contrato de imágenes y encuadres.
+
 `guided_program_covers` añade una portada por raíz de familia con FK a la primera
 versión. La RPC administrativa y las políticas amplían el bucket existente con
 el prefijo `guided`, protegiendo las imágenes vigentes de ambos recursos.

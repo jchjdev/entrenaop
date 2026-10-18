@@ -16,15 +16,12 @@ class EntrenaProgramCard extends StatelessWidget {
     this.coverImage,
     this.focalX = 0.5,
     this.focalY = 0.5,
-    this.square = false,
-    this.extent = 250,
   });
   final String title, label, detail, actionLabel;
   final IconData icon;
   final VoidCallback? onTap;
   final ImageProvider? coverImage;
-  final double focalX, focalY, extent;
-  final bool square;
+  final double focalX, focalY;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +36,7 @@ class EntrenaProgramCard extends StatelessWidget {
         fontWeight: FontWeight.w800,
       ),
     );
-    final card = EntrenaCard(
+    return EntrenaCard(
       tone: EntrenaCardTone.progress,
       onTap: onTap,
       coverImage: coverImage,
@@ -47,7 +44,7 @@ class EntrenaProgramCard extends StatelessWidget {
       focalY: focalY,
       padding: const EdgeInsets.all(18),
       child: Column(
-        mainAxisSize: square ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -70,17 +67,10 @@ class EntrenaProgramCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          if (square)
-            Expanded(
-              child: Align(alignment: Alignment.topLeft, child: titleWidget),
-            )
-          else
-            titleWidget,
+          titleWidget,
           const SizedBox(height: 6),
           Text(
             detail,
-            maxLines: square ? 1 : null,
-            overflow: square ? TextOverflow.ellipsis : null,
             style: TextStyle(
               color: context.visuals.textMuted,
               fontSize: 13,
@@ -90,8 +80,6 @@ class EntrenaProgramCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             actionLabel,
-            maxLines: square ? 1 : null,
-            overflow: square ? TextOverflow.ellipsis : null,
             style: TextStyle(
               color: secondary,
               fontSize: 14,
@@ -102,6 +90,5 @@ class EntrenaProgramCard extends StatelessWidget {
         ],
       ),
     );
-    return square ? SizedBox.square(dimension: extent, child: card) : card;
   }
 }

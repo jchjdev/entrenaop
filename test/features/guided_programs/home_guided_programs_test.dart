@@ -58,7 +58,7 @@ void main() {
 
   for (final view in [(390.0, 1.0), (320.0, 2.0), (1100.0, 1.0)]) {
     testWidgets(
-      'tarjetas cuadradas alineadas y desplazamiento horizontal a $view',
+      'tarjetas compactas alineadas y desplazamiento horizontal a $view',
       (tester) async {
         final routes = <String>[];
         await mount(tester, view.$1, view.$2, _Programs(), (route) async {
@@ -66,8 +66,35 @@ void main() {
         });
         final first = find.byKey(const ValueKey('home-guided-card-program'));
         final second = find.byKey(const ValueKey('home-guided-card-phased'));
-        expect(tester.getSize(first), const Size(250, 250));
-        expect(tester.getSize(second), const Size(250, 250));
+        expect(tester.getSize(first).width, 250);
+        expect(tester.getSize(second).width, 250);
+        for (final (card, name, detail) in [
+          (first, 'Hipertrofia básica', '1 sesión'),
+          (second, 'Mejora de dominadas', 'Fase 1 de 3'),
+        ]) {
+          final title = find.descendant(of: card, matching: find.text(name));
+          final subtitle = find.descendant(
+            of: card,
+            matching: find.text(detail),
+          );
+          expect(
+            tester.getTopLeft(subtitle).dy - tester.getBottomLeft(title).dy,
+            closeTo(6, 0.01),
+          );
+          expect(
+            tester.getBottomLeft(card).dy -
+                tester
+                    .getBottomLeft(
+                      find.descendant(
+                        of: card,
+                        matching: find.text('Ver programa →'),
+                      ),
+                    )
+                    .dy,
+            // El borde de la superficie añade un píxel al relleno inferior.
+            closeTo(19, 0.01),
+          );
+        }
         final title = tester.renderObject<RenderBox>(
           find.text('Hipertrofia básica'),
         );
@@ -111,14 +138,14 @@ void main() {
     );
   }
   testWidgets(
-    'sin programas ofrece una tarjeta cuadrada para añadir con texto ampliado',
+    'sin programas ofrece una tarjeta compacta para añadir con texto ampliado',
     (tester) async {
       final routes = <String>[];
       await mount(tester, 320, 2, _Programs()..empty = true, (route) async {
         routes.add(route);
       });
       final card = find.byKey(const ValueKey('home-guided-card-add'));
-      expect(tester.getSize(card), const Size(250, 250));
+      expect(tester.getSize(card).width, 250);
       expect(find.text('Añadir programa'), findsOneWidget);
       final title = tester.renderObject<RenderBox>(
         find.text('Añadir programa'),

@@ -1022,7 +1022,7 @@ Inicio/Hoy muestra **Tus programas**, los tres últimos iniciados activos,
 con fase actual y acceso a la ficha. Se actualiza al volver/refrescar, sin crear
 sesiones por fecha ni mezclar la rutina con la agenda adaptativa.
 En la revisión del mismo día, Javier sitúa esta sección debajo de Preparaciones:
-tarjetas cuadradas y carrusel horizontal con el mismo acabado visual. Si no hay
+tarjetas de 250 px de ancho y carrusel horizontal con el mismo acabado visual. Si no hay
 programas iniciados, se ofrece Añadir programa. Ese acceso y Añadir en la cabecera
 abren directamente la pestaña Programas de Biblioteca.
 
@@ -1043,6 +1043,12 @@ la foto. Una fotografía comparte portada y cabecera con encuadres independiente
 y es común a las versiones de la familia. Cambiarla no modifica entrenamiento
 ni resultados. Las fotos de las demos quedan a elección editorial. Implementado
 solo en desarrollo; aceptación autenticada en dispositivos pendiente.
+
+PRG-006 corrige las proporciones tras la captura de Javier: se elimina la
+variante cuadrada que aún diferenciaba Programas de Preparaciones. Ambas usan
+una única composición compacta, sin espacio expansible bajo el título, con
+altura según contenido y tamaño de texto. Inicio, Biblioteca y la vista previa
+de ADMIN comparten este formato; las tarjetas de sesiones se conservan.
 
 ## Plataformas
 

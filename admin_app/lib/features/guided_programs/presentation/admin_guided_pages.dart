@@ -97,7 +97,6 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
           cardIcon: p.mode == GuidedProgramMode.guide
               ? Icons.fitness_center_rounded
               : Icons.trending_up_rounded,
-          squareCard: true,
         ),
       ),
     );

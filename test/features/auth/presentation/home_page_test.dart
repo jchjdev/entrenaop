@@ -216,6 +216,24 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Tus programas'), findsOneWidget);
       expect(find.byType(EntrenaProgramCard), findsNWidgets(2));
+      // Compartir un tipo no basta: ambos deben mantener la composición compacta.
+      for (final card in find.byType(EntrenaProgramCard).evaluate()) {
+        final data = card.widget as EntrenaProgramCard;
+        final finder = find.byWidget(data);
+        final title = find.descendant(
+          of: finder,
+          matching: find.text(data.title),
+        );
+        final detail = find.descendant(
+          of: finder,
+          matching: find.text(data.detail),
+        );
+        expect(tester.getSize(finder).width, 250);
+        expect(
+          tester.getTopLeft(detail).dy - tester.getBottomLeft(title).dy,
+          closeTo(6, 0.01),
+        );
+      }
       expect(
         tester.getTopLeft(find.text('Preparaciones')).dy,
         lessThan(tester.getTopLeft(find.text('Tus programas')).dy),

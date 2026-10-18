@@ -109,7 +109,7 @@ dependencias o producción; queda la aceptación física de Javier.
 
 ### Tarjetas de Inicio · ajuste confirmado el 18/10/2026
 
-Javier corrige la presentación: **Tus programas** aparece debajo de
+En el primer ajuste Javier corrige la presentación: **Tus programas** aparece debajo de
 **Preparaciones**, con tarjetas cuadradas de 250 × 250, el mismo tono de progreso,
 espaciado y acabado de las tarjetas de preparación. Se recorre lateralmente en
 una fila, sin apilar los programas ni añadir una lista vertical. Cada tarjeta
@@ -138,7 +138,8 @@ la composición editorial común sobre `EntrenaCard`: fotografía, contraste,
 encuadre, etiqueta, nombre, detalle y acción. Preparaciones adapta sus datos a
 ese componente; `GuidedProgramCard` es únicamente el adaptador de programas,
 reutilizado en el carrusel de Inicio y el catálogo paginado de Biblioteca.
-Los programas mantienen formato cuadrado de 250 × 250 y el estado Añadir.
+El estado Añadir se conserva. PRG-006, descrito debajo, sustituye el formato
+cuadrado inicial de 250 × 250 por la composición compacta de Preparaciones.
 
 `editorialCoverProvider`, en `core/presentation/images`, conserva exactamente
 la caché móvil y el proveedor web corregido que antes pertenecían a
@@ -187,6 +188,32 @@ escritorio, además de Biblioteca y su paginador. No se asignan fotografías a
 las demos sin selección editorial; ADMIN permite elegirlas. Sin dependencias
 nuevas ni cambios de motores, ejecutores, sesiones o producción. La aceptación
 autenticada en dispositivos queda pendiente de las pruebas de Javier.
+
+### Corrección de proporciones · PRG-006 · 18/10/2026
+
+Javier aporta una captura de Inicio en la que la preparación es compacta y los
+programas tienen un gran espacio vacío bajo el título. El componente compartido
+seguía teniendo una variante `square` activada solo para programas: compartir
+la clase no había unificado la presentación. Se elimina esa variante y su
+dimensión fija del paquete `entrena_ui`, así como el selector correspondiente
+del editor de portadas y del catálogo de ADMIN.
+
+Preparaciones y Programas usan ahora una sola composición compacta: misma
+tipografía, relleno, separación entre etiqueta/título/detalle/acción y acabado.
+La altura sigue al contenido y al tamaño de texto; no hay un área expandida que
+separe el título del detalle. Inicio y Biblioteca conservan los 250 px de ancho,
+y el carrusel de programas alinea las tarjetas por arriba. Se mantiene debajo
+de Preparaciones y conserva Añadir, navegación, portadas y encuadres. Las demos
+sin fotografía asignada conservan el fondo de marca; no se les asigna una foto
+para ocultar la diferencia. Sesiones y ejecutores no cambian.
+
+Verificación: análisis limpios de raíz y ADMIN; 955 pruebas completas raíz,
+118 ADMIN y seis del paquete visual correctas, con las omisiones existentes.
+Se refuerzan las regresiones de Inicio y de la vista previa de ADMIN para medir
+la separación real entre título y detalle, además de comprobar el tipo de widget.
+Capturas revisadas con fotografía de preparación y programas sin foto a 390 px,
+320 px con texto 2× y escritorio; Biblioteca y el desplazamiento conservados.
+Sin SQL, cambios de datos, dependencias o producción. Aceptación móvil pendiente.
 
 ### Dejar un programa · PRG-005 · implementado el 18/10/2026
 

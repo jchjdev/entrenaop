@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**PRG-006, 18/10/2026 · proporciones de tarjetas corregidas:** la captura de
+Javier acredita que la variante cuadrada seguía diferenciando Programas de
+Preparaciones. Eliminada del componente compartido y del editor ADMIN; un único
+formato compacto, sin hueco expansible bajo el título. Inicio y Biblioteca
+mantienen ancho de 250 px, carrusel y portadas. Análisis limpios de ambas apps;
+955 pruebas raíz, 118 ADMIN y seis del paquete visual correctas, con las
+omisiones existentes. Regresiones comprueban la composición real y capturas
+revisadas a 390 px, 320 px con texto 2× y escritorio. Sin SQL ni cambios de
+datos, sesiones, ejecutores o producción.
+**Único siguiente bloque recomendado de este recorrido:** aceptación de Javier
+en móvil del formato compacto y las demos antes de ampliar catálogo.
+Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-005, 18/10/2026 · dejar programas:** la ficha permite abandonar con
 confirmación y conserva seguimiento, fase y resultados. Inicio y Programas
 iniciados muestran seguimientos activos; reiniciar una publicación crea otro

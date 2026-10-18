@@ -83,6 +83,7 @@ class _HomeGuidedProgramsState extends State<HomeGuidedPrograms> {
                   key: const PageStorageKey('home-guided-programs'),
                   scrollDirection: Axis.horizontal,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (items.isEmpty)
                         GuidedProgramCard(
