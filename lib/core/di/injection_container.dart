@@ -92,6 +92,7 @@ import 'package:entrenaop/features/workouts/presentation/bloc/workout_editor_cub
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_library_cubit.dart';
 import 'package:entrenaop/features/workouts/presentation/bloc/workout_preview_cubit.dart';
 import 'package:get_it/get_it.dart';
+import 'package:entrenaop/features/exercises/data/services/exercise_video_playback.dart';
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/pro/data/supabase_pro_access_repository.dart';
 import 'package:entrenaop/features/pro/data/revenuecat_pro_purchase_repository.dart';
@@ -109,6 +110,7 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton(() => ExerciseVideoPlayback(sl()));
   sl.registerLazySingleton<ProPurchaseRepository>(
     () => RevenueCatProPurchaseRepository(
       configuration: ProPurchaseConfiguration(

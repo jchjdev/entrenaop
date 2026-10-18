@@ -1,5 +1,6 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_repository.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
@@ -31,6 +32,7 @@ GoRouter createAdminRouter({
   ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
   AdminGuidedRepository? guided,
+  AdminExerciseVideoRepository? exerciseVideos,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -377,7 +379,8 @@ GoRouter createAdminRouter({
         path: '/exercises',
         builder: (context, state) => load(
           () async => true,
-          (_) => AdminExercisesPage(repository: exercises),
+          (_) =>
+              AdminExercisesPage(repository: exercises, videos: exerciseVideos),
         ),
       ),
       GoRoute(

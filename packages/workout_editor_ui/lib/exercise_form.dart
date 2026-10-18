@@ -19,6 +19,7 @@ class ExerciseForm extends StatefulWidget {
     this.autofocusName = true,
     this.initialImageUrl,
     this.onDirtyChanged,
+    this.videoFieldBuilder,
   });
 
   final String title;
@@ -30,6 +31,11 @@ class ExerciseForm extends StatefulWidget {
   final bool autofocusName;
   final String? initialImageUrl;
   final ValueChanged<bool>? onDirtyChanged;
+  final Widget Function(
+    TextEditingController controller,
+    ValueChanged<bool> onBusyChanged,
+  )?
+  videoFieldBuilder;
 
   @override
   State<ExerciseForm> createState() => _ExerciseFormState();
@@ -47,6 +53,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
   ExerciseImageUpload? _image;
   bool _removeExistingImage = false;
   bool _processingImage = false;
+  bool _processingVideo = false;
   String? _imageError;
   late final List<Object?> _initialValues;
 
@@ -81,6 +88,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
     _difficulty = draft?.difficulty ?? 'inicial';
     _exerciseType = draft?.exerciseType ?? 'repeticiones';
     _initialValues = _values;
+    _videoController.addListener(_notifyDirty);
   }
 
   @override
@@ -147,16 +155,23 @@ class _ExerciseFormState extends State<ExerciseForm> {
               validator: ExerciseDraftValidator.descriptionError,
             ),
             const SizedBox(height: 4),
-            TextFormField(
-              controller: _videoController,
-              keyboardType: TextInputType.url,
-              decoration: const InputDecoration(
-                labelText: 'Vídeo HTTPS (opcional)',
-                hintText: 'https://…',
-                prefixIcon: Icon(Icons.play_circle_outline_rounded),
+            if (widget.videoFieldBuilder != null)
+              widget.videoFieldBuilder!(_videoController, (busy) {
+                if (mounted && _processingVideo != busy) {
+                  setState(() => _processingVideo = busy);
+                }
+              })
+            else
+              TextFormField(
+                controller: _videoController,
+                keyboardType: TextInputType.url,
+                decoration: const InputDecoration(
+                  labelText: 'Vídeo HTTPS (opcional)',
+                  hintText: 'https://…',
+                  prefixIcon: Icon(Icons.play_circle_outline_rounded),
+                ),
+                validator: ExerciseDraftValidator.videoUrlError,
               ),
-              validator: ExerciseDraftValidator.videoUrlError,
-            ),
             const SizedBox(height: 12),
             TextFormField(
               key: ValueKey('${widget.fieldKeyPrefix}-muscles'),
@@ -234,7 +249,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
             ),
             const SizedBox(height: 22),
             FilledButton.icon(
-              onPressed: _processingImage ? null : _submit,
+              onPressed: _processingImage || _processingVideo ? null : _submit,
               icon: const Icon(Icons.check_rounded),
               label: Text(widget.submitLabel),
             ),

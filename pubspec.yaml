@@ -49,6 +49,10 @@ dependencies:
   # UI
   cupertino_icons: ^1.0.8
   cached_network_image: ^4.0.0
+  # Versiones ya presentes en el lockfile; caché acotada de clips oficiales.
+  http: 1.6.0
+  crypto: 3.0.7
+  path_provider: 2.1.6
 
   # Compras nativas: primera integración limitada a Test Store móvil debug Dev.
   purchases_flutter: 10.15.2
@@ -59,8 +63,6 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
 
-  # Ya transitiva de Supabase; permite probar Auth con respuestas de red simuladas.
-  http: ^1.6.0
 flutter:
   uses-material-design: true
   assets:

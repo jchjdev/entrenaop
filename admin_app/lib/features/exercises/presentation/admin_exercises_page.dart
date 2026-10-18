@@ -7,10 +7,14 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
+import '../data/admin_exercise_video_repository.dart';
+import 'admin_exercise_video_field.dart';
+
 class AdminExercisesPage extends StatefulWidget {
-  const AdminExercisesPage({super.key, required this.repository});
+  const AdminExercisesPage({super.key, required this.repository, this.videos});
 
   final AdminExerciseRepository repository;
+  final AdminExerciseVideoRepository? videos;
 
   @override
   State<AdminExercisesPage> createState() => _AdminExercisesPageState();
@@ -126,6 +130,13 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                             initialImageUrl: exercise?.imageUrl,
                             onSubmit: submit,
                             onDirtyChanged: markDirty,
+                            videoFieldBuilder: widget.videos == null
+                                ? null
+                                : (controller, busy) => AdminExerciseVideoField(
+                                    controller: controller,
+                                    repository: widget.videos!,
+                                    onBusyChanged: busy,
+                                  ),
                           ),
                         ),
                       ),

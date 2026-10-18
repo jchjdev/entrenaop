@@ -391,17 +391,20 @@ FAS 2027:
   edición actualiza el catálogo privado para futuras ejecuciones y conserva
   las instantáneas de entrenamientos anteriores. El contenido de EntrenaOP
   permanece de consulta en la app del deportista (UI-012, 08/10/2026).
-- Gestión de vídeos pendiente (VID-001, 08/10/2026): Javier decide concretar
-  alojamiento, subidas y gestión en otro chat. La consulta actual usa la URL
-  HTTPS del ejercicio; la base de datos guarda el enlace y el archivo permanece
-  en su alojamiento original. El reproductor no incorpora una subida de vídeos
-  ni supone que se haya elegido proveedor.
+- Gestión de vídeos (VID-003): Javier elige Bunny Stream y autoriza empezar por
+  el catálogo oficial. ADMIN incorpora subida, comprobación y previsualización;
+  el servidor valida permisos y estado y firma la reproducción bajo demanda.
+  Base técnica en Dev, pendiente de biblioteca/secretos de Bunny y prueba real.
+  El recorrido sigue abierto. El futuro espacio de entrenadores reutilizará esta
+  dirección con cuotas y privacidad propias, todavía sin implementar.
+  Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, 17/10/2026):
   como máximo 5 segundos. La comparación de alojamiento debe usar esta duración
   y explicitar calidad, tamaño y transferencia real. Repetir desde memoria o
-  caché no equivale necesariamente a descargar de nuevo. Proveedor, subidas,
-  reproducción automática y bucle siguen pendientes; no existe una validación
-  implementada de este máximo.
+  caché no equivale necesariamente a descargar de nuevo. VID-003 comprueba la
+  duración comunicada por Bunny y el tamaño del MP4; su precisión y recorrido
+  real quedan pendientes. Caché móvil de hasta 100 MiB; web depende del navegador.
+  Reproducción automática y bucle siguen pendientes.
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
   recuperación pasiva, andando o trotando por duración o distancia. Repetir un

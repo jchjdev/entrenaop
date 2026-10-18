@@ -5,6 +5,56 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 
 void main() {
+  testWidgets(
+    'no guarda un vídeo pendiente y detecta la referencia preparada como cambio',
+    (tester) async {
+      ValueChanged<bool>? busy;
+      TextEditingController? video;
+      ExerciseDraft? submitted;
+      bool? dirty;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ExerciseForm(
+              title: 'Editar',
+              supportingText: 'Oficial',
+              submitLabel: 'Guardar',
+              autofocusName: false,
+              initialDraft: const ExerciseDraft(
+                name: 'Sentadilla',
+                muscleGroups: ['piernas'],
+                equipment: [],
+                difficulty: 'inicial',
+                exerciseType: 'repeticiones',
+              ),
+              onDirtyChanged: (value) => dirty = value,
+              videoFieldBuilder: (controller, onBusy) {
+                video = controller;
+                busy = onBusy;
+                return const Text('Subida de prueba');
+              },
+              onSubmit: (value) => submitted = value.draft,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      busy!(true);
+      await tester.pump();
+      final save = find.widgetWithText(FilledButton, 'Guardar');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
+      expect(submitted, isNull);
+      video!.text = 'https://fixture.b-cdn.net/clip/play_720p.mp4';
+      busy!(false);
+      await tester.pump();
+      expect(dirty, true);
+      await tester.tap(save);
+      await tester.pump();
+      expect(submitted?.videoUrl, video!.text);
+    },
+  );
   for (final (difficulty, type) in [
     ('intermedio', 'duración'),
     ('avanzado', 'repeticiones'),

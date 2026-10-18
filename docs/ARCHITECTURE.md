@@ -688,6 +688,15 @@ La copia de ejecución incluye también la descripción y la URL de vídeo del
 ejercicio. La sesión activa muestra siempre la explicación y carga el vídeo
 solo cuando el usuario lo solicita, evitando consumo innecesario de datos.
 
+VID-003 añade `exercise_video_assets` y la función Edge `exercise-video` para
+Bunny Stream. Catálogo e instantáneas conservan referencias estables; el servidor
+verifica identidad/permisos y genera firmas temporales al reproducir. Solo el
+servidor cambia los estados; ADMIN publica tras comprobar el MP4 preparado.
+La app reutiliza clips en una caché móvil de hasta 100 MiB, separada por proyecto,
+cuenta y activo; web conserva la gestión del navegador. Migración y función en
+Dev, pendientes de biblioteca, secretos y prueba real. Contratos deportivos sin
+cambios y espacio de entrenadores todavía sin implementar. [Vídeos](VIDEOS.md).
+
 Cada serie conserva por separado objetivo y resultado real (repeticiones,
 tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
 `skipped`, por lo que nunca se contabiliza como una serie completada. PostgreSQL

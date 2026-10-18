@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:get_it/get_it.dart';
+
+import '../../data/services/exercise_video_playback.dart';
 
 /// Carga bajo demanda: consultar un ejercicio no inicia descargas ni reproducción.
 class ExerciseReferenceVideo extends StatefulWidget {
@@ -18,6 +21,8 @@ class ExerciseReferenceVideo extends StatefulWidget {
 }
 
 class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
+  bool get _managed =>
+      Uri.tryParse(widget.url)?.host.endsWith('.b-cdn.net') == true;
   VideoPlayerController? _controller;
   bool _loading = false;
   bool _failed = false;
@@ -56,9 +61,11 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
       if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
         throw const FormatException('Vídeo HTTPS requerido.');
       }
-      candidate =
-          widget.createController?.call(uri) ??
-          VideoPlayerController.networkUrl(uri);
+      candidate = widget.createController != null
+          ? widget.createController!(uri)
+          : uri.host.endsWith('.b-cdn.net')
+          ? await GetIt.instance<ExerciseVideoPlayback>().createController(uri)
+          : VideoPlayerController.networkUrl(uri);
       await candidate.initialize();
       if (!mounted || request != _request) {
         await candidate.dispose();
@@ -169,25 +176,28 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
             ),
           ),
         if (_failed)
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'No se ha podido reproducir. El enlace debe apuntar a un archivo de vídeo compatible.',
+              _managed
+                  ? 'No se ha podido cargar el vídeo. Comprueba la conexión y vuelve a intentarlo.'
+                  : 'No se ha podido reproducir. El enlace debe apuntar a un archivo de vídeo compatible.',
             ),
           ),
         const SizedBox(height: 8),
         if (Uri.tryParse(widget.url.trim()) case final uri?
-            when uri.scheme == 'https' && uri.host.isNotEmpty)
+            when !_managed && uri.scheme == 'https' && uri.host.isNotEmpty)
           TextButton.icon(
             onPressed: _openLink,
             icon: const Icon(Icons.open_in_new_rounded),
             label: const Text('Abrir enlace original'),
           ),
         if (_linkError case final error?) Text(error),
-        SelectableText(
-          widget.url,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        if (!_managed)
+          SelectableText(
+            widget.url,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
       ],
     );
   }
