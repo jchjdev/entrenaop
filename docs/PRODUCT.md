@@ -498,7 +498,7 @@ Una variante para academias podría incorporar organizaciones, grupos, alumnos y
 varios entrenadores. Es una dirección futura, no alcance del MVP. El modelo
 actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
-### Administración y entrenadores · TRN-001/002 · 18/10/2026
+### Administración y entrenadores · TRN-001/002/004 · 18/10/2026
 
 **Criterio de producto acordado; espacio profesional aún no implementado.**
 La aplicación del deportista es la aplicación actual: los clientes del entrenador
@@ -521,6 +521,22 @@ Javier distingue las responsabilidades siguientes:
 - **Accesos comerciales:** Pro del deportista y acceso profesional del entrenador
   son derechos distintos. Regalar uno no implica conceder el otro. Precios,
   límites de clientes y derechos incluidos para los clientes siguen pendientes.
+
+**Modelo comercial propuesto por Javier · TRN-004:** mantener EntrenaOP como un
+único producto. El entrenador paga por las herramientas de creación y gestión,
+con una tarifa dependiente del número de clientes. Cada cliente utiliza su
+cuenta habitual en la aplicación actual y recibe condiciones de acceso a través
+del entrenador. Esta propuesta permite incluir el acceso necesario para seguir
+el entrenamiento contratado; el conjunto concreto de funciones sigue pendiente
+y no equivale a conceder automáticamente todo Pro.
+
+Falta concretar tarifas y tramos, qué clientes computan para el límite, derechos
+incluidos, convivencia con una suscripción Pro individual y qué sucede al
+terminar la relación o el acceso profesional del entrenador. La propuesta no
+requiere otro producto generalista ni otra aplicación para los clientes, y no
+resuelve por sí sola la separación técnica del panel profesional. La cancelación
+de una suscripción conserva el historial conforme al criterio vigente; no se ha
+definido todavía la disponibilidad posterior del contenido privado asignado.
 
 Javier plantea que el entrenador pueda aprovechar el algoritmo de EntrenaOP.
 Quedan por acordar la generación y revisión de propuestas, la convivencia con
