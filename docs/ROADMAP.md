@@ -3,11 +3,13 @@
 **VID-003 · Bunny Stream, base técnica en desarrollo; bloque abierto:** subida
 desde ADMIN, verificación de MP4/duración en servidor, referencias históricas
 estables, firma de reproducción y caché móvil acotada. Migración y función solo
-en Dev; 161 migraciones coincidentes, SQL con ROLLBACK, análisis de ambas apps
+en Dev; 162 migraciones coincidentes, SQL con ROLLBACK, análisis de ambas apps
 limpios y baterías completas (959 raíz, 123 ADMIN, con sus omisiones previas),
 doce pruebas del editor compartido y compilaciones web de ambas apps.
+Máximo ampliado a diez segundos el 18/10/2026: catorce pruebas HTTP y SQL de
+límites correctos, análisis ADMIN limpio y ocho pruebas de ejercicios correctas.
 **Siguiente paso de este recorrido:** conectar biblioteca/secretos de Bunny y
-contrastar un clip real de hasta cinco segundos en ADMIN, móvil y web antes de
+contrastar clips reales de cinco y diez segundos en ADMIN, móvil y web antes de
 cargar catálogo o implementar entrenadores. No se da por cerrado ni se modifica
 producción. Configuración y límites en [VIDEOS.md](VIDEOS.md).
 

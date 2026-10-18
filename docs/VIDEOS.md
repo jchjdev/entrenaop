@@ -3,7 +3,9 @@
 ## Dirección acordada y estado real
 
 Javier elige Bunny Stream para el catálogo y las futuras subidas de entrenadores.
-Se empieza por ADMIN y clips oficiales de hasta cinco segundos. El espacio de
+Se empieza por ADMIN y clips oficiales de hasta diez segundos. Javier amplía
+el máximo el 18/10/2026 para dejar margen a demostraciones de ocho a diez segundos;
+los clips pueden seguir durando menos. El espacio de
 entrenadores, sus cuotas comerciales, vídeos largos y enlaces externos opcionales
 se implementarán en su bloque, sin exigir cuentas de Vimeo o YouTube.
 
@@ -38,7 +40,7 @@ prueba subidos al proveedor ni cambios en producción.
    - `BUNNY_STREAM_API_KEY`: clave API de **esa biblioteca**, no la cuenta global.
    - `BUNNY_STREAM_TOKEN_KEY`: clave de firma de la Pull Zone de contenido.
 
-7. Probar un clip de cinco segundos: peso, calidad, orientación, arranque,
+7. Probar clips de cinco y diez segundos: peso, calidad, orientación, arranque,
    pausa y reutilización. No cargar el catálogo entero antes de contrastarlo.
    Revisar uso/saldo en Bunny. Esta tarea no contrata recarga automática ni pagos.
 
@@ -55,12 +57,19 @@ hasta cinco MiB. El servidor consulta estado/duración de Bunny y comprueba el
 MP4 final mediante HEAD antes de permitir publicarlo. Estados: `uploading`,
 `processing`, `ready`, `rejected`, `failed`. Reconsultar no degrada un `ready`.
 
-Bunny informa duración en segundos enteros: la precisión del máximo de cinco
+Bunny informa duración en segundos enteros: la precisión del máximo de diez
 segundos y los clips inferiores a un segundo requieren prueba real. El límite
 de entrada se comprueba en ADMIN y en la reserva declarada, pero la firma TUS no
 vincula criptográficamente los bytes. Solo se habilitan administradores de
 confianza. Antes de admitir entrenadores se endurecerán tamaño real, cuotas,
 propiedad, medición y limpieza de originales/rechazos.
+
+El máximo es una regla de EntrenaOP, no una limitación permanente de Bunny.
+Puede ampliarse después coordinando validación del servidor, constraint de la
+base de datos mediante una nueva migración, textos de ADMIN y pruebas. No exige
+volver a subir los vídeos existentes. Los topes de entrada (20 MiB), reproducción
+(5 MiB) y caché móvil (100 MiB) se conservan al pasar de cinco a diez segundos;
+la calidad y el peso del clip de diez segundos requieren contraste real.
 
 Catálogo e instantáneas conservan `video_url` estable sin firma. Cada sustitución
 crea otro ID; no se borran vídeos que puedan seguir referenciados por ejecuciones.
@@ -90,14 +99,20 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
 
 ## Verificación y cierre pendiente
 
-- Migración `20261018150520_bunny_exercise_videos.sql`, solo en Dev: historial
-  comprobado con 161 migraciones coincidentes. Prueba SQL de permisos, cuotas,
+- Migraciones `20261018150520_bunny_exercise_videos.sql` y
+  `20261018165149_bunny_video_duration_ten_seconds.sql`, solo en Dev: historial
+  comprobado con 162 migraciones coincidentes. Prueba SQL de permisos, cuotas,
   estados, duración, tamaño y referencia estable con ROLLBACK, sin fixtures.
 - Función desplegada en Dev; petición sin JWT: 401; OPTIONS: 204 con CORS.
-  Trece pruebas HTTP simuladas cubren permisos, identidad, firma, entorno y estados.
+  Catorce pruebas HTTP simuladas cubren permisos, identidad, firma, entorno,
+  estados y el límite ampliado (cinco/ocho/diez aceptados, más de diez rechazado).
 - Análisis limpio y baterías completas: 959 pruebas raíz y 123 ADMIN correctas,
   con una omisión previa en cada una, y doce pruebas del editor compartido.
   Compilaciones web de ambas apps comprobadas.
+- Ampliación a diez segundos del 18/10/2026: análisis de ADMIN limpio, ocho
+  pruebas de ejercicios y SQL con ROLLBACK correctos. Se conservan las
+  comprobaciones iniciales anteriores; no se repite la compilación web por
+  este cambio acotado de límite y textos. Biblioteca real aún pendiente.
 - Advisor: RLS sin políticas en activos (acceso directo cerrado) y ejecución
   autenticada de la reserva SECURITY DEFINER. Son deliberados: se comprueban
   usuario/admin y cuota, y SQL rechaza al deportista. Referencias de diagnóstico:

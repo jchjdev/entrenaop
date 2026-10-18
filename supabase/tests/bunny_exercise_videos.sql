@@ -49,9 +49,9 @@ begin
   end;
   reset role;
   begin
-    update public.exercise_video_assets set status = 'ready', duration_seconds = 6,
+    update public.exercise_video_assets set status = 'ready', duration_seconds = 10.01,
       playback_bytes = 1000 where id = asset_id;
-    raise exception 'Se aceptó un clip superior a cinco segundos';
+    raise exception 'Se aceptó un clip superior a diez segundos';
   exception when check_violation then null;
   end;
   begin
@@ -62,6 +62,9 @@ begin
   end;
   update public.exercise_video_assets set status = 'ready', duration_seconds = 5,
     playback_bytes = 1000 where id = asset_id;
+  -- Las referencias anteriores siguen válidas y ambos nuevos límites se admiten.
+  update public.exercise_video_assets set duration_seconds = 8 where id = asset_id;
+  update public.exercise_video_assets set duration_seconds = 10 where id = asset_id;
   perform set_config('request.jwt.claim.sub', user_id::text, true);
   set local role authenticated;
   if public.can_read_exercise_video(reference) then

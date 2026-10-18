@@ -114,7 +114,7 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
       } else if (result.status == 'rejected' || result.status == 'failed') {
         _pending = null;
         setState(
-          () => _message = 'Vídeo rechazado: comprueba que dure como máximo 5 segundos y que se haya podido preparar. Se conserva el anterior.',
+          () => _message = 'Vídeo rechazado: comprueba que dure como máximo 10 segundos y que se haya podido preparar. Se conserva el anterior.',
         );
       } else {
         setState(
@@ -169,7 +169,7 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
         style: Theme.of(context).textTheme.titleSmall,
       ),
       const Text(
-        'Clip de hasta 5 segundos. Archivo de hasta 20 MB; se prepara automáticamente hasta 720p.',
+        'Clip de hasta 10 segundos. Archivo de hasta 20 MB; se prepara automáticamente hasta 720p.',
       ),
       const SizedBox(height: 8),
       OutlinedButton.icon(

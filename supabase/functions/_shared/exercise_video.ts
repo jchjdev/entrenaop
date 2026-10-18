@@ -8,6 +8,7 @@ type Fetcher = typeof fetch;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const maxSource = 20 * 1024 * 1024;
 const maxPlayback = 5 * 1024 * 1024;
+const maxDurationSeconds = 10;
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
@@ -167,7 +168,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     if ([5, 6].includes(Number(video.status))) status = "failed";
     if (Number(video.status) === 4) {
       duration = Number(video.length);
-      if (!Number.isFinite(duration) || duration <= 0 || duration > 5 || Number(video.storageSize) > 100 * 1024 * 1024) {
+      if (!Number.isFinite(duration) || duration <= 0 || duration > maxDurationSeconds || Number(video.storageSize) > 100 * 1024 * 1024) {
         status = "rejected"; duration = null;
       } else if (video.hasMP4Fallback === true) {
         const resolution = ["720p", "480p", "360p"].find((r) => String(video.availableResolutions).split(",").includes(r));

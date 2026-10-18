@@ -109,11 +109,22 @@ test("rechaza archivos vacíos o mayores que el límite antes de reservar o crea
     assert.equal(f.calls.some((s) => s.includes("reserve_") || s.includes("bunnycdn")), false);
   }
 });
-test("un vídeo de más de cinco segundos nunca queda publicable", async () => {
-  const f = fixture({ ready: false, provider: { length: 6 } });
-  const result = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
-  assert.equal((await result.json()).status, "rejected");
-  assert.equal(f.writes[0].duration_seconds, null);
+test("admite clips de ocho y diez segundos y conserva los de cinco", async () => {
+  for (const length of [5, 8, 10]) {
+    const f = fixture({ ready: false, provider: { length } });
+    const result = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+    assert.equal((await result.json()).status, "ready");
+    assert.equal(f.writes[0].duration_seconds, length);
+  }
+});
+
+test("rechaza duración nula, inválida o superior a diez segundos", async () => {
+  for (const length of [0, -1, "invalid", 10.01, 11]) {
+    const f = fixture({ ready: false, provider: { length } });
+    const result = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+    assert.equal((await result.json()).status, "rejected");
+    assert.equal(f.writes[0].duration_seconds, null);
+  }
 });
 test("solo queda listo al comprobar el MP4 final y conserva resoluciones inferiores", async () => {
   const f = fixture({ ready: false, provider: { availableResolutions: "480p,360p" } });

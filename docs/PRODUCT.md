@@ -398,8 +398,10 @@ FAS 2027:
   El recorrido sigue abierto. El futuro espacio de entrenadores reutilizará esta
   dirección con cuotas y privacidad propias, todavía sin implementar.
   Contrato y preparación: [Vídeos](VIDEOS.md).
-- Duración confirmada para los vídeos de ejercicios (VID-002, 17/10/2026):
-  como máximo 5 segundos. La comparación de alojamiento debe usar esta duración
+- Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
+  como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar
+  este máximo coordinando servidor, base de datos y ADMIN. La comparación de
+  alojamiento debe usar esta duración
   y explicitar calidad, tamaño y transferencia real. Repetir desde memoria o
   caché no equivale necesariamente a descargar de nuevo. VID-003 comprueba la
   duración comunicada por Bunny y el tamaño del MP4; su precisión y recorrido
@@ -1146,7 +1148,8 @@ RPE/RIR, modificaciones, pruebas y simulacros.
 - Fondo histórico de referencia `#0A0A0A`.
 - Calisteniapp es una inspiración de experiencia, especialmente durante la
   sesión, pero no una plantilla que deba copiarse.
-- Vídeos de ejercicios: máximo de 5 segundos confirmado por Javier (VID-002).
+- Vídeos de ejercicios: máximo de 10 segundos confirmado por Javier (VID-002,
+  ampliado el 18/10/2026 para dar margen a demostraciones de ocho a diez segundos).
   MP4/H.264 y hasta 720p siguen como orientación técnica por validar con costes,
   accesibilidad y necesidades reales antes de cerrar la implementación.
 
