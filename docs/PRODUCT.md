@@ -412,6 +412,8 @@ FAS 2027:
   Javier descarta UI-049. UI-050 conserva la tarjeta en fila y usa miniatura
   discreta de 80×60 px con el encuadre de ADMIN. La portada del vídeo muestra
   solo Play en una esquina, sin texto ni oscurecimiento global.
+  El listado omite la descripción y ajusta el margen a la foto; la descripción
+  completa sigue disponible al abrir el ejercicio.
   Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
   como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar

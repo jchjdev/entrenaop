@@ -2020,6 +2020,13 @@ con un aumento discreto, como ADMIN. Se restaura la fila con foto a la izquierda
 texto y flecha, sin variante apilada. Miniatura de 80×60 px, radio de 10 px y
 BoxFit.cover como ADMIN; la ficha conserva la imagen completa.
 
+Javier pide después retirar la descripción de la tarjeta para reducir su alto.
+El listado conserva foto, nombre, «Ver ejercicio» y flecha, con margen vertical
+de 10 px. El alto normal queda determinado por la foto de 60 px más los márgenes;
+los nombres largos y texto ampliado pueden crecer sin cortarse. La descripción
+completa se conserva al abrir la ficha. Análisis limpio y doce pruebas de listado
+correctas, incluyendo esta separación y el caso de 320 px con texto doble.
+
 En la portada del vídeo se retiran el texto central, el fondo circular y la
 capa oscura global. Solo aparece Play blanco con fondo transparente y sombra
 discreta en la esquina inferior derecha. Durante la carga aparece el indicador

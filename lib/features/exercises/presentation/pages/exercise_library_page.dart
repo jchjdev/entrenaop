@@ -291,6 +291,7 @@ class _ExerciseTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => EntrenaCard(
     tone: EntrenaCardTone.quiet,
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     onTap: () async {
       final cubit = context.read<ExerciseLibraryCubit>();
       final action = await showModalBottomSheet<String>(
@@ -329,16 +330,7 @@ class _ExerciseTile extends StatelessWidget {
                 exercise.name,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              if (exercise.description?.trim().isNotEmpty == true) ...[
-                const SizedBox(height: 5),
-                Text(
-                  exercise.description!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: context.visuals.textMuted),
-                ),
-              ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 'Ver ejercicio',
                 style: TextStyle(

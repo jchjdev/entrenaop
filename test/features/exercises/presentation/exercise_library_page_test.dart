@@ -65,12 +65,14 @@ void main() {
         expect(tester.getSize(find.byType(Image)), const Size(80, 60));
         expect(tester.widget<RawImage>(find.byType(RawImage)).image, isNotNull);
         expect(find.text('Ver ejercicio').hitTestable(), findsOneWidget);
+        expect(find.text('Descripción del movimiento.'), findsNothing);
         await capturePerformanceWidget(
           tester,
           'ejercicios-miniatura-$personal',
         );
         await tester.tap(find.text('Ejercicio con foto'));
         await tester.pumpAndSettle();
+        expect(find.text('Descripción del movimiento.'), findsOneWidget);
         expect(
           (tester.widgetList<Image>(find.byType(Image)).last.image
                   as NetworkImage)
