@@ -129,6 +129,42 @@ nombre para evitar recorte vertical con texto ampliado.
 Verificado: análisis limpio y 947 pruebas completas correctas con la omisión
 web existente. ADMIN, SQL, dependencias y contratos deportivos no cambian.
 
+### Portadas · PRG-004 · requisito y revisión del 18/10/2026
+
+Javier requiere imágenes para los programas, reutilizando el sistema de
+Preparaciones también en ADMIN. **Pendiente de implementación:** las tarjetas
+actuales admiten el tratamiento visual pero no reciben portada, y el creador
+guiado aún no incorpora el editor de imágenes.
+
+La revisión localizada confirma:
+
+- `EntrenaCard` y `EntrenaCoverImage` ya comparten fotografía, velo de contraste
+  y punto de interés. El proveedor actual de Preparaciones resuelve caché móvil
+  y el caso web corregido; puede trasladarse a una utilidad común sin duplicarlo.
+- `ProgramCoverEditor` recibe un repositorio y ya permite seleccionar, sustituir
+  o retirar fotografía, encuadres independientes de tarjeta/cabecera, vista
+  previa, cambios pendientes y control de revisión. Su previsualización contiene
+  textos y composición de preparación; necesita una variante con la tarjeta
+  cuadrada real del programa.
+- `ProgramCoverImageDraft`, en `workout_editor_ui`, optimiza una fotografía en
+  versiones de tarjeta/cabecera sin EXIF y conserva proporciones. Es reutilizable.
+- El repositorio de portadas, la tabla `preparation_program_covers`, las RPC y
+  las políticas de Storage verifican programas de preparación. Hay que ampliar
+  el vínculo de datos y el guardado autorizado para programas guiados; también
+  proteger sus imágenes vigentes frente a la limpieza de archivos. No basta
+  con permitir la subida de otra ruta.
+
+Recomendación técnica, sin aplicar todavía: mantener un editor de portadas
+común en ADMIN con adaptadores de persistencia por recurso y vista previa real;
+portada opcional coherente en Inicio/Biblioteca y encuadre de cabecera para la
+ficha. Conservar los metadatos visuales separados de la prescripción deportiva,
+como en UI-006, para cambiar una foto sin modificar sesiones o resultados.
+Sin foto se mantiene el acabado actual. La vinculación concreta a familia o
+versión deberá resolverse al implementar y verificar su integridad y permisos.
+
+Solo revisión de código, migraciones y documentación local: no se han cambiado
+Flutter, SQL instalado, archivos de Storage ni producción.
+
 ### Preparación de la ejecución
 
 `start_guided_program_session` comprueba propietario, fase, sesión y descanso
