@@ -491,8 +491,16 @@ La evolución comercial prevista tiene dos vías complementarias:
 
 - **B2C:** el opositor descubre la aplicación, utiliza el nivel gratuito y
   puede contratar adaptación automática o seguimiento humano.
-- **Profesional:** el entrenador incorpora y gestiona clientes desde un espacio
-  de trabajo propio.
+- **Profesional:** el preparador de oposiciones incorpora y gestiona clientes
+  desde un espacio de trabajo propio.
+
+**Público profesional confirmado · TRN-005 · 18/10/2026:** Javier confirma que
+quiere ayudar principalmente a preparadores de oposiciones. El espacio
+profesional mantiene la especialización de EntrenaOP y la aplicación actual para
+sus clientes; no se abre otro producto de entrenamiento general. Esta orientación
+no amplía por sí sola las pruebas deportivas soportadas por el algoritmo. Los
+pendientes sobre preparaciones, intervención del entrenador y condiciones
+comerciales de TRN-002/004 siguen abiertos.
 
 Una variante para academias podría incorporar organizaciones, grupos, alumnos y
 varios entrenadores. Es una dirección futura, no alcance del MVP. El modelo
