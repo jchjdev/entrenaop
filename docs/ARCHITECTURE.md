@@ -477,6 +477,17 @@ la experiencia de acceso y la posible reutilización de interfaz se decidirán
 al implementar cada espacio. Los permisos administrativos y las relaciones
 entrenador-cliente seguirán siendo contratos distintos en el backend.
 
+**Propuesta de secuencia · TRN-003 · 18/10/2026:** Javier propone terminar primero
+ADMIN para facilitar el espacio profesional y evitar programar por duplicado
+las herramientas comunes. El alcance del cierre sigue pendiente. Se recomienda
+consolidar los recorridos de creación de ejercicios, sesiones y programas,
+compartiendo modelos, validaciones y componentes mediante los paquetes existentes
+cuando corresponda. El espacio profesional consumiría esas piezas compartidas;
+su navegación, clientes, guardado y permisos seguirían siendo propios. No se ha
+acordado copiar ADMIN ni una extracción concreta del editor, ni se condiciona
+el portal a implementar todas las funciones administrativas futuras. Esta
+propuesta no inicia una refactorización ni da por cerrado el trabajo actual.
+
 `website/next/` contiene un borrador local de la futura web de presentación.
 Resume el recorrido que existe en desarrollo, anuncia iPhone y Android sin
 ofrecer descargas y reserva entradas visibles pero desactivadas para
