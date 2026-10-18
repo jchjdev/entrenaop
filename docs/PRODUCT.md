@@ -493,6 +493,41 @@ Una variante para academias podría incorporar organizaciones, grupos, alumnos y
 varios entrenadores. Es una dirección futura, no alcance del MVP. El modelo
 actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
+### Administración y entrenadores · TRN-001/002 · 18/10/2026
+
+**Criterio de producto acordado; espacio profesional aún no implementado.**
+La aplicación del deportista es la aplicación actual: los clientes del entrenador
+recibirían allí sus entrenamientos y registrarían sus resultados.
+
+Javier distingue las responsabilidades siguientes:
+
+- **Administración general:** gestionar las cuentas de la plataforma, crear
+  ejercicios, sesiones y programas oficiales de EntrenaOP y administrar los
+  accesos comerciales autorizados. El producto profesional deberá permitir
+  consultar el estado comercial de los entrenadores y concederles acceso
+  gratuito. Gestionar cuentas no implica consultar por defecto los entrenamientos
+  privados que cada entrenador prescribe a sus clientes. Se conserva COM-017:
+  la gestión de cuentas corresponde al responsable autorizado y no se deriva
+  del permiso de edición de contenido.
+- **Entrenador:** gestionar sus propios clientes y crear sesiones y programas
+  privados para ellos. Ese contenido no se publica en el catálogo general de
+  EntrenaOP. No puede modificar el contenido oficial, gestionar cuentas ajenas,
+  conceder derechos comerciales ni acceder a funciones internas de la plataforma.
+- **Accesos comerciales:** Pro del deportista y acceso profesional del entrenador
+  son derechos distintos. Regalar uno no implica conceder el otro. Precios,
+  límites de clientes y derechos incluidos para los clientes siguen pendientes.
+
+Javier plantea que el entrenador pueda aprovechar el algoritmo de EntrenaOP.
+Quedan por acordar la generación y revisión de propuestas, la convivencia con
+ajustes manuales y el alcance de las preparaciones oficiales o privadas. No se
+ha acordado que crear una preparación permita aplicar automáticamente el motor
+a pruebas deportivas que este todavía no soporte.
+
+Una aplicación profesional separada dentro del mismo repositorio, compartiendo
+modelos y componentes existentes, es una recomendación pendiente de decisión.
+Esta definición no implementa relaciones entrenador-cliente, permisos,
+suscripciones profesionales ni cambios en el algoritmo.
+
 ## Free y Pro: reparto confirmado, interfaz inicial y pagos pendientes
 
 **Estado actual · COM-008 · 10/10/2026:** existen derechos Pro temporales y cuotas
