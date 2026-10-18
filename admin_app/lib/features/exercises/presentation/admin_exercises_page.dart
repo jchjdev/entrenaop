@@ -132,11 +132,13 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                             onDirtyChanged: markDirty,
                             videoFieldBuilder: widget.videos == null
                                 ? null
-                                : (controller, busy) => AdminExerciseVideoField(
-                                    controller: controller,
-                                    repository: widget.videos!,
-                                    onBusyChanged: busy,
-                                  ),
+                                : (controller, busy, applyVideoCover) =>
+                                      AdminExerciseVideoField(
+                                        controller: controller,
+                                        repository: widget.videos!,
+                                        onBusyChanged: busy,
+                                        onCoverReady: applyVideoCover,
+                                      ),
                           ),
                         ),
                       ),

@@ -402,6 +402,10 @@ FAS 2027:
   el reproductor al tocar Play. No se descarga vídeo al abrir la ficha. El audio
   se conserva como venga en el archivo; Javier lo subirá sin sonido cuando no
   lo quiera y descarta añadir controles de silencio o volumen.
+  VID-005 obtiene automáticamente la portada del vídeo oficial si no hay foto;
+  conserva la elegida y permite sustituirla expresamente. Solo administradores
+  pueden subir archivos a Bunny. El deportista guarda únicamente un enlace
+  externo para su ejercicio privado; ese campo no aloja una copia de vídeo.
   Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
   como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar

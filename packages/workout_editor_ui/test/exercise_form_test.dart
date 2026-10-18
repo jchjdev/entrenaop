@@ -1,10 +1,61 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_image.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 
 void main() {
+  for (final existing in [false, true]) {
+    testWidgets('portada automática respeta foto existente: $existing', (
+      tester,
+    ) async {
+      bool Function(ExerciseImageUpload, bool)? applyCover;
+      ExerciseImageUpload? saved;
+      final cover = ExerciseImageUpload(
+        bytes: base64Decode(
+          'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGP8HyXCgA0wYRUdtBIAIlABfcyTUMcAAAAASUVORK5CYII=',
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ExerciseForm(
+              title: 'Editar',
+              supportingText: 'Oficial',
+              submitLabel: 'Guardar',
+              autofocusName: false,
+              initialImageUrl: existing ? 'fixture-existing-image' : null,
+              initialDraft: const ExerciseDraft(
+                name: 'Flexiones',
+                muscleGroups: ['pecho'],
+                equipment: [],
+                difficulty: 'inicial',
+                exerciseType: 'repeticiones',
+              ),
+              videoFieldBuilder: (controller, busy, apply) {
+                applyCover = apply;
+                return const SizedBox.shrink();
+              },
+              onSubmit: (value) => saved = value.image,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(applyCover!(cover, false), !existing);
+      expect(applyCover!(cover, true), true);
+      await tester.pumpAndSettle();
+      final save = find.widgetWithText(FilledButton, 'Guardar');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pump();
+      expect(saved, same(cover));
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets(
     'no guarda un vídeo pendiente y detecta la referencia preparada como cambio',
     (tester) async {
@@ -28,7 +79,7 @@ void main() {
                 exerciseType: 'repeticiones',
               ),
               onDirtyChanged: (value) => dirty = value,
-              videoFieldBuilder: (controller, onBusy) {
+              videoFieldBuilder: (controller, onBusy, applyVideoCover) {
                 video = controller;
                 busy = onBusy;
                 return const Text('Subida de prueba');

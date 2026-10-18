@@ -100,7 +100,8 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     if (body.expected_user_id !== user) throw new VideoError(409, "account_changed");
     const admin = await db(c, f, "rpc/is_admin", {}, authorization) === true;
     const expires = Math.floor(Date.now() / 1000) + 900;
-    if (body.action === "playback") {
+    if (body.action === "playback" || body.action === "thumbnail") {
+      if (body.action === "thumbnail" && !admin) throw new VideoError(403, "forbidden");
       const url = body.url;
       if (typeof url !== "string" || url.length > 500) throw new VideoError(400, "invalid_video_url");
       // Búsqueda exacta: nunca firmar una ruta aportada libremente por el cliente.
@@ -113,6 +114,14 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         throw new VideoError(403, "forbidden");
       }
       if (asset.cdn_host !== c.cdnHost || String(asset.library_id) !== c.libraryId) throw new VideoError(409, "video_environment_mismatch");
+      if (body.action === "thumbnail") {
+        // Ruta fija de un activo registrado: nunca firmar imágenes arbitrarias.
+        if (typeof asset.provider_video_id !== "string" || !uuid.test(asset.provider_video_id)) {
+          throw new VideoError(409, "video_environment_mismatch");
+        }
+        const thumbnail = `https://${c.cdnHost}/${asset.provider_video_id}/thumbnail.jpg`;
+        return json({ url: await signPlayback(thumbnail, c.tokenKey, expires), expires });
+      }
       return json({ url: await signPlayback(url, c.tokenKey, expires), expires,
         cache_key: String(asset.id), bytes: asset.playback_bytes });
     }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:workout_core/exercise_image.dart';
+import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 import '../data/admin_exercise_video_repository.dart';
 
@@ -11,11 +13,14 @@ class AdminExerciseVideoField extends StatefulWidget {
     required this.repository,
     required this.onBusyChanged,
     this.pickVideo,
+    this.onCoverReady,
   });
   final TextEditingController controller;
   final AdminExerciseVideoRepository repository;
   final ValueChanged<bool> onBusyChanged;
   final Future<XFile?> Function()? pickVideo;
+  final bool Function(ExerciseImageUpload image, bool replaceExisting)?
+  onCoverReady;
 
   @override
   State<AdminExerciseVideoField> createState() =>
@@ -111,6 +116,7 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
         setState(
           () => _message = 'Vídeo preparado. Previsualiza y guarda el ejercicio para publicarlo.',
         );
+        if (widget.onCoverReady != null) await _prepareCover(false);
       } else if (result.status == 'rejected' || result.status == 'failed') {
         _pending = null;
         setState(
@@ -160,6 +166,32 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
     }
   }
 
+  Future<void> _prepareCover(bool replaceExisting) async {
+    final apply = widget.onCoverReady;
+    if (apply == null) return;
+    _setBusy(true);
+    try {
+      final bytes = await widget.repository.thumbnail(widget.controller.text);
+      if (!mounted) return;
+      final image = await optimizeExerciseImage(bytes);
+      if (!mounted) return;
+      final applied = apply(image, replaceExisting);
+      setState(
+        () => _message = applied
+            ? 'Vídeo y portada preparados. Guarda el ejercicio para publicarlos.'
+            : 'Vídeo preparado. Se conserva la foto que has elegido.',
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message = 'El vídeo está preparado, pero no se pudo generar la portada. Puedes reintentar o elegir una foto.',
+        );
+      }
+    } finally {
+      if (mounted) _setBusy(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -172,6 +204,15 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
         'Clip de hasta 10 segundos. Archivo de hasta 20 MB; se prepara automáticamente hasta 720p.',
       ),
       const SizedBox(height: 8),
+      if (widget.onCoverReady != null &&
+          _pending == null &&
+          Uri.tryParse(widget.controller.text)?.host.endsWith('.b-cdn.net') ==
+              true)
+        TextButton.icon(
+          onPressed: _busy ? null : () => _prepareCover(true),
+          icon: const Icon(Icons.photo_outlined),
+          label: const Text('Usar portada del vídeo'),
+        ),
       OutlinedButton.icon(
         onPressed: _busy || _pending != null ? null : _pick,
         icon: const Icon(Icons.video_call_outlined),

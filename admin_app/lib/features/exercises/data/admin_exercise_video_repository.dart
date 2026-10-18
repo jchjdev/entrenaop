@@ -26,6 +26,7 @@ abstract class AdminExerciseVideoRepository {
   );
   Future<AdminVideoStatus> status(String id);
   Future<Uri> playback(String url);
+  Future<Uint8List> thumbnail(String url);
 }
 
 class SupabaseAdminExerciseVideoRepository
@@ -33,6 +34,58 @@ class SupabaseAdminExerciseVideoRepository
   SupabaseAdminExerciseVideoRepository(this._client, {this._transport});
   final SupabaseClient _client;
   final http.Client? _transport;
+
+  @override
+  Future<Uint8List> thumbnail(String url) async {
+    final owner = _client.auth.currentUser?.id;
+    final data = await _call({'action': 'thumbnail', 'url': url});
+    final target = Uri.parse(data['url'] as String);
+    final reference = Uri.parse(url);
+    final parts = reference.pathSegments;
+    if (parts.length != 2 ||
+        !reference.host.endsWith('.b-cdn.net') ||
+        target.scheme != 'https' ||
+        target.host != reference.host ||
+        target.port != 443 ||
+        target.userInfo.isNotEmpty ||
+        target.path != '/${parts.first}/thumbnail.jpg') {
+      throw const FormatException('La portada recibida no es válida.');
+    }
+    final client = _transport ?? http.Client();
+    try {
+      final request = http.Request('GET', target)..followRedirects = false;
+      final response = await client
+          .send(request)
+          .timeout(const Duration(seconds: 20));
+      if (response.statusCode != 200 ||
+          response.headers['content-type']
+                  ?.split(';')
+                  .first
+                  .trim()
+                  .toLowerCase() !=
+              'image/jpeg' ||
+          (response.contentLength ?? 0) > 2 * 1024 * 1024) {
+        await response.stream.listen((_) {}).cancel();
+        throw const FormatException('No se pudo obtener la portada del vídeo.');
+      }
+      final bytes = BytesBuilder(copy: false);
+      await for (final chunk in response.stream.timeout(
+        const Duration(seconds: 20),
+      )) {
+        if (bytes.length + chunk.length > 2 * 1024 * 1024) {
+          throw const FormatException('La portada supera el tamaño permitido.');
+        }
+        bytes.add(chunk);
+      }
+      if (bytes.isEmpty) throw const FormatException('La portada está vacía.');
+      if (_client.auth.currentUser?.id != owner) {
+        throw StateError('La cuenta ha cambiado.');
+      }
+      return bytes.takeBytes();
+    } finally {
+      if (_transport == null) client.close();
+    }
+  }
 
   Future<Map<String, dynamic>> _call(Map<String, Object?> body) async {
     final owner = _client.auth.currentUser?.id;

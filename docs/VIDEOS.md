@@ -98,6 +98,30 @@ No guarda con vídeo pendiente; un fallo conserva la referencia anterior. Subir
 no publica: se guarda el ejercicio después. El formulario compartido mantiene
 los enlaces personales y no exige cambiar las referencias anteriores.
 
+**VID-005 · portada automática y límites del deportista, 18/10/2026:** al quedar
+listo un vídeo oficial, ADMIN solicita la miniatura JPEG que Bunny ya genera.
+La función firma únicamente `thumbnail.jpg` del activo registrado/listo, de la
+biblioteca configurada y para administradores autenticados. El cliente valida
+host/ruta, HTTPS sin redirecciones, MIME JPEG y hasta 2 MiB recibidos; optimiza
+con el mismo flujo de foto existente a JPEG de hasta 500 KiB. Se guarda como
+imagen oficial al guardar el ejercicio, sin persistir firmas caducables ni
+cambiar el esquema. No se descarga el MP4 para extraer el fotograma en el cliente.
+
+Si no hay foto, se aplica automáticamente. Una foto ya elegida o una retirada
+explícita se respetan; «Usar portada del vídeo» permite sustituirla expresamente
+o reintentar. Un fallo de miniatura mantiene el vídeo listo y permite elegir
+foto o guardar sin portada. Cambiar de cuenta o cerrar el editor descarta
+resultados tardíos según las comprobaciones de identidad y montaje existentes.
+
+El deportista normal no puede crear subidas de Bunny ni escribir activos:
+el servidor exige administración, además de la ausencia del selector en su UI.
+Su campo personal «Enlace externo al vídeo» guarda solo una URL HTTPS, sin
+subir, importar ni almacenar una copia de vídeo en Bunny. El vídeo compatible
+se reproduce desde ese proveedor; el enlace original conserva su apertura.
+El ejercicio personal sigue privado. Los entrenadores con subidas propias y
+cuotas siguen fuera del alcance actual. Aclarado el campo personal con ayuda
+explícita; no se elimina la referencia externa existente.
+
 El deportista carga bajo demanda. Los clips gestionados no muestran URLs
 internas ni apertura de una referencia sin firma. Otros proveedores conservan
 el comportamiento existente. No se reproduce al abrir la ficha ni se añade bucle
@@ -166,6 +190,15 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
   Clip real reproducido en web desde la portada hasta 3.008 s; vista a 390 px
   revisada. Las capturas móviles de Javier acreditan el problema anterior;
   la nueva interfaz y la caché nativa aún requieren contraste en su móvil.
+- VID-005: análisis de ambas apps limpios; 970 pruebas raíz y 135 ADMIN correctas
+  con una omisión previa por aplicación, catorce del editor compartido y dieciséis
+  HTTP del servidor. Portadas de otro host, HTML y tamaño excesivo rechazados;
+  preservación de foto elegida, sustitución expresa y reintento sin nueva subida
+  cubiertos. SQL transaccional de Bunny correcto y 163 migraciones coincidentes,
+  sin migración nueva. Función actualizada solo en Dev. Prueba real sobre el
+  mismo vídeo: miniatura obtenida, optimizada y guardada en el ejercicio de prueba
+  como JPEG de 42154 bytes, conservando referencia e ID del vídeo. No hay otro
+  vídeo subido para esta comprobación. Captura local fuera de Git.
 - Advisor: RLS sin políticas en activos (acceso directo cerrado) y ejecución
   autenticada de la reserva SECURITY DEFINER. Son deliberados: se comprueban
   usuario/admin y cuota, y SQL rechaza al deportista. Referencias de diagnóstico:
@@ -177,6 +210,7 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
   real desde una cuenta no administradora; sus permisos conservan pruebas SQL/HTTP.
 
 Fuentes oficiales: [tarifas](https://bunny.net/docs/stream/pricing),
+[miniaturas](https://bunny.net/docs/stream/storage-structure),
 [TUS](https://bunny.net/docs/stream/tus-resumable-uploads),
 [MP4](https://bunny.net/docs/stream/mp4-downloads),
 [seguridad](https://bunny.net/docs/stream/security),

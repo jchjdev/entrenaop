@@ -62,11 +62,34 @@ test("rechaza JWT inválido, cambio de cuenta y configuración de producción", 
   }
 });
 test("un deportista no puede crear subidas ni inspeccionar su estado", async () => {
-  for (const action of ["create", "status"]) {
+  for (const action of ["create", "status", "thumbnail"]) {
     const f = fixture({ admin: false });
     assert.equal((await handleExerciseVideo(request({ action, bytes: 10, id }), config, f.fetcher)).status, 403);
     assert.equal(f.calls.some((s) => s.includes("bunnycdn")), false);
   }
+});
+
+test("solo admin obtiene la miniatura del vídeo registrado y listo", async () => {
+  const f = fixture();
+  const response = await handleExerciseVideo(request({ action: "thumbnail", url }), config, f.fetcher);
+  const data = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(new URL(data.url).pathname, `/${video}/thumbnail.jpg`);
+  assert.ok(new URL(data.url).searchParams.get("token")?.startsWith("HS256-"));
+  assert.equal(JSON.stringify(data).includes(config.apiKey), false);
+  for (const options of [{ asset: false }, { ready: false }]) {
+    const blocked = fixture(options);
+    const result = await handleExerciseVideo(request({ action: "thumbnail", url }), config, blocked.fetcher);
+    assert.equal(result.status, options.asset === false ? 404 : 409);
+  }
+});
+
+test("leer un vídeo público no concede permiso de generar portadas ni subidas", async () => {
+  const f = fixture({ admin: false, canRead: true });
+  const result = await handleExerciseVideo(request({ action: "thumbnail", url }), config, f.fetcher);
+  assert.equal(result.status, 403);
+  assert.equal(f.writes.length, 0);
+  assert.equal(f.calls.some((s) => s.includes("exercise_video_assets") || s.includes("bunnycdn")), false);
 });
 test("no firma un vídeo oculto o una URL arbitraria aunque el cliente conozca el ID", async () => {
   for (const options of [{ admin: false }, { admin: true, asset: false }]) {

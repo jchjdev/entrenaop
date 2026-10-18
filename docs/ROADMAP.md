@@ -30,6 +30,11 @@ con la omisión previa.
 VID-004: foto y vídeo comparten un único bloque superior, con inicio desde la
 portada y audio conservado sin controles de silencio. Comprobado con el clip real
 en web a 390 px; análisis limpio y 970 pruebas raíz correctas con la omisión previa.
+VID-005: portada automática del vídeo oficial sin pisar fotos elegidas; guardado
+real de JPEG de 42154 bytes sin otro vídeo. Campo personal aclarado como enlace
+externo, con subidas de Bunny cerradas a deportistas. Análisis limpios, 970 raíz,
+135 ADMIN (omisiones previas), catorce del editor y dieciséis HTTP correctas;
+SQL con ROLLBACK y 163 migraciones coincidentes, sin cambiar esquema.
 **Siguiente paso de este recorrido:** aceptación física en Android/iPhone y
 contraste de clips reales de cinco/diez segundos, fracciones y consumo antes de
 cargar catálogo o implementar entrenadores. No se da por cerrado ni se modifica

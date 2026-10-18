@@ -34,6 +34,8 @@ class ExerciseForm extends StatefulWidget {
   final Widget Function(
     TextEditingController controller,
     ValueChanged<bool> onBusyChanged,
+    bool Function(ExerciseImageUpload image, bool replaceExisting)
+    applyVideoCover,
   )?
   videoFieldBuilder;
 
@@ -54,6 +56,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
   bool _removeExistingImage = false;
   bool _processingImage = false;
   bool _processingVideo = false;
+  bool _imageFromVideo = false;
   String? _imageError;
   late final List<Object?> _initialValues;
 
@@ -128,6 +131,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
                       (!_removeExistingImage && widget.initialImageUrl != null)
                   ? _removeImage
                   : null,
+              automaticCover: widget.videoFieldBuilder != null,
             ),
             const SizedBox(height: 18),
             TextFormField(
@@ -160,14 +164,17 @@ class _ExerciseFormState extends State<ExerciseForm> {
                 if (mounted && _processingVideo != busy) {
                   setState(() => _processingVideo = busy);
                 }
-              })
+              }, _applyVideoCover)
             else
               TextFormField(
                 controller: _videoController,
                 keyboardType: TextInputType.url,
                 decoration: const InputDecoration(
-                  labelText: 'Vídeo HTTPS (opcional)',
+                  labelText: 'Enlace externo al vídeo (opcional)',
                   hintText: 'https://…',
+                  helperText:
+                      'Solo se guarda el enlace; no sube archivos a EntrenaOP.',
+                  helperMaxLines: 3,
                   prefixIcon: Icon(Icons.play_circle_outline_rounded),
                 ),
                 validator: ExerciseDraftValidator.videoUrlError,
@@ -292,6 +299,7 @@ class _ExerciseFormState extends State<ExerciseForm> {
       if (!mounted) return;
       setState(() {
         _image = optimized;
+        _imageFromVideo = false;
         _removeExistingImage = false;
       });
       _notifyDirty();
@@ -308,10 +316,31 @@ class _ExerciseFormState extends State<ExerciseForm> {
 
   void _removeImage() => setState(() {
     _image = null;
+    _imageFromVideo = false;
     _removeExistingImage = true;
     _imageError = null;
     _notifyDirty();
   });
+
+  bool _applyVideoCover(ExerciseImageUpload image, bool replaceExisting) {
+    if (!mounted || _processingImage) return false;
+    // Una portada automática no pisa una foto elegida ni una retirada explícita.
+    if (!replaceExisting &&
+        !_imageFromVideo &&
+        (_image != null ||
+            widget.initialImageUrl != null ||
+            _removeExistingImage)) {
+      return false;
+    }
+    setState(() {
+      _image = image;
+      _imageFromVideo = true;
+      _removeExistingImage = false;
+      _imageError = null;
+    });
+    _notifyDirty();
+    return true;
+  }
 }
 
 List<String> _tags(String? value) => (value ?? '').split(',').toList();
@@ -324,6 +353,7 @@ class _ImageHeader extends StatelessWidget {
     required this.error,
     required this.onPick,
     required this.onRemove,
+    required this.automaticCover,
   });
 
   final Uint8List? bytes;
@@ -332,6 +362,7 @@ class _ImageHeader extends StatelessWidget {
   final String? error;
   final VoidCallback onPick;
   final VoidCallback? onRemove;
+  final bool automaticCover;
 
   @override
   Widget build(BuildContext context) {
@@ -420,7 +451,10 @@ class _ImageHeader extends StatelessWidget {
             ],
             const SizedBox(height: 6),
             Text(
-              error ?? 'Se optimizará automáticamente a un máximo de 500 KB.',
+              error ??
+                  (automaticCover
+                      ? 'El vídeo generará una portada si no eliges foto. Máximo 500 KB.'
+                      : 'Se optimizará automáticamente a un máximo de 500 KB.'),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: error == null
                     ? null
