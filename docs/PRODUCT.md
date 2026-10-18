@@ -1018,13 +1018,22 @@ deportiva antes de convertirse en programas definitivos.
 
 Javier confirma el 18/10/2026 mantener **Iniciar programa** como paso explícito
 para ambas modalidades. Crea el seguimiento y permite después elegir sesión.
-Inicio/Hoy muestra **Tus programas**, los tres últimos iniciados sin completar,
+Inicio/Hoy muestra **Tus programas**, los tres últimos iniciados activos,
 con fase actual y acceso a la ficha. Se actualiza al volver/refrescar, sin crear
 sesiones por fecha ni mezclar la rutina con la agenda adaptativa.
 En la revisión del mismo día, Javier sitúa esta sección debajo de Preparaciones:
 tarjetas cuadradas y carrusel horizontal con el mismo acabado visual. Si no hay
 programas iniciados, se ofrece Añadir programa. Ese acceso y Añadir en la cabecera
 abren directamente la pestaña Programas de Biblioteca.
+
+PRG-005 permite **Dejar programa** desde su ficha, con confirmación. Conserva
+todos los entrenamientos y registros; retira el seguimiento de Inicio y del
+filtro Programas iniciados, reservado a seguimientos sin completar ni abandonar.
+El abandono se distingue de completar. Si la versión sigue publicada, se puede
+volver a iniciar desde el principio con un seguimiento nuevo y conservar el
+historial anterior. Una sesión abierta debe terminarse o abandonarse primero
+desde el ejecutor habitual; la ficha lo indica y el servidor lo comprueba.
+Implementado y verificado solo en desarrollo; aceptación móvil pendiente.
 
 PRG-004 reutiliza la misma tarjeta editorial de Preparaciones para los programas
 de Inicio y Biblioteca; se retiran sus composiciones duplicadas. Las tarjetas de

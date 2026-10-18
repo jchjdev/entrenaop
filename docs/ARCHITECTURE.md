@@ -567,6 +567,11 @@ la vista previa y el ejecutor, con ajustes opcionales y retorno verificable.
 Inicio recibe el repositorio de programas por inyección y muestra un resumen
 acotado de seguimientos propios activos; la selección y el límite se aplican
 en datos usando las RLS existentes. Abrir una ficha no inicia una ejecución.
+PRG-005 distingue `abandoned_at` de `completed_at` mediante restricción e índice
+parcial. El repositorio expone abandono por identificador de seguimiento; la RPC
+verifica propietario y serializa con el inicio guiado, sin cerrar ejecuciones
+automáticamente. Inicio y Programas iniciados filtran seguimientos activos en
+servidor. Reiniciar selecciona un seguimiento nuevo sin alterar el historial.
 No modifica motores ni lógica de ejecución. Contrato y comprobaciones en
 [`PROGRAMAS_GUIADOS.md`](PROGRAMAS_GUIADOS.md).
 

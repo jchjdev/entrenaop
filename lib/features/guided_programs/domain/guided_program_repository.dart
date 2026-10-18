@@ -11,10 +11,13 @@ class GuidedFollow {
     required this.id,
     required this.phaseIndex,
     required this.completed,
+    this.abandoned = false,
   });
   final String id;
   final int phaseIndex;
   final bool completed;
+  final bool abandoned;
+  bool get active => !completed && !abandoned;
 }
 
 class GuidedRun {
@@ -68,6 +71,7 @@ abstract class GuidedProgramRepository {
   });
   Future<GuidedProgramDetail> detail(String id);
   Future<void> follow(String id);
+  Future<void> abandon(String followId);
   Future<void> advance(String followId, int expectedPhase);
   Future<String> start({
     required String programId,

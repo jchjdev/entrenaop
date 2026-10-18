@@ -40,6 +40,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
         .select('phase_index,guided_programs!inner(*)')
         .eq('user_id', owner)
         .isFilter('completed_at', null)
+        .isFilter('abandoned_at', null)
         .order('started_at', ascending: false)
         .order('id', ascending: false)
         .limit(3);
@@ -116,6 +117,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
               id: follow['id'] as String,
               phaseIndex: follow['phase_index'] as int,
               completed: follow['completed_at'] != null,
+              abandoned: follow['abandoned_at'] != null,
             ),
       runs: runs
           .map(
@@ -135,6 +137,14 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   @override
   Future<void> follow(String id) async {
     await client.rpc('follow_guided_program', params: {'p_program_id': id});
+  }
+
+  @override
+  Future<void> abandon(String followId) async {
+    await client.rpc(
+      'abandon_guided_program',
+      params: {'p_follow_id': followId},
+    );
   }
 
   @override

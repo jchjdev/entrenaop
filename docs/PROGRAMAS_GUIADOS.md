@@ -88,7 +88,7 @@ las sesiones publicadas. El botón se llama **Iniciar programa** y sigue creando
 el seguimiento explícito antes de permitir entrenar; no arranca una sesión.
 
 Inicio/Hoy incorpora **Tus programas**, con acceso a las fichas de los tres
-últimos programas iniciados y no completados, mostrando la fase actual cuando
+últimos programas iniciados activos (sin completar ni abandonar), mostrando la fase actual cuando
 corresponda. La consulta pasa por `GuidedProgramRepository`, filtra propietario
 y seguimiento activo en servidor, tiene orden estable y límite de tres, y usa
 las RLS existentes. No agenda sesiones ni cambia el calendario o los ejecutores.
@@ -187,6 +187,52 @@ escritorio, además de Biblioteca y su paginador. No se asignan fotografías a
 las demos sin selección editorial; ADMIN permite elegirlas. Sin dependencias
 nuevas ni cambios de motores, ejecutores, sesiones o producción. La aceptación
 autenticada en dispositivos queda pendiente de las pruebas de Javier.
+
+### Dejar un programa · PRG-005 · implementado el 18/10/2026
+
+Javier solicita poder abandonar los programas. La ficha ofrece **Dejar programa**
+con confirmación explícita. El seguimiento abandonado desaparece de Inicio y del
+filtro **Programas iniciados**, que ahora solo muestra seguimientos activos,
+sin completar ni abandonar. El catálogo general conserva las publicaciones.
+La ficha mantiene el estado **Has dejado este programa** y permite **Volver a
+iniciar programa** si esa versión sigue publicada: crea un seguimiento desde
+la primera fase, conservando el anterior y sus ejecuciones. Las sesiones del
+seguimiento abandonado se pueden explorar, pero no iniciar desde sus enlaces.
+
+`guided_program_follows.abandoned_at` distingue el abandono del cierre por
+cumplimiento; un CHECK impide ambos estados terminales simultáneos. El índice
+único de seguimientos activos excluye ambos. `abandon_guided_program` comprueba
+identidad y propietario, conserva fase, fecha de inicio y resultados, y es
+idempotente por identificador de seguimiento. Reintentar un abandono antiguo
+no afecta a otro seguimiento nuevo ni convierte uno completado en abandonado.
+No hay permisos de escritura directa del cliente sobre los seguimientos.
+
+Si existe una ejecución en curso, la ficha explica que debe terminarse o
+abandonarse en el ejecutor antes de dejar el programa. El servidor repite esa
+comprobación con el mismo bloqueo por usuario que el inicio guiado. El inicio
+y el reinicio consultan únicamente el seguimiento activo; así no seleccionan
+por error uno antiguo completado o abandonado. Se conservan los reintentos de
+operaciones de entrenamiento anteriores y todos los contratos del ejecutor.
+Un error al guardar mantiene el seguimiento visible y permite reintentar.
+
+Migraciones `20261018111646_guided_program_abandonment.sql` y
+`20261018112305_guided_program_active_catalog.sql`, aplicadas solo en desarrollo.
+Las cuatro baterías SQL de abandono, recorrido, autoría y portadas terminan
+con ROLLBACK. Cubren propietario, ausencia de usuario, permisos, rutina sin
+entrenamientos, sesión abierta, conservación de pesos/repeticiones, fase,
+reintentos, nuevo seguimiento, finalización y contenido retirado. Los 160
+identificadores de migración coinciden con desarrollo.
+
+Análisis Flutter limpio y 955 pruebas completas correctas, con la omisión web
+existente. Se comprueban confirmación/cancelación y reinicio a 320 px con texto
+normal y 2×, errores sin retirada optimista, pulsaciones durante el guardado,
+sesión abierta y bloqueo del inicio por URL tras abandono. El adaptador interpreta
+el estado de abandono, conserva las referencias a resultados y filtra antes del
+límite del resumen de Inicio. El asesor añade únicamente el aviso previsto de
+RPC autenticada SECURITY DEFINER, con propiedad y grants comprobados;
+sin avisos de rendimiento nuevos relacionados. ADMIN, paquetes compartidos,
+ejecutores y producción no cambian. Queda la aceptación autenticada de Javier
+en móvil.
 
 ### Preparación de la ejecución
 

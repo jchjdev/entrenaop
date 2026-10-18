@@ -16,6 +16,31 @@ class GuidedProgramPage extends StatefulWidget {
 
 class _GuidedProgramPageState extends State<GuidedProgramPage> {
   int? _selectedPhase;
+  Future<void> _abandon(GuidedDetailCubit cubit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Dejar este programa?'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'Dejará de aparecer en Inicio y en tus programas iniciados. Tus entrenamientos y registros se conservan. Si vuelves a iniciarlo, empezarás desde el principio.',
+          ),
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Dejar programa'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await cubit.abandon();
+  }
+
   Future<void> _advance(GuidedDetailCubit cubit) async {
     final d = cubit.state.detail!;
     final last = d.currentPhase == d.program.phases.length - 1;
@@ -155,11 +180,19 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                             state.busy ? 'Guardando…' : 'Iniciar programa',
                           ),
                         ),
-                      if (d.follow?.completed == true) ...[
-                        const ListTile(
-                          leading: Icon(Icons.check_circle_outline),
-                          title: Text('Programa completado'),
-                          subtitle: Text(
+                      if (d.follow != null && !d.follow!.active) ...[
+                        ListTile(
+                          leading: Icon(
+                            d.follow!.abandoned
+                                ? Icons.stop_circle_outlined
+                                : Icons.check_circle_outline,
+                          ),
+                          title: Text(
+                            d.follow!.abandoned
+                                ? 'Has dejado este programa'
+                                : 'Programa completado',
+                          ),
+                          subtitle: const Text(
                             'Tus entrenamientos siguen en el historial.',
                           ),
                         ),
@@ -171,7 +204,11 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                                     setState(() => _selectedPhase = null);
                                     await cubit.follow();
                                   },
-                            child: const Text('Repetir programa'),
+                            child: Text(
+                              d.follow!.abandoned
+                                  ? 'Volver a iniciar programa'
+                                  : 'Repetir programa',
+                            ),
                           ),
                       ],
                       if (d.program.mode == GuidedProgramMode.phased) ...[
@@ -227,8 +264,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                             final phase = _selectedPhase ?? d.currentPhase;
                             final session = d.program.phases[phase].sessions[i];
                             final guided =
-                                d.follow != null &&
-                                d.follow?.completed == false &&
+                                d.follow?.active == true &&
                                 phase == d.currentPhase;
                             final recent = d.runs
                                 .where(
@@ -270,8 +306,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                             );
                           },
                         ),
-                      if (d.follow != null &&
-                          d.follow?.completed == false &&
+                      if (d.follow?.active == true &&
                           d.program.mode == GuidedProgramMode.phased &&
                           (_selectedPhase == null ||
                               _selectedPhase == d.currentPhase)) ...[
@@ -283,6 +318,22 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                                 ? 'Completar programa'
                                 : 'Revisar paso de fase',
                           ),
+                        ),
+                      ],
+                      if (d.follow?.active == true) ...[
+                        const SizedBox(height: 20),
+                        if (d.runs.any((r) => r.status == 'in_progress'))
+                          const Text(
+                            'Termina o abandona la sesión en curso para dejar el programa.',
+                          ),
+                        TextButton.icon(
+                          onPressed:
+                              state.busy ||
+                                  d.runs.any((r) => r.status == 'in_progress')
+                              ? null
+                              : () => _abandon(cubit),
+                          icon: const Icon(Icons.exit_to_app),
+                          label: const Text('Dejar programa'),
                         ),
                       ],
                     ],

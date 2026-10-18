@@ -288,9 +288,7 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
     final e = widget.entry;
     final follow = widget.detail.follow;
     final canTrain =
-        follow != null &&
-        !follow.completed &&
-        follow.phaseIndex == e.phaseIndex;
+        follow != null && follow.active && follow.phaseIndex == e.phaseIndex;
     final session =
         widget.detail.program.phases[e.phaseIndex].sessions[e.sessionIndex];
     return BlocProvider.value(
@@ -314,6 +312,8 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
                 child: Text(
                   follow == null
                       ? 'Inicia el programa desde su ficha para entrenar con seguimiento.'
+                      : follow.abandoned
+                      ? 'Has dejado este programa. Puedes volver a iniciarlo desde su ficha.'
                       : follow.completed
                       ? 'Programa completado. Puedes repetirlo desde su ficha.'
                       : 'Vista previa: esta sesión pertenece a otra fase.',

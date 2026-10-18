@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**PRG-005, 18/10/2026 · dejar programas:** la ficha permite abandonar con
+confirmación y conserva seguimiento, fase y resultados. Inicio y Programas
+iniciados muestran seguimientos activos; reiniciar una publicación crea otro
+desde la primera fase. Sesiones abiertas se resuelven en el ejecutor habitual,
+con control de propiedad, bloqueo compartido y reintentos seguros en servidor.
+Corregida la selección del seguimiento al repetir o reiniciar con historial.
+Análisis limpio, 955 pruebas raíz correctas con la omisión existente, cuatro
+baterías SQL con ROLLBACK y 160 migraciones coincidentes solo en desarrollo.
+Diálogo y reinicio comprobados a 320 px con texto 1×/2×; errores conservan el
+estado. Sin cambios de ADMIN, paquetes compartidos, ejecutores o producción.
+**Único siguiente bloque recomendado de este recorrido:** aceptación de Javier
+en móvil de dejar/reiniciar las demos y de sus portadas compartidas antes de
+ampliar catálogo. Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-004, 18/10/2026 · tarjeta y portadas compartidas:** Preparaciones y Programas
 usan `EntrenaProgramCard`; Inicio y Biblioteca reutilizan el mismo adaptador de
 programa. Retiradas las composiciones duplicadas, conservando las tarjetas de

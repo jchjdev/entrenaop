@@ -120,13 +120,25 @@ class GuidedDetailCubit extends Cubit<GuidedDetailState> {
   }
 
   Future<void> follow() async => _mutate(() => repository.follow(programId));
+  Future<void> abandon() async {
+    final follow = state.detail?.follow;
+    if (follow == null || !follow.active) return;
+    await _mutate(
+      () => repository.abandon(follow.id),
+      errorMessage: 'No se pudo dejar el programa. Revisa la conexión y termina o abandona cualquier sesión en curso antes de reintentar.',
+    );
+  }
+
   Future<void> advance() async {
     final f = state.detail?.follow;
     if (f == null) return;
     await _mutate(() => repository.advance(f.id, f.phaseIndex));
   }
 
-  Future<void> _mutate(Future<void> Function() action) async {
+  Future<void> _mutate(
+    Future<void> Function() action, {
+    String errorMessage = 'No se pudo guardar el cambio. Si tienes una sesión en curso, resuélvela antes de avanzar.',
+  }) async {
     if (state.busy) return;
     emit(GuidedDetailState(detail: state.detail, busy: true));
     try {
@@ -134,12 +146,7 @@ class GuidedDetailCubit extends Cubit<GuidedDetailState> {
       if (!isClosed) await load();
     } catch (_) {
       if (!isClosed) {
-        emit(
-          GuidedDetailState(
-            detail: state.detail,
-            error: 'No se pudo guardar el cambio. Si tienes una sesión en curso, resuélvela antes de avanzar.',
-          ),
-        );
+        emit(GuidedDetailState(detail: state.detail, error: errorMessage));
       }
     }
   }

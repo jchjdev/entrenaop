@@ -17,17 +17,53 @@ void main() {
   Completer<void>? gate;
   Completer<void>? arrived;
   bool showCover = false;
+  bool abandonedDetail = false;
   setUp(() async {
     requests.clear();
     gate = null;
     arrived = null;
     showCover = false;
+    abandonedDetail = false;
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       requests.add(request.uri);
       if (arrived != null && !arrived!.isCompleted) arrived!.complete();
       await gate?.future;
       request.response.headers.contentType = ContentType.json;
+      if (abandonedDetail &&
+          !request.uri.path.endsWith('/guided_program_covers')) {
+        final Object response;
+        if (request.uri.path.endsWith('/guided_programs')) {
+          response = {
+            'id': 'program',
+            'family_id': 'family',
+            'version': 1,
+            'status': 'published',
+            'content': guidedProgramToJson(guidedFixture),
+          };
+        } else if (request.uri.path.endsWith('/guided_program_follows')) {
+          response = [
+            {
+              'id': 'follow',
+              'phase_index': 0,
+              'completed_at': null,
+              'abandoned_at': '2026-10-18T00:00:00Z',
+            },
+          ];
+        } else {
+          response = [
+            {
+              'phase_index': 0,
+              'session_index': 0,
+              'execution_id': 'execution',
+              'workout_executions': {'status': 'completed'},
+            },
+          ];
+        }
+        request.response.write(jsonEncode(response));
+        await request.response.close();
+        return;
+      }
       request.response.write(
         jsonEncode(
           request.uri.path.endsWith('/guided_program_covers')
@@ -77,6 +113,7 @@ void main() {
           .queryParameters;
       expect(params['user_id'], 'eq.owner');
       expect(params['completed_at'], 'is.null');
+      expect(params['abandoned_at'], 'is.null');
       expect(params['limit'], '3');
       expect(params['order'], 'started_at.desc.nullslast,id.desc.nullslast');
       expect(params['select'], 'phase_index,guided_programs!inner(*)');
@@ -99,6 +136,18 @@ void main() {
         .single;
     expect(coverQuery.queryParameters['program_id'], 'in.("family")');
   });
+  test(
+    'la ficha interpreta abandono y conserva las referencias a resultados',
+    () async {
+      abandonedDetail = true;
+      final detail = await repository.detail('program');
+      expect(detail.follow!.abandoned, isTrue);
+      expect(detail.follow!.completed, isFalse);
+      expect(detail.follow!.active, isFalse);
+      expect(detail.runs.single.executionId, 'execution');
+      expect(detail.runs.single.status, 'completed');
+    },
+  );
   test(
     'sin sesión no consulta; cambiar de cuenta descarta una respuesta anterior',
     () async {
