@@ -100,7 +100,24 @@ los enlaces personales y no exige cambiar las referencias anteriores.
 
 El deportista carga bajo demanda. Los clips gestionados no muestran URLs
 internas ni apertura de una referencia sin firma. Otros proveedores conservan
-el comportamiento existente. No se añade autoplay ni bucle automático.
+el comportamiento existente. No se reproduce al abrir la ficha ni se añade bucle
+automático.
+
+**VID-004 · ficha con un único bloque visual, 18/10/2026:** Javier confirma que
+el clip se ve bien y aporta capturas de móvil con foto arriba y un segundo bloque
+de vídeo debajo. Se sustituye esa duplicación por un único bloque encima de la
+descripción, compartido entre Biblioteca y consulta de técnica en sesión. La foto
+es portada con Play y permanece durante la carga; al estar listo se reemplaza por
+el vídeo en el mismo espacio. Sin vídeo se mantiene la foto habitual. Se respeta
+la proporción del archivo dentro del marco; pausa/reproducción y progreso quedan
+juntos debajo. El toque en la portada carga e intenta arrancar el clip; si el
+navegador exige otra interacción, se conserva el reproductor listo para pulsar
+Play sin repetir la inicialización. Reproducir al terminar vuelve al inicio.
+
+Javier descarta añadir un control para silenciar: cada archivo conserva su audio.
+Si no quiere sonido lo subirá sin pista de audio; si necesita voz podrá conservarla.
+No se añaden ajustes de volumen/silencio, ni procesamiento de audio, ni reglas
+distintas para tutoriales. No se amplía el máximo de diez segundos.
 
 En móvil, caché temporal de hasta veinte MP4 de cinco MiB (100 MiB en total),
 caducidad de quince días y expulsión de los antiguos. La clave distingue proyecto,
@@ -142,6 +159,13 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
   amplían grants/RLS ni se ocultan errores del resto de ejercicios. Dos
   regresiones con HTTP simulado y recorrido real correctos. Análisis raíz limpio
   y batería completa de 967 pruebas correctas, con la omisión previa existente.
+- VID-004: análisis raíz limpio, 970 pruebas correctas con la omisión previa;
+  19 específicas de vídeo/ficha/biblioteca. Regresiones de portada única,
+  sustitución por vídeo, carga bajo demanda, arranque bloqueado, reintento sin
+  crear otro reproductor, audio sin modificar, repetición y liberación al cerrar.
+  Clip real reproducido en web desde la portada hasta 3.008 s; vista a 390 px
+  revisada. Las capturas móviles de Javier acreditan el problema anterior;
+  la nueva interfaz y la caché nativa aún requieren contraste en su móvil.
 - Advisor: RLS sin políticas en activos (acceso directo cerrado) y ejecución
   autenticada de la reserva SECURITY DEFINER. Son deliberados: se comprueban
   usuario/admin y cuota, y SQL rechaza al deportista. Referencias de diagnóstico:

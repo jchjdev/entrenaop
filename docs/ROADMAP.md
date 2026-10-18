@@ -27,6 +27,9 @@ publicado desde ADMIN; reproducción completa en ADMIN y app web (3.008 s,
 MP4 360p de 249464 bytes). URL sin firma: 403. Corregida consulta del catálogo
 del deportista con cuenta admin; análisis limpio y 967 pruebas raíz correctas
 con la omisión previa.
+VID-004: foto y vídeo comparten un único bloque superior, con inicio desde la
+portada y audio conservado sin controles de silencio. Comprobado con el clip real
+en web a 390 px; análisis limpio y 970 pruebas raíz correctas con la omisión previa.
 **Siguiente paso de este recorrido:** aceptación física en Android/iPhone y
 contraste de clips reales de cinco/diez segundos, fracciones y consumo antes de
 cargar catálogo o implementar entrenadores. No se da por cerrado ni se modifica

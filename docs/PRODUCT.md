@@ -398,6 +398,10 @@ FAS 2027:
   web real comprobadas con un clip propio de Javier de 3.008 segundos.
   El recorrido sigue abierto. El futuro espacio de entrenadores reutilizará esta
   dirección con cuotas y privacidad propias, todavía sin implementar.
+  VID-004 unifica foto y vídeo en un bloque superior: la portada se sustituye por
+  el reproductor al tocar Play. No se descarga vídeo al abrir la ficha. El audio
+  se conserva como venga en el archivo; Javier lo subirá sin sonido cuando no
+  lo quiera y descarta añadir controles de silencio o volumen.
   Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
   como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar
@@ -408,7 +412,8 @@ FAS 2027:
   duración comunicada por Bunny y el tamaño del MP4; la precisión fraccionaria y
   el recorrido físico móvil quedan pendientes. Caché móvil de hasta 100 MiB;
   web depende del navegador.
-  Reproducción automática y bucle siguen pendientes.
+  Reproducción al abrir la ficha y bucle automático siguen sin acordarse;
+  el arranque tras tocar la portada sí está implementado en VID-004.
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su
   recuperación pasiva, andando o trotando por duración o distancia. Repetir un

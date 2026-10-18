@@ -52,7 +52,10 @@ class ExerciseDetailSheet extends StatelessWidget {
             ),
             if (subtitle != null)
               Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
-            if (imageUrl?.trim().isNotEmpty == true) ...[
+            if (videoUrl?.trim().isNotEmpty == true) ...[
+              const SizedBox(height: 20),
+              ExerciseReferenceVideo(url: videoUrl!, posterUrl: imageUrl),
+            ] else if (imageUrl?.trim().isNotEmpty == true) ...[
               const SizedBox(height: 20),
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -99,10 +102,6 @@ class ExerciseDetailSheet extends StatelessWidget {
               Text('Material', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 5),
               Text(equipment.join(' · ')),
-            ],
-            if (videoUrl?.trim().isNotEmpty == true) ...[
-              const SizedBox(height: 18),
-              ExerciseReferenceVideo(url: videoUrl!),
             ],
             if (onEdit != null) ...[
               const SizedBox(height: 24),

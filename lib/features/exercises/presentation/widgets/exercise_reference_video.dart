@@ -10,10 +10,12 @@ class ExerciseReferenceVideo extends StatefulWidget {
   const ExerciseReferenceVideo({
     super.key,
     required this.url,
+    this.posterUrl,
     this.createController,
     this.openExternal,
   });
   final String url;
+  final String? posterUrl;
   final VideoPlayerController Function(Uri)? createController;
   final Future<bool> Function(Uri)? openExternal;
   @override
@@ -27,6 +29,7 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
   bool _loading = false;
   bool _failed = false;
   String? _linkError;
+  String? _playbackError;
   int _request = 0;
 
   Future<void> _openLink() async {
@@ -54,6 +57,7 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
     setState(() {
       _loading = true;
       _failed = false;
+      _playbackError = null;
     });
     VideoPlayerController? candidate;
     try {
@@ -82,6 +86,37 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
         _failed = true;
         _loading = false;
       });
+      return;
+    }
+    // La descarga y el arranque nacen del mismo toque, nunca al abrir la ficha.
+    // Si el navegador exige otra interacción para el audio, queda el botón Play.
+    await _togglePlayback();
+  }
+
+  Future<void> _togglePlayback() async {
+    final controller = _controller;
+    if (controller == null) return;
+    try {
+      final value = controller.value;
+      if (value.isPlaying) {
+        await controller.pause();
+      } else {
+        if (value.duration > Duration.zero &&
+            value.position >= value.duration) {
+          await controller.seekTo(Duration.zero);
+        }
+        if (!mounted || _controller != controller) return;
+        await controller.play();
+      }
+      if (mounted && _controller == controller) {
+        setState(() => _playbackError = null);
+      }
+    } catch (_) {
+      if (mounted && _controller == controller) {
+        setState(() {
+          _playbackError = 'No se ha podido iniciar. Pulsa reproducir para intentarlo de nuevo.';
+        });
+      }
     }
   }
 
@@ -94,6 +129,7 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
       _controller = null;
       _loading = _failed = false;
       _linkError = null;
+      _playbackError = null;
     }
   }
 
@@ -110,71 +146,58 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Vídeo de referencia',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
         if (controller == null)
-          OutlinedButton.icon(
-            onPressed: _loading ? null : _load,
-            icon: _loading
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.play_circle_outline_rounded),
-            label: Text(
-              _loading
-                  ? 'Cargando vídeo…'
-                  : _failed
-                  ? 'Reintentar vídeo'
-                  : 'Ver vídeo',
-            ),
-          )
+          _poster(context)
         else
           ValueListenableBuilder<VideoPlayerValue>(
             valueListenable: controller,
             builder: (context, value, _) => Column(
               children: [
-                AspectRatio(
-                  aspectRatio: value.aspectRatio > 0
-                      ? value.aspectRatio
-                      : 16 / 9,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: VideoPlayer(controller),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: ColoredBox(
+                      color: Colors.black,
+                      child: Center(
+                        child: AspectRatio(
+                          aspectRatio: value.aspectRatio > 0
+                              ? value.aspectRatio
+                              : 16 / 9,
+                          child: VideoPlayer(controller),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                VideoProgressIndicator(
-                  controller,
-                  allowScrubbing: true,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                IconButton.filledTonal(
-                  tooltip: value.isPlaying
-                      ? 'Pausar vídeo'
-                      : 'Reproducir vídeo',
-                  onPressed: () async {
-                    try {
-                      if (value.isPlaying) {
-                        await controller.pause();
-                      } else {
-                        await controller.play();
-                      }
-                    } catch (_) {
-                      if (mounted) setState(() => _failed = true);
-                    }
-                  },
-                  icon: Icon(
-                    value.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: value.isPlaying
+                          ? 'Pausar vídeo'
+                          : 'Reproducir vídeo',
+                      onPressed: _togglePlayback,
+                      icon: Icon(
+                        value.isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: VideoProgressIndicator(
+                        controller,
+                        allowScrubbing: true,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+        if (_playbackError case final error?)
+          Padding(padding: const EdgeInsets.only(top: 8), child: Text(error)),
         if (_failed)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -199,6 +222,83 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
       ],
+    );
+  }
+
+  Widget _poster(BuildContext context) {
+    final label = _loading
+        ? 'Cargando vídeo…'
+        : _failed
+        ? 'Reintentar vídeo'
+        : 'Ver vídeo';
+    final image = widget.posterUrl?.trim();
+    final onTap = _loading ? null : _load;
+    return Semantics(
+      button: true,
+      label: label,
+      enabled: !_loading,
+      onTap: onTap,
+      child: ExcludeSemantics(
+        child: Material(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (image != null && image.isNotEmpty)
+                    Image.network(
+                      image,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ColoredBox(color: Colors.black.withValues(alpha: .2)),
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: .6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: _loading
+                                ? const SizedBox.square(
+                                    dimension: 32,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Icon(
+                                    _failed
+                                        ? Icons.refresh_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
