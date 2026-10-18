@@ -1,8 +1,8 @@
+import 'guided_program_card.dart';
+
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
-import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_heading.dart';
 import 'package:flutter/material.dart';
-import 'package:workout_core/guided_program.dart';
 
 import '../domain/guided_program_repository.dart';
 
@@ -84,10 +84,21 @@ class _HomeGuidedProgramsState extends State<HomeGuidedPrograms> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      if (items.isEmpty) _ProgramCard(onOpen: widget.onOpen),
+                      if (items.isEmpty)
+                        GuidedProgramCard(
+                          key: const ValueKey('home-guided-card-add'),
+                          onTap: () => widget.onOpen('/library?tab=programs'),
+                        ),
                       for (final (index, item) in items.indexed) ...[
                         if (index > 0) const SizedBox(width: 10),
-                        _ProgramCard(item: item, onOpen: widget.onOpen),
+                        GuidedProgramCard(
+                          key: ValueKey('home-guided-card-${item.program.id}'),
+                          program: item.program,
+                          phaseIndex: item.phaseIndex,
+                          onTap: () => widget.onOpen(
+                            '/library/programs/${item.program.id}',
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -97,106 +108,4 @@ class _HomeGuidedProgramsState extends State<HomeGuidedPrograms> {
           );
         },
       );
-}
-
-class _ProgramCard extends StatelessWidget {
-  const _ProgramCard({this.item, required this.onOpen});
-  final StartedGuidedProgram? item;
-  final Future<void> Function(String route) onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    final program = item?.program;
-    final phased = program?.mode == GuidedProgramMode.phased;
-    final secondary = Theme.of(context).colorScheme.secondary;
-    final detail = program == null
-        ? 'Elige un programa'
-        : phased
-        ? 'Fase ${item!.phaseIndex + 1} de ${program.phases.length}'
-        : '${program.sessionCount} ${program.sessionCount == 1 ? 'sesión' : 'sesiones'}';
-    return SizedBox.square(
-      key: ValueKey('home-guided-card-${program?.id ?? 'add'}'),
-      dimension: 250,
-      child: EntrenaCard(
-        tone: EntrenaCardTone.progress,
-        onTap: () => onOpen(
-          program == null
-              ? '/library?tab=programs'
-              : '/library/programs/${program.id}',
-        ),
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  program == null
-                      ? Icons.add_circle_outline_rounded
-                      : phased
-                      ? Icons.trending_up_rounded
-                      : Icons.fitness_center_rounded,
-                  color: secondary,
-                  size: 25,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    program?.modeLabel ?? 'Programas',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: context.visuals.textMuted,
-                      fontSize: 12,
-                      height: 1.2,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  program?.name ?? 'Añadir programa',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    height: 1.2,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              detail,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.visuals.textMuted,
-                fontSize: 13,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              program == null ? 'Explorar →' : 'Ver programa →',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: secondary,
-                fontSize: 14,
-                height: 1.2,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

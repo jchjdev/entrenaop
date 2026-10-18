@@ -9,6 +9,28 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   final SupabaseClient client;
   @override
   String? get currentUserId => client.auth.currentUser?.id;
+  Future<List<GuidedProgram>> _withCovers(
+    List<Map<String, dynamic>> rows,
+  ) async {
+    if (rows.isEmpty) return const [];
+    final families = rows.map((r) => r['family_id'] as String).toSet().toList();
+    final covers = await client
+        .from('guided_program_covers')
+        .select()
+        .inFilter('program_id', families);
+    final byFamily = {
+      for (final cover in covers) cover['program_id'] as String: cover,
+    };
+    return [
+      for (final row in rows)
+        guidedProgramFromJson(
+          {...row, 'cover': byFamily[row['family_id']]},
+          resolveCoverUrl: (path) =>
+              client.storage.from('program-covers-public').getPublicUrl(path),
+        ),
+    ];
+  }
+
   @override
   Future<List<StartedGuidedProgram>> startedPrograms() async {
     final owner = currentUserId;
@@ -22,12 +44,15 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
         .order('id', ascending: false)
         .limit(3);
     if (owner != currentUserId) return const [];
-    return [
+    final programs = await _withCovers([
       for (final row in rows)
+        Map<String, dynamic>.from(row['guided_programs'] as Map),
+    ]);
+    if (owner != currentUserId) return const [];
+    return [
+      for (final (index, row) in rows.indexed)
         StartedGuidedProgram(
-          program: guidedProgramFromJson(
-            Map<String, dynamic>.from(row['guided_programs'] as Map),
-          ),
+          program: programs[index],
           phaseIndex: row['phase_index'] as int,
         ),
     ];
@@ -52,12 +77,10 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
       },
     ) as List;
     return GuidedCatalogPage(
-      rows
-          .take(pageSize)
-          .map(
-            (r) => guidedProgramFromJson(Map<String, dynamic>.from(r as Map)),
-          )
-          .toList(),
+      await _withCovers([
+        for (final r in rows.take(pageSize))
+          Map<String, dynamic>.from(r as Map),
+      ]),
       hasMore: rows.length > pageSize,
     );
   }
@@ -86,7 +109,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
               .eq('follow_id', follow['id'])
               .order('created_at', ascending: false);
     return GuidedProgramDetail(
-      guidedProgramFromJson(row),
+      (await _withCovers([row])).single,
       follow: follow == null
           ? null
           : GuidedFollow(

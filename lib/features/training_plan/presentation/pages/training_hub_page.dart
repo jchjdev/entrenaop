@@ -11,7 +11,7 @@ import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_h
 import 'package:entrenaop/features/dashboard/presentation/widgets/preparation_status_label.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
@@ -371,7 +371,7 @@ class _CurrentProgramCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => EntrenaCard(
     tone: EntrenaCardTone.accent,
-    coverImage: preparationCoverProvider(goal?.program.cover?.headerUrl),
+    coverImage: editorialCoverProvider(goal?.program.cover?.headerUrl),
     focalX: goal?.program.cover?.headerFocalX ?? 0.5,
     focalY: goal?.program.cover?.headerFocalY ?? 0.5,
     child: Column(
@@ -470,7 +470,7 @@ class _SavedPreparationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => EntrenaCard(
     tone: EntrenaCardTone.progress,
-    coverImage: preparationCoverProvider(goal.program.cover?.cardUrl),
+    coverImage: editorialCoverProvider(goal.program.cover?.cardUrl),
     focalX: goal.program.cover?.focalX ?? 0.5,
     focalY: goal.program.cover?.focalY ?? 0.5,
     child: Column(

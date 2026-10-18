@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaProgramCard;
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
@@ -16,7 +17,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
@@ -581,60 +582,18 @@ class _PreparationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = preparationStatusLabel(progress);
-    return EntrenaCard(
-      tone: EntrenaCardTone.progress,
+    return EntrenaProgramCard(
+      title: goal.program.name,
+      label: status,
+      icon: Icons.flag_outlined,
       onTap: goal.id == null ? null : () => onOpen('/plan/goal/${goal.id}'),
-      coverImage: preparationCoverProvider(goal.program.cover?.cardUrl),
+      coverImage: editorialCoverProvider(goal.program.cover?.cardUrl),
       focalX: goal.program.cover?.focalX ?? 0.5,
       focalY: goal.program.cover?.focalY ?? 0.5,
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.flag_outlined,
-                color: Theme.of(context).colorScheme.secondary,
-                size: 25,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: context.visuals.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            goal.program.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 7),
-          Text(
-            goal.targetDate == null
-                ? 'Sin fecha objetivo'
-                : 'Pruebas · ${goal.targetDate!.day}/${goal.targetDate!.month}/${goal.targetDate!.year}',
-            style: TextStyle(color: context.visuals.textMuted, fontSize: 13),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Ver preparación →',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.secondary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
+      detail: goal.targetDate == null
+          ? 'Sin fecha objetivo'
+          : 'Pruebas · ${goal.targetDate!.day}/${goal.targetDate!.month}/${goal.targetDate!.year}',
+      actionLabel: 'Ver preparación →',
     );
   }
 }

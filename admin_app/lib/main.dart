@@ -7,7 +7,7 @@ import 'package:entrenaop_admin/features/auth/presentation/admin_login_page.dart
 import 'package:entrenaop_admin/core/app_config.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
-import 'package:entrenaop_admin/features/programs/data/program_cover_repository.dart';
+import 'package:entrenaop_admin/features/editorial_covers/data/program_cover_repository.dart';
 import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +71,10 @@ class _AdminAppState extends State<AdminApp> {
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(client),
       covers: SupabaseProgramCoverRepository(client),
+      guidedCovers: SupabaseProgramCoverRepository(
+        client,
+        resource: ProgramCoverResource.guided,
+      ),
       proAccess: SupabaseAdminProAccessRepository(client),
       guided: SupabaseAdminGuidedRepository(client),
       onSignOut: () => unawaited(client.auth.signOut()),

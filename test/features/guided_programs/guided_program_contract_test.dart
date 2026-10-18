@@ -1,7 +1,46 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:workout_core/guided_program_codec.dart';
 
 void main() {
+  test(
+    'la portada editorial se lee aparte y no modifica la receta versionada',
+    () {
+      final content = {
+        'name': 'Rutina',
+        'mode': 'guide',
+        'phases': <dynamic>[],
+      };
+      final row = {
+        'id': 'version',
+        'family_id': 'family',
+        'version': 2,
+        'status': 'published',
+        'content': content,
+        'cover': {
+          'card_image_path': 'guided/family/card.jpg',
+          'header_image_path': 'guided/family/header.jpg',
+          'focal_x': 0.8,
+          'focal_y': 0.3,
+          'header_focal_x': 0.2,
+          'header_focal_y': 0.9,
+        },
+      };
+      final program = guidedProgramFromJson(
+        row,
+        resolveCoverUrl: (p) => 'https://images.example/$p',
+      );
+      expect(
+        program.cover!.cardUrl,
+        'https://images.example/guided/family/card.jpg',
+      );
+      expect(program.cover!.focalX, 0.8);
+      expect(program.cover!.headerFocalX, 0.2);
+      expect(guidedProgramToJson(program).containsKey('cover'), isFalse);
+      expect(guidedProgramToJson(program)['phases'], content['phases']);
+      expect(guidedProgramFromJson(row).cover, isNull);
+    },
+  );
   const session = GuidedSession(templateId: 'official', name: 'Empuje');
   test('una guía conserva una estructura repetible, sin exigir semanas', () {
     const guide = GuidedProgram(

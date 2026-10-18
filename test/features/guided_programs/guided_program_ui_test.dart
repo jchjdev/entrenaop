@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaProgramCard;
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_program_cubits.dart';
@@ -49,6 +50,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Hipertrofia básica'), findsOneWidget);
         expect(find.text('Rutina'), findsOneWidget);
+        expect(find.byType(EntrenaProgramCard), findsOneWidget);
         if (capturePerformanceReview) {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 150)),

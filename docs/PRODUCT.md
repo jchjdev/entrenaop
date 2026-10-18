@@ -1026,6 +1026,15 @@ tarjetas cuadradas y carrusel horizontal con el mismo acabado visual. Si no hay
 programas iniciados, se ofrece Añadir programa. Ese acceso y Añadir en la cabecera
 abren directamente la pestaña Programas de Biblioteca.
 
+PRG-004 reutiliza la misma tarjeta editorial de Preparaciones para los programas
+de Inicio y Biblioteca; se retiran sus composiciones duplicadas. Las tarjetas de
+sesiones dentro de rutinas y fases se conservan. Desde ADMIN → Programas guiados
+→ Portada se usa el editor común para seleccionar, encuadrar, sustituir o retirar
+la foto. Una fotografía comparte portada y cabecera con encuadres independientes,
+y es común a las versiones de la familia. Cambiarla no modifica entrenamiento
+ni resultados. Las fotos de las demos quedan a elección editorial. Implementado
+solo en desarrollo; aceptación autenticada en dispositivos pendiente.
+
 ## Plataformas
 
 - Android e iPhone son prioritarios para la experiencia del opositor.

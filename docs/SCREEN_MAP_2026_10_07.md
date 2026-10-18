@@ -1021,7 +1021,7 @@ Entrada: `Modal desde detalle de programa`.
 
 **Pendiente / propuesta:** Propuesta: verificar fotos reales y pantallas estrechas; las imágenes de la auditoría usan archivos de fixture.
 
-Código: [admin_app/lib/features/programs/presentation/program_cover_editor.dart](../admin_app/lib/features/programs/presentation/program_cover_editor.dart).
+Código: [admin_app/lib/features/editorial_covers/presentation/program_cover_editor.dart](../admin_app/lib/features/editorial_covers/presentation/program_cover_editor.dart).
 
 ![Editar portada](visual-audit/2026-10-07/images/ProgramCoverEditor-1.webp)
 

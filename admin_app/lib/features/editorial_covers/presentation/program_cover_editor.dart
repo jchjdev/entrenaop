@@ -1,5 +1,5 @@
 import 'package:entrena_ui/entrena_ui.dart';
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_editor_ui/program_cover_image_draft.dart';
 
@@ -10,8 +10,18 @@ class ProgramCoverEditor extends StatefulWidget {
     required this.programName,
     required this.repository,
     this.pickImage,
+    this.cardLabel = 'Por configurar',
+    this.cardDetail = 'Sin fecha objetivo',
+    this.cardAction = 'Gestionar preparación →',
+    this.cardIcon = Icons.flag_outlined,
+    this.squareCard = false,
+    this.headerTitle = 'Cabecera de la preparación',
+    this.editorTitle = 'Imagen de preparación',
   });
   final String programId, programName;
+  final String cardLabel, cardDetail, cardAction, headerTitle, editorTitle;
+  final IconData cardIcon;
+  final bool squareCard;
   final ProgramCoverRepository repository;
   final Future<ProgramCoverImageDraft?> Function()? pickImage;
   @override
@@ -229,7 +239,7 @@ class _ProgramCoverEditorState extends State<ProgramCoverEditor> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Imagen de preparación',
+                      widget.editorTitle,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
@@ -463,17 +473,21 @@ class _ProgramCoverEditorState extends State<ProgramCoverEditor> {
       Align(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: _desktop ? 650 : 360),
-          child: EntrenaCard(
-            tone: EntrenaCardTone.progress,
+          child: EntrenaProgramCard(
+            title: widget.programName,
+            label: widget.cardLabel,
+            detail: widget.cardDetail,
+            actionLabel: widget.cardAction,
+            icon: widget.cardIcon,
+            square: widget.squareCard,
             coverImage: _cardImage,
             focalX: _x,
             focalY: _y,
-            child: _previewContent(context),
           ),
         ),
       ),
       const SizedBox(height: 24),
-      const Text('Cabecera de la preparación'),
+      Text(widget.headerTitle),
       const SizedBox(height: 12),
       EntrenaCard(
         coverImage: _headerImage,
@@ -489,42 +503,13 @@ class _ProgramCoverEditorState extends State<ProgramCoverEditor> {
       ),
       const SizedBox(height: 12),
       const Text(
-        'Datos de ejemplo. El cambio afecta a la imagen, no a las reglas de la preparación.',
+        'Vista previa de la portada. Los entrenamientos conservan su contenido.',
         style: TextStyle(fontSize: 12),
-      ),
-    ],
-  );
-
-  Widget _previewContent(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Icon(
-            Icons.flag_outlined,
-            color: Theme.of(context).colorScheme.secondary,
-          ),
-          const SizedBox(width: 8),
-          const Expanded(child: Text('Por configurar')),
-        ],
-      ),
-      const SizedBox(height: 20),
-      Text(widget.programName, style: Theme.of(context).textTheme.titleLarge),
-      const SizedBox(height: 8),
-      const Text('Sin fecha objetivo'),
-      const SizedBox(height: 28),
-      Text(
-        'Gestionar preparación →',
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.secondary,
-          fontWeight: FontWeight.w700,
-        ),
       ),
     ],
   );
 }
 
-/// El punto se elige sobre la imagen completa, no sobre una miniatura ya recortada.
 class CoverFocusPicker extends StatefulWidget {
   const CoverFocusPicker({
     super.key,

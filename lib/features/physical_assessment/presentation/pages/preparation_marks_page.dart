@@ -8,7 +8,7 @@ import 'package:entrenaop/features/physical_assessment/presentation/utils/prepar
 import 'package:entrenaop/features/physical_assessment/presentation/widgets/measurement_comparison_card.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -142,7 +142,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                         ),
                       ],
                       EntrenaCard(
-                        coverImage: preparationCoverProvider(
+                        coverImage: editorialCoverProvider(
                           goal.program.cover?.headerUrl,
                         ),
                         focalX: goal.program.cover?.headerFocalX ?? .5,

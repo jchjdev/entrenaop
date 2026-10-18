@@ -129,41 +129,64 @@ nombre para evitar recorte vertical con texto ampliado.
 Verificado: análisis limpio y 947 pruebas completas correctas con la omisión
 web existente. ADMIN, SQL, dependencias y contratos deportivos no cambian.
 
-### Portadas · PRG-004 · requisito y revisión del 18/10/2026
+### Portadas compartidas · PRG-004 · implementadas el 18/10/2026
 
-Javier requiere imágenes para los programas, reutilizando el sistema de
-Preparaciones también en ADMIN. **Pendiente de implementación:** las tarjetas
-actuales admiten el tratamiento visual pero no reciben portada, y el creador
-guiado aún no incorpora el editor de imágenes.
+Javier confirma reutilizar la tarjeta de Preparaciones en Inicio y Biblioteca,
+retirar la composición duplicada de programas y conservar las tarjetas de
+sesiones dentro de rutinas/fases. `EntrenaProgramCard`, en `entrena_ui`, contiene
+la composición editorial común sobre `EntrenaCard`: fotografía, contraste,
+encuadre, etiqueta, nombre, detalle y acción. Preparaciones adapta sus datos a
+ese componente; `GuidedProgramCard` es únicamente el adaptador de programas,
+reutilizado en el carrusel de Inicio y el catálogo paginado de Biblioteca.
+Los programas mantienen formato cuadrado de 250 × 250 y el estado Añadir.
 
-La revisión localizada confirma:
+`editorialCoverProvider`, en `core/presentation/images`, conserva exactamente
+la caché móvil y el proveedor web corregido que antes pertenecían a
+Preparaciones. `EditorialCover`, en `workout_core`, es el valor puro compartido;
+la portada es opcional y no se serializa en la prescripción versionada.
+La ficha de programa utiliza el encuadre independiente de cabecera.
 
-- `EntrenaCard` y `EntrenaCoverImage` ya comparten fotografía, velo de contraste
-  y punto de interés. El proveedor actual de Preparaciones resuelve caché móvil
-  y el caso web corregido; puede trasladarse a una utilidad común sin duplicarlo.
-- `ProgramCoverEditor` recibe un repositorio y ya permite seleccionar, sustituir
-  o retirar fotografía, encuadres independientes de tarjeta/cabecera, vista
-  previa, cambios pendientes y control de revisión. Su previsualización contiene
-  textos y composición de preparación; necesita una variante con la tarjeta
-  cuadrada real del programa.
-- `ProgramCoverImageDraft`, en `workout_editor_ui`, optimiza una fotografía en
-  versiones de tarjeta/cabecera sin EXIF y conserva proporciones. Es reutilizable.
-- El repositorio de portadas, la tabla `preparation_program_covers`, las RPC y
-  las políticas de Storage verifican programas de preparación. Hay que ampliar
-  el vínculo de datos y el guardado autorizado para programas guiados; también
-  proteger sus imágenes vigentes frente a la limpieza de archivos. No basta
-  con permitir la subida de otra ruta.
+ADMIN reutiliza `ProgramCoverEditor` y el repositorio de portadas en
+`features/editorial_covers/`, con el mismo selector/optimizador existente en
+`workout_editor_ui`. El catálogo de programas ofrece **Portada** para cada
+programa guardado, sin exigir crear una revisión del entrenamiento. La vista
+previa usa la misma tarjeta compartida. El adaptador distingue preparación y
+programa, conservando el formato de archivos, límites, rutas inmutables,
+retirada, errores retenidos y control de revisión.
 
-Recomendación técnica, sin aplicar todavía: mantener un editor de portadas
-común en ADMIN con adaptadores de persistencia por recurso y vista previa real;
-portada opcional coherente en Inicio/Biblioteca y encuadre de cabecera para la
-ficha. Conservar los metadatos visuales separados de la prescripción deportiva,
-como en UI-006, para cambiar una foto sin modificar sesiones o resultados.
-Sin foto se mantiene el acabado actual. La vinculación concreta a familia o
-versión deberá resolverse al implementar y verificar su integridad y permisos.
+Migración `20261018073544_guided_program_covers.sql`, solo desarrollo:
+`guided_program_covers.program_id` referencia por FK la primera versión de la
+familia. Las versiones consultan la misma portada por `family_id`; modificarla
+no cambia sesiones, seguimientos o resultados. El bucket existente
+`program-covers-public` admite el prefijo `guided/<familia>/<identificador>/`,
+con subida administrativa y limpieza que protege portadas vigentes de ambos
+recursos. `set_admin_guided_program_cover` valida administrador, raíz, archivos,
+pareja de formatos, encuadres y revisión esperada. Los metadatos de borradores
+son administrativos; publicaciones y versiones seguidas conservan sus lecturas
+bajo RLS. La app resuelve las fotos por lote de familias, no una consulta por
+cada tarjeta, y mantiene las guardas de cambio de cuenta.
 
-Solo revisión de código, migraciones y documentación local: no se han cambiado
-Flutter, SQL instalado, archivos de Storage ni producción.
+Las cinco baterías SQL relacionadas terminan con ROLLBACK: nueva portada por
+familia, portada de Preparaciones, encuadres independientes, autoría y recorrido
+guiado. Cubren permisos, conflictos, referencias a otra familia, archivos
+pendientes, limpieza de imágenes vigentes, retirada y seguimiento. Los 158
+identificadores de migración coinciden con desarrollo. No quedan usuarios u
+objetos ficticios. El asesor solo añade el
+[aviso previsto de RPC autenticada](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)
+para el guardado administrativo, protegido y probado; no concede ejecución
+anónima. Sin avisos de rendimiento nuevos relacionados con esta ampliación.
+
+Análisis limpios de raíz y ADMIN; baterías completas con 949 y 118 pruebas
+correctas respectivamente, conservando sus omisiones anteriores. Cubren lectura
+por familia con identificadores distintos, descarte por cambio de cuenta,
+portada fuera de la receta, reutilización de tarjeta y editor, guardado,
+subida parcial, conflictos, sustitución y retirada de imagen.
+
+Revisadas capturas con fotografía real a 390 px, 320 px con texto 2× y
+escritorio, además de Biblioteca y su paginador. No se asignan fotografías a
+las demos sin selección editorial; ADMIN permite elegirlas. Sin dependencias
+nuevas ni cambios de motores, ejecutores, sesiones o producción. La aceptación
+autenticada en dispositivos queda pendiente de las pruebas de Javier.
 
 ### Preparación de la ejecución
 

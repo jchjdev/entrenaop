@@ -1,11 +1,17 @@
 import 'dart:math';
 
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+enum ProgramCoverResource { preparation, guided }
+
 class SupabaseProgramCoverRepository implements ProgramCoverRepository {
-  SupabaseProgramCoverRepository(this.client);
+  SupabaseProgramCoverRepository(
+    this.client, {
+    this.resource = ProgramCoverResource.preparation,
+  });
   final SupabaseClient client;
+  final ProgramCoverResource resource;
   static const bucket = 'program-covers-public';
 
   ProgramCover _parse(Map<String, dynamic> json) => ProgramCover(
@@ -25,8 +31,20 @@ class SupabaseProgramCoverRepository implements ProgramCoverRepository {
 
   @override
   Future<ProgramCover> load(String programId) async {
+    if (resource == ProgramCoverResource.guided) {
+      final program = await client
+          .from('guided_programs')
+          .select('family_id')
+          .eq('id', programId)
+          .single();
+      programId = program['family_id'] as String;
+    }
     final value = await client
-        .from('preparation_program_covers')
+        .from(
+          resource == ProgramCoverResource.guided
+              ? 'guided_program_covers'
+              : 'preparation_program_covers',
+        )
         .select()
         .eq('program_id', programId)
         .maybeSingle();
@@ -74,7 +92,8 @@ class SupabaseProgramCoverRepository implements ProgramCoverRepository {
           16,
           (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
         ).join();
-        final prefix = 'official/${current.programId}/$version';
+        final prefix =
+            '${resource == ProgramCoverResource.guided ? 'guided' : 'official'}/${current.programId}/$version';
         cardPath = '$prefix/card.jpg';
         headerPath = '$prefix/header.jpg';
         for (final entry in [
@@ -97,7 +116,9 @@ class SupabaseProgramCoverRepository implements ProgramCoverRepository {
       }
       final response = Map<String, dynamic>.from(
         await client.rpc(
-          'set_admin_program_cover_v2',
+          resource == ProgramCoverResource.guided
+              ? 'set_admin_guided_program_cover'
+              : 'set_admin_program_cover_v2',
           params: {
             'p_program_id': current.programId,
             'p_card_image_path': cardPath,

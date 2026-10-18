@@ -5,7 +5,7 @@ import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 
 class AdminProgramsPage extends StatefulWidget {
   const AdminProgramsPage({

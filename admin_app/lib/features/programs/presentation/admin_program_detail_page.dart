@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 
 import 'admin_performance_strategy_section.dart';
 
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 
-import 'program_cover_editor.dart';
+import 'package:entrenaop_admin/features/editorial_covers/presentation/program_cover_editor.dart';
 
 class AdminProgramDetailPage extends StatefulWidget {
   const AdminProgramDetailPage({

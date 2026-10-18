@@ -1,3 +1,4 @@
+import 'package:workout_core/editorial_cover.dart';
 import 'package:equatable/equatable.dart';
 
 enum PreparationProgramKind { access, internalAssessment }
@@ -32,26 +33,13 @@ class PreparationProgram extends Equatable {
 }
 
 /// Identidad editorial del catálogo; no participa en la planificación deportiva.
-class PreparationProgramCover extends Equatable {
+class PreparationProgramCover extends EditorialCover {
   const PreparationProgramCover({
-    required this.cardUrl,
-    required this.headerUrl,
-    this.focalX = 0.5,
-    this.focalY = 0.5,
-    double? headerFocalX,
-    double? headerFocalY,
-  }) : headerFocalX = headerFocalX ?? focalX,
-       headerFocalY = headerFocalY ?? focalY;
-  final String cardUrl, headerUrl;
-  final double focalX, focalY;
-  final double headerFocalX, headerFocalY;
-  @override
-  List<Object?> get props => [
-    cardUrl,
-    headerUrl,
-    focalX,
-    focalY,
-    headerFocalX,
-    headerFocalY,
-  ];
+    required super.cardUrl,
+    required super.headerUrl,
+    super.focalX,
+    super.focalY,
+    super.headerFocalX,
+    super.headerFocalY,
+  });
 }

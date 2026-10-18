@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:entrenaop/features/pro/domain/pro_offer.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_discovery_card.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -123,7 +123,7 @@ class _Content extends StatelessWidget {
                     ),
                   const SizedBox(height: 12),
                   EntrenaCard(
-                    coverImage: preparationCoverProvider(
+                    coverImage: editorialCoverProvider(
                       goal.program.cover?.headerUrl,
                     ),
                     focalX: goal.program.cover?.headerFocalX ?? 0.5,

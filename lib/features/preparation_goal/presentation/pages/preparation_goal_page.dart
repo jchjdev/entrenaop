@@ -4,7 +4,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_cubit.dart';
 import 'package:entrenaop/features/preparation_goal/presentation/bloc/preparation_goal_state.dart';
 import 'package:flutter/material.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -135,7 +135,7 @@ class _ProgramCard extends StatelessWidget {
     final goal = activeGoal;
     return EntrenaCard(
       tone: goal == null ? EntrenaCardTone.neutral : EntrenaCardTone.progress,
-      coverImage: preparationCoverProvider(program.cover?.cardUrl),
+      coverImage: editorialCoverProvider(program.cover?.cardUrl),
       focalX: program.cover?.focalX ?? 0.5,
       focalY: program.cover?.focalY ?? 0.5,
       child: Column(

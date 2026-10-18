@@ -323,6 +323,22 @@ ni reglas de prescripción en el widget. Análisis y pruebas de app correctos;
 
 ## Portadas editoriales · UI-006 · 06/10/2026
 
+Ampliación PRG-004 del 18/10/2026: `EntrenaProgramCard` comparte la composición
+de Preparaciones y Programas en Inicio/Biblioteca, sin alterar las tarjetas de
+sesiones. El editor y el adaptador de portadas de ADMIN se trasladan a
+`features/editorial_covers/`; el mismo repositorio selecciona el recurso y
+reutiliza optimización, subida, revisión y limpieza. El proveedor de caché pasa
+a `core/presentation/images/editorial_cover_provider.dart` conservando su
+comportamiento web/móvil. `EditorialCover` es un valor puro compartido.
+
+`guided_program_covers` añade una portada por raíz de familia con FK a la primera
+versión. La RPC administrativa y las políticas amplían el bucket existente con
+el prefijo `guided`, protegiendo las imágenes vigentes de ambos recursos.
+La lectura resuelve por lote las familias de cada página o resumen. La portada
+se mantiene fuera del JSON prescriptivo; un cambio visual no crea una versión
+deportiva ni modifica el historial. Migración `20261018073544`, aplicada solo en
+desarrollo. Contrato y pruebas en `PROGRAMAS_GUIADOS.md`.
+
 La identidad fotográfica es independiente del contenido deportivo publicado.
 `preparation_program_covers` enlaza una portada opcional por programa; la RPC
 administrativa valida archivos, encuadre y revisión antes de actualizarla.

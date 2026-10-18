@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:entrena_ui/entrena_ui.dart';
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
-import 'package:entrenaop_admin/features/programs/presentation/program_cover_editor.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/presentation/program_cover_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

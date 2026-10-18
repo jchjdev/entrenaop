@@ -1,3 +1,5 @@
+import 'editorial_cover.dart';
+
 /// Contenido editorial; las fases no dependen del calendario del dispositivo.
 enum GuidedProgramMode { guide, phased }
 
@@ -46,6 +48,7 @@ class GuidedProgram {
     this.description = '',
     this.audience = '',
     this.equipment = '',
+    this.cover,
   });
   final String? id;
   final String? familyId;
@@ -57,6 +60,7 @@ class GuidedProgram {
   final String description;
   final String audience;
   final String equipment;
+  final EditorialCover? cover;
   int get sessionCount => phases.fold(0, (n, p) => n + p.sessions.length);
   String get modeLabel =>
       mode == GuidedProgramMode.guide ? 'Rutina' : 'Por fases';

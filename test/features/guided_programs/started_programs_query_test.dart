@@ -16,29 +16,47 @@ void main() {
   final requests = <Uri>[];
   Completer<void>? gate;
   Completer<void>? arrived;
+  bool showCover = false;
   setUp(() async {
     requests.clear();
     gate = null;
     arrived = null;
+    showCover = false;
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       requests.add(request.uri);
-      arrived?.complete();
+      if (arrived != null && !arrived!.isCompleted) arrived!.complete();
       await gate?.future;
       request.response.headers.contentType = ContentType.json;
       request.response.write(
-        jsonEncode([
-          {
-            'phase_index': 0,
-            'guided_programs': {
-              'id': 'program',
-              'family_id': 'family',
-              'version': 1,
-              'status': 'published',
-              'content': guidedProgramToJson(guidedFixture),
-            },
-          },
-        ]),
+        jsonEncode(
+          request.uri.path.endsWith('/guided_program_covers')
+              ? (showCover
+                    ? [
+                        {
+                          'program_id': 'family',
+                          'card_image_path': 'guided/family/card.jpg',
+                          'header_image_path': 'guided/family/header.jpg',
+                          'focal_x': 0.8,
+                          'focal_y': 0.2,
+                          'header_focal_x': 0.3,
+                          'header_focal_y': 0.7,
+                        },
+                      ]
+                    : [])
+              : [
+                  {
+                    'phase_index': 0,
+                    'guided_programs': {
+                      'id': 'program',
+                      'family_id': 'family',
+                      'version': 1,
+                      'status': 'published',
+                      'content': guidedProgramToJson(guidedFixture),
+                    },
+                  },
+                ],
+        ),
       );
       await request.response.close();
     });
@@ -53,7 +71,10 @@ void main() {
     'Inicio consulta los tres últimos seguimientos activos del propietario',
     () async {
       final result = await repository.startedPrograms();
-      final params = requests.single.queryParameters;
+      final params = requests
+          .where((r) => r.path.endsWith('/guided_program_follows'))
+          .single
+          .queryParameters;
       expect(params['user_id'], 'eq.owner');
       expect(params['completed_at'], 'is.null');
       expect(params['limit'], '3');
@@ -64,6 +85,20 @@ void main() {
       expect(result.single.phaseIndex, 0);
     },
   );
+  test('resuelve una portada por familia aunque la versión tenga otro identificador', () async {
+    showCover = true;
+    final result = await repository.startedPrograms();
+    expect(
+      result.single.program.cover!.cardUrl,
+      contains('/program-covers-public/guided/family/card.jpg'),
+    );
+    expect(result.single.program.cover!.focalX, 0.8);
+    expect(result.single.program.cover!.headerFocalY, 0.7);
+    final coverQuery = requests
+        .where((r) => r.path.endsWith('/guided_program_covers'))
+        .single;
+    expect(coverQuery.queryParameters['program_id'], 'in.("family")');
+  });
   test(
     'sin sesión no consulta; cambiar de cuenta descarta una respuesta anterior',
     () async {

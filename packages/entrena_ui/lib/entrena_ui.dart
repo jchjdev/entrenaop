@@ -1,6 +1,7 @@
 library;
 
 export 'src/entrena_card.dart';
+export 'src/entrena_program_card.dart';
 export 'src/entrena_dialog_actions.dart';
 export 'src/entrena_cover_image.dart';
 export 'src/entrena_theme.dart';

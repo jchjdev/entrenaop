@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**PRG-004, 18/10/2026 · tarjeta y portadas compartidas:** Preparaciones y Programas
+usan `EntrenaProgramCard`; Inicio y Biblioteca reutilizan el mismo adaptador de
+programa. Retiradas las composiciones duplicadas, conservando las tarjetas de
+sesiones. ADMIN usa el editor común en `features/editorial_covers/`, con Portada
+desde el catálogo y sin revisión deportiva por cambiar foto. Portadas por familia,
+encuadres independientes, bucket existente, rutas inmutables, revisión y RLS;
+limpieza que conserva imágenes vigentes de ambos recursos. Solo desarrollo.
+Análisis limpios, 949 pruebas raíz y 118 ADMIN correctas con sus omisiones,
+cinco baterías SQL con ROLLBACK y 158 migraciones coincidentes. Capturas de
+widgets reales con fotografía a 390 px, 320 px con texto 2× y escritorio;
+Biblioteca revisada. No se asignan fotos a las demos sin selección editorial.
+**Único siguiente bloque recomendado de este recorrido:** aceptación de Javier
+en ADMIN y móvil de selección/encuadres, actualización en Inicio/Biblioteca y
+las dos demos, antes de ampliar catálogo. Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-003, 18/10/2026 · carrusel de programas en Inicio:** tarjetas cuadradas
 de 250 × 250 con el acabado de Preparaciones, desplazamiento horizontal y
 sección situada debajo de Preparaciones. Sin seguimientos activos se muestra

@@ -5,15 +5,19 @@ import 'package:workout_core/guided_program.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
 import '../domain/admin_guided_repository.dart';
+import '../../editorial_covers/domain/program_cover.dart';
+import '../../editorial_covers/presentation/program_cover_editor.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
     super.key,
     required this.repository,
     this.warmups = false,
+    this.covers,
   });
   final AdminGuidedRepository repository;
   final bool warmups;
+  final ProgramCoverRepository? covers;
   @override
   State<AdminGuidedCatalogPage> createState() => _AdminGuidedCatalogPageState();
 }
@@ -74,6 +78,29 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _cover(GuidedProgram p) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => Dialog(
+        insetPadding: const EdgeInsets.all(20),
+        child: ProgramCoverEditor(
+          programId: p.id!,
+          programName: p.name,
+          repository: widget.covers!,
+          editorTitle: 'Imagen del programa',
+          headerTitle: 'Cabecera del programa',
+          cardLabel: p.modeLabel,
+          cardDetail: '${p.sessionCount} sesiones',
+          cardAction: 'Ver programa →',
+          cardIcon: p.mode == GuidedProgramMode.guide
+              ? Icons.fitness_center_rounded
+              : Icons.trending_up_rounded,
+          squareCard: true,
+        ),
+      ),
+    );
   }
 
   @override
@@ -158,6 +185,12 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
+                          if (widget.covers != null)
+                            OutlinedButton.icon(
+                              onPressed: _busy ? null : () => _cover(p),
+                              icon: const Icon(Icons.image_outlined),
+                              label: const Text('Portada'),
+                            ),
                           OutlinedButton(
                             onPressed: _busy
                                 ? null

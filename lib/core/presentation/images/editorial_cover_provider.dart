@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 /// Caché de fotografías en el deportista; el paquete visual no conoce almacenamiento.
-ImageProvider? preparationCoverProvider(String? url) {
+ImageProvider? editorialCoverProvider(String? url) {
   if (url == null || url.trim().isEmpty) return null;
   // En web, el completer de CachedNetworkImage vuelve a decodificar la imagen
   // HTML al reactivar una ruta. Al liberar el fotograma anterior, Flutter limpia

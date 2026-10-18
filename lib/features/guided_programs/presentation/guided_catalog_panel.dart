@@ -1,4 +1,5 @@
-import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'guided_program_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -109,55 +110,23 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               child: Text('No hay programas con estos criterios.'),
             ),
           if (!state.loading)
-            for (final p in state.items)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: EntrenaCard(
-                  padding: const EdgeInsets.all(16),
-                  child: InkWell(
-                    onTap: () async {
-                      await context.push('/library/programs/${p.id}');
-                      if (mounted) await cubit.load(page: state.page);
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                p.modeLabel,
-                                style: Theme.of(context).textTheme.labelMedium,
-                              ),
-                            ),
-                            const Icon(Icons.arrow_forward_rounded, size: 18),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          p.name,
-                          style: Theme.of(context).textTheme.titleLarge,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (p.description.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            p.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        const SizedBox(height: 12),
-                        Text(
-                          '${p.sessionCount} ${p.sessionCount == 1 ? 'sesión' : 'sesiones'}${p.modeLabel == 'Por fases' ? ' · ${p.phases.length} fases' : ''} · v${p.version}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final p in state.items)
+                    GuidedProgramCard(
+                      program: p,
+                      onTap: () async {
+                        await context.push('/library/programs/${p.id}');
+                        if (mounted) await cubit.load(page: state.page);
+                      },
                     ),
-                  ),
-                ),
+                ],
               ),
+            ),
           if (state.error == null && (state.page > 0 || state.hasMore))
             Padding(
               padding: const EdgeInsets.only(top: 12),

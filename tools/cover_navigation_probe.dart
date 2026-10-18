@@ -2,7 +2,7 @@
 // el actual utilizando un PNG de color, sin red ni datos personales.
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:entrena_ui/entrena_ui.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,7 +49,7 @@ class _ProbeState extends State<_Probe> {
                               child: EntrenaCoverImage(
                                 image: i == 0
                                     ? const CachedNetworkImageProvider(_url)
-                                    : preparationCoverProvider(_url),
+                                    : editorialCoverProvider(_url),
                               ),
                             ),
                           ],

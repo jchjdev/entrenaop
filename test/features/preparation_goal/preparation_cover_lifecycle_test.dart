@@ -1,5 +1,5 @@
 import 'package:entrena_ui/entrena_ui.dart';
-import 'package:entrenaop/features/preparation_goal/presentation/widgets/preparation_cover_provider.dart';
+import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,7 +22,7 @@ void main() {
               child: SizedBox(
                 width: 200,
                 height: 200,
-                child: EntrenaCoverImage(image: preparationCoverProvider(url)),
+                child: EntrenaCoverImage(image: editorialCoverProvider(url)),
               ),
             );
           },

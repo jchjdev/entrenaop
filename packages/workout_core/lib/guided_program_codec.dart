@@ -1,4 +1,5 @@
 import 'guided_program.dart';
+import 'editorial_cover.dart';
 
 Map<String, dynamic> guidedProgramToJson(GuidedProgram program) => {
   'name': program.name.trim(),
@@ -28,7 +29,10 @@ Map<String, dynamic> guidedProgramToJson(GuidedProgram program) => {
   ],
 };
 
-GuidedProgram guidedProgramFromJson(Map<String, dynamic> row) {
+GuidedProgram guidedProgramFromJson(
+  Map<String, dynamic> row, {
+  String Function(String)? resolveCoverUrl,
+}) {
   final data = Map<String, dynamic>.from(row['content'] as Map);
   return GuidedProgram(
     id: row['id'] as String,
@@ -40,10 +44,25 @@ GuidedProgram guidedProgramFromJson(Map<String, dynamic> row) {
     description: data['description'] as String? ?? '',
     audience: data['audience'] as String? ?? '',
     equipment: data['equipment'] as String? ?? '',
+    cover: _cover(row['cover'], resolveCoverUrl),
     phases: [
       for (final raw in data['phases'] as List)
         _phase(Map<String, dynamic>.from(raw as Map)),
     ],
+  );
+}
+
+EditorialCover? _cover(dynamic raw, String Function(String)? resolve) {
+  if (raw is! Map || resolve == null) return null;
+  final card = raw['card_image_path'], header = raw['header_image_path'];
+  if (card is! String || header is! String) return null;
+  return EditorialCover(
+    cardUrl: resolve(card),
+    headerUrl: resolve(header),
+    focalX: (raw['focal_x'] as num?)?.toDouble() ?? 0.5,
+    focalY: (raw['focal_y'] as num?)?.toDouble() ?? 0.5,
+    headerFocalX: (raw['header_focal_x'] as num?)?.toDouble(),
+    headerFocalY: (raw['header_focal_y'] as num?)?.toDouble(),
   );
 }
 

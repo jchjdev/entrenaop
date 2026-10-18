@@ -5,9 +5,21 @@ import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_rep
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/presentation/program_cover_editor.dart';
 
 class _Guided extends Fake implements AdminGuidedRepository {
   GuidedProgram? saved;
+  @override
+  Future<List<GuidedProgram>> programs() async => [
+    const GuidedProgram(
+      id: 'program',
+      name: 'Hipertrofia',
+      mode: GuidedProgramMode.guide,
+      phases: [],
+    ),
+  ];
   @override
   Future<List<GuidedWarmup>> warmups() async => [];
   @override
@@ -40,6 +52,32 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
 }
 
 void main() {
+  testWidgets(
+    'el catálogo abre el mismo editor de portada con la tarjeta compartida',
+    (tester) async {
+      final repo = _Guided();
+      await tester.binding.setSurfaceSize(const Size(1100, 1400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: AdminGuidedCatalogPage(repository: repo, covers: _Covers()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Portada'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProgramCoverEditor), findsOneWidget);
+      expect(find.text('Imagen del programa'), findsOneWidget);
+      expect(
+        tester
+            .widget<EntrenaProgramCard>(find.byType(EntrenaProgramCard))
+            .square,
+        isTrue,
+      );
+      expect(repo.saved, isNull);
+    },
+  );
   testWidgets(
     'el creador guarda una guía ejecutable y excluye sesiones borrador',
     (tester) async {
@@ -136,4 +174,10 @@ void main() {
       );
     },
   );
+}
+
+class _Covers extends Fake implements ProgramCoverRepository {
+  @override
+  Future<ProgramCover> load(String id) async =>
+      const ProgramCover(programId: 'family');
 }

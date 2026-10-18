@@ -2,7 +2,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
-import 'package:entrenaop_admin/features/programs/domain/program_cover.dart';
+import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_attempt_preview_page.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_detail_page.dart';
@@ -28,6 +28,7 @@ GoRouter createAdminRouter({
   required AdminExerciseRepository exercises,
   required VoidCallback onSignOut,
   ProgramCoverRepository? covers,
+  ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
   AdminGuidedRepository? guided,
   String? initialLocation,
@@ -175,7 +176,10 @@ GoRouter createAdminRouter({
           path: '/guided-programs',
           builder: (_, _) => load(
             () async => true,
-            (_) => AdminGuidedCatalogPage(repository: guided),
+            (_) => AdminGuidedCatalogPage(
+              repository: guided,
+              covers: guidedCovers,
+            ),
           ),
           routes: [
             workflow(

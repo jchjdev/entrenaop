@@ -11,6 +11,7 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaProgramCard;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -214,6 +215,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Tus programas'), findsOneWidget);
+      expect(find.byType(EntrenaProgramCard), findsNWidgets(2));
       expect(
         tester.getTopLeft(find.text('Preparaciones')).dy,
         lessThan(tester.getTopLeft(find.text('Tus programas')).dy),
