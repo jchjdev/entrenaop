@@ -312,7 +312,7 @@ de sesiones usa «Ver las mías»; la de ejercicios conserva «Ver los míos».
 
 Cada entrada de las listas de ejercicios, tanto personal como oficial, muestra
 la misma `thumbnailUrl` ya utilizada por su ficha, inicialmente en una miniatura
-de 72 px; UI-049 amplía posteriormente ese tamaño.
+de 72 px; UI-050 fija finalmente 80×60 px tras descartar UI-049.
 Mantiene proporción y muestra un icono durante carga, ante error o si no existe
 foto. Tocar la tarjeta conserva el panel compartido, con permisos de edición
 intactos. No se inventan fotos ni se publica contenido en el catálogo.
@@ -1997,6 +1997,8 @@ registrados en `PRODUCT.md`.
 
 ## Portadas legibles en las listas de ejercicios · UI-049 · 18/10/2026
 
+Descartada por Javier; el criterio vigente es UI-050, descrito a continuación.
+
 Javier compara ADMIN y app y pide ampliar la foto de la tarjeta. La portada
 seleccionada y guardada en ADMIN es la misma que consulta la app mediante
 image_path/thumbnailUrl; no existe otra portada independiente en el listado.
@@ -2010,3 +2012,17 @@ ya disponible; no carga ni reproduce el vídeo.
 Comprobada en web a 390 px con la portada elegida de las flexiones. Las doce
 pruebas del listado pasan, incluida la foto común en lista/ficha, el error de
 imagen y el caso de 320 px con texto doble. Aceptación en móvil físico pendiente.
+
+## Tarjeta compacta y portada limpia · UI-050 · 18/10/2026
+
+Javier descarta la ampliación y apilado de UI-049: prefiere la estética anterior
+con un aumento discreto, como ADMIN. Se restaura la fila con foto a la izquierda,
+texto y flecha, sin variante apilada. Miniatura de 80×60 px, radio de 10 px y
+BoxFit.cover como ADMIN; la ficha conserva la imagen completa.
+
+En la portada del vídeo se retiran el texto central, el fondo circular y la
+capa oscura global. Solo aparece Play blanco con fondo transparente y sombra
+discreta en la esquina inferior derecha. Durante la carga aparece el indicador
+y ante fallo el icono de reintento en esa esquina. La portada completa sigue
+pulsable y conserva las etiquetas del lector de pantalla. No cambian audio,
+reproducción bajo demanda, controles posteriores, datos ni permisos.

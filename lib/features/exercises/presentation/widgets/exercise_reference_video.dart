@@ -230,7 +230,7 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
         ? 'Cargando vídeo…'
         : _failed
         ? 'Reintentar vídeo'
-        : 'Ver vídeo';
+        : 'Reproducir vídeo';
     final image = widget.posterUrl?.trim();
     final onTap = _loading ? null : _load;
     return Semantics(
@@ -256,41 +256,30 @@ class _ExerciseReferenceVideoState extends State<ExerciseReferenceVideo> {
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
-                  ColoredBox(color: Colors.black.withValues(alpha: .2)),
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: .6),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: _loading
-                                ? const SizedBox.square(
-                                    dimension: 32,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Icon(
-                                    _failed
-                                        ? Icons.refresh_rounded
-                                        : Icons.play_arrow_rounded,
-                                    color: Colors.white,
-                                    size: 32,
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          label,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ],
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    child: SizedBox.square(
+                      dimension: 48,
+                      child: Center(
+                        child: _loading
+                            ? const SizedBox.square(
+                                dimension: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(
+                                _failed
+                                    ? Icons.refresh_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 36,
+                                shadows: const [
+                                  Shadow(color: Colors.black87, blurRadius: 4),
+                                ],
+                              ),
+                      ),
                     ),
                   ),
                 ],

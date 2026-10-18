@@ -317,59 +317,47 @@ class _ExerciseTile extends StatelessWidget {
       );
       if (saved != null && !cubit.isClosed) await cubit.load();
     },
-    child: LayoutBuilder(
-      builder: (context, constraints) {
-        final stacked =
-            constraints.maxWidth < 300 ||
-            MediaQuery.textScalerOf(context).scale(16) > 24;
-        final details = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(exercise.name, style: Theme.of(context).textTheme.titleMedium),
-            if (exercise.description?.trim().isNotEmpty == true) ...[
-              const SizedBox(height: 5),
+    child: Row(
+      children: [
+        _ExerciseThumbnail(url: exercise.thumbnailUrl),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                exercise.description!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: context.visuals.textMuted),
+                exercise.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              if (exercise.description?.trim().isNotEmpty == true) ...[
+                const SizedBox(height: 5),
+                Text(
+                  exercise.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: context.visuals.textMuted),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Text(
+                'Ver ejercicio',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
             ],
-            const SizedBox(height: 8),
-            Text(
-              'Ver ejercicio',
-              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
-            ),
-          ],
-        );
-        if (stacked) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ExerciseThumbnail(url: exercise.thumbnailUrl, expanded: true),
-              const SizedBox(height: 12),
-              details,
-            ],
-          );
-        }
-        return Row(
-          children: [
-            _ExerciseThumbnail(url: exercise.thumbnailUrl),
-            const SizedBox(width: 14),
-            Expanded(child: details),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded),
-          ],
-        );
-      },
+          ),
+        ),
+        const SizedBox(width: 8),
+        const Icon(Icons.chevron_right_rounded),
+      ],
     ),
   );
 }
 
 class _ExerciseThumbnail extends StatelessWidget {
-  const _ExerciseThumbnail({this.url, this.expanded = false});
+  const _ExerciseThumbnail({this.url});
   final String? url;
-  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -384,21 +372,19 @@ class _ExerciseThumbnail extends StatelessWidget {
     );
     return ExcludeSemantics(
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: SizedBox(
-          width: expanded ? double.infinity : 128,
-          child: AspectRatio(
-            aspectRatio: expanded ? 16 / 9 : 4 / 3,
-            child: url?.trim().isNotEmpty != true
-                ? placeholder
-                : Image.network(
-                    url!,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (_, image, progress) =>
-                        progress == null ? image : placeholder,
-                    errorBuilder: (_, _, _) => placeholder,
-                  ),
-          ),
+          width: 80,
+          height: 60,
+          child: url?.trim().isNotEmpty != true
+              ? placeholder
+              : Image.network(
+                  url!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (_, image, progress) =>
+                      progress == null ? image : placeholder,
+                  errorBuilder: (_, _, _) => placeholder,
+                ),
         ),
       ),
     );

@@ -157,6 +157,11 @@ juntos debajo. El toque en la portada carga e intenta arrancar el clip; si el
 navegador exige otra interacción, se conserva el reproductor listo para pulsar
 Play sin repetir la inicialización. Reproducir al terminar vuelve al inicio.
 
+UI-050 deja la portada limpia: Play transparente en la esquina inferior derecha,
+sin texto visible ni capa oscura sobre la imagen. La portada completa sigue
+siendo pulsable, con etiqueta accesible; carga y reintento usan un indicador o
+icono en esa misma esquina.
+
 Javier descarta añadir un control para silenciar: cada archivo conserva su audio.
 Si no quiere sonido lo subirá sin pista de audio; si necesita voz podrá conservarla.
 No se añaden ajustes de volumen/silencio, ni procesamiento de audio, ni reglas

@@ -61,11 +61,11 @@ void main() {
         ),
       );
       expect(loads, 0);
-      await tester.tap(find.text('Ver vídeo'));
+      await tester.tap(find.byIcon(Icons.play_arrow_rounded));
       await tester.pumpAndSettle();
-      expect(find.text('Reintentar vídeo'), findsOneWidget);
+      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
       expect(failed.disposals, 1);
-      await tester.tap(find.text('Reintentar vídeo'));
+      await tester.tap(find.byIcon(Icons.refresh_rounded));
       await tester.pumpAndSettle();
       expect(ready.value.isPlaying, true);
       await tester.tap(find.byTooltip('Pausar vídeo'));
@@ -97,6 +97,11 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
     expect(find.byType(ExerciseReferenceVideo), findsOneWidget);
     expect(find.text('Vídeo de referencia'), findsNothing);
+    expect(find.text('Ver vídeo'), findsNothing);
+    final poster = tester.getRect(find.byType(AspectRatio).first);
+    final play = tester.getCenter(find.byIcon(Icons.play_arrow_rounded));
+    expect(play.dx, greaterThan(poster.center.dx));
+    expect(play.dy, greaterThan(poster.center.dy));
     expect(
       tester.getTopLeft(find.byType(ExerciseReferenceVideo)).dy,
       lessThan(
@@ -125,10 +130,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(Image), findsOneWidget);
     expect(controller.value.isInitialized, false);
-    await tester.tap(find.text('Ver vídeo'));
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
     await tester.pump();
     expect(find.byType(Image), findsOneWidget);
-    expect(find.text('Cargando vídeo…'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     gate.complete();
     await tester.pumpAndSettle();
     expect(find.byType(Image), findsNothing);
@@ -159,7 +164,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('Ver vídeo'));
+      await tester.tap(find.byIcon(Icons.play_arrow_rounded));
       await tester.pumpAndSettle();
       expect(controller.value.isInitialized, true);
       expect(controller.value.isPlaying, false);
@@ -197,7 +202,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.text('Ver vídeo'));
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
     await tester.pump();
     await tester.pumpWidget(const SizedBox());
     gate.complete();
@@ -223,10 +228,10 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.text('Ver vídeo'));
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
     await tester.pumpAndSettle();
     expect(loads, 0);
-    expect(find.text('Reintentar vídeo'), findsOneWidget);
+    expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
