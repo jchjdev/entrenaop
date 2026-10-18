@@ -1,0 +1,149 @@
+import 'package:entrenaop/core/theme/entrena_theme.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:entrenaop/features/guided_programs/presentation/home_guided_programs.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:workout_core/guided_program.dart';
+
+import '../../helpers/performance_visual_review.dart';
+import '../../support/guided_program_fixture.dart';
+
+const phased = GuidedProgram(
+  id: 'phased',
+  name: 'Mejora de dominadas',
+  mode: GuidedProgramMode.phased,
+  phases: [
+    GuidedPhase(name: 'Base', sessions: []),
+    GuidedPhase(name: 'Progreso', sessions: []),
+    GuidedPhase(name: 'Consolidación', sessions: []),
+  ],
+);
+
+void main() {
+  setUpAll(loadReviewFont);
+  Future<void> mount(
+    WidgetTester tester,
+    double width,
+    double scale,
+    _Programs repo,
+    Future<void> Function(String) onOpen,
+  ) async {
+    await tester.binding.setSurfaceSize(Size(width, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: child!,
+          ),
+        ),
+        home: Scaffold(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: HomeGuidedPrograms(
+              repository: repo,
+              refreshVersion: 0,
+              onOpen: onOpen,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  for (final view in [(390.0, 1.0), (320.0, 2.0), (1100.0, 1.0)]) {
+    testWidgets(
+      'tarjetas cuadradas alineadas y desplazamiento horizontal a $view',
+      (tester) async {
+        final routes = <String>[];
+        await mount(tester, view.$1, view.$2, _Programs(), (route) async {
+          routes.add(route);
+        });
+        final first = find.byKey(const ValueKey('home-guided-card-program'));
+        final second = find.byKey(const ValueKey('home-guided-card-phased'));
+        expect(tester.getSize(first), const Size(250, 250));
+        expect(tester.getSize(second), const Size(250, 250));
+        final title = tester.renderObject<RenderBox>(
+          find.text('Hipertrofia básica'),
+        );
+        expect(
+          title.size.height,
+          greaterThanOrEqualTo(
+            title.getMinIntrinsicHeight(title.size.width) - 0.1,
+          ),
+        );
+        expect(tester.getTopLeft(first).dy, tester.getTopLeft(second).dy);
+        expect(
+          tester.getTopLeft(second).dx,
+          greaterThan(tester.getTopRight(first).dx),
+        );
+        if (capturePerformanceReview) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 150)),
+          );
+          await tester.pumpAndSettle();
+        }
+        await capturePerformanceWidget(
+          tester,
+          'programas-inicio-carrusel-${view.$1}-${view.$2}',
+        );
+        final carousel = find.byWidgetPredicate(
+          (w) =>
+              w is SingleChildScrollView &&
+              w.scrollDirection == Axis.horizontal,
+        );
+        if (view.$1 < 500) {
+          final before = tester.getTopLeft(first).dx;
+          await tester.drag(carousel, const Offset(-220, 0));
+          await tester.pumpAndSettle();
+          expect(tester.getTopLeft(first).dx, lessThan(before));
+        }
+        await tester.tap(second);
+        await tester.pumpAndSettle();
+        expect(routes.single, '/library/programs/phased');
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+  testWidgets(
+    'sin programas ofrece una tarjeta cuadrada para añadir con texto ampliado',
+    (tester) async {
+      final routes = <String>[];
+      await mount(tester, 320, 2, _Programs()..empty = true, (route) async {
+        routes.add(route);
+      });
+      final card = find.byKey(const ValueKey('home-guided-card-add'));
+      expect(tester.getSize(card), const Size(250, 250));
+      expect(find.text('Añadir programa'), findsOneWidget);
+      final title = tester.renderObject<RenderBox>(
+        find.text('Añadir programa'),
+      );
+      expect(
+        title.size.height,
+        greaterThanOrEqualTo(
+          title.getMinIntrinsicHeight(title.size.width) - 0.1,
+        ),
+      );
+      await tester.tap(card);
+      expect(routes.single, '/library?tab=programs');
+      expect(tester.takeException(), isNull);
+      await capturePerformanceWidget(tester, 'programas-inicio-vacio-320-2');
+    },
+  );
+}
+
+class _Programs extends GuidedTestRepository {
+  bool empty = false;
+  @override
+  Future<List<StartedGuidedProgram>> startedPrograms() async => empty
+      ? []
+      : const [
+          StartedGuidedProgram(program: guidedFixture, phaseIndex: 0),
+          StartedGuidedProgram(program: phased, phaseIndex: 0),
+        ];
+}

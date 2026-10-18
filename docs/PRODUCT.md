@@ -1021,6 +1021,10 @@ para ambas modalidades. Crea el seguimiento y permite después elegir sesión.
 Inicio/Hoy muestra **Tus programas**, los tres últimos iniciados sin completar,
 con fase actual y acceso a la ficha. Se actualiza al volver/refrescar, sin crear
 sesiones por fecha ni mezclar la rutina con la agenda adaptativa.
+En la revisión del mismo día, Javier sitúa esta sección debajo de Preparaciones:
+tarjetas cuadradas y carrusel horizontal con el mismo acabado visual. Si no hay
+programas iniciados, se ofrece Añadir programa. Ese acceso y Añadir en la cabecera
+abren directamente la pestaña Programas de Biblioteca.
 
 ## Plataformas
 

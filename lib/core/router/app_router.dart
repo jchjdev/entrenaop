@@ -595,6 +595,8 @@ class AppRouter {
                       BlocBuilder<AuthCubit, AuthState>(
                         bloc: authCubit,
                         builder: (_, auth) => LibraryHubPage(
+                          initialTab:
+                              state.uri.queryParameters['tab'] ?? 'sessions',
                           key: ValueKey(
                             auth is AuthAuthenticated
                                 ? auth.user.id

@@ -94,8 +94,8 @@ y seguimiento activo en servidor, tiene orden estable y límite de tres, y usa
 las RLS existentes. No agenda sesiones ni cambia el calendario o los ejecutores.
 Se actualiza al volver a Inicio y al refrescar, incluso si el resumen principal
 responde antes del siguiente frame. Un cambio de cuenta descarta respuestas
-anteriores y el componente se identifica por usuario. Sin programas se oculta;
-un fallo ofrece reintento sin bloquear el resumen de preparaciones.
+anteriores y el componente se identifica por usuario. Un fallo ofrece reintento
+sin bloquear el resumen de preparaciones. El estado vacío se revisa debajo.
 
 El paginador de Biblioteca solo aparece si hay otra página o se está más allá
 de la primera. En la última página conserva el acceso de vuelta. No se añade
@@ -106,6 +106,28 @@ de la app y 111 de ADMIN correctas, con sus omisiones anteriores. Regresiones
 de navegación/actualización, fase, texto 2× a 320 px, paginación y consulta por
 propietario con respuesta pendiente al cambiar de cuenta. Sin cambios de SQL,
 dependencias o producción; queda la aceptación física de Javier.
+
+### Tarjetas de Inicio · ajuste confirmado el 18/10/2026
+
+Javier corrige la presentación: **Tus programas** aparece debajo de
+**Preparaciones**, con tarjetas cuadradas de 250 × 250, el mismo tono de progreso,
+espaciado y acabado de las tarjetas de preparación. Se recorre lateralmente en
+una fila, sin apilar los programas ni añadir una lista vertical. Cada tarjeta
+presenta modalidad, nombre, número de sesiones o fase actual y acceso a la ficha.
+
+Sin seguimientos activos se muestra una tarjeta **Añadir programa**, en lugar
+de ocultar la sección. La cabecera también permite **Añadir**. Ambas entradas
+abren `/library?tab=programs`; Biblioteca selecciona Programas, conservando
+Sesiones como entrada predeterminada del acceso habitual. No se confunde una
+carga pendiente o fallida con un catálogo vacío. Se conservan consulta, límite
+de tres, seguimiento, historial y ejecutores.
+
+La revisión incluye capturas de widgets reales a 390 px, 320 px con texto 2×
+y escritorio. Se comprueban tamaño cuadrado, alineación lateral, desplazamiento,
+navegación, posición bajo Preparaciones y altura completa de las líneas del
+nombre para evitar recorte vertical con texto ampliado.
+Verificado: análisis limpio y 947 pruebas completas correctas con la omisión
+web existente. ADMIN, SQL, dependencias y contratos deportivos no cambian.
 
 ### Preparación de la ejecución
 

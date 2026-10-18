@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**PRG-003, 18/10/2026 · carrusel de programas en Inicio:** tarjetas cuadradas
+de 250 × 250 con el acabado de Preparaciones, desplazamiento horizontal y
+sección situada debajo de Preparaciones. Sin seguimientos activos se muestra
+Añadir programa; este acceso y Añadir en la cabecera abren Biblioteca en
+Programas, conservando la entrada habitual en Sesiones. Capturas revisadas a
+390 px, 320 px con texto 2× y escritorio; regresiones de tamaño, líneas completas,
+desplazamiento, orden y navegación. Análisis limpio y 947 pruebas raíz correctas
+con la omisión web existente. Sin cambios de ADMIN, SQL, dependencias o ejecutores.
+**Único siguiente bloque recomendado de este recorrido:** aceptación de Javier
+en móvil del carrusel y de las dos demos, antes de ampliar el catálogo.
+Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-002, 18/10/2026 · nombres y acceso desde Inicio:** Biblioteca y ADMIN
 utilizan Rutinas/Rutina y Por fases. Iniciar programa conserva el seguimiento
 explícito. Inicio/Hoy muestra los tres últimos programas propios iniciados sin

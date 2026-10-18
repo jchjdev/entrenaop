@@ -204,6 +204,8 @@ class _DashboardContentState extends State<_DashboardContent> {
                     onOpen: _open,
                   ),
                   const SizedBox(height: 24),
+                  _PreparationsSection(overview: overview, onOpen: _open),
+                  const SizedBox(height: 24),
                   if (widget.guidedPrograms case final repository?)
                     HomeGuidedPrograms(
                       key: ValueKey('guided-${widget.userId}'),
@@ -211,8 +213,6 @@ class _DashboardContentState extends State<_DashboardContent> {
                       refreshVersion: widget.guidedRefreshVersion,
                       onOpen: _open,
                     ),
-                  _PreparationsSection(overview: overview, onOpen: _open),
-                  const SizedBox(height: 24),
                   const HomeToolsSection(),
                   const SizedBox(height: 24),
                   HomeFavorites(

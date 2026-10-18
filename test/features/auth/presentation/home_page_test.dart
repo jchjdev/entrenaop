@@ -18,6 +18,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../support/guided_program_fixture.dart';
 
+import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
+
 void main() {
   final today = DateUtils.dateOnly(DateTime.now());
   final week = today.subtract(Duration(days: today.weekday - 1));
@@ -92,6 +94,13 @@ void main() {
               userId: 'user-1',
               guidedPrograms: guided,
             ),
+          ),
+        ),
+        GoRoute(
+          path: '/library',
+          builder: (_, state) => LibraryHubPage(
+            guided: guided,
+            initialTab: state.uri.queryParameters['tab'] ?? 'sessions',
           ),
         ),
         GoRoute(
@@ -200,9 +209,15 @@ void main() {
         width: 320,
         textScale: 2,
       );
-      await tester.ensureVisible(find.text('Hipertrofia básica'));
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Hipertrofia básica')),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Tus programas'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Preparaciones')).dy,
+        lessThan(tester.getTopLeft(find.text('Tus programas')).dy),
+      );
       await tester.tap(find.text('Hipertrofia básica'));
       await tester.pumpAndSettle();
       expect(router.state.uri.path, '/library/programs/program');
@@ -226,17 +241,27 @@ void main() {
       expect(repo.calls, 2);
       expect(find.text('Hipertrofia básica'), findsNothing);
       await tester.ensureVisible(find.text('Dominadas'));
-      expect(find.text('Fase 2 de 2 · Progreso'), findsOneWidget);
+      expect(find.text('Fase 2 de 2'), findsOneWidget);
       expect(repo.starts, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
   testWidgets(
-    'Inicio descubre un programa iniciado y oculta los completados al refrescar',
+    'Inicio ofrece añadir programa y actualiza sus tarjetas al volver',
     (tester) async {
       final repo = _HomePrograms()..items = [];
       final router = await mount(tester, overview(), guided: repo);
-      expect(find.text('Tus programas'), findsNothing);
+      expect(find.text('Tus programas'), findsOneWidget);
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Añadir programa')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Añadir programa'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.toString(), '/library?tab=programs');
+      expect(find.text('Hipertrofia básica'), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
       final firstVisit = router.push<void>('/library/programs/program');
       await tester.pumpAndSettle();
       repo.items = [
@@ -252,8 +277,9 @@ void main() {
       router.pop();
       await secondVisit;
       await tester.pumpAndSettle();
-      expect(repo.calls, 3);
-      expect(find.text('Tus programas'), findsNothing);
+      expect(repo.calls, 4);
+      expect(find.text('Tus programas'), findsOneWidget);
+      expect(find.text('Añadir programa'), findsOneWidget);
     },
   );
   testWidgets('la sesión diaria abre su agenda sin iniciar una ejecución', (

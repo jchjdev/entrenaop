@@ -9,8 +9,9 @@ import '../../guided_programs/domain/guided_program_repository.dart';
 import '../../guided_programs/presentation/guided_catalog_panel.dart';
 
 class LibraryHubPage extends StatelessWidget {
-  const LibraryHubPage({super.key, this.guided});
+  const LibraryHubPage({super.key, this.guided, this.initialTab = 'sessions'});
   final GuidedProgramRepository? guided;
+  final String initialTab;
 
   Future<void> _createSession(BuildContext context) async {
     final route = await chooseSessionEditor(context);
@@ -30,8 +31,13 @@ class LibraryHubPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DefaultTabController(
+    key: ValueKey(initialTab),
     length: guided == null ? 2 : 3,
-    initialIndex: guided == null ? 0 : 1,
+    initialIndex: switch (initialTab) {
+      'programs' when guided != null => 0,
+      'exercises' => guided == null ? 1 : 2,
+      _ => guided == null ? 0 : 1,
+    },
     child: Scaffold(
       appBar: AppBar(title: const EntrenaWordmark(width: 164)),
       body: Center(
