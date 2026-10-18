@@ -394,7 +394,8 @@ FAS 2027:
 - Gestión de vídeos (VID-003): Javier elige Bunny Stream y autoriza empezar por
   el catálogo oficial. ADMIN incorpora subida, comprobación y previsualización;
   el servidor valida permisos y estado y firma la reproducción bajo demanda.
-  Base técnica en Dev, pendiente de biblioteca/secretos de Bunny y prueba real.
+  Biblioteca y secretos conectados en Dev; subida, publicación y reproducción
+  web real comprobadas con un clip propio de Javier de 3.008 segundos.
   El recorrido sigue abierto. El futuro espacio de entrenadores reutilizará esta
   dirección con cuotas y privacidad propias, todavía sin implementar.
   Contrato y preparación: [Vídeos](VIDEOS.md).
@@ -404,8 +405,9 @@ FAS 2027:
   alojamiento debe usar esta duración
   y explicitar calidad, tamaño y transferencia real. Repetir desde memoria o
   caché no equivale necesariamente a descargar de nuevo. VID-003 comprueba la
-  duración comunicada por Bunny y el tamaño del MP4; su precisión y recorrido
-  real quedan pendientes. Caché móvil de hasta 100 MiB; web depende del navegador.
+  duración comunicada por Bunny y el tamaño del MP4; la precisión fraccionaria y
+  el recorrido físico móvil quedan pendientes. Caché móvil de hasta 100 MiB;
+  web depende del navegador.
   Reproducción automática y bucle siguen pendientes.
 - El creador especializado de carrera admite carrera continua por distancia o
   duración y tramos ordenados con ritmo exacto o rango. Cada tramo conserva su

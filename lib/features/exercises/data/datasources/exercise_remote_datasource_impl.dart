@@ -14,9 +14,13 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
   @override
   Future<List<ExerciseModel>> getExercises() async {
     try {
-      final response = await supabaseClient
-          .from('exercises')
-          .select(_exerciseColumns);
+      final userId = supabaseClient.auth.currentUser?.id;
+      final query = supabaseClient.from('exercises').select(_exerciseColumns);
+      // La app del deportista consulta públicos y propios incluso si la cuenta
+      // es administradora. No debe pedir firmas de fotos privadas de terceros.
+      final response = await (userId == null
+          ? query.eq('is_public', true)
+          : query.or('is_public.eq.true,created_by.eq.$userId'));
       return await Future.wait(
         (response as List).map(
           (json) async => ExerciseModel.fromJson(await _resolveImage(json)),

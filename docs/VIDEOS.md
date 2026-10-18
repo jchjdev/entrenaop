@@ -9,22 +9,28 @@ los clips pueden seguir durando menos. El espacio de
 entrenadores, sus cuotas comerciales, vídeos largos y enlaces externos opcionales
 se implementarán en su bloque, sin exigir cuentas de Vimeo o YouTube.
 
-Base técnica desplegada **solo en entrenaop-dev**. Faltan biblioteca y secretos
-de Bunny, subida real y reproducción física/web. La función permanece deshabilitada
-sin configuración válida. El bloque funcional sigue abierto. No hay vídeos de
-prueba subidos al proveedor ni cambios en producción.
+Base técnica y conexión configuradas **solo en entrenaop-dev**. Biblioteca de
+Bunny `783236` (`entrenaop-dev`), CDN `vz-728e7240-d7a.b-cdn.net` y cinco secretos
+guardados en Edge Function Secrets. No hay claves en Flutter ni en este documento.
+Subida real desde ADMIN, publicación y reproducción web completas comprobadas
+con el clip de Javier. Faltan aceptación en móvil físico, límites fraccionarios
+y consumo medido. El bloque funcional sigue abierto. No hay cambios en producción.
 
 ## Preparación de Bunny para el piloto
 
 1. Crear cuenta en [Bunny](https://dash.bunny.net/) y una **Video Library** en
    **Stream**, llamada `entrenaop-dev`. No crear un bucket de Storage para este
    flujo. El alta y la aceptación de condiciones corresponden a Javier.
-2. Almacenamiento Frankfurt y entrega Standard. Evitar replicaciones adicionales
-   hasta medir costes. Producción tendrá una biblioteca independiente cuando se
-   autorice expresamente.
+2. Biblioteca creada por Javier: Frankfurt principal y réplicas existentes en
+   Los Ángeles, Nueva York y Singapur. El panel marca $0.03/GB de almacenamiento
+   mensual; indica que las réplicas creadas no se pueden retirar. No se añaden más.
+   La entrega ya está en High Volume (desde $0.005/GB); se conserva para medir
+   arranque real antes de considerar Standard. Producción tendrá una biblioteca
+   independiente cuando se autorice expresamente.
 3. Codificación estándar, resoluciones 360p, 480p y 720p. Activar **MP4 Fallback
    antes de subir**; no se genera retroactivamente. No activar Premium Encoding,
-   transcripción, IA ni DRM de pago para este piloto.
+   transcripción, IA ni DRM de pago para este piloto. Configurados H.264,
+   360p/480p/720p; originales y multipista desactivados antes de subir archivos.
 4. Activar autenticación de token en la **Pull Zone del contenido**, no solo en
    el reproductor insertado. Se usa firma HMAC-SHA256. Verificar con un archivo
    real que su URL sin firma devuelve 403 y la firmada funciona, también en HEAD.
@@ -40,7 +46,11 @@ prueba subidos al proveedor ni cambios en producción.
    - `BUNNY_STREAM_API_KEY`: clave API de **esa biblioteca**, no la cuenta global.
    - `BUNNY_STREAM_TOKEN_KEY`: clave de firma de la Pull Zone de contenido.
 
-7. Probar clips de cinco y diez segundos: peso, calidad, orientación, arranque,
+7. Javier aporta un clip propio de flexiones: 3.008 s, H.264/AAC, 640×360 y
+   518853 bytes. Subido desde ADMIN con su sesión administradora; Bunny genera
+   MP4 de 249464 bytes a 360p. Ejercicio de desarrollo «Prueba Bunny · Flexiones
+   parque», creado expresamente para la aceptación, sin alterar otros ejercicios.
+   Probar además clips de cinco y diez segundos: peso, calidad, orientación, arranque,
    pausa y reutilización. No cargar el catálogo entero antes de contrastarlo.
    Revisar uso/saldo en Bunny. Esta tarea no contrata recarga automática ni pagos.
 
@@ -112,14 +122,35 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
 - Ampliación a diez segundos del 18/10/2026: análisis de ADMIN limpio, ocho
   pruebas de ejercicios y SQL con ROLLBACK correctos. Se conservan las
   comprobaciones iniciales anteriores; no se repite la compilación web por
-  este cambio acotado de límite y textos. Biblioteca real aún pendiente.
+  este cambio acotado de límite y textos.
+- Conexión real del 18/10/2026: biblioteca y cinco secretos configurados; ajustes
+  de seguridad comprobados tras cargar otra vez la página. CDN con token activo,
+  sin bloqueo por Referer, acceso directo habilitado. HEAD sin firma: 403;
+  preflight de la función: 204 y CORS `*`.
+- Prueba real del 18/10/2026: una reserva, subida TUS desde ADMIN, procesamiento,
+  HEAD firmado y publicación de MP4 360p. Previsualización completa en ADMIN y
+  reproducción completa en la app web: `readyState=4`, duración y posición final
+  3.008 s, sin error de vídeo. HEAD sin firma del mismo archivo: 403. Referencia
+  estable en ejercicio, sin token persistido. Activo
+  `c68b82f5-6304-4e64-ba28-f2365121069b`, ejercicio
+  `e0d92a09-237b-45be-b98f-ea4fdc8e0fc3`, solo Dev. Las capturas y el archivo
+  personal se conservan fuera de los archivos versionados.
+- La aceptación descubre un bloqueo previo del catálogo cuando el deportista
+  entra con cuenta administradora: la lectura amplia de RLS incluye ejercicios
+  privados de terceros y falla al pedir sus fotos en Storage. La consulta del
+  deportista se limita a públicos y propios antes de resolver imágenes; no se
+  amplían grants/RLS ni se ocultan errores del resto de ejercicios. Dos
+  regresiones con HTTP simulado y recorrido real correctos. Análisis raíz limpio
+  y batería completa de 967 pruebas correctas, con la omisión previa existente.
 - Advisor: RLS sin políticas en activos (acceso directo cerrado) y ejecución
   autenticada de la reserva SECURITY DEFINER. Son deliberados: se comprueban
   usuario/admin y cuota, y SQL rechaza al deportista. Referencias de diagnóstico:
   [RLS](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy),
   [función](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
-- Pendientes para cerrar: biblioteca/secretos reales, firma/CORS de Bunny,
-  precisión de duración, subida real, reproducción física y consumo medido.
+- Pendientes para cerrar: precisión de duración (clips reales de cinco/diez
+  segundos y fracciones), reproducción/caché en Android/iPhone físico y consumo
+  medido. La prueba web no acredita caché nativa, modo sin conexión ni acceso
+  real desde una cuenta no administradora; sus permisos conservan pruebas SQL/HTTP.
 
 Fuentes oficiales: [tarifas](https://bunny.net/docs/stream/pricing),
 [TUS](https://bunny.net/docs/stream/tus-resumable-uploads),

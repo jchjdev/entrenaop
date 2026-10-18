@@ -14,7 +14,7 @@ coincidentes y capturas revisadas en móvil, texto 2× y escritorio. Solo desarr
 de Javier en móvil y ADMIN de anchuras, clasificación, búsqueda y las dos demos
 antes de ampliar catálogo. Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
 
-**VID-003 · Bunny Stream, base técnica en desarrollo; bloque abierto:** subida
+**VID-003 · Bunny conectado y recorrido web comprobado; bloque abierto:** subida
 desde ADMIN, verificación de MP4/duración en servidor, referencias históricas
 estables, firma de reproducción y caché móvil acotada. Migración y función solo
 en Dev; 162 migraciones coincidentes, SQL con ROLLBACK, análisis de ambas apps
@@ -22,8 +22,13 @@ limpios y baterías completas (959 raíz, 123 ADMIN, con sus omisiones previas),
 doce pruebas del editor compartido y compilaciones web de ambas apps.
 Máximo ampliado a diez segundos el 18/10/2026: catorce pruebas HTTP y SQL de
 límites correctos, análisis ADMIN limpio y ocho pruebas de ejercicios correctas.
-**Siguiente paso de este recorrido:** conectar biblioteca/secretos de Bunny y
-contrastar clips reales de cinco y diez segundos en ADMIN, móvil y web antes de
+Biblioteca y cinco secretos conectados el 18/10/2026. Clip de Javier subido y
+publicado desde ADMIN; reproducción completa en ADMIN y app web (3.008 s,
+MP4 360p de 249464 bytes). URL sin firma: 403. Corregida consulta del catálogo
+del deportista con cuenta admin; análisis limpio y 967 pruebas raíz correctas
+con la omisión previa.
+**Siguiente paso de este recorrido:** aceptación física en Android/iPhone y
+contraste de clips reales de cinco/diez segundos, fracciones y consumo antes de
 cargar catálogo o implementar entrenadores. No se da por cerrado ni se modifica
 producción. Configuración y límites en [VIDEOS.md](VIDEOS.md).
 

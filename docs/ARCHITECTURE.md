@@ -703,8 +703,12 @@ verifica identidad/permisos y genera firmas temporales al reproducir. Solo el
 servidor cambia los estados; ADMIN publica tras comprobar el MP4 preparado.
 La app reutiliza clips en una caché móvil de hasta 100 MiB, separada por proyecto,
 cuenta y activo; web conserva la gestión del navegador. Migración y función en
-Dev, pendientes de biblioteca, secretos y prueba real. Contratos deportivos sin
-cambios y espacio de entrenadores todavía sin implementar. [Vídeos](VIDEOS.md).
+Dev, con biblioteca/secretos conectados y subida, publicación y reproducción web
+real comprobadas con un clip de 3.008 s. La consulta del deportista limita la
+lectura a ejercicios públicos y propios antes de resolver fotos, incluso con
+cuenta administradora; evita pedir imágenes privadas ajenas. RLS se conserva.
+Pendientes móvil físico, límites fraccionarios y consumo. Contratos deportivos
+sin cambios y espacio de entrenadores sin implementar. [Vídeos](VIDEOS.md).
 
 Cada serie conserva por separado objetivo y resultado real (repeticiones,
 tiempo, distancia, carga y esfuerzo aplicables). Una omisión usa el estado
