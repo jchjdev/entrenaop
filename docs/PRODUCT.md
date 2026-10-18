@@ -409,6 +409,8 @@ FAS 2027:
   VID-006 permite elegir otro instante desde ADMIN web con una barra temporal
   y usarlo como portada; se aplica al borrador y se publica al guardar, sin
   volver a subir el vídeo. Cancelar conserva la foto anterior.
+  UI-049 amplía las miniaturas de las listas oficial/personal a 128×96 px con
+  imagen completa; en ancho estrecho o texto grande pasan sobre el contenido.
   Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
   como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar

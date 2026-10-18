@@ -311,7 +311,8 @@ conservan desplazamiento para acceder a todos los controles. La tarjeta personal
 de sesiones usa «Ver las mías»; la de ejercicios conserva «Ver los míos».
 
 Cada entrada de las listas de ejercicios, tanto personal como oficial, muestra
-la misma `thumbnailUrl` ya utilizada por su ficha en una miniatura de 72 px.
+la misma `thumbnailUrl` ya utilizada por su ficha, inicialmente en una miniatura
+de 72 px; UI-049 amplía posteriormente ese tamaño.
 Mantiene proporción y muestra un icono durante carga, ante error o si no existe
 foto. Tocar la tarjeta conserva el panel compartido, con permisos de edición
 intactos. No se inventan fotos ni se publica contenido en el catálogo.
@@ -1993,3 +1994,19 @@ rutas, motores, permisos o SQL. La maqueta anterior queda como exploración
 descartada de composición y no acredita una cuenta con suscripción ni una
 propuesta real del servidor. UI-009 y el recorrido responsable quedan
 registrados en `PRODUCT.md`.
+
+## Portadas legibles en las listas de ejercicios · UI-049 · 18/10/2026
+
+Javier compara ADMIN y app y pide ampliar la foto de la tarjeta. La portada
+seleccionada y guardada en ADMIN es la misma que consulta la app mediante
+image_path/thumbnailUrl; no existe otra portada independiente en el listado.
+
+Las listas oficial y personal pasan de 72×72 a 128×96 px, con imagen completa
+sin recortes. Bajo 300 px de ancho útil o con escala de texto superior a 1,5×,
+la imagen pasa encima del texto a ancho disponible y proporción 16:9. El título,
+el acceso al detalle y los permisos se conservan. La ampliación usa la imagen
+ya disponible; no carga ni reproduce el vídeo.
+
+Comprobada en web a 390 px con la portada elegida de las flexiones. Las doce
+pruebas del listado pasan, incluida la foto común en lista/ficha, el error de
+imagen y el caso de 320 px con texto doble. Aceptación en móvil físico pendiente.
