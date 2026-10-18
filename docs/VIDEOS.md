@@ -105,13 +105,32 @@ biblioteca configurada y para administradores autenticados. El cliente valida
 host/ruta, HTTPS sin redirecciones, MIME JPEG y hasta 2 MiB recibidos; optimiza
 con el mismo flujo de foto existente a JPEG de hasta 500 KiB. Se guarda como
 imagen oficial al guardar el ejercicio, sin persistir firmas caducables ni
-cambiar el esquema. No se descarga el MP4 para extraer el fotograma en el cliente.
+cambiar el esquema. En esta ruta automática no se descarga el MP4 para extraer
+el fotograma en el cliente.
 
 Si no hay foto, se aplica automáticamente. Una foto ya elegida o una retirada
 explícita se respetan; «Usar portada del vídeo» permite sustituirla expresamente
 o reintentar. Un fallo de miniatura mantiene el vídeo listo y permite elegir
 foto o guardar sin portada. Cambiar de cuenta o cerrar el editor descarta
 resultados tardíos según las comprobaciones de identidad y montaje existentes.
+
+**VID-006 · fotograma elegido, 18/10/2026:** ADMIN web añade «Elegir fotograma»
+junto a la portada automática. Abre el vídeo pausado mediante la reproducción
+firmada existente y permite buscar un instante con una barra temporal. Espera
+el evento de fin de búsqueda antes de habilitar «Usar como portada»; captura
+la imagen decodificada que se está mostrando, con la precisión del vídeo/navegador.
+No es selección de un número de fotograma ni edición del clip.
+
+La captura usa vídeo HTML con CORS anónimo y canvas, con tamaño máximo 1280×720;
+se optimiza por el flujo de foto existente hasta 500 KiB y sustituye la portada
+del borrador solo al confirmarla. Se publica al guardar el ejercicio. No cambia
+la miniatura de Bunny, no duplica el vídeo ni necesita funciones o esquema nuevos.
+Cancelar o fallar conserva la foto; una referencia de vídeo cambiada descarta
+la respuesta tardía. Tiempos de carga/búsqueda acotados; cerrar permite reintentar
+con una firma nueva. Al cerrar se retiran eventos, temporizadores y fuente de vídeo.
+El selector requiere ADMIN web y CORS habilitado por el proveedor; comprobado
+con el CDN de desarrollo. `web` 1.1.1, ya resuelto, se declara dependencia directa
+para usar las API del navegador; no cambia ninguna versión resuelta.
 
 El deportista normal no puede crear subidas de Bunny ni escribir activos:
 el servidor exige administración, además de la ausencia del selector en su UI.
@@ -199,6 +218,11 @@ el archivo: no hay modo sin conexión. En web manda la caché del navegador.
   mismo vídeo: miniatura obtenida, optimizada y guardada en el ejercicio de prueba
   como JPEG de 42154 bytes, conservando referencia e ID del vídeo. No hay otro
   vídeo subido para esta comprobación. Captura local fuera de Git.
+- VID-006: análisis raíz y ADMIN limpios; 139 pruebas ADMIN correctas y una
+  omisión previa. Regresiones de aplicación, cancelación, fallo y cambio de vídeo.
+  Prueba web real con las flexiones: barra desplazada a 1,51 s, captura aplicada,
+  guardada y portada confirmada al reabrir el ejercicio. Capturas locales fuera
+  de Git. Sin cambios de servidor, SQL ni permisos; no acredita otros navegadores.
 - Advisor: RLS sin políticas en activos (acceso directo cerrado) y ejecución
   autenticada de la reserva SECURITY DEFINER. Son deliberados: se comprueban
   usuario/admin y cuota, y SQL rechaza al deportista. Referencias de diagnóstico:

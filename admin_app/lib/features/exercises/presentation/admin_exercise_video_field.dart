@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
@@ -5,6 +6,7 @@ import 'package:workout_core/exercise_image.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 import '../data/admin_exercise_video_repository.dart';
+import 'exercise_video_frame_picker.dart';
 
 class AdminExerciseVideoField extends StatefulWidget {
   const AdminExerciseVideoField({
@@ -14,6 +16,7 @@ class AdminExerciseVideoField extends StatefulWidget {
     required this.onBusyChanged,
     this.pickVideo,
     this.onCoverReady,
+    this.pickFrame,
   });
   final TextEditingController controller;
   final AdminExerciseVideoRepository repository;
@@ -21,6 +24,7 @@ class AdminExerciseVideoField extends StatefulWidget {
   final Future<XFile?> Function()? pickVideo;
   final bool Function(ExerciseImageUpload image, bool replaceExisting)?
   onCoverReady;
+  final Future<Uint8List?> Function(BuildContext context, Uri video)? pickFrame;
 
   @override
   State<AdminExerciseVideoField> createState() =>
@@ -192,6 +196,41 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
     }
   }
 
+  Future<void> _chooseFrame() async {
+    final apply = widget.onCoverReady;
+    if (apply == null) return;
+    final reference = widget.controller.text;
+    _setBusy(true);
+    try {
+      await _preview?.pause();
+      final uri = await widget.repository.playback(reference);
+      if (!mounted || reference != widget.controller.text) return;
+      final bytes = await (widget.pickFrame ?? pickExerciseVideoFrame)(
+        context,
+        uri,
+      );
+      if (bytes == null || !mounted || reference != widget.controller.text) {
+        return;
+      }
+      final image = await optimizeExerciseImage(bytes);
+      if (!mounted || reference != widget.controller.text) return;
+      final applied = apply(image, true);
+      setState(
+        () => _message = applied
+            ? 'Fotograma elegido. Guarda el ejercicio para publicar la portada.'
+            : 'No se pudo aplicar el fotograma. Reintenta cuando termine la foto.',
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message = 'No se pudo elegir el fotograma. La portada anterior se conserva.',
+        );
+      }
+    } finally {
+      if (mounted) _setBusy(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -208,10 +247,20 @@ class _AdminExerciseVideoFieldState extends State<AdminExerciseVideoField> {
           _pending == null &&
           Uri.tryParse(widget.controller.text)?.host.endsWith('.b-cdn.net') ==
               true)
-        TextButton.icon(
-          onPressed: _busy ? null : () => _prepareCover(true),
-          icon: const Icon(Icons.photo_outlined),
-          label: const Text('Usar portada del vídeo'),
+        Wrap(
+          children: [
+            TextButton.icon(
+              onPressed: _busy ? null : () => _prepareCover(true),
+              icon: const Icon(Icons.photo_outlined),
+              label: const Text('Usar portada del vídeo'),
+            ),
+            if (kIsWeb || widget.pickFrame != null)
+              TextButton.icon(
+                onPressed: _busy ? null : _chooseFrame,
+                icon: const Icon(Icons.video_library_outlined),
+                label: const Text('Elegir fotograma'),
+              ),
+          ],
         ),
       OutlinedButton.icon(
         onPressed: _busy || _pending != null ? null : _pick,

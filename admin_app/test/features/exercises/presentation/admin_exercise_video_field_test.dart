@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_repository.dart';
@@ -40,6 +42,70 @@ class _Videos implements AdminExerciseVideoRepository {
 }
 
 void main() {
+  for (final scenario in ['chosen', 'cancelled', 'failed', 'changed-video']) {
+    testWidgets(
+      'elegir fotograma: $scenario conserva el vídeo y libera guardado',
+      (tester) async {
+        final videos = _Videos();
+        final controller = TextEditingController(
+          text: 'https://fixture.b-cdn.net/video/play_360p.mp4',
+        );
+        addTearDown(controller.dispose);
+        var applied = 0;
+        final busy = <bool>[];
+        late Completer<void> completed;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: AdminExerciseVideoField(
+                controller: controller,
+                repository: videos,
+                onBusyChanged: (value) {
+                  busy.add(value);
+                  if (!value && !completed.isCompleted) completed.complete();
+                },
+                onCoverReady: (image, replace) {
+                  expect(replace, true);
+                  expect(image.bytes, isNotEmpty);
+                  applied++;
+                  return true;
+                },
+                pickFrame: (_, uri) async {
+                  expect(uri.host, 'fixture.b-cdn.net');
+                  if (scenario == 'cancelled') return null;
+                  if (scenario == 'failed') throw StateError('Falló captura');
+                  if (scenario == 'changed-video') {
+                    controller.text =
+                        'https://fixture.b-cdn.net/new/play_360p.mp4';
+                  }
+                  return base64Decode(
+                    'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGP8HyXCgA0wYRUdtBIAIlABfcyTUMcAAAAASUVORK5CYII=',
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+        await tester.runAsync(() async {
+          completed = Completer<void>();
+          // El optimizador usa compute: ejecutar la acción fuera del reloj falso.
+          tester
+              .widget<TextButton>(
+                find.widgetWithText(TextButton, 'Elegir fotograma'),
+              )
+              .onPressed!();
+          await completed.future.timeout(const Duration(seconds: 10));
+        });
+        await tester.pumpAndSettle();
+        expect(applied, scenario == 'chosen' ? 1 : 0);
+        expect(videos.creates, 0);
+        expect(videos.uploads, 0);
+        expect(busy.last, false);
+        expect(controller.text, contains('play_360p.mp4'));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   testWidgets(
     'fallar la portada no pierde el vídeo listo y permite reintentar',
     (tester) async {

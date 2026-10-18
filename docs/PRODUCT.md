@@ -406,6 +406,9 @@ FAS 2027:
   conserva la elegida y permite sustituirla expresamente. Solo administradores
   pueden subir archivos a Bunny. El deportista guarda únicamente un enlace
   externo para su ejercicio privado; ese campo no aloja una copia de vídeo.
+  VID-006 permite elegir otro instante desde ADMIN web con una barra temporal
+  y usarlo como portada; se aplica al borrador y se publica al guardar, sin
+  volver a subir el vídeo. Cancelar conserva la foto anterior.
   Contrato y preparación: [Vídeos](VIDEOS.md).
 - Duración confirmada para los vídeos de ejercicios (VID-002, ampliada el 18/10/2026):
   como máximo 10 segundos, con clips más cortos cuando basten. Se podrá revisar

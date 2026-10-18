@@ -16,6 +16,8 @@ dependencies:
   image_picker: 1.2.3
   http: 1.6.0
   video_player: 2.14.0
+  # Captura de fotogramas en ADMIN web con las API del navegador; ya resuelto.
+  web: 1.1.1
   workout_core:
     path: ../packages/workout_core
   workout_editor_ui:

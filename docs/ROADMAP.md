@@ -35,6 +35,10 @@ real de JPEG de 42154 bytes sin otro vídeo. Campo personal aclarado como enlace
 externo, con subidas de Bunny cerradas a deportistas. Análisis limpios, 970 raíz,
 135 ADMIN (omisiones previas), catorce del editor y dieciséis HTTP correctas;
 SQL con ROLLBACK y 163 migraciones coincidentes, sin cambiar esquema.
+VID-006: selector de fotograma en ADMIN web con búsqueda temporal y captura
+del vídeo pausado. Portada de las flexiones a 1,51 s guardada y confirmada al
+reabrir; análisis raíz/ADMIN limpios y 139 pruebas ADMIN correctas con la
+omisión previa. Sin cambios de servidor ni esquema; otros navegadores pendientes.
 **Siguiente paso de este recorrido:** aceptación física en Android/iPhone y
 contraste de clips reales de cinco/diez segundos, fracciones y consumo antes de
 cargar catálogo o implementar entrenadores. No se da por cerrado ni se modifica
