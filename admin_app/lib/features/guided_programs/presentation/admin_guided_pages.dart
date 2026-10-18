@@ -7,6 +7,7 @@ import '../../workouts/data/admin_workout_repository.dart';
 import '../domain/admin_guided_repository.dart';
 import '../../editorial_covers/domain/program_cover.dart';
 import '../../editorial_covers/presentation/program_cover_editor.dart';
+import 'guided_category_editor.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
@@ -92,6 +93,7 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
           editorTitle: 'Imagen del programa',
           headerTitle: 'Cabecera del programa',
           cardLabel: p.modeLabel,
+          cardCategory: p.primaryCategory?.name,
           cardDetail: '${p.sessionCount} sesiones',
           cardAction: 'Ver programa →',
           cardIcon: p.mode == GuidedProgramMode.guide
@@ -153,6 +155,15 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                         : 'Gestionar calentamientos',
                   ),
                 ),
+                if (!widget.warmups)
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await manageGuidedCategories(context, widget.repository);
+                      if (mounted) await _load();
+                    },
+                    icon: const Icon(Icons.category_outlined),
+                    label: const Text('Categorías'),
+                  ),
               ],
             ),
             if (_error != null) ...[
@@ -180,6 +191,20 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                             : 'Retirado'}',
                       ),
                       const SizedBox(height: 12),
+                      if (p.categories.isNotEmpty)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            for (final c in p.categories)
+                              Chip(
+                                label: Text(c.name),
+                                avatar: c.id == p.primaryCategoryId
+                                    ? const Icon(Icons.star_outline, size: 16)
+                                    : null,
+                              ),
+                          ],
+                        ),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -267,6 +292,10 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   final _phases = <_PhaseFields>[];
   List<AdminWorkoutSummary> _sessions = [];
   List<GuidedWarmup> _warmups = [];
+  List<GuidedProgramCategory> _categories = [];
+  final _categoryIds = <String>{};
+  String? _primaryCategoryId;
+  bool _catalogsReady = false;
   bool _busy = false, _loading = true, _dirty = false;
   String? _error;
   @override
@@ -278,6 +307,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     _audience.text = p?.audience ?? '';
     _equipment.text = p?.equipment ?? '';
     _mode = p?.mode ?? GuidedProgramMode.guide;
+    _categoryIds.addAll(p?.categories.map((c) => c.id) ?? const []);
+    _primaryCategoryId = p?.primaryCategoryId;
     _phases.addAll(p?.phases.map(_PhaseFields.fromPhase) ?? [_PhaseFields()]);
     _load();
   }
@@ -286,10 +317,13 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     try {
       final sessions = await widget.workouts.listGeneral();
       final warmups = await widget.repository.warmups();
+      final categories = await widget.repository.categories();
       if (mounted) {
         setState(() {
           _sessions = sessions.where((s) => s.status == 'published').toList();
           _warmups = warmups;
+          _categories = categories;
+          _catalogsReady = true;
           _loading = false;
           _error = null;
         });
@@ -298,7 +332,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = 'No se pudieron cargar las sesiones o calentamientos.';
+          _error = 'No se pudieron cargar las sesiones, calentamientos o categorías. Reintenta la carga.';
         });
       }
     }
@@ -355,7 +389,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   }
 
   Future<void> _save() async {
-    if (_busy || !_form.currentState!.validate()) return;
+    if (_busy || !_catalogsReady || !_form.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     try {
       final p = GuidedProgram(
@@ -365,6 +399,10 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         equipment: _equipment.text,
         mode: _mode,
         phases: _phases.map((p) => p.input(_mode)).toList(),
+        categories: _categories
+            .where((c) => _categoryIds.contains(c.id))
+            .toList(),
+        primaryCategoryId: _primaryCategoryId,
       );
       validateGuidedProgram(p);
       setState(() {
@@ -482,6 +520,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                               : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
                         ),
                         const SizedBox(height: 18),
+                        _categoryFields(),
+                        const SizedBox(height: 18),
                         for (var i = 0; i < _phases.length; i++)
                           _phaseCard(_phases[i], i),
                         if (_mode == GuidedProgramMode.phased)
@@ -528,9 +568,14 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                               ),
                             ),
                           ),
+                        if (!_catalogsReady)
+                          TextButton(
+                            onPressed: _load,
+                            child: const Text('Reintentar carga'),
+                          ),
                         const SizedBox(height: 16),
                         FilledButton.icon(
-                          onPressed: _busy ? null : _save,
+                          onPressed: _busy || !_catalogsReady ? null : _save,
                           icon: const Icon(Icons.save_outlined),
                           label: Text(
                             _busy ? 'Guardando…' : 'Guardar borrador',
@@ -543,6 +588,105 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ),
             ),
     ),
+  );
+  Widget _categoryFields() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        'Categorías del programa',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 6),
+      const Text(
+        'Selecciona hasta ocho. La principal aparece en la tarjeta; todas participan en la búsqueda.',
+      ),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        children: [
+          for (final c in _categories.where(
+            (c) => c.active || _categoryIds.contains(c.id),
+          ))
+            FilterChip(
+              label: Text('${c.name}${c.active ? '' : ' (desactivada)'}'),
+              selected: _categoryIds.contains(c.id),
+              onSelected: (selected) => setState(() {
+                if (selected) {
+                  if (_categoryIds.length >= 8) {
+                    _error = 'Puedes seleccionar hasta ocho categorías.';
+                    return;
+                  }
+                  _categoryIds.add(c.id);
+                  _primaryCategoryId ??= c.id;
+                } else {
+                  _categoryIds.remove(c.id);
+                  if (_primaryCategoryId == c.id) {
+                    _primaryCategoryId = _categoryIds.firstOrNull;
+                  }
+                }
+                _dirty = true;
+              }),
+            ),
+        ],
+      ),
+      if (_categoryIds.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          key: ValueKey(
+            'primary-$_primaryCategoryId-${_categoryIds.join(',')}',
+          ),
+          initialValue: _primaryCategoryId,
+          decoration: const InputDecoration(labelText: 'Categoría principal'),
+          isExpanded: true,
+          items: [
+            for (final c in _categories.where(
+              (c) => _categoryIds.contains(c.id),
+            ))
+              DropdownMenuItem(
+                value: c.id,
+                child: Text(c.name, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: (id) => setState(() {
+            _primaryCategoryId = id;
+            _dirty = true;
+          }),
+        ),
+      ],
+      Wrap(
+        spacing: 8,
+        children: [
+          TextButton.icon(
+            onPressed: () async {
+              final c = await editGuidedCategory(context, widget.repository);
+              if (c != null && mounted) {
+                setState(() {
+                  _categories = [
+                    ..._categories.where((old) => old.id != c.id),
+                    c,
+                  ];
+                  if (_categoryIds.length < 8) {
+                    _categoryIds.add(c.id);
+                    _primaryCategoryId ??= c.id;
+                  }
+                  _dirty = true;
+                });
+              }
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Crear categoría'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await manageGuidedCategories(context, widget.repository);
+              if (mounted) await _load();
+            },
+            child: const Text('Gestionar categorías'),
+          ),
+        ],
+      ),
+    ],
   );
   Widget _phaseCard(_PhaseFields p, int index) => Card(
     key: ValueKey(p),

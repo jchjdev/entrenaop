@@ -13,21 +13,78 @@ class SupabaseAdminGuidedRepository implements AdminGuidedRepository {
   Future<List<GuidedProgram>> programs() async =>
       (await client
               .from('guided_programs')
-              .select()
+              .select(
+                '*,category_links:guided_program_category_links(is_primary,guided_program_categories(*))',
+              )
               .order('created_at', ascending: false))
           .map(guidedProgramFromJson)
           .toList();
   @override
   Future<GuidedProgram> program(String id) async => guidedProgramFromJson(
-    await client.from('guided_programs').select().eq('id', id).single(),
+    await client
+        .from('guided_programs')
+        .select(
+          '*,category_links:guided_program_category_links(is_primary,guided_program_categories(*))',
+        )
+        .eq('id', id)
+        .single(),
   );
   @override
   Future<String> save(GuidedProgram program, {String? id}) async {
     validateGuidedProgram(program);
     return await client.rpc(
       'save_guided_program',
-      params: {'p_content': guidedProgramToJson(program), 'p_id': id},
+      params: {
+        'p_content': guidedProgramToJson(program),
+        'p_id': id,
+        'p_category_ids': program.categories.map((c) => c.id).toList(),
+        'p_primary_category_id': program.primaryCategoryId,
+      },
     ) as String;
+  }
+
+  @override
+  Future<List<GuidedProgramCategory>> categories() async =>
+      (await client.from('guided_program_categories').select().order('name'))
+          .map(guidedCategoryFromJson)
+          .toList();
+
+  @override
+  Future<GuidedProgramCategory> saveCategory(
+    String name, {
+    GuidedProgramCategory? original,
+    bool active = true,
+  }) async {
+    try {
+      final id = await client.rpc(
+        'save_guided_program_category',
+        params: {
+          'p_name': name,
+          'p_id': original?.id,
+          'p_active': active,
+          'p_expected_revision': original?.revision,
+        },
+      ) as String;
+      return guidedCategoryFromJson(
+        await client
+            .from('guided_program_categories')
+            .select()
+            .eq('id', id)
+            .single(),
+      );
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        throw const FormatException(
+          'Ya existe una categoría con ese nombre, incluso sin tildes o con otras mayúsculas.',
+        );
+      }
+      if (e.code == '40001') {
+        throw const FormatException(
+          'La categoría ha cambiado. Recarga la lista antes de editarla.',
+        );
+      }
+      rethrow;
+    }
   }
 
   @override

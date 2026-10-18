@@ -1,9 +1,10 @@
-param([switch]$Publish)
+param([switch]$Publish, [switch]$Classify)
 $ErrorActionPreference = 'Stop'
 
 # El destino es fijo: estos ejemplos nunca forman parte de las migraciones de producción.
 $demoProjectRef = 'sxbxfjqgoddzhtcyhalw'
-$demoSql = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'seed.sql') -Raw -Encoding UTF8
+$demoSource = if ($Classify) { 'categories.sql' } else { 'seed.sql' }
+$demoSql = Get-Content -LiteralPath (Join-Path $PSScriptRoot $demoSource) -Raw -Encoding UTF8
 $demoMarker = 'rollback; -- @demo-transaction-end'
 if (($demoSql.Split($demoMarker).Count - 1) -ne 1) {
     throw 'El script debe contener un único cierre de transacción.'

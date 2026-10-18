@@ -69,12 +69,15 @@ class GuidedTestRepository extends Fake implements GuidedProgramRepository {
       ? [const StartedGuidedProgram(program: guidedFixture, phaseIndex: 0)]
       : [];
   @override
+  Future<List<GuidedProgramCategory>> categories() async => [];
+  @override
   Future<GuidedCatalogPage> catalog({
     String query = '',
     GuidedProgramMode? mode,
     int page = 0,
     int pageSize = 2,
     bool followed = false,
+    String? categoryId,
   }) async {
     return GuidedCatalogPage(
       query.isEmpty || guidedFixture.name.contains(query)

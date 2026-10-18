@@ -3,6 +3,18 @@ import 'editorial_cover.dart';
 /// Contenido editorial; las fases no dependen del calendario del dispositivo.
 enum GuidedProgramMode { guide, phased }
 
+class GuidedProgramCategory {
+  const GuidedProgramCategory({
+    required this.id,
+    required this.name,
+    this.active = true,
+    this.revision = 1,
+  });
+  final String id, name;
+  final bool active;
+  final int revision;
+}
+
 class GuidedRestPolicy {
   const GuidedRestPolicy({this.minimumSeconds, this.maximumSeconds});
   final int? minimumSeconds;
@@ -49,6 +61,8 @@ class GuidedProgram {
     this.audience = '',
     this.equipment = '',
     this.cover,
+    this.categories = const [],
+    this.primaryCategoryId,
   });
   final String? id;
   final String? familyId;
@@ -61,6 +75,10 @@ class GuidedProgram {
   final String audience;
   final String equipment;
   final EditorialCover? cover;
+  final List<GuidedProgramCategory> categories;
+  final String? primaryCategoryId;
+  GuidedProgramCategory? get primaryCategory =>
+      categories.where((c) => c.id == primaryCategoryId).firstOrNull;
   int get sessionCount => phases.fold(0, (n, p) => n + p.sessions.length);
   String get modeLabel =>
       mode == GuidedProgramMode.guide ? 'Rutina' : 'Por fases';
@@ -82,6 +100,15 @@ class GuidedWarmup {
 }
 
 void validateGuidedProgram(GuidedProgram program) {
+  final ids = program.categories.map((c) => c.id).toSet();
+  if (ids.length != program.categories.length ||
+      ids.length > 8 ||
+      (ids.isNotEmpty && !ids.contains(program.primaryCategoryId)) ||
+      (ids.isEmpty && program.primaryCategoryId != null)) {
+    throw const FormatException(
+      'Selecciona hasta ocho categorías distintas y una principal.',
+    );
+  }
   if (program.name.trim().isEmpty || program.name.length > 80) {
     throw const FormatException('Escribe un nombre de hasta 80 caracteres.');
   }

@@ -18,18 +18,71 @@ void main() {
   Completer<void>? arrived;
   bool showCover = false;
   bool abandonedDetail = false;
+  bool showCategories = false;
+  final posted = <Map<String, dynamic>>[];
   setUp(() async {
     requests.clear();
     gate = null;
     arrived = null;
     showCover = false;
     abandonedDetail = false;
+    showCategories = false;
+    posted.clear();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       requests.add(request.uri);
+      if (request.method == 'POST') {
+        posted.add(
+          jsonDecode(await utf8.decoder.bind(request).join())
+              as Map<String, dynamic>,
+        );
+      }
       if (arrived != null && !arrived!.isCompleted) arrived!.complete();
       await gate?.future;
       request.response.headers.contentType = ContentType.json;
+      if (request.uri.path.endsWith('/guided_program_category_links')) {
+        request.response.write(
+          jsonEncode(
+            showCategories
+                ? [
+                    {
+                      'program_id': 'program',
+                      'is_primary': true,
+                      'guided_program_categories': {
+                        'id': 'strength',
+                        'name': 'Fuerza',
+                      },
+                    },
+                    {
+                      'program_id': 'program',
+                      'is_primary': false,
+                      'guided_program_categories': {
+                        'id': 'beginner',
+                        'name': 'Iniciación',
+                      },
+                    },
+                  ]
+                : [],
+          ),
+        );
+        await request.response.close();
+        return;
+      }
+      if (request.uri.path.endsWith('/get_guided_program_catalog')) {
+        request.response.write(
+          jsonEncode([
+            {
+              'id': 'program',
+              'family_id': 'family',
+              'version': 1,
+              'status': 'published',
+              'content': guidedProgramToJson(guidedFixture),
+            },
+          ]),
+        );
+        await request.response.close();
+        return;
+      }
       if (abandonedDetail &&
           !request.uri.path.endsWith('/guided_program_covers')) {
         final Object response;
@@ -146,6 +199,35 @@ void main() {
       expect(detail.follow!.active, isFalse);
       expect(detail.runs.single.executionId, 'execution');
       expect(detail.runs.single.status, 'completed');
+    },
+  );
+  test(
+    'clasifica por lote y envía búsqueda, categoría y página al servidor',
+    () async {
+      showCategories = true;
+      final result = await repository.catalog(
+        query: 'GLUTEO iniciacion',
+        categoryId: 'beginner',
+        page: 2,
+        pageSize: 2,
+        followed: true,
+      );
+      expect(result.items.single.primaryCategory!.name, 'Fuerza');
+      expect(result.items.single.categories.map((c) => c.id), [
+        'strength',
+        'beginner',
+      ]);
+      expect(posted.single['p_category_id'], 'beginner');
+      expect(posted.single['p_query'], 'GLUTEO iniciacion');
+      expect(posted.single['p_offset'], 4);
+      expect(posted.single['p_limit'], 3);
+      expect(posted.single['p_followed'], isTrue);
+      expect(
+        requests
+            .where((r) => r.path.endsWith('/guided_program_category_links'))
+            .length,
+        1,
+      );
     },
   );
   test(

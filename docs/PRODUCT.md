@@ -1114,6 +1114,17 @@ una única composición compacta, sin espacio expansible bajo el título, con
 altura según contenido y tamaño de texto. Inicio, Biblioteca y la vista previa
 de ADMIN comparten este formato; las tarjetas de sesiones se conservan.
 
+PRG-007 conserva Inicio y adapta Biblioteca al ancho disponible: una columna
+en móvil y dos en pantallas amplias, usando la misma tarjeta. Los programas
+admiten varias categorías editoriales con una principal visible junto a
+Rutina/Por fases. ADMIN gestiona el catálogo y permite crear categorías desde
+el creador. Renombrar conserva referencias; desactivar conserva asignaciones
+y bloquea las nuevas. El guardado de borrador y categorías es atómico.
+El buscador encuentra nombre, descripción y todas las categorías con/sin
+tildes, antes de paginar; también se puede filtrar por categoría. Las demos de
+desarrollo están clasificadas para probarlo. Implementado y verificado solo
+en desarrollo; aceptación autenticada en dispositivos pendiente.
+
 ## Plataformas
 
 - Android e iPhone son prioritarios para la experiencia del opositor.

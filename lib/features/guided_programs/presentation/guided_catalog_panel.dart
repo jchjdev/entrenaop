@@ -3,6 +3,7 @@ import 'guided_program_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_core/guided_program.dart';
 
 import '../domain/guided_program_repository.dart';
 import 'guided_program_cubits.dart';
@@ -13,12 +14,13 @@ class GuidedCatalogPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => BlocProvider(
     create: (_) => GuidedCatalogCubit(repository)..load(),
-    child: const _Catalog(),
+    child: _Catalog(repository: repository),
   );
 }
 
 class _Catalog extends StatefulWidget {
-  const _Catalog();
+  const _Catalog({required this.repository});
+  final GuidedProgramRepository repository;
   @override
   State<_Catalog> createState() => _CatalogState();
 }
@@ -27,6 +29,13 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   String _filter = 'all';
+  late Future<List<GuidedProgramCategory>> _categories;
+  @override
+  void initState() {
+    super.initState();
+    _categories = widget.repository.categories();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -89,6 +98,45 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               }
             },
           ),
+          const SizedBox(height: 10),
+          FutureBuilder<List<GuidedProgramCategory>>(
+            future: _categories,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return TextButton.icon(
+                  onPressed: () => setState(() {
+                    _categories = widget.repository.categories();
+                  }),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Reintentar categorías'),
+                );
+              }
+              if (!snapshot.hasData) return const LinearProgressIndicator();
+              if (snapshot.data!.isEmpty) return const SizedBox.shrink();
+              return DropdownButtonFormField<String>(
+                initialValue: cubit.categoryId ?? '',
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Categoría'),
+                items: [
+                  const DropdownMenuItem(
+                    value: '',
+                    child: Text('Todas las categorías'),
+                  ),
+                  for (final c in snapshot.data!)
+                    DropdownMenuItem(
+                      value: c.id,
+                      child: Text(
+                        c.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+                onChanged: (value) =>
+                    cubit.filterCategory(value == '' ? null : value),
+              );
+            },
+          ),
           if (state.loading)
             const Padding(
               padding: EdgeInsets.all(20),
@@ -112,19 +160,27 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
           if (!state.loading)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  for (final p in state.items)
-                    GuidedProgramCard(
-                      program: p,
-                      onTap: () async {
-                        await context.push('/library/programs/${p.id}');
-                        if (mounted) await cubit.load(page: state.page);
-                      },
-                    ),
-                ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = constraints.maxWidth >= 640 ? 2 : 1;
+                  final width =
+                      (constraints.maxWidth - 12 * (columns - 1)) / columns;
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      for (final p in state.items)
+                        GuidedProgramCard(
+                          width: width,
+                          program: p,
+                          onTap: () async {
+                            await context.push('/library/programs/${p.id}');
+                            if (mounted) await cubit.load(page: state.page);
+                          },
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           if (state.error == null && (state.page > 0 || state.hasMore))

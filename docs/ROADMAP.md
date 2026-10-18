@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**PRG-007, 18/10/2026 · Biblioteca adaptable, categorías y búsqueda:** se
+conserva Inicio y Biblioteca ocupa el ancho móvil, con dos columnas en escritorio.
+Categorías múltiples, una principal visible, gestión y creación desde ADMIN;
+identificadores estables, nombres únicos normalizados, desactivación sin perder
+asignaciones y edición con revisión. Guardado atómico y búsqueda con/sin tildes
+en nombre, descripción y todas las categorías antes de paginar. Demos de
+desarrollo clasificadas mediante herramienta idempotente, sin cambiar historial.
+Análisis limpios; 965 pruebas raíz, 130 ADMIN y seis del paquete visual correctas
+con las omisiones existentes. Cinco baterías SQL con ROLLBACK, 163 migraciones
+coincidentes y capturas revisadas en móvil, texto 2× y escritorio. Solo desarrollo.
+**Único siguiente bloque recomendado de este recorrido:** aceptación autenticada
+de Javier en móvil y ADMIN de anchuras, clasificación, búsqueda y las dos demos
+antes de ampliar catálogo. Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **VID-003 · Bunny Stream, base técnica en desarrollo; bloque abierto:** subida
 desde ADMIN, verificación de MP4/duración en servidor, referencias históricas
 estables, firma de reproducción y caché móvil acotada. Migración y función solo

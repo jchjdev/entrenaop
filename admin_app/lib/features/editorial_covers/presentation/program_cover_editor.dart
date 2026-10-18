@@ -14,12 +14,14 @@ class ProgramCoverEditor extends StatefulWidget {
     this.cardDetail = 'Sin fecha objetivo',
     this.cardAction = 'Gestionar preparación →',
     this.cardIcon = Icons.flag_outlined,
+    this.cardCategory,
     this.headerTitle = 'Cabecera de la preparación',
     this.editorTitle = 'Imagen de preparación',
   });
   final String programId, programName;
   final String cardLabel, cardDetail, cardAction, headerTitle, editorTitle;
   final IconData cardIcon;
+  final String? cardCategory;
   final ProgramCoverRepository repository;
   final Future<ProgramCoverImageDraft?> Function()? pickImage;
   @override
@@ -474,6 +476,7 @@ class _ProgramCoverEditorState extends State<ProgramCoverEditor> {
           child: EntrenaProgramCard(
             title: widget.programName,
             label: widget.cardLabel,
+            categoryLabel: widget.cardCategory,
             detail: widget.cardDetail,
             actionLabel: widget.cardAction,
             icon: widget.cardIcon,

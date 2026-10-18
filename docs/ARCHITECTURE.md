@@ -588,6 +588,15 @@ parcial. El repositorio expone abandono por identificador de seguimiento; la RPC
 verifica propietario y serializa con el inicio guiado, sin cerrar ejecuciones
 automáticamente. Inicio y Programas iniciados filtran seguimientos activos en
 servidor. Reiniciar selecciona un seguimiento nuevo sin alterar el historial.
+PRG-007 añade categorías editoriales relacionadas por versión, fuera del JSON
+de prescripción. El repositorio administrativo guarda documento y asignaciones
+en una transacción; el catálogo de categorías usa identificadores, clave de
+búsqueda única y revisión de edición. Las RPC conservan los argumentos antiguos,
+validan administración y no conceden escritura directa al cliente. Las lecturas
+de clasificación y portadas se agrupan por página. La búsqueda normaliza ambos
+lados e incluye todas las categorías antes de paginar; no filtra solo la página
+descargada. El ancho es responsabilidad de cada contenedor y la tarjeta mantiene
+una única composición compartida.
 No modifica motores ni lógica de ejecución. Contrato y comprobaciones en
 [`PROGRAMAS_GUIADOS.md`](PROGRAMAS_GUIADOS.md).
 

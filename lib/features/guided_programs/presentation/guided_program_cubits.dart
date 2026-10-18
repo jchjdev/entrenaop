@@ -24,6 +24,7 @@ class GuidedCatalogCubit extends Cubit<GuidedCatalogState> {
   final GuidedProgramRepository repository;
   String query = '';
   GuidedProgramMode? mode;
+  String? categoryId;
   bool followed = false;
   int _request = 0;
   Timer? _debounce;
@@ -35,6 +36,7 @@ class GuidedCatalogCubit extends Cubit<GuidedCatalogState> {
         query: query,
         mode: mode,
         followed: followed,
+        categoryId: categoryId,
         page: page,
       );
       if (isClosed || request != _request) return;
@@ -72,6 +74,12 @@ class GuidedCatalogCubit extends Cubit<GuidedCatalogState> {
       'phased' => GuidedProgramMode.phased,
       _ => null,
     };
+    load();
+  }
+
+  void filterCategory(String? value) {
+    categoryId = value;
+    _debounce?.cancel();
     load();
   }
 

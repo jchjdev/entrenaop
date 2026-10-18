@@ -141,6 +141,20 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      if (d.program.categories.isNotEmpty)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            for (final c in d.program.categories)
+                              Chip(
+                                label: Text(c.name),
+                                avatar: c.id == d.program.primaryCategoryId
+                                    ? const Icon(Icons.star_outline, size: 16)
+                                    : null,
+                              ),
+                          ],
+                        ),
                       if (d.program.description.isNotEmpty)
                         Text(d.program.description),
                       ExpansionTile(

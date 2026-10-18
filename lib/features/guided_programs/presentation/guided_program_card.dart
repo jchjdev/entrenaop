@@ -11,19 +11,22 @@ class GuidedProgramCard extends StatelessWidget {
     required this.onTap,
     this.program,
     this.phaseIndex,
+    this.width = 250,
   });
   final GuidedProgram? program;
   final int? phaseIndex;
+  final double width;
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
     final p = program;
     final phased = p?.mode == GuidedProgramMode.phased;
     return SizedBox(
-      width: 250,
+      width: width,
       child: EntrenaProgramCard(
         title: p?.name ?? 'Añadir programa',
         label: p?.modeLabel ?? 'Programas',
+        categoryLabel: p?.primaryCategory?.name,
         detail: p == null
             ? 'Elige un programa'
             : phased && phaseIndex != null

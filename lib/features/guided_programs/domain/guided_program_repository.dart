@@ -62,12 +62,14 @@ class GuidedProgramDetail {
 abstract class GuidedProgramRepository {
   String? get currentUserId;
   Future<List<StartedGuidedProgram>> startedPrograms();
+  Future<List<GuidedProgramCategory>> categories();
   Future<GuidedCatalogPage> catalog({
     String query = '',
     GuidedProgramMode? mode,
     int page = 0,
     int pageSize = 2,
     bool followed = false,
+    String? categoryId,
   });
   Future<GuidedProgramDetail> detail(String id);
   Future<void> follow(String id);

@@ -16,12 +16,14 @@ class EntrenaProgramCard extends StatelessWidget {
     this.coverImage,
     this.focalX = 0.5,
     this.focalY = 0.5,
+    this.categoryLabel,
   });
   final String title, label, detail, actionLabel;
   final IconData icon;
   final VoidCallback? onTap;
   final ImageProvider? coverImage;
   final double focalX, focalY;
+  final String? categoryLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -52,16 +54,48 @@ class EntrenaProgramCard extends StatelessWidget {
               Icon(icon, color: secondary, size: 25),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.visuals.textMuted,
-                    fontSize: 12,
-                    height: 1.2,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.visuals.textMuted,
+                        fontSize: 12,
+                        height: 1.2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (categoryLabel != null)
+                      Tooltip(
+                        message: categoryLabel!,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: secondary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            categoryLabel!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: secondary,
+                              fontSize: 11,
+                              height: 1.2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

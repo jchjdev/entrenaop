@@ -34,6 +34,7 @@ GuidedProgram guidedProgramFromJson(
   String Function(String)? resolveCoverUrl,
 }) {
   final data = Map<String, dynamic>.from(row['content'] as Map);
+  final links = (row['category_links'] as List? ?? const []).cast<Map>();
   return GuidedProgram(
     id: row['id'] as String,
     familyId: row['family_id'] as String,
@@ -45,12 +46,30 @@ GuidedProgram guidedProgramFromJson(
     audience: data['audience'] as String? ?? '',
     equipment: data['equipment'] as String? ?? '',
     cover: _cover(row['cover'], resolveCoverUrl),
+    categories: [
+      for (final l in links)
+        guidedCategoryFromJson(
+          Map<String, dynamic>.from(l['guided_program_categories'] as Map),
+        ),
+    ],
+    primaryCategoryId: links
+        .where((l) => l['is_primary'] == true)
+        .map((l) => (l['guided_program_categories'] as Map)['id'] as String)
+        .firstOrNull,
     phases: [
       for (final raw in data['phases'] as List)
         _phase(Map<String, dynamic>.from(raw as Map)),
     ],
   );
 }
+
+GuidedProgramCategory guidedCategoryFromJson(Map<String, dynamic> row) =>
+    GuidedProgramCategory(
+      id: row['id'] as String,
+      name: row['name'] as String,
+      active: row['is_active'] as bool? ?? true,
+      revision: row['revision'] as int? ?? 1,
+    );
 
 EditorialCover? _cover(dynamic raw, String Function(String)? resolve) {
   if (raw is! Map || resolve == null) return null;

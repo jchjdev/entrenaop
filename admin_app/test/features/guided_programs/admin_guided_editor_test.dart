@@ -11,6 +11,27 @@ import 'package:entrenaop_admin/features/editorial_covers/presentation/program_c
 
 class _Guided extends Fake implements AdminGuidedRepository {
   GuidedProgram? saved;
+  List<GuidedProgramCategory> categoryItems = [];
+  bool failCategory = false;
+  @override
+  Future<List<GuidedProgramCategory>> categories() async => categoryItems;
+  @override
+  Future<GuidedProgramCategory> saveCategory(
+    String name, {
+    GuidedProgramCategory? original,
+    bool active = true,
+  }) async {
+    if (failCategory) throw StateError('Sin conexión');
+    final result = GuidedProgramCategory(
+      id: original?.id ?? 'new-category',
+      name: name,
+      active: active,
+      revision: (original?.revision ?? 0) + 1,
+    );
+    categoryItems = [...categoryItems.where((c) => c.id != result.id), result];
+    return result;
+  }
+
   @override
   Future<List<GuidedProgram>> programs() async => [
     const GuidedProgram(
@@ -52,6 +73,195 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
 }
 
 void main() {
+  testWidgets('el gestor y la creación admiten texto 2× en móvil estrecho', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repo = _Guided()
+      ..categoryItems = [
+        const GuidedProgramCategory(
+          id: 'strength',
+          name: 'Fuerza e iniciación',
+        ),
+      ];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: AdminGuidedCatalogPage(repository: repo),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Categorías'),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Categorías'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Crear categoría'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Crear categoría'));
+    await tester.pumpAndSettle();
+    expect(
+      find.widgetWithText(TextField, 'Nombre de la categoría'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
+    'selecciona varias categorías, cambia principal y crea desde el borrador',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repo = _Guided()
+        ..categoryItems = [
+          const GuidedProgramCategory(id: 'strength', name: 'Fuerza'),
+          const GuidedProgramCategory(id: 'beginner', name: 'Iniciación'),
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => context.push('/editor'),
+                  child: const Text('Abrir'),
+                ),
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/editor',
+            builder: (_, _) => AdminGuidedEditorPage(
+              repository: repo,
+              workouts: _Workouts(),
+              original: const GuidedProgram(
+                id: 'program',
+                name: 'Programa de prueba',
+                mode: GuidedProgramMode.guide,
+                phases: [
+                  GuidedPhase(
+                    name: 'Trabajo',
+                    sessions: [
+                      GuidedSession(
+                        templateId: 'official',
+                        name: 'Empuje publicado',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.tap(find.text('Abrir'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Fuerza'),
+        220,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Fuerza'));
+      await tester.tap(find.text('Iniciación'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(
+          DropdownButtonFormField<String>,
+          'Categoría principal',
+        ),
+      );
+      await tester.tap(
+        find.widgetWithText(
+          DropdownButtonFormField<String>,
+          'Categoría principal',
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Iniciación').last);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Crear categoría'));
+      await tester.tap(find.text('Crear categoría'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre de la categoría'),
+        'Rehabilitación',
+      );
+      repo.failCategory = true;
+      await tester.tap(find.text('Guardar categoría'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rehabilitación'), findsOneWidget);
+      expect(
+        find.textContaining('No se pudo guardar la categoría'),
+        findsOneWidget,
+      );
+      repo.failCategory = false;
+      await tester.tap(find.text('Guardar categoría'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilterChip, 'Rehabilitación'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Guardar borrador'),
+        250,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Guardar borrador'));
+      await tester.pumpAndSettle();
+      expect(repo.saved!.categories.map((c) => c.id), [
+        'strength',
+        'beginner',
+        'new-category',
+      ]);
+      expect(repo.saved!.primaryCategoryId, 'beginner');
+      expect(repo.saved!.phases.single.sessions.single.templateId, 'official');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'gestiona nombres y desactiva categorías conservando su identidad',
+    (tester) async {
+      final repo = _Guided()
+        ..categoryItems = [
+          const GuidedProgramCategory(id: 'strength', name: 'Fuerza'),
+        ];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: AdminGuidedCatalogPage(repository: repo),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Categorías'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Fuerza'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre de la categoría'),
+        'Fuerza inicial',
+      );
+      await tester.tap(find.text('Disponible para nuevos programas'));
+      await tester.tap(find.text('Guardar categoría'));
+      await tester.pumpAndSettle();
+      expect(find.text('Fuerza inicial'), findsOneWidget);
+      expect(find.text('Desactivada'), findsOneWidget);
+      expect(repo.categoryItems.single.id, 'strength');
+      expect(repo.categoryItems.single.revision, 2);
+      expect(repo.categoryItems.single.active, isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'el catálogo abre el mismo editor de portada con la tarjeta compartida',
     (tester) async {

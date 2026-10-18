@@ -9,22 +9,35 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   final SupabaseClient client;
   @override
   String? get currentUserId => client.auth.currentUser?.id;
-  Future<List<GuidedProgram>> _withCovers(
+  Future<List<GuidedProgram>> _withEditorial(
     List<Map<String, dynamic>> rows,
   ) async {
     if (rows.isEmpty) return const [];
     final families = rows.map((r) => r['family_id'] as String).toSet().toList();
-    final covers = await client
-        .from('guided_program_covers')
-        .select()
-        .inFilter('program_id', families);
+    final results = await Future.wait([
+      client
+          .from('guided_program_covers')
+          .select()
+          .inFilter('program_id', families),
+      client
+          .from('guided_program_category_links')
+          .select('program_id,is_primary,guided_program_categories(*)')
+          .inFilter('program_id', rows.map((r) => r['id'] as String).toList()),
+    ]);
+    final covers = results[0], links = results[1];
     final byFamily = {
       for (final cover in covers) cover['program_id'] as String: cover,
     };
     return [
       for (final row in rows)
         guidedProgramFromJson(
-          {...row, 'cover': byFamily[row['family_id']]},
+          {
+            ...row,
+            'cover': byFamily[row['family_id']],
+            'category_links': links
+                .where((l) => l['program_id'] == row['id'])
+                .toList(),
+          },
           resolveCoverUrl: (path) =>
               client.storage.from('program-covers-public').getPublicUrl(path),
         ),
@@ -45,7 +58,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
         .order('id', ascending: false)
         .limit(3);
     if (owner != currentUserId) return const [];
-    final programs = await _withCovers([
+    final programs = await _withEditorial([
       for (final row in rows)
         Map<String, dynamic>.from(row['guided_programs'] as Map),
     ]);
@@ -60,12 +73,23 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   }
 
   @override
+  Future<List<GuidedProgramCategory>> categories() async =>
+      (await client
+              .from('guided_program_categories')
+              .select()
+              .eq('is_active', true)
+              .order('name'))
+          .map(guidedCategoryFromJson)
+          .toList();
+
+  @override
   Future<GuidedCatalogPage> catalog({
     String query = '',
     GuidedProgramMode? mode,
     int page = 0,
     int pageSize = 2,
     bool followed = false,
+    String? categoryId,
   }) async {
     final rows = await client.rpc(
       'get_guided_program_catalog',
@@ -75,10 +99,11 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
         'p_offset': page * pageSize,
         'p_limit': pageSize + 1,
         'p_followed': followed,
+        'p_category_id': categoryId,
       },
     ) as List;
     return GuidedCatalogPage(
-      await _withCovers([
+      await _withEditorial([
         for (final r in rows.take(pageSize))
           Map<String, dynamic>.from(r as Map),
       ]),
@@ -110,7 +135,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
               .eq('follow_id', follow['id'])
               .order('created_at', ascending: false);
     return GuidedProgramDetail(
-      (await _withCovers([row])).single,
+      (await _withEditorial([row])).single,
       follow: follow == null
           ? null
           : GuidedFollow(

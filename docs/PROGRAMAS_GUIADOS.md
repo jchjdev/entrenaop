@@ -215,6 +215,86 @@ Capturas revisadas con fotografía de preparación y programas sin foto a 390 px
 320 px con texto 2× y escritorio; Biblioteca y el desplazamiento conservados.
 Sin SQL, cambios de datos, dependencias o producción. Aceptación móvil pendiente.
 
+### Ancho, clasificación y búsqueda · PRG-007 · implementado el 18/10/2026
+
+Javier valida Inicio y autoriza el resto de la propuesta, incluidas varias
+categorías con una principal. `GuidedProgramCard` mantiene su ancho de 250 px en
+el carrusel. Biblioteca calcula el ancho disponible: una tarjeta por fila en
+móvil y dos columnas desde 640 px útiles. Se conserva la composición compacta,
+las portadas y la paginación; no se incorpora otro diseño de Mi plan.
+
+La categoría principal aparece como etiqueta junto a Rutina/Por fases; con
+texto ampliado puede pasar a otra línea. La ficha muestra todas las categorías.
+El filtro Categoría es independiente de estructura/iniciados y de la búsqueda;
+cambiarlo vuelve a la primera página y conserva los otros criterios. Si falla
+la carga de categorías, el catálogo sigue disponible y ofrece reintentar las
+opciones. Inicio conserva el carrusel y su posición bajo Preparaciones.
+
+ADMIN → Programas guiados → **Categorías** permite crear, renombrar y desactivar
+categorías sin código. El creador permite seleccionar hasta ocho, marcar una
+principal y crear otra desde el mismo formulario. La primera seleccionada es
+principal hasta que el autor elija otra; quitarla elige una de las restantes.
+Renombrar conserva el identificador. Desactivar impide nuevas asignaciones,
+conserva las existentes y su búsqueda; el autor puede mantener o quitar una
+categoría desactivada que ya pertenecía al programa. Los formularios conservan
+los campos ante errores y bloquean el doble envío mientras guardan.
+
+`GuidedProgramCategory`, categorías y principal pertenecen al contrato puro de
+`workout_core`, pero quedan fuera del JSON deportivo, igual que la portada.
+`guided_program_categories` contiene nombre, clave normalizada única, actividad
+y revisión; `guided_program_category_links` relaciona cada versión con sus
+categorías, con claves foráneas y una sola principal. Una revisión copia la
+clasificación anterior cuando la llamada no aporta nuevas categorías. Editar
+una publicación sigue creando borrador; no cambia la receta ni la clasificación
+de la versión publicada. Renombrar la categoría actualiza su etiqueta común.
+
+`save_guided_program` amplía sus parámetros opcionales con categorías/principal;
+los argumentos anteriores siguen funcionando. Valida y guarda borrador,
+sesiones y clasificación en la misma transacción: un fallo no deja un guardado
+parcial. `save_guided_program_category` exige administrador y revisión esperada
+al editar, evitando sobrescrituras silenciosas. Las tablas conceden solo lectura
+al cliente; las asignaciones siguen la visibilidad de cada programa bajo RLS.
+El catálogo de nombres es legible por cuentas autenticadas, incluso para
+conservar etiquetas de categorías desactivadas. No hay permisos anónimos nuevos.
+
+`library_search_text` aplica en PostgreSQL el criterio de Biblioteca: NFC,
+minúsculas, sustitución de tildes y diacríticos combinados, guiones bajos como
+espacios y espacios repetidos normalizados. Sesiones y Ejercicios conservan
+`librarySearchText`/`matchesLibrarySearch`. El servidor busca todas las palabras
+entre nombre, descripción y categorías antes de ordenar y paginar. Las tildes
+se conservan en nombres y etiquetas; `%` no funciona como comodín de usuario.
+Las lecturas de portadas y clasificación se resuelven por lotes en paralelo,
+conservando la guarda por cambio de cuenta del resumen de Inicio.
+
+Migración `20261018165441_guided_program_categories_and_search.sql`, solo en
+desarrollo. Incluye Hipertrofia, Fuerza, Movilidad, Estiramientos, Resistencia,
+Potencia e Iniciación como catálogo inicial editable. Las cinco baterías SQL de
+categorías, autoría, recorrido, abandono y portadas terminan con ROLLBACK. Cubren
+autorización, referencias, principal, duplicados normalizados, ediciones
+concurrentes, borradores privados, atomicidad, revisión y compatibilidad de las
+llamadas anteriores. Las búsquedas se contrastan con/sin tildes, texto Unicode
+descompuesto, palabras de varias fuentes, filtro y páginas. Historial de 163
+migraciones coincidente en la comprobación de desarrollo; sin usuarios de
+prueba persistentes. El asesor solo presenta los avisos previstos de RPC
+autenticadas SECURITY DEFINER, protegidas por comprobación administrativa y
+grants explícitos; sin avisos de rendimiento nuevos relacionados.
+
+Las demos de desarrollo ya muestran categorías: Empuje/tirón/pierna lleva
+Hipertrofia principal y Fuerza; dominadas lleva Fuerza principal e Iniciación.
+`tools/guided_programs_demo/run.ps1 -Classify` ensaya con ROLLBACK; con `-Publish`
+asigna únicamente en el proyecto fijo de desarrollo y conserva clasificaciones
+existentes. Se verifican ensayo, aplicación y repetición. No crea versiones ni
+altera sesiones, seguimientos, cargas o resultados.
+
+Análisis limpios de raíz y ADMIN; 965 pruebas raíz y 130 ADMIN correctas, con sus
+omisiones anteriores, y seis pruebas del paquete visual. Se comprueban por HTTP
+los parámetros y el guardado único, además de codec/validación, filtro, selección
+múltiple, principal, creación y gestión desde ADMIN y errores retenidos.
+Capturas de Biblioteca revisadas a 390 px, 320 px con texto 2× y escritorio; el
+gestor administrativo y su diálogo admiten móvil estrecho con texto 2× mediante
+desplazamiento. Sin dependencias nuevas, cambios de ejecutores o producción.
+Queda la aceptación autenticada de Javier en dispositivos.
+
 ### Dejar un programa · PRG-005 · implementado el 18/10/2026
 
 Javier solicita poder abandonar los programas. La ficha ofrece **Dejar programa**
