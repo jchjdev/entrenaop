@@ -557,6 +557,14 @@ del entrenador. Esta propuesta permite incluir el acceso necesario para seguir
 el entrenamiento contratado; el conjunto concreto de funciones sigue pendiente
 y no equivale a conceder automáticamente todo Pro.
 
+**Confirmación del 19/10/2026:** Javier confirma contemplar paquetes profesionales
+según número de clientes desde el diseño inicial. Los precios y cantidades que
+aporta son ejemplos, sin tarifas ni tramos aprobados. La relación con el cliente
+se mantiene independiente del paquete; la capacidad vigente limita su activación
+en servidor. Se recomienda contar relaciones aceptadas y activas, pendiente de
+confirmación junto con las reglas de reducción de cupo y caducidad. El proveedor
+de cobro puede incorporarse después sobre ese mismo acceso efectivo.
+
 Falta concretar tarifas y tramos, qué clientes computan para el límite, derechos
 incluidos, convivencia con una suscripción Pro individual y qué sucede al
 terminar la relación o el acceso profesional del entrenador. La propuesta no
@@ -580,6 +588,12 @@ suscripciones profesionales ni cambios en el algoritmo.
 existentes sin duplicar ADMIN. La revisión técnica y la propuesta de una primera
 versión se recogen en [Espacio de entrenadores](TRAINER_APP.md), distinguiendo
 acuerdos vigentes de decisiones todavía pendientes.
+
+**Panel profesional · TRN-006 · 19/10/2026:** Javier confirma crear el panel y
+prioriza un acabado visual especialmente cuidado. Reutilizará la identidad y
+los componentes existentes. La propuesta de revisión visual inicial de clientes
+y ficha, incluidos estados vacíos, errores, móvil y texto ampliado, está en
+`docs/TRAINER_APP.md`. No hay todavía pantallas profesionales implementadas.
 
 ## Free y Pro: reparto confirmado, interfaz inicial y pagos pendientes
 

@@ -11,9 +11,12 @@ sin duplicar ADMIN. Los criterios de TRN-001/004/005 siguen vigentes: preparador
 de oposiciones, contenido privado y clientes en la app actual, con acceso
 profesional separado de Pro y de los permisos administrativos.
 
+Javier confirma también crear un panel profesional con un acabado visual
+especialmente cuidado y contemplar paquetes según número de clientes. Sus
+ejemplos de cantidades y precios son ilustrativos, no tarifas acordadas.
 La estructura, secuencia y primera versión descritas a continuación son
 recomendaciones revisables. La intervención del algoritmo sigue pendiente en
-TRN-002; tarifas, derechos y límites de clientes siguen pendientes en TRN-004.
+TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
 
 ## Base comprobada y dependencias
 
@@ -72,6 +75,57 @@ decidirse cómo se concede para el piloto; la propuesta es acceso manual desde
 administración autorizada, sin implementar cobros para probar el recorrido.
 No se modifica aquí el contrato de cuotas Free ni se concede Pro a clientes.
 
+## Paquetes profesionales y capacidad de clientes · TRN-004
+
+**Modelo confirmado; condiciones concretas pendientes.** Los paquetes deben
+tenerse en cuenta desde el diseño inicial, aunque los tramos y precios se
+decidan después. El vínculo identifica a entrenador y cliente y conserva su
+estado e historial; no se crea una relación diferente para cada tarifa. El
+acceso profesional determina por separado las capacidades y el límite vigente.
+Cambiar ese límite no exige reconstruir vínculos ni mover resultados.
+
+La recomendación inicial es contar relaciones aceptadas y activas. Invitaciones
+pendientes y relaciones finalizadas no ocuparían plaza. Es una propuesta que
+requiere confirmación, junto con el número de entrenadores que puede tener un
+cliente. La cuota se comprueba en servidor al activar/reactivar el vínculo,
+de forma atómica para que dos aceptaciones simultáneas no consuman la misma
+última plaza. La pantalla informa antes, pero no decide la capacidad disponible.
+
+Con el cupo completo, se recomienda impedir nuevas activaciones y ofrecer
+gestionar clientes o cambiar de paquete. Bajar de paquete o perder vigencia no
+debe borrar vínculos o resultados ni cortar una ejecución en curso; falta
+acordar cómo resolver exceso de clientes, nuevas asignaciones, consulta e
+historial. La revocación de acceso por fin de una relación conserva su propia
+regla y no se sustituye por un simple recuento de plazas.
+
+Para el piloto se propone conceder manualmente un acceso profesional con cupo
+explícito y comprobar ya esas reglas. Conectar el cobro posteriormente debe
+actualizar el mismo acceso efectivo con autenticación e idempotencia de servidor,
+sin permitir al entrenador aumentar su propio límite desde Flutter.
+
+Los paquetes pueden diferenciarse inicialmente por capacidad, manteniendo las
+herramientas esenciales comunes; funciones adicionales, periodicidad, impuestos,
+derechos del cliente y precios quedan por valorar. El número de clientes no
+acota por sí solo el consumo de vídeos, almacenamiento o transferencia: esas
+cuotas necesitan medición y condiciones propias según `COST_CONTROL.md`.
+
+## Calidad visual del panel · TRN-006
+
+**Prioridad confirmada por Javier.** El panel profesional debe ser especialmente
+cuidado, coherente y agradable. Reutiliza identidad, tema Compacto y componentes
+existentes; no se introduce otro sistema visual para distinguirlo de ADMIN.
+
+Se recomienda una primera revisión visual del listado de clientes y su ficha,
+con datos de ejemplo, antes de extender el resto de pantallas. Debe permitir
+reconocer cliente, situación, siguiente acción y capacidad del paquete sin
+saturar de indicadores. La composición ha de contemplar vacío, carga, error,
+invitación pendiente y cupo completo, además del estado con datos.
+
+La aceptación incluirá escritorio, móvil, texto ampliado, foco/teclado,
+contraste, nombres largos y acciones inequívocas. Las capturas de widgets se
+complementarán con el recorrido autenticado cuando exista. Esta propuesta no
+afirma que haya pantallas o maquetas implementadas.
+
 ## Primera versión recomendada
 
 Cerrar primero un recorrido de asignación manual y resultados:
@@ -100,11 +154,12 @@ hay que fijar qué se permite cuando el cliente ya sigue un plan automático.
 
 1. Separar las dependencias del editor de sesiones y seguir utilizándolo desde
    ADMIN con sus guardados y pruebas actuales. Cierre técnico localizado.
-2. Concretar acceso profesional, relación aceptada, asignación versionada,
-   ámbito de resultados y fin del vínculo. Implementar y comprobar sus contratos
-   de servidor antes de conectar datos privados.
-3. Crear el cliente web profesional y conectar el recorrido completo de una
-   sesión hasta sus resultados en la app del deportista.
+2. Concretar acceso profesional con cupo, relación aceptada, asignación
+   versionada, ámbito de resultados y fin del vínculo. Implementar y comprobar
+   sus contratos de servidor antes de conectar datos privados.
+3. Revisar visualmente clientes y ficha usando el diseño existente; crear el
+   cliente web profesional y conectar el recorrido completo de una sesión hasta
+   sus resultados en la app del deportista.
 4. Ampliar por recorridos completos: programas privados y creación de ejercicios;
    después, uso del algoritmo conforme a TRN-002 y condiciones comerciales.
 
@@ -120,7 +175,9 @@ de ADMIN no publica `trainer_app/` automáticamente.
   cómo termina el vínculo. Conservar resultados históricos no decide por sí solo
   qué acceso conserva cada parte al contenido, a la agenda o a los resultados.
 - Qué acceso necesita el cliente para ejecutar la asignación, cómo convive con
-  cuotas/Pro y qué ocurre al caducar el acceso profesional del entrenador.
+  cuotas/Pro y qué ocurre al caducar el acceso profesional del entrenador o
+  reducir el cupo por debajo de las relaciones activas. Confirmar qué estados
+  computan antes de implementar el límite.
 
 ## Verificación y trabajo desde la nube
 
@@ -133,8 +190,10 @@ La extracción del editor requiere análisis y pruebas de ADMIN, del paquete
 compartido y de los consumidores afectados según `AGENTS.md`. El cierre del
 recorrido profesional necesita pruebas SQL transaccionales con ROLLBACK y casos
 de entrenador A/B, cliente sin relación, relación terminada, referencias ajenas,
-reintentos de asignación y cambio de cuenta. Comprobar también que los recorridos
-oficiales y personales conservan sus contratos.
+reintentos de asignación y cambio de cuenta. El cupo requiere probar su última
+plaza con aceptaciones concurrentes, reactivación, exceso tras cambio de paquete
+y vigencia del acceso. Comprobar también que los recorridos oficiales y
+personales conservan sus contratos.
 
 Esta preparación solo cambia documentación: no acredita ninguna de esas pruebas
 futuras ni habilita usuarios, permisos, planes de pago, subdominios o despliegues.
