@@ -30,8 +30,14 @@ Este primer paquete queda sustituido para publicar: Javier detecta que la imagen
 TOTP no carga. GoTrue Dart 2.27.2 antepone `data:image/svg+xml;utf-8,` al SVG
 de Auth y la pantalla codificaba de nuevo toda esa URI. Se retira el prefijo
 del SDK antes de generar una URI SVG base64, conservando los caracteres del SVG.
-No cambia el factor ni el mecanismo de autorización. Se recompila el admin local
-y se debe generar y cargar otro paquete corregido antes de extraerlo.
+No cambia el factor ni el mecanismo de autorización. El admin local está
+recompilado y el paquete corregido ya está cargado en la misma carpeta privada:
+`c2d7e4e-20261019T093931Z.zip`, SHA-256
+`0557D8AAFC5BC95302F29E820C096716501750BC90CFFE641D60B0B955B0A414`.
+Su manifiesto indica revisión `c2d7e4e`, fuentes limpias y SHA-256 del JavaScript
+`615EA8A181B4D38B43E996D79650C6D821C5855F4E9AD69626A2428AD47A4864`.
+`hostinger-corrected-release.png` acredita esa carga. Se conserva el ZIP anterior
+sin extraerlo. La extracción pública sigue pendiente del alta del autenticador.
 La captura `hostinger-private-release.png` acredita únicamente la carga privada.
 `security-login-handoff.png` muestra el acceso local entregado al propietario,
 con campos vacíos, antes de configurar el autenticador.

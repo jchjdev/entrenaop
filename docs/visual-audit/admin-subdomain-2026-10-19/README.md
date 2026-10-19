@@ -19,3 +19,7 @@ la conversión corregida del formato de GoTrue Dart. Se verifican `complete=true
 y dimensiones naturales de 210×210. No contiene un QR de autenticación válido,
 una clave ni datos de ninguna cuenta. La página temporal se retira de `build/web`
 antes de preparar el nuevo ZIP.
+
+`hostinger-corrected-release.png` acredita la carga privada del paquete corregido
+`c2d7e4e-20261019T093931Z.zip` junto al primero, que queda sustituido para publicar.
+Todavía no acredita extracción ni acceso remoto autenticado.
