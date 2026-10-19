@@ -65,21 +65,7 @@ class LibraryHubPage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: TabBar(
-                  isScrollable:
-                      guided != null &&
-                      MediaQuery.textScalerOf(context).scale(14) > 20,
-                  tabAlignment:
-                      guided != null &&
-                          MediaQuery.textScalerOf(context).scale(14) > 20
-                      ? TabAlignment.start
-                      : TabAlignment.fill,
-                  tabs: [
-                    if (guided != null) const Tab(text: 'Programas'),
-                    const Tab(text: 'Sesiones'),
-                    const Tab(text: 'Ejercicios'),
-                  ],
-                ),
+                child: _LibraryTabs(showPrograms: guided != null),
               ),
               Expanded(
                 child: TabBarView(
@@ -135,6 +121,49 @@ class LibraryHubPage extends StatelessWidget {
         ),
       ),
     ),
+  );
+}
+
+class _LibraryTabs extends StatelessWidget {
+  const _LibraryTabs({required this.showPrograms});
+
+  final bool showPrograms;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final labels = [if (showPrograms) 'Programas', 'Sesiones', 'Ejercicios'];
+      final theme = Theme.of(context);
+      final tabTheme = TabBarTheme.of(context);
+      final selected = theme.textTheme.titleSmall!.merge(tabTheme.labelStyle);
+      final unselected = theme.textTheme.titleSmall!.merge(
+        tabTheme.unselectedLabelStyle,
+      );
+      const padding = EdgeInsets.symmetric(horizontal: 8);
+      final painter = TextPainter(
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
+      );
+      // Medir ambos estados evita recortar una etiqueta al seleccionarla.
+      final scrollable = labels.any(
+        (label) => [selected, unselected].any((style) {
+          painter.text = TextSpan(text: label, style: style);
+          painter.layout();
+          return painter.width + padding.horizontal + 1 >
+              constraints.maxWidth / labels.length;
+        }),
+      );
+      painter.dispose();
+      return TabBar(
+        isScrollable: scrollable,
+        tabAlignment: scrollable ? TabAlignment.start : TabAlignment.fill,
+        labelPadding: padding,
+        labelStyle: selected,
+        unselectedLabelStyle: unselected,
+        tabs: [for (final label in labels) Tab(text: label)],
+      );
+    },
   );
 }
 

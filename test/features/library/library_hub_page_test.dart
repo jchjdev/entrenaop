@@ -132,6 +132,8 @@ void main() {
       150,
       scrollable: vertical,
     );
+    await tester.ensureVisible(find.text('Ejercicios'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Ejercicios'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
