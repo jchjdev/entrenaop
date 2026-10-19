@@ -109,6 +109,30 @@ derechos del cliente y precios quedan por valorar. El número de clientes no
 acota por sí solo el consumo de vídeos, almacenamiento o transferencia: esas
 cuotas necesitan medición y condiciones propias según `COST_CONTROL.md`.
 
+### Acceso del cliente incluido en el paquete
+
+**Confirmado por Javier el 19/10/2026:** el entrenador paga por poder prestar
+el servicio a sus clientes y el acceso de estos al entrenamiento debe estar
+incluido. No se exige al cliente otra suscripción de EntrenaOP para recibir
+asignaciones, consultar su contenido y medios, realizarlas en el ejecutor y
+registrar/consultar sus resultados. Las cuotas personales Free no deben impedir
+ese recorrido ni presentar una compra Pro como condición para completarlo.
+
+Se mantiene la misma cuenta y aplicación del deportista. La recomendación
+técnica es derivar un acceso por la relación autorizada y el acceso profesional
+vigente del entrenador, separado de la suscripción individual y limitado a los
+recursos y operaciones incluidos. No se convierte al cliente en administrador
+ni se cambia su suscripción personal para representar el vínculo.
+
+Falta decidir si el paquete incluye todo Pro o únicamente el servicio vinculado
+al entrenador y sus herramientas necesarias. También requiere una regla expresa
+la convivencia con un Pro individual ya contratado: informar del acceso incluido
+y evitar promover otra compra para las mismas funciones; no cancelar ni alterar
+suscripciones de tienda sin petición. Si termina el vínculo o el acceso
+profesional, se conserva el historial y no se crea un cobro al cliente ni se
+activa automáticamente una suscripción individual. Las nuevas asignaciones,
+el acceso posterior al contenido y las funciones adicionales siguen pendientes.
+
 ## Calidad visual del panel · TRN-006
 
 **Prioridad confirmada por Javier.** El panel profesional debe ser especialmente
@@ -174,8 +198,9 @@ de ADMIN no publica `trainer_app/` automáticamente.
 - Cómo acepta el cliente la relación, si puede tener varios entrenadores y
   cómo termina el vínculo. Conservar resultados históricos no decide por sí solo
   qué acceso conserva cada parte al contenido, a la agenda o a los resultados.
-- Qué acceso necesita el cliente para ejecutar la asignación, cómo convive con
-  cuotas/Pro y qué ocurre al caducar el acceso profesional del entrenador o
+- Qué funciones adicionales recibe el cliente más allá del entrenamiento ya
+  incluido sin otra suscripción, cómo convive con Pro individual y qué ocurre
+  al caducar el acceso profesional del entrenador o
   reducir el cupo por debajo de las relaciones activas. Confirmar qué estados
   computan antes de implementar el límite.
 
@@ -194,6 +219,12 @@ reintentos de asignación y cambio de cuenta. El cupo requiere probar su última
 plaza con aceptaciones concurrentes, reactivación, exceso tras cambio de paquete
 y vigencia del acceso. Comprobar también que los recorridos oficiales y
 personales conservan sus contratos.
+
+El acceso incluido necesita además un cliente Free sin suscripción individual
+que complete el recorrido con sus cuotas personales agotadas, sin compra
+obligatoria; un cliente con Pro previo; y revocación/caducidad sin cobro ni
+suscripción individual automáticos. Son verificaciones futuras, no ejecutadas
+en esta preparación documental.
 
 Esta preparación solo cambia documentación: no acredita ninguna de esas pruebas
 futuras ni habilita usuarios, permisos, planes de pago, subdominios o despliegues.

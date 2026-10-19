@@ -547,15 +547,18 @@ Javier distingue las responsabilidades siguientes:
   conceder derechos comerciales ni acceder a funciones internas de la plataforma.
 - **Accesos comerciales:** Pro del deportista y acceso profesional del entrenador
   son derechos distintos. Regalar uno no implica conceder el otro. Precios,
-  límites de clientes y derechos incluidos para los clientes siguen pendientes.
+  límites de clientes y alcance adicional del acceso incluido siguen pendientes.
 
-**Modelo comercial propuesto por Javier · TRN-004:** mantener EntrenaOP como un
+**Modelo comercial confirmado por Javier · TRN-004:** mantener EntrenaOP como un
 único producto. El entrenador paga por las herramientas de creación y gestión,
 con una tarifa dependiente del número de clientes. Cada cliente utiliza su
 cuenta habitual en la aplicación actual y recibe condiciones de acceso a través
-del entrenador. Esta propuesta permite incluir el acceso necesario para seguir
-el entrenamiento contratado; el conjunto concreto de funciones sigue pendiente
-y no equivale a conceder automáticamente todo Pro.
+del entrenador. Javier confirma el 19/10/2026 que el paquete profesional debe
+incluir el acceso del cliente al servicio de entrenamiento: no se le exige pagar
+otra suscripción de EntrenaOP para recibirlo y utilizarlo. Recibir asignaciones,
+consultarlas, entrenar y registrar/consultar sus resultados no puede quedar
+bloqueado por cuotas Free o por exigir Pro individual. El alcance de funciones
+adicionales sigue pendiente; no se ha acordado aún equivalencia con todo Pro.
 
 **Confirmación del 19/10/2026:** Javier confirma contemplar paquetes profesionales
 según número de clientes desde el diseño inicial. Los precios y cantidades que
@@ -566,7 +569,7 @@ confirmación junto con las reglas de reducción de cupo y caducidad. El proveed
 de cobro puede incorporarse después sobre ese mismo acceso efectivo.
 
 Falta concretar tarifas y tramos, qué clientes computan para el límite, derechos
-incluidos, convivencia con una suscripción Pro individual y qué sucede al
+adicionales incluidos, convivencia con Pro individual y qué sucede al
 terminar la relación o el acceso profesional del entrenador. La propuesta no
 requiere otro producto generalista ni otra aplicación para los clientes, y no
 resuelve por sí sola la separación técnica del panel profesional. La cancelación
