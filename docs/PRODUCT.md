@@ -576,6 +576,11 @@ modelos y componentes existentes, es una recomendación pendiente de decisión.
 Esta definición no implementa relaciones entrenador-cliente, permisos,
 suscripciones profesionales ni cambios en el algoritmo.
 
+**Aclaración de TRN-003 · 19/10/2026:** Javier confirma reutilizar las herramientas
+existentes sin duplicar ADMIN. La revisión técnica y la propuesta de una primera
+versión se recogen en [Espacio de entrenadores](TRAINER_APP.md), distinguiendo
+acuerdos vigentes de decisiones todavía pendientes.
+
 ## Free y Pro: reparto confirmado, interfaz inicial y pagos pendientes
 
 **Estado actual · COM-008 · 10/10/2026:** existen derechos Pro temporales y cuotas

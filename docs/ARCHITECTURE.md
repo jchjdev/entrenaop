@@ -550,16 +550,23 @@ la confirmación relee contenido y referencias conservando las RPC existentes.
 [Contrato y límites de concurrencia](ADMIN_PUBLICATION_REVIEW_2026_10_19.md).
 
 
-**Propuesta de secuencia · TRN-003 · 18/10/2026:** Javier propone terminar primero
-ADMIN para facilitar el espacio profesional y evitar programar por duplicado
-las herramientas comunes. El alcance del cierre sigue pendiente. Se recomienda
-consolidar los recorridos de creación de ejercicios, sesiones y programas,
-compartiendo modelos, validaciones y componentes mediante los paquetes existentes
-cuando corresponda. El espacio profesional consumiría esas piezas compartidas;
-su navegación, clientes, guardado y permisos seguirían siendo propios. No se ha
-acordado copiar ADMIN ni una extracción concreta del editor, ni se condiciona
-el portal a implementar todas las funciones administrativas futuras. Esta
-propuesta no inicia una refactorización ni da por cerrado el trabajo actual.
+**Reutilización acordada · TRN-003 · aclaración del 19/10/2026:** Javier confirma
+que el espacio profesional debe aprovechar las herramientas existentes y evitar
+dos copias de ADMIN. Modelos, validaciones y herramientas de creación comunes
+deben mantenerse compartidos; navegación, clientes, guardado y autorización
+conservan el contexto de cada aplicación. No se condiciona el portal a terminar
+todas las funciones administrativas futuras.
+
+La inspección del 19/10 encuentra modelos en `workout_core`, campos de autoría
+en `workout_editor_ui` y diseño en `entrena_ui`. Los creadores completos de
+sesiones/programas, portadas y recuperación de programas aún dependen de tipos,
+rutas o repositorios administrativos. Se recomienda separar esos límites de
+forma incremental, verificando primero su uso en ADMIN, y utilizar los paquetes
+existentes cuando corresponda. `trainer_app/` sigue siendo el nombre propuesto
+para una aplicación profesional independiente dentro del repositorio. La
+distribución concreta y el primer recorrido están propuestos en
+[Espacio de entrenadores](TRAINER_APP.md); esta revisión documental no inicia
+una refactorización ni implementa permisos profesionales.
 
 `website/next/` contiene un borrador local de la futura web de presentación.
 Resume el recorrido que existe en desarrollo, anuncia iPhone y Android sin
