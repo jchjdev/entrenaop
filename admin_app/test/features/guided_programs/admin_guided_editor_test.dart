@@ -429,15 +429,15 @@ void main() {
       await tester.tap(find.text('Iniciación'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(
-        find.widgetWithText(
-          DropdownButtonFormField<String>,
-          'Categoría principal',
+        find.descendant(
+          of: find.byKey(const ValueKey('program-label-Categoría principal')),
+          matching: find.byType(DropdownButtonFormField<String>),
         ),
       );
       await tester.tap(
-        find.widgetWithText(
-          DropdownButtonFormField<String>,
-          'Categoría principal',
+        find.descendant(
+          of: find.byKey(const ValueKey('program-label-Categoría principal')),
+          matching: find.byType(DropdownButtonFormField<String>),
         ),
       );
       await tester.pumpAndSettle();
@@ -584,7 +584,7 @@ void main() {
       await tester.tap(find.text('Abrir'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Nombre del programa'),
+        find.byKey(const ValueKey('program-field-Nombre del programa')),
         'Guía estable',
       );
       await tester.ensureVisible(find.text('Elegir del catálogo'));
@@ -622,13 +622,14 @@ void main() {
       await tester.tap(find.text('Por fases'));
       await tester.pumpAndSettle();
       expect(
-        find.widgetWithText(TextFormField, 'Duración orientativa (semanas)'),
+        find.byKey(
+          const ValueKey('program-field-Duración orientativa (semanas)'),
+        ),
         findsOneWidget,
       );
       expect(
-        find.widgetWithText(
-          TextFormField,
-          'Indicaciones y condiciones de avance',
+        find.byKey(
+          const ValueKey('program-field-Indicaciones y condiciones de avance'),
         ),
         findsOneWidget,
       );

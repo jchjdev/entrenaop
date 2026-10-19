@@ -169,7 +169,7 @@ Future<GoRouter> _mount(
   );
   await tester.pumpAndSettle();
   await tester.enterText(
-    find.widgetWithText(TextFormField, 'Nombre del programa'),
+    find.byKey(const ValueKey('program-field-Nombre del programa')),
     'Glúteos · cuatro sesiones',
   );
   return router;
@@ -384,7 +384,11 @@ void main() {
     await tester.pumpAndSettle();
     for (var i = 0; i < 2; i++) {
       final field = find
-          .widgetWithText(TextFormField, 'Indicaciones y condiciones de avance')
+          .byKey(
+            const ValueKey(
+              'program-field-Indicaciones y condiciones de avance',
+            ),
+          )
           .at(i);
       await tester.ensureVisible(field);
       await tester.enterText(field, 'Avanzar tras revisar la fase');

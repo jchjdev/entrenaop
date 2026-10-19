@@ -1,5 +1,15 @@
 # Identidad visual de EntrenaOP
 
+## Creador de programas en ADMIN · UI-060 · 19/10/2026
+
+Tras detectar etiquetas flotantes sobre botones, Javier solicita revisar el
+formulario completo. En este creador las etiquetas pasan al flujo vertical, con
+su nombre accesible asociado al control y posibilidad de envolver varias líneas.
+Se conservan superficies, colores y campos Compacto; no cambia el tema global.
+Las acciones de orden y los interruptores se redistribuyen al reducir el ancho o
+ampliar texto. Los nombres de categorías y calentamientos crecen sin recortarse.
+[Cobertura, evidencia y límites](ADMIN_PROGRAM_CREATOR_LAYOUT_2026_10_19.md).
+
 ## Compacto en deportista y ADMIN · UI-059 · 19/10/2026
 
 Javier considera demasiado grandes e impersonales los campos tras UI-057.

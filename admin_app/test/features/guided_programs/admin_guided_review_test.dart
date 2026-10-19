@@ -261,7 +261,7 @@ void main() {
       final router = await _mount(tester, guided, _Workouts());
       await tap(tester, find.text('Editar borrador'));
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Objetivo e indicaciones'),
+        find.byKey(const ValueKey('program-field-Objetivo e indicaciones')),
         'Indicaciones revisadas antes de publicar',
       );
       await tap(tester, find.text('Guardar y revisar'));

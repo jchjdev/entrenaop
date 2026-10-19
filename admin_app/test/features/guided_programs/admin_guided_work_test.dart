@@ -148,12 +148,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.widgetWithText(TextFormField, 'Nombre del programa'),
+        find.byKey(const ValueKey('program-field-Nombre del programa')),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Nombre del programa'),
+        find.byKey(const ValueKey('program-field-Nombre del programa')),
         'Trabajo sin conexión',
       );
       await tester.pump(const Duration(seconds: 1));
@@ -168,7 +168,7 @@ void main() {
         findsOneWidget,
       );
       await tester.scrollUntilVisible(
-        find.widgetWithText(TextFormField, 'Nombre del programa'),
+        find.byKey(const ValueKey('program-field-Nombre del programa')),
         200,
         scrollable: find.byType(Scrollable).first,
       );
@@ -243,7 +243,7 @@ void main() {
       expect(find.text('-'), findsOneWidget);
       expect(find.textContaining('pendiente'), findsWidgets);
       await tester.enterText(
-        find.widgetWithText(TextFormField, 'Nombre del programa'),
+        find.byKey(const ValueKey('program-field-Nombre del programa')),
         'Glúteos recuperado',
       );
       await tester.pump(const Duration(seconds: 1));
@@ -260,46 +260,67 @@ void main() {
       expect(find.text('¿Salir sin guardar?'), findsNothing);
     },
   );
-  testWidgets(
-    'crear usa una URL estable y un guardado final incierto no duplica al reintentar',
-    (tester) async {
-      final state = _state()..['mode'] = 'guide';
-      (state['phases'] as List).single['pending'] = <String>[];
-      (state['phases'] as List).single['sessions'][0]['adjustable'] = false;
-      final repo = _Work()..loseFinal = true;
-      final router = createAdminRouter(
-        programs: _Programs(),
-        workouts: _Workouts(),
-        exercises: _Exercises(),
-        guided: _Guided(),
-        guidedWork: repo,
-        onSignOut: () {},
-        initialLocation: '/guided-programs/new',
-      );
-      addTearDown(router.dispose);
-      await tester.binding.setSurfaceSize(const Size(1300, 1700));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      await tester.pumpAndSettle();
-      final location = router.routeInformationProvider.value.uri;
-      expect(location.path, startsWith('/guided-programs/work/'));
-      final id = location.pathSegments.last;
-      // Simula recarga en el mismo identificador, ahora con contenido válido.
-      repo.rows[id] = GuidedWork(id: id, state: state, revision: 1);
-      router.go('/guided-programs');
-      await tester.pumpAndSettle();
-      router.go(location.toString());
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar en catálogo'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Guardar en catálogo'));
-      await tester.pumpAndSettle();
-      expect(find.text('Comprobar y reintentar guardado'), findsOneWidget);
-      await tester.tap(find.text('Comprobar y reintentar guardado'));
-      await tester.pumpAndSettle();
-      expect(repo.finalized, 1);
-      expect(find.text('Comprobar y reintentar guardado'), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  for (final narrow in [false, true]) {
+    testWidgets(
+      'crear usa URL estable y reintenta sin duplicar · ${narrow ? '320 px y texto doble' : 'escritorio'}',
+      (tester) async {
+        final state = _state()..['mode'] = 'guide';
+        (state['phases'] as List).single['pending'] = <String>[];
+        (state['phases'] as List).single['sessions'][0]['adjustable'] = false;
+        final repo = _Work()..loseFinal = true;
+        final router = createAdminRouter(
+          programs: _Programs(),
+          workouts: _Workouts(),
+          exercises: _Exercises(),
+          guided: _Guided(),
+          guidedWork: repo,
+          onSignOut: () {},
+          initialLocation: '/guided-programs/new',
+        );
+        addTearDown(router.dispose);
+        await tester.binding.setSurfaceSize(
+          narrow ? const Size(320, 900) : const Size(1300, 1700),
+        );
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          MaterialApp.router(
+            routerConfig: router,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(narrow ? 2 : 1)),
+              child: child!,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final location = router.routeInformationProvider.value.uri;
+        expect(location.path, startsWith('/guided-programs/work/'));
+        final id = location.pathSegments.last;
+        // Simula recarga en el mismo identificador, ahora con contenido válido.
+        repo.rows[id] = GuidedWork(id: id, state: state, revision: 1);
+        router.go('/guided-programs');
+        await tester.pumpAndSettle();
+        router.go(location.toString());
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Guardar en catálogo'),
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Guardar en catálogo'));
+        await tester.pumpAndSettle();
+        expect(find.text('Comprobar y reintentar guardado'), findsOneWidget);
+        await tester.ensureVisible(
+          find.text('Comprobar y reintentar guardado'),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Comprobar y reintentar guardado'));
+        await tester.pumpAndSettle();
+        expect(repo.finalized, 1);
+        expect(find.text('Comprobar y reintentar guardado'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

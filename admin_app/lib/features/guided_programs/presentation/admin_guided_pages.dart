@@ -903,17 +903,108 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     int lines = 1,
     bool required = false,
     bool numeric = false,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: TextFormField(
+  }) => _labeledControl(
+    label,
+    TextFormField(
+      key: ValueKey('program-field-$label'),
       controller: c,
       maxLines: lines,
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(labelText: label),
+      decoration: const InputDecoration(),
       onChanged: (_) => setState(_changed),
       validator: (v) =>
           required && (v ?? '').trim().isEmpty ? 'Completa este campo.' : null,
     ),
+  );
+
+  // La etiqueta ocupa espacio real y puede envolver líneas sin invadir el
+  // control anterior; se conserva su nombre accesible en el campo.
+  Widget _labeledControl(String label, Widget control) => Padding(
+    key: ValueKey('program-label-$label'),
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ExcludeSemantics(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Semantics(label: label, child: control),
+      ],
+    ),
+  );
+
+  Widget _header(Widget title, List<Widget> actions) => LayoutBuilder(
+    builder: (context, constraints) {
+      if (constraints.maxWidth < 400 ||
+          MediaQuery.textScalerOf(context).scale(16) > 24) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            title,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Wrap(children: actions),
+            ),
+          ],
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: title),
+          ...actions,
+        ],
+      );
+    },
+  );
+
+  Widget _sessionSwitch({
+    required String title,
+    required Widget subtitle,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+  }) => LayoutBuilder(
+    key: ValueKey('program-switch-$title'),
+    builder: (context, constraints) {
+      if (constraints.maxWidth < 280 ||
+          MediaQuery.textScalerOf(context).scale(16) > 24) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(title),
+              const SizedBox(height: 4),
+              DefaultTextStyle(
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                child: subtitle,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Semantics(
+                  label: title,
+                  child: Switch(value: value, onChanged: onChanged),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(title),
+        subtitle: subtitle,
+        value: value,
+        onChanged: onChanged,
+      );
+    },
   );
   Future<void> _retryFinal() async {
     if (_busy || _finalAttempt == null) return;
@@ -1105,7 +1196,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                     child: Material(
                       color: Theme.of(context).colorScheme.surface,
                       child: Center(
-                        child: Padding(
+                        child: SingleChildScrollView(
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -1142,57 +1233,83 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         'Selecciona hasta ocho. La principal aparece en la tarjeta; todas participan en la búsqueda.',
       ),
       const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 6,
-        children: [
-          for (final c in _categories.where(
-            (c) => c.active || _categoryIds.contains(c.id),
-          ))
-            FilterChip(
-              label: Text('${c.name}${c.active ? '' : ' (desactivada)'}'),
-              selected: _categoryIds.contains(c.id),
-              onSelected: (selected) => setState(() {
-                if (selected) {
-                  if (_categoryIds.length >= 8) {
-                    _error = 'Puedes seleccionar hasta ocho categorías.';
-                    return;
-                  }
-                  _categoryIds.add(c.id);
-                  _primaryCategoryId ??= c.id;
-                } else {
-                  _categoryIds.remove(c.id);
-                  if (_primaryCategoryId == c.id) {
-                    _primaryCategoryId = _categoryIds.firstOrNull;
-                  }
-                }
-                _changed();
-              }),
-            ),
-        ],
-      ),
-      if (_categoryIds.isNotEmpty) ...[
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          key: ValueKey(
-            'primary-$_primaryCategoryId-${_categoryIds.join(',')}',
-          ),
-          initialValue: _primaryCategoryId,
-          decoration: const InputDecoration(labelText: 'Categoría principal'),
-          isExpanded: true,
-          items: [
+      LayoutBuilder(
+        builder: (context, constraints) => Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
             for (final c in _categories.where(
-              (c) => _categoryIds.contains(c.id),
+              (c) => c.active || _categoryIds.contains(c.id),
             ))
-              DropdownMenuItem(
-                value: c.id,
-                child: Text(c.name, overflow: TextOverflow.ellipsis),
+              FilterChip(
+                label: ConstrainedBox(
+                  // Reservar sitio al check y rellenos antes de medir el texto
+                  // permite que el chip calcule su altura con todas las líneas.
+                  constraints: BoxConstraints(
+                    maxWidth: (constraints.maxWidth - 80).clamp(
+                      1,
+                      double.infinity,
+                    ),
+                  ),
+                  child: Builder(
+                    builder: (context) => DefaultTextStyle(
+                      style: DefaultTextStyle.of(context).style,
+                      child: Text(
+                        '${c.name}${c.active ? '' : ' (desactivada)'}',
+                        softWrap: true,
+                      ),
+                    ),
+                  ),
+                ),
+                selected: _categoryIds.contains(c.id),
+                onSelected: (selected) => setState(() {
+                  if (selected) {
+                    if (_categoryIds.length >= 8) {
+                      _error = 'Puedes seleccionar hasta ocho categorías.';
+                      return;
+                    }
+                    _categoryIds.add(c.id);
+                    _primaryCategoryId ??= c.id;
+                  } else {
+                    _categoryIds.remove(c.id);
+                    if (_primaryCategoryId == c.id) {
+                      _primaryCategoryId = _categoryIds.firstOrNull;
+                    }
+                  }
+                  _changed();
+                }),
               ),
           ],
-          onChanged: (id) => setState(() {
-            _primaryCategoryId = id;
-            _changed();
-          }),
+        ),
+      ),
+      if (_categoryIds.isNotEmpty) ...[
+        _labeledControl(
+          'Categoría principal',
+          DropdownButtonFormField<String>(
+            key: ValueKey(
+              'primary-$_primaryCategoryId-${_categoryIds.join(',')}',
+            ),
+            initialValue: _primaryCategoryId,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            ),
+            isExpanded: true,
+            isDense: false,
+            itemHeight: null,
+            items: [
+              for (final c in _categories.where(
+                (c) => _categoryIds.contains(c.id),
+              ))
+                DropdownMenuItem(
+                  value: c.id,
+                  child: Text(c.name, softWrap: true),
+                ),
+            ],
+            onChanged: (id) => setState(() {
+              _primaryCategoryId = id;
+              _changed();
+            }),
+          ),
         ),
       ],
       Wrap(
@@ -1237,14 +1354,12 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_mode == GuidedProgramMode.phased) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Fase ${index + 1}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
+            _header(
+              Text(
+                'Fase ${index + 1}',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              [
                 IconButton(
                   tooltip: 'Subir fase',
                   onPressed: index == 0 ? null : () => _movePhase(index, -1),
@@ -1371,14 +1486,12 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${i + 1}. ${s.name}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
+            _header(
+              Text(
+                '${i + 1}. ${s.name}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              [
                 IconButton(
                   tooltip: 'Subir sesión',
                   onPressed: i == 0
@@ -1414,9 +1527,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
             const SizedBox(height: 8),
             if (source?.catalogScope == 'general' &&
                 source?.status == 'published')
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Mostrar en Sesiones de EntrenaOP'),
+              _sessionSwitch(
+                title: 'Mostrar en Sesiones de EntrenaOP',
                 subtitle: _savingVisibilityId == source!.id
                     ? const Text('Guardando visibilidad…')
                     : AdminSessionLibraryStatus(session: source),
@@ -1448,45 +1560,55 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ),
             if (hasWarmup)
               const Text('Esta sesión ya incluye su propio calentamiento.'),
-            if (!hasWarmup) const SizedBox(height: 16),
             if (!hasWarmup)
-              DropdownButtonFormField<String>(
-                key: ValueKey('${s.id}:${s.warmup}'),
-                initialValue: s.warmup ?? '',
-                isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Calentamiento adjunto',
-                ),
-                items: [
-                  const DropdownMenuItem(
-                    value: '',
-                    child: Text('Sin calentamiento adjunto'),
-                  ),
-                  if (s.warmup != null &&
-                      !_warmups.any((w) => w.id == s.warmup))
-                    DropdownMenuItem(
-                      value: s.warmup,
-                      enabled: false,
-                      child: const Text('Calentamiento no disponible'),
+              _labeledControl(
+                'Calentamiento adjunto',
+                DropdownButtonFormField<String>(
+                  key: ValueKey('${s.id}:${s.warmup}'),
+                  initialValue: s.warmup ?? '',
+                  isExpanded: true,
+                  isDense: false,
+                  itemHeight: null,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
                     ),
-                  for (final w in _warmups)
-                    if (w.status == 'published' || w.id == s.warmup)
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: '',
+                      child: Text('Sin calentamiento adjunto', softWrap: true),
+                    ),
+                    if (s.warmup != null &&
+                        !_warmups.any((w) => w.id == s.warmup))
                       DropdownMenuItem(
-                        value: w.id,
-                        enabled: w.status == 'published',
-                        child: Text(
-                          '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
-                          overflow: TextOverflow.ellipsis,
+                        value: s.warmup,
+                        enabled: false,
+                        child: const Text(
+                          'Calentamiento no disponible',
+                          softWrap: true,
                         ),
                       ),
-                ],
-                // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
-                onChanged: (v) {
-                  setState(() {
-                    s.warmup = v == '' ? null : v;
-                    _changed();
-                  });
-                },
+                    for (final w in _warmups)
+                      if (w.status == 'published' || w.id == s.warmup)
+                        DropdownMenuItem(
+                          value: w.id,
+                          enabled: w.status == 'published',
+                          child: Text(
+                            '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
+                            softWrap: true,
+                          ),
+                        ),
+                  ],
+                  // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
+                  onChanged: (v) {
+                    setState(() {
+                      s.warmup = v == '' ? null : v;
+                      _changed();
+                    });
+                  },
+                ),
               ),
             if (!hasWarmup)
               Align(
@@ -1497,9 +1619,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                   label: const Text('Crear y adjuntar calentamiento'),
                 ),
               ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Permitir ajustar descansos entre series'),
+            _sessionSwitch(
+              title: 'Permitir ajustar descansos entre series',
               subtitle: const Text(
                 'Solo bloques convencionales; se conservan los formatos temporizados.',
               ),
