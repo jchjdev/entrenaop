@@ -500,9 +500,11 @@ La visión acordada para la web pública es que sirva de puerta de entrada a la
 aplicación del deportista y a espacios diferenciados para administración y
 entrenadores. Podrán tener despliegues independientes y enlazarse desde la web
 principal bajo el mismo dominio. La app del deportista ya tiene destino web y
-`admin_app/` es una aplicación Flutter web separada. WEB-005 prepara su acceso
+`admin_app/` es una aplicación Flutter web separada. WEB-005 publica su acceso
 en `admin.entrenaop.es`, con carpeta propia de Hostinger y Supabase Dev;
-subdominio y HTTPS están creados, y la carga/aceptación siguen en curso.
+el acceso HTTPS está publicado y contrastado en Chrome y navegador integrado.
+Javier completa la entrada remota con Microsoft Authenticator y se comprueban
+los catálogos autenticados contra Dev.
 El acceso usa la misma identidad Dev del deportista, con contraseña compartida
 y segundo factor para las facultades administrativas. El requisito persistente
 de MFA se activa al verificar el autenticador y se aplica desde `is_admin()`;

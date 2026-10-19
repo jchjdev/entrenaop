@@ -1,14 +1,22 @@
 # Roadmap de EntrenaOP
 
-**WEB-005 · 19/10/2026 · publicación administrativa en curso:** Javier autoriza
+**WEB-005 · 19/10/2026 · publicado en Dev; entrada remota comprobada:** Javier autoriza
 `admin.entrenaop.es` conectado a Dev y confirma la identidad compartida con su
-cuenta de deportista. Subdominio/carpeta/HTTPS creados en Hostinger; acceso con
-contraseña fuerte y TOTP preparado, con requisito de servidor tras verificar el
-factor. Análisis limpio, 173 pruebas ADMIN correctas y dos capturas optativas
+cuenta de deportista. Subdominio/carpeta/HTTPS publicados en Hostinger; contraseña
+cambiada por Javier y Microsoft Authenticator activado, con requisito de servidor
+comprobado. Análisis limpio, 176 pruebas ADMIN correctas y dos capturas optativas
 omitidas, compilación release endurecida y pruebas SQL transaccionales correctas.
-**Bloque abierto:** falta que Javier complete sus credenciales, publicar el paquete
-y comprobar su acceso desde el subdominio. No abrir otra mejora grande antes
-de cerrar este recorrido. [Estado y contrato](ADMIN_HOSTING_2026_10_19.md).
+Manifiesto/JavaScript Dev coincidentes, MIME WebAssembly corregido y acceso
+anónimo mostrado en Chrome y navegador integrado.
+Javier confirma la entrada con Microsoft Authenticator; se contrastan las cuatro
+preparaciones y los dos programas guiados desde el subdominio. El código publicado
+es el build validado, sin incorporar los cambios simultáneos de otro chat.
+**Cierre técnico verificado; remate de seguridad pendiente:** Javier indica que
+desactiva el permiso temporal de archivos de la extensión; falta su confirmación.
+No se modifica Supabase de producción ni la web principal. Tras ese remate, el
+único siguiente bloque recomendado es vista previa y revisión editorial previa
+a publicar, manteniendo el acceso remoto ya disponible.
+[Estado y contrato](ADMIN_HOSTING_2026_10_19.md).
 
 **UI-056, 19/10/2026 · recuperación del trabajo de ADMIN:** programas guiados
 con guardado automático/manual de campos incompletos, referencias pendientes y

@@ -13,44 +13,40 @@ espacio disponible y subdominio creado con carpeta `public_html/admin`.
 DNS resuelve y HTTPS valida correctamente, sin omitir la verificación TLS.
 La web principal y su repositorio independiente `website/` no se modifican.
 
-El paquete de la revisión `2939c96` está cargado en `admin-releases`, fuera de
-`public_html`, y todavía no se ha extraído en el subdominio. Javier confirma el
-cambio de contraseña y ha habilitado temporalmente el acceso a archivos de la
-extensión de Chrome para esta carga. Queda pendiente que desactive ese permiso
-al terminar. La publicación y el recorrido con la cuenta real quedan pendientes
-del alta del autenticador por el propio Javier. La comprobación de Dev después
-de su aclaración sigue mostrando un administrador, ningún requisito MFA activado
-y ningún factor administrativo verificado. Este apartado se
-actualiza con la evidencia de publicación; no acredita por sí mismo un panel
-ya operativo en el subdominio.
+**Publicado en HTTPS el 19/10/2026:** `https://admin.entrenaop.es/`, conectado
+exclusivamente al proyecto Dev `sxbxfjqgoddzhtcyhalw`. Javier ya ha cambiado la
+contraseña y activado TOTP con Microsoft Authenticator. La comprobación previa
+al despliegue confirma un administrador, un requisito MFA activo y un factor
+administrativo verificado. Javier confirma su entrada en el subdominio y se
+contrasta el panel autenticado, con las cuatro preparaciones y los dos programas
+guiados de Dev. Queda pendiente su confirmación de haber desactivado el permiso
+temporal de archivos de la extensión ChatGPT; ya ha indicado que lo desactiva.
+La carga ha terminado y no requiere mantener ese permiso.
 
-Paquete cargado: `2939c96-20261019T090124Z.zip`, SHA-256
-`057CD1EC7CA0009787E3C2A4511667373F4767C1651636BE566A50188543AD31`.
-Este primer paquete queda sustituido para publicar: Javier detecta que la imagen
-TOTP no carga. GoTrue Dart 2.27.2 antepone `data:image/svg+xml;utf-8,` al SVG
-de Auth y la pantalla codificaba de nuevo toda esa URI. Se retira el prefijo
-del SDK antes de generar una URI SVG base64, conservando los caracteres del SVG.
-No cambia el factor ni el mecanismo de autorización. El admin local está
-recompilado y el paquete corregido ya está cargado en la misma carpeta privada:
-`c2d7e4e-20261019T093931Z.zip`, SHA-256
-`0557D8AAFC5BC95302F29E820C096716501750BC90CFFE641D60B0B955B0A414`.
-Su manifiesto indica revisión `c2d7e4e`, fuentes limpias y SHA-256 del JavaScript
-`615EA8A181B4D38B43E996D79650C6D821C5855F4E9AD69626A2428AD47A4864`.
-`hostinger-corrected-release.png` acredita esa carga. Se conserva el ZIP anterior
-sin extraerlo. La extracción pública sigue pendiente del alta del autenticador.
-La captura `hostinger-private-release.png` acredita únicamente la carga privada.
-`security-login-handoff.png` muestra el acceso local entregado al propietario,
-con campos vacíos, antes de configurar el autenticador.
+Paquete completo publicado: `fcf60d7-20261019T095548Z.zip`, SHA-256
+`891CCDD254C90E72FD98A2669784CD6A2F65ACC341BE891469E1229275FFBA80`.
+El manifiesto remoto acredita revisión `fcf60d7`, entorno `development` y el
+proyecto Dev esperado. El JavaScript descargado desde el subdominio coincide
+con su SHA-256 `0394034862E227AE62E009089B7D819338371C7B80C4198D797E33FE81AA3E72`.
+Se reutiliza el build de aplicación validado en `9d88cd6` y se incorpora la
+configuración de Hostinger de `fcf60d7`, sin recompilar ni integrar los cambios
+simultáneos de otro chat. Por esos cambios presentes al empaquetar, el manifiesto
+registra literalmente `sourceTreeDirty=true`; no se afirma que el checkout
+compartido estuviera limpio ni que esos cambios formen parte del JavaScript.
 
-Después de separar la contraseña del alta del autenticador queda preparado
-localmente `9d88cd6-20261019T094805Z.zip`, SHA-256
-`74315EDCABB5041B2D1C2414419BDCE8D896EEDA96149E8C6C75E38C4AC8EA84`.
-Es el paquete vigente para la publicación y todavía debe cargarse en Hostinger;
-los paquetes privados anteriores se conservan sin extraer. La revisión es
-`9d88cd6`, las fuentes están limpias y el SHA-256 del JavaScript es
-`0394034862E227AE62E009089B7D819338371C7B80C4198D797E33FE81AA3E72`.
-La captura `security-direct-qr.png` acredita la pantalla real local con el botón
-directo visible y la contraseña opcional cerrada, antes de generar el factor.
+Todos los ZIP y el parche MIME intermedio permanecen en `admin-releases`, fuera
+de `public_html`. La extracción definitiva usa solo `public_html/admin`, sin
+borrar el `default.php` ni modificar la web principal. La carpeta requiere el
+nombre `.` en el selector de extracción de Hostinger para publicar en el destino.
+
+Durante la preparación se corrigen dos incidencias: GoTrue Dart antepone una URI
+al SVG y la imagen se codificaba dos veces; se normaliza antes de codificar en
+base64. Además, recargar perdía la confirmación de contraseña; el QR tiene ahora
+acceso directo y el cambio de contraseña es opcional. Las capturas locales y de
+cargas anteriores documentan esas etapas, no la publicación vigente.
+
+`hosted-login.png` y `chrome-hosted-login.png` muestran el acceso real publicado
+con campos vacíos en el navegador integrado y en Chrome, respectivamente.
 
 ## Acceso y segundo factor
 
@@ -63,8 +59,12 @@ El primer arranque detecta que Hostinger sirve `.wasm` como `text/plain`;
 `AddType application/wasm .wasm` en el `.htaccess` exclusivo del subdominio lo
 corrige. Las respuestas GET de CanvasKit normal, Chromium y WebParagraph pasan
 a `application/wasm`, y una sesión nueva del navegador carga el acceso sin errores.
-Se prepara un paquete completo que incorpore ese ajuste; la aceptación autenticada
-en el subdominio sigue pendiente de la entrada privada del propietario.
+El paquete completo `fcf60d7-20261019T095548Z.zip` incorpora el ajuste y renueva
+también los recursos que Chrome había conservado con el tipo MIME anterior.
+Chrome y una sesión nueva del navegador integrado cargan el formulario de acceso.
+Javier confirma la entrada remota y se comprueban los catálogos autenticados.
+La captura `hosted-authenticated-guided-programs.png` acredita los dos programas
+y el trabajo privado recuperable. No se muestra ni se registra su código TOTP.
 
 El router comprueba el estado administrativo antes de resolver una ruta
 privada. `/security` vive fuera del marco de contenido y permite completar:
@@ -144,6 +144,23 @@ las rutas del admin a través de la web pública. La dirección raíz sirve
 `index.html` como prioridad; el `default.php` de Hostinger se conserva.
 
 ## Validación del bloque
+
+- HTTPS real válido, índice y manifiesto HTTP 200; HTTP redirige a HTTPS,
+  `entrenaop.es/admin/` redirige al host administrativo y el listado de CanvasKit
+  devuelve 403. Se comprueban CSP, HSTS, noindex, no-sniff, bloqueo de marcos,
+  política de permisos, referrer y no-store de los puntos de entrada.
+- Manifiesto y JavaScript final coinciden con Dev y el paquete consolidado.
+  Motor normal, Chromium y WebParagraph con MIME correcto. Chrome y navegador
+  integrado muestran el login; navegar anónimamente a `#/guided-programs`
+  vuelve a `#/login` antes de mostrar contenido privado.
+- Después del alta real se repite `admin_web_mfa_access.sql` con ROLLBACK y se
+  contrasta otra vez el historial de migraciones Dev, sin diferencias.
+- Entrada del propietario con Microsoft Authenticator confirmada y panel remoto
+  autenticado verificado: cuatro preparaciones, dos programas guiados y el trabajo
+  privado de prueba conservado desde local. Se abre «Continuar» en
+  `QA recuperacion admin` y se comprueban su nombre, modalidad por fases y estado
+  guardado en el editor remoto; se vuelve al catálogo sin modificarlo. No se publica
+  contenido de prueba ni se modifica el catálogo del deportista durante la aceptación.
 
 - Análisis de ADMIN limpio, 176 pruebas correctas y dos capturas optativas
   existentes omitidas; compilación web con la configuración

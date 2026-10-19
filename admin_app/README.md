@@ -1,9 +1,11 @@
 # EntrenaOP Admin
 
-El acceso remoto de desarrollo se prepara en `admin.entrenaop.es`, con la
+El acceso remoto de desarrollo está publicado en `https://admin.entrenaop.es/`, con la
 misma cuenta Dev que el deportista y verificación TOTP para administrar.
 El cambio de contraseña puede hacerse desde cualquiera de las dos apps;
-`/security` permite continuar si ya se cambió en el deportista.
+`/security` ofrece acceso directo al autenticador y deja el cambio de contraseña
+como opción independiente. Microsoft Authenticator está verificado con la cuenta
+del propietario y su entrada remota está comprobada contra los catálogos Dev.
 [Contrato, paquete Hostinger y estado real](../docs/ADMIN_HOSTING_2026_10_19.md).
 
 **Cuentas y Pro** (menú Gestión, o `/accounts`) muestra al entrar

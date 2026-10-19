@@ -5,9 +5,9 @@
 Se comprueba la elegibilidad de su cuenta con Supabase Dev. No se ha solicitado
 ni fotografiado una contraseña, QR, clave TOTP o código de verificación.
 
-La puesta en marcha del subdominio está en curso. La evidencia de publicación
-y la prueba autenticada se incorporarán después de la configuración privada
-del propietario. No interpretar esta captura local como un despliegue remoto.
+El subdominio ya está publicado con Dev y la entrada autenticada está comprobada.
+Las capturas locales iniciales se conservan como historial y no acreditan el
+despliegue remoto por sí mismas.
 
 `hostinger-private-release.png` acredita la carga del primer ZIP en la carpeta
 privada, sin extracción pública. Ese paquete requiere sustitución por la
@@ -27,5 +27,20 @@ Todavía no acredita extracción ni acceso remoto autenticado.
 `security-direct-qr.png` muestra en Chrome el acceso directo a «Mostrar QR del
 autenticador» y el cambio de contraseña opcional cerrado. Se verifica el botón
 visible sin pulsarlo; la captura precede al alta privada del factor por Javier.
-El paquete vigente de este flujo es `9d88cd6-20261019T094805Z.zip`, preparado
-localmente y pendiente de cargar y publicar cuando termine la configuración.
+El paquete de este flujo fue `9d88cd6-20261019T094805Z.zip`, sustituido después
+por el paquete consolidado `fcf60d7-20261019T095548Z.zip` con MIME WebAssembly.
+
+`hosted-login.png` y `chrome-hosted-login.png` acreditan el acceso real desde
+`https://admin.entrenaop.es/#/login`, con campos vacíos, en navegador integrado y
+Chrome. El manifiesto publicado declara Dev y la revisión `fcf60d7`; su JavaScript
+coincide con el SHA-256 contrastado en el documento de despliegue. Una ruta privada
+solicitada sin sesión redirige al login. La entrada con contraseña y código del
+propietario se realiza mediante entrega del control, sin observar esos datos.
+
+`hosted-authenticated-preparations.png` y
+`hosted-authenticated-guided-programs.png` muestran los catálogos Dev después de
+que Javier confirme su entrada remota con Microsoft Authenticator.
+`hosted-recovered-work.png` acredita la recuperación del trabajo privado de
+prueba creado previamente en local, con su nombre y modalidad conservados. Se
+vuelve al catálogo sin editar ni publicar el trabajo. El acceso anónimo y el
+acceso autenticado pertenecen a sesiones distintas de navegador.
