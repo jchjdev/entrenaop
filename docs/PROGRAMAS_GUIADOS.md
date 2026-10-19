@@ -333,6 +333,33 @@ gestor administrativo y su diálogo admiten móvil estrecho con texto 2× median
 desplazamiento. Sin dependencias nuevas, cambios de ejecutores o producción.
 Queda la aceptación autenticada de Javier en dispositivos.
 
+### Exploración de Biblioteca · PRG-008 · revisión del 19/10/2026
+
+Javier descarta el paginador visible de programas y, durante la revisión,
+también la propuesta de sustituirlo por **Ver más**. Sus capturas muestran tres
+programas repartidos entre dos páginas, con búsqueda y dos selectores grandes
+antes de las tarjetas. El repositorio consulta actualmente dos publicaciones
+por página; este comportamiento sigue implementado y queda pendiente de cambio.
+
+Se revisa el vídeo local `exploracalisteniap.mp4`: Explora separa objetivos y
+tipos de contenido; los catálogos muestran búsqueda y Filtros compactos. Las
+sesiones oficiales ofrecen entradas por categorías y las personales una lista
+más directa. El vídeo permite valorar la navegación visible, sin acreditar cómo
+consulta o pagina internamente esa aplicación.
+
+La propuesta principal es conservar Programas/Sesiones/Ejercicios y mostrar el
+catálogo pequeño completo, con búsqueda y Filtros en una fila, categorías
+compactas y las tarjetas comunes vigentes. Como alternativa se presenta una
+entrada por objetivos. Si el catálogo crece, se valorarán colecciones para que
+la portada no se convierta en un recorrido interminable; la carga interna y su
+composición definitiva todavía no se han acordado. No se introduce otro sistema
+adaptativo ni se modifican preparaciones, ejecutores, autoría o registros.
+
+La comparación se entrega como maqueta de conversación, no como pantalla
+Flutter implementada. Se conservan los arreglos recientes de pestañas,
+selectores y estilo Compacto. Este apartado sustituye la aceptación visual
+del paginador descrita en PRG-002/007; su reemplazo sigue pendiente.
+
 ### Dejar un programa · PRG-005 · implementado el 18/10/2026
 
 Javier solicita poder abandonar los programas. La ficha ofrece **Dejar programa**
