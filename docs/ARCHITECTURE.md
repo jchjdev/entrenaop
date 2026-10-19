@@ -500,11 +500,15 @@ La visión acordada para la web pública es que sirva de puerta de entrada a la
 aplicación del deportista y a espacios diferenciados para administración y
 entrenadores. Podrán tener despliegues independientes y enlazarse desde la web
 principal bajo el mismo dominio. La app del deportista ya tiene destino web y
-`admin_app/` es una aplicación Flutter web separada; todavía no se han publicado
-en subdominios ni existe un portal de entrenadores. Los nombres de las rutas,
-la experiencia de acceso y la posible reutilización de interfaz se decidirán
-al implementar cada espacio. Los permisos administrativos y las relaciones
-entrenador-cliente seguirán siendo contratos distintos en el backend.
+`admin_app/` es una aplicación Flutter web separada. WEB-005 prepara su acceso
+en `admin.entrenaop.es`, con carpeta propia de Hostinger y Supabase Dev;
+subdominio y HTTPS están creados, y la carga/aceptación siguen en curso.
+El acceso usa la misma identidad Dev del deportista, con contraseña compartida
+y segundo factor para las facultades administrativas. El requisito persistente
+de MFA se activa al verificar el autenticador y se aplica desde `is_admin()`;
+la interfaz no puede retirarlo. No existe todavía un portal de entrenadores.
+Los permisos administrativos y las relaciones entrenador-cliente conservan
+contratos distintos. [Despliegue y límites](ADMIN_HOSTING_2026_10_19.md).
 
 **Propuesta de secuencia · TRN-003 · 18/10/2026:** Javier propone terminar primero
 ADMIN para facilitar el espacio profesional y evitar programar por duplicado

@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**WEB-005 · 19/10/2026 · publicación administrativa en curso:** Javier autoriza
+`admin.entrenaop.es` conectado a Dev y confirma la identidad compartida con su
+cuenta de deportista. Subdominio/carpeta/HTTPS creados en Hostinger; acceso con
+contraseña fuerte y TOTP preparado, con requisito de servidor tras verificar el
+factor. Análisis limpio, 173 pruebas ADMIN correctas y dos capturas optativas
+omitidas, compilación release endurecida y pruebas SQL transaccionales correctas.
+**Bloque abierto:** falta que Javier complete sus credenciales, publicar el paquete
+y comprobar su acceso desde el subdominio. No abrir otra mejora grande antes
+de cerrar este recorrido. [Estado y contrato](ADMIN_HOSTING_2026_10_19.md).
+
 **UI-056, 19/10/2026 · recuperación del trabajo de ADMIN:** programas guiados
 con guardado automático/manual de campos incompletos, referencias pendientes y
 URL recuperable. Catálogo con Continuar trabajando, permisos por administrador,
@@ -7,7 +17,7 @@ conflictos del mismo trabajo y finalización transaccional que permite reintenta
 sin duplicar versiones. Publicación y validación editorial conservadas.
 Análisis limpio, 167 pruebas correctas (dos capturas optativas omitidas), web
 compilada y SQL/Chrome comprobados contra Dev; no cambia producción ni deportista.
-**Único siguiente bloque tras la aceptación de Javier · WEB-003:** preparar el
+**Único siguiente bloque tras la aceptación de Javier · WEB-005:** preparar el
 acceso administrativo por subdominio, verificando alojamiento, entorno y acceso
 con su cuenta antes de publicar. La vista previa y la revisión previa a publicar
 quedan como mejoras posteriores, sin bloquear este acceso.

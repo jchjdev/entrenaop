@@ -90,7 +90,7 @@ Tampoco se añade idempotencia a la creación independiente de sesiones o ejerci
 Se verifican ADMIN, su nuevo contrato y las fronteras del catálogo. No cambian
 la app del deportista, paquetes compartidos, algoritmo, subdominio ni producción.
 Tras aceptar este estado, Javier confirma que será el único administrador y
-prioriza concretar el acceso por subdominio (WEB-003). El único siguiente bloque
+prioriza concretar el acceso por subdominio (WEB-005). El único siguiente bloque
 es preparar ese acceso, verificando el alojamiento, el entorno de datos y la
 autenticación antes de publicar. La vista previa como deportista, la revisión
 previa a publicar, duplicar como punto de partida y los avisos de contenido

@@ -1,0 +1,26 @@
+# Solo para admin.entrenaop.es: no copiar a la raíz de la web pública.
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} !^admin\.entrenaop\.es$ [NC]
+  RewriteRule ^ https://admin.entrenaop.es/ [R=302,L]
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://admin.entrenaop.es%{REQUEST_URI} [R=302,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  # HTTPS en imágenes/vídeos/conexiones conserva los proveedores de medios admitidos.
+  # El JavaScript y CanvasKit se sirven desde este mismo alojamiento.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://sxbxfjqgoddzhtcyhalw.supabase.co; media-src 'self' blob: https:; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+  <FilesMatch "^(index\.html|flutter_bootstrap\.js|flutter\.js|main\.dart\.js|version\.json|manifest\.json|build-info\.json|flutter_service_worker\.js)$">
+    Header always set Cache-Control "no-store, max-age=0"
+  </FilesMatch>
+</IfModule>

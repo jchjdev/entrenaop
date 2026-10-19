@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'features/auth/data/supabase_admin_security_repository.dart';
+import 'features/auth/presentation/admin_security_page.dart';
+
 import 'features/guided_programs/data/supabase_admin_guided_work_repository.dart';
 
 import 'package:entrenaop_admin/features/guided_programs/data/supabase_admin_guided_repository.dart';
@@ -69,6 +72,7 @@ class _AdminAppState extends State<AdminApp> {
 
   GoRouter _createRouter({String? initialLocation}) {
     final client = widget.client;
+    final security = SupabaseAdminSecurityRepository(client);
     return createAdminRouter(
       programs: SupabaseAdminProgramRepository(client),
       workouts: SupabaseAdminWorkoutRepository(client),
@@ -86,6 +90,20 @@ class _AdminAppState extends State<AdminApp> {
       authChanges: _authChanges,
       isAuthenticated: () => client.auth.currentSession != null,
       loginBuilder: (_) => AdminLoginPage(client: client),
+      needsSecurity: () async {
+        try {
+          return (await security.status()).needsSetupOrChallenge;
+        } catch (_) {
+          return true;
+        }
+      },
+      securityBuilder: (context) => AdminSecurityPage(
+        repository: security,
+        onComplete: () {
+          _authChanges.value++;
+          GoRouter.of(context).go('/programs');
+        },
+      ),
       initialLocation: initialLocation,
     );
   }

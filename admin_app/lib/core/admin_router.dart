@@ -41,6 +41,8 @@ GoRouter createAdminRouter({
   Listenable? authChanges,
   bool Function()? isAuthenticated,
   WidgetBuilder? loginBuilder,
+  WidgetBuilder? securityBuilder,
+  Future<bool> Function()? needsSecurity,
 }) {
   final exits = WorkflowExitRegistry();
   GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -179,12 +181,17 @@ GoRouter createAdminRouter({
     initialLocation: initialLocation,
     overridePlatformDefaultLocation: initialLocation != null,
     refreshListenable: authChanges,
-    redirect: (context, state) {
+    redirect: (context, state) async {
       if (isAuthenticated == null) {
         return state.uri.path == '/' ? '/programs' : null;
       }
       if (!isAuthenticated()) {
         return state.uri.path == '/login' ? null : '/login';
+      }
+      if (securityBuilder != null &&
+          state.uri.path != '/security' &&
+          await needsSecurity!()) {
+        return '/security';
       }
       return state.uri.path == '/login' || state.uri.path == '/'
           ? '/programs'
@@ -195,6 +202,11 @@ GoRouter createAdminRouter({
     routes: [
       if (loginBuilder != null)
         GoRoute(path: '/login', builder: (context, _) => loginBuilder(context)),
+      if (securityBuilder != null)
+        GoRoute(
+          path: '/security',
+          builder: (context, _) => securityBuilder(context),
+        ),
       ShellRoute(
         builder: (_, state, child) => AdminShell(
           path: state.uri.path,
