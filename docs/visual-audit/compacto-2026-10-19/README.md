@@ -25,3 +25,15 @@ contrastan sus valores. Los tests usan la política de entrada común.
 
 No son capturas de un móvil físico: falta la aceptación nativa de iPhone y
 Android. [Informe, matriz completa y límites](../../COMPACT_FORMS_2026_10_19.md).
+
+## Evidencia posterior en iPhone
+
+[Editor en Iphone-JVR](iphone-editor-real.png) es una captura nativa adicional
+del iPhone 12 físico, tras instalar Compacto en Release Dev. Las cuatro muestras
+anteriores siguen siendo capturas de widgets. Esta imagen acredita el editor
+visible con Tiempo/Carga alineados y `00:30` completo; no sustituye la prueba
+física de los gestos de teclado y el resto de pantallas.
+
+[Manifiesto real de ADMIN](admin-served-build-info.json): publicación de
+`1ac3781` comprobada por HTTPS, con Compacto incluido. Se contrasta el SHA-256
+del JavaScript servido, además de entrada, cabeceras y WebAssembly.

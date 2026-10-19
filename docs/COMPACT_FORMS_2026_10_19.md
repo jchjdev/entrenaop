@@ -138,6 +138,41 @@ Se escriben en `build/performance_v2_review/` de la app correspondiente.
 
 ## Límite pendiente: dispositivos físicos
 
+### Publicación web y preparación iPhone · 19/10/2026
+
+ADMIN sirve Compacto en `https://admin.entrenaop.es/`, revisión
+`1ac37816c2749d71680e26a62d6531fafb8ccb96`, que incluye `6e32099`.
+La ejecución [39252195710](https://github.com/jchjdev/entrenaop/actions/runs/39252195710)
+termina correctamente en su segundo intento. El primer despliegue de Compacto
+se detuvo porque `main` había avanzado; la primera publicación de la revisión
+actual falló con un error de transporte y pasó al reintentar solo ese trabajo.
+No fue un fallo de las pruebas ni de la compilación. Se contrastan por HTTPS
+el manifiesto, SHA-256 del JavaScript, entrada versionada, cabeceras y MIME de
+WebAssembly. [Manifiesto servido](visual-audit/compacto-2026-10-19/admin-served-build-info.json).
+
+El Mac se actualiza hasta esa revisión mediante fast-forward, conservando sus
+ajustes locales de Xcode y las resoluciones SPM. La compilación Release sin
+firma pasa con `APP_ENV=development`, sin la clave de compras Test Store.
+La firma desde SSH falla con `errSecInternalComponent`; se utiliza Xcode con
+el esquema existente `Runner iPhone` y destino `Iphone-JVR`. El resultado de
+instalación se registra en [la guía iOS](IOS_DEVELOPMENT.md).
+
+Recorrido de aceptación en el teléfono, con texto normal y ampliado:
+
+1. Crear/editar una sesión: escribir tiempo, descanso, repeticiones y carga;
+   comprobar valores completos, RIR y etiquetas. Añadir, quitar e igualar series
+   debe actualizar tanto el contador como los campos visibles.
+2. Tocar una zona vacía y desplazar la página: el teclado debe cerrarse. Pasar
+   directamente a otro campo debe mantener la edición; el botón tocado debe
+   ejecutar su acción al primer toque.
+3. Abrir los formatos disponibles, descansos entre rondas y transiciones;
+   comprobar también carrera, notas largas y un panel de RIR abierto/cerrado.
+4. Revisar acceso, marcas/calculadora y otros formularios usados habitualmente.
+   Volver atrás debe cerrar el teclado; valores, ayudas y acciones inferiores
+   deben seguir accesibles sin solaparse.
+
+Compilar, instalar o arrancar no acredita por sí solo este recorrido físico.
+
 `flutter devices` solo encuentra Windows, Chrome y Edge en este equipo. Las
 pruebas de foco/ocultación se ejecutan con el entorno de texto de Flutter,
 incluyendo las variantes iOS/Android. No sustituyen comprobar el teclado nativo

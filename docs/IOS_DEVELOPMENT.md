@@ -455,3 +455,35 @@ carrera `05:50`, además de agilidad `12,05 s`. El teclado está cerrado en esa
 observación. La distribución final está acreditada visualmente; la aceptación
 estética de Javier y la repetición completa de guardar un test siguen siendo
 comprobaciones distintas, no realizadas por el agente.
+
+## Compacto instalado en Iphone-JVR · 19/10/2026
+
+El Mac avanza mediante fast-forward desde `7cca2bc` hasta
+`1ac37816c2749d71680e26a62d6531fafb8ccb96`, que incluye Compacto (`6e32099`).
+Se revisan y conservan los cambios locales previos del proyecto, del esquema
+Runner y las dos resoluciones SPM. Flutter 3.47.5 y Xcode 27.0 se mantienen;
+las dependencias se preparan con `--enforce-lockfile`.
+
+La compilación Release sin firma termina correctamente. Dos intentos de firma
+desde SSH fallan con `errSecInternalComponent`, incluso después de desbloquear
+el Mac. Se utiliza la sesión interactiva existente de Xcode, con el esquema
+compartido **Runner iPhone** y destino **Iphone-JVR**, sin modificar el llavero
+ni la firma del proyecto. Xcode produce el paquete Release firmado e instala
+la actualización. Se comprueba:
+
+- `APP_ENV=development` explícito en la configuración generada y ausencia de
+  la clave Test Store. No se configura producción.
+- Verificación estricta y completa de firma del paquete de Xcode, generado
+  a las 14:42 del 19/10/2026. Huella SHA-256 de `App.framework/App`:
+  `8884d9cc207d1b4d025fb050f84a55e430b0a6e8313c8ab67e70b5db2d9ffa20`.
+- CoreDevice acredita `com.entrenaOp.entrenaop` instalado en el iPhone 12 de
+  Javier. Se conserva el identificador de la aplicación y no se desinstala.
+- [Captura nativa del editor](visual-audit/compacto-2026-10-19/iphone-editor-real.png),
+  1170 × 2532 px: editor abierto en una superserie, Tiempo y Carga alineados,
+  tiempo `00:30` completo y teclado cerrado en esa observación.
+
+La instalación y esa captura no acreditan todos los recorridos del teclado ni
+la ausencia de recortes en cada pantalla. Javier continúa la prueba física;
+el [recorrido de aceptación](COMPACT_FORMS_2026_10_19.md) incluye texto ampliado,
+toque exterior, desplazamiento, cambios de campo, RIR, series y formatos.
+Las pruebas completas de Flutter de esta implementación están documentadas allí.
