@@ -8,8 +8,10 @@ como opción independiente. Microsoft Authenticator está verificado con la cuen
 del propietario y su entrada remota está comprobada contra los catálogos Dev.
 [Contrato, paquete Hostinger y estado real](../docs/ADMIN_HOSTING_2026_10_19.md).
 
-La publicación automática se prepara con GitHub Actions, validaciones y cuenta
-FTPS limitada al admin. [Activación, estado y recuperación](../docs/ADMIN_DEPLOYMENT_2026_10_19.md).
+Las mejoras del código subidas a `main` se validan, compilan para Dev y publican
+automáticamente mediante GitHub Actions y una cuenta FTPS limitada al admin.
+La primera publicación completa y el arranque remoto están comprobados.
+[Activación, estado y recuperación](../docs/ADMIN_DEPLOYMENT_2026_10_19.md).
 
 **Cuentas y Pro** (menú Gestión, o `/accounts`) muestra al entrar
 una lista de cuentas con correo, Free/Pro y origen del acceso. Hay búsqueda

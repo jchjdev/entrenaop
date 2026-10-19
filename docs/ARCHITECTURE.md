@@ -526,6 +526,10 @@ de MFA se activa al verificar el autenticador y se aplica desde `is_admin()`;
 la interfaz no puede retirarlo. No existe todavía un portal de entrenadores.
 Los permisos administrativos y las relaciones entrenador-cliente conservan
 contratos distintos. [Despliegue y límites](ADMIN_HOSTING_2026_10_19.md).
+WEB-006 publica desde GitHub Actions con cuenta FTPS confinada al admin,
+recursos por versión y activación del índice después de transferirlos.
+Conexión autorizada y primera ejecución completa comprobadas por HTTPS y Chrome;
+[configuración y estado](ADMIN_DEPLOYMENT_2026_10_19.md).
 
 **Propuesta de secuencia · TRN-003 · 18/10/2026:** Javier propone terminar primero
 ADMIN para facilitar el espacio profesional y evitar programar por duplicado

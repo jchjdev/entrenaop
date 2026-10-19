@@ -44,3 +44,18 @@ que Javier confirme su entrada remota con Microsoft Authenticator.
 prueba creado previamente en local, con su nombre y modalidad conservados. Se
 vuelve al catálogo sin editar ni publicar el trabajo. El acceso anónimo y el
 acceso autenticado pertenecen a sesiones distintas de navegador.
+
+`versioned-release-preview.png` muestra el login vacío en un servidor local
+separado, después de aplicar la distribución por versiones de WEB-006 al build
+previamente validado. Chrome carga aplicación, motor y recursos con ese prefijo
+y no registra errores. Esta captura prueba el arranque del paquete, no la
+conexión FTPS ni una ejecución completa de GitHub Actions.
+
+WEB-006: `ci-account-handoff.png` y `github-secret-handoff.png` corresponden a
+formularios vacíos antes de entregar el control a Javier; no contienen ninguna
+contraseña. `github-ci-enabled.png` muestra la configuración pública del
+interruptor de despliegue; `github-ci-success.png` acredita la ejecución completa
+39240100206 correcta. `ci-hosted-guided-programs.png` muestra el catálogo remoto
+cargado después de esa publicación conservando la sesión, sus dos programas y
+el trabajo recuperable. `ci-deployed-build-info.json` conserva el manifiesto
+público comprobado de forma independiente; no contiene credenciales.

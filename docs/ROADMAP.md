@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**WEB-006 · 19/10/2026 · publicación automática ADMIN activada y comprobada:**
+GitHub Actions valida, compila Dev y publica por FTPS con cuenta confinada al
+admin, recursos por versión y comprobación HTTPS. Javier guarda directamente
+la contraseña y autoriza el acceso persistente; solo `main` usa el entorno.
+Primera ejecución completa correcta, con ambas apps verificadas, nueve pruebas
+del publicador, transferencia y comprobación independiente de hash/cabeceras/MIME.
+Chrome conserva sesión, dos programas publicados y trabajo privado recuperable.
+**Bloque técnico cerrado:** no incluye migraciones, producción ni limpieza de
+versiones antiguas; los avisos de runtime de acciones quedan documentados.
+**Único siguiente bloque recomendado para ADMIN:** vista previa y revisión
+editorial antes de publicar contenido, conservando acceso y despliegue remotos.
+[Estado y configuración](ADMIN_DEPLOYMENT_2026_10_19.md).
+
 **UI-057 · 19/10/2026 · revisión general de teclado y formularios:** se atiende
 la petición expresa de Javier de ampliar UI-053 a toda la app. Política común
 de interacción, filas adaptables, etiquetas/opciones completas y composición

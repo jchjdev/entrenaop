@@ -1,0 +1,11 @@
+{
+  "host": "admin.entrenaop.es",
+  "supabaseProject": "sxbxfjqgoddzhtcyhalw",
+  "environment": "development",
+  "revision": "6c680f6d549db2a39b8ff911d5bb895489540157",
+  "releaseId": "6c680f6d549db2a39b8ff911d5bb895489540157-39240100206-1",
+  "assetBase": "/releases/6c680f6d549db2a39b8ff911d5bb895489540157-39240100206-1/",
+  "sourceTreeDirty": false,
+  "builtAtUtc": "2026-10-19T10:55:48.163328+00:00",
+  "mainJsSha256": "68df267d85d5efd294f2f0e3d970e540b3e7c542a9a2598c33a53c467c54e2eb"
+}

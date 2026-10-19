@@ -4,9 +4,13 @@
 
 Javier pide automatizar la publicación de las mejoras validadas del admin en
 `admin.entrenaop.es`, conectado a desarrollo, sin subir ZIP manualmente.
-Se prepara `.github/workflows/admin-dev.yml`. La conexión y la primera ejecución
-real siguen pendientes: no dar esta automatización por operativa hasta contrastar
-un despliegue de GitHub Actions y su manifiesto HTTPS.
+La publicación automática está activada y comprobada de extremo a extremo:
+[ejecución 39240100206](https://github.com/jchjdev/entrenaop/actions/runs/39240100206),
+sobre `6c680f6d549db2a39b8ff911d5bb895489540157`, correcta en 8 min 56 s.
+GitHub valida ambas aplicaciones, compila, transfiere por FTPS y contrasta el
+resultado por HTTPS. Una segunda comprobación independiente confirma el
+manifiesto y el JavaScript servidos. Chrome conserva la sesión de Javier y carga
+los dos programas guiados publicados y su trabajo privado recuperable.
 
 Los cambios simultáneos de otros chats se conservan y no forman parte de este
 trabajo. El flujo construye desde GitHub, con el commit exacto de `main`, no desde
@@ -23,8 +27,9 @@ un build local que pueda tener fuentes pendientes de otros equipos.
    ejecuta migraciones ni usa claves administrativas de Supabase. Las migraciones
    siguen requiriendo su validación Dev conforme a `AGENTS.md`.
 4. Conserva el paquete validado como artefacto de GitHub durante 14 días. La
-   publicación está desactivada hasta configurar los secretos y poner la variable
-   de repositorio `ADMIN_DEV_DEPLOY_ENABLED` a `true`.
+   publicación está activada mediante los secretos del entorno `admin-dev` y la
+   variable de repositorio `ADMIN_DEV_DEPLOY_ENABLED=true`. Ponerla a `false`
+   permite detener publicaciones futuras sin eliminar la versión que está servida.
 5. Antes de transferir contrasta que el commit siga siendo el `main` vigente.
    La cuenta FTPS debe estar confinada por Hostinger a `public_html/admin`. Se
    usa TLS verificado en control y datos, sin FTP en claro ni excepciones de
@@ -49,7 +54,7 @@ Supabase de producción ni la autenticación del administrador.
 En Hostinger, Cuentas FTP del sitio `entrenaop.es`, crear una cuenta adicional:
 
 - Directorio: `/public_html/admin`, sobre el prefijo del dominio que muestra el panel.
-- Usuario específico para CI, por ejemplo `admin_ci`; conservar el nombre completo
+- Usuario específico para CI, por ejemplo `adminci` (solo letras y números); conservar el nombre completo
   que muestre Hostinger después de crearlo.
 - Contraseña única generada y guardada por Javier. El agente no la introduce,
   fotografía ni la solicita en la conversación.
@@ -59,11 +64,21 @@ En GitHub, entorno `admin-dev`, guardar como secretos:
 - `HOSTINGER_ADMIN_FTPS_USER`: nombre completo de esa cuenta adicional.
 - `HOSTINGER_ADMIN_FTPS_PASSWORD`: su contraseña.
 
+Cuenta creada por Javier y directorio contrastado en Hostinger:
+`u287240541.adminci`, confinada a
+`/home/u287240541/domains/entrenaop.es/public_html/admin`. El entorno `admin-dev`
+de GitHub permite una sola rama, `main`, sin tags ni bypass administrativo de
+las reglas configuradas. Ambos secretos guardados; Javier introduce directamente
+la contraseña y autoriza expresamente activar la publicación automática el 19/10/2026.
+Variable de repositorio `ADMIN_DEV_DEPLOY_ENABLED=true` contrastada en GitHub.
+Primera ejecución completa de validación y publicación correcta sobre `main`.
+
 La contraseña se introduce directamente en GitHub por el propietario, sin
 compartirla con el agente. El host `srv1589.hstgr.io:21` se ha contrastado sin
-credenciales con certificado de Hostinger válido y TLS 1.3; el acceso a la carpeta
-debe comprobarse en la primera ejecución. El publicador exige que la raíz de la
-cuenta tenga el manifiesto actual de ADMIN Dev antes de escribir nada.
+credenciales con certificado de Hostinger válido y TLS 1.3; la primera ejecución
+real confirma el acceso a la carpeta y la transferencia con TLS verificado.
+El publicador exige que la raíz de la cuenta tenga el manifiesto actual de ADMIN
+Dev antes de escribir nada.
 
 Al activar `ADMIN_DEV_DEPLOY_ENABLED=true`, GitHub podrá escribir en esa carpeta
 tras validar cada push relevante de `main`. Ese acceso persistente requiere la
@@ -89,9 +104,34 @@ conservan; su limpieza futura requiere una política acordada, sin borrado ahora
   `versioned-release-preview.png` contiene solo el login vacío de esa prueba;
   no acredita todavía un despliegue automatizado.
 - Flutter y acciones oficiales de checkout/artefactos fijados por versión/hash.
-  La validación real de GitHub y la primera transferencia quedan pendientes.
+- [Ejecución 39237918107](https://github.com/jchjdev/entrenaop/actions/runs/39237918107):
+  validación correcta del commit `24d59946a4ca0d24deae17a6a7a8dbf58d7ed79b` en
+  GitHub Actions, con análisis y batería completa de ADMIN, nueve pruebas Python,
+  compilación y artefacto conservado. Publicación omitida deliberadamente porque
+  en esa ejecución la conexión aún no estaba activada. La primera transferencia
+  se acredita después con la ejecución completa indicada arriba.
 
 Referencias: [cuentas limitadas de Hostinger](https://www.hostinger.com/support/1583246-how-to-create-additional-ftp-accounts-in-hostinger/),
 [inicialización de Flutter](https://docs.flutter.dev/platform-integration/web/initialization),
 [entornos de GitHub](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments),
 [FTPS de Python](https://docs.python.org/3/library/ftplib.html#ftplib.FTP_TLS).
+
+## Evidencia del primer despliegue completo
+
+- Revisión publicada: `6c680f6d549db2a39b8ff911d5bb895489540157`.
+- Versión: `6c680f6d549db2a39b8ff911d5bb895489540157-39240100206-1`.
+- Entorno: `development`, proyecto `sxbxfjqgoddzhtcyhalw`.
+- SHA-256 del JavaScript servido:
+  `68df267d85d5efd294f2f0e3d970e540b3e7c542a9a2598c33a53c467c54e2eb`.
+- Validación de app y ADMIN correcta, nueve pruebas del publicador, compilación,
+  artefacto y transferencia completos. Manifiesto, hash, índice, no-store,
+  X-Frame-Options DENY y MIME WebAssembly comprobados también desde este equipo.
+- Capturas y manifiesto público conservados en
+  `docs/visual-audit/admin-subdomain-2026-10-19/`.
+- GitHub muestra dos avisos del proveedor por acciones de artefactos que declaran
+  Node 20 y ejecuta con Node 24. Ambas funcionan en esta ejecución; actualizar
+  sus hashes requiere comprobar primero el contrato de sus nuevas versiones.
+
+No hace falta subir ZIP ni habilitar permisos de archivos de la extensión.
+Los cambios de contenido guardados en el admin se persisten en Dev directamente;
+solo los cambios del código necesitan este flujo de publicación.
