@@ -1,6 +1,6 @@
 {
   "date": "2026-10-19",
-  "source": "Tres capturas de widgets con fixtures y dos capturas autenticadas de Chrome; procedencia en README",
+  "source": "Tres capturas de widgets con fixtures y cuatro capturas autenticadas de Chrome; procedencia en README",
   "files": [
     {
       "path": "docs/visual-audit/admin-navigation-2026-10-19/desktop.png",
@@ -49,6 +49,14 @@
     {
       "path": "docs/visual-audit/admin-navigation-2026-10-19/session-published-admin.png",
       "sha256": "f7b4e891618abcac0e56e43439912f260d8c5d4b6c72a6038ea0ee3f80a4b143"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/session-library-athlete.png",
+      "sha256": "fbc704923485be113f57e6680eeaefd409b20891569e4673b087fd33df50e215"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/session-preview-athlete.png",
+      "sha256": "e2c2c854e7da91c2bf6653f5ccf59608457597fb90fa0b691ebebcd564582914"
     }
   ],
   "fonts": [

@@ -120,9 +120,15 @@ se distinguen de las tres capturas con fixtures. No se modifica código fuente,
 esquema o servidor remoto en esta comprobación; no requiere repetir Flutter ni
 una prueba transaccional de migraciones.
 
-La organización local y el guardado/publicación autenticados de una sesión
-quedan comprobados. El único siguiente tramo de este recorrido es verificar
-la sesión desde Biblioteca en la app de desarrollo, abierta en Chrome en
-`localhost:55554` y pendiente de que Javier inicie sesión. El acceso desde
-subdominio se prepara después. No se da por cerrada toda la autoría ni las
-revisiones deportivas o de vídeo de otros bloques.
+Tras el acceso personal de Javier a la app de desarrollo en Chrome
+(`localhost:55554`), se recorre Biblioteca → Sesiones → Explorar sesiones.
+`Prueba ADMIN 19-10-2026` aparece en el catálogo EntrenaOP y abre su vista de
+sesión con el mismo identificador, versión 1, un tramo de 400 m a 6:00/km y
+la descripción de prueba. Se guardan `session-library-athlete.png` y
+`session-preview-athlete.png`. No se pulsa Registrar resultado.
+
+Queda comprobado el recorrido autenticado crear → guardar → reabrir → publicar
+en ADMIN → consultar biblioteca y contenido en la app de desarrollo. El único
+siguiente tramo recomendado es preparar el acceso administrativo desde el
+subdominio, concretando antes alojamiento, entorno y autenticación. No se da por
+cerrada toda la autoría ni las revisiones deportivas o de vídeo de otros bloques.

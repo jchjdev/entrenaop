@@ -11,8 +11,10 @@ permisos ni contenidos de una sesión autenticada en Supabase.
 | `mobile-large-text.png` | 320 × 900: menú desplazable con texto 2×. |
 | `authenticated-desktop.png` | Chrome autenticado en Dev: navegación nueva y preparaciones reales tras corregir la colisión IPv4/IPv6 de servidores locales. |
 | `session-published-admin.png` | Chrome autenticado en Dev: `Prueba ADMIN 19-10-2026` aparece publicada en el catálogo general. |
+| `session-library-athlete.png` | App del deportista en Chrome y Dev: la sesión publicada aparece en Biblioteca → Sesiones → EntrenaOP. |
+| `session-preview-athlete.png` | App del deportista en Chrome y Dev: vista de la misma sesión, versión 1 y 400 m a 6:00/km, sin registrar resultados. |
 
-Las dos capturas autenticadas proceden de Chrome, no del fixture. Javier inicia
+Las cuatro capturas autenticadas proceden de Chrome, no del fixture. Javier inicia
 sesión personalmente; no se capturan ni guardan credenciales. El recorrido de
 guardado/publicación y sus límites se explica en
 [la comprobación posterior](../../ADMIN_NAVIGATION_2026_10_19.md#comprobación-autenticada-posterior--19102026).

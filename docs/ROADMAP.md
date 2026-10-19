@@ -12,11 +12,13 @@ servidor, web pública ni producción. En la prueba posterior se corrige la
 convivencia de un servidor antiguo en IPv6 y el build nuevo en IPv4; ambos
 loopbacks sirven ahora el build correcto. Chrome conserva la sesión de Javier
 y se comprueba crear, guardar, reabrir y publicar «Prueba ADMIN 19-10-2026»
-solo en Dev. No acredita todos los guardados ni cierra toda la autoría o el
-futuro portal profesional.
-**Único siguiente tramo recomendado de este recorrido:** aceptación autenticada
-de la sesión publicada desde Biblioteca en la app Dev, pendiente del acceso de
-Javier a la app, antes de preparar el subdominio.
+solo en Dev. Tras el acceso de Javier a la app, se comprueba que aparece en
+Biblioteca y que su vista conserva versión 1, 400 m y 6:00/km. Sin asignar ni
+registrar resultados. No acredita todos los guardados ni cierra toda la autoría
+o el futuro portal profesional.
+**Único siguiente tramo recomendado de este recorrido:** preparar el acceso
+administrativo desde el subdominio, concretando alojamiento, entorno y
+autenticación antes de desplegar.
 [Detalle](ADMIN_NAVIGATION_2026_10_19.md).
 
 **PRG-007, 18/10/2026 · Biblioteca adaptable, categorías y búsqueda:** se
