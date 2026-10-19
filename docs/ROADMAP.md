@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**UI-052, 19/10/2026 · organización local de ADMIN comprobada:** navegación
+lateral agrupada y adaptable, Preparaciones separada de Programas guiados y
+acceso recuperado al laboratorio de flexiones junto al de rendimiento. Se
+conservan rutas, autoría, publicación, permisos comerciales y guards de salida.
+Inventario de contratos y recuentos contrastado con Supabase Dev en solo lectura.
+Análisis limpio, 147 pruebas ADMIN correctas con dos capturas optativas omitidas,
+captura específica adicional ejecutada y revisada en escritorio/móvil/texto 2×,
+y compilación web de desarrollo correcta. No cambia deportista, paquetes,
+servidor, web pública ni producción. No acredita una nueva pasada autenticada
+de cada guardado ni cierra toda la autoría o el futuro portal profesional.
+**Único siguiente tramo recomendado de este recorrido:** aceptación autenticada
+de Javier en local del menú y un guardado real con contraste en la app Dev,
+antes de preparar el subdominio. [Detalle](ADMIN_NAVIGATION_2026_10_19.md).
+
 **PRG-007, 18/10/2026 · Biblioteca adaptable, categorías y búsqueda:** se
 conserva Inicio y Biblioteca ocupa el ancho móvil, con dos columnas en escritorio.
 Categorías múltiples, una principal visible, gestión y creación desde ADMIN;

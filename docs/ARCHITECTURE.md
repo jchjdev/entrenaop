@@ -1,5 +1,21 @@
 # Arquitectura de EntrenaOP
 
+## Marco administrativo local · UI-052 · 19/10/2026
+
+`admin_app/` organiza las rutas existentes dentro de un `ShellRoute`, con
+columna lateral en escritorio y menú desplazable en pantallas estrechas o texto
+ampliado. El login queda fuera. La interfaz agrupa Contenido, Preparación
+deportiva, Gestión y Herramientas; `/programs` conserva su URL y se presenta
+como Preparaciones, separada de Programas guiados. Los dos laboratorios de
+simulación tienen acceso desde Herramientas, sin persistir datos deportivos.
+
+El marco pertenece a presentación: conserva repositorios, comprobaciones por
+ruta, RPC/RLS, aislamiento por identidad y guards de salida. El permiso
+comercial específico decide la entrada Cuentas y Pro sin bloquear autoría ante
+un fallo de su consulta. No añade paquetes, infraestructura ni extracción de
+componentes para entrenadores. Ver [inventario, validación y límites](ADMIN_NAVIGATION_2026_10_19.md).
+El siguiente tramo es aceptación autenticada local antes de preparar alojamiento.
+
 ## Selección de carrera v6 · PLAN-026 · 16/10/2026
 
 El adaptador existente `calculate_running_week_constrained` usa

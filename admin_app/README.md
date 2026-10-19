@@ -1,6 +1,6 @@
 # EntrenaOP Admin
 
-**Cuentas y Pro** (botón e icono en Programas, o `/accounts`) muestra al entrar
+**Cuentas y Pro** (menú Gestión, o `/accounts`) muestra al entrar
 una lista de cuentas con correo, Free/Pro y origen del acceso. Hay búsqueda
 parcial por correo y páginas de 25. Pulsar una cuenta abre la ficha que muestra
 por separado Pro gratuito y suscripción vigente; volver conserva búsqueda/página.
@@ -25,18 +25,27 @@ La organización de bloques, repeticiones y variantes aún tiene adaptadores de
 pantalla distintos.
 
 `packages/entrena_ui/` comparte el tema, los componentes de marca y las portadas
-con la app del deportista. Programas incorpora edición de pruebas/baremos,
+con la app del deportista. Preparaciones incorpora edición de pruebas/baremos,
 previsualización de intentos, vínculos deportivos, configuración de estrategias
 y portadas con encuadres separados. Los laboratorios permiten revisar escenarios;
 la prescripción del deportista corresponde al motor de servidor.
 
-La portada administrativa separa tres áreas: **Programas**, **Sesiones
-oficiales** y **Ejercicios oficiales**. El creador de ejercicios guarda mediante
+La navegación lateral agrupa **Contenido** (Programas guiados, Sesiones,
+Calentamientos y Ejercicios), **Preparación deportiva** (Preparaciones),
+**Gestión** (Cuentas y Pro, solo con permiso específico) y **Herramientas**
+(Laboratorio de rendimiento y política de flexiones). En móvil o con texto
+ampliado se abre con el botón de menú. El catálogo inicial es Preparaciones;
+la zona central conserva únicamente las acciones del recurso actual.
+Las URLs y los guards de salida se mantienen. El login queda fuera del marco.
+El [repaso del 19/10/2026](../docs/ADMIN_NAVIGATION_2026_10_19.md) distingue
+conexiones reales, simulaciones, comprobaciones y aceptación pendiente.
+
+El creador de ejercicios guarda mediante
 funciones SQL que vuelven a comprobar `is_admin()` y fijan en servidor el origen
 oficial, la visibilidad pública y la ausencia de propietario personal.
 
-En **Programas**, abre un programa y pulsa **Nueva sesión** para crear una plantilla
-exclusiva de esa preparación. La entrada **Sesiones oficiales**
+En **Preparaciones**, abre una preparación y pulsa **Nueva sesión** para crear una plantilla
+exclusiva de esa preparación. La entrada **Sesiones**
 crea sesiones libres sin destino de programa. Carrera permite
 tramos repetidos, rangos de ritmo y recuperación por tiempo o metros. Fuerza
 permite combinar bloques convencionales, superseries, circuitos, intervalos,

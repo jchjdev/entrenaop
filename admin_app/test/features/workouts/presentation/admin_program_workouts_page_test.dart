@@ -2,6 +2,7 @@ import 'package:entrenaop_admin/features/programs/data/admin_program_repository.
 import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
@@ -120,6 +121,22 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   Future<List<AdminExercise>> listPublicExercises() async => const [];
 }
 
+Future<void> _previewAction(WidgetTester tester, String label) async {
+  await tester.scrollUntilVisible(
+    find.text(label),
+    180,
+    scrollable: find
+        .descendant(
+          of: find.byType(AdminWorkoutPreviewPage),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('publicar exige confirmación y vuelve a cargar el estado', (
     tester,
@@ -141,16 +158,14 @@ void main() {
     await tester.tap(find.text('Series 200 m'));
     await tester.pumpAndSettle();
     expect(find.textContaining('3:50/km'), findsOneWidget);
-    await tester.tap(find.text('Publicar para el programa'));
-    await tester.pumpAndSettle();
+    await _previewAction(tester, 'Publicar para el programa');
     expect(find.textContaining('plantilla de este programa'), findsOneWidget);
     expect(repository.publishCalls, 0);
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
     expect(repository.publishCalls, 0);
 
-    await tester.tap(find.text('Publicar para el programa'));
-    await tester.pumpAndSettle();
+    await _previewAction(tester, 'Publicar para el programa');
     await tester.tap(find.text('Publicar para el programa').last);
     await tester.pumpAndSettle();
     expect(repository.publishCalls, 1);
@@ -177,8 +192,7 @@ void main() {
     expect(find.text('Sesiones generales de EntrenaOP'), findsOneWidget);
     await tester.tap(find.text('Series 200 m'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Borrar borrador'));
-    await tester.pumpAndSettle();
+    await _previewAction(tester, 'Borrar borrador');
     expect(repository.removeCalls, 0);
     await tester.tap(find.text('Borrar borrador').last);
     await tester.pumpAndSettle();

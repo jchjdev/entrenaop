@@ -1,3 +1,5 @@
+import 'package:entrenaop_admin/core/admin_shell.dart';
+
 import 'dart:async';
 
 import '../../../helpers/admin_test_app.dart';
@@ -416,14 +418,23 @@ void main() {
     testWidgets(
       'gestión de cuentas visible solo con permiso específico: $allowed',
       (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(1440, 900);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
         await tester.pumpWidget(
           MaterialApp(
-            home: AdminProgramsPage(
-              repository: _FakeRepository(allowed: true),
-              workoutRepository: _FakeWorkouts(),
-              exerciseRepository: _FakeExercises(),
-              onSignOut: () {},
+            home: AdminShell(
+              path: '/programs',
+              hasAccess: () async => true,
               canManageAccounts: () async => allowed,
+              onSignOut: () {},
+              child: AdminProgramsPage(
+                repository: _FakeRepository(allowed: true),
+                workoutRepository: _FakeWorkouts(),
+                exerciseRepository: _FakeExercises(),
+                onSignOut: () {},
+              ),
             ),
           ),
         );
@@ -432,7 +443,7 @@ void main() {
           find.text('Cuentas y Pro'),
           allowed ? findsOneWidget : findsNothing,
         );
-        expect(find.text('¿Qué quieres gestionar?'), findsOneWidget);
+        expect(find.text('Preparaciones'), findsWidgets);
       },
     );
   }
@@ -490,7 +501,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await _tapVisible(tester, 'Crear programa');
+      await _tapVisible(tester, 'Nueva preparación');
       await tester.enterText(find.byType(TextFormField), 'Programa de prueba');
       final field = find.byType(DropdownButtonFormField<String>);
       await tester.ensureVisible(field);
@@ -1173,7 +1184,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final search = find.widgetWithText(TextField, 'Buscar programas');
+    final search = find.widgetWithText(TextField, 'Buscar preparaciones');
     await tester.scrollUntilVisible(
       search,
       200,
@@ -1185,7 +1196,7 @@ void main() {
     expect(find.text('Evaluación FAS'), findsNothing);
     await tester.enterText(search, 'algo inexistente');
     await tester.pumpAndSettle();
-    expect(find.text('No hay programas con esa búsqueda.'), findsOneWidget);
+    expect(find.text('No hay preparaciones con esa búsqueda.'), findsOneWidget);
   });
   for (final width in [360.0, 1100.0]) {
     testWidgets('panel de administración adaptable a ${width.toInt()} px', (
@@ -1279,7 +1290,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('no tiene permiso'), findsOneWidget);
-    expect(find.text('Nuevo programa'), findsNothing);
+    expect(find.text('Nueva preparación'), findsNothing);
     expect(repository.listCalls, 0);
   });
 
@@ -1299,11 +1310,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Programas'), findsOneWidget);
-    expect(find.text('Sesiones oficiales'), findsOneWidget);
-    expect(find.text('Ejercicios oficiales'), findsOneWidget);
+    expect(find.text('Preparaciones'), findsOneWidget);
+    expect(find.text('¿Qué quieres gestionar?'), findsNothing);
 
-    await tester.tap(find.text('Crear programa'));
+    await tester.tap(find.text('Nueva preparación'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextFormField), 'Guardia Civil');
     repository.failCreate = true;
@@ -1394,6 +1404,8 @@ void main() {
     expect(find.text('Prueba añadida al borrador.'), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
 
+    await tester.ensureVisible(runTile);
+    await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(of: runTile, matching: find.text('Carrera 1.000 m')),
     );
@@ -1593,6 +1605,8 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 5));
 
+    await tester.ensureVisible(pullupTile);
+    await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(of: pullupTile, matching: find.text('Dominadas')),
     );

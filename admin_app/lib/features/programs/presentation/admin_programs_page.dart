@@ -1,3 +1,4 @@
+import 'package:entrenaop_admin/core/admin_shell.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
@@ -15,8 +16,6 @@ class AdminProgramsPage extends StatefulWidget {
     required this.exerciseRepository,
     required this.onSignOut,
     this.coverRepository,
-    this.canManageAccounts,
-    this.hasGuidedPrograms = false,
   });
 
   final AdminProgramRepository repository;
@@ -24,8 +23,6 @@ class AdminProgramsPage extends StatefulWidget {
   final AdminExerciseRepository exerciseRepository;
   final VoidCallback onSignOut;
   final ProgramCoverRepository? coverRepository;
-  final Future<bool> Function()? canManageAccounts;
-  final bool hasGuidedPrograms;
 
   @override
   State<AdminProgramsPage> createState() => _AdminProgramsPageState();
@@ -34,7 +31,6 @@ class AdminProgramsPage extends StatefulWidget {
 class _AdminProgramsPageState extends State<AdminProgramsPage> {
   bool _loading = true;
   bool _authorized = false;
-  bool _accountsAllowed = false;
   bool _saving = false;
   String? _error;
   List<AdminProgram> _programs = const [];
@@ -76,17 +72,10 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
         });
         return;
       }
-      var accountsAllowed = false;
-      try {
-        accountsAllowed = await widget.canManageAccounts?.call() ?? false;
-      } catch (_) {
-        // Un fallo comercial no impide trabajar en contenido ni revela cuentas.
-      }
       final programs = await widget.repository.listPrograms();
       if (!mounted) return;
       setState(() {
         _authorized = true;
-        _accountsAllowed = accountsAllowed;
         _programs = programs;
         _loading = false;
       });
@@ -142,29 +131,18 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Wrap(
-          spacing: 16,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            EntrenaWordmark(width: 132),
-            Text('Administración', style: TextStyle(fontSize: 14)),
-          ],
-        ),
-        actions: [
-          if (_authorized && _accountsAllowed)
-            IconButton(
-              tooltip: 'Cuentas y Pro',
-              icon: const Icon(Icons.manage_accounts_outlined),
-              onPressed: () => context.push('/accounts'),
+      appBar: AdminShellScope.hidesAppBar(context)
+          ? null
+          : AppBar(
+              title: const Text('Preparaciones'),
+              actions: [
+                IconButton(
+                  tooltip: 'Cerrar sesión',
+                  onPressed: widget.onSignOut,
+                  icon: const Icon(Icons.logout),
+                ),
+              ],
             ),
-          IconButton(
-            tooltip: 'Cerrar sesión',
-            onPressed: widget.onSignOut,
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1100),
@@ -182,121 +160,43 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
     if (!_authorized) {
       return const _Message('Esta cuenta no tiene permiso de administración.');
     }
+    final drafts = _programs.where((program) => !program.enabled).length;
+    final published = _programs.length - drafts;
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          '¿Qué quieres gestionar?',
+          'Preparaciones',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
-        if (_accountsAllowed) ...[
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton.tonalIcon(
-              onPressed: () => context.push('/accounts'),
-              icon: const Icon(Icons.manage_accounts_outlined),
-              label: const Text('Cuentas y Pro'),
-            ),
-          ),
-        ],
         const SizedBox(height: 8),
-        Text(
-          'Elige el catálogo de contenido de EntrenaOP en el que quieres trabajar.',
-          style: TextStyle(color: context.visuals.textMuted),
+        const Text(
+          'Oposiciones y evaluaciones físicas: pruebas, baremos y preparación deportiva. '
+          'Las rutinas y los programas por fases se gestionan en Programas guiados.',
         ),
         const SizedBox(height: 20),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 840
-                ? 3
-                : constraints.maxWidth >= 560
-                ? 2
-                : 1;
-            final width = (constraints.maxWidth - 12 * (columns - 1)) / columns;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                if (widget.hasGuidedPrograms)
-                  _AdminAreaCard(
-                    width: width,
-                    icon: Icons.auto_stories_outlined,
-                    title: 'Programas guiados',
-                    description: 'Rutinas y programas por fases.',
-                    action: 'Abrir creador',
-                    onTap: () => context.push('/guided-programs'),
-                  ),
-                if (widget.hasGuidedPrograms)
-                  _AdminAreaCard(
-                    width: width,
-                    icon: Icons.self_improvement,
-                    title: 'Calentamientos',
-                    description:
-                        'Crear y asignar calentamientos reutilizables.',
-                    action: 'Abrir calentamientos',
-                    onTap: () => context.push('/warmups'),
-                  ),
-                _AdminAreaCard(
-                  width: width,
-                  icon: Icons.account_tree_outlined,
-                  title: 'Programas',
-                  description: 'Crear una preparación o evaluación.',
-                  action: 'Crear programa',
-                  onTap: _saving ? null : _createDraft,
-                ),
-                _AdminAreaCard(
-                  width: width,
-                  icon: Icons.view_agenda_outlined,
-                  title: 'Sesiones oficiales',
-                  description: 'Crear sesiones para la biblioteca general.',
-                  action: 'Abrir sesiones',
-                  onTap: () => context.push('/sessions'),
-                ),
-                _AdminAreaCard(
-                  width: width,
-                  icon: Icons.fitness_center,
-                  title: 'Ejercicios oficiales',
-                  description: 'Crear y editar el catálogo global.',
-                  action: 'Abrir ejercicios',
-                  onTap: () => context.push('/exercises'),
-                ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 24),
-        Card(
-          child: ListTile(
-            title: const Text('Laboratorio de fuerza y rendimiento'),
-            subtitle: const Text(
-              'Revisar selección, dosis y respuesta con datos simulados',
-            ),
-            leading: const Icon(Icons.science_outlined),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => context.push('/laboratory'),
-          ),
-        ),
-        const SizedBox(height: 32),
         Wrap(
-          spacing: 20,
+          spacing: 12,
           runSpacing: 12,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(
-              'Programas existentes',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
             FilledButton.icon(
               onPressed: _saving ? null : _createDraft,
               icon: const Icon(Icons.add),
-              label: const Text('Nuevo programa'),
+              label: const Text('Nueva preparación'),
+            ),
+            OutlinedButton.icon(
+              onPressed: _saving ? null : _load,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Actualizar'),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 20),
         Text(
-          'Cada programa agrupa sus propias sesiones. Los borradores no aparecen en la aplicación del deportista.',
+          '${_programs.length} ${_programs.length == 1 ? 'preparación' : 'preparaciones'} · '
+          '$drafts ${drafts == 1 ? 'borrador' : 'borradores'} · '
+          '$published ${published == 1 ? 'publicada' : 'publicadas'}',
           style: TextStyle(color: context.visuals.textMuted),
         ),
         const SizedBox(height: 16),
@@ -304,7 +204,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
           controller: _search,
           onChanged: (_) => setState(() {}),
           decoration: const InputDecoration(
-            labelText: 'Buscar programas',
+            labelText: 'Buscar preparaciones',
             prefixIcon: Icon(Icons.search),
             hintText: 'Nombre, tipo o estado',
           ),
@@ -315,13 +215,15 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
         if (_programs.isNotEmpty && _visiblePrograms.isEmpty)
           const Padding(
             padding: EdgeInsets.all(20),
-            child: Text('No hay programas con esa búsqueda.'),
+            child: Text('No hay preparaciones con esa búsqueda.'),
           ),
         if (_programs.isEmpty)
           const Card(
             child: Padding(
               padding: EdgeInsets.all(20),
-              child: Text('Todavía no hay programas.'),
+              child: Text(
+                'Todavía no hay preparaciones. Crea la primera como borrador.',
+              ),
             ),
           )
         else
@@ -334,6 +236,7 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
                   );
                   if (mounted) await _load();
                 },
+                leading: const Icon(Icons.account_tree_outlined),
                 title: Text(program.name),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 6),
@@ -368,71 +271,6 @@ class _AdminProgramsPageState extends State<AdminProgramsPage> {
       ],
     );
   }
-}
-
-class _AdminAreaCard extends StatelessWidget {
-  const _AdminAreaCard({
-    required this.width,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.action,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final double width;
-  final String title;
-  final String description;
-  final String action;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: width,
-    child: EntrenaCard(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: context.visuals.accentSoft,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              icon,
-              size: 26,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Text(description, style: TextStyle(color: context.visuals.textMuted)),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  action,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const Icon(Icons.arrow_forward_rounded, size: 18),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _Message extends StatelessWidget {
@@ -486,7 +324,7 @@ class _NewProgramDialogState extends State<_NewProgramDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Nuevo programa'),
+    title: const Text('Nueva preparación'),
     scrollable: true,
     content: SizedBox(
       width: 440,

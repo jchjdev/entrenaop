@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-19",
+  "source": "Widgets y router reales; repositorios de prueba",
+  "files": [
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/desktop.png",
+      "sha256": "ba9f241b626aed7505ba921e60acaab87a9abb2597f7d39b481831d2a8a93a3e"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/mobile.png",
+      "sha256": "0a33ef368fb6f175fce1099864c9bf5c0ff8ec17f4cb55a1893c3820b48c1bce"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/mobile-large-text.png",
+      "sha256": "195844cda952005effd5cf6c63fb203da44e99201baecbf58cbe29cc1385f12c"
+    },
+    {
+      "path": "admin_app/lib/core/admin_shell.dart",
+      "sha256": "b76036f4f2d941266fa6ee77bfe05db5dc2d74eab7fae0810ba976953b7f1035"
+    },
+    {
+      "path": "admin_app/lib/core/admin_router.dart",
+      "sha256": "b689c9eba7f61e80d2da9f17ccc79ca722a2983b84e9190847df71a2e325f18e"
+    },
+    {
+      "path": "admin_app/lib/features/programs/presentation/admin_programs_page.dart",
+      "sha256": "fce01af49f2c6edd37b8cb57490390a7f5b30733496762ce5f481cbd3b8d5725"
+    },
+    {
+      "path": "admin_app/lib/features/programs/presentation/admin_laboratory_page.dart",
+      "sha256": "4d6a9a9a3317837283244d610f608f7d4246f7aa75cccaffceb2df46e456f802"
+    },
+    {
+      "path": "admin_app/test/core/admin_shell_test.dart",
+      "sha256": "36a5e31e3d3b96ae15562edf363485fc48ac4b264a703fe75e5a92110d316bce"
+    },
+    {
+      "path": "packages/entrena_ui/lib/src/entrena_theme.dart",
+      "sha256": "c69a80886f87f204d5f068e3d37446d470d36e229af5be6b1c68df83cd6c11a7"
+    },
+    {
+      "path": "packages/entrena_ui/assets/branding/entrenaop_wordmark_on_dark.png",
+      "sha256": "047db7bc27549eb2d1783cda6dc282319833cff6bcf04a25f1bbbeb3b6a4d94c"
+    }
+  ],
+  "fonts": [
+    {
+      "source": "Flutter SDK material_fonts/roboto-regular.ttf",
+      "sha256": "79e851404657dac2106b3d22ad256d47824a9a5765458edb72c9102a45816d95"
+    },
+    {
+      "source": "Flutter SDK material_fonts/materialicons-regular.otf",
+      "sha256": "d9865b671a09d683d13a863089d8825e0f61a37696ce5d7d448bc8023aa62453"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
+import '../../../core/admin_shell.dart';
+
 import '../data/admin_exercise_video_repository.dart';
 import 'admin_exercise_video_field.dart';
 
@@ -186,16 +188,18 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Administración · ejercicios'),
-      leading: GoRouter.maybeOf(context)?.canPop() == false
-          ? IconButton(
-              tooltip: 'Ir a programas',
-              icon: const Icon(Icons.home_outlined),
-              onPressed: () => context.go('/programs'),
-            )
-          : null,
-    ),
+    appBar: AdminShellScope.hidesAppBar(context)
+        ? null
+        : AppBar(
+            title: const Text('Administración · ejercicios'),
+            leading: GoRouter.maybeOf(context)?.canPop() == false
+                ? IconButton(
+                    tooltip: 'Ir a programas',
+                    icon: const Icon(Icons.home_outlined),
+                    onPressed: () => context.go('/programs'),
+                  )
+                : null,
+          ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),

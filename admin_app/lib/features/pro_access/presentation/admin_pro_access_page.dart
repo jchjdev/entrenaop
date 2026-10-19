@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/admin_shell.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/admin_pro_access_repository.dart';
@@ -334,7 +337,9 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Cuentas y Pro')),
+    appBar: AdminShellScope.hidesAppBar(context)
+        ? null
+        : AppBar(title: const Text('Cuentas y Pro')),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 680),

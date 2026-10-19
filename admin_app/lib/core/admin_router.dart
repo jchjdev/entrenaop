@@ -4,7 +4,7 @@ import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_rep
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
-import 'package:entrenaop_admin/features/programs/presentation/admin_performance_progression_lab.dart';
+import 'package:entrenaop_admin/features/programs/presentation/admin_laboratory_page.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_attempt_preview_page.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_detail_page.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
@@ -20,6 +20,8 @@ import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_reposi
 import 'package:entrenaop_admin/features/pro_access/presentation/admin_pro_access_page.dart';
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
+
+import 'admin_shell.dart';
 
 /// Las URLs contienen identidad, nunca una entidad que solo exista en `extra`.
 /// Recargar resuelve el contenido mediante los repositorios actuales y sus RLS.
@@ -173,237 +175,249 @@ GoRouter createAdminRouter({
     errorBuilder: (context, state) =>
         const _RouteMessage('Esta página no existe.'),
     routes: [
-      if (guided != null)
-        GoRoute(
-          path: '/guided-programs',
-          builder: (_, _) => load(
-            () async => true,
-            (_) => AdminGuidedCatalogPage(
-              repository: guided,
-              covers: guidedCovers,
-            ),
-          ),
-          routes: [
-            workflow(
-              'new',
-              (_, _) => load(
-                () async => true,
-                (_) => AdminGuidedEditorPage(
-                  repository: guided,
-                  workouts: workouts,
-                ),
-              ),
-            ),
-            workflow(
-              ':guidedId/edit',
-              (_, state) => load(
-                () => guided.program(state.pathParameters['guidedId']!),
-                (p) => AdminGuidedEditorPage(
-                  repository: guided,
-                  workouts: workouts,
-                  original: p,
-                ),
-              ),
-            ),
-          ],
-        ),
-      if (guided != null)
-        GoRoute(
-          path: '/warmups',
-          builder: (_, _) => load(
-            () async => true,
-            (_) => AdminGuidedCatalogPage(repository: guided, warmups: true),
-          ),
-          routes: [
-            workflow(
-              'new',
-              (_, _) => load(
-                () async => true,
-                (_) => AdminWorkoutEditorPage(
-                  program: null,
-                  repository: workouts,
-                  warmup: true,
-                  saveInput: (input) async {
-                    await guided.saveWarmup(input);
-                  },
-                ),
-              ),
-            ),
-            workflow(
-              ':warmupId/edit',
-              (_, state) => load(
-                () async {
-                  final id = state.pathParameters['warmupId']!;
-                  final warmup = (await guided.warmups())
-                      .where((w) => w.id == id)
-                      .first;
-                  final template = await workouts.getTemplateById(
-                    warmup.templateId,
-                  );
-                  if (template == null) {
-                    throw const _RouteUnavailable(
-                      'No se encuentra el calentamiento.',
-                    );
-                  }
-                  return (warmup, template);
-                },
-                (data) => AdminWorkoutEditorPage(
-                  program: null,
-                  repository: workouts,
-                  warmup: true,
-                  originalTemplate: data.$2,
-                  saveInput: (input) async {
-                    await guided.saveWarmup(input, previousId: data.$1.id);
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      if (proAccess != null)
-        GoRoute(
-          path: '/accounts',
-          builder: (_, _) => load(() async {
-            if (!await proAccess.canManageAccounts()) {
-              throw const _RouteUnavailable(
-                'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
-              );
-            }
-            return proAccess;
-          }, (repository) => AdminProAccessPage(repository: repository)),
-        ),
-      if (proAccess != null)
-        GoRoute(path: '/development-accounts', redirect: (_, _) => '/accounts'),
-      GoRoute(path: '/', redirect: (_, _) => '/programs'),
       if (loginBuilder != null)
         GoRoute(path: '/login', builder: (context, _) => loginBuilder(context)),
-      GoRoute(
-        path: '/programs',
-        builder: (context, state) => AdminProgramsPage(
-          repository: programs,
-          workoutRepository: workouts,
-          exerciseRepository: exercises,
-          coverRepository: covers,
-          onSignOut: onSignOut,
+      ShellRoute(
+        builder: (_, state, child) => AdminShell(
+          path: state.uri.path,
+          hasAccess: programs.hasAccess,
           canManageAccounts: proAccess?.canManageAccounts,
           hasGuidedPrograms: guided != null,
+          onSignOut: onSignOut,
+          child: child,
         ),
         routes: [
-          GoRoute(
-            path: ':programId',
-            builder: (context, state) => programPage(
-              state,
-              (item) => AdminProgramDetailPage(
-                program: item,
-                repository: programs,
-                workoutRepository: workouts,
-                coverRepository: covers,
-              ),
-            ),
-            routes: [
-              GoRoute(
-                path: 'sessions',
-                builder: (context, state) => programPage(
-                  state,
-                  (item) => AdminProgramWorkoutsPage(
-                    program: item,
-                    repository: workouts,
-                  ),
+          if (guided != null)
+            GoRoute(
+              path: '/guided-programs',
+              builder: (_, _) => load(
+                () async => true,
+                (_) => AdminGuidedCatalogPage(
+                  repository: guided,
+                  covers: guidedCovers,
                 ),
-                routes: sessionRoutes(),
               ),
-              GoRoute(
-                path: 'simulation',
-                builder: (context, state) => programPage(
-                  state,
-                  (item) => load(
-                    () => programs.listTests(item.id),
-                    (tests) => AdminProgramAttemptPreviewPage(
-                      program: item,
-                      tests: tests,
-                      repository: programs,
+              routes: [
+                workflow(
+                  'new',
+                  (_, _) => load(
+                    () async => true,
+                    (_) => AdminGuidedEditorPage(
+                      repository: guided,
+                      workouts: workouts,
                     ),
                   ),
                 ),
+                workflow(
+                  ':guidedId/edit',
+                  (_, state) => load(
+                    () => guided.program(state.pathParameters['guidedId']!),
+                    (p) => AdminGuidedEditorPage(
+                      repository: guided,
+                      workouts: workouts,
+                      original: p,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (guided != null)
+            GoRoute(
+              path: '/warmups',
+              builder: (_, _) => load(
+                () async => true,
+                (_) =>
+                    AdminGuidedCatalogPage(repository: guided, warmups: true),
               ),
-              GoRoute(
-                path: 'tests/:testId/scale',
-                builder: (context, state) => programPage(
-                  state,
-                  (item) => load(
+              routes: [
+                workflow(
+                  'new',
+                  (_, _) => load(
+                    () async => true,
+                    (_) => AdminWorkoutEditorPage(
+                      program: null,
+                      repository: workouts,
+                      warmup: true,
+                      saveInput: (input) async {
+                        await guided.saveWarmup(input);
+                      },
+                    ),
+                  ),
+                ),
+                workflow(
+                  ':warmupId/edit',
+                  (_, state) => load(
                     () async {
-                      final tests = await programs.listTests(item.id);
-                      final rule = await programs.getScoringRule(item.id);
-                      if (rule == null) {
+                      final id = state.pathParameters['warmupId']!;
+                      final warmup = (await guided.warmups())
+                          .where((w) => w.id == id)
+                          .first;
+                      final template = await workouts.getTemplateById(
+                        warmup.templateId,
+                      );
+                      if (template == null) {
                         throw const _RouteUnavailable(
-                          'Define primero la calificación del programa.',
+                          'No se encuentra el calentamiento.',
                         );
                       }
-                      for (final test in tests) {
-                        if (test.id == state.pathParameters['testId']) {
-                          return (test, rule);
-                        }
-                      }
-                      throw const _RouteUnavailable(
-                        'Esta prueba no está disponible en el programa.',
-                      );
+                      return (warmup, template);
                     },
-                    (data) => data.$2.scoringMode == 'pass_fail'
-                        ? AdminTestPassStandardsPage(
-                            test: data.$1,
-                            repository: programs,
-                            editable: !item.enabled,
-                          )
-                        : AdminTestScoreBandsPage(
-                            programId: item.id,
-                            test: data.$1,
-                            repository: programs,
-                            editable: !item.enabled,
-                          ),
+                    (data) => AdminWorkoutEditorPage(
+                      program: null,
+                      repository: workouts,
+                      warmup: true,
+                      originalTemplate: data.$2,
+                      saveInput: (input) async {
+                        await guided.saveWarmup(input, previousId: data.$1.id);
+                      },
+                    ),
                   ),
+                ),
+              ],
+            ),
+          if (proAccess != null)
+            GoRoute(
+              path: '/accounts',
+              builder: (_, _) => load(() async {
+                if (!await proAccess.canManageAccounts()) {
+                  throw const _RouteUnavailable(
+                    'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
+                  );
+                }
+                return proAccess;
+              }, (repository) => AdminProAccessPage(repository: repository)),
+            ),
+          if (proAccess != null)
+            GoRoute(
+              path: '/development-accounts',
+              redirect: (_, _) => '/accounts',
+            ),
+          GoRoute(path: '/', redirect: (_, _) => '/programs'),
+          GoRoute(
+            path: '/programs',
+            builder: (context, state) => AdminProgramsPage(
+              repository: programs,
+              workoutRepository: workouts,
+              exerciseRepository: exercises,
+              coverRepository: covers,
+              onSignOut: onSignOut,
+            ),
+            routes: [
+              GoRoute(
+                path: ':programId',
+                builder: (context, state) => programPage(
+                  state,
+                  (item) => AdminProgramDetailPage(
+                    program: item,
+                    repository: programs,
+                    workoutRepository: workouts,
+                    coverRepository: covers,
+                  ),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'sessions',
+                    builder: (context, state) => programPage(
+                      state,
+                      (item) => AdminProgramWorkoutsPage(
+                        program: item,
+                        repository: workouts,
+                      ),
+                    ),
+                    routes: sessionRoutes(),
+                  ),
+                  GoRoute(
+                    path: 'simulation',
+                    builder: (context, state) => programPage(
+                      state,
+                      (item) => load(
+                        () => programs.listTests(item.id),
+                        (tests) => AdminProgramAttemptPreviewPage(
+                          program: item,
+                          tests: tests,
+                          repository: programs,
+                        ),
+                      ),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'tests/:testId/scale',
+                    builder: (context, state) => programPage(
+                      state,
+                      (item) => load(
+                        () async {
+                          final tests = await programs.listTests(item.id);
+                          final rule = await programs.getScoringRule(item.id);
+                          if (rule == null) {
+                            throw const _RouteUnavailable(
+                              'Define primero la calificación del programa.',
+                            );
+                          }
+                          for (final test in tests) {
+                            if (test.id == state.pathParameters['testId']) {
+                              return (test, rule);
+                            }
+                          }
+                          throw const _RouteUnavailable(
+                            'Esta prueba no está disponible en el programa.',
+                          );
+                        },
+                        (data) => data.$2.scoringMode == 'pass_fail'
+                            ? AdminTestPassStandardsPage(
+                                test: data.$1,
+                                repository: programs,
+                                editable: !item.enabled,
+                              )
+                            : AdminTestScoreBandsPage(
+                                programId: item.id,
+                                test: data.$1,
+                                repository: programs,
+                                editable: !item.enabled,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/sessions',
+            builder: (context, state) => load(
+              () async => true,
+              (_) =>
+                  AdminProgramWorkoutsPage(program: null, repository: workouts),
+            ),
+            routes: sessionRoutes(),
+          ),
+          GoRoute(
+            path: '/exercises',
+            builder: (context, state) => load(
+              () async => true,
+              (_) => AdminExercisesPage(
+                repository: exercises,
+                videos: exerciseVideos,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/laboratory',
+            builder: (context, state) => load(
+              () async => true,
+              (_) => AdminLaboratoryPage(repository: exercises),
+            ),
+            routes: [
+              GoRoute(
+                path: 'push-ups',
+                builder: (_, _) => load(
+                  () async => true,
+                  (_) =>
+                      AdminLaboratoryPage(repository: exercises, pushUps: true),
                 ),
               ),
             ],
           ),
         ],
-      ),
-      GoRoute(
-        path: '/sessions',
-        builder: (context, state) => load(
-          () async => true,
-          (_) => AdminProgramWorkoutsPage(program: null, repository: workouts),
-        ),
-        routes: sessionRoutes(),
-      ),
-      GoRoute(
-        path: '/exercises',
-        builder: (context, state) => load(
-          () async => true,
-          (_) =>
-              AdminExercisesPage(repository: exercises, videos: exerciseVideos),
-        ),
-      ),
-      GoRoute(
-        path: '/laboratory',
-        builder: (context, state) => load(
-          () async => true,
-          (_) => Scaffold(
-            appBar: AppBar(
-              title: const Text('Laboratorio · datos simulados'),
-              leading: GoRouter.of(context).canPop()
-                  ? null
-                  : IconButton(
-                      tooltip: 'Ir a programas',
-                      icon: const Icon(Icons.home_outlined),
-                      onPressed: () => context.go('/programs'),
-                    ),
-            ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: AdminPerformanceProgressionLab(repository: exercises),
-            ),
-          ),
-        ),
       ),
     ],
   );

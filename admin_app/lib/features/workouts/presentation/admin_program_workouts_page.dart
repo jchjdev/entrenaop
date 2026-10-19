@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/admin_shell.dart';
+
 class AdminProgramWorkoutsPage extends StatefulWidget {
   const AdminProgramWorkoutsPage({
     super.key,
@@ -93,16 +95,18 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(widget.program?.name ?? 'Biblioteca general'),
-      leading: GoRouter.maybeOf(context)?.canPop() == false
-          ? IconButton(
-              tooltip: 'Ir a programas',
-              icon: const Icon(Icons.home_outlined),
-              onPressed: () => context.go('/programs'),
-            )
-          : null,
-    ),
+    appBar: AdminShellScope.hidesAppBar(context)
+        ? null
+        : AppBar(
+            title: Text(widget.program?.name ?? 'Biblioteca general'),
+            leading: GoRouter.maybeOf(context)?.canPop() == false
+                ? IconButton(
+                    tooltip: 'Ir a programas',
+                    icon: const Icon(Icons.home_outlined),
+                    onPressed: () => context.go('/programs'),
+                  )
+                : null,
+          ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),

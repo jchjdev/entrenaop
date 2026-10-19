@@ -1,5 +1,8 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+
+import '../../../core/admin_shell.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/guided_program.dart';
 
@@ -106,13 +109,17 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(widget.warmups ? 'Calentamientos' : 'Programas guiados'),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => context.go('/programs'),
-      ),
-    ),
+    appBar: AdminShellScope.hidesAppBar(context)
+        ? null
+        : AppBar(
+            title: Text(
+              widget.warmups ? 'Calentamientos' : 'Programas guiados',
+            ),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/programs'),
+            ),
+          ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 960),
@@ -145,16 +152,17 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                         : 'Crear programa guiado',
                   ),
                 ),
-                OutlinedButton(
-                  onPressed: () => context.push(
-                    widget.warmups ? '/guided-programs' : '/warmups',
+                if (!AdminShellScope.hidesAppBar(context))
+                  OutlinedButton(
+                    onPressed: () => context.push(
+                      widget.warmups ? '/guided-programs' : '/warmups',
+                    ),
+                    child: Text(
+                      widget.warmups
+                          ? 'Programas guiados'
+                          : 'Gestionar calentamientos',
+                    ),
                   ),
-                  child: Text(
-                    widget.warmups
-                        ? 'Programas guiados'
-                        : 'Gestionar calentamientos',
-                  ),
-                ),
                 if (!widget.warmups)
                   OutlinedButton.icon(
                     onPressed: () async {
