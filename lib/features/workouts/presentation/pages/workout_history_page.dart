@@ -45,7 +45,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
       onVisible: () => _refresh(),
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: const Text('Evolución'),
         ),
         body: BlocBuilder<WorkoutHistoryCubit, WorkoutHistoryState>(

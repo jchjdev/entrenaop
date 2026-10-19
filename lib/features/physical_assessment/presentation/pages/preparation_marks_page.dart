@@ -86,7 +86,10 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Marcas y resultados')),
+    appBar: AppBar(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      title: const Text('Marcas y resultados'),
+    ),
     body: FutureBuilder<PreparationMarksData>(
       future: _future,
       builder: (context, snapshot) {
@@ -265,7 +268,8 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        for (final result in data.running)
+                        for (final (index, result) in data.running.indexed) ...[
+                          if (index > 0) const SizedBox(height: 12),
                           EntrenaCard(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -304,6 +308,7 @@ class _PreparationMarksPageState extends State<PreparationMarksPage> {
                               ],
                             ),
                           ),
+                        ],
                       ],
                     ],
                   ),

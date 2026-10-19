@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
+import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/physical_assessment/presentation/pages/preparation_marks_page.dart';
+import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,6 +26,109 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
+  }
+
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets(
+      'separa controles y mantiene la cabecera legible al desplazar en $width px con texto x$scale',
+      (t) async {
+        t.view.physicalSize = Size(width, 844);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.resetPhysicalSize);
+        addTearDown(t.view.resetDevicePixelRatio);
+        const frameKey = ValueKey('marks-frame');
+        final data = PreparationMarksData(
+          goal: evolutionGeneric,
+          running: [
+            RunningTestResult(
+              id: 'first',
+              completedAt: DateTime(2026, 10, 10),
+              durationSeconds: 400,
+              rpe: 6,
+              averageHrBpm: 155,
+              maxHrBpm: 165,
+            ),
+            RunningTestResult(
+              id: 'second',
+              completedAt: DateTime(2026, 10, 10),
+              durationSeconds: 510,
+              rpe: 8,
+            ),
+          ],
+        );
+        await t.pumpWidget(
+          MaterialApp(
+            theme: EntrenaTheme.dark,
+            builder: (_, child) => MediaQuery(
+              data: MediaQueryData(
+                size: Size(width, 844),
+                textScaler: TextScaler.linear(scale),
+              ),
+              child: child!,
+            ),
+            home: RepaintBoundary(
+              key: frameKey,
+              child: PreparationMarksPage(
+                goalId: 'generic',
+                load: (_) async => data,
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        final toolbar = t.getRect(find.byType(AppBar));
+        Future<Uint8List> headerPixels() async {
+          final boundary = t.renderObject<RenderRepaintBoundary>(
+            find.byKey(frameKey),
+          );
+          return (await t.runAsync(() async {
+            final image = await boundary.toImage();
+            final bytes = await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            );
+            final pixels = Uint8List.fromList(
+              bytes!.buffer.asUint8List(
+                (toolbar.top * width * 4).round(),
+                (toolbar.height * width * 4).round(),
+              ),
+            );
+            image.dispose();
+            return pixels;
+          }))!;
+        }
+
+        final before = await headerPixels();
+        await t.drag(find.byType(ListView), const Offset(0, -160));
+        await t.pumpAndSettle();
+        final scrollable = t.state<ScrollableState>(
+          find.descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          ),
+        );
+        expect(scrollable.position.pixels, greaterThan(0));
+        expect(
+          listEquals(before, await headerPixels()),
+          isTrue,
+          reason: 'El contenido desplazado no debe verse bajo la cabecera.',
+        );
+        final first = find.ancestor(
+          of: find.text('6:40 · RPE 6'),
+          matching: find.byType(EntrenaCard),
+        );
+        final second = find.ancestor(
+          of: find.text('8:30 · RPE 8'),
+          matching: find.byType(EntrenaCard),
+        );
+        expect(
+          t.getRect(second).top - t.getRect(first).bottom,
+          greaterThanOrEqualTo(12),
+        );
+        await t.ensureVisible(find.text('8:30 · RPE 8'));
+        await t.pumpAndSettle();
+        expect(t.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets('consulta snapshots e intentos nulos sin recalcular puntos', (

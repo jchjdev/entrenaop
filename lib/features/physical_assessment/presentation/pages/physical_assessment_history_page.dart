@@ -13,7 +13,7 @@ class PhysicalAssessmentHistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.white,
         title: const Text('Evaluación física · Tropa'),
       ),
