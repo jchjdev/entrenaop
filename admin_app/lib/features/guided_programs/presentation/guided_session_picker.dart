@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/catalog_search.dart';
 import '../../workouts/data/admin_workout_repository.dart';
+import '../../workouts/presentation/admin_session_library_status.dart';
 
 class GuidedSessionPicker extends StatefulWidget {
   const GuidedSessionPicker({super.key, required this.sessions});
@@ -103,8 +104,16 @@ class _GuidedSessionPickerState extends State<GuidedSessionPicker> {
                   final s = visible[index];
                   return ListTile(
                     title: Text(s.name),
-                    subtitle: Text(
-                      'Versión ${s.version} · ${s.isRunning ? 'Carrera' : 'Fuerza'}${_drafts ? ' · Revisar y publicar' : ''}',
+                    subtitle: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Versión ${s.version} · ${s.isRunning ? 'Carrera' : 'Fuerza'}${_drafts ? ' · Revisar y publicar' : ''}',
+                        ),
+                        const SizedBox(height: 4),
+                        AdminSessionLibraryStatus(session: s),
+                      ],
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.pop(context, s),

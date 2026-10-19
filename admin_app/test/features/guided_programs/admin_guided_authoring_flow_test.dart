@@ -410,10 +410,29 @@ void main() {
             ),
             child: child!,
           ),
-          home: const Scaffold(body: GuidedSessionPicker(sessions: [])),
+          home: const Scaffold(
+            body: GuidedSessionPicker(
+              sessions: [
+                AdminWorkoutSummary(
+                  id: 'hidden',
+                  name: 'Sesión de fuerza de la fase avanzada',
+                  status: 'published',
+                  version: 1,
+                  isRunning: false,
+                  catalogScope: 'general',
+                  showInLibrary: false,
+                ),
+              ],
+            ),
+          ),
         ),
       );
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Oculta como sesión suelta'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(tester.takeException(), isNull);
     },
   );

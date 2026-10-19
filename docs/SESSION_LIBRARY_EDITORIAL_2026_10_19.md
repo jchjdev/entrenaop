@@ -28,6 +28,21 @@ chips pertenecen a Programas; no se inventa clasificación editorial de sesiones
 - Una revisión deportiva conserva la marca de su versión fuente. Cambiar la
   marca no crea una revisión ni modifica bloques, series, enlaces o ejecuciones.
 
+### Visibilidad a simple vista en ADMIN
+
+Javier solicita ver la marca sin abrir cada sesión. Las tarjetas de sesiones del
+creador de programas y las filas del selector comparten el indicador del listado
+administrativo: «Visible como sesión suelta» u «Oculta como sesión suelta».
+Los borradores indican qué ocurrirá al publicar, las sesiones retiradas no se
+presentan como visibles y la falta de metadatos se muestra como visibilidad no
+disponible. No se deduce que una sesión es oculta solo porque no se pudo cargar.
+
+El indicador es informativo; la edición sigue en la ficha de revisión existente.
+Al volver de revisar una sesión se recarga el catálogo y se actualiza la marca
+de su tarjeta. Una sesión oculta sigue siendo seleccionable y reutilizable en
+programas. Se reutilizan los resúmenes ya cargados, sin consultas por tarjeta,
+nuevos guardados ni cambios en publicación o permisos.
+
 `workout_templates.show_in_library` es una propiedad editorial de esa versión,
 independiente de `visibility` y `status`. Se inicia en true para conservar el
 comportamiento de los datos existentes. La migración no decide qué sesiones
@@ -83,3 +98,11 @@ permiso/MFA, recurso oficial y valor esperado comprobados por la prueba SQL.
 Aceptación física del nuevo flujo pendiente; no se modifica
 producción, no se migran automáticamente las elecciones editoriales existentes
 y no se cambia la planificación adaptativa ni los ejecutores.
+
+Ampliación de interfaz del 19/10/2026: análisis de ADMIN limpio y batería completa
+con 227 pruebas correctas y las dos omisiones preexistentes. Las regresiones
+comprueban el estado visible en el programa, su actualización al volver de la
+revisión, la reutilización de sesiones ocultas y la distinción de borradores.
+El selector con contenido se comprueba a 320 px, texto 2× y teclado abierto.
+Este ajuste solo utiliza datos existentes de ADMIN: no requiere migraciones ni
+modifica la aplicación del deportista.

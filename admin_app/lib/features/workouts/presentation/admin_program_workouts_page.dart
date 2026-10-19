@@ -5,6 +5,7 @@ import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/admin_shell.dart';
+import 'admin_session_library_status.dart';
 
 class AdminProgramWorkoutsPage extends StatefulWidget {
   const AdminProgramWorkoutsPage({
@@ -222,11 +223,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                           ),
                           if (widget.program == null) ...[
                             const SizedBox(height: 8),
-                            Text(
-                              workout.showInLibrary
-                                  ? 'Visible como sesión suelta'
-                                  : 'Fuera del listado de sesiones sueltas',
-                            ),
+                            AdminSessionLibraryStatus(session: workout),
                             if (workout.guidedPrograms.isEmpty)
                               const Text('Sin programas guiados asociados')
                             else ...[

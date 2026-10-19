@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
+import 'package:entrenaop_admin/features/guided_programs/presentation/guided_session_picker.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:entrena_ui/entrena_ui.dart';
@@ -51,15 +52,18 @@ class _Guided extends Fake implements AdminGuidedRepository {
 }
 
 class _Workouts extends Fake implements AdminWorkoutRepository {
+  bool listed = true;
+
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async => [
-    const AdminWorkoutSummary(
+    AdminWorkoutSummary(
       id: 'official',
       name: 'Empuje publicado',
       status: 'published',
       version: 1,
       isRunning: false,
       catalogScope: 'general',
+      showInLibrary: listed,
     ),
     const AdminWorkoutSummary(
       id: 'draft',
@@ -73,6 +77,118 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
 }
 
 void main() {
+  testWidgets('el programa muestra la visibilidad y la refresca tras revisar', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1100, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final workouts = _Workouts();
+    final guided = _Guided();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => AdminGuidedEditorPage(
+            repository: guided,
+            workouts: workouts,
+            original: const GuidedProgram(
+              id: 'program',
+              name: 'Programa de prueba',
+              mode: GuidedProgramMode.guide,
+              phases: [
+                GuidedPhase(
+                  name: 'Trabajo',
+                  sessions: [
+                    GuidedSession(
+                      templateId: 'official',
+                      name: 'Empuje publicado',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/sessions/official',
+          builder: (context, _) => Scaffold(
+            body: TextButton(
+              onPressed: () {
+                workouts.listed = false;
+                context.pop();
+              },
+              child: const Text('Ocultar y volver'),
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Visible como sesión suelta'),
+      250,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Visible como sesión suelta'), findsOneWidget);
+    await tester.ensureVisible(find.text('Revisar sesión'));
+    await tester.tap(find.text('Revisar sesión'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ocultar y volver'));
+    await tester.pumpAndSettle();
+    expect(find.text('Oculta como sesión suelta'), findsOneWidget);
+    expect(find.text('Visible como sesión suelta'), findsNothing);
+    expect(find.text('1. Empuje publicado'), findsOneWidget);
+    expect(guided.saved, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('el selector distingue borradores y permite reutilizar ocultas', (
+    tester,
+  ) async {
+    final workouts = _Workouts()..listed = false;
+    final sessions = await workouts.listGeneral();
+    AdminWorkoutSummary? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async {
+                selected = await showDialog<AdminWorkoutSummary>(
+                  context: context,
+                  builder: (_) => GuidedSessionPicker(sessions: sessions),
+                );
+              },
+              child: const Text('Elegir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Elegir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Oculta como sesión suelta'), findsOneWidget);
+    await tester.tap(find.text('Borradores'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Se mostrará como sesión suelta al publicar'),
+      findsOneWidget,
+    );
+    expect(find.text('Visible como sesión suelta'), findsNothing);
+    await tester.tap(find.text('Publicadas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Empuje publicado'));
+    await tester.pumpAndSettle();
+    expect(selected?.id, 'official');
+    expect(selected?.showInLibrary, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('el gestor y la creación admiten texto 2× en móvil estrecho', (
     tester,
   ) async {

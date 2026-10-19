@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/guided_program.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
+import '../../workouts/presentation/admin_session_library_status.dart';
 import '../domain/admin_guided_repository.dart';
 import '../domain/admin_guided_work.dart';
 import '../../editorial_covers/domain/program_cover.dart';
@@ -1352,6 +1353,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            AdminSessionLibraryStatus(session: source),
+            const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
