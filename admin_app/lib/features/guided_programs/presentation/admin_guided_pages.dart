@@ -1448,6 +1448,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ),
             if (hasWarmup)
               const Text('Esta sesión ya incluye su propio calentamiento.'),
+            if (!hasWarmup) const SizedBox(height: 16),
             if (!hasWarmup)
               DropdownButtonFormField<String>(
                 key: ValueKey('${s.id}:${s.warmup}'),
