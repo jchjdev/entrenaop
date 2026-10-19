@@ -1,4 +1,5 @@
 import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
+import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/exercises/domain/repositories/exercise_repository.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/create_exercise_usecase.dart';
 import 'package:entrenaop/features/exercises/domain/usecases/get_exercises_usecase.dart';
@@ -17,11 +18,144 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/exercise_image.dart';
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
+import 'package:workout_editor_ui/strength_set_fields.dart';
+import 'package:workout_editor_ui/workout_effort_field.dart';
 
 import '../../exercises/domain/strength_exercise_catalog_test.dart'
     show readCatalogJson;
+import '../../../helpers/performance_visual_review.dart';
 
 void main() {
+  setUpAll(loadReviewFont);
+  testWidgets('series, RIR y teclado se actualizan sin salir del editor', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(390, 844);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+    final repository = _WorkoutRepository();
+    final drafts = _DraftStore();
+    final cubit = WorkoutEditorCubit(
+      getExercises: GetExercisesUseCase(_ExerciseRepository()),
+      createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+      draftStore: drafts,
+      createWorkout: CreatePersonalWorkoutUseCase(repository),
+      getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+      reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+      templateId: 'template-v1',
+    );
+    addTearDown(cubit.close);
+    await cubit.load();
+    await t.pumpWidget(
+      RepaintBoundary(
+        key: const ValueKey('review-boundary'),
+        child: MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutEditorPage(),
+          ),
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.byTooltip('Añadir serie'));
+    await t.pumpAndSettle();
+    await t.tap(find.byTooltip('Añadir serie'));
+    await t.pumpAndSettle();
+    expect(find.text('Series (2)'), findsOneWidget);
+    expect(find.byType(StrengthSetFields), findsNWidgets(2));
+    await t.tap(find.byTooltip('Quitar última serie'));
+    await t.pumpAndSettle();
+    expect(find.text('Series (1)'), findsOneWidget);
+    expect(find.byType(StrengthSetFields), findsOneWidget);
+
+    final effort = find.byType(WorkoutEffortField);
+    await t.ensureVisible(effort);
+    await t.pumpAndSettle();
+    await t.tap(effort);
+    await t.pumpAndSettle();
+    await t.tap(find.widgetWithText(ChoiceChip, '3'));
+    await t.pumpAndSettle();
+    expect(t.widget<WorkoutEffortField>(effort).value, 3);
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.single.targetRir,
+      3,
+    );
+
+    final target = find.widgetWithText(TextFormField, 'Repeticiones');
+    await t.ensureVisible(target);
+    await t.pumpAndSettle();
+    await t.enterText(target, '8');
+    await t.pump();
+    expect(t.testTextInput.isVisible, isTrue);
+    await t.tap(find.text('Serie 1'));
+    await t.pumpAndSettle();
+    expect(t.testTextInput.isVisible, isFalse);
+    await capturePerformanceWidget(t, 'editor-series-repeticiones-390');
+    await t.tap(target);
+    await t.pump();
+    expect(t.testTextInput.isVisible, isTrue);
+    await t.drag(find.byType(ListView), const Offset(0, -80));
+    await t.pumpAndSettle();
+    expect(t.testTextInput.isVisible, isFalse);
+    await t.ensureVisible(find.byTooltip('Añadir serie'));
+    await t.pumpAndSettle();
+    await t.tap(find.byTooltip('Añadir serie'));
+    await t.pumpAndSettle();
+    expect(find.text('Series (2)'), findsOneWidget);
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetValue,
+      ),
+      [8, 8],
+    );
+    final targets = find.widgetWithText(TextFormField, 'Repeticiones');
+    await t.ensureVisible(targets.last);
+    await t.pumpAndSettle();
+    await t.enterText(targets.last, '12');
+    await t.ensureVisible(find.text('Igualar'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Igualar'));
+    await t.pumpAndSettle();
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetValue,
+      ),
+      [8, 8],
+    );
+    for (final field in targets.evaluate()) {
+      expect(
+        t
+            .widget<EditableText>(
+              find.descendant(
+                of: find.byWidget(field.widget),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .controller
+            .text,
+        '8',
+      );
+    }
+    final selector = find.byType(DropdownButtonFormField<WorkoutTargetType>);
+    await t.ensureVisible(selector);
+    await t.pumpAndSettle();
+    await t.tap(selector);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Tiempo').last);
+    await t.pumpAndSettle();
+    final time = find.widgetWithText(TextFormField, 'Tiempo').first;
+    await t.ensureVisible(time);
+    await t.pumpAndSettle();
+    await capturePerformanceWidget(t, 'editor-series-tiempo-390');
+    expect(t.takeException(), isNull);
+  });
+
   test(
     'una cuota rechazada conserva el borrador y devuelve el motivo comercial',
     () async {

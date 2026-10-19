@@ -3,6 +3,7 @@ import 'package:entrena_ui/entrena_ui.dart'
 import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/pro/presentation/widgets/pro_access_widgets.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrenaop/core/presentation/dismiss_keyboard.dart';
 
 import 'dart:async';
 
@@ -78,7 +79,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     title: '¿Descartar los cambios incompletos?',
     message: 'Estos cambios no se han podido guardar como borrador. Si sales, se conserva el último borrador guardado.',
     exitLabel: 'Salir sin estos cambios',
-    child: _buildContent(context),
+    child: NotificationListener<ScrollStartNotification>(
+      onNotification: (notification) {
+        if (notification.dragDetails != null) dismissKeyboard();
+        return false;
+      },
+      child: GestureDetector(
+        onTap: dismissKeyboard,
+        child: _buildContent(context),
+      ),
+    ),
   );
 
   Widget _buildContent(BuildContext context) {
@@ -341,6 +351,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     return Form(
       key: _formKey,
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
         children: [
           Center(
@@ -773,9 +784,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     key: ValueKey(block.rows[exerciseIndex].identity),
                     index: exerciseIndex,
                     positionLabel: block.positionLabel(exerciseIndex),
-                    setSectionLabel: block.setSectionLabel(
-                      block.rows[exerciseIndex].sets.length,
-                    ),
+                    setSectionLabel: block.setSectionLabel,
                     data: block.rows[exerciseIndex],
                     enabled: !saving,
                     fixedSetCount: block.fixedSetCount,
@@ -1522,7 +1531,7 @@ class _ExerciseEditorCard extends StatefulWidget {
 
   final int index;
   final String positionLabel;
-  final String setSectionLabel;
+  final String Function(int) setSectionLabel;
   final _ExerciseRowData data;
   final bool enabled;
   final bool fixedSetCount;
@@ -1683,7 +1692,7 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
             ],
             const SizedBox(height: 12),
             Text(
-              widget.setSectionLabel,
+              widget.setSectionLabel(data.sets.length),
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             Align(
@@ -1749,7 +1758,10 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
                   targetEnabled: widget.enabled && !widget.fixedTarget,
                   showRest: !widget.fixedSetCount,
                   itemLabel: widget.setItemLabel,
-                  onChanged: widget.onChanged,
+                  onChanged: () {
+                    setState(() {});
+                    widget.onChanged();
+                  },
                 ),
               ),
             ),

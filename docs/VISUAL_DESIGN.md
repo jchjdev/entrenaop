@@ -1,5 +1,36 @@
 # Identidad visual de EntrenaOP
 
+## Editor de series en móvil · UI-053 · 19/10/2026
+
+Las capturas de Javier muestran tiempos recortados por el sufijo `min:seg`,
+campos estrechos de distinto ancho y un selector RIR mucho más alto. Además,
+el contador conservaba el texto anterior al añadir o quitar series y la elección
+de RIR no refrescaba su valor hasta otra reconstrucción.
+
+El editor calcula el contador desde la lista actual y refresca la selección de
+RIR sin salir. Los campos compartidos aprovechan todo el ancho en móvil;
+disponen dos columnas uniformes cuando el ancho y la escala de texto lo
+permiten. RIR usa una presentación compacta con la misma decoración y altura;
+`min:seg` queda bajo el tiempo para no competir con los dígitos. Se conservan la
+conversión a segundos, los límites y la selección de enteros/ausencia de RIR.
+
+En el editor personal, tocar fuera y comenzar un desplazamiento manual cierra
+el teclado; se combina la retirada del foco con el cierre nativo ya utilizado
+por la aplicación. Los controles numéricos compartidos admiten Hecho y toque
+exterior. Añadir, quitar e igualar series siguen guardando el borrador.
+
+Las regresiones cubren contador, copia, igualación, elección de RIR, borrador y
+cierre de teclado. Se comprueban anchos útiles de 220, 390 y 740 px con texto
+normal y doble, además de capturas del editor real a 390 px para repeticiones
+y tiempo. Queda repetir el recorrido físico en iPhone. No cambia el contrato
+de dominio, almacenamiento, permisos ni paquetes externos.
+
+Verificación: análisis limpio en raíz, ADMIN y el paquete compartido; 984
+pruebas de deportista, 147 de ADMIN y 20 del editor correctas. Una prueba de
+raíz y dos de ADMIN omitidas por sus condiciones existentes. La comprobación
+de ADMIN se realiza sobre el árbol compartido que incluye el trabajo de
+navegación de UI-052; esta corrección no incorpora esos cambios.
+
 ## Cierre sin notas vacías · 16/10/2026
 
 Javier confirma que el RPE se ve bien y aporta un cierre con comillas vacías.

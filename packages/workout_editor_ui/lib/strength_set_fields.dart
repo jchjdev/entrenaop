@@ -62,73 +62,82 @@ class StrengthSetFields extends StatelessWidget {
   final String rirLabel;
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: 10,
-    runSpacing: 10,
-    children: [
-      if (showTarget)
-        _input(
-          label:
-              targetLabel ??
-              switch (targetType) {
-                WorkoutTargetType.repetitions => 'Repeticiones',
-                WorkoutTargetType.duration => 'Tiempo',
-                WorkoutTargetType.distance => 'Distancia',
-              },
-          value: targetText,
-          onChanged: onTargetChanged,
-          enabled: enabled && targetEnabled,
-          clock: clockTarget,
-          optional: targetOptional,
-          integer: targetType != WorkoutTargetType.distance && !clockTarget,
-          min: 0.01,
-          max: 100000,
-          suffix: clockTarget
-              ? null
-              : switch (targetType) {
-                  WorkoutTargetType.repetitions => 'reps',
-                  WorkoutTargetType.duration => 's',
-                  WorkoutTargetType.distance => 'm',
-                },
-        ),
-      if (showLoad)
-        _input(
-          label: loadLabel,
-          value: loadText,
-          onChanged: onLoadChanged,
-          enabled: enabled,
-          optional: true,
-          min: 0,
-          max: 1000,
-          suffix: 'kg',
-        ),
-      if (showRir && targetType.supportsRir)
-        SizedBox(
-          width: 185,
-          child: WorkoutEffortField(
-            label: rirLabel,
-            minimum: 0,
-            value: double.tryParse(rirText.replaceAll(',', '.')),
-            enabled: enabled,
-            onChanged: (value) =>
-                onRirChanged(value == null ? '' : _number(value)),
-          ),
-        ),
-      if (showRest)
-        _input(
-          label: restLabel ?? 'Descanso',
-          value: restText,
-          onChanged: onRestChanged,
-          enabled: enabled,
-          clock: clockRest,
-          optional: restOptional,
-          integer: !clockRest,
-          min: 0,
-          max: 3600,
-          suffix: clockRest ? null : 's',
-        ),
-    ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final minimumWidth =
+          180 * MediaQuery.textScalerOf(context).scale(14) / 14;
+      final columns = constraints.maxWidth >= minimumWidth * 2 + 10 ? 2 : 1;
+      final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
+      return Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          for (final field in _fields()) SizedBox(width: width, child: field),
+        ],
+      );
+    },
   );
+
+  List<Widget> _fields() => [
+    if (showTarget)
+      _input(
+        label:
+            targetLabel ??
+            switch (targetType) {
+              WorkoutTargetType.repetitions => 'Repeticiones',
+              WorkoutTargetType.duration => 'Tiempo',
+              WorkoutTargetType.distance => 'Distancia',
+            },
+        value: targetText,
+        onChanged: onTargetChanged,
+        enabled: enabled && targetEnabled,
+        clock: clockTarget,
+        optional: targetOptional,
+        integer: targetType != WorkoutTargetType.distance && !clockTarget,
+        min: 0.01,
+        max: 100000,
+        suffix: clockTarget
+            ? null
+            : switch (targetType) {
+                WorkoutTargetType.repetitions => 'reps',
+                WorkoutTargetType.duration => 's',
+                WorkoutTargetType.distance => 'm',
+              },
+      ),
+    if (showLoad)
+      _input(
+        label: loadLabel,
+        value: loadText,
+        onChanged: onLoadChanged,
+        enabled: enabled,
+        optional: true,
+        min: 0,
+        max: 1000,
+        suffix: 'kg',
+      ),
+    if (showRir && targetType.supportsRir)
+      WorkoutEffortField(
+        compact: true,
+        label: rirLabel,
+        minimum: 0,
+        value: double.tryParse(rirText.replaceAll(',', '.')),
+        enabled: enabled,
+        onChanged: (value) => onRirChanged(value == null ? '' : _number(value)),
+      ),
+    if (showRest)
+      _input(
+        label: restLabel ?? 'Descanso',
+        value: restText,
+        onChanged: onRestChanged,
+        enabled: enabled,
+        clock: clockRest,
+        optional: restOptional,
+        integer: !clockRest,
+        min: 0,
+        max: 3600,
+        suffix: clockRest ? null : 's',
+      ),
+  ];
 
   Widget _input({
     required String label,
@@ -141,51 +150,53 @@ class StrengthSetFields extends StatelessWidget {
     bool clock = false,
     bool integer = false,
     String? suffix,
-  }) => SizedBox(
-    width: 155,
-    child: TextFormField(
-      key: ValueKey('$label:$clock:$suffix'),
-      initialValue: suffix == 's' && num.tryParse(value) != null
-          ? formatDurationSeconds(num.parse(value))
-          : value,
-      enabled: enabled,
-      keyboardType: clock || suffix == 's'
-          ? TextInputType.number
-          : const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: clock || suffix == 's'
-          ? const [DurationInputFormatter()]
-          : null,
-      decoration: InputDecoration(
-        labelText: label,
-        suffixText: clock || suffix == 's' ? 'min:seg' : suffix,
-        hintText: clock || suffix == 's' ? '00:00' : null,
-      ),
-      validator: !validateNumbers
-          ? null
-          : (text) {
-              final normalized = text?.trim().replaceAll(',', '.') ?? '';
-              if (normalized.isEmpty && optional) return null;
-              if (clock || suffix == 's') {
-                final seconds = parseDurationInput(normalized);
-                return seconds == null || seconds < min || seconds > max
-                    ? 'Usa un tiempo entre ${formatDurationSeconds(min)} y ${formatDurationSeconds(max)}'
-                    : null;
-              }
-              final number = double.tryParse(normalized);
-              if (number == null || number < min || number > max) {
-                return 'Entre ${_number(min)} y ${_number(max)}';
-              }
-              if (integer && number != number.roundToDouble()) {
-                return 'Usa un entero';
-              }
-              return null;
-            },
-      // Conserva el contrato del editor: los controles antes expresados en
-      // segundos entregan segundos, aunque la interfaz muestre un reloj.
-      onChanged: suffix == 's' && !clock
-          ? (text) => onChanged(parseDurationInput(text)?.toString() ?? text)
-          : onChanged,
+  }) => TextFormField(
+    key: ValueKey('$label:$clock:$suffix'),
+    initialValue: suffix == 's' && num.tryParse(value) != null
+        ? formatDurationSeconds(num.parse(value))
+        : value,
+    enabled: enabled,
+    textInputAction: TextInputAction.done,
+    onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+    onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+    keyboardType: clock || suffix == 's'
+        ? TextInputType.number
+        : const TextInputType.numberWithOptions(decimal: true),
+    inputFormatters: clock || suffix == 's'
+        ? const [DurationInputFormatter()]
+        : null,
+    decoration: InputDecoration(
+      labelText: label,
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      suffixText: clock || suffix == 's' ? null : suffix,
+      helperText: clock || suffix == 's' ? 'min:seg' : ' ',
+      hintText: clock || suffix == 's' ? '00:00' : null,
     ),
+    validator: !validateNumbers
+        ? null
+        : (text) {
+            final normalized = text?.trim().replaceAll(',', '.') ?? '';
+            if (normalized.isEmpty && optional) return null;
+            if (clock || suffix == 's') {
+              final seconds = parseDurationInput(normalized);
+              return seconds == null || seconds < min || seconds > max
+                  ? 'Usa un tiempo entre ${formatDurationSeconds(min)} y ${formatDurationSeconds(max)}'
+                  : null;
+            }
+            final number = double.tryParse(normalized);
+            if (number == null || number < min || number > max) {
+              return 'Entre ${_number(min)} y ${_number(max)}';
+            }
+            if (integer && number != number.roundToDouble()) {
+              return 'Usa un entero';
+            }
+            return null;
+          },
+    // Conserva el contrato del editor: los controles antes expresados en
+    // segundos entregan segundos, aunque la interfaz muestre un reloj.
+    onChanged: suffix == 's' && !clock
+        ? (text) => onChanged(parseDurationInput(text)?.toString() ?? text)
+        : onChanged,
   );
 }
 
