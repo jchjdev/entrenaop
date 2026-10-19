@@ -23,3 +23,9 @@ antes de preparar el nuevo ZIP.
 `hostinger-corrected-release.png` acredita la carga privada del paquete corregido
 `c2d7e4e-20261019T093931Z.zip` junto al primero, que queda sustituido para publicar.
 Todavía no acredita extracción ni acceso remoto autenticado.
+
+`security-direct-qr.png` muestra en Chrome el acceso directo a «Mostrar QR del
+autenticador» y el cambio de contraseña opcional cerrado. Se verifica el botón
+visible sin pulsarlo; la captura precede al alta privada del factor por Javier.
+El paquete vigente de este flujo es `9d88cd6-20261019T094805Z.zip`, preparado
+localmente y pendiente de cargar y publicar cuando termine la configuración.

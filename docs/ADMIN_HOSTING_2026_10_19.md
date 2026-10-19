@@ -42,6 +42,16 @@ La captura `hostinger-private-release.png` acredita únicamente la carga privada
 `security-login-handoff.png` muestra el acceso local entregado al propietario,
 con campos vacíos, antes de configurar el autenticador.
 
+Después de separar la contraseña del alta del autenticador queda preparado
+localmente `9d88cd6-20261019T094805Z.zip`, SHA-256
+`74315EDCABB5041B2D1C2414419BDCE8D896EEDA96149E8C6C75E38C4AC8EA84`.
+Es el paquete vigente para la publicación y todavía debe cargarse en Hostinger;
+los paquetes privados anteriores se conservan sin extraer. La revisión es
+`9d88cd6`, las fuentes están limpias y el SHA-256 del JavaScript es
+`0394034862E227AE62E009089B7D819338371C7B80C4198D797E33FE81AA3E72`.
+La captura `security-direct-qr.png` acredita la pantalla real local con el botón
+directo visible y la contraseña opcional cerrada, antes de generar el factor.
+
 ## Acceso y segundo factor
 
 El router comprueba el estado administrativo antes de resolver una ruta
