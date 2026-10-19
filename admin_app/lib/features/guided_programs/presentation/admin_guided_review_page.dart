@@ -47,6 +47,19 @@ class _AdminGuidedReviewPageState extends State<AdminGuidedReviewPage> {
     _review = _fetch();
   }
 
+  @override
+  void didUpdateWidget(covariant AdminGuidedReviewPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Guardar y revisar puede volver al mismo ID mediante go y conservar esta
+    // página en el navegador. Su lectura anterior ya no acredita el borrador.
+    if (oldWidget.programId != widget.programId ||
+        ModalRoute.of(context)?.isCurrent == true) {
+      _clearContent();
+      _error = null;
+      _review = _fetch();
+    }
+  }
+
   Future<_Review> _fetch() async {
     final result = await (
       widget.repository.program(widget.programId),

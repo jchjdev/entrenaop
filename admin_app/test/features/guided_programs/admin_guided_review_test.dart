@@ -87,6 +87,7 @@ class _Guided extends Fake implements AdminGuidedRepository {
   bool fail = false, failPublish = false;
   int writes = 0;
   int saves = 0;
+  String savedId = 'saved-version';
   Completer<void>? publishGate;
   @override
   Future<GuidedProgram> program(String id) async {
@@ -102,7 +103,7 @@ class _Guided extends Fake implements AdminGuidedRepository {
   Future<String> save(GuidedProgram input, {String? id}) async {
     saves++;
     current = input;
-    return 'saved-version';
+    return savedId;
   }
 
   @override
@@ -253,6 +254,30 @@ Future<void> _capture(WidgetTester tester, String name) async {
 }
 
 void main() {
+  testWidgets(
+    'volver a revisar el mismo borrador muestra los cambios guardados',
+    (tester) async {
+      final guided = _Guided()..savedId = 'p';
+      final router = await _mount(tester, guided, _Workouts());
+      await tap(tester, find.text('Editar borrador'));
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Objetivo e indicaciones'),
+        'Indicaciones revisadas antes de publicar',
+      );
+      await tap(tester, find.text('Guardar y revisar'));
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        '/guided-programs/p/review',
+      );
+      expect(guided.saves, 1);
+      expect(guided.writes, 0);
+      expect(
+        find.text('Indicaciones revisadas antes de publicar'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('confirmación de publicación accesible a 320 px con texto 2×', (
     tester,
   ) async {
