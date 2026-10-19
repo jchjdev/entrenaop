@@ -37,11 +37,21 @@ Los borradores indican qué ocurrirá al publicar, las sesiones retiradas no se
 presentan como visibles y la falta de metadatos se muestra como visibilidad no
 disponible. No se deduce que una sesión es oculta solo porque no se pudo cargar.
 
-El indicador es informativo; la edición sigue en la ficha de revisión existente.
-Al volver de revisar una sesión se recarga el catálogo y se actualiza la marca
-de su tarjeta. Una sesión oculta sigue siendo seleccionable y reutilizable en
-programas. Se reutilizan los resúmenes ya cargados, sin consultas por tarjeta,
-nuevos guardados ni cambios en publicación o permisos.
+Javier precisa que también debe poder cambiarse desde la propia tarjeta. Cada
+sesión general publicada del programa ofrece «Mostrar en Sesiones de EntrenaOP»
+con un interruptor que guarda inmediatamente mediante la misma operación de la
+ficha de revisión; se conservan ambos controles. No exige guardar el programa.
+Durante la petición se bloquean cambios simultáneos y salida; el valor se confirma
+tras guardar. El error queda junto al control y permite reintentar. Se conserva
+la comparación con el valor esperado y se recarga el catálogo ante un error del
+servidor para recoger posibles cambios de otra pestaña.
+
+La marca pertenece a la versión compartida de la sesión: todas sus referencias
+dentro del montaje se actualizan juntas, sin modificar fases, ejercicios ni
+registros. Al volver de revisar una sesión se recarga el catálogo y se actualiza
+la marca de su tarjeta. Una sesión oculta sigue siendo seleccionable y reutilizable
+en programas. Selector y listado conservan su indicador informativo. Se reutilizan
+los resúmenes ya cargados, sin consultas por tarjeta ni cambios de permisos.
 
 `workout_templates.show_in_library` es una propiedad editorial de esa versión,
 independiente de `visibility` y `status`. Se inicia en true para conservar el
@@ -106,3 +116,11 @@ revisión, la reutilización de sesiones ocultas y la distinción de borradores.
 El selector con contenido se comprueba a 320 px, texto 2× y teclado abierto.
 Este ajuste solo utiliza datos existentes de ADMIN: no requiere migraciones ni
 modifica la aplicación del deportista.
+
+Ampliación del interruptor en tarjetas: análisis ADMIN limpio y 229 pruebas
+correctas, con las dos omisiones preexistentes. Se comprueban guardado inmediato
+sin guardar el programa, valores esperados al ocultar/mostrar, sincronización
+de referencias repetidas, bloqueo de cambios durante la petición y error con
+reintento. La regresión de guardado recuperable espera a terminar el desplazamiento
+antes de pulsar el botón; conserva sus comprobaciones de identidad e idempotencia.
+Sin cambios de esquema, RPC ni permisos.

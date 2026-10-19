@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -53,6 +55,22 @@ class _Guided extends Fake implements AdminGuidedRepository {
 
 class _Workouts extends Fake implements AdminWorkoutRepository {
   bool listed = true;
+  bool failVisibility = false;
+  Completer<void>? visibilityGate;
+  final visibilityWrites = <({String id, bool value, bool expected})>[];
+
+  @override
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  }) async {
+    visibilityWrites.add((id: templateId, value: value, expected: expected));
+    await visibilityGate?.future;
+    if (failVisibility) throw StateError('Sin conexión');
+    expect(listed, expected);
+    listed = value;
+  }
 
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async => [
@@ -76,7 +94,124 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   ];
 }
 
+Future<void> _mountVisibilityProgram(
+  WidgetTester tester,
+  _Guided guided,
+  _Workouts workouts,
+) async {
+  await tester.binding.setSurfaceSize(const Size(1100, 1800));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: EntrenaTheme.dark,
+      home: AdminGuidedEditorPage(
+        repository: guided,
+        workouts: workouts,
+        original: const GuidedProgram(
+          id: 'program',
+          name: 'Programa de prueba',
+          mode: GuidedProgramMode.guide,
+          phases: [
+            GuidedPhase(
+              name: 'Trabajo',
+              sessions: [
+                GuidedSession(templateId: 'official', name: 'Empuje publicado'),
+                GuidedSession(templateId: 'official', name: 'Empuje repetido'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(
+    find.text('Mostrar en Sesiones de EntrenaOP').first,
+    250,
+    scrollable: find.byType(Scrollable).last,
+  );
+}
+
 void main() {
+  testWidgets('el switch guarda sin salir y sincroniza las referencias', (
+    tester,
+  ) async {
+    final workouts = _Workouts();
+    final guided = _Guided();
+    await _mountVisibilityProgram(tester, guided, workouts);
+    final switches = find.widgetWithText(
+      SwitchListTile,
+      'Mostrar en Sesiones de EntrenaOP',
+    );
+    await tester.tap(switches.first);
+    await tester.pumpAndSettle();
+    expect(workouts.visibilityWrites.single, (
+      id: 'official',
+      value: false,
+      expected: true,
+    ));
+    expect(find.text('Oculta como sesión suelta'), findsNWidgets(2));
+    expect(
+      tester.widgetList<SwitchListTile>(switches).every((s) => !s.value),
+      isTrue,
+    );
+    await tester.tap(switches.first);
+    await tester.pumpAndSettle();
+    expect(workouts.visibilityWrites.last, (
+      id: 'official',
+      value: true,
+      expected: false,
+    ));
+    expect(find.text('Visible como sesión suelta'), findsNWidgets(2));
+    expect(guided.saved, isNull);
+    expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'guardado pendiente bloquea cambios y el error permite reintentar',
+    (tester) async {
+      final workouts = _Workouts()
+        ..failVisibility = true
+        ..visibilityGate = Completer<void>();
+      final guided = _Guided();
+      await _mountVisibilityProgram(tester, guided, workouts);
+      final switches = find.widgetWithText(
+        SwitchListTile,
+        'Mostrar en Sesiones de EntrenaOP',
+      );
+      await tester.tap(switches.first);
+      await tester.pump();
+      expect(workouts.visibilityWrites, hasLength(1));
+      expect(find.text('Guardando visibilidad…'), findsNWidgets(2));
+      expect(
+        tester
+            .widgetList<SwitchListTile>(switches)
+            .every((s) => s.onChanged == null && s.value),
+        isTrue,
+      );
+      workouts.visibilityGate!.complete();
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('No se pudo guardar la visibilidad'),
+        findsNWidgets(2),
+      );
+      expect(workouts.listed, isTrue);
+      expect(find.text('Visible como sesión suelta'), findsNWidgets(2));
+      workouts.failVisibility = false;
+      await tester.tap(switches.first);
+      await tester.pumpAndSettle();
+      expect(workouts.visibilityWrites, hasLength(2));
+      expect(workouts.listed, isFalse);
+      expect(
+        find.textContaining('No se pudo guardar la visibilidad'),
+        findsNothing,
+      );
+      expect(guided.saved, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('el programa muestra la visibilidad y la refresca tras revisar', (
     tester,
   ) async {

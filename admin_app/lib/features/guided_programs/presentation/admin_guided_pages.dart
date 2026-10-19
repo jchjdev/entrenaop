@@ -457,6 +457,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   String? _primaryCategoryId;
   bool _catalogsReady = false;
   bool _busy = false, _loading = true, _dirty = false;
+  String? _savingVisibilityId;
+  final _visibilityErrors = <String, String>{};
   String? _error;
   GuidedWorkController? _checkpoint;
   Timer? _saveTimer;
@@ -741,6 +743,62 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   Future<void> _reviewSession(_SessionFields session) async {
     await context.push('/sessions/${Uri.encodeComponent(session.id)}');
     if (mounted) await _load();
+  }
+
+  Future<void> _setSessionVisibility(
+    AdminWorkoutSummary source,
+    bool value,
+  ) async {
+    if (_busy ||
+        source.catalogScope != 'general' ||
+        source.status != 'published' ||
+        value == source.showInLibrary) {
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _savingVisibilityId = source.id;
+      _visibilityErrors.remove(source.id);
+    });
+    try {
+      await widget.workouts.setLibraryVisibility(
+        source.id,
+        value,
+        expected: source.showInLibrary,
+      );
+      if (mounted) {
+        setState(() {
+          // La marca pertenece a la sesión compartida, no a una fase concreta.
+          _sessions = [
+            for (final session in _sessions)
+              if (session.id == source.id)
+                session.withLibraryVisibility(value)
+              else
+                session,
+          ];
+        });
+      }
+    } on PostgrestException catch (error) {
+      // Una pestaña pudo cambiar la marca; recargar permite reintentar con el
+      // valor esperado vigente sin sobrescribirlo silenciosamente.
+      await _load();
+      if (mounted) {
+        setState(() => _visibilityErrors[source.id] = error.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _visibilityErrors[source.id] = 'No se pudo guardar la visibilidad. Vuelve a usar el interruptor para reintentar.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _savingVisibilityId = null;
+        });
+      }
+    }
   }
 
   Future<void> _save({bool reviewAfter = false}) async {
@@ -1354,7 +1412,26 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ],
             ),
             const SizedBox(height: 8),
-            AdminSessionLibraryStatus(session: source),
+            if (source?.catalogScope == 'general' &&
+                source?.status == 'published')
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mostrar en Sesiones de EntrenaOP'),
+                subtitle: _savingVisibilityId == source!.id
+                    ? const Text('Guardando visibilidad…')
+                    : AdminSessionLibraryStatus(session: source),
+                value: source.showInLibrary,
+                onChanged: _busy
+                    ? null
+                    : (value) => _setSessionVisibility(source, value),
+              )
+            else
+              AdminSessionLibraryStatus(session: source),
+            if (_visibilityErrors[s.id] case final message?)
+              Text(
+                message,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerLeft,

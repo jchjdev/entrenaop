@@ -28,6 +28,19 @@ class AdminWorkoutSummary {
   final List<AdminWorkoutProgramUsage> guidedPrograms;
   final bool hasWarmup, supportsAdjustableRest;
   final bool showInLibrary;
+
+  AdminWorkoutSummary withLibraryVisibility(bool value) => AdminWorkoutSummary(
+    id: id,
+    name: name,
+    status: status,
+    version: version,
+    isRunning: isRunning,
+    catalogScope: catalogScope,
+    guidedPrograms: guidedPrograms,
+    hasWarmup: hasWarmup,
+    supportsAdjustableRest: supportsAdjustableRest,
+    showInLibrary: value,
+  );
 }
 
 class AdminWorkoutProgramUsage {

@@ -291,6 +291,7 @@ void main() {
       router.go(location.toString());
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Guardar en catálogo'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar en catálogo'));
       await tester.pumpAndSettle();
       expect(find.text('Comprobar y reintentar guardado'), findsOneWidget);
