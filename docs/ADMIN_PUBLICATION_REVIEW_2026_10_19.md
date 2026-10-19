@@ -86,6 +86,24 @@ de versión que evita reutilizar el favicon de una publicación anterior.
 - Capturas de widgets reales con datos sintéticos: escritorio, sesión desplegada,
   móvil con texto 2× y confirmación a 320 px. Conservadas en
   `docs/visual-audit/admin-publication-review-2026-10-19/` tras revisión visual.
-- Compilación web release Dev comprobada. La publicación y el recorrido remoto
-  se registrarán cuando termine GitHub Actions; no se presenta esa parte como
-  realizada antes de comprobarla.
+- Compilación web release Dev comprobada. [GitHub Actions 39245586883](https://github.com/jchjdev/entrenaop/actions/runs/39245586883)
+  publica `7cca2bc699c548a1ea044890352e3ba9dfe24d34` correctamente en 4 min 59 s:
+  validación 3 min 28 s, publicación 1 min 22 s. Conexión exclusivamente a Dev.
+- Verificación HTTPS independiente de manifiesto, JavaScript, cabeceras e índice
+  correcta. SHA-256 servido del JavaScript:
+  `639fa690e764871434c6c8355a72978b2336a02a240a7762873f798c86d9c6f8`.
+  El favicon PNG servido coincide byte a byte con el recurso de marca:
+  `9963fc69a08debd3deb3d82d05ffdb25ec7ab6429583872ca3babda97e58b294`.
+- Chrome conserva la sesión de Javier y abre la revisión de la rutina demo con
+  tres sesiones, sus categorías, calentamiento, bloques, series, RIR y descansos.
+  Recargar directamente su URL vuelve a resolver la misma revisión.
+  También abre una sesión de carrera existente con sus tramos y ritmo, panel de
+  revisión y acciones propias de una publicación. Sin errores de consola.
+  No se modifica ni publica contenido en esta prueba.
+  Los iconos grandes servidos por CDN son PNG de los tamaños declarados; el
+  contraste byte a byte del favicon se acredita por separado.
+
+Bloque publicado y comprobado en web. La revisión semántica se contrasta mediante
+los widgets y el recorrido remoto; no se acreditan dispositivos móviles físicos.
+Único siguiente bloque recomendado para ADMIN: historial editorial propio con
+qué cambió y cuándo, conservando permisos y versiones.
