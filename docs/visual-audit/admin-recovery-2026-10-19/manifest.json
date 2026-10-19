@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-19",
+  "environment": "Supabase Dev",
+  "url": "http://localhost:55555/#/guided-programs",
+  "capture": {
+    "path": "continuar-trabajando.png",
+    "sha256": "eed66f49fc85a8181e0bfd9799b76693c3c528bf98db466145da1fcd4c3c85de"
+  },
+  "build": {
+    "path": "admin_app/build/web/main.dart.js",
+    "sha256": "0e097c540b13ff5903cb703307346ac1ee01f10dc9faeb848b151560f6874045"
+  },
+  "verification": {
+    "adminTestsPassed": 167,
+    "optionalCapturesSkipped": 2,
+    "analyze": "clean",
+    "sqlTransactionalScripts": [
+      "admin_guided_work_drafts",
+      "guided_program_authoring",
+      "guided_program_categories",
+      "guided_program_follow_through"
+    ]
+  }
+}

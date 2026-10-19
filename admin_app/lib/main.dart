@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'features/guided_programs/data/supabase_admin_guided_work_repository.dart';
+
 import 'package:entrenaop_admin/features/guided_programs/data/supabase_admin_guided_repository.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -79,6 +81,7 @@ class _AdminAppState extends State<AdminApp> {
       ),
       proAccess: SupabaseAdminProAccessRepository(client),
       guided: SupabaseAdminGuidedRepository(client),
+      guidedWork: SupabaseAdminGuidedWorkRepository(client),
       onSignOut: () => unawaited(client.auth.signOut()),
       authChanges: _authChanges,
       isAuthenticated: () => client.auth.currentSession != null,

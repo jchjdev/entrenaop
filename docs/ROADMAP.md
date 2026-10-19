@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**UI-056, 19/10/2026 · recuperación del trabajo de ADMIN:** programas guiados
+con guardado automático/manual de campos incompletos, referencias pendientes y
+URL recuperable. Catálogo con Continuar trabajando, permisos por administrador,
+conflictos del mismo trabajo y finalización transaccional que permite reintentar
+sin duplicar versiones. Publicación y validación editorial conservadas.
+Análisis limpio, 167 pruebas correctas (dos capturas optativas omitidas), web
+compilada y SQL/Chrome comprobados contra Dev; no cambia producción ni deportista.
+**Único siguiente bloque recomendado:** vista previa del programa como deportista
+y revisión previa a publicar, antes de preparar el acceso por subdominio.
+[Límites y evidencia](ADMIN_DRAFT_RECOVERY_2026_10_19.md).
+
 **UI-055, 19/10/2026 · autoría contextual de ADMIN:** desde cada fase/rutina se
 puede crear una sesión con el editor existente, revisarla, publicarla
 explícitamente e incorporar su versión. Selector con búsqueda y borradores,
@@ -11,7 +22,7 @@ optativas existentes omitidas; compilación web de desarrollo correcta. Navegaci
 y selector comprobados en Chrome autenticado con catálogo Dev; el recorrido de
 cuatro sesiones y sus fallos se prueba con repositorios de prueba. Sin nuevas
 mutaciones remotas, migraciones, dependencias, cambios compartidos ni deportista.
-**Único siguiente bloque recomendado de este recorrido:** concretar recuperación
+**Siguiente bloque recomendado al cerrar UI-055, completado después en UI-056:** concretar recuperación
 persistente de programas incompletos e idempotencia de guardado antes de preparar
 el subdominio. El montaje sin guardar vive en la pantalla y sigue exigiendo
 sesiones publicadas para persistir el programa.

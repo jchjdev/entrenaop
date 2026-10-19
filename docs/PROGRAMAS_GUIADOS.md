@@ -15,6 +15,12 @@ convencionales, sin alterar formatos temporizados ni el motor adaptativo.
 
 ## Bloque 1 · Autoría en ADMIN
 
+**UI-056 · 19/10/2026:** el trabajo incompleto se guarda por administrador y se
+recupera desde su URL o Continuar trabajando. Conserva campos inválidos y
+sesiones pendientes. Guardar en catálogo aplica las validaciones previas y
+registra el resultado para reintentar sin duplicar versiones; publicar continúa
+siendo independiente. [Contrato y límites](ADMIN_DRAFT_RECOVERY_2026_10_19.md).
+
 **UI-055 · 19/10/2026:** creación y reutilización de sesiones desde cada fase del
 programa. Se usa el editor existente, se revisa y publica explícitamente y se
 incorpora la identidad publicada a la fase original. Pendientes visibles durante

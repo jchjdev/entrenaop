@@ -1020,6 +1020,12 @@ borradores pendientes quedan visibles en el montaje; no se guarda el programa
 omitiéndolos sin aviso. Los calentamientos pueden crearse y adjuntarse desde
 cada sesión. [Recorrido y límites de conservación](ADMIN_AUTHORING_2026_10_19.md).
 
+UI-056 añade guardado automático y manual del trabajo incompleto por cuenta
+administradora. Continuar trabajando recupera sus campos y referencias pendientes,
+aunque aún falten sesiones o haya texto inválido. Guardar en catálogo valida el
+programa completo y conserva el resultado al reintentar; publicar sigue siendo
+una decisión independiente. [Alcance y límites](ADMIN_DRAFT_RECOVERY_2026_10_19.md).
+
 ### Personalización y límites
 
 El contenido oficial prescribe la estructura y el esfuerzo aplicable; el usuario

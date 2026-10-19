@@ -20,9 +20,14 @@ y calentamientos usando los mismos editores y repositorios. Los resultados de
 navegación pueden devolver opcionalmente el ID guardado; los demás consumidores
 conservan sus booleanos. La revisión bloquea salidas mientras escribe y espera
 el frame de cierre de una página hija antes de encadenar otro regreso con guards
-asíncronos. No cambia contratos de servidor; las referencias pendientes del
-programa viven en la pantalla hasta resolverlas y guardar.
-[Auditoría y siguiente contrato pendiente](ADMIN_AUTHORING_2026_10_19.md).
+asíncronos. UI-056 añade un repositorio de trabajo administrativo independiente
+del contenido validado: `admin_guided_work_drafts`, RLS por propietario y
+permiso administrativo vigente, revisión optimista y RPC de finalización que
+compone el guardado existente y su resultado en una transacción. Conserva texto
+incompleto y referencias pendientes; serializa reintentos tras respuestas
+ambiguas. La URL lleva la identidad de trabajo y el catálogo permite retomarlo.
+No modifica los contratos compartidos con el deportista.
+[Contrato, verificación y límites](ADMIN_DRAFT_RECOVERY_2026_10_19.md).
 
 ## Selección de carrera v6 · PLAN-026 · 16/10/2026
 

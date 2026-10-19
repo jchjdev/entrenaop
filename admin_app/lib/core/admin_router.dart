@@ -22,6 +22,7 @@ import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_rep
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
 
 import 'admin_shell.dart';
+import '../features/guided_programs/domain/admin_guided_work.dart';
 
 /// Las URLs contienen identidad, nunca una entidad que solo exista en `extra`.
 /// Recargar resuelve el contenido mediante los repositorios actuales y sus RLS.
@@ -34,6 +35,7 @@ GoRouter createAdminRouter({
   ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
   AdminGuidedRepository? guided,
+  AdminGuidedWorkRepository? guidedWork,
   AdminExerciseVideoRepository? exerciseVideos,
   String? initialLocation,
   Listenable? authChanges,
@@ -78,8 +80,10 @@ GoRouter createAdminRouter({
     String path,
     GoRouterWidgetBuilder builder, {
     List<RouteBase> routes = const [],
+    GoRouterRedirect? redirect,
   }) => GoRoute(
     path: path,
+    redirect: redirect,
     onExit: (context, state) => isAuthenticated?.call() == false
         ? true
         : exits.requestExit(state.pageKey),
@@ -204,14 +208,73 @@ GoRouter createAdminRouter({
           if (guided != null)
             GoRoute(
               path: '/guided-programs',
-              builder: (_, _) => load(
-                () async => true,
-                (_) => AdminGuidedCatalogPage(
-                  repository: guided,
-                  covers: guidedCovers,
+              builder: (_, state) => KeyedSubtree(
+                key: ValueKey(state.uri.toString()),
+                child: load(
+                  () async => true,
+                  (_) => AdminGuidedCatalogPage(
+                    repository: guided,
+                    covers: guidedCovers,
+                    workRepository: guidedWork,
+                  ),
                 ),
               ),
               routes: [
+                if (guidedWork != null)
+                  workflow(
+                    'work/:workId',
+                    (context, state) => KeyedSubtree(
+                      key: ValueKey(state.uri.toString()),
+                      child: load(
+                        () async {
+                          final id = state.pathParameters['workId']!;
+                          final work =
+                              await guidedWork.load(id) ??
+                              GuidedWork(
+                                id: id,
+                                state: const {},
+                                baseProgramId:
+                                    state.uri.queryParameters['base'],
+                              );
+                          if (work.discarded) {
+                            throw const _RouteUnavailable(
+                              'Este trabajo se ha descartado.',
+                            );
+                          }
+                          final base = work.baseProgramId;
+                          return (
+                            work,
+                            base == null ? null : await guided.program(base),
+                          );
+                        },
+                        (data) => data.$1.finalizedProgramId != null
+                            ? Scaffold(
+                                body: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Este trabajo ya se guardó en el catálogo.',
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            context.go('/guided-programs'),
+                                        child: const Text('Ver programas'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : AdminGuidedEditorPage(
+                                repository: guided,
+                                workouts: workouts,
+                                original: data.$2,
+                                workRepository: guidedWork,
+                                work: data.$1,
+                              ),
+                      ),
+                    ),
+                  ),
                 workflow(
                   'new',
                   (_, _) => load(
@@ -221,6 +284,9 @@ GoRouter createAdminRouter({
                       workouts: workouts,
                     ),
                   ),
+                  redirect: guidedWork == null
+                      ? null
+                      : (_, _) => '/guided-programs/work/${newGuidedWorkId()}',
                 ),
                 workflow(
                   ':guidedId/edit',
@@ -232,6 +298,10 @@ GoRouter createAdminRouter({
                       original: p,
                     ),
                   ),
+                  redirect: guidedWork == null
+                      ? null
+                      : (_, state) =>
+                            '/guided-programs/work/${newGuidedWorkId()}?base=${state.pathParameters['guidedId']}',
                 ),
               ],
             ),

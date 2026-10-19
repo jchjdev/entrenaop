@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +13,7 @@ import 'package:workout_core/guided_program.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
 import '../domain/admin_guided_repository.dart';
+import '../domain/admin_guided_work.dart';
 import '../../editorial_covers/domain/program_cover.dart';
 import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
@@ -23,10 +26,12 @@ class AdminGuidedCatalogPage extends StatefulWidget {
     required this.repository,
     this.warmups = false,
     this.covers,
+    this.workRepository,
   });
   final AdminGuidedRepository repository;
   final bool warmups;
   final ProgramCoverRepository? covers;
+  final AdminGuidedWorkRepository? workRepository;
   @override
   State<AdminGuidedCatalogPage> createState() => _AdminGuidedCatalogPageState();
 }
@@ -36,6 +41,8 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
   List<GuidedWarmup>? _warmups;
   String? _error;
   bool _busy = false;
+  List<GuidedWork> _work = [];
+  String? _workError;
   final _search = TextEditingController();
   GuidedProgramMode? _mode;
   String _statusFilter = 'all';
@@ -79,6 +86,12 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
         }
       } else {
         final items = await widget.repository.programs();
+        try {
+          _work = await widget.workRepository?.list() ?? [];
+          _workError = null;
+        } catch (_) {
+          _workError = 'No se pudieron cargar tus borradores de trabajo. Pulsa Actualizar para reintentar.';
+        }
         if (mounted) {
           setState(() {
             _programs = items;
@@ -217,6 +230,54 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
               ],
             ),
             const SizedBox(height: 24),
+            if (!widget.warmups && widget.workRepository != null) ...[
+              if (_workError != null) Text(_workError!),
+              if (_work.isNotEmpty) ...[
+                Text(
+                  'Continuar trabajando',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Text(
+                  'Borradores privados, todavía fuera del catálogo. Se conservan aunque estén incompletos.',
+                ),
+                for (final work in _work)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            work.name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (work.updatedAt != null)
+                            Text(
+                              'Guardado: ${work.updatedAt!.toLocal().toString().substring(0, 16)}',
+                            ),
+                          Wrap(
+                            spacing: 12,
+                            children: [
+                              TextButton.icon(
+                                onPressed: _busy
+                                    ? null
+                                    : () => _open('work/${work.id}'),
+                                icon: const Icon(Icons.edit_outlined),
+                                label: const Text('Continuar'),
+                              ),
+                              TextButton(
+                                onPressed: _busy ? null : () => _discard(work),
+                                child: const Text('Descartar trabajo'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+              ],
+            ],
             if (!widget.warmups) ...[
               TextField(
                 controller: _search,
@@ -324,6 +385,42 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
       ),
     ),
   );
+
+  Future<void> _discard(GuidedWork work) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Descartar este trabajo?'),
+        content: const Text(
+          'Se quitará de la lista. Las sesiones del catálogo y el programa de origen se conservan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Descartar'),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await widget.workRepository!.discard(work);
+      await _load();
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _workError = 'No se pudo descartar. Actualiza el catálogo antes de reintentarlo.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 }
 
 class AdminGuidedEditorPage extends StatefulWidget {
@@ -332,10 +429,14 @@ class AdminGuidedEditorPage extends StatefulWidget {
     required this.repository,
     required this.workouts,
     this.original,
+    this.workRepository,
+    this.work,
   });
   final AdminGuidedRepository repository;
   final AdminWorkoutRepository workouts;
   final GuidedProgram? original;
+  final AdminGuidedWorkRepository? workRepository;
+  final GuidedWork? work;
   @override
   State<AdminGuidedEditorPage> createState() => _AdminGuidedEditorPageState();
 }
@@ -356,6 +457,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   bool _catalogsReady = false;
   bool _busy = false, _loading = true, _dirty = false;
   String? _error;
+  GuidedWorkController? _checkpoint;
+  Timer? _saveTimer;
+  GuidedProgram? _finalAttempt;
   @override
   void initState() {
     super.initState();
@@ -368,7 +472,122 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     _categoryIds.addAll(p?.categories.map((c) => c.id) ?? const []);
     _primaryCategoryId = p?.primaryCategoryId;
     _phases.addAll(p?.phases.map(_PhaseFields.fromPhase) ?? [_PhaseFields()]);
+    final work = widget.work;
+    if (work != null && widget.workRepository != null) {
+      if (work.state.isNotEmpty) _restore(work.state);
+      _checkpoint = GuidedWorkController(
+        widget.workRepository!,
+        work,
+        _snapshot(),
+      )..addListener(_checkpointChanged);
+    }
     _load();
+  }
+
+  Map<String, dynamic> _snapshot() => {
+    'schema': 1,
+    'name': _name.text,
+    'description': _description.text,
+    'audience': _audience.text,
+    'equipment': _equipment.text,
+    'mode': _mode.name,
+    'categories': _categoryIds.toList(),
+    'primary': _primaryCategoryId,
+    'phases': _phases.map((p) => p.snapshot()).toList(),
+  };
+  void _restore(Map<String, dynamic> state) {
+    if (state['schema'] != 1) {
+      throw const FormatException(
+        'Este borrador necesita otra versión del admin.',
+      );
+    }
+    _name.text = state['name'] as String;
+    _description.text = state['description'] as String;
+    _audience.text = state['audience'] as String;
+    _equipment.text = state['equipment'] as String;
+    _mode = GuidedProgramMode.values.byName(state['mode'] as String);
+    _categoryIds
+      ..clear()
+      ..addAll((state['categories'] as List).cast<String>());
+    _primaryCategoryId = state['primary'] as String?;
+    for (final p in _phases) {
+      p.dispose();
+    }
+    _phases
+      ..clear()
+      ..addAll(
+        (state['phases'] as List).map(
+          (p) => _PhaseFields.restore(Map<String, dynamic>.from(p as Map)),
+        ),
+      );
+  }
+
+  void _checkpointChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _changed() {
+    _dirty = true;
+    if (_checkpoint == null) return;
+    _saveTimer?.cancel();
+    // Se captura después de completar la mutación de campos/listas del evento.
+    _saveTimer = Timer(const Duration(milliseconds: 700), () async {
+      if (!mounted || _finalAttempt != null) return;
+      await _saveWork();
+    });
+  }
+
+  Future<bool> _saveWork() async {
+    final checkpoint = _checkpoint;
+    if (checkpoint == null) return true;
+    _saveTimer?.cancel();
+    checkpoint.update(_snapshot());
+    try {
+      await checkpoint.flush();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Widget _workStatus() {
+    final checkpoint = _checkpoint!;
+    final message = checkpoint.conflict
+        ? 'Otra pestaña ha cambiado este trabajo. Tus campos siguen aquí. Abre el borrador actualizado antes de continuar.'
+        : checkpoint.error != null
+        ? 'No se ha guardado el último cambio. Conserva esta pantalla y reintenta.'
+        : checkpoint.saving
+        ? 'Guardando trabajo…'
+        : _saveTimer?.isActive == true || checkpoint.dirty
+        ? 'Cambios pendientes de guardar'
+        : checkpoint.work.revision == 0
+        ? 'Empieza a escribir para guardar tu trabajo automáticamente'
+        : 'Trabajo guardado · puedes continuar más tarde desde Programas guiados';
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message),
+            if (!checkpoint.conflict)
+              TextButton.icon(
+                onPressed: checkpoint.saving ? null : _saveWork,
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: const Text('Guardar trabajo ahora'),
+              ),
+            if (checkpoint.conflict)
+              TextButton(
+                onPressed: () => context.push('/guided-programs'),
+                child: const Text('Abrir programas'),
+              ),
+            const Text(
+              'Este guardado admite campos incompletos. «Guardar en catálogo» comprueba las sesiones y crea un borrador listo para revisar.',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<bool> _load() async {
@@ -402,6 +621,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
 
   @override
   void dispose() {
+    _saveTimer?.cancel();
+    _checkpoint?.removeListener(_checkpointChanged);
+    _checkpoint?.dispose();
     for (final c in [_name, _description, _audience, _equipment]) {
       c.dispose();
     }
@@ -430,16 +652,17 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     setState(() {
       phase.sessions.add(_SessionFields(session.id, session.name));
       phase.pendingSessions.remove(session.id);
-      _dirty = true;
+      _changed();
     });
   }
 
   Future<void> _createSession(_PhaseFields phase) async {
+    if (!await _saveWork() || !mounted) return;
     final id = await context.push<String>('/sessions/new?returnId=true');
     if (!mounted || id == null) return;
     setState(() {
       phase.pendingSessions.add(id);
-      _dirty = true;
+      _changed();
     });
     if (!await _load() || !mounted) return;
     await _reviewAndAttach(phase, id);
@@ -468,8 +691,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       }
       setState(() {
         phase.pendingSessions.add(currentId);
-        _dirty = true;
+        _changed();
       });
+      if (!await _saveWork() || !mounted) return;
       final reviewedId = await context.push<String>(
         '/sessions/${Uri.encodeComponent(currentId)}?returnId=true',
       );
@@ -479,6 +703,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         setState(() {
           phase.pendingSessions.remove(currentId);
           phase.pendingSessions.add(reviewedId);
+          _changed();
         });
       }
       if (!await _load() || !mounted) return;
@@ -497,13 +722,14 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   }
 
   Future<void> _createWarmup(_SessionFields session) async {
+    if (!await _saveWork() || !mounted) return;
     final id = await context.push<String>('/warmups/new?returnId=true');
     if (!mounted || id == null) return;
     if (!await _load() || !mounted) return;
     if (_warmups.any((w) => w.id == id && w.status == 'published')) {
       setState(() {
         session.warmup = id;
-        _dirty = true;
+        _changed();
       });
     }
   }
@@ -569,14 +795,25 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         _busy = true;
         _error = null;
       });
-      await widget.repository.save(p, id: widget.original?.id);
+      if (!await _saveWork() || !mounted) return;
+      if (_checkpoint == null) {
+        await widget.repository.save(p, id: widget.original?.id);
+      } else {
+        _finalAttempt = p;
+        await _checkpoint!.repository.finalize(_checkpoint!.work, p);
+        _finalAttempt = null;
+      }
       if (mounted) {
         setState(() => _dirty = false);
-        context.pop(true);
+        context.canPop() ? context.pop(true) : context.go('/guided-programs');
       }
     } on FormatException catch (e) {
       if (mounted) setState(() => _error = e.message);
-    } catch (_) {
+    } catch (e) {
+      if (e is PostgrestException &&
+          ['22023', '23503', '42501'].contains(e.code)) {
+        _finalAttempt = null;
+      }
       if (mounted) {
         setState(
           () => _error = 'No se pudo guardar. Comprueba las sesiones publicadas, los descansos y la conexión.',
@@ -600,19 +837,48 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       maxLines: lines,
       keyboardType: numeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(labelText: label),
-      onChanged: (_) => _dirty = true,
+      onChanged: (_) => setState(_changed),
       validator: (v) =>
           required && (v ?? '').trim().isEmpty ? 'Completa este campo.' : null,
     ),
   );
+  Future<void> _retryFinal() async {
+    if (_busy || _finalAttempt == null) return;
+    setState(() => _busy = true);
+    try {
+      await _checkpoint!.repository.finalize(_checkpoint!.work, _finalAttempt!);
+      _finalAttempt = null;
+      _dirty = false;
+      if (mounted) {
+        context.canPop() ? context.pop(true) : context.go('/guided-programs');
+      }
+    } catch (e) {
+      if (e is PostgrestException &&
+          ['22023', '23503', '42501'].contains(e.code)) {
+        _finalAttempt = null;
+      }
+      if (mounted) {
+        setState(
+          () => _error = 'No se pudo confirmar. Revisa la conexión y las sesiones publicadas.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   void _movePhase(int i, int delta) => setState(() {
     final p = _phases.removeAt(i);
     _phases.insert(i + delta, p);
-    _dirty = true;
+    _changed();
   });
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
-    hasUnsavedChanges: () => _dirty,
+    hasUnsavedChanges: () => _checkpoint == null
+        ? _dirty
+        : _saveTimer?.isActive == true ||
+              _checkpoint!.dirty ||
+              _finalAttempt != null,
     isBusy: () => _busy,
     child: Scaffold(
       appBar: AppBar(
@@ -624,117 +890,162 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : AbsorbPointer(
-              absorbing: _busy,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  child: Form(
-                    key: _form,
-                    child: ListView(
-                      padding: const EdgeInsets.all(24),
-                      children: [
-                        _field(_name, 'Nombre del programa', required: true),
-                        _field(
-                          _description,
-                          'Objetivo e indicaciones',
-                          lines: 3,
-                        ),
-                        _field(
-                          _audience,
-                          'Destinatarios y requisitos',
-                          lines: 2,
-                        ),
-                        _field(_equipment, 'Material necesario'),
-                        SegmentedButton<GuidedProgramMode>(
-                          segments: const [
-                            ButtonSegment(
-                              value: GuidedProgramMode.guide,
-                              label: Text('Rutina'),
-                            ),
-                            ButtonSegment(
-                              value: GuidedProgramMode.phased,
-                              label: Text('Por fases'),
-                            ),
-                          ],
-                          selected: {_mode},
-                          onSelectionChanged: (v) {
-                            if (v.first == GuidedProgramMode.guide &&
-                                _phases.length > 1) {
-                              setState(
-                                () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
-                              );
-                              return;
-                            }
-                            setState(() {
-                              _mode = v.first;
-                              _dirty = true;
-                              _error = null;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _mode == GuidedProgramMode.guide
-                              ? 'Las sesiones se pueden repetir sin fecha de finalización.'
-                              : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
-                        ),
-                        const SizedBox(height: 18),
-                        _categoryFields(),
-                        const SizedBox(height: 18),
-                        for (var i = 0; i < _phases.length; i++)
-                          _phaseCard(_phases[i], i),
-                        if (_mode == GuidedProgramMode.phased)
-                          OutlinedButton.icon(
-                            onPressed: () => setState(() {
-                              _phases.add(_PhaseFields());
-                              _dirty = true;
-                            }),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Añadir fase'),
-                          ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+          : Stack(
+              children: [
+                AbsorbPointer(
+                  absorbing: _busy || _finalAttempt != null,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 900),
+                      child: Form(
+                        key: _form,
+                        child: ListView(
+                          padding: const EdgeInsets.all(24),
                           children: [
-                            TextButton(
-                              onPressed: () async {
-                                await context.push('/sessions');
-                                if (mounted) await _load();
-                              },
-                              child: const Text('Publicar o revisar sesiones'),
+                            if (_checkpoint != null) _workStatus(),
+                            _field(
+                              _name,
+                              'Nombre del programa',
+                              required: true,
                             ),
-                          ],
-                        ),
-                        if (_error != null)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Text(
-                              _error!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                            _field(
+                              _description,
+                              'Objetivo e indicaciones',
+                              lines: 3,
+                            ),
+                            _field(
+                              _audience,
+                              'Destinatarios y requisitos',
+                              lines: 2,
+                            ),
+                            _field(_equipment, 'Material necesario'),
+                            SegmentedButton<GuidedProgramMode>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: GuidedProgramMode.guide,
+                                  label: Text('Rutina'),
+                                ),
+                                ButtonSegment(
+                                  value: GuidedProgramMode.phased,
+                                  label: Text('Por fases'),
+                                ),
+                              ],
+                              selected: {_mode},
+                              onSelectionChanged: (v) {
+                                if (v.first == GuidedProgramMode.guide &&
+                                    _phases.length > 1) {
+                                  setState(
+                                    () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
+                                  );
+                                  return;
+                                }
+                                setState(() {
+                                  _mode = v.first;
+                                  _changed();
+                                  _error = null;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _mode == GuidedProgramMode.guide
+                                  ? 'Las sesiones se pueden repetir sin fecha de finalización.'
+                                  : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
+                            ),
+                            const SizedBox(height: 18),
+                            _categoryFields(),
+                            const SizedBox(height: 18),
+                            for (var i = 0; i < _phases.length; i++)
+                              _phaseCard(_phases[i], i),
+                            if (_mode == GuidedProgramMode.phased)
+                              OutlinedButton.icon(
+                                onPressed: () => setState(() {
+                                  _phases.add(_PhaseFields());
+                                  _changed();
+                                }),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Añadir fase'),
+                              ),
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                TextButton(
+                                  onPressed: () async {
+                                    await context.push('/sessions');
+                                    if (mounted) await _load();
+                                  },
+                                  child: const Text(
+                                    'Publicar o revisar sesiones',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_error != null)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                child: Text(
+                                  _error!,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                              ),
+                            if (!_catalogsReady)
+                              TextButton(
+                                onPressed: _load,
+                                child: const Text('Reintentar carga'),
+                              ),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                              onPressed: _busy || !_catalogsReady
+                                  ? null
+                                  : _save,
+                              icon: const Icon(Icons.save_outlined),
+                              label: Text(
+                                _busy
+                                    ? 'Guardando…'
+                                    : _checkpoint == null
+                                    ? 'Guardar borrador'
+                                    : 'Guardar en catálogo',
                               ),
                             ),
-                          ),
-                        if (!_catalogsReady)
-                          TextButton(
-                            onPressed: _load,
-                            child: const Text('Reintentar carga'),
-                          ),
-                        const SizedBox(height: 16),
-                        FilledButton.icon(
-                          onPressed: _busy || !_catalogsReady ? null : _save,
-                          icon: const Icon(Icons.save_outlined),
-                          label: Text(
-                            _busy ? 'Guardando…' : 'Guardar borrador',
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+                if (_finalAttempt != null && !_busy)
+                  Positioned.fill(
+                    child: Material(
+                      color: Theme.of(context).colorScheme.surface,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'No se pudo confirmar el guardado en catálogo. Reintenta la misma operación; se conserva su identidad para evitar duplicados.',
+                              ),
+                              if (_error != null) Text(_error!),
+                              FilledButton(
+                                onPressed: _retryFinal,
+                                child: const Text(
+                                  'Comprobar y reintentar guardado',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
     ),
   );
@@ -774,7 +1085,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                     _primaryCategoryId = _categoryIds.firstOrNull;
                   }
                 }
-                _dirty = true;
+                _changed();
               }),
             ),
         ],
@@ -799,7 +1110,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           ],
           onChanged: (id) => setState(() {
             _primaryCategoryId = id;
-            _dirty = true;
+            _changed();
           }),
         ),
       ],
@@ -819,7 +1130,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                     _categoryIds.add(c.id);
                     _primaryCategoryId ??= c.id;
                   }
-                  _dirty = true;
+                  _changed();
                 });
               }
             },
@@ -870,7 +1181,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                     tooltip: 'Quitar fase',
                     onPressed: () => setState(() {
                       _phases.removeAt(index).dispose();
-                      _dirty = true;
+                      _changed();
                     }),
                     icon: const Icon(Icons.close),
                   ),
@@ -915,10 +1226,10 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
-              'Crea, revisa y publica para incorporar una sesión. El programa se guarda después con Guardar borrador.',
+              'Crea, revisa y publica para incorporar una sesión. El programa se guarda después con ${_checkpoint == null ? 'Guardar borrador' : 'Guardar en catálogo'}.',
             ),
           ),
           for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
@@ -953,7 +1264,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                         TextButton(
                           onPressed: () => setState(() {
                             p.pendingSessions.remove(id);
-                            _dirty = true;
+                            _changed();
                           }),
                           child: const Text('Quitar referencia pendiente'),
                         ),
@@ -994,7 +1305,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                       : () => setState(() {
                           p.sessions.removeAt(i);
                           p.sessions.insert(i - 1, s);
-                          _dirty = true;
+                          _changed();
                         }),
                   icon: const Icon(Icons.arrow_upward),
                 ),
@@ -1005,7 +1316,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                       : () => setState(() {
                           p.sessions.removeAt(i);
                           p.sessions.insert(i + 1, s);
-                          _dirty = true;
+                          _changed();
                         }),
                   icon: const Icon(Icons.arrow_downward),
                 ),
@@ -1013,7 +1324,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                   tooltip: 'Quitar sesión',
                   onPressed: () => setState(() {
                     p.sessions.removeAt(i).dispose();
-                    _dirty = true;
+                    _changed();
                   }),
                   icon: const Icon(Icons.close),
                 ),
@@ -1069,7 +1380,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 onChanged: (v) {
                   setState(() {
                     s.warmup = v == '' ? null : v;
-                    _dirty = true;
+                    _changed();
                   });
                 },
               ),
@@ -1093,7 +1404,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                   ? null
                   : (v) => setState(() {
                       s.adjustable = v;
-                      _dirty = true;
+                      _changed();
                     }),
             ),
             if (!supportsRest)
@@ -1129,6 +1440,23 @@ class _SessionFields {
         ..minimum.text = '${s.restPolicy.minimumSeconds ?? 60}'
         ..maximum.text = '${s.restPolicy.maximumSeconds ?? 180}';
   final String id, name;
+  factory _SessionFields.restore(Map<String, dynamic> s) =>
+      _SessionFields(
+          s['id'] as String,
+          s['name'] as String,
+          warmup: s['warmup'] as String?,
+        )
+        ..adjustable = s['adjustable'] as bool
+        ..minimum.text = s['minimum'] as String
+        ..maximum.text = s['maximum'] as String;
+  Map<String, dynamic> snapshot() => {
+    'id': id,
+    'name': name,
+    'warmup': warmup,
+    'adjustable': adjustable,
+    'minimum': minimum.text,
+    'maximum': maximum.text,
+  };
   String? warmup;
   bool adjustable = false;
   final minimum = TextEditingController(text: '60'),
@@ -1167,6 +1495,23 @@ class _PhaseFields {
       instructions = TextEditingController();
   final sessions = <_SessionFields>[];
   final pendingSessions = <String>{};
+  factory _PhaseFields.restore(Map<String, dynamic> p) => _PhaseFields()
+    ..name.text = p['name'] as String
+    ..weeks.text = p['weeks'] as String
+    ..instructions.text = p['instructions'] as String
+    ..pendingSessions.addAll((p['pending'] as List).cast<String>())
+    ..sessions.addAll(
+      (p['sessions'] as List).map(
+        (s) => _SessionFields.restore(Map<String, dynamic>.from(s as Map)),
+      ),
+    );
+  Map<String, dynamic> snapshot() => {
+    'name': name.text,
+    'weeks': weeks.text,
+    'instructions': instructions.text,
+    'pending': pendingSessions.toList(),
+    'sessions': sessions.map((s) => s.snapshot()).toList(),
+  };
   GuidedPhase input(GuidedProgramMode mode) => GuidedPhase(
     name: mode == GuidedProgramMode.guide ? 'Entrenamiento' : name.text,
     durationWeeks: mode == GuidedProgramMode.guide

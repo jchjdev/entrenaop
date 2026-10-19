@@ -52,7 +52,11 @@ documenta bibliotecas reutilizables para facilitar la planificación. Se conserv
 nuestro catálogo común y se reduce el cambio manual entre catálogo y programa.
 No se trasladan sus reglas de copia, permisos, prescripción ni negocio.
 
-## Límites comprobados
+## Límites comprobados al cerrar UI-055
+
+La conservación de programas incompletos y el guardado final se amplían después
+en [UI-056](ADMIN_DRAFT_RECOVERY_2026_10_19.md). La lista siguiente describe el
+estado previo de este bloque, no sus pendientes actuales.
 
 - Los campos de programa y las referencias pendientes sin guardar viven en la
   pantalla. No se añade recuperación persistente tras cerrar/recargar el navegador.
