@@ -1,4 +1,7 @@
 import '../../../helpers/admin_test_app.dart';
+import '../../../../../test/helpers/performance_visual_review.dart';
+
+import 'package:entrena_ui/entrena_ui.dart';
 
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
@@ -15,6 +18,14 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   String? programId;
   String? revisedId;
   bool failSave = false;
+  bool? savedVisibility;
+
+  @override
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  }) async {}
 
   @override
   Future<void> publishDraft(String templateId) async {}
@@ -38,10 +49,12 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   @override
   Future<String> createDraft(
     String? programId,
-    CreatePersonalWorkoutInput input,
-  ) async {
+    CreatePersonalWorkoutInput input, {
+    bool showInLibrary = true,
+  }) async {
     if (failSave) throw StateError('Sin conexión');
     this.programId = programId;
+    savedVisibility = showInLibrary;
     saved = input;
     return 'draft-id';
   }
@@ -68,6 +81,75 @@ Finder _field(String label) => find.byWidgetPredicate(
 );
 
 void main() {
+  setUpAll(loadReviewFont);
+  for (final initial in [true, false]) {
+    testWidgets(
+      'crear sesión conserva la elección editorial inicial $initial',
+      (tester) async {
+        await tester.binding.setSurfaceSize(Size(initial ? 390 : 320, 1100));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final repository = _FakeWorkouts();
+        await tester.pumpWidget(
+          AdminTestApp(
+            theme: EntrenaTheme.dark,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(initial ? 1 : 2)),
+              child: RepaintBoundary(
+                key: const ValueKey('review-boundary'),
+                child: child!,
+              ),
+            ),
+            home: AdminWorkoutEditorPage(
+              program: null,
+              repository: repository,
+              initialShowInLibrary: initial,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byType(SwitchListTile),
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          initial,
+        );
+        await capturePerformanceWidget(
+          tester,
+          'sesion-editorial-admin-$initial',
+        );
+        await tester.drag(find.byType(Scrollable).first, const Offset(0, 5000));
+        await tester.pumpAndSettle();
+        Future<void> enter(String label, String value) async {
+          final field = _field(label);
+          await tester.scrollUntilVisible(
+            field,
+            200,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.ensureVisible(field);
+          await tester.enterText(field, value);
+          await tester.pumpAndSettle();
+        }
+
+        await enter('Nombre de la sesión', 'Sesión independiente');
+        await enter('Distancia (m)', '400');
+        await enter('Ritmo (m:ss/km)', '6:00');
+        await tester.scrollUntilVisible(
+          find.text('Guardar borrador'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('Guardar borrador'));
+        await tester.pumpAndSettle();
+        expect(repository.savedVisibility, initial);
+      },
+    );
+  }
+
   const program = AdminProgram(
     id: 'tropa',
     name: 'Tropa',

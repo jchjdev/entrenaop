@@ -148,6 +148,7 @@ class WorkoutTemplateSummary extends Equatable {
     required this.origin,
     required this.version,
     this.isRunning = false,
+    this.exerciseNames = const [],
   });
 
   final String id;
@@ -157,6 +158,7 @@ class WorkoutTemplateSummary extends Equatable {
   final WorkoutTemplateOrigin origin;
   final int version;
   final bool isRunning;
+  final List<String> exerciseNames;
 
   @override
   List<Object?> get props => [
@@ -167,6 +169,7 @@ class WorkoutTemplateSummary extends Equatable {
     origin,
     version,
     isRunning,
+    exerciseNames,
   ];
 }
 

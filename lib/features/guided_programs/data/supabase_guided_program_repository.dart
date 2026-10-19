@@ -74,12 +74,11 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
 
   @override
   Future<List<GuidedProgramCategory>> categories() async =>
-      (await client
-              .from('guided_program_categories')
-              .select()
-              .eq('is_active', true)
-              .order('name'))
-          .map(guidedCategoryFromJson)
+      ((await client.rpc('get_guided_program_catalog_categories')) as List)
+          .map(
+            (row) =>
+                guidedCategoryFromJson(Map<String, dynamic>.from(row as Map)),
+          )
           .toList();
 
   @override

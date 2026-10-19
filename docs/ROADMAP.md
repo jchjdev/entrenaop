@@ -137,6 +137,19 @@ administrativo desde el subdominio, concretando alojamiento, entorno y
 autenticación antes de desplegar.
 [Detalle](ADMIN_NAVIGATION_2026_10_19.md).
 
+**PRG-009, 19/10/2026 · selección editorial de sesiones:** Mostrar en Sesiones de
+EntrenaOP separa publicación y escaparate, preservando reutilización de la misma
+versión en varios programas. Creación contextual inicialmente desmarcada; suelta
+marcada. La ficha permite cambiar visibilidad sin nueva receta ni pérdida de
+referencias/registros. Búsqueda por ejercicios y chips únicamente de categorías
+con programas publicados vigentes. Migración solo Dev y cinco pruebas SQL con
+ROLLBACK correctas y 166 migraciones coincidentes. Análisis limpios de ambas apps,
+1.092 pruebas raíz y 225 ADMIN correctas, con sus omisiones preexistentes. Capturas
+reales de ADMIN a 390 px y 320 px con texto 2× revisadas. Sin cambios de producción.
+**Único siguiente paso de este recorrido:** aceptación física del creador/listado
+y elección editorial de Javier para las sesiones existentes antes de ampliar
+el catálogo. [Contrato](SESSION_LIBRARY_EDITORIAL_2026_10_19.md).
+
 **PRG-008, 19/10/2026 · catálogo directo de programas:** Javier elige la maqueta
 directa y confirma categorías pequeñas deslizables. Se retiran números/flechas
 de página y no se incorpora Ver más. Búsqueda/Filtros comparten fila; Mostrar

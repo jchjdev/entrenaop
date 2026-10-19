@@ -39,16 +39,46 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   bool _publishing = false;
   bool _confirming = false;
   bool _removing = false;
+  bool _savingVisibility = false;
+  late bool _showInLibrary;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _showInLibrary = widget.workout.showInLibrary;
     _template = widget.repository.getTemplateById(widget.workout.id);
   }
 
+  Future<void> _setVisibility(bool value) async {
+    if (_savingVisibility || _publishing || _removing || _confirming) return;
+    setState(() {
+      _savingVisibility = true;
+      _error = null;
+    });
+    try {
+      await widget.repository.setLibraryVisibility(
+        widget.workout.id,
+        value,
+        expected: _showInLibrary,
+      );
+      if (mounted) setState(() => _showInLibrary = value);
+    } on PostgrestException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'No se pudo cambiar la visibilidad. Reintenta; la sesión y sus programas se conservan.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingVisibility = false);
+    }
+  }
+
   Future<void> _publish(WorkoutTemplate reviewed) async {
-    if (_publishing ||
+    if (_savingVisibility ||
+        _publishing ||
         _confirming ||
         _removing ||
         _blockingIssues(reviewed).isNotEmpty) {
@@ -63,7 +93,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           title: const Text('Publicar sesión'),
           content: Text(
             widget.workout.catalogScope == 'general'
-                ? '«${widget.workout.name}» será visible para todos en la biblioteca general. No se asignará a ningún plan ni agenda.'
+                ? _showInLibrary
+                      ? '«${widget.workout.name}» se podrá usar en programas y será visible como sesión suelta. No se asignará a ningún plan ni agenda.'
+                      : '«${widget.workout.name}» se podrá usar en programas y quedará fuera del listado de sesiones sueltas. No se asignará a ningún plan ni agenda.'
                 : '«${widget.workout.name}» quedará disponible como plantilla de este programa. No aparecerá en la biblioteca general ni se asignará a alumnos hasta definir las reglas del plan.',
           ),
           actions: [
@@ -75,7 +107,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(
                 widget.workout.catalogScope == 'general'
-                    ? 'Publicar en biblioteca general'
+                    ? _showInLibrary
+                          ? 'Publicar en biblioteca general'
+                          : 'Publicar sesión'
                     : 'Publicar para el programa',
               ),
             ),
@@ -121,7 +155,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   }
 
   Future<void> _remove() async {
-    if (_publishing || _removing) return;
+    if (_savingVisibility || _publishing || _removing) return;
     final draft = widget.workout.status == 'draft';
     final confirmed = await showDialog<bool>(
       context: context,
@@ -174,6 +208,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   }
 
   Future<void> _revise(WorkoutTemplate template) async {
+    if (_savingVisibility) return;
     final base = widget.program == null
         ? '/sessions'
         : '/programs/${Uri.encodeComponent(widget.program!.id)}/sessions';
@@ -189,7 +224,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
     hasUnsavedChanges: () => false,
-    isBusy: () => _publishing || _removing || _confirming,
+    isBusy: () => _publishing || _removing || _confirming || _savingVisibility,
     child: Scaffold(
       appBar: AppBar(title: const Text('Revisar sesión')),
       body: Center(
@@ -222,7 +257,10 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
                   ),
                 );
               }
-              return _content(snapshot.data!);
+              return AbsorbPointer(
+                absorbing: _savingVisibility,
+                child: _content(snapshot.data!),
+              );
             },
           ),
         ),
@@ -249,10 +287,26 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
             : widget.workout.status == 'archived'
             ? 'Retirada'
             : widget.workout.catalogScope == 'general'
-            ? 'Publicado en biblioteca general'
+            ? _showInLibrary
+                  ? 'Publicado en biblioteca general'
+                  : 'Publicada · fuera del listado de sesiones sueltas'
             : 'Publicado para el programa'}',
       ),
       const SizedBox(height: 16),
+      if (widget.workout.catalogScope == 'general' &&
+          widget.workout.status != 'archived')
+        SwitchListTile.adaptive(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Mostrar en Sesiones de EntrenaOP'),
+          subtitle: Text(
+            _savingVisibility ? 'Guardando…' : 'Se guarda sin crear otra versión. Los programas que la utilizan y sus registros se conservan.',
+          ),
+          value: _showInLibrary,
+          onChanged:
+              _publishing || _removing || _confirming || _savingVisibility
+              ? null
+              : _setVisibility,
+        ),
       AdminWorkoutContent(template: template, showTitle: false),
       const SizedBox(height: 16),
       PublicationReviewPanel(
@@ -292,7 +346,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       if (widget.workout.status == 'draft') ...[
         Text(
           widget.workout.catalogScope == 'general'
-              ? 'Publicar la mostrará en la biblioteca general. No modifica planes ni agendas.'
+              ? _showInLibrary
+                    ? 'Publicar la mostrará como sesión suelta y permitirá usarla en programas. No modifica planes ni agendas.'
+                    : 'Publicar permitirá usarla en programas. No aparecerá en el listado de sesiones sueltas.'
               : 'Publicar la deja disponible para las futuras reglas de este programa. No la asigna todavía a ningún alumno.',
         ),
         const SizedBox(height: 16),
@@ -308,7 +364,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
               _publishing
                   ? 'Publicando…'
                   : widget.workout.catalogScope == 'general'
-                  ? 'Publicar en biblioteca general'
+                  ? _showInLibrary
+                        ? 'Publicar en biblioteca general'
+                        : 'Publicar sesión'
                   : 'Publicar para el programa',
             ),
           ),

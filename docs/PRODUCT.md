@@ -1173,6 +1173,15 @@ y las tarjetas visibles al actualizar tras volver de una ficha. Implementado y
 verificado en Flutter; aceptación física pendiente. Detalle y límites en
 [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
 
+PRG-009 separa publicación y descubrimiento de sesiones. ADMIN elige Mostrar en
+Sesiones de EntrenaOP por versión, inicialmente desmarcado al crear desde un
+programa y marcado al crear una sesión suelta. La ficha permite cambiarlo sin
+revisar la receta ni alterar programas o entrenamientos existentes. Una versión
+puede reutilizarse en varios programas. El buscador incluye sus ejercicios y
+los chips de Programas solo ofrecen categorías con publicaciones vigentes.
+Las elecciones editoriales existentes se conservan. Contrato y verificación en
+[SESSION_LIBRARY_EDITORIAL_2026_10_19.md](SESSION_LIBRARY_EDITORIAL_2026_10_19.md).
+
 ## Plataformas
 
 - Android e iPhone son prioritarios para la experiencia del opositor.

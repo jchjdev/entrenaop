@@ -57,6 +57,7 @@ class _Guided extends Fake implements AdminGuidedRepository {
 class _Workouts extends Fake implements AdminWorkoutRepository {
   final inputs = <String, CreatePersonalWorkoutInput>{};
   final published = <String>{};
+  final visibility = <String, bool>{};
   int creates = 0, publishes = 0, reads = 0;
   bool failPublish = false;
   Completer<void>? publishGate;
@@ -77,6 +78,7 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
           isRunning: true,
           supportsAdjustableRest: false,
           catalogScope: 'general',
+          showInLibrary: visibility[entry.key] ?? true,
         ),
     ];
   }
@@ -84,11 +86,13 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   @override
   Future<String> createDraft(
     String? programId,
-    CreatePersonalWorkoutInput input,
-  ) async {
+    CreatePersonalWorkoutInput input, {
+    bool showInLibrary = true,
+  }) async {
     expect(programId, isNull);
     final id = 'session-${++creates}';
     inputs[id] = input;
+    visibility[id] = showInLibrary;
     return id;
   }
 
@@ -139,6 +143,7 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
     final next = 'revision-$id';
     inputs.remove(id);
     inputs[next] = input;
+    visibility[next] = visibility.remove(id) ?? true;
     return next;
   }
 }
@@ -188,6 +193,10 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
 Future<void> _create(WidgetTester tester, String name) async {
   await _tap(tester, find.text('Crear nueva sesión').last);
   expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+  expect(
+    tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+    isFalse,
+  );
   await tester.enterText(
     find.widgetWithText(TextField, 'Nombre de la sesión'),
     name,
@@ -205,9 +214,9 @@ Future<void> _create(WidgetTester tester, String name) async {
 }
 
 Future<void> _confirmPublication(WidgetTester tester) async {
-  await _tap(tester, find.text('Publicar en biblioteca general'));
-  expect(find.textContaining('visible para todos'), findsOneWidget);
-  await _tap(tester, find.text('Publicar en biblioteca general').last);
+  await _tap(tester, find.text('Publicar sesión'));
+  expect(find.textContaining('quedará fuera del listado'), findsOneWidget);
+  await _tap(tester, find.text('Publicar sesión').last);
 }
 
 void main() {
@@ -246,7 +255,7 @@ void main() {
       final guided = _Guided(), workouts = _Workouts();
       await _mount(tester, guided, workouts);
       await _create(tester, 'Sesión recuperable');
-      await _tap(tester, find.text('Publicar en biblioteca general'));
+      await _tap(tester, find.text('Publicar sesión'));
       await _tap(tester, find.text('Cancelar'));
       await tester.pageBack();
       await tester.pumpAndSettle();
@@ -301,8 +310,8 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'regreso de la revisión');
       expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
       workouts.publishGate = Completer<void>();
-      await _tap(tester, find.text('Publicar en biblioteca general'));
-      await tester.tap(find.text('Publicar en biblioteca general').last);
+      await _tap(tester, find.text('Publicar sesión'));
+      await tester.tap(find.text('Publicar sesión').last);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Publicando…'), findsOneWidget);

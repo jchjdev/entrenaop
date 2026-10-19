@@ -291,6 +291,12 @@ class _FakeRepository implements AdminProgramRepository {
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  }) async {}
+  @override
   Future<WorkoutTemplate?> getTemplateById(String templateId) async => null;
 
   @override
@@ -309,7 +315,11 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   Future<List<AdminWorkoutSummary>> listGeneral() async => const [];
 
   @override
-  Future<String> createDraft(String? programId, dynamic input) async => 'draft';
+  Future<String> createDraft(
+    String? programId,
+    dynamic input, {
+    bool showInLibrary = true,
+  }) async => 'draft';
 
   @override
   Future<List<AdminExercise>> listPublicExercises() async => const [];

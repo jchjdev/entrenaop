@@ -29,6 +29,7 @@ class WorkoutLibraryFilter {
     return matchesLibrarySearch(query, [
       workout.name,
       workout.description ?? '',
+      ...workout.exerciseNames,
     ]);
   }
 }

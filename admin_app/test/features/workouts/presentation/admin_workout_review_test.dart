@@ -47,10 +47,22 @@ WorkoutTemplate session({
 class _Workouts extends Fake implements AdminWorkoutRepository {
   WorkoutTemplate? current = session();
   int writes = 0;
+  bool listed = true, failVisibility = false;
+  @override
+  Future<void> setLibraryVisibility(
+    String id,
+    bool value, {
+    required bool expected,
+  }) async {
+    expect(expected, listed);
+    if (failVisibility) throw StateError('Sin conexión');
+    listed = value;
+  }
+
   @override
   Future<WorkoutTemplate?> getTemplateById(String id) async => current;
   @override
-  Future<List<AdminWorkoutSummary>> listGeneral() async => const [
+  Future<List<AdminWorkoutSummary>> listGeneral() async => [
     AdminWorkoutSummary(
       id: 's',
       name: 'Sesión revisada',
@@ -58,6 +70,7 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
       version: 1,
       isRunning: false,
       catalogScope: 'general',
+      showInLibrary: listed,
     ),
   ];
   @override
@@ -105,6 +118,46 @@ Future<void> tap(WidgetTester tester, Finder target) async {
 }
 
 void main() {
+  testWidgets('la visibilidad se guarda sin publicar ni revisar la receta', (
+    tester,
+  ) async {
+    final workouts = _Workouts();
+    await _mount(tester, workouts);
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    expect(workouts.listed, isFalse);
+    expect(workouts.writes, 0);
+    expect(workouts.current, session());
+    await tap(tester, find.text('Publicar sesión'));
+    expect(find.textContaining('quedará fuera del listado'), findsOneWidget);
+    await tap(tester, find.text('Cancelar'));
+    expect(workouts.writes, 0);
+  });
+
+  testWidgets(
+    'fallar visibilidad conserva la elección guardada y permite reintentar',
+    (tester) async {
+      final workouts = _Workouts()..failVisibility = true;
+      await _mount(tester, workouts);
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
+      expect(
+        find.textContaining('No se pudo cambiar la visibilidad'),
+        findsOneWidget,
+      );
+      workouts.failVisibility = false;
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isFalse,
+      );
+    },
+  );
   testWidgets('una sesión vacía muestra el problema y bloquea publicar', (
     tester,
   ) async {

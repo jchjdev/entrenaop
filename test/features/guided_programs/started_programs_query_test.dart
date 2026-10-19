@@ -32,14 +32,21 @@ void main() {
     server.listen((request) async {
       requests.add(request.uri);
       if (request.method == 'POST') {
-        posted.add(
-          jsonDecode(await utf8.decoder.bind(request).join())
-              as Map<String, dynamic>,
-        );
+        final body = jsonDecode(await utf8.decoder.bind(request).join());
+        if (body is Map<String, dynamic>) posted.add(body);
       }
       if (arrived != null && !arrived!.isCompleted) arrived!.complete();
       await gate?.future;
       request.response.headers.contentType = ContentType.json;
+      if (request.uri.path.endsWith('/get_guided_program_catalog_categories')) {
+        request.response.write(
+          jsonEncode([
+            {'id': 'strength', 'name': 'Fuerza'},
+          ]),
+        );
+        await request.response.close();
+        return;
+      }
       if (request.uri.path.endsWith('/guided_program_category_links')) {
         request.response.write(
           jsonEncode(
@@ -156,6 +163,18 @@ void main() {
     await client.dispose();
     await server.close(force: true);
   });
+  test(
+    'las opciones de categoría usan el catálogo publicado disponible',
+    () async {
+      final categories = await repository.categories();
+      expect(categories.map((c) => c.name), ['Fuerza']);
+      expect(
+        requests.single.path,
+        endsWith('/rpc/get_guided_program_catalog_categories'),
+      );
+    },
+  );
+
   test(
     'Inicio consulta los tres últimos seguimientos activos del propietario',
     () async {

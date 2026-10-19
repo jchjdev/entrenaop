@@ -222,6 +222,11 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                           ),
                           if (widget.program == null) ...[
                             const SizedBox(height: 8),
+                            Text(
+                              workout.showInLibrary
+                                  ? 'Visible como sesión suelta'
+                                  : 'Fuera del listado de sesiones sueltas',
+                            ),
                             if (workout.guidedPrograms.isEmpty)
                               const Text('Sin programas guiados asociados')
                             else ...[

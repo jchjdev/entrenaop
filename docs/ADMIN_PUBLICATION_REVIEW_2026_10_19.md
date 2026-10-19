@@ -7,6 +7,11 @@ validada al subdominio de desarrollo. Añade el favicon del admin. Se mantiene e
 catálogo común: una sesión general puede usarse suelta o en varios programas;
 publicarla y publicar el programa son operaciones distintas.
 
+PRG-009 amplía después esta revisión: Mostrar en Sesiones de EntrenaOP decide
+su presencia en el listado de sesiones sueltas y el diálogo refleja esa elección.
+Se puede cambiar también en publicaciones existentes sin revisar su receta.
+[Contrato y verificación](SESSION_LIBRARY_EDITORIAL_2026_10_19.md).
+
 La implementación modifica solo ADMIN y sus recursos web. No cambia esquema,
 RPC, RLS, autenticación, datos deportivos, dependencias ni la app del deportista.
 La publicación del código usa WEB-006; publicar contenido sigue siendo una acción

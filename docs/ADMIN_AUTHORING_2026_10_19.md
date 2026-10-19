@@ -29,7 +29,9 @@ programas; la incorporación referencia una versión concreta, sin copiarla.
 ## Publicación y referencias
 
 Guardar una sesión sigue creando un borrador. Publicar requiere el diálogo
-existente que avisa de su visibilidad en la biblioteca general. Publicar una
+existente que confirma si se ofrecerá como sesión suelta según la marca editorial
+PRG-009. Crear desde un programa comienza desmarcado; el catálogo de autoría sigue
+permitiendo reutilizar la versión publicada. Publicar una
 sesión no publica el programa, no asigna agendas ni ejecuta entrenamientos.
 El programa se guarda después, con sus referencias y configuración, y conserva
 su publicación independiente. Una revisión publicada no sustituye versiones

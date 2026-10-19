@@ -1,0 +1,85 @@
+# Sesiones sueltas, reutilización y búsqueda · PRG-009
+
+## Acuerdo del 19/10/2026
+
+Javier confirma una marca administrativa por sesión para decidir si aparece en
+Sesiones de EntrenaOP. Publicar una sesión y ofrecerla como entrenamiento suelto
+son decisiones distintas. Se conserva el catálogo común y la posibilidad de
+reutilizar la misma versión en varios programas guiados, sin copias por programa.
+No se ocultan sesiones automáticamente por modalidad o dificultad.
+
+También solicita buscar por los ejercicios que contiene cada sesión y retirar
+los chips de categorías que no tienen programas publicados disponibles. Estos
+chips pertenecen a Programas; no se inventa clasificación editorial de sesiones.
+
+## Autoría y publicación
+
+- El creador de sesiones sueltas comienza con Mostrar en Sesiones de EntrenaOP
+  activado. Desde Crear nueva sesión dentro de un programa guiado comienza
+  desactivado; la elección es editable antes de guardar.
+- La ficha de revisión permite cambiar la marca de borradores o publicaciones
+  generales. Se guarda inmediatamente, con error visible y reintento. Se bloquean
+  salidas y acciones incompatibles mientras se guarda.
+- El diálogo de publicación indica si se ofrecerá como sesión suelta. Publicar
+  sigue siendo una acción explícita, independiente de publicar el programa.
+- El listado administrativo indica su visibilidad y conserva los programas que
+  utilizan la sesión. El selector de programas ofrece todas las versiones
+  publicadas del catálogo común, incluidas las que no se anuncian sueltas.
+- Una revisión deportiva conserva la marca de su versión fuente. Cambiar la
+  marca no crea una revisión ni modifica bloques, series, enlaces o ejecuciones.
+
+`workout_templates.show_in_library` es una propiedad editorial de esa versión,
+independiente de `visibility` y `status`. Se inicia en true para conservar el
+comportamiento de los datos existentes. La migración no decide qué sesiones
+previas debe retirar Javier del escaparate. Los calentamientos privados y las
+plantillas privadas de preparaciones conservan sus contratos de acceso.
+
+Crear el borrador guarda receta y marca de forma atómica en la RPC existente.
+La nueva `set_admin_workout_library_visibility` exige administrador y el requisito
+MFA vigente, valida el recurso general oficial y compara el valor esperado para
+rechazar ediciones obsoletas. No concede permisos a deportistas ni acceso anónimo.
+Las RLS y las reglas de ejecución no se relajan. Estar fuera del listado no es
+una prohibición de lectura por enlace ni una nueva barrera comercial.
+
+## Catálogo y búsqueda
+
+El listado público exige publicación pública y show_in_library. Leer por identidad
+para entrenar desde un programa conserva el camino existente. Las sesiones propias
+mantienen su separación por propietario y no aplican la marca del escaparate oficial.
+
+Los resúmenes incorporan los nombres de los ejercicios mediante la relación
+bloques → items → ejercicios, en la misma consulta. No cargan series ni hacen una
+consulta por tarjeta. El modelo compartido conserva nombres únicos y admite los
+resúmenes anteriores sin ese campo. La búsqueda combina nombre, descripción y
+ejercicios, manteniendo palabras sin orden, mayúsculas/tildes ignoradas y filtros
+de tipo y duración. No añade un ranking, sinónimos ni una clasificación inferida.
+
+La RPC `get_guided_program_catalog_categories` ofrece categorías activas con
+alguna versión publicada vigente, con las mismas condiciones de vigencia del
+catálogo general. Omite categorías vacías, de borradores y de versiones superadas.
+ADMIN conserva todas las categorías para preparar publicaciones futuras. La fila
+deslizable y el resto del catálogo directo PRG-008 se mantienen; la búsqueda actual
+no hace desaparecer chips que tengan contenido fuera de esos criterios.
+
+## Verificación y límites
+
+Migración `20261019130022_workout_library_editorial_visibility.sql` aplicada solo
+al proyecto enlazado de desarrollo. Prueba SQL nueva con ROLLBACK para permisos,
+concurrencia, creación/revisión, reutilización en dos programas, inicio desde un
+programa y conservación de una ejecución en curso. Comprueba categorías vacías,
+de borradores y de versiones superadas. Cuatro regresiones SQL existentes de
+autoría, sesiones oficiales, ejecución y categorías se ejecutan con ROLLBACK,
+añadiendo únicamente contexto MFA a copias de prueba en build/.
+
+Pruebas Flutter de consulta HTTP/nombres de ejercicios, compatibilidad del resumen,
+opciones reales del catálogo, elección inicial, persistencia y error de visibilidad,
+revisión y creación contextual. Se verifican raíz y ADMIN por el contrato compartido
+de workout_core: análisis limpios, 1.092 pruebas raíz y 225 ADMIN correctas con
+sus omisiones preexistentes. Historial local/Dev cotejado: 166 migraciones, sin
+pendientes. Capturas reales de la opción en ADMIN a 390 px y 320 px con texto 2×.
+La revisión de seguridad conserva los avisos existentes; la nueva RPC administrativa
+usa el patrón de función con privilegios controlados, sin EXECUTE anónimo y con
+permiso/MFA, recurso oficial y valor esperado comprobados por la prueba SQL.
+Aceptación física del nuevo flujo pendiente; no se modifica
+producción, no se migran automáticamente las elecciones editoriales existentes
+y no se cambia la planificación adaptativa ni los ejecutores.

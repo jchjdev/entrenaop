@@ -108,6 +108,8 @@ GoRouter createAdminRouter({
         (owner) => AdminWorkoutEditorPage(
           program: owner,
           repository: workouts,
+          initialShowInLibrary:
+              state.uri.queryParameters['standalone'] != 'false',
           returnSavedId:
               owner == null && state.uri.queryParameters['returnId'] == 'true',
         ),

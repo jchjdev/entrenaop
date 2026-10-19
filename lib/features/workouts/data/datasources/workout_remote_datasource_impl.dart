@@ -105,10 +105,11 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final response = await supabaseClient
         .from('workout_templates')
         .select(
-          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format)',
+          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format,workout_items(exercises(name)))',
         )
         .eq('visibility', 'public')
         .eq('status', 'published')
+        .eq('show_in_library', true)
         .order('created_at');
     return response.cast<Map<String, dynamic>>();
   }
@@ -120,7 +121,7 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     final response = await supabaseClient
         .from('workout_templates')
         .select(
-          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format)',
+          'id, name, description, estimated_duration_minutes, origin, version, workout_blocks(format,workout_items(exercises(name)))',
         )
         .eq('owner_user_id', userId)
         .eq('origin', 'user')

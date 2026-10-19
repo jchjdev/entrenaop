@@ -659,7 +659,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
 
   Future<void> _createSession(_PhaseFields phase) async {
     if (!await _saveWork() || !mounted) return;
-    final id = await context.push<String>('/sessions/new?returnId=true');
+    final id = await context.push<String>(
+      '/sessions/new?returnId=true&standalone=false',
+    );
     if (!mounted || id == null) return;
     setState(() {
       phase.pendingSessions.add(id);

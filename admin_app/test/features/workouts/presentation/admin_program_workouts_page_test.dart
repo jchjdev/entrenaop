@@ -38,6 +38,12 @@ class _Programs extends Fake implements AdminProgramRepository {
 class _Exercises extends Fake implements AdminExerciseRepository {}
 
 class _FakeWorkouts implements AdminWorkoutRepository {
+  @override
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  }) async {}
   String scope = 'program';
   bool published = false;
   bool removed = false;
@@ -119,8 +125,9 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   @override
   Future<String> createDraft(
     String? programId,
-    CreatePersonalWorkoutInput input,
-  ) async => 'new-id';
+    CreatePersonalWorkoutInput input, {
+    bool showInLibrary = true,
+  }) async => 'new-id';
 
   @override
   Future<List<AdminExercise>> listPublicExercises() async => const [];

@@ -26,6 +26,7 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     this.warmup = false,
     this.saveInput,
     this.returnSavedId = false,
+    this.initialShowInLibrary = true,
   });
 
   final AdminProgram? program;
@@ -35,6 +36,7 @@ class AdminWorkoutEditorPage extends StatefulWidget {
   final bool warmup;
   final Future<String> Function(CreatePersonalWorkoutInput)? saveInput;
   final bool returnSavedId;
+  final bool initialShowInLibrary;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -49,6 +51,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   List<AdminExercise> _catalog = const [];
   bool _running = true;
   bool _busy = false;
+  late bool _showInLibrary;
   String? _error;
   late String _savedStamp;
   String get _draftStamp => jsonEncode([
@@ -56,6 +59,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     _description.text,
     _duration.text,
     _running,
+    _showInLibrary,
     for (final segment in _segments)
       [
         segment.count.text,
@@ -99,6 +103,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   @override
   void initState() {
     super.initState();
+    _showInLibrary = widget.initialShowInLibrary;
     if (widget.originalTemplate case final original?) _populate(original);
     if (widget.warmup) {
       _running = false;
@@ -408,6 +413,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         savedId = await widget.repository.createDraft(
           widget.program?.id,
           input,
+          showInLibrary: _showInLibrary,
         );
       }
       if (mounted) {
@@ -541,7 +547,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               widget.warmup
                   ? 'Calentamiento reutilizable'
                   : widget.program == null
-                  ? 'Sesión general en borrador'
+                  ? 'Sesión en borrador'
                   : 'Sesión del programa en borrador',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
@@ -550,7 +556,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               widget.warmup
                   ? 'Guarda una versión para adjuntarla a las sesiones. El deportista podrá omitirla.'
                   : widget.program == null
-                  ? 'Se guarda en la biblioteca general. No será visible hasta que la publiques.'
+                  ? 'Al publicarla podrás usarla en programas. La opción Mostrar en Sesiones de EntrenaOP decide si también aparece como sesión suelta.'
                   : 'Se vincula al programa, no a la biblioteca general. Publicar no la asigna a ningún alumno.',
             ),
             const SizedBox(height: 24),
@@ -581,6 +587,19 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 selected: {_running},
                 onSelectionChanged: (selection) =>
                     setState(() => _running = selection.first),
+              ),
+            if (!widget.warmup &&
+                widget.program == null &&
+                widget.revisionId == null &&
+                widget.saveInput == null)
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mostrar en Sesiones de EntrenaOP'),
+                subtitle: const Text(
+                  'Permite encontrarla y entrenarla como sesión suelta. Puede reutilizarse en programas en ambos casos.',
+                ),
+                value: _showInLibrary,
+                onChanged: (value) => setState(() => _showInLibrary = value),
               ),
             const SizedBox(height: 20),
             if (_running) _runningEditor() else _strengthEditor(),

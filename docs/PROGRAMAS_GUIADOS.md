@@ -48,14 +48,20 @@ previas. No se adjunta otro calentamiento a una sesión que ya incluya uno.
 
 ### Contrato e integración
 
-**Catálogo compartido confirmado por Javier · UI-054 · 19/10/2026.** Las sesiones
-oficiales generales publicadas siguen disponibles sueltas y pueden formar parte
-de uno o varios programas guiados. No se introduce contenido exclusivo del
-programa. ADMIN muestra los usos de cada versión de sesión a partir de
+**Catálogo compartido · UI-054, matizado por PRG-009 · 19/10/2026.** Las sesiones
+oficiales generales publicadas pueden formar parte de uno o varios programas
+guiados. Su presencia como sesiones sueltas es optativa mediante Mostrar en
+Sesiones de EntrenaOP; crear desde un programa empieza desmarcado. La ficha de
+revisión permite cambiarlo sin modificar recetas, enlaces o resultados. No se
+duplica el catálogo ni se prohíbe la reutilización. ADMIN muestra los usos de cada
+versión de sesión a partir de
 `guided_program_links`, con nombre, versión y estado del programa. Conserva
 visibles borradores y retirados para distinguirlos de publicaciones vigentes;
 repetir una sesión en varias fases de la misma versión no duplica el indicador.
 El enlace abre el editor de esa versión y al volver se recargan los usos.
+La búsqueda del deportista incluye ejercicios de la sesión; los chips de Programas
+solo ofrecen categorías con publicaciones vigentes. Contrato, migración y límites
+en [SESSION_LIBRARY_EDITORIAL_2026_10_19.md](SESSION_LIBRARY_EDITORIAL_2026_10_19.md).
 La búsqueda de sesiones incluye los nombres de los programas asociados. Un fallo
 al consultar usos se muestra como error de carga, no como ausencia de vínculos.
 

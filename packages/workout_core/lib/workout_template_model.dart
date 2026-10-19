@@ -70,8 +70,13 @@ class WorkoutTemplateModel {
     return (
       order: order,
       value: WorkoutSet(
-        performancePrescription: json['performance_prescription'] == null ? null
-          : PerformanceSetCodec.prescription(Map<String, dynamic>.from(json['performance_prescription'] as Map)),
+        performancePrescription: json['performance_prescription'] == null
+            ? null
+            : PerformanceSetCodec.prescription(
+                Map<String, dynamic>.from(
+                  json['performance_prescription'] as Map,
+                ),
+              ),
         id: json['id'] as String,
         order: order,
         targetReps: json['target_reps'] as int?,
@@ -145,5 +150,13 @@ class WorkoutTemplateSummaryModel {
         isRunning: ((json['workout_blocks'] as List?) ?? const []).any(
           (block) => (block as Map)['format'] == 'running',
         ),
+        exerciseNames: {
+          for (final block in (json['workout_blocks'] as List? ?? const []))
+            for (final item
+                in ((block as Map)['workout_items'] as List? ?? const []))
+              if ((item as Map)['exercises'] case final Map exercise)
+                if (exercise['name'] case final String name)
+                  if (name.trim().isNotEmpty) name.trim(),
+        }.toList(growable: false),
       );
 }

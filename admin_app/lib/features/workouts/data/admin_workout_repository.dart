@@ -16,6 +16,7 @@ class AdminWorkoutSummary {
     this.guidedPrograms = const [],
     this.hasWarmup = false,
     this.supportsAdjustableRest = true,
+    this.showInLibrary = true,
   });
 
   final String id;
@@ -26,6 +27,7 @@ class AdminWorkoutSummary {
   final String catalogScope;
   final List<AdminWorkoutProgramUsage> guidedPrograms;
   final bool hasWarmup, supportsAdjustableRest;
+  final bool showInLibrary;
 }
 
 class AdminWorkoutProgramUsage {
@@ -63,8 +65,14 @@ abstract class AdminWorkoutRepository {
   Future<WorkoutTemplate?> getTemplateById(String templateId);
   Future<String> createDraft(
     String? programId,
-    CreatePersonalWorkoutInput input,
-  );
+    CreatePersonalWorkoutInput input, {
+    bool showInLibrary = true,
+  });
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  });
   Future<void> publishDraft(String templateId);
   Future<void> remove(String templateId);
   Future<String> revise(String templateId, CreatePersonalWorkoutInput input);
@@ -102,7 +110,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
     if (ids.isEmpty) return const [];
     final rows = await _client
         .from('workout_templates')
-        .select('id,name,status,version')
+        .select('id,name,status,version,show_in_library')
         .inFilter('id', ids)
         .order('created_at', ascending: false);
     final blockRows = await _client
@@ -150,6 +158,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             name: row['name'] as String,
             status: row['status'] as String,
             version: row['version'] as int,
+            showInLibrary: row['show_in_library'] as bool? ?? true,
             isRunning: runningIds.contains(row['id']),
             catalogScope: catalogScope,
             hasWarmup: warmupIds.contains(row['id']),
@@ -203,17 +212,37 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
   @override
   Future<String> createDraft(
     String? programId,
-    CreatePersonalWorkoutInput input,
-  ) async {
+    CreatePersonalWorkoutInput input, {
+    bool showInLibrary = true,
+  }) async {
     validateWorkoutDraft(input);
     final id = await _client.rpc(
       'create_admin_workout_draft',
       params: {
         'p_program_id': programId,
-        'p_payload': workoutDraftToJson(input),
+        'p_payload': {
+          ...workoutDraftToJson(input),
+          'show_in_library': showInLibrary,
+        },
       },
     );
     return id as String;
+  }
+
+  @override
+  Future<void> setLibraryVisibility(
+    String templateId,
+    bool value, {
+    required bool expected,
+  }) async {
+    await _client.rpc(
+      'set_admin_workout_library_visibility',
+      params: {
+        'p_template_id': templateId,
+        'p_show_in_library': value,
+        'p_expected': expected,
+      },
+    );
   }
 
   @override

@@ -1049,7 +1049,10 @@ identidad
   estructura, pero el algoritmo genera una nueva versión privada con origen
   `algorithm`; no modifica la plantilla ni una prescripción histórica.
 - `workout_templates.origin` separa contenido de sistema, usuario, entrenador y
-  algoritmo. La biblioteca muestra únicamente plantillas públicas publicadas;
+  algoritmo. La biblioteca de sesiones sueltas muestra plantillas públicas
+  publicadas con `show_in_library` activado (PRG-009); la marca editorial no altera
+  lectura por identidad ni ejecución desde programas guiados. Los resúmenes de
+  Biblioteca incluyen nombres de ejercicios sin cargar sus series. Por su parte,
   las prescripciones adaptativas y las sesiones personales permanecen privadas.
 - Las sesiones personales convencionales se crean mediante
   `create_personal_workout_template(jsonb)`. La función valida de nuevo el
@@ -1164,7 +1167,9 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    distintas. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
    privada y registra su destino en `program_workout_templates` en una
-   transacción. El destino `general` puede publicarse en la biblioteca abierta;
+   transacción. El destino `general` permite publicación pública; PRG-009 separa
+   mediante `show_in_library` la aparición en el listado de sesiones sueltas,
+   conservando reutilización de esa versión en varios programas guiados;
    el destino `program` permanece privado aunque esté publicado, reservado para
    la futura prescripción de esa preparación. Ninguno crea agenda.
    La edición de borradores reemplaza la versión privada; revisar una sesión
