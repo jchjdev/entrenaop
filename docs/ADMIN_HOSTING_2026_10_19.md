@@ -13,11 +13,28 @@ espacio disponible y subdominio creado con carpeta `public_html/admin`.
 DNS resuelve y HTTPS valida correctamente, sin omitir la verificación TLS.
 La web principal y su repositorio independiente `website/` no se modifican.
 
-El código y el paquete se preparan antes de la carga. La publicación y el
-recorrido con la cuenta real quedan pendientes hasta completar el cambio de
-contraseña y el alta del autenticador por el propio Javier. Este apartado se
+El paquete de la revisión `2939c96` está cargado en `admin-releases`, fuera de
+`public_html`, y todavía no se ha extraído en el subdominio. Javier confirma el
+cambio de contraseña y ha habilitado temporalmente el acceso a archivos de la
+extensión de Chrome para esta carga. Queda pendiente que desactive ese permiso
+al terminar. La publicación y el recorrido con la cuenta real quedan pendientes
+del alta del autenticador por el propio Javier. La comprobación de Dev después
+de su aclaración sigue mostrando un administrador, ningún requisito MFA activado
+y ningún factor administrativo verificado. Este apartado se
 actualiza con la evidencia de publicación; no acredita por sí mismo un panel
 ya operativo en el subdominio.
+
+Paquete cargado: `2939c96-20261019T090124Z.zip`, SHA-256
+`057CD1EC7CA0009787E3C2A4511667373F4767C1651636BE566A50188543AD31`.
+Este primer paquete queda sustituido para publicar: Javier detecta que la imagen
+TOTP no carga. GoTrue Dart 2.27.2 antepone `data:image/svg+xml;utf-8,` al SVG
+de Auth y la pantalla codificaba de nuevo toda esa URI. Se retira el prefijo
+del SDK antes de generar una URI SVG base64, conservando los caracteres del SVG.
+No cambia el factor ni el mecanismo de autorización. Se recompila el admin local
+y se debe generar y cargar otro paquete corregido antes de extraerlo.
+La captura `hostinger-private-release.png` acredita únicamente la carga privada.
+`security-login-handoff.png` muestra el acceso local entregado al propietario,
+con campos vacíos, antes de configurar el autenticador.
 
 ## Acceso y segundo factor
 
@@ -95,11 +112,18 @@ las rutas del admin a través de la web pública. La dirección raíz sirve
 
 ## Validación del bloque
 
-- Análisis de ADMIN limpio, 173 pruebas correctas y dos capturas optativas
+- Análisis de ADMIN limpio, 175 pruebas correctas y dos capturas optativas
   existentes omitidas; compilación web con la configuración
   de publicación. Pruebas de denegación a no administradores, guardado de
   contraseña independiente del cierre de sesiones, cambio ya realizado en
   deportista, fallo/confirmación MFA, ruta privada y pantalla estrecha con texto 2×.
+- Regresión del QR: conversión del formato real de GoTrue y del SVG sin prefijo,
+  incluidos colores con `#`. Chrome carga una imagen sintética de 210×210 usando
+  la conversión de producción (`complete=true`, dimensiones naturales 210×210).
+  `tool/verify_admin_totp_qr.dart` permite regenerar esta comprobación sin cuenta
+  ni secretos y fuera del directorio empaquetado. El lanzador de pruebas web de
+  Flutter no completó el arranque en este equipo; la comprobación en Chrome se
+  realizó por el servidor local existente con el navegador conectado.
 - `supabase/tests/admin_web_mfa_access.sql`: activación autorizada, requisito
   persistente, AAL1 y claim ausente rechazados, RLS, RPC de escritura y reinicio,
   permisos comerciales, factor retirado y metadatos sin autoridad. Fixtures
