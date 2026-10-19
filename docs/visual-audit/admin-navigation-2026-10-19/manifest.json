@@ -1,6 +1,6 @@
 {
   "date": "2026-10-19",
-  "source": "Widgets y router reales; repositorios de prueba",
+  "source": "Tres capturas de widgets con fixtures y dos capturas autenticadas de Chrome; procedencia en README",
   "files": [
     {
       "path": "docs/visual-audit/admin-navigation-2026-10-19/desktop.png",
@@ -41,6 +41,14 @@
     {
       "path": "packages/entrena_ui/assets/branding/entrenaop_wordmark_on_dark.png",
       "sha256": "047db7bc27549eb2d1783cda6dc282319833cff6bcf04a25f1bbbeb3b6a4d94c"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/authenticated-desktop.png",
+      "sha256": "fd2c09689c87bdb33226b3aba2408f402ff1b06b3fa3c15489c3a0645fc8d345"
+    },
+    {
+      "path": "docs/visual-audit/admin-navigation-2026-10-19/session-published-admin.png",
+      "sha256": "f7b4e891618abcac0e56e43439912f260d8c5d4b6c72a6038ea0ee3f80a4b143"
     }
   ],
   "fonts": [

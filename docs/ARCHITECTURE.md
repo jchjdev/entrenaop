@@ -14,7 +14,9 @@ ruta, RPC/RLS, aislamiento por identidad y guards de salida. El permiso
 comercial específico decide la entrada Cuentas y Pro sin bloquear autoría ante
 un fallo de su consulta. No añade paquetes, infraestructura ni extracción de
 componentes para entrenadores. Ver [inventario, validación y límites](ADMIN_NAVIGATION_2026_10_19.md).
-El siguiente tramo es aceptación autenticada local antes de preparar alojamiento.
+El guardado y la publicación de una sesión se comprueban después con la cuenta
+de Javier en Dev. El siguiente tramo es contrastarla en la app de desarrollo
+antes de preparar alojamiento.
 
 ## Selección de carrera v6 · PLAN-026 · 16/10/2026
 

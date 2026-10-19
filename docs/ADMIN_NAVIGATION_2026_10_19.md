@@ -91,14 +91,38 @@ patrones con los componentes Material y la identidad ya existentes.
   modifican migraciones, funciones, grants, paquetes compartidos ni deportista;
   no corresponde una nueva batería de raíz ni SQL transaccional de mutaciones.
 
-La compilación se sirve solo en `127.0.0.1:55555`, con respuesta HTTP 200.
-Chrome alcanza el login. El navegador integrado muestra una interfaz anterior
-incluso tras recargar; esa vista no se utiliza como evidencia de la nueva
-navegación. No se ha introducido la contraseña de Javier ni se ha sustituido la
-aceptación autenticada por las capturas con fixtures.
+## Comprobación autenticada posterior · 19/10/2026
 
-La organización local queda comprobada. El único siguiente tramo de este
-recorrido es la aceptación autenticada de Javier en local: revisar el menú,
-abrir/editar/guardar un contenido de prueba y comprobar su resultado en la app
-de desarrollo. El acceso desde subdominio se prepara después. No se da por
-cerrada toda la autoría ni las revisiones deportivas o de vídeo de otros bloques.
+Javier entra en Chrome y aporta una captura con la portada anterior. Se
+identifican dos servidores distintos en el mismo puerto: una ejecución antigua
+de Flutter en `::1:55555` y la compilación nueva en `127.0.0.1:55555`.
+`localhost` resolvía al primero. El JavaScript servido desde localhost era
+distinto del build; no era evidencia de un fallo del nuevo marco.
+
+Se detiene únicamente ese proceso antiguo, comprobando antes su comando y
+puerto, y se sirve el mismo build en ambos loopbacks. Las dos respuestas HTTP
+200 coinciden por SHA-256 con `admin_app/build/web/main.dart.js`. Tras recargar,
+Chrome conserva la sesión de Javier y muestra la navegación nueva y las cuatro
+preparaciones. No se cambian credenciales ni configuración de Supabase.
+
+Desde esa sesión administrativa se crea y guarda `Prueba ADMIN 19-10-2026`:
+un tramo de carrera de 400 m a 6:00/km, con indicaciones explícitas de prueba
+técnica que no debe usarse como entrenamiento. Se reabre desde el listado y
+se comprueba el contenido. La publicación se confirma desde su diálogo real.
+Una consulta de solo lectura en Dev confirma el identificador
+`cf3f50a5-0b60-4023-ba1f-7c72e93759ad`, versión 1, estado `published`,
+visibilidad `public` y ámbito `general`. No se asigna a planes ni agendas ni se
+registra una ejecución deportiva. El contenido de prueba permanece en Dev.
+
+Las capturas `authenticated-desktop.png` y `session-published-admin.png`
+acreditan respectivamente la navegación con datos reales y la sesión publicada;
+se distinguen de las tres capturas con fixtures. No se modifica código fuente,
+esquema o servidor remoto en esta comprobación; no requiere repetir Flutter ni
+una prueba transaccional de migraciones.
+
+La organización local y el guardado/publicación autenticados de una sesión
+quedan comprobados. El único siguiente tramo de este recorrido es verificar
+la sesión desde Biblioteca en la app de desarrollo, abierta en Chrome en
+`localhost:55554` y pendiente de que Javier inicie sesión. El acceso desde
+subdominio se prepara después. No se da por cerrada toda la autoría ni las
+revisiones deportivas o de vídeo de otros bloques.
