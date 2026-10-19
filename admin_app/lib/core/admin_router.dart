@@ -21,6 +21,8 @@ import 'package:entrenaop_admin/features/pro_access/presentation/admin_pro_acces
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
 
+import '../features/guided_programs/presentation/admin_guided_review_page.dart';
+
 import 'admin_shell.dart';
 import '../features/guided_programs/domain/admin_guided_work.dart';
 
@@ -299,6 +301,18 @@ GoRouter createAdminRouter({
                   redirect: guidedWork == null
                       ? null
                       : (_, _) => '/guided-programs/work/${newGuidedWorkId()}',
+                ),
+                workflow(
+                  ':guidedId/review',
+                  (_, state) => load(
+                    () async => true,
+                    (_) => AdminGuidedReviewPage(
+                      programId: state.pathParameters['guidedId']!,
+                      repository: guided,
+                      workouts: workouts,
+                      covers: guidedCovers,
+                    ),
+                  ),
                 ),
                 workflow(
                   ':guidedId/edit',

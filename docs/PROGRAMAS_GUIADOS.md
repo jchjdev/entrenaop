@@ -15,6 +15,13 @@ convencionales, sin alterar formatos temporizados ni el motor adaptativo.
 
 ## Bloque 1 · Autoría en ADMIN
 
+**UI-058 · 19/10/2026:** Guardar y revisar abre el borrador guardado en una URL
+recargable. Catálogo ofrece revisión antes de publicar y vista previa para otras
+versiones, con ficha, fases, condiciones, sesiones y calentamientos desplegables.
+Referencias actuales y contenido leído al confirmar, problemas bloqueantes y
+sugerencias opcionales separados; publicación explícita conserva sus RPC y su
+independencia de la sesión. [Contrato y estado](ADMIN_PUBLICATION_REVIEW_2026_10_19.md).
+
 **UI-056 · 19/10/2026:** el trabajo incompleto se guarda por administrador y se
 recupera desde su URL o Continuar trabajando. Conserva campos inválidos y
 sesiones pendientes. Guardar en catálogo aplica las validaciones previas y

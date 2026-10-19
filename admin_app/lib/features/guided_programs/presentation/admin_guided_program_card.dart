@@ -6,13 +6,13 @@ class AdminGuidedProgramCard extends StatelessWidget {
     super.key,
     required this.program,
     required this.onEdit,
-    required this.onPublish,
+    required this.onReview,
     required this.onRetire,
     this.onCover,
   });
 
   final GuidedProgram program;
-  final VoidCallback? onEdit, onPublish, onRetire, onCover;
+  final VoidCallback? onEdit, onReview, onRetire, onCover;
 
   @override
   Widget build(BuildContext context) {
@@ -121,12 +121,13 @@ class AdminGuidedProgramCard extends StatelessWidget {
                     p.status == 'draft' ? 'Editar borrador' : 'Crear revisión',
                   ),
                 ),
-                if (p.status == 'draft')
-                  OutlinedButton.icon(
-                    onPressed: onPublish,
-                    icon: const Icon(Icons.publish_outlined, size: 18),
-                    label: const Text('Publicar'),
+                OutlinedButton.icon(
+                  onPressed: onReview,
+                  icon: const Icon(Icons.visibility_outlined, size: 18),
+                  label: Text(
+                    p.status == 'draft' ? 'Revisar y publicar' : 'Vista previa',
                   ),
+                ),
                 if (onCover != null)
                   TextButton.icon(
                     onPressed: onCover,

@@ -69,6 +69,13 @@ Future<_Repository> _mount(WidgetTester tester) async {
         ),
       ),
       GoRoute(
+        path: '/guided-programs/:id/review',
+        builder: (_, state) => Scaffold(
+          appBar: AppBar(),
+          body: Text('Revisión ${state.pathParameters['id']}'),
+        ),
+      ),
+      GoRoute(
         path: '/guided-programs/new',
         builder: (_, _) => const Scaffold(body: Text('Nuevo programa')),
       ),
@@ -125,7 +132,7 @@ void main() {
   );
 
   testWidgets(
-    'publica, retira desde Más opciones y abre la versión correcta sin mutar al abrir',
+    'abre revisión sin publicar, retira desde Más opciones y conserva la versión correcta',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1100, 1500));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -135,9 +142,11 @@ void main() {
       expect(repo.changes, isEmpty);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      await _tap(tester, find.text('Publicar'));
-      expect(repo.changes, ['phased:published']);
-      expect(find.text('Editar borrador'), findsNothing);
+      await _tap(tester, find.text('Revisar y publicar'));
+      expect(find.text('Revisión phased'), findsOneWidget);
+      expect(repo.changes, isEmpty);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       await _tap(tester, find.byTooltip('Más opciones de Empuje y tirón'));
       await tester.tap(find.text('Retirar del catálogo'));
       await tester.pumpAndSettle();
@@ -152,7 +161,7 @@ void main() {
         find.descendant(of: card, matching: find.text('Crear revisión')),
       );
       expect(find.text('Editor routine'), findsOneWidget);
-      expect(repo.changes, hasLength(2));
+      expect(repo.changes, hasLength(1));
     },
   );
 

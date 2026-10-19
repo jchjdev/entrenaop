@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**UI-058 · 19/10/2026 · revisión editorial ADMIN en validación final:** vista
+previa recargable, Guardar y revisar, fases/sesiones/calentamientos desplegables,
+comprobaciones y confirmación previa a publicar. Mantiene versiones, catálogo
+común y RPC. Favicon e iconos web de EntrenaOP incorporados. No publica contenido
+ni modifica servidor. Antes de cerrar: análisis/batería ADMIN, revisión visual y
+publicación del código por WEB-006 con comprobación remota.
+[Contrato y evidencia](ADMIN_PUBLICATION_REVIEW_2026_10_19.md).
+
+
 **WEB-006 · 19/10/2026 · publicación automática ADMIN activada y comprobada:**
 GitHub Actions valida, compila Dev y publica por FTPS con cuenta confinada al
 admin, recursos por versión y comprobación HTTPS. Javier guarda directamente

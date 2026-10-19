@@ -530,6 +530,12 @@ WEB-006 publica desde GitHub Actions con cuenta FTPS confinada al admin,
 recursos por versión y activación del índice después de transferirlos.
 Conexión autorizada y primera ejecución completa comprobadas por HTTPS y Chrome;
 [configuración y estado](ADMIN_DEPLOYMENT_2026_10_19.md).
+UI-058 añade revisión editorial por identidad y un lector ADMIN de plantillas
+compartido entre sesión y programa, sin importar pantallas del deportista.
+La lectura de detalles es diferida y se conserva por ID hasta actualizar;
+la confirmación relee contenido y referencias conservando las RPC existentes.
+[Contrato y límites de concurrencia](ADMIN_PUBLICATION_REVIEW_2026_10_19.md).
+
 
 **Propuesta de secuencia · TRN-003 · 18/10/2026:** Javier propone terminar primero
 ADMIN para facilitar el espacio profesional y evitar programar por duplicado

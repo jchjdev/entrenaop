@@ -9,6 +9,10 @@ import 'package:entrenaop_admin/features/programs/data/admin_program_repository.
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
+
+import 'admin_workout_content.dart';
+import '../../publication/presentation/publication_review_panel.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminWorkoutPreviewPage extends StatefulWidget {
@@ -33,6 +37,7 @@ class AdminWorkoutPreviewPage extends StatefulWidget {
 class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   late Future<WorkoutTemplate?> _template;
   bool _publishing = false;
+  bool _confirming = false;
   bool _removing = false;
   String? _error;
 
@@ -42,41 +47,62 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     _template = widget.repository.getTemplateById(widget.workout.id);
   }
 
-  Future<void> _publish() async {
-    if (_publishing || _removing) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Publicar sesión'),
-        content: Text(
-          widget.workout.catalogScope == 'general'
-              ? '«${widget.workout.name}» será visible para todos en la biblioteca general. No se asignará a ningún plan ni agenda.'
-              : '«${widget.workout.name}» quedará disponible como plantilla de este programa. No aparecerá en la biblioteca general ni se asignará a alumnos hasta definir las reglas del plan.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
+  Future<void> _publish(WorkoutTemplate reviewed) async {
+    if (_publishing ||
+        _confirming ||
+        _removing ||
+        _blockingIssues(reviewed).isNotEmpty) {
+      return;
+    }
+    _confirming = true;
+    bool? confirmed;
+    try {
+      confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Publicar sesión'),
+          content: Text(
+            widget.workout.catalogScope == 'general'
+                ? '«${widget.workout.name}» será visible para todos en la biblioteca general. No se asignará a ningún plan ni agenda.'
+                : '«${widget.workout.name}» quedará disponible como plantilla de este programa. No aparecerá en la biblioteca general ni se asignará a alumnos hasta definir las reglas del plan.',
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              widget.workout.catalogScope == 'general'
-                  ? 'Publicar en biblioteca general'
-                  : 'Publicar para el programa',
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
             ),
-          ),
-        ],
-      ),
-    );
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(
+                widget.workout.catalogScope == 'general'
+                    ? 'Publicar en biblioteca general'
+                    : 'Publicar para el programa',
+              ),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      _confirming = false;
+    }
     if (confirmed != true || !mounted || _publishing || _removing) return;
     setState(() {
       _publishing = true;
       _error = null;
     });
     try {
+      final latest = await widget.repository.getTemplateById(widget.workout.id);
+      if (!mounted) return;
+      if (latest == null || latest != reviewed) {
+        setState(() {
+          _template = Future.value(latest);
+          _error = 'La sesión ha cambiado desde la revisión. Comprueba el contenido actualizado antes de publicar.';
+        });
+        return;
+      }
       await widget.repository.publishDraft(widget.workout.id);
       if (mounted) {
+        setState(() => _publishing = false);
         context.pop<Object>(widget.returnSavedId ? widget.workout.id : true);
       }
     } on PostgrestException catch (error) {
@@ -163,7 +189,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
     hasUnsavedChanges: () => false,
-    isBusy: () => _publishing || _removing,
+    isBusy: () => _publishing || _removing || _confirming,
     child: Scaffold(
       appBar: AppBar(title: const Text('Revisar sesión')),
       body: Center(
@@ -185,11 +211,11 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
                         'No se pudo cargar la sesión. No la publiques todavía.',
                       ),
                       TextButton(
-                        onPressed: () => setState(
-                          () => _template = widget.repository.getTemplateById(
+                        onPressed: () => setState(() {
+                          _template = widget.repository.getTemplateById(
                             widget.workout.id,
-                          ),
-                        ),
+                          );
+                        }),
                         child: const Text('Reintentar'),
                       ),
                     ],
@@ -203,6 +229,14 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       ),
     ),
   );
+
+  List<String> _blockingIssues(WorkoutTemplate template) => [
+    if (template.blocks.isEmpty) 'La sesión no contiene bloques.',
+    if (template.blocks.any(
+      (b) => b.items.isEmpty || b.items.any((i) => i.sets.isEmpty),
+    ))
+      'Hay bloques o ejercicios sin series ni tramos. Completa el borrador antes de publicar.',
+  ];
 
   Widget _content(WorkoutTemplate template) => ListView(
     padding: const EdgeInsets.all(24),
@@ -218,22 +252,17 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
             ? 'Publicado en biblioteca general'
             : 'Publicado para el programa'}',
       ),
-      if (template.description?.isNotEmpty == true) ...[
-        const SizedBox(height: 10),
-        Text(template.description!),
-      ],
-      if (template.estimatedDurationMinutes != null) ...[
-        const SizedBox(height: 10),
-        Text('Duración estimada: ${template.estimatedDurationMinutes} min'),
-      ],
-      const SizedBox(height: 24),
-      for (var index = 0; index < template.blocks.length; index++)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: _block(index, template.blocks[index]),
-          ),
-        ),
+      const SizedBox(height: 16),
+      AdminWorkoutContent(template: template, showTitle: false),
+      const SizedBox(height: 16),
+      PublicationReviewPanel(
+        errors: _blockingIssues(template),
+        suggestions: [
+          if (template.description?.trim().isNotEmpty != true) 'Puedes añadir una descripción para explicar el objetivo de la sesión.',
+          if (template.estimatedDurationMinutes == null)
+            'La duración estimada no está indicada.',
+        ],
+      ),
       const SizedBox(height: 16),
       if (widget.workout.status != 'archived') ...[
         Align(
@@ -270,7 +299,10 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
         Align(
           alignment: Alignment.centerLeft,
           child: FilledButton.icon(
-            onPressed: _publishing || _removing ? null : _publish,
+            onPressed:
+                _publishing || _removing || _blockingIssues(template).isNotEmpty
+                ? null
+                : () => _publish(template),
             icon: const Icon(Icons.public),
             label: Text(
               _publishing
@@ -301,110 +333,4 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       ],
     ],
   );
-
-  Widget _block(int index, WorkoutBlock block) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '${index + 1}. ${block.name}',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 4),
-      Text(
-        [
-          _formatLabel(block.format),
-          if (block.rounds > 1) '${block.rounds} rondas',
-          if (block.timeCapSeconds != null)
-            'límite ${_time(block.timeCapSeconds!)}',
-          if (block.restAfterSeconds > 0)
-            'descanso de bloque ${_time(block.restAfterSeconds)}',
-        ].join(' · '),
-      ),
-      const SizedBox(height: 14),
-      for (var index = 0; index < block.items.length; index++)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: _item(index, block.items[index], block.format),
-        ),
-    ],
-  );
-
-  Widget _item(int index, WorkoutItem item, WorkoutBlockFormat format) =>
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${index + 1}. ${item.exerciseName}',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 5),
-          if (format == WorkoutBlockFormat.running &&
-              item.sets.length > 1 &&
-              item.sets.every(
-                (set) =>
-                    _setText(set, format) == _setText(item.sets.first, format),
-              ))
-            Text('${item.sets.length} × ${_setText(item.sets.first, format)}')
-          else
-            for (var number = 0; number < item.sets.length; number++)
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(
-                  '${number + 1}. ${_setText(item.sets[number], format)}',
-                ),
-              ),
-        ],
-      );
 }
-
-String _setText(WorkoutSet set, WorkoutBlockFormat format) {
-  final target = set.targetReps != null
-      ? '${set.targetReps} rep'
-      : set.targetDurationSeconds != null
-      ? _time(set.targetDurationSeconds!)
-      : '${set.targetDistanceMeters?.toStringAsFixed(0)} m';
-  final details = <String>[target];
-  if (set.targetPaceMinSecondsPerKm case final minPace?) {
-    final maxPace = set.targetPaceMaxSecondsPerKm;
-    details.add(
-      maxPace == null || maxPace == minPace
-          ? '${_time(minPace)}/km'
-          : '${_time(minPace)}–${_time(maxPace)}/km',
-    );
-  }
-  if (set.targetLoadKg != null) details.add('${set.targetLoadKg} kg');
-  if (set.usesRir && set.targetRir != null) details.add('RIR ${set.targetRir}');
-  if (set.recoveryType != null) {
-    final measure = set.recoveryDurationSeconds != null
-        ? _time(set.recoveryDurationSeconds!)
-        : '${set.recoveryDistanceMeters?.toStringAsFixed(0)} m';
-    details.add('rec. ${_recoveryLabel(set.recoveryType!)} $measure');
-  } else if (format != WorkoutBlockFormat.running && set.restAfterSeconds > 0) {
-    details.add('descanso ${_time(set.restAfterSeconds)}');
-  }
-  return details.join(' · ');
-}
-
-String _time(int seconds) {
-  final minutes = seconds ~/ 60;
-  return '$minutes:${(seconds % 60).toString().padLeft(2, '0')}';
-}
-
-String _recoveryLabel(RunningRecoveryType type) => switch (type) {
-  RunningRecoveryType.passive => 'pasiva',
-  RunningRecoveryType.walking => 'andando',
-  RunningRecoveryType.jogging => 'trote',
-};
-
-String _formatLabel(WorkoutBlockFormat format) => switch (format) {
-  WorkoutBlockFormat.straightSets => 'Series convencionales',
-  WorkoutBlockFormat.superset => 'Superserie',
-  WorkoutBlockFormat.circuit => 'Circuito',
-  WorkoutBlockFormat.intervals => 'Intervalos',
-  WorkoutBlockFormat.emom => 'EMOM',
-  WorkoutBlockFormat.amrap => 'AMRAP',
-  WorkoutBlockFormat.tabata => 'Tabata 20/10',
-  WorkoutBlockFormat.running => 'Carrera por tramos',
-  WorkoutBlockFormat.warmUp => 'Calentamiento',
-  WorkoutBlockFormat.coolDown => 'Vuelta a la calma',
-};

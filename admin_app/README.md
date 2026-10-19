@@ -13,6 +13,12 @@ automáticamente mediante GitHub Actions y una cuenta FTPS limitada al admin.
 La primera publicación completa y el arranque remoto están comprobados.
 [Activación, estado y recuperación](../docs/ADMIN_DEPLOYMENT_2026_10_19.md).
 
+**Revisión editorial:** los programas ofrecen «Guardar y revisar» en el editor
+y «Revisar y publicar» en el catálogo. La vista previa muestra fases, sesiones,
+calentamientos y comprobaciones antes de confirmar su publicación. Las sesiones
+conservan su revisión y destino propios. Abrir o cancelar no publica contenido.
+[Recorrido y límites](../docs/ADMIN_PUBLICATION_REVIEW_2026_10_19.md).
+
 **Cuentas y Pro** (menú Gestión, o `/accounts`) muestra al entrar
 una lista de cuentas con correo, Free/Pro y origen del acceso. Hay búsqueda
 parcial por correo y páginas de 25. Pulsar una cuenta abre la ficha que muestra

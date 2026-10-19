@@ -358,7 +358,7 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
               AdminGuidedProgramCard(
                 program: p,
                 onEdit: _busy ? null : () => _open('${p.id}/edit'),
-                onPublish: _busy ? null : () => _status(p, 'published'),
+                onReview: _busy ? null : () => _open('${p.id}/review'),
                 onRetire: _busy ? null : () => _status(p, 'archived'),
                 onCover: widget.covers == null || _busy
                     ? null
@@ -460,6 +460,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   GuidedWorkController? _checkpoint;
   Timer? _saveTimer;
   GuidedProgram? _finalAttempt;
+  bool _reviewAfterSave = false;
   @override
   void initState() {
     super.initState();
@@ -739,8 +740,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     if (mounted) await _load();
   }
 
-  Future<void> _save() async {
+  Future<void> _save({bool reviewAfter = false}) async {
     if (_busy || !_catalogsReady || !_form.currentState!.validate()) return;
+    _reviewAfterSave = reviewAfter;
     FocusScope.of(context).unfocus();
     try {
       if (_phases.any((p) => p.pendingSessions.isNotEmpty)) {
@@ -796,17 +798,15 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         _error = null;
       });
       if (!await _saveWork() || !mounted) return;
+      final String savedId;
       if (_checkpoint == null) {
-        await widget.repository.save(p, id: widget.original?.id);
+        savedId = await widget.repository.save(p, id: widget.original?.id);
       } else {
         _finalAttempt = p;
-        await _checkpoint!.repository.finalize(_checkpoint!.work, p);
+        savedId = await _checkpoint!.repository.finalize(_checkpoint!.work, p);
         _finalAttempt = null;
       }
-      if (mounted) {
-        setState(() => _dirty = false);
-        context.canPop() ? context.pop(true) : context.go('/guided-programs');
-      }
+      if (mounted) _finishSave(savedId);
     } on FormatException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (e) {
@@ -821,6 +821,18 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       }
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _finishSave(String id) {
+    setState(() {
+      _dirty = false;
+      _busy = false;
+    });
+    if (_reviewAfterSave) {
+      context.go('/guided-programs/${Uri.encodeComponent(id)}/review');
+    } else {
+      context.canPop() ? context.pop(true) : context.go('/guided-programs');
     }
   }
 
@@ -846,12 +858,12 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     if (_busy || _finalAttempt == null) return;
     setState(() => _busy = true);
     try {
-      await _checkpoint!.repository.finalize(_checkpoint!.work, _finalAttempt!);
+      final savedId = await _checkpoint!.repository.finalize(
+        _checkpoint!.work,
+        _finalAttempt!,
+      );
       _finalAttempt = null;
-      _dirty = false;
-      if (mounted) {
-        context.canPop() ? context.pop(true) : context.go('/guided-programs');
-      }
+      if (mounted) _finishSave(savedId);
     } catch (e) {
       if (e is PostgrestException &&
           ['22023', '23503', '42501'].contains(e.code)) {
@@ -1000,6 +1012,14 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                                 child: const Text('Reintentar carga'),
                               ),
                             const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: _busy || !_catalogsReady
+                                  ? null
+                                  : () => _save(reviewAfter: true),
+                              icon: const Icon(Icons.visibility_outlined),
+                              label: const Text('Guardar y revisar'),
+                            ),
+                            const SizedBox(height: 12),
                             FilledButton.icon(
                               onPressed: _busy || !_catalogsReady
                                   ? null
