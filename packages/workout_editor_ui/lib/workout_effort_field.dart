@@ -22,68 +22,50 @@ class WorkoutEffortField extends StatelessWidget {
       n == n.roundToDouble() ? '${n.toInt()}' : '$n';
   @override
   Widget build(BuildContext context) {
-    if (compact) {
-      return InkWell(
+    final control = InputDecorator(
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        labelText: compact ? label : null,
+        enabled: enabled,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        helperText: compact ? ' ' : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              value == null
+                  ? (compact ? '—' : 'Sin registrar')
+                  : _number(value!),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontSize: 16),
+            ),
+          ),
+          const Icon(Icons.expand_more_rounded, size: 16),
+        ],
+      ),
+    );
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      value: value == null ? 'Sin registrar' : _number(value!),
+      excludeSemantics: true,
+      onTap: enabled ? () => _select(context) : null,
+      child: InkWell(
         onTap: enabled ? () => _select(context) : null,
-        borderRadius: BorderRadius.circular(15),
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            enabled: enabled,
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            helperText: ' ',
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  value == null ? 'Sin registrar' : _number(value!),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              const Icon(Icons.expand_more_rounded, size: 20),
-            ],
-          ),
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: OutlinedButton(
-        onPressed: !enabled ? null : () => _select(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final result = value == null ? 'Sin registrar' : _number(value!);
-              if (constraints.maxWidth < 280) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(label),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(child: Text(result)),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.expand_more_rounded, size: 20),
-                      ],
-                    ),
-                  ],
-                );
-              }
-              return Row(
+        borderRadius: BorderRadius.circular(10),
+        child: compact
+            ? control
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(child: Text(label)),
-                  Flexible(child: Text(result)),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.expand_more_rounded, size: 20),
+                  Text(label, style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  control,
                 ],
-              );
-            },
-          ),
-        ),
+              ),
       ),
     );
   }

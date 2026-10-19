@@ -80,7 +80,9 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Sin registrar'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    final semantics = t.widgetList<Semantics>(find.byType(Semantics));
+    expect(semantics.any((s) => s.properties.value == 'Sin registrar'), isTrue);
     expect(t.takeException(), isNull);
   });
   testWidgets('RIR antiguo intacto hasta elección entera o desconocido', (

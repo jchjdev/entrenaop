@@ -86,6 +86,9 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
           },
           child: Scaffold(
             appBar: AppBar(
+              toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
+                  ? 112
+                  : null,
               backgroundColor: Colors.transparent,
               leading: IconButton(
                 tooltip: 'Volver',
@@ -96,6 +99,8 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                 state.originalTemplate == null
                     ? 'Nueva carrera'
                     : 'Editar carrera',
+                softWrap: true,
+                maxLines: 2,
               ),
               actions: [
                 TextButton(

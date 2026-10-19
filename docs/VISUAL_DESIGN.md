@@ -1,22 +1,32 @@
 # Identidad visual de EntrenaOP
 
-## Dirección Compacto · UI-059 · 19/10/2026
+## Compacto en deportista y ADMIN · UI-059 · 19/10/2026
 
 Javier considera demasiado grandes e impersonales los campos tras UI-057.
 Prefiere la propuesta Compacto: superficies discretas, menos contornos anidados,
 valores alineados y campos proporcionados al contenido. Exige mantener ese
 lenguaje en toda la app sin perder opciones, accesibilidad ni cierre del teclado.
-La preferencia no acredita la cobertura funcional de la maqueta inicial.
+Tras ampliar la preview, autoriza aplicarlo conservando todas las opciones.
 
 Se conserva la infraestructura Material 3 y la política de entrada de UI-057.
-La densidad se resolverá en los componentes compartidos y su distribución;
+La densidad se resuelve en los componentes compartidos y su distribución;
 con poco ancho o texto ampliado se permite crecer y cambiar de columnas sin
 reducir artificialmente la letra ni recortar valores, etiquetas o errores.
 ADMIN mantiene su densidad de escritorio y consume las mismas piezas comunes.
 
-Se ha contrastado el inventario de los creadores y ampliado la propuesta visual.
-No se ha cambiado Flutter ni se ha decidido extraer un editor completo único.
-[Cobertura, diferencias actuales y criterio de implementación](COMPACT_FORMS_2026_10_19.md).
+El tema de ambas apps usa campos rellenos sin contorno permanente, radios de
+10 px y relleno moderado; foco y error siguen visibles. Los botones conservan
+áreas táctiles de 48 px. Los valores numéricos admiten hasta cuatro columnas
+cuando caben y un máximo de 520 px en escritorio. Formato y objetivo comparten
+etiqueta/selector en línea o apilados según espacio y texto. Se retiran los
+recuadros anidados de ejercicios, series y secuencias sin quitar sus acciones.
+
+Los contenedores existentes conservan estado, permisos y guardado. Se verifican
+los siete formatos, carrera y calentamientos, con valores administrativos
+personalizados e históricos. Análisis limpio en cuatro proyectos; 1.349 pruebas
+correctas con las tres omisiones existentes. La aceptación del teclado en móviles
+físicos sigue pendiente: este equipo solo dispone de Windows y navegadores.
+[Cobertura, evidencia y límites](COMPACT_FORMS_2026_10_19.md).
 
 ## Pulido transversal de teclado y campos · UI-057 · 19/10/2026
 

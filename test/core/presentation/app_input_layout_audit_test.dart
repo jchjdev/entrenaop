@@ -27,6 +27,7 @@ import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/running_step_fields.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
+import 'package:workout_editor_ui/workout_effort_field.dart';
 
 import '../../helpers/performance_visual_review.dart';
 
@@ -102,6 +103,13 @@ void main() {
                       onLoadChanged: (_) {},
                       onRirChanged: (_) {},
                     ),
+                    WorkoutEffortField(
+                      label: 'Repeticiones que te quedaban · 0 a 10',
+                      minimum: 0,
+                      value: null,
+                      enabled: true,
+                      onChanged: (_) {},
+                    ),
                   ],
                 ),
               ),
@@ -156,13 +164,19 @@ void main() {
             );
             await t.pumpAndSettle();
             expect(t.takeException(), isNull);
-            for (final label in [
+            for (final label in {
               'Correo electrónico',
               'Contraseña',
               'Recuperación',
               'Tiempo realizado',
               'Días disponibles',
-            ]) {
+              'Evaluación física · Tropa',
+              'Repeticiones que te quedaban · 0 a 10',
+              for (final decorator in t.widgetList<InputDecorator>(
+                find.byType(InputDecorator),
+              ))
+                ?decorator.decoration.labelText,
+            }) {
               for (final e in find.text(label).evaluate()) {
                 final paragraph = t.renderObject<RenderParagraph>(
                   find.byWidget(e.widget),

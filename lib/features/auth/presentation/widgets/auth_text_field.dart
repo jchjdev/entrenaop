@@ -44,7 +44,10 @@ class AuthTextField extends StatelessWidget {
       autocorrect: false,
       decoration: InputDecoration(
         labelText: label,
-        hintText: hint,
+        hintText: MediaQuery.textScalerOf(context).scale(16) > 24 ? null : hint,
+        helperText: MediaQuery.textScalerOf(context).scale(16) > 24
+            ? hint
+            : null,
         prefixIcon:
             prefixIcon == null ||
                 MediaQuery.textScalerOf(context).scale(16) > 24

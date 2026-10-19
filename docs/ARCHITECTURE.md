@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Presentación Compacto compartida · UI-059 · 19/10/2026
+
+`EntrenaTheme` aplica el lenguaje de formularios a ambas apps. No hay temas de
+entrada locales que restituyan los contornos anteriores. En `workout_editor_ui`,
+`CompactFieldLayout` dispone etiqueta y selector en línea o en columna;
+`ResponsiveFieldGroup` admite 1/2/3/4 columnas según sus parámetros y espacio.
+Fuerza calcula un ancho mínimo desde etiquetas/valores y limita el grupo a 520 px;
+carrera conserva dos columnas como máximo y pasa a una cuando lo necesita.
+No se añaden dependencias, controladores paralelos ni otro creador. Los
+contenedores personal, carrera y ADMIN conservan estado, callbacks, guardado y
+reglas propias. `EntrenaInputPolicy` permanece por encima de sus navegadores.
+[Matriz y límites de aceptación](COMPACT_FORMS_2026_10_19.md).
+
 ## Política común de entrada · UI-057 · 19/10/2026
 
 `EntrenaInputPolicy`, en `entrena_ui`, envuelve el Navigator de deportista y

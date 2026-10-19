@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**UI-059 · 19/10/2026 · Compacto implementado en ambas apps:** Javier aprueba
+la propuesta ampliada y autoriza el lenguaje común de campos/controles en
+deportista y ADMIN. Se reutilizan tema y componentes existentes, sin otro
+creador. Se mantienen siete formatos, carrera, calentamientos, personalización,
+valores históricos, borradores y guardado. Análisis limpio en cuatro proyectos;
+1.084 pruebas de app, 220 de ADMIN, 32 del editor y 13 del tema correctas,
+con las tres omisiones previas. Se revisan capturas de widgets reales a distintos
+anchos y texto normal/doble, más pruebas de cierre de teclado y errores.
+**Punto de guardado validado en Flutter:** sin cambios deportivos, de datos,
+servidor, permisos ni dependencias. No acredita aceptación nativa del teclado.
+**Único siguiente paso de este tramo:** repetir toque exterior, desplazamiento,
+paso entre campos y selectores en iPhone y Android físicos con esta versión.
+[Cobertura y capturas](COMPACT_FORMS_2026_10_19.md).
+
 **UI-058 · 19/10/2026 · revisión editorial ADMIN publicada y comprobada:** vista
 previa recargable, Guardar y revisar, fases/sesiones/calentamientos desplegables,
 comprobaciones y confirmación previa a publicar. Mantiene versiones, catálogo

@@ -27,7 +27,7 @@ void main() {
         var presses = 0;
         await t.pumpWidget(
           MaterialApp(
-            theme: ThemeData(platform: platform),
+            theme: EntrenaTheme.dark.copyWith(platform: platform),
             builder: (_, child) => EntrenaInputPolicy(child: child!),
             home: Scaffold(
               body: Column(

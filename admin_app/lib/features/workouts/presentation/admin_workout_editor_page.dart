@@ -14,6 +14,7 @@ import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/running_step_fields.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
+import 'package:workout_editor_ui/compact_field_layout.dart';
 
 class AdminWorkoutEditorPage extends StatefulWidget {
   const AdminWorkoutEditorPage({
@@ -515,10 +516,19 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
 
   Widget _buildPage(BuildContext context) => Scaffold(
     appBar: AppBar(
+      toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
+          ? 128
+          : null,
       title: Text(
         widget.warmup
             ? 'Crear calentamiento'
+            : MediaQuery.sizeOf(context).width < 600
+            ? widget.revisionId == null
+                  ? 'Nueva sesión'
+                  : 'Revisar sesión'
             : '${widget.revisionId == null ? 'Nueva sesión' : 'Revisar sesión'} · ${widget.program?.name ?? 'EntrenaOP'}',
+        softWrap: true,
+        maxLines: 3,
       ),
     ),
     body: Center(
@@ -563,12 +573,10 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             const SizedBox(height: 12),
             if (!widget.warmup)
               SegmentedButton<bool>(
+                showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(value: true, label: Text('Carrera')),
-                  ButtonSegment(
-                    value: false,
-                    label: Text('Fuerza convencional'),
-                  ),
+                  ButtonSegment(value: false, label: Text('Fuerza')),
                 ],
                 selected: {_running},
                 onSelectionChanged: (selection) =>
@@ -839,21 +847,21 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         ? block.exercises.length > 8
         : block.exercises.length > 1;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).dividerColor),
-        borderRadius: BorderRadius.circular(12),
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
-                tabata ? 'Intervalo ${index + 1}' : 'Posición ${index + 1}',
-                style: Theme.of(context).textTheme.titleMedium,
+              Expanded(
+                child: Text(
+                  tabata ? 'Intervalo ${index + 1}' : 'Posición ${index + 1}',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
-              const Spacer(),
               if (index > 0)
                 IconButton(
                   tooltip: 'Subir posición',
@@ -922,27 +930,32 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
               if (!tabata && !amrap)
                 SizedBox(
                   width: 225,
-                  child: DropdownButtonFormField<WorkoutTargetType>(
-                    isExpanded: true,
-                    key: ValueKey(item.type),
-                    initialValue: item.type,
-                    decoration: const InputDecoration(labelText: 'Objetivo'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: WorkoutTargetType.repetitions,
-                        child: Text('Repeticiones'),
-                      ),
-                      DropdownMenuItem(
-                        value: WorkoutTargetType.duration,
-                        child: Text('Duración'),
-                      ),
-                      DropdownMenuItem(
-                        value: WorkoutTargetType.distance,
-                        child: Text('Metros'),
-                      ),
-                    ],
-                    onChanged: (value) =>
-                        setState(() => item.type = value ?? item.type),
+                  child: CompactFieldLayout(
+                    label: 'Objetivo',
+                    child: DropdownButtonFormField<WorkoutTargetType>(
+                      isExpanded: true,
+                      key: ValueKey(item.type),
+                      initialValue: item.type,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(fontSize: 16),
+                      decoration: const InputDecoration(),
+                      items: const [
+                        DropdownMenuItem(
+                          value: WorkoutTargetType.repetitions,
+                          child: Text('Repeticiones'),
+                        ),
+                        DropdownMenuItem(
+                          value: WorkoutTargetType.duration,
+                          child: Text('Duración'),
+                        ),
+                        DropdownMenuItem(
+                          value: WorkoutTargetType.distance,
+                          child: Text('Metros'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => item.type = value ?? item.type),
+                    ),
                   ),
                 ),
             ],
@@ -965,8 +978,8 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                     ? 'Tiempo'
                     : 'Cantidad',
                 restLabel: 'Descanso',
-                loadLabel: 'Carga kg (opcional)',
-                rirLabel: 'RIR (opcional)',
+                loadLabel: 'Carga',
+                rirLabel: 'RIR',
                 validateNumbers: false,
                 showRest:
                     !amrap &&
@@ -1022,10 +1035,10 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             restText: variation.rest.text,
             loadText: variation.load.text,
             rirText: variation.rir.text,
-            targetLabel: 'Objetivo propio',
-            restLabel: 'Descanso propio',
-            loadLabel: 'Carga propia kg',
-            rirLabel: 'RIR propio',
+            targetLabel: 'Objetivo',
+            restLabel: 'Descanso',
+            loadLabel: 'Carga',
+            rirLabel: 'RIR',
             targetOptional: true,
             restOptional: true,
             validateNumbers: false,
@@ -1092,8 +1105,9 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
 
   Widget _rowTitle(String title, VoidCallback? remove) => Row(
     children: [
-      Text(title, style: Theme.of(context).textTheme.titleMedium),
-      const Spacer(),
+      Expanded(
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      ),
       if (remove != null)
         IconButton(
           tooltip: 'Quitar',
@@ -1111,8 +1125,23 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   }) {
     final clock = label.contains('m:ss');
     final text = label.startsWith('Nombre');
+    final minutes = label.contains('(min, opcional)');
+    final caption =
+        (label.startsWith('Descanso entre rondas') ? 'Descanso' : label)
+            .replaceAll(' (m:ss)', '')
+            .replaceAll(' (min, opcional)', '');
+    final painter = TextPainter(
+      text: TextSpan(
+        text: caption,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14),
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final minimumWidth = painter.width + 24;
+    painter.dispose();
     return SizedBox(
-      width: width,
+      width: width < minimumWidth ? minimumWidth : width,
       child: TextField(
         controller: controller,
         onChanged: onChanged,
@@ -1121,9 +1150,15 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
             : const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: clock ? const [DurationInputFormatter()] : null,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: caption,
           hintText: clock ? '00:00' : null,
-          suffixText: clock ? 'min:seg' : null,
+          helperText: label.startsWith('Descanso entre rondas')
+              ? 'Entre rondas · min:seg'
+              : clock
+              ? 'min:seg'
+              : minutes
+              ? 'min · opcional'
+              : null,
         ),
       ),
     );

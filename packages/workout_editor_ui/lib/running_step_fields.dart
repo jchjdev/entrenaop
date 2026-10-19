@@ -47,6 +47,8 @@ class RunningStepFields extends StatelessWidget {
         ResponsiveFieldGroup(
           children: [
             DropdownButtonFormField<WorkoutTargetType>(
+              style: Theme.of(context).textTheme.bodyLarge
+                  ?.copyWith(fontSize: 16),
               key: ValueKey('target-$targetType'),
               initialValue: targetType,
               isExpanded: true,
@@ -106,6 +108,7 @@ class RunningStepFields extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<RunningRecoveryType?>(
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
           key: ValueKey('recovery-$recoveryType'),
           initialValue: recoveryType,
           isExpanded: true,
@@ -138,6 +141,8 @@ class RunningStepFields extends StatelessWidget {
             children: [
               if (recoveryType != RunningRecoveryType.passive)
                 DropdownButtonFormField<bool>(
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(fontSize: 16),
                   key: ValueKey('measure-$recoveryByDistance'),
                   initialValue: recoveryByDistance,
                   isExpanded: true,

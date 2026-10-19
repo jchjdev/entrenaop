@@ -63,19 +63,80 @@ class StrengthSetFields extends StatelessWidget {
   final String rirLabel;
 
   @override
-  Widget build(BuildContext context) =>
-      ResponsiveFieldGroup(spacing: 10, runSpacing: 10, children: _fields());
+  Widget build(BuildContext context) {
+    // El ancho depende del contenido: un reloj o un valor largo nunca debe
+    // competir con un sufijo. La escala la aplica el grupo compartido.
+    var minimum = 72.0;
+    final labels = [
+      if (showTarget) targetLabel ?? _targetLabel,
+      if (showLoad) loadLabel,
+      if (showRir && targetType.supportsRir) rirLabel,
+      if (showRest) restLabel ?? 'Descanso',
+    ];
+    final values = [
+      if (showTarget)
+        _displayValue(
+          targetText,
+          clockTarget || targetType == WorkoutTargetType.duration,
+        ),
+      if (showLoad) loadText,
+      if (showRir && targetType.supportsRir) rirText,
+      if (showRest) _displayValue(restText, true),
+    ];
+    for (final text in labels) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(fontSize: 10.5),
+        ),
+        textDirection: Directionality.of(context),
+      )..layout();
+      minimum = minimum < painter.width + 16 ? painter.width + 16 : minimum;
+      painter.dispose();
+    }
+    for (final text in values) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontSize: 16),
+        ),
+        textDirection: Directionality.of(context),
+      )..layout();
+      minimum = minimum < painter.width + 16 ? painter.width + 16 : minimum;
+      painter.dispose();
+    }
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: ResponsiveFieldGroup(
+          minimumFieldWidth: minimum,
+          maximumColumns: 4,
+          spacing: 8,
+          runSpacing: 10,
+          children: _fields(),
+        ),
+      ),
+    );
+  }
+
+  String get _targetLabel => switch (targetType) {
+    WorkoutTargetType.repetitions => 'Reps',
+    WorkoutTargetType.duration => 'Tiempo',
+    WorkoutTargetType.distance => 'Distancia',
+  };
+
+  String _displayValue(String value, bool clock) =>
+      clock && num.tryParse(value) != null
+      ? formatDurationSeconds(num.parse(value))
+      : value;
 
   List<Widget> _fields() => [
     if (showTarget)
       _input(
-        label:
-            targetLabel ??
-            switch (targetType) {
-              WorkoutTargetType.repetitions => 'Repeticiones',
-              WorkoutTargetType.duration => 'Tiempo',
-              WorkoutTargetType.distance => 'Distancia',
-            },
+        label: targetLabel ?? _targetLabel,
         value: targetText,
         onChanged: onTargetChanged,
         enabled: enabled && targetEnabled,
@@ -144,6 +205,10 @@ class StrengthSetFields extends StatelessWidget {
         ? formatDurationSeconds(num.parse(value))
         : value,
     enabled: enabled,
+    style: const TextStyle(
+      fontSize: 16,
+      fontFeatures: [FontFeature.tabularFigures()],
+    ),
     textInputAction: TextInputAction.done,
     onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
     onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -154,10 +219,10 @@ class StrengthSetFields extends StatelessWidget {
         ? const [DurationInputFormatter()]
         : null,
     decoration: InputDecoration(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       labelText: label,
       floatingLabelBehavior: FloatingLabelBehavior.always,
-      suffixText: clock || suffix == 's' ? null : suffix,
-      helperText: clock || suffix == 's' ? 'min:seg' : ' ',
+      helperText: clock || suffix == 's' ? 'min:seg' : suffix ?? ' ',
       hintText: clock || suffix == 's' ? '00:00' : null,
     ),
     validator: !validateNumbers

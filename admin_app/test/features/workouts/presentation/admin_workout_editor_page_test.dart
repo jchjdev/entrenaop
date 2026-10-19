@@ -324,7 +324,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(_field('Nombre de la sesión'), 'Fuerza base');
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
@@ -363,7 +363,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(_field('Nombre de la sesión'), 'Fuerza base');
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
@@ -406,7 +406,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(_field('Nombre de la sesión'), 'Superserie base');
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byType(DropdownButtonFormField<WorkoutBlockFormat>).first,
@@ -453,7 +453,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(_field('Nombre de la sesión'), 'EMOM base');
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byType(DropdownButtonFormField<WorkoutBlockFormat>).first,
@@ -496,7 +496,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(_field('Nombre de la sesión'), 'AMRAP base');
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byType(DropdownButtonFormField<WorkoutBlockFormat>).first,
@@ -504,7 +504,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('AMRAP · máximas vueltas').last);
     await tester.pumpAndSettle();
-    await tester.enterText(_field('Límite global (m:ss)'), '15:00');
+    await tester.enterText(_field('Límite global'), '15:00');
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Flexiones').last);
@@ -539,7 +539,7 @@ void main() {
       _field('Nombre de la sesión'),
       'Progresión de fuerza',
     );
-    await tester.tap(find.text('Fuerza convencional'));
+    await tester.tap(find.text('Fuerza'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Buscar ejercicio del catálogo'));
     await tester.pumpAndSettle();
@@ -552,7 +552,7 @@ void main() {
     await tester.enterText(_field('Cantidad'), '10');
     await tester.tap(find.text('Personalizar cada serie'));
     await tester.pumpAndSettle();
-    await tester.enterText(_field('Objetivo propio').at(1), '8');
+    await tester.enterText(_field('Objetivo').at(1), '8');
     await tester.scrollUntilVisible(
       find.text('Guardar borrador'),
       300,

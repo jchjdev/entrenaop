@@ -1,4 +1,4 @@
-# Compacto: cobertura del creador antes de cambiar la interfaz
+# Compacto: implementación compartida y cobertura de los creadores
 
 Fecha de contraste: 19/10/2026. Decisión UI-059.
 
@@ -6,8 +6,9 @@ Fecha de contraste: 19/10/2026. Decisión UI-059.
 
 Javier prefiere Compacto y pide coherencia en toda la app, conservar todas las
 opciones y reutilizar los controles entre deportista y ADMIN. Solicita preview
-antes de aplicar el cambio. En esta tarea solo se amplía la propuesta visual y
-se registra el alcance; no se cambia código Flutter, guardado ni permisos.
+antes de aplicar el cambio. Tras ver la propuesta ampliada autoriza el cambio
+en toda la app y ADMIN. La implementación usa el tema y controles existentes;
+no modifica contratos de guardado, dominio, permisos ni servidor.
 
 La primera maqueta solo mostraba una superserie de ejemplo. Omitía el selector
 de objetivo y otros formatos. Permitía variar series de una superserie de forma
@@ -68,18 +69,85 @@ publicación y orden no sustituyen los flujos reales. No verifica todos sus caso
 validaciones, cambios de formato, decimales históricos o recuperación de errores.
 Sus comprobaciones de ancho en navegador no acreditan Flutter ni teclado nativo.
 
-## Implementación pendiente
+## Implementación comprobada
 
-1. Aplicar el lenguaje Compacto en el tema y controles compartidos, manteniendo
-   callbacks, controladores, máscaras, opcionalidad y validaciones existentes.
-   Conservar el acceso a todos los controles de los contenedores actuales.
-2. Capturar los siete formatos, carrera y ADMIN desde Flutter real. Incluir
-   nombres largos, vacíos, errores y texto ampliado; reordenar campos cuando no
-   caben en lugar de encoger la letra o forzar cuatro columnas.
-3. Verificar guardado/recarga, borradores y edición de valores por formato;
-   aplicar la matriz del repositorio a ambas apps y paquetes compartidos.
-4. Repetir en dispositivos físicos el toque exterior, paso entre campos,
-   arrastre, diálogos y teclado numérico. Mantener la política UI-057.
+- `EntrenaTheme` afecta a ambas apps: superficies rellenas, sin borde permanente,
+  radios de 10 px, relleno menor y etiquetas/ayudas discretas. Foco y errores
+  conservan sus contornos. Los botones siguen teniendo un mínimo táctil de 48 px.
+- `StrengthSetFields` conserva propiedades/callbacks y calcula el espacio para
+  valores y etiquetas. Admite hasta cuatro celdas por fila, redistribuye con texto
+  ampliado o datos largos y limita el grupo a 520 px en escritorio. Unidades
+  fuera del valor, con los relojes completos. Las entradas vacías siguen vacías.
+- `WorkoutEffortField` usa el mismo decorador compacto en ambas apps y recorridos;
+  conserva enteros, ausencia distinta de cero y valores históricos decimales.
+  El guion del campo compacto tiene valor accesible «Sin registrar»; su panel
+  mantiene la opción completa. No se redondean datos.
+  Fuera de la tabla de series, las etiquetas largas de RPE/RIR se colocan sobre
+  el control y pueden envolver varias líneas, sin volver al botón sobredimensionado.
+- `CompactFieldLayout` comparte la distribución de formato/objetivo, alineada
+  en línea cuando cabe y apilada con poco ancho o texto grande. El menú mantiene
+  los siete formatos y sus restricciones.
+- El editor personal retira las cajas anidadas en secuencias, ejercicios y series;
+  conserva contadores, igualación, acciones, borrador y protección de salida.
+- ADMIN mantiene valores por defecto, personalización y calentamientos. Se
+  corrigen títulos que competían con acciones y etiquetas que se recortaban con
+  texto doble. «Fuerza» nombra el selector que incluye los siete formatos;
+  las unidades y «entre rondas» se trasladan a la ayuda cuando es necesario.
+- Carrera comparte la nueva densidad, con dos columnas cuando caben y una
+  cuando se necesita; conserva distancias, tiempos, ritmos y recuperación.
+- Las cabeceras de los tres editores pueden crecer con texto ampliado.
+- Acceso desplaza sus ejemplos a la ayuda cuando el texto está ampliado, y la
+  cabecera de evaluación Tropa crece para conservar el título completo.
+- La política UI-057 no cambia: toque exterior, paso entre campos, accesorios,
+  desplazamiento, diálogos y paneles siguen cubiertos. El cierre de teclado no
+  consume el botón pulsado ni descarta entradas.
+
+## Verificación y evidencia
+
+| Proyecto | Análisis | Batería completa |
+| --- | --- | --- |
+| Deportista | `flutter analyze --no-pub`, limpio | 1.084 correctas; una omisión existente |
+| ADMIN | `flutter analyze --no-pub`, limpio | 220 correctas; dos capturas optativas omitidas |
+| `workout_editor_ui` | `flutter analyze --no-pub`, limpio | 32 correctas |
+| `entrena_ui` | `flutter analyze --no-pub`, limpio | 13 correctas |
+
+Las regresiones nuevas miden el ancho de los valores editables y las etiquetas,
+incluyen errores y valores largos, anchos útiles 220–600 px y texto normal/doble.
+Los formularios reales se comprueban a 320, 390 y 1024 px; el editor personal
+recorre los siete formatos a 320/390 y ambos tamaños de texto. Carrera tiene
+recorrido propio. ADMIN comprueba los siete formatos, carrera y calentamientos
+a 390/1×, 320/2× y 1100/1×, guardando y contrastando todos los valores de la
+prescripción: objetivos, cantidades, cargas, RIR antiguo, descansos y ritmos/
+recuperaciones. Se verifican campos que se construyen al desplazar, no solo
+la ficha inicial. Las pruebas previas de borrador, errores y edición se mantienen.
+
+Se generan capturas desde widgets Flutter reales con repositorios ficticios,
+sin cuentas ni escrituras remotas. Las muestras guardadas solo reducen escala y
+agrupan pantallas; no reconstruyen controles con otra tecnología:
+
+- [Editor y carrera](visual-audit/compacto-2026-10-19/app-editor-carrera.jpg).
+- [Acceso y registro de marcas](visual-audit/compacto-2026-10-19/app-formularios.jpg).
+- [ADMIN en escritorio](visual-audit/compacto-2026-10-19/admin-editor.jpg).
+- [Pantalla estrecha y texto doble](visual-audit/compacto-2026-10-19/texto-ampliado.jpg).
+
+Las capturas individuales se reproducen con `CAPTURE_PERFORMANCE_REVIEW=true`
+en `test/core/presentation/app_input_layout_audit_test.dart`,
+`test/features/workouts/presentation/workout_editor_cubit_test.dart` y
+`admin_app/test/features/workouts/presentation/compact_workout_editor_test.dart`.
+Se escriben en `build/performance_v2_review/` de la app correspondiente.
+
+## Límite pendiente: dispositivos físicos
+
+`flutter devices` solo encuentra Windows, Chrome y Edge en este equipo. Las
+pruebas de foco/ocultación se ejecutan con el entorno de texto de Flutter,
+incluyendo las variantes iOS/Android. No sustituyen comprobar el teclado nativo
+en un iPhone y Android reales. Ese es el siguiente paso de aceptación.
+
+Los nombres editables largos admiten desplazamiento horizontal y las notas su
+desplazamiento vertical; no se promete que ochenta caracteres quepan en una
+sola línea móvil. Los valores numéricos y relojes de las pruebas deben caber
+completos sin ese desplazamiento. Tampoco se acredita cada combinación de
+contenido remoto de todos los recorridos de la aplicación por estas capturas.
 
 La revisión general de la app debe conservar la identidad Compacto, con anchos
 adecuados al dato y texto largo disponible. No se impone un ancho estrecho a

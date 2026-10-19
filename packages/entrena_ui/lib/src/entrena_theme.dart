@@ -196,15 +196,15 @@ abstract final class EntrenaTheme {
           foregroundColor: colorScheme.onPrimary,
           disabledBackgroundColor: EntrenaVisuals.dark.surfaceHigh,
           disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
-          minimumSize: const Size(48, 52),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           textStyle: textTheme.labelLarge?.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w800,
           ),
           iconSize: 20,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -214,13 +214,13 @@ abstract final class EntrenaTheme {
           foregroundColor: textPrimary,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
-          minimumSize: const Size(48, 52),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
           iconSize: 20,
           side: const BorderSide(color: Color(0xFF3A414C)),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -238,12 +238,12 @@ abstract final class EntrenaTheme {
               foregroundColor: textPrimary,
               backgroundColor: EntrenaVisuals.dark.surfaceHigh,
               disabledForegroundColor: textPrimary.withValues(alpha: 0.38),
-              minimumSize: const Size(48, 52),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               textStyle: textTheme.labelLarge?.copyWith(fontSize: 15),
               iconSize: 20,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
             ).copyWith(
               side: WidgetStateProperty.resolveWith(
@@ -252,7 +252,7 @@ abstract final class EntrenaTheme {
                       ? EntrenaVisuals.dark.outline
                       : states.contains(WidgetState.focused)
                       ? brandOrangeLight
-                      : EntrenaVisuals.dark.outlineStrong,
+                      : EntrenaVisuals.dark.outline,
                 ),
               ),
             ),
@@ -261,35 +261,51 @@ abstract final class EntrenaTheme {
         style: TextButton.styleFrom(
           foregroundColor: textPrimary,
           minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           textStyle: textTheme.labelLarge,
           iconSize: 20,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        isDense: true,
         floatingLabelBehavior: FloatingLabelBehavior.always,
+        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFFA9A6A3)),
+        floatingLabelStyle: const TextStyle(fontSize: 14),
+        helperStyle: const TextStyle(fontSize: 12, color: Color(0xFFA9A6A3)),
         helperMaxLines: 6,
         errorMaxLines: 4,
         filled: true,
         fillColor: EntrenaVisuals.dark.surfaceHigh,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 15,
+          horizontal: 12,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFF343A44)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Color(0xFF343A44)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: brandOrange, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: colorScheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(

@@ -110,12 +110,17 @@ class _InitialAssessmentPageState extends State<InitialAssessmentPage> {
             absorbing: state.status == PhysicalAssessmentStatus.saving,
             child: Scaffold(
               appBar: AppBar(
+                toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
+                    ? 168
+                    : null,
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 title: Text(
                   report == null
                       ? 'Evaluación física · Tropa'
                       : 'Resultado de la evaluación',
+                  softWrap: true,
+                  maxLines: 3,
                 ),
               ),
               body: SafeArea(

@@ -21,6 +21,7 @@ import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
 import 'package:workout_editor_ui/responsive_field_group.dart';
+import 'package:workout_editor_ui/compact_field_layout.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({super.key});
@@ -127,6 +128,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           },
           child: Scaffold(
             appBar: AppBar(
+              toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
+                  ? 112
+                  : null,
               backgroundColor: Colors.transparent,
               leading: IconButton(
                 tooltip: 'Volver',
@@ -137,6 +141,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                 state.originalTemplate == null
                     ? 'Nueva sesión'
                     : 'Editar sesión',
+                softWrap: true,
+                maxLines: 2,
               ),
               actions: [
                 TextButton(
@@ -526,6 +532,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   ) {
     final block = _blocks[blockIndex];
     return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -535,6 +542,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               builder: (context, constraints) {
                 final header = (
                   number: CircleAvatar(
+                    radius: 16,
                     backgroundColor: const Color(0x33FF8A50),
                     foregroundColor: const Color(0xFFFF8A50),
                     child: Text('${blockIndex + 1}'),
@@ -655,7 +663,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           WorkoutBlockFormat.emom => 'Vueltas',
                           _ => 'Rondas',
                         },
-                        prefixIcon: const Icon(Icons.repeat_rounded),
                       ),
                       validator: (value) => _integerValidator(
                         value,
@@ -684,10 +691,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                           labelText:
                               block.format == WorkoutBlockFormat.intervals
                               ? 'Recuperación'
-                              : 'Descanso entre rondas',
-                          helperText: 'min:seg',
+                              : 'Descanso',
+                          helperText:
+                              block.format == WorkoutBlockFormat.intervals
+                              ? 'min:seg'
+                              : 'Entre rondas · min:seg',
                           hintText: '00:00',
-                          prefixIcon: const Icon(Icons.timer_outlined),
                         ),
                         inputFormatters: const [DurationInputFormatter()],
                         validator: (value) =>
@@ -806,7 +815,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     stationTransitionLabel:
                         block.format == WorkoutBlockFormat.circuit &&
                             exerciseIndex < block.rows.length - 1
-                        ? 'Transición después de E${exerciseIndex + 1}'
+                        ? 'Transición tras E${exerciseIndex + 1}'
                         : null,
                     moveTargets: [
                       for (final (index, target) in _blocks.indexed)
@@ -1263,13 +1272,8 @@ class _BlockSequenceOverview extends StatelessWidget {
       WorkoutBlockFormat.tabata => 8,
       _ => block.rows.length,
     };
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.035),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1568,8 +1572,11 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
   Widget build(BuildContext context) {
     final data = widget.data;
     return Card(
+      margin: EdgeInsets.zero,
+      color: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -1648,43 +1655,48 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
               ],
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<WorkoutTargetType>(
-              isExpanded: true,
-              isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
-              itemHeight: null,
-              initialValue: data.targetType,
-              decoration: const InputDecoration(labelText: 'Objetivo'),
-              items: const [
-                DropdownMenuItem(
-                  value: WorkoutTargetType.repetitions,
-                  child: Text('Repeticiones'),
-                ),
-                DropdownMenuItem(
-                  value: WorkoutTargetType.duration,
-                  child: Text('Tiempo'),
-                ),
-                DropdownMenuItem(
-                  value: WorkoutTargetType.distance,
-                  child: Text('Distancia'),
-                ),
-              ],
-              onChanged: widget.enabled && !widget.fixedTarget
-                  ? (value) {
-                      setState(() {
-                        if (value == null) return;
-                        data.targetType = value;
-                        final defaultTarget = switch (value) {
-                          WorkoutTargetType.repetitions => 10.0,
-                          WorkoutTargetType.duration => 30.0,
-                          WorkoutTargetType.distance => 1000.0,
-                        };
-                        for (final set in data.sets) {
-                          set.targetValue = defaultTarget;
-                        }
-                      });
-                      widget.onChanged();
-                    }
-                  : null,
+            CompactFieldLayout(
+              label: 'Objetivo',
+              child: DropdownButtonFormField<WorkoutTargetType>(
+                isExpanded: true,
+                isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+                itemHeight: null,
+                initialValue: data.targetType,
+                style: Theme.of(context).textTheme.bodyLarge
+                    ?.copyWith(fontSize: 16),
+                decoration: const InputDecoration(),
+                items: const [
+                  DropdownMenuItem(
+                    value: WorkoutTargetType.repetitions,
+                    child: Text('Repeticiones'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutTargetType.duration,
+                    child: Text('Tiempo'),
+                  ),
+                  DropdownMenuItem(
+                    value: WorkoutTargetType.distance,
+                    child: Text('Distancia'),
+                  ),
+                ],
+                onChanged: widget.enabled && !widget.fixedTarget
+                    ? (value) {
+                        setState(() {
+                          if (value == null) return;
+                          data.targetType = value;
+                          final defaultTarget = switch (value) {
+                            WorkoutTargetType.repetitions => 10.0,
+                            WorkoutTargetType.duration => 30.0,
+                            WorkoutTargetType.distance => 1000.0,
+                          };
+                          for (final set in data.sets) {
+                            set.targetValue = defaultTarget;
+                          }
+                        });
+                        widget.onChanged();
+                      }
+                    : null,
+              ),
             ),
             if (widget.stationTransitionLabel case final label?) ...[
               const SizedBox(height: 12),
@@ -1705,58 +1717,61 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
               ),
             ],
             const SizedBox(height: 12),
-            Text(
-              widget.setSectionLabel(data.sets.length),
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (data.sets.length >= 2)
-                    TextButton.icon(
-                      onPressed: !widget.enabled
-                          ? null
-                          : () {
-                              setState(() {
-                                final first = data.sets.first;
-                                data.sets = List.generate(
-                                  data.sets.length,
-                                  (_) => first.copy(),
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  widget.setSectionLabel(data.sets.length),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (data.sets.length >= 2)
+                      TextButton.icon(
+                        onPressed: !widget.enabled
+                            ? null
+                            : () {
+                                setState(() {
+                                  final first = data.sets.first;
+                                  data.sets = List.generate(
+                                    data.sets.length,
+                                    (_) => first.copy(),
+                                  );
+                                });
+                                widget.onChanged();
+                              },
+                        icon: const Icon(Icons.copy_all_rounded, size: 17),
+                        label: const Text('Igualar'),
+                      ),
+                    if (!widget.fixedSetCount) ...[
+                      IconButton(
+                        tooltip: 'Quitar última serie',
+                        onPressed: !widget.enabled || data.sets.length <= 1
+                            ? null
+                            : () {
+                                setState(data.sets.removeLast);
+                                widget.onChanged();
+                              },
+                        icon: const Icon(Icons.remove_circle_outline_rounded),
+                      ),
+                      IconButton(
+                        tooltip: 'Añadir serie',
+                        onPressed: !widget.enabled || data.sets.length >= 20
+                            ? null
+                            : () {
+                                setState(
+                                  () => data.sets.add(data.sets.last.copy()),
                                 );
-                              });
-                              widget.onChanged();
-                            },
-                      icon: const Icon(Icons.copy_all_rounded, size: 17),
-                      label: const Text('Igualar'),
-                    ),
-                  if (!widget.fixedSetCount) ...[
-                    IconButton(
-                      tooltip: 'Quitar última serie',
-                      onPressed: !widget.enabled || data.sets.length <= 1
-                          ? null
-                          : () {
-                              setState(data.sets.removeLast);
-                              widget.onChanged();
-                            },
-                      icon: const Icon(Icons.remove_circle_outline_rounded),
-                    ),
-                    IconButton(
-                      tooltip: 'Añadir serie',
-                      onPressed: !widget.enabled || data.sets.length >= 20
-                          ? null
-                          : () {
-                              setState(
-                                () => data.sets.add(data.sets.last.copy()),
-                              );
-                              widget.onChanged();
-                            },
-                      icon: const Icon(Icons.add_circle_outline_rounded),
-                    ),
+                                widget.onChanged();
+                              },
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             ...List.generate(
@@ -1810,13 +1825,8 @@ class _SetEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.035),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1824,10 +1834,11 @@ class _SetEditor extends StatelessWidget {
             '$itemLabel ${index + 1}',
             style: const TextStyle(
               color: Color(0xFFFF8A50),
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           StrengthSetFields(
             targetType: targetType,
             targetText: _numberText(data.targetValue),

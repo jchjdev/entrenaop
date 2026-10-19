@@ -13,6 +13,7 @@ import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/running_workout_editor_page.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/workout_editor_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -76,12 +77,14 @@ void main() {
           'pulido-editor-bloque-${width.toInt()}-$scale',
         );
         final selector = find.byType(WorkoutFormatField);
-        for (final format in [
-          'Superserie',
-          'Circuito',
-          'EMOM · cada minuto',
-          'AMRAP · máximas vueltas',
-          'Tabata · 8 × 20/10',
+        for (final (slug, format) in [
+          ('series', 'Series convencionales'),
+          ('superserie', 'Superserie'),
+          ('circuito', 'Circuito'),
+          ('intervalos', 'Intervalos de trabajo'),
+          ('emom', 'EMOM · cada minuto'),
+          ('amrap', 'AMRAP · máximas vueltas'),
+          ('tabata', 'Tabata · 8 × 20/10'),
         ]) {
           await t.ensureVisible(selector);
           await t.pumpAndSettle();
@@ -92,6 +95,45 @@ void main() {
           await t.tap(find.text(format).last);
           await t.pumpAndSettle();
           expect(t.takeException(), isNull);
+          for (final decorator in t.widgetList<InputDecorator>(
+            find.byType(InputDecorator),
+          )) {
+            final label = decorator.decoration.labelText;
+            if (label == null) continue;
+            for (final element in find.text(label).evaluate()) {
+              final paragraph = element.renderObject;
+              if (paragraph is RenderParagraph) {
+                expect(
+                  paragraph.didExceedMaxLines,
+                  isFalse,
+                  reason: '$label completo en $slug a $width/$scale',
+                );
+              }
+            }
+          }
+          await Scrollable.ensureVisible(t.element(name), alignment: .08);
+          await t.pumpAndSettle();
+          await capturePerformanceWidget(
+            t,
+            'compacto-editor-$slug-${width.toInt()}-$scale',
+          );
+          final fields = find.byType(StrengthSetFields).first;
+          await Scrollable.ensureVisible(t.element(fields), alignment: .1);
+          await t.pumpAndSettle();
+          final position = t
+              .state<ScrollableState>(find.byType(Scrollable).first)
+              .position;
+          position.jumpTo(
+            (position.pixels - 24).clamp(
+              position.minScrollExtent,
+              position.maxScrollExtent,
+            ),
+          );
+          await t.pumpAndSettle();
+          await capturePerformanceWidget(
+            t,
+            'compacto-editor-$slug-campos-${width.toInt()}-$scale',
+          );
           if (format == 'Circuito' || format == 'AMRAP · máximas vueltas') {
             await t.ensureVisible(selector);
             await t.pumpAndSettle();
@@ -129,6 +171,7 @@ void main() {
         key: const ValueKey('review-boundary'),
         child: MaterialApp(
           theme: EntrenaTheme.dark,
+          debugShowCheckedModeBanner: false,
           home: BlocProvider.value(
             value: cubit,
             child: const WorkoutEditorPage(),
@@ -162,7 +205,7 @@ void main() {
       3,
     );
 
-    final target = find.widgetWithText(TextFormField, 'Repeticiones');
+    final target = find.widgetWithText(TextFormField, 'Reps');
     await t.ensureVisible(target);
     await t.pumpAndSettle();
     await t.enterText(target, '8');
@@ -171,6 +214,18 @@ void main() {
     await t.tap(find.text('Serie 1'));
     await t.pumpAndSettle();
     expect(t.testTextInput.isVisible, isFalse);
+    await Scrollable.ensureVisible(
+      t.element(
+        find
+            .ancestor(
+              of: find.widgetWithText(TextFormField, 'Nombre del bloque'),
+              matching: find.byType(Card),
+            )
+            .first,
+      ),
+      alignment: .08,
+    );
+    await t.pumpAndSettle();
     await capturePerformanceWidget(t, 'editor-series-repeticiones-390');
     await t.tap(target);
     await t.pump();
@@ -190,7 +245,7 @@ void main() {
       ),
       [8, 8],
     );
-    final targets = find.widgetWithText(TextFormField, 'Repeticiones');
+    final targets = find.widgetWithText(TextFormField, 'Reps');
     await t.ensureVisible(targets.last);
     await t.pumpAndSettle();
     await t.enterText(targets.last, '12');
@@ -219,6 +274,19 @@ void main() {
         '8',
       );
     }
+    await Scrollable.ensureVisible(
+      t.element(
+        find
+            .ancestor(
+              of: find.widgetWithText(TextFormField, 'Nombre del bloque'),
+              matching: find.byType(Card),
+            )
+            .first,
+      ),
+      alignment: .08,
+    );
+    await t.pumpAndSettle();
+    await capturePerformanceWidget(t, 'compacto-series-dos-390');
     final selector = find.byType(DropdownButtonFormField<WorkoutTargetType>);
     await t.ensureVisible(selector);
     await t.pumpAndSettle();
@@ -232,6 +300,71 @@ void main() {
     await capturePerformanceWidget(t, 'editor-series-tiempo-390');
     expect(t.takeException(), isNull);
   });
+
+  for (final (width, scale) in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets('carrera Compacto completa a $width/$scale y teclado', (
+      t,
+    ) async {
+      t.view.physicalSize = Size(width, 844);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      final repository = _WorkoutRepository();
+      final cubit = WorkoutEditorCubit(
+        getExercises: GetExercisesUseCase(_ExerciseRepository()),
+        createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+        draftStore: _DraftStore(),
+        createWorkout: CreatePersonalWorkoutUseCase(repository),
+        getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+        reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+        runningEditor: true,
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      await t.pumpWidget(
+        RepaintBoundary(
+          key: const ValueKey('review-boundary'),
+          child: MaterialApp(
+            theme: EntrenaTheme.dark,
+            debugShowCheckedModeBanner: false,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: EntrenaInputPolicy(child: child!),
+            ),
+            home: BlocProvider.value(
+              value: cubit,
+              child: const RunningWorkoutEditorPage(),
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final name = find.widgetWithText(TextFormField, 'Nombre de la sesión');
+      await t.enterText(name, 'Series de carrera');
+      await t.pumpAndSettle();
+      await t.tapAt(const Offset(5, 200));
+      await t.pumpAndSettle();
+      await capturePerformanceWidget(
+        t,
+        'compacto-carrera-${width.toInt()}-$scale-ficha',
+      );
+      final pace = find.widgetWithText(TextFormField, 'Desde (min/km)');
+      await t.ensureVisible(pace);
+      await t.pumpAndSettle();
+      await capturePerformanceWidget(
+        t,
+        'compacto-carrera-${width.toInt()}-$scale-campos',
+      );
+      await t.enterText(pace, '500');
+      await t.pumpAndSettle();
+      expect(t.testTextInput.isVisible, isTrue);
+      await t.tapAt(const Offset(5, 200));
+      await t.pumpAndSettle();
+      expect(t.testTextInput.isVisible, isFalse);
+      expect(find.text('05:00'), findsOneWidget);
+      expect(t.takeException(), isNull);
+    });
+  }
 
   test(
     'una cuota rechazada conserva el borrador y devuelve el motivo comercial',

@@ -62,6 +62,7 @@ class _AdminTestAppState extends State<AdminTestApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
+    debugShowCheckedModeBanner: false,
     routerConfig: _router,
     theme: widget.theme,
     builder: widget.builder,

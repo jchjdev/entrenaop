@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
 
+import 'compact_field_layout.dart';
+
 /// El catálogo de formatos y sus límites se mantiene igual en ambos editores.
 class WorkoutFormatField extends StatelessWidget {
   const WorkoutFormatField({
@@ -19,72 +21,65 @@ class WorkoutFormatField extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) =>
-      DropdownButtonFormField<WorkoutBlockFormat>(
-        key: ValueKey(format),
-        isExpanded: true,
-        isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
-        itemHeight: null,
-        initialValue: format,
-        selectedItemBuilder:
-            MediaQuery.textScalerOf(context).scale(16) > 24 ||
-                MediaQuery.sizeOf(context).width < 360
-            ? (_) => [
-                for (final name in [
-                  'Por series',
-                  'Superserie',
-                  'Circuito',
-                  'Intervalos',
-                  'Tabata',
-                  'EMOM',
-                  'AMRAP',
-                ])
-                  Align(alignment: Alignment.centerLeft, child: Text(name)),
-              ]
-            : null,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: MediaQuery.textScalerOf(context).scale(16) > 24
-              ? null
-              : const Icon(Icons.account_tree_outlined),
+  Widget build(BuildContext context) => CompactFieldLayout(
+    label: label,
+    child: DropdownButtonFormField<WorkoutBlockFormat>(
+      key: ValueKey(format),
+      isExpanded: true,
+      isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+      itemHeight: null,
+      initialValue: format,
+      selectedItemBuilder: (_) => [
+        for (final name in [
+          'Por series',
+          'Superserie',
+          'Circuito',
+          'Intervalos',
+          'Tabata',
+          'EMOM',
+          'AMRAP',
+        ])
+          Align(alignment: Alignment.centerLeft, child: Text(name)),
+      ],
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
+      decoration: const InputDecoration(),
+      items: [
+        const DropdownMenuItem(
+          value: WorkoutBlockFormat.straightSets,
+          child: Text('Series convencionales'),
         ),
-        items: [
-          const DropdownMenuItem(
-            value: WorkoutBlockFormat.straightSets,
-            child: Text('Series convencionales'),
-          ),
-          const DropdownMenuItem(
-            value: WorkoutBlockFormat.superset,
-            child: Text('Superserie'),
-          ),
-          const DropdownMenuItem(
-            value: WorkoutBlockFormat.circuit,
-            child: Text('Circuito'),
-          ),
-          DropdownMenuItem(
-            value: WorkoutBlockFormat.intervals,
-            enabled:
-                exerciseCount <= 1 || format == WorkoutBlockFormat.intervals,
-            child: const Text('Intervalos de trabajo'),
-          ),
-          DropdownMenuItem(
-            value: WorkoutBlockFormat.tabata,
-            enabled: exerciseCount <= 8 || format == WorkoutBlockFormat.tabata,
-            child: const Text('Tabata · 8 × 20/10'),
-          ),
-          const DropdownMenuItem(
-            value: WorkoutBlockFormat.emom,
-            child: Text('EMOM · cada minuto'),
-          ),
-          const DropdownMenuItem(
-            value: WorkoutBlockFormat.amrap,
-            child: Text('AMRAP · máximas vueltas'),
-          ),
-        ],
-        onChanged: enabled
-            ? (value) {
-                if (value != null) onChanged(value);
-              }
-            : null,
-      );
+        const DropdownMenuItem(
+          value: WorkoutBlockFormat.superset,
+          child: Text('Superserie'),
+        ),
+        const DropdownMenuItem(
+          value: WorkoutBlockFormat.circuit,
+          child: Text('Circuito'),
+        ),
+        DropdownMenuItem(
+          value: WorkoutBlockFormat.intervals,
+          enabled: exerciseCount <= 1 || format == WorkoutBlockFormat.intervals,
+          child: const Text('Intervalos de trabajo'),
+        ),
+        DropdownMenuItem(
+          value: WorkoutBlockFormat.tabata,
+          enabled: exerciseCount <= 8 || format == WorkoutBlockFormat.tabata,
+          child: const Text('Tabata · 8 × 20/10'),
+        ),
+        const DropdownMenuItem(
+          value: WorkoutBlockFormat.emom,
+          child: Text('EMOM · cada minuto'),
+        ),
+        const DropdownMenuItem(
+          value: WorkoutBlockFormat.amrap,
+          child: Text('AMRAP · máximas vueltas'),
+        ),
+      ],
+      onChanged: enabled
+          ? (value) {
+              if (value != null) onChanged(value);
+            }
+          : null,
+    ),
+  );
 }
