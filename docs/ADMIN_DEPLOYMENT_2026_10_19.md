@@ -135,3 +135,18 @@ Referencias: [cuentas limitadas de Hostinger](https://www.hostinger.com/support/
 No hace falta subir ZIP ni habilitar permisos de archivos de la extensión.
 Los cambios de contenido guardados en el admin se persisten en Dev directamente;
 solo los cambios del código necesitan este flujo de publicación.
+
+
+## Comprobación del disparo automático por push
+
+El punto de guardado `04ea36d2c6b86a403764a881b1f7644f87c87d77` inicia por sí
+solo la [ejecución 39241531224](https://github.com/jchjdev/entrenaop/actions/runs/39241531224),
+con evento `push`, sin usar «Run workflow». Termina correctamente en 5 min 29 s:
+validación ADMIN, publicador, compilación y publicación. No repite deportista
+porque ese commit solo modifica documentación y evidencia, sin código compartido.
+El manifiesto público corresponde a esa revisión y a la versión
+`04ea36d2c6b86a403764a881b1f7644f87c87d77-39241531224-1`.
+Verificación HTTPS independiente correcta, con el mismo SHA-256 del JavaScript
+anterior porque no cambia código Dart. Evidencia: `github-ci-push-success.png` y
+`ci-push-deployed-build-info.json`. La documentación posterior fuera de
+`admin_app/` no inicia compilaciones adicionales.

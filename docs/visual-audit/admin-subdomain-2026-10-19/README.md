@@ -59,3 +59,9 @@ interruptor de despliegue; `github-ci-success.png` acredita la ejecución comple
 cargado después de esa publicación conservando la sesión, sus dos programas y
 el trabajo recuperable. `ci-deployed-build-info.json` conserva el manifiesto
 público comprobado de forma independiente; no contiene credenciales.
+
+
+`github-ci-push-success.png` acredita además la ejecución 39241531224, iniciada
+por el push de `04ea36d` sin lanzamiento manual, con validación y despliegue
+correctos. `ci-push-deployed-build-info.json` conserva su manifiesto público;
+revisión, hash, entrada y cabeceras se contrastan de nuevo por HTTPS.
