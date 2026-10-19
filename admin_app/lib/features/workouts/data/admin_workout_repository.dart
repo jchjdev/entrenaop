@@ -14,6 +14,8 @@ class AdminWorkoutSummary {
     required this.isRunning,
     required this.catalogScope,
     this.guidedPrograms = const [],
+    this.hasWarmup = false,
+    this.supportsAdjustableRest = true,
   });
 
   final String id;
@@ -23,6 +25,7 @@ class AdminWorkoutSummary {
   final bool isRunning;
   final String catalogScope;
   final List<AdminWorkoutProgramUsage> guidedPrograms;
+  final bool hasWarmup, supportsAdjustableRest;
 }
 
 class AdminWorkoutProgramUsage {
@@ -102,12 +105,21 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
         .select('id,name,status,version')
         .inFilter('id', ids)
         .order('created_at', ascending: false);
-    final runningRows = await _client
+    final blockRows = await _client
         .from('workout_blocks')
-        .select('template_id')
+        .select('template_id,format')
         .inFilter('template_id', ids)
-        .eq('format', 'running');
-    final runningIds = runningRows
+        .inFilter('format', ['running', 'warm_up', 'straight_sets']);
+    final runningIds = blockRows
+        .where((row) => row['format'] == 'running')
+        .map((row) => row['template_id'] as String)
+        .toSet();
+    final warmupIds = blockRows
+        .where((row) => row['format'] == 'warm_up')
+        .map((row) => row['template_id'] as String)
+        .toSet();
+    final adjustableIds = blockRows
+        .where((row) => row['format'] == 'straight_sets')
         .map((row) => row['template_id'] as String)
         .toSet();
     final usages = <String, Map<String, AdminWorkoutProgramUsage>>{};
@@ -140,6 +152,8 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             version: row['version'] as int,
             isRunning: runningIds.contains(row['id']),
             catalogScope: catalogScope,
+            hasWarmup: warmupIds.contains(row['id']),
+            supportsAdjustableRest: adjustableIds.contains(row['id']),
             guidedPrograms: (usages[row['id']]?.values.toList() ?? [])
               ..sort((a, b) {
                 final name = a.name.compareTo(b.name);

@@ -1006,12 +1006,19 @@ La organización por fases añade sus duraciones, orden e instrucciones sin
 crear otro editor de ejercicios o sesiones. La cantidad de sesiones depende
 del contenido; cinco o seis son ejemplos, no un límite acordado.
 
-El admin actual ya edita sesiones generales o vinculadas a programas y comparte
-contratos y campos de sesión con la aplicación del deportista. Sin embargo,
-sus programas actuales pertenecen al catálogo de preparaciones con pruebas,
-baremos y módulos de entrenamiento. El nuevo creador de programas
-guiados es independiente: reutilizar componentes no implica convertir una rutina de
-hipertrofia en una oposición ni exigirle pruebas o baremos.
+El admin edita sesiones generales o vinculadas a preparaciones y comparte
+contratos y campos de sesión con la aplicación del deportista. El catálogo de
+Preparaciones mantiene sus pruebas, baremos y módulos; el creador de programas
+guiados es independiente. Reutilizar componentes no implica convertir una rutina
+de hipertrofia en una oposición ni exigirle pruebas o baremos.
+
+UI-055 permite crear o elegir sesiones desde cada fase/rutina, usando el editor
+actual. Guardar, revisar y publicar explícitamente incorpora la versión a la
+fase original; el programa se guarda y publica por separado. Las sesiones
+generales publicadas siguen disponibles sueltas y son reutilizables. Los
+borradores pendientes quedan visibles en el montaje; no se guarda el programa
+omitiéndolos sin aviso. Los calentamientos pueden crearse y adjuntarse desde
+cada sesión. [Recorrido y límites de conservación](ADMIN_AUTHORING_2026_10_19.md).
 
 ### Personalización y límites
 

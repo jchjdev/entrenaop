@@ -24,6 +24,7 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     this.revisionId,
     this.warmup = false,
     this.saveInput,
+    this.returnSavedId = false,
   });
 
   final AdminProgram? program;
@@ -31,7 +32,8 @@ class AdminWorkoutEditorPage extends StatefulWidget {
   final WorkoutTemplate? originalTemplate;
   final String? revisionId;
   final bool warmup;
-  final Future<void> Function(CreatePersonalWorkoutInput)? saveInput;
+  final Future<String> Function(CreatePersonalWorkoutInput)? saveInput;
+  final bool returnSavedId;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -396,19 +398,23 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         _busy = true;
         _error = null;
       });
+      final String savedId;
       if (widget.saveInput case final save?) {
-        await save(input);
+        savedId = await save(input);
       } else if (widget.revisionId case final id?) {
-        await widget.repository.revise(id, input);
+        savedId = await widget.repository.revise(id, input);
       } else {
-        await widget.repository.createDraft(widget.program?.id, input);
+        savedId = await widget.repository.createDraft(
+          widget.program?.id,
+          input,
+        );
       }
       if (mounted) {
         setState(() {
           _busy = false;
           _savedStamp = _draftStamp;
         });
-        context.pop(true);
+        context.pop<Object>(widget.returnSavedId ? savedId : true);
       }
     } on FormatException catch (error) {
       if (mounted) setState(() => _error = error.message);
@@ -917,6 +923,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
                 SizedBox(
                   width: 225,
                   child: DropdownButtonFormField<WorkoutTargetType>(
+                    isExpanded: true,
                     key: ValueKey(item.type),
                     initialValue: item.type,
                     decoration: const InputDecoration(labelText: 'Objetivo'),

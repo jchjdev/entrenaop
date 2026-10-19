@@ -1,5 +1,9 @@
 import 'package:entrena_ui/entrena_ui.dart'
-    show EntrenaDialog, EntrenaDialogActions, EntrenaButtonStyles;
+    show
+        EntrenaDialog,
+        EntrenaDialogActions,
+        EntrenaButtonStyles,
+        WorkflowDraftGuard;
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -13,11 +17,13 @@ class AdminWorkoutPreviewPage extends StatefulWidget {
     required this.workout,
     required this.repository,
     required this.program,
+    this.returnSavedId = false,
   });
 
   final AdminWorkoutSummary workout;
   final AdminWorkoutRepository repository;
   final AdminProgram? program;
+  final bool returnSavedId;
 
   @override
   State<AdminWorkoutPreviewPage> createState() =>
@@ -28,6 +34,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   late Future<WorkoutTemplate?> _template;
   bool _publishing = false;
   bool _removing = false;
+  String? _error;
 
   @override
   void initState() {
@@ -36,6 +43,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   }
 
   Future<void> _publish() async {
+    if (_publishing || _removing) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -61,20 +69,24 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-    setState(() => _publishing = true);
+    if (confirmed != true || !mounted || _publishing || _removing) return;
+    setState(() {
+      _publishing = true;
+      _error = null;
+    });
     try {
       await widget.repository.publishDraft(widget.workout.id);
-      if (mounted) context.pop(true);
+      if (mounted) {
+        context.pop<Object>(widget.returnSavedId ? widget.workout.id : true);
+      }
     } on PostgrestException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
+        setState(() => _error = error.message);
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo publicar la sesión.')),
+        setState(
+          () => _error = 'No se pudo publicar la sesión. Tu borrador sigue guardado; puedes reintentar.',
         );
       }
     } finally {
@@ -83,6 +95,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   }
 
   Future<void> _remove() async {
+    if (_publishing || _removing) return;
     final draft = widget.workout.status == 'draft';
     final confirmed = await showDialog<bool>(
       context: context,
@@ -111,20 +124,22 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-    setState(() => _removing = true);
+    if (confirmed != true || !mounted || _publishing || _removing) return;
+    setState(() {
+      _removing = true;
+      _error = null;
+    });
     try {
       await widget.repository.remove(widget.workout.id);
-      if (mounted) context.pop(true);
+      if (mounted) context.pop<Object?>(widget.returnSavedId ? null : true);
     } on PostgrestException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
+        setState(() => _error = error.message);
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo retirar la sesión.')),
+        setState(
+          () => _error = 'No se pudo retirar la sesión. Puedes reintentar.',
         );
       }
     } finally {
@@ -136,47 +151,54 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     final base = widget.program == null
         ? '/sessions'
         : '/programs/${Uri.encodeComponent(widget.program!.id)}/sessions';
-    final saved = await context.push<bool>(
-      '$base/${Uri.encodeComponent(widget.workout.id)}/edit',
+    final saved = await context.push<Object>(
+      '$base/${Uri.encodeComponent(widget.workout.id)}/edit${widget.returnSavedId ? '?returnId=true' : ''}',
     );
-    if (saved == true && mounted) context.pop(true);
+    // Con onExit asíncrono, el resultado llega antes de retirar la página hija.
+    // Esperar su frame evita intentar cerrar dos veces el mismo editor.
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted && (saved == true || saved is String)) context.pop(saved);
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Revisar sesión')),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: FutureBuilder<WorkoutTemplate?>(
-          future: _template,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator();
-            }
-            if (snapshot.hasError || snapshot.data == null) {
-              return Padding(
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'No se pudo cargar la sesión. No la publiques todavía.',
-                    ),
-                    TextButton(
-                      onPressed: () => setState(
-                        () => _template = widget.repository.getTemplateById(
-                          widget.workout.id,
-                        ),
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    hasUnsavedChanges: () => false,
+    isBusy: () => _publishing || _removing,
+    child: Scaffold(
+      appBar: AppBar(title: const Text('Revisar sesión')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: FutureBuilder<WorkoutTemplate?>(
+            future: _template,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const CircularProgressIndicator();
+              }
+              if (snapshot.hasError || snapshot.data == null) {
+                return Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'No se pudo cargar la sesión. No la publiques todavía.',
                       ),
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return _content(snapshot.data!);
-          },
+                      TextButton(
+                        onPressed: () => setState(
+                          () => _template = widget.repository.getTemplateById(
+                            widget.workout.id,
+                          ),
+                        ),
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return _content(snapshot.data!);
+            },
+          ),
         ),
       ),
     ),
@@ -230,6 +252,14 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
         ),
         const SizedBox(height: 12),
       ],
+      if (_error != null)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            _error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
       if (widget.workout.status == 'draft') ...[
         Text(
           widget.workout.catalogScope == 'general'
@@ -240,7 +270,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
         Align(
           alignment: Alignment.centerLeft,
           child: FilledButton.icon(
-            onPressed: _publishing ? null : _publish,
+            onPressed: _publishing || _removing ? null : _publish,
             icon: const Icon(Icons.public),
             label: Text(
               _publishing

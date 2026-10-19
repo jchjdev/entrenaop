@@ -336,8 +336,8 @@ void main() {
         find.widgetWithText(TextFormField, 'Nombre del programa'),
         'Guía estable',
       );
-      await tester.ensureVisible(find.text('Añadir sesión'));
-      await tester.tap(find.text('Añadir sesión'));
+      await tester.ensureVisible(find.text('Elegir del catálogo'));
+      await tester.tap(find.text('Elegir del catálogo'));
       await tester.pumpAndSettle();
       expect(find.text('Sesión no publicada'), findsNothing);
       await tester.tap(find.text('Empuje publicado'));

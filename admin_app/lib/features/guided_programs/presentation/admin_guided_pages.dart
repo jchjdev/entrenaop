@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ import '../../editorial_covers/domain/program_cover.dart';
 import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
 import 'admin_guided_program_card.dart';
+import 'guided_session_picker.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
@@ -96,6 +99,7 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
   }
 
   Future<void> _status(GuidedProgram p, String status) async {
+    if (_busy) return;
     setState(() => _busy = true);
     try {
       await widget.repository.setStatus(p.id!, status);
@@ -367,14 +371,16 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<bool> _load() async {
     try {
-      final sessions = await widget.workouts.listGeneral();
-      final warmups = await widget.repository.warmups();
-      final categories = await widget.repository.categories();
+      final (sessions, warmups, categories) = await (
+        widget.workouts.listGeneral(),
+        widget.repository.warmups(),
+        widget.repository.categories(),
+      ).wait;
       if (mounted) {
         setState(() {
-          _sessions = sessions.where((s) => s.status == 'published').toList();
+          _sessions = sessions;
           _warmups = warmups;
           _categories = categories;
           _catalogsReady = true;
@@ -382,6 +388,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           _error = null;
         });
       }
+      return true;
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -389,6 +396,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           _error = 'No se pudieron cargar las sesiones, calentamientos o categorías. Reintenta la carga.';
         });
       }
+      return false;
     }
   }
 
@@ -406,46 +414,114 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   Future<void> _addSession(_PhaseFields phase) async {
     final selected = await showDialog<AdminWorkoutSummary>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Añadir sesión oficial'),
-        content: SizedBox(
-          width: 480,
-          child: _sessions.isEmpty
-              ? const Text(
-                  'Publica primero una sesión desde Sesiones oficiales.',
-                )
-              : ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (final s in _sessions)
-                      ListTile(
-                        title: Text(s.name),
-                        subtitle: Text('Versión ${s.version}'),
-                        onTap: () => Navigator.pop(ctx, s),
-                      ),
-                  ],
-                ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Volver'),
-          ),
-        ],
-      ),
+      builder: (_) => GuidedSessionPicker(sessions: _sessions),
     );
     if (selected != null && mounted) {
+      if (selected.status == 'published') {
+        _attachSession(phase, selected);
+      } else {
+        await _reviewAndAttach(phase, selected.id);
+      }
+    }
+  }
+
+  void _attachSession(_PhaseFields phase, AdminWorkoutSummary session) {
+    if (!_phases.contains(phase)) return;
+    setState(() {
+      phase.sessions.add(_SessionFields(session.id, session.name));
+      phase.pendingSessions.remove(session.id);
+      _dirty = true;
+    });
+  }
+
+  Future<void> _createSession(_PhaseFields phase) async {
+    final id = await context.push<String>('/sessions/new?returnId=true');
+    if (!mounted || id == null) return;
+    setState(() {
+      phase.pendingSessions.add(id);
+      _dirty = true;
+    });
+    if (!await _load() || !mounted) return;
+    await _reviewAndAttach(phase, id);
+  }
+
+  Future<void> _reviewAndAttach(_PhaseFields phase, String id) async {
+    var currentId = id;
+    // Editar un borrador puede devolver otra versión; nunca se enlaza la anterior.
+    while (mounted) {
+      final session = _sessions.where((s) => s.id == currentId).firstOrNull;
+      if (session == null) {
+        setState(
+          () => _error = 'La sesión pendiente ya no está disponible. Quita su referencia y elige otra del catálogo.',
+        );
+        return;
+      }
+      if (session.status == 'published') {
+        _attachSession(phase, session);
+        return;
+      }
+      if (session.status != 'draft') {
+        setState(
+          () => _error = 'La sesión pendiente está retirada. Quita su referencia y elige una publicada.',
+        );
+        return;
+      }
       setState(() {
-        phase.sessions.add(_SessionFields(selected.id, selected.name));
+        phase.pendingSessions.add(currentId);
+        _dirty = true;
+      });
+      final reviewedId = await context.push<String>(
+        '/sessions/${Uri.encodeComponent(currentId)}?returnId=true',
+      );
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+      if (reviewedId != null) {
+        setState(() {
+          phase.pendingSessions.remove(currentId);
+          phase.pendingSessions.add(reviewedId);
+        });
+      }
+      if (!await _load() || !mounted) return;
+      if (reviewedId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se ha añadido la sesión. Puedes retomar el borrador desde el programa o desde el catálogo.',
+            ),
+          ),
+        );
+        return;
+      }
+      currentId = reviewedId;
+    }
+  }
+
+  Future<void> _createWarmup(_SessionFields session) async {
+    final id = await context.push<String>('/warmups/new?returnId=true');
+    if (!mounted || id == null) return;
+    if (!await _load() || !mounted) return;
+    if (_warmups.any((w) => w.id == id && w.status == 'published')) {
+      setState(() {
+        session.warmup = id;
         _dirty = true;
       });
     }
+  }
+
+  Future<void> _reviewSession(_SessionFields session) async {
+    await context.push('/sessions/${Uri.encodeComponent(session.id)}');
+    if (mounted) await _load();
   }
 
   Future<void> _save() async {
     if (_busy || !_catalogsReady || !_form.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     try {
+      if (_phases.any((p) => p.pendingSessions.isNotEmpty)) {
+        throw const FormatException(
+          'Tienes sesiones pendientes de incorporar. Retómalas o quita su referencia antes de guardar el programa; los borradores del catálogo se conservan.',
+        );
+      }
       final p = GuidedProgram(
         name: _name.text,
         description: _description.text,
@@ -459,6 +535,36 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         primaryCategoryId: _primaryCategoryId,
       );
       validateGuidedProgram(p);
+      for (final phase in _phases) {
+        for (final session in phase.sessions) {
+          final source = _sessions.where((s) => s.id == session.id).firstOrNull;
+          if (!_sessions.any(
+            (s) => s.id == session.id && s.status == 'published',
+          )) {
+            throw FormatException(
+              '«${session.name}» ya no está publicada. Quita esa referencia y elige una sesión publicada.',
+            );
+          }
+          if (session.warmup != null &&
+              !_warmups.any(
+                (w) => w.id == session.warmup && w.status == 'published',
+              )) {
+            throw FormatException(
+              'Revisa el calentamiento de «${session.name}»: ya no está disponible.',
+            );
+          }
+          if (session.warmup != null && source?.hasWarmup == true) {
+            throw FormatException(
+              '«${session.name}» ya incluye calentamiento. Quita el calentamiento adjunto.',
+            );
+          }
+          if (session.adjustable && source?.supportsAdjustableRest != true) {
+            throw FormatException(
+              'El formato de «${session.name}» no admite ajustes genéricos de descanso. Desactiva esa opción.',
+            );
+          }
+        }
+      }
       setState(() {
         _busy = true;
         _error = null;
@@ -592,22 +698,11 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                           spacing: 12,
                           runSpacing: 12,
                           children: [
-                            OutlinedButton(
-                              onPressed: () async {
-                                await context.push('/sessions/new');
-                                if (mounted) await _load();
-                              },
-                              child: const Text('Crear sesión oficial'),
-                            ),
-                            OutlinedButton(
-                              onPressed: () async {
-                                await context.push('/warmups/new');
-                                if (mounted) await _load();
-                              },
-                              child: const Text('Crear calentamiento'),
-                            ),
                             TextButton(
-                              onPressed: () => context.push('/sessions'),
+                              onPressed: () async {
+                                await context.push('/sessions');
+                                if (mounted) await _load();
+                              },
                               child: const Text('Publicar o revisar sesiones'),
                             ),
                           ],
@@ -800,18 +895,83 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
           const SizedBox(height: 12),
-          for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
-          OutlinedButton.icon(
-            onPressed: () => _addSession(p),
-            icon: const Icon(Icons.add),
-            label: const Text('Añadir sesión'),
+          Text(
+            '${p.sessions.length} ${p.sessions.length == 1 ? 'sesión' : 'sesiones'} en ${_mode == GuidedProgramMode.guide ? 'esta rutina' : 'esta fase'}',
           ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              FilledButton.tonalIcon(
+                onPressed: () => _createSession(p),
+                icon: const Icon(Icons.add),
+                label: const Text('Crear nueva sesión'),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _addSession(p),
+                icon: const Icon(Icons.library_add_outlined),
+                label: const Text('Elegir del catálogo'),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              'Crea, revisa y publica para incorporar una sesión. El programa se guarda después con Guardar borrador.',
+            ),
+          ),
+          for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
+          for (final id in p.pendingSessions)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _sessions.where((s) => s.id == id).firstOrNull?.name ??
+                          'Sesión guardada en el catálogo',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pendiente de incorporar al programa. El programa todavía no incluye esta sesión.',
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            if (await _load() && mounted) {
+                              await _reviewAndAttach(p, id);
+                            }
+                          },
+                          child: const Text('Retomar sesión'),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() {
+                            p.pendingSessions.remove(id);
+                            _dirty = true;
+                          }),
+                          child: const Text('Quitar referencia pendiente'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     ),
   );
   Widget _sessionCard(_PhaseFields p, int i) {
     final s = p.sessions[i];
+    final source = _sessions.where((item) => item.id == s.id).firstOrNull;
+    final hasWarmup = source?.hasWarmup == true;
+    final supportsRest = source?.supportsAdjustableRest == true;
     return Card(
       key: ValueKey(s),
       child: Padding(
@@ -839,6 +999,17 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                   icon: const Icon(Icons.arrow_upward),
                 ),
                 IconButton(
+                  tooltip: 'Bajar sesión',
+                  onPressed: i == p.sessions.length - 1
+                      ? null
+                      : () => setState(() {
+                          p.sessions.removeAt(i);
+                          p.sessions.insert(i + 1, s);
+                          _dirty = true;
+                        }),
+                  icon: const Icon(Icons.arrow_downward),
+                ),
+                IconButton(
                   tooltip: 'Quitar sesión',
                   onPressed: () => setState(() {
                     p.sessions.removeAt(i).dispose();
@@ -848,31 +1019,69 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 ),
               ],
             ),
-            DropdownButtonFormField<String>(
-              initialValue: s.warmup ?? '',
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Calentamiento adjunto',
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _reviewSession(s),
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text('Revisar sesión'),
               ),
-              items: [
-                const DropdownMenuItem(
-                  value: '',
-                  child: Text('Sin calentamiento adjunto'),
-                ),
-                for (final w in _warmups)
-                  DropdownMenuItem(
-                    value: w.id,
-                    child: Text(
-                      '${w.name} · v${w.version}',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
-              onChanged: (v) {
-                s.warmup = v == '' ? null : v;
-                _dirty = true;
-              },
             ),
+            if (source == null || source.status != 'published')
+              Text(
+                'Esta versión ya no está publicada. Quita la referencia y elige otra sesión.',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            if (hasWarmup)
+              const Text('Esta sesión ya incluye su propio calentamiento.'),
+            if (!hasWarmup)
+              DropdownButtonFormField<String>(
+                key: ValueKey('${s.id}:${s.warmup}'),
+                initialValue: s.warmup ?? '',
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Calentamiento adjunto',
+                ),
+                items: [
+                  const DropdownMenuItem(
+                    value: '',
+                    child: Text('Sin calentamiento adjunto'),
+                  ),
+                  if (s.warmup != null &&
+                      !_warmups.any((w) => w.id == s.warmup))
+                    DropdownMenuItem(
+                      value: s.warmup,
+                      enabled: false,
+                      child: const Text('Calentamiento no disponible'),
+                    ),
+                  for (final w in _warmups)
+                    if (w.status == 'published' || w.id == s.warmup)
+                      DropdownMenuItem(
+                        value: w.id,
+                        enabled: w.status == 'published',
+                        child: Text(
+                          '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                ],
+                // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
+                onChanged: (v) {
+                  setState(() {
+                    s.warmup = v == '' ? null : v;
+                    _dirty = true;
+                  });
+                },
+              ),
+            if (!hasWarmup)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => _createWarmup(s),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Crear y adjuntar calentamiento'),
+                ),
+              ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Permitir ajustar descansos entre series'),
@@ -880,11 +1089,17 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 'Solo bloques convencionales; se conservan los formatos temporizados.',
               ),
               value: s.adjustable,
-              onChanged: (v) => setState(() {
-                s.adjustable = v;
-                _dirty = true;
-              }),
+              onChanged: !supportsRest && !s.adjustable
+                  ? null
+                  : (v) => setState(() {
+                      s.adjustable = v;
+                      _dirty = true;
+                    }),
             ),
+            if (!supportsRest)
+              const Text(
+                'El formato de esta sesión no admite un ajuste genérico de descansos.',
+              ),
             if (s.adjustable) ...[
               _field(
                 s.minimum,
@@ -951,6 +1166,7 @@ class _PhaseFields {
       weeks = TextEditingController(text: '2'),
       instructions = TextEditingController();
   final sessions = <_SessionFields>[];
+  final pendingSessions = <String>{};
   GuidedPhase input(GuidedProgramMode mode) => GuidedPhase(
     name: mode == GuidedProgramMode.guide ? 'Entrenamiento' : name.text,
     durationWeeks: mode == GuidedProgramMode.guide

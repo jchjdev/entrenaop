@@ -15,6 +15,13 @@ convencionales, sin alterar formatos temporizados ni el motor adaptativo.
 
 ## Bloque 1 · Autoría en ADMIN
 
+**UI-055 · 19/10/2026:** creación y reutilización de sesiones desde cada fase del
+programa. Se usa el editor existente, se revisa y publica explícitamente y se
+incorpora la identidad publicada a la fase original. Pendientes visibles durante
+el montaje, recuperación de borradores desde el selector y creación de
+calentamientos adjuntos sin cambiar de catálogo manualmente.
+[Auditoría, comportamiento y límites](ADMIN_AUTHORING_2026_10_19.md).
+
 Implementados catálogo y creador común, orden de fases/sesiones, duración,
 condiciones, selección de sesiones oficiales generales publicadas, calentamiento
 por sesión y límites de descanso entre series. Una guía usa una fase repetible

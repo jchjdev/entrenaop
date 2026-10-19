@@ -74,7 +74,11 @@ GoRouter createAdminRouter({
     child: load(() => program(state.pathParameters['programId']!), build),
   );
 
-  GoRoute workflow(String path, GoRouterWidgetBuilder builder) => GoRoute(
+  GoRoute workflow(
+    String path,
+    GoRouterWidgetBuilder builder, {
+    List<RouteBase> routes = const [],
+  }) => GoRoute(
     path: path,
     onExit: (context, state) => isAuthenticated?.call() == false
         ? true
@@ -83,6 +87,7 @@ GoRouter createAdminRouter({
       controller: exits.controller(state.pageKey),
       child: builder(context, state),
     ),
+    routes: routes,
   );
 
   List<RouteBase> sessionRoutes() => [
@@ -92,12 +97,17 @@ GoRouter createAdminRouter({
         state,
         program,
         load,
-        (owner) => AdminWorkoutEditorPage(program: owner, repository: workouts),
+        (owner) => AdminWorkoutEditorPage(
+          program: owner,
+          repository: workouts,
+          returnSavedId:
+              owner == null && state.uri.queryParameters['returnId'] == 'true',
+        ),
       ),
     ),
-    GoRoute(
-      path: ':templateId',
-      builder: (context, state) => programOrGeneral(
+    workflow(
+      ':templateId',
+      (context, state) => programOrGeneral(
         state,
         program,
         load,
@@ -117,6 +127,7 @@ GoRouter createAdminRouter({
             workout: item,
             repository: workouts,
             program: owner,
+            returnSavedId: state.uri.queryParameters['returnId'] == 'true',
           ),
         ),
       ),
@@ -149,6 +160,9 @@ GoRouter createAdminRouter({
                 repository: workouts,
                 originalTemplate: template,
                 revisionId: state.pathParameters['templateId'],
+                returnSavedId:
+                    owner == null &&
+                    state.uri.queryParameters['returnId'] == 'true',
               ),
             ),
           ),
@@ -232,15 +246,15 @@ GoRouter createAdminRouter({
               routes: [
                 workflow(
                   'new',
-                  (_, _) => load(
+                  (_, state) => load(
                     () async => true,
                     (_) => AdminWorkoutEditorPage(
                       program: null,
                       repository: workouts,
                       warmup: true,
-                      saveInput: (input) async {
-                        await guided.saveWarmup(input);
-                      },
+                      returnSavedId:
+                          state.uri.queryParameters['returnId'] == 'true',
+                      saveInput: (input) => guided.saveWarmup(input),
                     ),
                   ),
                 ),
@@ -267,9 +281,8 @@ GoRouter createAdminRouter({
                       repository: workouts,
                       warmup: true,
                       originalTemplate: data.$2,
-                      saveInput: (input) async {
-                        await guided.saveWarmup(input, previousId: data.$1.id);
-                      },
+                      saveInput: (input) =>
+                          guided.saveWarmup(input, previousId: data.$1.id),
                     ),
                   ),
                 ),

@@ -1,5 +1,22 @@
 # Roadmap de EntrenaOP
 
+**UI-055, 19/10/2026 · autoría contextual de ADMIN:** desde cada fase/rutina se
+puede crear una sesión con el editor existente, revisarla, publicarla
+explícitamente e incorporar su versión. Selector con búsqueda y borradores,
+pendientes visibles y retomables, calentamientos creados/adjuntados desde la
+sesión, opciones según el formato real, movimiento en ambos sentidos y salida
+bloqueada durante publicación. Corregido el doble cierre al encadenar regresos
+con guards asíncronos. Análisis limpio, 162 pruebas correctas y dos capturas
+optativas existentes omitidas; compilación web de desarrollo correcta. Navegación
+y selector comprobados en Chrome autenticado con catálogo Dev; el recorrido de
+cuatro sesiones y sus fallos se prueba con repositorios de prueba. Sin nuevas
+mutaciones remotas, migraciones, dependencias, cambios compartidos ni deportista.
+**Único siguiente bloque recomendado de este recorrido:** concretar recuperación
+persistente de programas incompletos e idempotencia de guardado antes de preparar
+el subdominio. El montaje sin guardar vive en la pantalla y sigue exigiendo
+sesiones publicadas para persistir el programa.
+[Auditoría, referencias y límites](ADMIN_AUTHORING_2026_10_19.md).
+
 **UI-054, 19/10/2026 · catálogos ADMIN de sesiones y programas guiados:** Javier
 confirma las sesiones generales reutilizables. Se muestran sus programas de uso,
 versiones y estados, con enlace al editor. Programas guiados separa resumen,

@@ -34,6 +34,12 @@ void main() {
               for (final id in ['used', 'unused'])
                 {'id': id, 'name': id, 'status': 'published', 'version': 1},
             ];
+          case 'workout_blocks':
+            rows = [
+              {'template_id': 'used', 'format': 'warm_up'},
+              {'template_id': 'used', 'format': 'straight_sets'},
+              {'template_id': 'unused', 'format': 'running'},
+            ];
           case 'guided_program_links':
             if (failUsages) {
               return http.Response(
@@ -75,6 +81,19 @@ void main() {
     repository = SupabaseAdminWorkoutRepository(client);
   });
   tearDown(() => client.dispose());
+
+  test(
+    'las opciones de calentamiento y descanso se derivan de los bloques reales',
+    () async {
+      final sessions = await repository.listGeneral();
+      expect(sessions.first.hasWarmup, isTrue);
+      expect(sessions.first.supportsAdjustableRest, isTrue);
+      expect(sessions.first.isRunning, isFalse);
+      expect(sessions.last.hasWarmup, isFalse);
+      expect(sessions.last.supportsAdjustableRest, isFalse);
+      expect(sessions.last.isRunning, isTrue);
+    },
+  );
 
   test(
     'deduplica fases por versión sin ocultar borradores ni retirados',

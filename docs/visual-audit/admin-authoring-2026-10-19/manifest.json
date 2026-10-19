@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-19",
+  "source": "Chrome autenticado en ADMIN de desarrollo; consulta y navegación sin escrituras remotas",
+  "files": [
+    {
+      "path": "docs/visual-audit/admin-authoring-2026-10-19/contextual-actions.png",
+      "sha256": "85e0a459018715fb9cfe861d33a46c1b156766c9525573c714566eff7f6bc8ff"
+    },
+    {
+      "path": "docs/visual-audit/admin-authoring-2026-10-19/reused-session-editor.png",
+      "sha256": "04d548dbce131b5e56a808d519cc1719b768b4d5cdf79beb82265d17069a7cd1"
+    },
+    {
+      "path": "docs/visual-audit/admin-authoring-2026-10-19/catalog-picker-search.png",
+      "sha256": "6fa886b5b1fcca38150c7f0d6a1af24472b2e78ce19f039fd4495780ea679ad5"
+    }
+  ],
+  "finalBuild": {
+    "path": "admin_app/build/web/main.dart.js",
+    "sha256": "72f815e38775e3187f85b67d2fb3da40ec07741bf668a75b1e85dd5317db5c68"
+  }
+}
