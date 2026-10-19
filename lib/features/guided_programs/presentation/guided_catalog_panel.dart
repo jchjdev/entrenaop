@@ -29,11 +29,19 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
   String _filter = 'all';
+  bool _filtersExpanded = false;
+  final _search = TextEditingController();
   late Future<List<GuidedProgramCategory>> _categories;
   @override
   void initState() {
     super.initState();
     _categories = widget.repository.categories();
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,40 +53,91 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
         key: const PageStorageKey('guided-program-catalog'),
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
         children: [
-          TextField(
-            decoration: const InputDecoration(
-              labelText: 'Buscar',
-              hintText: 'Nombre del programa',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: cubit.search,
-          ),
-          const SizedBox(height: 10),
-          DropdownButtonFormField<String>(
-            initialValue: _filter,
-            isExpanded: true,
-            isDense: false,
-            itemHeight: null,
-            decoration: const InputDecoration(labelText: 'Mostrar'),
-            items: const [
-              DropdownMenuItem(
-                value: 'all',
-                child: Text('Todos los programas'),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _search,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar',
+                    prefixIcon: const Icon(Icons.search),
+                    prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                    suffixIconConstraints: const BoxConstraints(minWidth: 40),
+                    suffixIcon: _search.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Borrar búsqueda',
+                            onPressed: () {
+                              _search.clear();
+                              cubit.search('');
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                  ),
+                  onChanged: (value) {
+                    cubit.search(value);
+                    setState(() {});
+                  },
+                ),
               ),
-              DropdownMenuItem(value: 'guide', child: Text('Rutinas')),
-              DropdownMenuItem(value: 'phased', child: Text('Por fases')),
-              DropdownMenuItem(
-                value: 'following',
-                child: Text('Programas iniciados'),
+              const SizedBox(width: 10),
+              Semantics(
+                expanded: _filtersExpanded,
+                child: MediaQuery.textScalerOf(context).scale(14) > 21
+                    ? IconButton.outlined(
+                        tooltip: _filter == 'all'
+                            ? 'Filtros'
+                            : 'Filtros activos',
+                        isSelected: _filter != 'all',
+                        onPressed: () => setState(
+                          () => _filtersExpanded = !_filtersExpanded,
+                        ),
+                        icon: const Icon(Icons.tune),
+                      )
+                    : OutlinedButton.icon(
+                        onPressed: () => setState(
+                          () => _filtersExpanded = !_filtersExpanded,
+                        ),
+                        icon: Icon(
+                          _filtersExpanded ? Icons.expand_less : Icons.tune,
+                        ),
+                        label: Text(
+                          _filter == 'all' ? 'Filtros' : 'Filtros (1)',
+                        ),
+                      ),
               ),
             ],
-            onChanged: (v) {
-              if (v != null) {
-                setState(() => _filter = v);
-                cubit.filter(v);
-              }
-            },
           ),
+          if (_filtersExpanded) ...[
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              initialValue: _filter,
+              isExpanded: true,
+              isDense: false,
+              itemHeight: null,
+              decoration: const InputDecoration(labelText: 'Mostrar'),
+              items: const [
+                DropdownMenuItem(
+                  value: 'all',
+                  child: Text('Todos los programas'),
+                ),
+                DropdownMenuItem(value: 'guide', child: Text('Rutinas')),
+                DropdownMenuItem(value: 'phased', child: Text('Por fases')),
+                DropdownMenuItem(
+                  value: 'following',
+                  child: Text('Programas iniciados'),
+                ),
+              ],
+              onChanged: (v) {
+                if (v != null) {
+                  setState(() => _filter = v);
+                  cubit.filter(v);
+                }
+              },
+            ),
+          ],
           const SizedBox(height: 10),
           FutureBuilder<List<GuidedProgramCategory>>(
             future: _categories,
@@ -94,26 +153,33 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               }
               if (!snapshot.hasData) return const LinearProgressIndicator();
               if (snapshot.data!.isEmpty) return const SizedBox.shrink();
-              return DropdownButtonFormField<String>(
-                initialValue: cubit.categoryId ?? '',
-                isExpanded: true,
-                isDense: false,
-                itemHeight: null,
-                decoration: const InputDecoration(labelText: 'Categoría'),
-                items: [
-                  const DropdownMenuItem(
-                    value: '',
-                    child: Text('Todas las categorías'),
-                  ),
-                  for (final c in snapshot.data!)
-                    DropdownMenuItem(value: c.id, child: Text(c.name)),
-                ],
-                onChanged: (value) =>
-                    cubit.filterCategory(value == '' ? null : value),
+              return SingleChildScrollView(
+                key: const PageStorageKey('guided-category-strip'),
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ChoiceChip(
+                      showCheckmark: false,
+                      label: const Text('Todos'),
+                      selected: cubit.categoryId == null,
+                      onSelected: (_) => cubit.filterCategory(null),
+                    ),
+                    for (final c in snapshot.data!) ...[
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        showCheckmark: false,
+                        key: ValueKey('guided-category-${c.id}'),
+                        label: Text(c.name),
+                        selected: cubit.categoryId == c.id,
+                        onSelected: (_) => cubit.filterCategory(c.id),
+                      ),
+                    ],
+                  ],
+                ),
               );
             },
           ),
-          if (state.loading)
+          if (state.loading && state.items.isEmpty)
             const Padding(
               padding: EdgeInsets.all(20),
               child: Center(child: CircularProgressIndicator()),
@@ -123,17 +189,14 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Text(state.error!),
             ),
-            TextButton(
-              onPressed: () => cubit.load(page: state.page),
-              child: const Text('Reintentar'),
-            ),
+            TextButton(onPressed: cubit.load, child: const Text('Reintentar')),
           ],
           if (!state.loading && state.error == null && state.items.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 28),
               child: Text('No hay programas con estos criterios.'),
             ),
-          if (!state.loading)
+          if (state.items.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: LayoutBuilder(
@@ -151,41 +214,12 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
                           program: p,
                           onTap: () async {
                             await context.push('/library/programs/${p.id}');
-                            if (mounted) await cubit.load(page: state.page);
+                            if (mounted) await cubit.load(keepItems: true);
                           },
                         ),
                     ],
                   );
                 },
-              ),
-            ),
-          if (state.error == null && (state.page > 0 || state.hasMore))
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    tooltip: 'Página anterior',
-                    onPressed: state.loading || state.page == 0
-                        ? null
-                        : () => cubit.load(page: state.page - 1),
-                    icon: const Icon(Icons.chevron_left),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'Página ${state.page + 1}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Página siguiente',
-                    onPressed: state.loading || !state.hasMore
-                        ? null
-                        : () => cubit.load(page: state.page + 1),
-                    icon: const Icon(Icons.chevron_right),
-                  ),
-                ],
               ),
             ),
         ],

@@ -137,6 +137,19 @@ administrativo desde el subdominio, concretando alojamiento, entorno y
 autenticación antes de desplegar.
 [Detalle](ADMIN_NAVIGATION_2026_10_19.md).
 
+**PRG-008, 19/10/2026 · catálogo directo de programas:** Javier elige la maqueta
+directa y confirma categorías pequeñas deslizables. Se retiran números/flechas
+de página y no se incorpora Ver más. Búsqueda/Filtros comparten fila; Mostrar
+queda plegado y las categorías administrativas son chips horizontales combinados
+con texto y modalidad. El Cubit reúne las tandas hasta el final, protege frente
+a respuestas antiguas y conserva tarjetas al actualizar desde una ficha. Se
+mantienen tarjetas, anchos, pestañas corregidas y estilo Compacto. Análisis,
+pruebas raíz/específicas y capturas reales comprobados. Sin cambios de ADMIN,
+paquetes compartidos, servidor, datos o ejecutores.
+**Único siguiente paso de este recorrido:** aceptación de Javier en móvil del
+catálogo directo y los filtros antes de ampliar la navegación por colecciones.
+Detalle en [PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 **PRG-007, 18/10/2026 · Biblioteca adaptable, categorías y búsqueda:** se
 conserva Inicio y Biblioteca ocupa el ancho móvil, con dos columnas en escritorio.
 Categorías múltiples, una principal visible, gestión y creación desde ADMIN;

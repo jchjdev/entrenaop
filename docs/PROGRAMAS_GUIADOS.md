@@ -333,13 +333,13 @@ gestor administrativo y su diálogo admiten móvil estrecho con texto 2× median
 desplazamiento. Sin dependencias nuevas, cambios de ejecutores o producción.
 Queda la aceptación autenticada de Javier en dispositivos.
 
-### Exploración de Biblioteca · PRG-008 · revisión del 19/10/2026
+### Catálogo directo · PRG-008 · implementado el 19/10/2026
 
 Javier descarta el paginador visible de programas y, durante la revisión,
 también la propuesta de sustituirlo por **Ver más**. Sus capturas muestran tres
 programas repartidos entre dos páginas, con búsqueda y dos selectores grandes
-antes de las tarjetas. El repositorio consulta actualmente dos publicaciones
-por página; este comportamiento sigue implementado y queda pendiente de cambio.
+antes de las tarjetas. El tamaño anterior de dos publicaciones por página
+provocaba el cambio de pantalla incluso con un catálogo pequeño.
 
 Se revisa el vídeo local `exploracalisteniap.mp4`: Explora separa objetivos y
 tipos de contenido; los catálogos muestran búsqueda y Filtros compactos. Las
@@ -347,18 +347,42 @@ sesiones oficiales ofrecen entradas por categorías y las personales una lista
 más directa. El vídeo permite valorar la navegación visible, sin acreditar cómo
 consulta o pagina internamente esa aplicación.
 
-La propuesta principal es conservar Programas/Sesiones/Ejercicios y mostrar el
-catálogo pequeño completo, con búsqueda y Filtros en una fila, categorías
-compactas y las tarjetas comunes vigentes. Como alternativa se presenta una
-entrada por objetivos. Si el catálogo crece, se valorarán colecciones para que
-la portada no se convierta en un recorrido interminable; la carga interna y su
-composición definitiva todavía no se han acordado. No se introduce otro sistema
-adaptativo ni se modifican preparaciones, ejecutores, autoría o registros.
+Javier elige **Catálogo directo** y autoriza implementarlo conservando las
+tarjetas comunes y los cambios recientes. Programas mantiene su lugar entre
+las tres pestañas. Búsqueda y Filtros comparten una fila; el selector Mostrar
+(todos, rutinas, por fases, iniciados) aparece al desplegar Filtros. Con texto
+muy ampliado se usa un botón de icono con etiqueta accesible para mantener
+espacio para escribir. Buscar tiene un único texto interior, sin rótulo flotante.
 
-La comparación se entrega como maqueta de conversación, no como pantalla
-Flutter implementada. Se conservan los arreglos recientes de pestañas,
-selectores y estilo Compacto. Este apartado sustituye la aceptación visual
-del paginador descrita en PRG-002/007; su reemplazo sigue pendiente.
+Las categorías activas del catálogo administrativo se leen mediante el
+repositorio existente y se muestran en una fila de chips con desplazamiento
+horizontal. Todos retira solo la categoría. Seleccionar otra conserva texto
+y modalidad; nuevas categorías aparecen en la siguiente carga de opciones.
+No hay un segundo catálogo de categorías en Flutter. Fallar su lectura no
+bloquea los programas y conserva el reintento independiente.
+
+El Cubit reúne automáticamente las tandas de 24 resultados de la consulta
+existente hasta su final y deduplica por identidad, sin páginas visibles,
+botones para continuar ni carga ligada al desplazamiento. Conserva los
+criterios entre tandas, cancela la incorporación de respuestas antiguas y
+permite reintentar si falla una consulta. Al volver de una ficha mantiene las
+tarjetas durante la actualización y si esta falla, conservando el recorrido.
+El catálogo es finito; si aumenta mucho habrá que revisar el coste de reunirlo
+completo y valorar colecciones, sin introducirlas anticipadamente.
+
+Se conservan ancho completo móvil, dos columnas amplias, fotos y composición
+compartida, pestañas sin recorte y estilo Compacto. Sesiones, ejercicios,
+preparaciones adaptativas, ejecutores, autoría y resultados no cambian. No hay
+dependencias, migraciones ni cambios de ADMIN. Este apartado sustituye el
+paginador visible de PRG-002/007. La alternativa de portada por objetivos de la
+maqueta no se implementa.
+
+Análisis limpio y 1.089 pruebas raíz correctas, con la omisión preexistente;
+67 pruebas específicas de programas/Biblioteca correctas. Incluyen consulta
+completa, respuestas fuera de orden, reintento, actualización conservada y
+categorías deslizables combinadas con texto/modalidad. Capturas de widgets reales
+a 390 px, 320 px con texto 2× y escritorio. La aceptación física de Javier sigue
+pendiente.
 
 ### Dejar un programa · PRG-005 · implementado el 18/10/2026
 

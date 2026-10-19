@@ -1164,6 +1164,15 @@ tildes, antes de paginar; también se puede filtrar por categoría. Las demos de
 desarrollo están clasificadas para probarlo. Implementado y verificado solo
 en desarrollo; aceptación autenticada en dispositivos pendiente.
 
+PRG-008 sustituye el paginador visible por catálogo directo: búsqueda y Filtros
+en una fila, selector Mostrar plegado y categorías de ADMIN en chips que se
+deslizan horizontalmente. Texto, modalidad y categoría se combinan; Todos solo
+retira la categoría. El catálogo reúne las tandas del repositorio hasta su final,
+sin páginas numeradas ni Ver más. Mantiene tarjetas, portadas y anchos vigentes,
+y las tarjetas visibles al actualizar tras volver de una ficha. Implementado y
+verificado en Flutter; aceptación física pendiente. Detalle y límites en
+[PROGRAMAS_GUIADOS.md](PROGRAMAS_GUIADOS.md).
+
 ## Plataformas
 
 - Android e iPhone son prioritarios para la experiencia del opositor.

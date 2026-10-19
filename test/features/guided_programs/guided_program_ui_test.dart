@@ -9,6 +9,8 @@ import 'package:entrenaop/features/guided_programs/presentation/guided_program_c
 import 'package:entrenaop/features/guided_programs/presentation/guided_catalog_panel.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_program_page.dart';
 import 'package:entrenaop/features/guided_programs/presentation/guided_session_page.dart';
+import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
+import 'package:workout_core/guided_program.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/get_starter_workout_usecase.dart';
 import 'package:entrenaop/features/workouts/domain/usecases/workout_execution_usecases.dart';
 
@@ -75,7 +77,7 @@ void main() {
       },
     );
   }
-  testWidgets('un catálogo de una página no muestra el paginador', (
+  testWidgets('el catálogo directo oculta los filtros hasta abrirlos', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -91,29 +93,43 @@ void main() {
     expect(find.text('Hipertrofia básica'), findsOneWidget);
     expect(find.text('Página 1'), findsNothing);
     expect(find.byTooltip('Página siguiente'), findsNothing);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
+    await tester.tap(find.text('Filtros'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     expect(find.text('Rutinas'), findsWidgets);
     expect(find.text('Por fases'), findsWidgets);
   });
-  testWidgets('la última página conserva la vuelta a la anterior', (
+  testWidgets('tres programas quedan juntos aunque la consulta use tandas', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: GuidedCatalogPanel(repository: GuidedTestRepository()),
+        theme: EntrenaTheme.dark,
+        builder: (_, child) => RepaintBoundary(
+          key: const ValueKey('review-boundary'),
+          child: child!,
+        ),
+        home: LibraryHubPage(
+          guided: _ThreeProgramsRepository(),
+          initialTab: 'programs',
         ),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byTooltip('Página siguiente'));
-    await tester.tap(find.byTooltip('Página siguiente'));
+    expect(find.byType(EntrenaProgramCard), findsNWidgets(3));
+    await capturePerformanceWidget(tester, 'biblioteca-directa-tres-programas');
+    await tester.ensureVisible(find.text('Dominadas'));
     await tester.pumpAndSettle();
-    expect(find.text('Página 2'), findsOneWidget);
-    await tester.tap(find.byTooltip('Página anterior'));
-    await tester.pumpAndSettle();
-    expect(find.text('Página 1'), findsOneWidget);
+    expect(find.text('Dominadas').hitTestable(), findsOneWidget);
+    expect(find.textContaining('Página '), findsNothing);
+    expect(find.text('Ver más'), findsNothing);
+    expect(find.byTooltip('Página siguiente'), findsNothing);
+    await capturePerformanceWidget(tester, 'biblioteca-directa-final');
+    expect(tester.takeException(), isNull);
   });
   testWidgets('seguir un programa conserva el acceso para entrenar', (
     tester,
@@ -256,4 +272,29 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+class _ThreeProgramsRepository extends GuidedTestRepository {
+  @override
+  Future<List<GuidedProgramCategory>> categories() async => const [
+    GuidedProgramCategory(id: 'hypertrophy', name: 'Hipertrofia'),
+    GuidedProgramCategory(id: 'strength', name: 'Fuerza'),
+  ];
+  @override
+  Future<GuidedCatalogPage> catalog({
+    String query = '',
+    GuidedProgramMode? mode,
+    int page = 0,
+    int pageSize = 2,
+    bool followed = false,
+    String? categoryId,
+  }) async => GuidedCatalogPage([
+    for (final name in page == 0 ? ['Glúteos', 'Empuje'] : ['Dominadas'])
+      GuidedProgram(
+        id: name,
+        name: name,
+        mode: guidedFixture.mode,
+        phases: guidedFixture.phases,
+      ),
+  ], hasMore: page == 0);
 }

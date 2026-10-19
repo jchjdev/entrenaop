@@ -79,20 +79,16 @@ void main() {
         view.$1 < 640 ? available : (available - 12) / 2,
       );
       expect(find.text('Rutina'), findsNWidgets(2));
-      expect(find.text('Fuerza'), findsNWidgets(2));
+      expect(find.text('Fuerza'), findsNWidgets(3));
       await tester.enterText(
         find.widgetWithText(TextField, 'Buscar'),
         'gluteo fuerza',
       );
       await tester.pump(const Duration(milliseconds: 350));
       await tester.pumpAndSettle();
-      final filter = find.widgetWithText(
-        DropdownButtonFormField<String>,
-        'Categoría',
-      );
-      await tester.tap(filter);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Iniciación').last);
+      final category = find.byKey(const ValueKey('guided-category-beginner'));
+      await tester.ensureVisible(category);
+      await tester.tap(category);
       await tester.pumpAndSettle();
       expect(repo.lastQuery, 'gluteo fuerza');
       expect(repo.lastCategory, 'beginner');
@@ -104,6 +100,54 @@ void main() {
       );
     });
   }
+
+  testWidgets(
+    'muchas categorías se deslizan y filtran junto con texto y modalidad',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repo = _Repository()
+        ..extraCategories = [
+          for (var i = 0; i < 8; i++)
+            GuidedProgramCategory(id: 'extra-$i', name: 'Categoría $i'),
+        ];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: Scaffold(body: GuidedCatalogPanel(repository: repo)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'gluteo');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Filtros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Por fases').last);
+      await tester.pumpAndSettle();
+      final strip = find.byKey(const PageStorageKey('guided-category-strip'));
+      final last = find.byKey(const ValueKey('guided-category-extra-7'));
+      expect(last.hitTestable(), findsNothing);
+      await tester.drag(strip, const Offset(-1800, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(last);
+      await tester.pumpAndSettle();
+      expect(repo.lastCategory, 'extra-7');
+      expect(repo.lastQuery, 'gluteo');
+      expect(repo.lastMode, GuidedProgramMode.phased);
+      expect(tester.widget<ChoiceChip>(last).selected, isTrue);
+      await tester.drag(strip, const Offset(1800, 0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Todos'));
+      await tester.pumpAndSettle();
+      expect(repo.lastCategory, isNull);
+      expect(repo.lastQuery, 'gluteo');
+      expect(repo.lastMode, GuidedProgramMode.phased);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'fallar categorías permite consultar programas y reintentar opciones',
@@ -120,19 +164,21 @@ void main() {
       repo.failCategories = false;
       await tester.tap(find.text('Reintentar categorías'));
       await tester.pumpAndSettle();
-      expect(find.text('Todas las categorías'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Todos'), findsOneWidget);
     },
   );
 }
 
 class _Repository extends GuidedTestRepository {
   String? lastCategory, lastQuery;
+  GuidedProgramMode? lastMode;
+  List<GuidedProgramCategory> extraCategories = [];
   int? lastPage;
   bool failCategories = false;
   @override
   Future<List<GuidedProgramCategory>> categories() async {
     if (failCategories) throw StateError('Sin conexión');
-    return [strength, beginner];
+    return [strength, beginner, ...extraCategories];
   }
 
   @override
@@ -147,6 +193,7 @@ class _Repository extends GuidedTestRepository {
     lastCategory = categoryId;
     lastQuery = query;
     lastPage = page;
+    lastMode = mode;
     return GuidedCatalogPage([
       categorized(),
       categorized(id: 'other'),

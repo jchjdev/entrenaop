@@ -10,13 +10,10 @@ class GuidedCatalogState {
     this.items = const [],
     this.loading = false,
     this.error,
-    this.page = 0,
-    this.hasMore = false,
   });
   final List<GuidedProgram> items;
-  final bool loading, hasMore;
+  final bool loading;
   final String? error;
-  final int page;
 }
 
 class GuidedCatalogCubit extends Cubit<GuidedCatalogState> {
@@ -28,31 +25,43 @@ class GuidedCatalogCubit extends Cubit<GuidedCatalogState> {
   bool followed = false;
   int _request = 0;
   Timer? _debounce;
-  Future<void> load({int page = 0}) async {
+  Future<void> load({bool keepItems = false}) async {
+    if (isClosed) return;
     final request = ++_request;
-    emit(GuidedCatalogState(loading: true, page: page, items: state.items));
+    final previousItems = keepItems ? state.items : const <GuidedProgram>[];
+    emit(GuidedCatalogState(loading: true, items: previousItems));
+    final currentQuery = query;
+    final currentMode = mode;
+    final currentFollowed = followed;
+    final currentCategory = categoryId;
     try {
-      final result = await repository.catalog(
-        query: query,
-        mode: mode,
-        followed: followed,
-        categoryId: categoryId,
-        page: page,
-      );
-      if (isClosed || request != _request) return;
-      emit(
-        GuidedCatalogState(
-          items: result.items,
+      final programs = <Object, GuidedProgram>{};
+      var page = 0;
+      // Las tandas son un detalle de consulta: el catálogo tiene un único final,
+      // sin páginas visibles ni un botón para continuar explorando.
+      while (true) {
+        final result = await repository.catalog(
+          query: currentQuery,
+          mode: currentMode,
+          followed: currentFollowed,
+          categoryId: currentCategory,
           page: page,
-          hasMore: result.hasMore,
-        ),
-      );
+          pageSize: 24,
+        );
+        if (isClosed || request != _request) return;
+        for (final program in result.items) {
+          programs[program.id ?? program] = program;
+        }
+        if (!result.hasMore || result.items.isEmpty) break;
+        page++;
+      }
+      emit(GuidedCatalogState(items: List.unmodifiable(programs.values)));
     } catch (_) {
       if (!isClosed && request == _request) {
         emit(
           GuidedCatalogState(
+            items: previousItems,
             error: 'No se pudieron cargar los programas. Revisa la conexión.',
-            page: page,
           ),
         );
       }
