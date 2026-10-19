@@ -7,8 +7,10 @@ conflictos del mismo trabajo y finalización transaccional que permite reintenta
 sin duplicar versiones. Publicación y validación editorial conservadas.
 Análisis limpio, 167 pruebas correctas (dos capturas optativas omitidas), web
 compilada y SQL/Chrome comprobados contra Dev; no cambia producción ni deportista.
-**Único siguiente bloque recomendado:** vista previa del programa como deportista
-y revisión previa a publicar, antes de preparar el acceso por subdominio.
+**Único siguiente bloque tras la aceptación de Javier · WEB-003:** preparar el
+acceso administrativo por subdominio, verificando alojamiento, entorno y acceso
+con su cuenta antes de publicar. La vista previa y la revisión previa a publicar
+quedan como mejoras posteriores, sin bloquear este acceso.
 [Límites y evidencia](ADMIN_DRAFT_RECOVERY_2026_10_19.md).
 
 **UI-055, 19/10/2026 · autoría contextual de ADMIN:** desde cada fase/rutina se

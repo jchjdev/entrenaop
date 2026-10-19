@@ -89,7 +89,11 @@ Tampoco se añade idempotencia a la creación independiente de sesiones o ejerci
 
 Se verifican ADMIN, su nuevo contrato y las fronteras del catálogo. No cambian
 la app del deportista, paquetes compartidos, algoritmo, subdominio ni producción.
-El único siguiente bloque recomendado es **vista previa del programa como
-deportista y revisión previa a publicar**, reutilizando el modelo vigente.
-Duplicar como punto de partida, avisos de contenido sin uso/retirado y registro
-de actividad administrativa quedan como propuestas ordenadas después de él.
+Tras aceptar este estado, Javier confirma que será el único administrador y
+prioriza concretar el acceso por subdominio (WEB-003). El único siguiente bloque
+es preparar ese acceso, verificando el alojamiento, el entorno de datos y la
+autenticación antes de publicar. La vista previa como deportista, la revisión
+previa a publicar, duplicar como punto de partida y los avisos de contenido
+sin uso/retirado quedan como mejoras posteriores. El historial tendría utilidad
+para consultar sus propios cambios y versiones; no se diseña colaboración entre
+editores ni se implementa un historial nuevo en este bloque.
