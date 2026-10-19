@@ -1,6 +1,8 @@
 # Solo para admin.entrenaop.es: no copiar a la raíz de la web pública.
 Options -Indexes
 DirectoryIndex index.html
+# El motor CanvasKit exige este MIME para compilar WebAssembly en el navegador.
+AddType application/wasm .wasm
 
 <IfModule mod_rewrite.c>
   RewriteEngine On

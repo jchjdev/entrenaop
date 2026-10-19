@@ -54,6 +54,18 @@ directo visible y la contraseña opcional cerrada, antes de generar el factor.
 
 ## Acceso y segundo factor
 
+Javier confirma el alta con **Microsoft Authenticator**, no Google Authenticator.
+La comprobación de Dev previa a la extracción devuelve un administrador, un
+requisito MFA activado y un factor administrativo verificado. El paquete
+`9d88cd6-20261019T094805Z.zip` se extrae en `public_html/admin` el 19/10/2026.
+El manifiesto público y el SHA-256 del JavaScript servido coinciden con el paquete.
+El primer arranque detecta que Hostinger sirve `.wasm` como `text/plain`;
+`AddType application/wasm .wasm` en el `.htaccess` exclusivo del subdominio lo
+corrige. Las respuestas GET de CanvasKit normal, Chromium y WebParagraph pasan
+a `application/wasm`, y una sesión nueva del navegador carga el acceso sin errores.
+Se prepara un paquete completo que incorpore ese ajuste; la aceptación autenticada
+en el subdominio sigue pendiente de la entrada privada del propietario.
+
 El router comprueba el estado administrativo antes de resolver una ruta
 privada. `/security` vive fuera del marco de contenido y permite completar:
 
