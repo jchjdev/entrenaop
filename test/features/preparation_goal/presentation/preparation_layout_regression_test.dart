@@ -21,6 +21,74 @@ Finder _decoration(String label) => find.byWidgetPredicate(
 
 void main() {
   setUpAll(loadReviewFont);
+  for (final scale in [1.0, 2.0]) {
+    testWidgets('días y semanas de carrera legibles con texto $scale', (
+      t,
+    ) async {
+      t.view.physicalSize = const Size(320, 844);
+      t.view.devicePixelRatio = 1;
+      addTearDown(t.view.reset);
+      await t.pumpWidget(
+        RepaintBoundary(
+          key: const ValueKey('review-boundary'),
+          child: MaterialApp(
+            theme: EntrenaTheme.dark,
+            debugShowCheckedModeBanner: false,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: child!,
+            ),
+            home: RunningContextFormPage(
+              goalId: 'goal',
+              goals: const _Goals(),
+              loadContext: ({required goalId, required programId}) async =>
+                  null,
+              saveContext: (_) async {},
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(
+        find.byKey(const Key('available-day-1')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.tap(find.byKey(const Key('available-day-1')));
+      await t.pumpAndSettle();
+      final expansion = find.text('Ajustar días concretos o reservar fuerza');
+      await t.scrollUntilVisible(
+        expansion,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.pumpAndSettle();
+      await t.tap(expansion);
+      await t.pumpAndSettle();
+      final minutes = find.widgetWithText(TextField, 'Minutos').first;
+      await t.ensureVisible(minutes);
+      await t.pumpAndSettle();
+      await t.enterText(minutes, '55');
+      await t.pumpAndSettle();
+      final dayController = t.widget<TextField>(minutes).controller!;
+      await capturePerformanceWidget(t, 'pulido-contexto-dia-320-$scale');
+      expect(t.takeException(), isNull);
+      final recent = find.byKey(const Key('recent-minutes-0'));
+      await t.scrollUntilVisible(
+        recent,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await t.pumpAndSettle();
+      await t.enterText(recent, '120');
+      await t.pumpAndSettle();
+      await capturePerformanceWidget(t, 'pulido-contexto-semana-320-$scale');
+      expect(t.takeException(), isNull);
+      expect(dayController.text, '55');
+      expect(t.widget<TextField>(recent).controller!.text, '120');
+    });
+  }
   for (final width in [320.0, 390.0, 640.0]) {
     for (final scale in [1.0, 2.0]) {
       testWidgets(
@@ -89,8 +157,8 @@ void main() {
           );
           await t.tap(find.text('Abrir referencia'));
           await t.pumpAndSettle();
-          final movement = _decoration('Movimiento que quieres mejorar');
-          final measurement = _decoration('Qué quieres mejorar');
+          final movement = _decoration('Movimiento');
+          final measurement = _decoration('Objetivo');
           expect(
             t.getTopLeft(measurement).dy - t.getBottomRight(movement).dy,
             greaterThanOrEqualTo(16),
@@ -176,7 +244,7 @@ void main() {
         await t.pumpAndSettle();
         final goal = find.widgetWithText(
           DropdownButtonFormField<String>,
-          'Qué quieres conseguir',
+          'Objetivo',
         );
         await t.ensureVisible(goal);
         await t.tap(goal);
@@ -186,7 +254,7 @@ void main() {
         final target = _decoration('Meta de 2 km');
         expect(
           t.getTopLeft(target).dy -
-              t.getBottomRight(_decoration('Qué quieres conseguir')).dy,
+              t.getBottomRight(_decoration('Objetivo')).dy,
           greaterThanOrEqualTo(16),
         );
         await t.enterText(

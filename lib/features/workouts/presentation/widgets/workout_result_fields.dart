@@ -69,7 +69,8 @@ class WorkoutDurationResultField extends StatelessWidget {
         keyboardType: TextInputType.number,
         inputFormatters: const [DurationInputFormatter()],
         decoration: InputDecoration(
-          labelText: '$label (min:seg)',
+          labelText: label,
+          helperText: 'min:seg',
           hintText: '00:00',
         ),
         onChanged: onChanged,

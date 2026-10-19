@@ -47,7 +47,8 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
         children: [
           TextField(
             decoration: const InputDecoration(
-              labelText: 'Buscar programas',
+              labelText: 'Buscar',
+              hintText: 'Nombre del programa',
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: cubit.search,
@@ -56,39 +57,19 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
           DropdownButtonFormField<String>(
             initialValue: _filter,
             isExpanded: true,
+            isDense: false,
+            itemHeight: null,
             decoration: const InputDecoration(labelText: 'Mostrar'),
             items: const [
               DropdownMenuItem(
                 value: 'all',
-                child: Text(
-                  'Todos los programas',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Text('Todos los programas'),
               ),
-              DropdownMenuItem(
-                value: 'guide',
-                child: Text(
-                  'Rutinas',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              DropdownMenuItem(
-                value: 'phased',
-                child: Text(
-                  'Por fases',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              DropdownMenuItem(value: 'guide', child: Text('Rutinas')),
+              DropdownMenuItem(value: 'phased', child: Text('Por fases')),
               DropdownMenuItem(
                 value: 'following',
-                child: Text(
-                  'Programas iniciados',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Text('Programas iniciados'),
               ),
             ],
             onChanged: (v) {
@@ -116,6 +97,8 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
               return DropdownButtonFormField<String>(
                 initialValue: cubit.categoryId ?? '',
                 isExpanded: true,
+                isDense: false,
+                itemHeight: null,
                 decoration: const InputDecoration(labelText: 'Categoría'),
                 items: [
                   const DropdownMenuItem(
@@ -123,14 +106,7 @@ class _CatalogState extends State<_Catalog> with AutomaticKeepAliveClientMixin {
                     child: Text('Todas las categorías'),
                   ),
                   for (final c in snapshot.data!)
-                    DropdownMenuItem(
-                      value: c.id,
-                      child: Text(
-                        c.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+                    DropdownMenuItem(value: c.id, child: Text(c.name)),
                 ],
                 onChanged: (value) =>
                     cubit.filterCategory(value == '' ? null : value),

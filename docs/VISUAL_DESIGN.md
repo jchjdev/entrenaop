@@ -1,5 +1,23 @@
 # Identidad visual de EntrenaOP
 
+## Pulido transversal de teclado y campos · UI-057 · 19/10/2026
+
+Javier amplía UI-053 a la revisión general de la app. Tocar fuera de una entrada
+cierra el teclado sin consumir la acción; cambiar de campo, usar sus accesorios
+o desplazar el texto de una nota conserva la edición. La política compartida se
+instala por encima del Navigator y alcanza también diálogos y paneles.
+
+Los grupos de campos responden al ancho útil y al tamaño del texto. Se corrigen
+filas de carrera/descanso/frecuencia cardíaca, encabezados de bloque y evaluación,
+botones de alto fijo, acceso con texto grande y opciones truncadas en Biblioteca.
+Las etiquetas breves mantienen su explicación y unidades fuera del valor cuando
+compiten por espacio; FAS conserva UI-031. Se amplían ayudas/errores del tema.
+Las etiquetas permanecen flotantes también en campos vacíos, con su valor y
+ejemplo separados, evitando recortes del texto de entrada.
+
+[Inventario, cambios, capturas, matriz y límites](UI_POLISH_2026_10_19.md).
+La aceptación con teclado nativo en dispositivos físicos sigue pendiente.
+
 ## Editor de series en móvil · UI-053 · 19/10/2026
 
 Las capturas de Javier muestran tiempos recortados por el sufijo `min:seg`,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/duration_input_formatter.dart';
 
+import 'responsive_field_group.dart';
+
 /// Campos de un tramo de carrera compartidos por el editor personal y el panel.
 /// La aplicación propietaria conserva el estado, la persistencia y los permisos.
 class RunningStepFields extends StatelessWidget {
@@ -42,45 +44,42 @@ class RunningStepFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
+        ResponsiveFieldGroup(
           children: [
-            Expanded(
-              child: DropdownButtonFormField<WorkoutTargetType>(
-                key: ValueKey('target-$targetType'),
-                initialValue: targetType,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  labelText: adminLabels ? 'Tipo de objetivo' : 'Objetivo',
+            DropdownButtonFormField<WorkoutTargetType>(
+              key: ValueKey('target-$targetType'),
+              initialValue: targetType,
+              isExpanded: true,
+              isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+              itemHeight: null,
+              decoration: InputDecoration(
+                labelText: adminLabels ? 'Tipo de objetivo' : 'Objetivo',
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: WorkoutTargetType.distance,
+                  child: Text('Distancia'),
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: WorkoutTargetType.distance,
-                    child: Text('Distancia'),
-                  ),
-                  DropdownMenuItem(
-                    value: WorkoutTargetType.duration,
-                    child: Text('Duración'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) onTargetTypeChanged(value);
-                },
-              ),
+                DropdownMenuItem(
+                  value: WorkoutTargetType.duration,
+                  child: Text('Duración'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) onTargetTypeChanged(value);
+              },
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _valueField(
-                targetController,
-                clock: !byDistance,
-                label: adminLabels
-                    ? byDistance
-                          ? 'Distancia (m)'
-                          : 'Tiempo (m:ss)'
-                    : byDistance
-                    ? 'Metros'
-                    : 'Min:seg',
-                validator: targetValidator,
-              ),
+            _valueField(
+              targetController,
+              clock: !byDistance,
+              label: adminLabels
+                  ? byDistance
+                        ? 'Distancia (m)'
+                        : 'Tiempo (m:ss)'
+                  : byDistance
+                  ? 'Metros'
+                  : 'Min:seg',
+              validator: targetValidator,
             ),
           ],
         ),
@@ -89,24 +88,19 @@ class RunningStepFields extends StatelessWidget {
           const Text('Ritmo opcional', style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 7),
         ],
-        Row(
+        ResponsiveFieldGroup(
           children: [
-            Expanded(
-              child: _valueField(
-                paceMinController,
-                clock: true,
-                label: adminLabels ? 'Ritmo (m:ss/km)' : 'Desde (min/km)',
-                hint: adminLabels ? null : '5:00',
-              ),
+            _valueField(
+              paceMinController,
+              clock: true,
+              label: adminLabels ? 'Ritmo (m:ss/km)' : 'Desde (min/km)',
+              hint: adminLabels ? null : '5:00',
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _valueField(
-                paceMaxController,
-                clock: true,
-                label: adminLabels ? 'Hasta (m:ss/km)' : 'Hasta (min/km)',
-                hint: adminLabels ? null : '5:20',
-              ),
+            _valueField(
+              paceMaxController,
+              clock: true,
+              label: adminLabels ? 'Hasta (m:ss/km)' : 'Hasta (min/km)',
+              hint: adminLabels ? null : '5:20',
             ),
           ],
         ),
@@ -115,9 +109,9 @@ class RunningStepFields extends StatelessWidget {
           key: ValueKey('recovery-$recoveryType'),
           initialValue: recoveryType,
           isExpanded: true,
-          decoration: InputDecoration(
-            labelText: adminLabels ? 'Recuperación' : 'Recuperación posterior',
-          ),
+          isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+          itemHeight: null,
+          decoration: InputDecoration(labelText: 'Recuperación'),
           items: [
             DropdownMenuItem(
               value: null,
@@ -140,38 +134,34 @@ class RunningStepFields extends StatelessWidget {
         ),
         if (recoveryType != null) ...[
           const SizedBox(height: 10),
-          Row(
+          ResponsiveFieldGroup(
             children: [
-              if (recoveryType != RunningRecoveryType.passive) ...[
-                Expanded(
-                  child: DropdownButtonFormField<bool>(
-                    key: ValueKey('measure-$recoveryByDistance'),
-                    initialValue: recoveryByDistance,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Medida'),
-                    items: const [
-                      DropdownMenuItem(value: false, child: Text('Duración')),
-                      DropdownMenuItem(value: true, child: Text('Distancia')),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) onRecoveryMeasureChanged(value);
-                    },
-                  ),
+              if (recoveryType != RunningRecoveryType.passive)
+                DropdownButtonFormField<bool>(
+                  key: ValueKey('measure-$recoveryByDistance'),
+                  initialValue: recoveryByDistance,
+                  isExpanded: true,
+                  isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+                  itemHeight: null,
+                  decoration: const InputDecoration(labelText: 'Medida'),
+                  items: const [
+                    DropdownMenuItem(value: false, child: Text('Duración')),
+                    DropdownMenuItem(value: true, child: Text('Distancia')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) onRecoveryMeasureChanged(value);
+                  },
                 ),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: _valueField(
-                  recoveryController,
-                  clock: !recoveryByDistance,
-                  label: adminLabels
-                      ? recoveryByDistance
-                            ? 'Recuperación (m)'
-                            : 'Recuperación (m:ss)'
-                      : recoveryByDistance
-                      ? 'Metros'
-                      : 'Min:seg',
-                ),
+              _valueField(
+                recoveryController,
+                clock: !recoveryByDistance,
+                label: adminLabels
+                    ? recoveryByDistance
+                          ? 'Recuperación (m)'
+                          : 'Recuperación (m:ss)'
+                    : recoveryByDistance
+                    ? 'Metros'
+                    : 'Min:seg',
               ),
             ],
           ),

@@ -40,10 +40,7 @@ void main() {
     expect(find.text('Conoce este apoyo'), findsOneWidget);
     expect(find.textContaining('Repeticiones que te quedaban'), findsNothing);
     expect(find.textContaining('no hay kilos obligatorios'), findsNothing);
-    final field = find.widgetWithText(
-      TextFormField,
-      'Tiempo válido realizado',
-    );
+    final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
     await t.enterText(field, '0:15');
     await t.ensureVisible(find.text('Guardar resultado'));
     await t.tap(find.text('Guardar resultado'));
@@ -114,10 +111,10 @@ void main() {
         expect(field.controller?.text ?? '', isEmpty);
       }
       Finder field(String label) => find.widgetWithText(TextFormField, label);
-      await t.enterText(field('Resultado · repeticiones válidas'), '8');
-      await t.enterText(field('Carga externa real · kg'), '12');
+      await t.enterText(field('Resultado'), '8');
+      await t.enterText(field('Carga externa'), '12');
       if (loadMode == 'bodyweight_plus_external') {
-        await t.enterText(field('Masa corporal actual · kg'), '75');
+        await t.enterText(field('Masa corporal'), '75');
       }
       final rir = find.text('Repeticiones que te quedaban · 0 a 10');
       await t.ensureVisible(rir);

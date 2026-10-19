@@ -146,9 +146,9 @@ class _RunningPaceCalculatorPageState extends State<RunningPaceCalculatorPage> {
     keyboardType: TextInputType.number,
     inputFormatters: const [DurationInputFormatter()],
     decoration: const InputDecoration(
-      labelText: 'Ritmo objetivo (min:seg/km)',
+      labelText: 'Ritmo objetivo',
       hintText: '00:00',
-      helperText: 'Escribe, por ejemplo, 3:40',
+      helperText: 'Min:seg/km. Escribe, por ejemplo, 3:40',
       prefixIcon: Icon(Icons.speed_rounded),
     ),
     onChanged: (_) => setState(() {}),

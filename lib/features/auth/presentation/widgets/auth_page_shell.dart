@@ -32,7 +32,10 @@ class AuthPageShell extends StatelessWidget {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 900;
+                final isWide =
+                    constraints.maxWidth >= 900 &&
+                    constraints.maxHeight >= 640 &&
+                    MediaQuery.textScalerOf(context).scale(16) <= 24;
                 if (isWide) {
                   return Row(
                     children: [
@@ -135,7 +138,7 @@ class _AuthFormPanel extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return EntrenaCard(
       tone: EntrenaCardTone.neutral,
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 400 ? 16 : 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -150,7 +153,14 @@ class _AuthFormPanel extends StatelessWidget {
             ),
             const SizedBox(height: 20),
           ],
-          Text(title, style: textTheme.headlineMedium),
+          Text(
+            title,
+            style:
+                MediaQuery.sizeOf(context).width < 400 &&
+                    MediaQuery.textScalerOf(context).scale(16) > 22
+                ? textTheme.headlineSmall
+                : textTheme.headlineMedium,
+          ),
           const SizedBox(height: 8),
           Text(
             subtitle,

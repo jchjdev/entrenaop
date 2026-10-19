@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/responsive_field_group.dart';
 import 'package:entrenaop/features/preparation_goal/data/repositories/running_test_repository.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/running_test_result.dart';
@@ -276,13 +277,11 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
           ),
         ),
         const SizedBox(height: 12),
-        _durationField(_time, 'Tiempo total de 2 km', 'Ejemplo: 8:30'),
+        _durationField(_time, 'Tiempo de 2 km', 'Ejemplo: 8:30'),
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
           initialValue: _rpe,
-          decoration: const InputDecoration(
-            labelText: 'Esfuerzo percibido (RPE) *',
-          ),
+          decoration: const InputDecoration(labelText: 'Esfuerzo (RPE) *'),
           items: [
             for (var value = 1; value <= 10; value++)
               DropdownMenuItem(value: value, child: Text('$value/10')),
@@ -290,11 +289,10 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
           onChanged: (value) => setState(() => _rpe = value),
         ),
         const SizedBox(height: 12),
-        Row(
+        ResponsiveFieldGroup(
           children: [
-            Expanded(child: _hrField(_averageHr, 'FC media (opcional)')),
-            const SizedBox(width: 12),
-            Expanded(child: _hrField(_maxHr, 'FC máxima (opcional)')),
+            _hrField(_averageHr, 'FC media'),
+            _hrField(_maxHr, 'FC máxima'),
           ],
         ),
         const SizedBox(height: 12),
@@ -302,9 +300,7 @@ class _RunningTestFormState extends State<RunningTestFormPage> {
           controller: _notes,
           maxLength: 1000,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Incidencias o notas (opcional)',
-          ),
+          decoration: const InputDecoration(labelText: 'Notas (opcional)'),
         ),
         SwitchListTile(
           title: const Text('Añadir parciales de 400 m'),
@@ -358,7 +354,7 @@ Widget _hrField(TextEditingController controller, String label) => TextField(
     FilteringTextInputFormatter.digitsOnly,
     LengthLimitingTextInputFormatter(3),
   ],
-  decoration: InputDecoration(labelText: label),
+  decoration: InputDecoration(labelText: label, helperText: 'Opcional · ppm'),
 );
 
 String _formatTime(int seconds) =>

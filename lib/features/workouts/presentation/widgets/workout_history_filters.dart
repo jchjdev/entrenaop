@@ -77,7 +77,7 @@ class WorkoutHistoryFilters extends StatelessWidget {
         isExpanded: true,
         isDense: false,
         itemHeight: null,
-        decoration: const InputDecoration(labelText: 'Tipo de entrenamiento'),
+        decoration: const InputDecoration(labelText: 'Entrenamiento'),
         items: [
           const DropdownMenuItem(value: '', child: Text('Todos los tipos')),
           for (final type in WorkoutSessionType.values)

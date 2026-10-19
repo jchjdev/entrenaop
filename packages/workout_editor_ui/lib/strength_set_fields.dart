@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'duration_input_formatter.dart';
 import 'workout_effort_field.dart';
+import 'responsive_field_group.dart';
 
 import 'package:workout_core/workout_template.dart';
 
@@ -62,21 +63,8 @@ class StrengthSetFields extends StatelessWidget {
   final String rirLabel;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final minimumWidth =
-          180 * MediaQuery.textScalerOf(context).scale(14) / 14;
-      final columns = constraints.maxWidth >= minimumWidth * 2 + 10 ? 2 : 1;
-      final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
-      return Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          for (final field in _fields()) SizedBox(width: width, child: field),
-        ],
-      );
-    },
-  );
+  Widget build(BuildContext context) =>
+      ResponsiveFieldGroup(spacing: 10, runSpacing: 10, children: _fields());
 
   List<Widget> _fields() => [
     if (showTarget)

@@ -231,7 +231,7 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
                     controller: input,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Descanso entre series (segundos)',
+                      labelText: 'Descanso (segundos)',
                       helperText:
                           'Entre ${session.restPolicy.minimumSeconds} y ${session.restPolicy.maximumSeconds} s',
                       errorText: error,

@@ -121,6 +121,7 @@ class _AdminAppState extends State<AdminApp> {
     title: 'EntrenaOP · Administración',
     debugShowCheckedModeBanner: false,
     theme: EntrenaTheme.dark,
+    builder: (context, child) => EntrenaInputPolicy(child: child!),
     routerConfig: _router,
   );
 }

@@ -1,5 +1,20 @@
 # Arquitectura de EntrenaOP
 
+## Política común de entrada · UI-057 · 19/10/2026
+
+`EntrenaInputPolicy`, en `entrena_ui`, envuelve el Navigator de deportista y
+ADMIN mediante el builder de MaterialApp. Sobrescribe la acción de toque
+exterior de EditableText, conserva el grupo de campo/accesorios y retira el
+teclado nativo al perder el foco de edición. ScrollConfiguration aplica cierre
+al desplazar páginas sin interceptar los gestos de selección o de una nota.
+No incorpora estado deportivo, repositorios ni navegación propia.
+
+`ResponsiveFieldGroup`, en `workout_editor_ui`, distribuye campos con el mismo
+ancho y pasa a una columna cuando el ancho/escala de texto lo requiere. Conserva
+los controladores, callbacks y contratos numéricos de cada editor. La verificación
+incluye los dos consumidores de estos paquetes, sin añadir dependencias.
+[Alcance y límites](UI_POLISH_2026_10_19.md).
+
 ## Marco administrativo local · UI-052 · 19/10/2026
 
 `admin_app/` organiza las rutas existentes dentro de un `ShellRoute`, con

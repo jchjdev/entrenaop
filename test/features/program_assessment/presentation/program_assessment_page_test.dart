@@ -4,7 +4,9 @@ import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_program.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+
+import '../../../helpers/performance_visual_review.dart';
 
 class _Assessment implements ProgramAssessmentRepository {
   _Assessment({this.allowRetry = false});
@@ -96,6 +98,7 @@ class _Assessment implements ProgramAssessmentRepository {
 }
 
 void main() {
+  setUpAll(loadReviewFont);
   const goal = PreparationGoal(
     id: 'goal',
     program: PreparationProgram(
@@ -104,6 +107,58 @@ void main() {
       kind: PreparationProgramKind.access,
     ),
   );
+  for (final width in [320.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('evaluación completa a $width px con texto $scale', (
+        t,
+      ) async {
+        t.view.physicalSize = Size(width, 844);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.reset);
+        await t.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: MaterialApp(
+              theme: EntrenaTheme.dark,
+              debugShowCheckedModeBanner: false,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(scale)),
+                child: EntrenaInputPolicy(child: child!),
+              ),
+              home: ProgramAssessmentPage(
+                goalId: 'goal',
+                loadGoal: (_) async => goal,
+                repository: _Assessment(),
+                loadBirthDate: () async => DateTime(2000, 1, 1),
+                saveBirthDate: (_) async {},
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        await capturePerformanceWidget(
+          t,
+          'pulido-evaluacion-${width.toInt()}-$scale',
+        );
+        expect(t.takeException(), isNull);
+        final field = find.byType(TextFormField);
+        await t.scrollUntilVisible(
+          field,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await t.pumpAndSettle();
+        await t.enterText(field, '6');
+        await t.pumpAndSettle();
+        await capturePerformanceWidget(
+          t,
+          'pulido-evaluacion-marca-${width.toInt()}-$scale',
+        );
+        expect(t.takeException(), isNull);
+      });
+    }
+  }
   testWidgets(
     'protege los campos y un fallo de recarga no convierte el guardado en fallido',
     (tester) async {

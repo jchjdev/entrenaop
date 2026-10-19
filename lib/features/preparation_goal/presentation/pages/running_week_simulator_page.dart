@@ -334,7 +334,7 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           keyboardType: TextInputType.number,
                           inputFormatters: const [DurationInputFormatter()],
                           decoration: const InputDecoration(
-                            labelText: 'Marca de 2 km (escenario)',
+                            labelText: 'Marca de 2 km',
                             hintText: '00:00',
                             helperText:
                                 'Puedes escribir solo dígitos: 1000 → 10:00.',
@@ -355,9 +355,9 @@ class _RunningWeekSimulatorPageState extends State<RunningWeekSimulatorPage> {
                           keyboardType: TextInputType.number,
                           inputFormatters: const [DurationInputFormatter()],
                           decoration: const InputDecoration(
-                            labelText: 'Objetivo de 2 km (opcional)',
+                            labelText: 'Meta de 2 km',
                             hintText: '00:00',
-                            helperText: 'Solo para comparar la meta con la marca actual.',
+                            helperText: 'Opcional. Solo para comparar la meta con la marca actual.',
                           ),
                           onChanged: (_) => setState(() => _decision = null),
                         ),

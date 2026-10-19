@@ -135,7 +135,7 @@ void main() {
         await t.pumpAndSettle();
         final frequency = find.widgetWithText(
           DropdownButtonFormField<int>,
-          'Sesiones por semana que ya toleras',
+          'Sesiones toleradas',
         );
         await t.ensureVisible(frequency);
         await t.tap(frequency);

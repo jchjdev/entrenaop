@@ -654,7 +654,7 @@ class _CorrectionDialogState extends State<_CorrectionDialog> {
                   maxLength: 300,
                   maxLines: 2,
                   decoration: const InputDecoration(
-                    labelText: 'Motivo de la corrección',
+                    labelText: 'Motivo',
                     hintText: 'Por ejemplo: anoté 8, pero fueron 10.',
                   ),
                   validator: (value) {
@@ -729,8 +729,8 @@ class _DurationCorrectionField extends StatelessWidget {
         keyboardType: TextInputType.number,
         inputFormatters: const [DurationInputFormatter()],
         decoration: InputDecoration(
-          labelText: '$label (min:seg)',
-          helperText: 'Escribe 128 para registrar 1:28.',
+          labelText: label,
+          helperText: 'Min:seg. Escribe 128 para registrar 1:28.',
         ),
         validator: (value) {
           final seconds = parseDurationInput(value ?? '');

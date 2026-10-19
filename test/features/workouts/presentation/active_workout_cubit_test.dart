@@ -484,10 +484,7 @@ void main() {
         ])
         ..failDiscard = true;
       final (cubit, router) = await _mountSession(tester, repository);
-      final notes = find.widgetWithText(
-        TextField,
-        '¿Cómo te has sentido? (opcional)',
-      );
+      final notes = find.widgetWithText(TextField, 'Sensaciones');
       await tester.ensureVisible(notes);
       await tester.enterText(notes, 'Conservar si falla');
       Future<void> open() async {
@@ -578,10 +575,7 @@ void main() {
         ..failAbandonment = true;
       final (cubit, router) = await _mountSession(tester, repository);
       final savedSets = repository.execution.sets;
-      final notes = find.widgetWithText(
-        TextField,
-        '¿Cómo te has sentido? (opcional)',
-      );
+      final notes = find.widgetWithText(TextField, 'Sensaciones');
       await tester.ensureVisible(notes);
       await tester.enterText(notes, 'Borrador que quiero conservar');
       await _chooseExitAbandonment(tester);
@@ -659,10 +653,7 @@ void main() {
         final repository = _Repository()..execution = _timedExecution(seconds);
         await _mountSession(tester, repository);
         await _openCurrentResult(tester);
-        final field = find.widgetWithText(
-          TextFormField,
-          'Tiempo realizado (min:seg)',
-        );
+        final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
         expect(
           tester.widget<TextFormField>(field).controller!.text,
           expectedText,
@@ -686,10 +677,7 @@ void main() {
       timer.onElapsedChanged(20);
       await tester.pump();
       await _openCurrentResult(tester);
-      final field = find.widgetWithText(
-        TextFormField,
-        'Tiempo realizado (min:seg)',
-      );
+      final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
       expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
       await _confirmOpenResult(tester);
       expect(repository.lastSetResult?.actualDurationSeconds, 20);
@@ -702,10 +690,7 @@ void main() {
     final repository = _Repository()..execution = _timedExecution(90);
     await _mountSession(tester, repository);
     await _openCurrentResult(tester);
-    final field = find.widgetWithText(
-      TextFormField,
-      'Tiempo realizado (min:seg)',
-    );
+    final field = find.widgetWithText(TextFormField, 'Tiempo realizado');
     await tester.ensureVisible(field);
     await tester.enterText(field, '20');
     expect(tester.widget<TextFormField>(field).controller!.text, '00:20');
@@ -789,10 +774,7 @@ void main() {
       final savedSets = repository.execution.sets;
       final (cubit, _) = await _mountSession(tester, repository);
       const draft = 'He hecho las series, pero tengo que salir.';
-      final notes = find.widgetWithText(
-        TextField,
-        '¿Cómo te has sentido? (opcional)',
-      );
+      final notes = find.widgetWithText(TextField, 'Sensaciones');
       await tester.ensureVisible(notes);
       await tester.enterText(notes, draft);
       await _confirmAbandonment(tester);

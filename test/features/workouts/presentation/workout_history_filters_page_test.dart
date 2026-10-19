@@ -112,7 +112,7 @@ void main() {
         await t.pumpAndSettle();
         for (final label in [
           'Preparación',
-          'Tipo de entrenamiento',
+          'Entrenamiento',
           'Estado de la sesión',
         ]) {
           await t.ensureVisible(find.text(label));

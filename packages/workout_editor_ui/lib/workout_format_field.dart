@@ -9,7 +9,7 @@ class WorkoutFormatField extends StatelessWidget {
     required this.exerciseCount,
     required this.onChanged,
     this.enabled = true,
-    this.label = 'Formato del bloque',
+    this.label = 'Formato',
   });
 
   final WorkoutBlockFormat format;
@@ -23,10 +23,30 @@ class WorkoutFormatField extends StatelessWidget {
       DropdownButtonFormField<WorkoutBlockFormat>(
         key: ValueKey(format),
         isExpanded: true,
+        isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+        itemHeight: null,
         initialValue: format,
+        selectedItemBuilder:
+            MediaQuery.textScalerOf(context).scale(16) > 24 ||
+                MediaQuery.sizeOf(context).width < 360
+            ? (_) => [
+                for (final name in [
+                  'Por series',
+                  'Superserie',
+                  'Circuito',
+                  'Intervalos',
+                  'Tabata',
+                  'EMOM',
+                  'AMRAP',
+                ])
+                  Align(alignment: Alignment.centerLeft, child: Text(name)),
+              ]
+            : null,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: const Icon(Icons.account_tree_outlined),
+          prefixIcon: MediaQuery.textScalerOf(context).scale(16) > 24
+              ? null
+              : const Icon(Icons.account_tree_outlined),
         ),
         items: [
           const DropdownMenuItem(

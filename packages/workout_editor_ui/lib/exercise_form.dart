@@ -152,8 +152,8 @@ class _ExerciseFormState extends State<ExerciseForm> {
               maxLines: 4,
               maxLength: 500,
               decoration: const InputDecoration(
-                labelText: 'Descripción (opcional)',
-                hintText: 'Técnica o indicaciones importantes',
+                labelText: 'Descripción',
+                hintText: 'Opcional: técnica o indicaciones importantes',
                 alignLabelWithHint: true,
               ),
               validator: ExerciseDraftValidator.descriptionError,
@@ -170,11 +170,10 @@ class _ExerciseFormState extends State<ExerciseForm> {
                 controller: _videoController,
                 keyboardType: TextInputType.url,
                 decoration: const InputDecoration(
-                  labelText: 'Enlace externo al vídeo (opcional)',
+                  labelText: 'Vídeo externo',
                   hintText: 'https://…',
-                  helperText:
-                      'Solo se guarda el enlace; no sube archivos a EntrenaOP.',
-                  helperMaxLines: 3,
+                  helperText: 'Opcional. Solo se guarda el enlace; no sube archivos a EntrenaOP.',
+                  helperMaxLines: 6,
                   prefixIcon: Icon(Icons.play_circle_outline_rounded),
                 ),
                 validator: ExerciseDraftValidator.videoUrlError,

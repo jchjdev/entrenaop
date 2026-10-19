@@ -128,7 +128,9 @@ void main() {
       );
       await tester.enterText(_field('Distancia (m)'), '200');
       await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Guardar borrador'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       expect(repository.saved, isNull);
@@ -144,7 +146,9 @@ void main() {
         'Series recuperables',
       );
       repository.failSave = false;
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Guardar borrador'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       expect(repository.saved?.name, 'Series recuperables');
@@ -174,7 +178,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -198,7 +204,9 @@ void main() {
     await tester.enterText(_field('Nombre de la sesión'), 'Series de 200 m');
     await tester.enterText(_field('Distancia (m)'), '200');
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:99');
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -224,7 +232,9 @@ void main() {
     await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
     await tester.enterText(_field('Distancia (m)'), '400');
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     expect(
@@ -288,7 +298,9 @@ void main() {
     await tester.tap(find.text('Distancia').last);
     await tester.pumpAndSettle();
     await tester.enterText(_field('Recuperación (m)'), '100');
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -324,7 +336,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -369,7 +383,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     final exercise = repository.saved!.blocks.single.exercises.single;
@@ -455,7 +471,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -497,7 +515,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -538,7 +558,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Guardar borrador'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     final sets = repository.saved!.blocks.single.exercises.single.sets;
@@ -607,7 +629,9 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar revisión como borrador'));
       await tester.pumpAndSettle();
       final set = repository.saved!.blocks.single.exercises.single.sets.single;
@@ -678,7 +702,9 @@ void main() {
         (tester.widget(_field('Veces')) as TextField).controller!.text,
         '2',
       );
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar revisión como borrador'));
       await tester.pumpAndSettle();
       expect(repository.revisedId, original.id);

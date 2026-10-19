@@ -1,3 +1,5 @@
+import 'package:workout_editor_ui/responsive_field_group.dart';
+
 import '../widgets/preparation_select_field.dart';
 
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -439,9 +441,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
               ...[
                 PreparationSelectField<String>(
                   initialValue: _goalMode,
-                  decoration: const InputDecoration(
-                    labelText: 'Qué quieres conseguir',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Objetivo'),
                   items: const [
                     DropdownMenuItem(
                       value: 'improve',
@@ -482,7 +482,7 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
                     keyboardType: TextInputType.number,
                     inputFormatters: const [DurationInputFormatter()],
                     decoration: const InputDecoration(
-                      labelText: 'Margen por debajo del umbral · min:seg',
+                      labelText: 'Margen · min:seg',
                       hintText: '00:00',
                       helperMaxLines: 4,
                       helperText: 'Elige un margen entre 00:00 y 02:00. Verás el tiempo resultante antes de publicar.',
@@ -617,28 +617,34 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
 
   Widget _dayDetails(int day) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-    child: Row(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(width: 85, child: Text(_dayNames[day - 1])),
-        Expanded(
-          child: TextField(
-            controller: _minutesByDay[day - 1],
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Minutos disponibles'),
-            onChanged: (_) => setState(() => _normalSessionMinutes = null),
-          ),
-        ),
-        const SizedBox(width: 8),
-        FilterChip(
-          label: const Text('Fuerza'),
-          selected: _strength.contains(day),
-          onSelected: (selected) => setState(() {
-            if (selected) {
-              _strength.add(day);
-            } else {
-              _strength.remove(day);
-            }
-          }),
+        Text(_dayNames[day - 1]),
+        const SizedBox(height: 12),
+        ResponsiveFieldGroup(
+          children: [
+            TextField(
+              controller: _minutesByDay[day - 1],
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Minutos',
+                helperText: 'Disponibles para ese día.',
+              ),
+              onChanged: (_) => setState(() => _normalSessionMinutes = null),
+            ),
+            FilterChip(
+              label: const Text('Fuerza'),
+              selected: _strength.contains(day),
+              onSelected: (selected) => setState(() {
+                if (selected) {
+                  _strength.add(day);
+                } else {
+                  _strength.remove(day);
+                }
+              }),
+            ),
+          ],
         ),
       ],
     ),
@@ -646,30 +652,27 @@ class _RunningContextFormPageState extends State<RunningContextFormPage> {
 
   Widget _weekRow(int index) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Row(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(
-          width: 105,
-          child: Text(
-            index == 0 ? 'Semana pasada' : 'Hace ${index + 1} semanas',
-          ),
-        ),
-        Expanded(
-          child: TextField(
-            key: Key('recent-days-$index'),
-            controller: _daysByWeek[index],
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Días'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: TextField(
-            key: Key('recent-minutes-$index'),
-            controller: _minutesByWeek[index],
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Minutos totales'),
-          ),
+        Text(index == 0 ? 'Semana pasada' : 'Hace ${index + 1} semanas'),
+        const SizedBox(height: 12),
+        ResponsiveFieldGroup(
+          minimumFieldWidth: 160,
+          children: [
+            TextField(
+              key: Key('recent-days-$index'),
+              controller: _daysByWeek[index],
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Días'),
+            ),
+            TextField(
+              key: Key('recent-minutes-$index'),
+              controller: _minutesByWeek[index],
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Minutos totales'),
+            ),
+          ],
         ),
       ],
     ),

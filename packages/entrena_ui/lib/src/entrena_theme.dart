@@ -270,6 +270,9 @@ abstract final class EntrenaTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        helperMaxLines: 6,
+        errorMaxLines: 4,
         filled: true,
         fillColor: EntrenaVisuals.dark.surfaceHigh,
         contentPadding: const EdgeInsets.symmetric(

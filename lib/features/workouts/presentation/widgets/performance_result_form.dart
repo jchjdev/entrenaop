@@ -111,11 +111,10 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           ? const [DurationInputFormatter(allowFraction: true)]
           : null,
       decoration: InputDecoration(
-        labelText: label,
+        labelText: label.split(' · ').first,
         hintText: time ? '00:00' : null,
-        helperText: time
-            ? 'Minutos:segundos. Teclea 130 para 01:30. Vacío si no lo sabes.'
-            : 'Déjalo vacío si no lo sabes.',
+        helperText:
+            '${label.contains(' · ') ? '${label.split(' · ').last}. ' : ''}${time ? 'Minutos:segundos. Teclea 130 para 01:30. Vacío si no lo sabes.' : 'Déjalo vacío si no lo sabes.'}',
       ),
       keyboardType: time
           ? const TextInputType.numberWithOptions(decimal: true)
@@ -290,20 +289,20 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
         else
           _number(
             'value',
-            _timeValue ? 'Tiempo válido realizado' : 'Resultado · ${p.unit}',
+            _timeValue ? 'Tiempo realizado' : 'Resultado · ${p.unit}',
             integer: p.isIntegerValue,
             time: _timeValue,
           ),
         if (p.measurement == 'REPS_IN_TIME')
-          _number('window', 'Tiempo realizado realmente', time: true),
+          _number('window', 'Tiempo realizado', time: true),
         if (p.usesLoad)
           _number(
             'load',
             p.loadMode == 'assisted'
                 ? 'Asistencia real · kg'
-                : 'Carga externa real · kg',
+                : 'Carga externa · kg',
           ),
-        if (p.needsBodyMass) _number('body', 'Masa corporal actual · kg'),
+        if (p.needsBodyMass) _number('body', 'Masa corporal · kg'),
         if (_familiarization)
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
@@ -346,10 +345,9 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
             }),
           ),
         ],
-        if (_penalties)
-          _number('penalty', 'Penalización del protocolo', time: true),
+        if (_penalties) _number('penalty', 'Penalización', time: true),
         if (p.measurement == 'REACTIVE_METRICS') ...[
-          _number('height', 'Altura medida del salto · metros'),
+          _number('height', 'Altura del salto · metros'),
           TextFormField(
             controller: _fields['method'],
             maxLength: 200,
@@ -447,9 +445,7 @@ class _PerformanceResultFormState extends State<PerformanceResultForm> {
           TextFormField(
             controller: _fields['reason'],
             maxLength: 300,
-            decoration: const InputDecoration(
-              labelText: 'Motivo de la corrección',
-            ),
+            decoration: const InputDecoration(labelText: 'Motivo'),
             validator: (v) =>
                 (v?.trim().length ?? 0) < 3 ? 'Explica el cambio.' : null,
           ),

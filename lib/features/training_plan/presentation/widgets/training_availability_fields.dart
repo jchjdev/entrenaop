@@ -53,7 +53,8 @@ class TrainingAvailabilityFields extends StatelessWidget {
           initialValue: days.length,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: 'Máximo de días disponibles',
+            labelText: 'Días disponibles',
+            helperText: 'Máximo de días que podrías entrenar.',
           ),
           items: [
             for (var n = 0; n <= 7; n++)

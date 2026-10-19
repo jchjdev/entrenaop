@@ -133,8 +133,8 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                   ],
                   const SizedBox(height: 26),
-                  SizedBox(
-                    height: 52,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 52),
                     child: FilledButton.icon(
                       onPressed: isLoading ? null : _submit,
                       icon: isLoading

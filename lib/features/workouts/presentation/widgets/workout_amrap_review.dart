@@ -181,7 +181,8 @@ class _WorkoutAmrapReviewState extends State<WorkoutAmrapReview> {
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => dismissKeyboard(),
                       decoration: const InputDecoration(
-                        labelText: 'Repeticiones realizadas en ese ejercicio',
+                        labelText: 'Repeticiones',
+                        helperText: 'Realizadas en el ejercicio elegido.',
                       ),
                       onChanged: (value) =>
                           update(draft.copyWith(partialReps: value)),

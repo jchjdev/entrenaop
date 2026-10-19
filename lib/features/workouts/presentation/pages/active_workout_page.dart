@@ -1,3 +1,5 @@
+import 'package:workout_editor_ui/responsive_field_group.dart';
+
 import '../widgets/workout_amrap_entry.dart';
 import '../widgets/workout_tabata_entry.dart';
 import '../../domain/entities/workout_amrap_draft.dart';
@@ -870,29 +872,24 @@ class _FinishCard extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
-              Row(
+              ResponsiveFieldGroup(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: averageHeartRateController,
-                      enabled: !saving,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'FC media',
-                        suffixText: 'ppm',
-                      ),
+                  TextField(
+                    controller: averageHeartRateController,
+                    enabled: !saving,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'FC media',
+                      suffixText: 'ppm',
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: maxHeartRateController,
-                      enabled: !saving,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'FC máxima',
-                        suffixText: 'ppm',
-                      ),
+                  TextField(
+                    controller: maxHeartRateController,
+                    enabled: !saving,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'FC máxima',
+                      suffixText: 'ppm',
                     ),
                   ),
                 ],
@@ -907,9 +904,8 @@ class _FinishCard extends StatelessWidget {
               maxLength: 500,
               textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
-                labelText: '¿Cómo te has sentido? (opcional)',
-                hintText:
-                    'Técnica, molestias, energía o cualquier detalle útil.',
+                labelText: 'Sensaciones',
+                hintText: 'Opcional: técnica, molestias, energía o cualquier detalle útil.',
                 alignLabelWithHint: true,
               ),
             ),

@@ -20,6 +20,7 @@ import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
+import 'package:workout_editor_ui/responsive_field_group.dart';
 
 class WorkoutEditorPage extends StatefulWidget {
   const WorkoutEditorPage({super.key});
@@ -433,8 +434,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     maxLines: 4,
                     maxLength: 500,
                     decoration: const InputDecoration(
-                      labelText: 'Descripción (opcional)',
-                      hintText: 'Objetivo o indicaciones generales',
+                      labelText: 'Descripción',
+                      hintText: 'Opcional: objetivo o indicaciones generales',
                       alignLabelWithHint: true,
                     ),
                   ),
@@ -530,16 +531,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: const Color(0x33FF8A50),
-                  foregroundColor: const Color(0xFFFF8A50),
-                  child: Text('${blockIndex + 1}'),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final header = (
+                  number: CircleAvatar(
+                    backgroundColor: const Color(0x33FF8A50),
+                    foregroundColor: const Color(0xFFFF8A50),
+                    child: Text('${blockIndex + 1}'),
+                  ),
+                  name: TextFormField(
                     key: ValueKey(block),
                     initialValue: block.name,
                     enabled: !saving,
@@ -557,50 +557,75 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                       _scheduleAutosave();
                     },
                   ),
-                ),
-                PopupMenuButton<int>(
-                  enabled: !saving,
-                  tooltip: 'Organizar bloque',
-                  onSelected: (value) {
-                    if (value == -1) {
-                      _moveBlock(blockIndex, blockIndex - 1);
-                    }
-                    if (value == -2) {
-                      _moveBlock(blockIndex, blockIndex + 1);
-                    }
-                    if (value == -3) _removeBlock(context, blockIndex);
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: -1,
-                      enabled: blockIndex > 0,
-                      child: const ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.arrow_upward_rounded),
-                        title: Text('Subir bloque'),
+                  actions: PopupMenuButton<int>(
+                    enabled: !saving,
+                    tooltip: 'Organizar bloque',
+                    onSelected: (value) {
+                      if (value == -1) {
+                        _moveBlock(blockIndex, blockIndex - 1);
+                      }
+                      if (value == -2) {
+                        _moveBlock(blockIndex, blockIndex + 1);
+                      }
+                      if (value == -3) _removeBlock(context, blockIndex);
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: -1,
+                        enabled: blockIndex > 0,
+                        child: const ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.arrow_upward_rounded),
+                          title: Text('Subir bloque'),
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: -2,
-                      enabled: blockIndex < _blocks.length - 1,
-                      child: const ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.arrow_downward_rounded),
-                        title: Text('Bajar bloque'),
+                      PopupMenuItem(
+                        value: -2,
+                        enabled: blockIndex < _blocks.length - 1,
+                        child: const ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.arrow_downward_rounded),
+                          title: Text('Bajar bloque'),
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: -3,
-                      enabled: _blocks.length > 1,
-                      child: const ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.delete_outline_rounded),
-                        title: Text('Eliminar bloque'),
+                      PopupMenuItem(
+                        value: -3,
+                        enabled: _blocks.length > 1,
+                        child: const ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.delete_outline_rounded),
+                          title: Text('Eliminar bloque'),
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                );
+                if (constraints.maxWidth < 300 ||
+                    MediaQuery.textScalerOf(context).scale(16) > 24) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          header.number,
+                          const Spacer(),
+                          header.actions,
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      header.name,
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    header.number,
+                    const SizedBox(width: 10),
+                    Expanded(child: header.name),
+                    header.actions,
                   ],
-                ),
-              ],
+                );
+              },
             ),
             const SizedBox(height: 4),
             WorkoutFormatField(
@@ -617,78 +642,66 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               if (block.format == WorkoutBlockFormat.tabata)
                 const _TabataSummary()
               else ...[
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                ResponsiveFieldGroup(
                   children: [
-                    SizedBox(
-                      width: 180,
-                      child: TextFormField(
-                        key: ValueKey(
-                          'rounds-${block.identity}-${block.rounds}',
+                    TextFormField(
+                      key: ValueKey('rounds-${block.identity}-${block.rounds}'),
+                      initialValue: block.rounds.toString(),
+                      enabled: !saving,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: switch (block.format) {
+                          WorkoutBlockFormat.intervals => 'Intervalos',
+                          WorkoutBlockFormat.emom => 'Vueltas',
+                          _ => 'Rondas',
+                        },
+                        prefixIcon: const Icon(Icons.repeat_rounded),
+                      ),
+                      validator: (value) => _integerValidator(
+                        value,
+                        min: 1,
+                        max: block.maxRounds,
+                        label: 'cantidad de rondas',
+                      ),
+                      onChanged: (value) {
+                        final rounds = int.tryParse(value);
+                        if (rounds != null &&
+                            rounds >= 1 &&
+                            rounds <= block.maxRounds) {
+                          _changeBlockRounds(blockIndex, rounds);
+                        }
+                      },
+                    ),
+                    if (block.format != WorkoutBlockFormat.emom)
+                      TextFormField(
+                        key: ValueKey('rest-${block.identity}-${block.format}'),
+                        initialValue: formatDurationSeconds(
+                          block.restAfterSeconds,
                         ),
-                        initialValue: block.rounds.toString(),
                         enabled: !saving,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: switch (block.format) {
-                            WorkoutBlockFormat.intervals => 'Intervalos',
-                            WorkoutBlockFormat.emom => 'Vueltas',
-                            _ => 'Rondas',
-                          },
-                          prefixIcon: const Icon(Icons.repeat_rounded),
+                          labelText:
+                              block.format == WorkoutBlockFormat.intervals
+                              ? 'Recuperación'
+                              : 'Descanso entre rondas',
+                          helperText: 'min:seg',
+                          hintText: '00:00',
+                          prefixIcon: const Icon(Icons.timer_outlined),
                         ),
-                        validator: (value) => _integerValidator(
-                          value,
-                          min: 1,
-                          max: block.maxRounds,
-                          label: 'cantidad de rondas',
-                        ),
+                        inputFormatters: const [DurationInputFormatter()],
+                        validator: (value) =>
+                            parseDurationInput(value ?? '') == null ||
+                                parseDurationInput(value ?? '')! > 3600
+                            ? 'Entre 00:00 y 60:00'
+                            : null,
                         onChanged: (value) {
-                          final rounds = int.tryParse(value);
-                          if (rounds != null &&
-                              rounds >= 1 &&
-                              rounds <= block.maxRounds) {
-                            _changeBlockRounds(blockIndex, rounds);
+                          final seconds = parseDurationInput(value);
+                          if (seconds != null) {
+                            block.restAfterSeconds = seconds;
+                            _scheduleAutosave();
                           }
                         },
-                      ),
-                    ),
-                    if (block.format != WorkoutBlockFormat.emom)
-                      SizedBox(
-                        width: 220,
-                        child: TextFormField(
-                          key: ValueKey(
-                            'rest-${block.identity}-${block.format}',
-                          ),
-                          initialValue: formatDurationSeconds(
-                            block.restAfterSeconds,
-                          ),
-                          enabled: !saving,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText:
-                                block.format == WorkoutBlockFormat.intervals
-                                ? 'Recuperación'
-                                : 'Descanso entre rondas',
-                            suffixText: 'min:seg',
-                            hintText: '00:00',
-                            prefixIcon: const Icon(Icons.timer_outlined),
-                          ),
-                          inputFormatters: const [DurationInputFormatter()],
-                          validator: (value) =>
-                              parseDurationInput(value ?? '') == null ||
-                                  parseDurationInput(value ?? '')! > 3600
-                              ? 'Entre 00:00 y 60:00'
-                              : null,
-                          onChanged: (value) {
-                            final seconds = parseDurationInput(value);
-                            if (seconds != null) {
-                              block.restAfterSeconds = seconds;
-                              _scheduleAutosave();
-                            }
-                          },
-                        ),
                       ),
                   ],
                 ),
@@ -725,7 +738,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Límite de tiempo',
-                    suffixText: 'min:seg',
+                    helperText: 'min:seg',
                     hintText: '00:00',
                     prefixIcon: Icon(Icons.hourglass_bottom_rounded),
                   ),
@@ -1636,10 +1649,11 @@ class _ExerciseEditorCardState extends State<_ExerciseEditorCard> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<WorkoutTargetType>(
+              isExpanded: true,
+              isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+              itemHeight: null,
               initialValue: data.targetType,
-              decoration: const InputDecoration(
-                labelText: 'Objetivo principal',
-              ),
+              decoration: const InputDecoration(labelText: 'Objetivo'),
               items: const [
                 DropdownMenuItem(
                   value: WorkoutTargetType.repetitions,
@@ -1877,43 +1891,39 @@ class _NumberField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 145,
-      child: TextFormField(
-        initialValue: suffix == 's'
-            ? formatDurationSeconds(num.parse(initialValue))
-            : initialValue,
-        enabled: enabled,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: suffix == 's'
-            ? const [DurationInputFormatter()]
-            : null,
-        decoration: InputDecoration(
-          labelText: label,
-          suffixText: suffix == 's' ? 'min:seg' : suffix,
-          hintText: suffix == 's' ? '00:00' : null,
-        ),
-        validator: (value) {
-          final normalized = value?.trim().replaceAll(',', '.') ?? '';
-          final number = suffix == 's'
-              ? parseDurationInput(normalized)?.toDouble()
-              : double.tryParse(normalized);
-          if (number == null || number < min || number > max) {
-            return 'Entre ${_numberText(min)} y ${_numberText(max)}';
-          }
-          if (integer && number != number.roundToDouble()) {
-            return 'Usa un entero';
-          }
-          return null;
-        },
-        onChanged: (value) {
-          final normalized = value.trim().replaceAll(',', '.');
-          final number = suffix == 's'
-              ? parseDurationInput(normalized)?.toDouble()
-              : double.tryParse(normalized);
-          if (number != null) onChanged(number);
-        },
+    return TextFormField(
+      initialValue: suffix == 's'
+          ? formatDurationSeconds(num.parse(initialValue))
+          : initialValue,
+      enabled: enabled,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: suffix == 's' ? const [DurationInputFormatter()] : null,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: suffix == 's' ? null : suffix,
+        helperText: suffix == 's' ? 'min:seg' : null,
+        hintText: suffix == 's' ? '00:00' : null,
       ),
+      validator: (value) {
+        final normalized = value?.trim().replaceAll(',', '.') ?? '';
+        final number = suffix == 's'
+            ? parseDurationInput(normalized)?.toDouble()
+            : double.tryParse(normalized);
+        if (number == null || number < min || number > max) {
+          return 'Entre ${_numberText(min)} y ${_numberText(max)}';
+        }
+        if (integer && number != number.roundToDouble()) {
+          return 'Usa un entero';
+        }
+        return null;
+      },
+      onChanged: (value) {
+        final normalized = value.trim().replaceAll(',', '.');
+        final number = suffix == 's'
+            ? parseDurationInput(normalized)?.toDouble()
+            : double.tryParse(normalized);
+        if (number != null) onChanged(number);
+      },
     );
   }
 }

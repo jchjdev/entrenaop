@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**UI-057 · 19/10/2026 · revisión general de teclado y formularios:** se atiende
+la petición expresa de Javier de ampliar UI-053 a toda la app. Política común
+de interacción, filas adaptables, etiquetas/opciones completas y composición
+corregida en acceso, disponibilidad, editores, resultados y evaluación. Se
+conservan Inicio/Mi plan, tarjetas, dominio, datos y permisos. La verificación
+incluye pruebas de los dos paquetes visuales y sus aplicaciones consumidoras.
+Análisis limpio en los cuatro proyectos, 1.038 pruebas de app, 176 de ADMIN,
+32 del editor y 13 del sistema visual correctas, con las tres omisiones
+existentes. Revisión de 157 capturas generadas y muestras conservadas.
+**Siguiente paso único de este tramo:** aceptación en iPhone y Android físicos
+del toque exterior, cambio de campo, diálogos/paneles y formularios corregidos.
+La revisión automatizada y las capturas no acreditan todavía ese recorrido nativo.
+[Inventario, evidencia y límites](UI_POLISH_2026_10_19.md).
+
 **WEB-005 · 19/10/2026 · publicado en Dev; entrada remota comprobada:** Javier autoriza
 `admin.entrenaop.es` conectado a Dev y confirma la identidad compartida con su
 cuenta de deportista. Subdominio/carpeta/HTTPS publicados en Hostinger; contraseña

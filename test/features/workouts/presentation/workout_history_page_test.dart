@@ -96,10 +96,7 @@ void main() {
         await tester.tap(find.byTooltip('Corregir resultado'));
         await tester.pumpAndSettle();
         expect(find.text('RIR real'), duration ? findsNothing : findsOneWidget);
-        final reason = find.widgetWithText(
-          TextFormField,
-          'Motivo de la corrección',
-        );
+        final reason = find.widgetWithText(TextFormField, 'Motivo');
         await tester.ensureVisible(reason);
         await tester.enterText(reason, 'Corregir anotación');
         await tester.tap(find.text('Guardar corrección'));

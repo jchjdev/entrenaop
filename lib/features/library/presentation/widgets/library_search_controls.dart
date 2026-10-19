@@ -41,7 +41,10 @@ class _LibrarySearchControlsState extends State<LibrarySearchControls> {
         onChanged: widget.onQueryChanged,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          labelText: widget.searchLabel,
+          labelText: MediaQuery.textScalerOf(context).scale(16) > 24
+              ? 'Buscar'
+              : widget.searchLabel,
+          hintText: widget.searchLabel,
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: widget.controller.text.isEmpty
               ? null
@@ -134,18 +137,13 @@ class LibraryFilterField extends StatelessWidget {
       key: ValueKey('$label-$value-${choices.keys.join('|')}'),
       initialValue: value ?? '',
       isExpanded: true,
+      isDense: false,
+      itemHeight: null,
       decoration: InputDecoration(labelText: label),
       items: [
         const DropdownMenuItem(value: '', child: Text('Cualquiera')),
         for (final entry in choices.entries)
-          DropdownMenuItem(
-            value: entry.key,
-            child: Text(
-              entry.value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          DropdownMenuItem(value: entry.key, child: Text(entry.value)),
       ],
       onChanged: (value) => onChanged(value == '' ? null : value),
     );

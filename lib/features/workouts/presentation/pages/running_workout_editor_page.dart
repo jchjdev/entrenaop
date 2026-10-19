@@ -221,15 +221,16 @@ class _RunningWorkoutEditorPageState extends State<RunningWorkoutEditorPage> {
                   const SizedBox(height: 12),
                   _RunningEstimateCard(estimate: _safeEstimate()),
                   const SizedBox(height: 26),
-                  Row(
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'Tramos',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
+                      const Text(
+                        'Tramos',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
@@ -613,8 +614,8 @@ class _RunningSegmentCardState extends State<_RunningSegmentCard> {
                       : null,
                   icon: const Icon(Icons.remove_circle_outline_rounded),
                 ),
-                SizedBox(
-                  width: 42,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 42),
                   child: Text(
                     '× ${data.repetitions}',
                     textAlign: TextAlign.center,

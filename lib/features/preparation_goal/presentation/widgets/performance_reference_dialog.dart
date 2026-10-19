@@ -487,7 +487,7 @@ class _PerformanceReferenceDialogState
 
                         menuMaxHeight: 300,
                         decoration: const InputDecoration(
-                          labelText: 'Movimiento que quieres mejorar',
+                          labelText: 'Movimiento',
                         ),
                         items: [
                           for (final p in widget.data.catalog)
@@ -512,7 +512,7 @@ class _PerformanceReferenceDialogState
                         initialValue: _goalMode,
 
                         decoration: const InputDecoration(
-                          labelText: 'Qué quieres mejorar',
+                          labelText: 'Objetivo',
                         ),
                         items: [
                           for (final m in _goal.measurements)
@@ -534,7 +534,7 @@ class _PerformanceReferenceDialogState
                       initialValue: _work.code,
 
                       decoration: const InputDecoration(
-                        labelText: 'Variante que has realizado',
+                        labelText: 'Variante realizada',
                       ),
                       items: [
                         for (final p in _variants)
@@ -560,7 +560,7 @@ class _PerformanceReferenceDialogState
                         initialValue: _mode,
 
                         decoration: const InputDecoration(
-                          labelText: 'Medición de esta práctica',
+                          labelText: 'Medición',
                         ),
                         items: [
                           for (final m in _workOptions)
@@ -600,9 +600,7 @@ class _PerformanceReferenceDialogState
                       maxLines: 2,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       decoration: InputDecoration(
-                        labelText: _needsSetup
-                            ? 'Cómo has preparado esta variante'
-                            : 'Condiciones (opcional)',
+                        labelText: _needsSetup ? 'Preparación' : 'Condiciones',
                         errorMaxLines: 3,
                         helper: Text(
                           _needsSetup
@@ -779,8 +777,8 @@ class _PerformanceReferenceDialogState
                     PreparationSelectField<int>(
                       initialValue: _frequency,
                       decoration: const InputDecoration(
-                        labelText: 'Sesiones por semana que ya toleras',
-                        helperText: 'Describe lo que ya haces con esta variante, no los días que quieres que te pautemos.',
+                        labelText: 'Sesiones toleradas',
+                        helperText: 'Por semana. Describe lo que ya haces con esta variante, no los días que quieres que te pautemos.',
                         helperMaxLines: 3,
                       ),
                       items: [

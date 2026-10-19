@@ -256,10 +256,10 @@ class _ProgramAssessmentPageState extends State<ProgramAssessmentPage> {
             controller: _controller(test, index),
             decoration: InputDecoration(
               labelText: 'Marca',
-              suffixText: test.unit == 'seconds' ? 'min:seg' : _unit(test.unit),
+              suffixText: test.unit == 'seconds' ? null : _unit(test.unit),
               hintText: test.unit == 'seconds' ? '00:00' : null,
               helperText:
-                  'Precisión: ${_mark(test.markStep)} ${_unit(test.unit)}',
+                  '${test.unit == 'seconds' ? 'Min:seg. ' : ''}Precisión: ${_mark(test.markStep)} ${_unit(test.unit)}',
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: test.unit == 'seconds'

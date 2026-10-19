@@ -304,8 +304,8 @@ class _AssessmentForm extends StatelessWidget {
                       : null,
                 ),
                 const SizedBox(height: 8),
-                SizedBox(
-                  height: 54,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 54),
                   child: FilledButton.icon(
                     onPressed: onEvaluate,
                     icon: const Icon(Icons.assessment_outlined),
@@ -355,6 +355,9 @@ class _MarkFieldCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stackMinimum =
+        MediaQuery.sizeOf(context).width < 360 ||
+        MediaQuery.textScalerOf(context).scale(16) > 24;
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
       child: Padding(
@@ -392,22 +395,33 @@ class _MarkFieldCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+                if (!stackMinimum)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      minimum,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    minimum,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                ),
               ],
             ),
+            if (stackMinimum) ...[
+              const SizedBox(height: 10),
+              Text(
+                minimum,
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+            ],
             const SizedBox(height: 16),
             TextFormField(
               controller: controller,

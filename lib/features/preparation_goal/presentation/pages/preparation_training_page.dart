@@ -900,10 +900,11 @@ class _PreparationTrainingPageState extends State<PreparationTrainingPage> {
                     ? const TextInputType.numberWithOptions(decimal: true)
                     : const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Marca que quieres conseguir (opcional)',
-                  suffixText: timed ? 'min:seg' : _unit(measurement),
+                  labelText: 'Marca objetivo',
+                  suffixText: timed ? null : _unit(measurement),
                   hintText: timed ? '00:00' : null,
-                  helperText: 'Deja vacío para mejorar sin fijar una marca.',
+                  helperText:
+                      '${timed ? 'Min:seg. ' : ''}Deja vacío para mejorar sin fijar una marca.',
                 ),
                 onChanged: (text) {
                   _plan = null;

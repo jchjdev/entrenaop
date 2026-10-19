@@ -81,7 +81,7 @@ void main() {
       expect(find.text('Rutina'), findsNWidgets(2));
       expect(find.text('Fuerza'), findsNWidgets(2));
       await tester.enterText(
-        find.widgetWithText(TextField, 'Buscar programas'),
+        find.widgetWithText(TextField, 'Buscar'),
         'gluteo fuerza',
       );
       await tester.pump(const Duration(milliseconds: 350));

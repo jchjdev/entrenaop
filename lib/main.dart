@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaInputPolicy;
+
 import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/core/di/injection_container.dart';
 import 'package:entrenaop/core/navigation/app_back_gesture.dart';
@@ -65,6 +67,7 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
         supportedLocales: const [Locale('es', 'ES')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         theme: withAppBackGesture(EntrenaTheme.dark),
+        builder: (context, child) => EntrenaInputPolicy(child: child!),
         routerConfig: _appRouter.config,
       ),
     );

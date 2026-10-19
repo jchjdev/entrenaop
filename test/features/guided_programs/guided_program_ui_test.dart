@@ -62,7 +62,7 @@ void main() {
           'programas-biblioteca-${view.$1}-${view.$3}',
         );
         await tester.enterText(
-          find.widgetWithText(TextField, 'Buscar programas'),
+          find.widgetWithText(TextField, 'Buscar'),
           'Sin coincidencias',
         );
         await tester.pump(const Duration(milliseconds: 350));
@@ -226,7 +226,7 @@ void main() {
       await tester.tap(find.text('Descansos según la pauta'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.widgetWithText(TextField, 'Descanso entre series (segundos)'),
+        find.widgetWithText(TextField, 'Descanso (segundos)'),
         '300',
       );
       await tester.tap(find.text('Aplicar ajustes'));
@@ -236,7 +236,7 @@ void main() {
         findsOneWidget,
       );
       await tester.enterText(
-        find.widgetWithText(TextField, 'Descanso entre series (segundos)'),
+        find.widgetWithText(TextField, 'Descanso (segundos)'),
         '120',
       );
       await tester.tap(find.text('Aplicar ajustes'));

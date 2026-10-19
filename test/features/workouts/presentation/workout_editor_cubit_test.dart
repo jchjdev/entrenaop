@@ -20,13 +20,90 @@ import 'package:workout_core/exercise_image.dart';
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
 import 'package:workout_editor_ui/workout_effort_field.dart';
+import 'package:workout_editor_ui/workout_format_field.dart';
+import 'package:entrena_ui/entrena_ui.dart' show EntrenaInputPolicy;
 
 import '../../exercises/domain/strength_exercise_catalog_test.dart'
     show readCatalogJson;
 import '../../../helpers/performance_visual_review.dart';
 
 void main() {
-  setUpAll(loadReviewFont);
+  setUpAll(() => loadReviewFont(always: true));
+  for (final width in [320.0, 390.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('bloques y campos del editor a $width px y texto $scale', (
+        t,
+      ) async {
+        t.view.physicalSize = Size(width, 844);
+        t.view.devicePixelRatio = 1;
+        addTearDown(t.view.reset);
+        final repository = _WorkoutRepository();
+        final cubit = WorkoutEditorCubit(
+          getExercises: GetExercisesUseCase(_ExerciseRepository()),
+          createExercise: CreateExerciseUseCase(_ExerciseRepository()),
+          draftStore: _DraftStore(),
+          createWorkout: CreatePersonalWorkoutUseCase(repository),
+          getWorkoutTemplate: GetWorkoutTemplateUseCase(repository),
+          reviseWorkout: RevisePersonalWorkoutUseCase(repository),
+          templateId: 'template-v1',
+        );
+        addTearDown(cubit.close);
+        await cubit.load();
+        await t.pumpWidget(
+          RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: MaterialApp(
+              theme: EntrenaTheme.dark,
+              debugShowCheckedModeBanner: false,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(scale)),
+                child: EntrenaInputPolicy(child: child!),
+              ),
+              home: BlocProvider.value(
+                value: cubit,
+                child: const WorkoutEditorPage(),
+              ),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        final name = find.widgetWithText(TextFormField, 'Nombre del bloque');
+        await t.ensureVisible(name);
+        await t.pumpAndSettle();
+        await capturePerformanceWidget(
+          t,
+          'pulido-editor-bloque-${width.toInt()}-$scale',
+        );
+        final selector = find.byType(WorkoutFormatField);
+        for (final format in [
+          'Superserie',
+          'Circuito',
+          'EMOM · cada minuto',
+          'AMRAP · máximas vueltas',
+          'Tabata · 8 × 20/10',
+        ]) {
+          await t.ensureVisible(selector);
+          await t.pumpAndSettle();
+          await t.tap(selector);
+          await t.pumpAndSettle();
+          await t.ensureVisible(find.text(format).last);
+          await t.pumpAndSettle();
+          await t.tap(find.text(format).last);
+          await t.pumpAndSettle();
+          expect(t.takeException(), isNull);
+          if (format == 'Circuito' || format == 'AMRAP · máximas vueltas') {
+            await t.ensureVisible(selector);
+            await t.pumpAndSettle();
+            await capturePerformanceWidget(
+              t,
+              'pulido-editor-${format.startsWith('Circuito') ? 'circuito' : 'amrap'}-${width.toInt()}-$scale',
+            );
+          }
+        }
+      });
+    }
+  }
   testWidgets('series, RIR y teclado se actualizan sin salir del editor', (
     t,
   ) async {
