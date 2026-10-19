@@ -884,8 +884,15 @@ objetivo de cada esfuerzo y una recuperación común. Sirven para trabajo
 temporizado de fuerza-resistencia o acondicionamiento; no representan series
 de carrera. Tabata se ofrece como protocolo cerrado de ocho rondas de 20
 segundos de trabajo y 10 de recuperación. El usuario elige uno o varios
-movimientos y la secuencia se repite hasta completar los ocho intervalos. EMOM
-alterna uno o varios ejercicios, asigna un minuto a cada uno y
+movimientos y la secuencia se repite hasta completar los ocho intervalos.
+Desde UI-051, **Iniciar Tabata** activa una preparación inicial de tres segundos
+y un reloj continuo para los ocho intervalos, incluida la recuperación final:
+cuatro minutos de protocolo, además de la preparación. Trabajo y recuperación
+avanzan automáticamente; pausar y reanudar conserva la fase y el tiempo restante.
+El bloque termina antes de iniciar cualquier bloque siguiente. Los tiempos del
+reloj quedan como borradores locales para revisar; no confirman resultados ni
+inventan carga o esfuerzo. Detalle y límites en `SESSION_CONTROLS_2026_10_08.md`.
+EMOM alterna uno o varios ejercicios, asigna un minuto a cada uno y
 repite la secuencia por vueltas; completar u omitir una estación conserva el
 tiempo restante hasta el siguiente minuto. AMRAP usa un único reloj global y
 registra vueltas completas, último ejercicio parcial y repeticiones parciales.

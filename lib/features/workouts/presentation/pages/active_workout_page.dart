@@ -1,4 +1,5 @@
 import '../widgets/workout_amrap_entry.dart';
+import '../widgets/workout_tabata_entry.dart';
 import '../../domain/entities/workout_amrap_draft.dart';
 import '../widgets/workout_session_records.dart';
 import '../widgets/workout_set_entry.dart';
@@ -249,6 +250,7 @@ class _ActiveContent extends StatefulWidget {
 
 class _ActiveContentState extends State<_ActiveContent> {
   int? _finalRpe;
+  int? _tabataBlockOrder;
   final _notesController = TextEditingController();
   final _averageHeartRateController = TextEditingController();
   final _maxHeartRateController = TextEditingController();
@@ -304,6 +306,24 @@ class _ActiveContentState extends State<_ActiveContent> {
           nextImageUrl: state.exercises[current.exerciseId]?.thumbnailUrl,
           onNextTechnique: () => showWorkoutTechnique(context, current),
         ),
+      );
+    } else if (_tabataBlockOrder != null ||
+        current?.blockFormat == WorkoutBlockFormat.tabata) {
+      // El cierre permanece visible hasta Continuar: un EMOM posterior
+      // arranca al montarse y no debe consumir su minuto mientras se revisa.
+      _tabataBlockOrder ??= current!.blockOrder;
+      body = WorkoutTabataEntry(
+        key: ValueKey('tabata-$_tabataBlockOrder'),
+        executionId: execution.id,
+        sets: execution.sets
+            .where((set) => set.blockOrder == _tabataBlockOrder)
+            .toList(),
+        exercises: state.exercises,
+        timerStore: widget.timerStore,
+        cueService: widget.cueService,
+        onIntervalEnded: cubit.endTabataInterval,
+        onContinue: () => setState(() => _tabataBlockOrder = null),
+        records: records,
       );
     } else if (current?.blockFormat == WorkoutBlockFormat.amrap) {
       body = WorkoutAmrapEntry(

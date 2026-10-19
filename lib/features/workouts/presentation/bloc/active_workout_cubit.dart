@@ -181,7 +181,30 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
     }
   }
 
-  Future<void> endCurrentSet({int? elapsedSeconds}) async {
+  /// El reloj encadena Tabata sin confirmar resultados ni añadir otro descanso.
+  Future<bool> endTabataInterval(String setId) async {
+    final set = state.execution?.currentSet;
+    if (set?.id != setId || set?.blockFormat != WorkoutBlockFormat.tabata) {
+      return false;
+    }
+    final old = _drafts[setId];
+    await updateDraft(
+      WorkoutSetResultInput(
+        resultId: setId,
+        actualDurationSeconds: 20,
+        actualLoadKg: old?.result.actualLoadKg,
+        actualRpe: old?.result.actualRpe,
+      ),
+      {...?old?.fields, 'duration': '0:20'},
+    );
+    await endCurrentSet(startRest: false);
+    return _drafts[setId]?.endedAt != null;
+  }
+
+  Future<void> endCurrentSet({
+    int? elapsedSeconds,
+    bool startRest = true,
+  }) async {
     if (_draftBusy ||
         state.status == ActiveWorkoutStatus.saving ||
         state.status == ActiveWorkoutStatus.resting) {
@@ -214,7 +237,7 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       );
       _draftBusy = false;
       final rest = workoutRestAfterSet(set, elapsedSeconds: elapsedSeconds);
-      if (updated.currentSet != null && rest > 0) {
+      if (startRest && updated.currentSet != null && rest > 0) {
         _startRest(
           updated,
           rest,
@@ -895,6 +918,11 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       final currentSet = execution.currentSet;
       if (currentSet != null) {
         await _timerStore.clear(_timerId(currentSet.id));
+        if (currentSet.blockFormat == WorkoutBlockFormat.tabata) {
+          await _timerStore.clear(
+            '$executionId:tabata:${currentSet.blockOrder}',
+          );
+        }
       }
       final updated = disposition == WorkoutMutationDisposition.queued
           ? execution.copyWith(
@@ -987,6 +1015,9 @@ class ActiveWorkoutCubit extends Cubit<ActiveWorkoutState> {
       for (final set in execution.sets) {
         await _timerStore.clear(_timerId(set.id));
         await _timerStore.clear(_amrapTimerId(set.blockOrder));
+        if (set.blockFormat == WorkoutBlockFormat.tabata) {
+          await _timerStore.clear('$executionId:tabata:${set.blockOrder}');
+        }
       }
     } catch (_) {}
     _drafts.clear();

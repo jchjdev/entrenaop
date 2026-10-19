@@ -1,5 +1,44 @@
 # Sesión, tiempo y ancho de Mi semana · UI-019/020 · 08/10/2026
 
+## UI-051 · Tabata continuo · 19/10/2026
+
+Javier pide que pulsar Iniciar ejecute todo el Tabata automáticamente, con
+opción de pausa. El ejecutor presenta un único reloj por bloque: tres segundos
+de preparación inicial y ocho intervalos de veinte segundos de trabajo y diez
+de recuperación. La recuperación final también forma parte del bloque: cuatro
+minutos de protocolo, además de la preparación. No se repite la preparación
+entre intervalos ni se espera a guardar cada resultado para arrancar el reloj
+siguiente. Al terminar mantiene **Tabata completado** y **Continuar**: no monta
+el bloque posterior hasta pulsarlo, evitando el inicio automático de un EMOM
+posterior. Tampoco confirma la sesión.
+
+**Pausar/Reanudar** conserva el punto exacto en preparación, trabajo o
+recuperación. El reloj usa tiempo monotónico durante el montaje y una
+instantánea local para recuperar la fase al volver. Si se salió con el reloj
+corriendo, cuenta el tiempo transcurrido; si estaba pausado, no consume tiempo.
+Los avisos reutilizan sonido/vibración de la sesión y anuncian la fase actual,
+sin reproducir en ráfaga señales de fases pasadas al recuperar el reloj.
+No se acredita ejecución continua en segundo plano con el sistema suspendido
+ni avisos con la aplicación cerrada; la aceptación física sigue pendiente.
+
+Cada trabajo terminado conserva veinte segundos medidos en un borrador local,
+sin enviar automáticamente resultados deportivos al servidor. La última serie
+se resuelve después de su recuperación para mantener el bloque visible hasta
+el final. **Series y registros** permite revisar esos tiempos y completar carga
+o esfuerzo cuando corresponda, antes de confirmar la sesión. No se rellenan
+estos datos a partir de la pauta. Un fallo al conservar el progreso pausa el
+reloj con aviso y permite reintentar sin saltar al intervalo siguiente.
+
+El cambio afecta solo a la ejecución Tabata de la app del deportista. Conserva
+plantillas, prescripciones, otros formatos, permisos y contratos del servidor.
+Las pruebas cubren las ocho rondas, recuperación final, pausa en las tres fases,
+restauración durante recuperación y con reloj corrido, guardado lento,
+fallo/reintento local, datos pendientes de confirmar y 320 px con texto doble.
+Verificación: `flutter analyze --no-pub` limpio; batería completa de raíz con
+983 pruebas correctas y una omisión existente; 65 pruebas del ejecutor/Tabata
+correctas, incluida la regresión Tabata seguido de EMOM. Pendiente probar el
+recorrido en un dispositivo físico.
+
 **Ampliación UI-022, 09/10/2026:** Javier confirma descartar también series
 registradas de una sesión en curso. Flecha y botón inferior ofrecen Salir sin
 guardar, con confirmación/conexión y restauración de la cita a pendiente.

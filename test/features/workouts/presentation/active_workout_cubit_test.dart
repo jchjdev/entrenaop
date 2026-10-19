@@ -38,6 +38,7 @@ import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_cub
 import 'package:entrenaop/features/workouts/presentation/bloc/active_workout_state.dart';
 import 'package:entrenaop/features/workouts/presentation/pages/active_workout_page.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/workout_set_countdown.dart';
+import 'package:entrenaop/features/workouts/presentation/widgets/workout_tabata_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,6 +46,103 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  test('Tabata avanza con borradores de tiempo sin confirmar ni inventar carga o esfuerzo', () async {
+    final repository = _Repository()..execution = _tabataExecution();
+    final store = MemoryWorkoutSessionDraftStore();
+    final cubit = _cubit(repository, sessionDraftStore: store);
+    addTearDown(cubit.close);
+    await cubit.load();
+    for (var i = 0; i < 8; i++) {
+      expect(await cubit.endTabataInterval('tabata-$i'), isTrue);
+      expect(cubit.state.status, ActiveWorkoutStatus.ready);
+    }
+    expect(cubit.state.execution!.currentSet, isNull);
+    expect(cubit.state.unconfirmedDraftCount, 8);
+    expect(repository.lastSetResult, isNull);
+    final drafts = await store.read('execution-1');
+    expect(drafts.length, 8);
+    for (final draft in drafts.values) {
+      expect(draft.result.actualDurationSeconds, 20);
+      expect(draft.result.actualRpe, isNull);
+      expect(draft.result.actualLoadKg, isNull);
+      expect(draft.fields['duration'], '0:20');
+      expect(draft.confirmed, isFalse);
+    }
+    await cubit.finish(finalRpe: 5);
+    expect(repository.finishAttempts, 0);
+  });
+
+  test(
+    'Tabata rechaza callbacks antiguos y no avanza si falla el guardado local',
+    () async {
+      final repository = _Repository()..execution = _tabataExecution();
+      final store = _FailingTabataDraftStore();
+      final cubit = _cubit(repository, sessionDraftStore: store);
+      addTearDown(cubit.close);
+      await cubit.load();
+      expect(await cubit.endTabataInterval('tabata-1'), isFalse);
+      expect(await cubit.endTabataInterval('tabata-0'), isFalse);
+      expect(cubit.state.execution!.currentSet!.id, 'tabata-0');
+      expect(cubit.state.errorMessage, isNotNull);
+      store.failWrite = false;
+      expect(await cubit.endTabataInterval('tabata-0'), isTrue);
+      expect(await cubit.endTabataInterval('tabata-0'), isFalse);
+      expect(cubit.state.execution!.currentSet!.id, 'tabata-1');
+    },
+  );
+
+  testWidgets('el ejecutor selecciona un único reloj para todo el Tabata', (
+    tester,
+  ) async {
+    final tabata = _tabataExecution();
+    final repository = _Repository()
+      ..execution = tabata.copyWith(
+        sets: [
+          ...tabata.sets,
+          const WorkoutExecutionSet(
+            id: 'next-emom',
+            blockOrder: 1,
+            blockName: 'EMOM',
+            blockFormat: WorkoutBlockFormat.emom,
+            itemOrder: 0,
+            exerciseId: 'exercise-1',
+            exerciseName: 'Sentadillas',
+            setOrder: 0,
+            targetReps: 8,
+            restAfterSeconds: 60,
+            status: WorkoutSetStatus.pending,
+          ),
+        ],
+      );
+    final cubit = _cubit(repository);
+    addTearDown(cubit.close);
+    await cubit.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider.value(
+          value: cubit,
+          child: ActiveWorkoutPage(
+            timerStore: _TimerStore(),
+            cueService: _CueService(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(WorkoutTabataEntry), findsOneWidget);
+    expect(find.byType(WorkoutSetCountdown), findsNothing);
+    expect(find.text('Iniciar Tabata'), findsOneWidget);
+    for (var i = 0; i < 8; i++) {
+      await cubit.endTabataInterval('tabata-$i');
+      await tester.pump();
+    }
+    // Resolver las series no desmonta el cierre del bloque ni abre el siguiente.
+    expect(cubit.state.execution!.currentSet!.id, 'next-emom');
+    expect(find.byType(WorkoutTabataEntry), findsOneWidget);
+    expect(find.byType(WorkoutSetCountdown), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   // Estas regresiones miden tarjetas completas en dispositivos; Ahem tiene
   // métricas distintas a las fuentes de la aplicación.
   setUpAll(() => loadReviewFont(always: true));
@@ -1761,6 +1859,39 @@ class _FailingClearDraftStore extends MemoryWorkoutSessionDraftStore {
     await super.clear(executionId);
   }
 }
+
+class _FailingTabataDraftStore extends MemoryWorkoutSessionDraftStore {
+  bool failWrite = true;
+  @override
+  Future<void> write(
+    String executionId,
+    Map<String, WorkoutSessionSetDraft> drafts,
+  ) async {
+    if (failWrite) throw StateError('Disco lleno');
+    await super.write(executionId, drafts);
+  }
+}
+
+WorkoutExecution _tabataExecution() => _execution().copyWith(
+  sets: List.generate(
+    8,
+    (i) => WorkoutExecutionSet(
+      id: 'tabata-$i',
+      blockOrder: 0,
+      blockName: 'Tabata',
+      blockFormat: WorkoutBlockFormat.tabata,
+      itemOrder: i,
+      exerciseId: 'exercise-1',
+      exerciseName: 'Sentadillas',
+      setOrder: 0,
+      targetDurationSeconds: 20,
+      targetLoadKg: 5,
+      targetRpe: 7,
+      restAfterSeconds: 10,
+      status: WorkoutSetStatus.pending,
+    ),
+  ),
+);
 
 WorkoutExecution _execution() => WorkoutExecution(
   id: 'execution-1',
