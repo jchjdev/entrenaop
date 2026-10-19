@@ -132,6 +132,11 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
       _error = null;
     });
     try {
+      // Cerrar las otras sesiones no debe exigir repetir un cambio de contraseña.
+      if (!_othersRevoked) {
+        await widget.repository.revokeOtherSessions();
+        _othersRevoked = true;
+      }
       final setup = await widget.repository.enroll();
       if (mounted) {
         setState(() {
@@ -142,7 +147,9 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo preparar el autenticador. Reintenta; no se ha activado la protección todavía.',
+          () => _error = _othersRevoked
+              ? 'No se pudo preparar el autenticador. Reintenta; no se ha activado la protección todavía.'
+              : 'No se pudieron cerrar las otras sesiones. Pulsa de nuevo Mostrar QR del autenticador para reintentar.',
         );
       }
     } finally {
@@ -280,82 +287,27 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
                         child: const Text('Reintentar comprobación'),
                       ),
                     ] else ...[
-                      if (!_status!.mfaRequired) ...[
-                        Text(
-                          '1. Cambia tu contraseña',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const Text(
-                          'Usa una contraseña única, larga y guardada en tu gestor. Después configuraremos el autenticador. No compartas sus claves ni códigos.',
-                        ),
-                        const SizedBox(height: 16),
-                        if (!_passwordChanged)
-                          AutofillGroup(
-                            child: Form(
-                              key: _passwordForm,
-                              child: Column(
-                                children: [
-                                  _passwordField(
-                                    _current,
-                                    'Contraseña actual',
-                                    current: true,
-                                  ),
-                                  _passwordField(_password, 'Nueva contraseña'),
-                                  _passwordField(
-                                    _repeat,
-                                    'Repetir nueva contraseña',
-                                    repeat: true,
-                                  ),
-                                  FilledButton(
-                                    onPressed: _busy ? null : _changePassword,
-                                    child: const Text('Cambiar contraseña'),
-                                  ),
-                                  TextButton(
-                                    onPressed: _busy
-                                        ? null
-                                        : () async {
-                                            setState(() {
-                                              _passwordChanged = true;
-                                              _current.clear();
-                                              _password.clear();
-                                              _repeat.clear();
-                                            });
-                                            await _revokeOthers();
-                                          },
-                                    child: const Text(
-                                      'Ya la cambié en la app del deportista',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        if (_passwordChanged)
-                          const Text('Contraseña actualizada.'),
-                        if (_passwordChanged && !_othersRevoked)
-                          OutlinedButton(
-                            onPressed: _busy ? null : _revokeOthers,
-                            child: const Text(
-                              'Reintentar cierre de otras sesiones',
-                            ),
-                          ),
-                        const SizedBox(height: 24),
-                      ],
-                      if (_status!.mfaRequired ||
-                          (_passwordChanged && _othersRevoked)) ...[
+                      ...[
                         Text(
                           _status!.mfaRequired
                               ? 'Verifica tu acceso'
-                              : '2. Activa tu autenticador',
+                              : 'Activa tu autenticador',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const Text(
                           'Usa una aplicación como Google Authenticator, Microsoft Authenticator o tu gestor con TOTP. Guarda su copia de recuperación en un lugar seguro.',
                         ),
+                        if (!_status!.mfaRequired)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Text(
+                              'Si ya cambiaste tu contraseña, continúa directamente con el QR. Usa una contraseña única y segura para tu cuenta.',
+                            ),
+                          ),
                         if (_factors.isEmpty && _setup == null)
                           FilledButton(
                             onPressed: _busy ? null : _enroll,
-                            child: const Text('Configurar autenticador'),
+                            child: const Text('Mostrar QR del autenticador'),
                           ),
                         if (_setup != null) ...[
                           const SizedBox(height: 16),
@@ -435,6 +387,59 @@ class _AdminSecurityPageState extends State<AdminSecurityPage> {
                           ),
                         if (_busy)
                           const Center(child: CircularProgressIndicator()),
+                        if (!_status!.mfaRequired &&
+                            _setup == null &&
+                            _factors.isEmpty)
+                          ExpansionTile(
+                            key: const ValueKey('admin-password-option'),
+                            title: const Text('Cambiar contraseña (opcional)'),
+                            subtitle: const Text(
+                              'Solo si todavía necesitas actualizarla.',
+                            ),
+                            children: [
+                              if (!_passwordChanged)
+                                AutofillGroup(
+                                  child: Form(
+                                    key: _passwordForm,
+                                    child: Column(
+                                      children: [
+                                        _passwordField(
+                                          _current,
+                                          'Contraseña actual',
+                                          current: true,
+                                        ),
+                                        _passwordField(
+                                          _password,
+                                          'Nueva contraseña',
+                                        ),
+                                        _passwordField(
+                                          _repeat,
+                                          'Repetir nueva contraseña',
+                                          repeat: true,
+                                        ),
+                                        FilledButton(
+                                          onPressed: _busy
+                                              ? null
+                                              : _changePassword,
+                                          child: const Text(
+                                            'Cambiar contraseña',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              if (_passwordChanged)
+                                const Text('Contraseña actualizada.'),
+                              if (_passwordChanged && !_othersRevoked)
+                                OutlinedButton(
+                                  onPressed: _busy ? null : _revokeOthers,
+                                  child: const Text(
+                                    'Reintentar cierre de otras sesiones',
+                                  ),
+                                ),
+                            ],
+                          ),
                       ],
                     ],
                   ],

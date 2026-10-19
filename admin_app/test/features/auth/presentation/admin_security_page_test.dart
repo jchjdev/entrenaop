@@ -102,7 +102,7 @@ Future<void> _passwords(WidgetTester tester) async {
 
 void main() {
   testWidgets(
-    'permite continuar tras cambiarla en la app del deportista sin otro cambio',
+    'abre el QR sin repetir contraseña y permite volver tras recargar',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(900, 1400));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -113,10 +113,25 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await _tap(tester, 'Ya la cambié en la app del deportista');
+      expect(find.text('Contraseña actual'), findsNothing);
+      await _tap(tester, 'Mostrar QR del autenticador');
       expect(repo.passwordChanges, 0);
       expect(repo.revokes, 1);
-      expect(find.text('Configurar autenticador'), findsOneWidget);
+      expect(repo.enrolls, 1);
+      expect(find.text('Código de seis cifras'), findsOneWidget);
+      expect(repo.enables, 0);
+      // Una recarga destruye el estado local: el acceso al QR sigue disponible.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AdminSecurityPage(repository: repo, onComplete: () {}),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Contraseña actual'), findsNothing);
+      await _tap(tester, 'Mostrar QR del autenticador');
+      expect(repo.passwordChanges, 0);
+      expect(repo.enrolls, 2);
       expect(repo.enables, 0);
     },
   );
@@ -158,17 +173,18 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _tap(tester, 'Cambiar contraseña (opcional)');
       await _tap(tester, 'Cambiar contraseña');
       expect(repo.passwordChanges, 0);
       expect(find.textContaining('al menos 16'), findsOneWidget);
       await _passwords(tester);
       await _tap(tester, 'Cambiar contraseña');
       expect(repo.passwordChanges, 1);
-      expect(find.text('Configurar autenticador'), findsNothing);
+      expect(repo.enrolls, 0);
       repo.failRevoke = false;
       await _tap(tester, 'Reintentar cierre de otras sesiones');
       expect(repo.passwordChanges, 1);
-      await _tap(tester, 'Configurar autenticador');
+      await _tap(tester, 'Mostrar QR del autenticador');
       expect(repo.enrolls, 1);
       expect(
         tester
@@ -276,12 +292,37 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Cambiar contraseña'),
+      find.text('Mostrar QR del autenticador'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Cambiar contraseña').hitTestable(), findsOneWidget);
+    expect(
+      find.text('Mostrar QR del autenticador').hitTestable(),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'un fallo al cerrar sesiones no crea el factor ni pide contraseña',
+    (tester) async {
+      final repo = _Security()..failRevoke = true;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AdminSecurityPage(repository: repo, onComplete: () {}),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Mostrar QR del autenticador');
+      expect(repo.enrolls, 0);
+      expect(repo.enables, 0);
+      expect(repo.passwordChanges, 0);
+      expect(find.text('Contraseña actual'), findsNothing);
+      repo.failRevoke = false;
+      await _tap(tester, 'Mostrar QR del autenticador');
+      expect(repo.enrolls, 1);
+      expect(repo.revokes, 2);
+      expect(repo.passwordChanges, 0);
+    },
+  );
 }

@@ -47,11 +47,16 @@ con campos vacíos, antes de configurar el autenticador.
 El router comprueba el estado administrativo antes de resolver una ruta
 privada. `/security` vive fuera del marco de contenido y permite completar:
 
-1. Cambio a una contraseña única de al menos 16 caracteres en el formulario,
-   o confirmación de haberla cambiado en la app del deportista. No hace falta
-   cambiarla dos veces. El formulario limita además la longitud a 72 bytes.
+1. Acceso directo a «Mostrar QR del autenticador». Javier confirma que la
+   contraseña ya está cambiada y comunica que la recarga le devuelve al cambio
+   de contraseña. Se retira esa barrera de estado local: actualizar la contraseña
+   queda en un apartado opcional cerrado, con mínimo de 16 caracteres y máximo
+   de 72 bytes. La recarga no exige repetir ni confirmar el cambio para llegar al
+   QR. Esto no certifica la fortaleza de una contraseña desde el cliente.
 2. Revocación de la renovación de otras sesiones mediante Supabase Auth,
-   conservando esta sesión de configuración.
+   conservando esta sesión de configuración. Se realiza antes de generar el
+   factor aunque no se use el formulario opcional de contraseña. Un fallo permite
+   reintentar desde el mismo botón, sin generar el factor hasta completar el cierre.
 3. Alta de TOTP con QR o clave manual, verificación del código y activación
    del requisito de MFA en servidor. Las siguientes entradas piden el código.
 
@@ -118,11 +123,13 @@ las rutas del admin a través de la web pública. La dirección raíz sirve
 
 ## Validación del bloque
 
-- Análisis de ADMIN limpio, 175 pruebas correctas y dos capturas optativas
+- Análisis de ADMIN limpio, 176 pruebas correctas y dos capturas optativas
   existentes omitidas; compilación web con la configuración
   de publicación. Pruebas de denegación a no administradores, guardado de
-  contraseña independiente del cierre de sesiones, cambio ya realizado en
-  deportista, fallo/confirmación MFA, ruta privada y pantalla estrecha con texto 2×.
+  contraseña independiente del cierre de sesiones, acceso directo al QR después
+  de recargar, reintento de revocación sin pedir contraseña, fallo/confirmación MFA,
+  ruta privada y pantalla estrecha con texto 2×. El formulario opcional mantiene
+  su expansión al mostrar errores y no bloquea el acceso al autenticador.
 - Regresión del QR: conversión del formato real de GoTrue y del SVG sin prefijo,
   incluidos colores con `#`. Chrome carga una imagen sintética de 210×210 usando
   la conversión de producción (`complete=true`, dimensiones naturales 210×210).
