@@ -1,5 +1,23 @@
 # Identidad visual de EntrenaOP
 
+## Dirección Compacto · UI-059 · 19/10/2026
+
+Javier considera demasiado grandes e impersonales los campos tras UI-057.
+Prefiere la propuesta Compacto: superficies discretas, menos contornos anidados,
+valores alineados y campos proporcionados al contenido. Exige mantener ese
+lenguaje en toda la app sin perder opciones, accesibilidad ni cierre del teclado.
+La preferencia no acredita la cobertura funcional de la maqueta inicial.
+
+Se conserva la infraestructura Material 3 y la política de entrada de UI-057.
+La densidad se resolverá en los componentes compartidos y su distribución;
+con poco ancho o texto ampliado se permite crecer y cambiar de columnas sin
+reducir artificialmente la letra ni recortar valores, etiquetas o errores.
+ADMIN mantiene su densidad de escritorio y consume las mismas piezas comunes.
+
+Se ha contrastado el inventario de los creadores y ampliado la propuesta visual.
+No se ha cambiado Flutter ni se ha decidido extraer un editor completo único.
+[Cobertura, diferencias actuales y criterio de implementación](COMPACT_FORMS_2026_10_19.md).
+
 ## Pulido transversal de teclado y campos · UI-057 · 19/10/2026
 
 Javier amplía UI-053 a la revisión general de la app. Tocar fuera de una entrada
