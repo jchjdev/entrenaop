@@ -132,3 +132,34 @@ en ADMIN → consultar biblioteca y contenido en la app de desarrollo. El único
 siguiente tramo recomendado es preparar el acceso administrativo desde el
 subdominio, concretando antes alojamiento, entorno y autenticación. No se da por
 cerrada toda la autoría ni las revisiones deportivas o de vídeo de otros bloques.
+
+## Claridad de catálogos · UI-054 · 19/10/2026
+
+Javier confirma que una sesión publicada puede usarse suelta y en varios
+programas guiados. Se añaden sus usos al catálogo de Sesiones, por versión y
+estado del programa, con acceso al editor y recarga al volver. La lectura se
+agrupa en una consulta adicional de los vínculos existentes para todo el listado;
+no se consulta una vez por tarjeta ni se duplican usos por fase. Los errores de
+lectura no se convierten en «Sin programas guiados asociados».
+
+Programas guiados incorpora búsqueda, filtros combinables de modalidad/estado,
+recuentos y tarjetas con resumen separado del pie de acciones. La retirada pasa
+a Más opciones; crear, editar borrador, crear revisión, portada, categorías y
+publicación conservan sus operaciones. Los calentamientos mantienen su recorrido.
+No se modifican modelo de datos, permisos, motor deportivo o app del deportista.
+
+Validación: `flutter analyze` limpio y 155 pruebas ADMIN correctas, con las dos
+capturas optativas existentes omitidas. Ocho regresiones nuevas cubren lectura
+agrupada y deduplicación por versión, estados históricos, error de consulta sin
+falso vacío, separación de preparaciones, búsqueda, enlace/recarga, filtros,
+publicación/retirada y móvil de 320 px con texto 2×. Compilación web de desarrollo
+correcta; tras corregir la proyección del nombre desde `content->>name`, se repite
+la batería y se genera la compilación final. La compilación final JavaScript usa
+`--no-wasm-dry-run`; la comprobación Wasm de la primera compilación había pasado.
+
+Una lectura SQL en Dev contrasta las seis sesiones demo enlazadas a los dos
+programas publicados. Chrome autenticado muestra esos usos y abre el editor de
+la versión enlazada; se vuelve sin guardar. Se recarga también la pestaña de
+ADMIN del navegador integrado. Las capturas reales están en
+[la evidencia de catálogos](visual-audit/admin-catalogs-2026-10-19/README.md).
+No se publica, retira, revisa ni ejecuta contenido remoto durante esta revisión.

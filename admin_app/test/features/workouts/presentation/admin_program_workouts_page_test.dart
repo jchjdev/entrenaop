@@ -3,6 +3,9 @@ import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
@@ -40,6 +43,7 @@ class _FakeWorkouts implements AdminWorkoutRepository {
   bool removed = false;
   int publishCalls = 0;
   int removeCalls = 0;
+  List<AdminWorkoutProgramUsage> usages = [];
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String templateId) async =>
@@ -87,6 +91,7 @@ class _FakeWorkouts implements AdminWorkoutRepository {
         version: 1,
         isRunning: true,
         catalogScope: scope,
+        guidedPrograms: usages,
       ),
   ];
 
@@ -138,6 +143,114 @@ Future<void> _previewAction(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets(
+    'muestra versiones y estados de uso, busca por programa y abre su editor',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(900, 1300));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _FakeWorkouts()
+        ..scope = 'general'
+        ..usages = const [
+          AdminWorkoutProgramUsage(
+            id: 'routine-v1',
+            name: 'Rutina compartida',
+            version: 1,
+            status: 'published',
+          ),
+          AdminWorkoutProgramUsage(
+            id: 'routine-v2',
+            name: 'Rutina compartida',
+            version: 2,
+            status: 'draft',
+          ),
+        ];
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) =>
+                AdminProgramWorkoutsPage(program: null, repository: repository),
+          ),
+          GoRoute(
+            path: '/guided-programs/:id/edit',
+            builder: (_, state) => Scaffold(
+              appBar: AppBar(),
+              body: Text('Editor ${state.pathParameters['id']}'),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Rutina compartida · v1 · Publicado'), findsOneWidget);
+      expect(find.text('Rutina compartida · v2 · Borrador'), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar sesiones'),
+        'compartida',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Series 200 m'), findsOneWidget);
+      await tester.tap(find.text('Rutina compartida · v2 · Borrador'));
+      await tester.pumpAndSettle();
+      expect(find.text('Editor routine-v2'), findsOneWidget);
+      repository.usages = [];
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(
+        find.text('No hay sesiones con esta búsqueda y estado.'),
+        findsOneWidget,
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar sesiones'),
+        '',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Sin programas guiados asociados'), findsOneWidget);
+      expect(repository.publishCalls, 0);
+      expect(repository.removeCalls, 0);
+    },
+  );
+
+  testWidgets(
+    'nombres de programa largos admiten móvil estrecho y texto grande',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final repository = _FakeWorkouts()
+        ..scope = 'general'
+        ..usages = const [
+          AdminWorkoutProgramUsage(
+            id: 'routine',
+            name: 'Rutina de fuerza de empuje, tirón y pierna para iniciación',
+            version: 12,
+            status: 'archived',
+          ),
+        ];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: AdminProgramWorkoutsPage(program: null, repository: repository),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.textContaining('Rutina de fuerza'),
+        150,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('publicar exige confirmación y vuelve a cargar el estado', (
     tester,
   ) async {

@@ -28,6 +28,24 @@ previas. No se adjunta otro calentamiento a una sesión que ya incluya uno.
 
 ### Contrato e integración
 
+**Catálogo compartido confirmado por Javier · UI-054 · 19/10/2026.** Las sesiones
+oficiales generales publicadas siguen disponibles sueltas y pueden formar parte
+de uno o varios programas guiados. No se introduce contenido exclusivo del
+programa. ADMIN muestra los usos de cada versión de sesión a partir de
+`guided_program_links`, con nombre, versión y estado del programa. Conserva
+visibles borradores y retirados para distinguirlos de publicaciones vigentes;
+repetir una sesión en varias fases de la misma versión no duplica el indicador.
+El enlace abre el editor de esa versión y al volver se recargan los usos.
+La búsqueda de sesiones incluye los nombres de los programas asociados. Un fallo
+al consultar usos se muestra como error de carga, no como ausencia de vínculos.
+
+El catálogo administrativo guiado separa información y acciones: modalidad,
+versión, estado, número de sesiones/fases, descripción breve y categorías antes
+del pie de edición, portada y publicación. Retirar una publicación permanece en
+Más opciones. Búsqueda sin tildes en nombre, descripción, público, material y
+categorías, combinable con modalidad y estado. Se conservan todas las versiones,
+las rutas y las operaciones vigentes. Sin nuevas dependencias ni migraciones.
+
 - `workout_core/guided_program.dart`: entidades y validación pura.
   `guided_program_codec.dart`: adaptación JSON fuera de las entidades.
 - `admin_app/lib/features/guided_programs/`: repositorio, adaptador y pantallas.

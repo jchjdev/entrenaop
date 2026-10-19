@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**UI-054, 19/10/2026 · catálogos ADMIN de sesiones y programas guiados:** Javier
+confirma las sesiones generales reutilizables. Se muestran sus programas de uso,
+versiones y estados, con enlace al editor. Programas guiados separa resumen,
+categorías y acciones e incorpora búsqueda sin tildes y filtros de modalidad y
+estado. Análisis limpio, 155 pruebas correctas y las dos capturas optativas
+existentes omitidas; compilación web correcta. Comprobación autenticada en ADMIN
+contra Dev: seis sesiones demo enlazadas a sus dos programas, acceso al editor y
+catálogo actualizado en la pestaña del navegador integrado. Sin mutaciones
+remotas, migraciones, dependencias, cambios del deportista ni producción.
+**Único siguiente tramo recomendado de este recorrido:** preparar el acceso
+administrativo desde el subdominio, concretando alojamiento, entorno y
+autenticación antes de desplegar.
+[Detalle y límites](ADMIN_NAVIGATION_2026_10_19.md#claridad-de-catálogos--ui-054--19102026).
+
 **UI-052, 19/10/2026 · organización local de ADMIN comprobada:** navegación
 lateral agrupada y adaptable, Preparaciones separada de Programas guiados y
 acceso recuperado al laboratorio de flexiones junto al de rendimiento. Se

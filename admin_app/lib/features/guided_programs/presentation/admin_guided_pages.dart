@@ -2,6 +2,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/admin_shell.dart';
+import '../../../core/catalog_search.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/guided_program.dart';
@@ -11,6 +12,7 @@ import '../domain/admin_guided_repository.dart';
 import '../../editorial_covers/domain/program_cover.dart';
 import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
+import 'admin_guided_program_card.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
@@ -31,6 +33,31 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
   List<GuidedWarmup>? _warmups;
   String? _error;
   bool _busy = false;
+  final _search = TextEditingController();
+  GuidedProgramMode? _mode;
+  String _statusFilter = 'all';
+
+  List<GuidedProgram> get _visiblePrograms => (_programs ?? <GuidedProgram>[])
+      .where(
+        (p) =>
+            (_mode == null || p.mode == _mode) &&
+            (_statusFilter == 'all' || p.status == _statusFilter) &&
+            matchesCatalogSearch(_search.text, [
+              p.name,
+              p.description,
+              p.audience,
+              p.equipment,
+              ...p.categories.map((c) => c.name),
+            ]),
+      )
+      .toList();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -122,21 +149,21 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
           ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 960),
+        constraints: const BoxConstraints(maxWidth: 1100),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
             Text(
               widget.warmups
                   ? 'Calentamientos reutilizables'
-                  : 'Rutinas y programas por fases',
+                  : 'Programas guiados',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 12),
             Text(
               widget.warmups
                   ? 'Cada guardado conserva una versión. Puedes asignarla a varias sesiones.'
-                  : 'Un único creador para ambos recorridos. Publicar los incorpora al catálogo; no activa planes adaptativos.',
+                  : 'Organiza sesiones del catálogo en rutinas repetibles o recorridos por fases.',
             ),
             const SizedBox(height: 20),
             Wrap(
@@ -165,93 +192,112 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                   ),
                 if (!widget.warmups)
                   OutlinedButton.icon(
-                    onPressed: () async {
-                      await manageGuidedCategories(context, widget.repository);
-                      if (mounted) await _load();
-                    },
+                    onPressed: _busy
+                        ? null
+                        : () async {
+                            await manageGuidedCategories(
+                              context,
+                              widget.repository,
+                            );
+                            if (mounted) await _load();
+                          },
                     icon: const Icon(Icons.category_outlined),
                     label: const Text('Categorías'),
                   ),
+                if (!widget.warmups)
+                  IconButton.outlined(
+                    onPressed: _busy ? null : _load,
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Actualizar',
+                  ),
               ],
             ),
+            const SizedBox(height: 24),
+            if (!widget.warmups) ...[
+              TextField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Buscar programas',
+                  hintText: 'Nombre, categoría o descripción',
+                  prefixIcon: Icon(Icons.search),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  for (final (mode, label) in <(GuidedProgramMode?, String)>[
+                    (null, 'Todos'),
+                    (GuidedProgramMode.guide, 'Rutinas'),
+                    (GuidedProgramMode.phased, 'Por fases'),
+                  ])
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: _mode == mode,
+                      onSelected: (_) => setState(() => _mode = mode),
+                    ),
+                  SizedBox(
+                    width: 220,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _statusFilter,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Estado'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'all',
+                          child: Text('Todos los estados'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'draft',
+                          child: Text('Borradores'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'published',
+                          child: Text('Publicados'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'archived',
+                          child: Text('Retirados'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => _statusFilter = value ?? 'all'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              if (_programs?.isNotEmpty == true)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    '${_visiblePrograms.length} de ${_programs!.length} programas · ${_programs!.where((p) => p.status == 'published').length} publicados · ${_programs!.where((p) => p.status == 'draft').length} borradores',
+                  ),
+                ),
+            ],
             if (_error != null) ...[
               Text(_error!),
               TextButton(onPressed: _load, child: const Text('Reintentar')),
             ],
             if (_programs == null && _warmups == null && _error == null)
               const Center(child: CircularProgressIndicator()),
-            for (final p in _programs ?? <GuidedProgram>[])
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p.name,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Text(
-                        '${p.modeLabel} · v${p.version} · ${p.status == 'draft'
-                            ? 'Borrador'
-                            : p.status == 'published'
-                            ? 'Publicado'
-                            : 'Retirado'}',
-                      ),
-                      const SizedBox(height: 12),
-                      if (p.categories.isNotEmpty)
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: [
-                            for (final c in p.categories)
-                              Chip(
-                                label: Text(c.name),
-                                avatar: c.id == p.primaryCategoryId
-                                    ? const Icon(Icons.star_outline, size: 16)
-                                    : null,
-                              ),
-                          ],
-                        ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          if (widget.covers != null)
-                            OutlinedButton.icon(
-                              onPressed: _busy ? null : () => _cover(p),
-                              icon: const Icon(Icons.image_outlined),
-                              label: const Text('Portada'),
-                            ),
-                          OutlinedButton(
-                            onPressed: _busy
-                                ? null
-                                : () => _open('${p.id}/edit'),
-                            child: Text(
-                              p.status == 'draft'
-                                  ? 'Editar borrador'
-                                  : 'Crear revisión',
-                            ),
-                          ),
-                          if (p.status == 'draft')
-                            FilledButton(
-                              onPressed: _busy
-                                  ? null
-                                  : () => _status(p, 'published'),
-                              child: const Text('Publicar'),
-                            ),
-                          if (p.status == 'published')
-                            OutlinedButton(
-                              onPressed: _busy
-                                  ? null
-                                  : () => _status(p, 'archived'),
-                              child: const Text('Retirar del catálogo'),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+            if (_programs?.isNotEmpty == true && _visiblePrograms.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Text('No hay programas con esta búsqueda y filtros.'),
+              ),
+            for (final p in _visiblePrograms)
+              AdminGuidedProgramCard(
+                program: p,
+                onEdit: _busy ? null : () => _open('${p.id}/edit'),
+                onPublish: _busy ? null : () => _status(p, 'published'),
+                onRetire: _busy ? null : () => _status(p, 'archived'),
+                onCover: widget.covers == null || _busy
+                    ? null
+                    : () => _cover(p),
               ),
             for (final w in _warmups ?? <GuidedWarmup>[])
               Card(

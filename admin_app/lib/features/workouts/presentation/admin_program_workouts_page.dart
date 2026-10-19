@@ -46,6 +46,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                   matchesCatalogSearch(_search.text, [
                     workout.name,
                     workout.isRunning ? 'Carrera' : 'Fuerza',
+                    ...workout.guidedPrograms.map((p) => p.name),
                   ]),
             )
             .toList(growable: false);
@@ -93,6 +94,13 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
     if (mounted) await _load();
   }
 
+  Future<void> _openGuidedProgram(AdminWorkoutProgramUsage program) async {
+    await context.push(
+      '/guided-programs/${Uri.encodeComponent(program.id)}/edit',
+    );
+    if (mounted) await _load();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AdminShellScope.hidesAppBar(context)
@@ -122,7 +130,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
             const SizedBox(height: 8),
             Text(
               widget.program == null
-                  ? 'Solo las sesiones publicadas aquí aparecerán en la biblioteca general de la app.'
+                  ? 'Las sesiones publicadas aparecen en la biblioteca y pueden reutilizarse en programas guiados.'
                   : 'Estas plantillas pertenecen a este programa. Publicarlas no las muestra en la biblioteca general ni las asigna a alumnos.',
             ),
             const SizedBox(height: 24),
@@ -140,7 +148,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Buscar sesiones',
-                hintText: 'Nombre, carrera o fuerza',
+                hintText: 'Nombre, programa guiado, carrera o fuerza',
                 prefixIcon: Icon(Icons.search),
               ),
             ),
@@ -189,24 +197,53 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                     title: Text(workout.name),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 6,
-                        crossAxisAlignment: WrapCrossAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            workout.isRunning
-                                ? 'Carrera · versión ${workout.version}'
-                                : 'Fuerza · versión ${workout.version}',
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                workout.isRunning
+                                    ? 'Carrera · versión ${workout.version}'
+                                    : 'Fuerza · versión ${workout.version}',
+                              ),
+                              Chip(
+                                label: Text(switch (workout.status) {
+                                  'draft' => 'Borrador',
+                                  'published' => 'Publicado',
+                                  'archived' => 'Retirado',
+                                  _ => workout.status,
+                                }),
+                              ),
+                            ],
                           ),
-                          Chip(
-                            label: Text(switch (workout.status) {
-                              'draft' => 'Borrador',
-                              'published' => 'Publicado',
-                              'archived' => 'Retirado',
-                              _ => workout.status,
-                            }),
-                          ),
+                          if (widget.program == null) ...[
+                            const SizedBox(height: 8),
+                            if (workout.guidedPrograms.isEmpty)
+                              const Text('Sin programas guiados asociados')
+                            else ...[
+                              const Text('Usada en programas guiados:'),
+                              for (final program in workout.guidedPrograms)
+                                TextButton.icon(
+                                  onPressed: () => _openGuidedProgram(program),
+                                  icon: const Icon(
+                                    Icons.account_tree_outlined,
+                                    size: 16,
+                                  ),
+                                  label: Text(
+                                    '${program.name} · v${program.version} · ${switch (program.status) {
+                                      'published' => 'Publicado',
+                                      'draft' => 'Borrador',
+                                      'archived' => 'Retirado',
+                                      _ => program.status,
+                                    }}',
+                                  ),
+                                ),
+                            ],
+                          ],
                         ],
                       ),
                     ),

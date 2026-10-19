@@ -13,6 +13,7 @@ class AdminWorkoutSummary {
     required this.version,
     required this.isRunning,
     required this.catalogScope,
+    this.guidedPrograms = const [],
   });
 
   final String id;
@@ -21,6 +22,19 @@ class AdminWorkoutSummary {
   final int version;
   final bool isRunning;
   final String catalogScope;
+  final List<AdminWorkoutProgramUsage> guidedPrograms;
+}
+
+class AdminWorkoutProgramUsage {
+  const AdminWorkoutProgramUsage({
+    required this.id,
+    required this.name,
+    required this.version,
+    required this.status,
+  });
+
+  final String id, name, status;
+  final int version;
 }
 
 class AdminExercise {
@@ -96,6 +110,27 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
     final runningIds = runningRows
         .map((row) => row['template_id'] as String)
         .toSet();
+    final usages = <String, Map<String, AdminWorkoutProgramUsage>>{};
+    if (catalogScope == 'general') {
+      final programLinks = await _client
+          .from('guided_program_links')
+          .select(
+            'template_id,program:guided_programs!inner(id,name:content->>name,version,status)',
+          )
+          .inFilter('template_id', ids);
+      for (final link in programLinks) {
+        final program = link['program'] as Map<String, dynamic>;
+        final id = program['id'] as String;
+        // Una versión puede repetir la sesión en varias fases: se muestra una vez.
+        (usages[link['template_id'] as String] ??=
+            {})[id] = AdminWorkoutProgramUsage(
+          id: id,
+          name: program['name'] as String,
+          version: program['version'] as int,
+          status: program['status'] as String,
+        );
+      }
+    }
     return rows
         .map(
           (row) => AdminWorkoutSummary(
@@ -105,6 +140,11 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
             version: row['version'] as int,
             isRunning: runningIds.contains(row['id']),
             catalogScope: catalogScope,
+            guidedPrograms: (usages[row['id']]?.values.toList() ?? [])
+              ..sort((a, b) {
+                final name = a.name.compareTo(b.name);
+                return name != 0 ? name : b.version.compareTo(a.version);
+              }),
           ),
         )
         .toList();

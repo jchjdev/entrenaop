@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-19",
+  "source": "ADMIN autenticado en Dev: Chrome de escritorio y pestaña existente del navegador integrado",
+  "files": [
+    {
+      "path": "docs/visual-audit/admin-catalogs-2026-10-19/sessions-usage-desktop.png",
+      "sha256": "28727f9c8d4244461d68767f447c4f17bcd969a51c5868d41e36c5c1d54a31d2"
+    },
+    {
+      "path": "docs/visual-audit/admin-catalogs-2026-10-19/guided-desktop.png",
+      "sha256": "02b96e1099ce8f2810f19dc17cfba4e9dcaaf964e9c580efdacbb3f4d4e9ef08"
+    },
+    {
+      "path": "docs/visual-audit/admin-catalogs-2026-10-19/guided-narrow.png",
+      "sha256": "75b19d4298e02fed0ed24edb4a9b6289dbd9b079ce15725b1de790ad6f8c169a"
+    }
+  ],
+  "build": {
+    "path": "admin_app/build/web/main.dart.js",
+    "sha256": "49a8fb218ab6fbb404ba3d26ea54e102f5a717efe6728a180ebf9dd556a06574"
+  }
+}
