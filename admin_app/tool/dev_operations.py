@@ -75,7 +75,18 @@ def api(path, data=None, *, github=False):
         # El estado HTTP permite distinguir credencial, permiso y consulta sin
         # publicar URL, cabeceras ni el cuerpo privado devuelto por el servicio.
         provider = "github" if github else "supabase"
-        raise OperationsError(provider + "_api_http_" + str(error.code)) from error
+        operation = "logs" if path.startswith("/analytics/") else "database" if path == "/database/query" else "other"
+        # Solo se extraen códigos SQL/ClickHouse y categorías cerradas. El
+        # cuerpo remoto puede incluir consultas o datos y nunca se publica.
+        detail = ""
+        if error.code == 400:
+            body = error.read(32768).decode("utf-8", errors="replace")
+            state = re.search(r'ERROR:\s+([A-Z0-9]{5})\b|Code:\s*(\d{1,5})\b', body)
+            if state:
+                detail = "_" + next(v for v in state.groups() if v)
+            else:
+                detail = "".join("_" + word for word in ("timestamp", "transaction", "syntax", "interval") if word in body.lower())
+        raise OperationsError(provider + "_api_http_" + str(error.code) + "_" + operation + detail) from error
     except Exception as error:
         raise OperationsError("github_api_failed" if github else "supabase_api_failed") from error
 
@@ -136,8 +147,8 @@ def collect_logs():
     end = now().replace(second=0, microsecond=0)
     # Solapamiento de 24 h: tolera retrasos del proveedor y reintentos sin duplicar.
     start = end - dt.timedelta(hours=24)
-    query = urllib.parse.urlencode({"sql": LOG_SQL, "iso_timestamp_start": stamp(start),
-                                   "iso_timestamp_end": stamp(end)})
+    query = urllib.parse.urlencode({"sql": LOG_SQL, "iso_timestamp_start": stamp(start).replace("+00:00", "Z"),
+                                   "iso_timestamp_end": stamp(end).replace("+00:00", "Z")})
     try:
         data = api("/analytics/endpoints/logs?" + query)
         if not isinstance(data, dict) or data.get("error") or not isinstance(data.get("result"), list):
@@ -279,8 +290,11 @@ def backup(output):
             (source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             # El ensayo acepta únicamente el contenedor temporal creado por el
             # script; jamás una URL o contraseña de un proyecto remoto.
-            from dev_restore_drill import verify_restore
-            verify_restore(source)
+            from dev_restore_drill import verify_restore, RestoreError
+            try:
+                verify_restore(source)
+            except RestoreError as error:
+                raise OperationsError(str(error)) from error
             verified = stamp()
             output = Path(output)
             output.mkdir(parents=True, exist_ok=True)

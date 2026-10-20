@@ -85,7 +85,16 @@ class DevOperationsTests(unittest.TestCase):
                 patch.object(ops.urllib.request, "urlopen", side_effect=error):
             with self.assertRaises(ops.OperationsError) as caught:
                 ops.api("/database/query", {"query": "fixture"})
-        self.assertEqual(str(caught.exception), "supabase_api_http_403")
+        self.assertEqual(str(caught.exception), "supabase_api_http_403_database")
+
+    def test_query_diagnostic_never_exposes_response_body(self):
+        error = ops.urllib.error.HTTPError("https://private.example", 400,
+            "private password", {}, io.BytesIO(b'{"message":"ERROR: 23503 private@example.com private payload"}'))
+        with patch.dict(os.environ, {"SUPABASE_ACCESS_TOKEN": "fixture"}), \
+                patch.object(ops.urllib.request, "urlopen", side_effect=error):
+            with self.assertRaises(ops.OperationsError) as caught:
+                ops.api("/database/query", {"query": "fixture"})
+        self.assertEqual(str(caught.exception), "supabase_api_http_400_database_23503")
 
     def test_restore_refuses_a_different_environment(self):
         with tempfile.TemporaryDirectory() as temp:

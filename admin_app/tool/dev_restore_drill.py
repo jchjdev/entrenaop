@@ -13,6 +13,10 @@ import tempfile
 IMAGE = "supabase/postgres:17.6.1.166@sha256:b3bfedb107413abb3b8cb0d0874b0414a1dceb3d55bc0c778de6ad22d1f7dc86"
 
 
+class RestoreError(RuntimeError):
+    """Códigos de fase locales; nunca contienen SQL ni salida del servidor."""
+
+
 def copied_rows(text):
     counts, table, count = {}, None, 0
     for line in text.splitlines():
@@ -60,16 +64,20 @@ def verify_restore(source):
         result = subprocess.run(args, input=data, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
         if result.returncode:
             # La salida de psql puede incluir datos del COPY. No se imprime.
-            state = re.search(rb'ERROR:\s+([A-Z0-9]{5})(?:\s|:)', result.stderr)
-            raise RuntimeError("isolated_restore_failed" + (":" + state[1].decode() if state else ""))
+            state = re.search(rb'(?:ERROR|FATAL):\s+([A-Z0-9]{5})(?:\s|:)', result.stderr)
+            raise RestoreError("isolated_restore_failed" + (":" + state[1].decode() if state else ""))
         return result.stdout
 
-    def query(sql):
+    def query(sql, phase="query"):
         # supabase_admin es el superusuario de este contenedor nuevo. El rol
         # postgres replica el rol restringido de Supabase y no puede preparar
         # los esquemas administrados del ensayo.
-        return run(["docker", "exec", "-i", name, "psql", "-X", "-U", "supabase_admin", "-d", "postgres",
-                    "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=sqlstate", "-At"], sql.encode()).decode().strip()
+        try:
+            return run(["docker", "exec", "-i", name, "psql", "-X", "-U", "supabase_admin", "-d", "postgres",
+                        "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=sqlstate", "-At"], sql.encode()).decode().strip()
+        except RestoreError as error:
+            state = str(error).partition(":")[2]
+            raise RestoreError("isolated_restore_" + phase + (":" + state if state else "")) from error
 
     created = False
     try:
@@ -91,19 +99,19 @@ def verify_restore(source):
         roles = re.sub(r'^CREATE ROLE ("?[A-Za-z_][A-Za-z_0-9]*"?);$',
             lambda m: "do $$begin if not exists(select 1 from pg_roles where rolname=" +
             "'" + m[1].strip('"') + "') then create role " + m[1] + "; end if; end$$;", roles, flags=re.M)
-        query(roles)
+        query(roles, "roles")
         # Solo se limpian esquemas del contenedor recién creado por este proceso.
-        query("drop schema if exists public,auth,storage,admin_ops_private,trainer_private,supabase_migrations cascade;")
-        query((source / "extensions.sql").read_text(encoding="utf-8"))
-        query((source / "schema.sql").read_text(encoding="utf-8"))
-        query("set session_replication_role=replica;\n" + (source / "data.sql").read_text(encoding="utf-8"))
+        query("drop schema if exists public,auth,storage,admin_ops_private,trainer_private,supabase_migrations cascade;", "prepare")
+        query((source / "extensions.sql").read_text(encoding="utf-8"), "extensions")
+        query((source / "schema.sql").read_text(encoding="utf-8"), "schema")
+        query("set session_replication_role=replica;\n" + (source / "data.sql").read_text(encoding="utf-8"), "data")
         for table, expected in counts.items():
-            actual = int(query("select count(*) from " + table))
+            actual = int(query("select count(*) from " + table, "counts"))
             if actual != expected:
-                raise RuntimeError("restored_row_count_mismatch")
-        stored = json.loads(query("select coalesce(json_agg(json_build_object('bucket_id',bucket_id,'name',name)), '[]') from storage.objects"))
+                raise RestoreError("restored_row_count_mismatch")
+        stored = json.loads(query("select coalesce(json_agg(json_build_object('bucket_id',bucket_id,'name',name)), '[]') from storage.objects", "inventory"))
         if {(r["bucket_id"], r["name"]) for r in stored} != {(r["bucket_id"], r["name"]) for r in index}:
-            raise RuntimeError("restored_storage_inventory_mismatch")
+            raise RestoreError("restored_storage_inventory_mismatch")
         # Recorre todas las FK restauradas; desactivar triggers al cargar no
         # basta para acreditar la integridad de las relaciones.
         query("""do $drill$ declare c record; n bigint; begin
@@ -120,7 +128,7 @@ def verify_restore(source):
                 c.child,c.present,c.parent,c.comparison) into n;
               if n<>0 then raise exception 'restore_fk_mismatch'; end if;
           end loop;
-        end $drill$;""")
+        end $drill$;""", "foreign_keys")
         return {"tables": len(counts), "storage_objects": len(index)}
     finally:
         if created:
