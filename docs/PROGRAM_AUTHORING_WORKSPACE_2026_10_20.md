@@ -27,6 +27,20 @@ el plegado y la accesibilidad de edición; revisadas capturas de escritorio y
 Compilación web release local para Dev correcta, con CSP y sin mapas de fuentes
 ni recursos CDN.
 
+Publicación verificada de este ajuste:
+
+- Commit: `dfed3dc310e7451970b897242bf665cdb3571c80`.
+- [CI 39468530920](https://github.com/jchjdev/entrenaop/actions/runs/39468530920):
+  validación, compilación y despliegue correctos.
+- HTTPS independiente el 20/10/2026, 17:48 UTC: revisión exacta y entorno
+  `development` con proyecto `sxbxfjqgoddzhtcyhalw`; entrada, manifiesto, hash de
+  JavaScript, cabeceras de caché/protección de marco y MIME WebAssembly correctos.
+- Versión: `dfed3dc310e7451970b897242bf665cdb3571c80-39468530920-1`.
+- JavaScript SHA-256:
+  `9b2355cea161574135cee35238042d739f52f8a4a23ba07c77c7cdd66080de74`.
+- Capturas verificadas mediante widgets reales; aceptación manual de este ajuste
+  pendiente. Se conserva el trabajo abierto del usuario y producción sin cambios.
+
 ## Lectura en el programa y edición directa · 20/10/2026
 
 Javier confirma ver la sesión escrita en «Sesiones del programa» y abrir el
