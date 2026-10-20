@@ -31,6 +31,7 @@ class GuidedProgramAccess {
   final bool isPro;
   final int activePrograms;
   int? get activeLimit => isPro ? null : 1;
+  bool get requiresSelection => !isPro && activePrograms > 1;
 }
 
 class GuidedRun {
@@ -62,6 +63,7 @@ class GuidedProgramDetail {
   final GuidedFollow? follow;
   final List<GuidedRun> runs;
   final GuidedProgramAccess? access;
+  bool get requiresSelection => access?.requiresSelection == true;
   int get currentPhase => follow?.phaseIndex ?? 0;
   int get nextSession {
     final active = runs
@@ -94,6 +96,7 @@ abstract class GuidedProgramRepository {
   Future<void> follow(String id);
   Future<void> abandon(String followId);
   Future<void> setPaused(String followId, {required bool paused});
+  Future<void> keepFreeProgram(String followId);
   Future<void> advance(String followId, int expectedPhase);
   Future<String> start({
     required String programId,

@@ -10,10 +10,13 @@ fase y resultados, sin límite de alternancias.
 
 La ficha consulta el acceso y contador del servidor. Iniciar o retomar con la
 plaza ocupada devuelve `free_guided_program_limit` y abre la invitación
-contextual a Pro; no cambia el seguimiento ni los derechos localmente. Los
-programas ya activos siguen utilizables después de caducar Pro; nuevas
-activaciones y reanudaciones deben cumplir la cuota. No se modifica ni cancela
-una compra por esta regla. [Contrato de programas](PROGRAMAS_GUIADOS.md).
+contextual a Pro; no cambia el seguimiento ni los derechos localmente.
+**COM-020 corrige la caducidad:** con cualquier cantidad superior a uno en Free
+hay que elegir qué programa mantener. Hasta elegir, el servidor impide nuevas
+sesiones guiadas y avances; la elección pausa los demás conservando fase e
+historial. Se permite terminar sesiones ya abiertas. Cancelar una renovación
+conserva Pro hasta su vencimiento real. No se modifica ni cancela una compra
+por esta regla. [Contrato de programas](PROGRAMAS_GUIADOS.md).
 
 La validación final figura en [Roadmap](ROADMAP.md). El cierre comercial continúa
 abierto: esta entrega no acredita compra/restauración física ni los sandboxes

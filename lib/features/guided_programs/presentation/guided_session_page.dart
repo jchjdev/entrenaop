@@ -288,7 +288,10 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
     final e = widget.entry;
     final follow = widget.detail.follow;
     final canTrain =
-        follow != null && follow.active && follow.phaseIndex == e.phaseIndex;
+        follow != null &&
+        follow.active &&
+        !widget.detail.requiresSelection &&
+        follow.phaseIndex == e.phaseIndex;
     final session =
         widget.detail.program.phases[e.phaseIndex].sessions[e.sessionIndex];
     return BlocProvider.value(
@@ -310,7 +313,9 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  follow == null
+                  widget.detail.requiresSelection
+                      ? 'Tu cuenta Free permite un programa activo. Elige cuál mantener desde su ficha para continuar.'
+                      : follow == null
                       ? 'Inicia el programa desde su ficha para entrenar con seguimiento.'
                       : follow.abandoned
                       ? 'Has dejado este programa. Puedes volver a iniciarlo desde su ficha.'

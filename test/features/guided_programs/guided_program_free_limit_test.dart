@@ -42,6 +42,56 @@ void main() {
   }
 
   for (final scale in [1.0, 2.0]) {
+    testWidgets(
+      'al perder Pro exige elegir uno y conserva los demás a $scale×',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(320, 780));
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(() {
+          tester.binding.setSurfaceSize(null);
+          tester.platformDispatcher.clearTextScaleFactorTestValue();
+        });
+        final repo = _Repository()..needsChoice = true;
+        await showProgram(tester, repo);
+        expect(find.textContaining('Siguiente en la secuencia'), findsNothing);
+        await tester.scrollUntilVisible(
+          find.text('Continuar solo con este programa'),
+          180,
+        );
+        await tester.ensureVisible(
+          find.text('Continuar solo con este programa'),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continuar solo con este programa'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Volver'));
+        await tester.pumpAndSettle();
+        expect(repo.selections, 0);
+        expect(repo.needsChoice, isTrue);
+        await tester.ensureVisible(
+          find.text('Continuar solo con este programa'),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continuar solo con este programa'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Elegir este programa'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Elegir este programa'));
+        await tester.pumpAndSettle();
+        expect(repo.selections, 1);
+        expect(repo.needsChoice, isFalse);
+        expect((await repo.detail('program')).follow!.id, 'same-follow');
+        expect((await repo.detail('program')).runs.single.status, 'completed');
+        expect(find.text('Continuar solo con este programa'), findsNothing);
+        await tester.scrollUntilVisible(
+          find.text('Programas activos: 1/1'),
+          -180,
+        );
+        expect(find.text('Programas activos: 1/1'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('pausar y retomar conserva seguimiento e historial a $scale×', (
       tester,
     ) async {
@@ -185,9 +235,70 @@ void main() {
     expect(repo.starts, isEmpty);
   });
 
+  testWidgets(
+    'una URL directa tampoco permite entrenar con varios tras perder Pro',
+    (tester) async {
+      final repo = _Repository()..needsChoice = true;
+      final workouts = GuidedTestWorkouts();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GuidedSessionPage(
+            repository: repo,
+            workouts: workouts,
+            programId: 'program',
+            phaseIndex: 0,
+            sessionIndex: 0,
+            getTemplate: GetWorkoutTemplateUseCase(workouts),
+            startDefault: StartWorkoutExecutionUseCase(workouts),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Tu cuenta Free permite un programa activo. Elige cuál mantener desde su ficha para continuar.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('workout-preview-start')),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(repo.starts, isEmpty);
+    },
+  );
+
+  test(
+    'fallar al elegir conserva la obligación de selección y el progreso',
+    () async {
+      final repo = _Repository()
+        ..needsChoice = true
+        ..gate = Completer<void>();
+      final cubit = GuidedDetailCubit(repo, 'program');
+      addTearDown(cubit.close);
+      await cubit.load();
+      final pending = cubit.keepFreeProgram();
+      await cubit.keepFreeProgram();
+      expect(repo.selections, 1);
+      repo.gate!.completeError(StateError('Sesión abierta en otro programa'));
+      await pending;
+      expect(cubit.state.detail!.requiresSelection, isTrue);
+      expect(cubit.state.detail!.runs.single.status, 'completed');
+      expect(cubit.state.error, contains('sesiones abiertas'));
+    },
+  );
+
   test('código de cuota distingue programas del resto de restricciones', () {
     final denied = ProAccessDenied.fromDetails('free_guided_program_limit');
     expect(denied?.restriction, ProRestriction.guidedPrograms);
+    expect(
+      ProAccessDenied.fromDetails('free_guided_program_selection')?.restriction,
+      ProRestriction.guidedPrograms,
+    );
     expect(ProAccessDenied.fromDetails('desconocido'), isNull);
     const follow = GuidedFollow(
       id: 'f',
@@ -199,10 +310,34 @@ void main() {
     expect(follow.resumable, isTrue);
     expect(follow.phaseIndex, 1);
   });
+
+  test(
+    'Free exige selección para cualquier cantidad superior a uno; Pro no',
+    () {
+      for (final count in [0, 1, 2, 3, 10, 100]) {
+        expect(
+          GuidedProgramAccess(
+            isPro: false,
+            activePrograms: count,
+          ).requiresSelection,
+          count > 1,
+        );
+        expect(
+          GuidedProgramAccess(
+            isPro: true,
+            activePrograms: count,
+          ).requiresSelection,
+          isFalse,
+        );
+      }
+    },
+  );
 }
 
 class _Repository extends GuidedTestRepository {
   bool paused = false, otherActive = false, running = false;
+  bool needsChoice = false;
+  int selections = 0;
   final changes = <bool>[];
   Completer<void>? gate;
   @override
@@ -223,7 +358,11 @@ class _Repository extends GuidedTestRepository {
     ],
     access: GuidedProgramAccess(
       isPro: false,
-      activePrograms: paused ? (otherActive ? 1 : 0) : 1,
+      activePrograms: needsChoice
+          ? 3
+          : paused
+          ? (otherActive ? 1 : 0)
+          : 1,
     ),
   );
   @override
@@ -235,5 +374,13 @@ class _Repository extends GuidedTestRepository {
       throw ProAccessDenied.fromDetails('free_guided_program_limit')!;
     }
     this.paused = paused;
+  }
+
+  @override
+  Future<void> keepFreeProgram(String followId) async {
+    expect(followId, 'same-follow');
+    selections++;
+    await gate?.future;
+    needsChoice = false;
   }
 }

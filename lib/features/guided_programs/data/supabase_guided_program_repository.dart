@@ -198,6 +198,10 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
   );
 
   @override
+  Future<void> keepFreeProgram(String followId) =>
+      _change('keep_free_guided_program', {'p_follow_id': followId});
+
+  @override
   Future<void> abandon(String followId) async {
     await client.rpc(
       'abandon_guided_program',

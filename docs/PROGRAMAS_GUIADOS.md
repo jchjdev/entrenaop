@@ -1,6 +1,6 @@
 # Programas guiados oficiales
 
-## Acceso Free/Pro y pausa · COM-019 · 20/10/2026
+## Acceso Free/Pro y pausa · COM-019/020 · 20/10/2026
 
 Free incluye **un programa guiado activo**; Pro permite varios sin esta cuota.
 Cuenta cada seguimiento no completado, abandonado ni pausado. No limita el
@@ -21,10 +21,22 @@ y **Volver**, explicando que se puede pausar el actual. El servidor conserva el
 estado si se rechaza el cambio. **Dejar programa** mantiene su significado:
 cierra ese seguimiento; volver a iniciarlo empieza desde la primera fase.
 
-Los seguimientos activos anteriores y los activados con Pro se conservan
-utilizables tras introducir esta cuota o caducar Pro. No se elige ni se elimina
-automáticamente ninguno. Nuevos inicios y reanudaciones sí deben cumplir la
-cuota vigente. Un reintento sobre un seguimiento ya activo no crea otra plaza.
+**Corrección COM-020:** conservar el historial no mantiene varios programas
+utilizables al perder Pro. Con cualquier cantidad superior a uno, Free exige
+elegir cuál mantener antes de iniciar un entrenamiento nuevo o avanzar de fase.
+La ficha ofrece **Continuar solo con este programa**, con confirmación: los
+demás quedan en pausa conservando fase y resultados. También se puede reducir
+el número pausándolos manualmente. No se impone uno arbitrariamente ni se borra
+ninguno. Se conserva el acceso Pro hasta que termine realmente su vigencia;
+cancelar la renovación por sí solo no activa esta restricción.
+
+Una sesión ya iniciada puede terminarse y sus reintentos mantienen la ejecución
+original. No se pausa un programa con sesión abierta: para elegir otro hay que
+resolverla primero, o mantener el que tiene esa sesión. Una vez elegida una sola
+plaza, se sigue pudiendo alternar pausando y retomando. Pro conserva varias.
+La elección se revalida en servidor; renovar Pro durante el diálogo evita
+pausar programas innecesariamente. Esta regla sustituye la excepción inicial
+de COM-019 para seguimientos activos anteriores y para cuentas que pierdan Pro.
 
 Contrato técnico: `paused_at`, CHECK de estados no terminales e índice parcial
 para contar activos. El índice único previo sigue incluyendo los pausados para
@@ -35,19 +47,39 @@ propiedad y cuota mediante el mismo bloqueo transaccional por usuario que
 inicio, avance y abandono. No hay escritura directa del cliente. Los reintentos
 de entrenamientos ya aceptados siguen resolviendo su ejecución original.
 
+COM-020 añade `keep_free_guided_program`, con identidad, propiedad y el mismo
+bloqueo por usuario. Iniciar, seguir un programa ya activo y avanzar comprueban
+el estado comercial actual y rechazan continuar con más de uno en Free mediante
+`free_guided_program_selection`. No depende de recibir un webhook ni de un
+temporizador para impedir nuevos entrenamientos. La lectura puede reflejar
+varios seguimientos pendientes de elección; eso no autoriza su uso. La
+migración `20261020101936_guided_program_downgrade_selection.sql` conserva
+los reintentos ya aceptados antes de comprobar la nueva restricción.
+
 Migración `20261020094903_guided_program_free_limit_and_pause.sql` y prueba
 `supabase/tests/guided_program_free_limit_and_pause.sql`, transaccional con
 ROLLBACK. Estado final de validación y límites en [Roadmap](ROADMAP.md).
 La interfaz nueva requiere actualizar la app; no modifica el motor adaptativo,
 las concesiones administrativas de Pro ni la facturación.
 
-Verificación del 20/10/2026: análisis limpio, 1.101 pruebas raíz correctas con
+Verificación inicial COM-019 del 20/10/2026: análisis limpio, 1.101 pruebas raíz correctas con
 una omisión previa, seis SQL transaccionales correctos tras aplicar la migración
 solo en Dev y 168 migraciones coincidentes. Las pruebas cubren cambio con plaza
 ocupada, inicio/reanudación por RPC, fase conservada, permisos, rechazo de pausa
 con ejecución abierta, reintentos, caducidad de Pro y estados terminales. La UI
 se comprueba a 320 px con texto 1×/2×. No hay móvil conectado para aceptación
 física ni ensayo de peticiones realmente concurrentes.
+
+COM-020 se verifica después con análisis limpio y 1.106 pruebas raíz correctas,
+con la misma omisión previa. Seis SQL con ROLLBACK correctos tras aplicar solo
+en Dev su migración: 169 coincidentes. Se comprueba el umbral con dos programas
+y se repite con tres; selección, permisos, fase e historial conservados,
+sesiones abiertas y reintentos cubiertos. La interfaz exige elegir antes de
+entrenar y se comprueba a 320 px con texto 1×/2×. La aceptación física de la
+interfaz y un ensayo realmente concurrente siguen pendientes. El asesor añade
+el aviso esperado de RPC SECURITY DEFINER para `keep_free_guided_program`:
+acceso autenticado intencionado, sin acceso anónimo, con propiedad y bloqueo
+comprobados, conforme al enlace siguiente.
 
 Los asesores añaden dos avisos de
 [RPC SECURITY DEFINER ejecutables por authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0028_authenticated_security_definer_function_executable):

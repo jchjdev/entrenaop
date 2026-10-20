@@ -164,6 +164,17 @@ class GuidedDetailCubit extends Cubit<GuidedDetailState> {
     await _mutate(() => repository.advance(f.id, f.phaseIndex));
   }
 
+  Future<void> keepFreeProgram() async {
+    final follow = state.detail?.follow;
+    if (follow == null || !follow.active || !state.detail!.requiresSelection) {
+      return;
+    }
+    await _mutate(
+      () => repository.keepFreeProgram(follow.id),
+      errorMessage: 'No se pudo elegir el programa. Termina o abandona las sesiones abiertas de los otros programas y vuelve a intentarlo.',
+    );
+  }
+
   Future<void> _mutate(
     Future<void> Function() action, {
     String errorMessage = 'No se pudo guardar el cambio. Si tienes una sesión en curso, resuélvela antes de avanzar.',

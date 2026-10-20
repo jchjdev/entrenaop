@@ -17,6 +17,30 @@ class GuidedProgramPage extends StatefulWidget {
 
 class _GuidedProgramPageState extends State<GuidedProgramPage> {
   int? _selectedPhase;
+  Future<void> _keepFreeProgram(GuidedDetailCubit cubit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        scrollable: true,
+        title: const Text('¿Continuar solo con este programa?'),
+        content: const Text(
+          'Los demás programas quedarán en pausa. Conservarás sus fases y entrenamientos y podrás alternarlos usando tu plaza Free.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => ctx.pop(false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => ctx.pop(true),
+            child: const Text('Elegir este programa'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await cubit.keepFreeProgram();
+  }
+
   Future<void> _pause(GuidedDetailCubit cubit) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -230,10 +254,20 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                               ? 'Con Pro puedes mantener varios programas activos.'
                               : 'Free incluye un programa activo. Puedes pausar y retomar sin perder tu avance.',
                         ),
-                        if (!access.isPro && access.activePrograms > 1)
+                        if (access.requiresSelection) ...[
                           const Text(
-                            'Puedes continuar con los programas que ya tenías iniciados. Para activar otro, pausa los activos o accede a Pro.',
+                            'Tu cuenta Free permite un programa activo. Elige cuál mantener para continuar; los demás quedarán en pausa conservando tu progreso.',
                           ),
+                          if (d.follow?.active == true)
+                            FilledButton(
+                              onPressed: state.busy
+                                  ? null
+                                  : () => _keepFreeProgram(cubit),
+                              child: const Text(
+                                'Continuar solo con este programa',
+                              ),
+                            ),
+                        ],
                         const SizedBox(height: 12),
                       ],
                       if (d.follow == null)
@@ -345,6 +379,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                             final session = d.program.phases[phase].sessions[i];
                             final guided =
                                 d.follow?.active == true &&
+                                !d.requiresSelection &&
                                 phase == d.currentPhase;
                             final recent = d.runs
                                 .where(
@@ -387,6 +422,7 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                           },
                         ),
                       if (d.follow?.active == true &&
+                          !d.requiresSelection &&
                           d.program.mode == GuidedProgramMode.phased &&
                           (_selectedPhase == null ||
                               _selectedPhase == d.currentPhase)) ...[

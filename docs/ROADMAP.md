@@ -1,10 +1,30 @@
 # Roadmap de EntrenaOP
 
+**COM-020 · 20/10/2026 · pérdida de Pro y elección de una plaza Free:** Javier
+rechaza conservar varios programas utilizables al perder Pro. Se corrige para
+cualquier cantidad superior a uno, sin excepción para programas previos: antes
+de nuevos entrenamientos o avances debe elegir uno desde su ficha. La elección
+pausa los demás conservando fase e historial. Se pueden terminar sesiones ya
+iniciadas; no se pausa otro programa con ejecución abierta. Cancelar renovación
+mantiene Pro hasta vencer; la elección no modifica facturación.
+**Validación del 20/10/2026:** análisis limpio y 1.106 pruebas raíz correctas
+con una omisión previa. Seis SQL con ROLLBACK correctos después de aplicar
+solo en Dev la migración; 169 migraciones local/remoto coincidentes. Casos de
+dos y tres programas, rechazo de URL directa, avance, reintento de sesión ya
+aceptada, selección, renovación durante el diálogo y permisos cubiertos. La
+interfaz se prueba a 320 px con texto 1×/2×. Asesor revisado: RPC del propio
+usuario intencionadamente ejecutable por autenticados, sin acceso
+anónimo. Aceptación móvil y ensayo realmente concurrente pendientes; producción
+sin cambios.
+**Siguiente recorrido de este cambio:** actualizar el móvil y probar Pro con
+varios → retirar/caducar Pro → elegir uno → comprobar los demás en pausa.
+Compras y sandboxes nativos continúan pendientes. [Contrato](PROGRAMAS_GUIADOS.md).
+
 **COM-019 · 20/10/2026 · una plaza Free y pausa de programas guiados:** se
 implementan cuota de servidor, contador, invitación a Pro y pausa/reanudación
 conservando fase e historial. Pro permite varios; Free alterna pausando el
-actual sin penalización. Se conservan los seguimientos ya activos tras
-caducar Pro. Catálogo, sesiones oficiales sueltas, cuotas personales 8/4,
+actual sin penalización. COM-020 sustituye posteriormente la excepción de
+continuidad de varios al caducar Pro. Catálogo, sesiones oficiales sueltas, cuotas personales 8/4,
 motor adaptativo y facturación conservan sus contratos.
 **Validación del 20/10/2026:** análisis limpio y 1.101 pruebas raíz correctas,
 con una omisión preexistente. Migración aplicada solo en Dev: 168 migraciones

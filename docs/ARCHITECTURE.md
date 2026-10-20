@@ -12,9 +12,15 @@ bloquear el seguimiento. El contador usa un índice parcial sobre seguimientos
 no terminales sin pausa. Se conserva el índice único de no terminales, incluido
 el pausado, por usuario y versión.
 
-No se cambia fase, historial ni vigencia de suscripción al pausar. Se permite
-continuar seguimientos ya activos tras caducar Pro; solo nuevas activaciones
-comprueban cuota. Inicio de sesión y avance rechazan un seguimiento pausado;
+No se cambia fase, historial ni vigencia de suscripción al pausar. COM-020
+retira la excepción que permitía continuar con varios tras caducar Pro: antes
+de nuevos inicios o avances se exige elegir una sola plaza si Free supera uno.
+`keep_free_guided_program` conserva el seguimiento elegido y pausa los otros
+en la misma transacción, comprobando propiedad y ausencia de sesiones abiertas
+en los programas que pausa. Una renovación Pro durante el diálogo no pausa nada.
+No se necesita un cron ni webhook para impedir uso simultáneo: se consultan
+los derechos actuales en cada operación protegida. Los reintentos de sesiones
+ya iniciadas y su finalización siguen disponibles. Inicio y avance rechazan un seguimiento pausado;
 los reintentos de operaciones ya registradas conservan su resultado original.
 El repositorio traduce únicamente el código comercial estable a la invitación
 Pro; Flutter no concede derechos ni resuelve la cuota. Inicio excluye pausados,

@@ -4,9 +4,11 @@
 activo y Pro varios sin esa cuota. Pausar libera la plaza, retomar conserva fase
 e historial y alternar no tiene penalización. El catálogo y las sesiones
 oficiales sueltas siguen disponibles. Las cuotas de 8 ejercicios propios y 4
-familias de sesiones propias son independientes. Los programas ya activos
-continúan utilizables tras caducar Pro; nuevos inicios/reanudaciones comprueban
-la cuota en servidor. Dejar un programa sigue siendo distinto de pausarlo.
+familias de sesiones propias son independientes. **COM-020 corrige la pérdida
+de Pro:** cualquier cantidad superior a uno exige elegir qué programa mantener;
+el resto se pausa conservando progreso. Hasta elegir no se permiten nuevas
+sesiones guiadas ni avances de fase, aunque se pueden terminar sesiones abiertas.
+La cuota se comprueba en servidor. Dejar un programa sigue siendo distinto de pausarlo.
 [Contrato, validación y límites](PROGRAMAS_GUIADOS.md).
 
 **PLAN-026, 16/10/2026 · progresión de carrera:** una nueva marca no descarta

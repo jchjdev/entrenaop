@@ -7,7 +7,8 @@ declare u uuid:=gen_random_uuid(); other_user uuid:=gen_random_uuid(); admin_id 
   detail text; access jsonb; i integer; result_id uuid;
 begin
   if has_function_privilege('anon','public.get_my_guided_program_access()','EXECUTE')
-    or has_function_privilege('anon','public.set_guided_program_paused(uuid,boolean)','EXECUTE') then
+    or has_function_privilege('anon','public.set_guided_program_paused(uuid,boolean)','EXECUTE')
+    or has_function_privilege('anon','public.keep_free_guided_program(uuid)','EXECUTE') then
     raise exception 'Acceso anónimo a las RPC de cuota o pausa';
   end if;
   insert into auth.users(id,email) values(u,u||'@guided-quota.example.invalid'),
@@ -76,22 +77,68 @@ begin
   insert into public.pro_access_grants(user_id,source,starts_at,ends_at,reason)
     values(u,'development_manual',now()-interval '2 days',now()+interval '1 day','Pro del ensayo de programas');
   set local role authenticated;
-  perform public.set_guided_program_paused(b,false); c:=public.follow_guided_program(programs[3]);
-  access:=public.get_my_guided_program_access();
-  if access->>'active_limit' is not null or access->>'active_programs'<>'3' then raise exception 'Pro no permite varios programas'; end if;
+  perform public.set_guided_program_paused(b,false);
   reset role;
   update public.pro_access_grants set ends_at=now()-interval '1 second' where user_id=u;
   set local role authenticated;
-  if public.follow_guided_program(programs[1])<>a then raise exception 'La bajada de Pro bloquea los existentes'; end if;
-  execution:=public.start_guided_program_session(programs[3],0,0,gen_random_uuid());
+  if public.get_my_guided_program_access()->>'active_programs'<>'2' then raise exception 'Falta el caso límite de dos programas'; end if;
+  begin perform public.follow_guided_program(programs[1]); raise exception 'Dos programas también deben exigir selección';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_selection' then raise; end if; end;
+  begin perform public.start_guided_program_session(programs[1],1,0,gen_random_uuid()); raise exception 'Entrena con dos programas tras caducar Pro';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_selection' then raise; end if; end;
+  reset role;
+  update public.pro_access_grants set ends_at=now()+interval '1 day' where user_id=u;
+  set local role authenticated;
+  c:=public.follow_guided_program(programs[3]);
+  access:=public.get_my_guided_program_access();
+  if access->>'active_limit' is not null or access->>'active_programs'<>'3' then raise exception 'Pro no permite varios programas'; end if;
+  perform public.keep_free_guided_program(a);
+  if public.get_my_guided_program_access()->>'active_programs'<>'3' then raise exception 'Una selección antigua pausa programas tras renovar Pro'; end if;
+  operation:=gen_random_uuid();
+  execution:=public.start_guided_program_session(programs[3],0,0,operation);
+  reset role;
+  update public.pro_access_grants set ends_at=now()-interval '1 second' where user_id=u;
+  set local role authenticated;
+  -- Caducar conserva datos y permite terminar lo empezado, pero no seguir con varios programas.
+  begin perform public.follow_guided_program(programs[1]); raise exception 'Tras caducar Pro sigue con varios programas';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_selection' then raise; end if; end;
+  begin perform public.advance_guided_program(a,1); raise exception 'Avanza sin elegir la plaza Free';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_selection' then raise; end if; end;
+  begin perform public.start_guided_program_session(programs[1],1,0,gen_random_uuid()); raise exception 'Entrena por URL sin elegir';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_selection' then raise; end if; end;
+  if public.start_guided_program_session(programs[3],0,0,operation)<>execution then raise exception 'Perder Pro pierde el reintento de una sesión en curso'; end if;
+  begin perform public.keep_free_guided_program(a); raise exception 'Pausa otro programa con sesión abierta'; exception when invalid_parameter_value then null; end;
+  if public.get_my_guided_program_access()->>'active_programs'<>'3' then raise exception 'Elegir fallido modifica seguimientos'; end if;
+  perform set_config('request.jwt.claim.sub',other_user::text,true);
+  begin perform public.keep_free_guided_program(a); raise exception 'Elige por otro usuario'; exception when insufficient_privilege then null; end;
+  perform set_config('request.jwt.claim.sub',u::text,true);
   for result_id in select id from public.workout_execution_sets where execution_id=execution and status='pending' loop
     perform public.complete_workout_set_idempotent(gen_random_uuid(),result_id,p_actual_reps=>8,p_actual_load_kg=>40,p_actual_rpe=>7,p_actual_rir=>3);
   end loop;
   perform public.finish_workout_execution_idempotent(gen_random_uuid(),execution,7,null,null,null,'manual');
+  perform public.keep_free_guided_program(a); perform public.keep_free_guided_program(a);
+  if public.get_my_guided_program_access()->>'active_programs'<>'1' then raise exception 'No limita a uno tras elegir'; end if;
+  if not exists(select 1 from public.guided_program_follows where id=a and phase_index=1 and paused_at is null)
+    or (select count(*) from public.guided_program_follows where id in(b,c) and paused_at is not null)<>2 then
+    raise exception 'Elegir pierde fase o no pausa los otros dos';
+  end if;
+  if not exists(select 1 from public.workout_executions where id=execution and status='completed') then raise exception 'Elegir borra resultados'; end if;
+  if public.follow_guided_program(programs[1])<>a then raise exception 'No permite continuar con el único elegido'; end if;
+  begin perform public.keep_free_guided_program(b); raise exception 'Elige un pausado como si estuviera activo'; exception when invalid_parameter_value then null; end;
   begin perform public.follow_guided_program(programs[4]); raise exception 'Tras caducar Pro se amplía la cuota';
   exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
     if detail is distinct from 'free_guided_program_limit' then raise; end if; end;
-  perform public.set_guided_program_paused(b,true); perform public.set_guided_program_paused(c,true);
+  -- Alternar sigue siendo gratis, pero nunca mantiene los tres utilizables.
+  perform public.set_guided_program_paused(a,true); perform public.set_guided_program_paused(b,false);
+  begin perform public.set_guided_program_paused(c,false); raise exception 'Retoma varios después de elegir';
+  exception when sqlstate 'P0001' then get stacked diagnostics detail=PG_EXCEPTION_DETAIL;
+    if detail is distinct from 'free_guided_program_limit' then raise; end if; end;
+  perform public.set_guided_program_paused(b,true);
   perform public.set_guided_program_paused(a,true);
   perform public.abandon_guided_program(a);
   if not exists(select 1 from public.guided_program_follows where id=a and abandoned_at is not null and paused_at is null) then raise exception 'No permite dejar un programa pausado'; end if;

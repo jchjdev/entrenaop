@@ -22,6 +22,10 @@ class ProAccessDenied implements Exception {
       ProRestriction.guidedPrograms,
       'Free incluye un programa activo. Pausa el actual para iniciar o retomar otro, o accede a Pro para mantener varios a la vez.',
     ),
+    'free_guided_program_selection' => const ProAccessDenied(
+      ProRestriction.guidedPrograms,
+      'Free incluye un programa activo. Elige en su ficha cuál quieres mantener; los demás quedarán en pausa sin perder tu progreso.',
+    ),
     _ => null,
   };
 }
