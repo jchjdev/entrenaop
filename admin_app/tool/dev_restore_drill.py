@@ -17,6 +17,28 @@ class RestoreError(RuntimeError):
     """Códigos de fase locales; nunca contienen SQL ni salida del servidor."""
 
 
+def missing_roles_sql(catalog, existing):
+    statements = []
+    for role in catalog:
+        name = role["rolname"]
+        if not isinstance(name, str) or not name or len(name.encode()) > 63 or "\0" in name:
+            raise ValueError("invalid_role_inventory")
+        if name in existing:
+            continue
+        flags = []
+        for key, enabled, disabled in (("rolsuper", "SUPERUSER", "NOSUPERUSER"),
+            ("rolinherit", "INHERIT", "NOINHERIT"), ("rolcreaterole", "CREATEROLE", "NOCREATEROLE"),
+            ("rolcreatedb", "CREATEDB", "NOCREATEDB"), ("rolreplication", "REPLICATION", "NOREPLICATION"),
+            ("rolbypassrls", "BYPASSRLS", "NOBYPASSRLS")):
+            if type(role.get(key)) is not bool:
+                raise ValueError("invalid_role_inventory")
+            flags.append(enabled if role[key] else disabled)
+        # La autenticación se configura aparte. Los roles nuevos del ensayo no
+        # reciben credenciales ni pueden iniciar sesión por sí mismos.
+        statements.append('create role "' + name.replace('"', '""') + '" with NOLOGIN ' + " ".join(flags) + ";")
+    return "\n".join(statements)
+
+
 def copied_rows(text):
     counts, table, count = {}, None, 0
     for line in text.splitlines():
@@ -95,6 +117,12 @@ def verify_restore(source):
             time.sleep(1)
         else:
             raise RuntimeError("isolated_database_not_ready")
+        catalog_path = source / "roles.json"
+        if catalog_path.exists():
+            existing = json.loads(query("select json_agg(rolname) from pg_roles", "role_inventory"))
+            bootstrap = missing_roles_sql(json.loads(catalog_path.read_text(encoding="utf-8")), set(existing))
+            if bootstrap:
+                query(bootstrap, "role_inventory")
         roles = (source / "roles.sql").read_text(encoding="utf-8")
         roles = re.sub(r'^CREATE ROLE ("?[A-Za-z_][A-Za-z_0-9]*"?);$',
             lambda m: "do $$begin if not exists(select 1 from pg_roles where rolname=" +
@@ -138,7 +166,12 @@ def verify_restore(source):
 def self_test():
     with tempfile.TemporaryDirectory() as temp:
         source = Path(temp)
-        (source / "roles.sql").write_text("select 1;", encoding="utf-8")
+        (source / "roles.sql").write_text("grant set on parameter log_min_messages to fixture_supabase_managed;", encoding="utf-8")
+        (source / "roles.json").write_text(json.dumps([{
+            "rolname": "fixture_supabase_managed", "rolsuper": False,
+            "rolinherit": True, "rolcreaterole": False, "rolcreatedb": False,
+            "rolcanlogin": True, "rolreplication": False, "rolbypassrls": False,
+        }]), encoding="utf-8")
         (source / "extensions.sql").write_text("select 1;", encoding="utf-8")
         (source / "schema.sql").write_text("""create schema auth; create schema storage; create schema public;
           create table auth.users(id uuid primary key);

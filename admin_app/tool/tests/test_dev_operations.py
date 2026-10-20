@@ -96,6 +96,29 @@ class DevOperationsTests(unittest.TestCase):
                 ops.api("/database/query", {"query": "fixture"})
         self.assertEqual(str(caught.exception), "supabase_api_http_400_database_23503")
 
+    def test_log_window_uses_utc_z_accepted_by_management_api(self):
+        with patch.object(ops, "api", return_value={"result": []}) as api, \
+                patch.object(ops, "sql"), patch.object(ops, "run_id", return_value="123-1"), \
+                patch("builtins.print"):
+            ops.collect_logs()
+        query = ops.urllib.parse.parse_qs(ops.urllib.parse.urlsplit(api.call_args.args[0]).query)
+        start, end = query["iso_timestamp_start"][0], query["iso_timestamp_end"][0]
+        self.assertTrue(start.endswith("Z") and end.endswith("Z"))
+        self.assertEqual(ops.dt.datetime.fromisoformat(end) - ops.dt.datetime.fromisoformat(start),
+                         ops.dt.timedelta(hours=24))
+
+    def test_missing_managed_roles_keep_privileges_without_login_or_replacing_local_admin(self):
+        def role(name):
+            return dict(rolname=name, rolsuper=False, rolinherit=True, rolcreaterole=False,
+                        rolcreatedb=False, rolcanlogin=True, rolreplication=False, rolbypassrls=True)
+        sql = drill.missing_roles_sql([role('supabase_admin'), role('realtime"; select secret;--')], {'supabase_admin'})
+        self.assertNotIn('supabase_admin', sql)
+        self.assertIn('"realtime""; select secret;--" with NOLOGIN', sql)
+        self.assertIn('BYPASSRLS', sql)
+        self.assertIn('NOSUPERUSER', sql)
+        with self.assertRaises(ValueError):
+            drill.missing_roles_sql([role('invalid') | {'rolsuper': 'private'}], set())
+
     def test_restore_refuses_a_different_environment(self):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp)

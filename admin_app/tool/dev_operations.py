@@ -276,6 +276,12 @@ def backup(output):
                 "n.nspname,e.extname,n.nspname) as statement from pg_extension e join pg_namespace n on n.oid=e.extnamespace "
                 "where e.extname<>'plpgsql' order by e.extname", read_only=True)
             (source / "extensions.sql").write_text("\n".join(e["statement"] for e in extensions), encoding="utf-8")
+            # El CLI omite CREATE/ALTER de roles gestionados. El contenedor de
+            # ensayo necesita su inventario para resolver owners y grants;
+            # pg_roles no expone hashes de contraseñas.
+            roles = sql("select rolname,rolsuper,rolinherit,rolcreaterole,rolcreatedb,"
+                "rolcanlogin,rolreplication,rolbypassrls from pg_roles where rolname !~ '^pg_' order by rolname", read_only=True)
+            (source / "roles.json").write_text(json.dumps(roles), encoding="utf-8")
             count = storage_backup(source / "storage")
             revision = os.environ.get("GITHUB_SHA", "")
             if not re.fullmatch(r"[a-f0-9]{40}", revision):
