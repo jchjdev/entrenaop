@@ -9,6 +9,7 @@ abstract class AdminOperationsRepository {
   Future<String> restore(int id, String requestId, {required bool useBefore});
   Future<List<Map<String, dynamic>>> quality();
   Future<Map<String, dynamic>> status();
+  Future<Map<String, dynamic>> diagnostics();
   Future<Map<String, dynamic>> support(String userId);
   Future<Map<String, dynamic>?> deployment();
 }
@@ -58,6 +59,10 @@ class SupabaseAdminOperationsRepository implements AdminOperationsRepository {
   @override
   Future<Map<String, dynamic>> status() async => Map<String, dynamic>.from(
     await client.rpc('admin_operations_status') as Map,
+  );
+  @override
+  Future<Map<String, dynamic>> diagnostics() async => Map<String, dynamic>.from(
+    await client.rpc('admin_recovery_diagnostics') as Map,
   );
   @override
   Future<Map<String, dynamic>> support(String userId) async =>

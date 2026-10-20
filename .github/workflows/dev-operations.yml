@@ -1,0 +1,102 @@
+name: Copias y errores de Dev
+
+on:
+  schedule:
+    - cron: '17 0-2,4-23 * * *'
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      backup:
+        description: 'Crear copia cifrada y ensayar restauración de datos'
+        type: boolean
+        default: true
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dev-operations.yml'
+      - 'admin_app/tool/dev_*.py'
+      - 'admin_app/tool/tests/test_dev_operations.py'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: dev-operations
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Probar cifrado y controles
+        run: python3 -m unittest discover -s admin_app/tool/tests -v
+      - name: Probar ensayo aislado
+        if: github.event_name == 'push' || inputs.backup == true || github.event.schedule == '17 3 * * *'
+        run: python3 admin_app/tool/dev_restore_drill.py --self-test
+
+  operate:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'push'
+    needs: verify
+    runs-on: ubuntu-24.04
+    environment: admin-dev
+    timeout-minutes: 30
+    env:
+      DEV_PROJECT_REF: sxbxfjqgoddzhtcyhalw
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_DEV_OPERATIONS_TOKEN }}
+      DEV_BACKUP_PASSPHRASE: ${{ secrets.DEV_BACKUP_PASSPHRASE }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Comprobar activación sin revelar secretos
+        id: enabled
+        env:
+          MANUAL_BACKUP: ${{ inputs.backup }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          python3 - <<'PY'
+          import os
+          logs=bool(os.environ.get('SUPABASE_ACCESS_TOKEN'))
+          backup=logs and bool(os.environ.get('DEV_BACKUP_PASSPHRASE')) and (os.environ.get('MANUAL_BACKUP')=='true' or os.environ.get('SCHEDULE')=='17 3 * * *')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('logs='+str(logs).lower()+'\nbackup='+str(backup).lower()+'\n')
+          print('Recogida configurada:',logs,'Copia solicitada:',backup)
+          PY
+      - name: Recoger errores de servicios Dev
+        if: steps.enabled.outputs.logs == 'true'
+        run: python3 admin_app/tool/dev_operations.py logs
+      - name: Instalar CLI oficial fijado
+        if: steps.enabled.outputs.backup == 'true'
+        run: |
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/supabase.tar.gz" https://github.com/supabase/cli/releases/download/v2.117.0/supabase_linux_amd64.tar.gz
+          echo "69c05f85b9e47ee706d30f1a6ca8a526b4e337bfd12c7ef1ef522d24e7280d24  $RUNNER_TEMP/supabase.tar.gz" | sha256sum --check
+          mkdir "$RUNNER_TEMP/supabase-cli"
+          tar -xf "$RUNNER_TEMP/supabase.tar.gz" -C "$RUNNER_TEMP/supabase-cli"
+          echo "$RUNNER_TEMP/supabase-cli" >> "$GITHUB_PATH"
+      - name: Crear, restaurar en aislamiento y cifrar copia
+        if: steps.enabled.outputs.backup == 'true'
+        run: python3 admin_app/tool/dev_operations.py backup
+      - name: Conservar únicamente el paquete cifrado
+        if: steps.enabled.outputs.backup == 'true'
+        id: archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: entrenaop-dev-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dev-backup/*.gpg
+          retention-days: 7
+          if-no-files-found: error
+          compression-level: 0
+      - name: Registrar evidencia del paquete disponible
+        if: steps.enabled.outputs.backup == 'true'
+        env:
+          ARTIFACT_ID: ${{ steps.archive.outputs.artifact-id }}
+        run: python3 admin_app/tool/dev_operations.py receipt --artifact-id "$ARTIFACT_ID"
+      - name: Registrar fallo sin datos privados
+        if: failure() && steps.enabled.outputs.backup == 'true'
+        run: python3 admin_app/tool/dev_operations.py failed

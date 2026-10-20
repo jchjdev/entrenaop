@@ -9,6 +9,10 @@ abstract final class AppConfig {
     'SUPABASE_URL',
     defaultValue: 'https://sxbxfjqgoddzhtcyhalw.supabase.co',
   );
+  static const revision = String.fromEnvironment(
+    'APP_REVISION',
+    defaultValue: 'local',
+  );
 
   static const supabasePublishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',

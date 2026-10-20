@@ -105,6 +105,13 @@ class _Operations extends Fake implements AdminOperationsRepository {
     'backups': 'unverified',
   };
   @override
+  Future<Map<String, dynamic>> diagnostics() async => {
+    'checked_at': '2026-10-20T17:00:00Z',
+    'backups': <Map<String, dynamic>>[],
+    'collection': null,
+    'errors': <Map<String, dynamic>>[],
+  };
+  @override
   Future<Map<String, dynamic>?> deployment() async => null;
   @override
   Future<Map<String, dynamic>> support(String userId) async => {
@@ -339,7 +346,7 @@ void main() {
         find.text('Compilación local sin manifiesto de despliegue.'),
         findsOneWidget,
       );
-      final copies = find.text('Copias de seguridad: sin verificar');
+      final copies = find.text('Sin copia verificada todavía');
       if (copies.evaluate().isEmpty) {
         await tester.scrollUntilVisible(
           copies,
@@ -350,7 +357,7 @@ void main() {
       }
       await tester.ensureVisible(copies);
       await tester.pumpAndSettle();
-      expect(find.text('Copias de seguridad: sin verificar'), findsOneWidget);
+      expect(find.text('Sin copia verificada todavía'), findsOneWidget);
       await capturePerformanceWidget(
         tester,
         'admin-system-${width.toInt()}-${scale.toInt()}',

@@ -9,6 +9,7 @@ import '../../../core/app_config.dart';
 import '../../guided_programs/domain/admin_guided_work.dart';
 import '../data/admin_operations_repository.dart';
 import 'admin_editorial_diff.dart';
+import 'admin_recovery_panel.dart';
 
 String resourceLabel(Object? kind) => switch (kind) {
   'session' => 'Sesión',
@@ -502,10 +503,12 @@ class AdminSystemPage extends StatefulWidget {
 }
 
 class _AdminSystemPageState extends State<AdminSystemPage> {
+  int _diagnosticsVersion = 0;
   late Future<Map<String, dynamic>> _status = widget.repository.status();
   late Future<Map<String, dynamic>?> _deployment = widget.repository
       .deployment();
   void _refresh() => setState(() {
+    _diagnosticsVersion++;
     _status = widget.repository.status();
     _deployment = widget.repository.deployment();
   });
@@ -600,23 +603,15 @@ class _AdminSystemPageState extends State<AdminSystemPage> {
                     Text(
                       'Vídeos con fallo registrado: ${data['failed_videos']}',
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Copias de seguridad: sin verificar',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Text(
-                      'Pendiente conectar el estado del proveedor y registrar una prueba de recuperación.',
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Registro general de errores de servicios: sin conectar. La conexión anterior es una comprobación puntual.',
-                    ),
                   ],
                 ),
               ),
             );
           },
+        ),
+        AdminRecoveryPanel(
+          key: ValueKey(_diagnosticsVersion),
+          repository: widget.repository,
         ),
       ],
     ),

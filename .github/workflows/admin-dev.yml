@@ -70,7 +70,7 @@ jobs:
         run: python3 -m unittest discover -s admin_app/tool/tests -v
       - name: Compilar ADMIN exclusivamente con Dev
         working-directory: admin_app
-        run: flutter build web --release --csp --no-web-resources-cdn --no-source-maps --no-wasm-dry-run --dart-define=APP_ENV=development --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co
+        run: flutter build web --release --csp --no-web-resources-cdn --no-source-maps --no-wasm-dry-run --dart-define=APP_ENV=development --dart-define=APP_REVISION=${{ github.sha }} --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co
       - name: Preparar versión aislada
         run: python3 admin_app/tool/admin_release.py package
       - name: Conservar el paquete validado

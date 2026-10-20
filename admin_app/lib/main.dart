@@ -1,4 +1,5 @@
 import 'features/operations/data/admin_operations_repository.dart';
+import 'features/operations/data/admin_error_reporter.dart';
 
 import 'dart:async';
 
@@ -43,6 +44,7 @@ class AdminApp extends StatefulWidget {
 }
 
 class _AdminAppState extends State<AdminApp> {
+  late final AdminErrorReporter _errorReporter;
   final _authChanges = ValueNotifier<int>(0);
   late GoRouter _router;
   String? _sessionUserId;
@@ -53,6 +55,21 @@ class _AdminAppState extends State<AdminApp> {
     super.initState();
     _sessionUserId = widget.client.auth.currentUser?.id;
     _router = _createRouter();
+    _errorReporter = AdminErrorReporter.forClient(widget.client)
+      ..attach(() {
+        final path = _router.routeInformationProvider.value.uri.path.split('/');
+        final section = path.length > 1 ? path[1] : '';
+        return switch (section) {
+          'guided-programs' => 'guided_programs',
+          'history' || 'quality' || 'system' => 'operations',
+          'programs' ||
+          'sessions' ||
+          'exercises' ||
+          'warmups' ||
+          'accounts' => section,
+          _ => 'admin',
+        };
+      });
     _authSubscription = widget.client.auth.onAuthStateChange.listen((event) {
       if (!mounted) return;
       final nextId = event.session?.user.id;
@@ -113,6 +130,7 @@ class _AdminAppState extends State<AdminApp> {
 
   @override
   void dispose() {
+    _errorReporter.dispose();
     unawaited(_authSubscription.cancel());
     _router.dispose();
     _authChanges.dispose();

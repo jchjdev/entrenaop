@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**ADM-002 · 20/10/2026 · recuperación de Dev:** Javier autoriza continuar con
+copias y errores. Preparación local/SQL verificada: copia cifrada con límites y
+siete días de retención, ensayo aislado, recibos privados y registro reducido a
+códigos. Cinco SQL correctas, 280 pruebas ADMIN y 19 Python correctas, análisis
+y build Dev limpios. **Siguiente paso único:** ejecutar el ensayo de GitHub y
+activar secretos para producir y comprobar la primera copia real. Todavía no se
+acredita una copia disponible. No se añade borrado de programas ni restauración
+sobre Dev. [Contrato, alcance y pendientes](DEV_RECOVERY_2026_10_20.md).
+
 **ADM-001 y UI-063 · 20/10/2026 · eficiencia y operaciones de ADMIN:** se cierra
 la implementación de copia independiente, resumen plegado, deshacer y estado
 editorial explícito, conservando el creador y publicación conjunta. Gestión añade

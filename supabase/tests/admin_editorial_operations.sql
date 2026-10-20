@@ -66,7 +66,7 @@ begin
   result:=public.restore_admin_editorial_event(program_event,gen_random_uuid(),false);
   if result=program then raise exception 'Recuperar programa modifica el original.'; end if;
   if (public.admin_operations_status()->>'database')<>'reachable' or
-    (public.admin_operations_status()->>'backups')<>'unverified' then raise exception 'Estado no verificable presentado como real.'; end if;
+    (public.admin_operations_status()->>'backups') not in ('unverified','verified') then raise exception 'Estado operativo inválido.'; end if;
   if jsonb_typeof(public.admin_catalog_quality())<>'array' then raise exception 'Calidad inválida.'; end if;
   reset role;
   if (select status from public.workout_templates where id=restored)<>'draft' or

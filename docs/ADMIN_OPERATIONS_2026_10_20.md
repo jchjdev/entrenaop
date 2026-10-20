@@ -62,6 +62,14 @@ bloquea cambiar de estado hasta resolverla; su guard protege salir con resultado
 incierto. La garantía del reintento corresponde a esa petición conservada, no a
 iniciar otra recuperación deliberada desde una nueva pantalla.
 
+## Ampliación de recuperación y errores · ADM-002
+
+Javier autoriza continuar con copias y errores. El contrato de preparación,
+activación, pruebas y límites se mantiene en
+[DEV_RECOVERY_2026_10_20.md](DEV_RECOVERY_2026_10_20.md). Los párrafos siguientes
+describen el límite de la primera entrega ADM-001, no una confirmación de que la
+ampliación ya haya producido una copia real.
+
 ## Límites operativos explícitos
 
 **Copias de seguridad: sin verificar.** No hay integración de estado del
