@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**COM-019, 20/10/2026 · programas guiados Free/Pro:** Free permite un programa
+activo y Pro varios sin esa cuota. Pausar libera la plaza, retomar conserva fase
+e historial y alternar no tiene penalización. El catálogo y las sesiones
+oficiales sueltas siguen disponibles. Las cuotas de 8 ejercicios propios y 4
+familias de sesiones propias son independientes. Los programas ya activos
+continúan utilizables tras caducar Pro; nuevos inicios/reanudaciones comprueban
+la cuota en servidor. Dejar un programa sigue siendo distinto de pausarlo.
+[Contrato, validación y límites](PROGRAMAS_GUIADOS.md).
+
 **PLAN-026, 16/10/2026 · progresión de carrera:** una nueva marca no descarta
 automáticamente parciales que todavía cumplen el trabajo actual. El motor
 prioriza progresión justificada de dosis y especificidad, conserva una calidad

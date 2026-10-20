@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**COM-019 · 20/10/2026 · una plaza Free y pausa de programas guiados:** se
+implementan cuota de servidor, contador, invitación a Pro y pausa/reanudación
+conservando fase e historial. Pro permite varios; Free alterna pausando el
+actual sin penalización. Se conservan los seguimientos ya activos tras
+caducar Pro. Catálogo, sesiones oficiales sueltas, cuotas personales 8/4,
+motor adaptativo y facturación conservan sus contratos.
+**Validación del 20/10/2026:** análisis limpio y 1.101 pruebas raíz correctas,
+con una omisión preexistente. Migración aplicada solo en Dev: 168 migraciones
+local/remoto coincidentes. Seis pruebas SQL con ROLLBACK correctas sobre el
+servidor actualizado: cuota/pausa, seguimiento/ejecutor, abandono, portadas,
+visibilidad editorial y cuotas personales. Revisados los permisos de las RPC
+nuevas y los avisos esperados del asesor. Los fixtures no dejan datos.
+No hay dispositivo móvil conectado; instalación y aceptación física de esta
+interfaz pendientes. No se acredita ensayo de dos activaciones realmente
+concurrentes; se revisa su bloqueo transaccional común. Producción sin cambios.
+**Siguiente recorrido de este bloque:** actualizar el móvil y comprobar
+Free → iniciar → pausar → otro programa → retomar con plaza ocupada → Pro.
+La compra/restauración física y los sandboxes de las tiendas siguen pendientes;
+no se da por cerrado Free/Pro. [Contrato](PROGRAMAS_GUIADOS.md).
+
 **TRN-008/009 · 20/10/2026 · contrato base profesional en Dev:** Javier confirma
 un preparador activo por alumno y rechaza creación personal ilimitada por el
 vínculo. Acceso manual con cupo y auditoría, invitaciones y relación

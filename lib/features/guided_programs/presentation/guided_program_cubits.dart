@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:workout_core/guided_program.dart';
 
 import '../domain/guided_program_repository.dart';
+import '../../pro/domain/pro_access.dart';
 
 class GuidedCatalogState {
   const GuidedCatalogState({
@@ -105,10 +106,12 @@ class GuidedDetailState {
     this.loading = false,
     this.busy = false,
     this.error,
+    this.restriction,
   });
   final GuidedProgramDetail? detail;
   final bool loading, busy;
   final String? error;
+  final ProAccessDenied? restriction;
 }
 
 class GuidedDetailCubit extends Cubit<GuidedDetailState> {
@@ -139,10 +142,19 @@ class GuidedDetailCubit extends Cubit<GuidedDetailState> {
   Future<void> follow() async => _mutate(() => repository.follow(programId));
   Future<void> abandon() async {
     final follow = state.detail?.follow;
-    if (follow == null || !follow.active) return;
+    if (follow == null || follow.completed || follow.abandoned) return;
     await _mutate(
       () => repository.abandon(follow.id),
       errorMessage: 'No se pudo dejar el programa. Revisa la conexión y termina o abandona cualquier sesión en curso antes de reintentar.',
+    );
+  }
+
+  Future<void> setPaused(bool paused) async {
+    final follow = state.detail?.follow;
+    if (follow == null || follow.completed || follow.abandoned) return;
+    await _mutate(
+      () => repository.setPaused(follow.id, paused: paused),
+      errorMessage: 'No se pudo cambiar el programa. Revisa la conexión y termina o abandona la sesión en curso antes de pausar.',
     );
   }
 
@@ -161,6 +173,10 @@ class GuidedDetailCubit extends Cubit<GuidedDetailState> {
     try {
       await action();
       if (!isClosed) await load();
+    } on ProAccessDenied catch (denied) {
+      if (!isClosed) {
+        emit(GuidedDetailState(detail: state.detail, restriction: denied));
+      }
     } catch (_) {
       if (!isClosed) {
         emit(GuidedDetailState(detail: state.detail, error: errorMessage));

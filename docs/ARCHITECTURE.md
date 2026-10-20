@@ -1,5 +1,26 @@
 # Arquitectura de EntrenaOP
 
+## Cuota de programas guiados y pausa · COM-019 · 20/10/2026
+
+`guided_program_follows.paused_at` distingue pausa de los estados terminales.
+Las tablas continúan sin escritura directa del cliente. Las RPC autenticadas
+`get_my_guided_program_access`, `set_guided_program_paused` y
+`follow_guided_program` consultan `has_pro_access` y comprueban una plaza activa
+en Free al iniciar/reanudar; Pro no tiene esta cuota. Inicio, pausa, reanudación,
+avance y abandono usan el bloqueo transaccional existente por usuario antes de
+bloquear el seguimiento. El contador usa un índice parcial sobre seguimientos
+no terminales sin pausa. Se conserva el índice único de no terminales, incluido
+el pausado, por usuario y versión.
+
+No se cambia fase, historial ni vigencia de suscripción al pausar. Se permite
+continuar seguimientos ya activos tras caducar Pro; solo nuevas activaciones
+comprueban cuota. Inicio de sesión y avance rechazan un seguimiento pausado;
+los reintentos de operaciones ya registradas conservan su resultado original.
+El repositorio traduce únicamente el código comercial estable a la invitación
+Pro; Flutter no concede derechos ni resuelve la cuota. Inicio excluye pausados,
+el catálogo de iniciados los conserva y la ficha permite retomarlos.
+[Contrato y pruebas](PROGRAMAS_GUIADOS.md).
+
 ## Presentación Compacto compartida · UI-059 · 19/10/2026
 
 `EntrenaTheme` aplica el lenguaje de formularios a ambas apps. No hay temas de

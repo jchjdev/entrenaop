@@ -314,6 +314,8 @@ class _GuidedPreviewState extends State<_GuidedPreview> {
                       ? 'Inicia el programa desde su ficha para entrenar con seguimiento.'
                       : follow.abandoned
                       ? 'Has dejado este programa. Puedes volver a iniciarlo desde su ficha.'
+                      : follow.paused
+                      ? 'Programa en pausa. Retómalo desde su ficha para continuar entrenando.'
                       : follow.completed
                       ? 'Programa completado. Puedes repetirlo desde su ficha.'
                       : 'Vista previa: esta sesión pertenece a otra fase.',

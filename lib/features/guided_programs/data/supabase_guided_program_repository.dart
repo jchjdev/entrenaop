@@ -2,6 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/guided_program_codec.dart';
 
+import '../../pro/domain/pro_access.dart';
+
 import '../domain/guided_program_repository.dart';
 
 class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
@@ -54,6 +56,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
         .eq('user_id', owner)
         .isFilter('completed_at', null)
         .isFilter('abandoned_at', null)
+        .isFilter('paused_at', null)
         .order('started_at', ascending: false)
         .order('id', ascending: false)
         .limit(3);
@@ -112,6 +115,7 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
 
   @override
   Future<GuidedProgramDetail> detail(String id) async {
+    final owner = currentUserId;
     final row = await client
         .from('guided_programs')
         .select()
@@ -133,8 +137,15 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
               )
               .eq('follow_id', follow['id'])
               .order('created_at', ascending: false);
+    final access = Map<String, dynamic>.from(
+      await client.rpc('get_my_guided_program_access') as Map,
+    );
+    final program = (await _withEditorial([row])).single;
+    if (owner == null || owner != currentUserId) {
+      throw StateError('La cuenta ha cambiado. Vuelve a abrir el programa.');
+    }
     return GuidedProgramDetail(
-      (await _withEditorial([row])).single,
+      program,
       follow: follow == null
           ? null
           : GuidedFollow(
@@ -142,7 +153,12 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
               phaseIndex: follow['phase_index'] as int,
               completed: follow['completed_at'] != null,
               abandoned: follow['abandoned_at'] != null,
+              paused: follow['paused_at'] != null,
             ),
+      access: GuidedProgramAccess(
+        isPro: access['is_pro'] == true,
+        activePrograms: (access['active_programs'] as num).toInt(),
+      ),
       runs: runs
           .map(
             (r) => GuidedRun(
@@ -160,8 +176,26 @@ class SupabaseGuidedProgramRepository implements GuidedProgramRepository {
 
   @override
   Future<void> follow(String id) async {
-    await client.rpc('follow_guided_program', params: {'p_program_id': id});
+    await _change('follow_guided_program', {'p_program_id': id});
   }
+
+  Future<void> _change(String name, Map<String, dynamic> params) async {
+    try {
+      await client.rpc(name, params: params);
+    } on PostgrestException catch (error) {
+      final denied = error.code == 'P0001'
+          ? ProAccessDenied.fromDetails(error.details)
+          : null;
+      if (denied != null) throw denied;
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> setPaused(String followId, {required bool paused}) => _change(
+    'set_guided_program_paused',
+    {'p_follow_id': followId, 'p_paused': paused},
+  );
 
   @override
   Future<void> abandon(String followId) async {

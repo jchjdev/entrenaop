@@ -9,6 +9,9 @@ declare owner_id uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); admi
   amrap_session uuid; amrap_program uuid; amrap_execution uuid; running_session uuid; running_program uuid; running_execution uuid;
 begin
   insert into auth.users(id,email) values(owner_id,owner_id||'@guided.example.invalid'),(outsider,outsider||'@guided.example.invalid');
+  -- Este ensayo combina programas para comprobar sus recetas; la cuota Free se prueba por separado.
+  insert into public.pro_access_grants(user_id,source,starts_at,ends_at,reason)
+    values(owner_id,'development_manual',now(),now()+interval '1 hour','Recetas guiadas del ensayo transaccional');
   select user_id into admin_id from public.admin_permissions limit 1;
   perform set_config('request.jwt.claim.sub',admin_id::text,true);
   select id into exercise from public.exercises where is_public and id<>'20000000-0000-4000-8000-000000000004' limit 1;

@@ -12,12 +12,25 @@ class GuidedFollow {
     required this.phaseIndex,
     required this.completed,
     this.abandoned = false,
+    this.paused = false,
   });
   final String id;
   final int phaseIndex;
   final bool completed;
   final bool abandoned;
-  bool get active => !completed && !abandoned;
+  final bool paused;
+  bool get active => !completed && !abandoned && !paused;
+  bool get resumable => !completed && !abandoned && paused;
+}
+
+class GuidedProgramAccess {
+  const GuidedProgramAccess({
+    required this.isPro,
+    required this.activePrograms,
+  });
+  final bool isPro;
+  final int activePrograms;
+  int? get activeLimit => isPro ? null : 1;
 }
 
 class GuidedRun {
@@ -39,10 +52,16 @@ class StartedGuidedProgram {
 }
 
 class GuidedProgramDetail {
-  const GuidedProgramDetail(this.program, {this.follow, this.runs = const []});
+  const GuidedProgramDetail(
+    this.program, {
+    this.follow,
+    this.runs = const [],
+    this.access,
+  });
   final GuidedProgram program;
   final GuidedFollow? follow;
   final List<GuidedRun> runs;
+  final GuidedProgramAccess? access;
   int get currentPhase => follow?.phaseIndex ?? 0;
   int get nextSession {
     final active = runs
@@ -74,6 +93,7 @@ abstract class GuidedProgramRepository {
   Future<GuidedProgramDetail> detail(String id);
   Future<void> follow(String id);
   Future<void> abandon(String followId);
+  Future<void> setPaused(String followId, {required bool paused});
   Future<void> advance(String followId, int expectedPhase);
   Future<String> start({
     required String programId,

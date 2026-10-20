@@ -1,4 +1,4 @@
-enum ProRestriction { exercises, sessions, adaptiveProgram }
+enum ProRestriction { exercises, sessions, adaptiveProgram, guidedPrograms }
 
 class ProAccessDenied implements Exception {
   const ProAccessDenied(this.restriction, this.message);
@@ -17,6 +17,10 @@ class ProAccessDenied implements Exception {
     'pro_required' => const ProAccessDenied(
       ProRestriction.adaptiveProgram,
       'Los programas adaptativos requieren Pro.',
+    ),
+    'free_guided_program_limit' => const ProAccessDenied(
+      ProRestriction.guidedPrograms,
+      'Free incluye un programa activo. Pausa el actual para iniciar o retomar otro, o accede a Pro para mantener varios a la vez.',
     ),
     _ => null,
   };

@@ -90,6 +90,10 @@ class _ProOfferPageState extends State<ProOfferPage> {
         Icons.add_circle_outline_rounded,
         'Más ejercicios y sesiones propios, sin las cuotas de Free.',
       ),
+      const _Benefit(
+        Icons.library_books_outlined,
+        'Varios programas activos a la vez, sin la cuota de Free.',
+      ),
       const SizedBox(height: 12),
       Text(
         'El mismo Pro. Elige cómo pagar.',
@@ -417,7 +421,7 @@ class _AccessDetails extends StatelessWidget {
                             ? 'Suscripción de prueba hasta el $date a las $time (hora local). No se realizará ningún cobro.'
                             : 'Acceso por suscripción hasta el $date.'
                       : 'Acceso de prueba hasta el $date. No es una suscripción de pago.'
-                : 'Incluye 8 ejercicios propios y 4 sesiones propias guardadas.',
+                : 'Incluye 8 ejercicios propios, 4 sesiones propias guardadas y 1 programa activo.',
           ),
           if (access.isPro && testSubscription) ...[
             const SizedBox(height: 8),

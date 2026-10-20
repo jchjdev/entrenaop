@@ -1,5 +1,62 @@
 # Programas guiados oficiales
 
+## Acceso Free/Pro y pausa · COM-019 · 20/10/2026
+
+Free incluye **un programa guiado activo**; Pro permite varios sin esta cuota.
+Cuenta cada seguimiento no completado, abandonado ni pausado. No limita el
+catálogo que se puede explorar, las sesiones oficiales sueltas ni el número
+de entrenamientos realizados. Las cuotas personales de 8 ejercicios y 4
+familias de sesiones siguen siendo independientes.
+
+La ficha muestra el contador y ofrece **Pausar programa**, con confirmación,
+y **Retomar programa**. Pausar libera la plaza sin cambiar seguimiento, fecha
+de inicio, fase ni resultados. Se puede alternar sin límite de cambios ni
+esperas. Los pausados desaparecen del carrusel de Inicio, pero siguen en
+**Programas iniciados** y en su ficha. Las sesiones se pueden consultar; para
+entrenar o avanzar de fase debe retomarse el programa. Una ejecución abierta
+debe terminarse o abandonarse antes de pausar.
+
+Intentar iniciar o retomar otro cuando la plaza está ocupada ofrece **Ver Pro**
+y **Volver**, explicando que se puede pausar el actual. El servidor conserva el
+estado si se rechaza el cambio. **Dejar programa** mantiene su significado:
+cierra ese seguimiento; volver a iniciarlo empieza desde la primera fase.
+
+Los seguimientos activos anteriores y los activados con Pro se conservan
+utilizables tras introducir esta cuota o caducar Pro. No se elige ni se elimina
+automáticamente ninguno. Nuevos inicios y reanudaciones sí deben cumplir la
+cuota vigente. Un reintento sobre un seguimiento ya activo no crea otra plaza.
+
+Contrato técnico: `paused_at`, CHECK de estados no terminales e índice parcial
+para contar activos. El índice único previo sigue incluyendo los pausados para
+conservar un único seguimiento no terminal de cada versión por usuario.
+`get_my_guided_program_access` devuelve solo los derechos y contador propios;
+`set_guided_program_paused` y `follow_guided_program` comprueban identidad,
+propiedad y cuota mediante el mismo bloqueo transaccional por usuario que
+inicio, avance y abandono. No hay escritura directa del cliente. Los reintentos
+de entrenamientos ya aceptados siguen resolviendo su ejecución original.
+
+Migración `20261020094903_guided_program_free_limit_and_pause.sql` y prueba
+`supabase/tests/guided_program_free_limit_and_pause.sql`, transaccional con
+ROLLBACK. Estado final de validación y límites en [Roadmap](ROADMAP.md).
+La interfaz nueva requiere actualizar la app; no modifica el motor adaptativo,
+las concesiones administrativas de Pro ni la facturación.
+
+Verificación del 20/10/2026: análisis limpio, 1.101 pruebas raíz correctas con
+una omisión previa, seis SQL transaccionales correctos tras aplicar la migración
+solo en Dev y 168 migraciones coincidentes. Las pruebas cubren cambio con plaza
+ocupada, inicio/reanudación por RPC, fase conservada, permisos, rechazo de pausa
+con ejecución abierta, reintentos, caducidad de Pro y estados terminales. La UI
+se comprueba a 320 px con texto 1×/2×. No hay móvil conectado para aceptación
+física ni ensayo de peticiones realmente concurrentes.
+
+Los asesores añaden dos avisos de
+[RPC SECURITY DEFINER ejecutables por authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0028_authenticated_security_definer_function_executable):
+acceso intencionado, con identidad, propiedad, `search_path` vacío, grants
+explícitos y permisos probados. El índice parcial nuevo figura inicialmente
+[sin uso](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index)
+en el pequeño volumen de Dev. No se cambian avisos anteriores ni se retiran
+estos controles para silenciarlos.
+
 ## Acuerdo e implementación por bloques · 17/10/2026
 
 Javier autoriza implementar PRG-001 conservando Biblioteca, preparaciones
@@ -394,8 +451,9 @@ pendiente.
 
 Javier solicita poder abandonar los programas. La ficha ofrece **Dejar programa**
 con confirmación explícita. El seguimiento abandonado desaparece de Inicio y del
-filtro **Programas iniciados**, que ahora solo muestra seguimientos activos,
-sin completar ni abandonar. El catálogo general conserva las publicaciones.
+filtro **Programas iniciados**, que excluye completados y abandonados. COM-019
+añade después los pausados a ese filtro, conservándolos fuera de Inicio.
+El catálogo general conserva las publicaciones.
 La ficha mantiene el estado **Has dejado este programa** y permite **Volver a
 iniciar programa** si esa versión sigue publicada: crea un seguimiento desde
 la primera fase, conservando el anterior y sus ejecuciones. Las sesiones del

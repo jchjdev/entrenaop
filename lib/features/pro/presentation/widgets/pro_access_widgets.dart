@@ -162,7 +162,7 @@ Future<void> showProRestriction(
     builder: (context) => AlertDialog(
       title: const Text('Amplía tu acceso con Pro'),
       content: Text(
-        '${denied.message}\n\nTu borrador y lo que ya has guardado se conservan.',
+        '${denied.message}\n\n${denied.restriction == ProRestriction.guidedPrograms ? 'Tu progreso y tus entrenamientos se conservan.' : 'Tu borrador y lo que ya has guardado se conservan.'}',
       ),
       actions: [
         TextButton(

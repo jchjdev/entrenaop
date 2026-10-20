@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:entrenaop/features/guided_programs/data/supabase_guided_program_repository.dart';
+import 'package:entrenaop/features/pro/domain/pro_access.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workout_core/guided_program_codec.dart';
@@ -18,6 +19,8 @@ void main() {
   Completer<void>? arrived;
   bool showCover = false;
   bool abandonedDetail = false;
+  bool pausedDetail = false;
+  bool quotaDenied = false;
   bool showCategories = false;
   final posted = <Map<String, dynamic>>[];
   setUp(() async {
@@ -26,6 +29,8 @@ void main() {
     arrived = null;
     showCover = false;
     abandonedDetail = false;
+    pausedDetail = false;
+    quotaDenied = false;
     showCategories = false;
     posted.clear();
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -38,6 +43,20 @@ void main() {
       if (arrived != null && !arrived!.isCompleted) arrived!.complete();
       await gate?.future;
       request.response.headers.contentType = ContentType.json;
+      if (quotaDenied &&
+          (request.uri.path.endsWith('/follow_guided_program') ||
+              request.uri.path.endsWith('/set_guided_program_paused'))) {
+        request.response.statusCode = 400;
+        request.response.write(
+          jsonEncode({
+            'code': 'P0001',
+            'details': 'free_guided_program_limit',
+            'message': 'Free incluye un programa activo.',
+          }),
+        );
+        await request.response.close();
+        return;
+      }
       if (request.uri.path.endsWith('/get_guided_program_catalog_categories')) {
         request.response.write(
           jsonEncode([
@@ -90,7 +109,18 @@ void main() {
         await request.response.close();
         return;
       }
-      if (abandonedDetail &&
+      if (request.uri.path.endsWith('/get_my_guided_program_access')) {
+        request.response.write(
+          jsonEncode({
+            'is_pro': false,
+            'active_programs': 0,
+            'active_limit': 1,
+          }),
+        );
+        await request.response.close();
+        return;
+      }
+      if ((abandonedDetail || pausedDetail) &&
           !request.uri.path.endsWith('/guided_program_covers')) {
         final Object response;
         if (request.uri.path.endsWith('/guided_programs')) {
@@ -107,7 +137,8 @@ void main() {
               'id': 'follow',
               'phase_index': 0,
               'completed_at': null,
-              'abandoned_at': '2026-10-18T00:00:00Z',
+              'abandoned_at': abandonedDetail ? '2026-10-18T00:00:00Z' : null,
+              'paused_at': pausedDetail ? '2026-10-20T00:00:00Z' : null,
             },
           ];
         } else {
@@ -186,6 +217,7 @@ void main() {
       expect(params['user_id'], 'eq.owner');
       expect(params['completed_at'], 'is.null');
       expect(params['abandoned_at'], 'is.null');
+      expect(params['paused_at'], 'is.null');
       expect(params['limit'], '3');
       expect(params['order'], 'started_at.desc.nullslast,id.desc.nullslast');
       expect(params['select'], 'phase_index,guided_programs!inner(*)');
@@ -218,6 +250,31 @@ void main() {
       expect(detail.follow!.active, isFalse);
       expect(detail.runs.single.executionId, 'execution');
       expect(detail.runs.single.status, 'completed');
+    },
+  );
+  test('la ficha distingue pausa de abandono y conserva resultados', () async {
+    pausedDetail = true;
+    final detail = await repository.detail('program');
+    expect(detail.follow!.resumable, isTrue);
+    expect(detail.follow!.active, isFalse);
+    expect(detail.follow!.abandoned, isFalse);
+    expect(detail.runs.single.executionId, 'execution');
+    expect(detail.access!.activeLimit, 1);
+  });
+  test(
+    'inicio y reanudación convierten la cuota SQL en la invitación contextual',
+    () async {
+      quotaDenied = true;
+      final restriction = isA<ProAccessDenied>().having(
+        (e) => e.restriction,
+        'restricción',
+        ProRestriction.guidedPrograms,
+      );
+      await expectLater(repository.follow('program'), throwsA(restriction));
+      await expectLater(
+        repository.setPaused('follow', paused: false),
+        throwsA(restriction),
+      );
     },
   );
   test(

@@ -7,6 +7,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import '../../../core/presentation/images/editorial_cover_provider.dart';
 
 import 'guided_program_cubits.dart';
+import '../../pro/presentation/widgets/pro_access_widgets.dart';
 
 class GuidedProgramPage extends StatefulWidget {
   const GuidedProgramPage({super.key});
@@ -16,6 +17,31 @@ class GuidedProgramPage extends StatefulWidget {
 
 class _GuidedProgramPageState extends State<GuidedProgramPage> {
   int? _selectedPhase;
+  Future<void> _pause(GuidedDetailCubit cubit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Pausar este programa?'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'Conservarás la fase actual y tus entrenamientos. Podrás iniciar otro programa y retomar este más adelante.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Pausar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) await cubit.setPaused(true);
+  }
+
   Future<void> _abandon(GuidedDetailCubit cubit) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -82,7 +108,13 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
   @override
   Widget build(
     BuildContext context,
-  ) => BlocBuilder<GuidedDetailCubit, GuidedDetailState>(
+  ) => BlocConsumer<GuidedDetailCubit, GuidedDetailState>(
+    listenWhen: (_, next) => next.restriction != null,
+    listener: (context, state) async {
+      final cubit = context.read<GuidedDetailCubit>();
+      await showProRestriction(context, state.restriction!);
+      if (context.mounted) await cubit.load();
+    },
     builder: (context, state) {
       final cubit = context.read<GuidedDetailCubit>(), d = state.detail;
       return Scaffold(
@@ -187,6 +219,23 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(state.error!),
                         ),
+                      if (d.access case final access?) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'Programas activos: ${access.activePrograms}${access.isPro ? '' : '/1'}',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        Text(
+                          access.isPro
+                              ? 'Con Pro puedes mantener varios programas activos.'
+                              : 'Free incluye un programa activo. Puedes pausar y retomar sin perder tu avance.',
+                        ),
+                        if (!access.isPro && access.activePrograms > 1)
+                          const Text(
+                            'Puedes continuar con los programas que ya tenías iniciados. Para activar otro, pausa los activos o accede a Pro.',
+                          ),
+                        const SizedBox(height: 12),
+                      ],
                       if (d.follow == null)
                         FilledButton(
                           onPressed: state.busy ? null : cubit.follow,
@@ -194,7 +243,24 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                             state.busy ? 'Guardando…' : 'Iniciar programa',
                           ),
                         ),
-                      if (d.follow != null && !d.follow!.active) ...[
+                      if (d.follow?.resumable == true) ...[
+                        const ListTile(
+                          leading: Icon(Icons.pause_circle_outline),
+                          title: Text('Programa en pausa'),
+                          subtitle: Text(
+                            'Tu fase y tus entrenamientos se conservan.',
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: state.busy
+                              ? null
+                              : () => cubit.setPaused(false),
+                          child: const Text('Retomar programa'),
+                        ),
+                      ],
+                      if (d.follow != null &&
+                          !d.follow!.active &&
+                          !d.follow!.paused) ...[
                         ListTile(
                           leading: Icon(
                             d.follow!.abandoned
@@ -335,6 +401,24 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
                         ),
                       ],
                       if (d.follow?.active == true) ...[
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed:
+                              state.busy ||
+                                  d.runs.any((r) => r.status == 'in_progress')
+                              ? null
+                              : () => _pause(cubit),
+                          icon: const Icon(Icons.pause_circle_outline),
+                          label: const Text('Pausar programa'),
+                        ),
+                        if (d.runs.any((r) => r.status == 'in_progress'))
+                          const Text(
+                            'Termina o abandona la sesión en curso para pausar el programa.',
+                          ),
+                      ],
+                      if (d.follow != null &&
+                          !d.follow!.completed &&
+                          !d.follow!.abandoned) ...[
                         const SizedBox(height: 20),
                         if (d.runs.any((r) => r.status == 'in_progress'))
                           const Text(

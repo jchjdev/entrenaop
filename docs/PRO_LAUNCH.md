@@ -1,5 +1,24 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Programas guiados y pausa · COM-019 · 20/10/2026
+
+Free: 1 programa guiado activo, 8 ejercicios propios y 4 familias de sesiones
+propias. Pro amplía esas cuotas y mantiene los programas adaptativos existentes.
+Las sesiones oficiales sueltas y los entrenamientos registrados no consumen
+plazas personales. Pausar libera la plaza de programa y retomar conserva su
+fase y resultados, sin límite de alternancias.
+
+La ficha consulta el acceso y contador del servidor. Iniciar o retomar con la
+plaza ocupada devuelve `free_guided_program_limit` y abre la invitación
+contextual a Pro; no cambia el seguimiento ni los derechos localmente. Los
+programas ya activos siguen utilizables después de caducar Pro; nuevas
+activaciones y reanudaciones deben cumplir la cuota. No se modifica ni cancela
+una compra por esta regla. [Contrato de programas](PROGRAMAS_GUIADOS.md).
+
+La validación final figura en [Roadmap](ROADMAP.md). El cierre comercial continúa
+abierto: esta entrega no acredita compra/restauración física ni los sandboxes
+reales de Apple y Google.
+
 ## Anual y confirmación tardía · COM-018 · 13/10/2026
 
 Javier realiza la compra anual de Test Store como Free y comunica que permanece
