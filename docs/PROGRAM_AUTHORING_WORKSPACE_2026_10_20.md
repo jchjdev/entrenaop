@@ -42,8 +42,25 @@ recoger un enlace fallido y retomarlo sin duplicar, borrador conservado al salir
 del área visible y protección al navegar fuera. Vista previa y creación no añaden
 Dialog, Scaffold ni ListView interno. Revisadas capturas de widgets reales a
 1300/390 px y 320 px con texto 2×; la publicación sigue usando el contrato Dev ya
-validado, sin migraciones nuevas. CI y la comprobación HTTPS de la publicación
-se registran al terminar el despliegue.
+validado, sin migraciones nuevas. CI y la comprobación HTTPS constan debajo.
+
+### Publicación comprobada del editor integrado
+
+- Commit de interfaz: `6f1b2fe1b86410f35d4d461273eaaabdd403750f`.
+- [CI 39449386565](https://github.com/jchjdev/entrenaop/actions/runs/39449386565):
+  validación, compilación y despliegue correctos.
+- Comprobación HTTPS independiente el 20/10/2026, 15:41 UTC: revisión exacta,
+  configuración `development` y proyecto Dev `sxbxfjqgoddzhtcyhalw`, JavaScript
+  SHA-256 `3a2d029e59b0c87d5e42cc38c9f49731383bbcb6f02b9947d6ab97571b73d259`,
+  entrada activa, `Cache-Control: no-store`, `X-Frame-Options: DENY` y MIME de
+  WebAssembly correctos.
+- Versión: `6f1b2fe1b86410f35d4d461273eaaabdd403750f-39449386565-1`.
+- No se recargan pestañas de trabajo del usuario ni se modifican sus sesiones
+  para esta comprobación. Aceptación manual del editor integrado y teclado en
+  dispositivo físico pendientes; las capturas anteriores son tests de widgets.
+- Para recuperar el panel anterior basta revertir la presentación introducida
+  por este commit; no hay migraciones ni datos que deshacer y la publicación
+  conjunta de UI-062 permanece.
 
 ## Contrato acordado
 
