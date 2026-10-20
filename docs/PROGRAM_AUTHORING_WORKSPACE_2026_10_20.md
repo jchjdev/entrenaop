@@ -38,6 +38,20 @@ ventana cubren 1300/390 px y 320 px con texto 2×; revisada la captura de escrit
 Compilación web release local para Dev correcta, con CSP y sin mapas de fuentes
 ni recursos CDN. No se repite raíz ni paquetes porque no cambian sus fuentes.
 
+### Publicación comprobada de la ventana elegida
+
+- Commit de presentación: `e9114c735d0bb944be841a858b1f8b43bedd35d7`.
+- [CI 39462194081](https://github.com/jchjdev/entrenaop/actions/runs/39462194081):
+  validación, compilación y publicación automática en ADMIN Dev.
+- Comprobación HTTPS independiente el 20/10/2026, 17:03 UTC: revisión exacta,
+  entorno `development` y proyecto `sxbxfjqgoddzhtcyhalw`, entrada activa,
+  manifiesto, cabeceras de caché y protección de marco y MIME WebAssembly correctos.
+- Versión: `e9114c735d0bb944be841a858b1f8b43bedd35d7-39462194081-1`.
+- JavaScript SHA-256:
+  `134d0b6fcdf75453523347e0f4979ac6589a9aa98072f4b244144a9e94927551`.
+- No se recarga el trabajo abierto de Javier. Aceptación manual con su contenido
+  y teclado físico pendientes; producción sin cambios.
+
 ## Prueba anterior: editor dentro de la página · sustituida por ventana
 
 Javier prueba el panel superpuesto y confirma reemplazarlo por creación, edición
