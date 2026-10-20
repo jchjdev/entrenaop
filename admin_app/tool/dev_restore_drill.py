@@ -60,12 +60,16 @@ def verify_restore(source):
         result = subprocess.run(args, input=data, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
         if result.returncode:
             # La salida de psql puede incluir datos del COPY. No se imprime.
-            raise RuntimeError("isolated_restore_failed")
+            state = re.search(rb'ERROR:\s+([A-Z0-9]{5})(?:\s|:)', result.stderr)
+            raise RuntimeError("isolated_restore_failed" + (":" + state[1].decode() if state else ""))
         return result.stdout
 
     def query(sql):
-        return run(["docker", "exec", "-i", name, "psql", "-X", "-U", "postgres", "-d", "postgres",
-                    "-v", "ON_ERROR_STOP=1", "-At"], sql.encode()).decode().strip()
+        # supabase_admin es el superusuario de este contenedor nuevo. El rol
+        # postgres replica el rol restringido de Supabase y no puede preparar
+        # los esquemas administrados del ensayo.
+        return run(["docker", "exec", "-i", name, "psql", "-X", "-U", "supabase_admin", "-d", "postgres",
+                    "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=sqlstate", "-At"], sql.encode()).decode().strip()
 
     created = False
     try:
