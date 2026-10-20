@@ -42,6 +42,7 @@ class WorkflowDraftGuard extends StatefulWidget {
     required this.hasUnsavedChanges,
     required this.child,
     this.isBusy,
+    this.beforeExit,
     this.saveDraftBeforeExit,
     this.confirmExit,
     this.title = '¿Salir sin guardar?',
@@ -51,6 +52,9 @@ class WorkflowDraftGuard extends StatefulWidget {
   });
   final bool Function() hasUnsavedChanges;
   final bool Function()? isBusy;
+
+  /// Protege un editor contenido antes de comprobar el borrador de la página.
+  final Future<bool> Function()? beforeExit;
   final Future<bool> Function()? saveDraftBeforeExit;
 
   /// Un flujo con varias salidas puede decidir sin cambiar el guard del router
@@ -85,6 +89,7 @@ class _WorkflowDraftGuardState extends State<WorkflowDraftGuard> {
       _pending ??= _confirm().whenComplete(() => _pending = null);
   Future<bool> _confirm() async {
     if (widget.isBusy?.call() == true) return false;
+    if (widget.beforeExit != null && !await widget.beforeExit!()) return false;
     if (widget.saveDraftBeforeExit != null) {
       try {
         if (await widget.saveDraftBeforeExit!()) return true;

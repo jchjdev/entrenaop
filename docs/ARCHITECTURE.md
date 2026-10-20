@@ -6,7 +6,12 @@
 lector existente dentro del programa, con guard local y sin otro router ni copia
 del creador. El trabajo del programa se conserva antes de abrir y al enlazar el
 ID guardado. Si el enlace falla, su reintento usa ese ID sin crear otra sesión.
-El guard del programa bloquea salir mientras está abierto el panel.
+El contenido `embedded` de creador y lector se despliega dentro del programa,
+sin Scaffold ni scroll propios. El programa conserva todo el contenido montado
+en su único desplazamiento. `WorkflowDraftGuard.beforeExit` consulta el guard
+local antes del guard del programa al navegar fuera; recoger usa el mismo guard
+local. La estructura del programa permanece bloqueada mientras se edita una
+sesión. Las rutas independientes mantienen su composición anterior.
 
 `save_guided_program` admite sesiones oficiales generales en borrador o
 publicadas. `set_guided_program_status` bloquea familia, programa y recetas y

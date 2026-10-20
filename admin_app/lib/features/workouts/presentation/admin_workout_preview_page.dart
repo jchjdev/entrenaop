@@ -234,47 +234,49 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
   Widget build(BuildContext context) => WorkflowDraftGuard(
     hasUnsavedChanges: () => false,
     isBusy: () => _publishing || _removing || _confirming || _savingVisibility,
-    child: Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(title: const Text('Revisar sesión')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: FutureBuilder<WorkoutTemplate?>(
-            future: _template,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const CircularProgressIndicator();
-              }
-              if (snapshot.hasError || snapshot.data == null) {
-                return Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'No se pudo cargar la sesión. No la publiques todavía.',
-                      ),
-                      TextButton(
-                        onPressed: () => setState(() {
-                          _template = widget.repository.getTemplateById(
-                            widget.workout.id,
-                          );
-                        }),
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return AbsorbPointer(
-                absorbing: _savingVisibility,
-                child: _content(snapshot.data!),
-              );
-            },
+    child: widget.embedded
+        ? _previewContent()
+        : Scaffold(
+            appBar: AppBar(title: const Text('Revisar sesión')),
+            body: _previewContent(),
           ),
-        ),
+  );
+
+  Widget _previewContent() => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: FutureBuilder<WorkoutTemplate?>(
+        future: _template,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.hasError || snapshot.data == null) {
+            return Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'No se pudo cargar la sesión. No la publiques todavía.',
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _template = widget.repository.getTemplateById(
+                        widget.workout.id,
+                      );
+                    }),
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            );
+          }
+          return AbsorbPointer(
+            absorbing: _savingVisibility,
+            child: _content(snapshot.data!),
+          );
+        },
       ),
     ),
   );
@@ -287,9 +289,8 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
       'Hay bloques o ejercicios sin series ni tramos. Completa el borrador antes de publicar.',
   ];
 
-  Widget _content(WorkoutTemplate template) => ListView(
-    padding: const EdgeInsets.all(24),
-    children: [
+  Widget _content(WorkoutTemplate template) {
+    final children = <Widget>[
       Text(template.name, style: Theme.of(context).textTheme.headlineMedium),
       const SizedBox(height: 6),
       Text(
@@ -404,6 +405,15 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           ),
         ),
       ],
-    ],
-  );
+    ];
+    return widget.embedded
+        ? Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          )
+        : ListView(padding: const EdgeInsets.all(24), children: children);
+  }
 }

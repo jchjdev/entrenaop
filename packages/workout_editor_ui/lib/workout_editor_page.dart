@@ -522,10 +522,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     child: AbsorbPointer(absorbing: _busy, child: _buildPage(context)),
   );
 
-  Widget _buildPage(BuildContext context) => Scaffold(
-    appBar: widget.embedded
-        ? null
-        : AppBar(
+  Widget _buildPage(BuildContext context) => widget.embedded
+      ? _editorContent()
+      : Scaffold(
+          appBar: AppBar(
             toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
                 ? 128
                 : null,
@@ -537,73 +537,79 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               maxLines: 3,
             ),
           ),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Text(
-              widget.heading,
-              style: widget.embedded
-                  ? Theme.of(context).textTheme.titleLarge
-                  : Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(widget.instructions),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _name,
-              maxLength: 80,
-              decoration: const InputDecoration(
-                labelText: 'Nombre de la sesión',
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _description,
-              maxLength: 500,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Indicaciones (opcional)',
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (!widget.warmup)
-              SegmentedButton<bool>(
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(value: true, label: Text('Carrera')),
-                  ButtonSegment(value: false, label: Text('Fuerza')),
-                ],
-                selected: {_running},
-                onSelectionChanged: (selection) =>
-                    setState(() => _running = selection.first),
-              ),
-            ?widget.additionalFields,
-            const SizedBox(height: 20),
-            if (_running) _runningEditor() else _strengthEditor(),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FilledButton.icon(
-                onPressed: _busy ? null : _save,
-                icon: const Icon(Icons.save_outlined),
-                label: Text(_busy ? 'Guardando…' : widget.saveLabel),
-              ),
-            ),
+          body: _editorContent(),
+        );
+
+  Widget _editorContent() {
+    final children = <Widget>[
+      Text(
+        widget.heading,
+        style: widget.embedded
+            ? Theme.of(context).textTheme.titleLarge
+            : Theme.of(context).textTheme.headlineMedium,
+      ),
+      const SizedBox(height: 8),
+      Text(widget.instructions),
+      const SizedBox(height: 24),
+      TextField(
+        controller: _name,
+        maxLength: 80,
+        decoration: const InputDecoration(labelText: 'Nombre de la sesión'),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: _description,
+        maxLength: 500,
+        maxLines: 2,
+        decoration: const InputDecoration(labelText: 'Indicaciones (opcional)'),
+      ),
+      const SizedBox(height: 12),
+      if (!widget.warmup)
+        SegmentedButton<bool>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: true, label: Text('Carrera')),
+            ButtonSegment(value: false, label: Text('Fuerza')),
           ],
+          selected: {_running},
+          onSelectionChanged: (selection) =>
+              setState(() => _running = selection.first),
+        ),
+      ?widget.additionalFields,
+      const SizedBox(height: 20),
+      if (_running) _runningEditor() else _strengthEditor(),
+      if (_error != null) ...[
+        const SizedBox(height: 16),
+        Text(
+          _error!,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ],
+      const SizedBox(height: 24),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: FilledButton.icon(
+          onPressed: _busy ? null : _save,
+          icon: const Icon(Icons.save_outlined),
+          label: Text(_busy ? 'Guardando…' : widget.saveLabel),
         ),
       ),
-    ),
-  );
+    ];
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: widget.embedded
+            ? Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: children,
+                ),
+              )
+            : ListView(padding: const EdgeInsets.all(24), children: children),
+      ),
+    );
+  }
 
   Widget _runningEditor() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,

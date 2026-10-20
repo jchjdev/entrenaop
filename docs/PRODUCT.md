@@ -4,7 +4,9 @@
 sesiones dentro del programa como borradores, revisar el conjunto y publicarlo
 en una sola operación. Se conserva reutilización, versiones y la opción de
 mostrar una sesión suelta. No se exige publicar cada sesión antes de añadirla.
-La autoría independiente sigue disponible en Sesiones.
+El creador y la revisión se despliegan dentro de la página del programa, sin
+ventana superpuesta. La autoría independiente sigue disponible en Sesiones.
+Se mantienen los kilos opcionales y el RIR por repeticiones compatibles.
 [Recorrido vigente](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
 
 **COM-019, 20/10/2026 · programas guiados Free/Pro:** Free permite un programa

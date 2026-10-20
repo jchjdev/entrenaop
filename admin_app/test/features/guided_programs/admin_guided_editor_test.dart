@@ -282,7 +282,7 @@ void main() {
     await tester.ensureVisible(toggle);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Volver al programa'));
+    await tester.tap(find.text('Recoger sesión'));
     await tester.pumpAndSettle();
     expect(find.text('Oculta como sesión suelta'), findsOneWidget);
     expect(find.text('Visible como sesión suelta'), findsNothing);

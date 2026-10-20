@@ -3,11 +3,16 @@
 **UI-062 · 20/10/2026 · creadores y Compacto:** Javier confirma concentrar este
 recorrido y adoptar guardado/publicación conjunta. Se corrigen los solapamientos
 de series en los componentes compartidos y se integra el creador y lector de
-sesiones en un panel sobre el programa. Guardar en programa incorpora el borrador;
+sesiones dentro de la página del programa, sin panel superpuesto y con un único
+desplazamiento. Javier confirma este ajuste tras probar el panel anterior.
+Guardar en programa incorpora el borrador;
 una revisión y publicación final activa el conjunto en una transacción. Se
 conservan visibilidad suelta opcional, reutilización, versiones y recuperación.
-Pruebas: 1.128 raíz, 250 ADMIN, 43 del paquete, análisis limpios y build Dev;
-cuatro SQL con ROLLBACK y 171 migraciones coincidentes. Capturas reales revisadas.
+Verificación inicial del guardado conjunto: 1.128 raíz, 250 ADMIN, 43 del paquete,
+análisis limpios y build Dev; cuatro SQL con ROLLBACK y 171 migraciones coincidentes. El ajuste integrado vuelve
+a verificar raíz (1.128), ADMIN (253) y ambos paquetes UI (43/15), con análisis
+limpios; no requiere migraciones nuevas.
+Capturas reales revisadas.
 Límites: aceptación física y ensayo realmente concurrente pendientes; producción
 sin cambios. **Único siguiente paso de este recorrido:** aceptación manual del
 montaje y las series con el contenido de Javier, sin abrir otro rediseño.

@@ -4,6 +4,47 @@ Javier concentra creadores y Compacto en este chat. Solicita corregir los
 solapamientos de personalización de series y evitar saltar entre páginas para
 crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
+## Ajuste confirmado: editor dentro de la página · 20/10/2026
+
+Javier prueba el panel superpuesto y confirma reemplazarlo por creación, edición
+y revisión desplegadas en la propia página del programa. Una sesión abierta a
+la vez, sin diálogo, ruta adicional, Scaffold ni scroll interno del creador.
+El programa comparte un único desplazamiento y conserva montados los campos
+fuera del área visible para no perder el borrador al desplazarse.
+
+Mientras está abierta se bloquean los controles de estructura y metadatos del
+programa, también para el foco de teclado; se mantienen visibles. **Recoger
+sesión** consulta el guard del editor y pide confirmar si hay cambios sin guardar.
+Salir por navegación consulta primero ese guard y después el del programa;
+`WorkflowDraftGuard.beforeExit` compone ambas comprobaciones sin sustituirlas.
+El guard del lector conserva el bloqueo de operaciones en curso. Un error de
+enlace permite reintentar o recoger la sesión: el padre conserva el ID pendiente.
+
+Se reutilizan creador y lector, ofreciendo contenido sin scroll propio en modo
+`embedded`; sus rutas independientes conservan Scaffold y desplazamiento. No se
+modifican RPC, esquema, publicación conjunta, dosis, ejecutor ni algoritmo.
+Javier confirma conservar repeticiones y RIR con kg opcionales; vacío no implica
+cero y no se incorpora prescripción por RM. El cambio de interfaz se guarda en
+un commit separado para poder recuperar el panel anterior mediante una reversión
+selectiva de presentación, conservando datos y publicación conjunta.
+
+La evidencia del panel más abajo corresponde a la primera implementación. La
+integración directa tiene sus propias pruebas y capturas; su aceptación manual
+por Javier queda pendiente.
+
+### Verificación del editor integrado
+
+Análisis limpios en raíz, ADMIN, `workout_editor_ui` y `entrena_ui`. Batería raíz:
+1.128 correctas, una omisión previa; ADMIN: 253 correctas y dos omisiones previas;
+editor compartido: 43; componentes UI: 15.
+Las regresiones de autoría verifican cuatro sesiones, fase correcta, reintentos,
+recoger un enlace fallido y retomarlo sin duplicar, borrador conservado al salir
+del área visible y protección al navegar fuera. Vista previa y creación no añaden
+Dialog, Scaffold ni ListView interno. Revisadas capturas de widgets reales a
+1300/390 px y 320 px con texto 2×; la publicación sigue usando el contrato Dev ya
+validado, sin migraciones nuevas. CI y la comprobación HTTPS de la publicación
+se registran al terminar el despliegue.
+
 ## Contrato acordado
 
 - El programa mantiene su contexto mientras se crean, editan y revisan sesiones
@@ -22,7 +63,7 @@ crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
 Este acuerdo sustituye la obligación anterior de publicar cada sesión antes de
 enlazarla. Implementado y validado en Flutter y Supabase Dev. La aceptación manual
-del nuevo panel por Javier continúa pendiente; no se atribuye a capturas de tests.
+del editor integrado por Javier continúa pendiente; no se atribuye a capturas de tests.
 
 ## Series
 
@@ -33,7 +74,7 @@ aparente. Se conserva el cálculo existente de dosis, descansos, carga y RIR.
 
 ## Guardado y recuperación
 
-Se guarda el trabajo antes de abrir el panel. Tras recibir el ID de la sesión,
+Se guarda el trabajo antes de desplegar el editor. Tras recibir el ID de la sesión,
 primero se conserva como pendiente, después se lee su resumen y se confirma el
 enlace. Un fallo permite reintentar con ese ID, sin volver a crear la sesión ni
 duplicar su posición. Recuperar una revisión pendiente conserva cuál era su

@@ -2,8 +2,10 @@
 
 ## Autoría integrada · UI-062 · 20/10/2026
 
-Crear o revisar una sesión desde el programa abre un panel sobre el montaje y
-reutiliza el creador compartido. **Guardar en programa** incorpora el borrador;
+Crear o revisar una sesión desde el programa despliega su contenido dentro de
+la misma página y reutiliza el creador compartido, con un solo desplazamiento.
+**Recoger sesión** protege los cambios pendientes y permite seguir organizando
+el programa. **Guardar en programa** incorpora el borrador;
 no exige publicarlo aparte ni cambia la ruta. La revisión final acepta sesiones
 oficiales generales en borrador o publicadas. **Publicar programa** publica sus
 borradores y el programa en una transacción: cualquier error revierte el conjunto.
