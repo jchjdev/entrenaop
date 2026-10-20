@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**TRN-008/009 · 20/10/2026 · contrato base profesional en Dev:** Javier confirma
+un preparador activo por alumno y rechaza creación personal ilimitada por el
+vínculo. Acceso manual con cupo y auditoría, invitaciones y relación
+aceptada/terminada implementados. Prueba SQL con ROLLBACK correcta, también
+Free 8/4 con alumno vinculado; regresiones de cuotas y directorio correctas.
+167 migraciones local/Dev coincidentes; no quedan usuarios ni concesiones de
+prueba. Configuración manual deshabilitada, sin cambios en producción o Flutter.
+**Recorrido profesional abierto:** faltan panel, asignaciones, acceso incluido,
+resultados y ensayo de aceptaciones realmente simultáneas antes del piloto.
+**Único siguiente bloque profesional recomendado:** integrar acceso/cupo,
+invitación y aceptación en las interfaces y comprobar la contención concurrente
+antes de habilitar cuentas. [Contrato y límites](TRAINER_ACCESS_2026_10_20.md).
+
 **TRN-007 · 20/10/2026 · creador compartido para el espacio profesional:**
 se recuperan e integran los tres commits documentales de la nube y se completa
 la primera extracción acordada. Sesiones, carrera y calentamientos pasan a

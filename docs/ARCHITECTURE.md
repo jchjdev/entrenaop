@@ -578,6 +578,17 @@ existentes, `show_in_library` y el retorno por go_router. El paquete depende del
 nuevas. El creador de programas y el editor personal mantienen sus contenedores;
 no existen todavía permisos ni asignaciones profesionales.
 
+**Base de vínculo · TRN-008 · 20/10/2026:** `trainer_access`, su auditoría,
+`trainer_invitations` y `trainer_client_relations` separan derecho profesional,
+invitación y relación. Un índice único parcial impide más de un preparador
+activo por alumno. Las RPC expuestas son invoker y delegan en funciones del
+esquema no expuesto `trainer_private`, con comprobaciones de identidad y
+capacidad. Las tablas no admiten escritura del cliente. El gestor de cuentas
+administra el acceso comercial, sin lectura de relaciones privadas por ese
+permiso. No se cambia Pro ni su creación personal. Configuración manual
+deshabilitada, sin cuentas habilitadas; panel y asignaciones pendientes.
+[Contrato y alcance de verificación en Dev](TRAINER_ACCESS_2026_10_20.md).
+
 `website/next/` contiene un borrador local de la futura web de presentación.
 Resume el recorrido que existe en desarrollo, anuncia iPhone y Android sin
 ofrecer descargas y reserva entradas visibles pero desactivadas para

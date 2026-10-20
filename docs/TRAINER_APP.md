@@ -6,8 +6,9 @@ La preparación de la nube del 19/10/2026, basada en `39f24ff`, se integra en
 Windows mediante avance directo hasta `18e5d03`, conservando los cambios locales.
 TRN-007 completa el primer tramo técnico: el creador de sesiones queda en el
 paquete compartido y ADMIN lo consume mediante su adaptador. Todavía no hay
-aplicación profesional ni relación entrenador-cliente implementadas. Esta
-extracción no cambia SQL, permisos, contenido remoto ni infraestructura.
+aplicación profesional. La extracción no cambió SQL ni permisos. TRN-008 añade
+después el contrato base de acceso y vínculos en Dev, sin habilitar cuentas;
+su integración visual, las asignaciones y el acceso incluido siguen pendientes.
 
 Javier confirma en TRN-003 que las herramientas existentes deben reutilizarse
 sin duplicar ADMIN. Los criterios de TRN-001/004/005 siguen vigentes: preparadores
@@ -33,9 +34,11 @@ TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
 | Recuperación de trabajo guiado | El controlador serializa escrituras y conserva peticiones inciertas; su contrato y persistencia actuales son administrativos. Reutilizar el comportamiento requiere separar ese contexto y conservar conflictos/idempotencia. |
 | App del deportista | Ya dispone de agenda, vista previa, ejecutor e historial. Ampliar lectura e inicio para asignaciones autorizadas; mantener una sola ejecución y un solo registro de resultados. |
 
-`WorkoutTemplateOrigin.coach` y `ScheduledWorkoutSource.coach` existen, pero
-no hay vínculo profesional, asignación ni permiso para leer resultados ajenos.
-Estos valores no deben presentarse como un módulo profesional funcional.
+`WorkoutTemplateOrigin.coach` y `ScheduledWorkoutSource.coach` ya existían en la
+inspección inicial sin circuito profesional. TRN-008 añade el vínculo aceptado
+con preparador único; los valores de origen siguen sin acreditar asignaciones
+ni permiso para leer resultados ajenos. No hay todavía un módulo profesional
+funcional para el usuario.
 
 ## Primer tramo cerrado: creador compartido · TRN-007 · 20/10/2026
 
@@ -78,6 +81,34 @@ idempotencia nueva. Tampoco habilita cuentas, invitaciones, cupos, asignaciones,
 cobros, acceso incluido o consulta de resultados. El único siguiente bloque
 profesional recomendado es concretar y probar el contrato de acceso profesional
 y relación aceptada antes de conectar datos privados al panel.
+
+## Base de acceso y vínculo · TRN-008/009 · 20/10/2026
+
+Javier confirma un único preparador activo por alumno. El contrato base ya está
+aplicado y probado en Dev: cupo manual, gestión reservada al responsable de
+cuentas, invitación con código secreto y aceptación explícita, relación única
+activa y cierre por cualquiera de sus partes. El cupo cuenta vínculos activos
+aceptados; las invitaciones pendientes y los vínculos terminados no ocupan plaza.
+La aceptación bloquea el acceso del preparador y el contexto del alumno antes
+de comprobar capacidad y crear la relación. La reactivación requiere otra
+invitación aceptada: un reintento antiguo nunca reabre un vínculo terminado.
+
+El alumno conserva sus cuotas personales: ocho ejercicios propios y cuatro
+sesiones propias en Free, o sus derechos Pro individuales si los tiene. Se prueba
+expresamente que la vinculación no permite un noveno ejercicio ni una quinta
+sesión propia en Free. Consumir asignaciones del preparador sin cuota personal
+ni otra compra sigue siendo un requisito pendiente de conectar al recorrido.
+
+La configuración manual permanece deshabilitada y las pruebas no dejan cuentas,
+concesiones ni relaciones de ensayo. La bajada manual con acceso habilitado se
+rechaza si el nuevo límite es inferior a los vínculos activos; la política
+comercial definitiva sigue pendiente. La retirada/caducidad no borra relaciones,
+y se permite terminarlas aunque el acceso profesional ya no esté vigente.
+
+[Contrato, permisos, pruebas SQL y límites de verificación](TRAINER_ACCESS_2026_10_20.md).
+El siguiente bloque profesional es integrar visualmente acceso, cupo, invitación
+y aceptación sobre este contrato, con verificación de contención concurrente
+antes de habilitar un piloto. El panel y las asignaciones todavía no existen.
 
 ## Distribución recomendada
 
@@ -129,10 +160,9 @@ estado e historial; no se crea una relación diferente para cada tarifa. El
 acceso profesional determina por separado las capacidades y el límite vigente.
 Cambiar ese límite no exige reconstruir vínculos ni mover resultados.
 
-La recomendación inicial es contar relaciones aceptadas y activas. Invitaciones
-pendientes y relaciones finalizadas no ocuparían plaza. Es una propuesta que
-requiere confirmación, junto con el número de entrenadores que puede tener un
-cliente. La cuota se comprueba en servidor al activar/reactivar el vínculo,
+El contrato del piloto de TRN-008 cuenta relaciones aceptadas y activas.
+Invitaciones pendientes y relaciones finalizadas no ocupan plaza. Javier confirma
+un único preparador activo por alumno. La cuota se comprueba en servidor al activar el vínculo,
 de forma atómica para que dos aceptaciones simultáneas no consuman la misma
 última plaza. La pantalla informa antes, pero no decide la capacidad disponible.
 
@@ -143,8 +173,8 @@ acordar cómo resolver exceso de clientes, nuevas asignaciones, consulta e
 historial. La revocación de acceso por fin de una relación conserva su propia
 regla y no se sustituye por un simple recuento de plazas.
 
-Para el piloto se propone conceder manualmente un acceso profesional con cupo
-explícito y comprobar ya esas reglas. Conectar el cobro posteriormente debe
+El contrato permite conceder manualmente un acceso profesional con cupo
+explícito; la habilitación de esa gestión sigue desactivada. Conectar el cobro posteriormente debe
 actualizar el mismo acceso efectivo con autenticación e idempotencia de servidor,
 sin permitir al entrenador aumentar su propio límite desde Flutter.
 
@@ -223,9 +253,9 @@ hay que fijar qué se permite cuando el cliente ya sigue un plan automático.
 
 1. **Completado en TRN-007:** separar las dependencias del editor de sesiones y
    seguir utilizándolo desde ADMIN con sus guardados y pruebas actuales.
-2. Concretar acceso profesional con cupo, relación aceptada, asignación
-   versionada, ámbito de resultados y fin del vínculo. Implementar y comprobar
-   sus contratos de servidor antes de conectar datos privados.
+2. **Base en Dev en TRN-008:** acceso manual con cupo y relación aceptada/terminada.
+   Faltan integración visual y ensayo concurrente, asignación versionada,
+   ámbito de resultados y derechos sobre contenido tras terminar el vínculo.
 3. Revisar visualmente clientes y ficha usando el diseño existente; crear el
    cliente web profesional y conectar el recorrido completo de una sesión hasta
    sus resultados en la app del deportista.
@@ -240,14 +270,14 @@ de ADMIN no publica `trainer_app/` automáticamente.
 
 - Si el algoritmo debe intervenir desde la primera versión o después del
   recorrido manual; qué significa revisar o sustituir su pauta.
-- Cómo acepta el cliente la relación, si puede tener varios entrenadores y
-  cómo termina el vínculo. Conservar resultados históricos no decide por sí solo
+- El piloto usa código secreto, aceptación explícita y un único preparador activo;
+  ambas partes pueden terminar el vínculo. Conservar resultados no decide por sí solo
   qué acceso conserva cada parte al contenido, a la agenda o a los resultados.
 - Qué funciones adicionales recibe el cliente más allá del entrenamiento ya
   incluido sin otra suscripción, cómo convive con Pro individual y qué ocurre
   al caducar el acceso profesional del entrenador o
-  reducir el cupo por debajo de las relaciones activas. Confirmar qué estados
-  computan antes de implementar el límite.
+  reducir el cupo por debajo de las relaciones activas. El piloto cuenta solo
+  aceptados activos y rechaza esa reducción manual mientras siga habilitado.
 
 ## Verificación y trabajo desde la nube
 

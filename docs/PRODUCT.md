@@ -560,15 +560,27 @@ consultarlas, entrenar y registrar/consultar sus resultados no puede quedar
 bloqueado por cuotas Free o por exigir Pro individual. El alcance de funciones
 adicionales sigue pendiente; no se ha acordado aún equivalencia con todo Pro.
 
+**Alcance del piloto confirmado el 20/10/2026 · TRN-008/009:** cada alumno podrá
+tener un único preparador activo. La relación no le concede Pro ni creación
+personal ilimitada: conserva las cuotas de su cuenta, actualmente ocho ejercicios
+propios y cuatro sesiones propias en Free. Si tiene Pro individual, sus derechos
+siguen siendo independientes. El contenido recibido del preparador pertenece al
+servicio incluido y no debe consumir esas cuotas de creación personal.
+
+La base de acceso profesional, invitaciones y vínculos está aplicada y probada
+exclusivamente en Dev, sin cuentas habilitadas. Todavía no implementa la recepción
+ni ejecución de asignaciones profesionales ni la exención de cuotas para ese
+recorrido. [Contrato y verificaciones](TRAINER_ACCESS_2026_10_20.md).
+
 **Confirmación del 19/10/2026:** Javier confirma contemplar paquetes profesionales
 según número de clientes desde el diseño inicial. Los precios y cantidades que
 aporta son ejemplos, sin tarifas ni tramos aprobados. La relación con el cliente
 se mantiene independiente del paquete; la capacidad vigente limita su activación
-en servidor. Se recomienda contar relaciones aceptadas y activas, pendiente de
-confirmación junto con las reglas de reducción de cupo y caducidad. El proveedor
+en servidor. El contrato del piloto de TRN-008 cuenta relaciones aceptadas y
+activas; las reglas comerciales de reducción y caducidad siguen pendientes. El proveedor
 de cobro puede incorporarse después sobre ese mismo acceso efectivo.
 
-Falta concretar tarifas y tramos, qué clientes computan para el límite, derechos
+Falta concretar tarifas y tramos, las condiciones comerciales del límite, derechos
 adicionales incluidos, convivencia con Pro individual y qué sucede al
 terminar la relación o el acceso profesional del entrenador. La propuesta no
 requiere otro producto generalista ni otra aplicación para los clientes, y no
