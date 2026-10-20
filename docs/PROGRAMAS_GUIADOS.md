@@ -81,8 +81,10 @@ con la misma omisión previa. Seis SQL con ROLLBACK correctos tras aplicar solo
 en Dev su migración: 169 coincidentes. Se comprueba el umbral con dos programas
 y se repite con tres; selección, permisos, fase e historial conservados,
 sesiones abiertas y reintentos cubiertos. La interfaz exige elegir antes de
-entrenar y se comprueba a 320 px con texto 1×/2×. La aceptación física de la
-interfaz y un ensayo realmente concurrente siguen pendientes. El asesor añade
+entrenar y se comprueba a 320 px con texto 1×/2×. Javier confirma después el
+20/10 el recorrido Pro con dos → retirar Pro → elegir uno → otro pausado:
+aceptación manual completada. El ensayo realmente concurrente sigue pendiente.
+El asesor añade
 el aviso esperado de RPC SECURITY DEFINER para `keep_free_guided_program`:
 acceso autenticado intencionado, sin acceso anónimo, con propiedad y bloqueo
 comprobados, conforme al enlace siguiente.

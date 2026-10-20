@@ -31,10 +31,11 @@ dos y tres programas, rechazo de URL directa, avance, reintento de sesión ya
 aceptada, selección, renovación durante el diálogo y permisos cubiertos. La
 interfaz se prueba a 320 px con texto 1×/2×. Asesor revisado: RPC del propio
 usuario intencionadamente ejecutable por autenticados, sin acceso
-anónimo. Aceptación móvil y ensayo realmente concurrente pendientes; producción
-sin cambios.
-**Siguiente recorrido de este cambio:** actualizar el móvil y probar Pro con
-varios → retirar/caducar Pro → elegir uno → comprobar los demás en pausa.
+anónimo. Javier confirma después el 20/10 que funciona Pro con dos programas →
+retirar Pro → elegir uno → otro pausado: esa aceptación manual queda completa.
+El ensayo realmente concurrente sigue pendiente; producción sin cambios.
+**Siguiente recorrido Free/Pro:** cuotas personales 8/4 y compras de prueba
+desde el móvil debug Dev. No repetir como pendiente la elección ya aceptada.
 Compras y sandboxes nativos continúan pendientes. [Contrato](PROGRAMAS_GUIADOS.md).
 
 **COM-019 · 20/10/2026 · una plaza Free y pausa de programas guiados:** se

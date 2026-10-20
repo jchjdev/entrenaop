@@ -6,6 +6,12 @@ Javier confirma que la corrección de UI-061 se ve bien y tiene continuidad con
 los otros botones de la app. Se acepta ese resultado visual; no se deduce de
 ello aceptación de cuotas, pérdida de Pro, compras o restauración en el móvil.
 
+Después confirma expresamente que funciona el recorrido propuesto con
+`jvr.trainer`: Pro → iniciar dos programas → retirar Pro → elegir uno → el otro
+queda pausado. Queda aceptada manualmente la pérdida de Pro y elección de una
+plaza; no volver a presentarla como pendiente. Esta confirmación no acredita
+por sí sola las cuotas 8/4 ni compras, restauración o caducidad de una tienda.
+
 Implementados: derechos de servidor separados de administración y seguimiento
 profesional, regalos desde Cuentas y Pro, cuotas Free 8/4/1, pausa/reanudación y
 elección de una plaza al perder Pro con más de un programa. Ofertas mensual y
@@ -16,8 +22,8 @@ El bloque sigue abierto. Los pendientes contrastados se ordenan así:
 
 1. **Recorrido funcional en móvil actualizado:** Free alcanza 8 ejercicios,
    4 familias de sesiones propias y 1 programa; los límites conservan borrador.
-   Pro amplía cuotas. Con 2 o más programas, perder Pro exige elegir uno y
-   pausa los demás conservando fase e historial. Comprobar pausas, retorno a
+   Pro amplía cuotas. La prueba Pro con dos programas → retirar Pro → elegir
+   uno → otro pausado ya está aceptada por Javier el 20/10. Comprobar retorno a
    Mi plan y los regalos/fechas, sin otra fuente Pro que invalide el ensayo Free.
 2. **Compra desde la interfaz actualizada:** mensual y anual desde Free,
    precio EUR del catálogo, confirmación automática sin reiniciar/restaurar para
@@ -32,7 +38,11 @@ El bloque sigue abierto. Los pendientes contrastados se ordenan así:
    perdidos y documentos/precios de contratación definitivos. Contrastar el
    entorno de producción y su configuración solo cuando se autorice esa tarea.
 
-El siguiente recorrido inmediato es el punto 1 con `jvr.trainer@gmail.com`.
+Quedan las cuotas 8/4 del punto 1 y la aceptación de compras del punto 2.
+Para probar Test Store se debe iniciar **EntrenaOP Compras · móvil debug Dev**
+con el dispositivo seleccionado y su configuración pública local. El esquema
+**Runner iPhone** en Release conserva consultas de acceso y regalos, pero no
+habilita Test Store; no confundir ambos recorridos. [Preparación iOS](IOS_DEVELOPMENT.md).
 La configuración y las pruebas de tiendas siguen dentro de este bloque; no se
 aplazan a otro para presentarlo como cerrado. Registrar únicamente los casos
 realmente ejecutados y sus límites, conservando pendientes los demás.
