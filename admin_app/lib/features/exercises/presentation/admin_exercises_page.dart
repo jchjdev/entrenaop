@@ -13,9 +13,15 @@ import '../data/admin_exercise_video_repository.dart';
 import 'admin_exercise_video_field.dart';
 
 class AdminExercisesPage extends StatefulWidget {
-  const AdminExercisesPage({super.key, required this.repository, this.videos});
+  const AdminExercisesPage({
+    super.key,
+    required this.repository,
+    this.videos,
+    this.initialExerciseId,
+  });
 
   final AdminExerciseRepository repository;
+  final String? initialExerciseId;
   final AdminExerciseVideoRepository? videos;
 
   @override
@@ -24,6 +30,7 @@ class AdminExercisesPage extends StatefulWidget {
 
 class _AdminExercisesPageState extends State<AdminExercisesPage> {
   bool _loading = true;
+  bool _initialOpened = false;
   bool _saving = false;
   String? _error;
   List<AdminCatalogExercise> _exercises = const [];
@@ -63,6 +70,21 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
         _exercises = exercises;
         _loading = false;
       });
+      if (!_initialOpened && widget.initialExerciseId != null) {
+        _initialOpened = true;
+        final target = exercises
+            .where((e) => e.id == widget.initialExerciseId)
+            .firstOrNull;
+        if (target == null) {
+          setState(
+            () => _error = 'El ejercicio solicitado no está disponible.',
+          );
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _openEditor(target);
+          });
+        }
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() {

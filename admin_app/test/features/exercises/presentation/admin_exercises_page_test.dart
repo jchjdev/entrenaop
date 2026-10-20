@@ -47,6 +47,47 @@ class _FakeRepository implements AdminExerciseRepository {
 }
 
 void main() {
+  testWidgets('el enlace de calidad abre el editor existente sin guardar', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _FakeRepository()
+      ..exercises.add(
+        const AdminCatalogExercise(
+          id: 'quality-exercise',
+          name: 'Puente de glúteos',
+          description: 'Preparar apoyo',
+          videoUrl: null,
+          muscleGroups: ['glúteos'],
+          equipment: [],
+          difficulty: 'inicial',
+          exerciseType: 'repeticiones',
+        ),
+      );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminExercisesPage(
+          repository: repository,
+          initialExerciseId: 'quality-exercise',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Editar ejercicio oficial'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.byKey(const ValueKey('admin-exercise-name')),
+          )
+          .controller!
+          .text,
+      'Puente de glúteos',
+    );
+    expect(repository.updated, isNull);
+    expect(repository.created, isNull);
+  });
+
   testWidgets('el panel crea un ejercicio con el formulario compartido', (
     tester,
   ) async {

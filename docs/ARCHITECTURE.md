@@ -1,5 +1,19 @@
 # Arquitectura de EntrenaOP
 
+## Operaciones de ADMIN · ADM-001 · 20/10/2026
+
+`AdminOperationsRepository` centraliza historial, calidad, soporte y diagnóstico;
+las rutas reutilizan el guard administrativo. El adaptador consulta seis RPC
+protegidas y el manifiesto público del mismo origen. `admin_ops_private` mantiene
+instantáneas oficiales por transacción y recuperaciones con UUID idempotente,
+RLS sin acceso directo y funciones con `search_path` vacío. Los guardados actuales
+reconstruyen borradores independientes. Soporte requiere además el responsable
+comercial; recetas personales y permisos profesionales quedan fuera.
+La calidad distingue errores, campos pendientes y borradores; consulta portadas
+por familia y abre los editores existentes. El sistema informa despliegue y
+acceso puntual; copias y registros generales están sin conectar.
+[Contrato, seguridad y límites](ADMIN_OPERATIONS_2026_10_20.md).
+
 ## Autoría conjunta en ADMIN · UI-062 · 20/10/2026
 
 `GuidedSessionWorkspace` abre directamente el adaptador ADMIN de `WorkoutEditorPage`,

@@ -1,3 +1,6 @@
+import '../../operations/data/admin_operations_repository.dart';
+import '../../operations/presentation/admin_operations_pages.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/admin_shell.dart';
@@ -7,8 +10,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/admin_pro_access_repository.dart';
 
 class AdminProAccessPage extends StatefulWidget {
-  const AdminProAccessPage({required this.repository, super.key});
+  const AdminProAccessPage({
+    required this.repository,
+    this.operations,
+    super.key,
+  });
   final AdminProAccessRepository repository;
+  final AdminOperationsRepository? operations;
   @override
   State<AdminProAccessPage> createState() => _AdminProAccessPageState();
 }
@@ -391,6 +399,12 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
                 child: Text(_error!),
               ),
             if (_account case final account?) ...[
+              if (widget.operations case final operations?)
+                AdminAccountSupport(
+                  key: ValueKey(account.userId),
+                  repository: operations,
+                  userId: account.userId,
+                ),
               const SizedBox(height: 24),
               Card(
                 child: Padding(

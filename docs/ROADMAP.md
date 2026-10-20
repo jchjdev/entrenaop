@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**ADM-001 y UI-063 · 20/10/2026 · eficiencia y operaciones de ADMIN:** se cierra
+la implementación de copia independiente, resumen plegado, deshacer y estado
+editorial explícito, conservando el creador y publicación conjunta. Gestión añade
+historial/comparación/recuperación como borrador y calidad con avisos accionables;
+Cuentas incorpora diagnóstico para su responsable y Herramientas el estado
+comprobable del despliegue y conexión. Se revisan código, permisos y fronteras
+de guardado/publicación, con pruebas Flutter y SQL transaccionales en Dev.
+Límites: historial desde activación, recuperación de sesiones/programas sujeta
+al guardado vigente, sin copiar recetas personales ni auditar archivos externos;
+aceptación manual de estas nuevas pantallas pendiente. Copias y errores generales
+de servicios aún sin integrar. **Único siguiente bloque recomendado de operaciones:**
+conectar esas evidencias con alcance y costes acordados.
+[Contrato, pruebas y despliegue](ADMIN_OPERATIONS_2026_10_20.md).
+
 **UI-062 · 20/10/2026 · creadores y Compacto:** tras comparar ventana y edición
 en página, Javier elige la ventana existente para focalizar la sesión y pide
 reutilizarla sin otro rediseño ni selector. Confirma leer la sesión escrita en las

@@ -13,6 +13,14 @@ automáticamente mediante GitHub Actions y una cuenta FTPS limitada al admin.
 La primera publicación completa y el arranque remoto están comprobados.
 [Activación, estado y recuperación](../docs/ADMIN_DEPLOYMENT_2026_10_19.md).
 
+**Operaciones:** Gestión añade Historial editorial (comparar y recuperar sesiones
+y programas como borradores independientes) y Calidad del catálogo (errores,
+campos por completar y borradores). Cuentas incorpora diagnóstico de seguimiento
+para el responsable comercial. Herramientas añade Estado del sistema con el
+manifiesto real del despliegue y conexión puntual. Copias y registros generales
+siguen expresamente sin verificar/conectar.
+[Contrato y límites](../docs/ADMIN_OPERATIONS_2026_10_20.md).
+
 **Revisión editorial:** los programas ofrecen «Guardar y revisar» en el editor
 y «Revisar y publicar» en el catálogo. La vista previa muestra fases, sesiones,
 calentamientos y comprobaciones antes de confirmar su publicación. Las sesiones
@@ -53,8 +61,9 @@ la prescripción del deportista corresponde al motor de servidor.
 
 La navegación lateral agrupa **Contenido** (Programas guiados, Sesiones,
 Calentamientos y Ejercicios), **Preparación deportiva** (Preparaciones),
-**Gestión** (Cuentas y Pro, solo con permiso específico) y **Herramientas**
-(Laboratorio de rendimiento y política de flexiones). En móvil o con texto
+**Gestión** (Cuentas y Pro con permiso específico, Historial editorial y Calidad
+del catálogo) y **Herramientas** (Estado del sistema, Laboratorio de rendimiento
+y política de flexiones). En móvil o con texto
 ampliado se abre con el botón de menú. El catálogo inicial es Preparaciones;
 la zona central conserva únicamente las acciones del recurso actual.
 Las URLs y los guards de salida se mantienen. El login queda fuera del marco.

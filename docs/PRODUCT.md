@@ -1,5 +1,21 @@
 # Producto EntrenaOP
 
+**ADM-001 · 20/10/2026 · operaciones del administrador:** Gestión incorpora
+Historial editorial y Calidad del catálogo. Las sesiones/programas pueden
+recuperarse desde un cambio registrado como borrador independiente; se conserva
+el original y se revisa antes de publicar. Los avisos separan errores de trabajo
+pendiente y llevan al recurso. Cuentas amplía su ficha de soporte para el
+responsable único; Herramientas muestra versión desplegada y conexión puntual.
+Las copias siguen sin verificar y el registro general de servicios sin conectar.
+No se atribuye a esa pantalla una monitorización todavía inexistente.
+[Alcance y límites](ADMIN_OPERATIONS_2026_10_20.md).
+
+**UI-063 · 20/10/2026 · eficiencia de autoría:** duplicar abre el creador actual
+con una copia independiente que se guarda al confirmar. Las sesiones plegadas
+muestran resumen; quitar permite deshacer con posición y ajustes. Estado y
+versión quedan separados de la opción de mostrarse como sesión suelta.
+Se conservan guardado y publicación conjunta.
+
 **UI-062 · 20/10/2026 · creadores y Compacto:** Javier confirma crear y guardar
 sesiones dentro del programa como borradores, revisar el conjunto y publicarlo
 en una sola operación. Se conserva reutilización, versiones y la opción de

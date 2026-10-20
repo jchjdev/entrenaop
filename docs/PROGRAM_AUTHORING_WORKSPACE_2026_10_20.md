@@ -27,6 +27,13 @@ publicadas sin escritura al abrir, independencia al guardar, orden recuperado
 y calentamiento conservado al deshacer. Se conservan los contratos de
 publicación conjunta y las pruebas de disposición con texto ampliado.
 
+Punto de guardado: `f8c35be9f5e409cb0514392165fb51fc1757c998`, subido a main.
+GitHub Actions `39489162228` completa validación y despliegue. Verificación
+independiente posterior por HTTPS: manifiesto de esa revisión conectado a Dev,
+activación del índice, hash de JavaScript, cabeceras sin caché y protección de
+marco, y MIME de WASM correctos. No se recarga el montaje abierto de Javier.
+
+
 ## Contenido plegable y edición destacada · 20/10/2026
 
 Javier confirma que la lectura y edición directa funcionan bien. Pide poder

@@ -13,6 +13,7 @@ class AdminShell extends StatefulWidget {
     required this.child,
     this.canManageAccounts,
     this.hasGuidedPrograms = false,
+    this.hasOperations = false,
     super.key,
   });
 
@@ -21,6 +22,7 @@ class AdminShell extends StatefulWidget {
   final Future<bool> Function()? canManageAccounts;
   final VoidCallback onSignOut;
   final bool hasGuidedPrograms;
+  final bool hasOperations;
   final Widget child;
 
   @override
@@ -182,6 +184,7 @@ class _AdminShellState extends State<AdminShell> {
                 final sections = _sections.where(
                   (section) =>
                       (!section.guided || widget.hasGuidedPrograms) &&
+                      (!section.operations || widget.hasOperations) &&
                       (section.path != '/accounts' || snapshot.data!.accounts),
                 );
                 String? group;
@@ -297,10 +300,11 @@ class _AdminSection {
     this.path,
     this.icon, {
     this.guided = false,
+    this.operations = false,
   });
   final String group, label, path;
   final IconData icon;
-  final bool guided;
+  final bool guided, operations;
 
   bool contains(String location) =>
       location == path || location.startsWith('$path/');
@@ -344,6 +348,27 @@ const _sections = [
     'Cuentas y Pro',
     '/accounts',
     Icons.manage_accounts_outlined,
+  ),
+  _AdminSection(
+    'Gestión',
+    'Calidad del catálogo',
+    '/quality',
+    Icons.fact_check_outlined,
+    operations: true,
+  ),
+  _AdminSection(
+    'Gestión',
+    'Historial editorial',
+    '/history',
+    Icons.history,
+    operations: true,
+  ),
+  _AdminSection(
+    'Herramientas',
+    'Estado del sistema',
+    '/system',
+    Icons.monitor_heart_outlined,
+    operations: true,
   ),
   _AdminSection(
     'Herramientas',

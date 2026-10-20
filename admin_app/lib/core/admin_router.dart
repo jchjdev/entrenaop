@@ -1,3 +1,6 @@
+import '../features/operations/data/admin_operations_repository.dart';
+import '../features/operations/presentation/admin_operations_pages.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_repository.dart';
@@ -36,6 +39,7 @@ GoRouter createAdminRouter({
   ProgramCoverRepository? covers,
   ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
+  AdminOperationsRepository? operations,
   AdminGuidedRepository? guided,
   AdminGuidedWorkRepository? guidedWork,
   AdminExerciseVideoRepository? exerciseVideos,
@@ -217,10 +221,54 @@ GoRouter createAdminRouter({
           hasAccess: programs.hasAccess,
           canManageAccounts: proAccess?.canManageAccounts,
           hasGuidedPrograms: guided != null,
+          hasOperations: operations != null,
           onSignOut: onSignOut,
           child: child,
         ),
         routes: [
+          if (operations != null) ...[
+            GoRoute(
+              path: '/history',
+              builder: (_, _) => load(
+                () async => operations,
+                (repo) => AdminHistoryPage(repository: repo),
+              ),
+              routes: [
+                workflow(
+                  ':eventId',
+                  (_, state) => load(
+                    () async {
+                      final id = int.tryParse(state.pathParameters['eventId']!);
+                      if (id == null || id < 1) {
+                        throw const _RouteUnavailable(
+                          'El identificador del cambio no es válido.',
+                        );
+                      }
+                      return (operations, id);
+                    },
+                    (data) => AdminHistoryDetailPage(
+                      repository: data.$1,
+                      eventId: data.$2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: '/quality',
+              builder: (_, _) => load(
+                () async => operations,
+                (repo) => AdminQualityPage(repository: repo),
+              ),
+            ),
+            GoRoute(
+              path: '/system',
+              builder: (_, _) => load(
+                () async => operations,
+                (repo) => AdminSystemPage(repository: repo),
+              ),
+            ),
+          ],
           if (guided != null)
             GoRoute(
               path: '/guided-programs',
@@ -389,14 +437,20 @@ GoRouter createAdminRouter({
           if (proAccess != null)
             GoRoute(
               path: '/accounts',
-              builder: (_, _) => load(() async {
-                if (!await proAccess.canManageAccounts()) {
-                  throw const _RouteUnavailable(
-                    'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
-                  );
-                }
-                return proAccess;
-              }, (repository) => AdminProAccessPage(repository: repository)),
+              builder: (_, _) => load(
+                () async {
+                  if (!await proAccess.canManageAccounts()) {
+                    throw const _RouteUnavailable(
+                      'Solo el responsable de cuentas puede gestionar Cuentas y Pro.',
+                    );
+                  }
+                  return proAccess;
+                },
+                (repository) => AdminProAccessPage(
+                  repository: repository,
+                  operations: operations,
+                ),
+              ),
             ),
           if (proAccess != null)
             GoRoute(
@@ -506,6 +560,8 @@ GoRouter createAdminRouter({
             builder: (context, state) => load(
               () async => true,
               (_) => AdminExercisesPage(
+                key: ValueKey(state.uri.toString()),
+                initialExerciseId: state.uri.queryParameters['edit'],
                 repository: exercises,
                 videos: exerciseVideos,
               ),

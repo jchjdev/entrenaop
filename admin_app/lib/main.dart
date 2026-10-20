@@ -1,3 +1,5 @@
+import 'features/operations/data/admin_operations_repository.dart';
+
 import 'dart:async';
 
 import 'features/auth/data/supabase_admin_security_repository.dart';
@@ -84,6 +86,7 @@ class _AdminAppState extends State<AdminApp> {
         resource: ProgramCoverResource.guided,
       ),
       proAccess: SupabaseAdminProAccessRepository(client),
+      operations: SupabaseAdminOperationsRepository(client),
       guided: SupabaseAdminGuidedRepository(client),
       guidedWork: SupabaseAdminGuidedWorkRepository(client),
       onSignOut: () => unawaited(client.auth.signOut()),
