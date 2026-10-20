@@ -42,6 +42,21 @@ ni recursos CDN. No se recarga el montaje abierto del usuario.
 La evidencia de la primera recuperación de la ventana, a continuación, conserva
 su alcance histórico.
 
+### Publicación comprobada de la lectura y edición directa
+
+- Commit: `22c6ba04bba34a9e8fa0d5da04d3afcdca9b6207`.
+- [CI 39466656859](https://github.com/jchjdev/entrenaop/actions/runs/39466656859):
+  validación, compilación y despliegue correctos.
+- Comprobación HTTPS independiente el 20/10/2026, 17:36 UTC: revisión exacta,
+  entorno `development`, proyecto Dev `sxbxfjqgoddzhtcyhalw`, entrada y manifiesto
+  activos, hash de JavaScript, caché, protección de marco y MIME WebAssembly correctos.
+- Versión: `22c6ba04bba34a9e8fa0d5da04d3afcdca9b6207-39466656859-1`.
+- JavaScript SHA-256:
+  `2249ff816d4d088d1c57ab1726e055d1d6fca8b8057dfe69f9b81fb7e08f6c93`.
+- La prueba funcional y visual corresponde a widgets reales. Aceptación manual
+  con el contenido de Javier y teclado físico pendiente; su pestaña no se recarga.
+  Sin cambios en producción ni en el contrato de publicación conjunta.
+
 ## Presentación elegida: la ventana existente · 20/10/2026
 
 Tras comparar ambas presentaciones, Javier elige la ventana para focalizar la
