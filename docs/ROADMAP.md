@@ -9,8 +9,12 @@ de negocio, SQL, tema global ni ADMIN. Veinte casos de distribución y 76
 pruebas relacionadas correctos; 1.128 pruebas raíz correctas con una omisión
 previa. Capturas de widgets reales revisadas en móvil, texto ampliado,
 horizontal y escritorio. Análisis limpio.
-**Siguiente comprobación de esta corrección:** repetir Dejar programa en el
-iPhone actualizado; el alcance no cierra las aceptaciones móviles de Pro.
+Javier confirma el 20/10 que el resultado visual se ve bien y tiene continuidad
+con otros botones; queda aceptada esta corrección visual. Esta confirmación
+no acredita las cuotas, pérdida de Pro ni compras en el móvil actualizado.
+**Siguiente recorrido Free/Pro:** cuotas 8/4/1 y Pro → Free con varios programas;
+después, compra mensual/anual y validación de tiendas dentro del mismo bloque.
+El [estado consolidado](PRO_LAUNCH.md) conserva los pendientes de cierre.
 [Criterio visual](VISUAL_DESIGN.md).
 
 **COM-020 · 20/10/2026 · pérdida de Pro y elección de una plaza Free:** Javier

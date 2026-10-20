@@ -19,8 +19,10 @@ pausa, abandono, fases o derechos comerciales.
 Veinte casos de distribución cubren los cinco avisos en 390 px con áreas
 seguras de móvil, 320 px con texto 2×, horizontal y escritorio. Se comprueban
 separación real de los botones, ancho, jerarquía y cancelación sin mutaciones.
-Capturas de widgets reales con fuente Roboto revisadas; reproducción en el
-iPhone actualizado pendiente. Análisis y batería raíz se registran en Roadmap.
+Capturas de widgets reales con fuente Roboto revisadas. Javier confirma después
+el 20/10 que se ve bien y tiene continuidad con el resto de botones: corrección
+visual aceptada. No se extiende esa confirmación a los recorridos comerciales
+de Free/Pro. Análisis y batería raíz se registran en Roadmap.
 
 ## Creador de programas en ADMIN · UI-060 · 19/10/2026
 

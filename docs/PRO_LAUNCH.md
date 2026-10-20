@@ -1,5 +1,42 @@
 # Pro: interfaz inicial y conexión de pagos
 
+## Estado de cierre contrastado · 20/10/2026
+
+Javier confirma que la corrección de UI-061 se ve bien y tiene continuidad con
+los otros botones de la app. Se acepta ese resultado visual; no se deduce de
+ello aceptación de cuotas, pérdida de Pro, compras o restauración en el móvil.
+
+Implementados: derechos de servidor separados de administración y seguimiento
+profesional, regalos desde Cuentas y Pro, cuotas Free 8/4/1, pausa/reanudación y
+elección de una plaza al perder Pro con más de un programa. Ofertas mensual y
+anual, SDK Test Store, conciliación y webhook Dev conservan su implementación
+previa. Las verificaciones automatizadas están registradas por entrega.
+
+El bloque sigue abierto. Los pendientes contrastados se ordenan así:
+
+1. **Recorrido funcional en móvil actualizado:** Free alcanza 8 ejercicios,
+   4 familias de sesiones propias y 1 programa; los límites conservan borrador.
+   Pro amplía cuotas. Con 2 o más programas, perder Pro exige elegir uno y
+   pausa los demás conservando fase e historial. Comprobar pausas, retorno a
+   Mi plan y los regalos/fechas, sin otra fuente Pro que invalide el ensayo Free.
+2. **Compra desde la interfaz actualizada:** mensual y anual desde Free,
+   precio EUR del catálogo, confirmación automática sin reiniciar/restaurar para
+   activar, Mi plan, cancelación del diálogo, fallo de confirmación y cambio de
+   cuenta. La compra Test Store anterior no acredita la repetición de COM-018.
+3. **Tiendas nativas:** terminar productos y configuración de App Store/Google
+   Play con RevenueCat y comprobar en sus sandboxes compras, renovaciones,
+   caducidad, restauración, reembolsos y política de transferencia entre cuentas.
+   Test Store no sustituye esta evidencia. No se habilitan cobros en este paso.
+4. **Verificación final de acceso y recuperación:** ensayo realmente concurrente
+   de la plaza Free, reintentos/eventos repetidos, recuperación ante eventos
+   perdidos y documentos/precios de contratación definitivos. Contrastar el
+   entorno de producción y su configuración solo cuando se autorice esa tarea.
+
+El siguiente recorrido inmediato es el punto 1 con `jvr.trainer@gmail.com`.
+La configuración y las pruebas de tiendas siguen dentro de este bloque; no se
+aplazan a otro para presentarlo como cerrado. Registrar únicamente los casos
+realmente ejecutados y sus límites, conservando pendientes los demás.
+
 ## Programas guiados y pausa · COM-019 · 20/10/2026
 
 Free: 1 programa guiado activo, 8 ejercicios propios y 4 familias de sesiones
