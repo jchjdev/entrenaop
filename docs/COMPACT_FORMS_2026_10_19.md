@@ -9,6 +9,12 @@ receta. ADMIN puede montarlo dentro del programa. El deportista conserva su
 contenedor y recibe el ajuste de los campos compartidos.
 [Recorrido y verificación](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
 
+**Cambio de formato · 20/10/2026:** al salir de Tabata se retiran únicamente
+sus posiciones automáticas aún intactas. Las elegidas o editadas se conservan;
+los huecos automáticos ya no bloquean Intervalos. Los límites de uno/dos
+ejercicios de Intervalos/Superserie se explican y no se fuerza perdiendo datos.
+La corrección pertenece al creador extraído, no a la elección ventana/página.
+
 ## Acuerdo y estado
 
 Javier prefiere Compacto y pide coherencia en toda la app, conservar todas las

@@ -42,15 +42,23 @@ class WorkoutFormatField extends StatelessWidget {
           Align(alignment: Alignment.centerLeft, child: Text(name)),
       ],
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
-      decoration: const InputDecoration(),
+      decoration: InputDecoration(
+        helperText: exerciseCount > 1
+            ? exerciseCount > 2
+                  ? 'Intervalos admite un ejercicio; superserie, dos. Mueve o quita los demás para elegirlos.'
+                  : 'Intervalos de trabajo admite un solo ejercicio.'
+            : null,
+        helperMaxLines: 5,
+      ),
       items: [
         const DropdownMenuItem(
           value: WorkoutBlockFormat.straightSets,
           child: Text('Series convencionales'),
         ),
-        const DropdownMenuItem(
+        DropdownMenuItem(
           value: WorkoutBlockFormat.superset,
-          child: Text('Superserie'),
+          enabled: exerciseCount <= 2 || format == WorkoutBlockFormat.superset,
+          child: const Text('Superserie'),
         ),
         const DropdownMenuItem(
           value: WorkoutBlockFormat.circuit,

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
 
 import '../../../test/helpers/performance_visual_review.dart';
@@ -106,6 +107,18 @@ Future<void> _save(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _chooseFormat(WidgetTester tester, String label) async {
+  FocusManager.instance.primaryFocus?.unfocus();
+  await tester.pumpAndSettle();
+  final selector = find.byType(WorkoutFormatField);
+  await tester.ensureVisible(selector);
+  await tester.pumpAndSettle();
+  await tester.tap(selector);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label).last);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(() => loadReviewFont(always: true));
   for (final width in [320.0, 390.0, 1100.0]) {
@@ -146,6 +159,144 @@ void main() {
       });
     }
   }
+
+  testWidgets(
+    'salir de Tabata retira sus huecos automáticos y conserva la receta original',
+    (tester) async {
+      CreatePersonalWorkoutInput? input;
+      await tester.pumpWidget(
+        _app(
+          save: (value) async {
+            input = value;
+            return 'saved';
+          },
+          saved: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (var attempt = 0; attempt < 2; attempt++) {
+        await _chooseFormat(tester, 'Tabata · 8 × 20/10');
+        expect(find.text('Intervalo 8'), findsOneWidget);
+        await _chooseFormat(tester, 'Series convencionales');
+        expect(find.text('Posición 2'), findsNothing);
+      }
+      await _save(tester);
+      expect(input!.blocks.single.format, WorkoutBlockFormat.straightSets);
+      expect(input!.blocks.single.exercises.single.exerciseId, 'base');
+      expect(input!.blocks.single.exercises.single.sets.length, 2);
+      expect(
+        input!.blocks.single.exercises.single.sets.first.targetLoadKg,
+        12.5,
+      );
+      expect(input!.blocks.single.exercises.single.sets.first.targetRir, 2.5);
+      expect(input!.blocks.single.exercises.single.sets.first.targetValue, 10);
+    },
+  );
+
+  testWidgets(
+    'Tabata permite volver directamente a intervalos con un ejercicio',
+    (tester) async {
+      CreatePersonalWorkoutInput? input;
+      await tester.pumpWidget(
+        _app(
+          save: (value) async {
+            input = value;
+            return 'saved';
+          },
+          saved: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _chooseFormat(tester, 'Tabata · 8 × 20/10');
+      await _chooseFormat(tester, 'Intervalos de trabajo');
+      expect(find.text('Posición 2'), findsNothing);
+      await _save(tester);
+      expect(input!.blocks.single.format, WorkoutBlockFormat.intervals);
+      expect(input!.blocks.single.exercises.single.exerciseId, 'base');
+    },
+  );
+
+  testWidgets(
+    'los ejercicios elegidos en los intervalos de Tabata se conservan al salir',
+    (tester) async {
+      CreatePersonalWorkoutInput? input;
+      await tester.pumpWidget(
+        _app(
+          save: (value) async {
+            input = value;
+            return 'saved';
+          },
+          saved: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _chooseFormat(tester, 'Tabata · 8 × 20/10');
+      final search = find.text('Buscar ejercicio del catálogo').last;
+      await tester.ensureVisible(search);
+      await tester.pumpAndSettle();
+      await tester.tap(search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ejercicio privado de Alba'));
+      await tester.pumpAndSettle();
+      await _chooseFormat(tester, 'Series convencionales');
+      expect(find.text('Posición 2'), findsOneWidget);
+      expect(find.text('Posición 3'), findsNothing);
+      expect(
+        find.textContaining('Cambiar ejercicio · Ejercicio privado de Alba'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Intervalos de trabajo admite un solo ejercicio.'),
+        findsOneWidget,
+      );
+      final field = tester.widget<DropdownButton<WorkoutBlockFormat>>(
+        find.descendant(
+          of: find.byType(WorkoutFormatField),
+          matching: find.byType(DropdownButton<WorkoutBlockFormat>),
+        ),
+      );
+      expect(
+        field.items!
+            .singleWhere((item) => item.value == WorkoutBlockFormat.intervals)
+            .enabled,
+        isFalse,
+      );
+      final amount = find.widgetWithText(TextFormField, 'Cantidad').last;
+      await tester.ensureVisible(amount);
+      await tester.enterText(amount, '12');
+      await _save(tester);
+      expect(input!.blocks.single.exercises.map((e) => e.exerciseId), [
+        'base',
+        'private',
+      ]);
+      expect(input!.blocks.single.exercises.last.sets.first.targetValue, 12);
+    },
+  );
+
+  testWidgets(
+    'un hueco automático con valores escritos no se elimina al cambiar de formato',
+    (tester) async {
+      await tester.pumpWidget(_app(save: (_) async => 'saved', saved: (_) {}));
+      await tester.pumpAndSettle();
+      await _chooseFormat(tester, 'Superserie');
+      final amount = find.widgetWithText(TextFormField, 'Cantidad').last;
+      await tester.ensureVisible(amount);
+      await tester.enterText(amount, '17');
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Intervalos de trabajo admite un solo ejercicio.'),
+        findsOneWidget,
+      );
+      await _chooseFormat(tester, 'Tabata · 8 × 20/10');
+      await _chooseFormat(tester, 'Series convencionales');
+      expect(find.text('Posición 2'), findsOneWidget);
+      expect(find.text('Posición 3'), findsNothing);
+      final targetFields = tester.widgetList<StrengthSetFields>(
+        find.byType(StrengthSetFields),
+      );
+      expect(targetFields.last.targetText, '17');
+    },
+  );
 
   testWidgets('un consumidor sin ADMIN aporta catálogo y recibe receta e ID', (
     tester,

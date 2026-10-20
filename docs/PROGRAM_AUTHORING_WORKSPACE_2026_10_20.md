@@ -62,6 +62,46 @@ validado, sin migraciones nuevas. CI y la comprobación HTTPS constan debajo.
   por este commit; no hay migraciones ni datos que deshacer y la publicación
   conjunta de UI-062 permanece.
 
+## Cambio de formato y comparación de presentaciones · 20/10/2026
+
+Javier detecta que pasar a Tabata crea ocho posiciones y que, al volver a series,
+permanecen las posiciones vacías y bloquean Intervalos de trabajo. El creador
+compartido distingue ahora los huecos añadidos automáticamente para completar
+un formato de los ejercicios elegidos o posiciones añadidas manualmente. Al
+cambiar de formato retira solo huecos automáticos intactos; elegir un ejercicio,
+escribir un valor, cambiar el objetivo o personalizar series los conserva.
+
+El selector cuenta las posiciones que se conservarían: los huecos automáticos
+no bloquean Intervalos (un ejercicio) ni Superserie (dos), pero el contenido
+existente no se recorta para forzar esos formatos. El selector explica el límite
+cuando hay más ejercicios. Se mantienen los ocho intervalos 20/10 de Tabata y
+la validación deportiva, serialización y publicación existentes.
+
+Javier continúa comparando ventana y edición dentro de la página; no ha elegido
+una definitiva. Pide abrir la anterior aquí, sin añadir selector ni modificar la
+presentación publicada. La comparación local conserva ventana; la web mantiene
+la integración en página. La copia local se compila en `.dart_tool/` con el
+contenedor anterior y el creador compartido corregido, sin cambiar main a ese
+contenedor ni recargar su pestaña de trabajo. El lector y creador `embedded` se
+alojan en un desplazamiento del diálogo local. No es una segunda implementación
+de la receta ni una versión publicable del producto.
+
+El cambio de nombre a «Guardar borrador y salir» se propuso y aceptó inicialmente;
+Javier interrumpió la implementación pidiendo no añadir nada y abrir la versión
+anterior para comparar. No se ha cambiado ese texto ni añadido el selector.
+
+Verificación de esta corrección: análisis limpios en raíz, ADMIN y
+`workout_editor_ui`; 1.128 pruebas raíz (una omisión previa), 253 ADMIN (dos
+omisiones previas) y 47 del paquete compartido correctas. Cuatro regresiones
+nuevas cubren volver de Tabata a series varias veces sin alterar la receta,
+pasar directamente a Intervalos, conservar ejercicios elegidos y conservar
+valores escritos en posiciones automáticas. La disponibilidad se actualiza al
+empezar a escribir, sin reconstruir por cada dígito una receta ya configurada.
+La compilación local de comparación termina correctamente. En navegador local
+se verifica Tabata → Intervalos: opción habilitada, una sola posición y consola
+sin errores; no se guarda contenido ni se recarga la pestaña del programa.
+La corrección no añade migraciones ni cambia permisos o algoritmos.
+
 ## Contrato acordado
 
 - El programa mantiene su contexto mientras se crean, editan y revisan sesiones

@@ -780,10 +780,22 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 width: 265,
                 child: WorkoutFormatField(
                   format: format,
-                  exerciseCount: block.exercises.length,
+                  exerciseCount: block.exercises
+                      .where((exercise) => !exercise.isEmptyFormatSlot)
+                      .length,
                   label: 'Formato',
                   onChanged: (value) {
                     setState(() {
+                      // Las posiciones automáticas vacías pertenecen al formato,
+                      // no son ejercicios añadidos por el usuario. Una posición
+                      // elegida o modificada se conserva siempre.
+                      final unused = block.exercises
+                          .where((exercise) => exercise.isEmptyFormatSlot)
+                          .toList();
+                      block.exercises.removeWhere(unused.contains);
+                      for (final exercise in unused) {
+                        exercise.dispose();
+                      }
                       block.format = value;
                       final minimum = value == WorkoutBlockFormat.tabata
                           ? 8
@@ -792,7 +804,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                           ? 2
                           : 1;
                       while (block.exercises.length < minimum) {
-                        block.exercises.add(_Exercise());
+                        block.exercises.add(_Exercise(automaticSlot: true));
                       }
                     });
                   },
@@ -994,9 +1006,18 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                         !amrap &&
                         format != WorkoutBlockFormat.emom &&
                         format != WorkoutBlockFormat.intervals,
-                    onTargetChanged: (value) => item.target.text = value,
-                    onRestChanged: (value) => item.rest.text = value,
-                    onLoadChanged: (value) => item.load.text = value,
+                    onTargetChanged: (value) => _changeExerciseValue(
+                      item,
+                      () => item.target.text = value,
+                    ),
+                    onRestChanged: (value) => _changeExerciseValue(
+                      item,
+                      () => item.rest.text = value,
+                    ),
+                    onLoadChanged: (value) => _changeExerciseValue(
+                      item,
+                      () => item.load.text = value,
+                    ),
                     onRirChanged: (value) =>
                         setState(() => item.rir.text = value),
                   ),
@@ -1041,6 +1062,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         ],
       ),
     );
+  }
+
+  void _changeExerciseValue(_Exercise item, VoidCallback change) {
+    final wasEmpty = item.isEmptyFormatSlot;
+    change();
+    // Actualizar los formatos disponibles al empezar a completar un hueco,
+    // sin reconstruir todo el editor por cada dígito de una receta existente.
+    if (wasEmpty != item.isEmptyFormatSlot) {
+      setState(() {});
+    }
   }
 
   Widget _variationFields(_Exercise item, int index, {required bool showRest}) {
@@ -1301,7 +1332,21 @@ class _StrengthBlock {
 }
 
 class _Exercise {
-  _Exercise();
+  _Exercise({this.automaticSlot = false});
+
+  final bool automaticSlot;
+
+  bool get isEmptyFormatSlot =>
+      automaticSlot &&
+      exerciseId == null &&
+      type == WorkoutTargetType.repetitions &&
+      !customSets &&
+      count.text == '3' &&
+      target.text.trim().isEmpty &&
+      rest.text == '60' &&
+      load.text.trim().isEmpty &&
+      rir.text.trim().isEmpty &&
+      !variations.values.any((variation) => variation.hasValues);
 
   factory _Exercise.fromItem(WorkoutItem source) {
     final exercise = _Exercise()..exerciseId = source.exerciseId;

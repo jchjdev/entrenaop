@@ -12,7 +12,10 @@ Verificación inicial del guardado conjunto: 1.128 raíz, 250 ADMIN, 43 del paqu
 análisis limpios y build Dev; cuatro SQL con ROLLBACK y 171 migraciones coincidentes. El ajuste integrado vuelve
 a verificar raíz (1.128), ADMIN (253) y ambos paquetes UI (43/15), con análisis
 limpios; no requiere migraciones nuevas.
-Capturas reales revisadas.
+Capturas reales revisadas. El ajuste posterior de Tabata retira solo huecos
+automáticos intactos al cambiar de formato y conserva ejercicios/valores;
+verificado con 1.128/253/47 pruebas y recorrido local real Tabata → Intervalos.
+Javier sigue comparando ventana local y página web, sin selector añadido.
 Límites: aceptación física y ensayo realmente concurrente pendientes; producción
 sin cambios. **Único siguiente paso de este recorrido:** aceptación manual del
 montaje y las series con el contenido de Javier, sin abrir otro rediseño.
