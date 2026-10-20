@@ -69,7 +69,11 @@ jobs:
           print('Recogida configurada:',logs,'Copia solicitada:',backup)
           PY
       - name: Recoger errores de servicios Dev
+        id: logs
         if: steps.enabled.outputs.logs == 'true'
+        # Un fallo de logs no debe impedir intentar la copia. Se propaga al
+        # estado final después de conservar una copia que sí haya funcionado.
+        continue-on-error: true
         run: python3 admin_app/tool/dev_operations.py logs
       - name: Instalar CLI oficial fijado
         if: steps.enabled.outputs.backup == 'true'
@@ -100,3 +104,8 @@ jobs:
       - name: Registrar fallo sin datos privados
         if: failure() && steps.enabled.outputs.backup == 'true'
         run: python3 admin_app/tool/dev_operations.py failed
+      - name: Indicar recogida de errores fallida
+        if: always() && steps.logs.outcome == 'failure'
+        run: |
+          echo 'La recogida de errores Dev falló; revisar su código de estado.'
+          exit 1

@@ -17,6 +17,7 @@ import tarfile
 import tempfile
 import urllib.parse
 import urllib.request
+import urllib.error
 
 PROJECT = "sxbxfjqgoddzhtcyhalw"
 REPO = "jchjdev/entrenaop"
@@ -70,6 +71,11 @@ def api(path, data=None, *, github=False):
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
             return json.load(response)
+    except urllib.error.HTTPError as error:
+        # El estado HTTP permite distinguir credencial, permiso y consulta sin
+        # publicar URL, cabeceras ni el cuerpo privado devuelto por el servicio.
+        provider = "github" if github else "supabase"
+        raise OperationsError(provider + "_api_http_" + str(error.code)) from error
     except Exception as error:
         raise OperationsError("github_api_failed" if github else "supabase_api_failed") from error
 

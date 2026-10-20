@@ -1,4 +1,5 @@
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -76,6 +77,15 @@ class DevOperationsTests(unittest.TestCase):
         with self.assertRaises(ops.OperationsError) as caught:
             ops.command([sys.executable, "-c", "import sys;print('private password');sys.exit(1)"])
         self.assertEqual(str(caught.exception), "command_failed")
+
+    def test_api_errors_expose_only_provider_and_http_status(self):
+        error = ops.urllib.error.HTTPError("https://private.example/secret", 403,
+            "private password", {}, io.BytesIO(b"private body"))
+        with patch.dict(os.environ, {"SUPABASE_ACCESS_TOKEN": "fixture"}), \
+                patch.object(ops.urllib.request, "urlopen", side_effect=error):
+            with self.assertRaises(ops.OperationsError) as caught:
+                ops.api("/database/query", {"query": "fixture"})
+        self.assertEqual(str(caught.exception), "supabase_api_http_403")
 
     def test_restore_refuses_a_different_environment(self):
         with tempfile.TemporaryDirectory() as temp:
