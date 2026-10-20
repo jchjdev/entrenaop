@@ -102,6 +102,15 @@ se verifica Tabata → Intervalos: opción habilitada, una sola posición y cons
 sin errores; no se guarda contenido ni se recarga la pestaña del programa.
 La corrección no añade migraciones ni cambia permisos o algoritmos.
 
+Publicación de la corrección de Tabata: commit
+`a2c672d6ca26370e0acc951ed13c974178641365`,
+[CI 39456371391](https://github.com/jchjdev/entrenaop/actions/runs/39456371391)
+con validación, build y despliegue correctos. Comprobación HTTPS independiente:
+revisión exacta, entorno `development`, proyecto Dev `sxbxfjqgoddzhtcyhalw`,
+entrada activa, cabeceras y MIME de WebAssembly correctos; SHA-256 del JavaScript
+`fde8e652151e768d93f22337e777b2de737e78db6b6b07c265b0393b7721584d`.
+La copia local con ventana se actualiza sin recargar el trabajo del usuario.
+
 ## Contrato acordado
 
 - El programa mantiene su contexto mientras se crean, editan y revisan sesiones
