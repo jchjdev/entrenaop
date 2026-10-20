@@ -265,7 +265,7 @@ void main() {
     button.onPressed!();
     await tester.pumpAndSettle();
     expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-    await _tap(tester, find.text('Recoger sesión'));
+    await _tap(tester, find.byTooltip('Volver al programa'));
     expect(find.byType(AdminWorkoutEditorPage), findsNothing);
   });
   testWidgets(
@@ -298,7 +298,7 @@ void main() {
     (const Size(320, 900), 2.0),
   ]) {
     testWidgets(
-      'editor integrado conserva programa y cierre accesible a $size / $scale',
+      'ventana conserva programa y cierre accesible a $size / $scale',
       (tester) async {
         final workouts = _Workouts();
         final router = await _mount(
@@ -313,7 +313,7 @@ void main() {
         expect(router.routeInformationProvider.value.uri, location);
         expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
         expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-        expect(find.byType(Dialog), findsNothing);
+        expect(find.byType(Dialog), findsOneWidget);
         expect(
           find.descendant(
             of: find.byType(AdminWorkoutEditorPage),
@@ -328,13 +328,16 @@ void main() {
           ),
           findsNothing,
         );
-        expect(find.text('Recoger sesión').hitTestable(), findsOneWidget);
+        expect(
+          find.byTooltip('Volver al programa').hitTestable(),
+          findsOneWidget,
+        );
         expect(find.text('Publicar sesión'), findsNothing);
         await capturePerformanceWidget(
           tester,
-          'program-session-inline-${size.width.toInt()}-${scale.toInt()}',
+          'program-session-window-${size.width.toInt()}-${scale.toInt()}',
         );
-        await _tap(tester, find.text('Recoger sesión'));
+        await _tap(tester, find.byTooltip('Volver al programa'));
         expect(find.byType(AdminWorkoutEditorPage), findsNothing);
         expect(workouts.creates, 0);
         expect(tester.takeException(), isNull);
@@ -382,11 +385,11 @@ void main() {
         find.widgetWithText(TextField, 'Nombre de la sesión'),
         'Sin guardar',
       );
-      await _tap(tester, find.text('Recoger sesión'));
+      await _tap(tester, find.byTooltip('Volver al programa'));
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
       await _tap(tester, find.text('Continuar'));
       expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-      await _tap(tester, find.text('Recoger sesión'));
+      await _tap(tester, find.byTooltip('Volver al programa'));
       await _tap(tester, find.text('Salir sin guardar'));
       expect(find.byType(AdminWorkoutEditorPage), findsNothing);
       expect(workouts.creates, 0);
@@ -394,7 +397,7 @@ void main() {
     },
   );
 
-  testWidgets('desplazarse por el programa conserva la sesión sin guardar', (
+  testWidgets('desplazarse por la ventana conserva la sesión sin guardar', (
     tester,
   ) async {
     await _mount(tester, _Guided(), _Workouts(), size: const Size(390, 900));
@@ -411,7 +414,7 @@ void main() {
       tester.widget<TextField>(name).controller!.text,
       'Borrador que permanece',
     );
-    await _tap(tester, find.text('Recoger sesión'));
+    await _tap(tester, find.byTooltip('Volver al programa'));
     expect(find.text('¿Salir sin guardar?'), findsOneWidget);
     await _tap(tester, find.text('Continuar'));
     expect(
@@ -420,32 +423,30 @@ void main() {
     );
   });
 
-  testWidgets(
-    'navegar fuera consulta también el borrador de sesión integrado',
-    (tester) async {
-      final router = await _mount(
-        tester,
-        _Guided(),
-        _Workouts(),
-        work: _Checkpoint(),
-      );
-      await _tap(tester, find.text('Crear nueva sesión'));
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Nombre de la sesión'),
-        'No perder',
-      );
-      router.go('/guided-programs');
-      await tester.pumpAndSettle();
-      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
-      await _tap(tester, find.text('Continuar'));
-      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-      router.go('/guided-programs');
-      await tester.pumpAndSettle();
-      await _tap(tester, find.text('Salir sin guardar'));
-      expect(find.byType(AdminWorkoutEditorPage), findsNothing);
-      expect(find.byType(AdminGuidedCatalogPage), findsOneWidget);
-    },
-  );
+  testWidgets('navegar fuera no descarta la ventana ni su borrador', (
+    tester,
+  ) async {
+    final router = await _mount(
+      tester,
+      _Guided(),
+      _Workouts(),
+      work: _Checkpoint(),
+    );
+    await _tap(tester, find.text('Crear nueva sesión'));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Nombre de la sesión'),
+      'No perder',
+    );
+    router.go('/guided-programs');
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+    await _tap(tester, find.byTooltip('Volver al programa'));
+    expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+    await _tap(tester, find.text('Salir sin guardar'));
+    router.go('/guided-programs');
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminGuidedCatalogPage), findsOneWidget);
+  });
 
   testWidgets(
     'fallar el enlace conserva el ID y reintentar no crea otra sesión',
@@ -474,7 +475,7 @@ void main() {
   );
 
   testWidgets(
-    'recoger un enlace fallido conserva el ID para retomarlo sin duplicar',
+    'cerrar un enlace fallido conserva el ID para retomarlo sin duplicar',
     (tester) async {
       final workouts = _Workouts();
       await _mount(tester, _Guided(), workouts);
@@ -490,7 +491,7 @@ void main() {
       workouts.failList = true;
       await _tap(tester, find.text('Guardar en programa'));
       expect(find.text('Reintentar enlace'), findsOneWidget);
-      await _tap(tester, find.text('Recoger sesión'));
+      await _tap(tester, find.byTooltip('Volver al programa'));
       expect(find.byType(AdminWorkoutEditorPage), findsNothing);
       expect(find.text('Retomar sesión'), findsOneWidget);
       workouts.failList = false;
@@ -521,7 +522,7 @@ void main() {
         expect(workouts.creates, 1);
         expect(workouts.inputs.keys, ['session-1']);
         expect(workouts.inputs['session-1']!.name, 'Sesión ya guardada');
-        await _tap(tester, find.text('Recoger sesión'));
+        await _tap(tester, find.byTooltip('Volver al programa'));
         expect(workouts.inputs.keys, ['session-1']);
       },
     );

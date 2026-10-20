@@ -1,27 +1,18 @@
 # Roadmap de EntrenaOP
 
-**UI-062 · 20/10/2026 · creadores y Compacto:** Javier confirma concentrar este
-recorrido y adoptar guardado/publicación conjunta. Se corrigen los solapamientos
-de series en los componentes compartidos y se integra el creador y lector de
-sesiones dentro de la página del programa, sin panel superpuesto y con un único
-desplazamiento. Javier confirma este ajuste tras probar el panel anterior.
-Guardar en programa incorpora el borrador;
-una revisión y publicación final activa el conjunto en una transacción. Se
-conservan visibilidad suelta opcional, reutilización, versiones y recuperación.
-Verificación inicial del guardado conjunto: 1.128 raíz, 250 ADMIN, 43 del paquete,
-análisis limpios y build Dev; cuatro SQL con ROLLBACK y 171 migraciones coincidentes. El ajuste integrado vuelve
-a verificar raíz (1.128), ADMIN (253) y ambos paquetes UI (43/15), con análisis
-limpios; no requiere migraciones nuevas.
-Capturas reales revisadas. El ajuste posterior de Tabata retira solo huecos
-automáticos intactos al cambiar de formato y conserva ejercicios/valores;
-verificado con 1.128/253/47 pruebas y recorrido local real Tabata → Intervalos.
-La revisión posterior cubre los cuatro formatos, excepciones ocultas y objetivos
-AMRAP explícitos; raíz/ADMIN conservan 1.128/255 pruebas correctas y la cobertura
-del paquete amplía las transiciones y guardados. Javier sigue comparando ventana
-local y página web, sin selector añadido.
+**UI-062 · 20/10/2026 · creadores y Compacto:** tras comparar ventana y edición
+en página, Javier elige la ventana existente para focalizar la sesión y pide
+reutilizarla sin otro rediseño ni selector. El programa conserva su contexto;
+Guardar en programa incorpora borradores y la revisión/publicación final activa
+el conjunto en una transacción. Se conservan reutilización, versiones, visibilidad
+suelta opcional, recuperación y todas las correcciones de formatos/series.
+La elección cambia únicamente composición y pruebas de ADMIN, sin nuevos cambios
+de servidor o paquetes compartidos. La revalidación de ADMIN y su despliegue se
+registran en el contrato; las verificaciones anteriores de raíz, paquetes y SQL
+siguen referidas a sus respectivos cambios.
 Límites: aceptación física y ensayo realmente concurrente pendientes; producción
-sin cambios. **Único siguiente paso de este recorrido:** aceptación manual del
-montaje y las series con el contenido de Javier, sin abrir otro rediseño.
+sin cambios. **Único siguiente paso de este recorrido:** aceptación manual de la
+ventana elegida con el contenido de Javier, sin abrir otro rediseño.
 [Contrato, evidencia y límites](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
 
 **Revisión del estado Free/Pro · 20/10/2026:** Javier pide contrastar el proyecto

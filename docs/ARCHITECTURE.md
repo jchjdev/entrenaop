@@ -6,12 +6,12 @@
 lector existente dentro del programa, con guard local y sin otro router ni copia
 del creador. El trabajo del programa se conserva antes de abrir y al enlazar el
 ID guardado. Si el enlace falla, su reintento usa ese ID sin crear otra sesión.
-El contenido `embedded` de creador y lector se despliega dentro del programa,
-sin Scaffold ni scroll propios. El programa conserva todo el contenido montado
-en su único desplazamiento. `WorkflowDraftGuard.beforeExit` consulta el guard
-local antes del guard del programa al navegar fuera; recoger usa el mismo guard
-local. La estructura del programa permanece bloqueada mientras se edita una
-sesión. Las rutas independientes mantienen su composición anterior.
+La presentación elegida es el Dialog existente sobre el programa, que sigue
+montado y conserva su ruta. El contenido `embedded` de creador y lector no añade
+Scaffold ni scroll propio: la ventana aporta un desplazamiento y cabecera fija.
+El guard local protege el cierre; PopScope delega atrás en esa comprobación. El
+programa bloquea navegación y edición mientras la ventana está abierta. Las rutas
+independientes y todos los contratos de receta mantienen su composición actual.
 
 `save_guided_program` admite sesiones oficiales generales en borrador o
 publicadas. `set_guided_program_status` bloquea familia, programa y recetas y

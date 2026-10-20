@@ -7,23 +7,19 @@ import '../../workouts/presentation/admin_workout_editor_page.dart';
 import '../../workouts/presentation/admin_workout_preview_page.dart';
 
 /// Mantiene el programa montado y reutiliza su creador y revisión de sesiones.
-/// Comparte el desplazamiento del programa y conserva su guard local de salida.
+/// El guard local protege el panel sin reemplazar el guard de la página padre.
 class GuidedSessionWorkspace extends StatefulWidget {
   const GuidedSessionWorkspace({
     super.key,
     required this.workouts,
     required this.programName,
     required this.onSaved,
-    required this.onClosed,
-    required this.exitController,
     this.sessionId,
   });
   final AdminWorkoutRepository workouts;
   final String programName;
   final String? sessionId;
   final Future<void> Function(String) onSaved;
-  final Future<void> Function() onClosed;
-  final WorkflowExitController exitController;
 
   @override
   State<GuidedSessionWorkspace> createState() => _GuidedSessionWorkspaceState();
@@ -32,7 +28,10 @@ class GuidedSessionWorkspace extends StatefulWidget {
 class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
   final _exit = WorkflowExitController();
   late Future<(AdminWorkoutSummary, WorkoutTemplate)?> _initial = _load();
-  bool _editing = false, _registering = false, _closing = false;
+  bool _editing = false,
+      _registering = false,
+      _canPop = false,
+      _closing = false;
   String? _savedId, _error;
 
   Future<(AdminWorkoutSummary, WorkoutTemplate)?> _load() async {
@@ -54,7 +53,9 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
     try {
       if (!saved && !await (_exit.onExit?.call() ?? Future.value(true))) return;
       if (!mounted) return;
-      await widget.onClosed();
+      setState(() => _canPop = true);
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) Navigator.of(context).pop(_savedId);
     } finally {
       _closing = false;
     }
@@ -83,107 +84,107 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
     }
   }
 
-  Future<bool> _requestExit() async {
-    if (_registering || _closing) return false;
-    // El padre conserva el ID pendiente incluso cuando falla su enlace.
-    if (_savedId != null) return true;
-    return await (_exit.onExit?.call() ?? Future.value(true));
-  }
-
   @override
-  Widget build(BuildContext context) => WorkflowExitScope(
-    controller: widget.exitController,
-    child: WorkflowDraftGuard(
-      hasUnsavedChanges: () => false,
-      beforeExit: _requestExit,
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 12),
+  Widget build(BuildContext context) => PopScope<String>(
+    canPop: _canPop,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop) _close();
+    },
+    child: Dialog(
+      insetPadding: const EdgeInsets.all(12),
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1020),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
                 children: [
-                  Text(
-                    'Sesión del programa',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  Expanded(
+                    child: Text(
+                      'Sesiones · ${widget.programName}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                  TextButton.icon(
+                  IconButton(
+                    tooltip: 'Volver al programa',
                     onPressed: _registering ? null : () => _close(),
-                    icon: const Icon(Icons.expand_less),
-                    label: const Text('Recoger sesión'),
+                    icon: const Icon(Icons.close),
                   ),
                 ],
               ),
             ),
             const Divider(height: 1),
-            if (_registering)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (_error != null)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_error!),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      onPressed: () => _saved(_savedId!),
-                      child: const Text('Reintentar enlace'),
-                    ),
-                  ],
-                ),
-              )
-            else
-              FutureBuilder<(AdminWorkoutSummary, WorkoutTemplate)?>(
-                future: _initial,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snapshot.hasError) {
-                    return TextButton(
-                      onPressed: () => setState(() => _initial = _load()),
-                      child: const Text(
-                        'No se pudo cargar la sesión. Reintentar',
-                      ),
-                    );
-                  }
-                  final original = snapshot.data;
-                  return WorkflowExitScope(
-                    controller: _exit,
-                    child: original == null || _editing
-                        ? AdminWorkoutEditorPage(
-                            program: null,
-                            repository: widget.workouts,
-                            originalTemplate: original?.$2,
-                            revisionId: original?.$1.id,
-                            initialShowInLibrary: false,
-                            embedded: true,
-                            programName: widget.programName,
-                            onSaved: _saved,
-                          )
-                        : AdminWorkoutPreviewPage(
-                            workout: original.$1,
-                            repository: widget.workouts,
-                            program: null,
-                            embedded: true,
-                            allowPublication: false,
-                            onEdit: (_) => setState(() => _editing = true),
+            Expanded(
+              child: SingleChildScrollView(
+                child: _registering
+                    ? const Center(child: CircularProgressIndicator())
+                    : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(_error!),
+                              const SizedBox(height: 16),
+                              FilledButton(
+                                onPressed: () => _saved(_savedId!),
+                                child: const Text('Reintentar enlace'),
+                              ),
+                            ],
                           ),
-                  );
-                },
+                        ),
+                      )
+                    : FutureBuilder<(AdminWorkoutSummary, WorkoutTemplate)?>(
+                        future: _initial,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState !=
+                              ConnectionState.done) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: TextButton(
+                                onPressed: () =>
+                                    setState(() => _initial = _load()),
+                                child: const Text(
+                                  'No se pudo cargar la sesión. Reintentar',
+                                ),
+                              ),
+                            );
+                          }
+                          final original = snapshot.data;
+                          return WorkflowExitScope(
+                            controller: _exit,
+                            child: original == null || _editing
+                                ? AdminWorkoutEditorPage(
+                                    program: null,
+                                    repository: widget.workouts,
+                                    originalTemplate: original?.$2,
+                                    revisionId: original?.$1.id,
+                                    initialShowInLibrary: false,
+                                    embedded: true,
+                                    programName: widget.programName,
+                                    onSaved: _saved,
+                                  )
+                                : AdminWorkoutPreviewPage(
+                                    workout: original.$1,
+                                    repository: widget.workouts,
+                                    program: null,
+                                    embedded: true,
+                                    allowPublication: false,
+                                    onEdit: (_) =>
+                                        setState(() => _editing = true),
+                                  ),
+                          );
+                        },
+                      ),
               ),
+            ),
           ],
         ),
       ),

@@ -663,38 +663,6 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   }
 
   bool _sessionWorkspaceOpen = false;
-  final _sessionExit = WorkflowExitController();
-  final _workspaceKey = GlobalKey();
-  _PhaseFields? _activePhase;
-  _SessionFields? _activeSession;
-  GuidedSessionWorkspace? _workspace;
-
-  // El programa se mantiene visible; su estructura queda estable mientras se
-  // edita una receta. El editor comparte el único scroll de la página.
-  Widget _programControl(Widget child) {
-    final key = child.key;
-    if ((key is ValueKey &&
-            (key.value == _activePhase || key.value == _activeSession)) ||
-        child == _workspace) {
-      return child;
-    }
-    return ExcludeFocus(
-      excluding: _sessionWorkspaceOpen,
-      child: AbsorbPointer(absorbing: _sessionWorkspaceOpen, child: child),
-    );
-  }
-
-  Future<void> _closeSession() async {
-    if (!mounted) return;
-    await _load();
-    if (!mounted) return;
-    setState(() {
-      _workspace = null;
-      _activePhase = null;
-      _activeSession = null;
-      _sessionWorkspaceOpen = false;
-    });
-  }
 
   Future<void> _createSession(_PhaseFields phase) => _openSession(phase);
 
@@ -708,69 +676,62 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     String? appliedId;
     try {
       if (!await _saveWork() || !mounted) return;
-      final workspace = GuidedSessionWorkspace(
-        key: _workspaceKey,
-        exitController: _sessionExit,
-        onClosed: _closeSession,
-        workouts: widget.workouts,
-        programName: _name.text.trim().isEmpty
-            ? 'Programa en borrador'
-            : _name.text.trim(),
-        sessionId: session?.id,
-        onSaved: (id) async {
-          if (!mounted || !_phases.contains(phase)) {
-            throw StateError('Programa cerrado');
-          }
-          // Primero conservar el ID: si falla la lectura o el enlace se puede
-          // recuperar sin crear otra sesión ni perder el trabajo del programa.
-          setState(() {
-            phase.pendingSessions.add(id);
-            if (session != null) phase.pendingReplacements[id] = session.id;
-            _changed();
-          });
-          if (!await _saveWork()) throw StateError('Guardado pendiente');
-          if (!await _load() || !mounted) {
-            throw StateError('Catálogo no disponible');
-          }
-          final saved = _sessions.where((s) => s.id == id).firstOrNull;
-          if (saved == null || !['draft', 'published'].contains(saved.status)) {
-            throw StateError('Sesión no disponible');
-          }
-          if (session != null) {
+      await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => GuidedSessionWorkspace(
+          workouts: widget.workouts,
+          programName: _name.text.trim().isEmpty
+              ? 'Programa en borrador'
+              : _name.text.trim(),
+          sessionId: session?.id,
+          onSaved: (id) async {
+            if (!mounted || !_phases.contains(phase)) {
+              throw StateError('Programa cerrado');
+            }
+            // Primero conservar el ID: si falla la lectura o el enlace se puede
+            // recuperar sin crear otra sesión ni perder el trabajo del programa.
             setState(() {
-              session.id = id;
-              session.name = saved.name;
+              phase.pendingSessions.add(id);
+              if (session != null) phase.pendingReplacements[id] = session.id;
+              _changed();
+            });
+            if (!await _saveWork()) throw StateError('Guardado pendiente');
+            if (!await _load() || !mounted) {
+              throw StateError('Catálogo no disponible');
+            }
+            final saved = _sessions.where((s) => s.id == id).firstOrNull;
+            if (saved == null ||
+                !['draft', 'published'].contains(saved.status)) {
+              throw StateError('Sesión no disponible');
+            }
+            if (session != null) {
+              setState(() {
+                session.id = id;
+                session.name = saved.name;
+                phase.pendingSessions.remove(id);
+                phase.pendingReplacements.remove(id);
+                _changed();
+              });
+            } else if (appliedId != id) {
+              _attachSession(phase, saved);
+            }
+            setState(() {
               phase.pendingSessions.remove(id);
               phase.pendingReplacements.remove(id);
               _changed();
             });
-          } else if (appliedId != id) {
-            _attachSession(phase, saved);
-          }
-          setState(() {
-            phase.pendingSessions.remove(id);
-            phase.pendingReplacements.remove(id);
-            _changed();
-          });
-          appliedId = id;
-          if (!await _saveWork()) {
-            throw StateError('Enlace pendiente de guardar');
-          }
-        },
+            appliedId = id;
+            if (!await _saveWork()) {
+              throw StateError('Enlace pendiente de guardar');
+            }
+          },
+        ),
       );
-      setState(() {
-        _activePhase = phase;
-        _activeSession = session;
-        _workspace = workspace;
-      });
-      await WidgetsBinding.instance.endOfFrame;
-      final target = _workspaceKey.currentContext;
-      if (target != null && target.mounted) {
-        await Scrollable.ensureVisible(target, alignment: 0.05);
-      }
     } finally {
-      if (mounted && _workspace == null) {
-        setState(() => _sessionWorkspaceOpen = false);
+      if (mounted) {
+        await _load();
+        if (mounted) setState(() => _sessionWorkspaceOpen = false);
       }
     }
   }
@@ -1120,10 +1081,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         : _saveTimer?.isActive == true ||
               _checkpoint!.dirty ||
               _finalAttempt != null,
-    isBusy: () => _busy || (_sessionWorkspaceOpen && _workspace == null),
-    beforeExit: () async =>
-        !_sessionWorkspaceOpen ||
-        await (_sessionExit.onExit?.call() ?? Future.value(false)),
+    isBusy: () => _busy || _sessionWorkspaceOpen,
     child: Scaffold(
       appBar: AppBar(
         title: Text(
@@ -1137,142 +1095,134 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           : Stack(
               children: [
                 AbsorbPointer(
-                  absorbing: _busy || _finalAttempt != null,
+                  absorbing:
+                      _busy || _sessionWorkspaceOpen || _finalAttempt != null,
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 900),
                       child: Form(
                         key: _form,
-                        child: SingleChildScrollView(
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
+                        child: ListView(
                           padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              if (_checkpoint != null) _workStatus(),
-                              _field(
-                                _name,
-                                'Nombre del programa',
-                                required: true,
-                              ),
-                              _field(
-                                _description,
-                                'Objetivo e indicaciones',
-                                lines: 3,
-                              ),
-                              _field(
-                                _audience,
-                                'Destinatarios y requisitos',
-                                lines: 2,
-                              ),
-                              _field(_equipment, 'Material necesario'),
-                              SegmentedButton<GuidedProgramMode>(
-                                segments: const [
-                                  ButtonSegment(
-                                    value: GuidedProgramMode.guide,
-                                    label: Text('Rutina'),
-                                  ),
-                                  ButtonSegment(
-                                    value: GuidedProgramMode.phased,
-                                    label: Text('Por fases'),
-                                  ),
-                                ],
-                                selected: {_mode},
-                                onSelectionChanged: (v) {
-                                  if (v.first == GuidedProgramMode.guide &&
-                                      _phases.length > 1) {
-                                    setState(
-                                      () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
-                                    );
-                                    return;
-                                  }
-                                  setState(() {
-                                    _mode = v.first;
-                                    _changed();
-                                    _error = null;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                _mode == GuidedProgramMode.guide
-                                    ? 'Las sesiones se pueden repetir sin fecha de finalización.'
-                                    : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
-                              ),
-                              const SizedBox(height: 18),
-                              _categoryFields(),
-                              const SizedBox(height: 18),
-                              for (var i = 0; i < _phases.length; i++)
-                                _phaseCard(_phases[i], i),
-                              if (_mode == GuidedProgramMode.phased)
-                                OutlinedButton.icon(
-                                  onPressed: () => setState(() {
-                                    _phases.add(_PhaseFields());
-                                    _changed();
-                                  }),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Añadir fase'),
+                          children: [
+                            if (_checkpoint != null) _workStatus(),
+                            _field(
+                              _name,
+                              'Nombre del programa',
+                              required: true,
+                            ),
+                            _field(
+                              _description,
+                              'Objetivo e indicaciones',
+                              lines: 3,
+                            ),
+                            _field(
+                              _audience,
+                              'Destinatarios y requisitos',
+                              lines: 2,
+                            ),
+                            _field(_equipment, 'Material necesario'),
+                            SegmentedButton<GuidedProgramMode>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: GuidedProgramMode.guide,
+                                  label: Text('Rutina'),
                                 ),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 12,
-                                runSpacing: 12,
-                                children: [
-                                  TextButton(
-                                    onPressed: () async {
-                                      await context.push('/sessions');
-                                      if (mounted) await _load();
-                                    },
-                                    child: const Text(
-                                      'Ver catálogo de sesiones',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (_error != null)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  child: Text(
-                                    _error!,
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .error,
-                                    ),
-                                  ),
+                                ButtonSegment(
+                                  value: GuidedProgramMode.phased,
+                                  label: Text('Por fases'),
                                 ),
-                              if (!_catalogsReady)
-                                TextButton(
-                                  onPressed: _load,
-                                  child: const Text('Reintentar carga'),
-                                ),
-                              const SizedBox(height: 16),
+                              ],
+                              selected: {_mode},
+                              onSelectionChanged: (v) {
+                                if (v.first == GuidedProgramMode.guide &&
+                                    _phases.length > 1) {
+                                  setState(
+                                    () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
+                                  );
+                                  return;
+                                }
+                                setState(() {
+                                  _mode = v.first;
+                                  _changed();
+                                  _error = null;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _mode == GuidedProgramMode.guide
+                                  ? 'Las sesiones se pueden repetir sin fecha de finalización.'
+                                  : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
+                            ),
+                            const SizedBox(height: 18),
+                            _categoryFields(),
+                            const SizedBox(height: 18),
+                            for (var i = 0; i < _phases.length; i++)
+                              _phaseCard(_phases[i], i),
+                            if (_mode == GuidedProgramMode.phased)
                               OutlinedButton.icon(
-                                onPressed: _busy || !_catalogsReady
-                                    ? null
-                                    : () => _save(reviewAfter: true),
-                                icon: const Icon(Icons.visibility_outlined),
-                                label: const Text('Guardar y revisar'),
+                                onPressed: () => setState(() {
+                                  _phases.add(_PhaseFields());
+                                  _changed();
+                                }),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Añadir fase'),
                               ),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: _busy || !_catalogsReady
-                                    ? null
-                                    : _save,
-                                icon: const Icon(Icons.save_outlined),
-                                label: Text(
-                                  _busy
-                                      ? 'Guardando…'
-                                      : _checkpoint == null
-                                      ? 'Guardar borrador'
-                                      : 'Guardar en catálogo',
+                            const SizedBox(height: 16),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                TextButton(
+                                  onPressed: () async {
+                                    await context.push('/sessions');
+                                    if (mounted) await _load();
+                                  },
+                                  child: const Text('Ver catálogo de sesiones'),
+                                ),
+                              ],
+                            ),
+                            if (_error != null)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                child: Text(
+                                  _error!,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                                 ),
                               ),
-                            ].map(_programControl).toList(),
-                          ),
+                            if (!_catalogsReady)
+                              TextButton(
+                                onPressed: _load,
+                                child: const Text('Reintentar carga'),
+                              ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: _busy || !_catalogsReady
+                                  ? null
+                                  : () => _save(reviewAfter: true),
+                              icon: const Icon(Icons.visibility_outlined),
+                              label: const Text('Guardar y revisar'),
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton.icon(
+                              onPressed: _busy || !_catalogsReady
+                                  ? null
+                                  : _save,
+                              icon: const Icon(Icons.save_outlined),
+                              label: Text(
+                                _busy
+                                    ? 'Guardando…'
+                                    : _checkpoint == null
+                                    ? 'Guardar borrador'
+                                    : 'Guardar en catálogo',
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -1439,7 +1389,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+        children: [
           if (_mode == GuidedProgramMode.phased) ...[
             _header(
               Text(
@@ -1516,8 +1466,6 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
             ),
           ),
           for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
-          if (_activePhase == p && _activeSession == null && _workspace != null)
-            _workspace!,
           for (final id in p.pendingSessions)
             Card(
               child: Padding(
@@ -1560,7 +1508,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 ),
               ),
             ),
-        ].map(_programControl).toList(),
+        ],
       ),
     ),
   );
@@ -1569,202 +1517,181 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     final source = _sessions.where((item) => item.id == s.id).firstOrNull;
     final hasWarmup = source?.hasWarmup == true;
     final supportsRest = source?.supportsAdjustableRest == true;
-    return Column(
+    return Card(
       key: ValueKey(s),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ExcludeFocus(
-          excluding: _sessionWorkspaceOpen,
-          child: AbsorbPointer(
-            absorbing: _sessionWorkspaceOpen,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _header(
-                      Text(
-                        '${i + 1}. ${s.name}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      [
-                        IconButton(
-                          tooltip: 'Subir sesión',
-                          onPressed: i == 0
-                              ? null
-                              : () => setState(() {
-                                  p.sessions.removeAt(i);
-                                  p.sessions.insert(i - 1, s);
-                                  _changed();
-                                }),
-                          icon: const Icon(Icons.arrow_upward),
-                        ),
-                        IconButton(
-                          tooltip: 'Bajar sesión',
-                          onPressed: i == p.sessions.length - 1
-                              ? null
-                              : () => setState(() {
-                                  p.sessions.removeAt(i);
-                                  p.sessions.insert(i + 1, s);
-                                  _changed();
-                                }),
-                          icon: const Icon(Icons.arrow_downward),
-                        ),
-                        IconButton(
-                          tooltip: 'Quitar sesión',
-                          onPressed: () => setState(() {
-                            p.sessions.removeAt(i).dispose();
-                            _changed();
-                          }),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (source?.catalogScope == 'general' &&
-                        source?.status == 'published')
-                      _sessionSwitch(
-                        title: 'Mostrar en Sesiones de EntrenaOP',
-                        subtitle: _savingVisibilityId == source!.id
-                            ? const Text('Guardando visibilidad…')
-                            : AdminSessionLibraryStatus(session: source),
-                        value: source.showInLibrary,
-                        onChanged: _busy
-                            ? null
-                            : (value) => _setSessionVisibility(source, value),
-                      )
-                    else
-                      AdminSessionLibraryStatus(session: source),
-                    if (_visibilityErrors[s.id] case final message?)
-                      Text(
-                        message,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () => _reviewSession(s),
-                        icon: const Icon(Icons.visibility_outlined),
-                        label: const Text('Revisar sesión'),
-                      ),
-                    ),
-                    if (source == null ||
-                        !['draft', 'published'].contains(source.status))
-                      Text(
-                        'Esta versión ya no está publicada. Quita la referencia y elige otra sesión.',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    if (hasWarmup)
-                      const Text(
-                        'Esta sesión ya incluye su propio calentamiento.',
-                      ),
-                    if (!hasWarmup)
-                      _labeledControl(
-                        'Calentamiento adjunto',
-                        DropdownButtonFormField<String>(
-                          key: ValueKey('${s.id}:${s.warmup}'),
-                          initialValue: s.warmup ?? '',
-                          isExpanded: true,
-                          isDense: false,
-                          itemHeight: null,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                              value: '',
-                              child: Text(
-                                'Sin calentamiento adjunto',
-                                softWrap: true,
-                              ),
-                            ),
-                            if (s.warmup != null &&
-                                !_warmups.any((w) => w.id == s.warmup))
-                              DropdownMenuItem(
-                                value: s.warmup,
-                                enabled: false,
-                                child: const Text(
-                                  'Calentamiento no disponible',
-                                  softWrap: true,
-                                ),
-                              ),
-                            for (final w in _warmups)
-                              if (w.status == 'published' || w.id == s.warmup)
-                                DropdownMenuItem(
-                                  value: w.id,
-                                  enabled: w.status == 'published',
-                                  child: Text(
-                                    '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
-                                    softWrap: true,
-                                  ),
-                                ),
-                          ],
-                          // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
-                          onChanged: (v) {
-                            setState(() {
-                              s.warmup = v == '' ? null : v;
-                              _changed();
-                            });
-                          },
-                        ),
-                      ),
-                    if (!hasWarmup)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () => _createWarmup(s),
-                          icon: const Icon(Icons.add),
-                          label: const Text('Crear y adjuntar calentamiento'),
-                        ),
-                      ),
-                    _sessionSwitch(
-                      title: 'Permitir ajustar descansos entre series',
-                      subtitle: const Text(
-                        'Solo bloques convencionales; se conservan los formatos temporizados.',
-                      ),
-                      value: s.adjustable,
-                      onChanged: !supportsRest && !s.adjustable
-                          ? null
-                          : (v) => setState(() {
-                              s.adjustable = v;
-                              _changed();
-                            }),
-                    ),
-                    if (!supportsRest)
-                      const Text(
-                        'El formato de esta sesión no admite un ajuste genérico de descansos.',
-                      ),
-                    if (s.adjustable) ...[
-                      _field(
-                        s.minimum,
-                        'Descanso mínimo (segundos)',
-                        numeric: true,
-                        required: true,
-                      ),
-                      _field(
-                        s.maximum,
-                        'Descanso máximo (segundos)',
-                        numeric: true,
-                        required: true,
-                      ),
-                    ],
-                  ],
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _header(
+              Text(
+                '${i + 1}. ${s.name}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              [
+                IconButton(
+                  tooltip: 'Subir sesión',
+                  onPressed: i == 0
+                      ? null
+                      : () => setState(() {
+                          p.sessions.removeAt(i);
+                          p.sessions.insert(i - 1, s);
+                          _changed();
+                        }),
+                  icon: const Icon(Icons.arrow_upward),
                 ),
+                IconButton(
+                  tooltip: 'Bajar sesión',
+                  onPressed: i == p.sessions.length - 1
+                      ? null
+                      : () => setState(() {
+                          p.sessions.removeAt(i);
+                          p.sessions.insert(i + 1, s);
+                          _changed();
+                        }),
+                  icon: const Icon(Icons.arrow_downward),
+                ),
+                IconButton(
+                  tooltip: 'Quitar sesión',
+                  onPressed: () => setState(() {
+                    p.sessions.removeAt(i).dispose();
+                    _changed();
+                  }),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (source?.catalogScope == 'general' &&
+                source?.status == 'published')
+              _sessionSwitch(
+                title: 'Mostrar en Sesiones de EntrenaOP',
+                subtitle: _savingVisibilityId == source!.id
+                    ? const Text('Guardando visibilidad…')
+                    : AdminSessionLibraryStatus(session: source),
+                value: source.showInLibrary,
+                onChanged: _busy
+                    ? null
+                    : (value) => _setSessionVisibility(source, value),
+              )
+            else
+              AdminSessionLibraryStatus(session: source),
+            if (_visibilityErrors[s.id] case final message?)
+              Text(
+                message,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _reviewSession(s),
+                icon: const Icon(Icons.visibility_outlined),
+                label: const Text('Revisar sesión'),
               ),
             ),
-          ),
+            if (source == null ||
+                !['draft', 'published'].contains(source.status))
+              Text(
+                'Esta versión ya no está publicada. Quita la referencia y elige otra sesión.',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            if (hasWarmup)
+              const Text('Esta sesión ya incluye su propio calentamiento.'),
+            if (!hasWarmup)
+              _labeledControl(
+                'Calentamiento adjunto',
+                DropdownButtonFormField<String>(
+                  key: ValueKey('${s.id}:${s.warmup}'),
+                  initialValue: s.warmup ?? '',
+                  isExpanded: true,
+                  isDense: false,
+                  itemHeight: null,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                  ),
+                  items: [
+                    const DropdownMenuItem(
+                      value: '',
+                      child: Text('Sin calentamiento adjunto', softWrap: true),
+                    ),
+                    if (s.warmup != null &&
+                        !_warmups.any((w) => w.id == s.warmup))
+                      DropdownMenuItem(
+                        value: s.warmup,
+                        enabled: false,
+                        child: const Text(
+                          'Calentamiento no disponible',
+                          softWrap: true,
+                        ),
+                      ),
+                    for (final w in _warmups)
+                      if (w.status == 'published' || w.id == s.warmup)
+                        DropdownMenuItem(
+                          value: w.id,
+                          enabled: w.status == 'published',
+                          child: Text(
+                            '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
+                            softWrap: true,
+                          ),
+                        ),
+                  ],
+                  // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
+                  onChanged: (v) {
+                    setState(() {
+                      s.warmup = v == '' ? null : v;
+                      _changed();
+                    });
+                  },
+                ),
+              ),
+            if (!hasWarmup)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => _createWarmup(s),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Crear y adjuntar calentamiento'),
+                ),
+              ),
+            _sessionSwitch(
+              title: 'Permitir ajustar descansos entre series',
+              subtitle: const Text(
+                'Solo bloques convencionales; se conservan los formatos temporizados.',
+              ),
+              value: s.adjustable,
+              onChanged: !supportsRest && !s.adjustable
+                  ? null
+                  : (v) => setState(() {
+                      s.adjustable = v;
+                      _changed();
+                    }),
+            ),
+            if (!supportsRest)
+              const Text(
+                'El formato de esta sesión no admite un ajuste genérico de descansos.',
+              ),
+            if (s.adjustable) ...[
+              _field(
+                s.minimum,
+                'Descanso mínimo (segundos)',
+                numeric: true,
+                required: true,
+              ),
+              _field(
+                s.maximum,
+                'Descanso máximo (segundos)',
+                numeric: true,
+                required: true,
+              ),
+            ],
+          ],
         ),
-        if (_activeSession == s && _workspace != null) _workspace!,
-      ],
+      ),
     );
   }
 }

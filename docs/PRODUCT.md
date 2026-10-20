@@ -4,8 +4,9 @@
 sesiones dentro del programa como borradores, revisar el conjunto y publicarlo
 en una sola operación. Se conserva reutilización, versiones y la opción de
 mostrar una sesión suelta. No se exige publicar cada sesión antes de añadirla.
-El creador y la revisión se despliegan dentro de la página del programa, sin
-ventana superpuesta. La autoría independiente sigue disponible en Sesiones.
+Tras comparar ambas presentaciones, Javier elige abrir el creador y la revisión
+en la ventana existente sobre el programa, sin otro rediseño ni selector. La
+autoría independiente sigue disponible en Sesiones.
 Se mantienen los kilos opcionales y el RIR por repeticiones compatibles.
 [Recorrido vigente](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
 

@@ -4,7 +4,41 @@ Javier concentra creadores y Compacto en este chat. Solicita corregir los
 solapamientos de personalización de series y evitar saltar entre páginas para
 crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
-## Ajuste confirmado: editor dentro de la página · 20/10/2026
+## Presentación elegida: la ventana existente · 20/10/2026
+
+Tras comparar ambas presentaciones, Javier elige la ventana para focalizar la
+edición de una sesión. Aclara expresamente que se reutilice la ventana que ya ha
+probado, sin otro rediseño ni selector de modos. Esta decisión sustituye la
+prueba anterior de edición desplegada en la página.
+
+Se recuperan el Dialog existente, su cabecera con cierre y el programa detrás.
+El contenido comparte un desplazamiento dentro de la ventana y reutiliza el
+creador y lector actuales. Se conservan todas las correcciones de formatos,
+series, protección del trabajo, reintento del enlace y publicación conjunta.
+La ruta del programa permanece estable; abrir no crea sesiones y guardar
+incorpora el borrador mediante el mismo contrato existente.
+
+El guard local consulta los cambios pendientes antes de cerrar; PopScope permite
+salir por atrás usando esa comprobación. El fondo no cierra por pulsación y el
+programa bloquea navegación/edición mientras la ventana está abierta. La cabecera
+de cierre permanece fuera del desplazamiento. No se cambia el diseño móvil de
+la ventana existente, ni se añaden nuevos accesos o atajos.
+
+Solo cambian la composición de ADMIN y sus pruebas. Sin cambios en los paquetes
+compartidos, datos, RPC, permisos, algoritmos ni migraciones. No se recarga la
+pestaña de trabajo del usuario.
+
+### Verificación de la ventana elegida
+
+Análisis de ADMIN sin incidencias y batería completa con 255 pruebas correctas
+y dos omisiones previas. Las 27 pruebas dirigidas de autoría y editor comprueban
+cuatro sesiones, cierre protegido, borrador conservado al desplazar, recuperación
+del enlace sin duplicados y apertura sin crear versiones. Las comprobaciones de
+ventana cubren 1300/390 px y 320 px con texto 2×; revisada la captura de escritorio.
+Compilación web release local para Dev correcta, con CSP y sin mapas de fuentes
+ni recursos CDN. No se repite raíz ni paquetes porque no cambian sus fuentes.
+
+## Prueba anterior: editor dentro de la página · sustituida por ventana
 
 Javier prueba el panel superpuesto y confirma reemplazarlo por creación, edición
 y revisión desplegadas en la propia página del programa. Una sesión abierta a
