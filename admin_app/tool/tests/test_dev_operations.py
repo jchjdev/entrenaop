@@ -68,6 +68,14 @@ class DevOperationsTests(unittest.TestCase):
             with self.assertRaises(ops.OperationsError):
                 ops.pack_and_encrypt("unused", "unused.gpg")
 
+    def test_invalid_passphrase_stops_before_accessing_or_exporting_dev(self):
+        with patch.dict(os.environ, {"DEV_BACKUP_PASSPHRASE": "short"}), \
+                patch.object(ops, "sql") as sql, patch.object(ops, "command") as command:
+            with self.assertRaises(ops.OperationsError):
+                ops.backup("unused")
+        sql.assert_not_called()
+        command.assert_not_called()
+
     def test_archive_budget_refuses_excess_without_deleting_anything(self):
         with patch.object(ops, "api", return_value={"artifacts": [{"expired": False, "size_in_bytes": ops.MAX_ARTIFACT_STORAGE}]}):
             with self.assertRaises(ops.OperationsError):

@@ -6,9 +6,13 @@ recuperarse desde un cambio registrado como borrador independiente; se conserva
 el original y se revisa antes de publicar. Los avisos separan errores de trabajo
 pendiente y llevan al recurso. Cuentas amplía su ficha de soporte para el
 responsable único; Herramientas muestra versión desplegada y conexión puntual.
-Las copias siguen sin verificar y el registro general de servicios sin conectar.
-No se atribuye a esa pantalla una monitorización todavía inexistente.
+ADM-002 añade recibos de copias y errores reducidos a códigos, con captura de
+fallos no controlados del admin. La interfaz está publicada y la recogida real
+de servicios funciona en Dev. La restauración aislada real pasa, pero la primera
+copia cifrada aún requiere corregir su frase y comprobar el artefacto disponible.
+No se presenta una copia disponible sin evidencia real.
 [Alcance y límites](ADMIN_OPERATIONS_2026_10_20.md).
+[Recuperación de Dev](DEV_RECOVERY_2026_10_20.md).
 
 **UI-063 · 20/10/2026 · eficiencia de autoría:** duplicar abre el creador actual
 con una copia independiente que se guarda al confirmar. Las sesiones plegadas

@@ -181,10 +181,15 @@ def tree_digest(directory):
             for p in sorted(directory.rglob("*")) if p.is_file()}
 
 
-def pack_and_encrypt(source, output, *, gpg="gpg"):
+def encryption_passphrase():
     password = os.environ.get("DEV_BACKUP_PASSPHRASE", "")
     if len(password) < 24 or any(c in password for c in "\n\r\0"):
         raise OperationsError("invalid_encryption_passphrase")
+    return password
+
+
+def pack_and_encrypt(source, output, *, gpg="gpg"):
+    password = encryption_passphrase()
     output = Path(output)
     if output.exists():
         raise OperationsError("archive_exists")
@@ -260,6 +265,8 @@ def assert_artifact_budget(extra):
 
 
 def backup(output):
+    # No exportar datos ni consumir el ensayo si la copia no podrá cifrarse.
+    encryption_passphrase()
     run = run_id()
     sql("insert into admin_ops_private.backup_runs(run_id,started_at,status) values(" + literal(run) +
         ",now(),'running') on conflict(run_id) do nothing")

@@ -3,9 +3,12 @@
 **ADM-002 · 20/10/2026 · recuperación de Dev:** Javier autoriza continuar con
 copias y errores. Preparación local/SQL verificada: copia cifrada con límites y
 siete días de retención, ensayo aislado, recibos privados y registro reducido a
-códigos. Cinco SQL correctas, 280 pruebas ADMIN y 19 Python correctas, análisis
-y build Dev limpios. **Siguiente paso único:** ejecutar el ensayo de GitHub y
-activar secretos para producir y comprobar la primera copia real. Todavía no se
+códigos. Cinco SQL correctas, 280 pruebas ADMIN y 24 Python correctas, análisis
+y build Dev limpios. Ensayos ficticio y real en Docker y despliegue de la interfaz
+verificados en GitHub/HTTPS. Recogida real conectada con token Dev. La frase de
+cifrado guardada no cumple el contrato y la ejecución no conserva un respaldo.
+**Siguiente paso único:** corregir ese secreto y comprobar el primer artefacto
+cifrado y su recibo. Todavía no se
 acredita una copia disponible. No se añade borrado de programas ni restauración
 sobre Dev. [Contrato, alcance y pendientes](DEV_RECOVERY_2026_10_20.md).
 

@@ -11,7 +11,7 @@ copia diaria a las 03:17 UTC; GitHub puede retrasar una ejecución. El disparo
 manual permite solicitar otra copia. Sin secretos, el trabajo no accede a Dev
 y el admin sigue mostrando que no existe evidencia verificada.
 
-La copia contiene roles sin contraseñas, esquema y datos de `public`, `auth`,
+La copia contiene roles sin contraseñas, su inventario gestionado, esquema y datos de `public`, `auth`,
 `storage`, `admin_ops_private`, `trainer_private` y `supabase_migrations`, las
 extensiones necesarias, migraciones del repositorio y los archivos reales de
 Storage, incluidos los privados. Los nombres originales de objetos se guardan
@@ -36,8 +36,13 @@ publicados. Se restauran esquemas/datos, se contrastan las cantidades del COPY,
 todas las claves foráneas y la correspondencia entre `storage.objects` y los
 archivos incluidos. Se verifica el hash de cada archivo. El contenedor se
 retira al terminar; ninguna URL de base remota es un argumento del ensayo.
+El inventario de `pg_roles` complementa el exportador oficial, que omite
+CREATE/ALTER de roles gestionados. En el ensayo solo se crean los ausentes,
+sin LOGIN y conservando los privilegios inventariados; no se reemplaza el
+superusuario local. El arranque espera TCP local para evitar el servidor
+transitorio de inicialización. Ninguno de estos preparativos se ejecuta en Dev.
 
-GPG cifra con AES-256 y una frase de al menos 24 caracteres transmitida por
+La frase se comprueba antes de exportar. GPG cifra con AES-256 y una frase de al menos 24 caracteres transmitida por
 entrada estándar, nunca como argumento visible. Se descifra el paquete y se
 contrasta su hash con el original antes de subirlo. Solo se sube `*.gpg`;
 SQL, índices, metadatos internos y archivos sin cifrar permanecen temporales.
@@ -88,8 +93,8 @@ tienen guard de servidor. Los avisos anteriores no se declaran solucionados.
 
 El entorno GitHub `admin-dev` necesita:
 
-1. `SUPABASE_DEV_OPERATIONS_TOKEN`: token limitado al proyecto Dev, con Projects
-   read, Database read-write (la conexión temporal del CLI lo exige), Connection
+1. `SUPABASE_DEV_OPERATIONS_TOKEN`: token limitado al proyecto Dev, con Project
+   Settings read, Database read-write (la conexión temporal del CLI lo exige), Connection
    Pooling read, API Keys read, API Key Secrets read y Logs read. Sin permisos de
    administración/borrado de proyectos ni acceso a producción.
 2. `DEV_BACKUP_PASSPHRASE`: frase única de 24 caracteres o más, sin saltos de línea,
@@ -127,16 +132,39 @@ y [tokens limitados](https://supabase.com/docs/guides/platform/personal-access-t
 
 ## Verificación del punto de preparación
 
-19 pruebas Python correctas, incluido cifrado/descifrado real en Windows,
+24 pruebas Python correctas, incluido cifrado/descifrado real en Windows,
 aislamiento de entorno, privacidad de eventos, presupuesto y análisis de COPY.
 Análisis ADMIN limpio, 280 pruebas correctas con dos omisiones previas y build
 web release Dev correcto. Cinco SQL con ROLLBACK pasan sobre el esquema instalado,
 incluidas las nuevas guardas y regresiones de autoría/publicación/MFA.
 La migración nueva es `20261020205917_dev_recovery_observability.sql`.
 
-**Pendiente en este punto:** ensayo Docker en GitHub, secretos, primera copia
-real, recogida real y publicación remota de esta interfaz. No confundir la
-prueba de cifrado con una copia completa ya disponible.
+El ensayo Docker con datos ficticios y las 19 pruebas Python pasan en GitHub
+([ejecución 39499687926](https://github.com/jchjdev/entrenaop/actions/runs/39499687926)).
+La interfaz está publicada en `admin.entrenaop.es` con revisión
+`69a9e70f48f643221135ff20bdafb1b8c1f26d09`: despliegue correcto e identidad Dev,
+hash de JavaScript, activación, caché y cabeceras comprobados por HTTPS.
+
+El token limitado de sustitución está conectado y permite leer/escribir solo
+Dev. Caduca a los 90 días; debe rotarse antes de vencer. La recogida real pasa y
+su recibo en la base acredita tres eventos sin truncado en
+[39503164726](https://github.com/jchjdev/entrenaop/actions/runs/39503164726).
+La Management API acepta las fechas UTC terminadas en Z; se cubre la regresión.
+Los errores iniciales de credencial y fechas quedan diferenciados por códigos
+cerrados, sin publicar cuerpos de respuesta. El fallo de logs tampoco impide
+intentar un respaldo, pero mantiene la ejecución fallida para hacerlo visible.
+
+El ensayo ficticio con el grant a un rol gestionado ausente pasa en
+[39504020366](https://github.com/jchjdev/entrenaop/actions/runs/39504020366).
+La restauración aislada de los datos reales también pasa en
+[39504060417](https://github.com/jchjdev/entrenaop/actions/runs/39504060417),
+pero esa ejecución termina con `invalid_encryption_passphrase`: no produce
+ninguna copia cifrada disponible. Storage inventaría 11 objetos, 1.060.653 bytes.
+
+**Pendiente en este punto:** corregir el secreto de cifrado en GitHub y repetir
+la copia hasta comprobar artefacto y recibo `verified`. El formulario está
+entregado a Javier para generar y conservar una frase de 32 caracteres en su
+gestor. No se atribuye una copia disponible al ensayo de restauración ya pasado.
 
 ## Borrado de programas
 

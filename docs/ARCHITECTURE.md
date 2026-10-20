@@ -11,8 +11,16 @@ reconstruyen borradores independientes. Soporte requiere además el responsable
 comercial; recetas personales y permisos profesionales quedan fuera.
 La calidad distingue errores, campos pendientes y borradores; consulta portadas
 por familia y abre los editores existentes. El sistema informa despliegue y
-acceso puntual; copias y registros generales están sin conectar.
+acceso puntual. ADM-002 añade tres tablas privadas con RLS para recibos y códigos
+de errores, RPC con guard administrativo/MFA y captura Flutter sin mensajes ni
+formularios. GitHub prepara exportación SQL/Storage cifrada y ensayo en un
+contenedor sin red. El inventario gestionado de roles complementa el dump oficial
+sin contraseñas y solo prepara roles ausentes del contenedor. Los ensayos ficticio
+y real pasan, la interfaz está desplegada y la recogida real funciona con token
+limitado a Dev. La primera copia cifrada está pendiente de corregir su frase y
+comprobar artefacto y recibo; no hay restauración remota automatizada.
 [Contrato, seguridad y límites](ADMIN_OPERATIONS_2026_10_20.md).
+[Contrato de copias y errores](DEV_RECOVERY_2026_10_20.md).
 
 ## Autoría conjunta en ADMIN · UI-062 · 20/10/2026
 
