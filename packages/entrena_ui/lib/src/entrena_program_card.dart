@@ -17,7 +17,8 @@ class EntrenaProgramCard extends StatelessWidget {
     this.focalX = 0.5,
     this.focalY = 0.5,
     this.categoryLabel,
-  });
+    this.minTitleLines = 1,
+  }) : assert(minTitleLines >= 1 && minTitleLines <= 2);
   final String title, label, detail, actionLabel;
   final IconData icon;
   final VoidCallback? onTap;
@@ -25,18 +26,37 @@ class EntrenaProgramCard extends StatelessWidget {
   final double focalX, focalY;
   final String? categoryLabel;
 
+  /// Reserva espacio para el título sin fijar la altura de la tarjeta.
+  final int minTitleLines;
+
   @override
   Widget build(BuildContext context) {
     final secondary = Theme.of(context).colorScheme.secondary;
+    const titleStyle = TextStyle(
+      fontSize: 18,
+      height: 1.2,
+      fontWeight: FontWeight.w800,
+    );
+    var minimumTitleHeight = 0.0;
+    if (minTitleLines > 1) {
+      // Mide las líneas con la fuente y el escalado reales, sin alturas fijas.
+      final painter = TextPainter(
+        text: TextSpan(
+          text: List.filled(minTitleLines, ' ').join('\n'),
+          style: DefaultTextStyle.of(context).style.merge(titleStyle),
+        ),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.maybeLocaleOf(context),
+      )..layout();
+      minimumTitleHeight = painter.height;
+      painter.dispose();
+    }
     final titleWidget = Text(
       title,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(
-        fontSize: 18,
-        height: 1.2,
-        fontWeight: FontWeight.w800,
-      ),
+      style: titleStyle,
     );
     return EntrenaCard(
       tone: EntrenaCardTone.progress,
@@ -101,7 +121,10 @@ class EntrenaProgramCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          titleWidget,
+          ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minimumTitleHeight),
+            child: titleWidget,
+          ),
           const SizedBox(height: 6),
           Text(
             detail,

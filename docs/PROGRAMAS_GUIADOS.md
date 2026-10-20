@@ -348,6 +348,20 @@ Capturas revisadas con fotografía de preparación y programas sin foto a 390 px
 320 px con texto 2× y escritorio; Biblioteca y el desplazamiento conservados.
 Sin SQL, cambios de datos, dependencias o producción. Aceptación móvil pendiente.
 
+El 20/10/2026 Javier precisa con dos capturas que «Añadir programa» debe
+conservar la altura de una tarjeta con título de dos líneas. El estado vacío
+reserva esas dos líneas dentro de `EntrenaProgramCard`, con el mismo estilo y
+el escalado de texto del sistema. Los programas iniciados y las preparaciones
+conservan su altura por contenido; no se recupera la variante cuadrada ni una
+altura fija. Se comprueba la igualdad de alturas al pasar del vacío a un
+programa con título de dos líneas a 390 px y la misma reserva de título a
+320 px con texto 2×, permitiendo que el detalle crezca si necesita más líneas.
+También se comprueba la navegación al catálogo.
+Verificación de esta ampliación: análisis limpios de raíz y ADMIN; 26 pruebas
+de Inicio/Biblioteca, 61 de programas/portadas de ADMIN (una omisión existente)
+y 13 del paquete visual correctas. Capturas del vacío revisadas a 390 px y
+320 px con texto 2×. Sin cambios de datos ni publicación móvil.
+
 ### Ancho, clasificación y búsqueda · PRG-007 · implementado el 18/10/2026
 
 Javier valida Inicio y autoriza el resto de la propuesta, incluidas varias

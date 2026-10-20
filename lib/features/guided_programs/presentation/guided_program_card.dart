@@ -25,6 +25,7 @@ class GuidedProgramCard extends StatelessWidget {
       width: width,
       child: EntrenaProgramCard(
         title: p?.name ?? 'Añadir programa',
+        minTitleLines: p == null ? 2 : 1,
         label: p?.modeLabel ?? 'Programas',
         categoryLabel: p?.primaryCategory?.name,
         detail: p == null

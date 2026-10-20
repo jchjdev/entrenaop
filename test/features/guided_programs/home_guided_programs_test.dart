@@ -20,7 +20,8 @@ const phased = GuidedProgram(
 );
 
 void main() {
-  setUpAll(loadReviewFont);
+  // La regresión compara alturas de texto: usa las métricas reales de Roboto.
+  setUpAll(() => loadReviewFont(always: true));
   Future<void> mount(
     WidgetTester tester,
     double width,
@@ -137,40 +138,81 @@ void main() {
       },
     );
   }
-  testWidgets(
-    'sin programas ofrece una tarjeta compacta para añadir con texto ampliado',
-    (tester) async {
-      final routes = <String>[];
-      await mount(tester, 320, 2, _Programs()..empty = true, (route) async {
-        routes.add(route);
-      });
-      final card = find.byKey(const ValueKey('home-guided-card-add'));
-      expect(tester.getSize(card).width, 250);
-      expect(find.text('Añadir programa'), findsOneWidget);
-      final title = tester.renderObject<RenderBox>(
-        find.text('Añadir programa'),
-      );
-      expect(
-        title.size.height,
-        greaterThanOrEqualTo(
-          title.getMinIntrinsicHeight(title.size.width) - 0.1,
-        ),
-      );
-      await tester.tap(card);
-      expect(routes.single, '/library?tab=programs');
-      expect(tester.takeException(), isNull);
-      await capturePerformanceWidget(tester, 'programas-inicio-vacio-320-2');
-    },
-  );
+  for (final view in [(390.0, 1.0), (320.0, 2.0)]) {
+    testWidgets(
+      'añadir programa reserva el espacio de un título de dos líneas a $view',
+      (tester) async {
+        final routes = <String>[];
+        await mount(tester, view.$1, view.$2, _Programs()..empty = true, (
+          route,
+        ) async {
+          routes.add(route);
+        });
+        final card = find.byKey(const ValueKey('home-guided-card-add'));
+        expect(tester.getSize(card).width, 250);
+        final emptyHeight = tester.getSize(card).height;
+        final emptyTitleToDetail =
+            tester.getTopLeft(find.text('Elige un programa')).dy -
+            tester.getTopLeft(find.text('Añadir programa')).dy;
+        expect(find.text('Añadir programa'), findsOneWidget);
+        final title = tester.renderObject<RenderBox>(
+          find.text('Añadir programa'),
+        );
+        expect(
+          title.size.height,
+          greaterThanOrEqualTo(
+            title.getMinIntrinsicHeight(title.size.width) - 0.1,
+          ),
+        );
+        await tester.tap(card);
+        expect(routes.single, '/library?tab=programs');
+        expect(tester.takeException(), isNull);
+        await capturePerformanceWidget(
+          tester,
+          'programas-inicio-vacio-${view.$1}-${view.$2}',
+        );
+        await mount(
+          tester,
+          view.$1,
+          view.$2,
+          _Programs(
+            first: const GuidedProgram(
+              id: 'program',
+              name: 'Glúteos · Empuje de cadera y sentadilla',
+              mode: GuidedProgramMode.guide,
+              phases: [GuidedPhase(name: 'Rutina', sessions: [])],
+            ),
+          ),
+          (_) async {},
+        );
+        final started = find.byKey(const ValueKey('home-guided-card-program'));
+        expect(
+          tester.getTopLeft(find.text('0 sesiones')).dy -
+              tester
+                  .getTopLeft(
+                    find.text('Glúteos · Empuje de cadera y sentadilla'),
+                  )
+                  .dy,
+          closeTo(emptyTitleToDetail, 0.1),
+        );
+        if (view.$2 == 1) {
+          expect(tester.getSize(started).height, closeTo(emptyHeight, 0.1));
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }
 
 class _Programs extends GuidedTestRepository {
+  _Programs({this.first = guidedFixture});
+  final GuidedProgram first;
   bool empty = false;
   @override
   Future<List<StartedGuidedProgram>> startedPrograms() async => empty
       ? []
-      : const [
-          StartedGuidedProgram(program: guidedFixture, phaseIndex: 0),
-          StartedGuidedProgram(program: phased, phaseIndex: 0),
+      : [
+          StartedGuidedProgram(program: first, phaseIndex: 0),
+          const StartedGuidedProgram(program: phased, phaseIndex: 0),
         ];
 }
