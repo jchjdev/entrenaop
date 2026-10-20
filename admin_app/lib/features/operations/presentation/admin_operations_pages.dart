@@ -348,7 +348,14 @@ class AdminQualityPage extends StatefulWidget {
 
 class _AdminQualityPageState extends State<AdminQualityPage> {
   late Future<List<Map<String, dynamic>>> _load = widget.repository.quality();
+  final _search = TextEditingController();
   String _filter = 'all', _query = '';
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   void _refresh() => setState(() {
     _load = widget.repository.quality();
   });
@@ -404,6 +411,7 @@ class _AdminQualityPageState extends State<AdminQualityPage> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: _search,
               onChanged: (v) => setState(() => _query = v),
               decoration: const InputDecoration(
                 labelText: 'Buscar',

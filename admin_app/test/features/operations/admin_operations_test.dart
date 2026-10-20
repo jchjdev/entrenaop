@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
@@ -120,6 +122,14 @@ class _Operations extends Fake implements AdminOperationsRepository {
   };
 }
 
+class _DelayedQuality extends _Operations {
+  final next = Completer<List<Map<String, dynamic>>>();
+  bool delay = false;
+  @override
+  Future<List<Map<String, dynamic>>> quality() =>
+      delay ? next.future : super.quality();
+}
+
 class _Programs extends Fake implements AdminProgramRepository {
   @override
   Future<bool> hasAccess() async => false;
@@ -174,6 +184,26 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
 
 void main() {
   setUpAll(() => loadReviewFont(always: true));
+  testWidgets('actualizar calidad conserva la búsqueda durante la espera', (
+    tester,
+  ) async {
+    final repo = _DelayedQuality();
+    await _mount(tester, AdminQualityPage(repository: repo));
+    await tester.enterText(find.byType(TextField), 'GLUTEOS');
+    await tester.pumpAndSettle();
+    repo.delay = true;
+    await tester.tap(find.byTooltip('Actualizar calidad'));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    repo.next.complete(await _Operations().quality());
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      'GLUTEOS',
+    );
+    expect(find.text('Ejercicio · Press de glúteos'), findsOneWidget);
+    expect(find.text('Programa · Referencia retirada'), findsNothing);
+  });
   test('comparación respeta claves, orden y valores anidados', () {
     expect(editorialDifferences({'a': 1, 'b': 2}, {'b': 2, 'a': 1}), isEmpty);
     final diff = editorialDifferences(

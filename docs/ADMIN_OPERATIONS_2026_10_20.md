@@ -111,18 +111,22 @@ no tienen ejecución anónima. Los avisos anteriores de `is_admin`,
 `handle_new_user` y protección de contraseñas filtradas no se presentan como
 resueltos por este bloque.
 
-Validación final: análisis ADMIN limpio y batería completa de **275 pruebas
+Validación final: análisis ADMIN limpio y batería completa de **276 pruebas
 correctas**, con dos omisiones previas. Las pruebas nuevas cubren comparación,
 filtros, recuperación tras respuesta perdida, separación de permisos, consulta
 de soporte por identidad y acceso directo al editor existente sin escrituras.
 Calidad y sistema se renderizan a 1100 px/1× y 320 px/2×; se revisan las capturas
 de widgets reales. Los filtros admiten varias líneas para que el nombre y el
-contador sigan completos con texto ampliado; se añade su regresión. Las capturas se generan en
+contador sigan completos con texto ampliado; se añade su regresión. Actualizar
+calidad conserva el texto y los resultados de búsqueda durante la espera del
+servidor; se prueba con respuesta demorada. Las capturas
+se generan en
 `admin_app/build/performance_v2_review/`. No se acredita aquí aceptación física.
 
 `supabase migration list --linked` acredita **173 migraciones coincidentes**
 local/remoto después de las dos altas; las seis pruebas SQL citadas pasan sobre
-el esquema instalado. La compilación web release Dev con CSP, recursos propios y sin mapas de código
-es correcta. La configuración compilada y las pruebas no tocan producción. La evidencia de publicación remota se añade tras finalizar CI.
+el esquema instalado. La compilación web release Dev con CSP, recursos propios
+y sin mapas de código es correcta. La configuración compilada y las pruebas no
+tocan producción. La evidencia de publicación remota se añade tras finalizar CI.
 **Único siguiente bloque recomendado:** conectar evidencia real de copias y
 recuperación y los errores de servicios, con alcance y coste revisados antes.
