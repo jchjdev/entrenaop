@@ -116,7 +116,8 @@ correctas**, con dos omisiones previas. Las pruebas nuevas cubren comparación,
 filtros, recuperación tras respuesta perdida, separación de permisos, consulta
 de soporte por identidad y acceso directo al editor existente sin escrituras.
 Calidad y sistema se renderizan a 1100 px/1× y 320 px/2×; se revisan las capturas
-de widgets reales. Las capturas se generan en
+de widgets reales. Los filtros admiten varias líneas para que el nombre y el
+contador sigan completos con texto ampliado; se añade su regresión. Las capturas se generan en
 `admin_app/build/performance_v2_review/`. No se acredita aquí aceptación física.
 
 `supabase migration list --linked` acredita **173 migraciones coincidentes**

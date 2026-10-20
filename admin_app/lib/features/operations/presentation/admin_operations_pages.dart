@@ -406,29 +406,43 @@ class _AdminQualityPageState extends State<AdminQualityPage> {
             TextField(
               onChanged: (v) => setState(() => _query = v),
               decoration: const InputDecoration(
-                labelText: 'Buscar recurso o problema',
+                labelText: 'Buscar',
                 prefixIcon: Icon(Icons.search),
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final (code, label) in [
-                  ('all', 'Todo'),
-                  ('error', 'Errores'),
-                  ('attention', 'Por completar'),
-                  ('pending', 'Pendientes'),
-                ])
-                  ChoiceChip(
-                    selected: _filter == code,
-                    onSelected: (_) => setState(() => _filter = code),
-                    label: Text(
-                      '$label (${code == 'all' ? all.length : all.where((r) => r['severity'] == code).length})',
+            LayoutBuilder(
+              builder: (context, constraints) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final (code, label) in [
+                    ('all', 'Todo'),
+                    ('error', 'Errores'),
+                    ('attention', 'Por completar'),
+                    ('pending', 'Pendientes'),
+                  ])
+                    ChoiceChip(
+                      selected: _filter == code,
+                      onSelected: (_) => setState(() => _filter = code),
+                      label: ConstrainedBox(
+                        // Reserva el icono de selección y deja crecer la etiqueta
+                        // en vertical al ampliar el texto del sistema.
+                        constraints: BoxConstraints(
+                          maxWidth: (constraints.maxWidth - 64).clamp(
+                            1,
+                            double.infinity,
+                          ),
+                        ),
+                        child: Text(
+                          '$label (${code == 'all' ? all.length : all.where((r) => r['severity'] == code).length})',
+                          maxLines: 3,
+                          softWrap: true,
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
             if (visible.isEmpty)
               const Padding(

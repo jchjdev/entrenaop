@@ -7,6 +7,7 @@ import 'package:entrenaop_admin/features/operations/presentation/admin_operation
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -273,6 +274,10 @@ void main() {
           tester,
           find.widgetWithText(ChoiceChip, 'Por completar (1)'),
         );
+        final filterLabel = tester.renderObject<RenderParagraph>(
+          find.text('Por completar (1)'),
+        );
+        expect(filterLabel.didExceedMaxLines, isFalse);
         await tester.enterText(find.byType(TextField), 'GLUTEOS');
         await tester.pumpAndSettle();
         expect(find.text('Ejercicio · Press de glúteos'), findsOneWidget);
