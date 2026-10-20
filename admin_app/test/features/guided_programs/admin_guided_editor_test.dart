@@ -287,7 +287,7 @@ void main() {
         scrollable: find.byType(Scrollable).last,
       );
       expect(find.text('Visible como sesión suelta'), findsOneWidget);
-      final edit = find.widgetWithText(TextButton, 'Editar sesión');
+      final edit = find.widgetWithText(FilledButton, 'Editar sesión');
       await tester.ensureVisible(edit);
       await tester.tap(edit);
       await tester.pumpAndSettle();

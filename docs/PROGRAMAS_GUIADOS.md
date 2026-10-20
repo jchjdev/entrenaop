@@ -3,7 +3,9 @@
 ## Autoría integrada · UI-062 · 20/10/2026
 
 Las tarjetas de «Sesiones del programa» muestran la receta escrita mediante el
-lector existente. «Editar sesión» abre directamente el creador compartido en la
+lector existente. «Ocultar contenido / Ver contenido» permite plegarla manteniendo
+nombre, estado y edición visibles; el contenido empieza abierto. El botón
+principal naranja «Editar sesión» abre directamente el creador compartido en la
 ventana elegida por Javier, sin pasar por otra revisión. Crear una sesión nueva
 abre esa misma ventana y mantiene el programa detrás con su ruta estable.
 Calentamiento, visibilidad y ajustes de descanso se agrupan en un desplegable.

@@ -4,6 +4,29 @@ Javier concentra creadores y Compacto en este chat. Solicita corregir los
 solapamientos de personalización de series y evitar saltar entre páginas para
 crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
+## Contenido plegable y edición destacada · 20/10/2026
+
+Javier confirma que la lectura y edición directa funcionan bien. Pide poder
+ocultar el contenido de cada sesión para trabajar con programas largos y destacar
+más la edición. Cada tarjeta añade «Ocultar contenido / Ver contenido», inicialmente
+abierta, y «Editar sesión» usa el botón principal naranja existente. El nombre,
+estado, edición y acceso a ajustes permanecen visibles con el contenido plegado.
+
+Plegar solo cambia la presentación local: no modifica el borrador ni sus recetas.
+El estado se conserva durante el montaje, también al desplazarse y editar en la
+ventana. Desplegar reutiliza la lectura ya cargada; guardar una edición invalida
+esa receta y se muestra actualizada al volver a desplegar. Se mantienen el lector
+único, guardado y publicación conjunta. Sin cambios de datos ni paquetes.
+
+Verificación: análisis de ADMIN limpio y 260 pruebas correctas, con dos omisiones
+previas. La regresión cubre plegar, editar con un clic, guardar manteniendo el
+contenido plegado y desplegar la receta actualizada sin lecturas repetidas.
+Las doce combinaciones de rutina/fases, 320/390/1100 px y texto 1×/2× comprueban
+el plegado y la accesibilidad de edición; revisadas capturas de escritorio y
+320 px con texto doble. No se recarga la pestaña de trabajo de Javier.
+Compilación web release local para Dev correcta, con CSP y sin mapas de fuentes
+ni recursos CDN.
+
 ## Lectura en el programa y edición directa · 20/10/2026
 
 Javier confirma ver la sesión escrita en «Sesiones del programa» y abrir el

@@ -217,7 +217,7 @@ void main() {
             );
             await capturePerformanceWidget(tester, '$name-phase');
           }
-          final edit = find.widgetWithText(TextButton, 'Editar sesión');
+          final edit = find.widgetWithText(FilledButton, 'Editar sesión');
           await _show(tester, edit);
           await capturePerformanceWidget(tester, '$name-written-session');
           expect(find.textContaining('12 rep · RIR 2'), findsWidgets);
@@ -235,6 +235,25 @@ void main() {
           expect(
             durationEnd.last.bottom,
             lessThanOrEqualTo(duration.size.height + 1),
+          );
+          final hide = find.widgetWithText(OutlinedButton, 'Ocultar contenido');
+          await _show(tester, hide);
+          await tester.tap(hide.first);
+          await tester.pumpAndSettle();
+          expect(
+            find.byKey(const ValueKey('program-session-content-session')),
+            findsNothing,
+          );
+          await _show(tester, edit);
+          expect(edit.first.hitTestable(), findsOneWidget);
+          await capturePerformanceWidget(tester, '$name-collapsed-session');
+          final show = find.widgetWithText(OutlinedButton, 'Ver contenido');
+          await _show(tester, show);
+          await tester.tap(show.first);
+          await tester.pumpAndSettle();
+          expect(
+            find.byKey(const ValueKey('program-session-content-session')),
+            findsOneWidget,
           );
           final settings = find.text('Calentamiento y ajustes');
           await _show(tester, settings);

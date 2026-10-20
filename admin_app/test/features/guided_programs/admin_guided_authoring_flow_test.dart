@@ -544,7 +544,7 @@ void main() {
         await _mount(tester, _Guided(), workouts);
         await _create(tester, 'Sesión ya guardada');
         if (published) workouts.published.add('session-1');
-        await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
+        await _tap(tester, find.widgetWithText(FilledButton, 'Editar sesión'));
         expect(find.byType(AdminWorkoutPreviewPage), findsNothing);
         expect(workouts.revisions, 0);
         expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
@@ -568,7 +568,7 @@ void main() {
         expect(find.byType(AdminWorkoutContent), findsOneWidget);
         expect(find.textContaining('400 m'), findsOneWidget);
         if (published) workouts.published.add('session-1');
-        await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
+        await _tap(tester, find.widgetWithText(FilledButton, 'Editar sesión'));
         expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
         expect(find.byType(AdminWorkoutPreviewPage), findsNothing);
         expect(find.text('Publicar sesión'), findsNothing);
@@ -608,7 +608,7 @@ void main() {
       final workouts = _Workouts();
       await _mount(tester, _Guided(), workouts);
       await _create(tester, 'Sesión original');
-      await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
+      await _tap(tester, find.widgetWithText(FilledButton, 'Editar sesión'));
       await tester.enterText(
         find.widgetWithText(TextField, 'Distancia (m)'),
         '800',
@@ -631,6 +631,48 @@ void main() {
       expect(workouts.revisions, 0);
       expect(workouts.creates, 1);
       expect(workouts.publishes, 0);
+    },
+  );
+
+  testWidgets(
+    'plegar contenido mantiene edición directa y refresca la receta al desplegar',
+    (tester) async {
+      final workouts = _Workouts();
+      await _mount(tester, _Guided(), workouts);
+      await _create(tester, 'Sesión plegable');
+      expect(find.byType(AdminWorkoutContent), findsOneWidget);
+      await _tap(
+        tester,
+        find.widgetWithText(OutlinedButton, 'Ocultar contenido'),
+      );
+      expect(find.byType(AdminWorkoutContent), findsNothing);
+      expect(workouts.templateReads['session-1'], 1);
+      final edit = find.widgetWithText(FilledButton, 'Editar sesión');
+      expect(edit.hitTestable(), findsOneWidget);
+      await _tap(tester, edit);
+      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Distancia (m)'),
+        '800',
+      );
+      await _tap(tester, find.text('Guardar en programa'));
+      expect(find.byType(AdminWorkoutContent), findsNothing);
+      expect(find.text('Ver contenido'), findsOneWidget);
+      await _tap(tester, find.widgetWithText(OutlinedButton, 'Ver contenido'));
+      expect(find.byType(AdminWorkoutContent), findsOneWidget);
+      expect(find.textContaining('800 m'), findsOneWidget);
+      expect(find.textContaining('400 m'), findsNothing);
+      final reads = workouts.templateReads['session-1'];
+      await _tap(
+        tester,
+        find.widgetWithText(OutlinedButton, 'Ocultar contenido'),
+      );
+      await _tap(tester, find.widgetWithText(OutlinedButton, 'Ver contenido'));
+      expect(workouts.templateReads['session-1'], reads);
+      expect(workouts.creates, 1);
+      expect(workouts.revisions, 1);
+      expect(workouts.publishes, 0);
+      expect(tester.takeException(), isNull);
     },
   );
 

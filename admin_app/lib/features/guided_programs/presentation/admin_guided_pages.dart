@@ -1572,17 +1572,31 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
             const SizedBox(height: 8),
             AdminSessionLibraryStatus(session: source),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed:
-                    source != null &&
-                        ['draft', 'published'].contains(source.status)
-                    ? () => _editSession(s)
-                    : null,
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar sesión'),
-              ),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed:
+                      source != null &&
+                          ['draft', 'published'].contains(source.status)
+                      ? () => _editSession(s)
+                      : null,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar sesión'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => setState(() {
+                    s.contentExpanded = !s.contentExpanded;
+                  }),
+                  icon: Icon(
+                    s.contentExpanded ? Icons.expand_less : Icons.expand_more,
+                  ),
+                  label: Text(
+                    s.contentExpanded ? 'Ocultar contenido' : 'Ver contenido',
+                  ),
+                ),
+              ],
             ),
             if (source == null ||
                 !['draft', 'published'].contains(source.status))
@@ -1590,7 +1604,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 'Esta versión no está disponible. Quita la referencia y elige otra sesión.',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               )
-            else
+            else if (s.contentExpanded)
               _sessionContent(s.id),
             ExpansionTile(
               initiallyExpanded: s.settingsExpanded,
@@ -1794,6 +1808,7 @@ class _SessionFields {
     'maximum': maximum.text,
   };
   String? warmup;
+  bool contentExpanded = true;
   bool settingsExpanded = false;
   bool adjustable = false;
   final minimum = TextEditingController(text: '60'),
