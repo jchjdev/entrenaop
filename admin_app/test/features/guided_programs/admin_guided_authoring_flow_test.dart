@@ -4,6 +4,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/core/admin_router.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
+import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_work.dart';
 import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_pages.dart';
 import 'package:entrenaop_admin/features/guided_programs/presentation/guided_session_picker.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
@@ -16,12 +17,37 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/workout_template.dart';
 
+import '../../../../test/helpers/performance_visual_review.dart';
+
 class _Programs extends Fake implements AdminProgramRepository {
   @override
   Future<bool> hasAccess() async => true;
 }
 
 class _Exercises extends Fake implements AdminExerciseRepository {}
+
+class _Checkpoint extends Fake implements AdminGuidedWorkRepository {
+  GuidedWork? stored;
+  bool failLink = true;
+  @override
+  Future<GuidedWork?> load(String id) async => stored;
+  @override
+  Future<GuidedWork> save(GuidedWork work, Map<String, dynamic> state) async {
+    final phase = (state['phases'] as List).single as Map;
+    if (failLink &&
+        (phase['sessions'] as List).isNotEmpty &&
+        (phase['pending'] as List).isEmpty) {
+      failLink = false;
+      throw StateError('Fallo al confirmar el enlace');
+    }
+    return stored = GuidedWork(
+      id: work.id,
+      revision: work.revision + 1,
+      state: state,
+      baseProgramId: work.baseProgramId,
+    );
+  }
+}
 
 class _Guided extends Fake implements AdminGuidedRepository {
   GuidedProgram? saved;
@@ -59,7 +85,7 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   final published = <String>{};
   final visibility = <String, bool>{};
   int creates = 0, publishes = 0, reads = 0;
-  bool failPublish = false;
+  bool failPublish = false, failList = false;
   Completer<void>? publishGate;
   @override
   Future<List<AdminExercise>> listPublicExercises() async => const [
@@ -68,6 +94,7 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async {
     reads++;
+    if (failList) throw StateError('Sin conexión');
     return [
       for (final entry in inputs.entries)
         AdminWorkoutSummary(
@@ -151,21 +178,36 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
 Future<GoRouter> _mount(
   WidgetTester tester,
   _Guided guided,
-  _Workouts workouts,
-) async {
-  await tester.binding.setSurfaceSize(const Size(1300, 1500));
+  _Workouts workouts, {
+  Size size = const Size(1300, 1500),
+  double scale = 1,
+  AdminGuidedWorkRepository? work,
+}) async {
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final router = createAdminRouter(
     programs: _Programs(),
     exercises: _Exercises(),
     workouts: workouts,
     guided: guided,
+    guidedWork: work,
     onSignOut: () {},
     initialLocation: '/guided-programs/new',
   );
   addTearDown(router.dispose);
   await tester.pumpWidget(
-    MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+    RepaintBoundary(
+      key: const ValueKey('review-boundary'),
+      child: MaterialApp.router(
+        theme: EntrenaTheme.dark,
+        routerConfig: router,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+      ),
+    ),
   );
   await tester.pumpAndSettle();
   await tester.enterText(
@@ -193,10 +235,7 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
 Future<void> _create(WidgetTester tester, String name) async {
   await _tap(tester, find.text('Crear nueva sesión').last);
   expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-  expect(
-    tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
-    isFalse,
-  );
+  expect(find.text('Mostrar en Sesiones de EntrenaOP'), findsNothing);
   await tester.enterText(
     find.widgetWithText(TextField, 'Nombre de la sesión'),
     name,
@@ -209,26 +248,94 @@ Future<void> _create(WidgetTester tester, String name) async {
     find.widgetWithText(TextField, 'Ritmo (m:ss/km)'),
     '6:00',
   );
-  await _tap(tester, find.text('Guardar borrador'));
-  expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
-}
-
-Future<void> _confirmPublication(WidgetTester tester) async {
-  await _tap(tester, find.text('Publicar sesión'));
-  expect(find.textContaining('quedará fuera del listado'), findsOneWidget);
-  await _tap(tester, find.text('Publicar sesión').last);
+  await _tap(tester, find.text('Guardar en programa'));
+  expect(find.byType(AdminWorkoutEditorPage), findsNothing);
 }
 
 void main() {
+  setUpAll(() => loadReviewFont(always: true));
+  testWidgets('doble pulsación al crear abre un solo panel', (tester) async {
+    await _mount(tester, _Guided(), _Workouts());
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Crear nueva sesión'),
+    );
+    button.onPressed!();
+    button.onPressed!();
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+    await _tap(tester, find.byTooltip('Volver al programa'));
+    expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+  });
   testWidgets(
-    'crea cuatro sesiones con editores y router reales, publica explícitamente y guarda sus identidades',
+    'reintentar el guardado final del enlace no duplica ni deja pendientes',
+    (tester) async {
+      final checkpoint = _Checkpoint(), workouts = _Workouts();
+      await _mount(tester, _Guided(), workouts, work: checkpoint);
+      await _tap(tester, find.text('Crear nueva sesión'));
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre de la sesión'),
+        'Recuperar enlace',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Distancia (m)'),
+        '400',
+      );
+      await _tap(tester, find.text('Guardar en programa'));
+      expect(find.text('Reintentar enlace'), findsOneWidget);
+      await _tap(tester, find.text('Reintentar enlace'));
+      expect(find.text('1 sesión en esta rutina'), findsOneWidget);
+      final phase = (checkpoint.stored!.state['phases'] as List).single as Map;
+      expect((phase['sessions'] as List).single['id'], 'session-1');
+      expect(phase['pending'], isEmpty);
+      expect(workouts.creates, 1);
+    },
+  );
+  for (final (size, scale) in [
+    (const Size(1300, 1000), 1.0),
+    (const Size(390, 900), 1.0),
+    (const Size(320, 900), 2.0),
+  ]) {
+    testWidgets('panel conserva programa y cierre accesible a $size / $scale', (
+      tester,
+    ) async {
+      final workouts = _Workouts();
+      final router = await _mount(
+        tester,
+        _Guided(),
+        workouts,
+        size: size,
+        scale: scale,
+      );
+      final location = router.routeInformationProvider.value.uri;
+      await _tap(tester, find.text('Crear nueva sesión'));
+      expect(router.routeInformationProvider.value.uri, location);
+      expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
+      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+      expect(
+        find.byTooltip('Volver al programa').hitTestable(),
+        findsOneWidget,
+      );
+      expect(find.text('Publicar sesión'), findsNothing);
+      await capturePerformanceWidget(
+        tester,
+        'program-session-panel-${size.width.toInt()}-${scale.toInt()}',
+      );
+      await _tap(tester, find.byTooltip('Volver al programa'));
+      expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+      expect(workouts.creates, 0);
+      expect(tester.takeException(), isNull);
+    });
+  }
+  testWidgets(
+    'crea cuatro borradores dentro del programa sin cambiar de ruta ni publicar sesiones',
     (tester) async {
       final guided = _Guided(), workouts = _Workouts();
-      await _mount(tester, guided, workouts);
+      final router = await _mount(tester, guided, workouts);
+      final location = router.routeInformationProvider.value.uri;
       for (var i = 1; i <= 4; i++) {
         await _create(tester, 'Sesión $i');
-        expect(workouts.published, hasLength(i - 1));
-        await _confirmPublication(tester);
+        expect(workouts.published, isEmpty);
+        expect(router.routeInformationProvider.value.uri, location);
         expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
         expect(
           find.text('$i ${i == 1 ? 'sesión' : 'sesiones'} en esta rutina'),
@@ -244,103 +351,84 @@ void main() {
         'session-4',
       ]);
       expect(workouts.creates, 4);
-      expect(workouts.publishes, 4);
+      expect(workouts.publishes, 0);
+      expect(workouts.visibility.values.every((v) => !v), isTrue);
       expect(find.text('¿Salir sin guardar?'), findsNothing);
     },
   );
 
   testWidgets(
-    'cancelar conserva borrador recuperable y fallar publicación no crea duplicados',
+    'cerrar una sesión sin guardar conserva el programa y pide confirmar',
     (tester) async {
       final guided = _Guided(), workouts = _Workouts();
       await _mount(tester, guided, workouts);
-      await _create(tester, 'Sesión recuperable');
-      await _tap(tester, find.text('Publicar sesión'));
-      await _tap(tester, find.text('Cancelar'));
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Crear nueva sesión'));
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre de la sesión'),
+        'Sin guardar',
+      );
+      await _tap(tester, find.byTooltip('Volver al programa'));
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await _tap(tester, find.text('Continuar'));
+      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+      await _tap(tester, find.byTooltip('Volver al programa'));
+      await _tap(tester, find.text('Salir sin guardar'));
+      expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+      expect(workouts.creates, 0);
       expect(find.text('0 sesiones en esta rutina'), findsOneWidget);
-      await _tap(tester, find.text('Guardar borrador'));
-      expect(guided.saved, isNull);
-      expect(find.textContaining('Tienes sesiones pendientes'), findsOneWidget);
-      await _tap(tester, find.text('Elegir del catálogo'));
-      await _tap(tester, find.widgetWithText(ChoiceChip, 'Borradores'));
-      await _tap(
-        tester,
-        find.descendant(
-          of: find.byType(GuidedSessionPicker),
-          matching: find.text('Sesión recuperable'),
-        ),
-      );
-      workouts.failPublish = true;
-      await _confirmPublication(tester);
-      expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
-      expect(
-        find.textContaining('No se pudo publicar la sesión.'),
-        findsOneWidget,
-      );
-      workouts.failPublish = false;
-      await _confirmPublication(tester);
-      expect(find.text('1 sesión en esta rutina'), findsOneWidget);
-      expect(workouts.creates, 1);
-      expect(workouts.publishes, 2);
     },
   );
 
   testWidgets(
-    'editar antes de publicar incorpora la identidad revisada y bloquea salir durante publicación',
+    'fallar el enlace conserva el ID y reintentar no crea otra sesión',
     (tester) async {
       final guided = _Guided(), workouts = _Workouts();
-      final router = await _mount(tester, guided, workouts);
-      await _create(tester, 'Sesión original');
-      await _tap(tester, find.text('Editar borrador'));
+      await _mount(tester, guided, workouts);
+      await _tap(tester, find.text('Crear nueva sesión'));
       await tester.enterText(
         find.widgetWithText(TextField, 'Nombre de la sesión'),
-        'Sesión revisada',
+        'Recuperable',
       );
       await tester.enterText(
         find.widgetWithText(TextField, 'Distancia (m)'),
         '400',
       );
+      workouts.failList = true;
+      await _tap(tester, find.text('Guardar en programa'));
+      expect(find.text('Reintentar enlace'), findsOneWidget);
+      expect(workouts.creates, 1);
+      workouts.failList = false;
+      await _tap(tester, find.text('Reintentar enlace'));
+      expect(find.text('1 sesión en esta rutina'), findsOneWidget);
+      expect(workouts.creates, 1);
+      expect(workouts.publishes, 0);
+    },
+  );
+
+  testWidgets(
+    'editar dentro del programa conserva ruta y enlaza la identidad devuelta',
+    (tester) async {
+      final guided = _Guided(), workouts = _Workouts();
+      final router = await _mount(tester, guided, workouts);
+      final location = router.routeInformationProvider.value.uri;
+      await _create(tester, 'Sesión original');
+      await _tap(tester, find.text('Revisar sesión'));
+      expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
+      expect(find.text('Publicar sesión'), findsNothing);
+      await _tap(tester, find.text('Editar borrador'));
       await tester.enterText(
-        find.widgetWithText(TextField, 'Ritmo (m:ss/km)'),
-        '6:00',
+        find.widgetWithText(TextField, 'Nombre de la sesión'),
+        'Sesión revisada',
       );
-      await _tap(tester, find.text('Guardar revisión como borrador'));
-      expect(tester.takeException(), isNull, reason: 'regreso de la revisión');
-      expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
-      workouts.publishGate = Completer<void>();
-      await _tap(tester, find.text('Publicar sesión'));
-      await tester.tap(find.text('Publicar sesión').last);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('Publicando…'), findsOneWidget);
-      expect(find.byType(AlertDialog), findsNothing);
-      expect(router.state.uri.path, '/sessions/revision-session-1');
-      router.pop();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(
-        tester.takeException(),
-        isNull,
-        reason: 'salida bloqueada por publicación',
-      );
-      expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
-      expect(router.state.uri.path, '/sessions/revision-session-1');
-      expect(workouts.publishes, 1);
-      workouts.publishGate!.complete();
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: 'publicación completada');
-      expect(
-        find.byType(AdminWorkoutPreviewPage),
-        findsNothing,
-        reason: 'publicación devuelve al programa',
-      );
+      await _tap(tester, find.text('Guardar en programa'));
+      expect(router.routeInformationProvider.value.uri, location);
       expect(find.text('1 sesión en esta rutina'), findsOneWidget);
       await _tap(tester, find.text('Guardar borrador'));
       expect(
         guided.saved!.phases.single.sessions.single.templateId,
         'revision-session-1',
       );
+      expect(workouts.publishes, 0);
     },
   );
 
@@ -350,7 +438,6 @@ void main() {
       final guided = _Guided(), workouts = _Workouts();
       await _mount(tester, guided, workouts);
       await _create(tester, 'Sesión con activación');
-      await _confirmPublication(tester);
       await _tap(tester, find.text('Crear y adjuntar calentamiento'));
       await tester.enterText(
         find.widgetWithText(TextField, 'Nombre de la sesión'),
@@ -374,11 +461,9 @@ void main() {
     final guided = _Guided(), workouts = _Workouts();
     await _mount(tester, guided, workouts);
     await _create(tester, 'Base');
-    await _confirmPublication(tester);
     await _tap(tester, find.text('Por fases'));
     await _tap(tester, find.text('Añadir fase'));
     await _create(tester, 'Progresión');
-    await _confirmPublication(tester);
     final scroll = find.byType(Scrollable).first;
     tester.state<ScrollableState>(scroll).position.jumpTo(0);
     await tester.pumpAndSettle();

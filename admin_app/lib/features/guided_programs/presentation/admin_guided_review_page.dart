@@ -100,7 +100,7 @@ class _AdminGuidedReviewPageState extends State<AdminGuidedReviewPage> {
         builder: (dialogContext) => EntrenaDialog(
           title: const Text('Publicar programa'),
           content: Text(
-            '«${reviewed.program.name}», versión ${reviewed.program.version}, aparecerá en Biblioteca con ${reviewed.program.sessionCount} sesiones. El deportista tendrá que iniciarlo expresamente. No crea seguimientos ni modifica agendas existentes.',
+            '«${reviewed.program.name}», versión ${reviewed.program.version}, aparecerá en Biblioteca con ${reviewed.program.sessionCount} sesiones. Sus sesiones en borrador se publicarán en la misma operación. Las sesiones ocultas seguirán fuera del listado de sesiones sueltas. El deportista tendrá que iniciarlo expresamente. No crea seguimientos ni modifica agendas existentes.',
           ),
           actions: [
             EntrenaDialogActions(
@@ -401,7 +401,11 @@ class _AdminGuidedReviewPageState extends State<AdminGuidedReviewPage> {
         subtitle: Text(
           source == null
               ? 'Sesión no disponible'
-              : '${source.name} · v${source.version} · ${source.status == 'published' ? 'Publicada' : 'No publicada'}',
+              : '${source.name} · v${source.version} · ${source.status == 'published'
+                    ? 'Publicada'
+                    : source.status == 'draft'
+                    ? 'Borrador · se publicará con el programa'
+                    : 'No publicada'}',
         ),
         childrenPadding: const EdgeInsets.all(16),
         children: _expanded.contains(expansion)
@@ -457,7 +461,10 @@ class _Review {
     for (final phase in program.phases) {
       for (final session in phase.sessions) {
         final source = sessionById[session.templateId];
-        if (source == null || source.status != 'published') {
+        if (source == null ||
+            !(program.status == 'draft'
+                ? ['draft', 'published'].contains(source.status)
+                : source.status == 'published')) {
           problems.add(
             '«${session.name}» no está disponible como sesión publicada.',
           );

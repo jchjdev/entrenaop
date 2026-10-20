@@ -22,12 +22,17 @@ class AdminWorkoutPreviewPage extends StatefulWidget {
     required this.repository,
     required this.program,
     this.returnSavedId = false,
+    this.embedded = false,
+    this.onEdit,
+    this.allowPublication = true,
   });
 
   final AdminWorkoutSummary workout;
   final AdminWorkoutRepository repository;
   final AdminProgram? program;
   final bool returnSavedId;
+  final bool embedded, allowPublication;
+  final ValueChanged<WorkoutTemplate>? onEdit;
 
   @override
   State<AdminWorkoutPreviewPage> createState() =>
@@ -209,6 +214,10 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
 
   Future<void> _revise(WorkoutTemplate template) async {
     if (_savingVisibility) return;
+    if (widget.onEdit case final edit?) {
+      edit(template);
+      return;
+    }
     final base = widget.program == null
         ? '/sessions'
         : '/programs/${Uri.encodeComponent(widget.program!.id)}/sessions';
@@ -226,7 +235,9 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
     hasUnsavedChanges: () => false,
     isBusy: () => _publishing || _removing || _confirming || _savingVisibility,
     child: Scaffold(
-      appBar: AppBar(title: const Text('Revisar sesión')),
+      appBar: widget.embedded
+          ? null
+          : AppBar(title: const Text('Revisar sesión')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -343,7 +354,11 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
             style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ),
-      if (widget.workout.status == 'draft') ...[
+      if (widget.workout.status == 'draft' && !widget.allowPublication)
+        const Text(
+          'Esta sesión se publicará junto con el programa. Puedes seguir editándola antes de la revisión final.',
+        ),
+      if (widget.workout.status == 'draft' && widget.allowPublication) ...[
         Text(
           widget.workout.catalogScope == 'general'
               ? _showInLibrary
@@ -372,7 +387,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           ),
         ),
       ],
-      if (widget.workout.status != 'archived') ...[
+      if (widget.workout.status != 'archived' && widget.allowPublication) ...[
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,

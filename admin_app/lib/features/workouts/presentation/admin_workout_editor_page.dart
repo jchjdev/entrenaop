@@ -19,6 +19,9 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     this.saveInput,
     this.returnSavedId = false,
     this.initialShowInLibrary = true,
+    this.onSaved,
+    this.programName,
+    this.embedded = false,
   });
 
   final AdminProgram? program;
@@ -29,6 +32,9 @@ class AdminWorkoutEditorPage extends StatefulWidget {
   final Future<String> Function(CreatePersonalWorkoutInput)? saveInput;
   final bool returnSavedId;
   final bool initialShowInLibrary;
+  final ValueChanged<String>? onSaved;
+  final String? programName;
+  final bool embedded;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -68,24 +74,35 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
     return WorkoutEditorPage(
       loadExercises: _loadExercises,
       onSave: _save,
-      onSaved: (id) => context.pop<Object>(widget.returnSavedId ? id : true),
+      onSaved:
+          widget.onSaved ??
+          (id) => context.pop<Object>(widget.returnSavedId ? id : true),
+      embedded: widget.embedded,
       originalTemplate: widget.originalTemplate,
       warmup: widget.warmup,
       title: widget.warmup ? 'Crear calentamiento' : sessionTitle,
       wideTitle: widget.warmup
           ? 'Crear calentamiento'
           : '$sessionTitle · ${widget.program?.name ?? 'EntrenaOP'}',
-      heading: widget.warmup
+      heading: widget.programName != null
+          ? widget.revisionId == null
+                ? 'Nueva sesión'
+                : 'Editar sesión'
+          : widget.warmup
           ? 'Calentamiento reutilizable'
           : widget.program == null
           ? 'Sesión en borrador'
           : 'Sesión del programa en borrador',
-      instructions: widget.warmup
+      instructions: widget.programName != null
+          ? 'Se guardará en el programa y se publicará con él.'
+          : widget.warmup
           ? 'Guarda una versión para adjuntarla a las sesiones. El deportista podrá omitirla.'
           : widget.program == null
           ? 'Al publicarla podrás usarla en programas. La opción Mostrar en Sesiones de EntrenaOP decide si también aparece como sesión suelta.'
           : 'Se vincula al programa, no a la biblioteca general. Publicar no la asigna a ningún alumno.',
-      saveLabel: widget.warmup
+      saveLabel: widget.programName != null
+          ? 'Guardar en programa'
+          : widget.warmup
           ? 'Guardar calentamiento'
           : widget.revisionId == null
           ? 'Guardar borrador'
@@ -94,6 +111,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
       additionalStateStamp: _showInLibrary.toString(),
       additionalFields:
           !widget.warmup &&
+              widget.programName == null &&
               widget.program == null &&
               widget.revisionId == null &&
               widget.saveInput == null

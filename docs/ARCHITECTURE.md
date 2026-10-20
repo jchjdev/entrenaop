@@ -1,5 +1,21 @@
 # Arquitectura de EntrenaOP
 
+## Autoría conjunta en ADMIN · UI-062 · 20/10/2026
+
+`GuidedSessionWorkspace` compone el adaptador ADMIN de `WorkoutEditorPage` y su
+lector existente dentro del programa, con guard local y sin otro router ni copia
+del creador. El trabajo del programa se conserva antes de abrir y al enlazar el
+ID guardado. Si el enlace falla, su reintento usa ese ID sin crear otra sesión.
+El guard del programa bloquea salir mientras está abierto el panel.
+
+`save_guided_program` admite sesiones oficiales generales en borrador o
+publicadas. `set_guided_program_status` bloquea familia, programa y recetas y
+publica el conjunto en una transacción con los permisos existentes. La edición
+de borradores conserva ID, versión y elección editorial y sustituye la receta
+validada; una publicación conserva su receta y genera otra versión al editar.
+No hay tablas nuevas, relajación de RLS ni cambios de cuotas o ejecutores.
+[Contrato y límites](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 ## Cuota de programas guiados y pausa · COM-019 · 20/10/2026
 
 `guided_program_follows.paused_at` distingue pausa de los estados terminales.

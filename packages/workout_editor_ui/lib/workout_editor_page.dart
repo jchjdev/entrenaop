@@ -35,6 +35,7 @@ class WorkoutEditorPage extends StatefulWidget {
     this.emptyCatalogMessage = 'No hay ejercicios disponibles.',
     this.saveErrorMessage =
         'No se pudo guardar el borrador. Revisa permisos y conexión.',
+    this.embedded = false,
   });
 
   final Future<List<WorkoutEditorExercise>> Function() loadExercises;
@@ -44,6 +45,7 @@ class WorkoutEditorPage extends StatefulWidget {
   final String? wideTitle;
   final WorkoutTemplate? originalTemplate;
   final bool warmup;
+  final bool embedded;
 
   /// Campos del contexto de autoría, sin trasladar su semántica al creador.
   final Widget? additionalFields;
@@ -521,18 +523,20 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   );
 
   Widget _buildPage(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
-          ? 128
-          : null,
-      title: Text(
-        MediaQuery.sizeOf(context).width < 600
-            ? widget.title
-            : widget.wideTitle ?? widget.title,
-        softWrap: true,
-        maxLines: 3,
-      ),
-    ),
+    appBar: widget.embedded
+        ? null
+        : AppBar(
+            toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
+                ? 128
+                : null,
+            title: Text(
+              MediaQuery.sizeOf(context).width < 600
+                  ? widget.title
+                  : widget.wideTitle ?? widget.title,
+              softWrap: true,
+              maxLines: 3,
+            ),
+          ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 900),
@@ -541,7 +545,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           children: [
             Text(
               widget.heading,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: widget.embedded
+                  ? Theme.of(context).textTheme.titleLarge
+                  : Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(widget.instructions),
@@ -711,7 +717,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         style: Theme.of(context).textTheme.titleLarge,
       ),
       const Text(
-        'Combina bloques convencionales, superseries, circuitos, intervalos, EMOM, AMRAP o Tabata.',
+        'Organiza el trabajo en bloques. El formato define series, rondas y descansos.',
       ),
       const SizedBox(height: 12),
       if (_catalog.isEmpty) Text(widget.emptyCatalogMessage),
@@ -760,6 +766,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         Wrap(
           spacing: 14,
           runSpacing: 12,
+          crossAxisAlignment: WrapCrossAlignment.end,
           children: [
             _field(block.name, 'Nombre del bloque', 230),
             if (!widget.warmup)
@@ -876,6 +883,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 ),
             ],
           ),
+          const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _catalog.isEmpty
                 ? null
@@ -904,6 +912,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           Wrap(
             spacing: 14,
             runSpacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.end,
             children: [
               if (!fixedRounds)
                 _field(
@@ -953,27 +962,39 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           else
             Padding(
               padding: const EdgeInsets.only(top: 10),
-              child: StrengthSetFields(
-                targetType: item.type,
-                targetText: item.target.text,
-                restText: item.rest.text,
-                loadText: item.load.text,
-                rirText: item.rir.text,
-                targetLabel: item.type == WorkoutTargetType.duration && !amrap
-                    ? 'Tiempo'
-                    : 'Cantidad',
-                restLabel: 'Descanso',
-                loadLabel: 'Carga',
-                rirLabel: 'RIR',
-                validateNumbers: false,
-                showRest:
-                    !amrap &&
-                    format != WorkoutBlockFormat.emom &&
-                    format != WorkoutBlockFormat.intervals,
-                onTargetChanged: (value) => item.target.text = value,
-                onRestChanged: (value) => item.rest.text = value,
-                onLoadChanged: (value) => item.load.text = value,
-                onRirChanged: (value) => setState(() => item.rir.text = value),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (item.customSets)
+                    Text(
+                      'Valores comunes',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  StrengthSetFields(
+                    targetType: item.type,
+                    targetText: item.target.text,
+                    restText: item.rest.text,
+                    loadText: item.load.text,
+                    rirText: item.rir.text,
+                    targetLabel:
+                        item.type == WorkoutTargetType.duration && !amrap
+                        ? 'Tiempo'
+                        : 'Cantidad',
+                    restLabel: 'Descanso',
+                    loadLabel: 'Carga',
+                    rirLabel: 'RIR',
+                    validateNumbers: false,
+                    showRest:
+                        !amrap &&
+                        format != WorkoutBlockFormat.emom &&
+                        format != WorkoutBlockFormat.intervals,
+                    onTargetChanged: (value) => item.target.text = value,
+                    onRestChanged: (value) => item.rest.text = value,
+                    onLoadChanged: (value) => item.load.text = value,
+                    onRirChanged: (value) =>
+                        setState(() => item.rir.text = value),
+                  ),
+                ],
               ),
             ),
           if (!tabata && !amrap) ...[
@@ -988,7 +1009,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                     : 'Personalizar cada serie',
               ),
             ),
-            if (item.customSets)
+            if (item.customSets) ...[
+              const Divider(height: 24),
+              Text(
+                'Ajustes por serie',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Rellena solo lo que cambie. «Común» usa el valor de arriba; no significa cero.',
+              ),
+              const SizedBox(height: 12),
               for (
                 var setIndex = 0;
                 setIndex <
@@ -999,6 +1030,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 setIndex++
               )
                 _variationFields(item, setIndex, showRest: !fixedRounds),
+            ],
           ],
         ],
       ),
@@ -1008,11 +1040,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   Widget _variationFields(_Exercise item, int index, {required bool showRest}) {
     final variation = item.variations.putIfAbsent(index, _SetVariation.new);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Serie ${index + 1}'),
+          Text(
+            'Serie ${index + 1}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 6),
           StrengthSetFields(
             key: ValueKey(variation),
             targetType: item.type,
@@ -1026,6 +1062,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             rirLabel: 'RIR',
             targetOptional: true,
             restOptional: true,
+            inheritEmptyValues: true,
             validateNumbers: false,
             showRest: showRest,
             onTargetChanged: (value) => variation.target.text = value,
@@ -1127,23 +1164,28 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     painter.dispose();
     return SizedBox(
       width: width < minimumWidth ? minimumWidth : width,
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        keyboardType: text
-            ? TextInputType.text
-            : const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: clock ? const [DurationInputFormatter()] : null,
-        decoration: InputDecoration(
-          labelText: caption,
-          hintText: clock ? '00:00' : null,
-          helperText: label.startsWith('Descanso entre rondas')
-              ? 'Entre rondas · min:seg'
-              : clock
-              ? 'min:seg'
-              : minutes
-              ? 'min · opcional'
-              : null,
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: MediaQuery.textScalerOf(context).scale(8),
+        ),
+        child: TextField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: text
+              ? TextInputType.text
+              : const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: clock ? const [DurationInputFormatter()] : null,
+          decoration: InputDecoration(
+            labelText: caption,
+            hintText: clock ? '00:00' : null,
+            helperText: label.startsWith('Descanso entre rondas')
+                ? 'Entre rondas · min:seg'
+                : clock
+                ? 'min:seg'
+                : minutes
+                ? 'min · opcional'
+                : null,
+          ),
         ),
       ),
     );

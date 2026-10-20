@@ -255,6 +255,29 @@ Future<void> _capture(WidgetTester tester, String name) async {
 
 void main() {
   testWidgets(
+    'la revisión admite sesiones borrador y pide una publicación conjunta',
+    (tester) async {
+      final guided = _Guided(), workouts = _Workouts()..status = 'draft';
+      await _mount(tester, guided, workouts);
+      expect(
+        find.textContaining('Borrador · se publicará con el programa'),
+        findsNWidgets(2),
+      );
+      expect(
+        find.textContaining('no está disponible como sesión publicada'),
+        findsNothing,
+      );
+      await tap(tester, find.text('Publicar programa'));
+      expect(
+        find.textContaining('se publicarán en la misma operación'),
+        findsOneWidget,
+      );
+      expect(guided.writes, 0);
+      await tap(tester, find.text('Publicar en Biblioteca'));
+      expect(guided.writes, 1);
+    },
+  );
+  testWidgets(
     'volver a revisar el mismo borrador muestra los cambios guardados',
     (tester) async {
       final guided = _Guided()..savedId = 'p';

@@ -10,6 +10,7 @@ class WorkoutEffortField extends StatelessWidget {
     required this.onChanged,
     this.wholeNumbersOnly = true,
     this.compact = false,
+    this.emptyText,
   });
   final String label;
   final int minimum;
@@ -18,6 +19,7 @@ class WorkoutEffortField extends StatelessWidget {
   final ValueChanged<double?> onChanged;
   final bool wholeNumbersOnly;
   final bool compact;
+  final String? emptyText;
   static String _number(double n) =>
       n == n.roundToDouble() ? '${n.toInt()}' : '$n';
   @override
@@ -35,7 +37,7 @@ class WorkoutEffortField extends StatelessWidget {
           Expanded(
             child: Text(
               value == null
-                  ? (compact ? '—' : 'Sin registrar')
+                  ? emptyText ?? (compact ? '—' : 'Sin registrar')
                   : _number(value!),
               style: Theme.of(context).textTheme.titleMedium
                   ?.copyWith(fontSize: 16),
@@ -49,7 +51,7 @@ class WorkoutEffortField extends StatelessWidget {
       button: true,
       enabled: enabled,
       label: label,
-      value: value == null ? 'Sin registrar' : _number(value!),
+      value: value == null ? emptyText ?? 'Sin registrar' : _number(value!),
       excludeSemantics: true,
       onTap: enabled ? () => _select(context) : null,
       child: InkWell(
@@ -111,7 +113,11 @@ class WorkoutEffortField extends StatelessWidget {
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.pop(sheetContext, (null,)),
-                child: const Text('No lo sé · Sin registrar'),
+                child: Text(
+                  emptyText == null
+                      ? 'No lo sé · Sin registrar'
+                      : 'Usar valor común',
+                ),
               ),
             ],
           ),

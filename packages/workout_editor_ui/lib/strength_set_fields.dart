@@ -35,6 +35,7 @@ class StrengthSetFields extends StatelessWidget {
     this.restLabel,
     this.loadLabel = 'Carga',
     this.rirLabel = 'RIR',
+    this.inheritEmptyValues = false,
   });
 
   final WorkoutTargetType targetType;
@@ -61,6 +62,9 @@ class StrengthSetFields extends StatelessWidget {
   final String? restLabel;
   final String loadLabel;
   final String rirLabel;
+
+  /// Las excepciones vacías conservan el valor común, no equivalen a cero.
+  final bool inheritEmptyValues;
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +120,17 @@ class StrengthSetFields extends StatelessWidget {
           maximumColumns: 4,
           spacing: 8,
           runSpacing: 10,
-          children: _fields(),
+          children: [
+            for (final field in _fields())
+              Padding(
+                // La etiqueta flotante necesita espacio propio, también cuando
+                // el grupo está debajo de una cabecera o salta a otra fila.
+                padding: EdgeInsets.only(
+                  top: MediaQuery.textScalerOf(context).scale(12),
+                ),
+                child: field,
+              ),
+          ],
         ),
       ),
     );
@@ -170,6 +184,7 @@ class StrengthSetFields extends StatelessWidget {
         label: rirLabel,
         minimum: 0,
         value: double.tryParse(rirText.replaceAll(',', '.')),
+        emptyText: inheritEmptyValues ? 'Común' : null,
         enabled: enabled,
         onChanged: (value) => onRirChanged(value == null ? '' : _number(value)),
       ),
@@ -223,7 +238,11 @@ class StrengthSetFields extends StatelessWidget {
       labelText: label,
       floatingLabelBehavior: FloatingLabelBehavior.always,
       helperText: clock || suffix == 's' ? 'min:seg' : suffix ?? ' ',
-      hintText: clock || suffix == 's' ? '00:00' : null,
+      hintText: inheritEmptyValues
+          ? 'Común'
+          : clock || suffix == 's'
+          ? '00:00'
+          : null,
     ),
     validator: !validateNumbers
         ? null

@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**UI-062 · 20/10/2026 · creadores y Compacto:** Javier confirma concentrar este
+recorrido y adoptar guardado/publicación conjunta. Se corrigen los solapamientos
+de series en los componentes compartidos y se integra el creador y lector de
+sesiones en un panel sobre el programa. Guardar en programa incorpora el borrador;
+una revisión y publicación final activa el conjunto en una transacción. Se
+conservan visibilidad suelta opcional, reutilización, versiones y recuperación.
+Pruebas: 1.128 raíz, 250 ADMIN, 43 del paquete, análisis limpios y build Dev;
+cuatro SQL con ROLLBACK y 171 migraciones coincidentes. Capturas reales revisadas.
+Límites: aceptación física y ensayo realmente concurrente pendientes; producción
+sin cambios. **Único siguiente paso de este recorrido:** aceptación manual del
+montaje y las series con el contenido de Javier, sin abrir otro rediseño.
+[Contrato, evidencia y límites](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 **Revisión del estado Free/Pro · 20/10/2026:** Javier pide contrastar el proyecto
 actual en vez de seguir proponiendo comprobaciones genéricas. Cuotas 8/4/1,
 regalos administrativos, programas y pérdida de Pro ya están implementados;
@@ -202,6 +215,8 @@ mutaciones remotas, migraciones, dependencias, cambios compartidos ni deportista
 persistente de programas incompletos e idempotencia de guardado antes de preparar
 el subdominio. El montaje sin guardar vive en la pantalla y sigue exigiendo
 sesiones publicadas para persistir el programa.
+Este requisito queda sustituido por UI-062 (20/10/2026), que permite guardar
+sesiones en borrador y publicar el conjunto desde el programa.
 [Auditoría, referencias y límites](ADMIN_AUTHORING_2026_10_19.md).
 
 **UI-054, 19/10/2026 · catálogos ADMIN de sesiones y programas guiados:** Javier

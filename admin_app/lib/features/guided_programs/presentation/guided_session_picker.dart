@@ -81,7 +81,7 @@ class _GuidedSessionPickerState extends State<GuidedSessionPicker> {
                     const SizedBox(height: 12),
                     Text(
                       _drafts
-                          ? 'Revisa y publica un borrador antes de incorporarlo. Puedes elegir si también se muestra como sesión suelta.'
+                          ? 'Puedes incorporar un borrador y publicarlo con el programa. No crea otra copia.'
                           : 'Se reutiliza la versión seleccionada, sin crear otra copia.',
                     ),
                     const SizedBox(height: 12),

@@ -6,6 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:workout_editor_ui/strength_set_fields.dart';
+
+import '../../../test/helpers/performance_visual_review.dart';
 
 const _catalog = [
   WorkoutEditorExercise(id: 'base', name: 'Ejercicio de partida'),
@@ -61,22 +64,31 @@ Widget _app({
   String stamp = '',
   Widget? additionalFields,
   Future<List<WorkoutEditorExercise>> Function()? load,
-}) => MaterialApp(
-  theme: EntrenaTheme.dark,
-  home: WorkflowExitScope(
-    controller: exit ?? WorkflowExitController(),
-    child: WorkoutEditorPage(
-      loadExercises: load ?? () async => _catalog,
-      onSave: save,
-      onSaved: saved,
-      title: 'Crear sesión privada',
-      heading: 'Contenido del preparador',
-      instructions: 'Solo para los clientes autorizados.',
-      saveLabel: 'Guardar privado',
-      originalTemplate: _original,
-      additionalFields: additionalFields,
-      additionalStateStamp: stamp,
-      saveErrorMessage: 'No se pudo guardar el contenido privado.',
+  double scale = 1,
+}) => RepaintBoundary(
+  key: const ValueKey('review-boundary'),
+  child: MaterialApp(
+    theme: EntrenaTheme.dark,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(scale)),
+      child: child!,
+    ),
+    home: WorkflowExitScope(
+      controller: exit ?? WorkflowExitController(),
+      child: WorkoutEditorPage(
+        loadExercises: load ?? () async => _catalog,
+        onSave: save,
+        onSaved: saved,
+        title: 'Crear sesión privada',
+        heading: 'Contenido del preparador',
+        instructions: 'Solo para los clientes autorizados.',
+        saveLabel: 'Guardar privado',
+        originalTemplate: _original,
+        additionalFields: additionalFields,
+        additionalStateStamp: stamp,
+        saveErrorMessage: 'No se pudo guardar el contenido privado.',
+      ),
     ),
   ),
 );
@@ -95,6 +107,46 @@ Future<void> _save(WidgetTester tester) async {
 }
 
 void main() {
+  setUpAll(() => loadReviewFont(always: true));
+  for (final width in [320.0, 390.0, 1100.0]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('series sin solapar título y etiquetas a $width / $scale', (
+        tester,
+      ) async {
+        await tester.binding.setSurfaceSize(Size(width, 1000));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          _app(save: (_) async => 'saved', saved: (_) {}, scale: scale),
+        );
+        await tester.pumpAndSettle();
+        final title = find.text('Serie 1');
+        await tester.scrollUntilVisible(
+          title,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.ensureVisible(title);
+        await tester.pumpAndSettle();
+        final fields = find.byType(StrengthSetFields).at(1);
+        final label = find.descendant(
+          of: fields,
+          matching: find.text('Objetivo'),
+        );
+        expect(
+          tester.getTopLeft(label).dy,
+          greaterThanOrEqualTo(tester.getBottomLeft(title).dy + 6),
+        );
+        expect(find.text('Valores comunes'), findsOneWidget);
+        expect(find.text('Ajustes por serie'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await capturePerformanceWidget(
+          tester,
+          'shared-series-${width.toInt()}-${scale.toInt()}',
+        );
+      });
+    }
+  }
+
   testWidgets('un consumidor sin ADMIN aporta catálogo y recibe receta e ID', (
     tester,
   ) async {

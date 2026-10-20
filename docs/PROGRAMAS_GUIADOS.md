@@ -1,5 +1,22 @@
 # Programas guiados oficiales
 
+## Autoría integrada · UI-062 · 20/10/2026
+
+Crear o revisar una sesión desde el programa abre un panel sobre el montaje y
+reutiliza el creador compartido. **Guardar en programa** incorpora el borrador;
+no exige publicarlo aparte ni cambia la ruta. La revisión final acepta sesiones
+oficiales generales en borrador o publicadas. **Publicar programa** publica sus
+borradores y el programa en una transacción: cualquier error revierte el conjunto.
+La opción de mostrar una sesión suelta continúa siendo independiente, inicialmente
+desactivada al crear desde un programa, y puede cambiarse en su revisión.
+
+Las sesiones siguen siendo versiones reutilizables, sin copias por programa.
+Editar un borrador conserva su ID y los enlaces existentes; editar una versión
+publicada crea otra, sin alterar programas publicados ni registros. El catálogo
+de Sesiones conserva la publicación independiente. Este recorrido sustituye la
+obligación anterior de publicar cada sesión antes de incorporarla.
+[Contrato, pruebas y límites](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 **UI-061 · 20/10/2026:** corregidas las confirmaciones de dejar, pausar, elegir
 una plaza Free, avanzar y completar con los componentes visuales comunes.
 Acciones verticales separadas y desplazables; Cancelar prioritario y Dejar

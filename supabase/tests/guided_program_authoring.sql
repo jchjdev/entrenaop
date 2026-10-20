@@ -1,5 +1,6 @@
 -- Autoría, permisos e inmutabilidad. No deja contenido de prueba.
 begin;
+select set_config('request.jwt.claims','{"aal":"aal2"}',true);
 select set_config('request.jwt.claim.sub',(select user_id::text from public.admin_permissions limit 1),true);
 set local role authenticated;
 do $$

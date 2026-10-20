@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**UI-062 · 20/10/2026 · creadores y Compacto:** Javier confirma crear y guardar
+sesiones dentro del programa como borradores, revisar el conjunto y publicarlo
+en una sola operación. Se conserva reutilización, versiones y la opción de
+mostrar una sesión suelta. No se exige publicar cada sesión antes de añadirla.
+La autoría independiente sigue disponible en Sesiones.
+[Recorrido vigente](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 **COM-019, 20/10/2026 · programas guiados Free/Pro:** Free permite un programa
 activo y Pro varios sin esa cuota. Pausar libera la plaza, retomar conserva fase
 e historial y alternar no tiene penalización. El catálogo y las sesiones

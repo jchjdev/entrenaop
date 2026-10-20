@@ -20,6 +20,7 @@ import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
 import 'admin_guided_program_card.dart';
 import 'guided_session_picker.dart';
+import 'guided_session_workspace.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
@@ -643,7 +644,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       builder: (_) => GuidedSessionPicker(sessions: _sessions),
     );
     if (selected != null && mounted) {
-      if (selected.status == 'published') {
+      if (['draft', 'published'].contains(selected.status)) {
         _attachSession(phase, selected);
       } else {
         await _reviewAndAttach(phase, selected.id);
@@ -656,74 +657,107 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     setState(() {
       phase.sessions.add(_SessionFields(session.id, session.name));
       phase.pendingSessions.remove(session.id);
+      phase.pendingReplacements.remove(session.id);
       _changed();
     });
   }
 
-  Future<void> _createSession(_PhaseFields phase) async {
-    if (!await _saveWork() || !mounted) return;
-    final id = await context.push<String>(
-      '/sessions/new?returnId=true&standalone=false',
-    );
-    if (!mounted || id == null) return;
-    setState(() {
-      phase.pendingSessions.add(id);
-      _changed();
-    });
-    if (!await _load() || !mounted) return;
-    await _reviewAndAttach(phase, id);
+  bool _sessionWorkspaceOpen = false;
+
+  Future<void> _createSession(_PhaseFields phase) => _openSession(phase);
+
+  Future<void> _openSession(
+    _PhaseFields phase, {
+    _SessionFields? session,
+  }) async {
+    if (_sessionWorkspaceOpen || _busy) return;
+    setState(() => _sessionWorkspaceOpen = true);
+    String? appliedId;
+    try {
+      if (!await _saveWork() || !mounted) return;
+      await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => GuidedSessionWorkspace(
+          workouts: widget.workouts,
+          programName: _name.text.trim().isEmpty
+              ? 'Programa en borrador'
+              : _name.text.trim(),
+          sessionId: session?.id,
+          onSaved: (id) async {
+            if (!mounted || !_phases.contains(phase)) {
+              throw StateError('Programa cerrado');
+            }
+            // Primero conservar el ID: si falla la lectura o el enlace se puede
+            // recuperar sin crear otra sesión ni perder el trabajo del programa.
+            setState(() {
+              phase.pendingSessions.add(id);
+              if (session != null) phase.pendingReplacements[id] = session.id;
+              _changed();
+            });
+            if (!await _saveWork()) throw StateError('Guardado pendiente');
+            if (!await _load() || !mounted) {
+              throw StateError('Catálogo no disponible');
+            }
+            final saved = _sessions.where((s) => s.id == id).firstOrNull;
+            if (saved == null ||
+                !['draft', 'published'].contains(saved.status)) {
+              throw StateError('Sesión no disponible');
+            }
+            if (session != null) {
+              setState(() {
+                session.id = id;
+                session.name = saved.name;
+                phase.pendingSessions.remove(id);
+                phase.pendingReplacements.remove(id);
+                _changed();
+              });
+            } else if (appliedId != id) {
+              _attachSession(phase, saved);
+            }
+            setState(() {
+              phase.pendingSessions.remove(id);
+              phase.pendingReplacements.remove(id);
+              _changed();
+            });
+            appliedId = id;
+            if (!await _saveWork()) {
+              throw StateError('Enlace pendiente de guardar');
+            }
+          },
+        ),
+      );
+    } finally {
+      if (mounted) {
+        await _load();
+        if (mounted) setState(() => _sessionWorkspaceOpen = false);
+      }
+    }
   }
 
   Future<void> _reviewAndAttach(_PhaseFields phase, String id) async {
-    var currentId = id;
-    // Editar un borrador puede devolver otra versión; nunca se enlaza la anterior.
-    while (mounted) {
-      final session = _sessions.where((s) => s.id == currentId).firstOrNull;
-      if (session == null) {
-        setState(
-          () => _error = 'La sesión pendiente ya no está disponible. Quita su referencia y elige otra del catálogo.',
-        );
-        return;
-      }
-      if (session.status == 'published') {
-        _attachSession(phase, session);
-        return;
-      }
-      if (session.status != 'draft') {
-        setState(
-          () => _error = 'La sesión pendiente está retirada. Quita su referencia y elige una publicada.',
-        );
-        return;
-      }
-      setState(() {
-        phase.pendingSessions.add(currentId);
-        _changed();
-      });
-      if (!await _saveWork() || !mounted) return;
-      final reviewedId = await context.push<String>(
-        '/sessions/${Uri.encodeComponent(currentId)}?returnId=true',
-      );
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-      if (reviewedId != null) {
+    final source = _sessions.where((s) => s.id == id).firstOrNull;
+    if (source != null && ['draft', 'published'].contains(source.status)) {
+      final previousId = phase.pendingReplacements.remove(id);
+      final previous = phase.sessions
+          .where((s) => s.id == previousId)
+          .firstOrNull;
+      if (previous == null) {
+        _attachSession(phase, source);
+      } else {
         setState(() {
-          phase.pendingSessions.remove(currentId);
-          phase.pendingSessions.add(reviewedId);
+          previous.id = source.id;
+          previous.name = source.name;
+          phase.pendingSessions.remove(id);
           _changed();
         });
       }
-      if (!await _load() || !mounted) return;
-      if (reviewedId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No se ha añadido la sesión. Puedes retomar el borrador desde el programa o desde el catálogo.',
-            ),
-          ),
-        );
-        return;
-      }
-      currentId = reviewedId;
+      await _saveWork();
+    } else {
+      setState(
+        () => _error =
+            'La sesión pendiente no está disponible. Elige otra del catálogo.',
+      );
     }
   }
 
@@ -741,8 +775,10 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   }
 
   Future<void> _reviewSession(_SessionFields session) async {
-    await context.push('/sessions/${Uri.encodeComponent(session.id)}');
-    if (mounted) await _load();
+    final phase = _phases
+        .where((p) => p.sessions.contains(session))
+        .firstOrNull;
+    if (phase != null) await _openSession(phase, session: session);
   }
 
   Future<void> _setSessionVisibility(
@@ -828,10 +864,11 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         for (final session in phase.sessions) {
           final source = _sessions.where((s) => s.id == session.id).firstOrNull;
           if (!_sessions.any(
-            (s) => s.id == session.id && s.status == 'published',
+            (s) =>
+                s.id == session.id && ['draft', 'published'].contains(s.status),
           )) {
             throw FormatException(
-              '«${session.name}» ya no está publicada. Quita esa referencia y elige una sesión publicada.',
+              '«${session.name}» ya no está disponible. Quita esa referencia y elige otra sesión.',
             );
           }
           if (session.warmup != null &&
@@ -1043,7 +1080,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
         : _saveTimer?.isActive == true ||
               _checkpoint!.dirty ||
               _finalAttempt != null,
-    isBusy: () => _busy,
+    isBusy: () => _busy || _sessionWorkspaceOpen,
     child: Scaffold(
       appBar: AppBar(
         title: Text(
@@ -1057,7 +1094,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           : Stack(
               children: [
                 AbsorbPointer(
-                  absorbing: _busy || _finalAttempt != null,
+                  absorbing:
+                      _busy || _sessionWorkspaceOpen || _finalAttempt != null,
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 900),
@@ -1140,9 +1178,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                                     await context.push('/sessions');
                                     if (mounted) await _load();
                                   },
-                                  child: const Text(
-                                    'Publicar o revisar sesiones',
-                                  ),
+                                  child: const Text('Ver catálogo de sesiones'),
                                 ),
                               ],
                             ),
@@ -1425,7 +1461,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
-              'Crea, revisa y publica para incorporar una sesión. El programa se guarda después con ${_checkpoint == null ? 'Guardar borrador' : 'Guardar en catálogo'}.',
+              'Crea y guarda las sesiones aquí. Se publicarán juntas tras revisar el programa. Guarda tu montaje con ${_checkpoint == null ? 'Guardar borrador' : 'Guardar en catálogo'}.',
             ),
           ),
           for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
@@ -1460,6 +1496,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                         TextButton(
                           onPressed: () => setState(() {
                             p.pendingSessions.remove(id);
+                            p.pendingReplacements.remove(id);
                             _changed();
                           }),
                           child: const Text('Quitar referencia pendiente'),
@@ -1553,7 +1590,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 label: const Text('Revisar sesión'),
               ),
             ),
-            if (source == null || source.status != 'published')
+            if (source == null ||
+                !['draft', 'published'].contains(source.status))
               Text(
                 'Esta versión ya no está publicada. Quita la referencia y elige otra sesión.',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -1664,7 +1702,7 @@ class _SessionFields {
         ..adjustable = s.restPolicy.adjustable
         ..minimum.text = '${s.restPolicy.minimumSeconds ?? 60}'
         ..maximum.text = '${s.restPolicy.maximumSeconds ?? 180}';
-  final String id, name;
+  String id, name;
   factory _SessionFields.restore(Map<String, dynamic> s) =>
       _SessionFields(
           s['id'] as String,
@@ -1720,11 +1758,17 @@ class _PhaseFields {
       instructions = TextEditingController();
   final sessions = <_SessionFields>[];
   final pendingSessions = <String>{};
+  // Si se interrumpe el enlace de una revisión, recuperar debe reemplazar su
+  // posición original, no añadir otra sesión al final del programa.
+  final pendingReplacements = <String, String>{};
   factory _PhaseFields.restore(Map<String, dynamic> p) => _PhaseFields()
     ..name.text = p['name'] as String
     ..weeks.text = p['weeks'] as String
     ..instructions.text = p['instructions'] as String
     ..pendingSessions.addAll((p['pending'] as List).cast<String>())
+    ..pendingReplacements.addAll(
+      (p['replacements'] as Map?)?.cast<String, String>() ?? const {},
+    )
     ..sessions.addAll(
       (p['sessions'] as List).map(
         (s) => _SessionFields.restore(Map<String, dynamic>.from(s as Map)),
@@ -1735,6 +1779,7 @@ class _PhaseFields {
     'weeks': weeks.text,
     'instructions': instructions.text,
     'pending': pendingSessions.toList(),
+    'replacements': Map<String, String>.of(pendingReplacements),
     'sessions': sessions.map((s) => s.snapshot()).toList(),
   };
   GuidedPhase input(GuidedProgramMode mode) => GuidedPhase(

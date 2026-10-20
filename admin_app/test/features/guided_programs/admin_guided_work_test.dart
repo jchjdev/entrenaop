@@ -81,8 +81,19 @@ class _Guided extends Fake implements AdminGuidedRepository {
 }
 
 class _Workouts extends Fake implements AdminWorkoutRepository {
+  _Workouts({this.withReplacement = false});
+  final bool withReplacement;
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async => [
+    if (withReplacement)
+      const AdminWorkoutSummary(
+        id: 'next',
+        name: 'Sesión corregida',
+        version: 2,
+        status: 'draft',
+        isRunning: false,
+        catalogScope: 'general',
+      ),
     const AdminWorkoutSummary(
       id: 's',
       name: 'Sesión publicada',
@@ -125,6 +136,45 @@ Map<String, dynamic> _state() => {
 };
 
 void main() {
+  testWidgets(
+    'recuperar una revisión pendiente reemplaza su posición sin duplicarla',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1100, 1500));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final state = _state();
+      final phase = (state['phases'] as List).single as Map;
+      phase['pending'] = ['next'];
+      phase['replacements'] = {'next': 's'};
+      final repo = _Work();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AdminGuidedEditorPage(
+            repository: _Guided(),
+            workouts: _Workouts(withReplacement: true),
+            workRepository: repo,
+            work: GuidedWork(id: 'recover', state: state),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final resume = find.text('Retomar sesión');
+      await tester.scrollUntilVisible(
+        resume,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(resume);
+    await tester.pumpAndSettle();
+      await tester.tap(resume);
+      await tester.pumpAndSettle();
+      final saved =
+          (repo.rows['recover']!.state['phases'] as List).single as Map;
+      expect((saved['sessions'] as List).single['id'], 'next');
+      expect(saved['pending'], isEmpty);
+      expect(saved['replacements'], isEmpty);
+      expect(find.text('1 sesión en esta fase'), findsOneWidget);
+    },
+  );
   testWidgets(
     'el estado de trabajo y los reintentos caben a 320 px con texto ampliado',
     (tester) async {

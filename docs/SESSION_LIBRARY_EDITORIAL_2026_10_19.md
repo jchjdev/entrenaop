@@ -14,14 +14,21 @@ chips pertenecen a Programas; no se inventa clasificación editorial de sesiones
 
 ## Autoría y publicación
 
+**Actualización UI-062 · 20/10/2026:** al crear desde un programa, la sesión se
+guarda e incorpora como borrador dentro de su panel. La revisión final publica
+el conjunto en una única operación atómica; ya no exige la publicación previa
+de cada sesión. El catálogo independiente conserva su confirmación propia.
+La marca de sesión suelta mantiene el contrato descrito aquí.
+[Recorrido vigente](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 - El creador de sesiones sueltas comienza con Mostrar en Sesiones de EntrenaOP
   activado. Desde Crear nueva sesión dentro de un programa guiado comienza
   desactivado; la elección es editable antes de guardar.
 - La ficha de revisión permite cambiar la marca de borradores o publicaciones
   generales. Se guarda inmediatamente, con error visible y reintento. Se bloquean
   salidas y acciones incompatibles mientras se guarda.
-- El diálogo de publicación indica si se ofrecerá como sesión suelta. Publicar
-  sigue siendo una acción explícita, independiente de publicar el programa.
+- El diálogo de publicación independiente indica si se ofrecerá como sesión
+  suelta. Desde un programa se puede publicar con el conjunto al revisarlo.
 - El listado administrativo indica su visibilidad y conserva los programas que
   utilizan la sesión. El selector de programas ofrece todas las versiones
   publicadas del catálogo común, incluidas las que no se anuncian sueltas.

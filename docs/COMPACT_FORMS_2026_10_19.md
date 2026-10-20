@@ -2,6 +2,13 @@
 
 Fecha de contraste: 19/10/2026. Decisión UI-059.
 
+**UI-062 · 20/10/2026:** el creador extraído en TRN-007 reserva espacio para las
+etiquetas y separa valores comunes de ajustes por serie. Los vacíos heredados se
+muestran como «Común», también en RIR, sin convertirlos en cero ni cambiar la
+receta. ADMIN puede montarlo dentro del programa. El deportista conserva su
+contenedor y recibe el ajuste de los campos compartidos.
+[Recorrido y verificación](PROGRAM_AUTHORING_WORKSPACE_2026_10_20.md).
+
 ## Acuerdo y estado
 
 Javier prefiere Compacto y pide coherencia en toda la app, conservar todas las

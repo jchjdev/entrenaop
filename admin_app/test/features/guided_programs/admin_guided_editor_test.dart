@@ -8,6 +8,8 @@ import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guid
 import 'package:entrenaop_admin/features/guided_programs/presentation/guided_session_picker.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:workout_core/workout_template.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:entrenaop_admin/features/editorial_covers/presentation/program_cover_editor.dart';
@@ -58,6 +60,16 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   bool failVisibility = false;
   Completer<void>? visibilityGate;
   final visibilityWrites = <({String id, bool value, bool expected})>[];
+
+  @override
+  Future<WorkoutTemplate?> getTemplateById(String id) async => WorkoutTemplate(
+    id: id,
+    name: 'Empuje publicado',
+    description: null,
+    estimatedDurationMinutes: null,
+    version: 1,
+    blocks: const [],
+  );
 
   @override
   Future<void> setLibraryVisibility(
@@ -244,18 +256,6 @@ void main() {
             ),
           ),
         ),
-        GoRoute(
-          path: '/sessions/official',
-          builder: (context, _) => Scaffold(
-            body: TextButton(
-              onPressed: () {
-                workouts.listed = false;
-                context.pop();
-              },
-              child: const Text('Ocultar y volver'),
-            ),
-          ),
-        ),
       ],
     );
     addTearDown(router.dispose);
@@ -272,7 +272,17 @@ void main() {
     await tester.ensureVisible(find.text('Revisar sesión'));
     await tester.tap(find.text('Revisar sesión'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ocultar y volver'));
+    final toggle = find.descendant(
+      of: find.byType(AdminWorkoutPreviewPage),
+      matching: find.widgetWithText(
+        SwitchListTile,
+        'Mostrar en Sesiones de EntrenaOP',
+      ),
+    );
+    await tester.ensureVisible(toggle);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Volver al programa'));
     await tester.pumpAndSettle();
     expect(find.text('Oculta como sesión suelta'), findsOneWidget);
     expect(find.text('Visible como sesión suelta'), findsNothing);
@@ -552,7 +562,7 @@ void main() {
     },
   );
   testWidgets(
-    'el creador guarda una guía ejecutable y excluye sesiones borrador',
+    'el selector comienza por publicadas y guarda una guía ejecutable',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1100, 1800));
       addTearDown(() => tester.binding.setSurfaceSize(null));

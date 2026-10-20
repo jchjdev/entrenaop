@@ -1,6 +1,7 @@
 -- Prueba de integración en desarrollo. Toda la autoría se revierte.
 -- Ejecutar con: supabase db query --linked --file supabase/tests/admin_workout_draft_smoke.sql
 begin;
+select set_config('request.jwt.claims','{"aal":"aal2"}',true);
 
 select set_config(
   'request.jwt.claim.sub',
@@ -171,13 +172,12 @@ begin
       ))
     )
   );
-  if exists (select 1 from public.workout_templates where id = v_revision_id)
-    or not exists (
+  if v_replacement_id <> v_revision_id or not exists (
       select 1 from public.workout_templates
       where id = v_replacement_id and version = 2
         and previous_version_id = v_template_id
     ) then
-    raise exception 'La edición del borrador alteró el historial de versiones.';
+    raise exception 'La edición del borrador cambió su identidad o historial de versiones.';
   end if;
   perform public.remove_admin_workout(v_template_id);
   if not exists (
