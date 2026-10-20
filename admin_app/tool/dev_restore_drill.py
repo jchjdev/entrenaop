@@ -77,7 +77,10 @@ def verify_restore(source):
              "--env", "POSTGRES_PASSWORD=" + secrets.token_hex(24), IMAGE])
         created = True
         for attempt in range(60):
-            ready = subprocess.run(["docker", "exec", name, "pg_isready", "-U", "postgres"],
+            # El arranque de la imagen usa primero un servidor temporal solo
+            # por socket y después lo reinicia. TCP local acredita el servidor
+            # definitivo; consultar el socket puede adelantarse al reinicio.
+            ready = subprocess.run(["docker", "exec", name, "pg_isready", "-h", "127.0.0.1", "-U", "supabase_admin"],
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if ready.returncode == 0:
                 break
