@@ -1,51 +1,79 @@
 # Pro: interfaz inicial y conexión de pagos
 
-## Estado de cierre contrastado · 20/10/2026
+## Estado contrastado con código y Dev · 20/10/2026
 
-Javier confirma que la corrección de UI-061 se ve bien y tiene continuidad con
-los otros botones de la app. Se acepta ese resultado visual; no se deduce de
-ello aceptación de cuotas, pérdida de Pro, compras o restauración en el móvil.
+Revisión solicitada por Javier tras advertir que se estaban arrastrando listas
+históricas de pendientes. Se contrastan cliente Flutter, inyección/configuración,
+repositorio y pantalla administrativa, funciones Edge, migraciones locales y
+metadatos de Supabase Dev. No se modifica código, configuración ni cuentas.
 
-Después confirma expresamente que funciona el recorrido propuesto con
-`jvr.trainer`: Pro → iniciar dos programas → retirar Pro → elegir uno → el otro
-queda pausado. Queda aceptada manualmente la pérdida de Pro y elección de una
-plaza; no volver a presentarla como pendiente. Esta confirmación no acredita
-por sí sola las cuotas 8/4 ni compras, restauración o caducidad de una tienda.
+### Implementado y comprobable
 
-Implementados: derechos de servidor separados de administración y seguimiento
-profesional, regalos desde Cuentas y Pro, cuotas Free 8/4/1, pausa/reanudación y
-elección de una plaza al perder Pro con más de un programa. Ofertas mensual y
-anual, SDK Test Store, conciliación y webhook Dev conservan su implementación
-previa. Las verificaciones automatizadas están registradas por entrega.
+- **Free/Pro y cuotas 8/4/1:** controles de servidor y cliente, triggers de
+  ejercicios/sesiones y guardas de programas instalados en Dev. Las pruebas SQL
+  cubren límites, revisiones, exclusión del catálogo, edición e historial tras
+  perder Pro. No están pendientes de implementación ni deben presentarse como
+  nuevas tareas que Javier tenga que demostrar para poder avanzar.
+- **Gestión desde Cuentas y Pro:** listado, búsqueda, regalos con vigencia y
+  retirada; permisos del responsable separados del contenido administrativo y
+  de la relación profesional. Las compras vigentes se conservan al quitar regalos.
+- **Programas:** pausa, reanudación y elección de una sola plaza al perder Pro
+  con más de uno. Javier confirma que funciona Pro con dos → retirar Pro → elegir
+  uno → otro pausado. También acepta la continuidad visual de UI-061.
+- **Compras Test Store:** catálogo, compra, restauración, UUID de cuenta, precios
+  del proveedor, confirmación con reintentos y estados de error/cancelación
+  implementados. Dev contiene registros SANDBOX de mensual y anual, ambos con
+  origen `test_store`; eso acredita integración previa, no ventas de las tiendas.
+- **Backend de compras:** `revenuecat-sync` y `revenuecat-webhook` activos, versión
+  6, en Dev; entorno SQL SANDBOX. Conciliación canónica, autenticación, separación
+  de entornos, repetición de eventos y respuestas antiguas ya están implementadas
+  y tienen pruebas. No listar esos mecanismos como código inexistente.
 
-El bloque sigue abierto. Los pendientes contrastados se ordenan así:
+La revisión confirma 169 migraciones local/Dev coincidentes. Se ejecutan de nuevo
+las 18 pruebas de las funciones de RevenueCat: todas correctas. La batería raíz
+más reciente conserva 1.128 pruebas correctas y una omisión previa; el código,
+SQL y pruebas no han cambiado desde ese guardado, por lo que no se repite solo
+por actualizar este estado. Las comprobaciones físicas no realizadas conservan
+su límite de evidencia; no se convierten en funcionalidades por desarrollar.
 
-1. **Recorrido funcional en móvil actualizado:** Free alcanza 8 ejercicios,
-   4 familias de sesiones propias y 1 programa; los límites conservan borrador.
-   Pro amplía cuotas. La prueba Pro con dos programas → retirar Pro → elegir
-   uno → otro pausado ya está aceptada por Javier el 20/10. Comprobar retorno a
-   Mi plan y los regalos/fechas, sin otra fuente Pro que invalide el ensayo Free.
-2. **Compra desde la interfaz actualizada:** mensual y anual desde Free,
-   precio EUR del catálogo, confirmación automática sin reiniciar/restaurar para
-   activar, Mi plan, cancelación del diálogo, fallo de confirmación y cambio de
-   cuenta. La compra Test Store anterior no acredita la repetición de COM-018.
-3. **Tiendas nativas:** terminar productos y configuración de App Store/Google
-   Play con RevenueCat y comprobar en sus sandboxes compras, renovaciones,
-   caducidad, restauración, reembolsos y política de transferencia entre cuentas.
-   Test Store no sustituye esta evidencia. No se habilitan cobros en este paso.
-4. **Verificación final de acceso y recuperación:** ensayo realmente concurrente
-   de la plaza Free, reintentos/eventos repetidos, recuperación ante eventos
-   perdidos y documentos/precios de contratación definitivos. Contrastar el
-   entorno de producción y su configuración solo cuando se autorice esa tarea.
+### Trabajo real antes de vender
 
-Quedan las cuotas 8/4 del punto 1 y la aceptación de compras del punto 2.
-Para probar Test Store se debe iniciar **EntrenaOP Compras · móvil debug Dev**
-con el dispositivo seleccionado y su configuración pública local. El esquema
-**Runner iPhone** en Release conserva consultas de acceso y regalos, pero no
-habilita Test Store; no confundir ambos recorridos. [Preparación iOS](IOS_DEVELOPMENT.md).
-La configuración y las pruebas de tiendas siguen dentro de este bloque; no se
-aplazan a otro para presentarlo como cerrado. Registrar únicamente los casos
-realmente ejecutados y sus límites, conservando pendientes los demás.
+1. **Integración con tiendas nativas:** `ProPurchaseConfiguration.enabled` exige
+   desarrollo, debug, móvil y clave `test_`. `AppConfig` e inyección solo leen
+   `REVENUECAT_TEST_API_KEY`. Falta incorporar la configuración Apple/Google y
+   habilitación por entorno apropiada; no basta conectar productos externos.
+   El webhook también compara con un único `REVENUECAT_APP_ID`: hay que
+   concretar la autorización de las apps nativas de ambas plataformas, además
+   de la app Test Store, conservando la separación de entornos.
+   La disponibilidad actual de cuentas y productos externos no se ha vuelto a
+   consultar y no se infiere de los registros SANDBOX de Dev.
+2. **Gestión de una suscripción pagada:** no hay enlace ni llamada a la gestión
+   de suscripciones de la tienda desde Mi suscripción. El panel actual consulta
+   acceso y prueba compras; la gestión de regalos del admin no sustituye esa
+   operación para quien paga.
+3. **Condiciones y privacidad:** ambos botones de `ProOfferPage` tienen
+   `onPressed: null`, incluso cuando Test Store está habilitado. Falta enlazar
+   documentos definitivos. Esta constatación de interfaz no acredita contenido
+   contractual ni una revisión jurídica.
+4. **Recuperación automática de conciliación:** existe consulta al proveedor al
+   comprar/restaurar o pulsar la sincronización. Al volver a la app,
+   `ProAccessBuilder` solo lee `get_my_pro_access` y no existe un barrido programado
+   de RevenueCat en el repositorio. Un webhook perdido puede exigir consulta
+   manual para actualizar una renovación. Falta decidir e implementar la
+   recuperación automática antes de usarlo para ventas.
+
+Después de completar esa integración corresponde comprobar compras y ciclo de
+vida en los sandboxes nativos. La aceptación de mensual/anual y restauración de
+las tiendas sigue siendo diferente de Test Store; no se inventa como realizada.
+La integración y la revisión de producción se mantienen dentro del mismo bloque,
+sin habilitar cobros ni tocar producción durante esta revisión. Las pruebas
+concurrentes del servidor pendientes son trabajo técnico del agente, no una
+petición de que Javier repita manualmente los accesos ya aceptados.
+
+El siguiente trabajo recomendado es preparar el contrato de configuración de
+compras nativas, conciliación y gestión de la suscripción con estos cuatro huecos
+identificados. No dar el bloque completo por cerrado ni continuar añadiendo
+listas genéricas de pruebas sin volver a contrastarlas con el código.
 
 ## Programas guiados y pausa · COM-019 · 20/10/2026
 

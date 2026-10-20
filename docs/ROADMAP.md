@@ -1,5 +1,22 @@
 # Roadmap de EntrenaOP
 
+**Revisión del estado Free/Pro · 20/10/2026:** Javier pide contrastar el proyecto
+actual en vez de seguir proponiendo comprobaciones genéricas. Cuotas 8/4/1,
+regalos administrativos, programas y pérdida de Pro ya están implementados;
+Javier ha aceptado la elección de una plaza y la continuidad visual. Dev tiene
+169 migraciones coincidentes y ambas funciones de RevenueCat activas. Se
+repiten 18 pruebas de funciones, todas correctas; la batería raíz de 1.128
+conserva su evidencia porque el código no ha cambiado.
+**Huecos reales del código para vender:** configuración del cliente limitada a
+Test Store debug, gestión de suscripción de tienda ausente, botones de documentos
+deshabilitados y conciliación disponible bajo demanda sin recuperación automática
+al volver a la app. No son equivalentes a las pruebas ya implementadas de cuotas,
+eventos duplicados o aislamiento de cuentas.
+**Siguiente trabajo recomendado:** preparar e integrar ese contrato de compras
+nativas y recuperación; después comprobar el ciclo de tienda en sus sandboxes.
+Sin cambios de código, cuentas, despliegues ni producción en esta revisión.
+[Evidencia y alcance](PRO_LAUNCH.md).
+
 **UI-061 · 20/10/2026 · confirmaciones de programas coherentes:** se corrigen
 los botones pegados que Javier muestra en iPhone. Dejar, pausar, elegir plaza
 Free, avanzar y completar reutilizan los diálogos comunes, con acciones
@@ -12,8 +29,8 @@ horizontal y escritorio. Análisis limpio.
 Javier confirma el 20/10 que el resultado visual se ve bien y tiene continuidad
 con otros botones; queda aceptada esta corrección visual. Esta confirmación
 no acredita las cuotas, pérdida de Pro ni compras en el móvil actualizado.
-**Siguiente recorrido Free/Pro:** cuotas 8/4/1 y Pro → Free con varios programas;
-después, compra mensual/anual y validación de tiendas dentro del mismo bloque.
+La aceptación posterior de COM-020 y la revisión inicial de este documento
+actualizan los siguientes pasos; no repetir la elección aceptada como pendiente.
 El [estado consolidado](PRO_LAUNCH.md) conserva los pendientes de cierre.
 [Criterio visual](VISUAL_DESIGN.md).
 
@@ -34,8 +51,8 @@ usuario intencionadamente ejecutable por autenticados, sin acceso
 anónimo. Javier confirma después el 20/10 que funciona Pro con dos programas →
 retirar Pro → elegir uno → otro pausado: esa aceptación manual queda completa.
 El ensayo realmente concurrente sigue pendiente; producción sin cambios.
-**Siguiente recorrido Free/Pro:** cuotas personales 8/4 y compras de prueba
-desde el móvil debug Dev. No repetir como pendiente la elección ya aceptada.
+La revisión actual de código y Dev al inicio de este documento concreta el
+trabajo de integración restante. No repetir como pendiente la elección aceptada.
 Compras y sandboxes nativos continúan pendientes. [Contrato](PROGRAMAS_GUIADOS.md).
 
 **COM-019 · 20/10/2026 · una plaza Free y pausa de programas guiados:** se
