@@ -127,6 +127,25 @@ se generan en
 local/remoto después de las dos altas; las seis pruebas SQL citadas pasan sobre
 el esquema instalado. La compilación web release Dev con CSP, recursos propios
 y sin mapas de código es correcta. La configuración compilada y las pruebas no
-tocan producción. La evidencia de publicación remota se añade tras finalizar CI.
+tocan producción.
+
+## Publicación comprobada · 20/10/2026
+
+- Código: `395e78cd5b65bcbccd80a8eb90026b9a19191d1a`, guardado y subido a main.
+- GitHub Actions [39494347075](https://github.com/jchjdev/entrenaop/actions/runs/39494347075):
+  validación y publicación correctas, incluidos análisis, 276 pruebas ADMIN,
+  pruebas del publicador y build Dev. No hay cambios compartidos de Flutter.
+- La publicación anterior `9131d69` también pasó HTTPS. La ejecución inicial de
+  `fc5c139` se detuvo antes de transferir al avanzar main: funcionó la protección
+  contra publicar una revisión superada; no fue un error de contenido.
+- Verificación independiente por HTTPS de la revisión final: identidad Dev,
+  manifiesto/índice, hash de JavaScript, cabeceras sin caché, `X-Frame-Options`
+  y MIME de WASM correctos. El manifiesto acredita compilación UTC
+  **2026-10-20T20:47:53.658478+00:00** y versión `395e78cd5b65bcbccd80a8eb90026b9a19191d1a-39494347075-1`.
+- Se conserva el montaje abierto de Javier, sin recargar su página. La aceptación
+  manual de los nuevos apartados queda pendiente; esta comprobación acredita
+  despliegue, pruebas de interfaz y contrato SQL, no una sesión física en iPhone.
+
+
 **Único siguiente bloque recomendado:** conectar evidencia real de copias y
 recuperación y los errores de servicios, con alcance y coste revisados antes.

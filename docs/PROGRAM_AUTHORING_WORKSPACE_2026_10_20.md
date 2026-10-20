@@ -18,8 +18,8 @@ cuando existe. Las recetas convencionales muestran series; carrera, tramos;
 otros formatos, bloques, sin convertir rondas en series ni inventar duraciones.
 El estado Borrador/Publicada/Retirada y su versión se muestran separados de la
 visibilidad como sesión suelta. Quitar del programa ofrece Deshacer: recupera
-la misma posición y sus controles, calentamiento y descansos mientras siga
-abierto el montaje; no borra la receta del catálogo.
+la misma posición y sus controles, calentamiento y descansos desde el aviso
+«Deshacer» mientras siga visible y abierto el montaje; no borra la receta del catálogo.
 
 Análisis ADMIN limpio, 263 pruebas correctas y dos omisiones previas; build web
 release Dev correcto. La cobertura verifica duplicación de borradores y

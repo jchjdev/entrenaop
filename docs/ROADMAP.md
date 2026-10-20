@@ -7,6 +7,8 @@ historial/comparación/recuperación como borrador y calidad con avisos accionab
 Cuentas incorpora diagnóstico para su responsable y Herramientas el estado
 comprobable del despliegue y conexión. Se revisan código, permisos y fronteras
 de guardado/publicación, con pruebas Flutter y SQL transaccionales en Dev.
+Análisis limpio, 276 pruebas ADMIN y seis SQL correctas con ROLLBACK; 173
+migraciones coincidentes. Publicación final `395e78c` comprobada por HTTPS.
 Límites: historial desde activación, recuperación de sesiones/programas sujeta
 al guardado vigente, sin copiar recetas personales ni auditar archivos externos;
 aceptación manual de estas nuevas pantallas pendiente. Copias y errores generales
