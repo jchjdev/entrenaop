@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../support/guided_program_fixture.dart';
+import '../../../helpers/performance_visual_review.dart';
 
 import 'package:entrenaop/features/library/presentation/library_hub_page.dart';
 
@@ -300,6 +301,68 @@ void main() {
       expect(repo.calls, 4);
       expect(find.text('Tus programas'), findsOneWidget);
       expect(find.text('Añadir programa'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'Inicio conserva el tamaño de Preparaciones al pasar de añadir a programa iniciado',
+    (tester) async {
+      await tester.runAsync(() => loadReviewFont(always: true));
+      const preparationName = 'Evaluación periódica FAS · Pruebas físicas';
+      const programName = 'Glúteos · Empuje de cadera y sentadilla';
+      final repo = _HomePrograms()..items = [];
+      final router = await mount(
+        tester,
+        PreparationOverview(
+          assessments: const [],
+          preferences: null,
+          goals: [
+            PreparationGoal(
+              id: 'goal-1',
+              program: const PreparationProgram(
+                id: PreparationProgramIds.fasPeriodicAssessment,
+                name: preparationName,
+                kind: PreparationProgramKind.internalAssessment,
+              ),
+              targetDate: DateTime(2027, 2, 14),
+            ),
+          ],
+          weekStart: week,
+          weeklyWorkouts: const [],
+        ),
+        guided: repo,
+        width: 390,
+      );
+      Finder cardNamed(String title) => find.byWidgetPredicate(
+        (widget) => widget is EntrenaProgramCard && widget.title == title,
+      );
+      final preparationSize = tester.getSize(cardNamed(preparationName));
+      final emptySize = tester.getSize(cardNamed('Añadir programa'));
+      expect(emptySize.width, preparationSize.width);
+      expect(emptySize.height, closeTo(preparationSize.height, 0.1));
+
+      // Reproduce el regreso a Inicio después de iniciar el programa del vídeo.
+      final visit = router.push<void>('/library/programs/program');
+      await tester.pumpAndSettle();
+      repo.items = const [
+        StartedGuidedProgram(
+          program: GuidedProgram(
+            id: 'program',
+            name: programName,
+            mode: GuidedProgramMode.guide,
+            phases: [GuidedPhase(name: 'Rutina', sessions: [])],
+          ),
+          phaseIndex: 0,
+        ),
+      ];
+      router.pop();
+      await visit;
+      await tester.pumpAndSettle();
+      final startedSize = tester.getSize(cardNamed(programName));
+      expect(startedSize.width, preparationSize.width);
+      expect(startedSize.height, closeTo(preparationSize.height, 0.1));
+      expect(tester.getSize(cardNamed(preparationName)), preparationSize);
+      expect(find.text('Añadir programa'), findsNothing);
+      expect(tester.takeException(), isNull);
     },
   );
   testWidgets('la sesión diaria abre su agenda sin iniciar una ejecución', (

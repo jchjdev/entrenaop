@@ -348,9 +348,10 @@ Capturas revisadas con fotografía de preparación y programas sin foto a 390 px
 320 px con texto 2× y escritorio; Biblioteca y el desplazamiento conservados.
 Sin SQL, cambios de datos, dependencias o producción. Aceptación móvil pendiente.
 
-El 20/10/2026 Javier precisa con dos capturas que «Añadir programa» debe
-conservar la altura de una tarjeta con título de dos líneas. El estado vacío
-reserva esas dos líneas dentro de `EntrenaProgramCard`, con el mismo estilo y
+El 20/10/2026 Javier precisa con capturas y un vídeo que «Añadir programa» debe
+conservar el mismo formato y tamaño visual de las tarjetas de Preparaciones y
+del programa iniciado, también cuando todavía no hay ninguno. El estado vacío
+reserva dos líneas de título dentro de `EntrenaProgramCard`, con el mismo estilo y
 el escalado de texto del sistema. Los programas iniciados y las preparaciones
 conservan su altura por contenido; no se recupera la variante cuadrada ni una
 altura fija. Se comprueba la igualdad de alturas al pasar del vacío a un
@@ -361,6 +362,14 @@ Verificación de esta ampliación: análisis limpios de raíz y ADMIN; 26 prueba
 de Inicio/Biblioteca, 61 de programas/portadas de ADMIN (una omisión existente)
 y 13 del paquete visual correctas. Capturas del vacío revisadas a 390 px y
 320 px con texto 2×. Sin cambios de datos ni publicación móvil.
+Tras revisar el vídeo se añade una regresión en Inicio completo que compara
+ancho y alto de Preparaciones, Añadir programa y un programa iniciado con
+título de dos líneas, antes y después de volver desde la ficha. La igualdad
+se verifica con la fuente real a 390 px. El vídeo muestra el vacío anterior,
+sin la reserva de espacio de `739d1c3`; la comprobación local de esa corrección
+no equivale a haber actualizado la compilación instalada en el teléfono.
+Esta regresión y las pruebas de Inicio/programas suman 19 pruebas correctas;
+el análisis de raíz termina sin incidencias.
 
 ### Ancho, clasificación y búsqueda · PRG-007 · implementado el 18/10/2026
 
