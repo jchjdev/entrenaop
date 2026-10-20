@@ -2,16 +2,19 @@
 
 ## Autoría integrada · UI-062 · 20/10/2026
 
-Crear o revisar una sesión desde el programa abre la ventana existente, elegida
-por Javier tras comparar ambas presentaciones. Reutiliza el creador compartido y
-mantiene el programa detrás con su ruta estable. **Volver al programa** protege
+Las tarjetas de «Sesiones del programa» muestran la receta escrita mediante el
+lector existente. «Editar sesión» abre directamente el creador compartido en la
+ventana elegida por Javier, sin pasar por otra revisión. Crear una sesión nueva
+abre esa misma ventana y mantiene el programa detrás con su ruta estable.
+Calentamiento, visibilidad y ajustes de descanso se agrupan en un desplegable.
+**Volver al programa** protege
 los cambios pendientes antes de cerrar. **Guardar en programa** incorpora el
-borrador;
-no exige publicarlo aparte ni cambia la ruta. La revisión final acepta sesiones
+borrador; no exige publicarlo aparte ni cambia la ruta. La revisión final acepta
+sesiones
 oficiales generales en borrador o publicadas. **Publicar programa** publica sus
 borradores y el programa en una transacción: cualquier error revierte el conjunto.
 La opción de mostrar una sesión suelta continúa siendo independiente, inicialmente
-desactivada al crear desde un programa, y puede cambiarse en su revisión.
+desactivada al crear desde un programa, y puede cambiarse en sus ajustes.
 
 Las sesiones siguen siendo versiones reutilizables, sin copias por programa.
 Editar un borrador conserva su ID y los enlaces existentes; editar una versión

@@ -4,9 +4,8 @@ import 'package:workout_core/workout_template.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
 import '../../workouts/presentation/admin_workout_editor_page.dart';
-import '../../workouts/presentation/admin_workout_preview_page.dart';
 
-/// Mantiene el programa montado y reutiliza su creador y revisión de sesiones.
+/// Mantiene el programa montado y abre directamente el creador compartido.
 /// El guard local protege el panel sin reemplazar el guard de la página padre.
 class GuidedSessionWorkspace extends StatefulWidget {
   const GuidedSessionWorkspace({
@@ -28,10 +27,7 @@ class GuidedSessionWorkspace extends StatefulWidget {
 class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
   final _exit = WorkflowExitController();
   late Future<(AdminWorkoutSummary, WorkoutTemplate)?> _initial = _load();
-  bool _editing = false,
-      _registering = false,
-      _canPop = false,
-      _closing = false;
+  bool _registering = false, _canPop = false, _closing = false;
   String? _savedId, _error;
 
   Future<(AdminWorkoutSummary, WorkoutTemplate)?> _load() async {
@@ -160,26 +156,28 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                           final original = snapshot.data;
                           return WorkflowExitScope(
                             controller: _exit,
-                            child: original == null || _editing
-                                ? AdminWorkoutEditorPage(
-                                    program: null,
-                                    repository: widget.workouts,
-                                    originalTemplate: original?.$2,
-                                    revisionId: original?.$1.id,
-                                    initialShowInLibrary: false,
-                                    embedded: true,
-                                    programName: widget.programName,
-                                    onSaved: _saved,
-                                  )
-                                : AdminWorkoutPreviewPage(
-                                    workout: original.$1,
-                                    repository: widget.workouts,
-                                    program: null,
-                                    embedded: true,
-                                    allowPublication: false,
-                                    onEdit: (_) =>
-                                        setState(() => _editing = true),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (original?.$1.status == 'published')
+                                  const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Text(
+                                      'Al guardar se creará una nueva versión en borrador para este programa. La versión publicada se conserva.',
+                                    ),
                                   ),
+                                AdminWorkoutEditorPage(
+                                  program: null,
+                                  repository: widget.workouts,
+                                  originalTemplate: original?.$2,
+                                  revisionId: original?.$1.id,
+                                  initialShowInLibrary: false,
+                                  embedded: true,
+                                  programName: widget.programName,
+                                  onSaved: _saved,
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),

@@ -2,13 +2,18 @@
 
 ## Autoría conjunta en ADMIN · UI-062 · 20/10/2026
 
-`GuidedSessionWorkspace` compone el adaptador ADMIN de `WorkoutEditorPage` y su
-lector existente dentro del programa, con guard local y sin otro router ni copia
-del creador. El trabajo del programa se conserva antes de abrir y al enlazar el
+`GuidedSessionWorkspace` abre directamente el adaptador ADMIN de `WorkoutEditorPage`,
+con guard local y sin otro router ni copia del creador. El trabajo del programa
+se conserva antes de abrir y al enlazar el
 ID guardado. Si el enlace falla, su reintento usa ese ID sin crear otra sesión.
 La presentación elegida es el Dialog existente sobre el programa, que sigue
-montado y conserva su ruta. El contenido `embedded` de creador y lector no añade
-Scaffold ni scroll propio: la ventana aporta un desplazamiento y cabecera fija.
+montado y conserva su ruta. El creador `embedded` no añade Scaffold ni scroll
+propio: la ventana aporta un desplazamiento y cabecera fija. Las tarjetas del
+programa reutilizan `AdminWorkoutContent` para leer la receta sin abrir otra vista.
+Las lecturas se reutilizan por ID dentro del montaje y se invalidan al guardar
+o al volver del catálogo de sesiones;
+el error permite reintentar. Calentamiento/visibilidad/descansos son desplegables
+con valores conservados en los campos del programa.
 El guard local protege el cierre; PopScope delega atrás en esa comprobación. El
 programa bloquea navegación y edición mientras la ventana está abierta. Las rutas
 independientes y todos los contratos de receta mantienen su composición actual.

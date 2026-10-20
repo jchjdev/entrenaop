@@ -10,9 +10,11 @@ import '../../../core/catalog_search.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:workout_core/workout_template.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
 import '../../workouts/presentation/admin_session_library_status.dart';
+import '../../workouts/presentation/admin_workout_content.dart';
 import '../domain/admin_guided_repository.dart';
 import '../domain/admin_guided_work.dart';
 import '../../editorial_covers/domain/program_cover.dart';
@@ -452,6 +454,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   GuidedProgramMode _mode = GuidedProgramMode.guide;
   final _phases = <_PhaseFields>[];
   List<AdminWorkoutSummary> _sessions = [];
+  final _sessionTemplates = <String, Future<WorkoutTemplate?>>{};
   List<GuidedWarmup> _warmups = [];
   List<GuidedProgramCategory> _categories = [];
   final _categoryIds = <String>{};
@@ -692,6 +695,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
             // Primero conservar el ID: si falla la lectura o el enlace se puede
             // recuperar sin crear otra sesión ni perder el trabajo del programa.
             setState(() {
+              _sessionTemplates.remove(id);
               phase.pendingSessions.add(id);
               if (session != null) phase.pendingReplacements[id] = session.id;
               _changed();
@@ -775,7 +779,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     }
   }
 
-  Future<void> _reviewSession(_SessionFields session) async {
+  Future<void> _editSession(_SessionFields session) async {
     final phase = _phases
         .where((p) => p.sessions.contains(session))
         .firstOrNull;
@@ -1177,7 +1181,10 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                                 TextButton(
                                   onPressed: () async {
                                     await context.push('/sessions');
-                                    if (mounted) await _load();
+                                    if (mounted) {
+                                      _sessionTemplates.clear();
+                                      await _load();
+                                    }
                                   },
                                   child: const Text('Ver catálogo de sesiones'),
                                 ),
@@ -1563,137 +1570,202 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
               ],
             ),
             const SizedBox(height: 8),
-            if (source?.catalogScope == 'general' &&
-                source?.status == 'published')
-              _sessionSwitch(
-                title: 'Mostrar en Sesiones de EntrenaOP',
-                subtitle: _savingVisibilityId == source!.id
-                    ? const Text('Guardando visibilidad…')
-                    : AdminSessionLibraryStatus(session: source),
-                value: source.showInLibrary,
-                onChanged: _busy
-                    ? null
-                    : (value) => _setSessionVisibility(source, value),
-              )
-            else
-              AdminSessionLibraryStatus(session: source),
-            if (_visibilityErrors[s.id] case final message?)
-              Text(
-                message,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            const SizedBox(height: 4),
+            AdminSessionLibraryStatus(session: source),
+            const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
-                onPressed: () => _reviewSession(s),
-                icon: const Icon(Icons.visibility_outlined),
-                label: const Text('Revisar sesión'),
+                onPressed:
+                    source != null &&
+                        ['draft', 'published'].contains(source.status)
+                    ? () => _editSession(s)
+                    : null,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Editar sesión'),
               ),
             ),
             if (source == null ||
                 !['draft', 'published'].contains(source.status))
               Text(
-                'Esta versión ya no está publicada. Quita la referencia y elige otra sesión.',
+                'Esta versión no está disponible. Quita la referencia y elige otra sesión.',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
+              )
+            else
+              _sessionContent(s.id),
+            ExpansionTile(
+              initiallyExpanded: s.settingsExpanded,
+              onExpansionChanged: (expanded) =>
+                  setState(() => s.settingsExpanded = expanded),
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Calentamiento y ajustes'),
+              subtitle: Text(
+                [
+                  if (hasWarmup)
+                    'Calentamiento incluido'
+                  else if (s.warmup != null)
+                    _warmups.where((w) => w.id == s.warmup).firstOrNull?.name ??
+                        'Calentamiento no disponible'
+                  else
+                    'Sin calentamiento adjunto',
+                  if (s.adjustable) 'Descansos ajustables',
+                ].join(' · '),
               ),
-            if (hasWarmup)
-              const Text('Esta sesión ya incluye su propio calentamiento.'),
-            if (!hasWarmup)
-              _labeledControl(
-                'Calentamiento adjunto',
-                DropdownButtonFormField<String>(
-                  key: ValueKey('${s.id}:${s.warmup}'),
-                  initialValue: s.warmup ?? '',
-                  isExpanded: true,
-                  isDense: false,
-                  itemHeight: null,
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+              children: [
+                if (source?.catalogScope == 'general' &&
+                    source?.status == 'published')
+                  _sessionSwitch(
+                    title: 'Mostrar en Sesiones de EntrenaOP',
+                    subtitle: _savingVisibilityId == source!.id
+                        ? const Text('Guardando visibilidad…')
+                        : const Text(
+                            'Cambia la visibilidad de esta sesión en todos sus programas.',
+                          ),
+                    value: source.showInLibrary,
+                    onChanged: _busy
+                        ? null
+                        : (value) => _setSessionVisibility(source, value),
+                  ),
+                if (_visibilityErrors[s.id] case final message?)
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-                  items: [
-                    const DropdownMenuItem(
-                      value: '',
-                      child: Text('Sin calentamiento adjunto', softWrap: true),
-                    ),
-                    if (s.warmup != null &&
-                        !_warmups.any((w) => w.id == s.warmup))
-                      DropdownMenuItem(
-                        value: s.warmup,
-                        enabled: false,
-                        child: const Text(
-                          'Calentamiento no disponible',
-                          softWrap: true,
+                if (hasWarmup)
+                  const Text('Esta sesión ya incluye su propio calentamiento.'),
+                if (!hasWarmup)
+                  _labeledControl(
+                    'Calentamiento adjunto',
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('${s.id}:${s.warmup}'),
+                      initialValue: s.warmup ?? '',
+                      isExpanded: true,
+                      isDense: false,
+                      itemHeight: null,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
                         ),
                       ),
-                    for (final w in _warmups)
-                      if (w.status == 'published' || w.id == s.warmup)
-                        DropdownMenuItem(
-                          value: w.id,
-                          enabled: w.status == 'published',
+                      items: [
+                        const DropdownMenuItem(
+                          value: '',
                           child: Text(
-                            '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
+                            'Sin calentamiento adjunto',
                             softWrap: true,
                           ),
                         ),
-                  ],
-                  // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
-                  onChanged: (v) {
-                    setState(() {
-                      s.warmup = v == '' ? null : v;
-                      _changed();
-                    });
-                  },
+                        if (s.warmup != null &&
+                            !_warmups.any((w) => w.id == s.warmup))
+                          DropdownMenuItem(
+                            value: s.warmup,
+                            enabled: false,
+                            child: const Text(
+                              'Calentamiento no disponible',
+                              softWrap: true,
+                            ),
+                          ),
+                        for (final w in _warmups)
+                          if (w.status == 'published' || w.id == s.warmup)
+                            DropdownMenuItem(
+                              value: w.id,
+                              enabled: w.status == 'published',
+                              child: Text(
+                                '${w.name} · v${w.version}${w.status != 'published' ? ' · Retirado' : ''}',
+                                softWrap: true,
+                              ),
+                            ),
+                      ],
+                      // Una referencia retirada conserva su etiqueta hasta que el autor la cambie.
+                      onChanged: (v) {
+                        setState(() {
+                          s.warmup = v == '' ? null : v;
+                          _changed();
+                        });
+                      },
+                    ),
+                  ),
+                if (!hasWarmup)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _createWarmup(s),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Crear y adjuntar calentamiento'),
+                    ),
+                  ),
+                _sessionSwitch(
+                  title: 'Permitir ajustar descansos entre series',
+                  subtitle: const Text(
+                    'Solo bloques convencionales; se conservan los formatos temporizados.',
+                  ),
+                  value: s.adjustable,
+                  onChanged: !supportsRest && !s.adjustable
+                      ? null
+                      : (v) => setState(() {
+                          s.adjustable = v;
+                          _changed();
+                        }),
                 ),
-              ),
-            if (!hasWarmup)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () => _createWarmup(s),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Crear y adjuntar calentamiento'),
-                ),
-              ),
-            _sessionSwitch(
-              title: 'Permitir ajustar descansos entre series',
-              subtitle: const Text(
-                'Solo bloques convencionales; se conservan los formatos temporizados.',
-              ),
-              value: s.adjustable,
-              onChanged: !supportsRest && !s.adjustable
-                  ? null
-                  : (v) => setState(() {
-                      s.adjustable = v;
-                      _changed();
-                    }),
+                if (!supportsRest)
+                  const Text(
+                    'El formato de esta sesión no admite un ajuste genérico de descansos.',
+                  ),
+                if (s.adjustable) ...[
+                  _field(
+                    s.minimum,
+                    'Descanso mínimo (segundos)',
+                    numeric: true,
+                    required: true,
+                  ),
+                  _field(
+                    s.maximum,
+                    'Descanso máximo (segundos)',
+                    numeric: true,
+                    required: true,
+                  ),
+                ],
+              ],
             ),
-            if (!supportsRest)
-              const Text(
-                'El formato de esta sesión no admite un ajuste genérico de descansos.',
-              ),
-            if (s.adjustable) ...[
-              _field(
-                s.minimum,
-                'Descanso mínimo (segundos)',
-                numeric: true,
-                required: true,
-              ),
-              _field(
-                s.maximum,
-                'Descanso máximo (segundos)',
-                numeric: true,
-                required: true,
-              ),
-            ],
           ],
         ),
       ),
     );
   }
+
+  Widget _sessionContent(String id) => FutureBuilder<WorkoutTemplate?>(
+    key: ValueKey('program-session-content-$id'),
+    // Una misma receta se lee una sola vez aunque figure en varias fases.
+    // Guardar desde la ventana invalida solo la receta modificada.
+    future: _sessionTemplates.putIfAbsent(
+      id,
+      () async => widget.workouts.getTemplateById(id),
+    ),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState != ConnectionState.done) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Text('Cargando sesión…'),
+        );
+      }
+      final template = snapshot.data;
+      if (snapshot.hasError || template == null) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => setState(() {
+              _sessionTemplates.remove(id);
+            }),
+            icon: const Icon(Icons.refresh),
+            label: const Text('No se pudo cargar el contenido. Reintentar'),
+          ),
+        );
+      }
+      return AdminWorkoutContent(template: template, showTitle: false);
+    },
+  );
 }
 
 class _SessionFields {
@@ -1722,6 +1794,7 @@ class _SessionFields {
     'maximum': maximum.text,
   };
   String? warmup;
+  bool settingsExpanded = false;
   bool adjustable = false;
   final minimum = TextEditingController(text: '60'),
       maximum = TextEditingController(text: '180');

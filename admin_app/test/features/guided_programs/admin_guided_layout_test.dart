@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:workout_core/workout_template.dart';
 
 import '../../../../test/helpers/performance_visual_review.dart';
 
@@ -30,6 +31,46 @@ class _Guided extends Fake implements AdminGuidedRepository {
 }
 
 class _Workouts extends Fake implements AdminWorkoutRepository {
+  @override
+  Future<WorkoutTemplate?> getTemplateById(String id) async => WorkoutTemplate(
+    id: id,
+    name: 'Empuje de cadera y trabajo complementario',
+    description: 'Mantén el control durante todo el recorrido.',
+    estimatedDurationMinutes: 35,
+    version: 1,
+    blocks: const [
+      WorkoutBlock(
+        id: 'block',
+        name: 'Fuerza',
+        format: WorkoutBlockFormat.straightSets,
+        rounds: 1,
+        restAfterSeconds: 0,
+        items: [
+          WorkoutItem(
+            id: 'item',
+            exerciseId: 'hip-thrust',
+            exerciseName: 'Empuje de cadera',
+            sets: [
+              WorkoutSet(
+                id: 'set1',
+                order: 0,
+                targetReps: 12,
+                targetRir: 2,
+                restAfterSeconds: 90,
+              ),
+              WorkoutSet(
+                id: 'set2',
+                order: 1,
+                targetReps: 10,
+                targetRir: 1,
+                restAfterSeconds: 120,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async => const [
     AdminWorkoutSummary(
@@ -57,9 +98,14 @@ Future<void> _show(WidgetTester tester, Finder target) async {
   final scroll = find.byType(Scrollable).first;
   tester.state<ScrollableState>(scroll).position.jumpTo(0);
   await tester.pumpAndSettle();
-  await tester.scrollUntilVisible(target, 250, scrollable: scroll);
+  for (var i = 0; i < 80 && target.evaluate().isEmpty; i++) {
+    final position = tester.state<ScrollableState>(scroll).position;
+    position.jumpTo((position.pixels + 250).clamp(0, position.maxScrollExtent));
+    await tester.pumpAndSettle();
+  }
+  expect(target, findsWidgets);
   await tester.pumpAndSettle();
-  await Scrollable.ensureVisible(tester.element(target), alignment: 0.45);
+  await Scrollable.ensureVisible(tester.element(target.first), alignment: 0.45);
   await tester.pumpAndSettle();
   expect(tester.takeException(), isNull);
 }
@@ -171,10 +217,33 @@ void main() {
             );
             await capturePerformanceWidget(tester, '$name-phase');
           }
+          final edit = find.widgetWithText(TextButton, 'Editar sesión');
+          await _show(tester, edit);
+          await capturePerformanceWidget(tester, '$name-written-session');
+          expect(find.textContaining('12 rep · RIR 2'), findsWidgets);
+          final duration = tester.renderObject<RenderParagraph>(
+            find.text('35 min estimados').first,
+          );
+          final durationEnd = duration.getBoxesForSelection(
+            const TextSelection(baseOffset: 14, extentOffset: 15),
+          );
+          expect(durationEnd, isNotEmpty);
+          expect(
+            durationEnd.last.right,
+            lessThanOrEqualTo(duration.size.width + 1),
+          );
+          expect(
+            durationEnd.last.bottom,
+            lessThanOrEqualTo(duration.size.height + 1),
+          );
+          final settings = find.text('Calentamiento y ajustes');
+          await _show(tester, settings);
+          await tester.tap(settings.first);
+          await tester.pumpAndSettle();
           await _separateLabel(
             tester,
             'Calentamiento adjunto',
-            find.widgetWithText(TextButton, 'Revisar sesión').first,
+            find.text('Mostrar en Sesiones de EntrenaOP').first,
           );
           await capturePerformanceWidget(tester, '$name-session');
           await _separateLabel(
@@ -195,10 +264,7 @@ void main() {
           await capturePerformanceWidget(tester, '$name-rest');
           await _show(tester, find.text('Guardar y revisar'));
           await capturePerformanceWidget(tester, '$name-actions');
-          expect(
-            find.text('Esta sesión ya incluye su propio calentamiento.'),
-            findsOneWidget,
-          );
+          expect(find.text('Calentamiento incluido'), findsOneWidget);
           expect(tester.takeException(), isNull);
         });
       }

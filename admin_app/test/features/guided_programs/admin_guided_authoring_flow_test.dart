@@ -11,6 +11,7 @@ import 'package:entrenaop_admin/features/programs/data/admin_program_repository.
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -84,7 +85,9 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   final inputs = <String, CreatePersonalWorkoutInput>{};
   final published = <String>{};
   final visibility = <String, bool>{};
-  int creates = 0, publishes = 0, reads = 0;
+  int creates = 0, publishes = 0, reads = 0, revisions = 0;
+  final templateReads = <String, int>{};
+  bool failContent = false;
   bool failPublish = false, failList = false;
   Completer<void>? publishGate;
   @override
@@ -132,45 +135,75 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   }
 
   @override
-  Future<WorkoutTemplate?> getTemplateById(String id) async => WorkoutTemplate(
-    id: id,
-    name: inputs[id]!.name,
-    description: null,
-    estimatedDurationMinutes: 2,
-    version: 1,
-    blocks: const [
-      WorkoutBlock(
-        id: 'running',
-        name: 'Carrera',
-        format: WorkoutBlockFormat.running,
-        rounds: 1,
-        restAfterSeconds: 0,
-        items: [
-          WorkoutItem(
-            id: 'item',
-            exerciseId: runningExerciseId,
-            exerciseName: 'Carrera',
-            sets: [
-              WorkoutSet(
-                id: 'set',
-                order: 0,
-                targetDistanceMeters: 400,
-                targetPaceMinSecondsPerKm: 360,
-                targetPaceMaxSecondsPerKm: 360,
-                restAfterSeconds: 0,
-              ),
+  Future<WorkoutTemplate?> getTemplateById(String id) async {
+    templateReads.update(id, (v) => v + 1, ifAbsent: () => 1);
+    if (failContent) throw StateError('Sin conexión');
+    final input = inputs[id]!;
+    return WorkoutTemplate(
+      id: id,
+      name: input.name,
+      description: input.description,
+      estimatedDurationMinutes: input.estimatedDurationMinutes,
+      version: 1,
+      blocks: [
+        for (final block in input.blocks)
+          WorkoutBlock(
+            id: 'block',
+            name: block.name,
+            format: block.format,
+            rounds: block.rounds,
+            restAfterSeconds: block.restAfterSeconds,
+            timeCapSeconds: block.timeCapSeconds,
+            items: [
+              for (final exercise in block.exercises)
+                WorkoutItem(
+                  id: 'item',
+                  exerciseId: exercise.exerciseId,
+                  exerciseName: exercise.exerciseId == runningExerciseId
+                      ? 'Carrera'
+                      : 'Puente de glúteos',
+                  sets: [
+                    for (final set in exercise.sets)
+                      WorkoutSet(
+                        id: 'set',
+                        order: 0,
+                        targetReps:
+                            set.targetType == WorkoutTargetType.repetitions
+                            ? set.targetValue.toInt()
+                            : null,
+                        targetDurationSeconds:
+                            set.targetType == WorkoutTargetType.duration
+                            ? set.targetValue.toInt()
+                            : null,
+                        targetDistanceMeters:
+                            set.targetType == WorkoutTargetType.distance
+                            ? set.targetValue
+                            : null,
+                        targetLoadKg: set.targetLoadKg,
+                        targetRir: set.applicableTargetRir,
+                        targetPaceMinSecondsPerKm:
+                            set.targetPaceMinSecondsPerKm,
+                        targetPaceMaxSecondsPerKm:
+                            set.targetPaceMaxSecondsPerKm,
+                        recoveryType: set.recoveryType,
+                        recoveryDurationSeconds: set.recoveryDurationSeconds,
+                        recoveryDistanceMeters: set.recoveryDistanceMeters,
+                        restAfterSeconds: set.restAfterSeconds,
+                      ),
+                  ],
+                ),
             ],
           ),
-        ],
-      ),
-    ],
-  );
+      ],
+    );
+  }
+
   @override
   Future<String> revise(String id, CreatePersonalWorkoutInput input) async {
-    final next = 'revision-$id';
-    inputs.remove(id);
+    revisions++;
+    final next = published.contains(id) ? 'revision-$id' : id;
     inputs[next] = input;
-    visibility[next] = visibility.remove(id) ?? true;
+    visibility[next] = visibility[id] ?? true;
     return next;
   }
 }
@@ -511,13 +544,9 @@ void main() {
         await _mount(tester, _Guided(), workouts);
         await _create(tester, 'Sesión ya guardada');
         if (published) workouts.published.add('session-1');
-        await _tap(tester, find.text('Revisar sesión'));
-        await _tap(
-          tester,
-          find.text(
-            published ? 'Crear nueva versión en borrador' : 'Editar borrador',
-          ),
-        );
+        await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
+        expect(find.byType(AdminWorkoutPreviewPage), findsNothing);
+        expect(workouts.revisions, 0);
         expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
         expect(workouts.creates, 1);
         expect(workouts.inputs.keys, ['session-1']);
@@ -528,30 +557,104 @@ void main() {
     );
   }
 
+  for (final published in [false, true]) {
+    testWidgets(
+      'editar ${published ? 'publicada' : 'borrador'} en un clic actualiza el lector y conserva publicación conjunta',
+      (tester) async {
+        final guided = _Guided(), workouts = _Workouts();
+        final router = await _mount(tester, guided, workouts);
+        final location = router.routeInformationProvider.value.uri;
+        await _create(tester, 'Sesión original');
+        expect(find.byType(AdminWorkoutContent), findsOneWidget);
+        expect(find.textContaining('400 m'), findsOneWidget);
+        if (published) workouts.published.add('session-1');
+        await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
+        expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+        expect(find.byType(AdminWorkoutPreviewPage), findsNothing);
+        expect(find.text('Publicar sesión'), findsNothing);
+        expect(workouts.revisions, 0);
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Nombre de la sesión'),
+          'Sesión revisada',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Distancia (m)'),
+          '800',
+        );
+        await _tap(tester, find.text('Guardar en programa'));
+        expect(router.routeInformationProvider.value.uri, location);
+        expect(find.text('1 sesión en esta rutina'), findsOneWidget);
+        expect(find.text('1. Sesión revisada'), findsOneWidget);
+        expect(find.textContaining('800 m'), findsOneWidget);
+        expect(find.textContaining('400 m'), findsNothing);
+        expect(workouts.revisions, 1);
+        if (published) {
+          expect(workouts.inputs['session-1']!.name, 'Sesión original');
+          expect(workouts.published, {'session-1'});
+        }
+        await _tap(tester, find.text('Guardar borrador'));
+        expect(
+          guided.saved!.phases.single.sessions.single.templateId,
+          published ? 'revision-session-1' : 'session-1',
+        );
+        expect(workouts.publishes, 0);
+      },
+    );
+  }
+
   testWidgets(
-    'editar dentro del programa conserva ruta y enlaza la identidad devuelta',
+    'descartar la edición conserva la sesión escrita sin crear versiones',
     (tester) async {
-      final guided = _Guided(), workouts = _Workouts();
-      final router = await _mount(tester, guided, workouts);
-      final location = router.routeInformationProvider.value.uri;
+      final workouts = _Workouts();
+      await _mount(tester, _Guided(), workouts);
       await _create(tester, 'Sesión original');
-      await _tap(tester, find.text('Revisar sesión'));
-      expect(find.byType(AdminWorkoutPreviewPage), findsOneWidget);
-      expect(find.text('Publicar sesión'), findsNothing);
-      await _tap(tester, find.text('Editar borrador'));
+      await _tap(tester, find.widgetWithText(TextButton, 'Editar sesión'));
       await tester.enterText(
-        find.widgetWithText(TextField, 'Nombre de la sesión'),
-        'Sesión revisada',
+        find.widgetWithText(TextField, 'Distancia (m)'),
+        '800',
       );
-      await _tap(tester, find.text('Guardar en programa'));
-      expect(router.routeInformationProvider.value.uri, location);
-      expect(find.text('1 sesión en esta rutina'), findsOneWidget);
-      await _tap(tester, find.text('Guardar borrador'));
+      await _tap(tester, find.byTooltip('Volver al programa'));
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await _tap(tester, find.text('Continuar'));
       expect(
-        guided.saved!.phases.single.sessions.single.templateId,
-        'revision-session-1',
+        tester
+            .widget<TextField>(find.widgetWithText(TextField, 'Distancia (m)'))
+            .controller!
+            .text,
+        '800',
       );
+      await _tap(tester, find.byTooltip('Volver al programa'));
+      await _tap(tester, find.text('Salir sin guardar'));
+      expect(find.byType(AdminWorkoutEditorPage), findsNothing);
+      expect(find.textContaining('400 m'), findsOneWidget);
+      expect(find.textContaining('800 m'), findsNothing);
+      expect(workouts.revisions, 0);
+      expect(workouts.creates, 1);
       expect(workouts.publishes, 0);
+    },
+  );
+
+  testWidgets(
+    'fallo del lector permite reintentar sin crear ni publicar sesiones',
+    (tester) async {
+      final workouts = _Workouts()..failContent = true;
+      await _mount(tester, _Guided(), workouts);
+      await _create(tester, 'Sesión con lectura pendiente');
+      final retry = find.text('No se pudo cargar el contenido. Reintentar');
+      expect(retry, findsOneWidget);
+      expect(workouts.templateReads['session-1'], 1);
+      workouts.failContent = false;
+      await _tap(tester, retry);
+      expect(find.byType(AdminWorkoutContent), findsOneWidget);
+      expect(find.textContaining('400 m'), findsOneWidget);
+      expect(workouts.templateReads['session-1'], 2);
+      expect(workouts.creates, 1);
+      expect(workouts.revisions, 0);
+      expect(workouts.publishes, 0);
+      await _tap(tester, find.text('Calentamiento y ajustes'));
+      await _tap(tester, find.text('Calentamiento y ajustes'));
+      expect(workouts.templateReads['session-1'], 2);
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -561,6 +664,7 @@ void main() {
       final guided = _Guided(), workouts = _Workouts();
       await _mount(tester, guided, workouts);
       await _create(tester, 'Sesión con activación');
+      await _tap(tester, find.text('Calentamiento y ajustes'));
       await _tap(tester, find.text('Crear y adjuntar calentamiento'));
       await tester.enterText(
         find.widgetWithText(TextField, 'Nombre de la sesión'),

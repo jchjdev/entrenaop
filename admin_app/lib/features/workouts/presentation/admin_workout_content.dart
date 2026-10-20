@@ -26,16 +26,12 @@ class AdminWorkoutContent extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          Chip(label: Text('Versión ${template.version}')),
-          Chip(
-            label: Text(
-              '${template.blocks.length} ${template.blocks.length == 1 ? 'bloque' : 'bloques'}',
-            ),
+          _summaryChip('Versión ${template.version}'),
+          _summaryChip(
+            '${template.blocks.length} ${template.blocks.length == 1 ? 'bloque' : 'bloques'}',
           ),
           if (template.estimatedDurationMinutes != null)
-            Chip(
-              label: Text('${template.estimatedDurationMinutes} min estimados'),
-            ),
+            _summaryChip('${template.estimatedDurationMinutes} min estimados'),
         ],
       ),
       const SizedBox(height: 12),
@@ -48,6 +44,10 @@ class AdminWorkoutContent extends StatelessWidget {
         ),
     ],
   );
+  // Chip impone una sola línea por defecto; estos datos deben leerse también
+  // en una tarjeta estrecha con texto ampliado.
+  Widget _summaryChip(String label) =>
+      Chip(label: Text(label, softWrap: true, maxLines: 3));
   Widget _block(BuildContext context, int index, WorkoutBlock block) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [

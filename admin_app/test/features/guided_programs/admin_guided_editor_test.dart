@@ -9,7 +9,7 @@ import 'package:entrenaop_admin/features/guided_programs/presentation/guided_ses
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/workout_template.dart';
-import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:entrenaop_admin/features/editorial_covers/presentation/program_cover_editor.dart';
@@ -57,19 +57,25 @@ class _Guided extends Fake implements AdminGuidedRepository {
 
 class _Workouts extends Fake implements AdminWorkoutRepository {
   bool listed = true;
+  int templateReads = 0;
+  @override
+  Future<List<AdminExercise>> listPublicExercises() async => [];
   bool failVisibility = false;
   Completer<void>? visibilityGate;
   final visibilityWrites = <({String id, bool value, bool expected})>[];
 
   @override
-  Future<WorkoutTemplate?> getTemplateById(String id) async => WorkoutTemplate(
-    id: id,
-    name: 'Empuje publicado',
-    description: null,
-    estimatedDurationMinutes: null,
-    version: 1,
-    blocks: const [],
-  );
+  Future<WorkoutTemplate?> getTemplateById(String id) async {
+    templateReads++;
+    return WorkoutTemplate(
+      id: id,
+      name: 'Empuje publicado',
+      description: null,
+      estimatedDurationMinutes: null,
+      version: 1,
+      blocks: const [],
+    );
+  }
 
   @override
   Future<void> setLibraryVisibility(
@@ -137,6 +143,16 @@ Future<void> _mountVisibilityProgram(
     ),
   );
   await tester.pumpAndSettle();
+  for (final tile in find.byType(ExpansionTile).evaluate().toList()) {
+    final title = find.descendant(
+      of: find.byWidget(tile.widget),
+      matching: find.text('Calentamiento y ajustes'),
+    );
+    await tester.ensureVisible(title);
+    await tester.pumpAndSettle();
+    await tester.tap(title);
+    await tester.pumpAndSettle();
+  }
   await tester.scrollUntilVisible(
     find.text('Mostrar en Sesiones de EntrenaOP').first,
     250,
@@ -151,10 +167,12 @@ void main() {
     final workouts = _Workouts();
     final guided = _Guided();
     await _mountVisibilityProgram(tester, guided, workouts);
+    expect(workouts.templateReads, 1);
     final switches = find.widgetWithText(
       SwitchListTile,
       'Mostrar en Sesiones de EntrenaOP',
     );
+    await tester.ensureVisible(switches.first);
     await tester.tap(switches.first);
     await tester.pumpAndSettle();
     expect(workouts.visibilityWrites.single, (
@@ -224,72 +242,114 @@ void main() {
     },
   );
 
-  testWidgets('el programa muestra la visibilidad y la refresca tras revisar', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(1100, 1600));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    final workouts = _Workouts();
-    final guided = _Guided();
-    final router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, _) => AdminGuidedEditorPage(
-            repository: guided,
-            workouts: workouts,
-            original: const GuidedProgram(
-              id: 'program',
-              name: 'Programa de prueba',
-              mode: GuidedProgramMode.guide,
-              phases: [
-                GuidedPhase(
-                  name: 'Trabajo',
-                  sessions: [
-                    GuidedSession(
-                      templateId: 'official',
-                      name: 'Empuje publicado',
-                    ),
-                  ],
-                ),
-              ],
+  testWidgets(
+    'edita directamente y refresca la visibilidad al cerrar la ventana',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1100, 1600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final workouts = _Workouts();
+      final guided = _Guided();
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => AdminGuidedEditorPage(
+              repository: guided,
+              workouts: workouts,
+              original: const GuidedProgram(
+                id: 'program',
+                name: 'Programa de prueba',
+                mode: GuidedProgramMode.guide,
+                phases: [
+                  GuidedPhase(
+                    name: 'Trabajo',
+                    sessions: [
+                      GuidedSession(
+                        templateId: 'official',
+                        name: 'Empuje publicado',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-    await tester.pumpWidget(
-      MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
-    );
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Visible como sesión suelta'),
-      250,
-      scrollable: find.byType(Scrollable).last,
-    );
-    expect(find.text('Visible como sesión suelta'), findsOneWidget);
-    await tester.ensureVisible(find.text('Revisar sesión'));
-    await tester.tap(find.text('Revisar sesión'));
-    await tester.pumpAndSettle();
-    final toggle = find.descendant(
-      of: find.byType(AdminWorkoutPreviewPage),
-      matching: find.widgetWithText(
-        SwitchListTile,
-        'Mostrar en Sesiones de EntrenaOP',
-      ),
-    );
-    await tester.ensureVisible(toggle);
-    await tester.tap(toggle);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Volver al programa'));
-    await tester.pumpAndSettle();
-    expect(find.text('Oculta como sesión suelta'), findsOneWidget);
-    expect(find.text('Visible como sesión suelta'), findsNothing);
-    expect(find.text('1. Empuje publicado'), findsOneWidget);
-    expect(guided.saved, isNull);
-    expect(tester.takeException(), isNull);
-  });
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Visible como sesión suelta'),
+        250,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('Visible como sesión suelta'), findsOneWidget);
+      final edit = find.widgetWithText(TextButton, 'Editar sesión');
+      await tester.ensureVisible(edit);
+      await tester.tap(edit);
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+      workouts.listed = false;
+      await tester.tap(find.byTooltip('Volver al programa'));
+      await tester.pumpAndSettle();
+      expect(find.text('Oculta como sesión suelta'), findsOneWidget);
+      expect(find.text('Visible como sesión suelta'), findsNothing);
+      expect(find.text('1. Empuje publicado'), findsOneWidget);
+      expect(guided.saved, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'plegar ajustes no omite la validación de descansos ni pierde valores',
+    (tester) async {
+      final workouts = _Workouts();
+      final guided = _Guided();
+      await _mountVisibilityProgram(tester, guided, workouts);
+      final toggle = find
+          .widgetWithText(
+            SwitchListTile,
+            'Permitir ajustar descansos entre series',
+          )
+          .first;
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      final minimum = find.byKey(
+        const ValueKey('program-field-Descanso mínimo (segundos)'),
+      );
+      await tester.ensureVisible(minimum);
+      await tester.pumpAndSettle();
+      await tester.enterText(minimum, '');
+      FocusManager.instance.primaryFocus?.unfocus();
+      final settings = find.text('Calentamiento y ajustes').first;
+      await tester.ensureVisible(settings);
+      await tester.pumpAndSettle();
+      await tester.tap(settings);
+      await tester.pumpAndSettle();
+      expect(minimum, findsNothing);
+      final save = find.text('Guardar borrador');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(guided.saved, isNull);
+      expect(
+        find.text('Escribe los descansos en segundos enteros.'),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(settings);
+      await tester.pumpAndSettle();
+      await tester.tap(settings);
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextFormField>(minimum).controller!.text, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('el selector distingue borradores y permite reutilizar ocultas', (
     tester,

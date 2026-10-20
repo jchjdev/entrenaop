@@ -11,6 +11,7 @@ import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:workout_core/workout_template.dart';
 
 class _Work extends Fake implements AdminGuidedWorkRepository {
   final rows = <String, GuidedWork>{};
@@ -83,6 +84,15 @@ class _Guided extends Fake implements AdminGuidedRepository {
 class _Workouts extends Fake implements AdminWorkoutRepository {
   _Workouts({this.withReplacement = false});
   final bool withReplacement;
+  @override
+  Future<WorkoutTemplate?> getTemplateById(String id) async => WorkoutTemplate(
+    id: id,
+    name: 'Sesión publicada',
+    description: null,
+    estimatedDurationMinutes: null,
+    version: 1,
+    blocks: const [],
+  );
   @override
   Future<List<AdminWorkoutSummary>> listGeneral() async => [
     if (withReplacement)
@@ -164,7 +174,7 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.ensureVisible(resume);
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
       await tester.tap(resume);
       await tester.pumpAndSettle();
       final saved =
@@ -290,8 +300,18 @@ void main() {
       expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
       expect(find.text('Glúteos en construcción'), findsOneWidget);
       expect(find.text('sin terminar'), findsOneWidget);
+      final settings = find.text('Calentamiento y ajustes');
+      await tester.ensureVisible(settings);
+      await tester.pumpAndSettle();
+      await tester.tap(settings);
+      await tester.pumpAndSettle();
       expect(find.text('-'), findsOneWidget);
       expect(find.textContaining('pendiente'), findsWidgets);
+      tester
+          .state<ScrollableState>(find.byType(Scrollable).first)
+          .position
+          .jumpTo(0);
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey('program-field-Nombre del programa')),
         'Glúteos recuperado',

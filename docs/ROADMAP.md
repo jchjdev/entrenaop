@@ -2,7 +2,9 @@
 
 **UI-062 · 20/10/2026 · creadores y Compacto:** tras comparar ventana y edición
 en página, Javier elige la ventana existente para focalizar la sesión y pide
-reutilizarla sin otro rediseño ni selector. El programa conserva su contexto;
+reutilizarla sin otro rediseño ni selector. Confirma leer la sesión escrita en las
+tarjetas del programa y editar con un clic directo a la ventana. El lector se
+reutiliza, los ajustes se pliegan y el programa conserva su contexto.
 Guardar en programa incorpora borradores y la revisión/publicación final activa
 el conjunto en una transacción. Se conservan reutilización, versiones, visibilidad
 suelta opcional, recuperación y todas las correcciones de formatos/series.

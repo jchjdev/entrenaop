@@ -4,6 +4,44 @@ Javier concentra creadores y Compacto en este chat. Solicita corregir los
 solapamientos de personalización de series y evitar saltar entre páginas para
 crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
+## Lectura en el programa y edición directa · 20/10/2026
+
+Javier confirma ver la sesión escrita en «Sesiones del programa» y abrir el
+editor en la ventana existente con un clic. Se elimina el paso intermedio de
+abrir la revisión y pulsar después Editar borrador. La revisión final del programa
+antes de publicar y el guardado/publicación conjunta se conservan.
+
+Cada tarjeta reutiliza `AdminWorkoutContent`: bloques, ejercicios, objetivos por
+serie, carga opcional, RIR compatible, ritmos y descansos del lector existente.
+«Editar sesión» abre directamente el creador compartido. Crear una sesión nueva
+sigue abriendo la misma ventana. Abrir no escribe ni crea otra versión; guardar
+un borrador conserva su identidad y guardar una publicada crea su revisión.
+Al guardar se actualiza el contenido escrito y se vuelve al programa.
+
+Calentamiento, visibilidad editorial y ajustes de descanso quedan en
+«Calentamiento y ajustes», plegado inicialmente y con resumen visible. Plegar y
+desplazarse conservan sus valores y estado visual sin marcar el montaje modificado.
+Las validaciones de receta, referencias y descansos siguen actuando al guardar.
+
+Las lecturas se reutilizan por ID durante el montaje, también entre fases o
+referencias repetidas. Guardar invalida la receta modificada; un error de lectura
+se muestra en la tarjeta con reintento, sin eliminar el enlace ni impedir editar.
+No se añaden creadores, formatos de receta, paquetes, RPC, migraciones o permisos.
+Solo cambia ADMIN y su cobertura de autoría, disposición y recuperación.
+
+Verificación de esta mejora: análisis de ADMIN limpio y batería completa con
+259 pruebas correctas y dos omisiones previas. Se comprueban edición directa de
+borradores/publicadas, refresco de la receta tras guardar, cancelación sin
+escrituras, error/reintento del lector, lectura única de referencias repetidas y
+validación de descansos con ajustes plegados. Las doce combinaciones de rutina o
+fases, 320/390/1100 px y texto 1×/2× pasan; capturas reales de escritorio y móvil
+revisadas. Los indicadores del lector envuelven el texto para conservar la duración
+completa a 320 px con texto ampliado. Sin cambios en raíz ni paquetes compartidos.
+Compilación web release local para Dev correcta, con CSP, sin mapas de fuentes
+ni recursos CDN. No se recarga el montaje abierto del usuario.
+La evidencia de la primera recuperación de la ventana, a continuación, conserva
+su alcance histórico.
+
 ## Presentación elegida: la ventana existente · 20/10/2026
 
 Tras comparar ambas presentaciones, Javier elige la ventana para focalizar la
