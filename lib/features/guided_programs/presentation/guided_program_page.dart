@@ -20,22 +20,29 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
   Future<void> _keepFreeProgram(GuidedDetailCubit cubit) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        scrollable: true,
+      builder: (ctx) => EntrenaDialog(
         title: const Text('¿Continuar solo con este programa?'),
-        content: const Text(
-          'Los demás programas quedarán en pausa. Conservarás sus fases y entrenamientos y podrás alternarlos usando tu plaza Free.',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Los demás programas quedarán en pausa. Conservarás sus fases y entrenamientos y podrás alternarlos usando tu plaza Free.',
+            ),
+            const SizedBox(height: 20),
+            EntrenaDialogActions(
+              primaryLabel: 'Elegir este programa',
+              onPrimary: () => ctx.pop(true),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => ctx.pop(false),
+                  child: const Text('Volver'),
+                ),
+              ],
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => ctx.pop(false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            onPressed: () => ctx.pop(true),
-            child: const Text('Elegir este programa'),
-          ),
-        ],
+        actions: const [],
       ),
     );
     if (confirmed == true && mounted) await cubit.keepFreeProgram();
@@ -44,23 +51,29 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
   Future<void> _pause(GuidedDetailCubit cubit) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => EntrenaDialog(
         title: const Text('¿Pausar este programa?'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Conservarás la fase actual y tus entrenamientos. Podrás iniciar otro programa y retomar este más adelante.',
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Conservarás la fase actual y tus entrenamientos. Podrás iniciar otro programa y retomar este más adelante.',
+            ),
+            const SizedBox(height: 20),
+            EntrenaDialogActions(
+              primaryLabel: 'Pausar',
+              onPrimary: () => Navigator.pop(ctx, true),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Volver'),
+                ),
+              ],
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Pausar'),
-          ),
-        ],
+        actions: const [],
       ),
     );
     if (confirmed == true && mounted) await cubit.setPaused(true);
@@ -69,23 +82,33 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
   Future<void> _abandon(GuidedDetailCubit cubit) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => EntrenaDialog(
         title: const Text('¿Dejar este programa?'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Dejará de aparecer en Inicio y en tus programas iniciados. Tus entrenamientos y registros se conservan. Si vuelves a iniciarlo, empezarás desde el principio.',
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Dejará de aparecer en Inicio y en tus programas iniciados. Tus entrenamientos y registros se conservan. Si vuelves a iniciarlo, empezarás desde el principio.',
+            ),
+            const SizedBox(height: 20),
+            EntrenaDialogActions(
+              primaryLabel: 'Cancelar',
+              onPrimary: () => Navigator.pop(ctx, false),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: EntrenaButtonStyles.destructive(ctx),
+                  child: const Text(
+                    'Dejar programa',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Dejar programa'),
-          ),
-        ],
+        actions: const [],
       ),
     );
     if (confirmed == true && mounted) await cubit.abandon();
@@ -96,31 +119,34 @@ class _GuidedProgramPageState extends State<GuidedProgramPage> {
     final last = d.currentPhase == d.program.phases.length - 1;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => EntrenaDialog(
         title: Text(last ? 'Completar programa' : 'Pasar a la siguiente fase'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(d.program.phases[d.currentPhase].instructions),
-              const SizedBox(height: 16),
-              const Text(
-                'Confirma que has revisado estas condiciones y quieres avanzar. El tiempo transcurrido no cambia la fase por sí solo.',
-              ),
-            ],
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(d.program.phases[d.currentPhase].instructions),
+            const SizedBox(height: 16),
+            const Text(
+              'Confirma que has revisado estas condiciones y quieres avanzar. El tiempo transcurrido no cambia la fase por sí solo.',
+            ),
+            const SizedBox(height: 20),
+            EntrenaDialogActions(
+              primaryLabel: last ? 'Completar programa' : 'Confirmar avance',
+              onPrimary: () => Navigator.pop(ctx, true),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text(
+                    'Continuar en esta fase',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Continuar en esta fase'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(last ? 'Completar programa' : 'Confirmar avance'),
-          ),
-        ],
+        actions: const [],
       ),
     );
     if (confirmed == true && mounted) {

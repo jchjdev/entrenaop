@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**UI-061 · 20/10/2026 · confirmaciones de programas coherentes:** se corrigen
+los botones pegados que Javier muestra en iPhone. Dejar, pausar, elegir plaza
+Free, avanzar y completar reutilizan los diálogos comunes, con acciones
+verticales, ancho compartido y separación de 10 px. Cancelar es prioritario
+frente a Dejar programa, que usa el estilo de peligro existente. Sin cambios
+de negocio, SQL, tema global ni ADMIN. Veinte casos de distribución y 76
+pruebas relacionadas correctos; 1.128 pruebas raíz correctas con una omisión
+previa. Capturas de widgets reales revisadas en móvil, texto ampliado,
+horizontal y escritorio. Análisis limpio.
+**Siguiente comprobación de esta corrección:** repetir Dejar programa en el
+iPhone actualizado; el alcance no cierra las aceptaciones móviles de Pro.
+[Criterio visual](VISUAL_DESIGN.md).
+
 **COM-020 · 20/10/2026 · pérdida de Pro y elección de una plaza Free:** Javier
 rechaza conservar varios programas utilizables al perder Pro. Se corrige para
 cualquier cantidad superior a uno, sin excepción para programas previos: antes

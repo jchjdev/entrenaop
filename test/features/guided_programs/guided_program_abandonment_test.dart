@@ -44,6 +44,8 @@ void main() {
       await tester.scrollUntilVisible(find.text('Dejar programa'), 200);
       await tester.tap(find.text('Dejar programa'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cancelar'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
       expect(repo.abandonments, 0);

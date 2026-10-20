@@ -64,6 +64,8 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Continuar solo con este programa'));
         await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Volver'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Volver'));
         await tester.pumpAndSettle();
         expect(repo.selections, 0);
@@ -107,6 +109,8 @@ void main() {
       await tester.ensureVisible(find.text('Pausar programa'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Pausar programa'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Volver'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Volver'));
       await tester.pumpAndSettle();
@@ -154,6 +158,8 @@ void main() {
         findsOneWidget,
       );
       expect(repo.paused, isTrue);
+      await tester.ensureVisible(find.text('Volver'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Volver'));
       await tester.pumpAndSettle();
       expect(find.text('Programa en pausa'), findsOneWidget);

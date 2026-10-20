@@ -1,5 +1,27 @@
 # Identidad visual de EntrenaOP
 
+## Confirmaciones de programas guiados · UI-061 · 20/10/2026
+
+Javier aporta una foto de iPhone con Cancelar y Dejar programa pegados y pide
+comprobar su concordancia con la app. Estos avisos usaban acciones Material
+sueltas, fuera del patrón de UI-036. Dejar, pausar, elegir una plaza Free,
+avanzar y completar reutilizan ahora `EntrenaDialog` y `EntrenaDialogActions`.
+Los botones comparten ancho, se apilan con 10 px de separación y forman parte
+del contenido desplazable, también con texto grande o pantalla horizontal.
+
+En **Dejar programa**, Cancelar es la acción principal naranja y Dejar programa
+utiliza el borde, texto y fondo tenue de peligro ya presentes en el ejecutor
+y los editores. Las otras confirmaciones mantienen su acción principal y
+alternativa existentes. Se conservan textos, confirmaciones y operaciones.
+No se modifica el tema global, los componentes compartidos ni la lógica de
+pausa, abandono, fases o derechos comerciales.
+
+Veinte casos de distribución cubren los cinco avisos en 390 px con áreas
+seguras de móvil, 320 px con texto 2×, horizontal y escritorio. Se comprueban
+separación real de los botones, ancho, jerarquía y cancelación sin mutaciones.
+Capturas de widgets reales con fuente Roboto revisadas; reproducción en el
+iPhone actualizado pendiente. Análisis y batería raíz se registran en Roadmap.
+
 ## Creador de programas en ADMIN · UI-060 · 19/10/2026
 
 Tras detectar etiquetas flotantes sobre botones, Javier solicita revisar el

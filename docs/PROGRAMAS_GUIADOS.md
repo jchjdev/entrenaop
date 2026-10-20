@@ -1,5 +1,11 @@
 # Programas guiados oficiales
 
+**UI-061 · 20/10/2026:** corregidas las confirmaciones de dejar, pausar, elegir
+una plaza Free, avanzar y completar con los componentes visuales comunes.
+Acciones verticales separadas y desplazables; Cancelar prioritario y Dejar
+programa con el tratamiento de peligro existente. Se conservan las operaciones
+y los contratos COM-019/020. [Diseño y cobertura](VISUAL_DESIGN.md).
+
 ## Acceso Free/Pro y pausa · COM-019/020 · 20/10/2026
 
 Free incluye **un programa guiado activo**; Pro permite varios sin esta cuota.
