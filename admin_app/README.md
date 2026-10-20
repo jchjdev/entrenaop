@@ -40,8 +40,10 @@ ejercicios. `packages/workout_editor_ui/` aporta el formulario de ejercicios,
 los campos de carrera, el buscador con miniaturas, el selector de formatos de
 bloque y los campos de objetivo, descanso, carga y RIR de cada serie. Cada
 aplicación conserva su navegación, guardado, autorización y funciones propias.
-La organización de bloques, repeticiones y variantes aún tiene adaptadores de
-pantalla distintos.
+Desde TRN-007, `WorkoutEditorPage` contiene también la composición completa de
+sesiones/calentamientos. `AdminWorkoutEditorPage` aporta catálogo, textos,
+guardado oficial, visibilidad editorial y navegación. El creador común no
+importa ADMIN ni go_router; el editor personal conserva su contenedor.
 
 `packages/entrena_ui/` comparte el tema, los componentes de marca y las portadas
 con la app del deportista. Preparaciones incorpora edición de pruebas/baremos,

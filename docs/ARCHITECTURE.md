@@ -568,6 +568,16 @@ distribución concreta y el primer recorrido están propuestos en
 [Espacio de entrenadores](TRAINER_APP.md); esta revisión documental no inicia
 una refactorización ni implementa permisos profesionales.
 
+**Primer tramo implementado · TRN-007 · 20/10/2026:** `WorkoutEditorPage` vive
+en `workout_editor_ui` y reúne el creador completo de sesiones y calentamientos
+antes contenido en ADMIN. Recibe catálogo neutral, guardado e ID confirmado,
+textos y campos adicionales; no depende de tipos administrativos ni del router.
+`AdminWorkoutEditorPage` conserva el catálogo autorizado, las operaciones
+existentes, `show_in_library` y el retorno por go_router. El paquete depende del
+`entrena_ui` existente para la protección de salida, sin dependencias externas
+nuevas. El creador de programas y el editor personal mantienen sus contenedores;
+no existen todavía permisos ni asignaciones profesionales.
+
 `website/next/` contiene un borrador local de la futura web de presentación.
 Resume el recorrido que existe en desarrollo, anuncia iPhone y Android sin
 ofrecer descargas y reserva entradas visibles pero desactivadas para
@@ -1169,8 +1179,9 @@ El futuro plan oficial separará dos responsabilidades que no deben confundirse:
    app del opositor; no comparte navegación ni guardado personal. El paquete
    Flutter `packages/workout_editor_ui/` comparte campos de tramos de carrera,
    búsqueda de ejercicios, selector de formatos y campos de series de fuerza.
-   La organización de bloques y repeticiones aún se adapta en cada pantalla;
-   la publicación y la edición personal siguen siendo responsabilidades
+   TRN-007 añade el creador completo de sesiones/calentamientos consumido por
+   ADMIN mediante un adaptador; el editor personal mantiene su contenedor.
+   La publicación y la edición personal siguen siendo responsabilidades
    distintas. La función
    `create_admin_workout_draft` exige `admin_permissions`, crea la sesión
    privada y registra su destino en `program_workout_templates` en una

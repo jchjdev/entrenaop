@@ -1,10 +1,13 @@
 # Espacio de entrenadores
 
-## Estado · 19/10/2026
+## Estado · 20/10/2026
 
-Documento de preparación, basado en la inspección de `main` en `39f24ff`.
-No hay aplicación profesional ni relación entrenador-cliente implementadas.
-Esta revisión no ejecuta SQL remoto ni modifica aplicaciones o infraestructura.
+La preparación de la nube del 19/10/2026, basada en `39f24ff`, se integra en
+Windows mediante avance directo hasta `18e5d03`, conservando los cambios locales.
+TRN-007 completa el primer tramo técnico: el creador de sesiones queda en el
+paquete compartido y ADMIN lo consume mediante su adaptador. Todavía no hay
+aplicación profesional ni relación entrenador-cliente implementadas. Esta
+extracción no cambia SQL, permisos, contenido remoto ni infraestructura.
 
 Javier confirma en TRN-003 que las herramientas existentes deben reutilizarse
 sin duplicar ADMIN. Los criterios de TRN-001/004/005 siguen vigentes: preparadores
@@ -23,9 +26,9 @@ TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
 | Pieza existente | Reutilización y límite observado |
 | --- | --- |
 | `packages/workout_core/` | Plantillas, borradores, validación y modelos/códecs de programas guiados. Sus recetas pueden compartirse; no acreditan autorización profesional. |
-| `packages/workout_editor_ui/` | Campos de series, carrera, formatos, tiempos, ejercicios y composición Compacto. No contiene los creadores completos de ADMIN. |
+| `packages/workout_editor_ui/` | Campos y composición Compacto; desde TRN-007 incluye WorkoutEditorPage, creador completo de sesiones/calentamientos independiente de ADMIN y del router. El editor de programas sigue pendiente. |
 | `packages/entrena_ui/` | Tema, marca, tarjetas, política de teclado, diálogos y protección de salida. Reutilizable por el panel profesional. |
-| `AdminWorkoutEditorPage` | Usa campos compartidos y permite inyectar un guardado, pero depende de `AdminProgram`, `AdminWorkoutRepository`, catálogo administrativo y retorno por rutas. Separar formulario y operaciones antes de consumirlo desde otra app. |
+| `AdminWorkoutEditorPage` | Adaptador del creador compartido: transforma el catálogo autorizado, conserva creación/revisión/calentamientos, show_in_library y retorno por rutas. AdminProgram y AdminWorkoutRepository no salen de ADMIN. |
 | `admin_guided_pages.dart` y revisión | Mezclan composición de fases, catálogo, recuperación, portadas, categorías globales, visibilidad pública y rutas administrativas. Extraer solo las piezas necesarias, conservando los recorridos actuales. |
 | Recuperación de trabajo guiado | El controlador serializa escrituras y conserva peticiones inciertas; su contrato y persistencia actuales son administrativos. Reutilizar el comportamiento requiere separar ese contexto y conservar conflictos/idempotencia. |
 | App del deportista | Ya dispone de agenda, vista previa, ejecutor e historial. Ampliar lectura e inicio para asignaciones autorizadas; mantener una sola ejecución y un solo registro de resultados. |
@@ -33,6 +36,48 @@ TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
 `WorkoutTemplateOrigin.coach` y `ScheduledWorkoutSource.coach` existen, pero
 no hay vínculo profesional, asignación ni permiso para leer resultados ajenos.
 Estos valores no deben presentarse como un módulo profesional funcional.
+
+## Primer tramo cerrado: creador compartido · TRN-007 · 20/10/2026
+
+`workout_editor_ui/lib/workout_editor_page.dart` contiene la edición completa de
+carrera, los siete formatos convencionales y el contexto de calentamiento. El
+consumidor aporta catálogo mediante `WorkoutEditorExercise`, guardado asíncrono
+de `CreatePersonalWorkoutInput` y recepción del ID confirmado. También aporta
+los textos, campos adicionales y su firma de cambios. El creador no importa
+ADMIN, Supabase ni go_router; no decide origen, audiencia ni publicación.
+
+ADMIN conserva la API de `AdminWorkoutEditorPage` y sus llamadas actuales para
+crear, revisar o guardar calentamientos. El interruptor editorial y su valor
+viven en el adaptador; cambiarlo no reconstruye ni pierde la receta. La firma
+de campos adicionales participa en la protección de salida del editor común.
+Se mantiene el bloqueo durante guardado y la retención ante errores. Los
+controles vacíos que heredan valores por serie ya no cuentan como cambios solo
+por mostrarlos, evitando un aviso de salida en una receta intacta.
+
+Se añade únicamente la dependencia interna a `entrena_ui`, sin ciclos, para
+reutilizar la protección de salida existente. Las resoluciones offline del
+paquete y ambas apps son correctas; los lockfiles de ambas apps no cambian y no
+se incorporan paquetes externos. El editor personal mantiene su contenedor.
+
+Verificación local:
+
+- Análisis de raíz, ADMIN y `workout_editor_ui` sin incidencias.
+- Baterías completas: 1.092 pruebas raíz, 242 ADMIN y 37 del paquete correctas;
+  se conservan una omisión raíz y dos ADMIN existentes.
+- Cinco regresiones nuevas desde un consumidor sin dependencias administrativas:
+  catálogo propio, conservación de objetivos/cargas/RIR históricos, ID confirmado
+  sin navegación implícita, validación previa, fallo/reintento, bloqueo de salida
+  durante petición y cambios de campos aportados por el consumidor.
+- Las 50 regresiones dirigidas de ADMIN conservan creación/revisión, visibilidad,
+  siete formatos, carrera, calentamiento y montaje de programas con router real.
+- Compilación web release Dev correcta; capturas nuevas de móvil 320 px con
+  texto 2× y carrera en escritorio revisadas. [Evidencia visual](visual-audit/shared-workout-editor-2026-10-20/README.md).
+
+Este cierre no añade recuperación persistente de sesiones/ejercicios ni promete
+idempotencia nueva. Tampoco habilita cuentas, invitaciones, cupos, asignaciones,
+cobros, acceso incluido o consulta de resultados. El único siguiente bloque
+profesional recomendado es concretar y probar el contrato de acceso profesional
+y relación aceptada antes de conectar datos privados al panel.
 
 ## Distribución recomendada
 
@@ -176,8 +221,8 @@ hay que fijar qué se permite cuando el cliente ya sigue un plan automático.
 
 ## Secuencia de implementación propuesta
 
-1. Separar las dependencias del editor de sesiones y seguir utilizándolo desde
-   ADMIN con sus guardados y pruebas actuales. Cierre técnico localizado.
+1. **Completado en TRN-007:** separar las dependencias del editor de sesiones y
+   seguir utilizándolo desde ADMIN con sus guardados y pruebas actuales.
 2. Concretar acceso profesional con cupo, relación aceptada, asignación
    versionada, ámbito de resultados y fin del vínculo. Implementar y comprobar
    sus contratos de servidor antes de conectar datos privados.
@@ -211,8 +256,8 @@ pruebas y migraciones versionadas. Instalar migraciones y acreditar SQL requiere
 acceso comprobado a Supabase Dev; no se presume por tener el código local.
 Las verificaciones físicas de iPhone siguen requiriendo Mac/dispositivo.
 
-La extracción del editor requiere análisis y pruebas de ADMIN, del paquete
-compartido y de los consumidores afectados según `AGENTS.md`. El cierre del
+La extracción de TRN-007 se verifica según la matriz de `AGENTS.md`, como se
+detalla arriba. Los siguientes cambios compartidos conservan esa matriz. El cierre del
 recorrido profesional necesita pruebas SQL transaccionales con ROLLBACK y casos
 de entrenador A/B, cliente sin relación, relación terminada, referencias ajenas,
 reintentos de asignación y cambio de cuenta. El cupo requiere probar su última
@@ -226,6 +271,7 @@ obligatoria; un cliente con Pro previo; y revocación/caducidad sin cobro ni
 suscripción individual automáticos. Son verificaciones futuras, no ejecutadas
 en esta preparación documental.
 
-Esta preparación solo cambia documentación: no acredita ninguna de esas pruebas
-futuras ni habilita usuarios, permisos, planes de pago, subdominios o despliegues.
-Se reutiliza la infraestructura existente conforme a `COST_CONTROL.md`.
+La preparación del 19/10/2026 era documental; TRN-007 acredita únicamente las
+pruebas del creador compartido descritas arriba. Las verificaciones profesionales
+siguen siendo futuras. No se habilitan usuarios, permisos, planes de pago ni
+subdominios. Se reutiliza la infraestructura existente según `COST_CONTROL.md`.

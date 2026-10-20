@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-007 · 20/10/2026 · creador compartido para el espacio profesional:**
+se recuperan e integran los tres commits documentales de la nube y se completa
+la primera extracción acordada. Sesiones, carrera y calentamientos pasan a
+`WorkoutEditorPage` en el paquete existente. ADMIN aporta catálogo, guardado,
+visibilidad y rutas; no se duplica el editor ni se amplían sus permisos.
+Análisis limpio en raíz, ADMIN y paquete; 1.092/242/37 pruebas correctas con las
+tres omisiones previas, compilación web Dev y capturas actuales revisadas.
+**Primer tramo técnico cerrado:** sin cambios SQL ni acceso profesional activo;
+programas privados, recuperación adicional y algoritmo profesional pendientes.
+**Único siguiente bloque profesional recomendado:** concretar acceso con cupo y
+relación aceptada, y verificar sus contratos de servidor antes de conectar
+clientes y contenido privado. El número de preparadores simultáneos por alumno
+y las condiciones pendientes se detallan en [Espacio de entrenadores](TRAINER_APP.md).
+
 **UI-059 · 19/10/2026 · Compacto implementado en ambas apps:** Javier aprueba
 la propuesta ampliada y autoriza el lenguaje común de campos/controles en
 deportista y ADMIN. Se reutilizan tema y componentes existentes, sin otro
