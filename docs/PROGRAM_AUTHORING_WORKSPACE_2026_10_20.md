@@ -157,6 +157,23 @@ excepciones ocultas y dos de objetivos AMRAP desde segundos/metros. La compilaci
 local con ventana termina correctamente; no se recarga ninguna pestaña de trabajo.
 La comprobación de CI y HTTPS se registra al terminar la publicación.
 
+Comprobación adicional en navegador local: un objetivo real de `00:45` pasa a
+AMRAP con repeticiones vacías y sin RIR inventado; al volver a series se recuperan
+visualmente los `00:45`. Consola sin errores, sin guardar contenido de prueba.
+Durante esta tarea Javier confirma que los programas de desarrollo son datos de
+prueba prescindibles y autoriza modificarlos o rehacerlos si hace falta para las
+comprobaciones. Este permiso no incluye producción ni otros datos ajenos a las
+pruebas de programas. No se borra ni modifica ningún programa por esta aclaración.
+
+Publicación de la revisión completa de formatos: commit
+`be1101b203e8411d5cba3f74b4d512cccb42c1c7`,
+[CI 39459395615](https://github.com/jchjdev/entrenaop/actions/runs/39459395615)
+con validación, compilación y despliegue correctos. HTTPS independiente acredita
+revisión exacta, entorno `development` y proyecto Dev `sxbxfjqgoddzhtcyhalw`,
+entrada activa, cabeceras y MIME de WebAssembly correctos. SHA-256 del JavaScript:
+`8a7af2293afc1f14e1e62e7013822f0b511541c984b023906aad9a444703caca`.
+La comparación local permanece en ventana y la web integrada, sin selector nuevo.
+
 ## Contrato acordado
 
 - El programa mantiene su contexto mientras se crean, editan y revisan sesiones
