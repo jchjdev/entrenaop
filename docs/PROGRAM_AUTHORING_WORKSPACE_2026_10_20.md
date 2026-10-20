@@ -86,3 +86,19 @@ ensayo de edición realmente simultánea ni aceptación de teclado en móvil fí
 Único siguiente paso de este recorrido: aceptación manual del montaje y sus
 series en el admin actualizado, con el contenido que Javier esté creando.
 No se abre aquí otro rediseño ni la implementación del portal profesional.
+
+## Publicación comprobada
+
+Publicado en `https://admin.entrenaop.es` mediante la
+[ejecución automática 39443585025](https://github.com/jchjdev/entrenaop/actions/runs/39443585025),
+validación y despliegue correctos. Revisión servida:
+`cdeb1ec318ec25265509b6397835ca3df60e19bf`.
+Release: `cdeb1ec318ec25265509b6397835ca3df60e19bf-39443585025-1`.
+
+Comprobación HTTPS independiente con `verify_public`: proyecto Dev, SHA-256 del
+JavaScript `d52035e9170a55f71b301a7dfd8dbaa1021cf166201a1d377eedee007ae1a160`,
+índice que activa la versión, cabeceras administrativas y MIME Wasm correctos.
+Nueva pestaña de Chrome: catálogo autenticado cargado, sin errores de consola.
+La pestaña de creación que Javier tenía abierta se conserva intacta. No se crea
+contenido remoto para esta comprobación ni se atribuye aceptación manual del
+panel a la mera lectura del catálogo.

@@ -16,3 +16,7 @@ No son capturas de la cuenta de Javier ni prueba de aceptación en iPhone.
 Generación optativa: `CAPTURE_PERFORMANCE_REVIEW=true` en los tests de
 `workout_editor_page_test.dart` y `admin_guided_authoring_flow_test.dart`.
 No se cambian opciones de fuente o zoom de las aplicaciones del usuario.
+
+[Catálogo publicado](catalogo-publicado.png) es una captura real de Chrome tras
+verificar la revisión `cdeb1ec` por HTTPS. Acredita acceso autenticado al despliegue,
+no una prueba manual del nuevo panel ni modificaciones de los borradores visibles.
