@@ -15,7 +15,10 @@ limpios; no requiere migraciones nuevas.
 Capturas reales revisadas. El ajuste posterior de Tabata retira solo huecos
 automáticos intactos al cambiar de formato y conserva ejercicios/valores;
 verificado con 1.128/253/47 pruebas y recorrido local real Tabata → Intervalos.
-Javier sigue comparando ventana local y página web, sin selector añadido.
+La revisión posterior cubre los cuatro formatos, excepciones ocultas y objetivos
+AMRAP explícitos; raíz/ADMIN conservan 1.128/255 pruebas correctas y la cobertura
+del paquete amplía las transiciones y guardados. Javier sigue comparando ventana
+local y página web, sin selector añadido.
 Límites: aceptación física y ensayo realmente concurrente pendientes; producción
 sin cambios. **Único siguiente paso de este recorrido:** aceptación manual del
 montaje y las series con el contenido de Javier, sin abrir otro rediseño.

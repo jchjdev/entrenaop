@@ -502,6 +502,31 @@ void main() {
     },
   );
 
+  for (final published in [false, true]) {
+    testWidgets(
+      'abrir ${published ? 'nueva versión' : 'editar borrador'} no crea ni guarda ninguna sesión',
+      (tester) async {
+        final workouts = _Workouts();
+        await _mount(tester, _Guided(), workouts);
+        await _create(tester, 'Sesión ya guardada');
+        if (published) workouts.published.add('session-1');
+        await _tap(tester, find.text('Revisar sesión'));
+        await _tap(
+          tester,
+          find.text(
+            published ? 'Crear nueva versión en borrador' : 'Editar borrador',
+          ),
+        );
+        expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
+        expect(workouts.creates, 1);
+        expect(workouts.inputs.keys, ['session-1']);
+        expect(workouts.inputs['session-1']!.name, 'Sesión ya guardada');
+        await _tap(tester, find.text('Recoger sesión'));
+        expect(workouts.inputs.keys, ['session-1']);
+      },
+    );
+  }
+
   testWidgets(
     'editar dentro del programa conserva ruta y enlaza la identidad devuelta',
     (tester) async {

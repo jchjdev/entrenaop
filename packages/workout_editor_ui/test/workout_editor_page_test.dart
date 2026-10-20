@@ -66,6 +66,7 @@ Widget _app({
   Widget? additionalFields,
   Future<List<WorkoutEditorExercise>> Function()? load,
   double scale = 1,
+  WorkoutTemplate original = _original,
 }) => RepaintBoundary(
   key: const ValueKey('review-boundary'),
   child: MaterialApp(
@@ -85,7 +86,7 @@ Widget _app({
         heading: 'Contenido del preparador',
         instructions: 'Solo para los clientes autorizados.',
         saveLabel: 'Guardar privado',
-        originalTemplate: _original,
+        originalTemplate: original,
         additionalFields: additionalFields,
         additionalStateStamp: stamp,
         saveErrorMessage: 'No se pudo guardar el contenido privado.',
@@ -116,6 +117,32 @@ Future<void> _chooseFormat(WidgetTester tester, String label) async {
   await tester.tap(selector);
   await tester.pumpAndSettle();
   await tester.tap(find.text(label).last);
+  await tester.pumpAndSettle();
+}
+
+WorkoutTemplate _withItems(List<WorkoutItem> items) => WorkoutTemplate(
+  id: _original.id,
+  name: _original.name,
+  description: _original.description,
+  estimatedDurationMinutes: 30,
+  version: 3,
+  blocks: [
+    WorkoutBlock(
+      id: 'block',
+      name: 'Bloque principal',
+      format: WorkoutBlockFormat.straightSets,
+      rounds: 1,
+      restAfterSeconds: 0,
+      items: items,
+    ),
+  ],
+);
+
+Future<void> _setField(WidgetTester tester, Finder field, String text) async {
+  await tester.ensureVisible(field);
+  await tester.pumpAndSettle();
+  await tester.enterText(field, text);
+  FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
 }
 
@@ -297,6 +324,276 @@ void main() {
       expect(targetFields.last.targetText, '17');
     },
   );
+
+  const changingFormats = [
+    'Superserie',
+    'Circuito',
+    'EMOM · cada minuto',
+    'AMRAP · máximas vueltas',
+  ];
+  for (final from in changingFormats) {
+    for (final to in changingFormats.where((value) => value != from)) {
+      testWidgets(
+        '$from → $to → series conserva ejercicios, dosis y excepciones',
+        (tester) async {
+          CreatePersonalWorkoutInput? input;
+          await tester.pumpWidget(
+            _app(
+              save: (value) async {
+                input = value;
+                return 'saved';
+              },
+              saved: (_) {},
+            ),
+          );
+          await tester.pumpAndSettle();
+          await _chooseFormat(tester, from);
+          await _chooseFormat(tester, to);
+          await _chooseFormat(tester, 'Series convencionales');
+          expect(find.text('Posición 2'), findsNothing);
+          await _save(tester);
+          final block = input!.blocks.single;
+          expect(block.format, WorkoutBlockFormat.straightSets);
+          expect(block.rounds, 1);
+          expect(block.restAfterSeconds, 0);
+          expect(block.timeCapSeconds, isNull);
+          final sets = block.exercises.single.sets;
+          expect(sets.map((set) => set.targetValue), [10, 12]);
+          expect(sets.map((set) => set.targetLoadKg), [12.5, 15]);
+          expect(sets.map((set) => set.targetRir), [2.5, 3]);
+          expect(sets.map((set) => set.restAfterSeconds), [90, 60]);
+        },
+      );
+    }
+  }
+
+  for (final targetFormat in changingFormats) {
+    testWidgets(
+      '$targetFormat guarda solo rondas, descanso y límite que le corresponden',
+      (tester) async {
+        CreatePersonalWorkoutInput? input;
+        await tester.pumpWidget(
+          _app(
+            original: _withItems(
+              List.filled(2, _original.blocks.single.items.single),
+            ),
+            save: (value) async {
+              input = value;
+              return 'saved';
+            },
+            saved: (_) {},
+          ),
+        );
+        await tester.pumpAndSettle();
+        await _chooseFormat(tester, 'Superserie');
+        await _setField(tester, find.widgetWithText(TextField, 'Rondas'), '3');
+        await _setField(
+          tester,
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is TextField &&
+                widget.decoration?.helperText == 'Entre rondas · min:seg',
+          ),
+          '00:37',
+        );
+        await _chooseFormat(tester, 'AMRAP · máximas vueltas');
+        await _setField(
+          tester,
+          find.widgetWithText(TextField, 'Límite global'),
+          '07:00',
+        );
+        await _chooseFormat(tester, 'EMOM · cada minuto');
+        await _chooseFormat(tester, targetFormat);
+        await _save(tester);
+        expect(input, isNotNull);
+        final block = input!.blocks.single;
+        final amrap = targetFormat.startsWith('AMRAP');
+        final emom = targetFormat.startsWith('EMOM');
+        expect(block.rounds, amrap ? 1 : 3);
+        expect(
+          block.restAfterSeconds,
+          amrap
+              ? 0
+              : emom
+              ? 60
+              : 37,
+        );
+        expect(block.timeCapSeconds, amrap ? 420 : isNull);
+        expect(block.exercises.length, 2);
+        for (final exercise in block.exercises) {
+          expect(exercise.sets.length, amrap ? 1 : 3);
+          expect(
+            exercise.sets.every(
+              (set) => set.restAfterSeconds == (amrap || emom ? 0 : 90),
+            ),
+            isTrue,
+          );
+        }
+        await _chooseFormat(tester, 'Series convencionales');
+        await _save(tester);
+        expect(
+          input!.blocks.single.exercises.first.sets.map(
+            (set) => set.restAfterSeconds,
+          ),
+          [90, 60],
+        );
+      },
+    );
+  }
+
+  for (final format in ['Tabata · 8 × 20/10', 'AMRAP · máximas vueltas']) {
+    testWidgets(
+      '$format ignora excepciones ocultas y las recupera al volver a series',
+      (tester) async {
+        CreatePersonalWorkoutInput? input;
+        final tabata = format.startsWith('Tabata');
+        final original = tabata
+            ? _withItems(List.filled(8, _original.blocks.single.items.single))
+            : _original;
+        await tester.pumpWidget(
+          _app(
+            original: original,
+            save: (value) async {
+              input = value;
+              return 'saved';
+            },
+            saved: (_) {},
+          ),
+        );
+        await tester.pumpAndSettle();
+        final firstSeries = find.byType(StrengthSetFields).at(1);
+        await _setField(
+          tester,
+          find.descendant(
+            of: firstSeries,
+            matching: find.widgetWithText(TextFormField, 'Objetivo'),
+          ),
+          '7',
+        );
+        await _setField(
+          tester,
+          find.descendant(
+            of: firstSeries,
+            matching: find.widgetWithText(TextFormField, 'Carga'),
+          ),
+          '24',
+        );
+        await _setField(
+          tester,
+          find.descendant(
+            of: firstSeries,
+            matching: find.widgetWithText(TextFormField, 'Descanso'),
+          ),
+          '00:45',
+        );
+        await _chooseFormat(tester, format);
+        await _save(tester);
+        expect(input, isNotNull);
+        final set = input!.blocks.single.exercises.first.sets.single;
+        expect(set.targetValue, tabata ? 20 : 10);
+        expect(
+          set.targetType,
+          tabata ? WorkoutTargetType.duration : WorkoutTargetType.repetitions,
+        );
+        expect(set.targetLoadKg, tabata ? isNull : 12.5);
+        expect(set.targetRir, tabata ? isNull : 2.5);
+        expect(set.restAfterSeconds, 0);
+        await _chooseFormat(tester, 'Series convencionales');
+        await _save(tester);
+        expect(input!.blocks.single.exercises.first.sets.first.targetValue, 7);
+        expect(
+          input!.blocks.single.exercises.first.sets.first.targetLoadKg,
+          24,
+        );
+        expect(
+          input!.blocks.single.exercises.first.sets.first.restAfterSeconds,
+          45,
+        );
+        expect(input!.blocks.single.exercises.first.sets.last.targetValue, 12);
+      },
+    );
+  }
+
+  for (final duration in [true, false]) {
+    testWidgets(
+      'AMRAP no interpreta ${duration ? 'segundos' : 'metros'} como repeticiones y conserva ambos objetivos',
+      (tester) async {
+        CreatePersonalWorkoutInput? input;
+        final original = _withItems([
+          WorkoutItem(
+            id: 'measured',
+            exerciseId: 'base',
+            exerciseName: 'Ejercicio de partida',
+            sets: [
+              WorkoutSet(
+                id: 'measured-set',
+                order: 0,
+                targetDurationSeconds: duration ? 45 : null,
+                targetDistanceMeters: duration ? null : 200,
+                targetRir: 2.5,
+                restAfterSeconds: 90,
+              ),
+            ],
+          ),
+        ]);
+        await tester.pumpWidget(
+          _app(
+            original: original,
+            save: (value) async {
+              input = value;
+              return 'saved';
+            },
+            saved: (_) {},
+          ),
+        );
+        await tester.pumpAndSettle();
+        await _chooseFormat(tester, 'AMRAP · máximas vueltas');
+        final fields = tester.widget<StrengthSetFields>(
+          find.byType(StrengthSetFields).first,
+        );
+        expect(fields.targetType, WorkoutTargetType.repetitions);
+        expect(fields.targetText, isEmpty);
+        expect(fields.rirText, isEmpty);
+        await _save(tester);
+        expect(input, isNull);
+        await _setField(
+          tester,
+          find.widgetWithText(TextFormField, 'Cantidad').first,
+          '12',
+        );
+        await _save(tester);
+        expect(
+          input!.blocks.single.exercises.single.sets.single.targetType,
+          WorkoutTargetType.repetitions,
+        );
+        expect(
+          input!.blocks.single.exercises.single.sets.single.targetValue,
+          12,
+        );
+        expect(
+          input!.blocks.single.exercises.single.sets.single.targetRir,
+          isNull,
+        );
+        await _chooseFormat(tester, 'Series convencionales');
+        await _save(tester);
+        expect(
+          input!.blocks.single.exercises.single.sets.single.targetValue,
+          duration ? 45 : 200,
+        );
+        expect(
+          input!.blocks.single.exercises.single.sets.single.targetType,
+          duration ? WorkoutTargetType.duration : WorkoutTargetType.distance,
+        );
+        await _chooseFormat(tester, 'AMRAP · máximas vueltas');
+        expect(
+          tester
+              .widget<StrengthSetFields>(find.byType(StrengthSetFields).first)
+              .targetText,
+          '12',
+        );
+      },
+    );
+  }
 
   testWidgets('un consumidor sin ADMIN aporta catálogo y recibe receta e ID', (
     tester,

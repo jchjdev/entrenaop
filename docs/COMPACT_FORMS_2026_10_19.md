@@ -15,6 +15,14 @@ los huecos automáticos ya no bloquean Intervalos. Los límites de uno/dos
 ejercicios de Intervalos/Superserie se explican y no se fuerza perdiendo datos.
 La corrección pertenece al creador extraído, no a la elección ventana/página.
 
+**Revisión completa de formatos · 20/10/2026:** las excepciones ocultas no se
+aplican en AMRAP/Tabata y se recuperan al volver a un formato compatible mientras
+se edita. AMRAP pide repeticiones explícitas si se venía de segundos o metros;
+no convierte cantidades ni esfuerzo. El guardado conserva exclusivamente la
+receta activa; recuperar valores de otros formatos tras guardar/cerrar no forma
+parte del contrato. Se prueban también rondas, descansos y límite global al
+pasar entre superserie, circuito, EMOM y AMRAP.
+
 ## Acuerdo y estado
 
 Javier prefiere Compacto y pide coherencia en toda la app, conservar todas las

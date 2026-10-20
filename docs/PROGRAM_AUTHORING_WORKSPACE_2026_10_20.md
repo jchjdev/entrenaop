@@ -111,6 +111,52 @@ entrada activa, cabeceras y MIME de WebAssembly correctos; SHA-256 del JavaScrip
 `fde8e652151e768d93f22337e777b2de737e78db6b6b07c265b0393b7721584d`.
 La copia local con ventana se actualiza sin recargar el trabajo del usuario.
 
+## Revisión de superserie, circuito, EMOM y AMRAP · 20/10/2026
+
+Javier pide comprobar todos los cambios de formato, sin restos del formato
+anterior ni pérdida del trabajo escrito. Se conservan las reglas deportivas y
+la serialización existentes: rondas/descanso en superserie y circuito, estaciones
+de un minuto en EMOM, límite global y objetivo común por repeticiones en AMRAP,
+y ocho intervalos fijos de 20/10 en Tabata.
+
+Se corrigen dos fronteras del creador compartido:
+
+- Las excepciones por serie ocultas no se envían en AMRAP ni Tabata. En AMRAP se
+  usa el objetivo común; Tabata mantiene 20 segundos sin kg ni RIR heredados.
+  Las excepciones quedan disponibles si se vuelve a un formato compatible
+  durante la misma edición, y la pantalla lo explica. Al guardar y salir se
+  conserva la receta del formato elegido, no una copia oculta de otros formatos.
+- Al entrar en AMRAP desde duración o distancia no se interpretan segundos o
+  metros como repeticiones ni se reutiliza esfuerzo histórico incompatible.
+  Se exige completar un objetivo de repeticiones explícito; las cantidades y el
+  RIR de esa modalidad se mantienen separados mientras se edita. Volver al
+  formato anterior recupera su objetivo y regresar a AMRAP recupera el nuevo.
+
+La comparación local con ventana recibe el mismo creador corregido, sin recargar
+el trabajo abierto. La web conserva la edición integrada. No se cambian datos,
+permisos, algoritmo, guardado conjunto ni publicación; no hay migraciones nuevas.
+
+### Botones de edición y versiones
+
+Javier pregunta por «Crear nueva versión en borrador» frente a «Editar borrador».
+El texto depende del estado de la sesión, no del modo ventana/página. Pulsarlo
+solo abre el editor y no hace RPC de guardado. Guardar desde una sesión publicada
+crea otra versión de su familia y conserva la publicación anterior; guardar un
+borrador actualiza el mismo ID según el contrato Dev ya validado de UI-062.
+En un programa, el ID devuelto se enlaza al montaje para su revisión/publicación
+conjunta. Dos nuevas regresiones comprueban que abrir/cerrar el editor desde
+ambos estados no crea ni guarda sesiones.
+
+### Verificación
+
+Análisis limpios en raíz, ADMIN y paquete compartido. La batería raíz conserva
+1.128 pruebas correctas y una omisión previa; ADMIN, 255 y dos omisiones previas.
+Las 67 pruebas del paquete compartido son correctas. Su cobertura incluye doce recorridos entre los cuatro formatos con
+vuelta a series, cuatro guardados de rondas/descansos/límite, dos regresiones de
+excepciones ocultas y dos de objetivos AMRAP desde segundos/metros. La compilación
+local con ventana termina correctamente; no se recarga ninguna pestaña de trabajo.
+La comprobación de CI y HTTPS se registra al terminar la publicación.
+
 ## Contrato acordado
 
 - El programa mantiene su contexto mientras se crean, editan y revisan sesiones

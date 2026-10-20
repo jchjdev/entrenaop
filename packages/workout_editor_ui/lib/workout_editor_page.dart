@@ -100,9 +100,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             exercise.customSets,
             exercise.count.text,
             exercise.target.text,
+            exercise.amrapRepetitions.text,
             exercise.rest.text,
             exercise.load.text,
             exercise.rir.text,
+            exercise.amrapRir.text,
             for (final entry in exercise.variations.entries)
               // Mostrar campos que heredan los valores comunes no es una edición.
               if (entry.value.hasValues)
@@ -295,11 +297,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             : format == WorkoutBlockFormat.amrap
             ? WorkoutTargetType.repetitions
             : item.type;
+        final targetInput = item.targetFor(format);
+        final rirInput = item.rirFor(format);
         final target = format == WorkoutBlockFormat.tabata
             ? 20.0
             : type == WorkoutTargetType.duration
-            ? int.tryParse(item.target.text.trim())?.toDouble()
-            : double.tryParse(item.target.text.replaceAll(',', '.'));
+            ? int.tryParse(targetInput.text.trim())?.toDouble()
+            : double.tryParse(targetInput.text.replaceAll(',', '.'));
         final count = format == WorkoutBlockFormat.straightSets
             ? int.tryParse(item.count.text)
             : usesRounds
@@ -317,9 +321,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             ? null
             : double.tryParse(item.load.text.replaceAll(',', '.'));
         final rir =
-            format == WorkoutBlockFormat.tabata || item.rir.text.trim().isEmpty
+            format == WorkoutBlockFormat.tabata || rirInput.text.trim().isEmpty
             ? null
-            : double.tryParse(item.rir.text.replaceAll(',', '.'));
+            : double.tryParse(rirInput.text.replaceAll(',', '.'));
         if (target == null ||
             target <= 0 ||
             count == null ||
@@ -330,7 +334,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                 item.load.text.trim().isNotEmpty &&
                 load == null) ||
             (format != WorkoutBlockFormat.tabata &&
-                item.rir.text.trim().isNotEmpty &&
+                rirInput.text.trim().isNotEmpty &&
                 rir == null)) {
           throw const FormatException(
             'Revisa las series, objetivos, descansos y cargas.',
@@ -338,7 +342,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         }
         final sets = <WorkoutSetDraft>[];
         for (var setIndex = 0; setIndex < count; setIndex++) {
-          final variation = item.customSets
+          // Tabata tiene dosis fija y AMRAP un objetivo común. Las excepciones
+          // ocultas se conservan en el editor, pero no contaminan su receta.
+          final variation =
+              item.customSets &&
+                  format != WorkoutBlockFormat.tabata &&
+                  format != WorkoutBlockFormat.amrap
               ? item.variations.putIfAbsent(setIndex, _SetVariation.new)
               : null;
           final targetText = variation?.target.text.trim() ?? '';
@@ -830,6 +839,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           _formatHelp(format),
           style: TextStyle(color: Theme.of(context).colorScheme.secondary),
         ),
+        if ((format == WorkoutBlockFormat.tabata ||
+                format == WorkoutBlockFormat.amrap) &&
+            block.exercises.any((item) => item.customSets))
+          const Text(
+            'Los ajustes por serie no se aplican en este formato. Puedes recuperarlos volviendo al formato anterior antes de guardar.',
+          ),
+        if (format == WorkoutBlockFormat.amrap &&
+            block.exercises.any(
+              (item) => item.type != WorkoutTargetType.repetitions,
+            ))
+          const Text(
+            'AMRAP necesita un objetivo de repeticiones. Los tiempos y distancias anteriores se conservan mientras editas; no se convierten en repeticiones.',
+          ),
         const SizedBox(height: 12),
         for (var j = 0; j < block.exercises.length; j++)
           Padding(
@@ -853,6 +875,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     final fixedRounds = format != WorkoutBlockFormat.straightSets;
     final tabata = format == WorkoutBlockFormat.tabata;
     final amrap = format == WorkoutBlockFormat.amrap;
+    final targetType = amrap ? WorkoutTargetType.repetitions : item.type;
+    final targetInput = item.targetFor(format);
+    final rirInput = item.rirFor(format);
     final canRemove = tabata
         ? block.exercises.length > 8
         : block.exercises.length > 1;
@@ -989,13 +1014,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   StrengthSetFields(
-                    targetType: item.type,
-                    targetText: item.target.text,
+                    targetType: targetType,
+                    targetText: targetInput.text,
                     restText: item.rest.text,
                     loadText: item.load.text,
-                    rirText: item.rir.text,
-                    targetLabel:
-                        item.type == WorkoutTargetType.duration && !amrap
+                    rirText: rirInput.text,
+                    targetLabel: targetType == WorkoutTargetType.duration
                         ? 'Tiempo'
                         : 'Cantidad',
                     restLabel: 'Descanso',
@@ -1008,7 +1032,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                         format != WorkoutBlockFormat.intervals,
                     onTargetChanged: (value) => _changeExerciseValue(
                       item,
-                      () => item.target.text = value,
+                      () => targetInput.text = value,
                     ),
                     onRestChanged: (value) => _changeExerciseValue(
                       item,
@@ -1019,7 +1043,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                       () => item.load.text = value,
                     ),
                     onRirChanged: (value) =>
-                        setState(() => item.rir.text = value),
+                        setState(() => rirInput.text = value),
                   ),
                 ],
               ),
@@ -1343,9 +1367,11 @@ class _Exercise {
       !customSets &&
       count.text == '3' &&
       target.text.trim().isEmpty &&
+      amrapRepetitions.text.trim().isEmpty &&
       rest.text == '60' &&
       load.text.trim().isEmpty &&
       rir.text.trim().isEmpty &&
+      amrapRir.text.trim().isEmpty &&
       !variations.values.any((variation) => variation.hasValues);
 
   factory _Exercise.fromItem(WorkoutItem source) {
@@ -1389,6 +1415,17 @@ class _Exercise {
 
   final count = TextEditingController(text: '3');
   final target = TextEditingController();
+  // Al imponer AMRAP no se reinterpretan segundos o metros como repeticiones,
+  // ni se reutiliza esfuerzo histórico incompatible con la tarea anterior.
+  final amrapRepetitions = TextEditingController();
+  final amrapRir = TextEditingController();
+  bool _usesAmrapInputs(WorkoutBlockFormat format) =>
+      format == WorkoutBlockFormat.amrap &&
+      type != WorkoutTargetType.repetitions;
+  TextEditingController targetFor(WorkoutBlockFormat format) =>
+      _usesAmrapInputs(format) ? amrapRepetitions : target;
+  TextEditingController rirFor(WorkoutBlockFormat format) =>
+      _usesAmrapInputs(format) ? amrapRir : rir;
   final rest = TextEditingController(text: '60');
   final load = TextEditingController();
   final rir = TextEditingController();
@@ -1400,6 +1437,8 @@ class _Exercise {
   void dispose() {
     count.dispose();
     target.dispose();
+    amrapRepetitions.dispose();
+    amrapRir.dispose();
     rest.dispose();
     load.dispose();
     rir.dispose();
