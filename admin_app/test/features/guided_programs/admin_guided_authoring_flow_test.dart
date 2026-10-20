@@ -676,6 +676,90 @@ void main() {
     },
   );
 
+  for (final published in [false, true]) {
+    testWidgets(
+      'duplicar ${published ? 'publicada' : 'borrador'} no escribe hasta guardar y conserva la original',
+      (tester) async {
+        final guided = _Guided(), workouts = _Workouts();
+        await _mount(tester, guided, workouts);
+        await _create(tester, 'Base');
+        if (published) workouts.published.add('session-1');
+        await _tap(tester, find.text('Duplicar sesión'));
+        expect(workouts.creates, 1);
+        expect(workouts.revisions, 0);
+        expect(
+          tester
+              .widget<TextField>(
+                find.widgetWithText(TextField, 'Nombre de la sesión'),
+              )
+              .controller!
+              .text,
+          'Base · copia',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Distancia (m)'),
+          '800',
+        );
+        await _tap(tester, find.text('Guardar en programa'));
+        expect(workouts.creates, 2);
+        expect(workouts.revisions, 0);
+        expect(
+          workouts
+              .inputs['session-1']!
+              .blocks
+              .single
+              .exercises
+              .single
+              .sets
+              .single
+              .targetValue,
+          400,
+        );
+        expect(
+          workouts
+              .inputs['session-2']!
+              .blocks
+              .single
+              .exercises
+              .single
+              .sets
+              .single
+              .targetValue,
+          800,
+        );
+        expect(workouts.visibility['session-2'], false);
+        expect(find.text('2 sesiones en esta rutina'), findsOneWidget);
+        expect(find.text('Borrador · v1'), findsWidgets);
+        await _tap(tester, find.text('Guardar borrador'));
+        expect(guided.saved!.phases.single.sessions.map((s) => s.templateId), [
+          'session-1',
+          'session-2',
+        ]);
+        expect(workouts.publishes, 0);
+      },
+    );
+  }
+
+  testWidgets('quitar y deshacer restaura el orden del programa', (
+    tester,
+  ) async {
+    final guided = _Guided(), workouts = _Workouts();
+    await _mount(tester, guided, workouts);
+    await _create(tester, 'Primera');
+    await _create(tester, 'Segunda');
+    await _tap(tester, find.byTooltip('Quitar sesión').first);
+    expect(find.text('1 sesión en esta rutina'), findsOneWidget);
+    await _tap(tester, find.text('Deshacer'));
+    expect(find.text('2 sesiones en esta rutina'), findsOneWidget);
+    await _tap(tester, find.text('Guardar borrador'));
+    expect(guided.saved!.phases.single.sessions.map((s) => s.templateId), [
+      'session-1',
+      'session-2',
+    ]);
+    expect(workouts.creates, 2);
+    expect(workouts.revisions, 0);
+  });
+
   testWidgets(
     'fallo del lector permite reintentar sin crear ni publicar sesiones',
     (tester) async {
@@ -717,6 +801,8 @@ void main() {
       await tester.enterText(find.widgetWithText(TextField, 'Cantidad'), '10');
       await _tap(tester, find.text('Guardar calentamiento'));
       expect(find.byType(AdminGuidedEditorPage), findsOneWidget);
+      await _tap(tester, find.byTooltip('Quitar sesión'));
+      await _tap(tester, find.text('Deshacer'));
       await _tap(tester, find.text('Guardar borrador'));
       expect(guided.saved!.phases.single.sessions.single.warmupId, 'warmup');
       expect(guided.saved!.name, 'Glúteos · cuatro sesiones');

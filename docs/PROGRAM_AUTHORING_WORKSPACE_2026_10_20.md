@@ -4,6 +4,29 @@ Javier concentra creadores y Compacto en este chat. Solicita corregir los
 solapamientos de personalización de series y evitar saltar entre páginas para
 crear un programa. Confirma expresamente el guardado y publicación conjunta.
 
+## Duplicación, resumen, deshacer y estado · 20/10/2026
+
+Javier autoriza las cuatro mejoras propuestas. Duplicar abre el creador existente
+con la receta y un nombre de copia; solo Guardar en programa crea un borrador
+independiente, fuera de la biblioteca suelta inicialmente. No modifica la sesión
+fuente ni crea otra versión de su familia. Copia la receta, incluido su
+calentamiento interno; el calentamiento adjunto y la política del programa son
+propios de la nueva posición y se configuran en sus ajustes.
+
+El contenido plegado conserva un resumen de ejercicios y duración estimada
+cuando existe. Las recetas convencionales muestran series; carrera, tramos;
+otros formatos, bloques, sin convertir rondas en series ni inventar duraciones.
+El estado Borrador/Publicada/Retirada y su versión se muestran separados de la
+visibilidad como sesión suelta. Quitar del programa ofrece Deshacer: recupera
+la misma posición y sus controles, calentamiento y descansos mientras siga
+abierto el montaje; no borra la receta del catálogo.
+
+Análisis ADMIN limpio, 263 pruebas correctas y dos omisiones previas; build web
+release Dev correcto. La cobertura verifica duplicación de borradores y
+publicadas sin escritura al abrir, independencia al guardar, orden recuperado
+y calentamiento conservado al deshacer. Se conservan los contratos de
+publicación conjunta y las pruebas de disposición con texto ampliado.
+
 ## Contenido plegable y edición destacada · 20/10/2026
 
 Javier confirma que la lectura y edición directa funcionan bien. Pide poder

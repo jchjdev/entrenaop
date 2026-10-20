@@ -15,6 +15,7 @@ import 'package:workout_core/workout_template.dart';
 import '../../workouts/data/admin_workout_repository.dart';
 import '../../workouts/presentation/admin_session_library_status.dart';
 import '../../workouts/presentation/admin_workout_content.dart';
+import '../../workouts/presentation/admin_workout_summary.dart';
 import '../domain/admin_guided_repository.dart';
 import '../domain/admin_guided_work.dart';
 import '../../editorial_covers/domain/program_cover.dart';
@@ -453,6 +454,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       _equipment = TextEditingController();
   GuidedProgramMode _mode = GuidedProgramMode.guide;
   final _phases = <_PhaseFields>[];
+  final _removedSessions = <_SessionFields>{};
   List<AdminWorkoutSummary> _sessions = [];
   final _sessionTemplates = <String, Future<WorkoutTemplate?>>{};
   List<GuidedWarmup> _warmups = [];
@@ -638,6 +640,9 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     for (final p in _phases) {
       p.dispose();
     }
+    for (final session in _removedSessions) {
+      session.dispose();
+    }
     super.dispose();
   }
 
@@ -672,6 +677,7 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
   Future<void> _openSession(
     _PhaseFields phase, {
     _SessionFields? session,
+    _SessionFields? duplicateOf,
   }) async {
     if (_sessionWorkspaceOpen || _busy) return;
     FocusManager.instance.primaryFocus?.unfocus();
@@ -687,7 +693,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
           programName: _name.text.trim().isEmpty
               ? 'Programa en borrador'
               : _name.text.trim(),
-          sessionId: session?.id,
+          sessionId: (session ?? duplicateOf)?.id,
+          duplicate: duplicateOf != null,
           onSaved: (id) async {
             if (!mounted || !_phases.contains(phase)) {
               throw StateError('Programa cerrado');
@@ -1519,6 +1526,39 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
       ),
     ),
   );
+  void _removeSession(_PhaseFields phase, int index) {
+    final session = phase.sessions[index];
+    setState(() {
+      phase.sessions.removeAt(index);
+      // Se conserva la misma referencia y sus controles hasta deshacer o salir.
+      _removedSessions.add(session);
+      _changed();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Se ha quitado «${session.name}» del programa.'),
+        action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            if (!mounted ||
+                !_phases.contains(phase) ||
+                !_removedSessions.contains(session)) {
+              return;
+            }
+            setState(() {
+              _removedSessions.remove(session);
+              phase.sessions.insert(
+                index.clamp(0, phase.sessions.length),
+                session,
+              );
+              _changed();
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _sessionCard(_PhaseFields p, int i) {
     final s = p.sessions[i];
     final source = _sessions.where((item) => item.id == s.id).firstOrNull;
@@ -1561,15 +1601,28 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 ),
                 IconButton(
                   tooltip: 'Quitar sesión',
-                  onPressed: () => setState(() {
-                    p.sessions.removeAt(i).dispose();
-                    _changed();
-                  }),
+                  onPressed: () => _removeSession(p, i),
                   icon: const Icon(Icons.close),
                 ),
               ],
             ),
             const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                Chip(
+                  label: Text(
+                    '${switch (source?.status) {
+                      'draft' => 'Borrador',
+                      'published' => 'Publicada',
+                      'archived' => 'Retirada',
+                      _ => 'No disponible',
+                    }}${source == null ? '' : ' · v${source.version}'}',
+                  ),
+                ),
+              ],
+            ),
             AdminSessionLibraryStatus(session: source),
             const SizedBox(height: 8),
             Wrap(
@@ -1584,6 +1637,15 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                       : null,
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Editar sesión'),
+                ),
+                OutlinedButton.icon(
+                  onPressed:
+                      source != null &&
+                          ['draft', 'published'].contains(source.status)
+                      ? () => _openSession(p, duplicateOf: s)
+                      : null,
+                  icon: const Icon(Icons.copy_outlined),
+                  label: const Text('Duplicar sesión'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => setState(() {
@@ -1604,8 +1666,8 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
                 'Esta versión no está disponible. Quita la referencia y elige otra sesión.',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               )
-            else if (s.contentExpanded)
-              _sessionContent(s.id),
+            else
+              _sessionContent(s.id, collapsed: !s.contentExpanded),
             ExpansionTile(
               initiallyExpanded: s.settingsExpanded,
               onExpansionChanged: (expanded) =>
@@ -1749,37 +1811,40 @@ class _AdminGuidedEditorPageState extends State<AdminGuidedEditorPage> {
     );
   }
 
-  Widget _sessionContent(String id) => FutureBuilder<WorkoutTemplate?>(
-    key: ValueKey('program-session-content-$id'),
-    // Una misma receta se lee una sola vez aunque figure en varias fases.
-    // Guardar desde la ventana invalida solo la receta modificada.
-    future: _sessionTemplates.putIfAbsent(
-      id,
-      () async => widget.workouts.getTemplateById(id),
-    ),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState != ConnectionState.done) {
-        return const Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text('Cargando sesión…'),
-        );
-      }
-      final template = snapshot.data;
-      if (snapshot.hasError || template == null) {
-        return Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () => setState(() {
-              _sessionTemplates.remove(id);
-            }),
-            icon: const Icon(Icons.refresh),
-            label: const Text('No se pudo cargar el contenido. Reintentar'),
-          ),
-        );
-      }
-      return AdminWorkoutContent(template: template, showTitle: false);
-    },
-  );
+  Widget _sessionContent(String id, {bool collapsed = false}) =>
+      FutureBuilder<WorkoutTemplate?>(
+        key: ValueKey('program-session-content-$id'),
+        // Una misma receta se lee una sola vez aunque figure en varias fases.
+        // Guardar desde la ventana invalida solo la receta modificada.
+        future: _sessionTemplates.putIfAbsent(
+          id,
+          () async => widget.workouts.getTemplateById(id),
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Text('Cargando sesión…'),
+            );
+          }
+          final template = snapshot.data;
+          if (snapshot.hasError || template == null) {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() {
+                  _sessionTemplates.remove(id);
+                }),
+                icon: const Icon(Icons.refresh),
+                label: const Text('No se pudo cargar el contenido. Reintentar'),
+              ),
+            );
+          }
+          return collapsed
+              ? AdminWorkoutSummaryLine(template: template)
+              : AdminWorkoutContent(template: template, showTitle: false);
+        },
+      );
 }
 
 class _SessionFields {

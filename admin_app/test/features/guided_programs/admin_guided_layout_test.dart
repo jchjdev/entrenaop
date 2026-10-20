@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_summary.dart';
 
 import '../../../../test/helpers/performance_visual_review.dart';
 
@@ -241,8 +242,11 @@ void main() {
           await tester.tap(hide.first);
           await tester.pumpAndSettle();
           expect(
-            find.byKey(const ValueKey('program-session-content-session')),
-            findsNothing,
+            find.descendant(
+              of: find.byKey(const ValueKey('program-session-content-session')),
+              matching: find.byType(AdminWorkoutSummaryLine),
+            ),
+            findsOneWidget,
           );
           await _show(tester, edit);
           expect(edit.first.hitTestable(), findsOneWidget);

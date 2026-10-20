@@ -14,10 +14,12 @@ class GuidedSessionWorkspace extends StatefulWidget {
     required this.programName,
     required this.onSaved,
     this.sessionId,
+    this.duplicate = false,
   });
   final AdminWorkoutRepository workouts;
   final String programName;
   final String? sessionId;
+  final bool duplicate;
   final Future<void> Function(String) onSaved;
 
   @override
@@ -159,7 +161,8 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                if (original?.$1.status == 'published')
+                                if (!widget.duplicate &&
+                                    original?.$1.status == 'published')
                                   const Padding(
                                     padding: EdgeInsets.all(16),
                                     child: Text(
@@ -169,8 +172,24 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                                 AdminWorkoutEditorPage(
                                   program: null,
                                   repository: widget.workouts,
-                                  originalTemplate: original?.$2,
-                                  revisionId: original?.$1.id,
+                                  originalTemplate: original == null
+                                      ? null
+                                      : widget.duplicate
+                                      ? WorkoutTemplate(
+                                          id: original.$2.id,
+                                          name:
+                                              '${original.$2.name.characters.take(112)} · copia',
+                                          description: original.$2.description,
+                                          estimatedDurationMinutes: original
+                                              .$2
+                                              .estimatedDurationMinutes,
+                                          version: 1,
+                                          blocks: original.$2.blocks,
+                                        )
+                                      : original.$2,
+                                  revisionId: widget.duplicate
+                                      ? null
+                                      : original?.$1.id,
                                   initialShowInLibrary: false,
                                   embedded: true,
                                   programName: widget.programName,
