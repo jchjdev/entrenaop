@@ -130,6 +130,7 @@ def race(observer, pool, *, same_client=False, same_code=False, repeatable=False
             second.query("rollback")
         rows = observer.query(f"select count(*) from public.trainer_client_relations where trainer_id='{trainer}' and ended_at is null")
         assert rows[0][0] == "1", rows
+        assert observer.query(f"select count(*) from public.trainer_clients where trainer_id='{trainer}' and client_id='{x}' and archived_at is null")[0][0] == "1"
         if repeatable:
             second.query("begin")
             identity(second, y)
@@ -139,6 +140,34 @@ def race(observer, pool, *, same_client=False, same_code=False, repeatable=False
             except SqlError as error:
                 assert error.code == "23514"
                 second.query("rollback")
+    finally:
+        first.close()
+        second.close()
+
+def portfolio_race(observer, pool, archive_first):
+    trainer, _, pupil, _, codes = setup_case(observer)
+    # Etapa previa terminada, con la ficha aún en cartera.
+    observer.query(f"insert into public.trainer_client_relations(trainer_id,client_id,ended_at) values('{trainer}','{pupil}',clock_timestamp())")
+    first, second = DB(), DB()
+    try:
+        first.query("begin")
+        identity(first, trainer if archive_first else pupil, "aal2" if archive_first else "aal1")
+        first.query(f"select public.archive_trainer_client('{pupil}',true)" if archive_first else f"select public.accept_trainer_invitation('{codes[0]}')")
+        second.query("begin")
+        identity(second, pupil if archive_first else trainer, "aal1" if archive_first else "aal2")
+        pid = int(second.query("select pg_backend_pid()")[0][0])
+        future = pool.submit(second.query, f"select public.accept_trainer_invitation('{codes[0]}')" if archive_first else f"select public.archive_trainer_client('{pupil}',true)")
+        wait_locked(observer, pid, future)
+        first.query("commit")
+        try:
+            future.result(timeout=10)
+            assert archive_first, "Archiva una ficha con servicio recién aceptado"
+            second.query("commit")
+        except SqlError as error:
+            assert not archive_first and error.code == "22023", (archive_first,error.code,str(error))
+            second.query("rollback")
+        assert observer.query(f"select count(*) from public.trainer_clients where trainer_id='{trainer}' and client_id='{pupil}' and archived_at is null")[0][0] == "1"
+        assert observer.query(f"select count(*) from public.trainer_client_relations where trainer_id='{trainer}' and client_id='{pupil}'")[0][0] == "2"
     finally:
         first.close()
         second.close()
@@ -176,7 +205,8 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
         observer.query(bootstrap)
         for filename in ["20261020072345_trainer_access_and_client_relations.sql",
                          "20261021074426_trainer_portal_summaries.sql",
-                         "20261021075243_trainer_mfa_and_directory.sql"]:
+                         "20261021075243_trainer_mfa_and_directory.sql",
+                         "20261021115014_trainer_client_portfolio.sql"]:
             observer.query((root / "supabase/migrations" / filename).read_text(encoding="utf-8"))
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             cases = [
@@ -190,7 +220,11 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
                 for _ in range(3):
                     race(observer, pool, **options)
                 print(f"OK: {name} (3 contenciones observadas)", flush=True)
-        print("OK: 15 carreras reales; migraciones originales; ningún acceso a Dev/producción.", flush=True)
+            for archive_first in (True, False):
+                for _ in range(3):
+                    portfolio_race(observer,pool,archive_first)
+                print(f"OK: archivo y vuelta, archivo primero={archive_first} (3 contenciones observadas)",flush=True)
+        print("OK: 21 carreras reales con cartera; migraciones originales; ningún acceso a Dev/producción.", flush=True)
     finally:
         if observer is not None:
             observer.close()

@@ -7,6 +7,70 @@ import 'package:trainer_access/trainer_access.dart';
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 
 void main() {
+  Future<void> press(WidgetTester tester, String label) async {
+    final target = find.text(label).last;
+    await tester.ensureVisible(target);
+    await tester.tap(target);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('la baja conserva la ficha inactiva y sus etapas', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository()
+      ..active = [trainerRelation('Alumno conservado')];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: TrainerClientsPage(repository: repo),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await press(tester, 'Desactivar servicio');
+    await press(tester, 'Desactivar servicio');
+    expect(repo.ends, 1);
+    expect(repo.active, isEmpty);
+    expect(repo.history, hasLength(1));
+    await press(tester, 'Inactivos');
+    expect(find.text('Alumno conservado'), findsOneWidget);
+    expect(find.text('1 etapa de seguimiento'), findsOneWidget);
+    await press(tester, 'Historial del vínculo');
+    expect(
+      find.text('Historial del vínculo · Alumno conservado'),
+      findsOneWidget,
+    );
+    expect(find.text('1/10/2026 → 2/10/2026'), findsOneWidget);
+  });
+
+  testWidgets('archivar y recuperar no borra ni reactiva al alumno', (
+    tester,
+  ) async {
+    final repo = FakeTrainerRepository()
+      ..history = [trainerRelation('Alumno inactivo', ended: true)];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: TrainerClientsPage(repository: repo),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await press(tester, 'Inactivos');
+    await press(tester, 'Archivar cliente');
+    await press(tester, 'Archivar cliente');
+    expect(repo.archivedClients, contains('person-a'));
+    expect(repo.history, hasLength(1));
+    expect(find.text('Alumno inactivo'), findsNothing);
+    await press(tester, 'Archivados');
+    expect(find.text('Alumno inactivo'), findsOneWidget);
+    await press(tester, 'Recuperar cliente');
+    await press(tester, 'Recuperar cliente');
+    expect(repo.archivedClients, isEmpty);
+    expect(repo.active, isEmpty);
+    expect(repo.ends, 0);
+    await press(tester, 'Inactivos');
+    expect(find.text('Alumno inactivo'), findsOneWidget);
+  });
+
   testWidgets('reintentar una creación incierta conserva identidad y secreto', (
     tester,
   ) async {
@@ -82,7 +146,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      await tester.scrollUntilVisible(find.text('Finalizar vínculo'), 300);
+      await tester.scrollUntilVisible(find.text('Desactivar servicio'), 300);
       expect(tester.takeException(), isNull);
     });
   }

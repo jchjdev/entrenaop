@@ -8,6 +8,8 @@ declare
   invite uuid:=gen_random_uuid(); secret text:=repeat('a',64);
   relation uuid; j jsonb; internal_function record;
 begin
+  -- Fija el estado del caso dentro de la prueba; ROLLBACK conserva el piloto real.
+  update public.trainer_access_settings set manual_access_enabled=false where singleton;
   for internal_function in
     select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname='trainer_private' and p.proname like '%\_without\_mfa'

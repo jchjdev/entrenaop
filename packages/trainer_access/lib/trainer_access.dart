@@ -39,6 +39,27 @@ class TrainerRelation {
   final DateTime? endedAt;
 }
 
+enum TrainerClientState { active, inactive, archived }
+
+class TrainerClient {
+  TrainerClient.fromJson(Json json)
+    : personId = json['person_id'] as String,
+      name = json['person_name'] as String,
+      createdAt = DateTime.parse(json['created_at'] as String),
+      updatedAt = DateTime.parse(json['updated_at'] as String),
+      acceptedAt = DateTime.parse(json['accepted_at'] as String),
+      endedAt = _date(json['ended_at']),
+      archivedAt = _date(json['archived_at']),
+      activeRelationId = json['active_relation_id'] as String?,
+      episodeCount = (json['episode_count'] as num).toInt();
+  final String personId, name;
+  final String? activeRelationId;
+  final DateTime createdAt, updatedAt, acceptedAt;
+  final DateTime? endedAt, archivedAt;
+  final int episodeCount;
+  bool get active => activeRelationId != null;
+}
+
 class TrainerInvitation {
   TrainerInvitation.fromJson(Json json)
     : id = json['id'] as String,
@@ -132,6 +153,15 @@ class ManagedTrainer {
 }
 
 abstract class TrainerRepository {
+  Future<List<TrainerClient>> clients({
+    TrainerClientState state = TrainerClientState.active,
+    TrainerClient? before,
+  });
+  Future<void> archiveClient(String clientId, {required bool archived});
+  Future<List<TrainerRelation>> clientRelations(
+    String clientId, {
+    TrainerRelation? before,
+  });
   Future<List<ManagedTrainer>> managedTrainers({String? afterId});
   Future<TrainerAccess> access();
   Future<List<TrainerRelation>> relations({
@@ -168,6 +198,32 @@ class SupabaseTrainerRepository implements TrainerRepository {
   }
 
   Json _json(dynamic data) => Json.from(data as Map);
+  @override
+  Future<List<TrainerClient>> clients({
+    TrainerClientState state = TrainerClientState.active,
+    TrainerClient? before,
+  }) async => (await _rpc('list_trainer_clients', {
+    'p_state': state.name,
+    'p_before_at': before?.updatedAt.toUtc().toIso8601String(),
+    'p_before_client_id': before?.personId,
+  }) as List).map((v) => TrainerClient.fromJson(_json(v))).toList();
+  @override
+  Future<void> archiveClient(String clientId, {required bool archived}) async {
+    await _rpc('archive_trainer_client', {
+      'p_client_id': clientId,
+      'p_archived': archived,
+    });
+  }
+
+  @override
+  Future<List<TrainerRelation>> clientRelations(
+    String clientId, {
+    TrainerRelation? before,
+  }) async => (await _rpc('get_trainer_client_relations', {
+    'p_client_id': clientId,
+    'p_before_at': before?.acceptedAt.toUtc().toIso8601String(),
+    'p_before_id': before?.id,
+  }) as List).map((v) => TrainerRelation.fromJson(_json(v))).toList();
   @override
   Future<List<ManagedTrainer>> managedTrainers({String? afterId}) async =>
       (await _rpc('list_managed_trainers', {'p_after_id': afterId}) as List)

@@ -36,3 +36,16 @@ No se ha elegido proveedor, fijado tarifas ni aceptado términos de pago. No se
 crean cuentas financieras, se contratan servicios ni se solicitan datos bancarios.
 La pasarela se abordará como bloque propio después del recorrido de entrenamiento
 y resultados. [Acceso profesional](TRAINER_APP.md).
+
+
+## Prioridad posterior y referencia aportada · 21/10/2026
+
+Javier confirma que todavía no tiene proveedor ni precios y prefiere terminar
+la infraestructura general antes de decidirlos. No bloquea clientes, autoría,
+asignaciones y resultados. No se contrata una prueba de Harbiz.
+
+La captura aportada muestra BASIC 19 €/mes hasta cinco clientes, PRO 119 €/mes
+hasta cincuenta y APP 199 €/mes hasta cincuenta con aplicación personalizada.
+Son importes de esa pantalla con cupos distintos; impuestos, periodicidad y
+otras condiciones no se acreditan con la captura. No se fijan tarifas nuestras
+ni se presume que copiar esos tramos sea adecuado.

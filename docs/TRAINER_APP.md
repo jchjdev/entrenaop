@@ -396,10 +396,10 @@ ID; no inicia una copia suelta. El cambio Flutter está conectado, pero todavía
 no hay autoría/asignación privada ni recepción remota profesional implementadas.
 No se presenta como recorrido de alumno real cerrado.
 
-Continúa pendiente la respuesta sobre consulta/repetición del contenido tras
-terminar el vínculo. Conservar el historial está acordado; derechos futuros de
-lectura, nuevas ejecuciones y cierre de consulta profesional necesitan regla
-expresa antes de aplicar la autorización correspondiente.
+TRN-015 concreta después la baja: el alumno conserva consulta/resultados de lo
+realizado y no nuevas repeticiones; el preparador conserva el historial de sus
+propias etapas con la ficha inactiva. La autorización de asignaciones/resultados
+todavía debe implementar ese contrato. [Cartera y derechos](TRAINER_CLIENT_LIFECYCLE.md).
 
 
 Verificación de esta integración Flutter (21/10/2026): análisis raíz limpio;
@@ -408,3 +408,18 @@ Verificación de esta integración Flutter (21/10/2026): análisis raíz limpio;
 cubren fechas, orígenes, estados, conservación de pautas, navegación a la cita,
 revisión automática coexistente y 320 px con texto 2×. No se modifican SQL,
 políticas de acceso, cuotas ni la publicación del deportista en este cambio.
+
+
+## Cartera y prioridades actualizadas · TRN-015
+
+Javier pide centrarse en avanzar con la infraestructura y dejar las fechas en
+segundo plano. El calendario anterior fue una propuesta y no gobierna recortes
+ni compromisos de publicación. También confirma posponer precios y proveedor de
+pagos; la captura aportada de Harbiz sirve como referencia, no como tarifa de
+EntrenaOP ni autorización para contratar una prueba.
+
+La cartera separa activos, inactivos y archivados, conserva etapas y recupera la
+misma ficha al volver mediante aceptación nueva. El historial mostrado hoy es el
+del vínculo, no resultados deportivos aún sin conectar. La política acordada
+conserva el trabajo propio del preparador tras la baja y el historial del alumno.
+[Contrato e implementación comprobada](TRAINER_CLIENT_LIFECYCLE.md).

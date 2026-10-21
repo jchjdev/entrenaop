@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**TRN-015 · 21/10/2026 · cartera duradera implementada en Dev:** activos,
+inactivos y archivados, una ficha por alumno/preparador, historial paginado de
+etapas y vuelta con aceptación nueva sin perder la ficha. Tres SQL con ROLLBACK
+y 21 contenciones reales locales correctas; análisis y baterías del deportista,
+ADMIN, panel y contrato compartido pasan. Historial deportivo privado,
+asignaciones, purga definitiva y pagos siguen pendientes. Javier deja las fechas
+en segundo plano y pospone precios/proveedor hasta cerrar la infraestructura.
+[Contrato, alcance y pruebas](TRAINER_CLIENT_LIFECYCLE.md).
+
 **TRN-013/014 · 21/10/2026 · entrega integrada en curso, objetivo 30/10:** Javier
 pide desarrollar portal y deportista conjuntamente. Confirma convivencia de
 pauta profesional y automática sin sustitución: aviso de coincidencia por día

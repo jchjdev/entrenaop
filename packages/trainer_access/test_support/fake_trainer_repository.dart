@@ -17,6 +17,65 @@ class FakeTrainerRepository implements TrainerRepository {
   int accepts = 0, previews = 0, ends = 0;
   Object? createError, saveError, previewError;
   Future<List<TrainerRelation>> Function()? relationsOverride;
+  final Set<String> archivedClients = {};
+  @override
+  Future<List<TrainerClient>> clients({
+    TrainerClientState state = TrainerClientState.active,
+    TrainerClient? before,
+  }) async {
+    final relations = await this.relations(
+      asTrainer: true,
+      ended: state != TrainerClientState.active,
+    );
+    final grouped = <String, TrainerRelation>{};
+    for (final item in relations) {
+      grouped.putIfAbsent(item.personId, () => item);
+    }
+    return grouped.values
+        .where(
+          (item) =>
+              archivedClients.contains(item.personId) ==
+              (state == TrainerClientState.archived),
+        )
+        .map(
+          (item) => TrainerClient.fromJson({
+            'person_id': item.personId,
+            'person_name': item.name,
+            'created_at': item.acceptedAt.toIso8601String(),
+            'updated_at': (item.endedAt ?? item.acceptedAt).toIso8601String(),
+            'accepted_at': item.acceptedAt.toIso8601String(),
+            'ended_at': item.endedAt?.toIso8601String(),
+            'archived_at': archivedClients.contains(item.personId)
+                ? item.endedAt?.toIso8601String()
+                : null,
+            'active_relation_id': item.endedAt == null ? item.id : null,
+            'episode_count': [
+              ...active,
+              ...history,
+            ].where((r) => r.personId == item.personId).length,
+          }),
+        )
+        .toList();
+  }
+
+  @override
+  Future<void> archiveClient(String clientId, {required bool archived}) async {
+    if (archived) {
+      if (active.any((r) => r.personId == clientId)) {
+        throw StateError('Cliente activo');
+      }
+      archivedClients.add(clientId);
+    } else {
+      archivedClients.remove(clientId);
+    }
+  }
+
+  @override
+  Future<List<TrainerRelation>> clientRelations(
+    String clientId, {
+    TrainerRelation? before,
+  }) async =>
+      [...active, ...history].where((r) => r.personId == clientId).toList();
   @override
   Future<TrainerAccess> access() async => current;
   @override
@@ -87,11 +146,15 @@ class FakeTrainerRepository implements TrainerRepository {
   Future<List<ManagedTrainer>> managedTrainers({String? afterId}) async => [];
 }
 
-TrainerRelation trainerRelation(String name, {bool ended = false}) =>
-    TrainerRelation.fromJson({
-      'id': 'relation-a',
-      'person_id': 'person-a',
-      'person_name': name,
-      'accepted_at': '2026-10-01T00:00:00Z',
-      'ended_at': ended ? '2026-10-02T00:00:00Z' : null,
-    });
+TrainerRelation trainerRelation(
+  String name, {
+  bool ended = false,
+  String personId = 'person-a',
+  String id = 'relation-a',
+}) => TrainerRelation.fromJson({
+  'id': id,
+  'person_id': personId,
+  'person_name': name,
+  'accepted_at': '2026-10-01T00:00:00Z',
+  'ended_at': ended ? '2026-10-02T00:00:00Z' : null,
+});

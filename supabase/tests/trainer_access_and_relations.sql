@@ -15,6 +15,9 @@ declare
   relation1 uuid; relation2 uuid; relation3 uuid; snapshot jsonb; preview jsonb; retry jsonb;
   own_exercise uuid; payload jsonb; quota_detail text;
 begin
+  -- El piloto real puede estar habilitado: el caso de denegación fija su propio
+  -- estado dentro de esta transacción y ROLLBACK conserva la configuración real.
+  update public.trainer_access_settings set manual_access_enabled=false where singleton;
   insert into auth.users(id,email) values
     (manager,manager||'@trainer-contract.invalid'),(editor,editor||'@trainer-contract.invalid'),
     (a,a||'@trainer-contract.invalid'),(b,b||'@trainer-contract.invalid'),

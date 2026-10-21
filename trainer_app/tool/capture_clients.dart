@@ -44,7 +44,11 @@ void main() {
       final repo = FakeTrainerRepository()
         ..active = [
           trainerRelation('Lucía Fernández'),
-          trainerRelation('Alejandro Martín de la Torre'),
+          trainerRelation(
+            'Alejandro Martín de la Torre',
+            personId: 'person-b',
+            id: 'relation-b',
+          ),
         ];
       repo.current = TrainerAccess.fromJson({
         'trainer_id': 'a',
@@ -99,7 +103,7 @@ void main() {
       });
       if (scale > 1) {
         await tester.scrollUntilVisible(
-          find.text('Finalizar vínculo').first,
+          find.text('Desactivar servicio').first,
           300,
         );
         await tester.pumpAndSettle();

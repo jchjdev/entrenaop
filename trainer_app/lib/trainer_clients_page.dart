@@ -1,3 +1,5 @@
+import 'client_relation_history.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:entrena_ui/entrena_ui.dart';
@@ -17,13 +19,11 @@ class TrainerClientsPage extends StatefulWidget {
 
 class _TrainerClientsPageState extends State<TrainerClientsPage> {
   TrainerAccess? _access;
-  List<TrainerRelation> _clients = [];
+  List<TrainerClient> _clients = [];
+  TrainerClientState _clientState = TrainerClientState.active;
   List<TrainerInvitation> _invitations = [];
   TrainerInvitationDraft? _draft;
-  bool _busy = true,
-      _ended = false,
-      _moreClients = false,
-      _moreInvitations = false;
+  bool _busy = true, _moreClients = false, _moreInvitations = false;
   bool _created = false;
   String? _error, _notice;
 
@@ -35,10 +35,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
 
   Future<void> _load() async {
     final access = await widget.repository.access();
-    final clients = await widget.repository.relations(
-      asTrainer: true,
-      ended: _ended,
-    );
+    final clients = await widget.repository.clients(state: _clientState);
     final invitations = await widget.repository.invitations();
     if (!mounted) return;
     setState(() {
@@ -276,41 +273,41 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                 builder: (context, constraints) {
                   final clients = _section(
                     'Alumnos',
-                    'Solo aparecen tus vínculos aceptados.',
+                    'Tu cartera conserva las etapas activas e inactivas del servicio.',
                     [
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          ChoiceChip(
-                            label: const Text('Activos'),
-                            selected: !_ended,
-                            onSelected: _busy
-                                ? null
-                                : (_) {
-                                    _ended = false;
-                                    _refresh();
-                                  },
-                          ),
-                          ChoiceChip(
-                            label: const Text('Finalizados'),
-                            selected: _ended,
-                            onSelected: _busy
-                                ? null
-                                : (_) {
-                                    _ended = true;
-                                    _refresh();
-                                  },
-                          ),
+                          for (final state in TrainerClientState.values)
+                            ChoiceChip(
+                              label: Text(switch (state) {
+                                TrainerClientState.active => 'Activos',
+                                TrainerClientState.inactive => 'Inactivos',
+                                TrainerClientState.archived => 'Archivados',
+                              }),
+                              selected: _clientState == state,
+                              onSelected: _busy
+                                  ? null
+                                  : (_) {
+                                      _clientState = state;
+                                      _refresh();
+                                    },
+                            ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       if (_clients.isEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24),
-                          child: Text(
-                            _ended ? 'Todavía no hay vínculos finalizados.' : 'Tu primer alumno empieza con una invitación.',
-                          ),
+                          child: Text(switch (_clientState) {
+                            TrainerClientState.active =>
+                              'Tu primer alumno empieza con una invitación.',
+                            TrainerClientState.inactive =>
+                              'Todavía no hay clientes inactivos.',
+                            TrainerClientState.archived =>
+                              'No tienes clientes archivados.',
+                          }),
                         ),
                       for (final relation in _clients)
                         Padding(
@@ -323,11 +320,11 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                               Text(
-                                relation.endedAt == null
-                                    ? 'Vinculado desde el ${trainerDate(relation.acceptedAt)}'
-                                    : 'Finalizado el ${trainerDate(relation.endedAt!)}',
+                                relation.active
+                                    ? 'Servicio activo desde el ${trainerDate(relation.acceptedAt)}'
+                                    : 'Servicio inactivo desde el ${trainerDate(relation.endedAt ?? relation.updatedAt)}',
                               ),
-                              if (relation.endedAt == null)
+                              if (relation.active)
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: TextButton(
@@ -335,21 +332,81 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                                         ? null
                                         : () async {
                                             if (!await _confirm(
-                                              'Finalizar vínculo',
-                                              'Se liberará la plaza de ${relation.name}. Para volver necesitará aceptar una nueva invitación. Su historial personal se conserva.',
+                                              'Desactivar servicio',
+                                              'Se liberará la plaza de ${relation.name}. Su ficha y las etapas del servicio se conservan. Para volver necesitará aceptar una nueva invitación.',
                                             )) {
                                               return;
                                             }
                                             if (!mounted) return;
                                             await _run(() async {
                                               await widget.repository
-                                                  .endRelation(relation.id);
+                                                  .endRelation(
+                                                    relation.activeRelationId!,
+                                                  );
                                               await _load();
                                             });
                                           },
-                                    child: const Text('Finalizar vínculo'),
+                                    child: const Text('Desactivar servicio'),
                                   ),
                                 ),
+                              Text(
+                                '${relation.episodeCount} ${relation.episodeCount == 1 ? 'etapa de seguimiento' : 'etapas de seguimiento'}',
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: _busy
+                                      ? null
+                                      : () => showDialog<void>(
+                                          context: context,
+                                          builder: (_) => ClientRelationHistory(
+                                            repository: widget.repository,
+                                            client: relation,
+                                          ),
+                                        ),
+                                  child: const Text('Historial del vínculo'),
+                                ),
+                              ),
+                              if (!relation.active) ...[
+                                const Text(
+                                  'No ocupa plaza. Una nueva aceptación permite retomar el servicio conservando la ficha.',
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: TextButton(
+                                    onPressed: _busy
+                                        ? null
+                                        : () async {
+                                            final archived =
+                                                relation.archivedAt == null;
+                                            if (!await _confirm(
+                                                  archived
+                                                      ? 'Archivar cliente'
+                                                      : 'Recuperar cliente',
+                                                  archived
+                                                      ? 'La ficha pasará a Archivados. No se borran etapas ni resultados del alumno.'
+                                                      : 'La ficha volverá a Inactivos. Esto no reactiva el servicio ni ocupa plaza.',
+                                                ) ||
+                                                !mounted) {
+                                              return;
+                                            }
+                                            await _run(() async {
+                                              await widget.repository
+                                                  .archiveClient(
+                                                    relation.personId,
+                                                    archived: archived,
+                                                  );
+                                              await _load();
+                                            });
+                                          },
+                                    child: Text(
+                                      relation.archivedAt == null
+                                          ? 'Archivar cliente'
+                                          : 'Recuperar cliente',
+                                    ),
+                                  ),
+                                ),
+                              ],
                               const Divider(),
                             ],
                           ),
@@ -359,12 +416,10 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                           onPressed: _busy
                               ? null
                               : () => _run(() async {
-                                  final more = await widget.repository
-                                      .relations(
-                                        asTrainer: true,
-                                        ended: _ended,
-                                        before: _clients.last,
-                                      );
+                                  final more = await widget.repository.clients(
+                                    state: _clientState,
+                                    before: _clients.last,
+                                  );
                                   if (mounted) {
                                     setState(() {
                                       _clients.addAll(more);
