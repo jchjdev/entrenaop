@@ -315,3 +315,12 @@ Una cuenta puede ser administradora, disponer de acceso profesional y ser alumna
 El entrenamiento asignado debe aparecer en el recorrido habitual del alumno únicamente cuando haya contenido autorizado: no se mostrarán secciones profesionales vacías a todos los usuarios. Mi preparador gestiona el vínculo; la integración concreta en inicio, agenda, biblioteca o Mi plan se resolverá al implementar asignaciones.
 
 ADMIN necesita un directorio de accesos profesionales y control manual del cupo. Javier quiere también contratación autónoma desde web en un bloque posterior. Tarifas y límites por alumnos, ejercicios, planes, almacenamiento y transferencia siguen pendientes de medición y acuerdo; no se habilitan cobros en este bloque.
+
+## Cobro del servicio del preparador · TRN-012 · 21/10/2026
+
+El alumno paga al preparador por su servicio; el preparador paga a EntrenaOP
+por herramientas y plazas. El acceso incluido evita otra suscripción obligatoria
+de EntrenaOP al alumno y no convierte en gratuito el trabajo del entrenador.
+Javier pide facilitar el pago al preparador desde la web. Pasarela, proveedor y
+condiciones quedan pendientes en un bloque propio; no se activan cobros aquí.
+[Contrato pendiente de pagos](TRAINER_PAYMENTS.md).

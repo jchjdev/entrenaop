@@ -9,6 +9,7 @@ on:
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
+      - 'tools/static_web_release.py'
       - '.github/workflows/admin-dev.yml'
   workflow_dispatch:
 
@@ -43,6 +44,8 @@ jobs:
           flutter pub get --enforce-lockfile
           cd admin_app
           flutter pub get --enforce-lockfile
+          cd ../trainer_app
+          flutter pub get --enforce-lockfile
       - name: Detectar cambios compartidos
         id: scope
         env:
@@ -68,6 +71,8 @@ jobs:
           flutter test
       - name: Probar el publicador
         run: python3 -m unittest discover -s admin_app/tool/tests -v
+      - name: Probar el paquete profesional
+        run: python3 -m unittest discover -s trainer_app/tool/tests -v
       - name: Compilar ADMIN exclusivamente con Dev
         working-directory: admin_app
         run: flutter build web --release --csp --no-web-resources-cdn --no-source-maps --no-wasm-dry-run --dart-define=APP_ENV=development --dart-define=APP_REVISION=${{ github.sha }} --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co

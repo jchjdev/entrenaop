@@ -1374,3 +1374,12 @@ La IA generativa no decidirá la progresión inicial. Podrá ayudar en el futuro
 explicar, resumir o redactar, pero las decisiones de entrenamiento comenzarán
 con reglas deterministas, explicables, versionadas y anulables por el
 entrenador.
+
+## Cobro del servicio del preparador · TRN-012 · 21/10/2026
+
+El alumno paga al preparador por su servicio; el preparador paga a EntrenaOP
+por herramientas y plazas. El acceso incluido evita otra suscripción obligatoria
+de EntrenaOP al alumno y no convierte en gratuito el trabajo del entrenador.
+Javier pide facilitar el pago al preparador desde la web. Pasarela, proveedor y
+condiciones quedan pendientes en un bloque propio; no se activan cobros aquí.
+[Contrato pendiente de pagos](TRAINER_PAYMENTS.md).
