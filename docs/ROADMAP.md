@@ -14,16 +14,19 @@ push, recuperación de hijos de programa/adaptación ni aceptación física comp
 asignación → ejecución → técnica/formulario/conversación → revisión, incluyendo
 recarga y reintento, antes de ampliar el alcance.
 
-**ADM-008 · 21/10/2026 · recuperación de sesiones y portada verificadas en código/Dev:**
+**ADM-008 · 21/10/2026 · recuperación de sesiones y portada publicadas en ADMIN Dev:**
 puerto opcional y checkpoint compartido conservan entradas incompletas y ramas
 ocultas; confirmación idempotente y enlace por fase/posición mantienen publicación
 conjunta. Inicio reúne trabajo, calidad y copias/errores sin duplicar servicios.
-Localización oficial española de los portales, sin rediseñar el editor. Contrato
-SQL con ROLLBACK sobre migración aplicada solo Dev; matriz y evidencia visual en
-[la entrega](ADMIN_SESSION_RECOVERY_2026_10_21.md). No acredita aceptación física
-ni publicación de interfaces por sí solo. **Único siguiente paso ADMIN:** aceptación
-con Javier de recuperación y pendientes. Cualquier otra función del acopio o
-rediseño se propone antes; el servidor privado profesional se integra en su chat.
+Localización oficial española, sin rediseñar el editor. Portal `ac45df0a` verificado
+por HTTPS y Chrome: sesión incompleta, reapertura/recarga, cambio de nombre y
+regreso desde URL directa con el catálogo actualizado. Dos migraciones ADMIN
+aplicadas y contrato con ROLLBACK pasado; 201 migraciones Dev coincidentes al
+cierre. El recibo pendiente de enlace protege su receta hasta confirmarse el
+padre. Matriz y límites en [la entrega](ADMIN_SESSION_RECOVERY_2026_10_21.md).
+**Único siguiente paso ADMIN:** aceptación con Javier de recuperación y pendientes.
+Cualquier otra función del acopio o rediseño se propone antes; el servidor
+privado profesional mantiene su entrega independiente.
 
 **TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; Trainer publicado:**
 programas incompletos de Trainer reutilizan puerto, controlador y editor comunes;

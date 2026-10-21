@@ -15,8 +15,8 @@ Persisten los pendientes de hijos de programa/adaptación, push y cobros reales.
 campos sin terminar, permite retomarlos y confirma el guardado sin crear otra
 versión por un reintento. Dentro del programa conserva el destino de la sesión y
 la publicación conjunta. Inicio reúne trabajo por continuar, calidad y diagnóstico
-existente de copias/errores. El editor conserva su diseño. Código y servidor Dev
-verificados; aceptación y publicación web se documentan por separado.
+existente de copias/errores. El editor conserva su diseño. Portal Dev publicado y
+recuperación comprobada en Chrome; aceptación de Javier pendiente.
 [Contrato y límites](ADMIN_SESSION_RECOVERY_2026_10_21.md).
 
 **TRN-021 · 21/10/2026 · programas que pueden retomarse:** código y servidor Dev

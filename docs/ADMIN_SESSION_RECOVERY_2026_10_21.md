@@ -7,12 +7,13 @@ de implementar. No se cambian dosis, kg opcionales, RIR, RM ni algoritmo.
 
 ## Estado de entrega
 
-Código implementado y verificado localmente. Migración
-`20261021195030_admin_workout_work_recovery.sql` aplicada solo en Dev y contrato
-SQL repetido sobre el esquema aplicado con `ROLLBACK`. En esa comprobación hay
-198 migraciones coincidentes; dos migraciones profesionales de otro bloque
-siguen pendientes y no se incluyen en esta entrega. Producción no se ha consultado
-ni modificado. La publicación web y aceptación de Javier se acreditan aparte.
+Código y portal Dev implementados y comprobados en Chrome autenticado. Las
+migraciones `20261021195030_admin_workout_work_recovery.sql` y
+`20261021210246_admin_session_pending_receipt_guard.sql` están aplicadas solo en
+Dev; contrato SQL repetido sobre el esquema aplicado con `ROLLBACK`. Al cierre
+hay 201 migraciones coincidentes y ninguna pendiente. Las dos migraciones
+profesionales intermedias fueron aplicadas por su chat. Producción no se ha
+consultado ni modificado. La aceptación de Javier sigue siendo el siguiente paso.
 
 ## Recuperación
 
@@ -124,5 +125,24 @@ La entrada directa por URL destapó una consulta antigua al volver al catálogo.
 El ajuste posterior escucha el regreso a su ruta y renueva consultas y clave de
 trabajos, incluso si la lista de recetas no ha cambiado. Dos regresiones cubren
 entrada por botón y URL directa; junto a las anteriores del catálogo pasan nueve
-pruebas y el análisis ADMIN vuelve a quedar limpio. Su publicación se comprueba
-como versión posterior, sin atribuir este ajuste al paquete ac7284fd.
+pruebas y el análisis ADMIN vuelve a quedar limpio. Se publicó como
+`ac45df0a5e4dfa527a54ae9ad743e630f17f16df-39674478528-1`; validación, despliegue y
+retención de [esa CI](https://github.com/jchjdev/entrenaop/actions/runs/39674478528)
+terminaron correctamente. Chrome acredita el regreso desde URL directa y el
+nombre actualizado en el catálogo, sin recarga adicional. La captura real se
+conserva localmente; las imágenes versionadas anteriores siguen siendo fixtures.
+
+## Protección del recibo antes del enlace
+
+La revisión final detectó que el origen con trabajo abierto estaba protegido,
+pero faltaba proteger el resultado confirmado cuyo enlace al padre aún no se
+había acusado. La migración posterior amplía la misma guarda: mientras el padre
+conserva la referencia `sessionWorks`, no se retira ni elimina esa receta. No
+modifica otras sesiones, la finalización ni los permisos.
+
+La regresión falla antes de la corrección al intentar mover ese resultado a la
+papelera por la RPC normal; después pasan retirada y borrado bloqueados, enlace
+confirmado y ciclo normal de papelera/restauración. El contrato completo termina
+en ROLLBACK y no conserva datos de prueba. Se repitieron historial de migraciones
+y asesores de seguridad; la tabla privada conserva el INFO intencional ya descrito.
+No hay nuevas tablas ni grants en esta corrección.

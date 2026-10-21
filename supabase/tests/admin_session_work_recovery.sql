@@ -5,7 +5,7 @@ declare owner uuid:=gen_random_uuid(); other uuid:=gen_random_uuid(); athlete uu
   work_id uuid:=gen_random_uuid(); child_id uuid:=gen_random_uuid(); parent_id uuid:=gen_random_uuid();
   phase_id uuid:=gen_random_uuid(); position_id uuid:=gen_random_uuid(); exercise uuid;
   rejected_work uuid:=gen_random_uuid(); source_work uuid:=gen_random_uuid(); source_origin jsonb;
-  origin jsonb; raw jsonb; recipe jsonb; parent_state jsonb; saved jsonb; result uuid;
+  origin jsonb; raw jsonb; recipe jsonb; parent_state jsonb; saved jsonb; result uuid; trash_stamp timestamptz;
 begin
   insert into auth.users(id,email) values(owner,owner||'@session.invalid'),(other,other||'@session.invalid'),(athlete,athlete||'@session.invalid');
   insert into public.admin_permissions(user_id) values(owner),(other);
@@ -67,6 +67,21 @@ begin
   perform public.save_admin_session_work(owner,child_id,1,origin,raw||jsonb_build_object('intent',recipe));
   result:=public.finalize_admin_session_work(owner,child_id,2);
   begin
+    perform public.trash_admin_session(result);
+    raise exception 'Retira el resultado antes de confirmar su enlace';
+  exception when invalid_parameter_value then
+    if position('enlace al programa' in SQLERRM)=0 then raise; end if;
+  end;
+  reset role;
+  begin
+    delete from public.workout_templates where id=result;
+    raise exception 'Borra el resultado antes de confirmar su enlace';
+  exception when invalid_parameter_value then
+    if position('enlace al programa' in SQLERRM)=0 then raise; end if;
+  end;
+  set local role authenticated;
+
+  begin
     perform public.save_admin_guided_work(parent_id,2,jsonb_set(parent_state,'{phases,0,sessionWorks}','{}'));
     raise exception 'Pierde hijo finalizado sin enlace';
   exception when serialization_failure then null; end;
@@ -75,6 +90,14 @@ begin
   perform public.save_admin_guided_work(parent_id,2,parent_state);
   if exists(select 1 from jsonb_array_elements(public.list_admin_session_work(owner)) w where w->>'id'=child_id::text) then
     raise exception 'Recibo enlazado sigue pendiente'; end if;
+  -- Confirmar el enlace libera esta guarda; se conserva el ciclo de papelera.
+  perform public.trash_admin_session(result);
+  reset role;
+  select trashed_at into trash_stamp from public.workout_templates where id=result;
+  if trash_stamp is null then raise exception 'La guarda bloquea una sesión ya enlazada'; end if;
+  set local role authenticated;
+  perform public.restore_admin_session(result,trash_stamp);
+
 
   perform set_config('request.jwt.claim.sub',other::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
