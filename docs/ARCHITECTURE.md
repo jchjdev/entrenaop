@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+## Papelera de sesiones y purga manual · ADM-004 · 21/10/2026
+
+La ampliación de ADM-003 añade marcas de retirada a recetas oficiales y una RPC
+de purga que comprueba lote, propiedad y referencias antes de DELETE. El cliente
+no puede borrar recetas oficiales directamente; sus RPC de autoría conservan
+el contrato anterior. Las marcas privadas de recursos purgados cierran URLs,
+historial y guardados JSON obsoletos. No se modifican ejecutores ni algoritmos.
+[Contrato, seguridad y pruebas](ADMIN_TRASH_DELETION_2026_10_21.md).
+
 ## Papelera de programas · ADM-003 · 21/10/2026
 
 `guided_programs.trashed_at` agrupa la retirada reversible de una familia mediante
@@ -8,7 +17,8 @@ triggers cierran guardado/publicación/portadas y trabajos vinculados obsoletos.
 Las RPC con admin/MFA recuperan el lote exacto sin clonar ni publicar; los trabajos
 privados conservan propiedad y usan revisión nueva al descartar/recuperar.
 ADMIN añade un repositorio acotado y ruta `/guided-programs/trash` bajo el guard
-existente. No hay DELETE ni cambios de recetas, ejecutores o derechos comerciales.
+existente. La retirada y recuperación no hacen DELETE; ADM-004 añade la purga
+manual protegida. No cambia ejecutores ni derechos comerciales.
 [Contrato, bloqueos y validación](ADMIN_PROGRAM_TRASH_2026_10_21.md).
 
 ## Operaciones de ADMIN · ADM-001 · 20/10/2026

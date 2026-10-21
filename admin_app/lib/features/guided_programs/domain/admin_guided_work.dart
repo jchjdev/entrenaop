@@ -22,13 +22,14 @@ class GuidedWork {
     this.finalizedProgramId,
     this.updatedAt,
     this.discarded = false,
+    this.permanentlyDeleted = false,
   });
   final String id;
   final Map<String, dynamic> state;
   final int revision;
   final String? baseProgramId, finalizedProgramId;
   final DateTime? updatedAt;
-  final bool discarded;
+  final bool discarded, permanentlyDeleted;
   String get name => (state['name'] as String?)?.trim().isNotEmpty == true
       ? state['name'] as String
       : 'Programa sin nombre';

@@ -1,5 +1,9 @@
 # Papelera de programas guiados · ADM-003 · 21/10/2026
 
+**Ampliación vigente ADM-004:** papelera de sesiones y purga manual confirmada,
+con referencias protegidas. [Contrato y pruebas](ADMIN_TRASH_DELETION_2026_10_21.md).
+Las verificaciones siguientes acreditan el bloque original ADM-003.
+
 ## Acuerdo y recorrido
 
 Javier pide borrar programas con recuperación, conservando las sesiones usadas
@@ -33,7 +37,8 @@ La recuperación conserva IDs, contenido, enlaces, categorías y portadas:
   Quien ya seguía el programa mantiene el acceso histórico y su continuidad;
   no se admiten nuevos seguimientos de la versión retirada.
 
-No hay borrado físico, vaciado automático ni botón de eliminación definitiva.
+El bloque original no incluía borrado físico: ADM-004 añade el botón de
+eliminación definitiva. Sigue sin haber vaciado automático.
 No cambia preparaciones/pruebas deportivas, programas personales ni producción.
 
 ## Contrato de servidor
@@ -41,7 +46,8 @@ No cambia preparaciones/pruebas deportivas, programas personales ni producción.
 Migración `20261021060631_admin_guided_program_trash.sql`, instalada solo en Dev.
 `guided_programs.trashed_at` marca el lote de una familia. El CHECK impide que
 una versión en papelera siga publicada; la retirada cambia únicamente el estado
-publicado a `archived`. Nunca se ejecuta DELETE de programas, sesiones o enlaces.
+publicado a `archived`. Retirar y recuperar nunca ejecutan DELETE de programas,
+sesiones o enlaces; el contrato de purga posterior está en ADM-004.
 
 `trash_admin_guided_program` y `restore_admin_guided_program` comparten el bloqueo
 transaccional por familia de guardado/publicación. Recuperar exige la fecha exacta

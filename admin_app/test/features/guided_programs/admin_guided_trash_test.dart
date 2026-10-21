@@ -26,10 +26,25 @@ class _Trash extends Fake implements AdminGuidedTrashRepository {
   List<GuidedTrashEntry> entries = [];
   final removed = <String>[];
   final restored = <GuidedTrashEntry>[];
+  final purged = <GuidedTrashEntry>[];
   bool fail = false;
   Completer<void>? gate;
   @override
   Future<List<GuidedTrashEntry>> list() async => entries;
+  @override
+  Future<List<GuidedTrashEntry>> listSessions() async => entries;
+  @override
+  Future<void> deletePermanently(GuidedTrashEntry entry) async {
+    purged.add(entry);
+    await gate?.future;
+    if (fail) {
+      throw const FormatException(
+        'La sesión tiene entrenamientos registrados. Se conserva.',
+      );
+    }
+    entries = [];
+  }
+
   @override
   Future<void> trashProgram(String programId) async {
     if (fail) throw StateError('Sin conexión');
@@ -274,5 +289,109 @@ void main() {
     await _tap(tester, find.text('Cancelar'));
     expect(tester.takeException(), isNull);
     expect(trash.restored, isEmpty);
+  });
+
+  testWidgets(
+    'borrado definitivo permite cancelar y solo envía una petición confirmada',
+    (tester) async {
+      final trash = _Trash()
+        ..entries = [_deleted]
+        ..gate = Completer<void>();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: AdminGuidedTrashPage(repository: trash),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Borrar definitivamente'));
+      expect(
+        find.textContaining('Sus sesiones se conservarán'),
+        findsOneWidget,
+      );
+      await _tap(tester, find.text('Cancelar'));
+      expect(trash.purged, isEmpty);
+      await _tap(tester, find.text('Borrar definitivamente'));
+      await _tap(tester, find.text('Borrar para siempre'));
+      expect(trash.purged, [_deleted]);
+      expect(
+        tester
+            .widget<OutlinedButton>(
+              find.widgetWithText(OutlinedButton, 'Borrar definitivamente'),
+            )
+            .onPressed,
+        isNull,
+      );
+      trash.gate!.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('La papelera está vacía.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'sesiones muestran versión y conservan la entrada si hay resultados',
+    (tester) async {
+      final session = GuidedTrashEntry(
+        id: 's',
+        name: 'Sesión con resultados',
+        isWork: false,
+        isSession: true,
+        versions: 2,
+        trashedAt: _deleted.trashedAt,
+      );
+      final trash = _Trash()
+        ..entries = [session]
+        ..fail = true;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: AdminGuidedTrashPage(repository: trash, sessions: true),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Sesión · versión 2'), findsOneWidget);
+      expect(find.text('Recuperar sesión'), findsOneWidget);
+      await _tap(tester, find.text('Borrar definitivamente'));
+      await _tap(tester, find.text('Borrar para siempre'));
+      expect(
+        find.textContaining('La sesión tiene entrenamientos'),
+        findsOneWidget,
+      );
+      expect(find.text(session.name), findsOneWidget);
+      expect(find.text('La papelera está vacía.'), findsNothing);
+    },
+  );
+
+  testWidgets('confirmación de borrado usable a 320 px y texto 2×', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final trash = _Trash()..entries = [_deleted];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(2)),
+          child: RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: child!,
+          ),
+        ),
+        home: AdminGuidedTrashPage(repository: trash),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Borrar definitivamente'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await _tap(tester, find.text('Borrar definitivamente'));
+    await capturePerformanceWidget(tester, 'admin-purge-confirm-320-2x');
+    await _tap(tester, find.text('Cancelar'));
+    expect(trash.purged, isEmpty);
+    expect(tester.takeException(), isNull);
   });
 }

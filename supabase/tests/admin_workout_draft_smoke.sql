@@ -236,8 +236,10 @@ begin
   end if;
 
   perform public.remove_admin_workout(v_strength_id);
-  if exists (select 1 from public.workout_templates where id = v_strength_id) then
-    raise exception 'El borrador no se borró.';
+  if not exists (select 1 from public.workout_templates
+    where id = v_strength_id and trashed_at is not null and trash_previous_status='draft'
+      and status='archived' and visibility='private') then
+    raise exception 'El borrador no se conservó en la papelera.';
   end if;
 end;
 $$;

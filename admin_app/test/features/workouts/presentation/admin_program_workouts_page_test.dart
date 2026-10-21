@@ -4,6 +4,8 @@ import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repositor
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_program_workouts_page.dart';
+import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_trash.dart';
+import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guided_trash_page.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +38,25 @@ class _Programs extends Fake implements AdminProgramRepository {
 }
 
 class _Exercises extends Fake implements AdminExerciseRepository {}
+
+class _SessionTrash extends Fake implements AdminGuidedTrashRepository {
+  _SessionTrash(this.workouts);
+  final _FakeWorkouts workouts;
+  bool fail = false;
+  int calls = 0;
+  @override
+  Future<List<GuidedTrashEntry>> listSessions() async => [];
+  @override
+  Future<void> trashSession(String sessionId) async {
+    calls++;
+    if (fail) {
+      throw const FormatException(
+        'La sesión sigue enlazada a programas. Quita esas referencias primero.',
+      );
+    }
+    workouts.removed = true;
+  }
+}
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
@@ -293,33 +314,76 @@ void main() {
     expect(find.text('Publicar para el programa'), findsNothing);
   });
 
-  testWidgets('la biblioteca general confirma publicación y borra borrador', (
-    tester,
-  ) async {
-    final repository = _FakeWorkouts()..scope = 'general';
-    await tester.pumpWidget(
-      MaterialApp.router(
-        routerConfig: createAdminRouter(
-          programs: _Programs(),
-          workouts: repository,
-          exercises: _Exercises(),
-          onSignOut: () {},
-          initialLocation: '/sessions',
+  testWidgets(
+    'la biblioteca general confirma publicación y mueve el borrador a papelera',
+    (tester) async {
+      final repository = _FakeWorkouts()..scope = 'general';
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: createAdminRouter(
+            programs: _Programs(),
+            workouts: repository,
+            exercises: _Exercises(),
+            onSignOut: () {},
+            initialLocation: '/sessions',
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Sesiones generales de EntrenaOP'), findsOneWidget);
-    await tester.tap(find.text('Series 200 m'));
-    await tester.pumpAndSettle();
-    await _previewAction(tester, 'Borrar borrador');
-    expect(repository.removeCalls, 0);
-    await tester.tap(find.text('Borrar borrador').last);
-    await tester.pumpAndSettle();
-    expect(repository.removeCalls, 1);
-    expect(
-      find.text('Todavía no hay sesiones en esta biblioteca.'),
-      findsOneWidget,
-    );
-  });
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Sesiones generales de EntrenaOP'), findsOneWidget);
+      await tester.tap(find.text('Series 200 m'));
+      await tester.pumpAndSettle();
+      await _previewAction(tester, 'Mover a papelera');
+      expect(repository.removeCalls, 0);
+      await tester.tap(find.text('Mover a papelera').last);
+      await tester.pumpAndSettle();
+      expect(repository.removeCalls, 1);
+      expect(
+        find.text('Todavía no hay sesiones en esta biblioteca.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'sesiones confirma la retirada y abre su papelera por la ruta correcta',
+    (tester) async {
+      final workouts = _FakeWorkouts()..scope = 'general';
+      final trash = _SessionTrash(workouts);
+      final router = createAdminRouter(
+        programs: _Programs(),
+        workouts: workouts,
+        exercises: _Exercises(),
+        guidedTrash: trash,
+        onSignOut: () {},
+        initialLocation: '/sessions',
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Más opciones de Series 200 m'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mover a papelera'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(trash.calls, 0);
+      await tester.tap(find.byTooltip('Más opciones de Series 200 m'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mover a papelera'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mover a papelera').last);
+      await tester.pumpAndSettle();
+      expect(trash.calls, 1);
+      expect(find.text('Series 200 m'), findsNothing);
+      await tester.tap(find.text('Papelera'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AdminGuidedTrashPage), findsOneWidget);
+      expect(find.text('Papelera de sesiones'), findsWidgets);
+      expect(find.text('La papelera está vacía.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

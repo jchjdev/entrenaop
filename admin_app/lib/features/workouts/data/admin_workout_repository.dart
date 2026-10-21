@@ -124,6 +124,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
     final rows = await _client
         .from('workout_templates')
         .select('id,name,status,version,show_in_library')
+        .isFilter('trashed_at', null)
         .inFilter('id', ids)
         .order('created_at', ascending: false);
     final blockRows = await _client
@@ -217,6 +218,7 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
     final row = await _client
         .from('workout_templates')
         .select(workoutTemplateSelect)
+        .isFilter('trashed_at', null)
         .eq('id', templateId)
         .maybeSingle();
     return row == null ? null : WorkoutTemplateModel.fromJson(row);

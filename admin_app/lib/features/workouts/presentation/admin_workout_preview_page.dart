@@ -161,15 +161,12 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
 
   Future<void> _remove() async {
     if (_savingVisibility || _publishing || _removing) return;
-    final draft = widget.workout.status == 'draft';
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => EntrenaDialog(
-        title: Text(draft ? 'Borrar borrador' : 'Retirar sesión'),
+        title: const Text('Mover a papelera'),
         content: Text(
-          draft
-              ? 'Se borrará «${widget.workout.name}». Esta acción no se puede deshacer.'
-              : '«${widget.workout.name}» dejará de estar disponible para nuevas asignaciones. Si hay entrenamientos pendientes o en curso, tendrás que reprogramarlos antes. El historial se conservará.',
+          '«${widget.workout.name}» se conservará en Sesiones → Papelera y podrás recuperarla. Si sigue enlazada a un programa o calentamiento, o tiene entrenamientos pendientes, primero tendrás que quitar esas referencias. El historial se conserva.',
         ),
         actions: [
           EntrenaDialogActions(
@@ -179,10 +176,7 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
               OutlinedButton(
                 onPressed: () => Navigator.of(dialogContext).pop(true),
                 style: EntrenaButtonStyles.destructive(dialogContext),
-                child: Text(
-                  draft ? 'Borrar borrador' : 'Retirar sesión',
-                  textAlign: TextAlign.center,
-                ),
+                child: Text('Mover a papelera', textAlign: TextAlign.center),
               ),
             ],
           ),
@@ -388,20 +382,14 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
           ),
         ),
       ],
-      if (widget.workout.status != 'archived' && widget.allowPublication) ...[
+      if (widget.allowPublication) ...[
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(
             onPressed: _publishing || _removing ? null : _remove,
             icon: const Icon(Icons.delete_outline),
-            label: Text(
-              _removing
-                  ? 'Retirando…'
-                  : widget.workout.status == 'draft'
-                  ? 'Borrar borrador'
-                  : 'Retirar sesión',
-            ),
+            label: Text(_removing ? 'Moviendo…' : 'Mover a papelera'),
           ),
         ),
       ],

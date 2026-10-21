@@ -312,6 +312,11 @@ GoRouter createAdminRouter({
                                 baseProgramId:
                                     state.uri.queryParameters['base'],
                               );
+                          if (work.permanentlyDeleted) {
+                            throw const _RouteUnavailable(
+                              'Este trabajo se ha borrado definitivamente. Vuelve a Programas guiados para crear otro.',
+                            );
+                          }
                           if (work.discarded) {
                             throw const _RouteUnavailable(
                               'Este trabajo o su programa de origen están en la papelera. Recupéralo desde Programas guiados → Papelera.',
@@ -499,6 +504,7 @@ GoRouter createAdminRouter({
                       (item) => AdminProgramWorkoutsPage(
                         program: item,
                         repository: workouts,
+                        trashRepository: guidedTrash,
                       ),
                     ),
                     routes: sessionRoutes(),
@@ -562,10 +568,26 @@ GoRouter createAdminRouter({
             path: '/sessions',
             builder: (context, state) => load(
               () async => true,
-              (_) =>
-                  AdminProgramWorkoutsPage(program: null, repository: workouts),
+              (_) => AdminProgramWorkoutsPage(
+                program: null,
+                repository: workouts,
+                trashRepository: guidedTrash,
+              ),
             ),
-            routes: sessionRoutes(),
+            routes: [
+              if (guidedTrash != null)
+                GoRoute(
+                  path: 'trash',
+                  builder: (context, state) => load(
+                    () async => true,
+                    (_) => AdminGuidedTrashPage(
+                      repository: guidedTrash,
+                      sessions: true,
+                    ),
+                  ),
+                ),
+              ...sessionRoutes(),
+            ],
           ),
           GoRoute(
             path: '/exercises',

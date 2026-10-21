@@ -3,8 +3,10 @@ import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/core/catalog_search.dart';
 import 'package:flutter/material.dart';
+import 'package:entrena_ui/entrena_ui.dart';
 
 import '../../../core/admin_shell.dart';
+import '../../guided_programs/domain/admin_guided_trash.dart';
 import 'admin_session_library_status.dart';
 
 class AdminProgramWorkoutsPage extends StatefulWidget {
@@ -12,10 +14,12 @@ class AdminProgramWorkoutsPage extends StatefulWidget {
     super.key,
     required this.program,
     required this.repository,
+    this.trashRepository,
   });
 
   final AdminProgram? program;
   final AdminWorkoutRepository repository;
+  final AdminGuidedTrashRepository? trashRepository;
 
   @override
   State<AdminProgramWorkoutsPage> createState() =>
@@ -26,6 +30,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   List<AdminWorkoutSummary>? _workouts;
   String? _error;
   String _filter = 'all';
+  bool _busy = false;
   final _search = TextEditingController();
 
   @override
@@ -102,6 +107,58 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
     if (mounted) await _load();
   }
 
+  Future<void> _trash(AdminWorkoutSummary workout) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final yes = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => EntrenaDialog(
+          title: const Text('¿Mover sesión a papelera?'),
+          content: Text(
+            '«${workout.name}» se conservará y podrás recuperarla desde Sesiones → Papelera. Si está enlazada a programas o calentamientos, o tiene entrenamientos pendientes, primero tendrás que quitar esas referencias.',
+          ),
+          actions: [
+            EntrenaDialogActions(
+              primaryLabel: 'Cancelar',
+              onPrimary: () => Navigator.of(ctx).pop(false),
+              secondary: [
+                OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text('Mover a papelera'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      if (yes != true || !mounted) return;
+      await widget.trashRepository!.trashSession(workout.id);
+      if (!mounted) return;
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Sesión movida a la papelera.'),
+          action: SnackBarAction(label: 'Ver papelera', onPressed: _openTrash),
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _error = error is FormatException ? error.message : 'No se pudo confirmar la retirada. Actualiza las sesiones antes de reintentar.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _openTrash() async {
+    await context.push('/sessions/trash');
+    if (mounted) await _load();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AdminShellScope.hidesAppBar(context)
@@ -135,13 +192,22 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                   : 'Estas plantillas pertenecen a este programa. Publicarlas no las muestra en la biblioteca general ni las asigna a alumnos.',
             ),
             const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FilledButton.icon(
-                onPressed: _create,
-                icon: const Icon(Icons.add),
-                label: const Text('Nueva sesión'),
-              ),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  onPressed: _busy ? null : _create,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Nueva sesión'),
+                ),
+                if (widget.trashRepository != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _openTrash,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Papelera'),
+                  ),
+              ],
             ),
             const SizedBox(height: 24),
             TextField(
@@ -189,7 +255,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               for (final workout in _visibleWorkouts)
                 Card(
                   child: ListTile(
-                    onTap: () => _preview(workout),
+                    onTap: _busy ? null : () => _preview(workout),
                     leading: Icon(
                       workout.isRunning
                           ? Icons.directions_run
@@ -249,7 +315,19 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
                         ],
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: widget.trashRepository == null
+                        ? const Icon(Icons.chevron_right)
+                        : PopupMenuButton<String>(
+                            enabled: !_busy,
+                            tooltip: 'Más opciones de ${workout.name}',
+                            onSelected: (_) => _trash(workout),
+                            itemBuilder: (_) => [
+                              const PopupMenuItem(
+                                value: 'trash',
+                                child: Text('Mover a papelera'),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
           ],

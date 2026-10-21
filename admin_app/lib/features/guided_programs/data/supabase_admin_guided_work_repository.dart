@@ -34,14 +34,16 @@ class SupabaseAdminGuidedWorkRepository implements AdminGuidedWorkRepository {
           .toList();
   @override
   Future<GuidedWork?> load(String id) async {
-    final row = await client
-        .from('admin_guided_work_drafts')
-        .select(
-          'id,state,revision,base_program_id,finalized_program_id,updated_at,discarded_at,base_program:guided_programs!admin_guided_work_drafts_base_program_id_fkey(trashed_at)',
-        )
-        .eq('id', id)
-        .maybeSingle();
-    return row == null ? null : _decode(row);
+    final result = await client.rpc(
+      'load_admin_guided_work',
+      params: {'p_id': id},
+    );
+    if (result == null) return null;
+    final row = Map<String, dynamic>.from(result as Map);
+    if (row['permanently_deleted'] == true) {
+      return GuidedWork(id: id, state: const {}, permanentlyDeleted: true);
+    }
+    return _decode(row);
   }
 
   @override
