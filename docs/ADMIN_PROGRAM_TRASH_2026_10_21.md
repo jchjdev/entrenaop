@@ -83,16 +83,33 @@ anteriores ajenos. Referencia: [asesor de RPC autenticadas](https://supabase.com
   `aal2`; el ensayo MFA conserva sus comprobaciones de rechazo explícitas.
 - **175 migraciones locales/remotas coincidentes**. La migración y ensayo nuevos
   se probaron juntos con ROLLBACK antes de instalar, y otra vez sobre el esquema
-  instalado. No quedan usuarios, programas ni sesiones del ensayo.
+  instalado. No quedan usuarios, programas ni sesiones del ensayo SQL.
 - Capturas de widgets reales con datos ficticios revisadas: escritorio y
   confirmación a 320 px con texto 2×, sin solapamientos ni acciones inaccesibles.
 - Build web release Dev correcto y vista local actualizada en el servidor ya
   existente de `127.0.0.1:55555`. No se recarga el montaje abierto de Javier.
-- Pendiente al preparar el punto de guardado: publicación automática en el
-  subdominio Dev y comprobación HTTPS del commit exacto.
+- Publicación automática [39555362471](https://github.com/jchjdev/entrenaop/actions/runs/39555362471)
+  correcta: análisis, 289 ADMIN/dos omisiones previas, 30 Python, build,
+  despliegue y retención. Revisión `b124feeddbb9fd8ac5cae7aeb5e3a13f9ccfc80a`.
+  Comprobación independiente HTTPS correcta: identidad Dev, manifiesto, hash de
+  JavaScript, cabeceras y MIME de WASM.
+- Chrome, con la sesión administrativa existente, acredita el ciclo real:
+  crear trabajo incompleto → guardar → papelera → recuperar → reabrir con el
+  mismo ID y revisión nueva → reutilizar sesión existente → guardar programa
+  en borrador → papelera → recuperar como el mismo borrador.
+- Ensayo UI: trabajo `bc6757f6-a5cb-4d6b-826b-b5cbcdf6d222` y programa
+  `af41f986-9c51-4004-a098-6f82b1b2bf47`, **Prueba papelera · ADM-003**.
+  La instantánea de la sesión compartida `840122a1-5ad7-4c13-9d97-e41f5973f25e`
+  mantiene el hash `0d99c635180fb31f28ce67e469fc7553` durante retirada y recuperación;
+  conserva los tres enlaces de las versiones del programa original. No se
+  modifica su receta, publicación ni visibilidad suelta.
+- Al terminar, únicamente ese programa de prueba queda de nuevo en papelera,
+  preparado para que Javier pueda recuperarlo. Los datos del catálogo anterior
+  no se retiran ni se recuperan durante la comprobación. Las filas del ensayo
+  SQL siguen sin persistir; las del ensayo UI son este ejemplo explícito.
 
 El bloqueo y los rechazos de edición obsoleta se prueban transaccionalmente; no
 se atribuye una prueba simultánea de varias conexiones. La aceptación de Javier
-con su catálogo real queda pendiente. El único siguiente paso recomendado tras
-la publicación es esa aceptación: retirar/recuperar un borrador y un programa
-con sesiones reutilizadas, antes de abrir otra función grande.
+con su catálogo real queda pendiente. El único siguiente paso recomendado es
+esa aceptación: retirar/recuperar un borrador y un programa con sesiones
+reutilizadas, antes de abrir otra función grande.

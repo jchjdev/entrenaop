@@ -1,11 +1,12 @@
 # Roadmap de EntrenaOP
 
-**ADM-003 · 21/10/2026 · papelera de programas:** implementación y contratos
+**ADM-003 · 21/10/2026 · papelera de programas cerrada:** implementación y contratos
 Dev verificados: retirada por familia, recuperación de trabajos incompletos,
 identidad y sesiones reutilizadas conservadas; recuperar no publica. Análisis
 limpio, 289 pruebas ADMIN (dos omisiones previas), nueve SQL con ROLLBACK y
 175 migraciones coincidentes. Capturas de escritorio y 320 px/texto 2× revisadas.
-Publicación automática y comprobación HTTPS pendientes del punto de guardado.
+Publicación `b124fee` y HTTPS correctos; Chrome acredita retirada/recuperación
+de trabajo y programa con una sesión compartida, sin alterar receta ni enlaces.
 Límites: sin vaciado automático ni borrado definitivo, continuidad de seguimientos
 existentes conservada; no afecta preparaciones ni producción. **Único siguiente
 paso recomendado:** aceptación de Javier retirando/recuperando un borrador y un
