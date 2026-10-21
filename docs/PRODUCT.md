@@ -4,8 +4,8 @@
 recuperable. Ambas papeleras permiten eliminación definitiva confirmada: los
 programas conservan todas sus sesiones; las referencias y entrenamientos impiden
 eliminar recursos necesarios. Recuperar sesiones mantiene ID y no republica.
-El historial no puede resucitar recursos purgados. Implementado/verificado en Dev,
-pendiente de acreditar el despliegue web. [Contrato y pruebas](ADMIN_TRASH_DELETION_2026_10_21.md).
+El historial no puede resucitar recursos purgados. Publicado y comprobado en Dev
+y Chrome, con retirada/recuperación real. [Contrato y pruebas](ADMIN_TRASH_DELETION_2026_10_21.md).
 
 **ADM-003 · 21/10/2026 · papelera de programas:** Programas guiados permite
 mover familias y trabajos incompletos a una papelera recuperable. Conserva las

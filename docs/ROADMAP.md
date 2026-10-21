@@ -1,10 +1,12 @@
 # Roadmap de EntrenaOP
 
-**ADM-004 · 21/10/2026 · papelera de sesiones y purga manual:** implementación
+**ADM-004 · 21/10/2026 · papelera de sesiones y purga manual cerrada:** implementación
 verificada en ADMIN/Dev: confirmación explícita, sesiones compartidas preservadas,
 seguimientos/ejecuciones/referencias bloquean el borrado, recuperación sin republicar
 y URLs purgadas cerradas. 296 ADMIN/dos omisiones previas, 30 Python, trece SQL con
-ROLLBACK y 176 migraciones coincidentes. Pendiente acreditar despliegue web y Chrome.
+ROLLBACK y 176 migraciones coincidentes. Publicación `4b2759d` y HTTPS correctos;
+Chrome acredita retirada/recuperación real y cancelación de ambas confirmaciones
+definitivas. La sesión técnica aparece purgada en la consulta final de Dev.
 Límites: sin vaciado automático ni limpieza de archivos o copias antiguas. **Único
 siguiente paso recomendado:** aceptación de ambas papeleras con el catálogo de
 prueba de Javier. [Contrato y pruebas](ADMIN_TRASH_DELETION_2026_10_21.md).

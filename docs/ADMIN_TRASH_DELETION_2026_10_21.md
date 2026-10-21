@@ -86,8 +86,21 @@ Referencias oficiales: [permisos de funciones](https://supabase.com/docs/guides/
   publicador/copias correctas con el runtime GPG instalado.
 - Capturas de widgets reales en escritorio y 320 px/texto 2×; cancelación y acciones
   utilizables. La confirmación utiliza palabras cortas para evitar partir el título.
-- Publicación y comprobación HTTPS/Chrome pendientes al guardar las fuentes;
-  se acreditarán después de terminar el despliegue automático.
+- Análisis ADMIN limpio y build web release Dev correcto. Vista local actualizada
+  sin recargar el montaje abierto de Javier.
+- Publicación automática [39561491328](https://github.com/jchjdev/entrenaop/actions/runs/39561491328)
+  correcta: validación, despliegue y retención. Revisión publicada
+  `4b2759dc313bed390eb3c6ac2933405111b6ad65`. Comprobación HTTPS independiente de
+  manifiesto Dev, hash JavaScript, cabeceras y MIME WASM correcta.
+- Chrome acredita la navegación Sesiones → Papelera, retirada → recuperación
+  como el mismo borrador → nueva retirada. La sesión técnica
+  `10e66ff8-2f19-45bc-9f78-ac5a4ba63550` nunca se publica ni aparece como suelta.
+  Se comprueban las confirmaciones definitivas de programa y sesión y se cancelan
+  durante el ensayo automatizado; la purga se ejercita en SQL con ROLLBACK.
+- La consulta final del navegador compartido y Dev muestra después esa sesión
+  técnica ya purgada, con marca `session` a las 07:33:15 UTC y sin receta. Esta
+  acción posterior no la ejecutó el ensayo automatizado. Los programas temporales
+  del ensayo SQL no persisten. No se recrea la sesión eliminada.
 
 Único siguiente paso recomendado: aceptación del recorrido de papelera con el
 catálogo de prueba de Javier antes de ampliar la gestión del catálogo.
