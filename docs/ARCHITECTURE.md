@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Programas profesionales y composición común · TRN-017 · 21/10/2026
+
+`GuidedProgramEditorPage`, puertos del catálogo y controlador de trabajo pasan a
+`workout_editor_ui`. ADMIN inyecta publicación, categorías, sesiones/calentamientos
+oficiales y navegación; Trainer inyecta biblioteca, versiones y guardado privado.
+No se copia otro montaje de programas. Las recetas profesionales viven en
+`trainer_private` y se entregan mediante tandas atómicas sobre las citas de
+TRN-016. El alumno consume las sesiones pautadas con el motor existente; la
+agenda profesional solo consulta las pautas del propio servicio. Los creadores
+tienen guard de salida en GoRouter y el shell conecta las secciones.
+[Contrato y límites](TRAINER_PRIVATE_PROGRAMS.md),
+[alcance profesional completo](TRAINER_PLATFORM.md).
+
 ## Dispositivos y actividades · INT-001 · contrato definido el 21/10/2026
 
 Bloque común acordado para deportista, ADMIN y Trainer, comenzando por carrera.

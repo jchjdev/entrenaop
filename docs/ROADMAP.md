@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-017 · 21/10/2026 · programas privados y agenda implementados en Dev:**
+composición de programas extraída íntegra de ADMIN al paquete común, biblioteca
+versionada, creación de sesiones dentro, selección de fases/fechas y envío
+atómico al alumno. Agenda mensual y navegación común. Análisis limpio, 1144
+pruebas raíz (una omisión previa), 301 ADMIN (dos previas), 24 portal y 67 del
+paquete; trece contratos SQL con ROLLBACK y 45 contenciones nativas locales.
+Diez capturas de widgets revisadas, incluida navegación móvil/texto 2×.
+Migración aplicada solo a Dev, 182 coincidentes. Publicación web y aceptación
+humana pendientes en esta instantánea. No cambia la app móvil distribuida.
+**Siguiente bloque profesional recomendado:** ejercicios propios privados con
+recetas versionadas, medios y cuotas de servidor. El alcance completo, con
+seguimiento agregado y ambos circuitos de pago, queda en
+[TRAINER_PLATFORM.md](TRAINER_PLATFORM.md). [Contrato de programas](TRAINER_PRIVATE_PROGRAMS.md).
+
 **INT-001 · 21/10/2026 · bloque común de dispositivos: definición inicial:** Javier
 aprueba alcance para deportista, ADMIN y entrenadores, empezando por carrera,
 contrato y acceso a proveedores. Se definen prescripción/actividad/resultado,
@@ -25,8 +39,8 @@ controles nuevos del deportista aún no distribuidos. 181 migraciones coinciden;
 doce contratos transaccionales, 33 contenciones locales y baterías correctos.
 Panel publicado desde `efff722`, HTTPS y biblioteca/creador verificados en Chrome;
 aceptación humana con dos cuentas pendiente.
-El único siguiente bloque recomendado es programas privados con composición
-reutilizada y asignación versionada. [Contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
+El siguiente bloque indicado entonces se implementa en TRN-017.
+[Contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
 
 **TRN-015 · 21/10/2026 · cartera duradera implementada en Dev:** activos,
 inactivos y archivados, una ficha por alumno/preparador, historial paginado de

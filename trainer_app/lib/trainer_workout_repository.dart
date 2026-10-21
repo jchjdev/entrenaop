@@ -24,9 +24,11 @@ class TrainerWorkout {
     : id = row['id'] as String,
       name = row['name'] as String,
       version = row['version'] as int,
+      isRunning = row['is_running'] == true,
       createdAt = DateTime.parse(row['created_at'] as String);
   final String id, name;
   final int version;
+  final bool isRunning;
   final DateTime createdAt;
 }
 

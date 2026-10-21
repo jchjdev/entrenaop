@@ -188,12 +188,29 @@ def install_assignment_fixture(db):
     db.query("grant execute on function trainer_private.assign_trainer_workout(uuid,uuid,uuid,date,text),public.assign_trainer_workout(uuid,uuid,uuid,date,text) to authenticated")
     db.query(re.search(r'create trigger withdraw_trainer_assignments[\s\S]*?;',migration).group())
 
-def assignment_race(observer,pool,assign_first,repeatable):
+def install_program_fixture(db):
+    migration=(root/'supabase/migrations/20261021132641_trainer_private_programs.sql').read_text(encoding='utf-8')
+    for name in ('programs','program_sessions','program_writes','program_deliveries'):
+        db.query(re.search(r'create table trainer_private\.'+name+r' \([\s\S]*?\n\);',migration).group())
+    db.query(re.search(r'alter table public.trainer_assignments add column[\s\S]*?;',migration).group())
+    db.query(re.search(r'do \$migration\$[\s\S]*?end \$migration\$;',migration).group())
+    db.query(re.search(r'create or replace function trainer_private.assign_trainer_workout\([\s\S]*?\$\$;',migration).group())
+    db.query(re.search(r'create function trainer_private.assign_trainer_program\([\s\S]*?end \$\$;',migration).group())
+    db.query(re.search(r'create function public.assign_trainer_program\([\s\S]*?\$\$;',migration).group())
+    db.query('revoke all on function trainer_private.assign_trainer_workout_version(uuid,uuid,uuid,date,text,boolean) from public,anon,authenticated')
+    db.query('grant execute on function trainer_private.assign_trainer_program(uuid,uuid,uuid,jsonb,text),public.assign_trainer_program(uuid,uuid,uuid,jsonb,text) to authenticated')
+
+def assignment_race(observer,pool,assign_first,repeatable,program=False):
     trainer,_,pupil,_,_=setup_case(observer)
     relation,template,assignment=[str(uuid.uuid4()) for _ in range(3)]
     observer.query(f"insert into public.trainer_client_relations(id,trainer_id,client_id) values('{relation}','{trainer}','{pupil}')")
     observer.query(f"insert into public.workout_templates values('{template}','{trainer}','coach','published','Fixture',1,30)")
     assign=f"select public.assign_trainer_workout('{assignment}','{relation}','{template}',current_date,null)"
+    if program:
+        program_id=str(uuid.uuid4())
+        content=json.dumps({'name':'Programa fijado','phases':[{'name':'Base'}]})
+        observer.query(f"insert into trainer_private.programs(id,trainer_id,family_id,version,content) values('{program_id}','{trainer}','{program_id}',1,'{content}'); insert into trainer_private.program_sessions values('{program_id}',0,0,'{template}')")
+        assign=f"select public.assign_trainer_program('{assignment}','{relation}','{program_id}',jsonb_build_array(jsonb_build_object('phase',0,'session',0,'date',current_date),jsonb_build_object('phase',0,'session',0,'date',current_date+2)),null)"
     end=f"select public.end_trainer_relation('{relation}')"
     first,second=DB(),DB()
     try:
@@ -216,8 +233,9 @@ def assignment_race(observer,pool,assign_first,repeatable):
             second.query('rollback')
             if assign_first and repeatable:
                 second.query('begin');identity(second,trainer,'aal2');second.query(end);second.query('commit')
-        rows=observer.query(f"select status from public.scheduled_workouts where id='{assignment}'")
-        assert rows==[['cancelled']] if assign_first else rows==[],rows
+        rows=observer.query(f"select s.status from public.scheduled_workouts s join public.trainer_assignments a on a.scheduled_id=s.id where "+
+            (f"a.program_delivery_id='{assignment}'" if program else f"s.id='{assignment}'"))
+        assert rows==[['cancelled']]*(2 if program else 1) if assign_first else rows==[],rows
         assert observer.query(f"select count(*) from public.trainer_client_relations where id='{relation}' and ended_at is not null")[0][0]=='1'
     finally:
         first.close();second.close()
@@ -259,6 +277,7 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
                          "20261021115014_trainer_client_portfolio.sql"]:
             observer.query((root / "supabase/migrations" / filename).read_text(encoding="utf-8"))
         install_assignment_fixture(observer)
+        install_program_fixture(observer)
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             cases = [
                 ("última plaza READ COMMITTED", {}),
@@ -279,7 +298,11 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
                 for repeatable in (False,True):
                     for _ in range(3): assignment_race(observer,pool,assign_first,repeatable)
                     print(f'OK: asignación/baja, asigna primero={assign_first}, RR={repeatable} (3 contenciones observadas)',flush=True)
-        print("OK: 33 carreras reales; acceso/cartera y RPC de asignación/baja; ningún acceso a Dev/producción.", flush=True)
+            for assign_first in (True,False):
+                for repeatable in (False,True):
+                    for _ in range(3): assignment_race(observer,pool,assign_first,repeatable,program=True)
+                    print(f'OK: programa/baja, asigna primero={assign_first}, RR={repeatable} (3 contenciones observadas)',flush=True)
+        print("OK: 45 carreras reales; acceso/cartera, sesión/baja y programa/baja; ningún acceso a Dev/producción.", flush=True)
     finally:
         if observer is not None:
             observer.close()

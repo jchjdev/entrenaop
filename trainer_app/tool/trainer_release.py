@@ -21,6 +21,22 @@ from static_web_release import package_web
 HOST = "trainer.entrenaop.es"
 PROJECT = "sxbxfjqgoddzhtcyhalw"
 
+def source_scope():
+    # Comprobar todos los paquetes locales que realmente compila Trainer. Otro
+    # chat puede trabajar en un paquete aún no consumido sin entrar en el ZIP.
+    config_path = ROOT / "trainer_app/.dart_tool/package_config.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    paths = {"trainer_app", "pubspec.yaml", "pubspec.lock", "tools/static_web_release.py"}
+    for package in config["packages"]:
+        uri = urllib.parse.urljoin(config_path.as_uri(), package["rootUri"])
+        parsed = urllib.parse.urlparse(uri)
+        if parsed.scheme != "file":
+            continue
+        path = Path(urllib.request.url2pathname(parsed.path)).resolve()
+        if path.is_relative_to(ROOT):
+            paths.add(path.relative_to(ROOT).as_posix())
+    return sorted(paths)
+
 def identity(manifest):
     if (manifest.get("host"),manifest.get("supabaseProject"),manifest.get("environment")) != (HOST,PROJECT,"development"):
         raise ValueError("El paquete no corresponde al panel profesional Dev.")
@@ -78,7 +94,7 @@ def main():
     parser.add_argument("--release-id")
     args = parser.parse_args()
     if args.command == "package":
-        scope = ["trainer_app","packages","pubspec.yaml","pubspec.lock","tools/static_web_release.py"]
+        scope = source_scope()
         if subprocess.check_output(["git","status","--porcelain","--",*scope],cwd=ROOT,text=True).strip():
             raise ValueError("Guarda y valida las fuentes antes de empaquetarlas.")
         if subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip() != args.revision:

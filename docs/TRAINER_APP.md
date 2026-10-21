@@ -496,3 +496,17 @@ consulta del resultado propio del servicio. El deportista usa agenda, ejecución
 e historial existentes; no recibe una biblioteca repetible al acabar el vínculo.
 ADMIN y portal comparten el lector de recetas, manteniendo permisos separados.
 [Implementación, pruebas y límites actuales](TRAINER_PRIVATE_WORKOUTS.md).
+
+## Programas, agenda y alcance ampliado · TRN-017/018 · 21/10/2026
+
+El montaje completo de programas se comparte con ADMIN mediante adaptadores.
+El portal incorpora biblioteca privada versionada, sesiones creadas dentro,
+asignación por fase/fecha y agenda conjunta con navegación. El alumno sigue
+consumiendo citas profesionales mediante su app; no se abre el catálogo privado.
+[Contrato y verificación](TRAINER_PRIVATE_PROGRAMS.md).
+
+Javier concreta ejercicios propios y contenido reutilizable para cualquier
+alumno, seguimiento y ambos circuitos de pago con cupos configurables. No son
+capacidades ya implementadas por estar acordadas. El alcance, límites técnicos
+por concretar y la separación respecto al trabajo de relojes se registran en
+[TRAINER_PLATFORM.md](TRAINER_PLATFORM.md).

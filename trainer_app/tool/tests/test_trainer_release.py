@@ -17,6 +17,23 @@ SHA = "a" * 40
 RELEASE = SHA + "-123-1"
 
 class TrainerReleaseTests(unittest.TestCase):
+    def test_scope_checks_every_local_dependency_without_unconsumed_packages(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            config = root / 'trainer_app/.dart_tool/package_config.json'
+            config.parent.mkdir(parents=True)
+            config.write_text(json.dumps({'packages': [
+                {'name': 'trainer', 'rootUri': '../'},
+                {'name': 'shared', 'rootUri': '../../packages/shared/'},
+                {'name': 'external', 'rootUri': 'https://example.invalid/package/'},
+            ]}))
+            with patch.object(release, 'ROOT', root):
+                scope = release.source_scope()
+            self.assertIn('packages/shared', scope)
+            self.assertIn('trainer_app', scope)
+            self.assertNotIn('packages', scope)
+            self.assertNotIn('packages/device_activity_core', scope)
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)

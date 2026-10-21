@@ -7,6 +7,8 @@ import 'package:workout_editor_ui/workout_editor_page.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_workout_repository.dart';
+import 'trainer_program_repository.dart';
+import 'trainer_program_pages.dart';
 
 class TrainerWorkoutLibraryPage extends StatefulWidget {
   const TrainerWorkoutLibraryPage({
@@ -250,10 +252,12 @@ class TrainerClientWorkoutsPage extends StatefulWidget {
     required this.repository,
     required this.accessRepository,
     required this.clientId,
+    this.programs,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
   final String clientId;
+  final TrainerProgramRepository? programs;
   @override
   State<TrainerClientWorkoutsPage> createState() =>
       _TrainerClientWorkoutsPageState();
@@ -303,6 +307,17 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       context: context,
       builder: (_) => TrainerAssignmentDialog(
         repository: widget.repository,
+        relationId: _relation!.id,
+      ),
+    );
+    if (assigned == true && mounted) await _load();
+  }
+
+  Future<void> _assignProgram() async {
+    final assigned = await showDialog<bool>(
+      context: context,
+      builder: (_) => TrainerProgramAssignmentDialog(
+        repository: widget.programs!,
         relationId: _relation!.id,
       ),
     );
@@ -391,6 +406,20 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
         icon: const Icon(Icons.event_available),
         label: const Text('Asignar sesión privada'),
       ),
+      if (widget.programs != null) ...[
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed:
+              _busy ||
+                  !_effective ||
+                  _relation == null ||
+                  _relation!.endedAt != null
+              ? null
+              : _assignProgram,
+          icon: const Icon(Icons.view_week_outlined),
+          label: const Text('Pautar programa privado'),
+        ),
+      ],
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) _retry(_error!, () => _load()),
       if (!_busy && _items.isEmpty && _error == null)

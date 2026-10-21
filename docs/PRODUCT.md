@@ -1,5 +1,15 @@
 # Producto EntrenaOP
 
+**TRN-017/018 · 21/10/2026 · programas privados y plataforma profesional:** el
+preparador ya puede montar programas con el creador común, pautar fases/sesiones
+en fechas concretas y consultar su agenda mensual en Dev. La biblioteca es
+reutilizable con cualquier alumno activo y conserva versiones. El alcance
+acordado incluye además ejercicios propios, seguimiento, cobros del alumno a
+su preparador y contratación de EntrenaOP por cupos configurables; esas partes
+siguen pendientes, sin tarifas/proveedor elegidos. La integración de relojes
+lleva su bloque propio. [Alcance](TRAINER_PLATFORM.md) y
+[programas/agenda](TRAINER_PRIVATE_PROGRAMS.md).
+
 **TRN-016 · 21/10/2026 · sesiones privadas, pautas y resultados en Dev:** el
 preparador crea y revisa recetas con el editor compartido, las pauta desde la
 ficha del alumno y consulta sus resultados. El alumno utiliza agenda, ejecutor

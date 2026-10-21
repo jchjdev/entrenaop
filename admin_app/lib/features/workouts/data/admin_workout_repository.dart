@@ -5,55 +5,12 @@ import 'package:workout_core/workout_template_model.dart';
 import 'package:workout_core/workout_template_query.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AdminWorkoutSummary {
-  const AdminWorkoutSummary({
-    required this.id,
-    required this.name,
-    required this.status,
-    required this.version,
-    required this.isRunning,
-    required this.catalogScope,
-    this.guidedPrograms = const [],
-    this.hasWarmup = false,
-    this.supportsAdjustableRest = true,
-    this.showInLibrary = true,
-  });
+export 'package:workout_editor_ui/program_session_catalog.dart'
+    show ProgramSessionSummary, ProgramSessionUsage;
+import 'package:workout_editor_ui/program_session_catalog.dart';
 
-  final String id;
-  final String name;
-  final String status;
-  final int version;
-  final bool isRunning;
-  final String catalogScope;
-  final List<AdminWorkoutProgramUsage> guidedPrograms;
-  final bool hasWarmup, supportsAdjustableRest;
-  final bool showInLibrary;
-
-  AdminWorkoutSummary withLibraryVisibility(bool value) => AdminWorkoutSummary(
-    id: id,
-    name: name,
-    status: status,
-    version: version,
-    isRunning: isRunning,
-    catalogScope: catalogScope,
-    guidedPrograms: guidedPrograms,
-    hasWarmup: hasWarmup,
-    supportsAdjustableRest: supportsAdjustableRest,
-    showInLibrary: value,
-  );
-}
-
-class AdminWorkoutProgramUsage {
-  const AdminWorkoutProgramUsage({
-    required this.id,
-    required this.name,
-    required this.version,
-    required this.status,
-  });
-
-  final String id, name, status;
-  final int version;
-}
+typedef AdminWorkoutSummary = ProgramSessionSummary;
+typedef AdminWorkoutProgramUsage = ProgramSessionUsage;
 
 class AdminExercise {
   const AdminExercise({
@@ -71,16 +28,19 @@ class AdminExercise {
   final String? thumbnailUrl;
 }
 
-abstract class AdminWorkoutRepository {
+abstract class AdminWorkoutRepository implements ProgramSessionCatalog {
   Future<List<AdminWorkoutSummary>> listForProgram(String programId);
+  @override
   Future<List<AdminWorkoutSummary>> listGeneral();
   Future<List<AdminExercise>> listPublicExercises();
+  @override
   Future<WorkoutTemplate?> getTemplateById(String templateId);
   Future<String> createDraft(
     String? programId,
     CreatePersonalWorkoutInput input, {
     bool showInLibrary = true,
   });
+  @override
   Future<void> setLibraryVisibility(
     String templateId,
     bool value, {
