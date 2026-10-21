@@ -96,9 +96,21 @@ y [RLS sin políticas](https://supabase.com/docs/guides/database/database-linter
 en el registro privado sin grants. Los avisos anteriores ajenos a este cambio
 permanecen fuera de alcance.
 
-La publicación web del panel se acredita por separado. Los cambios del deportista
-todavía no están distribuidos; no hay aceptación humana con dos cuentas ni
-ejecución en dispositivos. No se declara desplegado en producción.
+Panel publicado en `trainer.entrenaop.es`, conectado solo a Dev. Publicación
+`efff7227653cea6b37e26f6c362a6b7c0e4e03e8-20261021-4`, ZIP SHA-256
+`a3be588ea2d7fe916021090160ee54505fc27490b82860176791c831546ef867`.
+El verificador HTTPS acredita manifiesto, hash, entrada, cabeceras y WebAssembly.
+Chrome conserva la sesión MFA de Javier, carga la biblioteca y abre el creador
+con catálogo autorizado; no se guardan recetas ni pautas reales. Se conservan
+miniaturas de Storage y la ficha técnica de carrera no aparece en el selector
+de fuerza, igual que en ADMIN.
+[Biblioteca publicada](visual-audit/trainer-private-workouts-2026-10-21/published-library.png)
+y [creador publicado](visual-audit/trainer-private-workouts-2026-10-21/published-editor.png).
+
+Los cambios del deportista todavía no están distribuidos; no hay aceptación
+humana con dos cuentas ni ejecución en dispositivos. No se declara desplegado
+en producción. El recorrido de resultados se acredita con SQL y widgets reales
+con fixtures, no con el guardado de entrenamientos en la cuenta de Javier.
 
 No incluye programas privados, recurrencia, calendario mensual del preparador,
 mensajería, edición de pautas empezadas, purga definitiva, subidas privadas,

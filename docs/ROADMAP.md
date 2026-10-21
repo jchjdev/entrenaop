@@ -5,7 +5,8 @@ el editor común, previsualizar receta, asignar desde la ficha y consultar
 resultados propios. Agenda/ejecutor/historial se reutilizan; indicaciones y
 controles nuevos del deportista aún no distribuidos. 181 migraciones coinciden;
 doce contratos transaccionales, 33 contenciones locales y baterías correctos.
-Publicación del panel por acreditar y aceptación humana con dos cuentas pendiente.
+Panel publicado desde `efff722`, HTTPS y biblioteca/creador verificados en Chrome;
+aceptación humana con dos cuentas pendiente.
 El único siguiente bloque recomendado es programas privados con composición
 reutilizada y asignación versionada. [Contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
 

@@ -52,7 +52,7 @@ La entrega de cartera almacena **el historial de etapas del vínculo**.
 TRN-016 incorpora después las pautas y la consulta de los resultados propios
 del servicio. [Sesiones privadas y resultados](TRAINER_PRIVATE_WORKOUTS.md).
 
-## Derechos que deben aplicar las asignaciones futuras
+## Derechos tras la baja, aplicados por TRN-016
 
 El alumno conserva los resultados y la receta/versiones de lo que realizó para
 consulta. No puede iniciar nuevas repeticiones desde contenido del preparador

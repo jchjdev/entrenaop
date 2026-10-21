@@ -148,3 +148,17 @@ carga las tres listas Activos/Inactivos/Archivados con la sesión existente y
 0/5 plazas, sin errores de consola ni crear alumnos o invitaciones de ensayo.
 [Captura publicada](visual-audit/trainer-portfolio-2026-10-21/published-clients.png).
 La cartera y sus pruebas se describen en [TRN-015](TRAINER_CLIENT_LIFECYCLE.md).
+
+## Sesiones privadas y resultados · TRN-016 · 21/10/2026
+
+Publicación final `efff7227653cea6b37e26f6c362a6b7c0e4e03e8-20261021-4` desde
+fuentes guardadas, ZIP SHA-256
+`a3be588ea2d7fe916021090160ee54505fc27490b82860176791c831546ef867`.
+Se carga en `trainer-releases` y se extrae en `public_html/trainer`, conservando
+las versiones anteriores. No se modifican ADMIN, credenciales ni producción.
+
+`trainer_release.py verify --output build/trainer-workouts-catalog-release-20261021`
+correcto por HTTPS. Chrome conserva la sesión MFA y acredita biblioteca vacía,
+creador compartido y catálogo autorizado sin guardar datos de prueba. Consola
+del portal sin errores en la comprobación. Los resultados no se atribuyen a una
+prueba humana con alumnos: [contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
