@@ -26,28 +26,48 @@ class TrainerShell extends StatelessWidget {
         if (constraints.maxWidth >= 1100 &&
             MediaQuery.textScalerOf(context).scale(16) < 24) {
           return Scaffold(
-            body: Row(
+            body: Stack(
               children: [
-                NavigationRail(
-                  extended: true,
-                  selectedLabelTextStyle: Theme.of(context).textTheme.labelLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                  selectedIndex: selected,
-                  onDestinationSelected: go,
-                  leading: const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('Preparadores'),
-                  ),
-                  destinations: [
-                    for (final item in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(item.$3),
-                        label: Text(item.$2),
-                      ),
-                  ],
+                const SizedBox.expand(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 256),
+                  child: child,
                 ),
-                const VerticalDivider(width: 1),
-                Expanded(child: child),
+                // El Navigator contiene BlockSemantics. Pintar la navegación
+                // después conserva sus destinos para lectores de pantalla.
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 256,
+                  child: NavigationRail(
+                    extended: true,
+                    minExtendedWidth: 256,
+                    selectedLabelTextStyle: Theme.of(context)
+                        .textTheme
+                        .labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                    selectedIndex: selected,
+                    onDestinationSelected: go,
+                    leading: const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('Preparadores'),
+                    ),
+                    destinations: [
+                      for (final item in destinations)
+                        NavigationRailDestination(
+                          icon: Icon(item.$3),
+                          label: Text(item.$2),
+                        ),
+                    ],
+                  ),
+                ),
+                const Positioned(
+                  left: 255,
+                  top: 0,
+                  bottom: 0,
+                  child: VerticalDivider(width: 1),
+                ),
               ],
             ),
           );

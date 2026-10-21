@@ -191,6 +191,51 @@ Future<void> openProgramDialog(
 
 void main() {
   testWidgets(
+    'la navegación lateral sigue disponible para lectores de pantalla',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final semantics = tester.ensureSemantics();
+      try {
+        final router = GoRouter(
+          initialLocation: '/programs',
+          routes: [
+            ShellRoute(
+              builder: (_, state, child) =>
+                  TrainerShell(location: state.uri.path, child: child),
+              routes: [
+                GoRoute(
+                  path: '/programs',
+                  builder: (_, _) =>
+                      const Scaffold(body: Text('Biblioteca del profesional')),
+                ),
+              ],
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(
+          MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+        );
+        await tester.pumpAndSettle();
+        for (final label in ['Alumnos', 'Agenda', 'Sesiones', 'Programas']) {
+          final labels = tester.semantics.simulatedAccessibilityTraversal().map(
+            (node) => node.getSemanticsData().label,
+          );
+          expect(
+            labels.any((text) => text.contains(label)),
+            isTrue,
+            reason: '$label debe estar disponible fuera de la ruta activa',
+          );
+        }
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
     'revisar la biblioteca no invalida una receta elegida en el montaje actual',
     (tester) async {
       final repo = ProgramFixture();

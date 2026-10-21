@@ -4,7 +4,7 @@
 composición de programas extraída íntegra de ADMIN al paquete común, biblioteca
 versionada, creación de sesiones dentro, selección de fases/fechas y envío
 atómico al alumno. Agenda mensual y navegación común. Análisis limpio, 1144
-pruebas raíz (una omisión previa), 301 ADMIN (dos previas), 24 portal y 67 del
+pruebas raíz (una omisión previa), 301 ADMIN (dos previas), 25 portal y 67 del
 paquete; trece contratos SQL con ROLLBACK y 45 contenciones nativas locales.
 Diez capturas de widgets revisadas, incluida navegación móvil/texto 2×.
 Migración aplicada solo a Dev, 182 coincidentes. Publicación web y aceptación

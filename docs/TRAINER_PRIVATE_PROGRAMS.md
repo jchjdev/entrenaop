@@ -100,14 +100,18 @@ privadas sin grants generan INFO de RLS sin políticas y los índices recién
 creados pueden aparecer sin uso. No se corrigen avisos ajenos en esta entrega.
 
 Análisis limpio en deportista, ADMIN, portal y paquete común. Baterías: 1144
-raíz (una omisión previa), 301 ADMIN (dos previas), 24 portal y 67 compartidas.
-Las nueve regresiones nuevas cubren compositor real, receta/fases, operación
+raíz (una omisión previa), 301 ADMIN (dos previas), 25 portal y 67 compartidas.
+Las diez regresiones nuevas cubren compositor real, receta/fases, operación
 incierta, tanda repetida, agenda paginada, 320/1200 px con texto 2× y guard al
 cambiar de destino. Diez capturas reales de widgets con datos ficticios están
 en `docs/visual-audit/trainer-programs-2026-10-21/`. Web Dev Release compilada.
 Seis pruebas del empaquetador verifican origen, aislamiento de host, hash y
 dependencias locales: comprueba todos los paquetes resueltos de Trainer y no
 incluye paquetes aún no consumidos que se estén creando en otro chat.
+La comprobación del portal detecta que el Navigator bloqueaba la semántica de
+la barra lateral pintada antes. El shell pinta la navegación después, conservando
+su posición visual; una regresión recorre el árbol accesible y comprueba los
+cuatro destinos. Las capturas se regeneran tras la corrección.
 
 ## Referencia observada en Harbiz
 
