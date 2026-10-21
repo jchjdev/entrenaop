@@ -132,3 +132,19 @@ entrada manual no acredita el recorrido con un alumno real ni asignaciones.
 El único siguiente bloque recomendado es concretar derechos tras fin de vínculo
 y convivencia con el plan, y completar sesión privada → asignación versionada →
 ejecución existente → resultados autorizados. No se activan cobros aquí.
+
+## Actualización de cartera · TRN-015 · 21/10/2026
+
+Publicación `029a46ce7a638ac5954c9e85cd4ea7034636e144-20261021-2`, con fuentes
+guardadas en `029a46ce7a638ac5954c9e85cd4ea7034636e144`. ZIP cargado en
+`trainer-releases`, fuera de `public_html`, SHA-256
+`1551e7c22bdf1d190476dead43e9931a64638327b05cc5674c912f56bfd81f89`.
+Se extrae en `public_html/trainer`, actualizando la entrada y conservando la
+publicación anterior en su carpeta versionada.
+
+`trainer_release.py verify --output build/trainer-portfolio-release-20261021`
+acredita por HTTPS la revisión, el JavaScript y las cabeceras esperadas. Chrome
+carga las tres listas Activos/Inactivos/Archivados con la sesión existente y
+0/5 plazas, sin errores de consola ni crear alumnos o invitaciones de ensayo.
+[Captura publicada](visual-audit/trainer-portfolio-2026-10-21/published-clients.png).
+La cartera y sus pruebas se describen en [TRN-015](TRAINER_CLIENT_LIFECYCLE.md).

@@ -91,5 +91,17 @@ de objetos anteriores fuera de este alcance; la cartera solo tiene INFO de un
 [índice nuevo aún sin uso](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).
 No se elimina ese índice: cubre la clave foránea del alumno.
 
-La publicación web de esta ampliación se acreditará por separado. Las pautas y
-resultados privados, la purga definitiva y los cobros siguen pendientes.
+La ampliación está publicada en `trainer.entrenaop.es`, conectada solo a Dev:
+revisión `029a46ce7a638ac5954c9e85cd4ea7034636e144`, publicación
+`029a46ce7a638ac5954c9e85cd4ea7034636e144-20261021-2`. El verificador HTTPS
+comprueba manifiesto, hash del JavaScript, entrada, cabeceras y MIME WebAssembly.
+Chrome conserva la sesión validada, muestra 0/5 plazas y resuelve las listas de
+activos, inactivos y archivados sin errores de consola. No hay alumnos reales:
+las transiciones con datos se acreditan mediante SQL y pruebas de widgets,
+no mediante una aceptación humana nueva.
+[Captura publicada](visual-audit/trainer-portfolio-2026-10-21/published-clients.png).
+
+Las pautas y resultados privados, la purga definitiva y los cobros siguen
+pendientes. El único siguiente recorrido funcional es sesión privada →
+asignación versionada → ejecución en la app existente → resultados autorizados,
+aplicando los derechos tras la baja acordados aquí.

@@ -7,6 +7,10 @@ y 21 contenciones reales locales correctas; análisis y baterías del deportista
 ADMIN, panel y contrato compartido pasan. Historial deportivo privado,
 asignaciones, purga definitiva y pagos siguen pendientes. Javier deja las fechas
 en segundo plano y pospone precios/proveedor hasta cerrar la infraestructura.
+Publicado en Trainer Dev desde `029a46c`, verificado por HTTPS y en Chrome con
+la sesión existente y las tres listas. La referencia visual de Harbiz aportada
+por Javier orienta el siguiente recorrido de ficha, biblioteca y calendario;
+no acredita funciones nuevas ni cambia los contratos de permisos.
 [Contrato, alcance y pruebas](TRAINER_CLIENT_LIFECYCLE.md).
 
 **TRN-013/014 · 21/10/2026 · entrega integrada en curso, objetivo 30/10:** Javier

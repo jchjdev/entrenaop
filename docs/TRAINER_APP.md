@@ -360,9 +360,10 @@ baremos oficiales y revisión manual; no se presume ya implementada.
 
 Dos circuitos de contratación: preparador → EntrenaOP y alumno → preparador.
 Precios, proveedor, recepción de fondos, comisiones y efectos de impago siguen
-pendientes; se solicita esa información mientras continúa el desarrollo que no
-depende de ella. No se abren cuentas financieras ni se activan cargos por la
-petición de acelerar. [Pagos](TRAINER_PAYMENTS.md).
+pendientes. Javier decide después posponerlos hasta cerrar la infraestructura;
+no bloquean el desarrollo que no depende de esas condiciones. No se abren
+cuentas financieras ni se activan cargos por la petición de acelerar.
+[Pagos](TRAINER_PAYMENTS.md).
 
 Puntos de control propuestos para la fecha objetivo, sujetos a los contratos y
 verificación, no estimaciones cerradas ni habilitaciones de producción:
@@ -423,3 +424,38 @@ misma ficha al volver mediante aceptación nueva. El historial mostrado hoy es e
 del vínculo, no resultados deportivos aún sin conectar. La política acordada
 conserva el trabajo propio del preparador tras la baja y el historial del alumno.
 [Contrato e implementación comprobada](TRAINER_CLIENT_LIFECYCLE.md).
+
+## Referencia visual de Harbiz aportada por Javier · 21/10/2026
+
+Se revisan las pantallas del vídeo de aproximadamente 96 segundos aportado por
+Javier, que ha accedido gratis por su cuenta. Es evidencia visual de ese acceso,
+no una comprobación de las condiciones comerciales, permisos o arquitectura de
+Harbiz. No se contrata nada. El vídeo y sus fotogramas de trabajo no se añaden al
+repositorio porque incluyen datos de la cuenta.
+
+| Observado en el vídeo | Aplicación propuesta a EntrenaOP | Base y límite actuales |
+| --- | --- | --- |
+| Clientes con activos, invitaciones y archivados; columnas de actividad, cumplimiento y pagos | Cartera con indicadores útiles para detectar quién necesita revisión | Activos/inactivos/archivados e invitaciones ya existen. Cumplimiento, resultados y pagos profesionales aún no están conectados. |
+| Ficha del cliente con calendario y accesos a información, evolución y archivos | Un lugar principal por alumno para pautar y consultar su servicio | Se conserva la ficha y las etapas; todavía no hay espacio de planificación/resultados por alumno. |
+| Biblioteca de ejercicios, workouts y programas reutilizables | Contenido privado del preparador que se puede asignar a varios alumnos | Reutilizar `workout_editor_ui` y `workout_core` mediante adaptadores. No se copia el creador de ADMIN ni se publica el contenido privado en el catálogo oficial. |
+| Elección Normal/Sencillo y tabla comparativa de series, objetivos, descansos, marcas y superseries | Mantener una receta estructurada y su lectura sencilla para el alumno | Es una referencia de presentación; no se decide crear dos editores ni dos modelos. El creador compartido ya ofrece formatos propios. |
+| Botón «Así lo verá tu cliente» en el alta de workout | Vista previa con el lector del deportista antes de asignar | Se ha visto el botón; el vídeo no muestra con detalle su resultado ni todo el editor de la receta. |
+| Añadir tarea al calendario con fecha, repetición y tipos como workout o programa | Asignar una sesión/programa de biblioteca desde la ficha del alumno y después consultar su ejecución | Reutilizar agenda, ejecutor e historial del deportista; asignaciones remotas privadas y resultados autorizados siguen pendientes. |
+
+El calendario visible reúne tareas de varias clases y ofrece contadores de
+completadas/incompletas. En EntrenaOP la coincidencia con el plan automático se
+trata conforme a TRN-014, sin deducir del vídeo cómo lo resuelve Harbiz. Del mismo
+modo, la columna de pago y el estado del cliente se observan por separado, pero
+no se infieren sus reglas de cupo, archivo ni conservación de datos.
+
+El recorrido principal recomendado sigue siendo biblioteca privada → ficha del
+alumno/calendario → ejecución en su app → revisión por el preparador. Para
+oposiciones deberá permitir entender las pruebas y marcas pertinentes; la
+asistencia del algoritmo y las preparaciones privadas conservan su contrato
+pendiente. Nutrición, marketing y equipos de profesionales aparecen en Harbiz,
+pero observarlos no amplía automáticamente el alcance de esta entrega.
+
+Para estudiar mejor la interacción faltan dos vistas concretas: editar una
+sesión existente y previsualizar/asignar lo que verá el alumno; y consultar los
+resultados de una sesión ya realizada. No hace falta resolver precios ni pagar
+una prueba para avanzar con la infraestructura actual.
