@@ -34,6 +34,10 @@ dependencies:
     path: packages/entrena_ui
   trainer_access:
     path: packages/trainer_access
+  device_activity_core:
+    path: packages/device_activity_core
+  device_health:
+    path: packages/device_health
 
   # Video
   video_player: ^2.14.0

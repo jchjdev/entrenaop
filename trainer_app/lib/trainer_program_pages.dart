@@ -7,6 +7,7 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_editor_ui/guided_program_editor_page.dart';
 import 'package:workout_editor_ui/guided_program_editor_adapter.dart';
+import 'package:workout_editor_ui/guided_program_work.dart';
 import 'package:workout_editor_ui/program_session_catalog.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
@@ -147,9 +148,11 @@ class TrainerProgramLibraryPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.access,
+    this.workRepository,
   });
   final TrainerProgramRepository repository;
   final TrainerRepository access;
+  final GuidedWorkRepository? workRepository;
   @override
   State<TrainerProgramLibraryPage> createState() =>
       _TrainerProgramLibraryPageState();
@@ -157,8 +160,11 @@ class TrainerProgramLibraryPage extends StatefulWidget {
 
 class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
   List<TrainerProgram> _items = [];
+  List<GuidedWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
-  String? _error;
+  bool _discardBusy = false;
+  GuidedWork? _discardAttempt;
+  String? _error, _workError, _discardError;
   @override
   void initState() {
     super.initState();
@@ -175,11 +181,22 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
       final rows = await widget.repository.programs(
         before: more ? _items.last : null,
       );
+      List<GuidedWork>? works;
+      String? workError;
+      if (widget.workRepository != null && !more) {
+        try {
+          works = await widget.workRepository!.list();
+        } catch (error) {
+          workError = trainerError(error);
+        }
+      }
       if (mounted) {
         setState(() {
           _items = more ? [..._items, ...rows] : rows;
           _more = rows.length == 50;
           _canCreate = access.effective;
+          if (works != null) _works = works;
+          if (!more) _workError = workError;
         });
       }
     } catch (e) {
@@ -189,13 +206,74 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
     }
   }
 
+  Future<void> _discard(GuidedWork work, {bool retry = false}) async {
+    final repository = widget.workRepository;
+    if (_busy || _discardBusy || !_canCreate || repository == null) return;
+    if (!retry) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Descartar trabajo incompleto'),
+          content: Text(
+            'Se descartará «${work.name}». Sus sesiones de la biblioteca se conservan.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Conservar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Descartar trabajo'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted ||
+          repository != widget.workRepository ||
+          confirmed != true) {
+        return;
+      }
+    }
+    final request = retry ? _discardAttempt : work;
+    if (request == null) return;
+    setState(() {
+      _discardBusy = true;
+      _discardAttempt = request;
+      _discardError = null;
+    });
+    try {
+      await repository.discard(request);
+      if (!mounted || repository != widget.workRepository) return;
+      setState(() {
+        _discardAttempt = null;
+        _works = _works.where((item) => item.id != request.id).toList();
+      });
+    } catch (error) {
+      if (!mounted || repository != widget.workRepository) return;
+      setState(() {
+        if (error is GuidedWorkConflict) {
+          _discardAttempt = null;
+          _discardError = 'El trabajo ha cambiado. Actualiza y revísalo antes de descartarlo.';
+        } else {
+          _discardError =
+              'No se ha confirmado el descarte. Reintenta la misma petición. ${trainerError(error)}';
+        }
+      });
+    } finally {
+      if (mounted && repository == widget.workRepository) {
+        setState(() => _discardBusy = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: const Text('Mis programas privados'),
       actions: [
         IconButton(
-          onPressed: _busy ? null : _load,
+          onPressed: _busy || _discardBusy ? null : _load,
           icon: const Icon(Icons.refresh),
           tooltip: 'Actualizar',
         ),
@@ -206,6 +284,58 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         'Organiza sesiones por rutinas o fases y reutiliza cada programa con tus alumnos. Cada pauta conserva la versión asignada.',
       ),
       const SizedBox(height: 16),
+      if (widget.workRepository != null) ...[
+        Text(
+          'Trabajos incompletos',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const Text(
+          'Continúa los montajes guardados aunque tengan campos pendientes. Las sesiones creadas dentro se gestionan en su biblioteca.',
+        ),
+        if (_workError != null) Text('No se pudieron cargar: $_workError'),
+        if (_discardError != null) Text(_discardError!),
+        if (_discardAttempt != null && !_discardBusy)
+          TextButton(
+            onPressed: !_canCreate
+                ? null
+                : () => _discard(_discardAttempt!, retry: true),
+            child: const Text('Reintentar mismo descarte'),
+          ),
+        if (_discardBusy) const LinearProgressIndicator(),
+        if (!_busy && _workError == null && _works.isEmpty)
+          const Text('No tienes trabajos incompletos guardados.'),
+        for (final work in _works)
+          Card(
+            child: ListTile(
+              title: Text(work.name),
+              subtitle: Text('Trabajo guardado · revisión ${work.revision}'),
+              onTap: _discardBusy
+                  ? null
+                  : () async {
+                      await context.push(
+                        '/programs/work/${Uri.encodeComponent(work.id)}',
+                      );
+                      if (mounted) await _load();
+                    },
+              trailing: IconButton(
+                onPressed:
+                    _busy ||
+                        _discardBusy ||
+                        !_canCreate ||
+                        _discardAttempt != null
+                    ? null
+                    : () => _discard(work),
+                icon: const Icon(Icons.delete_outline),
+                tooltip: 'Descartar trabajo ${work.name}',
+              ),
+            ),
+          ),
+        if (_works.length == 100)
+          const Text(
+            'Se han cargado 100 trabajos. Puede haber más; conservan su enlace de recuperación.',
+          ),
+        const SizedBox(height: 24),
+      ],
       FilledButton.icon(
         onPressed: _busy || !_canCreate
             ? null
@@ -257,12 +387,16 @@ class TrainerProgramEditorPage extends StatefulWidget {
     this.programId,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.workRepository,
+    this.work,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final String? programId;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final GuidedWorkRepository? workRepository;
+  final GuidedWork? work;
   @override
   State<TrainerProgramEditorPage> createState() =>
       _TrainerProgramEditorPageState();
@@ -272,13 +406,17 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
   late Future<GuidedProgram?> _initial = _load();
   TrainerProgramComposition? _composition;
   Future<GuidedProgram?> _load() async {
-    final original = widget.programId == null
+    final base = widget.work == null
+        ? widget.programId
+        : widget.work!.baseProgramId;
+    final original = base == null
         ? null
-        : await widget.repository.program(widget.programId!);
-    _composition = TrainerProgramComposition(
+        : await widget.repository.program(base);
+    _composition = _TrainerRecoveredProgramComposition(
       widget.repository,
       widget.workouts,
       original: original,
+      work: widget.work,
     );
     return original;
   }
@@ -307,6 +445,8 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
         repository: _composition!,
         workouts: _composition!,
         original: snapshot.data,
+        workRepository: widget.workRepository,
+        work: widget.work,
         adapter: _TrainerProgramAdapter(
           widget.workouts,
           widget.onCreateExercise,
@@ -315,6 +455,61 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
       );
     },
   );
+}
+
+/// Completa únicamente referencias del checkpoint con lecturas autorizadas.
+/// El estado crudo continúa perteneciendo al creador compartido, no se convierte
+/// a GuidedProgram ni se pierden valores incompletos de semanas/descansos.
+class _TrainerRecoveredProgramComposition extends TrainerProgramComposition {
+  _TrainerRecoveredProgramComposition(
+    super.repository,
+    super.workouts, {
+    super.original,
+    this.work,
+  });
+  final GuidedWork? work;
+
+  @override
+  Future<List<ProgramSessionSummary>> listGeneral() async {
+    final rows = await super.listGeneral();
+    final known = rows.map((row) => row.id).toSet();
+    final references = <String>{};
+    final phases = work?.state['phases'];
+    if (phases is List) {
+      for (final phase in phases.whereType<Map>()) {
+        final sessions = phase['sessions'];
+        if (sessions is List) {
+          for (final session in sessions.whereType<Map>()) {
+            if (session['id'] is String) {
+              references.add(session['id'] as String);
+            }
+          }
+        }
+        final pending = phase['pending'];
+        if (pending is List) references.addAll(pending.whereType<String>());
+      }
+    }
+    for (final id in references) {
+      if (!known.add(id)) continue;
+      final template = await workouts.template(id);
+      if (template == null) continue;
+      rows.add(
+        ProgramSessionSummary(
+          id: template.id,
+          name: template.name,
+          status: 'published',
+          version: template.version,
+          isRunning: template.blocks.any(
+            (block) => block.format == WorkoutBlockFormat.running,
+          ),
+          catalogScope: 'private',
+          supportsAdjustableRest: false,
+          showInLibrary: false,
+        ),
+      );
+    }
+    return rows;
+  }
 }
 
 class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
@@ -395,8 +590,9 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
   );
   @override
   bool definitiveError(Object error) =>
+      error is GuidedWorkConflict ||
       error is PostgrestException &&
-      ['22023', '23503', '42501', '40001'].contains(error.code);
+          ['22023', '23503', '42501', '40001'].contains(error.code);
 }
 
 class _PrivateSessionWorkspace extends StatefulWidget {

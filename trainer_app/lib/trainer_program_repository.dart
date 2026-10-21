@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_core/guided_program_codec.dart';
 import 'package:workout_editor_ui/guided_program_editor_adapter.dart';
@@ -56,7 +57,12 @@ class SupabaseTrainerProgramRepository implements TrainerProgramRepository {
     }
 
     identity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     identity();
     return result;
   }

@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_followup.dart';
 import 'package:trainer_access/trainer_followup_codec.dart';
 
@@ -35,7 +36,12 @@ class SupabaseTrainerFormRepository implements TrainerFormRepository {
 
   Future<dynamic> _rpc(String name, [Map<String, dynamic>? params]) async {
     _identity();
-    final value = await client.rpc(name, params: params);
+    final value = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     _identity();
     return value;
   }

@@ -60,7 +60,9 @@ local independiente. El adaptador Dart y el puente Swift se extraen a
 `packages/device_health`, plugin interno consumido por el ensayo. El puerto
 tipado se conserva sin imports Flutter en `src/domain/` de ese paquete; el
 dominio `device_activity_core` sigue sin dependencias de ejecución. El puente
-Android permanece en el ensayo. La app principal no consume todavía el plugin.
+Android permanece en el ensayo. La app principal consume ahora el plugin iOS
+con lectura explícita e historial privado aplicado solo en Dev; su prueba física
+queda pendiente. [Integración y límites actuales](DEVICE_RUNNING_HISTORY.md).
 [Contrato de entrega e integración](DEVICE_HEALTH_APP_HANDOFF.md).
 
 Se contrastó `health` 13.3.2 y se descartó para este ensayo: el contrato Dart

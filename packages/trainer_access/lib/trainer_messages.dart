@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'authenticated_rpc.dart';
+
 String trainerMessageOperationId() {
   final random = Random.secure();
   final bytes = List.generate(16, (_) => random.nextInt(256));
@@ -60,7 +62,12 @@ class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
   Future<dynamic> _rpc(String name, Map<String, dynamic> params) async {
     _identity();
     try {
-      final result = await client.rpc(name, params: params);
+      final result = await authenticatedTrainerRpc(
+        client,
+        userId,
+        name,
+        params: params,
+      );
       _identity();
       return result;
     } catch (_) {

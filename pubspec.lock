@@ -321,6 +321,20 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.13"
+  device_activity_core:
+    dependency: "direct main"
+    description:
+      path: "packages/device_activity_core"
+      relative: true
+    source: path
+    version: "0.1.0"
+  device_health:
+    dependency: "direct main"
+    description:
+      path: "packages/device_health"
+      relative: true
+    source: path
+    version: "0.1.0"
   entrena_ui:
     dependency: "direct main"
     description:

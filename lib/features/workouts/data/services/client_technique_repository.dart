@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workout_editor_ui/exercise_video_client.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
@@ -41,7 +42,12 @@ class SupabaseClientTechniqueRepository implements ClientTechniqueRepository {
 
   Future<dynamic> _rpc(String name, Map<String, Object?> params) async {
     _identity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     _identity();
     return result;
   }

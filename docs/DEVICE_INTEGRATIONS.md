@@ -19,10 +19,18 @@ desde Garmin Connect acreditada y distancia/duración contrastadas con Garmin
 en dos carreras a precisión de pantalla; descarte y relectura sin repetición
 confirmados por el titular. Revocar/restaurar lectura desde Salud retira/devuelve
 las carreras en el ensayo. Pausas y Android físico pendientes. El puente
-iOS y adaptador Dart se extraen a `device_health` para su entrega coordinada;
-la app principal aún no los consume. Faltan conectores de producción, persistencia
-real, exportación, pantallas de las tres apps, nuevas tablas y permisos de
-servidor. No hay acceso API propio de Garmin ni cuenta de fabricante conectada
+iOS y adaptador Dart se extraen a `device_health`.
+**INT-004:** la app principal consume el plugin iOS desde Perfil → Carreras de
+Salud, con lectura explícita, revisión y guardado privado por cuenta. El dominio
+y los puertos permanecen separados de HealthKit y Supabase. Persistencia/RPC
+aplicadas y probadas solo en Dev; revisiones inmutables, reintentos sin duplicar,
+cuotas agregadas y aislamiento de cuentas comprobados con fixtures. Compilación
+Android de la app principal correcta; Health Connect continúa en el ensayo,
+sin elevar el mínimo Android. iOS principal y aceptación física del recorrido
+de lectura/guardado siguen pendientes. [Contrato y evidencia](DEVICE_RUNNING_HISTORY.md).
+Faltan conectores de producción, exportación, interfaces/autorización de ADMIN
+y Trainer, y lectura Android en la app principal.
+No hay acceso API propio de Garmin ni cuenta de fabricante conectada
 a EntrenaOP y el bloque funcional
 sigue abierto. [API y fronteras](../packages/device_activity_core/README.md).
 
@@ -32,6 +40,7 @@ No se promete compatibilidad universal ni igualdad de funciones. Una conexión
 que permite leer actividades no acredita envío de sesiones ni datos en directo.
 
 - [Contrato de carrera V1](DEVICE_RUNNING_CONTRACT_V1.md).
+- [Historial privado por cuenta e integración iOS](DEVICE_RUNNING_HISTORY.md).
 - [Acceso a proveedores y expediente de alta](DEVICE_PROVIDER_ACCESS_2026_10_21.md).
 - Fronteras actuales: [arquitectura](ARCHITECTURE.md),
   [sesiones profesionales](TRAINER_PRIVATE_WORKOUTS.md) y

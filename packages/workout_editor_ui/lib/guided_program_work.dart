@@ -39,6 +39,22 @@ class GuidedWorkConflict implements Exception {
   const GuidedWorkConflict();
 }
 
+// JSONB puede devolver otro orden de claves. Solo se ordenan mapas: las listas
+// conservan el orden de sesiones y los textos crudos conservan la edición.
+Object? _canonicalWorkValue(Object? value) {
+  if (value is Map) {
+    final keys = value.keys.cast<String>().toList()..sort();
+    return {for (final key in keys) key: _canonicalWorkValue(value[key])};
+  }
+  if (value is List) {
+    return value.map(_canonicalWorkValue).toList(growable: false);
+  }
+  return value;
+}
+
+String _encodeWorkState(Map<String, dynamic> state) =>
+    jsonEncode(_canonicalWorkValue(state));
+
 abstract interface class GuidedWorkRepository {
   Future<List<GuidedWork>> list();
   Future<GuidedWork?> load(String id);
@@ -50,8 +66,8 @@ abstract interface class GuidedWorkRepository {
 /// Serializa escrituras y conserva la petición incierta antes de enviar cambios nuevos.
 class GuidedWorkController extends ChangeNotifier {
   GuidedWorkController(this.repository, this.work, Map<String, dynamic> state)
-    : _latest = jsonEncode(state),
-      _saved = jsonEncode(state);
+    : _latest = _encodeWorkState(state),
+      _saved = _encodeWorkState(state);
   final GuidedWorkRepository repository;
   GuidedWork work;
   String _latest;
@@ -63,7 +79,7 @@ class GuidedWorkController extends ChangeNotifier {
   bool get dirty => _latest != _saved || _request != null;
   bool _disposed = false;
   void update(Map<String, dynamic> state) {
-    _latest = jsonEncode(state);
+    _latest = _encodeWorkState(state);
   }
 
   void _notify() {

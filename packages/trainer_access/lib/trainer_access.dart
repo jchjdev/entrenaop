@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'authenticated_rpc.dart';
+
 typedef Json = Map<String, dynamic>;
 DateTime? _date(dynamic value) =>
     value == null ? null : DateTime.parse(value as String);
@@ -192,7 +194,12 @@ class SupabaseTrainerRepository implements TrainerRepository {
 
   Future<dynamic> _rpc(String name, [Json? params]) async {
     _checkIdentity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     _checkIdentity();
     return result;
   }

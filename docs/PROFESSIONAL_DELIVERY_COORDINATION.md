@@ -15,15 +15,27 @@ API, tablas, permisos ni nuevos estados de producto. Desarrolla el
 [DECISIONS](DECISIONS.md), el [roadmap](ROADMAP.md) ni los contratos de dominio.
 El responsable Trainer incorporará allí la autorización y los cierres reales.
 
-Actualización de coordinación del 21/10/2026: `main` local en `124fa76`, tras el
-punto de guardado de Dispositivos; Trainer comunicó su estado de integración
-cuando la base aún era `0515a76`. TRN-020 mantiene cambios pendientes de guardar y
-publicación web pendiente, pero sus diez migraciones nuevas ya están aplicadas
-en Dev y `exercise-video` está desplegada allí, según la entrega de Trainer.
-Se conservan los cambios previos
-de `.gitignore` y `devtools_options.yaml`. Esta revisión contrasta Git, documentos
-y entregas de los responsables; no vuelve a ejecutar Flutter/SQL ni consulta el
-estado remoto de Supabase. Las cifras comunicadas se atribuyen abajo a su autor.
+Actualización de coordinación del 21/10/2026: entrega conjunta guardada y subida
+en `a2c467fe9a1a2a1c854304f7701879b509827aee`. Trainer está publicado en
+`https://trainer.entrenaop.es/`, release
+`a2c467fe9a1a2a1c854304f7701879b509827aee-20261021-8`; evidencia guardada en
+`6937aec` y ajuste de formato en `dd5443b`, HEAD local contrastado. Sus diez
+migraciones nuevas están aplicadas en Dev y `exercise-video` desplegada allí.
+[Identidad, validación y límites de la publicación](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
+Se conservan aparte los cambios previos de `.gitignore` y `devtools_options.yaml`.
+Esta revisión contrasta Git, documentos y entregas de los responsables; no vuelve
+a ejecutar Flutter/SQL ni consulta el estado remoto de Supabase. Las cifras se
+atribuyen abajo a su evidencia. El estado previo a la publicación queda superado;
+no debe leerse como el estado actual del portal.
+
+Continuación TRN-021 / INT-004 en validación final, todavía sin SHA de entrega
+nuevo: historial privado de Salud y trabajos incompletos de programas están
+implementados y sus dos migraciones aplicadas solo en Dev. Trainer confirma 197
+migraciones coincidentes, cero pendientes y 26 contratos juntos con `ROLLBACK`
+sobre el esquema aplicado. HEAD sigue siendo `dd5443b`; la publicación web
+anterior no acredita todavía esta continuación. Trainer conserva la ventana de
+Git y entregará la nueva identidad de fuentes/publicación al cerrar.
+[Programas](TRAINER_PROGRAM_WORK_DRAFTS.md), [Salud](DEVICE_RUNNING_HISTORY.md).
 
 ## Responsables y reservas
 
@@ -84,13 +96,15 @@ La conexión futura con las aplicaciones necesita su contrato y reserva propios.
 El lector de Salud actual pertenece a la app de ensayo, no a EntrenaOP móvil
 distribuida.
 
-### Revisión de la propuesta para conectar la app principal
+### Revisión inicial de conexión y evolución posterior
 
-Dispositivos propone `packages/device_health/` y una feature nueva
+Al abrir la coordinación, Dispositivos propuso `packages/device_health/` y una feature nueva
 `lib/features/device_activities/` para lectura/lista explícita local. Arquitectura
 recomienda la frontera, pendiente de concretar el contrato y reservar con Trainer
 pubspec/lockfile, router/perfil, DI y archivos nativos. Esta revisión no concede
-por sí sola esas reservas ni acredita integración implementada.
+por sí sola esas reservas ni acreditaba integración implementada. Los párrafos
+iniciales conservan esa justificación histórica; el estado posterior de extracción
+y las reservas nuevas se indican expresamente más abajo.
 
 Dispositivos contrasta después minSdk 24 en Flutter 3.47.5 y mínimo 26 en su
 dependencia Health Connect 1.1.0. Arquitectura recomienda comenzar el plugin
@@ -116,9 +130,25 @@ ejecución. Dispositivos comunica compilación iOS correcta del plugin guardado 
 `124fa76` mediante CI `39637024250`, job `119350196386` terminado con éxito;
 comunica después éxito de ambos jobs, iOS y Android, de esa ejecución.
 Coordinación registra esa entrega sin repetir la compilación. La reinstalación
-física y la conexión a la app principal/persistencia siguen pendientes; la lectura
-positiva anterior no los acredita.
+física de la integración principal sigue pendiente; el código de conexión y
+persistencia ya está implementado en la continuación descrita a continuación.
+La lectura positiva anterior no acredita esa instalación.
 [Contrato de desmontaje Flutter](https://api.flutter.dev/ios-embedder/protocol_flutter_plugin-p.html).
+
+Tras autorizar Javier la integración principal y el historial privado por cuenta,
+Dispositivos implementa ese tramo por separado. Trainer libera pubspec/lockfile raíz
+y configuración iOS aditiva; conserva router/perfil/DI. La migración local
+`20261021171215_device_running_history.sql` pertenece a Dispositivos y ya está
+aplicada en Dev, tras contrastar el DDL real antes de registrar su historial. No
+pertenece a la release profesional anterior de 195 migraciones. Su contrato SQL
+se repitió sobre el esquema aplicado; junto con programas hay ahora 197 versiones
+coincidentes y 26 contratos correctos, según Trainer. APK debug principal compilado
+y 16 pruebas dirigidas de Salud correctas; la compilación iOS principal en CI y
+la instalación física de esta integración siguen pendientes de evidencia.
+La conexión lógica por cuenta/canal, el guardado explícito y las revisiones
+inmutables mantienen el aislamiento del historial personal respecto a Trainer
+y ADMIN. El namespace persistente no identifica AppleID ni HealthStore; los
+ámbitos efímeros de lectura no deben convertirse en claves persistidas.
 
 La app no debe importar código de `labs`. El puente debe alojarse en un plugin
 Flutter interno con implementaciones Kotlin/Swift, consumido tanto por el ensayo
@@ -211,31 +241,36 @@ autorizan a los agentes a purgar datos durante este desarrollo.
 
 ## Mapa de los dieciséis puntos
 
-Estado local comunicado por Trainer y contrastado con los documentos de dominio
-el 21/10/2026. Implementación local, validación, guardado, aplicación permanente
-de SQL, publicación y aceptación física son hitos diferentes. Esta tabla no
-declara cerrados los dieciséis puntos.
+Estado comunicado por Trainer y contrastado con los documentos de dominio el
+21/10/2026. Las funciones integradas del portal forman parte de la publicación
+Dev identificada arriba; el código del deportista y la publicación de ADMIN
+mantienen sus hitos propios. La aceptación física conjunta sigue pendiente.
+Esta tabla no declara cerrados los dieciséis puntos.
 
 | Nº | Recorrido | Estado local y límites pendientes | Responsable y criterio observable |
 | --- | --- | --- | --- |
-| 1 | Inicio operativo | Inicio integrado en TRN-020; pendiente validación final y aceptación conjunta. | Trainer: avisos llevan a la acción y explican periodo/completitud; depende de 8/9/11. |
+| 1 | Inicio operativo | Publicado y consultado en Chrome en Dev; pendiente aceptación conjunta. | Trainer: avisos llevan a la acción y explican periodo/completitud; depende de 8/9/11. |
 | 2 | Ficha completa | Ficha y contexto profesional integrados localmente. | Trainer + deportista: solo datos permitidos; notas internas separadas de indicaciones visibles. |
-| 3 | Calendario editable | Agenda editable, eventos y previsualización integrados; comprobación ampliada de concurrencia en curso. | Trainer + deportista: confirmar fechas/cambios, tratar inicio concurrente y conservar el plan automático. |
-| 4 | Adaptación individual | Cambios individuales revisados implementados sin modificar biblioteca; nueva ejecución de regresiones en curso. | Trainer: receta/versiones y destinatario inequívocos; pauta anterior y ejecución iniciada preservadas. |
-| 5 | Creador ágil | Creación contextual y componentes comunes integrados; recuperación persistente adicional de borradores pendiente. | ADMIN + adaptadores Trainer: mismo creador, capacidades conservadas, reintento sin duplicados. |
-| 6 | Biblioteca eficiente | Backend de favoritos/recientes, getter CAS, puerto/protocolo UI y adaptador Trainer preparados; ADMIN cierra conexión y UI. Etiquetas no acreditadas por esta entrega. | ADMIN en componentes comunes, Trainer en sus datos: preferencias por identidad/contexto sin abrir contenido privado. |
+| 3 | Calendario editable | Agenda editable, eventos y previsualización integrados; batería final de concurrencia correcta. | Trainer + deportista: confirmar fechas/cambios, tratar inicio concurrente y conservar el plan automático. |
+| 4 | Adaptación individual | Cambios individuales revisados implementados sin modificar biblioteca; regresiones finales correctas. | Trainer: receta/versiones y destinatario inequívocos; pauta anterior y ejecución iniciada preservadas. |
+| 5 | Creador ágil | Creación contextual publicada; recuperación de programas Trainer implementada y servidor aplicado en Dev, cierre de matriz/publicación pendiente. Recuperación de sesiones incompletas sigue pendiente. | ADMIN + adaptadores Trainer: mismo creador, capacidades conservadas, reintento sin duplicados. |
+| 6 | Biblioteca eficiente | Backend y consumidores de favoritos/recientes integrados y probados; selector Trainer publicado y consultado en Chrome, sin escribir preferencias de ensayo. Etiquetas no acreditadas por esta entrega. | ADMIN en componentes comunes, Trainer en sus datos: preferencias por identidad/contexto sin abrir contenido privado. |
 | 7 | Grupos y envío conjunto | Grupos, envío y copia semanal integrados localmente. | Trainer: destinatarios explícitos, aislamiento individual y resultado recuperable por destinatario conforme al contrato de grupos. |
 | 8 | Evolución | Evolución y contexto de resultados integrados en ficha/informes; pendiente aceptación conjunta. | Trainer + deportista: periodo, origen, unidades, omisiones y cobertura explicados; ausencia no equivale a cero. |
 | 9 | Bandeja de revisión | Revisión y seguimiento vinculados implementados localmente. | Trainer + deportista: revisar una versión identificada, reintentar sin duplicar y conservar respuestas anteriores. |
-| 10 | Vídeos en ambas direcciones | Demostraciones privadas, técnica del alumno y componentes comunes integrados; seguridad revisada y función desplegada en Dev. Faltan publicación de interfaces y subida/reproducción con archivos reales. | Trainer coordina servidor y recepción; ADMIN aporta herramienta reutilizable. Aplican autorización, cuotas y conservación del contrato de vídeos privados. |
+| 10 | Vídeos en ambas direcciones | Demostraciones privadas, técnica del alumno y componentes comunes integrados; seguridad revisada y función desplegada en Dev, portal publicado. Faltan subida/reproducción con archivos reales y aceptación móvil. | Trainer coordina servidor y recepción; ADMIN aporta herramienta reutilizable. Aplican autorización, cuotas y conservación del contrato de vídeos privados. |
 | 11 | Formularios | Plantillas, asignación y respuestas integradas en Trainer/deportista. | Trainer + deportista: plantilla y respuesta versionadas, destinatario autorizado y conservación tras revisión. |
 | 12 | Comunicación | Conversación profesional integrada localmente; notificaciones push pendientes. | Trainer + deportista: distinguir mensajes compartidos/notas internas, reintentos y política de notificaciones. |
 | 13 | Automatizaciones controladas | Recurrencia finita de hasta doce semanas integrada; no acredita automatización profesional general ni motor adaptativo. | Trainer: acción explícita/auditable, idempotencia, cancelación y aprobación cuando proceda; sin finalizar vínculos por defecto. |
 | 14 | Cobros y servicio | Núcleo comercial simulado entregado con 21 pruebas; sin proveedor conectado, derechos reales ni políticas comerciales resueltas. | Trainer + ADMIN comercial: separar ambos circuitos y Pro; proveedor, condiciones, conciliación y pruebas antes de activar pagos. |
 | 15 | Informes | Informe de periodo y exportación CSV integrados localmente. | Trainer: mismas métricas autorizadas de 8, periodo/fuentes y revisión previa al compartir; sin datos privados ajenos. |
-| 16 | Preparación específica y relojes | Pruebas/simulacros tipados y versionados integrados. Motor profesional, puntuación/contexto oficial completo y conexión/persistencia de relojes siguen pendientes. | Trainer + dispositivos: reglas deportivas versionadas, anulación profesional definida y actividad externa confirmada sin alterar retrospectivamente el motor. |
+| 16 | Preparación específica y relojes | Pruebas/simulacros tipados integrados. Historial personal de Salud implementado y aplicado en Dev; instalación principal pendiente. Motor profesional, puntuación/contexto oficial completo y conectores directos siguen pendientes. | Trainer + dispositivos: reglas deportivas versionadas, anulación profesional definida y actividad externa confirmada sin alterar retrospectivamente el motor. |
 
 ### Evidencia de integración comunicada por Trainer
+
+Las cifras de este apartado describen la release `a2c467f` salvo la continuación
+TRN-021 / INT-004 identificada al final; se mantienen ambas para distinguir código
+publicado de código todavía pendiente de guardar/publicar.
 
 - Trainer confirma diez migraciones nuevas ya aplicadas permanentemente en Dev,
   con 195 entradas coincidentes en el historial local/remoto, y los 24 contratos
@@ -243,14 +278,16 @@ declara cerrados los dieciséis puntos.
   terminan con `ROLLBACK`; no dejan datos de prueba ni revierten las
   migraciones ya aplicadas. La evidencia anterior solo transaccional queda
   superada por esta comprobación comunicada por el responsable.
-- `exercise-video` desplegada en Dev y compilación web release de Trainer
-  correcta, según Trainer. La publicación del ZIP web está pendiente del punto
-  de guardado conjunto. No acredita producción, dos cuentas ni archivos reales.
-- Últimas baterías completas comunicadas antes de los cambios finales de
-  preferencias: raíz 1.204 pruebas correctas y una omitida, ADMIN 304 y dos
-  omitidas, Trainer 101 y editor compartido 87. Hay seis regresiones nuevas del
-  cliente de preferencias correctas; falta renovar el cierre de los consumidores
-  tras la integración final de ADMIN.
+- `exercise-video` desplegada en Dev y portal Trainer publicado desde la
+  compilación del commit guardado. La verificación HTTPS contrasta revisión,
+  release, SHA del JavaScript, entrada, cabeceras y MIME de WebAssembly. El
+  recorrido en Chrome conserva la sesión MFA y no guarda contenido de ensayo.
+  No acredita producción, dos cuentas ni archivos reales.
+- Baterías finales de la publicación: raíz 1.204 correctas/una omisión previa;
+  ADMIN 306/dos previas; Trainer 101; editor común 110; `entrena_ui` 19 y
+  `trainer_access` 20. Análisis de raíz, ADMIN, Trainer y editor limpios y ambos
+  portales compilados para web Dev. Estas cifras sustituyen las parciales
+  anteriores a la integración final de preferencias.
 - Planificación: Trainer confirma también las 306 ejecuciones correctas de la
   variante final de fixture personal sin advisory lock.
   Assessments, vídeo y preferencias: 36 ejecuciones correctas por batería,
@@ -258,12 +295,29 @@ declara cerrados los dieciséis puntos.
 - Comercio: 21 pruebas del núcleo simulado entregadas por arquitectura. No
   concede acceso real, cobra dinero ni acredita un adaptador persistente.
 
-Trainer coordina la revisión final, el punto de guardado y la actualización de
-los documentos globales. Permanecen pendientes la aceptación física con dos
-cuentas y archivos reales, la distribución móvil y la publicación de las
-interfaces ampliadas, además de las dependencias funcionales abiertas de la
-tabla. La propuesta de recuperación de creadores se mantiene como propuesta:
-su implementación se coordinará después del checkpoint actual.
+Continuación TRN-021 / INT-004: las migraciones `20261021171215` y
+`20261021172219` ya están aplicadas en Dev y los 26 contratos conjuntos han pasado
+sobre sus 197 versiones coincidentes. Los asesores posteriores no añaden WARN ni
+ERROR; los cuatro INFO nuevos de trabajos corresponden a tablas privadas cerradas,
+sin atribuir la ausencia de avisos a todo el proyecto. Trainer comunica 108
+contenciones locales RC/RR de programas y la regresión ampliada de Salud correcta.
+La matriz final comunicada por Trainer sobre las fuentes congeladas es: raíz
+1.220 correctas/una omisión previa, Trainer 137, ADMIN 306/dos omisiones previas,
+editor común 124 (catorce regresiones nuevas) y `trainer_access` 20; Salud conserva
+16 dirigidas correctas. Coordinación contrasta también el final del log
+`build/trainer-recovery-athlete-tests-final.log`. Análisis raíz/Trainer/ADMIN/editor
+limpios, 42 archivos Dart sin cambios de formato y compilación web Trainer Dev
+correcta, según Trainer. Incluye el guard previo al callback `onSaved`, probado.
+El commit y la publicación de esta continuación siguen pendientes de su identidad
+concreta; la matriz correcta no los acredita por sí sola.
+
+Trainer ha cerrado el punto de guardado/publicación descrito, sin cerrar el
+alcance completo. Permanecen pendientes la aceptación física con dos cuentas y
+archivos reales, la distribución móvil y la publicación ADMIN por su propio
+flujo, además de las dependencias funcionales abiertas de la tabla. El siguiente
+tramo de recuperación de programas Trainer está implementado y aplicado en Dev,
+en validación final y pendiente del siguiente guardado/publicación; no está
+incluido como terminado en la release publicada.
 
 ## Contratos entre aplicaciones
 
@@ -324,8 +378,9 @@ Primer punto de control: cerrar la aceptación pendiente de TRN-019 mediante
 ejercicio con foto → sesión/programa → pauta → app instalada del alumno →
 ejecución → resultado autorizado → revisión que conserva la receta anterior.
 La preparación de código, contratos y pruebas puede avanzar sin móvil; la prueba
-humana con dos cuentas y la lectura física de salud mantienen su estado pendiente
-hasta disponer de dispositivo y realizarlas.
+humana con dos cuentas mantiene su estado pendiente hasta realizarla. La lectura
+física del ensayo de Salud ya tiene evidencia propia; reinstalar el plugin nuevo
+y comprobarlo en la app principal son hitos distintos aún pendientes.
 
 Después se integran creación/medios, adaptación/calendario, revisión/evolución,
 formularios/comunicación/automatizaciones e informes, respetando dependencias de
@@ -352,13 +407,67 @@ Mantener `main`, cotejar el remoto antes de integrar y no incluir cambios ajenos
 sin revisión. Una comprobación fallida se comunica y corrige; el bloque no se
 declara cerrado ni se rebaja su verificación para guardar.
 
-## Propuesta de recuperación de creadores, pendiente de acuerdo e implementación
+## Recuperación de creadores: primer tramo acordado y propuesta posterior
 
-Revisión de solo lectura solicitada por Trainer para la continuación posterior
-al checkpoint. No reserva archivos nuevos ni autoriza cambios de datos. Las
-rutas y contratos siguientes son una propuesta, no API implementada.
+### Primer checkpoint de programas Trainer acordado
 
-### Base comprobada y reutilización
+Tras publicar, Trainer acepta la revisión focalizada y asigna backend nuevo a
+`professional_security_review`, adaptador/interfaz Trainer a `progress_domain`
+y revisión independiente a `followup_domain`. Esta hoja no concede reservas
+adicionales: sus propietarios las coordina Trainer. No se duplica editor ni
+puerto. La composición ADMIN permanece propia; las correcciones generales de
+posiciones repetidas y normalización se realizan una vez en el paquete común y
+ADMIN cierra su matriz con ambos consumidores. El backend
+`20261021172219_trainer_program_work_drafts.sql` ya está aplicado en Dev; la
+interfaz está integrada, con validación final y nueva publicación pendientes.
+
+Se reutilizan `GuidedWorkRepository`, `GuidedWorkController` y la página común.
+La clave de operación parcial es propietario/contexto/workId/acción/revisión
+esperada; no hace falta añadir un UUID al puerto existente. El payload canónico
+incluye estado y origen inmutable. Cada orden nueva aceptada consume una revisión
+una sola vez; un replay idéntico recupera su recibo sin mutar HEAD. Otra carga
+con la misma clave se rechaza. Si una orden nueva no cambia contenido, tampoco
+puede dejar su slot de revisión consumido pero reutilizable para otro payload.
+
+Servidor devuelve recibo confirmado y revisión/ciclo actuales. El adaptador
+Trainer lanza conflicto si el recibo ya no corresponde al HEAD abierto, evitando
+que el controlador marque como actual un estado histórico. La finalización
+bloquea el trabajo, valida revisión/contenido/origen, usa workId como operación
+estable del guardado de programa y registra resultado/cierre en la misma
+transacción. Recarga consulta `finalizedProgramId`; no crea otra versión por
+perder una respuesta. Se conserva también el rechazo existente a revisar una
+versión base que otro trabajo ya retiró.
+
+Política acordada por Trainer: el propietario con MFA puede recuperar el recibo
+de una finalización ya confirmada aunque se haya revocado el acceso profesional;
+no se ejecutan efectos nuevos. Guardados y finalizaciones nuevos exigen acceso
+vigente. Los límites propuestos deben contar historial y recibos retenidos,
+además de estados actuales, y comprobarse atómicamente; no se convierten en
+tarifas ni justifican purgar trabajo automáticamente.
+
+El controlador compara snapshots con representación canónica de mapas, sin
+alterar el orden de listas ni el texto crudo. La composición común incorpora
+`positionId` y `replacementPositions` para distinguir dos posiciones de una
+misma receta al reintentar una sustitución, conservando lectura del estado
+anterior. Eso no acredita recuperación de campos de una sesión hija incompleta.
+El listado de trabajos devuelve estado resumido; abrir el editor carga el trabajo
+completo por su ID. El helper de RPC fija la sesión al propietario y las cinco
+RPC nuevas verifican `p_expected_owner` antes de leer, bloquear o recuperar recibo.
+
+### Propuesta posterior para sesiones y trabajos anidados
+
+La revisión siguiente se conserva como propuesta para ampliar después a sesiones
+y trabajos hijos. Su API genérica/UUID explícito no reemplaza el acuerdo más
+acotado del primer checkpoint ni obliga a cambiar el puerto ADMIN existente.
+No acredita la API genérica implementada. Las posiciones de sesión ya tienen la
+corrección aditiva indicada arriba; las identidades de fase y la durabilidad del
+hijo incompleto requieren su tramo propio.
+
+### Base histórica de la propuesta y reutilización
+
+Este inventario describe lo observado antes del primer checkpoint; la inyección
+Trainer y las posiciones ya han evolucionado como se indica arriba. No debe
+interpretarse la carencia inicial como estado actual del código.
 
 - `GuidedWorkRepository` y `GuidedWorkController`, en
   `packages/workout_editor_ui/lib/guided_program_work.dart`, ya permiten cargar,

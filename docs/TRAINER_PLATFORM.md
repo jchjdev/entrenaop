@@ -24,8 +24,10 @@ juntos en Dev con ROLLBACK, se han aplicado las migraciones y se han repetido
 los 24 contratos sobre el esquema real aplicado. Publicación web y aceptación
 móvil se acreditan por separado. El núcleo comercial tiene únicamente un ensayo
 tipado con proveedor ficticio: no hay cobros reales. Favoritos/recientes se integran en los mismos creadores; recuperación persistente
-de borradores, motor profesional y conexión de relojes
-con la app principal requieren sus siguientes entregas y comprobaciones.
+de programas se incorpora en TRN-021 con servidor Dev verificado; la recuperación
+de sesiones internas y el motor profesional mantienen sus entregas pendientes.
+INT-004 conecta Salud con historial privado en la app principal, todavía sin
+distribución/aceptación física ni entrega automática de registros al preparador.
 
 ## Objetivo y propiedad del contenido
 

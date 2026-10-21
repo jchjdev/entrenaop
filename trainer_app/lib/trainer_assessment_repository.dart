@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/professional_assessment.dart';
 import 'package:workout_core/professional_assessment_codec.dart';
 
@@ -40,7 +41,12 @@ class SupabaseTrainerAssessmentRepository
     }
 
     identity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     identity();
     return result;
   }

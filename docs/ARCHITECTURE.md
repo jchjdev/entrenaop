@@ -40,6 +40,24 @@ Las diez migraciones profesionales se han aplicado en Dev y se han revalidado
 24 contratos con ROLLBACK sobre el esquema aplicado. La distribución de las
 interfaces y la aceptación física se acreditan por separado.
 
+TRN-021 añade persistencia privada de los trabajos de programas sobre los mismos
+puerto y controlador guiados. `trainer_private` separa estado incompleto,
+recibos inmutables y versión final; la finalización comprueba la proyección del
+estado confirmado en la misma transacción que el motor existente. El listado
+solo transporta nombre y metadata; recuperar carga el estado completo. La
+sesión del transporte queda fijada por petición y las nuevas RPC comprueban el
+titular esperado, conservando autorización y MFA en servidor.
+[Contrato](TRAINER_PROGRAM_WORK_DRAFTS.md), [identidad](TRAINER_ACCOUNT_REQUESTS.md).
+
+INT-004 conecta `device_health` mediante puertos a la feature de actividades del
+deportista, sin importar el laboratorio. El anfitrión compone adaptadores por
+cuenta y conserva sus instancias al renovar la sesión. El historial en
+`device_private` mantiene namespace por titular/canal, snapshots y recibos,
+separado de planificación y ejecución. Sus fachadas públicas invoker delegan en
+entradas privadas autorizadas; el bloqueo de Auth precede presupuesto y conexión.
+Importar no comparte datos con entrenadores ni confirma un resultado.
+[Contrato y límites](DEVICE_RUNNING_HISTORY.md).
+
 ## Ejercicios profesionales · TRN-019 · 21/10/2026
 
 Trainer reutiliza `ExerciseForm` con adaptador propio. `exercises.origin=coach`

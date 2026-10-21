@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_workout_repository.dart';
@@ -44,7 +45,9 @@ class SupabaseTrainerAgendaRepository implements TrainerAgendaRepository {
     TrainerAgendaItem? after,
   }) async {
     _identity();
-    final rows = await client.rpc(
+    final rows = await authenticatedTrainerRpc(
+      client,
+      userId,
       'list_trainer_agenda',
       params: {
         'p_from': agendaDate(from),

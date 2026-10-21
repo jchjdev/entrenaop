@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; publicación web en curso:**
+programas incompletos de Trainer reutilizan puerto, controlador y editor comunes;
+la sesión de las RPC queda vinculada a la cuenta. Nueva URL estable, recuperación,
+descarte y finalización atómica, sin copiar ADMIN. Servidor aplicado en Dev:
+197 migraciones coincidentes y cero pendientes; 26 contratos juntos con ROLLBACK,
+incluido historial personal de Salud. Los trabajos verifican 108 contenciones
+locales RC/RR. Matriz final: raíz 1220 correctas/una omisión previa, Trainer 137,
+ADMIN 306/dos omisiones previas, UI compartida 124 y acceso compartido 20.
+Análisis raíz/Trainer/ADMIN/UI limpios; formato de 42 fuentes Dart sin cambios.
+La corrección común conserva posiciones repetidas, normaliza el orden de claves
+y confirma un enlace incierto sin volver a introducirlo como pendiente. Catorce
+regresiones nuevas cubren recuperación y guardado en ambos contextos. El portal
+web compila para Dev; su publicación se acredita por separado.
+Salud incorpora ruta, configuración iOS aditiva, pruebas de feature y APK de
+desarrollo compilado; no acredita instalación física principal ni Health Connect
+en la app habitual. **No abrir otro bloque grande hasta este punto de guardado.**
+Después continúa la recuperación de sesiones, sin duplicar el creador.
+[Programas](TRAINER_PROGRAM_WORK_DRAFTS.md), [cuenta](TRAINER_ACCOUNT_REQUESTS.md),
+[Salud](DEVICE_RUNNING_HISTORY.md).
+
 **TRN-020 · 21/10/2026 · ampliación coordinada de los dieciséis puntos en curso:**
 Javier autoriza avanzar en paralelo con agentes, manteniendo creadores comunes y
 portales independientes. Ya hay implementación local integrada de inicio,

@@ -72,11 +72,14 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     final work = widget.work;
     if (work != null && widget.workRepository != null) {
       if (work.state.isNotEmpty) _restore(work.state);
-      _checkpoint = GuidedWorkController(
-        widget.workRepository!,
-        work,
-        _snapshot(),
-      )..addListener(_checkpointChanged);
+      _checkpoint =
+          GuidedWorkController(
+              widget.workRepository!,
+              work,
+              work.state.isEmpty ? _snapshot() : work.state,
+            )
+            ..update(_snapshot())
+            ..addListener(_checkpointChanged);
     }
     _load();
   }
@@ -95,7 +98,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
   void _restore(Map<String, dynamic> state) {
     if (state['schema'] != 1) {
       throw const FormatException(
-        'Este borrador necesita otra versión del admin.',
+        'Este borrador necesita otra versión del editor.',
       );
     }
     _name.text = state['name'] as String;
@@ -159,7 +162,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
         ? 'Cambios pendientes de guardar'
         : checkpoint.work.revision == 0
         ? 'Empieza a escribir para guardar tu trabajo automáticamente'
-        : 'Trabajo guardado · puedes continuar más tarde desde Programas guiados';
+        : 'Trabajo guardado · puedes continuar más tarde desde Programas';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -179,7 +182,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 child: const Text('Abrir programas'),
               ),
             const Text(
-              'Este guardado admite campos incompletos. «Guardar en catálogo» comprueba las sesiones y crea un borrador listo para revisar.',
+              'Este guardado admite campos incompletos. El guardado final comprueba las sesiones y conserva el programa para revisarlo.',
             ),
           ],
         ),
@@ -283,6 +286,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       phase.sessions.add(_SessionFields(session.id, session.name));
       phase.pendingSessions.remove(session.id);
       phase.pendingReplacements.remove(session.id);
+      phase.replacementPositions.remove(session.id);
       _changed();
     });
   }
@@ -313,12 +317,23 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
           if (!mounted || !_phases.contains(phase)) {
             throw StateError('Programa cerrado');
           }
+          // El enlace ya se aplicó en memoria. Confirmar la misma petición
+          // incierta sin volver a guardar la sesión como pendiente de incorporar.
+          if (appliedId == id) {
+            if (!await _saveWork()) {
+              throw StateError('Enlace pendiente de guardar');
+            }
+            return;
+          }
           // Primero conservar el ID: si falla la lectura o el enlace se puede
           // recuperar sin crear otra sesión ni perder el trabajo del programa.
           setState(() {
             _sessionTemplates.remove(id);
             phase.pendingSessions.add(id);
-            if (session != null) phase.pendingReplacements[id] = session.id;
+            if (session != null) {
+              phase.pendingReplacements[id] = session.id;
+              phase.replacementPositions[id] = session.positionId;
+            }
             _changed();
           });
           if (!await _saveWork()) throw StateError('Guardado pendiente');
@@ -330,11 +345,17 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
             throw StateError('Sesión no disponible');
           }
           if (session != null) {
+            if (!phase.sessions.contains(session)) {
+              throw StateError(
+                'La posición original ya no está en el programa.',
+              );
+            }
             setState(() {
               session.id = id;
               session.name = saved.name;
               phase.pendingSessions.remove(id);
               phase.pendingReplacements.remove(id);
+              phase.replacementPositions.remove(id);
               _changed();
             });
           } else if (appliedId != id) {
@@ -343,6 +364,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
           setState(() {
             phase.pendingSessions.remove(id);
             phase.pendingReplacements.remove(id);
+            phase.replacementPositions.remove(id);
             _changed();
           });
           appliedId = id;
@@ -362,17 +384,40 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
   Future<void> _reviewAndAttach(_PhaseFields phase, String id) async {
     final source = _sessions.where((s) => s.id == id).firstOrNull;
     if (source != null && ['draft', 'published'].contains(source.status)) {
-      final previousId = phase.pendingReplacements.remove(id);
-      final previous = phase.sessions
-          .where((s) => s.id == previousId)
-          .firstOrNull;
-      if (previous == null) {
+      final positionId = phase.replacementPositions[id];
+      final previousId = phase.pendingReplacements[id];
+      final replacing = positionId != null || previousId != null;
+      if (!replacing) {
         _attachSession(phase, source);
       } else {
+        final candidates = phase.sessions
+            .where(
+              (session) => positionId != null
+                  ? session.positionId == positionId
+                  : session.id == previousId,
+            )
+            .toList();
+        // Un ID de receta puede ocupar varias posiciones. Nunca se elige la
+        // primera por casualidad ni se convierte una sustitución en un añadido.
+        final previous =
+            candidates.length == 1 &&
+                (candidates.single.id == previousId ||
+                    candidates.single.id == id)
+            ? candidates.single
+            : await _chooseReplacementPosition(phase);
+        if (previous == null || !mounted) return;
+        if (!_phases.contains(phase) || !phase.sessions.contains(previous)) {
+          setState(
+            () => _error = 'La posición elegida ya no está en el programa. La revisión sigue pendiente.',
+          );
+          return;
+        }
         setState(() {
           previous.id = source.id;
           previous.name = source.name;
           phase.pendingSessions.remove(id);
+          phase.pendingReplacements.remove(id);
+          phase.replacementPositions.remove(id);
           _changed();
         });
       }
@@ -383,6 +428,39 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
             'La sesión pendiente no está disponible. Elige otra del catálogo.',
       );
     }
+  }
+
+  Future<_SessionFields?> _chooseReplacementPosition(_PhaseFields phase) async {
+    if (phase.sessions.isEmpty) {
+      setState(
+        () => _error = 'La posición original ya no está en el programa. La revisión sigue pendiente; puedes elegirla después desde el catálogo.',
+      );
+      return null;
+    }
+    return showDialog<_SessionFields>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Elige la posición que quieres sustituir'),
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Text(
+              'La posición original ya no puede recuperarse automáticamente. Elige dónde aplicar esta revisión guardada. No se añadirá otra sesión.',
+            ),
+          ),
+          for (var index = 0; index < phase.sessions.length; index++)
+            SimpleDialogOption(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(phase.sessions[index]),
+              child: Text('${index + 1}. ${phase.sessions[index].name}'),
+            ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _createWarmup(_SessionFields session) async {
@@ -1139,6 +1217,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                           onPressed: () => setState(() {
                             p.pendingSessions.remove(id);
                             p.pendingReplacements.remove(id);
+                            p.replacementPositions.remove(id);
                             _changed();
                           }),
                           child: const Text('Quitar referencia pendiente'),
@@ -1481,24 +1560,28 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
 }
 
 class _SessionFields {
-  _SessionFields(this.id, this.name, {this.warmup});
+  _SessionFields(this.id, this.name, {this.warmup, String? positionId})
+    : positionId = positionId ?? newGuidedWorkId();
   factory _SessionFields.fromSession(GuidedSession s) =>
       _SessionFields(s.templateId, s.name, warmup: s.warmupId)
         ..adjustable = s.restPolicy.adjustable
         ..minimum.text = '${s.restPolicy.minimumSeconds ?? 60}'
         ..maximum.text = '${s.restPolicy.maximumSeconds ?? 180}';
   String id, name;
+  final String positionId;
   factory _SessionFields.restore(Map<String, dynamic> s) =>
       _SessionFields(
           s['id'] as String,
           s['name'] as String,
           warmup: s['warmup'] as String?,
+          positionId: s['positionId'] as String?,
         )
         ..adjustable = s['adjustable'] as bool
         ..minimum.text = s['minimum'] as String
         ..maximum.text = s['maximum'] as String;
   Map<String, dynamic> snapshot() => {
     'id': id,
+    'positionId': positionId,
     'name': name,
     'warmup': warmup,
     'adjustable': adjustable,
@@ -1548,6 +1631,7 @@ class _PhaseFields {
   // Si se interrumpe el enlace de una revisión, recuperar debe reemplazar su
   // posición original, no añadir otra sesión al final del programa.
   final pendingReplacements = <String, String>{};
+  final replacementPositions = <String, String>{};
   factory _PhaseFields.restore(Map<String, dynamic> p) => _PhaseFields()
     ..name.text = p['name'] as String
     ..weeks.text = p['weeks'] as String
@@ -1555,6 +1639,9 @@ class _PhaseFields {
     ..pendingSessions.addAll((p['pending'] as List).cast<String>())
     ..pendingReplacements.addAll(
       (p['replacements'] as Map?)?.cast<String, String>() ?? const {},
+    )
+    ..replacementPositions.addAll(
+      (p['replacementPositions'] as Map?)?.cast<String, String>() ?? const {},
     )
     ..sessions.addAll(
       (p['sessions'] as List).map(
@@ -1567,6 +1654,7 @@ class _PhaseFields {
     'instructions': instructions.text,
     'pending': pendingSessions.toList(),
     'replacements': Map<String, String>.of(pendingReplacements),
+    'replacementPositions': Map<String, String>.of(replacementPositions),
     'sessions': sessions.map((s) => s.snapshot()).toList(),
   };
   GuidedPhase input(GuidedProgramMode mode) => GuidedPhase(

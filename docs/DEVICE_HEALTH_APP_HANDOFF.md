@@ -9,8 +9,8 @@ actual del ensayo permanece en memoria y no es un historial persistente.
 Trainer y Arquitectura ratifican extraer un plugin Flutter interno, consumido
 por el ensayo y después por deportista, con `device_activity_core` puro. No se
 importa código de `labs` desde ninguna app. Dispositivos prepara `device_health`
-y, cuando se conecte la dependencia, la feature `device_activities`; Trainer
-conecta pubspec/lock, rutas/perfil, composición y configuración nativa. Estas
+y la feature `device_activities`; en INT-004 Dispositivos añade pubspec/lock y
+configuración iOS aditiva, mientras Trainer conecta rutas/perfil y composición. Estas
 reservas no conceden editar sus archivos profesionales ni los compartidos.
 
 La extracción no cambia SQL, servidor, agenda, ejecuciones ni resultados.
@@ -85,9 +85,10 @@ El registro publica la instancia del plugin para que Flutter notifique
 [documentación del protocolo FlutterPlugin](https://api.flutter.dev/ios-embedder/protocol_flutter_plugin-p.html).
 El ciclo nativo de desmontaje todavía requiere verificación en iOS.
 
-El próximo contrato de guardado personal debe definir almacenamiento por
-titular y conexión estable, deduplicación por identidad/revisión, atomicidad,
-retención y cambio de cuenta. Una consulta parcial o vacía no borra historial.
+El contrato de guardado personal está implementado y aplicado solo en Dev como
+[INT-004](DEVICE_RUNNING_HISTORY.md): titular/conexión estable, deduplicación por
+identidad/revisión, atomicidad, retención, cuotas y cambio de cuenta. Prueba
+física de la app principal pendiente. Una consulta parcial o vacía no borra historial.
 No debe persistir como cuenta real el ámbito efímero del ensayo. Guardar una
 carrera no completa ni confirma una pauta; la asociación revisada y cualquier
 entrega autorizada a un preparador son acciones y contratos separados.

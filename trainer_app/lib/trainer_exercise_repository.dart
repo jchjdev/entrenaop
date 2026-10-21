@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
@@ -75,7 +76,12 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
 
   Future<dynamic> _rpc(String name, [Map<String, dynamic>? params]) async {
     _identity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     _identity();
     return result;
   }

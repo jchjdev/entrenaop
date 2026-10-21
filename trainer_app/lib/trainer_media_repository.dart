@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_video_repository.dart';
@@ -27,7 +28,12 @@ class SupabaseTrainerMediaRepository implements TrainerMediaRepository {
     if (client.auth.currentUser?.id != userId) {
       throw StateError('La cuenta ha cambiado.');
     }
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     if (client.auth.currentUser?.id != userId) {
       throw StateError('La cuenta ha cambiado.');
     }

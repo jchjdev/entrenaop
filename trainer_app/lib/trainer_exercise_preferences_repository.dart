@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_preferences_client.dart';
 
@@ -16,6 +17,7 @@ class SupabaseTrainerExercisePreferences extends ExercisePreferencesClient {
             throw StateError('La cuenta ha cambiado.');
           }
         },
-        call: (name, parameters) => client.rpc(name, params: parameters),
+        call: (name, parameters) =>
+            authenticatedTrainerRpc(client, userId, name, params: parameters),
       );
 }

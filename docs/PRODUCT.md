@@ -1,5 +1,19 @@
 # Producto EntrenaOP
 
+**TRN-021 · 21/10/2026 · programas que pueden retomarse:** código y servidor Dev
+incorporan trabajos privados incompletos mediante el creador compartido con
+ADMIN. Guardar el trabajo conserva campos pendientes; finalizar valida y crea
+la versión asignable. Recargar y renovar sesión conservan su identidad; los
+reintentos y otras pestañas no sobrescriben silenciosamente. La publicación de
+esta interfaz se acredita aparte; la recuperación de sesiones internas sigue
+pendiente. [Contrato](TRAINER_PROGRAM_WORK_DRAFTS.md).
+
+**INT-004 · 21/10/2026 · Carreras de Salud:** la app incorpora consulta e
+importación explícita al historial privado de la cuenta, con servidor Dev
+verificado. No confirma entrenamientos ni entrega historial a preparadores.
+Lectura nativa inicial iOS; Health Connect principal, distribución y aceptación
+física de este consumidor pendientes. [Estado y límites](DEVICE_RUNNING_HISTORY.md).
+
 **TRN-020 · 21/10/2026 · ampliación profesional en desarrollo:** los dieciséis
 puntos se trabajan coordinadamente. ADMIN y Trainer consumen los mismos
 creadores mediante adaptadores independientes; publicación oficial y contenido

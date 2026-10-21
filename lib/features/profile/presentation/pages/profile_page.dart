@@ -337,6 +337,18 @@ class _ProfilePageState extends State<ProfilePage> {
                             onTap: () => _open('/tools'),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.watch_outlined),
+                            title: const Text('Carreras de Salud'),
+                            subtitle: const Text(
+                              'Consulta e importa tus carreras a tu historial.',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open('/profile/activities'),
+                          ),
+                        ),
                         const SizedBox(height: 22),
                         Card(
                           child: ListTile(

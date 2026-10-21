@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'authenticated_rpc.dart';
+
 class TrainerTotpSetup {
   const TrainerTotpSetup(this.id, this.qr, this.secret);
   final String id, qr, secret;
@@ -25,7 +27,11 @@ class SupabaseTrainerSecurity implements TrainerSecurity {
   @override
   Future<bool> assured() async {
     _check();
-    final result = await client.rpc('get_trainer_security_status');
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      'get_trainer_security_status',
+    );
     _check();
     return result == true;
   }

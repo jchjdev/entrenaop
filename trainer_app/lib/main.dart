@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
+import 'package:workout_editor_ui/guided_program_work.dart';
 import 'package:entrena_ui/conversation_view.dart';
 import 'package:trainer_access/trainer_messages.dart';
 
@@ -16,6 +17,8 @@ import 'trainer_workout_result.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_program_pages.dart';
+import 'trainer_program_work_repository.dart';
+import 'trainer_program_work_pages.dart';
 import 'trainer_agenda_page.dart';
 import 'trainer_shell.dart';
 import 'trainer_exercise_page.dart';
@@ -119,10 +122,24 @@ class _TrainerAppState extends State<TrainerApp> {
     final identity = _identity;
     final exits = WorkflowExitRegistry();
     GoRouter.optionURLReflectsImperativeAPIs = true;
-    SupabaseTrainerWorkoutRepository workouts() =>
-        SupabaseTrainerWorkoutRepository(widget.client, identity!);
-    SupabaseTrainerProgramRepository programs() =>
-        SupabaseTrainerProgramRepository(widget.client, identity!);
+    // Estas instancias pertenecen a la identidad del router. Una renovación
+    // de sesión no debe reiniciar el trabajo abierto ni sus campos pendientes.
+    late final workoutRepository = SupabaseTrainerWorkoutRepository(
+      widget.client,
+      identity!,
+    );
+    late final programRepository = SupabaseTrainerProgramRepository(
+      widget.client,
+      identity!,
+    );
+    late final programWorkRepository = SupabaseTrainerProgramWorkRepository(
+      widget.client,
+      identity!,
+    );
+    SupabaseTrainerWorkoutRepository workouts() => workoutRepository;
+    SupabaseTrainerProgramRepository programs() => programRepository;
+    SupabaseTrainerProgramWorkRepository programWorks() =>
+        programWorkRepository;
     SupabaseTrainerRepository access() =>
         SupabaseTrainerRepository(widget.client, userId: identity!);
     SupabaseTrainerOperationsRepository operations() =>
@@ -454,16 +471,27 @@ class _TrainerAppState extends State<TrainerApp> {
               builder: (_, _) => TrainerProgramLibraryPage(
                 repository: programs(),
                 access: access(),
+                workRepository: programWorks(),
               ),
               routes: [
                 GoRoute(
                   path: 'new',
+                  redirect: (_, _) => '/programs/work/${newGuidedWorkId()}',
+                ),
+                GoRoute(
+                  path: 'work/:workId',
                   onExit: (_, state) => exits.requestExit(state.pageKey),
                   builder: (_, state) => guarded(
                     state,
-                    TrainerProgramEditorPage(
+                    TrainerProgramWorkPage(
+                      key: ValueKey(
+                        'program-work-$identity-${state.pathParameters['workId']}',
+                      ),
                       repository: programs(),
                       workouts: workouts(),
+                      workRepository: programWorks(),
+                      workId: state.pathParameters['workId']!,
+                      initialBaseProgramId: state.uri.queryParameters['base'],
                       onCreateExercise: createExercise,
                       exercisePreferences: exercisePreferences,
                     ),
@@ -479,17 +507,10 @@ class _TrainerAppState extends State<TrainerApp> {
                   routes: [
                     GoRoute(
                       path: 'revise',
-                      onExit: (_, state) => exits.requestExit(state.pageKey),
-                      builder: (_, state) => guarded(
-                        state,
-                        TrainerProgramEditorPage(
-                          repository: programs(),
-                          workouts: workouts(),
-                          onCreateExercise: createExercise,
-                          exercisePreferences: exercisePreferences,
-                          programId: state.pathParameters['id']!,
-                        ),
-                      ),
+                      redirect: (_, state) => Uri(
+                        path: '/programs/work/${newGuidedWorkId()}',
+                        queryParameters: {'base': state.pathParameters['id']!},
+                      ).toString(),
                     ),
                   ],
                 ),

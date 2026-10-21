@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/workout_draft_codec.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
@@ -76,7 +77,12 @@ class SupabaseTrainerOperationsRepository
   Future<dynamic> _rpc(String name, Map<String, dynamic> params) async {
     _identity();
     try {
-      final result = await client.rpc(name, params: params);
+      final result = await authenticatedTrainerRpc(
+        client,
+        userId,
+        name,
+        params: params,
+      );
       _identity();
       return result;
     } catch (_) {

@@ -536,3 +536,158 @@ su prueba en Dev y el recorrido autenticado completo deben cerrarse en la entreg
 conjunta. No atribuir a estas pruebas simuladas una comprobación real de permisos
 Dev, aceptación física ni publicación en el subdominio. Borradores adicionales no
 iniciados. Sin stage, commit, push, despliegue ni cambios de producción desde aquí.
+
+## Publicación ADMIN Dev comprobada · 21/10/2026
+
+Javier autoriza expresamente integrar y publicar para probar favoritos/recientes
+con su cuenta. La entrega conjunta queda en `a2c467f`, con formato posterior en
+`dd5443b6c245f0f8d29f40a94c62e0823d5d9363`. La publicación automática de esta última
+revisión en `admin.entrenaop.es` termina correctamente:
+[ejecución 39641421696](https://github.com/jchjdev/entrenaop/actions/runs/39641421696).
+
+Comprobación independiente del manifiesto HTTPS: revisión exacta, entorno
+`development`, proyecto `sxbxfjqgoddzhtcyhalw` y release
+`dd5443b6c245f0f8d29f40a94c62e0823d5d9363-39641421696-1`.
+También se verifican SHA-256 del JavaScript servido, entrada, cabeceras y MIME de
+WebAssembly mediante el comprobador del publicador. El intento anterior sobre
+`a2c467f` no acredita publicación: falló su transporte y su reintento fue detenido
+correctamente porque main había avanzado. Se conserva la trazabilidad de la
+revisión realmente publicada, sin activar una compilación local pendiente.
+
+Chrome abre una pestaña nueva con la sesión Dev existente de Javier, sin cerrar
+su laboratorio. En `/sessions/new`, modo Fuerza, el selector remoto carga los 72
+ejercicios autorizados sin aviso de error de preferencias, muestra estrellas y
+el menú Todos/Favoritos/Recientes. Se deja abierto para la prueba del propietario.
+No se guarda/publica una sesión ni se alteran sus favoritos/recientes durante
+esta comprobación de lectura/UI. La prueba humana de marcar y retomar queda para
+Javier; no atribuirla al mero despliegue. Producción permanece intacta.
+
+Evidencia local de esta comprobación (ignorada):
+`.dart_tool/adm006-deployed-build-info.json` y
+`.dart_tool/admin-pref-deployment/hosted-favorites-recents.png`.
+Este registro posterior se conserva pendiente de integrar en la siguiente ventana
+Git coordinada; este chat no interviene en el índice del nuevo tramo de borradores.
+
+## Contrato aditivo de posiciones pendientes · corrección compartida verificada
+
+**Nombres definitivos para el contrato de servidor: `positionId` y
+`replacementPositions`, camelCase; `schema` permanece 1.** No alias snake_case.
+
+Claves exactas para coordinar el validador del trabajo Trainer, **sin alias**:
+
+- Se conserva `schema: 1` y todas las claves existentes del snapshot.
+- Cada objeto de `phases[].sessions[]` añade `positionId: String` (UUID v4 estable
+  de la posición; no es el ID de la receta ni se copia al duplicarla).
+- Cada fase añade `replacementPositions: Map<String,String>` con
+  `nuevoTemplateId -> positionId` para una revisión guardada pendiente de enlace.
+- Se conserva `replacements: Map<String,String>` con
+  `nuevoTemplateId -> templateIdAnterior`, también en nuevos guardados, para
+  mantener la lectura de trabajos previos y la referencia de origen. Creaciones
+  pendientes sin sustitución no incluyen esa entrada.
+- Al restaurar objetos antiguos sin `positionId`, se genera uno por posición y
+  se incluye en el siguiente guardado, antes de abrir otra edición contextual.
+  No se regeneran IDs que ya están guardados ni se usan índices como identidad.
+- Retomar una sustitución nueva exige coincidencia única de `positionId` en su
+  fase. Si falta o es ambigua, no busca silenciosamente por templateId ni añade
+  una sesión. Ofrece elegir explícitamente una posición y conserva pendiente al
+  cancelar. Si ya no hay posiciones, conserva el pendiente y avisa.
+- Para legado sin `replacementPositions`, se sustituye automáticamente solo si
+  `templateIdAnterior` aparece exactamente una vez. Si se repite, se pide elegir.
+- `pending`, ambos mapas y los ajustes originales se conservan hasta resolver la
+  posición; se limpian juntos al enlazar. No se cambia `GuidedSession.input()` ni
+  la receta final de publicación. Quitar/ordenar/deshacer conserva la identidad
+  del objeto de posición. Regresión principal: `[S,S] -> [S,T]` tras guardar la
+  revisión de la segunda, fallar el enlace, recargar y Retomar.
+
+Propiedad: `packages/workout_editor_ui/lib/guided_program_editor_page.dart`, nueva
+prueba `packages/workout_editor_ui/test/guided_program_recovery_test.dart` y esta
+hoja. No SQL ADMIN ni edición de contratos/rutas/repositorios Trainer. Las nuevas
+claves son metadatos de composición; no contienen medios, tokens ni permisos.
+
+Ampliación localizada acordada: `guided_program_work.dart` y nueva prueba
+`guided_program_work_test.dart`. Comparación JSON canónica con claves de mapas
+ordenadas recursivamente, conservando orden de listas y textos crudos. Evita que
+el orden de claves de JSONB provoque un guardado ficticio; incorporar positionId
+ausente sigue siendo un cambio real que se conserva antes de abrir sesión hija.
+
+### Handoff estable de la corrección de posiciones
+
+Implementación y nombres definitivos, sin nuevos cambios de fuente pendientes:
+
+```text
+packages/workout_editor_ui/lib/guided_program_editor_page.dart
+packages/workout_editor_ui/lib/guided_program_work.dart
+packages/workout_editor_ui/test/guided_program_recovery_test.dart
+packages/workout_editor_ui/test/guided_program_work_test.dart
+docs/ADMIN_PROFESSIONAL_DELIVERY.md
+```
+
+La recuperación también pide elección si la posición existe pero ya contiene otra
+revisión diferente de la fuente y del destino pendientes. No pisa esa decisión
+posterior automáticamente. Se neutralizan los textos de checkpoint y versión del
+editor para los dos consumidores, manteniendo sus adaptadores y guardados propios.
+
+Validación final del 21/10/2026:
+
+- **12 regresiones nuevas correctas:** fallo real de carga tras guardar la revisión
+  de la segunda `[S,S]`, recarga/Retomar como `[S,T]` tanto oficial como profesional;
+  preservación de calentamiento/descansos/IDs; legado ambiguo con cancelación y
+  selección explícita; legado único; posición eliminada/reordenada/cambiada;
+  metadatos persistidos antes de abrir hija; JSONB distinto orden sin RPC;
+  normalización real de IDs; listas y texto crudo conservados.
+- **Baterías completas:** raíz **1219 correctas/1 omisión previa**, ADMIN **306
+  correctas/2 omisiones previas**, UI compartida **122 correctas**. Evidencias
+  `.dart_tool/adm007-{root,admin,shared}-all.log`.
+- **Tres análisis sin incidencias:** raíz
+  `.dart_tool/adm007-root-analyze-final.log`, ADMIN
+  `.dart_tool/adm007-admin-analyze.log`, UI
+  `.dart_tool/adm007-shared-analyze-final.log`.
+- Formato y diff propios revisados, incluidos los dos archivos de prueba nuevos.
+  Un aviso final de llaves de estilo en un helper de prueba se corrigió sin cambiar
+  su semántica y se repitieron los análisis. No se han reducido pruebas existentes.
+
+Fuente congelada para el checkpoint coordinado. No SQL ni nuevos adaptadores de
+cuenta desde este tramo; el backend y pruebas Dev pertenecen al coordinador.
+La corrección todavía no está publicada en ADMIN: la comprobación remota anterior
+acredita favoritos/recientes sobre `dd5443b`, no esta ampliación posterior.
+Sin cambios propios en Git de escritura, Trainer, Health ni documentos globales.
+
+### Borde de reintento del callback ya aplicado · ampliación acotada
+
+Se confirma y corrige el caso W2: la sesión T ya está enlazada en memoria, el
+guardado del enlace puede haberse confirmado en servidor pero perder su respuesta,
+y el editor hijo vuelve a llamar a `onSaved(T)`. Si `appliedId == id`, ahora solo
+se llama a `_saveWork()` y se retorna. El checkpoint confirma la petición incierta
+congelada; no vuelve a añadir T a `pending`, no recarga el catálogo ni crea W3
+con T simultáneamente aplicada y pendiente.
+
+Dos regresiones adicionales, creación y revisión, registran todos los payloads
+enviados a un repositorio con recibos por revisión/payload. W2 se confirma antes
+de simular pérdida de respuesta; el catálogo se interrumpe justo antes del retry.
+Se comprueba que confirmar no necesita catálogo, que los dos últimos envíos son
+iguales, que ningún payload persiste T aplicada y pendiente, y que tras recargar
+queda una sola T, sin acción Retomar ni mapas de sustitución. **14 regresiones
+dirigidas correctas** en `.dart_tool/adm007-callback-retry.log`.
+
+No cambian las claves del snapshot, el contrato SQL ni el controlador canónico.
+Archivos de esta ampliación: `guided_program_editor_page.dart`,
+`guided_program_recovery_test.dart` y esta hoja; siguen congelados para el
+checkpoint conjunto. El coordinador ejecutará la batería raíz final junto con
+los últimos cambios de Devices; no se duplica desde este chat.
+
+Cierre tras el guard del callback: UI común **124 correctas** y ADMIN **306
+correctas/2 omisiones previas**; análisis raíz, ADMIN y UI sin incidencias.
+Evidencias finales:
+
+```text
+.dart_tool/adm007-retry-shared-all.log
+.dart_tool/adm007-retry-admin-all.log
+.dart_tool/adm007-retry-shared-analyze.log
+.dart_tool/adm007-retry-admin-analyze.log
+.dart_tool/adm007-retry-root-analyze.log
+```
+
+Source/API estables, diff revisado, sin fallos propios pendientes. El manifiesto
+de integración sigue siendo los dos archivos de fuente, los dos de pruebas y
+esta hoja indicados arriba. Sin Git de escritura ni publicación de este arreglo
+desde este chat.

@@ -11,6 +11,7 @@ import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessmen
 import 'package:entrenaop/features/trainers/data/trainer_assessment_repository.dart';
 
 import 'package:entrenaop/core/router/material_app_route.dart';
+import 'package:entrenaop/core/router/device_activities_route.dart';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
@@ -982,6 +983,20 @@ class AppRouter {
                                 onOpenConversation: (id) => context.push(
                                   '/my-trainer/conversations/$id',
                                 ),
+                              ),
+                      ),
+                    ),
+                    materialAppRoute(
+                      path: 'activities',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : DeviceActivitiesRoute(
+                                key: ValueKey('activities-${auth.user.id}'),
+                                ownerId: auth.user.id,
+                                client: sl<SupabaseClient>(),
                               ),
                       ),
                     ),

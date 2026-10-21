@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 
 import 'trainer_calendar_date.dart';
 import 'trainer_groups_repository.dart';
@@ -124,7 +125,12 @@ class SupabaseTrainerRecurrenceRepository
     }
 
     identity();
-    final value = await client.rpc(name, params: params);
+    final value = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     identity();
     return value;
   }

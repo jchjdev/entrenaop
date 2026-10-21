@@ -43,12 +43,22 @@ def transaction_body(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--contracts-only", action="store_true", help="Ensayar las RPC ya migradas sin repetir DDL")
+    parser.add_argument("--with-program-work", action="store_true", help="Incluir recuperación privada de programas")
+    parser.add_argument("--with-device-history", action="store_true", help="Incluir historial personal de Salud")
     args = parser.parse_args()
-    migrations = [] if args.contracts_only else MIGRATIONS
+    migration_names = list(MIGRATIONS)
+    contracts = list(CONTRACTS)
+    if args.with_program_work:
+        migration_names.append("20261021172219_trainer_program_work_drafts.sql")
+        contracts.append("trainer_program_work_drafts")
+    if args.with_device_history:
+        migration_names.append("20261021171215_device_running_history.sql")
+        contracts.append("device_running_history")
+    migrations = [] if args.contracts_only else sorted(migration_names)
     statements = ["begin;"]
     for name in migrations:
         statements.append(transaction_body(ROOT / "supabase/migrations" / name))
-    for index, name in enumerate(CONTRACTS):
+    for index, name in enumerate(contracts):
         statements.extend([
             f"savepoint contract_{index};",
             f"-- Contrato {name}: todos sus actores se retiran antes del siguiente.",
@@ -57,13 +67,13 @@ def main() -> None:
             f"release savepoint contract_{index};",
         ])
     statements.extend([
-        f"select 'trainer_professional_integration: {len(migrations)} migrations and {len(CONTRACTS)} contracts OK' as result;",
+        f"select 'trainer_professional_integration: {len(migrations)} migrations and {len(contracts)} contracts OK' as result;",
         "rollback;",
     ])
     output = ROOT / ("build/trainer-professional-contracts-rollback.sql" if args.contracts_only else "build/trainer-professional-integration-rollback.sql")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(statements) + "\n", encoding="utf-8")
-    print(f"{len(migrations)} migraciones, {len(CONTRACTS)} contratos; {output}")
+    print(f"{len(migrations)} migraciones, {len(contracts)} contratos; {output}")
 
 
 if __name__ == "__main__":

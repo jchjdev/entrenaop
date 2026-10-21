@@ -26,6 +26,15 @@ Trainer guarda contenido privado y lo asigna a sus alumnos. No se importa
 concede permisos. Las capacidades exclusivas se inyectan desde el consumidor;
 los límites de acceso se comprueban de nuevo en servidor.
 
+TRN-021 conecta trabajos incompletos de programas sobre el mismo puerto y
+controlador de ADMIN. El listado permite retomar o descartar; la URL conserva
+UUID/base y la finalización crea la versión privada en una única transacción.
+Los estados crudos no conceden acceso a sesiones ajenas. Servidor Dev aplicado
+y 26 contratos conjuntos correctos; la publicación de la nueva interfaz se
+registra aparte. Los borradores internos de sesiones requieren su entrega propia.
+[Contrato](TRAINER_PROGRAM_WORK_DRAFTS.md),
+[transporte por cuenta](TRAINER_ACCOUNT_REQUESTS.md).
+
 ## Agenda mutable y receta fijada
 
 Antes de añadir cambios de fecha/receta se conserva la orden inicial en un ledger

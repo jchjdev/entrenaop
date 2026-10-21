@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/workout_template.dart';
 
 import 'trainer_agenda_page.dart';
@@ -206,7 +207,12 @@ class SupabaseTrainerGroupsRepository implements TrainerGroupsRepository {
     }
 
     identity();
-    final result = await client.rpc(name, params: params);
+    final result = await authenticatedTrainerRpc(
+      client,
+      userId,
+      name,
+      params: params,
+    );
     identity();
     return result;
   }

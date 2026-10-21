@@ -1,4 +1,4 @@
-name: Verificar ensayo aislado de Salud
+name: Verificar integración y ensayo de Salud
 
 on:
   push:
@@ -7,6 +7,12 @@ on:
       - 'labs/health_read_probe/**'
       - 'packages/device_activity_core/**'
       - 'packages/device_health/**'
+      - 'lib/features/device_activities/**'
+      - 'lib/core/router/device_activities_route.dart'
+      - 'test/features/device_activities/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
       - '.github/workflows/health-read-probe.yml'
   workflow_dispatch:
 
@@ -74,3 +80,8 @@ jobs:
         run: |
           flutter pub get --enforce-lockfile
           flutter build ios --simulator --debug --no-codesign --no-pub
+      - name: Compilar la app del deportista con Salud sin firmar ni publicar
+        working-directory: .
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter build ios --simulator --debug --no-codesign --no-pub --dart-define=APP_ENV=development
