@@ -10,12 +10,14 @@ de las tres apps, servidores, resultados, citas ni algoritmo.
 
 Android compila localmente y las pruebas del puente/flujo se ejecutan con
 muestras sintéticas. La CI confirma compilación Android e iOS para simulador
-del commit `4575e32`, con ambos jobs correctos. **La lectura física permanece
-pendiente en ambos sistemas y la fase móvil no está cerrada.** No hay teléfono
-conectado al Windows de desarrollo. Javier tiene iPhone como móvil principal,
-con carreras en Garmin Connect, y Android sin actividades propias. La primera
-evidencia real recomendada es su iPhone cuando esté disponible; no hace falta
-conseguir un voluntario Android para seguir preparando el ensayo.
+del commit `4575e32`, con ambos jobs correctos. **La primera lectura física de
+Salud en iPhone queda acreditada por la captura aportada por Javier el
+21/10/2026:** el ensayo muestra carreras y el escritor
+`com.garmin.connect.mobile`, con inicio, duración y distancia presentes. La
+comparación con la actividad original y las comprobaciones de repetición,
+revocación y descarte siguen pendientes; la fase móvil no está cerrada.
+Android aún no tiene evidencia física. Javier utiliza iPhone como móvil
+principal y su Android no contiene actividades propias.
 
 ## Recorrido y contrato de lectura
 
@@ -87,9 +89,12 @@ el entitlement para conseguir compilar ni reutilizar el identificador de la
 app del deportista. Si Xcode informa de conflicto de identificador, licencia,
 certificado o perfil, resolver ese mensaje específico antes de instalar.
 
-La preparación en el Mac de Javier, la provisión y la instalación aún están
-pendientes: desde Windows se verifican sintaxis y cuatro escenarios del script
-con herramientas simuladas; esas pruebas no se presentan como ejecución en Mac.
+Javier ejecutó el preparador en su Mac: las capturas muestran análisis sin
+incidencias, 43 pruebas correctas y detección de su iPhone físico. Después
+configuró la firma del ensayo con su equipo personal en Xcode y aportó una
+captura de la app ejecutándose y mostrando carreras. Esta evidencia sustituye
+la preparación e instalación pendientes; las cuatro pruebas del script con
+herramientas simuladas siguen siendo únicamente pruebas del preparador.
 
 ### Cuando esté conectado al Mac
 
@@ -149,6 +154,25 @@ del segundo plano. No se promete compatibilidad universal por este resultado.
 
 ## Evidencia y criterio de continuación
 
+### Primera lectura física de iPhone · 21/10/2026
+
+La captura de la app aportada por Javier acredita disponibilidad de HealthKit,
+solicitud de autorización completada y consulta no vacía de entrenamientos de
+carrera con origen Garmin Connect. Se muestran inicio, duración entre inicio y
+fin, temporizador y distancia; la zona de origen aparece sin informar. La
+pantalla muestra unidades y valores técnicos sin redondear, no una presentación
+final para el deportista. No se incorporan al repositorio la captura, fechas de
+actividades, valores de salud ni identificadores de registros o dispositivos.
+
+Se acredita la vía Garmin Connect → Salud → ensayo, sin acceso directo a la API
+de Garmin ni conexión con las apps del deportista, ADMIN o Trainer. La captura
+no permite comprobar igualdad con Connect/Salud, comportamiento de pausas,
+estabilidad, repetición, revocación o descarte al pasar a segundo plano. Esas
+comprobaciones y la prueba física Android permanecen abiertas. Completar el
+diálogo de Apple tampoco demuestra acceso a todo el historial.
+
+### Verificación automatizada previa
+
 Pasan 25 pruebas de mapeo, tiempos, revisiones, validación, permisos, errores
 reducidos a códigos, acciones explícitas, revocación, respuestas tardías y
 pantalla de 320 px con texto al doble. Análisis del ensayo limpio y APK Debug
@@ -174,8 +198,9 @@ compilación web y empaquetado. `deploy` y `retain-packages` terminaron como
 `skipped`: este alcance no publicó ADMIN ni retiró paquetes. La evidencia no
 equivale a una instalación o lectura HealthKit en un teléfono.
 
-**Siguiente tramo único:** acreditar lectura real en iPhone desde una carrera de
-Connect ya presente en Salud; después contrastar Android con datos reales.
+**Siguiente tramo único:** comparar una carrera leída en iPhone con su original
+de Connect/Salud y comprobar repetición, revocación y descarte; después
+contrastar Android con datos reales.
 Persistencia, autorización de resultados y conexiones de fabricantes permanecen
 fuera de este ensayo. No se abre otro bloque transversal mientras falte esta
 evidencia, ni se modifica Trainer para integrar el prototipo.
