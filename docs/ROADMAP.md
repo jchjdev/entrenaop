@@ -1,5 +1,23 @@
 # Roadmap de EntrenaOP
 
+**INT-001 · 21/10/2026 · bloque común de dispositivos: definición inicial:** Javier
+aprueba alcance para deportista, ADMIN y entrenadores, empezando por carrera,
+contrato y acceso a proveedores. Se definen prescripción/actividad/resultado,
+capacidades, identidad, duplicados, revisión y fronteras de permisos. Revisadas
+las vías públicas de Apple, Android, Garmin, COROS, Suunto y Huawei; no se
+acreditan altas, credenciales operativas ni dispositivos probados. Objetivo de
+cobertura de marcas, sin prometer compatibilidad universal. La API Garmin sigue
+pendiente y no bloquea la entrada indirecta de salud que se probará en móvil.
+**Tramo documental delimitado; bloque funcional abierto.** No cambia Trainer,
+sus asignaciones/creadores, SQL o producción; no se ejecuta Flutter/SQL por ser
+documentación. No desplaza el siguiente bloque profesional ya en curso.
+**Único siguiente tramo técnico de INT-001:** dominio puro de importación y
+asociación de carrera con pruebas, en archivos propios. La implementación
+transversal se ordenará con los bloques abiertos antes de conectar las apps.
+[Bloque y fases](DEVICE_INTEGRATIONS.md),
+[contrato V1](DEVICE_RUNNING_CONTRACT_V1.md) y
+[acceso a proveedores](DEVICE_PROVIDER_ACCESS_2026_10_21.md).
+
 **TRN-016 · 21/10/2026 · sesión privada implementada en Dev:** crear/revisar con
 el editor común, previsualizar receta, asignar desde la ficha y consultar
 resultados propios. Agenda/ejecutor/historial se reutilizan; indicaciones y
@@ -1839,9 +1857,10 @@ Una vez validada la primera semana adaptativa, el orden natural será:
 
 - Resolver todas las oposiciones a la vez.
 - Chat, nutrición, desafíos o red social.
-- Garmin Connect, Strava y otras integraciones antes de cerrar el ciclo
-  adaptativo. Después se estudiará el envío de entrenamientos de carrera y su
-  vinculación con planes como Guardia Civil o Tropa y Marinería.
+- Las integraciones no condicionan el cierre del ciclo adaptativo. INT-001
+  autoriza desde el 21/10/2026 su definición común y acceso a proveedores para
+  carrera, aislados del desarrollo profesional activo; implementación y envío
+  conservan sus fases y condiciones. Strava permanece fuera del primer alcance.
 - Algoritmos opacos o aprendizaje automático antes de validar reglas
   deterministas.
 - Academias y multi-tenancy sin un caso profesional validado.

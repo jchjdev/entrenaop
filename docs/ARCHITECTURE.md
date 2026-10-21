@@ -1,5 +1,19 @@
 # Arquitectura de EntrenaOP
 
+## Dispositivos y actividades · INT-001 · contrato definido el 21/10/2026
+
+Bloque común acordado para deportista, ADMIN y Trainer, comenzando por carrera.
+El contrato separa prescripción versionada, observación externa y resultado
+confirmado. Dominio puro, puertos de integración y adaptadores nativos/servidor
+mantendrán SDK, OAuth y persistencia fuera de las reglas deportivas. Se reutilizan
+receta, cita e historial; el proveedor no pasa a ser origen de prescripción.
+Esta fase es documental: no cambia módulos profesionales en curso, paquetes,
+tablas, RPC, permisos ni composición de las apps. El acoplamiento real se
+contrastará con el contrato profesional vigente antes de implementar.
+[Bloque y aislamiento](DEVICE_INTEGRATIONS.md),
+[contrato V1](DEVICE_RUNNING_CONTRACT_V1.md) y
+[accesos y límites comprobados](DEVICE_PROVIDER_ACCESS_2026_10_21.md).
+
 ## Sesiones privadas y resultados profesionales · TRN-016 · 21/10/2026
 
 El portal consume el creador de `workout_editor_ui` mediante su adaptador.

@@ -1375,11 +1375,17 @@ redefine sus reglas. Detalle en `PROGRAMA_ADAPTATIVO.md` y `VISUAL_DESIGN.md`.
 - Suscripciones: RevenueCat elegido en COM-012; COM-013 añade la integración
   inicial de Test Store conectada en Dev. Pruebas completas de iOS/Android
   pendientes. Venta web y Windows quedan fuera de este primer tramo.
-- Salud móvil: Health Connect y las APIs vigentes del ecosistema Apple/Google;
-  no diseñar una integración nueva alrededor del antiguo Google Fit.
-- Garmin Connect y Strava se investigarán más adelante y no deben bloquear el
-  MVP. La investigación de Garmin debe cubrir tanto sincronizar sesiones de
-  carrera como vincularlas a planes de preparación de oposiciones.
+- Dispositivos y actividades, INT-001 (21/10/2026): bloque común acordado para
+  deportista, ADMIN y entrenadores, comenzando por contrato y acceso para carrera.
+  Salud de Apple, Health Connect, Garmin, COROS, Suunto y Huawei son objetivo de
+  cobertura según capacidades reales; no se garantiza todo modelo o función.
+  La primera vertical será lectura, revisión y asociación a una sesión prevista;
+  el envío requiere integración y compatibilidad propias. Contrato y vías de
+  acceso documentados, sin conectores ni relojes probados. No bloquea el trabajo
+  profesional activo ni modifica sus derechos. No se diseña sobre Google Fit.
+  [Alcance, fases y límites](DEVICE_INTEGRATIONS.md).
+- Strava sigue como investigación futura, fuera del primer alcance de INT-001;
+  no se añade como dependencia para conectar los fabricantes.
 - Nutrición, si se incorpora, comenzará con un alcance limitado.
 
 La IA generativa no decidirá la progresión inicial. Podrá ayudar en el futuro a
