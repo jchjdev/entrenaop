@@ -8,13 +8,15 @@ biblioteca personal. Límites confirmados: 500 ejercicios/versiones y 1.000
 reservas de imagen de hasta 500 KB; cuotas e idempotencia en servidor.
 Catorce contratos SQL con ROLLBACK, 69 contenciones PostgreSQL locales, 1145
 pruebas raíz (una omisión previa), 301 ADMIN (dos previas), 33 portal y seis
-pruebas del publicador; seis capturas de widgets revisadas. Análisis del alcance
-modificado y ADMIN limpios. El análisis global detecta trabajo independiente en
-curso en `labs/health_read_probe` (incluida una prueba de plantilla sin adaptar);
-no se corrige ni incorpora ese trabajo desde este chat.
+pruebas del publicador; seis capturas de widgets revisadas. Análisis del alcance,
+ADMIN y global final limpios. El primer análisis global detectó trabajo ajeno en
+curso de `labs/health_read_probe`; se conservó aparte y el análisis final ya pasa.
 Compilación Dev del deportista preparada; no instalada en teléfono. No hay
 subida de vídeos profesionales, compras ni aceptación humana con dos cuentas.
-Publicación web en curso; no se declara cerrado el recorrido físico completo.
+Portal publicado desde `cb435e2` y verificado por HTTPS y sesión de Chrome;
+185 migraciones coincidentes en Dev. Biblioteca/formulario y cinco destinos
+comprobados, sin datos de ensayo guardados. No se declara cerrado el recorrido
+físico completo.
 **Único siguiente recorrido profesional recomendado:** aceptación con dos cuentas
 y app instalada: crear ejercicio con foto → sesión/programa → pauta → ejecución
 del alumno → resultado del preparador, antes de ampliar seguimiento y cobros.

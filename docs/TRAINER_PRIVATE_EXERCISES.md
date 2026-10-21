@@ -92,8 +92,31 @@ cuota/reintento, en READ COMMITTED y REPEATABLE READ). Baterías del deportista
 y ADMIN completas correctas: 1145 raíz (una omisión previa), 301 ADMIN (dos
 previas), 33 portal y seis del publicador. Seis capturas de widgets reales
 revisadas, incluida pantalla estrecha y texto 2×. Análisis del alcance modificado,
-portal y ADMIN limpios; el análisis global incluye trabajo ajeno en curso de
-`labs/health_read_probe`, con avisos y prueba de plantilla sin adaptar, y no se
-presenta como limpio. La compilación web Dev del deportista pasa; no se publica.
+portal, ADMIN y global final limpios. El primer análisis global detectó trabajo
+ajeno en curso de `labs/health_read_probe`; se conservó aparte y el último análisis
+global ya pasa. La compilación web Dev del deportista pasa; no se publica.
 Las pruebas SQL simulan metadatos de Storage: no sustituyen
 la aceptación física de dos cuentas ni el almacenamiento de un JPEG por HTTPS.
+
+## Publicación Dev comprobada
+
+Fuentes `cb435e288a0453283c4804a88bd9d852a49e8fd1`, subidas a main.
+Versión web `cb435e288a0453283c4804a88bd9d852a49e8fd1-20261021-7`,
+publicada únicamente en `public_html/trainer` de Hostinger. Se conserva el ZIP
+fuera de la carpeta pública y los recursos de versiones anteriores.
+
+- ZIP SHA-256: `4feabfb8ad901904512a41c792403ad58440e805dd871bc30705d4fedcbf7991`.
+- JavaScript SHA-256: `95b38970c895053ae4f78bdb5d644db59e77b437df47194c75d850bd3db84310`.
+- Verificador HTTPS correcto: revisión, hash, entrada de versión, cabeceras y
+  MIME de WebAssembly.
+- Dev: 185 migraciones locales/remotas coincidentes. Asesores sin avisos WARN
+  nuevos de este tramo; tablas privadas con RLS y sin permisos directos.
+- Chrome con la sesión existente: cinco destinos accesibles, uso 0/500 y
+  0/1.000, biblioteca y formulario común completos, cero errores de consola.
+  Se abre/cierra sin guardar datos ficticios. Capturas `published-library.png`
+  y `published-editor.png` en `docs/visual-audit/trainer-exercises-2026-10-21/`.
+
+No se acredita todavía una subida real de JPEG ni el recorrido humano de dos
+cuentas en un teléfono. La compilación del deportista está en
+`build/athlete-trainer-exercises-web/` (local, no distribuida). La publicación
+web no instala la app en el móvil ni habilita producción.
