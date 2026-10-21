@@ -9,7 +9,7 @@ responsable único; Herramientas muestra versión desplegada y conexión puntual
 ADM-002 añade recibos de copias y errores reducidos a códigos, con captura de
 fallos no controlados del admin. La interfaz está publicada y la recogida real
 de servicios funciona en Dev. La restauración aislada real pasa, pero la primera
-copia cifrada aún requiere corregir su frase y comprobar el artefacto disponible.
+copia cifrada aún requiere liberar presupuesto de compilados y comprobar el artefacto disponible.
 No se presenta una copia disponible sin evidencia real.
 [Alcance y límites](ADMIN_OPERATIONS_2026_10_20.md).
 [Recuperación de Dev](DEV_RECOVERY_2026_10_20.md).

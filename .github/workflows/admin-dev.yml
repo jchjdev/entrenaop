@@ -106,3 +106,22 @@ jobs:
         run: python3 admin_app/tool/admin_release.py deploy
       - name: Resultado
         run: echo 'ADMIN Dev publicado y verificado en https://admin.entrenaop.es/' >> "$GITHUB_STEP_SUMMARY"
+
+  retain-packages:
+    needs: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # Este job no recibe credenciales de Hostinger ni de Supabase. El permiso
+    # de escritura de Actions se limita al job de retención de compilados.
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Conservar cinco compilados recientes y la versión publicada
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 admin_app/tool/admin_artifact_retention.py --apply

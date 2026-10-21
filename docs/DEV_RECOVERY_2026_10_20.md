@@ -132,7 +132,7 @@ y [tokens limitados](https://supabase.com/docs/guides/platform/personal-access-t
 
 ## Verificación del punto de preparación
 
-24 pruebas Python correctas, incluido cifrado/descifrado real en Windows,
+30 pruebas Python correctas, incluido cifrado/descifrado real en Windows,
 aislamiento de entorno, privacidad de eventos, presupuesto y análisis de COPY.
 Análisis ADMIN limpio, 280 pruebas correctas con dos omisiones previas y build
 web release Dev correcto. Cinco SQL con ROLLBACK pasan sobre el esquema instalado,
@@ -142,7 +142,7 @@ La migración nueva es `20261020205917_dev_recovery_observability.sql`.
 El ensayo Docker con datos ficticios y las 19 pruebas Python pasan en GitHub
 ([ejecución 39499687926](https://github.com/jchjdev/entrenaop/actions/runs/39499687926)).
 La interfaz está publicada en `admin.entrenaop.es` con revisión
-`69a9e70f48f643221135ff20bdafb1b8c1f26d09`: despliegue correcto e identidad Dev,
+`50bb45c52350cb17a537e603784b8076d895bda5`: despliegue correcto e identidad Dev,
 hash de JavaScript, activación, caché y cabeceras comprobados por HTTPS.
 
 El token limitado de sustitución está conectado y permite leer/escribir solo
@@ -161,10 +161,34 @@ La restauración aislada de los datos reales también pasa en
 pero esa ejecución termina con `invalid_encryption_passphrase`: no produce
 ninguna copia cifrada disponible. Storage inventaría 11 objetos, 1.060.653 bytes.
 
-**Pendiente en este punto:** corregir el secreto de cifrado en GitHub y repetir
-la copia hasta comprobar artefacto y recibo `verified`. El formulario está
-entregado a Javier para generar y conservar una frase de 32 caracteres en su
-gestor. No se atribuye una copia disponible al ensayo de restauración ya pasado.
+El 21/10 Javier corrige la frase. La ejecución
+[39548459484](https://github.com/jchjdev/entrenaop/actions/runs/39548459484)
+supera la restauración y el cifrado, pero falla con `artifact_budget_limit`.
+El inventario real contiene 31 compilados ADMIN (486.652.893 bytes), por encima
+del presupuesto conservador de 400 MiB. No se sube una copia ni se aumenta
+el presupuesto; tampoco se borra ningún archivo durante el diagnóstico.
+
+### Retención de compilados: autorizada el 21/10/2026
+
+`admin_artifact_retention.py` ejecuta un plan de solo lectura por defecto.
+Conserva cinco compilados recientes y protege siempre frente a esta limpieza la revisión
+publicada. Solo selecciona `admin-dev-<SHA40>` de main cuya revisión coincida
+con su ejecución; excluye copias `entrenaop-dev-*`, otros artefactos y expirados.
+El plan del 21/10 conserva cinco y retiraría 26 compilados, 407.851.236 bytes.
+El código fuente y su historial Git no se retiran; los ZIP antiguos dejarán
+de estar disponibles para descargar, aunque pueden volver a compilarse.
+
+Javier autoriza la limpieza inicial y la retención automática limitada descrita
+el 21/10. La activación añade un job tras un despliegue correcto. Solo ese job
+tiene `actions: write`, sin credenciales de Hostinger ni de Supabase. Antes
+de aplicar exige repositorio/main correctos, manifiesto HTTPS de Dev y revisión
+publicada coincidente; revisa otra vez la identidad de cada artefacto. Las seis
+regresiones de retención cubren exclusiones, versión publicada, contexto y modo
+sin mutaciones. Los paquetes conservados siguen sujetos al vencimiento de 14
+días del proveedor; esta limpieza no amplía su caducidad.
+
+**Pendiente en este punto:** ejecutar la retención autorizada, liberar el espacio
+de compilados y repetir la copia hasta comprobar artefacto y recibo `verified`.
 
 ## Borrado de programas
 

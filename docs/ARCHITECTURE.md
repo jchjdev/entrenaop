@@ -17,8 +17,8 @@ formularios. GitHub prepara exportación SQL/Storage cifrada y ensayo en un
 contenedor sin red. El inventario gestionado de roles complementa el dump oficial
 sin contraseñas y solo prepara roles ausentes del contenedor. Los ensayos ficticio
 y real pasan, la interfaz está desplegada y la recogida real funciona con token
-limitado a Dev. La primera copia cifrada está pendiente de corregir su frase y
-comprobar artefacto y recibo; no hay restauración remota automatizada.
+limitado a Dev. La primera copia cifrada está pendiente de ejecutar la retención de compilados
+autorizada el 21/10 y comprobar artefacto y recibo; no hay restauración remota automatizada.
 [Contrato, seguridad y límites](ADMIN_OPERATIONS_2026_10_20.md).
 [Contrato de copias y errores](DEV_RECOVERY_2026_10_20.md).
 

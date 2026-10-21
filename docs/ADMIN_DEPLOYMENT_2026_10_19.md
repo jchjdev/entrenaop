@@ -26,7 +26,12 @@ un build local que pueda tener fuentes pendientes de otros equipos.
 3. Prueba el publicador y compila ADMIN exclusivamente para Supabase Dev. No
    ejecuta migraciones ni usa claves administrativas de Supabase. Las migraciones
    siguen requiriendo su validación Dev conforme a `AGENTS.md`.
-4. Conserva el paquete validado como artefacto de GitHub durante 14 días. La
+4. Conserva el paquete validado como artefacto de GitHub hasta 14 días. Desde
+   la autorización del 21/10, tras un despliegue correcto un job separado conserva
+   los cinco compilados más recientes y protege la versión publicada frente a
+   esta limpieza. Solo retira ZIP `admin-dev-<SHA>` comprobados de main; no toca
+   copias de datos. Ese job tiene `actions: write` sin credenciales de Hostinger
+   ni Supabase. La
    publicación está activada mediante los secretos del entorno `admin-dev` y la
    variable de repositorio `ADMIN_DEV_DEPLOY_ENABLED=true`. Ponerla a `false`
    permite detener publicaciones futuras sin eliminar la versión que está servida.
