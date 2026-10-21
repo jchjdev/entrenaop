@@ -173,8 +173,9 @@ una actividad real antes de conectar almacenamiento o pantallas profesionales.
 Se implementa el ensayo independiente en `labs/health_read_probe`, con puentes
 mínimos a SDK oficiales y consulta explícita de siete días. Mantiene el dominio
 puro y no incorpora dependencias ni conexiones a deportista, ADMIN o Trainer.
-Android compila y las pruebas con muestras pasan; faltan lectura física en
-ambos sistemas y contraste del build iOS en CI. La fase móvil permanece abierta.
+Android compila y las pruebas con muestras pasan; CI confirma además ambos
+builds nativos, incluido iOS Simulator. Falta lectura física en ambos sistemas.
+La fase móvil permanece abierta.
 
 Javier usa iPhone y Garmin Connect: el primer recorrido real recomendado es
 reloj → Connect → Salud → ensayo, con permisos del titular y límites de los

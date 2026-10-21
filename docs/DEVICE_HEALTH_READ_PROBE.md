@@ -9,8 +9,8 @@ del dominio puro `device_activity_core`. No se conecta todavía con ninguna
 de las tres apps, servidores, resultados, citas ni algoritmo.
 
 Android compila localmente y las pruebas del puente/flujo se ejecutan con
-muestras sintéticas. La compilación iOS se encarga al workflow de macOS; debe
-consultarse su resultado antes de acreditarla. **La lectura física permanece
+muestras sintéticas. La CI confirma compilación Android e iOS para simulador
+del commit `4575e32`, con ambos jobs correctos. **La lectura física permanece
 pendiente en ambos sistemas y la fase móvil no está cerrada.** No hay teléfono
 conectado al Windows de desarrollo. Javier tiene iPhone como móvil principal,
 con carreras en Garmin Connect, y Android sin actividades propias. La primera
@@ -82,8 +82,9 @@ de la serie completa. Este ensayo no solicita esas dos categorías.
 4. Ejecutar disponibilidad → permiso → lectura. Comparar con esa carrera de
    Salud: tipo, inicio, duración y distancia cuando exista. La distancia diaria
    de caminar/correr no equivale necesariamente al total del entrenamiento.
-5. Repetir sin crear otra actividad; comprobar que conserva identidad/revisión
-   en memoria. Vaciar, leer de nuevo tras acciones explícitas y verificar que
+5. Repetir sin crear otra actividad y comparar lista/métricas; las identidades
+   y revisiones se comprueban en las pruebas del adaptador y no se exponen en
+   pantalla. Vaciar, leer de nuevo tras acciones explícitas y verificar que
    no hay persistencia. Pasar a segundo plano y comprobar el descarte.
 6. Retirar lectura desde Salud y repetir. Apple puede devolver una lista vacía;
    no debe mostrarse como prueba de permiso concedido ni de denegación.
@@ -123,7 +124,9 @@ ensayo aislado y cambios mixtos: solo el ensayo/dominio/docs/CI no publican ADMI
 los cambios mixtos conservan el comportamiento de despliegue existente.
 
 El workflow propio solo verifica y compila; no despliega ni publica artefactos
-de salud. La compilación iOS para simulador no instala en teléfono ni valida
+de salud. [Ejecución de compilación Android e iOS correcta](https://github.com/jchjdev/entrenaop/actions/runs/39621174970),
+con ambos jobs completados satisfactoriamente. La compilación iOS para simulador
+no instala en teléfono ni valida
 los permisos reales. Registrar después fecha, sistema, escritor, tipos/métricas
 comprobados, resultado de denegar/revocar y límites; no subir datos de salud
 personales ni capturas identificables al repositorio.
