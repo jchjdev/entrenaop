@@ -124,21 +124,28 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
       _identity();
       final rows = await client
           .from('exercises')
-          .select('id,name,muscle_groups,equipment,thumbnail_url')
+          .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
           .eq('is_public', true)
           .order('id')
           .range(offset, offset + 499);
       _identity();
       result.addAll(
-        rows.map(
-          (row) => WorkoutEditorExercise(
-            id: row['id'] as String,
-            name: row['name'] as String,
-            muscleGroups: (row['muscle_groups'] as List? ?? []).cast<String>(),
-            equipment: (row['equipment'] as List? ?? []).cast<String>(),
-            thumbnailUrl: row['thumbnail_url'] as String?,
-          ),
-        ),
+        rows
+            .where((row) => row['id'] != runningExerciseId)
+            .map(
+              (row) => WorkoutEditorExercise(
+                id: row['id'] as String,
+                name: row['name'] as String,
+                muscleGroups: (row['muscle_groups'] as List? ?? [])
+                    .cast<String>(),
+                equipment: (row['equipment'] as List? ?? []).cast<String>(),
+                thumbnailUrl: row['image_path'] == null
+                    ? row['thumbnail_url'] as String?
+                    : client.storage
+                          .from('exercise-images-public')
+                          .getPublicUrl(row['image_path'] as String),
+              ),
+            ),
       );
       if (rows.length < 500) return result;
     }
