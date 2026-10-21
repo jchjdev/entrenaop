@@ -104,3 +104,25 @@ por la recuperación nueva de sesiones oficiales.
 sesión incompleta y abrir sus pendientes. Antes de biblioteca de medios, métricas,
 resumen visual del programa o rediseño del creador se enseña propuesta; no se
 implementan como extensión implícita de este bloque.
+
+## Publicación web y comprobación autenticada
+
+El paquete `ac7284fd5195cb3bffb223e3c61d028e5d182069` se publicó en
+`admin.entrenaop.es`, conectado exclusivamente a Dev. La CI
+[39671787411](https://github.com/jchjdev/entrenaop/actions/runs/39671787411)
+validó y compiló correctamente. El primer envío falló con OSError; reintentar
+solo los trabajos fallidos publicó y verificó HTTPS sin volver a compilar ni
+alterar credenciales. Deploy y retención terminaron en success. Manifiesto:
+`ac7284fd5195cb3bffb223e3c61d028e5d182069-39671787411-1`.
+
+Chrome autenticado acredita portada con datos reales, trabajo de sesión sin
+receta completa, salida al catálogo y reapertura desde Pendientes con la misma
+identidad, nombre, indicaciones y modalidad. El trabajo de prueba queda pendiente,
+sin crear versión de sesión ni publicarla. No se editó el programa de Javier.
+
+La entrada directa por URL destapó una consulta antigua al volver al catálogo.
+El ajuste posterior escucha el regreso a su ruta y renueva consultas y clave de
+trabajos, incluso si la lista de recetas no ha cambiado. Dos regresiones cubren
+entrada por botón y URL directa; junto a las anteriores del catálogo pasan nueve
+pruebas y el análisis ADMIN vuelve a quedar limpio. Su publicación se comprueba
+como versión posterior, sin atribuir este ajuste al paquete ac7284fd.

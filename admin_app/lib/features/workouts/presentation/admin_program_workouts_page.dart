@@ -38,9 +38,38 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
   String _filter = 'all';
   bool _busy = false;
   final _search = TextEditingController();
+  GoRouter? _navigationRouter;
+  bool _catalogVisible = false, _refreshScheduled = false;
+  int _workRevision = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.maybeOf(context);
+    if (router == _navigationRouter) return;
+    _navigationRouter?.routerDelegate.removeListener(_routeChanged);
+    _navigationRouter = router;
+    _catalogVisible = router?.state.uri.path == _routeBase;
+    router?.routerDelegate.addListener(_routeChanged);
+  }
+
+  void _routeChanged() {
+    final visible = _navigationRouter?.state.uri.path == _routeBase;
+    final returned = visible && !_catalogVisible;
+    _catalogVisible = visible;
+    if (!returned || _refreshScheduled) return;
+    _refreshScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshScheduled = false;
+      if (!mounted || !_catalogVisible) return;
+      // Una URL directa no tiene el Future de _create esperando al editor.
+      _load();
+    });
+  }
 
   @override
   void dispose() {
+    _navigationRouter?.routerDelegate.removeListener(_routeChanged);
     _search.dispose();
     super.dispose();
   }
@@ -77,6 +106,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
       if (mounted) {
         setState(() {
           _workouts = workouts;
+          _workRevision++;
           _error = null;
         });
       }
@@ -218,7 +248,7 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
             const SizedBox(height: 24),
             AdminSessionWorkList(
               limit: 100,
-              key: ValueKey(_workouts),
+              key: ValueKey(_workRevision),
               repository: widget.workRepository,
               programId: widget.program?.id,
               onOpen: (path) async {
