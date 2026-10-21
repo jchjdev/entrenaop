@@ -74,9 +74,9 @@ class WorkoutFixture extends TrainerWorkoutRepository {
   @override
   Future<WorkoutTemplate?> template(String id) async => privateRecipe;
   @override
-  Future<List<WorkoutEditorExercise>> exercises() async => [
-    const WorkoutEditorExercise(id: 'exercise', name: 'Dominadas'),
-  ];
+  Future<List<WorkoutEditorExercise>> exercises({
+    Set<String> retainedIds = const {},
+  }) async => [const WorkoutEditorExercise(id: 'exercise', name: 'Dominadas')];
   @override
   Future<String> save(
     String operationId,

@@ -240,6 +240,53 @@ def assignment_race(observer,pool,assign_first,repeatable,program=False):
     finally:
         first.close();second.close()
 
+def install_exercise_fixture(db):
+    # Se usan contadores y RPC reales. Las validaciones/RLS completas están
+    # cubiertas por trainer_private_exercises.sql en Dev con ROLLBACK.
+    db.query('create schema storage; create table storage.objects(bucket_id text,name text);')
+    db.query('create table public.exercises(id uuid primary key,name text,description text,video_url text,muscle_groups text[],equipment text[],difficulty text,exercise_type text,is_public boolean,created_by uuid,origin text,image_path text)')
+    normal=(root/'supabase/migrations/20260924000000_shared_exercise_creator.sql').read_text(encoding='utf-8')
+    db.query(re.search(r'create or replace function public.normalize_exercise_draft\([\s\S]*?\$\$;',normal).group())
+    migration=(root/'supabase/migrations/20261021142215_trainer_private_exercises.sql').read_text(encoding='utf-8')
+    for name in ('exercise_limits','exercise_versions','exercise_images'):
+        db.query(re.search(r'create table trainer_private\.'+name+r' \([\s\S]*?\n\);',migration).group())
+    for name in ('reserve_exercise_image','save_exercise'):
+        db.query(re.search(r'create function trainer_private\.'+name+r'\([\s\S]*?end \$\$;',migration).group())
+    for name in ('reserve_trainer_exercise_image','save_trainer_exercise'):
+        db.query(re.search(r'create function public\.'+name+r'\([\s\S]*?\$\$;',migration).group())
+    db.query('grant execute on function trainer_private.reserve_exercise_image(uuid),trainer_private.save_exercise(uuid,jsonb,uuid) to authenticated')
+
+def exercise_race(observer,pool,*,image=False,same_operation=False,repeatable=False):
+    trainer,_,_,_,_=setup_case(observer)
+    first_id=str(uuid.uuid4());second_id=first_id if same_operation else str(uuid.uuid4())
+    observer.query(f"insert into trainer_private.exercise_limits(trainer_id,exercise_limit,image_limit) values('{trainer}',1,1)")
+    payload=json.dumps({'name':'Ejercicio privado','muscle_groups':['espalda'],'equipment':[],
+                        'difficulty':'inicial','exercise_type':'repeticiones'})
+    def sql(op):
+        return f"select public.reserve_trainer_exercise_image('{op}')" if image else f"select public.save_trainer_exercise('{op}','{payload}',null)"
+    first,second=DB(),DB()
+    try:
+        first.query('begin');identity(first,trainer,'aal2');winner=first.query(sql(first_id))[0][0]
+        second.query('begin isolation level '+('repeatable read' if repeatable else 'read committed'))
+        identity(second,trainer,'aal2');second.query('select count(*) from public.trainer_access')
+        pid=int(second.query('select pg_backend_pid()')[0][0]);future=pool.submit(second.query,sql(second_id))
+        wait_locked(observer,pid,future);first.query('commit')
+        expected='40001' if repeatable else None if same_operation else '22023'
+        try:
+            result=future.result(timeout=10)[0][0]
+            assert expected is None and result==winner,(expected,result,winner)
+            second.query('commit')
+        except SqlError as error:
+            assert error.code==expected,(error.code,expected,str(error));second.query('rollback')
+        column='image_used' if image else 'exercise_used'
+        assert observer.query(f"select {column} from trainer_private.exercise_limits where trainer_id='{trainer}'")==[['1']]
+        if repeatable and same_operation:
+            second.query('begin');identity(second,trainer,'aal2')
+            assert second.query(sql(second_id))[0][0]==winner
+            second.query('commit')
+    finally:
+        first.close();second.close()
+
 bootstrap = """
 create role anon;
 create role authenticated;
@@ -278,6 +325,7 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
             observer.query((root / "supabase/migrations" / filename).read_text(encoding="utf-8"))
         install_assignment_fixture(observer)
         install_program_fixture(observer)
+        install_exercise_fixture(observer)
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             cases = [
                 ("última plaza READ COMMITTED", {}),
@@ -302,7 +350,12 @@ with tempfile.TemporaryDirectory(prefix="entrenaop-trainer-race-") as work:
                 for repeatable in (False,True):
                     for _ in range(3): assignment_race(observer,pool,assign_first,repeatable,program=True)
                     print(f'OK: programa/baja, asigna primero={assign_first}, RR={repeatable} (3 contenciones observadas)',flush=True)
-        print("OK: 45 carreras reales; acceso/cartera, sesión/baja y programa/baja; ningún acceso a Dev/producción.", flush=True)
+            for image in (False,True):
+                for same_operation in (False,True):
+                    for repeatable in (False,True):
+                        for _ in range(3): exercise_race(observer,pool,image=image,same_operation=same_operation,repeatable=repeatable)
+                        print(f'OK: cuota/reintento, imagen={image}, mismo envío={same_operation}, RR={repeatable} (3 contenciones observadas)',flush=True)
+        print("OK: 69 carreras reales; acceso/cartera, sesiones/programas y cuotas/reintentos de ejercicios e imágenes; ningún acceso a Dev/producción.", flush=True)
     finally:
         if observer is not None:
             observer.close()

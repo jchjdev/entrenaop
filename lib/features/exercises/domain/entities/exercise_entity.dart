@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/strength_exercise_catalog.dart';
 
-enum ExerciseOrigin { system, user }
+enum ExerciseOrigin { system, user, coach }
 
 /// Nombre conservado en la app para expresar que este adaptador siempre guarda
 /// el borrador compartido como ejercicio privado del usuario autenticado.

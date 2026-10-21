@@ -8,6 +8,8 @@ import 'package:workout_core/workout_template_model.dart';
 import 'package:workout_core/workout_template_query.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 
+import 'trainer_exercise_repository.dart';
+
 typedef WorkoutJson = Map<String, dynamic>;
 
 String trainerOperationId() {
@@ -61,7 +63,9 @@ class TrainerAssignment {
 abstract class TrainerWorkoutRepository {
   Future<List<TrainerWorkout>> workouts({TrainerWorkout? before});
   Future<WorkoutTemplate?> template(String id);
-  Future<List<WorkoutEditorExercise>> exercises();
+  Future<List<WorkoutEditorExercise>> exercises({
+    Set<String> retainedIds = const {},
+  });
   Future<String> save(
     String operationId,
     CreatePersonalWorkoutInput input, {
@@ -120,7 +124,9 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   }
 
   @override
-  Future<List<WorkoutEditorExercise>> exercises() async {
+  Future<List<WorkoutEditorExercise>> exercises({
+    Set<String> retainedIds = const {},
+  }) async {
     final result = <WorkoutEditorExercise>[];
     for (var offset = 0; ; offset += 500) {
       _identity();
@@ -149,8 +155,25 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
               ),
             ),
       );
-      if (rows.length < 500) return result;
+      if (rows.length < 500) break;
     }
+    final own = await SupabaseTrainerExerciseRepository(client, userId).list();
+    result.addAll(
+      own
+          .where((e) => e.current || retainedIds.contains(e.id))
+          .map(
+            (e) => WorkoutEditorExercise(
+              id: e.id,
+              name: e.current
+                  ? e.draft.name
+                  : '${e.draft.name} (versión ${e.version})',
+              muscleGroups: e.draft.muscleGroups,
+              equipment: e.draft.equipment,
+              thumbnailUrl: e.imageUrl,
+            ),
+          ),
+    );
+    return result;
   }
 
   @override

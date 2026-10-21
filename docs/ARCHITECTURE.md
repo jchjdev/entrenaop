@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+## Ejercicios profesionales · TRN-019 · 21/10/2026
+
+Trainer reutiliza `ExerciseForm` con adaptador propio. `exercises.origin=coach`
+separa propiedad/cuota profesional de Free/Pro personal. Cada revisión crea otra
+fila, con familia/operación en `trainer_private`; sesiones y programas fijan IDs.
+RLS y un trigger de referencias impiden copiar ejercicios privados a recetas
+ajenas o personales. Imágenes en bucket privado, reserva idempotente y contadores
+atómicos. El deportista lee solo la técnica recibida y firma la imagen de su
+versión; la biblioteca personal excluye ejercicios profesionales.
+[Contrato, límites y distribución](TRAINER_PRIVATE_EXERCISES.md).
+
 ## Programas profesionales y composición común · TRN-017 · 21/10/2026
 
 `GuidedProgramEditorPage`, puertos del catálogo y controlador de trabajo pasan a

@@ -517,7 +517,14 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
                             controller: _exit,
                             child: WorkoutEditorPage(
                               embedded: true,
-                              loadExercises: widget.repository.exercises,
+                              loadExercises: () => widget.repository.exercises(
+                                retainedIds: {
+                                  for (final block
+                                      in initial?.blocks ?? <WorkoutBlock>[])
+                                    for (final item in block.items)
+                                      item.exerciseId,
+                                },
+                              ),
                               originalTemplate: initial,
                               onSave: (input) => widget.repository.save(
                                 _operation,

@@ -61,6 +61,7 @@ class ExerciseModel extends ExerciseEntity {
       origin: switch (json['origin']) {
         'system' => ExerciseOrigin.system,
         'user' => ExerciseOrigin.user,
+        'coach' => ExerciseOrigin.coach,
         final value => throw FormatException(
           'Origen de ejercicio desconocido: $value',
         ),

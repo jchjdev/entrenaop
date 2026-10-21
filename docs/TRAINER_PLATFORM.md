@@ -18,9 +18,10 @@ ello lectura general de bibliotecas y resultados privados. Identidad, permiso
 ADMIN, Pro, acceso profesional, servicio con el alumno y pago siguen separados.
 
 TRN-016 implementa sesiones privadas, pautas y resultados. TRN-017 amplía a
-programas versionados y agenda. **Los ejercicios profesionales propios y sus
-medios aún no están implementados**; el creador profesional usa ejercicios
-públicos. Los documentos de cada recorrido acreditan código y verificación.
+programas versionados y agenda. TRN-019 incorpora ejercicios profesionales
+versionados, imágenes privadas y acceso del alumno, reutilizando el formulario
+de ADMIN. Su publicación y validación se acreditan en
+[el contrato específico](TRAINER_PRIVATE_EXERCISES.md).
 
 ## Dos circuitos comerciales
 
@@ -69,7 +70,10 @@ Los cupos de alumnos no sustituyen los límites técnicos de contenido y medios.
 Antes de habilitar ejercicios propios con imágenes o vídeo se necesitan propiedad
 profesional, acceso del alumno por recurso asignado, revisión versionada y cuotas
 de almacenamiento/subida verificadas en servidor. No se acuerdan creaciones ni
-medios infinitos, ni se reutiliza por accidente la cuota personal Free.
+medios infinitos, ni se reutiliza por accidente la cuota personal Free. TRN-019
+concreta el piloto confirmado: 500 ejercicios/versiones y 1.000 reservas de imagen
+de hasta 500 KB. Son límites técnicos configurables, no planes de pago. Los
+archivos de vídeo profesionales siguen pendientes; se admiten enlaces externos.
 
 La baja conserva la cartera e historial del servicio y libera la plaza conforme
 a TRN-015/016. Retornar requiere nueva aceptación. El archivo es recuperable;

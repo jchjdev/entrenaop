@@ -15,6 +15,8 @@ import 'trainer_program_repository.dart';
 import 'trainer_program_pages.dart';
 import 'trainer_agenda_page.dart';
 import 'trainer_shell.dart';
+import 'trainer_exercise_page.dart';
+import 'trainer_exercise_repository.dart';
 
 import 'package:trainer_access/trainer_security.dart';
 
@@ -152,6 +154,16 @@ class _TrainerAppState extends State<TrainerApp> {
           builder: (_, state, child) =>
               TrainerShell(location: state.uri.path, child: child),
           routes: [
+            GoRoute(
+              path: '/exercises',
+              builder: (_, _) => TrainerExercisePage(
+                repository: SupabaseTrainerExerciseRepository(
+                  widget.client,
+                  identity!,
+                ),
+                access: access(),
+              ),
+            ),
             GoRoute(
               path: '/clients',
               builder: (context, _) => identity == null

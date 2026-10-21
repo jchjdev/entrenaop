@@ -508,5 +508,15 @@ consumiendo citas profesionales mediante su app; no se abre el catálogo privado
 Javier concreta ejercicios propios y contenido reutilizable para cualquier
 alumno, seguimiento y ambos circuitos de pago con cupos configurables. No son
 capacidades ya implementadas por estar acordadas. El alcance, límites técnicos
-por concretar y la separación respecto al trabajo de relojes se registran en
+concretados en TRN-019 y la separación respecto al trabajo de relojes se registran en
 [TRAINER_PLATFORM.md](TRAINER_PLATFORM.md).
+
+## Ejercicios profesionales · TRN-019 · 21/10/2026
+
+El portal reutiliza el formulario de ADMIN para su catálogo privado, revisiones
+inmutables e imágenes. Los ejercicios se incorporan a sesiones/programas y el
+alumno los consulta dentro de lo asignado; su biblioteca personal no cambia.
+Javier confirma límites piloto de 500 ejercicios/versiones y 1.000 reservas de
+imagen de hasta 500 KB, configurables en servidor. El código del deportista se
+actualiza en este tramo, sin acreditar instalación en su teléfono.
+[Contrato, pruebas y distribución](TRAINER_PRIVATE_EXERCISES.md).

@@ -9,6 +9,7 @@ class TrainerShell extends StatelessWidget {
   static const destinations = [
     ('/clients', 'Alumnos', Icons.people_outline),
     ('/agenda', 'Agenda', Icons.calendar_month_outlined),
+    ('/exercises', 'Ejercicios', Icons.sports_gymnastics),
     ('/workouts', 'Sesiones', Icons.fitness_center),
     ('/programs', 'Programas', Icons.view_week_outlined),
   ];

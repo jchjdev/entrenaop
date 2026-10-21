@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:entrenaop/core/errors/exceptions.dart';
 import 'package:entrenaop/features/exercises/data/datasources/exercise_remote_datasource_impl.dart';
+import 'package:entrenaop/features/exercises/domain/entities/exercise_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -32,6 +33,10 @@ void main() {
       expect(exercises.map((e) => e.id), ['official', 'own']);
       expect(exercises.last.createdBy, _owner);
       expect(
+        requests.last.url.queryParameters['or'],
+        contains('and(origin.eq.user,created_by.eq.$_owner)'),
+      );
+      expect(
         requests.where((r) => r.url.path.startsWith('/storage/')),
         isEmpty,
       );
@@ -52,6 +57,35 @@ void main() {
     expect(exercises.map((e) => e.id), ['official']);
     expect(requests.where((r) => r.url.path.startsWith('/storage/')), isEmpty);
   });
+
+  test(
+    'un ejercicio pautado usa origen profesional y firma su imagen privada',
+    () async {
+      final requests = <http.Request>[];
+      final client = _client(requests);
+      addTearDown(client.dispose);
+      await client.auth.signInWithPassword(
+        email: 'admin@example.invalid',
+        password: 'fixture',
+      );
+      final exercise =
+          await ExerciseRemoteDataSourceImpl(supabaseClient: client)
+              .getExerciseById('coach')
+              .catchError(
+                (error) =>
+                    fail(error is ServerException ? error.message : '$error'),
+              );
+      expect(exercise?.origin, ExerciseOrigin.coach);
+      expect(
+        exercise?.thumbnailUrl,
+        contains('/storage/v1/object/sign/trainer-exercise-images/'),
+      );
+      expect(
+        requests.where((r) => r.url.path.contains('exercise-images-private')),
+        isEmpty,
+      );
+    },
+  );
 }
 
 SupabaseClient _client(List<http.Request> requests) => SupabaseClient(
@@ -86,9 +120,22 @@ SupabaseClient _client(List<http.Request> requests) => SupabaseClient(
       );
     }
     if (request.url.path == '/rest/v1/exercises') {
+      if (request.url.queryParameters['id'] == 'eq.coach') {
+        return http.Response(
+          jsonEncode(
+            _exercise('coach', owner: 'trainer')
+              ..['origin'] = 'coach'
+              ..['image_path'] = 'trainer/image.jpg',
+          ),
+          200,
+          headers: headers,
+          request: request,
+        );
+      }
       final rows = [
         _exercise('official', public: true),
         _exercise('own', owner: _owner),
+        _exercise('own-professional', owner: _owner)..['origin'] = 'coach',
         _exercise('foreign', owner: 'another-user')
           ..['image_path'] = 'another-user/foreign/photo.jpg',
       ];
@@ -104,7 +151,8 @@ SupabaseClient _client(List<http.Request> requests) => SupabaseClient(
                     ? row['is_public'] == true
                     : !scoped ||
                           row['is_public'] == true ||
-                          row['created_by'] == _owner,
+                          (row['created_by'] == _owner &&
+                              row['origin'] == 'user'),
               )
               .toList(),
         ),
@@ -114,6 +162,16 @@ SupabaseClient _client(List<http.Request> requests) => SupabaseClient(
       );
     }
     if (request.url.path.startsWith('/storage/')) {
+      if (request.url.path.contains('trainer-exercise-images')) {
+        return http.Response(
+          jsonEncode({
+            'signedURL': '/object/sign/trainer-exercise-images/trainer/image.jpg?token=fixture',
+          }),
+          200,
+          headers: headers,
+          request: request,
+        );
+      }
       return http.Response(
         jsonEncode({
           'statusCode': '404',

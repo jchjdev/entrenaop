@@ -1,5 +1,25 @@
 # Roadmap de EntrenaOP
 
+**TRN-019 · 21/10/2026 · ejercicios profesionales implementados y verificados en Dev:**
+formulario compartido con ADMIN, catálogo privado y revisiones inmutables,
+imágenes privadas y selección de versiones en sesiones/programas. El deportista
+reconoce origen profesional y firma la técnica recibida sin añadirla a su
+biblioteca personal. Límites confirmados: 500 ejercicios/versiones y 1.000
+reservas de imagen de hasta 500 KB; cuotas e idempotencia en servidor.
+Catorce contratos SQL con ROLLBACK, 69 contenciones PostgreSQL locales, 1145
+pruebas raíz (una omisión previa), 301 ADMIN (dos previas), 33 portal y seis
+pruebas del publicador; seis capturas de widgets revisadas. Análisis del alcance
+modificado y ADMIN limpios. El análisis global detecta trabajo independiente en
+curso en `labs/health_read_probe` (incluida una prueba de plantilla sin adaptar);
+no se corrige ni incorpora ese trabajo desde este chat.
+Compilación Dev del deportista preparada; no instalada en teléfono. No hay
+subida de vídeos profesionales, compras ni aceptación humana con dos cuentas.
+Publicación web en curso; no se declara cerrado el recorrido físico completo.
+**Único siguiente recorrido profesional recomendado:** aceptación con dos cuentas
+y app instalada: crear ejercicio con foto → sesión/programa → pauta → ejecución
+del alumno → resultado del preparador, antes de ampliar seguimiento y cobros.
+[Contrato y límites](TRAINER_PRIVATE_EXERCISES.md).
+
 **INT-002 · 21/10/2026 · dominio de carrera aislado y verificado:** paquete
 `device_activity_core`, sin dependencias de ejecución ni cambios de Trainer,
 creadores, agenda, aplicaciones o SQL. Modela identidad/procedencia, tiempos,
@@ -29,8 +49,7 @@ Migración aplicada solo a Dev, 182 coincidentes. Web publicada desde `834e3b6`,
 verificada por HTTPS y sesión existente en Chrome, con los cuatro destinos
 accesibles y biblioteca/creador. Aceptación humana con alumno pendiente.
 No cambia la app móvil distribuida.
-**Siguiente bloque profesional recomendado:** ejercicios propios privados con
-recetas versionadas, medios y cuotas de servidor. El alcance completo, con
+El siguiente bloque de ejercicios propios se implementa en TRN-019. El alcance completo, con
 seguimiento agregado y ambos circuitos de pago, queda en
 [TRAINER_PLATFORM.md](TRAINER_PLATFORM.md). [Contrato de programas](TRAINER_PRIVATE_PROGRAMS.md).
 

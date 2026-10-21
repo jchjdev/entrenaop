@@ -219,7 +219,13 @@ void main() {
           MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
         );
         await tester.pumpAndSettle();
-        for (final label in ['Alumnos', 'Agenda', 'Sesiones', 'Programas']) {
+        for (final label in [
+          'Alumnos',
+          'Agenda',
+          'Ejercicios',
+          'Sesiones',
+          'Programas',
+        ]) {
           final labels = tester.semantics.simulatedAccessibilityTraversal().map(
             (node) => node.getSemanticsData().label,
           );

@@ -20,7 +20,9 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
       // es administradora. No debe pedir firmas de fotos privadas de terceros.
       final response = await (userId == null
           ? query.eq('is_public', true)
-          : query.or('is_public.eq.true,created_by.eq.$userId'));
+          : query.or(
+              'is_public.eq.true,and(origin.eq.user,created_by.eq.$userId)',
+            ));
       return await Future.wait(
         (response as List).map(
           (json) async => ExerciseModel.fromJson(await _resolveImage(json)),
@@ -147,7 +149,11 @@ class ExerciseRemoteDataSourceImpl implements ExerciseRemoteDataSource {
           .getPublicUrl(path);
     } else {
       resolved['thumbnail_url'] = await supabaseClient.storage
-          .from(_privateBucket)
+          .from(
+            row['origin'] == 'coach'
+                ? 'trainer-exercise-images'
+                : _privateBucket,
+          )
           .createSignedUrl(path, 3600);
     }
     return resolved;

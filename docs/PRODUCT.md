@@ -1,12 +1,21 @@
 # Producto EntrenaOP
 
+**TRN-019 · 21/10/2026 · ejercicios profesionales:** creador compartido con
+ADMIN, biblioteca privada, versiones conservadas e imágenes privadas, conectados
+a sesiones/programas y lectura autorizada del alumno. Límites piloto confirmados:
+500 ejercicios/versiones y 1.000 imágenes reservadas de hasta 500 KB, separados
+del cupo de alumnos y de las cuotas personales. Vídeo por enlace externo; subida
+de vídeo y pagos siguen pendientes. El código del deportista se adapta, sin
+acreditar instalación en un móvil. [Contrato y evidencia](TRAINER_PRIVATE_EXERCISES.md).
+
 **TRN-017/018 · 21/10/2026 · programas privados y plataforma profesional:** el
 preparador ya puede montar programas con el creador común, pautar fases/sesiones
 en fechas concretas y consultar su agenda mensual en Dev. La biblioteca es
 reutilizable con cualquier alumno activo y conserva versiones. El alcance
-acordado incluye además ejercicios propios, seguimiento, cobros del alumno a
-su preparador y contratación de EntrenaOP por cupos configurables; esas partes
-siguen pendientes, sin tarifas/proveedor elegidos. La integración de relojes
+acordado incluye además ejercicios propios (TRN-019), seguimiento, cobros del
+alumno a su preparador y contratación de EntrenaOP por cupos configurables;
+seguimiento agregado y cobros siguen pendientes, sin tarifas/proveedor elegidos.
+La integración de relojes
 lleva su bloque propio. [Alcance](TRAINER_PLATFORM.md) y
 [programas/agenda](TRAINER_PRIVATE_PROGRAMS.md).
 
@@ -27,8 +36,8 @@ simultáneamente. Los entrenamientos futuros solo aparecerán al alumno cuando
 tenga contenido autorizado asignado. TRN-011 publica el panel y habilita solo
 en Dev la cuenta de Javier con cinco plazas; entrada humana TOTP y sesión tras
 recarga comprobadas en Chrome. Cada preparador usa el autenticador de su propia
-identidad, sin permisos ADMIN. Contratación autónoma web, tarifas y límites de
-recursos pendientes.
+identidad, sin permisos ADMIN. Contratación autónoma web y tarifas pendientes;
+los límites técnicos de ejercicios e imágenes se concretan en TRN-019.
 [Recorridos y validación](TRAINER_PORTAL_2026_10_21.md).
 
 **ADM-004 · 21/10/2026 · sesiones y borrado manual:** Sesiones incorpora papelera

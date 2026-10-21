@@ -169,7 +169,12 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
     }
     final revision = widget.templateId != null;
     return WorkoutEditorPage(
-      loadExercises: widget.repository.exercises,
+      loadExercises: () => widget.repository.exercises(
+        retainedIds: {
+          for (final block in _template?.blocks ?? <WorkoutBlock>[])
+            for (final item in block.items) item.exerciseId,
+        },
+      ),
       onSave: (input) => widget.repository.save(
         _operationId,
         input,
