@@ -369,6 +369,12 @@ void main() {
     );
     await tapText(tester, 'Guardar notas internas');
     expect(repo.writes, hasLength(1));
+    await tester.scrollUntilVisible(
+      find.widgetWithText(TextField, 'Notas internas'),
+      -150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Mi borrador'), findsOneWidget);
     repo.fail = false;
     await tapText(tester, 'Reintentar notas');

@@ -317,10 +317,13 @@ class _TrainerClientWorkspacePageState
                     'Notas del preparador',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
+                  const SizedBox(height: 8),
                   const Text(
                     'Privadas. No aparecen en la app del alumno ni en el informe exportado. El objetivo es una anotación tuya; no cambia pruebas o baremos.',
                   ),
+                  const SizedBox(height: 8),
                   Text('Revisión $_revision'),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _goal,
                     enabled:
@@ -332,6 +335,7 @@ class _TrainerClientWorkspacePageState
                     ),
                     onChanged: (_) => setState(() => _dirty = true),
                   ),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _notes,
                     enabled:
@@ -343,9 +347,13 @@ class _TrainerClientWorkspacePageState
                     ),
                     onChanged: (_) => setState(() => _dirty = true),
                   ),
+                  const SizedBox(height: 12),
                   if (_pending != null)
-                    const Text(
-                      'El guardado ya se envió. Reintenta para confirmar la misma revisión y contenido.',
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        'El guardado ya se envió. Reintenta para confirmar la misma revisión y contenido.',
+                      ),
                     ),
                   Align(
                     alignment: Alignment.centerLeft,

@@ -414,12 +414,14 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
             : 'Servicio inactivo. Conservas las pautas y los resultados de tus etapas.',
       ),
       const SizedBox(height: 16),
-      if (_relation != null)
+      if (_relation != null) ...[
         OutlinedButton.icon(
           onPressed: _busy ? null : _conversation,
           icon: const Icon(Icons.chat_bubble_outline),
           label: const Text('Conversación del servicio'),
         ),
+        const SizedBox(height: 12),
+      ],
       FilledButton.icon(
         onPressed:
             _busy ||
@@ -445,6 +447,7 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
           label: const Text('Pautar programa privado'),
         ),
       ],
+      const SizedBox(height: 16),
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) _retry(_error!, () => _load()),
       if (!_busy && _items.isEmpty && _error == null)
@@ -453,32 +456,35 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
           child: Text('Todavía no has pautado sesiones a este alumno.'),
         ),
       for (final item in _items)
-        EntrenaCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(item.name, style: Theme.of(context).textTheme.titleMedium),
-              Text(
-                '${trainerDate(item.date)} · ${item.statusLabel} · Versión ${item.version}',
-              ),
-              if (item.note?.isNotEmpty == true) Text(item.note!),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (item.executionId != null)
-                    TextButton(
-                      onPressed: _busy ? null : () => _result(item),
-                      child: const Text('Ver resultados'),
-                    ),
-                  if (item.status == 'planned')
-                    TextButton(
-                      onPressed: _busy ? null : () => _cancel(item),
-                      child: const Text('Retirar pauta'),
-                    ),
-                ],
-              ),
-            ],
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: EntrenaCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(item.name, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  '${trainerDate(item.date)} · ${item.statusLabel} · Versión ${item.version}',
+                ),
+                if (item.note?.isNotEmpty == true) Text(item.note!),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (item.executionId != null)
+                      TextButton(
+                        onPressed: _busy ? null : () => _result(item),
+                        child: const Text('Ver resultados'),
+                      ),
+                    if (item.status == 'planned')
+                      TextButton(
+                        onPressed: _busy ? null : () => _cancel(item),
+                        child: const Text('Retirar pauta'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       if (_more)
