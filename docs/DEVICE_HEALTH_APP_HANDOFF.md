@@ -14,8 +14,16 @@ conecta pubspec/lock, rutas/perfil, composición y configuración nativa. Estas
 reservas no conceden editar sus archivos profesionales ni los compartidos.
 
 La extracción no cambia SQL, servidor, agenda, ejecuciones ni resultados.
-La compilación iOS del nuevo plugin y su reinstalación física están pendientes;
-la lectura física positiva previa acredita el lector antes de extraerlo.
+La [CI 39637024250](https://github.com/jchjdev/entrenaop/actions/runs/39637024250)
+del commit `124fa76` acredita compilación del plugin iOS y del ensayo Android,
+con ambos jobs correctos. La reinstalación física del nuevo plugin sigue
+pendiente; la lectura física positiva previa acredita el lector antes de
+extraerlo, incluidos descarte al volver de Garmin, relectura sin repetición y
+retirada/restauración del permiso comprobadas por Javier.
+
+La [CI ADMIN 39637024185](https://github.com/jchjdev/entrenaop/actions/runs/39637024185)
+del mismo commit terminó con `success`, validación correcta y publicación y
+retención omitidas por alcance aislado. No se ha desplegado ninguna app.
 
 ## API y consumidor
 
@@ -47,7 +55,7 @@ el resultado anterior. Se debe comprobar ese ciclo antes de conectar la ruta.
 
 | Canal | Implementación del plugin | Consumidor de ensayo | Consumidor principal |
 | --- | --- | --- | --- |
-| iOS | Swift, HealthKit, registrador Flutter estándar; iOS 15; SPM y podspec. Cancela consulta en segundo plano y libera consulta/autorización/observador al detach. | Consume el plugin, sin segundo lector Swift en Runner; lectura física anterior positiva, extracción pendiente de build/reinstalación. | Dependencia, entitlement, descripción de lectura y ruta aún sin conectar. |
+| iOS | Swift, HealthKit, registrador Flutter estándar; iOS 15; SPM y podspec. Publica instancia para recibir detach; cancela consulta en segundo plano y libera consulta/autorización/observador al detach. | Consume el plugin, sin segundo lector Swift en Runner; build de extracción correcto y lectura física anterior positiva, reinstalación pendiente. | Dependencia, entitlement, descripción de lectura y ruta aún sin conectar. |
 | Android | No declarada en el plugin inicial. Factory devuelve `notIntegrated` sin invocar un canal ausente. | Conserva su puente Health Connect 1.1.0, solo READ_EXERCISE y mínimo 28. Sin prueba física. | Mantiene mínimo 24, MainActivity y callbacks actuales. No se eleva mínimo ni se usa overrideLibrary. |
 | Web/escritorio | Factory devuelve `unsupported`, sin llamadas nativas. | No lee datos de salud. | No hereda lectura nativa por compartir Flutter. |
 

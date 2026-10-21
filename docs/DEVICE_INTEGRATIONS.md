@@ -16,7 +16,9 @@ implementados en `device_activity_core`, sin consumo desde las apps.
 **INT-003:** puentes HealthKit/Health Connect y lectura
 explícita implementados en el ensayo aislado, con primera lectura física iPhone
 desde Garmin Connect acreditada y distancia/duración contrastadas con Garmin
-en dos carreras a precisión de pantalla; pausas, repetición, revocación y Android físico pendientes. El puente
+en dos carreras a precisión de pantalla; descarte y relectura sin repetición
+confirmados por el titular. Revocar/restaurar lectura desde Salud retira/devuelve
+las carreras en el ensayo. Pausas y Android físico pendientes. El puente
 iOS y adaptador Dart se extraen a `device_health` para su entrega coordinada;
 la app principal aún no los consume. Faltan conectores de producción, persistencia
 real, exportación, pantallas de las tres apps, nuevas tablas y permisos de
@@ -183,8 +185,11 @@ puro y no incorpora dependencias ni conexiones a deportista, ADMIN o Trainer.
 Android compila y las pruebas con muestras pasan; CI confirma además ambos
 builds nativos, incluido iOS Simulator. Javier aporta primera lectura física
 positiva de Salud en iPhone y contrasta distancia/duración con Garmin en dos carreras.
-La fase móvil permanece abierta por pausas, ciclo de permisos,
-repetición y Android pendientes.
+Javier confirma además descarte al volver de Garmin y relectura sin repetición.
+La CI `124fa76` compila el plugin iOS y el ensayo Android; el plugin sigue sin
+consumirse en la app principal. La revocación y restauración desde Salud están
+contrastadas por Javier. La fase móvil permanece abierta por pausas,
+reinstalación del plugin y Android físico pendientes.
 
 Javier usa iPhone y Garmin Connect: queda acreditado el recorrido
 Connect → Salud → ensayo, con permisos del titular y límites de los

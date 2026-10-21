@@ -26,7 +26,9 @@ clínicos ni entrega en segundo plano. Registro estándar Flutter, conservando
 los otros plugins/callbacks de la app. No copiar el lector al AppDelegate.
 
 Pruebas: `flutter pub get --enforce-lockfile`, `flutter analyze`, `flutter test`.
-La compilación iOS de esta extracción está pendiente; no se acredita integración
-en la app principal por existir el plugin.
+La [CI del commit 124fa76](https://github.com/jchjdev/entrenaop/actions/runs/39637024250)
+compila correctamente la extracción iOS y el ensayo Android. La reinstalación
+física del plugin sigue pendiente; no se acredita integración en la app
+principal por existir el plugin.
 
 [Contrato completo de entrega](../../docs/DEVICE_HEALTH_APP_HANDOFF.md).

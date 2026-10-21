@@ -17,8 +17,11 @@ Salud en iPhone queda acreditada por la captura aportada por Javier el
 `com.garmin.connect.mobile`, con inicio, duración y distancia presentes. Javier
 confirma después la correspondencia de dos carreras y aporta una captura de
 Garmin: distancia y duración coinciden a la precisión mostrada; el ritmo
-calculado es compatible. Las pausas y las comprobaciones de repetición, revocación
-y descarte siguen pendientes; la fase móvil no está cerrada.
+calculado es compatible. Javier comprueba después descarte al volver de Garmin
+y relectura de las mismas carreras sin repetición en la lista. Confirma además
+que al retirar lectura desaparecen y al restaurarla vuelven. Pausas
+y reinstalación del plugin extraído siguen pendientes; la fase móvil
+no está cerrada.
 Android aún no tiene evidencia física. Javier utiliza iPhone como móvil
 principal y su Android no contiene actividades propias.
 
@@ -181,19 +184,30 @@ Javier aclara además que la app funciona y la confusión era de presentación;
 no estaba comunicando bloqueos o cierres. Esto no acredita pruebas de estabilidad
 prolongadas ni los demás recorridos pendientes.
 
-Javier
-autoriza expresamente guardar sus métricas para desarrollar y verificar la
+Javier autoriza expresamente guardar sus métricas para desarrollar y verificar la
 integración. Se conserva evidencia local en
 `labs/health_read_probe/local_evidence/`, ignorada por Git. Incluye los campos
 visibles y la comparación de presentación; las pausas siguen sin contrastar.
 No se versionan la captura ni los valores personales. Esta evidencia de
 desarrollo no constituye persistencia del historial en la app del deportista.
 
+Javier autoriza además expresamente compartir el resumen técnico de lectura,
+comparación, descarte y permisos con los chats responsables de Trainer y
+Arquitectura, y guardarlo en la documentación de GitHub, sin métricas exactas
+ni capturas. Esta autorización de desarrollo no cambia los permisos de acceso
+del producto ni autoriza tratar datos de otros deportistas.
+
 Se acredita la vía Garmin Connect → Salud → ensayo, sin acceso directo a la API
 de Garmin ni conexión con las apps del deportista, ADMIN o Trainer. La captura
-no permite comprobar comportamiento de pausas,
-estabilidad, repetición, revocación o descarte al pasar a segundo plano. Esas
-comprobaciones y la prueba física Android permanecen abiertas. Completar el
+no permite comprobar comportamiento de pausas ni estabilidad prolongada.
+Después, Javier confirma que al volver de Garmin la lista está vacía y debe
+repetir las acciones explícitas; vuelven las mismas carreras sin repetirse en
+la lista. Esto acredita descarte y relectura física del lector instalado, no
+deduplicación de un historial persistente ni la reinstalación de la extracción.
+Javier comprueba además revocación y restauración desde Salud: sin permiso
+desaparecen las carreras y al restaurarlo vuelven. Se acredita el efecto de
+la revocación en la consulta, no que Apple exponga un booleano de concesión.
+Pausas y prueba física Android permanecen abiertas. Completar el
 diálogo de Apple tampoco demuestra acceso a todo el historial.
 
 ### Extracción reutilizable para el primer consumidor
@@ -212,8 +226,18 @@ compilado. Se conservan los valores originales; el formato humano solo afecta
 a presentación. El preparador comprueba ambos proyectos, y los dieciséis
 escenarios de alcance CI conservan la publicación de ADMIN para cambios mixtos
 y la omiten en este alcance aislado.
-La compilación iOS y la reinstalación física de esta extracción siguen pendientes:
-la evidencia física anterior corresponde al lector previo a la extracción.
+La [CI nativa 39637024250](https://github.com/jchjdev/entrenaop/actions/runs/39637024250)
+del commit `124fa76` acredita compilación del plugin en iOS Simulator y del
+ensayo Android: ambos jobs completados con `success`. El registro publica la
+instancia para recibir el desmontaje del motor. La reinstalación física y el
+ciclo de desmontaje nativo de esta extracción siguen pendientes; la evidencia
+física anterior corresponde al lector previo a la extracción.
+
+**CI ADMIN del mismo commit `124fa76`:**
+[ejecución 39637024185](https://github.com/jchjdev/entrenaop/actions/runs/39637024185)
+completada con `success`. El job de validación terminó correctamente, incluidos
+análisis, pruebas y empaquetado. `deploy` y `retain-packages` quedaron `skipped`:
+esta extracción no publicó ADMIN ni retiró paquetes.
 
 ### Verificación automatizada previa
 
@@ -242,9 +266,9 @@ compilación web y empaquetado. `deploy` y `retain-packages` terminaron como
 `skipped`: este alcance no publicó ADMIN ni retiró paquetes. La evidencia no
 equivale a una instalación o lectura HealthKit en un teléfono.
 
-**Siguiente tramo único:** verificar la compilación iOS del plugin extraído y
-entregar a integración la lectura local del deportista, conservando las pruebas
-físicas pendientes de pausas, repetición, revocación y descarte. Guardar un
+**Siguiente tramo único:** entregar a integración la lectura local del deportista
+desde el plugin compilado, conservando las pruebas físicas pendientes de
+reinstalación y pausas. Guardar un
 historial personal requiere después el contrato de persistencia por cuenta;
 una lista en memoria no cierra ese recorrido. Android real sigue pendiente.
 Persistencia, autorización de resultados y conexiones de fabricantes permanecen

@@ -139,7 +139,7 @@ de apps que otros chats están modificando.
 
 | Proveedor | Avance sin móvil | Lo que falta para conexión real |
 | --- | --- | --- |
-| Garmin | Lectura FIT offline con muestras; primera lectura física Connect → Salud → ensayo acreditada, con distancia/duración contrastadas con Garmin en dos carreras a precisión de pantalla. | API Connect no concedida; pausas, repetición, revocación y archivo FIT real pendientes; Training API para envío. |
+| Garmin | Lectura FIT offline con muestras; primera lectura física Connect → Salud → ensayo acreditada, con distancia/duración contrastadas con Garmin, relectura sin repetición y retirada/restauración del permiso comprobadas. | API Connect no concedida; pausas, reinstalación del plugin y archivo FIT real pendientes; Training API para envío. |
 | COROS | Recepción FIT documentada por su Partner API; adaptador de formato probado con muestras sintéticas. | Elegibilidad, acuerdo y credenciales propias; OAuth, webhook y archivo real de la cuenta autorizada. |
 | Suunto | Cloud API documenta FIT y resúmenes; mismo adaptador de formato, sin copiar dominio. | Admisión, claves de suscripción/OAuth y archivo real. La subida de actividad realizada no acredita envío de prescripción. |
 | Huawei | Health Kit y requisitos públicos revisados; no se fuerza su información al formato FIT. | Modalidad/región/permisos y esquema exacto de carreras autorizadas. Su compatibilidad con el canal local también necesita prueba real. |
