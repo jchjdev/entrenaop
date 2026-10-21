@@ -17,6 +17,19 @@ SHA = "a" * 40
 RELEASE = SHA + "-123-1"
 
 class TrainerReleaseTests(unittest.TestCase):
+    def test_local_file_read_is_allowed_without_allowing_blob_scripts(self):
+        import re
+        for portal in ('trainer_app', 'admin_app'):
+            with self.subTest(portal=portal):
+                config = (ROOT / portal / 'deployment/hostinger-dev.htaccess').read_text()
+                csp = re.search(r'Content-Security-Policy "([^"]+)"', config).group(1)
+                directives = {p.strip().split()[0]: p.strip().split()[1:]
+                              for p in csp.split(';') if p.strip()}
+                self.assertIn('blob:', directives['connect-src'])
+                self.assertNotIn('blob:', directives['script-src'])
+                self.assertNotIn("'unsafe-eval'", directives['script-src'])
+                self.assertEqual(directives['frame-ancestors'], ["'none'"])
+
     def test_scope_checks_every_local_dependency_without_unconsumed_packages(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder).resolve()

@@ -63,6 +63,7 @@ class _ExerciseVideoFieldState extends State<ExerciseVideoField> {
   }
 
   Future<void> _pick() async {
+    var step = 'seleccionar el archivo';
     _setBusy(true);
     setState(() {
       _message = 'Preparando subida…';
@@ -83,14 +84,18 @@ class _ExerciseVideoFieldState extends State<ExerciseVideoField> {
           'El archivo debe ocupar como máximo ${(widget.maxVideoBytes / (1024 * 1024)).ceil()} MB.',
         );
       }
+      step = 'reservar la subida';
       final upload = await widget.repository.create(size);
       if (!mounted) {
         return;
       }
       _pending = upload.id;
+      step = 'leer el archivo';
+      final bytes = await file.readAsBytes();
+      step = 'transferir el archivo';
       await widget.repository.upload(
         upload,
-        await file.readAsBytes(),
+        bytes,
         file.mimeType ??
             (file.name.toLowerCase().endsWith('.mov')
                 ? 'video/quicktime'
@@ -109,7 +114,9 @@ class _ExerciseVideoFieldState extends State<ExerciseVideoField> {
     } catch (error) {
       if (mounted) {
         setState(
-          () => _message = error is FormatException ? error.message : 'No se pudo completar. El vídeo anterior se conserva. Puedes descartar esta subida e intentarlo de nuevo.',
+          () => _message = error is FormatException
+              ? error.message
+              : 'No se pudo $step. El vídeo anterior y la reserva se conservan.',
         );
       }
     } finally {

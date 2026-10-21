@@ -21,7 +21,7 @@ AddType application/wasm .wasm
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   # HTTPS en imágenes/vídeos/conexiones conserva los proveedores de medios admitidos.
   # El JavaScript y CanvasKit se sirven desde este mismo alojamiento.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss://sxbxfjqgoddzhtcyhalw.supabase.co; media-src 'self' blob: https:; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' blob: https: wss://sxbxfjqgoddzhtcyhalw.supabase.co; media-src 'self' blob: https:; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
   <FilesMatch "^(index\.html|flutter_bootstrap\.js|flutter\.js|main\.dart\.js|version\.json|manifest\.json|build-info\.json|flutter_service_worker\.js)$">
     Header always set Cache-Control "no-store, max-age=0"
   </FilesMatch>

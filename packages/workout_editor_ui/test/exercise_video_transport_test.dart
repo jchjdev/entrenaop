@@ -9,6 +9,36 @@ import 'package:workout_editor_ui/exercise_video_transport.dart';
 
 void main() {
   test(
+    'fallo de red conserva etapa sin revelar mensaje ni destino privado',
+    () async {
+      final client = MockClient(
+        (_) async => throw http.ClientException(
+          'firma-privada https://private.invalid/?token=secret',
+        ),
+      );
+      await expectLater(
+        ExerciseVideoTransport(transport: client).upload(
+          const ExerciseVideoUpload(id: 'asset', headers: {}),
+          Uint8List(10),
+          'video/mp4',
+          (_) {},
+          maxBytes: 100,
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'mensaje seguro',
+            allOf(
+              contains('INICIO/CONEXION'),
+              isNot(contains('privada')),
+              isNot(contains('secret')),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+  test(
     'rechazo al iniciar explica el estado sin mostrar el cuerpo del proveedor',
     () async {
       var requests = 0;

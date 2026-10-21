@@ -30,6 +30,7 @@ class ExerciseVideoTransport {
     }
     checkIdentity?.call();
     final client = _transport ?? http.Client();
+    var step = 'INICIO';
     try {
       final endpoint = Uri.parse('https://video.bunnycdn.com/tusupload');
       final create = http.Request('POST', endpoint)..followRedirects = false;
@@ -64,6 +65,7 @@ class ExerciseVideoTransport {
       }
       var offset = 0;
       var failures = 0;
+      step = 'FRAGMENTO';
       while (offset < bytes.length) {
         checkIdentity?.call();
         final end = (offset + 512 * 1024).clamp(0, bytes.length);
@@ -113,6 +115,22 @@ class ExerciseVideoTransport {
           offset = recovered;
         }
       }
+    } catch (error) {
+      if (error is FormatException) rethrow;
+      checkIdentity?.call();
+      // Solo categorías cerradas. No mostrar mensajes de red con URLs o firmas.
+      final kind = error is http.ClientException
+          ? 'CONEXION'
+          : error is UnsupportedError
+          ? 'NO_COMPATIBLE'
+          : error is TypeError
+          ? 'TIPO'
+          : error is StateError
+          ? 'ESTADO'
+          : 'TRANSFERENCIA';
+      throw FormatException(
+        'No se pudo transferir el vídeo ($step/$kind). La reserva se conserva para continuar con el original.',
+      );
     } finally {
       if (_transport == null) client.close();
     }

@@ -1,5 +1,13 @@
 # Recuperación de demostraciones y técnica · 21/10/2026
 
+El cliente web `cross_file` 0.3.5+5 puede conocer el tamaño desde el selector y
+necesita después un XHR GET de su URL `blob:` para leer los bytes. Ambos portales
+omitían `blob:` en `connect-src`; se añade exclusivamente a esa directiva.
+`script-src` no admite blob ni unsafe-eval; destinos externos, MFA y permisos de
+medios se conservan. Una regresión de configuración comprueba los dos portales.
+El campo común identifica lectura/reserva/transferencia y el transporte usa solo
+categorías cerradas de error: nunca copia mensajes de red con firmas o URLs.
+
 La confirmación de creación RPC void/204 ya no se interpreta como JSON fallido.
 La subida usa título técnico y MIME en TUS; no transmite el nombre local del
 archivo. Los errores de inicio/fragmento y destino incompatible se muestran sin
