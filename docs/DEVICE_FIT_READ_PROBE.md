@@ -102,9 +102,15 @@ Resuelve con Dart 3.13.4 pese a su intervalo histórico de SDK; se verifican
 `pubspec.yaml`, lockfile y compilación Android real. Añade `csv` 5.1.1, `fixnum`
 1.1.1 y `logger` 1.4.0 al ensayo, sin actualizar las dependencias de las apps ni
 añadir paquetes al dominio. La compilación Android contiene el aviso de licencia
-de Stages Cycling en los `NOTICES` generados por Flutter. La compilación iOS tras
-esta dependencia se comprobará en el workflow aislado; no se acredita por la
-mera resolución de Pub ni por un build previo.
+de Stages Cycling en los `NOTICES` generados por Flutter. El
+[workflow aislado 39629315392](https://github.com/jchjdev/entrenaop/actions/runs/39629315392)
+del commit `0e38be8` figura `completed/success`. Android termina correctamente;
+el paso de compilación iOS Simulator y todos sus pasos, incluido `Complete job`,
+constan como correctos con el nuevo lockfile. En la comprobación del 21/10 el
+job iOS aún figura `in_progress`, incluso en REST sin caché: se registra esta
+discrepancia sin dar por cerrado ese estado global. Esto no acredita firma,
+lectura física ni archivos reales de fabricantes; tampoco integra el lector
+en la app principal.
 
 Se evaluaron alternativas antes de elegir: el port Dart `fit_sdk` 0.3.0 puede
 terminar la decodificación sin error ante una definición ausente, según su código.

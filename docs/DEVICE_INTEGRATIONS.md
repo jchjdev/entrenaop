@@ -272,7 +272,10 @@ no se convierten metadatos de fabricante en identidad autenticada ni una lectura
 en sesión completada. Huawei mantiene su propio expediente: no se presupone
 que exporte este mismo formato o que su carrera llegue a Salud/Health Connect.
 
-Pasan 43 pruebas del ensayo y compila Android tras la dependencia. La cobertura
+Pasan 43 pruebas del ensayo y CI confirma Android e iOS Simulator tras la
+dependencia para `0e38be8`. La ejecución `39629315392` figura correcta, aunque
+el job iOS sigue `in_progress` con todos sus pasos correctos; se conserva esa
+discrepancia sin acreditar el cierre global del job. La cobertura
 FIT es deliberadamente parcial y necesita archivos reales representativos;
 en concreto, timestamps comprimidos y campos developer se rechazan. Lectura
 física de Salud y conexión/credenciales de los proveedores siguen pendientes.
