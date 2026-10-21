@@ -9,6 +9,10 @@ import 'package:entrenaop/features/trainers/data/trainer_student_form_repository
 import 'package:entrenaop/features/trainers/presentation/pages/trainer_forms_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessments_page.dart';
 import 'package:entrenaop/features/trainers/data/trainer_assessment_repository.dart';
+import 'package:entrenaop/features/trainers/data/supabase_student_notice_repository.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/professional_hub_page.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/professional_technique_page.dart';
+import 'package:entrenaop/features/workouts/data/services/client_technique_repository.dart';
 
 import 'package:entrenaop/core/router/material_app_route.dart';
 import 'package:entrenaop/core/router/device_activities_route.dart';
@@ -269,6 +273,10 @@ class AppRouter {
                       child: HomePage(
                         favoritesRepository: sl(),
                         userId: auth.user.id,
+                        studentNotices: SupabaseStudentNoticeRepository(
+                          sl<SupabaseClient>(),
+                          auth.user.id,
+                        ),
                         guidedPrograms:
                             sl.isRegistered<GuidedProgramRepository>()
                             ? sl<GuidedProgramRepository>()
@@ -1017,6 +1025,58 @@ class AppRouter {
           builder: (context, state) => FasPeriodicCalculatorPage(
             birthDateRepository: sl(),
             repository: sl(),
+          ),
+        ),
+        materialAppRoute(
+          path: '/my-trainer',
+          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : ProfessionalHubPage(
+                    key: ValueKey('professional-hub-${auth.user.id}'),
+                    userId: auth.user.id,
+                    repository: SupabaseStudentNoticeRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
+          ),
+        ),
+        materialAppRoute(
+          path: '/my-trainer/technique',
+          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : ProfessionalTechniqueIndexPage(
+                    key: ValueKey('professional-technique-${auth.user.id}'),
+                    userId: auth.user.id,
+                    repository: SupabaseStudentNoticeRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
+          ),
+        ),
+        _workflowRoute(
+          path: '/my-trainer/technique/:executionId',
+          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : ProfessionalTechniquePage(
+                    key: ValueKey(
+                      'professional-technique-${auth.user.id}-${state.pathParameters['executionId']}',
+                    ),
+                    userId: auth.user.id,
+                    executionId: state.pathParameters['executionId']!,
+                    workouts: sl<WorkoutRepository>(),
+                    technique: SupabaseClientTechniqueRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
           ),
         ),
         materialAppRoute(

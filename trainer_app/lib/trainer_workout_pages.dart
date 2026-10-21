@@ -7,6 +7,7 @@ import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
+import 'package:workout_editor_ui/workout_editor_work.dart';
 
 import 'trainer_workout_repository.dart';
 import 'trainer_program_repository.dart';
@@ -17,9 +18,11 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.accessRepository,
+    this.workRepository,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
+  final WorkoutEditorWorkRepository? workRepository;
   @override
   State<TrainerWorkoutLibraryPage> createState() =>
       _TrainerWorkoutLibraryPageState();
@@ -27,8 +30,12 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
 
 class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
   List<TrainerWorkout> _items = [];
+  List<WorkoutEditorWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
   String? _error;
+  String? _workError, _discardError;
+  bool _discardBusy = false;
+  WorkoutEditorWork? _discardAttempt;
   @override
   void initState() {
     super.initState();
@@ -54,7 +61,83 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
     } catch (e) {
       if (mounted) setState(() => _error = trainerError(e));
     } finally {
+      // La recuperación propia sigue disponible aunque falle el catálogo o
+      // se haya deshabilitado el acceso profesional a nuevas escrituras.
+      if (!more && widget.workRepository != null) {
+        try {
+          final works = await widget.workRepository!.list();
+          if (mounted) {
+            setState(() {
+              _works = works;
+              _workError = null;
+            });
+          }
+        } catch (error) {
+          if (mounted) setState(() => _workError = trainerError(error));
+        }
+      }
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _discard(WorkoutEditorWork work, {bool retry = false}) async {
+    final repository = widget.workRepository;
+    if (_busy || _discardBusy || !_canCreate || repository == null) return;
+    if (!retry) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Descartar trabajo incompleto'),
+          content: Text(
+            'Se descartará «${work.name}». Las sesiones guardadas se conservan.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Conservar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Descartar trabajo'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted ||
+          confirmed != true ||
+          repository != widget.workRepository) {
+        return;
+      }
+    }
+    final request = retry ? _discardAttempt : work;
+    if (request == null) return;
+    setState(() {
+      _discardBusy = true;
+      _discardAttempt = request;
+      _discardError = null;
+    });
+    try {
+      await repository.discard(request);
+      if (!mounted || repository != widget.workRepository) return;
+      setState(() {
+        _discardAttempt = null;
+        _works = _works.where((item) => item.id != request.id).toList();
+      });
+    } catch (error) {
+      if (!mounted || repository != widget.workRepository) return;
+      setState(() {
+        if (error is WorkoutWorkConflict) {
+          _discardAttempt = null;
+          _discardError = 'El trabajo ha cambiado. Actualiza y revísalo antes de descartarlo.';
+        } else {
+          _discardError =
+              'No se ha confirmado el descarte. Reintenta la misma petición. ${trainerError(error)}';
+        }
+      });
+    } finally {
+      if (mounted && repository == widget.workRepository) {
+        setState(() => _discardBusy = false);
+      }
     }
   }
 
@@ -69,7 +152,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
       title: const Text('Mis sesiones privadas'),
       actions: [
         IconButton(
-          onPressed: _busy ? null : _load,
+          onPressed: _busy || _discardBusy ? null : _load,
           icon: const Icon(Icons.refresh),
           tooltip: 'Actualizar',
         ),
@@ -80,8 +163,62 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
       ),
       const SizedBox(height: 16),
+      if (widget.workRepository != null) ...[
+        Text(
+          'Trabajos incompletos',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const Text(
+          'Retoma tus sesiones aunque tengan campos pendientes. Un envío sin confirmar conserva su receta hasta resolverlo.',
+        ),
+        if (_workError != null) Text('No se pudieron cargar: $_workError'),
+        if (_discardError != null) Text(_discardError!),
+        if (_discardAttempt != null && !_discardBusy)
+          TextButton(
+            onPressed: !_canCreate
+                ? null
+                : () => _discard(_discardAttempt!, retry: true),
+            child: const Text('Reintentar mismo descarte'),
+          ),
+        if (_discardBusy) const LinearProgressIndicator(),
+        if (!_busy && _workError == null && _works.isEmpty)
+          const Text('No tienes trabajos incompletos guardados.'),
+        for (final work in _works)
+          Card(
+            child: ListTile(
+              title: Text(work.name),
+              subtitle: Text(
+                work.state['intent'] != null
+                    ? 'Guardado pendiente de confirmar'
+                    : 'Trabajo guardado · revisión ${work.revision}',
+              ),
+              onTap: _busy || _discardBusy
+                  ? null
+                  : () async {
+                      await context.push(
+                        '/workouts/work/${Uri.encodeComponent(work.id)}',
+                      );
+                      if (mounted) await _load();
+                    },
+              trailing: work.state['intent'] != null
+                  ? null
+                  : IconButton(
+                      onPressed:
+                          _busy ||
+                              _discardBusy ||
+                              !_canCreate ||
+                              _discardAttempt != null
+                          ? null
+                          : () => _discard(work),
+                      tooltip: 'Descartar trabajo ${work.name}',
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+            ),
+          ),
+        const SizedBox(height: 24),
+      ],
       FilledButton.icon(
-        onPressed: _busy || !_canCreate ? null : _create,
+        onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
         icon: const Icon(Icons.add),
         label: const Text('Crear sesión privada'),
       ),

@@ -21,6 +21,7 @@ class ExerciseVideoField extends StatefulWidget {
     this.maxVideoBytes = 20 * 1024 * 1024,
     this.maxVideoDurationSeconds = 10,
     this.allowExternalLinks = true,
+    this.onPickExisting,
   });
   final TextEditingController controller;
   final ExerciseVideoSource repository;
@@ -35,6 +36,9 @@ class ExerciseVideoField extends StatefulWidget {
 
   /// Cada consumidor decide si ofrece edición de enlaces externos o solo subida.
   final bool allowExternalLinks;
+
+  /// El consumidor consulta su biblioteca autorizada; el campo no conoce roles.
+  final Future<String?> Function(BuildContext context)? onPickExisting;
 
   @override
   State<ExerciseVideoField> createState() => _ExerciseVideoFieldState();
@@ -107,6 +111,37 @@ class _ExerciseVideoFieldState extends State<ExerciseVideoField> {
         setState(
           () => _message = error is FormatException ? error.message : 'No se pudo completar. El vídeo anterior se conserva. Puedes descartar esta subida e intentarlo de nuevo.',
         );
+      }
+    } finally {
+      if (mounted) _setBusy(false);
+    }
+  }
+
+  Future<void> _pickExisting() async {
+    final pick = widget.onPickExisting;
+    if (pick == null || _busy || _pending != null) return;
+    _setBusy(true);
+    try {
+      final url = await pick(context);
+      if (!mounted || url == null) return;
+      final error = ExerciseDraftValidator.videoUrlError(url);
+      if (error != null || url.trim().isEmpty) {
+        throw FormatException(error ?? 'El vídeo seleccionado no es válido.');
+      }
+      await _preview?.dispose();
+      if (!mounted) return;
+      setState(() {
+        _preview = null;
+        widget.controller.text = url.trim();
+        _message = 'Vídeo seleccionado. Guarda el ejercicio para aplicarlo.';
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _message = error is FormatException
+              ? error.message
+              : 'No se pudo elegir el vídeo. Se conserva el anterior.';
+        });
       }
     } finally {
       if (mounted) _setBusy(false);
@@ -298,6 +333,14 @@ class _ExerciseVideoFieldState extends State<ExerciseVideoField> {
           widget.controller.text.isEmpty ? 'Subir vídeo' : 'Sustituir vídeo',
         ),
       ),
+      if (widget.onPickExisting != null) ...[
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _busy || _pending != null ? null : _pickExisting,
+          icon: const Icon(Icons.video_library_outlined),
+          label: const Text('Elegir vídeo de mi biblioteca'),
+        ),
+      ],
       if (_busy)
         LinearProgressIndicator(
           value: _progress != null && _progress! < 1 ? _progress : null,

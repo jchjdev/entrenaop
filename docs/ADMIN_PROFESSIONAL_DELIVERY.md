@@ -4,7 +4,7 @@
 > más abajo es el diseño previo, conservado como contexto. Su implementación,
 > contrato definitivo, validación y límites se describen en
 > [Sesiones incompletas y pendientes](ADMIN_SESSION_RECOVERY_2026_10_21.md).
-> Allí `phaseId` y `pendingSessionWorks` ya están implementados de forma opcional;
+> Allí `phaseId` y `sessionWorks` ya están implementados de forma opcional;
 > la integración profesional corresponde a Trainer. Las frases de «solo diseño»
 > de este documento se refieren a aquel tramo anterior.
 

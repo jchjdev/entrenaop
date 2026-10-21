@@ -1,3 +1,5 @@
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -15,6 +17,8 @@ import 'trainer_security_page.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_workout_result.dart';
 import 'trainer_workout_repository.dart';
+import 'trainer_workout_work_repository.dart';
+import 'trainer_session_work_editor.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_program_pages.dart';
 import 'trainer_program_work_repository.dart';
@@ -136,10 +140,16 @@ class _TrainerAppState extends State<TrainerApp> {
       widget.client,
       identity!,
     );
+    late final sessionWorkRepository = SupabaseTrainerWorkoutWorkRepository(
+      widget.client,
+      identity!,
+    );
     SupabaseTrainerWorkoutRepository workouts() => workoutRepository;
     SupabaseTrainerProgramRepository programs() => programRepository;
     SupabaseTrainerProgramWorkRepository programWorks() =>
         programWorkRepository;
+    SupabaseTrainerWorkoutWorkRepository sessionWorks() =>
+        sessionWorkRepository;
     SupabaseTrainerRepository access() =>
         SupabaseTrainerRepository(widget.client, userId: identity!);
     SupabaseTrainerOperationsRepository operations() =>
@@ -167,6 +177,7 @@ class _TrainerAppState extends State<TrainerApp> {
           context,
           SupabaseTrainerExerciseRepository(widget.client, identity!),
           videoSource: videos,
+          mediaRepository: media(),
         );
     Widget guarded(GoRouterState state, Widget child) => WorkflowExitScope(
       controller: exits.controller(state.pageKey),
@@ -289,7 +300,18 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/media',
-              builder: (_, _) => TrainerMediaPage(repository: media()),
+              builder: (context, _) => TrainerMediaPage(
+                repository: media(),
+                onCreateExercise: (url) async {
+                  await showTrainerExerciseEditor(
+                    context,
+                    SupabaseTrainerExerciseRepository(widget.client, identity!),
+                    videoSource: videos,
+                    mediaRepository: media(),
+                    initialVideoUrl: url,
+                  );
+                },
+              ),
             ),
             GoRoute(
               path: '/assignments/:id/technique',
@@ -428,6 +450,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 access: access(),
                 videoSource: videos,
+                mediaRepository: media(),
               ),
             ),
             GoRoute(
@@ -521,17 +544,35 @@ class _TrainerAppState extends State<TrainerApp> {
               builder: (_, _) => TrainerWorkoutLibraryPage(
                 repository: workouts(),
                 accessRepository: access(),
+                workRepository: sessionWorks(),
               ),
               routes: [
                 GoRoute(
                   path: 'new',
+                  redirect: (_, _) => '/workouts/work/${newGuidedWorkId()}',
+                ),
+                GoRoute(
+                  path: 'work/:workId',
                   onExit: (_, state) => exits.requestExit(state.pageKey),
-                  builder: (_, state) => guarded(
+                  builder: (context, state) => guarded(
                     state,
-                    TrainerWorkoutEditorPage(
-                      repository: workouts(),
+                    TrainerSessionWorkEditor(
+                      key: ValueKey(
+                        'session-work-$identity-${state.pathParameters['workId']}',
+                      ),
+                      workId: state.pathParameters['workId']!,
+                      repository: sessionWorks(),
+                      workouts: workouts(),
+                      initialOrigin: trainerSessionWorkOrigin(
+                        baseId: state.uri.queryParameters['base'],
+                      ),
                       onCreateExercise: createExercise,
                       exercisePreferences: exercisePreferences,
+                      onSaved: (id) async {
+                        context.canPop()
+                            ? context.pop(id)
+                            : context.go('/workouts/$id');
+                      },
                     ),
                   ),
                 ),
@@ -544,16 +585,10 @@ class _TrainerAppState extends State<TrainerApp> {
                   routes: [
                     GoRoute(
                       path: 'revise',
-                      onExit: (_, state) => exits.requestExit(state.pageKey),
-                      builder: (_, state) => guarded(
-                        state,
-                        TrainerWorkoutEditorPage(
-                          repository: workouts(),
-                          onCreateExercise: createExercise,
-                          exercisePreferences: exercisePreferences,
-                          templateId: state.pathParameters['id']!,
-                        ),
-                      ),
+                      redirect: (_, state) => Uri(
+                        path: '/workouts/work/${newGuidedWorkId()}',
+                        queryParameters: {'base': state.pathParameters['id']!},
+                      ).toString(),
                     ),
                   ],
                 ),
@@ -593,6 +628,9 @@ class _TrainerAppState extends State<TrainerApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
+    locale: const Locale('es', 'ES'),
+    supportedLocales: const [Locale('es', 'ES')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     key: ValueKey(_identity),
     title: 'EntrenaOP · Preparadores',
     debugShowCheckedModeBanner: false,

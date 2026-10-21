@@ -75,7 +75,126 @@ class MediaFixture extends TrainerMediaRepository {
 
 class _Source extends Fake implements ExerciseVideoSource {}
 
+const readyUrl = 'https://fixture.b-cdn.net/library/play_720p.mp4';
+TrainerMediaRow readyMedia({String url = readyUrl}) => {
+  'id': 'ready-demo',
+  'scope': 'trainer_exercise',
+  'status': 'ready',
+  'source_bytes': 1024,
+  'reserved_bytes': 100 * 1024 * 1024,
+  'created_at': '2026-10-21T11:00:00Z',
+  'playback_url': url,
+};
+
+class PickerMediaFixture extends MediaFixture {
+  int reservations = 0;
+  @override
+  ExerciseVideoSource source({TrainerMediaRow? resume}) => _PickerSource(this);
+}
+
+class _PickerSource extends Fake implements ExerciseVideoSource {
+  _PickerSource(this.fixture);
+  final PickerMediaFixture fixture;
+  @override
+  Future<ExerciseVideoUpload> create(int bytes) async {
+    fixture.reservations++;
+    return const ExerciseVideoUpload(id: 'unexpected', headers: {});
+  }
+}
+
 void main() {
+  testWidgets(
+    'selector reutiliza medios, ofrece solo listos válidos y no reserva',
+    (tester) async {
+      final fixture = PickerMediaFixture()
+        ..media.addAll([
+          readyMedia(),
+          readyMedia(url: 'http://invalid.example/video.mp4'),
+        ]);
+      String? selected;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () async {
+                  selected = await showTrainerMediaPicker(context, fixture);
+                },
+                child: const Text('Elegir'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Elegir'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TrainerMediaPage), findsOneWidget);
+      expect(find.text('Usar este vídeo'), findsOneWidget);
+      expect(find.text('Subir demostración'), findsNothing);
+      expect(find.text('Comprobar estado'), findsNothing);
+      await tester.tap(find.text('Usar este vídeo'));
+      await tester.pumpAndSettle();
+      expect(selected, readyUrl);
+      expect(fixture.reservations, 0);
+      expect(find.byType(TrainerMediaPage), findsNothing);
+    },
+  );
+
+  testWidgets('cancelar selector devuelve null y no reserva', (tester) async {
+    final fixture = PickerMediaFixture()..media.add(readyMedia());
+    String? selected = 'anterior';
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async {
+                selected = await showTrainerMediaPicker(context, fixture);
+              },
+              child: const Text('Elegir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Elegir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Cancelar selección'));
+    await tester.pumpAndSettle();
+    expect(selected, isNull);
+    expect(fixture.reservations, 0);
+  });
+
+  testWidgets(
+    'banco explica asignación y permite preparar ejercicio con vídeo existente',
+    (tester) async {
+      final fixture = PickerMediaFixture()..media.add(readyMedia());
+      final chosen = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TrainerMediaPage(
+            repository: fixture,
+            onCreateExercise: (url) async {
+              chosen.add(url);
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('sesión asignada'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Crear ejercicio con este vídeo'),
+        250,
+      );
+      await tester.ensureVisible(find.text('Crear ejercicio con este vídeo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear ejercicio con este vídeo'));
+      await tester.pumpAndSettle();
+      expect(chosen, [readyUrl]);
+      expect(fixture.reservations, 0);
+    },
+  );
+
   for (final expired in [true, false]) {
     testWidgets(
       'consulta histórica o cuota agotada no ofrece otra respuesta: inactivo=$expired',

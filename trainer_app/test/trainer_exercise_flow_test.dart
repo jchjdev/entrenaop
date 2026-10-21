@@ -8,6 +8,8 @@ import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
+import 'trainer_media_pages_test.dart'
+    show PickerMediaFixture, readyMedia, readyUrl;
 
 class ExerciseFixture extends TrainerExerciseRepository {
   bool fail = false;
@@ -72,6 +74,60 @@ Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
 }
 
 void main() {
+  testWidgets(
+    'creador común vincula vídeo listo seleccionado sin subir ni guardar antes de confirmar',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final exercises = ExerciseFixture();
+      final media = PickerMediaFixture()..media.add(readyMedia());
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: TrainerExercisePage(
+            repository: exercises,
+            access: FakeTrainerRepository(),
+            mediaRepository: media,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear ejercicio privado'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('trainer-exercise-name')),
+        'Vídeo propio reutilizado',
+      );
+      await tester.ensureVisible(find.text('Elegir vídeo de mi biblioteca'));
+      await tester.tap(find.text('Elegir vídeo de mi biblioteca'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Usar este vídeo'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ExerciseForm), findsOneWidget);
+      expect(exercises.saves, isEmpty);
+      expect(media.reservations, 0);
+      final video = tester.widget<TextFormField>(
+        find.widgetWithText(TextFormField, 'Vídeo externo'),
+      );
+      expect(video.controller!.text, readyUrl);
+      await tester.enterText(
+        find.byKey(const ValueKey('trainer-exercise-muscles')),
+        'espalda',
+      );
+      await tester.ensureVisible(find.text('Crear ejercicio'));
+      await tester.tap(find.text('Crear ejercicio'));
+      await tester.pumpAndSettle();
+      expect(exercises.saves.single.submission.draft.videoUrl, readyUrl);
+      expect(
+        exercises.saves.single.submission.draft.name,
+        'Vídeo propio reutilizado',
+      );
+      expect(media.reservations, 0);
+    },
+  );
+
   testWidgets('el catálogo muestra versiones vigentes y permite buscarlas', (
     tester,
   ) async {

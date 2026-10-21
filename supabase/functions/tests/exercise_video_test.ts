@@ -19,7 +19,7 @@ function request(body: Record<string, unknown>, token = "Bearer fixture-user") {
 function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
   provider?: Record<string, unknown>; auth?: boolean; asset?: boolean;
   scope?: string; manage?: boolean; creationState?: string; searchItems?: unknown[];
-  searchTotal?: number; providerTimeout?: boolean } = {}) {
+  searchTotal?: number; providerTimeout?: boolean; voidResponse?: boolean } = {}) {
   const writes: Record<string, unknown>[] = [];
   const calls: string[] = [];
   const asset: Record<string, unknown> = {
@@ -50,7 +50,7 @@ function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
     if (path.endsWith("/rpc/claim_exercise_video_creation")) return Response.json({ state: options.creationState ?? "claimed", video_id: video });
     if (path.endsWith("/rpc/complete_exercise_video_creation")) {
       asset.provider_video_id = video; asset.creation_state = "created";
-      writes.push({ playback_url: url }); return Response.json(null);
+      writes.push({ playback_url: url }); return options.voidResponse ? new Response(null, { status: 204 }) : Response.json(null);
     }
     if (path.endsWith("/rpc/mark_exercise_video_creation_uncertain")) { asset.creation_state = "uncertain"; return Response.json(null); }
     if (path.includes("/exercise_video_assets?") && init?.method === "GET") return Response.json(options.asset === false ? [] : [asset]);
@@ -248,6 +248,17 @@ test("activo ya creado renueva el mismo vídeo sin otra creación", async () => 
   assert.equal(f.calls.some((s) => s.startsWith("https://video.bunnycdn.com")), false);
 });
 
+test("confirmación void 204 entrega credenciales tras crear sin inventar incertidumbre", async () => {
+  const f = fixture({ manage: true, scope: "trainer_exercise", voidResponse: true });
+  const response = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
+  const data = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(data.id, id); assert.equal(data.video_id, video);
+  assert.match(data.signature, /^[a-f0-9]{64}$/);
+  assert.equal(f.asset.creation_state, "created");
+  assert.equal(f.calls.some((path) => path.endsWith("/rpc/mark_exercise_video_creation_uncertain")), false);
+});
+
 test("recuperar un activo listo nunca vuelve a emitir autorización de subida", async () => {
   const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "created" });
   const response = await handleExerciseVideo(request({ action: "recover", id }), config, f.fetcher);
@@ -306,4 +317,20 @@ test("un enlace externo se identifica sin exigir configuración de Bunny ni firm
   assert.equal(response.status, 404);
   assert.equal((await response.json()).error, "video_not_managed");
   assert.equal(f.calls.some((s) => s.includes("bunnycdn")), false);
+});
+
+test("estados terminales y espera de resolución conservan el scope privado", async () => {
+  for (const scope of ["trainer_exercise", "client_technique"]) {
+    for (const status of ["failed", "rejected"]) {
+      const f = fixture({ manage: true, scope });
+      f.asset.status = status;
+      const response = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+      assert.deepEqual(await response.json(), { status, scope });
+      assert.equal(f.calls.some((path) => path.startsWith("https://video.bunnycdn.com")), false);
+    }
+    const f = fixture({ manage: true, scope, ready: false, provider: { availableResolutions: "1080p" } });
+    const response = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+    assert.deepEqual(await response.json(), { status: "processing", scope });
+    assert.equal(f.writes.length, 0);
+  }
 });

@@ -1,5 +1,22 @@
 # Arquitectura de EntrenaOP
 
+## Continuidad profesional y avisos · TRN-022 · 21/10/2026
+
+Trainer conecta el mismo binding de recuperación de ADMIN mediante sus propias
+RPC con MFA, propietario esperado, CAS y recibos. El editor proyecta la receta
+una sola vez; SQL valida esa intención con el motor profesional existente y
+conserva el estado crudo para recuperar, sin afirmar equivalencia semántica entre
+ambos. No conecta todavía trabajos hijos ni adapta pautas con este contrato.
+
+La app del deportista consume `StudentNoticeRepository` mediante un adaptador
+por identidad. Triggers del recurso generan avisos mínimos en la misma
+transacción; la resolución vuelve a comprobar propiedad y vigencia. No se copian
+mensajes, respuestas ni métricas al aviso. Inicio y rutas reutilizan agenda,
+formularios, conversación y técnica; no crean otro ejecutor o historial. El
+selector de vídeos es un callback del campo común: consulta la biblioteca
+autorizada de cada consumidor sin importar un portal desde otro.
+[Contratos](TRAINER_STUDENT_RECOVERY_2026_10_21.md).
+
 ## Recuperación opcional de sesiones · ADM-008 · 21/10/2026
 
 `WorkoutEditorWorkBinding` conecta el creador común a persistencia por consumidor.

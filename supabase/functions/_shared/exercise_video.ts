@@ -54,12 +54,19 @@ async function db(c: VideoConfig, f: Fetcher, path: string, body?: unknown, toke
   });
   if (!response.ok) {
     const failure = await response.json().catch(() => ({}));
+    // Diagnóstico acotado: nunca registrar JWT, claves, cuerpos ni datos del alumno.
+    console.warn(JSON.stringify({ event: "exercise_video_database_failure", http_status: response.status,
+      sql_state: typeof failure.code === "string" && /^[A-Z0-9]{5}$/.test(failure.code) ? failure.code : "unknown" }));
     if (failure.code === "54000") throw new VideoError(429, "upload_limit");
     if (failure.code === "42501") throw new VideoError(403, "forbidden");
     if (failure.code === "22023") throw new VideoError(400, "invalid_request");
     throw new VideoError(response.status === 403 ? 403 : 503, "video_database_error");
   }
-  return await response.json();
+  // Las RPC que devuelven void responden 204 sin JSON. La escritura ya puede
+  // estar confirmada: intentar parsearla como JSON inventaba un fallo incierto.
+  if (response.status === 204) return null;
+  const text = await response.text();
+  return text.length === 0 ? null : JSON.parse(text);
 }
 async function provider(c: VideoConfig, f: Fetcher, suffix: string, body?: unknown) {
   const response = await call(f, `https://video.bunnycdn.com/library/${c.libraryId}/videos${suffix}`, {
@@ -67,7 +74,10 @@ async function provider(c: VideoConfig, f: Fetcher, suffix: string, body?: unkno
     headers: { AccessKey: c.apiKey, "Content-Type": "application/json", Accept: "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!response.ok) throw new VideoError(502, "video_provider_error");
+  if (!response.ok) {
+    console.warn(JSON.stringify({ event: "exercise_video_provider_failure", http_status: response.status }));
+    throw new VideoError(502, "video_provider_error");
+  }
   return object(await response.json());
 }
 async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
@@ -215,7 +225,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
       throw new VideoError(409, "video_environment_mismatch");
     }
     if (asset.status === "ready") return json({ status: "ready", url: asset.playback_url, scope: asset.scope, playback_limit: asset.playback_limit, duration_limit: asset.duration_limit });
-    if (["failed", "rejected"].includes(String(asset.status))) return json({ status: asset.status });
+    if (["failed", "rejected"].includes(String(asset.status))) return json({ status: asset.status, scope: asset.scope });
     const video = await provider(c, f, `/${asset.provider_video_id}`);
     if (video.guid !== asset.provider_video_id || String(video.videoLibraryId) !== c.libraryId) {
       throw new VideoError(502, "invalid_response");
@@ -234,7 +244,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         status = "rejected"; duration = null;
       } else if (video.hasMP4Fallback === true) {
         const resolution = ["720p", "480p", "360p"].find((r) => String(video.availableResolutions).split(",").includes(r));
-        if (!resolution) return json({ status: "processing" });
+        if (!resolution) return json({ status: "processing", scope: asset.scope });
         asset.playback_url = `https://${c.cdnHost}/${asset.provider_video_id}/play_${resolution}.mp4`;
         const signed = await signPlayback(String(asset.playback_url), c.tokenKey, expires);
         const mp4 = await call(f, signed, { method: "HEAD" });
@@ -255,6 +265,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     return json({ status: settled.status, scope: settled.scope, playback_limit: settled.playback_limit,
       duration_limit: settled.duration_limit, ...(settled.status === "ready" ? { url: settled.playback_url } : {}) });
   } catch (error) {
+    console.warn(JSON.stringify({ event: "exercise_video_failure", code: error instanceof VideoError ? error.code : "video_unavailable" }));
     return error instanceof VideoError ? json({ error: error.code, ...error.details }, error.status) : json({ error: "video_unavailable" }, 503);
   }
 }

@@ -18,6 +18,52 @@ class _Source extends Fake implements ExerciseVideoSource {
 }
 
 void main() {
+  for (final selected in <String?>[
+    null,
+    'http://invalid.example/video.mp4',
+    'https://private.example/ready.mp4',
+  ]) {
+    testWidgets(
+      'elegir vídeo existente conserva anterior al cancelar o fallar: $selected',
+      (tester) async {
+        final source = _Source();
+        final controller = TextEditingController(
+          text: 'https://external.example/previous.mp4',
+        );
+        addTearDown(controller.dispose);
+        final busy = <bool>[];
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ExerciseVideoField(
+                controller: controller,
+                repository: source,
+                onBusyChanged: busy.add,
+                onPickExisting: (_) async => selected,
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Elegir vídeo de mi biblioteca'));
+        await tester.pumpAndSettle();
+        expect(
+          controller.text,
+          selected?.startsWith('https://') == true
+              ? selected
+              : 'https://external.example/previous.mp4',
+        );
+        expect(source.creates, 0);
+        expect(busy.last, isFalse);
+        if (selected?.startsWith('http://') == true) {
+          expect(
+            find.text('Introduce una dirección HTTPS válida.'),
+            findsOneWidget,
+          );
+        }
+      },
+    );
+  }
+
   testWidgets(
     'un consumidor sin ADMIN conserva enlace externo y subida a la vez',
     (tester) async {

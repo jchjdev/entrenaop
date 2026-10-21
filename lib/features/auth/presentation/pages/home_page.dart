@@ -23,6 +23,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/guided_programs/domain/guided_program_repository.dart';
 import 'package:entrenaop/features/guided_programs/presentation/home_guided_programs.dart';
+import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
+import 'package:entrenaop/features/trainers/presentation/widgets/home_professional_hub.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -30,11 +32,13 @@ class HomePage extends StatefulWidget {
     required this.favoritesRepository,
     required this.userId,
     this.guidedPrograms,
+    this.studentNotices,
   });
 
   final HomeFavoritesRepository favoritesRepository;
   final String userId;
   final GuidedProgramRepository? guidedPrograms;
+  final StudentNoticeRepository? studentNotices;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -97,6 +101,7 @@ class _HomePageState extends State<HomePage> {
             favoritesRepository: widget.favoritesRepository,
             userId: widget.userId,
             guidedPrograms: widget.guidedPrograms,
+            studentNotices: widget.studentNotices,
             guidedRefreshVersion: _guidedRefreshVersion,
             onRefresh: _refresh,
           );
@@ -113,6 +118,7 @@ class _DashboardContent extends StatefulWidget {
     required this.favoritesRepository,
     required this.userId,
     required this.guidedPrograms,
+    required this.studentNotices,
     required this.guidedRefreshVersion,
     required this.onRefresh,
   });
@@ -121,6 +127,7 @@ class _DashboardContent extends StatefulWidget {
   final HomeFavoritesRepository favoritesRepository;
   final String userId;
   final GuidedProgramRepository? guidedPrograms;
+  final StudentNoticeRepository? studentNotices;
   final int guidedRefreshVersion;
   final Future<void> Function() onRefresh;
 
@@ -210,6 +217,14 @@ class _DashboardContentState extends State<_DashboardContent> {
                     onOpen: _open,
                   ),
                   const SizedBox(height: 24),
+                  if (widget.studentNotices case final repository?)
+                    HomeProfessionalHub(
+                      key: ValueKey('professional-${widget.userId}'),
+                      repository: repository,
+                      userId: widget.userId,
+                      refreshVersion: widget.guidedRefreshVersion,
+                      onOpen: _open,
+                    ),
                   _PreparationsSection(overview: overview, onOpen: _open),
                   const SizedBox(height: 24),
                   if (widget.guidedPrograms case final repository?)

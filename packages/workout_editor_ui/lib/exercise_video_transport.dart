@@ -36,7 +36,10 @@ class ExerciseVideoTransport {
       create.headers.addAll({
         ...upload.headers,
         'Upload-Length': '${bytes.length}',
-        'Upload-Metadata': 'filetype ${base64Encode(utf8.encode(contentType))}',
+        // Bunny exige también título. Se conserva el identificador técnico;
+        // no enviamos el nombre local del archivo ni datos del alumno.
+        'Upload-Metadata':
+            'filetype ${base64Encode(utf8.encode(contentType))},title ${base64Encode(utf8.encode('EntrenaOP ${upload.id}'))}',
       });
       final created = await client
           .send(create)

@@ -10,6 +10,8 @@ import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_exercise_repository.dart';
 import 'trainer_workout_repository.dart';
+import 'trainer_media_page.dart';
+import 'trainer_media_repository.dart';
 
 /// El creador común recibe únicamente un ejercicio privado ya confirmado.
 Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
@@ -17,6 +19,8 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
   TrainerExerciseRepository repository, {
   TrainerExercise? previous,
   ExerciseVideoSource? videoSource,
+  TrainerMediaRepository? mediaRepository,
+  String? initialVideoUrl,
 }) async {
   WorkoutEditorExercise? saved;
   await showDialog<ExerciseFormSubmission<ExerciseDraft>>(
@@ -26,6 +30,8 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
       repository: repository,
       previous: previous,
       videoSource: videoSource,
+      mediaRepository: mediaRepository,
+      initialVideoUrl: initialVideoUrl,
       onSaved: (id, draft) {
         saved = WorkoutEditorExercise(
           id: id,
@@ -45,10 +51,12 @@ class TrainerExercisePage extends StatefulWidget {
     required this.repository,
     required this.access,
     this.videoSource,
+    this.mediaRepository,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
   final ExerciseVideoSource? videoSource;
+  final TrainerMediaRepository? mediaRepository;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -95,6 +103,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
       widget.repository,
       previous: previous,
       videoSource: widget.videoSource,
+      mediaRepository: widget.mediaRepository,
     );
     if (mounted) await _load();
   }
@@ -189,11 +198,15 @@ class _ExerciseDialog extends StatefulWidget {
     required this.onSaved,
     this.previous,
     this.videoSource,
+    this.mediaRepository,
+    this.initialVideoUrl,
   });
   final TrainerExerciseRepository repository;
   final void Function(String, ExerciseDraft) onSaved;
   final TrainerExercise? previous;
   final ExerciseVideoSource? videoSource;
+  final TrainerMediaRepository? mediaRepository;
+  final String? initialVideoUrl;
   @override
   State<_ExerciseDialog> createState() => _ExerciseDialogState();
 }
@@ -246,21 +259,43 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         title: widget.previous == null
                             ? 'Nuevo ejercicio privado'
                             : 'Revisar ejercicio privado',
-                        supportingText: 'Se guarda en tu biblioteca. Las sesiones ya creadas conservan su versión del ejercicio.',
+                        supportingText: 'Se guarda en tu biblioteca. Para que lo vea un alumno, utiliza el ejercicio en una sesión asignada. Las sesiones ya creadas conservan su versión.',
                         submitLabel: widget.previous == null
                             ? 'Crear ejercicio'
                             : 'Guardar nueva versión',
-                        initialDraft: widget.previous?.draft,
+                        initialDraft:
+                            widget.previous?.draft ??
+                            (widget.initialVideoUrl == null
+                                ? null
+                                : ExerciseDraft(
+                                    name: '',
+                                    muscleGroups: const [],
+                                    equipment: const [],
+                                    difficulty: 'inicial',
+                                    exerciseType: 'repeticiones',
+                                    videoUrl: widget.initialVideoUrl,
+                                  )),
                         initialImageUrl: widget.previous?.imageUrl,
                         fieldKeyPrefix: 'trainer-exercise',
                         onDirtyChanged: markDirty,
                         onSubmit: submit,
-                        videoFieldBuilder: widget.videoSource == null
+                        videoFieldBuilder:
+                            widget.videoSource == null &&
+                                widget.mediaRepository == null
                             ? null
                             : (controller, onBusyChanged, applyCover) =>
                                   ExerciseVideoField(
                                     controller: controller,
-                                    repository: widget.videoSource!,
+                                    repository:
+                                        widget.videoSource ??
+                                        widget.mediaRepository!.source(),
+                                    onPickExisting:
+                                        widget.mediaRepository == null
+                                        ? null
+                                        : (context) => showTrainerMediaPicker(
+                                            context,
+                                            widget.mediaRepository!,
+                                          ),
                                     onBusyChanged: onBusyChanged,
                                     onCoverReady: applyCover,
                                     maxVideoBytes: 100 * 1024 * 1024,

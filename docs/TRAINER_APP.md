@@ -1,5 +1,17 @@
 # Espacio de entrenadores
 
+## Actualización · 21/10/2026 · TRN-022
+
+El estado vigente incluye sesiones, programas y ejercicios privados asignables,
+agenda, seguimiento y recuperación de programas. Se añade recuperación privada
+de sesiones de biblioteca/nuevas versiones, selección de demostraciones guardadas
+y acceso del alumno desde Inicio a sus recursos y avisos. Reutiliza los creadores
+comunes de ADMIN mediante adaptadores independientes. Contratos aplicados solo
+en Dev; hijos de programa/adaptación, push y cobros reales siguen pendientes.
+[Evidencia y límites de esta entrega](TRAINER_STUDENT_RECOVERY_2026_10_21.md).
+Las secciones siguientes conservan instantáneas de los primeros tramos; sus
+afirmaciones de funciones pendientes se entienden en la fecha y alcance indicados.
+
 ## Estado · 21/10/2026 · TRN-010/011
 
 El primer bloque de acceso y clientes tiene interfaces y contrato verificados:

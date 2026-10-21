@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**TRN-022 · 21/10/2026 · continuidad y seguimiento visible:** Trainer permite
+retomar sesiones incompletas y nuevas versiones de biblioteca con el editor
+compartido. El alumno encuentra recursos y avisos en Inicio solo cuando existen
+entregas propias; dispone de formularios, conversación, pruebas y acceso directo
+a técnica de sus sesiones profesionales. Abrir un aviso no lo marca leído ni
+completa su tarea. Las demostraciones preparadas se pueden elegir al crear o
+editar ejercicios sin subirlas otra vez. Servidor Dev aplicado y contratos
+verificados; publicación web e instalación móvil se acreditan por separado.
+Persisten los pendientes de hijos de programa/adaptación, push y cobros reales.
+[Evidencia y límites](TRAINER_STUDENT_RECOVERY_2026_10_21.md).
+
 **ADM-008 · 21/10/2026 · sesiones incompletas y pendientes:** ADMIN conserva
 campos sin terminar, permite retomarlos y confirma el guardado sin crear otra
 versión por un reintento. Dentro del programa conserva el destino de la sesión y

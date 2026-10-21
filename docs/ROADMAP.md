@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-022 · 21/10/2026 · integración de continuidad y seguimiento:** recuperación
+privada de sesiones de biblioteca/nuevas versiones conectada al binding común;
+Inicio del alumno y bandeja profesional hacen visibles formularios, conversación,
+pruebas y técnica sin crear secciones vacías. Selector de demostraciones ya
+preparadas conectado al creador único. Las dos migraciones están aplicadas solo
+en Dev y ambos contratos se han repetido con ROLLBACK; 200 migraciones coinciden.
+Validación y aceptación de vídeo/publicación móvil constan por separado en
+[la evidencia del tramo](TRAINER_STUDENT_RECOVERY_2026_10_21.md).
+Los dieciséis puntos siguen abiertos: este cierre técnico no acredita cobros,
+push, recuperación de hijos de programa/adaptación ni aceptación física completa.
+**Único siguiente tramo recomendado:** probar con preparador y alumno el recorrido
+asignación → ejecución → técnica/formulario/conversación → revisión, incluyendo
+recarga y reintento, antes de ampliar el alcance.
+
 **ADM-008 · 21/10/2026 · recuperación de sesiones y portada verificadas en código/Dev:**
 puerto opcional y checkpoint compartido conservan entradas incompletas y ramas
 ocultas; confirmación idempotente y enlace por fase/posición mantienen publicación
