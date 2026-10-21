@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'editor_work_checkpoint.dart';
+
 import 'package:workout_core/guided_program.dart';
 
 String newGuidedWorkId() {
@@ -39,22 +39,6 @@ class GuidedWorkConflict implements Exception {
   const GuidedWorkConflict();
 }
 
-// JSONB puede devolver otro orden de claves. Solo se ordenan mapas: las listas
-// conservan el orden de sesiones y los textos crudos conservan la edición.
-Object? _canonicalWorkValue(Object? value) {
-  if (value is Map) {
-    final keys = value.keys.cast<String>().toList()..sort();
-    return {for (final key in keys) key: _canonicalWorkValue(value[key])};
-  }
-  if (value is List) {
-    return value.map(_canonicalWorkValue).toList(growable: false);
-  }
-  return value;
-}
-
-String _encodeWorkState(Map<String, dynamic> state) =>
-    jsonEncode(_canonicalWorkValue(state));
-
 abstract interface class GuidedWorkRepository {
   Future<List<GuidedWork>> list();
   Future<GuidedWork?> load(String id);
@@ -63,67 +47,19 @@ abstract interface class GuidedWorkRepository {
   Future<void> discard(GuidedWork work);
 }
 
-/// Serializa escrituras y conserva la petición incierta antes de enviar cambios nuevos.
-class GuidedWorkController extends ChangeNotifier {
-  GuidedWorkController(this.repository, this.work, Map<String, dynamic> state)
-    : _latest = _encodeWorkState(state),
-      _saved = _encodeWorkState(state);
+/// Conserva el contrato de programas sobre el checkpoint canónico compartido.
+class GuidedWorkController extends EditorWorkCheckpoint<GuidedWork> {
+  GuidedWorkController(
+    this.repository,
+    GuidedWork work,
+    Map<String, dynamic> state,
+  ) : super(
+        work: work,
+        state: state,
+        save: repository.save,
+        isNew: (work) => work.revision == 0,
+        isConflict: (error) => error is GuidedWorkConflict,
+        conflictError: GuidedWorkConflict.new,
+      );
   final GuidedWorkRepository repository;
-  GuidedWork work;
-  String _latest;
-  String? _saved, _request;
-  Future<void>? _saving;
-  bool conflict = false;
-  Object? error;
-  bool get saving => _saving != null;
-  bool get dirty => _latest != _saved || _request != null;
-  bool _disposed = false;
-  void update(Map<String, dynamic> state) {
-    _latest = _encodeWorkState(state);
-  }
-
-  void _notify() {
-    if (!_disposed) notifyListeners();
-  }
-
-  Future<void> flush() async {
-    if (_saving != null) return _saving;
-    if (conflict) throw const GuidedWorkConflict();
-    if (work.revision == 0) _request ??= _latest;
-    final future = _flush();
-    _saving = future;
-    _notify();
-    try {
-      await future;
-    } finally {
-      _saving = null;
-      _notify();
-    }
-  }
-
-  Future<void> _flush() async {
-    error = null;
-    try {
-      while (dirty) {
-        _request ??= _latest;
-        final sent = _request!;
-        work = await repository.save(
-          work,
-          jsonDecode(sent) as Map<String, dynamic>,
-        );
-        _saved = sent;
-        _request = null;
-      }
-    } catch (e) {
-      error = e;
-      conflict = e is GuidedWorkConflict;
-      rethrow;
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
 }

@@ -1,5 +1,13 @@
 # Entrega coordinada ADMIN y creador común · 21/10/2026
 
+> Actualización ADM-008 · 21/10/2026: la propuesta de recuperación que figura
+> más abajo es el diseño previo, conservado como contexto. Su implementación,
+> contrato definitivo, validación y límites se describen en
+> [Sesiones incompletas y pendientes](ADMIN_SESSION_RECOVERY_2026_10_21.md).
+> Allí `phaseId` y `pendingSessionWorks` ya están implementados de forma opcional;
+> la integración profesional corresponde a Trainer. Las frases de «solo diseño»
+> de este documento se refieren a aquel tramo anterior.
+
 ## Propiedad y alcance entregado · ADM-005
 
 **Estado: implementación de este tramo terminada y verificada; lista para
@@ -691,3 +699,169 @@ Source/API estables, diff revisado, sin fallos propios pendientes. El manifiesto
 de integración sigue siendo los dos archivos de fuente, los dos de pruebas y
 esta hoja indicados arriba. Sin Git de escritura ni publicación de este arreglo
 desde este chat.
+
+## Propuesta de recuperación de sesiones · inspección, sin código ni Git
+
+Propuesta posterior al checkpoint `37dcd14`. No amplía lo acreditado como
+implementado/publicado. El coordinador mantiene contratos profesionales,
+persistencia, migraciones y publicación. Este apartado prepara el contrato común
+para revisión antes de modificar fuentes.
+
+### Hechos del creador actual
+
+- `WorkoutEditorPage` guarda campos crudos solo en sus controladores privados.
+  `_input()` valida/convierte únicamente la receta activa y descarta ramas ocultas;
+  no sirve como snapshot de un trabajo incompleto.
+- `_draftStamp` tampoco es un codec de recuperación: omite `automaticSlot` y
+  variaciones vacías, y `additionalStateStamp` es una firma sin los valores del
+  consumidor. No copiarlo como payload de almacenamiento.
+- Carrera conserva sus tramos al pasar a fuerza y fuerza conserva bloques,
+  excepciones y campos AMRAP al cambiar de formato. `automaticSlot` distingue los
+  huecos generados de Tabata que se pueden retirar sin borrar contenido real.
+- `_save()` espera `onSave(input)`, pero `onSaved(String)` es síncrono. El workspace
+  conserva `_savedId` solo en memoria mientras confirma el enlace al programa.
+  Tras cerrar el navegador no hay una identidad persistente del trabajo de sesión.
+- Ya existen el checkpoint de programas y `sessions[].positionId`. Las fases no
+  tienen identidad estable y una creación nueva todavía no tiene posición hasta
+  incorporarse. Es necesario resolver ese destino antes de abrir un trabajo hijo.
+- El editor personal del deportista conserva su propio store por usuario con
+  receta tipada. Se mantiene su API y almacenamiento; esta propuesta no lo migra
+  ni lo importa dentro del paquete compartido.
+
+### Recorrido principal recomendado
+
+1. El consumidor obtiene/genera **una vez** el UUID de trabajo y fija entorno,
+   propietario esperado, contexto, tipo sesión/calentamiento y base/versionado.
+   Carga el trabajo antes de habilitar edición. Catálogo y medios se consultan
+   otra vez desde el consumidor autorizado.
+2. Autosave guarda el snapshot crudo completo y contexto tipado con CAS, sin
+   exigir una receta deportiva válida. UI distingue pendiente/guardando/guardado,
+   fallo recuperable y conflicto. Un dato ilegible o incompatible se conserva y
+   se informa; no se restaura como formulario vacío ni se sobrescribe en silencio.
+3. Guardar valida mediante `_input()` y las reglas actuales. Primero se conserva
+   una intención de finalización con snapshot y contenido validado **congelados y
+   recuperables**; después el servidor crea la versión y fija el recibo del trabajo
+   en la misma transacción. Una respuesta perdida se comprueba/reintenta con la
+   identidad, revisión y payload originales, incluso después de reiniciar la app.
+4. Una versión guardada se muestra como tal. Si falta el enlace al programa,
+   recuperar actúa sobre el recibo existente; no llama a crear/revisar de nuevo.
+   Se confirma el enlace con CAS y destino inequívoco. Solo ese acuse retira la
+   referencia pendiente del padre; no borra el recibo ni las sesiones reutilizadas.
+5. Este guardado produce borrador oficial en ADMIN o versión privada en Trainer.
+   No publica contenido, asigna alumnos ni sustituye la revisión conjunta actual.
+
+Estados de presentación propuestos: cargando, editando, guardando trabajo,
+conflicto, finalización sin confirmar, versión guardada/enlace pendiente y enlace
+confirmado. Mientras una finalización es incierta se congela esa petición; no se
+permite enviar otra receta como si fuera el mismo intento. Descartar trabajo es
+explícito y no elimina versiones de sesión ya guardadas.
+
+### Snapshot crudo propuesto, separado del sobre de trabajo
+
+Schema nuevo propio del formulario de sesiones, inicialmente `schema: 1`, sin
+reutilizar ni reinterpretar el schema de programas. Campos propuestos:
+
+| Nivel | Campos |
+| --- | --- |
+| Raíz | `schema`, `nameText`, `descriptionText`, `durationText`, `activeMode`, `segments`, `blocks` |
+| `segments[]` | `countText`, `targetText`, `paceText`, `paceMaxText`, `recoveryTimeText`, `byDistance`, `recoveryByDistance`, `recoveryType` |
+| `blocks[]` | `nameText`, `format`, `roundsText`, `restText`, `capText`, `exercises` |
+| `exercises[]` | `exerciseId`, `targetType`, `automaticSlot`, `customSets`, `countText`, `targetText`, `restText`, `loadText`, `rirText`, `amrapRepetitionsText`, `amrapRirText`, `variations` |
+| `variations[]` | `setIndex`, `targetText`, `restText`, `loadText`, `rirText` |
+
+Se conservan textos sin parsear, espacios, entradas incompletas, las dos ramas
+de modalidad, valores ocultos por formato y el orden de todas las listas. Las
+variaciones completamente vacías se omiten de forma canónica y se regeneran por
+`customSets`/cantidad al renderizar; mostrar campos que heredan no debe ensuciar el
+trabajo. Las variaciones con cualquier texto, incluido espacio, sí se conservan.
+
+No hacen falta UUID nuevos por serie/bloque para un checkpoint completo con CAS:
+no hay mezcla automática entre ediciones concurrentes. Los UUID estables necesarios
+son el trabajo, referencias de receta/ejercicio y el destino externo del programa.
+El codec valida forma, enums, límites técnicos y versión, sin normalizar dosis ni
+exigir repeticiones/ritmos válidos durante autosave. Los límites técnicos exactos
+se acuerdan con backend antes de SQL; no se inventan precios ni cuotas comerciales.
+
+No se guardan catálogo, miniaturas, URLs de reproducción firmadas, bytes de medios,
+tokens, cabeceras, widgets, foco/selección del cursor ni errores de infraestructura.
+Los campos libres siguen siendo texto privado del propietario y no van a logs.
+
+### Puerto y consumidores: responsabilidades a cerrar
+
+- Puerto tipado de trabajo de sesión: cargar, guardar con revisión, preparar y
+  confirmar finalización, consultar recibo y descartar. El sobre fija `workId`,
+  revisión, base de receta/versionado, lifecycle y recibo final. El servidor obtiene
+  propietario real y exige expected_owner; el adaptador fija sesión antes del await.
+- `WorkoutEditorPage` recibe un **binding opcional**. Sin él conserva exactamente
+  `onSave`, `onSaved` y el guard actual. Con él se usa exclusivamente la ruta de
+  trabajo/finalización, sin ejecutar también el guardado legado.
+- Los datos adicionales pertenecen a un contexto tipado del consumidor: por ejemplo,
+  el bool de visibilidad de ADMIN. Se capturan y restauran por callbacks/codec del
+  binding, sin un mapa libre ni conocimiento de roles dentro de UI. El payload
+  completo (raw + contexto) se congela antes del primer envío; un reintento no puede
+  releer un bool cambiado. `additionalStateStamp` solo sigue siendo una firma.
+- El binding aporta acuse asíncrono de versión guardada/enlace confirmado. No se
+  convierte el callback síncrono actual en una confirmación que no acredita.
+- Cada instancia está ligada a cuenta/contexto; cambios de identidad desmontan el
+  editor e invalidan respuestas tardías. Ni caché global ni mezcla entre cuentas.
+
+### Destino del programa: prerequisito explícito
+
+Para editar una posición existente se usa el `positionId` actual. Para crear una
+sesión dentro de una fase propongo reservar el `positionId` antes de abrirla y
+añadir identidad estable `phaseId` a la fase. Registrar en el padre una referencia
+duradera del trabajo hijo, separada de `pending` (que ya significa templateId).
+Nombre propuesto: `pendingSessionWorks`, mapa `sessionWorkId -> positionId` dentro
+de la fase identificada; **estas dos claves nuevas son propuesta, no definitivas**.
+
+Abrir el trabajo hijo y registrar esa referencia debe confirmarse con revisión
+del padre antes de editar. El trabajo queda ligado a padre/fase/posición/acción y
+base inmutables. Recuperar consulta también hijos finalizados si falta su enlace;
+un listado limitado a abiertos no basta. El programa no puede finalizar con hijos
+sin resolver. Posición/fase ausente, cambio posterior o revisión concurrente
+requieren resolución explícita, conservando hijo y recibo; nunca firstWhere por
+templateId ni índice de fase. Los trabajos antiguos sin identidad de fase se
+normalizan antes de abrir un hijo; no se crea un destino artificial por nombre.
+
+Esto afecta el contrato validado de trabajo profesional y su guardado en servidor:
+debe acordarse con el coordinador/seguridad antes de crear una migración nueva.
+No modificar la migración aplicada ni ADMIN SQL desde esta propuesta. La UI anterior
+no conocerá las referencias nuevas; backend debe impedir que un cliente viejo las
+borre mediante un guardado completo o exigir versión de capacidades para ese trabajo.
+
+### Archivos exactos propuestos y compatibilidad
+
+| Archivo | Alcance previsto |
+| --- | --- |
+| Nuevo `packages/workout_editor_ui/lib/workout_editor_snapshot.dart` | DTO raw tipado y codec versionado puro, sin Flutter/Supabase |
+| Nuevo `packages/workout_editor_ui/lib/workout_editor_work.dart` | Puerto, sobre, recibos y binding opcional de contexto tipado |
+| Nuevo `packages/workout_editor_ui/lib/editor_work_checkpoint.dart` | Extraer únicamente mecanismo canónico de checkpoint/reintento compartido |
+| Nuevo `packages/workout_editor_ui/lib/workout_editor_work_controller.dart` | Orquestar autosave, intención final y acuse sobre el mecanismo común |
+| `packages/workout_editor_ui/lib/guided_program_work.dart` | Mantener API pública; delegación interna al mecanismo común, sin otra versión del controlador de programas |
+| `packages/workout_editor_ui/lib/workout_editor_page.dart` | Exportar/restaurar raw, escuchar campos y conectar binding; mismo editor visual |
+| `packages/workout_editor_ui/lib/guided_program_editor_page.dart` y `guided_program_editor_adapter.dart` | Identidad/destino del hijo y apertura recuperable aditiva, manteniendo el método legado |
+| `admin_app/lib/features/workouts/presentation/admin_workout_editor_page.dart` | Contexto oficial tipado y propagación opcional |
+| `admin_app/lib/features/guided_programs/presentation/guided_session_workspace.dart` y `admin_guided_pages.dart` | Recibo del hijo y confirmación del enlace, preservando posición |
+| Nuevo `admin_app/lib/features/workouts/data/admin_workout_work_repository.dart` | Adaptador oficial tras acordar servidor; sin RPC profesionales |
+| Nuevos tests UI `workout_editor_snapshot_test.dart`, `editor_work_checkpoint_test.dart`, `workout_editor_work_controller_test.dart` | Roundtrip, escrituras/concurrencia y finalización incierta |
+| Tests existentes `workout_editor_page_test.dart`, `guided_program_work_test.dart`, `guided_program_recovery_test.dart` y tests ADMIN afectados | Compatibilidad de la ruta sin puerto y programa padre |
+
+La extracción del mecanismo requiere una regresión de paridad del checkpoint de
+programas antes de conectarlo a sesiones. Es una propuesta explícita de cambio
+interno; no está autorizada ni implementada por haberla escrito aquí. No se duplica
+el editor, la conversión de receta ni el controlador de programas. Se reutilizan
+validadores/codecs de dominio para el contenido final, conservando el raw aparte.
+
+Trainer conserva repositorios/rutas/main y contratos SQL con su propietario.
+Routers/main de ADMIN no se tocarían hasta acordar entradas/IDs estables con el
+coordinador. Sin paquetes nuevos, cambios de algoritmo o cambios comerciales.
+
+Pruebas exigibles: roundtrip de cada formato y rama oculta/automaticSlot; entradas
+incompletas; orden y excepciones; visibilidad adicional; autosave fallido/retry con
+payload idéntico; reinicio antes/durante/después de finalizar; recibo previo y head
+distinto; `[S,S]` con destino exacto; hijo finalizado/enlace perdido; fase quitada;
+cuenta/contexto/entorno distintos; ausencia del puerto. Matriz raíz/ADMIN/UI y
+contratos SQL/RPC reales coordinados antes de acreditar la funcionalidad.
+
+**Resultado de este tramo: inspección y diseño solamente.** No se han editado
+fuentes, tests, dependencias, SQL, rutas ni Git para recuperación de sesiones.

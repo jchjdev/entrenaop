@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Recuperación opcional de sesiones · ADM-008 · 21/10/2026
+
+`WorkoutEditorWorkBinding` conecta el creador común a persistencia por consumidor.
+`WorkoutEditorSnapshot` conserva texto crudo y ramas ocultas; la proyección pura
+reutiliza la conversión de receta existente. `EditorWorkCheckpoint` serializa
+escrituras y reintentos de programas/sesiones. Intención congelada, revisión
+esperada y recibo distinguen guardado de formulario y creación de versión.
+ADMIN implementa sus RPC en esquema privado con propietario esperado, MFA y
+fachadas invoker. Padre/fase/posición se confirman antes de abrir un hijo; el
+servidor protege sus referencias frente a clientes antiguos. Trainer conecta su
+adaptador y servidor aparte; sin binding no cambia el recorrido anterior.
+[Estado, pruebas y límites](ADMIN_SESSION_RECOVERY_2026_10_21.md).
+
 ## Creadores comunes y aplicaciones independientes · TRN-020 · 21/10/2026
 
 Javier ratifica que las mejoras generales de los editores de programas, sesiones

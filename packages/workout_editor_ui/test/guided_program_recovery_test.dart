@@ -210,6 +210,33 @@ class _RetryAdapter extends _Adapter {
   }
 }
 
+class _RecoverableAdapter extends _Adapter {
+  _RecoverableAdapter(super.catalog, this.works);
+  final _Works works;
+  String? childId;
+  Map<String, dynamic>? origin;
+  bool finishChild = false;
+  @override
+  bool get recoverableSessions => true;
+  @override
+  Future<void> openSessionWork(
+    BuildContext context, {
+    required String workId,
+    required Map<String, dynamic> origin,
+    required String programName,
+    required Future<void> Function(String) onSaved,
+  }) async {
+    edits++;
+    final phase = _phase(works);
+    expect((phase['sessionWorks'] as Map)[workId], origin);
+    expect(phase['phaseId'], origin['phaseId']);
+    if (childId != null) expect(workId, childId);
+    childId = workId;
+    this.origin = origin;
+    if (finishChild) await onSaved('T');
+  }
+}
+
 Widget _app(
   _Works works,
   _Catalog catalog,
@@ -249,6 +276,62 @@ List<Map<String, dynamic>> _sessions(_Works works) =>
         .toList();
 
 void main() {
+  testWidgets(
+    'hijo incompleto retoma la misma identidad tras recargar y enlaza segunda posición [S,S]',
+    (tester) async {
+      final works = _Works(
+        _snapshot(
+          sessions: [
+            _session(position: firstPosition),
+            _session(position: secondPosition, warmup: 'wb', minimum: '80'),
+          ],
+        ),
+      );
+      final catalog = _Catalog();
+      final adapter = _RecoverableAdapter(catalog, works);
+      await tester.pumpWidget(_app(works, catalog, adapter));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('2. Original'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Editar sesión').at(1));
+      expect(adapter.origin!['positionId'], secondPosition);
+      expect(_sessions(works).map((s) => s['id']), ['S', 'S']);
+      expect(_phase(works)['sessionWorks'], isNotEmpty);
+      adapter.finishChild = true;
+      await tester.pumpWidget(_app(works, catalog, adapter, key: 'recargado'));
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Retomar sesión'));
+      expect(_sessions(works).map((s) => s['id']), ['S', 'T']);
+      expect(_sessions(works).last['warmup'], 'wb');
+      expect(_sessions(works).last['minimum'], '80');
+      expect(_phase(works)['sessionWorks'], isEmpty);
+      expect(adapter.edits, 2);
+    },
+  );
+  testWidgets(
+    'una creación incompleta reserva destino y añade una sola posición al retomar',
+    (tester) async {
+      final works = _Works(_snapshot(sessions: []));
+      final catalog = _Catalog();
+      final adapter = _RecoverableAdapter(catalog, works);
+      await tester.pumpWidget(_app(works, catalog, adapter));
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Crear nueva sesión'));
+      final position = adapter.origin!['positionId'];
+      adapter.finishChild = true;
+      await tester.pumpWidget(_app(works, catalog, adapter, key: 'recargado'));
+      await tester.pumpAndSettle();
+      await _tap(tester, find.text('Retomar sesión'));
+      expect(_sessions(works).single['id'], 'T');
+      expect(_sessions(works).single['positionId'], position);
+      expect(_phase(works)['sessionWorks'], isEmpty);
+    },
+  );
+
   for (final editing in [false, true]) {
     testWidgets(
       'retry de onSaved tras respuesta perdida confirma enlace sin reintroducir pendiente, edición=$editing',

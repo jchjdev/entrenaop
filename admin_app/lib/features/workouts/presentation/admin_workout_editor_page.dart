@@ -1,3 +1,5 @@
+import 'package:workout_editor_ui/workout_editor_work.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +32,14 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     this.exerciseRepository,
     this.exerciseVideos,
     this.exercisePreferences,
+    this.work,
+    this.workRepository,
+    this.onRecoveredSaved,
   });
 
+  final WorkoutEditorWork? work;
+  final WorkoutEditorWorkRepository? workRepository;
+  final Future<void> Function(String)? onRecoveredSaved;
   final AdminProgram? program;
   final AdminWorkoutRepository repository;
   final WorkoutTemplate? originalTemplate;
@@ -53,6 +61,21 @@ class AdminWorkoutEditorPage extends StatefulWidget {
 
 class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
   late bool _showInLibrary = widget.initialShowInLibrary;
+  late final WorkoutEditorWorkBinding? _binding = widget.work == null
+      ? null
+      : _AdminWorkBinding(
+          widget.work!,
+          widget.workRepository!,
+          () => _AdminSessionContext(_showInLibrary),
+          (value) {
+            if (_showInLibrary == value.showInLibrary) return;
+            _showInLibrary = value.showInLibrary;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() {});
+            });
+          },
+          widget.onRecoveredSaved!,
+        );
 
   Future<List<WorkoutEditorExercise>> _loadExercises() async => [
     for (final exercise in await widget.repository.listPublicExercises())
@@ -84,6 +107,7 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         : 'Revisar sesión';
     return WorkoutEditorPage(
       loadExercises: _loadExercises,
+      workBinding: _binding,
       exercisePreferences: widget.exercisePreferences,
       onCreateExercise: widget.exerciseRepository == null
           ? null
@@ -157,4 +181,43 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           : null,
     );
   }
+}
+
+class _AdminSessionContext {
+  const _AdminSessionContext(this.showInLibrary);
+  final bool showInLibrary;
+  Map<String, dynamic> toJson() => {'showInLibrary': showInLibrary};
+  factory _AdminSessionContext.fromJson(Map<String, dynamic> json) {
+    if (json.length != 1 || json['showInLibrary'] is! bool) {
+      throw const FormatException('Contexto incompatible');
+    }
+    return _AdminSessionContext(json['showInLibrary'] as bool);
+  }
+}
+
+class _AdminWorkBinding extends WorkoutEditorWorkBinding {
+  _AdminWorkBinding(
+    this.work,
+    this.repository,
+    this.capture,
+    this.restore,
+    this.onSaved,
+  );
+  @override
+  final WorkoutEditorWork work;
+  @override
+  final WorkoutEditorWorkRepository repository;
+  final _AdminSessionContext Function() capture;
+  final void Function(_AdminSessionContext) restore;
+  final Future<void> Function(String) onSaved;
+  @override
+  Map<String, dynamic> captureContext() => capture().toJson();
+  @override
+  void restoreContext(Map<String, dynamic> context) =>
+      restore(_AdminSessionContext.fromJson(context));
+  @override
+  Future<void> acknowledge(String resultId) => onSaved(resultId);
+  @override
+  bool definitiveError(Object error) =>
+      error is PostgrestException && ['22023', '23503'].contains(error.code);
 }

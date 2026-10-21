@@ -314,6 +314,13 @@ class _AdminSection {
 
 const _sections = [
   _AdminSection(
+    'Inicio',
+    'Pendientes',
+    '/home',
+    Icons.dashboard_outlined,
+    operations: true,
+  ),
+  _AdminSection(
     'Contenido',
     'Programas guiados',
     '/guided-programs',

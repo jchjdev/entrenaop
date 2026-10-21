@@ -1,3 +1,7 @@
+import 'package:workout_editor_ui/workout_editor_work.dart';
+
+import '../../operations/presentation/admin_dashboard_page.dart';
+
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -15,8 +19,10 @@ class AdminProgramWorkoutsPage extends StatefulWidget {
     required this.program,
     required this.repository,
     this.trashRepository,
+    this.workRepository,
   });
 
+  final WorkoutEditorWorkRepository? workRepository;
   final AdminProgram? program;
   final AdminWorkoutRepository repository;
   final AdminGuidedTrashRepository? trashRepository;
@@ -83,8 +89,8 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
 
   Future<void> _create() async {
     final saved = await context.push<bool>('$_routeBase/new');
+    await _load();
     if (saved == true) {
-      await _load();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -210,6 +216,16 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
               ],
             ),
             const SizedBox(height: 24),
+            AdminSessionWorkList(
+              limit: 100,
+              key: ValueKey(_workouts),
+              repository: widget.workRepository,
+              programId: widget.program?.id,
+              onOpen: (path) async {
+                await context.push(path);
+                if (mounted) await _load();
+              },
+            ),
             TextField(
               controller: _search,
               onChanged: (_) => setState(() {}),

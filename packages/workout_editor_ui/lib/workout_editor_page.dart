@@ -2,9 +2,14 @@ import 'package:workout_editor_ui/duration_input_formatter.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:convert';
+import 'dart:async';
+
+import 'workout_editor_work.dart';
+import 'editor_work_checkpoint.dart';
+
+import 'package:workout_core/workout_draft_codec.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
-import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
@@ -40,6 +45,7 @@ class WorkoutEditorPage extends StatefulWidget {
     this.embedded = false,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.workBinding,
   });
 
   final Future<List<WorkoutEditorExercise>> Function() loadExercises;
@@ -47,6 +53,7 @@ class WorkoutEditorPage extends StatefulWidget {
   /// El consumidor crea en su catálogo autorizado y devuelve la identidad guardada.
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final WorkoutEditorWorkBinding? workBinding;
   final Future<String> Function(CreatePersonalWorkoutInput) onSave;
   final ValueChanged<String> onSaved;
   final String title, heading, instructions, saveLabel;
@@ -78,6 +85,282 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   bool _creatingExercise = false;
   ExercisePreferencesController? _exercisePreferences;
   String? _error;
+  WorkoutEditorWorkController? _work;
+  Timer? _workTimer;
+  String? _observedWork;
+  String? _workLoadError;
+  bool _canReopen = false;
+  final _observedControllers = <TextEditingController>{};
+
+  Map<String, dynamic> _rawSnapshot() => {
+    'schema': 1,
+    'nameText': _name.text,
+    'descriptionText': _description.text,
+    'durationText': _duration.text,
+    'running': _running,
+    'segments': [
+      for (final v in _segments)
+        {
+          'countText': v.count.text,
+          'targetText': v.target.text,
+          'paceText': v.pace.text,
+          'paceMaxText': v.paceMax.text,
+          'recoveryTimeText': v.recoveryTime.text,
+          'byDistance': v.byDistance,
+          'recoveryByDistance': v.recoveryByDistance,
+          'recoveryType': v.recovery?.name,
+        },
+    ],
+    'blocks': [
+      for (final b in _blocks)
+        {
+          'nameText': b.name.text,
+          'format': b.format.name,
+          'roundsText': b.rounds.text,
+          'restText': b.rest.text,
+          'capText': b.cap.text,
+          'exercises': [
+            for (final e in b.exercises)
+              {
+                'exerciseId': e.exerciseId,
+                'targetType': e.type.name,
+                'automaticSlot': e.automaticSlot,
+                'customSets': e.customSets,
+                'countText': e.count.text,
+                'targetText': e.target.text,
+                'restText': e.rest.text,
+                'loadText': e.load.text,
+                'rirText': e.rir.text,
+                'amrapRepetitionsText': e.amrapRepetitions.text,
+                'amrapRirText': e.amrapRir.text,
+                'variations': [
+                  for (final v in e.variations.entries)
+                    if (v.value.hasValues)
+                      {
+                        'setIndex': v.key,
+                        'targetText': v.value.target.text,
+                        'restText': v.value.rest.text,
+                        'loadText': v.value.load.text,
+                        'rirText': v.value.rir.text,
+                      },
+                ],
+              },
+          ],
+        },
+    ],
+  };
+
+  Map<String, dynamic> _workState({Map<String, dynamic>? intent}) => {
+    'schema': 1,
+    'editor': _rawSnapshot(),
+    'context': widget.workBinding!.captureContext(),
+    'intent': ?intent,
+  };
+
+  void _restoreRaw(Map<String, dynamic> raw) {
+    WorkoutEditorSnapshot(raw);
+    _name.text = raw['nameText'] as String;
+    _description.text = raw['descriptionText'] as String;
+    _duration.text = raw['durationText'] as String;
+    _running = raw['running'] as bool;
+    for (final v in _segments) {
+      v.dispose();
+    }
+    _segments.clear();
+    for (final row in raw['segments'] as List) {
+      _segments.add(
+        _Segment()
+          ..count.text = row['countText'] as String
+          ..target.text = row['targetText'] as String
+          ..pace.text = row['paceText'] as String
+          ..paceMax.text = row['paceMaxText'] as String
+          ..recoveryTime.text = row['recoveryTimeText'] as String
+          ..byDistance = row['byDistance'] as bool
+          ..recoveryByDistance = row['recoveryByDistance'] as bool
+          ..recovery = row['recoveryType'] == null
+              ? null
+              : RunningRecoveryType.values.byName(
+                  row['recoveryType'] as String,
+                ),
+      );
+    }
+    for (final v in _blocks) {
+      v.dispose();
+    }
+    _blocks.clear();
+    for (final row in raw['blocks'] as List) {
+      final b = _StrengthBlock()
+        ..name.text = row['nameText'] as String
+        ..format = WorkoutBlockFormat.values.byName(row['format'] as String)
+        ..rounds.text = row['roundsText'] as String
+        ..rest.text = row['restText'] as String
+        ..cap.text = row['capText'] as String;
+      b.exercises.single.dispose();
+      b.exercises.clear();
+      for (final r in row['exercises'] as List) {
+        final e = _Exercise(automaticSlot: r['automaticSlot'] as bool)
+          ..exerciseId = r['exerciseId'] as String?
+          ..type = WorkoutTargetType.values.byName(r['targetType'] as String)
+          ..customSets = r['customSets'] as bool
+          ..count.text = r['countText'] as String
+          ..target.text = r['targetText'] as String
+          ..rest.text = r['restText'] as String
+          ..load.text = r['loadText'] as String
+          ..rir.text = r['rirText'] as String
+          ..amrapRepetitions.text = r['amrapRepetitionsText'] as String
+          ..amrapRir.text = r['amrapRirText'] as String;
+        for (final v in r['variations'] as List) {
+          e.variations[v['setIndex'] as int] = _SetVariation()
+            ..target.text = v['targetText'] as String
+            ..rest.text = v['restText'] as String
+            ..load.text = v['loadText'] as String
+            ..rir.text = v['rirText'] as String;
+        }
+        b.exercises.add(e);
+      }
+      _blocks.add(b);
+    }
+  }
+
+  void _workChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _observeWork() {
+    if (_work == null || _workLoadError != null || _work!.finalizing) return;
+    final fields = [
+      _name,
+      _description,
+      _duration,
+      for (final s in _segments) ...[
+        s.count,
+        s.target,
+        s.pace,
+        s.paceMax,
+        s.recoveryTime,
+      ],
+      for (final b in _blocks) ...[
+        b.name,
+        b.rounds,
+        b.rest,
+        b.cap,
+        for (final e in b.exercises) ...[
+          e.count,
+          e.target,
+          e.rest,
+          e.load,
+          e.rir,
+          e.amrapRepetitions,
+          e.amrapRir,
+          for (final v in e.variations.values) ...[
+            v.target,
+            v.rest,
+            v.load,
+            v.rir,
+          ],
+        ],
+      ],
+    ];
+    for (final field in fields) {
+      if (_observedControllers.add(field)) field.addListener(_queueWork);
+    }
+    _queueWork();
+  }
+
+  void _queueWork() {
+    if (_work == null || _work!.finalizing || _workLoadError != null) return;
+    final state = _workState();
+    final stamp = canonicalEditorState(state);
+    if (stamp == _observedWork) return;
+    _observedWork = stamp;
+    _work!.update(state);
+    _workTimer?.cancel();
+    _workTimer = Timer(const Duration(milliseconds: 700), () async {
+      await _saveWork();
+    });
+  }
+
+  Future<bool> _saveWork() async {
+    final work = _work!;
+    _workTimer?.cancel();
+    if (!work.finalizing) work.update(_workState());
+    try {
+      await work.flush();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _saveBeforeExit() async {
+    if (_workLoadError != null) return true;
+    if (!await _saveWork()) throw StateError('Trabajo pendiente');
+    return true;
+  }
+
+  Widget _workStatus() {
+    final work = _work!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          work.finalizing
+              ? 'Guardado final pendiente de confirmar. Tus datos se conservan.'
+              : work.conflict
+              ? 'Otra pestaña ha cambiado este trabajo. Conserva esta pantalla y abre la versión actual.'
+              : work.error != null
+              ? 'No se ha guardado el último cambio. Reintenta antes de cerrar.'
+              : work.saving
+              ? 'Guardando trabajo…'
+              : work.dirty
+              ? 'Cambios pendientes de guardar'
+              : work.work.revision == 0
+              ? 'El trabajo se guarda al empezar a editar'
+              : 'Trabajo guardado · puedes retomarlo más tarde',
+        ),
+        if (!work.conflict)
+          TextButton.icon(
+            onPressed: _busy
+                ? null
+                : work.finalizing
+                ? _save
+                : _saveWork,
+            icon: const Icon(Icons.cloud_upload_outlined),
+            label: Text(
+              work.finalizing ? 'Confirmar guardado' : 'Guardar trabajo ahora',
+            ),
+          ),
+        if (_canReopen)
+          OutlinedButton(
+            onPressed: _busy
+                ? null
+                : () async {
+                    setState(() => _busy = true);
+                    try {
+                      await _work!.reopen();
+                      if (mounted) {
+                        setState(() {
+                          _canReopen = false;
+                          _error = null;
+                        });
+                      }
+                    } catch (_) {
+                      if (mounted) {
+                        setState(
+                          () => _error = 'No se pudo volver a editar. Confirma primero el estado del guardado.',
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _busy = false);
+                    }
+                  },
+            child: const Text('Volver a editar el trabajo'),
+          ),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
   late String _savedStamp;
   String get _draftStamp => jsonEncode([
     _name.text,
@@ -140,6 +423,33 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       _running = false;
       for (final block in _blocks) {
         block.format = WorkoutBlockFormat.straightSets;
+      }
+    }
+    final binding = widget.workBinding;
+    if (binding != null) {
+      try {
+        final state = binding.work.state;
+        if (binding.work.discarded) {
+          throw const FormatException('Este trabajo está descartado.');
+        }
+        if (state.isNotEmpty) {
+          if (state['schema'] != 1) {
+            throw const FormatException('Trabajo incompatible.');
+          }
+          binding.restoreContext(
+            Map<String, dynamic>.from(state['context'] as Map),
+          );
+          _restoreRaw(Map<String, dynamic>.from(state['editor'] as Map));
+        }
+        _work = WorkoutEditorWorkController(
+          binding,
+          state.isEmpty ? _workState() : state,
+        )..addListener(_workChanged);
+        _observedWork = canonicalEditorState(
+          state.isEmpty ? _workState() : state,
+        );
+      } catch (_) {
+        _workLoadError = 'No se puede recuperar este trabajo con esta versión del editor. Se conserva sin sobrescribir.';
       }
     }
     _savedStamp = _draftStamp;
@@ -205,6 +515,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 
   @override
   void dispose() {
+    _workTimer?.cancel();
+    _work?.dispose();
     _exercisePreferences?.dispose();
     _name.dispose();
     _description.dispose();
@@ -218,249 +530,44 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     super.dispose();
   }
 
-  CreatePersonalWorkoutInput _input() {
-    if (_running) {
-      final sets = <WorkoutSetDraft>[];
-      for (final segment in _segments) {
-        final count = int.tryParse(segment.count.text);
-        final target = segment.byDistance
-            ? double.tryParse(segment.target.text.replaceAll(',', '.'))
-            : _clock(segment.target.text)?.toDouble();
-        final pace = segment.pace.text.trim().isEmpty
-            ? null
-            : _pace(segment.pace.text);
-        final paceMax = segment.paceMax.text.trim().isEmpty
-            ? pace
-            : _pace(segment.paceMax.text);
-        final recovery = segment.recovery == null
-            ? null
-            : segment.recoveryByDistance
-            ? double.tryParse(segment.recoveryTime.text.replaceAll(',', '.'))
-            : _clock(segment.recoveryTime.text)?.toDouble();
-        if (count == null ||
-            count < 1 ||
-            count > 40 ||
-            target == null ||
-            target <= 0 ||
-            (segment.pace.text.trim().isNotEmpty && pace == null) ||
-            (segment.paceMax.text.trim().isNotEmpty &&
-                (pace == null || paceMax == null)) ||
-            (segment.recovery != null && (recovery == null || recovery <= 0))) {
-          throw const FormatException(
-            'Revisa repeticiones, objetivo, ritmo y recuperación de los tramos.',
-          );
-        }
-        final set = WorkoutSetDraft(
-          targetType: segment.byDistance
-              ? WorkoutTargetType.distance
-              : WorkoutTargetType.duration,
-          targetValue: target,
-          restAfterSeconds: 0,
-          targetPaceMinSecondsPerKm: pace,
-          targetPaceMaxSecondsPerKm: paceMax,
-          recoveryType: segment.recovery,
-          recoveryDurationSeconds: segment.recoveryByDistance
-              ? null
-              : recovery?.round(),
-          recoveryDistanceMeters: segment.recoveryByDistance ? recovery : null,
-        );
-        sets.addAll(List.filled(count, set));
-      }
-      final estimate = estimateRunningWorkout(sets);
-      return CreatePersonalWorkoutInput(
-        name: _name.text.trim(),
-        description: _description.text.trim(),
-        estimatedDurationMinutes: estimate.isComplete
-            ? estimate.estimatedMinutes
-            : null,
-        blocks: [
-          WorkoutBlockDraft(
-            name: 'Carrera',
-            format: WorkoutBlockFormat.running,
-            exercises: [
-              WorkoutExerciseDraft(exerciseId: runningExerciseId, sets: sets),
-            ],
-          ),
-        ],
-      );
-    }
-    final blocks = <WorkoutBlockDraft>[];
-    for (final block in _blocks) {
-      final format = block.format;
-      final usesRounds =
-          format == WorkoutBlockFormat.superset ||
-          format == WorkoutBlockFormat.circuit ||
-          format == WorkoutBlockFormat.intervals ||
-          format == WorkoutBlockFormat.emom;
-      final rounds = format == WorkoutBlockFormat.tabata
-          ? 8
-          : usesRounds
-          ? int.tryParse(block.rounds.text.trim())
-          : 1;
-      final blockRest = format == WorkoutBlockFormat.tabata
-          ? 10
-          : format == WorkoutBlockFormat.emom
-          ? 60
-          : usesRounds
-          ? _clock(block.rest.text.trim())
-          : 0;
-      final cap = format == WorkoutBlockFormat.amrap
-          ? _clock(block.cap.text)
-          : null;
-      if (rounds == null ||
-          rounds < 1 ||
-          rounds > 20 ||
-          blockRest == null ||
-          (format == WorkoutBlockFormat.amrap && cap == null)) {
-        throw const FormatException(
-          'Revisa rondas, descanso y límite del bloque.',
-        );
-      }
-
-      final exercises = <WorkoutExerciseDraft>[];
-      for (final item in block.exercises) {
-        if (item.exerciseId == null) {
-          throw const FormatException(
-            'Selecciona un ejercicio en cada posición.',
-          );
-        }
-        final type = format == WorkoutBlockFormat.tabata
-            ? WorkoutTargetType.duration
-            : format == WorkoutBlockFormat.amrap
-            ? WorkoutTargetType.repetitions
-            : item.type;
-        final targetInput = item.targetFor(format);
-        final rirInput = item.rirFor(format);
-        final target = format == WorkoutBlockFormat.tabata
-            ? 20.0
-            : type == WorkoutTargetType.duration
-            ? int.tryParse(targetInput.text.trim())?.toDouble()
-            : double.tryParse(targetInput.text.replaceAll(',', '.'));
-        final count = format == WorkoutBlockFormat.straightSets
-            ? int.tryParse(item.count.text)
-            : usesRounds
-            ? rounds
-            : 1;
-        final rest =
-            format == WorkoutBlockFormat.tabata ||
-                format == WorkoutBlockFormat.amrap ||
-                format == WorkoutBlockFormat.emom ||
-                format == WorkoutBlockFormat.intervals
-            ? 0
-            : int.tryParse(item.rest.text.trim());
-        final load =
-            format == WorkoutBlockFormat.tabata || item.load.text.trim().isEmpty
-            ? null
-            : double.tryParse(item.load.text.replaceAll(',', '.'));
-        final rir =
-            format == WorkoutBlockFormat.tabata || rirInput.text.trim().isEmpty
-            ? null
-            : double.tryParse(rirInput.text.replaceAll(',', '.'));
-        if (target == null ||
-            target <= 0 ||
-            count == null ||
-            count < 1 ||
-            count > 20 ||
-            rest == null ||
-            (format != WorkoutBlockFormat.tabata &&
-                item.load.text.trim().isNotEmpty &&
-                load == null) ||
-            (format != WorkoutBlockFormat.tabata &&
-                rirInput.text.trim().isNotEmpty &&
-                rir == null)) {
-          throw const FormatException(
-            'Revisa las series, objetivos, descansos y cargas.',
-          );
-        }
-        final sets = <WorkoutSetDraft>[];
-        for (var setIndex = 0; setIndex < count; setIndex++) {
-          // Tabata tiene dosis fija y AMRAP un objetivo común. Las excepciones
-          // ocultas se conservan en el editor, pero no contaminan su receta.
-          final variation =
-              item.customSets &&
-                  format != WorkoutBlockFormat.tabata &&
-                  format != WorkoutBlockFormat.amrap
-              ? item.variations.putIfAbsent(setIndex, _SetVariation.new)
-              : null;
-          final targetText = variation?.target.text.trim() ?? '';
-          final setTarget = targetText.isEmpty
-              ? target
-              : type == WorkoutTargetType.duration
-              ? int.tryParse(targetText)?.toDouble()
-              : double.tryParse(targetText.replaceAll(',', '.'));
-          final restText = variation?.rest.text.trim() ?? '';
-          final setRest =
-              format != WorkoutBlockFormat.straightSets || restText.isEmpty
-              ? rest
-              : int.tryParse(restText);
-          final loadText = variation?.load.text.trim() ?? '';
-          final setLoad = loadText.isEmpty
-              ? load
-              : double.tryParse(loadText.replaceAll(',', '.'));
-          final rirText = variation?.rir.text.trim() ?? '';
-          final setRir = rirText.isEmpty
-              ? rir
-              : double.tryParse(rirText.replaceAll(',', '.'));
-          if (setTarget == null ||
-              setTarget <= 0 ||
-              setRest == null ||
-              (loadText.isNotEmpty && setLoad == null) ||
-              (rirText.isNotEmpty && setRir == null)) {
-            throw FormatException(
-              'Revisa la serie ${setIndex + 1} del ejercicio.',
-            );
-          }
-          sets.add(
-            WorkoutSetDraft(
-              targetType: type,
-              targetValue: setTarget,
-              restAfterSeconds: setRest,
-              targetLoadKg: setLoad,
-              targetRir: setRir,
-            ),
-          );
-        }
-        exercises.add(
-          WorkoutExerciseDraft(exerciseId: item.exerciseId!, sets: sets),
-        );
-      }
-      blocks.add(
-        WorkoutBlockDraft(
-          name: block.name.text.trim(),
-          format: format,
-          rounds: rounds,
-          restAfterSeconds: blockRest,
-          timeCapSeconds: cap,
-          exercises: exercises,
-        ),
-      );
-    }
-    final duration = _duration.text.trim().isEmpty
-        ? null
-        : int.tryParse(_duration.text.trim());
-    if (_duration.text.trim().isNotEmpty && duration == null) {
-      throw const FormatException(
-        'La duración estimada debe estar en minutos.',
-      );
-    }
-    return CreatePersonalWorkoutInput(
-      name: _name.text.trim(),
-      description: _description.text.trim(),
-      estimatedDurationMinutes: duration,
-      blocks: blocks,
-    );
-  }
+  CreatePersonalWorkoutInput _input() =>
+      projectWorkoutEditorSnapshot(WorkoutEditorSnapshot(_rawSnapshot()));
 
   Future<void> _save() async {
     if (_busy) return;
     FocusScope.of(context).unfocus();
     try {
+      if (_work?.finalizing == true) {
+        setState(() {
+          _busy = true;
+          _error = null;
+        });
+        await _work!.flush();
+        await _work!.finish(
+          beforeAcknowledge: () {
+            if (mounted) setState(() => _busy = false);
+          },
+        );
+        return;
+      }
       final input = _input();
       validateWorkoutDraft(input);
       setState(() {
         _busy = true;
         _error = null;
       });
+      if (_work case final work?) {
+        if (!await _saveWork()) throw StateError('Trabajo pendiente');
+        final state = _workState(intent: workoutDraftToJson(input));
+        work.update(state);
+        await work.flush();
+        await work.finish(
+          beforeAcknowledge: () {
+            if (mounted) setState(() => _busy = false);
+          },
+        );
+        return;
+      }
       final savedId = await widget.onSave(input);
       if (mounted) {
         setState(() {
@@ -471,7 +578,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       }
     } on FormatException catch (error) {
       if (mounted) setState(() => _error = error.message);
-    } catch (_) {
+    } catch (error) {
+      if (_work?.finalizing == true &&
+          widget.workBinding!.definitiveError(error)) {
+        _canReopen = true;
+      }
       if (mounted) {
         setState(() => _error = widget.saveErrorMessage);
       }
@@ -557,14 +668,34 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   @override
-  Widget build(BuildContext context) => WorkflowDraftGuard(
-    hasUnsavedChanges: () => _draftStamp != _savedStamp,
-    isBusy: () => _busy || _creatingExercise,
-    child: AbsorbPointer(
-      absorbing: _busy || _creatingExercise,
-      child: _buildPage(context),
-    ),
-  );
+  Widget build(BuildContext context) {
+    _observeWork();
+    if (_workLoadError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(_workLoadError!),
+        ),
+      );
+    }
+    return WorkflowDraftGuard(
+      hasUnsavedChanges: () => _draftStamp != _savedStamp,
+      isBusy: () => _busy || _creatingExercise,
+      saveDraftBeforeExit: _work == null ? null : _saveBeforeExit,
+      child: AbsorbPointer(
+        absorbing: _busy || _creatingExercise,
+        child: _work?.finalizing == true
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [_workStatus(), if (_error != null) Text(_error!)],
+                ),
+              )
+            : _buildPage(context),
+      ),
+    );
+  }
 
   Widget _buildPage(BuildContext context) => widget.embedded
       ? _editorContent()
@@ -595,6 +726,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       const SizedBox(height: 8),
       Text(widget.instructions),
       const SizedBox(height: 24),
+      if (_work != null) _workStatus(),
       TextField(
         controller: _name,
         maxLength: 80,
@@ -1616,30 +1748,4 @@ class _SetVariation {
     load.dispose();
     rir.dispose();
   }
-}
-
-int? _clock(String value) {
-  final parts = value.trim().split(':');
-  if (parts.length != 2) return null;
-  final minutes = int.tryParse(parts[0]);
-  final seconds = int.tryParse(parts[1]);
-  if (minutes == null ||
-      seconds == null ||
-      minutes < 0 ||
-      seconds < 0 ||
-      seconds > 59) {
-    return null;
-  }
-  return minutes * 60 + seconds;
-}
-
-int? _pace(String value) {
-  final trimmed = value.trim();
-  if (trimmed.contains(':')) return _clock(trimmed);
-  if (!RegExp(r'^\d+$').hasMatch(trimmed)) return null;
-  if (trimmed.length <= 2) return int.parse(trimmed) * 60;
-  final minutes = int.tryParse(trimmed.substring(0, trimmed.length - 2));
-  final seconds = int.tryParse(trimmed.substring(trimmed.length - 2));
-  if (minutes == null || seconds == null || seconds > 59) return null;
-  return minutes * 60 + seconds;
 }

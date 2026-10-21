@@ -1,3 +1,7 @@
+import 'package:workout_editor_ui/workout_editor_work.dart';
+
+import '../features/workouts/presentation/admin_session_work_editor.dart';
+import '../features/operations/presentation/admin_dashboard_page.dart';
 import '../features/operations/data/admin_operations_repository.dart';
 import '../features/operations/presentation/admin_operations_pages.dart';
 
@@ -48,6 +52,7 @@ GoRouter createAdminRouter({
   AdminProAccessRepository? proAccess,
   TrainerRepository? trainers,
   AdminOperationsRepository? operations,
+  WorkoutEditorWorkRepository? sessionWork,
   AdminGuidedRepository? guided,
   AdminGuidedWorkRepository? guidedWork,
   AdminGuidedTrashRepository? guidedTrash,
@@ -112,7 +117,65 @@ GoRouter createAdminRouter({
     routes: routes,
   );
 
+  String sessionWorkLocation(GoRouterState state, {String? base}) {
+    final programId = state.pathParameters['programId'];
+    return Uri(
+      path:
+          '${programId == null ? "/sessions" : "/programs/${Uri.encodeComponent(programId)}/sessions"}/work/${newGuidedWorkId()}',
+      queryParameters: {
+        'new': 'true',
+        'base': ?base,
+        if (state.uri.queryParameters['standalone'] == 'false')
+          'standalone': 'false',
+        if (state.uri.queryParameters['returnId'] == 'true') 'returnId': 'true',
+      },
+    ).toString();
+  }
+
   List<RouteBase> sessionRoutes() => [
+    if (sessionWork != null)
+      workflow(
+        'work/:workId',
+        (context, state) => load(
+          () async => true,
+          (_) => AdminSessionWorkEditor(
+            key: ValueKey(state.uri.toString()),
+            workId: state.pathParameters['workId']!,
+            initialShowInLibrary:
+                state.uri.queryParameters['standalone'] != 'false',
+            repository: sessionWork,
+            workouts: workouts,
+            exerciseRepository: exercises,
+            exerciseVideos: exerciseVideos,
+            exercisePreferences: exercisePreferences,
+            origin: state.uri.queryParameters['new'] == 'true'
+                ? {
+                    'baseId': state.uri.queryParameters['base'],
+                    'programId': state.pathParameters['programId'],
+                    'parentWorkId': null,
+                    'phaseId': null,
+                    'positionId': null,
+                    'duplicate': false,
+                  }
+                : null,
+            onSaved: (id) async {
+              if (context.mounted) {
+                if (context.canPop()) {
+                  context.pop<Object>(
+                    state.uri.queryParameters['returnId'] == 'true' ? id : true,
+                  );
+                } else {
+                  context.go(
+                    state.pathParameters['programId'] == null
+                        ? '/sessions'
+                        : '/programs/${Uri.encodeComponent(state.pathParameters['programId']!)}/sessions',
+                  );
+                }
+              }
+            },
+          ),
+        ),
+      ),
     workflow(
       'new',
       (context, state) => programOrGeneral(
@@ -131,6 +194,9 @@ GoRouter createAdminRouter({
               owner == null && state.uri.queryParameters['returnId'] == 'true',
         ),
       ),
+      redirect: sessionWork == null
+          ? null
+          : (_, state) => sessionWorkLocation(state),
     ),
     workflow(
       ':templateId',
@@ -196,6 +262,12 @@ GoRouter createAdminRouter({
               ),
             ),
           ),
+          redirect: sessionWork == null
+              ? null
+              : (_, state) => sessionWorkLocation(
+                  state,
+                  base: state.pathParameters['templateId'],
+                ),
         ),
       ],
     ),
@@ -207,7 +279,9 @@ GoRouter createAdminRouter({
     refreshListenable: authChanges,
     redirect: (context, state) async {
       if (isAuthenticated == null) {
-        return state.uri.path == '/' ? '/programs' : null;
+        return state.uri.path == '/'
+            ? (operations == null ? '/programs' : '/home')
+            : null;
       }
       if (!isAuthenticated()) {
         return state.uri.path == '/login' ? null : '/login';
@@ -218,7 +292,7 @@ GoRouter createAdminRouter({
         return '/security';
       }
       return state.uri.path == '/login' || state.uri.path == '/'
-          ? '/programs'
+          ? (operations == null ? '/programs' : '/home')
           : null;
     },
     errorBuilder: (context, state) =>
@@ -243,6 +317,17 @@ GoRouter createAdminRouter({
         ),
         routes: [
           if (operations != null) ...[
+            GoRoute(
+              path: '/home',
+              builder: (_, _) => load(
+                () async => true,
+                (_) => AdminDashboardPage(
+                  operations: operations,
+                  sessions: sessionWork,
+                  programs: guidedWork,
+                ),
+              ),
+            ),
             GoRoute(
               path: '/history',
               builder: (_, _) => load(
@@ -360,6 +445,7 @@ GoRouter createAdminRouter({
                                 ),
                               )
                             : AdminGuidedEditorPage(
+                                sessionWorkRepository: sessionWork,
                                 exerciseRepository: exercises,
                                 exerciseVideos: exerciseVideos,
                                 exercisePreferences: exercisePreferences,
@@ -377,6 +463,7 @@ GoRouter createAdminRouter({
                   (_, _) => load(
                     () async => true,
                     (_) => AdminGuidedEditorPage(
+                      sessionWorkRepository: sessionWork,
                       exerciseRepository: exercises,
                       exerciseVideos: exerciseVideos,
                       exercisePreferences: exercisePreferences,
@@ -405,6 +492,7 @@ GoRouter createAdminRouter({
                   (_, state) => load(
                     () => guided.program(state.pathParameters['guidedId']!),
                     (p) => AdminGuidedEditorPage(
+                      sessionWorkRepository: sessionWork,
                       exerciseRepository: exercises,
                       exerciseVideos: exerciseVideos,
                       exercisePreferences: exercisePreferences,
@@ -531,6 +619,7 @@ GoRouter createAdminRouter({
                     builder: (context, state) => programPage(
                       state,
                       (item) => AdminProgramWorkoutsPage(
+                        workRepository: sessionWork,
                         program: item,
                         repository: workouts,
                         trashRepository: guidedTrash,
@@ -610,6 +699,7 @@ GoRouter createAdminRouter({
             builder: (context, state) => load(
               () async => true,
               (_) => AdminProgramWorkoutsPage(
+                workRepository: sessionWork,
                 program: null,
                 repository: workouts,
                 trashRepository: guidedTrash,

@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/workout_editor_work.dart';
 import 'package:workout_editor_ui/guided_program_editor_page.dart';
 import 'package:workout_editor_ui/guided_program_editor_adapter.dart';
 
@@ -483,7 +484,9 @@ class AdminGuidedEditorPage extends StatelessWidget {
     this.exerciseRepository,
     this.exerciseVideos,
     this.exercisePreferences,
+    this.sessionWorkRepository,
   });
+  final WorkoutEditorWorkRepository? sessionWorkRepository;
   final AdminGuidedRepository repository;
   final AdminWorkoutRepository workouts;
   final GuidedProgram? original;
@@ -505,6 +508,7 @@ class AdminGuidedEditorPage extends StatelessWidget {
       exerciseRepository,
       exerciseVideos,
       exercisePreferences,
+      sessionWorkRepository,
     ),
   );
 }
@@ -516,7 +520,42 @@ class _AdminProgramAdapter extends GuidedProgramEditorAdapter {
     this.exerciseRepository,
     this.exerciseVideos,
     this.exercisePreferences,
+    this.sessionWorkRepository,
   );
+  final WorkoutEditorWorkRepository? sessionWorkRepository;
+  @override
+  bool get recoverableSessions => sessionWorkRepository != null;
+  @override
+  Future<void> openSessionWork(
+    BuildContext context, {
+    required String workId,
+    required Map<String, dynamic> origin,
+    required String programName,
+    required Future<void> Function(String) onSaved,
+  }) async {
+    await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => GuidedSessionWorkspace(
+        workouts: workouts,
+        programName: programName,
+        onSaved: onSaved,
+        workRepository: sessionWorkRepository,
+        workId: workId,
+        origin: origin,
+        exerciseRepository: exerciseRepository,
+        exerciseVideos: exerciseVideos,
+        exercisePreferences: exercisePreferences,
+      ),
+    );
+  }
+
+  @override
+  Future<void> discardSessionWork(String workId) async {
+    final work = await sessionWorkRepository!.load(workId);
+    if (work != null) await sessionWorkRepository!.discard(work);
+  }
+
   final AdminGuidedRepository repository;
   final AdminWorkoutRepository workouts;
   final AdminExerciseRepository? exerciseRepository;

@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**ADM-008 · 21/10/2026 · sesiones incompletas y pendientes:** ADMIN conserva
+campos sin terminar, permite retomarlos y confirma el guardado sin crear otra
+versión por un reintento. Dentro del programa conserva el destino de la sesión y
+la publicación conjunta. Inicio reúne trabajo por continuar, calidad y diagnóstico
+existente de copias/errores. El editor conserva su diseño. Código y servidor Dev
+verificados; aceptación y publicación web se documentan por separado.
+[Contrato y límites](ADMIN_SESSION_RECOVERY_2026_10_21.md).
+
 **TRN-021 · 21/10/2026 · programas que pueden retomarse:** código y servidor Dev
 incorporan trabajos privados incompletos mediante el creador compartido con
 ADMIN. Guardar el trabajo conserva campos pendientes; finalizar valida y crea

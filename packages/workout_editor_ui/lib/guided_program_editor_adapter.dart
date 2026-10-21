@@ -13,6 +13,16 @@ abstract interface class GuidedProgramCompositionRepository {
 abstract class GuidedProgramEditorAdapter {
   const GuidedProgramEditorAdapter();
   bool get professional => false;
+  bool get recoverableSessions => false;
+  Future<void> openSessionWork(
+    BuildContext context, {
+    required String workId,
+    required Map<String, dynamic> origin,
+    required String programName,
+    required Future<void> Function(String) onSaved,
+  }) => throw UnsupportedError('Recuperación de sesiones no configurada');
+  Future<void> discardSessionWork(String workId) =>
+      throw UnsupportedError('Recuperación de sesiones no configurada');
   Future<void> openSession(
     BuildContext context, {
     required String programName,

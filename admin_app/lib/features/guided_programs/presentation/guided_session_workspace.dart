@@ -1,3 +1,7 @@
+import 'package:workout_editor_ui/workout_editor_work.dart';
+
+import '../../workouts/presentation/admin_session_work_editor.dart';
+
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
@@ -21,7 +25,13 @@ class GuidedSessionWorkspace extends StatefulWidget {
     this.exerciseRepository,
     this.exerciseVideos,
     this.exercisePreferences,
+    this.workRepository,
+    this.workId,
+    this.origin,
   });
+  final WorkoutEditorWorkRepository? workRepository;
+  final String? workId;
+  final Map<String, dynamic>? origin;
   final AdminWorkoutRepository workouts;
   final String programName;
   final String? sessionId;
@@ -142,6 +152,22 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                               ),
                             ],
                           ),
+                        ),
+                      )
+                    : widget.workRepository != null && widget.workId != null
+                    ? WorkflowExitScope(
+                        controller: _exit,
+                        child: AdminSessionWorkEditor(
+                          workId: widget.workId!,
+                          origin: widget.origin,
+                          repository: widget.workRepository!,
+                          workouts: widget.workouts,
+                          embedded: true,
+                          programName: widget.programName,
+                          onSaved: _saved,
+                          exerciseRepository: widget.exerciseRepository,
+                          exerciseVideos: widget.exerciseVideos,
+                          exercisePreferences: widget.exercisePreferences,
                         ),
                       )
                     : FutureBuilder<(AdminWorkoutSummary, WorkoutTemplate)?>(

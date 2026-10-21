@@ -1,3 +1,7 @@
+import 'features/workouts/data/admin_workout_work_repository.dart';
+
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'features/operations/data/admin_operations_repository.dart';
 import 'features/operations/data/admin_error_reporter.dart';
 
@@ -85,7 +89,7 @@ class _AdminAppState extends State<AdminApp> {
           // Cambiar de identidad descarta la pila de consulta de la cuenta
           // anterior; renovar un token de la misma cuenta conserva sus campos.
           _router = _createRouter(
-            initialLocation: nextId == null ? '/login' : '/programs',
+            initialLocation: nextId == null ? '/login' : '/home',
           );
         });
         WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
@@ -121,6 +125,12 @@ class _AdminAppState extends State<AdminApp> {
               userId: client.auth.currentUser!.id,
             ),
       operations: SupabaseAdminOperationsRepository(client),
+      sessionWork: client.auth.currentUser == null
+          ? null
+          : SupabaseAdminWorkoutWorkRepository(
+              client,
+              client.auth.currentUser!.id,
+            ),
       guided: SupabaseAdminGuidedRepository(client),
       guidedWork: SupabaseAdminGuidedWorkRepository(client),
       guidedTrash: SupabaseAdminGuidedTrashRepository(client),
@@ -139,7 +149,7 @@ class _AdminAppState extends State<AdminApp> {
         repository: security,
         onComplete: () {
           _authChanges.value++;
-          GoRouter.of(context).go('/programs');
+          GoRouter.of(context).go('/home');
         },
       ),
       initialLocation: initialLocation,
@@ -157,6 +167,9 @@ class _AdminAppState extends State<AdminApp> {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
+    locale: const Locale('es', 'ES'),
+    supportedLocales: const [Locale('es', 'ES')],
+    localizationsDelegates: GlobalMaterialLocalizations.delegates,
     title: 'EntrenaOP · Administración',
     debugShowCheckedModeBanner: false,
     theme: EntrenaTheme.dark,

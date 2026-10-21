@@ -93,7 +93,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     'mode': _mode.name,
     'categories': _categoryIds.toList(),
     'primary': _primaryCategoryId,
-    'phases': _phases.map((p) => p.snapshot()).toList(),
+    'phases': _phases
+        .map((p) => p.snapshot(recovery: widget.adapter.recoverableSessions))
+        .toList(),
   };
   void _restore(Map<String, dynamic> state) {
     if (state['schema'] != 1) {
@@ -300,6 +302,10 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     _SessionFields? session,
     _SessionFields? duplicateOf,
   }) async {
+    if (widget.adapter.recoverableSessions && _checkpoint != null) {
+      await _openSessionWork(phase, session: session, duplicateOf: duplicateOf);
+      return;
+    }
     if (_sessionWorkspaceOpen || _busy) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _sessionWorkspaceOpen = true);
@@ -377,6 +383,129 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       if (mounted) {
         await _load();
         if (mounted) setState(() => _sessionWorkspaceOpen = false);
+      }
+    }
+  }
+
+  Future<void> _openSessionWork(
+    _PhaseFields phase, {
+    _SessionFields? session,
+    _SessionFields? duplicateOf,
+    String? workId,
+  }) async {
+    if (_sessionWorkspaceOpen || _busy) return;
+    setState(() => _sessionWorkspaceOpen = true);
+    try {
+      final existing = session == null
+          ? null
+          : phase.sessionWorks.entries
+                .where((e) => e.value['positionId'] == session.positionId)
+                .firstOrNull;
+      final id = workId ?? existing?.key ?? newGuidedWorkId();
+      final origin = phase.sessionWorks.putIfAbsent(
+        id,
+        () => {
+          'baseId': (session ?? duplicateOf)?.id,
+          'programId': null,
+          'parentWorkId': _checkpoint!.work.id,
+          'phaseId': phase.phaseId,
+          'positionId': session?.positionId ?? newGuidedWorkId(),
+          'duplicate': duplicateOf != null,
+        },
+      );
+      if (!await _saveWork() || !mounted) return;
+      await widget.adapter.openSessionWork(
+        context,
+        workId: id,
+        origin: origin,
+        programName: _name.text.trim().isEmpty
+            ? 'Programa en borrador'
+            : _name.text.trim(),
+        onSaved: (resultId) async {
+          if (!mounted || !_phases.contains(phase)) {
+            throw StateError('Destino no disponible');
+          }
+          final slot = phase.sessions
+              .where((s) => s.positionId == origin['positionId'])
+              .firstOrNull;
+          if (slot?.id == resultId && !phase.sessionWorks.containsKey(id)) {
+            if (!await _saveWork()) throw StateError('Enlace pendiente');
+            return;
+          }
+          if (!await _load() || !mounted) {
+            throw StateError('Catálogo pendiente');
+          }
+          final saved = _sessions.where((s) => s.id == resultId).firstOrNull;
+          if (saved == null) throw StateError('Sesión no disponible');
+          final replacing =
+              origin['baseId'] != null && origin['duplicate'] != true;
+          if (replacing && (slot == null || slot.id != origin['baseId'])) {
+            throw StateError(
+              'La posición original ha cambiado. Se conserva la sesión guardada.',
+            );
+          }
+          setState(() {
+            if (slot != null) {
+              slot.id = resultId;
+              slot.name = saved.name;
+            } else {
+              phase.sessions.add(
+                _SessionFields(
+                  resultId,
+                  saved.name,
+                  positionId: origin['positionId'] as String,
+                ),
+              );
+            }
+            phase.sessionWorks.remove(id);
+            _sessionTemplates.remove(resultId);
+            _changed();
+          });
+          if (!await _saveWork()) throw StateError('Enlace pendiente');
+        },
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'No se pudo confirmar la sesión o su enlace. El trabajo se conserva para retomarlo.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sessionWorkspaceOpen = false);
+    }
+  }
+
+  Future<void> _discardSessionWork(_PhaseFields phase, String id) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('¿Descartar este trabajo incompleto?'),
+        content: const Text(
+          'Las sesiones guardadas y las utilizadas en otros programas se conservan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Continuar trabajando'),
+          ),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Descartar trabajo'),
+          ),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    try {
+      await widget.adapter.discardSessionWork(id);
+      if (!mounted) return;
+      setState(() => phase.sessionWorks.remove(id));
+      if (!await _saveWork()) throw StateError('Referencia pendiente');
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'No se pudo descartar. Si la sesión ya está guardada, retómala para confirmar su enlace.',
+        );
       }
     }
   }
@@ -541,7 +670,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     _reviewAfterSave = reviewAfter;
     FocusScope.of(context).unfocus();
     try {
-      if (_phases.any((p) => p.pendingSessions.isNotEmpty)) {
+      if (_phases.any(
+        (p) => p.pendingSessions.isNotEmpty || p.sessionWorks.isNotEmpty,
+      )) {
         throw const FormatException(
           'Tienes sesiones pendientes de incorporar. Retómalas o quita su referencia antes de guardar el programa; los borradores del catálogo se conservan.',
         );
@@ -1129,10 +1260,12 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 if (_phases.length > 1)
                   IconButton(
                     tooltip: 'Quitar fase',
-                    onPressed: () => setState(() {
-                      _phases.removeAt(index).dispose();
-                      _changed();
-                    }),
+                    onPressed: p.sessionWorks.isNotEmpty
+                        ? null
+                        : () => setState(() {
+                            _phases.removeAt(index).dispose();
+                            _changed();
+                          }),
                     icon: const Icon(Icons.close),
                   ),
               ],
@@ -1185,6 +1318,36 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
             ),
           ),
           for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
+          for (final entry in p.sessionWorks.entries)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Sesión incompleta o pendiente de enlazar'),
+                    const Text(
+                      'Retoma los campos guardados sin crear otra sesión.',
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.tonal(
+                          onPressed: () =>
+                              _openSessionWork(p, workId: entry.key),
+                          child: const Text('Retomar sesión'),
+                        ),
+                        TextButton(
+                          onPressed: () => _discardSessionWork(p, entry.key),
+                          child: const Text('Descartar trabajo'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           for (final id in p.pendingSessions)
             Card(
               child: Padding(
@@ -1267,6 +1430,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
 
   Widget _sessionCard(_PhaseFields p, int i) {
     final s = p.sessions[i];
+    final pendingWork = p.sessionWorks.values.any(
+      (origin) => origin['positionId'] == s.positionId,
+    );
     final source = _sessions.where((item) => item.id == s.id).firstOrNull;
     final hasWarmup = source?.hasWarmup == true;
     final supportsRest = source?.supportsAdjustableRest == true;
@@ -1307,7 +1473,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 ),
                 IconButton(
                   tooltip: 'Quitar sesión',
-                  onPressed: () => _removeSession(p, i),
+                  onPressed: pendingWork ? null : () => _removeSession(p, i),
                   icon: const Icon(Icons.close),
                 ),
               ],
@@ -1617,7 +1783,9 @@ class _SessionFields {
 }
 
 class _PhaseFields {
-  _PhaseFields();
+  _PhaseFields({String? phaseId}) : phaseId = phaseId ?? newGuidedWorkId();
+  final String phaseId;
+  final sessionWorks = <String, Map<String, dynamic>>{};
   factory _PhaseFields.fromPhase(GuidedPhase p) => _PhaseFields()
     ..name.text = p.name
     ..weeks.text = '${p.durationWeeks ?? 2}'
@@ -1632,23 +1800,31 @@ class _PhaseFields {
   // posición original, no añadir otra sesión al final del programa.
   final pendingReplacements = <String, String>{};
   final replacementPositions = <String, String>{};
-  factory _PhaseFields.restore(Map<String, dynamic> p) => _PhaseFields()
-    ..name.text = p['name'] as String
-    ..weeks.text = p['weeks'] as String
-    ..instructions.text = p['instructions'] as String
-    ..pendingSessions.addAll((p['pending'] as List).cast<String>())
-    ..pendingReplacements.addAll(
-      (p['replacements'] as Map?)?.cast<String, String>() ?? const {},
-    )
-    ..replacementPositions.addAll(
-      (p['replacementPositions'] as Map?)?.cast<String, String>() ?? const {},
-    )
-    ..sessions.addAll(
-      (p['sessions'] as List).map(
-        (s) => _SessionFields.restore(Map<String, dynamic>.from(s as Map)),
-      ),
-    );
-  Map<String, dynamic> snapshot() => {
+  factory _PhaseFields.restore(Map<String, dynamic> p) =>
+      _PhaseFields(phaseId: p['phaseId'] as String?)
+        ..sessionWorks.addAll({
+          for (final e in (p['sessionWorks'] as Map? ?? {}).entries)
+            e.key as String: Map<String, dynamic>.from(e.value as Map),
+        })
+        ..name.text = p['name'] as String
+        ..weeks.text = p['weeks'] as String
+        ..instructions.text = p['instructions'] as String
+        ..pendingSessions.addAll((p['pending'] as List).cast<String>())
+        ..pendingReplacements.addAll(
+          (p['replacements'] as Map?)?.cast<String, String>() ?? const {},
+        )
+        ..replacementPositions.addAll(
+          (p['replacementPositions'] as Map?)?.cast<String, String>() ??
+              const {},
+        )
+        ..sessions.addAll(
+          (p['sessions'] as List).map(
+            (s) => _SessionFields.restore(Map<String, dynamic>.from(s as Map)),
+          ),
+        );
+  Map<String, dynamic> snapshot({bool recovery = false}) => {
+    if (recovery) 'phaseId': phaseId,
+    if (recovery) 'sessionWorks': sessionWorks,
     'name': name.text,
     'weeks': weeks.text,
     'instructions': instructions.text,
