@@ -69,3 +69,20 @@ La guarda SQL monotónica permanece intacta. La recuperación comprueba el estad
 REST real del proveedor antes de renovar credenciales; no permite sobrescribir
 un archivo ya recibido. Contrato y validaciones focales:
 [Recuperación de medios](TRAINER_VIDEO_RECOVERY_2026_10_21.md).
+
+## Reproductor compacto · release 15
+
+Publicada y verificada por HTTPS desde fuentes limpias de
+`8402e29f0546d047c81c26e9c7b355f6b3130775`, release
+`8402e29f0546d047c81c26e9c7b355f6b3130775-20261021-15`.
+Construida `2026-10-21T21:32:01.235288+00:00`.
+ZIP `build/trainer-video-compact-release-20261021.zip`, SHA-256
+`7333e483cb5ed89673cd44e573d8607a52dc0a613deeec1b0d4daa084953afdc`.
+JavaScript SHA-256
+`9e9ae39d63177fc6c78feede62f32125e4a1bae4d8f1e8445637686a84612d73`.
+El reproductor compartido conserva proporción y limita altura a 360 px;
+siete pruebas focales y análisis correctos. No cambia reservas ni autorizaciones.
+
+La [captura real de la biblioteca](visual-audit/trainer-student-2026-10-21/trainer-demo-ready.png)
+acredita vídeo listo, acción para crear ejercicio y cupo conservado, sin guardar
+fotogramas privados del clip en el repositorio.
