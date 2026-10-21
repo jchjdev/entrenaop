@@ -84,7 +84,11 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.text('Sesión one'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Reintentar pruebas'), 300, scrollable: find.byType(Scrollable).first);
+      await tester.scrollUntilVisible(
+        find.text('Reintentar pruebas'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(
         find.textContaining('Las sesiones se muestran por separado'),
         findsOneWidget,

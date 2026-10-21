@@ -138,17 +138,17 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
                           final detail = await widget.operations!.assignment(
                             widget.assignmentId,
                           );
-                            if (context.mounted) {
+                          if (context.mounted) {
                             await context.push(
                               '/conversations/${detail.relationId}?assignment=${widget.assignmentId}',
                             );
-                            }
+                          }
                         } catch (e) {
-                            if (context.mounted) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(trainerError(e))),
                             );
-                            }
+                          }
                         }
                       },
                     ),

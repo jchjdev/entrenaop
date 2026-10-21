@@ -1243,7 +1243,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     });
     try {
       final created = await widget.onCreateExercise!(context);
-      if (!mounted || !identical(preferences, _exercisePreferences)) return null;
+      if (!mounted || !identical(preferences, _exercisePreferences)) {
+        return null;
+      }
       if (created != null && mounted) {
         setState(
           () => _catalog = {

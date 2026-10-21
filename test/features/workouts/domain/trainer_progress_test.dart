@@ -271,9 +271,8 @@ void main() {
 
     test('conserva resultado deportivo sin convertirlo en reps heredadas', () {
       const recorded = PerformanceSetResult(value: 12, techniqueValid: false);
-      final exercise = results([
-        set('typed', result: recorded),
-      ]).exercises['squat-v1']!;
+      final exercise = results([set('typed', result: recorded)])
+          .exercises['squat-v1']!;
       expect(exercise.records.single.performanceResult, same(recorded));
       expect(exercise.reps.recordedTotal, isNull);
     });

@@ -98,8 +98,11 @@ Future<void> openEditor(
 Future<void> tapText(WidgetTester tester, String label) async {
   FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
-  await tester.scrollUntilVisible(find.text(label), 250,
-    scrollable: find.byType(Scrollable).first);
+  await tester.scrollUntilVisible(
+    find.text(label),
+    250,
+    scrollable: find.byType(Scrollable).first,
+  );
   await tester.pumpAndSettle();
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();

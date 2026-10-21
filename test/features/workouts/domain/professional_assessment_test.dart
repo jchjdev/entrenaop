@@ -248,55 +248,49 @@ void main() {
       isNull,
     );
   });
-  test(
-    'borrador parcial no cierra una batería incompleta y rechaza pruebas ajenas',
-    () {
-      final f = battery(protocol());
-      expect(
-        ProfessionalAssessmentValidator.answers(f, {}, complete: false),
-        isEmpty,
-      );
-      expect(
-        () => ProfessionalAssessmentValidator.answers(f, {}, complete: true),
-        throwsFormatException,
-      );
-      expect(
-        () => ProfessionalAssessmentValidator.answers(f, {
-          'other': [],
-        }, complete: false),
-        throwsFormatException,
-      );
-      expect(
-        () => ProfessionalAssessmentValidator.normalize(
-          battery(protocol(maximumAttempts: 11)),
-        ),
-        throwsFormatException,
-      );
-    },
-  );
-  test(
-    'codec no envía huella, versión o definición oficial fabricadas por cliente',
-    () {
-      final official = ProfessionalAssessmentTest(
-        id: 'run',
-        name: 'Oficial',
-        unit: ProfessionalMarkUnit.seconds,
-        direction: ProfessionalBetterDirection.lower,
-        resolution: 0.01,
-        instructions: 'Protocolo completo publicado.',
-        maximumAttempts: 1,
-        retryPolicy: ProfessionalRetryPolicy.none,
-        source: ProfessionalProtocolSource.official,
-        officialTestId: 'official-id',
-        protocolFingerprint: 'forged',
-        definitionVersion: 99,
-      );
-      final payload = ProfessionalAssessmentCodec.encode(battery(official));
-      expect((payload['tests'] as List).single, {
-        'id': 'run',
-        'source': 'official',
-        'official_test_id': 'official-id',
-      });
-    },
-  );
+  test('borrador parcial no cierra una batería incompleta y rechaza pruebas ajenas', () {
+    final f = battery(protocol());
+    expect(
+      ProfessionalAssessmentValidator.answers(f, {}, complete: false),
+      isEmpty,
+    );
+    expect(
+      () => ProfessionalAssessmentValidator.answers(f, {}, complete: true),
+      throwsFormatException,
+    );
+    expect(
+      () => ProfessionalAssessmentValidator.answers(f, {
+        'other': [],
+      }, complete: false),
+      throwsFormatException,
+    );
+    expect(
+      () => ProfessionalAssessmentValidator.normalize(
+        battery(protocol(maximumAttempts: 11)),
+      ),
+      throwsFormatException,
+    );
+  });
+  test('codec no envía huella, versión o definición oficial fabricadas por cliente', () {
+    final official = ProfessionalAssessmentTest(
+      id: 'run',
+      name: 'Oficial',
+      unit: ProfessionalMarkUnit.seconds,
+      direction: ProfessionalBetterDirection.lower,
+      resolution: 0.01,
+      instructions: 'Protocolo completo publicado.',
+      maximumAttempts: 1,
+      retryPolicy: ProfessionalRetryPolicy.none,
+      source: ProfessionalProtocolSource.official,
+      officialTestId: 'official-id',
+      protocolFingerprint: 'forged',
+      definitionVersion: 99,
+    );
+    final payload = ProfessionalAssessmentCodec.encode(battery(official));
+    expect((payload['tests'] as List).single, {
+      'id': 'run',
+      'source': 'official',
+      'official_test_id': 'official-id',
+    });
+  });
 }
