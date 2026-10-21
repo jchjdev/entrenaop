@@ -1,5 +1,9 @@
 # Continuidad de Trainer y seguimiento del alumno · TRN-022
 
+Portal Dev publicado y contrastado por HTTPS y Chrome desde `4ff30d1`, release
+terminada en `-11`. Recuperación de un trabajo incompleto comprobada tras recarga.
+[Identidad, hashes, APK y aceptación](TRAINER_STUDENT_RELEASE_2026_10_21.md).
+
 ## Alcance contrastado
 
 El preparador retoma sesiones de biblioteca y sus nuevas versiones desde trabajos

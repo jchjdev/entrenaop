@@ -48,7 +48,9 @@ class ExerciseVideoTransport {
       checkIdentity?.call();
       final location = created.headers['location'];
       if (created.statusCode != 201 || location == null) {
-        throw StateError('No se pudo iniciar la subida.');
+        throw FormatException(
+          'No se pudo iniciar la transferencia (HTTP ${created.statusCode}). La reserva se conserva; reintenta con el archivo original.',
+        );
       }
       final target = endpoint.resolve(location);
       if (target.scheme != 'https' ||
@@ -56,7 +58,9 @@ class ExerciseVideoTransport {
           target.port != 443 ||
           target.userInfo.isNotEmpty ||
           !target.path.startsWith('/tusupload/')) {
-        throw StateError('El destino de subida no es válido.');
+        throw const FormatException(
+          'El proveedor devolvió un destino de subida incompatible. La reserva se conserva.',
+        );
       }
       var offset = 0;
       var failures = 0;
@@ -79,7 +83,9 @@ class ExerciseVideoTransport {
           checkIdentity?.call();
           final next = int.tryParse(response.headers['upload-offset'] ?? '');
           if (response.statusCode != 204 || next != end) {
-            throw StateError('Subida interrumpida.');
+            throw FormatException(
+              'Transferencia interrumpida (HTTP ${response.statusCode}). Puedes recuperar la reserva con el archivo original.',
+            );
           }
           offset = end;
           failures = 0;

@@ -9,6 +9,34 @@ import 'package:workout_editor_ui/exercise_video_transport.dart';
 
 void main() {
   test(
+    'rechazo al iniciar explica el estado sin mostrar el cuerpo del proveedor',
+    () async {
+      var requests = 0;
+      final client = MockClient((_) async {
+        requests++;
+        return http.Response('detalle privado del proveedor', 401);
+      });
+      await expectLater(
+        ExerciseVideoTransport(transport: client).upload(
+          const ExerciseVideoUpload(id: 'asset', headers: {}),
+          Uint8List(10),
+          'video/mp4',
+          (_) {},
+          maxBytes: 100,
+        ),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'error seguro',
+            allOf(contains('HTTP 401'), isNot(contains('detalle privado'))),
+          ),
+        ),
+      );
+      expect(requests, 1);
+    },
+  );
+
+  test(
     'TUS envía título técnico y MIME antes de transferir todos los fragmentos',
     () async {
       const id = '20000000-0000-4000-8000-000000000001';

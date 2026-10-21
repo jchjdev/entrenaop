@@ -74,7 +74,13 @@ void main() {
       );
       await expectLater(
         repository.upload(upload, Uint8List.fromList([1]), 'video/mp4', (_) {}),
-        throwsStateError,
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'destino rechazado',
+            contains('destino de subida incompatible'),
+          ),
+        ),
       );
       expect(requests, 1);
     },
