@@ -1,7 +1,9 @@
 # Continuidad de Trainer y seguimiento del alumno · TRN-022
 
-Portal Dev publicado y contrastado por HTTPS y Chrome desde `4ff30d1`, release
-terminada en `-11`. Recuperación de un trabajo incompleto comprobada tras recarga.
+Portal Dev publicado y contrastado por HTTPS y Chrome: recorrido inicial desde
+`4ff30d1` (-11), ampliado por la release -14 con lectura local de vídeos corregida.
+Recuperación de un trabajo incompleto comprobada tras recarga y demostración
+privada reproducida completa desde su reserva anterior.
 [Identidad, hashes, APK y aceptación](TRAINER_STUDENT_RELEASE_2026_10_21.md).
 
 ## Alcance contrastado
@@ -47,8 +49,9 @@ el nombre local del archivo. Referencia primaria revisada el 21/10/2026:
 [Bunny TUS](https://bunny.net/docs/stream/tus-resumable-uploads).
 El archivo de Javier es MP4 H264, 5,733 s y 15.514.669 bytes: entra en las cotas.
 La prueba real inicial reprodujo el fallo antes de entregar credenciales; tras
-el arreglo alcanzó la transferencia. La aceptación completa hasta vídeo listo y
-reproducción todavía debe acreditarse; no se confunde con los tests simulados.
+el arreglo alcanzó la transferencia. La release -14 acredita vídeo listo y
+reproducción completa de 5,733333 s;
+se distingue de los tests simulados y de la técnica física del alumno.
 Las reservas existentes se conservan, sin purga ni reinicio de derechos.
 
 ## Verificación de esta integración
@@ -61,7 +64,12 @@ Las reservas existentes se conservan, sin purga ni reinicio de derechos.
 - ADMIN: análisis y 312 pruebas correctas, dos omisiones previas, acreditados por
   su responsable sobre el código compartido; 15 pruebas focales de vídeo correctas
   tras añadir los metadatos TUS.
-- Servicio de vídeo: 29 pruebas HTTP correctas; autenticación propia conservada.
+- Servicio de vídeo: 32 pruebas HTTP correctas; autenticación propia conservada.
+- Incrementos de vídeo: ocho pruebas compartidas de campo/transporte, siete
+  de previsualización y siete de transporte Trainer correctas. Dieciséis pruebas
+  Python de publicación Trainer/ADMIN verifican también CSP para leer el archivo
+  local, sin admitir scripts blob. No se repiten las baterías completas por
+  cambios posteriores acotados.
 - SQL real: ambos contratos de aislamiento/reintentos/recetas con ROLLBACK.
   Backfill independiente contrastado con datos anteriores al DDL.
 - PG17 local: 108 contenciones de trabajos y cuatro de avisos/perfil correctas.

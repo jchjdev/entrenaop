@@ -105,11 +105,17 @@ class _ExerciseVideoPreviewState extends State<ExerciseVideoPreview> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AspectRatio(
-          aspectRatio: controller.value.aspectRatio > 0
-              ? controller.value.aspectRatio
-              : 16 / 9,
-          child: VideoPlayer(controller),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 360),
+          child: Align(
+            heightFactor: 1,
+            child: AspectRatio(
+              aspectRatio: controller.value.aspectRatio > 0
+                  ? controller.value.aspectRatio
+                  : 16 / 9,
+              child: VideoPlayer(controller),
+            ),
+          ),
         ),
         Slider(
           value: position.toDouble(),

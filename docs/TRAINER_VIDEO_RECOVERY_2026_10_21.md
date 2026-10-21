@@ -20,7 +20,7 @@ una migración aplicada. Consultar Created devuelve estado de transferencia al
 cliente sin actualizar esa fila. «Revisar reserva y continuar» permite pedir al
 servidor que vuelva a comprobarla.
 
-Antes de renovar credenciales de una reserva `processing`, el servidor consulta
+Antes de renovar credenciales de una reserva `uploading` o `processing`, el servidor consulta
 Bunny y verifica vídeo, biblioteca y entorno. Solo `status === 0` permite subir
 el original al mismo vídeo; los estados REST 1..8 no entregan credenciales.
 Se conservan la autorización por propietario/MFA/acceso profesional, el tamaño
@@ -42,6 +42,15 @@ el código comprobado solo limpia `_pending` local y avisa al formulario, sin RP
 ni borrado/liberación del activo. El cierre posterior se autorizó con esa evidencia.
 Se mantienen intactas las reservas remotas.
 
-La aceptación del archivo real hasta reproducción se registra por separado: las
-pruebas simuladas no acreditan ese resultado. No se amplían límites comerciales,
+La release 14 acredita en Chrome la transferencia y reproducción completa del
+MP4 original (5,733333 s), con la misma reserva y cupo 3/100 conservado. El
+creador abre el vídeo preparado sin subir otra copia. Las pruebas simuladas
+se mantienen separadas de esa aceptación, y la técnica física del alumno sigue
+pendiente. [Evidencia](TRAINER_STUDENT_RELEASE_2026_10_21.md). No se amplían límites comerciales,
 se habilitan cobros, se relaja MFA ni se toca producción.
+
+El reproductor compartido limita el vídeo a 360 px de alto, mantiene su proporción
+y deja los controles próximos al clip vertical. Siete pruebas verifican vistas de
+390/1600 px, reproducción bajo demanda, búsqueda y selección del instante; el
+análisis focal pasa. La misma mejora llega a ADMIN y al deportista mediante el
+paquete compartido.
