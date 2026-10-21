@@ -13,16 +13,20 @@ tienen guard de salida en GoRouter y el shell conecta las secciones.
 [Contrato y límites](TRAINER_PRIVATE_PROGRAMS.md),
 [alcance profesional completo](TRAINER_PLATFORM.md).
 
-## Dispositivos y actividades · INT-001 · contrato definido el 21/10/2026
+## Dispositivos y actividades · INT-001/002 · 21/10/2026
 
 Bloque común acordado para deportista, ADMIN y Trainer, comenzando por carrera.
 El contrato separa prescripción versionada, observación externa y resultado
 confirmado. Dominio puro, puertos de integración y adaptadores nativos/servidor
 mantendrán SDK, OAuth y persistencia fuera de las reglas deportivas. Se reutilizan
 receta, cita e historial; el proveedor no pasa a ser origen de prescripción.
-Esta fase es documental: no cambia módulos profesionales en curso, paquetes,
-tablas, RPC, permisos ni composición de las apps. El acoplamiento real se
-contrastará con el contrato profesional vigente antes de implementar.
+INT-002 materializa importación y asociación en `device_activity_core`, sin
+dependencias de ejecución ni consumo desde las apps. Sus planes son transiciones
+inmutables con checkpoints; la atomicidad y autorización reales quedan para el
+adaptador de servidor. No cambia módulos profesionales en curso, tablas, RPC,
+permisos o composición de las apps. La integración real se contrastará con el
+contrato profesional vigente antes de implementar.
+[API, invariantes y obligaciones del adaptador](../packages/device_activity_core/README.md).
 [Bloque y aislamiento](DEVICE_INTEGRATIONS.md),
 [contrato V1](DEVICE_RUNNING_CONTRACT_V1.md) y
 [accesos y límites comprobados](DEVICE_PROVIDER_ACCESS_2026_10_21.md).

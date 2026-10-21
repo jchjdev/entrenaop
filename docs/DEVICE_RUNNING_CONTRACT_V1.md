@@ -1,6 +1,6 @@
 # Contrato de dispositivos para carrera · V1 · INT-001
 
-**21/10/2026 · especificación documental, pendiente de implementación.**
+**21/10/2026 · especificación V1; dominio parcial implementado por INT-002.**
 Desarrolla el [bloque común](DEVICE_INTEGRATIONS.md). Los nombres de entidades y
 operaciones son vocabulario de diseño, no API publicada, tablas existentes ni
 un compromiso de sus firmas definitivas. La versión del contrato debe quedar
@@ -253,6 +253,29 @@ profesional vigente antes de implementar su comunicación.
 10. Sin proveedor, sin red o en web no compatible siguen disponibles el registro
     manual y los recorridos actuales de las tres aplicaciones.
 
-Estos son criterios futuros, no pruebas ejecutadas. La primera implementación
-de dominio cubrirá los casos puros; móvil, servidor y permisos necesitarán sus
-pruebas de integración antes de habilitar cada capacidad.
+INT-002 implementa y prueba los casos puros de importación y asociación, sin
+conectarlos a las aplicaciones. Móvil, servidor, permisos y exportación siguen
+necesitando sus pruebas de integración antes de habilitar cada capacidad.
+
+## 12. Correspondencia implementada · INT-002
+
+El paquete [device_activity_core](../packages/device_activity_core/README.md)
+implementa `ExternalActivity`/segmentos/métricas, identidad y revisiones,
+`ActivityImportState`/páginas/planes y `ActivityAssociationReview`/estado/planes.
+`RunningSessionTarget` proyecta una cita sin copiar su agenda ni recetas.
+`FindActivityDuplicates` recibe tolerancias y versión y solo devuelve candidatos;
+primaria y alias se eligen explícitamente en la revisión. El dominio no modifica
+derechos, resultados confirmados o ejecución por asociar una observación.
+
+Las transiciones incluyen un checkpoint que debe comprobar el adaptador de
+persistencia en una transacción. No se entrega un repositorio en memoria como
+si fuera persistencia real ni se crean interfaces vacías para futuros SDK.
+La cuarentena identifica registros recuperables y bloquea propuestas cuando
+cuestiona la revisión actual. Diferentes tokens sin fecha de modificación
+ordenable requieren recuperación, no una prioridad arbitraria entre canales.
+
+La versión de políticas puras de importación/asociación es 1. Los tiempos usan
+`Duration` con precisión de microsegundos, sin conversión al entero del resultado
+deportivo actual. Las observaciones ya elegidas se conservan como evidencia de
+asociación; no se implementa todavía `ConfirmedResultEvidence`, escritura de
+resultados, SDK, conexiones, OAuth, exportación, SQL ni comunicación con Trainer.

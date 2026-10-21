@@ -1,5 +1,23 @@
 # Roadmap de EntrenaOP
 
+**INT-002 · 21/10/2026 · dominio de carrera aislado y verificado:** paquete
+`device_activity_core`, sin dependencias de ejecución ni cambios de Trainer,
+creadores, agenda, aplicaciones o SQL. Modela identidad/procedencia, tiempos,
+validación/cuarentena, páginas idempotentes con checkpoint, candidatos de
+duplicados y revisión/asociación uno a uno con alias elegidos por el titular.
+Asociar no crea ejecuciones ni confirma resultados deportivos. Dart analyze
+limpio y 56 pruebas puras correctas; Flutter analyze limpio y 1144 pruebas raíz
+correctas con una omisión previa. CI incorpora resolución/análisis/pruebas del
+paquete y evita publicar ADMIN por cambios exclusivos de este dominio y docs/CI;
+ocho escenarios del detector real de alcance pasan con Bash.
+No se acreditan transacciones concurrentes, RLS, conectores ni dispositivos.
+**Tramo de dominio cerrado; bloque funcional de dispositivos abierto.**
+**Único siguiente tramo de INT-001/002:** ensayo aislado de lectura de carrera
+desde Salud de Apple y Health Connect, verificando SDK/permisos/dispositivo
+antes de conectar persistencia o las tres apps; mantener el trabajo profesional
+independiente. [Alcance y evidencia](DEVICE_INTEGRATIONS.md) y
+[API y límites](../packages/device_activity_core/README.md).
+
 **TRN-017 · 21/10/2026 · programas privados y agenda implementados en Dev:**
 composición de programas extraída íntegra de ADMIN al paquete común, biblioteca
 versionada, creación de sesiones dentro, selección de fases/fechas y envío
@@ -27,8 +45,7 @@ pendiente y no bloquea la entrada indirecta de salud que se probará en móvil.
 **Tramo documental delimitado; bloque funcional abierto.** No cambia Trainer,
 sus asignaciones/creadores, SQL o producción; no se ejecuta Flutter/SQL por ser
 documentación. No desplaza el siguiente bloque profesional ya en curso.
-**Único siguiente tramo técnico de INT-001:** dominio puro de importación y
-asociación de carrera con pruebas, en archivos propios. La implementación
+El siguiente tramo indicado entonces se implementa en INT-002. La implementación
 transversal se ordenará con los bloques abiertos antes de conectar las apps.
 [Bloque y fases](DEVICE_INTEGRATIONS.md),
 [contrato V1](DEVICE_RUNNING_CONTRACT_V1.md) y

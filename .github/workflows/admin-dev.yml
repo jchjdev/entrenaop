@@ -27,6 +27,7 @@ jobs:
     timeout-minutes: 35
     outputs:
       revision: ${{ github.sha }}
+      publish_required: ${{ steps.scope.outputs.publish_required }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -46,6 +47,15 @@ jobs:
           flutter pub get --enforce-lockfile
           cd ../trainer_app
           flutter pub get --enforce-lockfile
+          cd ../packages/device_activity_core
+          dart pub get --enforce-lockfile
+      - name: Validar dominio puro de dispositivos
+        working-directory: packages/device_activity_core
+        run: |
+          dart format --output=none --set-exit-if-changed lib test
+          dart analyze --fatal-infos
+          dart test
+          bash tool/test_ci_scope.sh
       - name: Detectar cambios compartidos
         id: scope
         env:
@@ -54,10 +64,21 @@ jobs:
         run: |
           if [ "$EVENT" = workflow_dispatch ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
             echo 'athlete=true' >> "$GITHUB_OUTPUT"
-          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -Eq '^(packages/|pubspec\.(yaml|lock)$|analysis_options\.yaml$)'; then
-            echo 'athlete=true' >> "$GITHUB_OUTPUT"
+            echo 'publish_required=true' >> "$GITHUB_OUTPUT"
           else
-            echo 'athlete=false' >> "$GITHUB_OUTPUT"
+            changed_files=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
+            if printf '%s\n' "$changed_files" | grep -Eq '^(packages/|pubspec\.(yaml|lock)$|analysis_options\.yaml$)'; then
+              echo 'athlete=true' >> "$GITHUB_OUTPUT"
+            else
+              echo 'athlete=false' >> "$GITHUB_OUTPUT"
+            fi
+            # El paquete aislado no se consume en ADMIN y no autoriza publicarlo.
+            if printf '%s\n' "$changed_files" | grep -q '^packages/device_activity_core/' &&
+               ! printf '%s\n' "$changed_files" | grep -Ev '^(packages/device_activity_core/|docs/|\.github/workflows/admin-dev\.yml$)' | grep -q .; then
+              echo 'publish_required=false' >> "$GITHUB_OUTPUT"
+            else
+              echo 'publish_required=true' >> "$GITHUB_OUTPUT"
+            fi
           fi
       - name: Validar aplicación del deportista si cambia código compartido
         if: steps.scope.outputs.athlete == 'true'
@@ -89,7 +110,7 @@ jobs:
 
   deploy:
     needs: validate
-    if: github.ref == 'refs/heads/main' && vars.ADMIN_DEV_DEPLOY_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && needs.validate.outputs.publish_required == 'true' && vars.ADMIN_DEV_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:

@@ -1391,7 +1391,9 @@ redefine sus reglas. Detalle en `PROGRAMA_ADAPTATIVO.md` y `VISUAL_DESIGN.md`.
   cobertura según capacidades reales; no se garantiza todo modelo o función.
   La primera vertical será lectura, revisión y asociación a una sesión prevista;
   el envío requiere integración y compatibilidad propias. Contrato y vías de
-  acceso documentados, sin conectores ni relojes probados. No bloquea el trabajo
+  acceso documentados; INT-002 implementa el dominio puro de importación y
+  asociación con pruebas, todavía sin consumo desde las apps, conectores o
+  relojes probados. No bloquea el trabajo
   profesional activo ni modifica sus derechos. No se diseña sobre Google Fit.
   [Alcance, fases y límites](DEVICE_INTEGRATIONS.md).
 - Strava sigue como investigación futura, fuera del primer alcance de INT-001;

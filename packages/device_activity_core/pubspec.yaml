@@ -1,0 +1,12 @@
+name: device_activity_core
+description: Dominio puro de importación y asociación de actividades EntrenaOP.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: '>=3.13.0 <4.0.0'
+
+# Solo herramientas de desarrollo; el dominio no tiene dependencias externas.
+dev_dependencies:
+  lints: 6.1.0
+  test: 1.31.1

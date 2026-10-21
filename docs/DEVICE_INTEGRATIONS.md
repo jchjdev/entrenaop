@@ -10,10 +10,12 @@ Health Connect es la entrada de salud del ecosistema Android.
 
 **Acordado:** alcance común, separación de responsabilidades, comienzo por
 contrato y acceso a proveedores, y aislamiento del trabajo profesional activo.
-**Definido en esta entrega:** contrato documental V1 y comprobación de las vías
-públicas de acceso. **No implementado:** conectores, importación, exportación,
-pantallas, nuevas tablas o permisos. No hay reloj ni cuenta externa conectados
-por esta entrega y no se declara cerrado el bloque funcional.
+**Definido inicialmente:** contrato documental V1 y comprobación de las vías
+públicas de acceso. **INT-002:** dominio puro de importación/asociación y pruebas
+implementados en `device_activity_core`, sin consumo desde las apps. Siguen sin
+implementar conectores, persistencia real, exportación, pantallas, nuevas tablas
+o permisos. No hay reloj ni cuenta externa conectados y el bloque funcional
+sigue abierto. [API y fronteras](../packages/device_activity_core/README.md).
 
 La cobertura de todas las marcas es un objetivo del producto. Cada combinación
 de reloj, firmware, teléfono, sistema y proveedor necesitará evidencia propia.
@@ -70,15 +72,17 @@ La orquestación depende de los puertos; sus implementaciones se inyectan desde
 la composición de cada aplicación/servicio. La presentación usa Bloc/Cubit para
 estados de producto. El motor de carrera no importará SDK ni conocerá marcas.
 
-Se propone materializar el dominio en un paquete específico cuando empiece su
-implementación, con el nombre y las dependencias comprobados entonces. Esta
-entrega no crea paquetes vacíos ni mueve entidades de los módulos existentes.
-Se reutilizará la receta de `workout_core`; no habrá otro editor o planificador.
+INT-002 materializa el dominio en `packages/device_activity_core/`, sin
+dependencias de ejecución; `test` y `lints` son herramientas de desarrollo
+fijadas y su lockfile se versiona expresamente. No se mueven entidades ni se
+añade la dependencia a las apps. La futura exportación reutilizará la receta de
+`workout_core`; no habrá otro editor o planificador.
 
 ### Regla de convivencia con el trabajo profesional activo
 
-- Este tramo solo modifica documentación propia y referencias acotadas en los
-  índices comunes. No modifica `trainer_app/`, `trainer_access`, creadores,
+- INT-001 documenta y INT-002 añade el paquete puro y su validación de CI, con
+  referencias acotadas en los índices comunes. No modifica `trainer_app/`,
+  `trainer_access`, creadores,
   asignaciones, migraciones, agenda, resultados o inyección de dependencias.
 - No exige al bloque profesional añadir campos de dispositivo ni esperar a
   disponer de accesos externos. Sus pruebas y entregas conservan su alcance.
@@ -95,8 +99,8 @@ Se reutilizará la receta de `workout_core`; no habrá otro editor o planificado
 
 | Fase | Entrega | Condición para darla por comprobada |
 | --- | --- | --- |
-| 0 · actual | Contrato, capacidades, acceso público y expediente de alta. | Documentos coherentes con el código y fuentes oficiales; distinguir acceso documental de credenciales operativas. |
-| 1 | Dominio puro y políticas de importación/asociación. | Pruebas de duplicados, datos incompletos, versiones, tiempos y reintentos; sin dependencia de Trainer. |
+| 0 · documentada | Contrato, capacidades, acceso público y expediente de alta. | Vías públicas revisadas, sin acreditar credenciales operativas. |
+| 1 · implementada por INT-002 | Dominio puro y políticas de importación/asociación. | 56 pruebas de duplicados, datos incompletos, versiones, tiempos y reintentos; sin dependencia de Trainer. |
 | 2 | Lectura de carrera desde Salud de Apple y Health Connect. | Prueba real por plataforma, permisos parciales/revocados, cierre de sesión y lectura incremental; sin perder registro manual. |
 | 3 | Resultado confirmado e integración autorizada en las tres apps. | Una actividad real queda vinculada una sola vez; alumno y preparador ven solo lo que permite su contrato; ADMIN solo diagnóstico. |
 | 4 | Envío de sesiones y conectores directos de fabricantes. | Credenciales aprobadas, receta compatible y envío/recepción reales; pruebas por combinación de dispositivo y proveedor. |
@@ -127,7 +131,7 @@ Revocar conexión detiene importaciones nuevas; desconexión y eliminación de
 datos ya guardados son acciones distintas que deben explicarse al titular.
 La baja profesional conserva el contrato de TRN-015/016 y no abre datos nuevos.
 
-## Evidencia de esta entrega
+## Evidencia de la definición inicial · INT-001
 
 Inspección localizada de `workout_core`, `WorkoutExecution`, `ScheduledWorkout`,
 contratos profesionales y configuración nativa. El código distingue
@@ -137,6 +141,29 @@ tratarse de una entrega exclusivamente documental. Se revisan diff, enlaces
 locales y estado de Git; no se actualizan instantáneas generales ni se atribuyen
 pruebas de otros bloques a esta entrega.
 
-**Único siguiente tramo técnico recomendado:** dominio puro de importación y
-asociación de carrera con pruebas del contrato V1, en archivos propios. No exige
-modificar la arquitectura profesional ni tener aprobadas las APIs de marcas.
+## Evidencia del dominio puro · INT-002 · 21/10/2026
+
+`device_activity_core` implementa entidades inmutables, validación y conservación
+de precisión, planes de importación por conexión/generación/cursor, recibos
+idempotentes, revisiones ordenables por fecha de origen, cuarentena, borrados,
+candidatos de duplicados y vista previa/asociación con primaria y alias explícitos.
+Una actualización dudosa no sobreescribe ni se ofrece como resultado revisable.
+Asociar fija evidencia y cita/versiones; no crea ejecución ni resultados.
+
+Dart 3.13.4 resuelve el lockfile; formatter y análisis sin incidencias. Pasan
+56 pruebas puras y 1144 pruebas de raíz (una omisión previa), con Flutter analyze
+limpio. La comprobación de imports confirma ausencia de dependencias externas
+en `lib/`. Ocho escenarios Bash verifican el detector real de alcance de CI.
+El workflow incorpora resolución y ejecución del paquete; el cambio limitado a este dominio,
+documentación e integración CI no publica ADMIN Dev. No se modifica configuración
+de despliegue de Trainer ni se reclama validación de apps no modificadas.
+
+Los planes deben persistirse en servidor con comprobación atómica de checkpoint,
+identidad, permisos y revisión actual; esa implementación queda pendiente.
+Tolerancias de similitud se inyectan con versión y no constituyen reglas
+deportivas aprobadas. Resolver avisos de duplicados, cuarentenas de orden
+desconocido, retención y datos reales requiere su flujo de integración.
+
+**Único siguiente tramo técnico recomendado:** ensayo móvil aislado de lectura
+de carrera desde Salud de Apple y Health Connect, contrastando SDK, permisos y
+una actividad real antes de conectar almacenamiento o pantallas profesionales.
