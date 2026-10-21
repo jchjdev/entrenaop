@@ -21,8 +21,9 @@ SQL transaccional repetida sobre el esquema aplicado, con `ROLLBACK`. Se registr
 como aplicada después de contrastar el DDL real; en ese momento coincidían 196
 versiones y la ajena `20261021172219` seguía pendiente. Trainer la aplicó después
 y comunicó 197 versiones coincidentes y 26 contratos transaccionales correctos,
-incluido Salud, sobre el esquema conjunto. No acredita producción,
-compilación iOS de la app principal ni instalación física de esta integración.
+incluido Salud, sobre el esquema conjunto. La CI de `37dcd14` compila el
+consumidor principal iOS Simulator. No acredita producción ni instalación física
+de esta integración.
 
 ## Identidad y conservación
 
@@ -149,9 +150,9 @@ Comprobaciones del 21/10/2026:
   ordenar revisiones opacas por momento de recepción ni mostrar dos versiones.
   Widget a 320 px y texto 2 prueba el cierre real del diálogo con `go_router` y
   los componentes comunes de confirmación.
-- `flutter analyze` raíz limpio; batería raíz de 1.219 pruebas correctas y una
-  omisión previa. Los cambios posteriores de diálogo y paginación pasan las 16
-  pruebas de feature; la matriz del punto de guardado conjunto se contrasta aparte.
+- `flutter analyze` raíz limpio; la batería final conjunta alcanza 1.220 pruebas
+  correctas y una omisión previa, después de los ajustes de diálogo y paginación.
+  Las 16 pruebas específicas de feature también pasan por separado.
 - APK debug de la app principal compilado. Android conserva mínimo 24 y todavía
   no conecta Health Connect desde esta app; el puente continúa aislado en el ensayo.
 - `supabase/tests/device_running_history.sql` pasa en PostgreSQL 17 aislado y en
@@ -169,10 +170,17 @@ Comprobaciones del 21/10/2026:
   de contraseñas. Ningún hallazgo nuevo de esta migración; no se han reparado
   áreas ajenas. [Interpretación del linter](https://supabase.com/docs/guides/database/database-linter).
 
-La CI de Salud compilará también la app principal iOS Simulator sin firma ni
-publicación al guardar este bloque. Hasta ver su resultado no se acredita esa
-compilación. La lectura física anterior del ensayo no acredita por sí sola
-guardado ni lectura de la app principal. Bloque de dispositivos abierto.
+Punto de guardado conjunto `37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`, confirmado
+en `main` remoto. [CI de Salud 39649281298](https://github.com/jchjdev/entrenaop/actions/runs/39649281298)
+terminada con `success`: Android `119393027027` e iOS `119393027073` correctos.
+El job iOS compila tanto el ensayo como la app principal para simulador, sin
+firma ni publicación. La lectura física anterior del ensayo no acredita por sí
+sola guardado ni lectura de la app principal. Bloque de dispositivos abierto.
+
+La [CI ADMIN 39649281484](https://github.com/jchjdev/entrenaop/actions/runs/39649281484)
+del mismo SHA termina con `success`: validación, publicación Dev y retención de
+paquetes correctas. Esta publicación web no distribuye la app móvil ni acredita
+producción o publicación del portal Trainer.
 
 ## Siguiente prueba con el iPhone
 

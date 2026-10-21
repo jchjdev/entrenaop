@@ -28,14 +28,27 @@ a ejecutar Flutter/SQL ni consulta el estado remoto de Supabase. Las cifras se
 atribuyen abajo a su evidencia. El estado previo a la publicación queda superado;
 no debe leerse como el estado actual del portal.
 
-Continuación TRN-021 / INT-004 en validación final, todavía sin SHA de entrega
-nuevo: historial privado de Salud y trabajos incompletos de programas están
+Continuación TRN-021 / INT-004 validada, guardada y subida en
+`37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`, HEAD local contrastado: historial
+privado de Salud y trabajos incompletos de programas están
 implementados y sus dos migraciones aplicadas solo en Dev. Trainer confirma 197
 migraciones coincidentes, cero pendientes y 26 contratos juntos con `ROLLBACK`
-sobre el esquema aplicado. HEAD sigue siendo `dd5443b`; la publicación web
-anterior no acredita todavía esta continuación. Trainer conserva la ventana de
-Git y entregará la nueva identidad de fuentes/publicación al cerrar.
+sobre el esquema aplicado. Trainer confirma remoto coincidente y 69 archivos
+revisados, conservando fuera los dos cambios ajenos. La reconstrucción web desde
+ese commit y el ZIP sellado están terminados. La publicación sigue pendiente de
+autorización específica: la revisión automática bloqueó conceder autoridad al
+origen de archivos de Hostinger, que muestra una raíz privada, y Trainer la ha
+solicitado a Javier sin buscar otro acceso. La publicación anterior `a2c467f` no
+acredita todavía esta continuación. Trainer conserva la ventana de Git y entregará
+la identidad de publicación al comprobarla. Dispositivos confirma ambas CI
+terminadas con éxito: Salud `39649281298`, incluida app principal iOS Simulator
+y ensayo iOS/Android; ADMIN `39649281484`, validación, despliegue Dev y retención.
+Estas CI no resuelven el bloqueo de publicación de Trainer ni la aceptación
+física de la integración principal.
 [Programas](TRAINER_PROGRAM_WORK_DRAFTS.md), [Salud](DEVICE_RUNNING_HISTORY.md).
+[ZIP de recuperación preparado y publicación bloqueada](TRAINER_RECOVERY_RELEASE_2026_10_21.md)
+registra fuente `37dcd14`, release preparada terminada en `-9` y hashes exactos;
+no acredita que ese artefacto esté servido por el portal.
 
 ## Responsables y reservas
 
@@ -143,8 +156,12 @@ aplicada en Dev, tras contrastar el DDL real antes de registrar su historial. No
 pertenece a la release profesional anterior de 195 migraciones. Su contrato SQL
 se repitió sobre el esquema aplicado; junto con programas hay ahora 197 versiones
 coincidentes y 26 contratos correctos, según Trainer. APK debug principal compilado
-y 16 pruebas dirigidas de Salud correctas; la compilación iOS principal en CI y
-la instalación física de esta integración siguen pendientes de evidencia.
+y 16 pruebas dirigidas de Salud correctas. La CI
+[39649281298](https://github.com/jchjdev/entrenaop/actions/runs/39649281298)
+termina con éxito y acredita también app principal iOS Simulator; la instalación
+física de esta integración sigue pendiente. Dispositivos registra asimismo CI
+[ADMIN 39649281484](https://github.com/jchjdev/entrenaop/actions/runs/39649281484)
+correcta, incluidos despliegue Dev y retención del mismo commit de fuentes.
 La conexión lógica por cuenta/canal, el guardado explícito y las revisiones
 inmutables mantienen el aislamiento del historial personal respecto a Trainer
 y ADMIN. El namespace persistente no identifica AppleID ni HealthStore; los
@@ -308,15 +325,20 @@ editor común 124 (catorce regresiones nuevas) y `trainer_access` 20; Salud cons
 `build/trainer-recovery-athlete-tests-final.log`. Análisis raíz/Trainer/ADMIN/editor
 limpios, 42 archivos Dart sin cambios de formato y compilación web Trainer Dev
 correcta, según Trainer. Incluye el guard previo al callback `onSaved`, probado.
-El commit y la publicación de esta continuación siguen pendientes de su identidad
-concreta; la matriz correcta no los acredita por sí sola.
+El commit de esta continuación es `37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`,
+guardado y subido según Trainer, con reconstrucción y ZIP sellado terminados. La
+publicación espera la autorización específica de Hostinger solicitada a Javier
+tras el bloqueo de revisión automática; no se ha completado por otra vía. La
+matriz correcta, el commit y el ZIP no acreditan por sí solos el despliegue.
 
 Trainer ha cerrado el punto de guardado/publicación descrito, sin cerrar el
 alcance completo. Permanecen pendientes la aceptación física con dos cuentas y
-archivos reales, la distribución móvil y la publicación ADMIN por su propio
-flujo, además de las dependencias funcionales abiertas de la tabla. El siguiente
+archivos reales y la distribución móvil, además de las dependencias funcionales
+abiertas de la tabla. ADMIN ya completa su flujo CI de despliegue Dev sobre
+`37dcd14`, según Dispositivos; la prueba humana de sus nuevos recorridos conserva
+su evidencia propia. El siguiente
 tramo de recuperación de programas Trainer está implementado y aplicado en Dev,
-en validación final y pendiente del siguiente guardado/publicación; no está
+validado y guardado en `37dcd14`, pendiente de publicación; no está
 incluido como terminado en la release publicada.
 
 ## Contratos entre aplicaciones
@@ -462,6 +484,15 @@ acotado del primer checkpoint ni obliga a cambiar el puerto ADMIN existente.
 No acredita la API genérica implementada. Las posiciones de sesión ya tienen la
 corrección aditiva indicada arriba; las identidades de fase y la durabilidad del
 hijo incompleto requieren su tramo propio.
+
+ADMIN prepara únicamente el diseño del puerto común de recuperación de sesiones.
+Arquitectura revisará ese contrato y sus fronteras cuando se entregue; no se abre
+su implementación ni se conceden nuevas reservas mientras las fuentes del bloque
+actual sigan congeladas.
+Trainer confirma en su revisión que faltan `phaseId`/`childWorkId` y que el
+callback común `openSession` todavía no recibe el binding del trabajo hijo. Esas
+carencias deben resolverse en la API opcional propuesta; `positionId` por sí solo
+no acredita durabilidad de una sesión incompleta dentro del programa.
 
 ### Base histórica de la propuesta y reutilización
 

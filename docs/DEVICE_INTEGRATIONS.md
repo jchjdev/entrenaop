@@ -26,8 +26,9 @@ y los puertos permanecen separados de HealthKit y Supabase. Persistencia/RPC
 aplicadas y probadas solo en Dev; revisiones inmutables, reintentos sin duplicar,
 cuotas agregadas y aislamiento de cuentas comprobados con fixtures. Compilación
 Android de la app principal correcta; Health Connect continúa en el ensayo,
-sin elevar el mínimo Android. iOS principal y aceptación física del recorrido
-de lectura/guardado siguen pendientes. [Contrato y evidencia](DEVICE_RUNNING_HISTORY.md).
+sin elevar el mínimo Android. La CI de `37dcd14` compila iOS Simulator de la app
+principal; la aceptación física del recorrido de lectura/guardado sigue pendiente.
+[Contrato y evidencia](DEVICE_RUNNING_HISTORY.md).
 Faltan conectores de producción, exportación, interfaces/autorización de ADMIN
 y Trainer, y lectura Android en la app principal.
 No hay acceso API propio de Garmin ni cuenta de fabricante conectada

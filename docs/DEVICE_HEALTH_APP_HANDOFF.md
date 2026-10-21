@@ -25,6 +25,16 @@ La [CI ADMIN 39637024185](https://github.com/jchjdev/entrenaop/actions/runs/3963
 del mismo commit terminó con `success`, validación correcta y publicación y
 retención omitidas por alcance aislado. No se ha desplegado ninguna app.
 
+INT-004 se guarda después en `37dcd14`. La
+[CI de Salud 39649281298](https://github.com/jchjdev/entrenaop/actions/runs/39649281298)
+termina con `success`: compila el ensayo Android y ambos consumidores iOS
+(ensayo y app principal) para simulador, sin firma ni publicación. Es evidencia
+de compilación del consumo principal; su lectura y guardado físicos siguen
+pendientes. [Historial privado por cuenta](DEVICE_RUNNING_HISTORY.md).
+La [CI ADMIN del mismo SHA](https://github.com/jchjdev/entrenaop/actions/runs/39649281484)
+también termina correctamente, con validación, publicación Dev y retención de
+paquetes. No equivale a distribución móvil ni publicación de Trainer.
+
 ## API y consumidor
 
 `device_health` expone un puerto sin imports Flutter:

@@ -1,6 +1,6 @@
 # Roadmap de EntrenaOP
 
-**TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; publicación web en curso:**
+**TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; publicación pendiente de acceso:**
 programas incompletos de Trainer reutilizan puerto, controlador y editor comunes;
 la sesión de las RPC queda vinculada a la cuenta. Nueva URL estable, recuperación,
 descarte y finalización atómica, sin copiar ADMIN. Servidor aplicado en Dev:
@@ -12,10 +12,17 @@ Análisis raíz/Trainer/ADMIN/UI limpios; formato de 42 fuentes Dart sin cambios
 La corrección común conserva posiciones repetidas, normaliza el orden de claves
 y confirma un enlace incierto sin volver a introducirlo como pendiente. Catorce
 regresiones nuevas cubren recuperación y guardado en ambos contextos. El portal
-web compila para Dev; su publicación se acredita por separado.
+web compila para Dev y el ZIP de `37dcd14` está sellado. La publicación espera
+autorización específica al origen del gestor Hostinger, bloqueada por revisión
+automática al mostrar también archivos privados del alojamiento. No se ha
+extraído el nuevo paquete ni eludido el bloqueo.
+[Identidad, matriz y estado de la entrega](TRAINER_RECOVERY_RELEASE_2026_10_21.md).
 Salud incorpora ruta, configuración iOS aditiva, pruebas de feature y APK de
-desarrollo compilado; no acredita instalación física principal ni Health Connect
-en la app habitual. **No abrir otro bloque grande hasta este punto de guardado.**
+desarrollo compilado. La CI `39649281298` de `37dcd14` termina correctamente,
+incluida la compilación principal iOS Simulator sin firma. ADMIN pasa validación
+y publicación Dev en la CI `39649281484`. No acredita instalación física
+principal ni Health Connect en la app habitual. **No abrir otro bloque grande
+hasta este punto de guardado.**
 Después continúa la recuperación de sesiones, sin duplicar el creador.
 [Programas](TRAINER_PROGRAM_WORK_DRAFTS.md), [cuenta](TRAINER_ACCOUNT_REQUESTS.md),
 [Salud](DEVICE_RUNNING_HISTORY.md).
