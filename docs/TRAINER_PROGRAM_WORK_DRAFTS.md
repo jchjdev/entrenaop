@@ -193,4 +193,9 @@ Matriz final: Trainer 137 pruebas, ADMIN 306 con dos omisiones previas, UI comú
 124 y raíz 1220 con una omisión previa. Los análisis correspondientes son limpios
 y la compilación web Dev de Trainer es correcta. Regresión del router real:
 UUID/controlador/texto conservados, autosave a 700 ms y recuperación tras salir.
-La aceptación humana en el portal y la distribución móvil se registran aparte.
+Trainer Dev se publica desde `37dcd14`, release terminada en `-20261021-9`:
+HTTPS contrasta identidad/archivos/cabeceras y Chrome comprueba biblioteca y
+editor con la sesión MFA existente, sin crear trabajos de prueba.
+[Evidencia de publicación](TRAINER_RECOVERY_RELEASE_2026_10_21.md).
+La aceptación humana de recuperación con contenido y la distribución móvil
+siguen siendo comprobaciones distintas.

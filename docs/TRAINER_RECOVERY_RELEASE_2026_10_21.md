@@ -1,4 +1,4 @@
-# Recuperación profesional y Salud · entrega preparada · 21/10/2026
+# Recuperación profesional y Salud · Trainer publicado en Dev · 21/10/2026
 
 ## Identidad y estado
 
@@ -8,30 +8,49 @@ ese commit y el empaquetador comprobó las fuentes consumidas limpias.
 
 - Destino autorizado: `https://trainer.entrenaop.es/`, exclusivamente Dev
   `sxbxfjqgoddzhtcyhalw`.
-- Release preparada: `37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0-20261021-9`.
+- Release publicada: `37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0-20261021-9`.
 - ZIP local: `build/trainer-recovery-release-20261021.zip`.
 - SHA-256 ZIP: `a831ef00fc6c54c093daa4a5ce7cbb1ed4dd87a3c2beaa448f7ac07045834f75`.
 - SHA-256 JavaScript: `fb04edd98edc9d9a371eeb4bc7b3e17ee8b5ce666032f9ca43202dcd8f4d651c`.
 - Fecha del manifiesto: `2026-10-21T18:05:08.248887+00:00`.
 
-**La nueva release todavía no está publicada ni verificada por HTTPS/Chrome.**
-La sesión anterior del gestor de archivos devolvió 403 durante la carga. Tras
-renovarla desde hPanel, la revisión automática del navegador rechazó conceder
-autoridad al origen `srv1589-files.hstgr.io`: el gestor muestra también otros
-archivos privados del alojamiento. Se solicitó a Javier autorización específica
-para ese acceso y para modificar únicamente `public_html/trainer`; permanece
-pendiente. No se ha extraído el paquete ni se han cambiado permisos para eludir
-el bloqueo. La revisión también rechazó observar hPanel al intentar guardar una
-captura del destino; no hay captura nueva ni se solicita ese acceso adicional,
-innecesario si el gestor específico queda autorizado. La publicación anterior
-conserva su evidencia en
+**Publicación completada y verificada por HTTPS y Chrome.** Javier confirma
+expresamente el acceso a Hostinger y su gestor para actualizar exclusivamente
+`public_html/trainer`. Esto resuelve el bloqueo de autorización registrado en
+`a686758`; no se cambian permisos del alojamiento ni se elude la revisión.
+
+Se renueva la sesión desde hPanel y se carga el ZIP en `trainer-releases`, fuera
+de la raíz pública. El selector de extracción confirma
+`/files/public_html/trainer/` antes de activar sobrescritura y extraer con nombre
+de carpeta `.`. No se modifican archivos de ADMIN ni se eliminan releases previas.
+El SHA-256 del ZIP local se contrasta otra vez antes de extraer.
+
+`trainer_release.py verify --output build/trainer-recovery-release-20261021`
+termina correctamente: manifiesto, revisión, release, hash del JavaScript,
+entrada activa, cabeceras y MIME de WebAssembly coinciden con el paquete.
+La publicación anterior conserva su evidencia histórica en
 [TRN-020](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
 
-Al recibir autorización, terminar la carga en el directorio no público
-`trainer-releases`, extraer solo en `public_html/trainer` conservando releases
-anteriores, ejecutar `trainer_release.py verify` y comprobar en Chrome la
-recuperación de programas con la sesión MFA existente. Registrar aquí las
-capturas y el resultado real antes de declarar publicada esta entrega.
+## Verificación en Chrome
+
+Se conserva la sesión MFA existente y el acceso profesional de cinco plazas
+(cero ocupadas). La biblioteca carga desde el servidor y muestra Trabajos
+incompletos sin errores; la cuenta no tiene montajes guardados. Crear programa
+abre el editor común en una URL estable `/programs/work/<UUID>`, con guardado
+parcial, rutina/fases y acceso a sesiones privadas. Se vuelve a la biblioteca
+sin escribir ni guardar; permanece vacía. No se crean clientes, sesiones,
+programas o trabajos de prueba.
+
+El registro capturado no muestra errores de aplicación en este recorrido;
+aparecen únicamente errores de conexión de la extensión KeePassXC. La
+recuperación de un trabajo ya escrito, los reintentos y la concurrencia se
+acreditan por las pruebas de la matriz, no por esta navegación sin escrituras.
+
+- [Biblioteca publicada](visual-audit/trainer-recovery-2026-10-21/programas-dev-publicado.png).
+- [Editor común publicado](visual-audit/trainer-recovery-2026-10-21/creador-dev-publicado.png).
+
+Se deja abierta la biblioteca. Esta comprobación no acredita aceptación con dos
+cuentas humanas, archivos reales ni distribución de la app del deportista.
 
 ## Cambios y comprobaciones
 

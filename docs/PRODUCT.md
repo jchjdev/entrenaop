@@ -4,9 +4,11 @@
 incorporan trabajos privados incompletos mediante el creador compartido con
 ADMIN. Guardar el trabajo conserva campos pendientes; finalizar valida y crea
 la versión asignable. Recargar y renovar sesión conservan su identidad; los
-reintentos y otras pestañas no sobrescriben silenciosamente. La publicación de
-esta interfaz se acredita aparte; la recuperación de sesiones internas sigue
-pendiente. [Contrato](TRAINER_PROGRAM_WORK_DRAFTS.md).
+reintentos y otras pestañas no sobrescriben silenciosamente. Interfaz publicada
+en Trainer Dev desde `37dcd14`, con HTTPS y entrada al editor comprobados en
+Chrome; la recuperación de sesiones internas sigue pendiente.
+[Contrato](TRAINER_PROGRAM_WORK_DRAFTS.md),
+[publicación](TRAINER_RECOVERY_RELEASE_2026_10_21.md).
 
 **INT-004 · 21/10/2026 · Carreras de Salud:** la app incorpora consulta e
 importación explícita al historial privado de la cuenta, con servidor Dev

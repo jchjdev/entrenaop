@@ -1,6 +1,6 @@
 # Roadmap de EntrenaOP
 
-**TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; publicación pendiente de acceso:**
+**TRN-021 / INT-004 · 21/10/2026 · código y Dev verificados; Trainer publicado:**
 programas incompletos de Trainer reutilizan puerto, controlador y editor comunes;
 la sesión de las RPC queda vinculada a la cuenta. Nueva URL estable, recuperación,
 descarte y finalización atómica, sin copiar ADMIN. Servidor aplicado en Dev:
@@ -12,10 +12,11 @@ Análisis raíz/Trainer/ADMIN/UI limpios; formato de 42 fuentes Dart sin cambios
 La corrección común conserva posiciones repetidas, normaliza el orden de claves
 y confirma un enlace incierto sin volver a introducirlo como pendiente. Catorce
 regresiones nuevas cubren recuperación y guardado en ambos contextos. El portal
-web compila para Dev y el ZIP de `37dcd14` está sellado. La publicación espera
-autorización específica al origen del gestor Hostinger, bloqueada por revisión
-automática al mostrar también archivos privados del alojamiento. No se ha
-extraído el nuevo paquete ni eludido el bloqueo.
+web está publicado desde `37dcd14`, release terminada en `-20261021-9`. Javier autoriza
+expresamente acceso a Hostinger/gestor y se extrae solo en `public_html/trainer`;
+queda resuelto el bloqueo anterior. HTTPS verifica identidad, archivos y
+cabeceras; Chrome conserva MFA/cinco plazas y comprueba biblioteca y editor sin
+crear contenido de prueba.
 [Identidad, matriz y estado de la entrega](TRAINER_RECOVERY_RELEASE_2026_10_21.md).
 Salud incorpora ruta, configuración iOS aditiva, pruebas de feature y APK de
 desarrollo compilado. La CI `39649281298` de `37dcd14` termina correctamente,

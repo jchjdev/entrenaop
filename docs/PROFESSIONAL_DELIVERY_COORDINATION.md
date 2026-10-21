@@ -15,11 +15,11 @@ API, tablas, permisos ni nuevos estados de producto. Desarrolla el
 [DECISIONS](DECISIONS.md), el [roadmap](ROADMAP.md) ni los contratos de dominio.
 El responsable Trainer incorporará allí la autorización y los cierres reales.
 
-Actualización de coordinación del 21/10/2026: entrega conjunta guardada y subida
-en `a2c467fe9a1a2a1c854304f7701879b509827aee`. Trainer está publicado en
+Primera publicación de este bloque, conservada como evidencia histórica:
+fuentes `a2c467fe9a1a2a1c854304f7701879b509827aee`, portal
 `https://trainer.entrenaop.es/`, release
 `a2c467fe9a1a2a1c854304f7701879b509827aee-20261021-8`; evidencia guardada en
-`6937aec` y ajuste de formato en `dd5443b`, HEAD local contrastado. Sus diez
+`6937aec` y ajuste de formato en `dd5443b`. Sus diez
 migraciones nuevas están aplicadas en Dev y `exercise-video` desplegada allí.
 [Identidad, validación y límites de la publicación](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
 Se conservan aparte los cambios previos de `.gitignore` y `devtools_options.yaml`.
@@ -29,26 +29,32 @@ atribuyen abajo a su evidencia. El estado previo a la publicación queda superad
 no debe leerse como el estado actual del portal.
 
 Continuación TRN-021 / INT-004 validada, guardada y subida en
-`37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`, HEAD local contrastado: historial
+`37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`, fuente contrastada: historial
 privado de Salud y trabajos incompletos de programas están
 implementados y sus dos migraciones aplicadas solo en Dev. Trainer confirma 197
 migraciones coincidentes, cero pendientes y 26 contratos juntos con `ROLLBACK`
 sobre el esquema aplicado. Trainer confirma remoto coincidente y 69 archivos
 revisados, conservando fuera los dos cambios ajenos. La reconstrucción web desde
-ese commit y el ZIP sellado están terminados. La publicación sigue pendiente de
-autorización específica: la revisión automática bloqueó conceder autoridad al
-origen de archivos de Hostinger, que muestra una raíz privada, y Trainer la ha
-solicitado a Javier sin buscar otro acceso. La publicación anterior `a2c467f` no
-acredita todavía esta continuación. Trainer conserva la ventana de Git y entregará
-la identidad de publicación al comprobarla. Dispositivos confirma ambas CI
+ese commit y el ZIP sellado están terminados. Javier autoriza expresamente el
+acceso a Hostinger/gestor y Trainer publica la release
+`37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0-20261021-9`, extrayendo únicamente en
+`public_html/trainer`. La revisión automática había bloqueado autorizar el origen
+de archivos, que muestra una raíz privada; ese bloqueo queda histórico y resuelto
+por la autorización específica. `trainer_release.py verify` acredita por HTTPS
+manifiesto, hash del JavaScript, entrada, cabeceras y MIME. Trainer comprueba en
+Chrome, conservando la sesión MFA, Programas/Trabajos incompletos y la nueva ruta
+UUID/editor común: carga sin errores y vuelve a lista vacía tras salir sin escribir.
+Coordinación registra ese recorrido y comprueba la presencia de sus capturas,
+sin repetir la navegación. Dispositivos confirma ambas CI
 terminadas con éxito: Salud `39649281298`, incluida app principal iOS Simulator
 y ensayo iOS/Android; ADMIN `39649281484`, validación, despliegue Dev y retención.
-Estas CI no resuelven el bloqueo de publicación de Trainer ni la aceptación
-física de la integración principal.
+Estas CI y la publicación web no acreditan aceptación física de la integración
+principal.
 [Programas](TRAINER_PROGRAM_WORK_DRAFTS.md), [Salud](DEVICE_RUNNING_HISTORY.md).
-[ZIP de recuperación preparado y publicación bloqueada](TRAINER_RECOVERY_RELEASE_2026_10_21.md)
-registra fuente `37dcd14`, release preparada terminada en `-9` y hashes exactos;
-no acredita que ese artefacto esté servido por el portal.
+[Evidencia de la publicación de recuperación](TRAINER_RECOVERY_RELEASE_2026_10_21.md)
+registra fuente `37dcd14`, release terminada en `-9` y hashes exactos. Capturas del
+recorrido comunicado: [lista publicada](visual-audit/trainer-recovery-2026-10-21/programas-dev-publicado.png)
+y [creador publicado](visual-audit/trainer-recovery-2026-10-21/creador-dev-publicado.png).
 
 ## Responsables y reservas
 
@@ -270,7 +276,7 @@ Esta tabla no declara cerrados los dieciséis puntos.
 | 2 | Ficha completa | Ficha y contexto profesional integrados localmente. | Trainer + deportista: solo datos permitidos; notas internas separadas de indicaciones visibles. |
 | 3 | Calendario editable | Agenda editable, eventos y previsualización integrados; batería final de concurrencia correcta. | Trainer + deportista: confirmar fechas/cambios, tratar inicio concurrente y conservar el plan automático. |
 | 4 | Adaptación individual | Cambios individuales revisados implementados sin modificar biblioteca; regresiones finales correctas. | Trainer: receta/versiones y destinatario inequívocos; pauta anterior y ejecución iniciada preservadas. |
-| 5 | Creador ágil | Creación contextual publicada; recuperación de programas Trainer implementada y servidor aplicado en Dev, cierre de matriz/publicación pendiente. Recuperación de sesiones incompletas sigue pendiente. | ADMIN + adaptadores Trainer: mismo creador, capacidades conservadas, reintento sin duplicados. |
+| 5 | Creador ágil | Creación contextual y recuperación de programas Trainer publicadas en Dev; lista/ruta/editor comprobados en Chrome sin escribir contenido de ensayo. Recuperación de sesiones incompletas sigue pendiente. | ADMIN + adaptadores Trainer: mismo creador, capacidades conservadas, reintento sin duplicados. |
 | 6 | Biblioteca eficiente | Backend y consumidores de favoritos/recientes integrados y probados; selector Trainer publicado y consultado en Chrome, sin escribir preferencias de ensayo. Etiquetas no acreditadas por esta entrega. | ADMIN en componentes comunes, Trainer en sus datos: preferencias por identidad/contexto sin abrir contenido privado. |
 | 7 | Grupos y envío conjunto | Grupos, envío y copia semanal integrados localmente. | Trainer: destinatarios explícitos, aislamiento individual y resultado recuperable por destinatario conforme al contrato de grupos. |
 | 8 | Evolución | Evolución y contexto de resultados integrados en ficha/informes; pendiente aceptación conjunta. | Trainer + deportista: periodo, origen, unidades, omisiones y cobertura explicados; ausencia no equivale a cero. |
@@ -286,8 +292,8 @@ Esta tabla no declara cerrados los dieciséis puntos.
 ### Evidencia de integración comunicada por Trainer
 
 Las cifras de este apartado describen la release `a2c467f` salvo la continuación
-TRN-021 / INT-004 identificada al final; se mantienen ambas para distinguir código
-publicado de código todavía pendiente de guardar/publicar.
+TRN-021 / INT-004 identificada al final; se mantienen ambas para distinguir sus
+fuentes, publicaciones y límites de aceptación.
 
 - Trainer confirma diez migraciones nuevas ya aplicadas permanentemente en Dev,
   con 195 entradas coincidentes en el historial local/remoto, y los 24 contratos
@@ -326,10 +332,11 @@ editor común 124 (catorce regresiones nuevas) y `trainer_access` 20; Salud cons
 limpios, 42 archivos Dart sin cambios de formato y compilación web Trainer Dev
 correcta, según Trainer. Incluye el guard previo al callback `onSaved`, probado.
 El commit de esta continuación es `37dcd14b3e2a1df0f23cfc117e2e42d5d8791ca0`,
-guardado y subido según Trainer, con reconstrucción y ZIP sellado terminados. La
-publicación espera la autorización específica de Hostinger solicitada a Javier
-tras el bloqueo de revisión automática; no se ha completado por otra vía. La
-matriz correcta, el commit y el ZIP no acreditan por sí solos el despliegue.
+guardado y subido según Trainer, con reconstrucción y ZIP sellado terminados.
+Publicación Dev completada tras autorización expresa de Javier, release `-9`
+verificada por HTTPS y recorrido de lectura en Chrome acreditado por Trainer.
+La comprobación no guarda un programa ni acredita recuperación tras recargar
+trabajo real, dos cuentas, vídeo real o instalación móvil.
 
 Trainer ha cerrado el punto de guardado/publicación descrito, sin cerrar el
 alcance completo. Permanecen pendientes la aceptación física con dos cuentas y
@@ -338,8 +345,8 @@ abiertas de la tabla. ADMIN ya completa su flujo CI de despliegue Dev sobre
 `37dcd14`, según Dispositivos; la prueba humana de sus nuevos recorridos conserva
 su evidencia propia. El siguiente
 tramo de recuperación de programas Trainer está implementado y aplicado en Dev,
-validado y guardado en `37dcd14`, pendiente de publicación; no está
-incluido como terminado en la release publicada.
+validado, guardado y publicado desde `37dcd14`. La aceptación humana del guardado
+y recuperación de un programa propio sigue siendo un hito distinto.
 
 ## Contratos entre aplicaciones
 
@@ -441,7 +448,8 @@ puerto. La composición ADMIN permanece propia; las correcciones generales de
 posiciones repetidas y normalización se realizan una vez en el paquete común y
 ADMIN cierra su matriz con ambos consumidores. El backend
 `20261021172219_trainer_program_work_drafts.sql` ya está aplicado en Dev; la
-interfaz está integrada, con validación final y nueva publicación pendientes.
+interfaz está integrada, validada y publicada desde `37dcd14`; el recorrido de
+Chrome acredita carga/lista/salida sin guardar, no aceptación de escritura real.
 
 Se reutilizan `GuidedWorkRepository`, `GuidedWorkController` y la página común.
 La clave de operación parcial es propietario/contexto/workId/acción/revisión
