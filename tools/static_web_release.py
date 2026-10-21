@@ -50,4 +50,3 @@ def package_web(source, output, revision, release_id, deployment, *, host, proje
                 "mainJsSha256": digest((release / "main.dart.js").read_bytes())}
     (output / "build-info.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest
-
