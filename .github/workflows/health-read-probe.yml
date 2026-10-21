@@ -33,6 +33,7 @@ jobs:
         run: |
           flutter config --jdk-dir "$JAVA_HOME_17_X64"
           flutter pub get --enforce-lockfile
+          bash tool/test_prepare_iphone.sh
           dart format --output=none --set-exit-if-changed lib test
           flutter analyze
           flutter test

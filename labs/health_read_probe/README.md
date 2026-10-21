@@ -15,6 +15,21 @@ revoca permisos del sistema.
 
 Desde esta carpeta, con Flutter 3.47.5 / Dart 3.13.4:
 
+En el Mac se puede preparar antes de conectar el iPhone:
+
+```sh
+bash tool/prepare_iphone.sh
+```
+
+El script fija la carpeta del ensayo, comprueba SDK/Xcode, resuelve el lockfile,
+analiza, prueba y lista destinos. No instala, firma, cambia Git ni solicita
+acceso a Salud. Al conectar el iPhone, revisar el equipo propio en Xcode y seguir
+el comando Release que imprime. La firma/provisión de este identificador debe
+validarse en el Mac; no se acredita por compilar sin firma en CI. No hacen falta
+archivos `.env` ni configuración de las aplicaciones existentes.
+
+Comprobación manual equivalente:
+
 ```sh
 flutter pub get --enforce-lockfile
 dart format --output=none --set-exit-if-changed lib test

@@ -63,6 +63,36 @@ a las aplicaciones existentes.
 
 ## Primera prueba real: Garmin → Connect → Salud → ensayo
 
+### Preparar el Mac antes de conectar el iPhone
+
+En GitHub Desktop del Mac, Fetch origin y Pull origin sobre `main`, conservando
+cualquier cambio local. Abrir una terminal en `labs/health_read_probe` y ejecutar:
+
+```sh
+bash tool/prepare_iphone.sh
+```
+
+El preparador verifica que se ejecuta en macOS con Flutter 3.47.5, muestra Xcode,
+resuelve el lockfile del ensayo y ejecuta su análisis/pruebas. Después muestra
+los destinos de Xcode y Flutter. Fija su propia carpeta, aunque se invoque desde
+otra ruta, y no ejecuta instalaciones, firma, lecturas de Salud ni operaciones
+de Git que modifiquen archivos o historial. Descarga dependencias y puede crear
+la configuración generada de Flutter dentro del ensayo.
+
+Revisar en Xcode el equipo propio, el identificador exclusivo y HealthKit.
+La matriz oficial de Apple incluye HealthKit entre las capacidades del acceso
+Apple Developer; no se da por necesaria una compra de membresía para este
+ensayo. La concesión concreta del perfil debe comprobarse en Xcode, sin quitar
+el entitlement para conseguir compilar ni reutilizar el identificador de la
+app del deportista. Si Xcode informa de conflicto de identificador, licencia,
+certificado o perfil, resolver ese mensaje específico antes de instalar.
+
+La preparación en el Mac de Javier, la provisión y la instalación aún están
+pendientes: desde Windows se verifican sintaxis y cuatro escenarios del script
+con herramientas simuladas; esas pruebas no se presentan como ejecución en Mac.
+
+### Cuando esté conectado al Mac
+
 Garmin documenta envío de entrenamientos de Connect a Salud cuando se autoriza
 el intercambio. Esto permite probar una vía indirecta de lectura sin disponer
 de acceso propio a Garmin Activity API. No acredita acceso directo a Garmin,
@@ -79,6 +109,11 @@ de la serie completa. Este ensayo no solicita esas dos categorías.
    `ios/Runner.xcworkspace`, seleccionar equipo propio y comprobar HealthKit en
    la firma del identificador `es.entrenaop.healthReadProbe`. Instalar solo el
    ensayo en el iPhone; no sustituye la app existente.
+   Desde esa misma carpeta, usar `flutter run --release -d ID_DEL_IPHONE --no-pub`
+   con el identificador físico que muestra `flutter devices`. Release permite
+   abrir el ensayo desde su icono sin mantener el depurador conectado. No hacen
+   falta Supabase, archivos `.env`, claves de fabricantes ni credenciales de
+   otras personas; tampoco se publica en una tienda.
 4. Ejecutar disponibilidad → permiso → lectura. Comparar con esa carrera de
    Salud: tipo, inicio, duración y distancia cuando exista. La distancia diaria
    de caminar/correr no equivale necesariamente al total del entrenamiento.
@@ -131,6 +166,14 @@ los permisos reales. Registrar después fecha, sistema, escritor, tipos/métrica
 comprobados, resultado de denegar/revocar y límites; no subir datos de salud
 personales ni capturas identificables al repositorio.
 
+**CI general ADMIN comprobada:**
+[ejecución 39621174972](https://github.com/jchjdev/entrenaop/actions/runs/39621174972)
+del commit `4575e32`, terminada con `success`. Incluye resolución de lockfiles,
+dominio puro, análisis y pruebas del deportista y ADMIN, pruebas de publicadores,
+compilación web y empaquetado. `deploy` y `retain-packages` terminaron como
+`skipped`: este alcance no publicó ADMIN ni retiró paquetes. La evidencia no
+equivale a una instalación o lectura HealthKit en un teléfono.
+
 **Siguiente tramo único:** acreditar lectura real en iPhone desde una carrera de
 Connect ya presente en Salud; después contrastar Android con datos reales.
 Persistencia, autorización de resultados y conexiones de fabricantes permanecen
@@ -142,6 +185,7 @@ evidencia, ni se modifica Trainer para integrar el prototipo.
 - [Garmin: compartir Connect con Salud](https://support.garmin.com/en-AU/?faq=lK5FPB9iPF5PXFkIpFlFPA).
 - [Garmin: programa y aprobación](https://developer.garmin.com/gc-developer-program/program-faq/).
 - [Apple: autorización HealthKit](https://developer.apple.com/documentation/healthkit/authorizing-access-to-health-data).
+- [Apple: capacidades según membresía](https://developer.apple.com/help/account/reference/supported-capabilities-ios).
 - [Android: lectura de Health Connect](https://developer.android.com/health-and-fitness/health-connect/read-data).
 - [Android: SDK y versiones](https://developer.android.com/jetpack/androidx/releases/health-connect).
 - [Código del paquete evaluado](https://github.com/carp-dk/carp-health-flutter), contrastado además con el paquete 13.3.2 resuelto localmente.

@@ -12,9 +12,12 @@ Health Connect es la entrada de salud del ecosistema Android.
 contrato y acceso a proveedores, y aislamiento del trabajo profesional activo.
 **Definido inicialmente:** contrato documental V1 y comprobación de las vías
 públicas de acceso. **INT-002:** dominio puro de importación/asociación y pruebas
-implementados en `device_activity_core`, sin consumo desde las apps. Siguen sin
-implementar conectores, persistencia real, exportación, pantallas, nuevas tablas
-o permisos. No hay reloj ni cuenta externa conectados y el bloque funcional
+implementados en `device_activity_core`, sin consumo desde las apps.
+**INT-003:** puentes HealthKit/Health Connect y lectura
+explícita implementados en el ensayo aislado, compilado y probado con muestras;
+su prueba física sigue pendiente. Faltan conectores de producción, persistencia
+real, exportación, pantallas de las tres apps, nuevas tablas y permisos de
+servidor. No hay reloj ni cuenta externa conectados y el bloque funcional
 sigue abierto. [API y fronteras](../packages/device_activity_core/README.md).
 
 La cobertura de todas las marcas es un objetivo del producto. Cada combinación
@@ -182,3 +185,75 @@ reloj → Connect → Salud → ensayo, con permisos del titular y límites de l
 datos que Garmin comparte. Android no necesita bloquear esta preparación;
 el eventual voluntario con Huawei debe comprobar primero su llegada a
 Health Connect. [Contrato local, fuentes y protocolo](DEVICE_HEALTH_READ_PROBE.md).
+
+## Propiedad y coordinación transversal · 21/10/2026
+
+Javier confirma que este chat lleva la conexión e integración con relojes y
+almacenes de salud: acceso a proveedores, adaptadores, permisos de conexión,
+sincronización, normalización, duplicados y futura entrega de entrenamientos
+cuando el canal la permita. La coordinación con otros chats permite integrar
+esa capacidad en las tres apps, sin trasladar aquí su navegación ni sus editores.
+
+Este tramo mantiene como propias `packages/device_activity_core/`,
+`labs/health_read_probe/`, `docs/DEVICE_*.md` y el workflow aislado del ensayo.
+El chat profesional conserva Trainer y sus contratos; ADMIN conserva sus
+creadores. El responsable transversal consolida la coordinación en
+`docs/PROFESSIONAL_DELIVERY_COORDINATION.md`. Los índices comunes y los archivos
+de otro responsable no se editan simultáneamente desde este bloque.
+
+La siguiente frontera desarrolla INT-001/002 y es una propuesta para contrastar
+con los contratos profesionales vigentes antes de implementarla. No crea DTO,
+tabla, permiso, estado de sesión ni endpoints nuevos por quedar descrita aquí.
+La importación, la asociación y la confirmación siguen siendo operaciones distintas.
+
+| Paso de integración | Contrato y responsable | Regla de frontera |
+| --- | --- | --- |
+| Adquirir una carrera | Dispositivos adapta la lectura al `ExternalActivity` existente. | Identidad, revisión, tiempos, unidades y origen explícitos. El permiso local de Salud no acredita autorización para subir o compartir datos. |
+| Persistir observaciones privadas | Dispositivos y responsable de servidor acuerdan la transacción antes de incorporar infraestructura. | El servidor obtiene el propietario de la identidad autenticada y valida conexión/generación/checkpoint. El preparador y ADMIN no reciben este almacén personal. |
+| Proyectar una cita | El dueño de planificación entrega una proyección al `RunningSessionTarget` existente mediante adaptador. | Conserva propietario, cita, receta/versión, revisión, estado y ejecución/revisión de resultado. No se copia la agenda ni se modifica la receta desde el conector. |
+| Revisar y asociar | Dispositivos entrega candidatura y revisión; el alumno elige cita, actividad primaria y posibles alias. | La semejanza no fusiona ni decide. Una orden idempotente se vuelve a validar contra versiones y permisos actuales. Asociar conserva evidencia y no completa la sesión. |
+| Confirmar resultado | El responsable de ejecución/resultados acuerda con dispositivos la escritura autorizada existente o su extensión necesaria. | Hace falta acción explícita del alumno y comprobación atómica de propiedad, cita, versiones, resultado y continuidad profesional. No se simula una ejecución del móvil para introducir datos del reloj. |
+| Mostrar al preparador | Trainer consume la proyección autorizada del resultado confirmado de su servicio. | Solo campos necesarios y procedencia legible; quedan fuera cuenta externa, tokens, rutas, salud diaria y actividades personales sin compartir/asociar. El rol de entrenador no abre el historial completo. |
+| Mostrar a ADMIN | ADMIN consume capacidades y diagnóstico operativo reducido. | Administrar un proveedor no concede acceso a carreras personales ni permite consentir por el alumno. |
+| Entregar al reloj | Dispositivos adapta una receta ya fijada y autorizada, cuando exista acceso al proveedor y compatibilidad comprobada. | No se crea otro editor. Envío solicitado, aceptado por proveedor y disponible en reloj son evidencias distintas; una respuesta incierta no provoca reenvíos duplicados. |
+
+### Contrato que debe acordarse antes de escribir resultados
+
+La orden debe conservar un identificador idempotente y las revisiones mostradas
+de la actividad y de la cita/receta/ejecución/resultado. La respuesta confirmada
+debe devolver identidad y revisión del resultado y la evidencia usada; el
+transporte y sus nombres concretos se decidirán con su propietario. El hash del
+snapshot HealthKit no demuestra cuál de dos revisiones distintas es posterior.
+Los cambios de origen, las métricas ausentes y la precisión original se conservan;
+una proyección al modelo deportivo actual no puede redondear o atribuir segmentos
+silenciosamente para hacer encajar una receta.
+
+Antes de subir datos reales se concretarán finalidad, datos mínimos, información
+y autorización del alumno para ese destino, retención y borrado. Los permisos
+del sistema de salud y el acceso profesional son fronteras distintas. Las reglas
+vigentes de relación, asignación, MFA y continuidad profesional siguen siendo
+la autoridad. Una pauta retirada o una baja no se eluden con una importación
+tardía; una actividad corregida no cambia automáticamente un resultado confirmado.
+Si no existe autorización para comunicarla al preparador, permanece en el ámbito
+personal del alumno. Tampoco se concede acceso privado general a ADMIN.
+
+La integración deberá verificar con servidor dos confirmaciones simultáneas,
+reintento tras respuesta perdida, cita o receta revisada, ejecución ya existente,
+relación finalizada, otro preparador, alumno ajeno, retirada del permiso local y
+borrado/corrección externa. Estas comprobaciones de servidor aún no están
+implementadas por el paquete puro ni por el ensayo móvil.
+
+### Qué puede avanzar y qué requiere evidencia externa
+
+| Trabajo | Sin móvil | Evidencia pendiente |
+| --- | --- | --- |
+| Dominio, precisión, cuarentena, duplicados y revisión/asociación | Implementados y probados en el paquete puro. | Persistencia atómica, permisos y confirmación real se validarán en su integración. |
+| Puentes locales, permiso mínimo y compilación nativa | Implementados en el ensayo y compilados en CI; preparación de iPhone disponible. | Firma/provisión, diálogo real, carrera de Connect en Salud, lectura y revocación en iPhone; recorrido equivalente Android. |
+| Contrato con planificación/resultados y privacidad profesional | Se puede contrastar con sus propietarios y probar con muestras sin conectar las apps. | Acuerdo coordinado antes de cambiar contratos, datos o dependencias; aceptación del recorrido con alumno y preparador. |
+| Conectores de Garmin, COROS, Suunto y Huawei | Se pueden preparar expedientes, matrices de capacidad y adaptadores con muestras documentadas. | Alta/credenciales y condiciones de cada proveedor; OAuth y actividad real antes de habilitar un conector. Garmin no tiene acceso concedido para EntrenaOP. |
+| Envío de receta al proveedor/reloj | Se pueden comprobar compatibilidad y traducción pura de la receta. | Acceso al canal de envío, recepción real en el reloj y ejecución; leer desde Salud no prueba ese envío. |
+
+**Siguiente entrega operativa:** instalar el ensayo en el iPhone cuando Javier
+pueda conectarlo al Mac y acreditar la carrera de Connect ya visible en Salud.
+En paralelo solo avanzan preparación y contratos aislados; este documento no
+habilita una integración en Trainer ni anuncia soporte universal de relojes.
