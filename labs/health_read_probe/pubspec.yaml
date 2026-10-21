@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   flutter_bloc: 9.1.1
   crypto: 3.0.7
+  fit_tool: 1.0.5
   device_activity_core:
     path: ../../packages/device_activity_core
 

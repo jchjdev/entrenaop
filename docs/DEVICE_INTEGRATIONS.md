@@ -257,3 +257,23 @@ implementadas por el paquete puro ni por el ensayo móvil.
 pueda conectarlo al Mac y acreditar la carrera de Connect ya visible en Salud.
 En paralelo solo avanzan preparación y contratos aislados; este documento no
 habilita una integración en Trainer ni anuncia soporte universal de relojes.
+
+## Avance con otros proveedores sin móvil · 21/10/2026
+
+Javier autoriza seguir con proveedores y pruebas independientes del iPhone.
+El ensayo incorpora un adaptador FIT acotado y un lector local de terminal,
+con dependencia exclusiva en datos/infraestructura del laboratorio. Recibe la
+identidad del adquirente y entrega `ExternalActivity`; el dominio puro y las
+dependencias de las tres apps permanecen intactos. No hay conexiones API nuevas.
+
+Garmin, COROS y Suunto documentan FIT como formato de actividades. Se comprueban
+estructura, CRC, precisión, procedencia, vueltas y límites con muestras sintéticas;
+no se convierten metadatos de fabricante en identidad autenticada ni una lectura
+en sesión completada. Huawei mantiene su propio expediente: no se presupone
+que exporte este mismo formato o que su carrera llegue a Salud/Health Connect.
+
+Pasan 43 pruebas del ensayo y compila Android tras la dependencia. La cobertura
+FIT es deliberadamente parcial y necesita archivos reales representativos;
+en concreto, timestamps comprimidos y campos developer se rechazan. Lectura
+física de Salud y conexión/credenciales de los proveedores siguen pendientes.
+[Implementación, ejecución sin móvil y evidencia](DEVICE_FIT_READ_PROBE.md).

@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+# Los archivos de actividades reales se prueban localmente, nunca se versionan.
+*.[fF][iI][tT]
 
 # Symbolication related
 app.*.symbols

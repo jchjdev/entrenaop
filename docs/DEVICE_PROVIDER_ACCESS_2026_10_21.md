@@ -1,5 +1,12 @@
 # Acceso a proveedores de dispositivos · INT-001 · 21/10/2026
 
+**Actualización del mismo día:** el dominio puro y el ensayo local de
+Salud/Health Connect ya están implementados y compilados, con prueba física
+pendiente. Después se añade el [lector FIT offline](DEVICE_FIT_READ_PROBE.md)
+para avanzar con el formato compartido por Garmin/COROS/Suunto. Estas entregas
+no acreditan altas, credenciales ni conexiones autenticadas a fabricantes;
+la revisión inicial de acceso que sigue conserva ese límite.
+
 ## Alcance de la comprobación
 
 Revisión de documentación y entradas públicas oficiales el 21/10/2026, junto
@@ -9,8 +16,8 @@ creado cuentas, aceptado contratos, solicitado altas, enviado mensajes ni
 introducido credenciales. La disponibilidad pública se debe volver a comprobar
 al tramitar cada acceso; no garantiza aprobación para EntrenaOP.
 
-Javier confirma que no disponemos de API Garmin. En el código/configuración
-inspeccionados tampoco hay conectores de salud o de estas marcas. No se acredita
+Javier confirma que no disponemos de API Garmin. Al iniciar esta revisión no
+había conectores de salud o de estas marcas en el código/configuración. No se acredita
 acceso operativo a ningún otro proveedor: no se ha consultado un inventario
 externo de cuentas o secretos. Una cuenta de usuario de reloj no equivale a
 credenciales de desarrollador.
@@ -185,8 +192,8 @@ configuración sin secretos, scopes reales, prueba de autorización/revocación,
 actividad de prueba con campos comprobados, comportamiento de cambios/borrados,
 límites y modelos ensayados. No se usan datos del titular para fabricar pruebas.
 
-**Siguiente acción técnica:** implementar el dominio puro del
-[contrato V1](DEVICE_RUNNING_CONTRACT_V1.md), sin tocar Trainer. Antes de su
-primer adaptador se verificará compatibilidad real del SDK y se preparará un
-ensayo móvil aislado; las solicitudes de partner requieren completar los datos
-reales del expediente y una acción expresa para su envío/aceptación de términos.
+El dominio del [contrato V1](DEVICE_RUNNING_CONTRACT_V1.md) y el ensayo móvil
+aislado ya permiten avanzar técnicamente sin tocar Trainer. La lectura física
+y los conectores autenticados siguen pendientes. Las solicitudes de partner
+requieren completar los datos reales del expediente y una acción expresa para
+su envío/aceptación de términos; el lector FIT no evita esos requisitos.

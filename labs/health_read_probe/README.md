@@ -75,3 +75,21 @@ apartados por validación sin imprimir su contenido ni mensajes nativos.
 
 Contrato, fuentes y protocolo físico:
 [DEVICE_HEALTH_READ_PROBE.md](../../docs/DEVICE_HEALTH_READ_PROBE.md).
+
+## Lectura FIT sin móvil
+
+Se añade un adaptador experimental en `lib/data/fit_running_activity_reader.dart`
+y una herramienta de terminal independiente de la interfaz móvil:
+
+```sh
+dart run tool/read_fit.dart garmin /ruta/a/carrera.fit
+```
+
+Admite proveedor declarado `garmin`, `coros` o `suunto`, sin autenticarlo ni
+conectar su API. Añadir `--show-metrics` muestra métricas locales explícitamente;
+por defecto solo se muestra el resumen de validación. No escribe resultados.
+FIT reales quedan fuera de Git. El lector tiene límites de tamaño/registros y
+rechaza codificaciones no admitidas, incluidos timestamps comprimidos y campos
+developer. Una muestra sintética no acredita compatibilidad de un reloj.
+
+[Contrato, dependencia, pruebas y límites](../../docs/DEVICE_FIT_READ_PROBE.md).
