@@ -282,4 +282,22 @@ void main() {
     expect(fixture.feedbacks[0].$2, 'clip');
     expect(fixture.feedbacks[0].$3, 12.5);
   });
+  testWidgets(
+    'una reserva processing permite pedir revisión del original sin crear otra',
+    (tester) async {
+      final fixture = MediaFixture();
+      fixture.media.single['status'] = 'processing';
+      await tester.pumpWidget(
+        MaterialApp(home: TrainerMediaPage(repository: fixture)),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Revisar reserva y continuar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Revisar reserva y continuar'));
+      await tester.pumpAndSettle();
+      expect(fixture.resumed?['id'], 'demo');
+      expect(find.text('Continuar reserva'), findsOneWidget);
+      expect(find.text('Subir demostración privada'), findsNothing);
+    },
+  );
 }

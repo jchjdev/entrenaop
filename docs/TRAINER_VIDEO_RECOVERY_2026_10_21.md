@@ -1,0 +1,39 @@
+# Recuperación de demostraciones y técnica · 21/10/2026
+
+La confirmación de creación RPC void/204 ya no se interpreta como JSON fallido.
+La subida usa título técnico y MIME en TUS; no transmite el nombre local del
+archivo. Los errores de inicio/fragmento y destino incompatible se muestran sin
+copiar respuestas privadas del proveedor ni URLs firmadas.
+
+Una consulta antigua podía dejar en SQL `processing` una reserva cuyo vídeo en
+Bunny seguía en estado REST `Created (0)`, todavía sin archivo. La guarda SQL
+monotónica se conserva: no se rebaja a `uploading`, se libera cuota ni se modifica
+una migración aplicada. Consultar Created devuelve estado de transferencia al
+cliente sin actualizar esa fila. «Revisar reserva y continuar» permite pedir al
+servidor que vuelva a comprobarla.
+
+Antes de renovar credenciales de una reserva `processing`, el servidor consulta
+Bunny y verifica vídeo, biblioteca y entorno. Solo `status === 0` permite subir
+el original al mismo vídeo; los estados REST 1..8 no entregan credenciales.
+Se conservan la autorización por propietario/MFA/acceso profesional, el tamaño
+original, el UUID, el presupuesto y el contenido anterior. No se permite
+sobrescribir un vídeo recibido, listo o terminal ni crear otra reserva al revisar.
+
+Referencia primaria: [enum REST del SDK oficial](https://github.com/BunnyWay/bunny-stream-android/blob/main/bunny-stream-api/src/main/java/net/bunny/api/model/VideoModelStatus.kt).
+Su numeración es distinta de los eventos de webhook: no usar el estado Queued
+del [webhook](https://bunny.net/docs/stream/webhooks) para interpretar REST.
+
+Verificación focal: 32 pruebas HTTP del servicio, incluidos vacío204, aislamiento,
+entorno incorrecto, origen/cupo, recuperación Created sin escritura SQL y rechazo
+de credenciales tras recibir el archivo. Quince pruebas Trainer de medios y
+transporte pasan; análisis de las dos fuentes UI/test sin incidencias. Las
+validaciones completas anteriores de esta entrega no se repiten por este ajuste.
+
+Las revisiones automáticas de «Descartar esta subida» interpretaron una purga;
+el código comprobado solo limpia `_pending` local y avisa al formulario, sin RPC
+ni borrado/liberación del activo. El cierre posterior se autorizó con esa evidencia.
+Se mantienen intactas las reservas remotas.
+
+La aceptación del archivo real hasta reproducción se registra por separado: las
+pruebas simuladas no acreditan ese resultado. No se amplían límites comerciales,
+se habilitan cobros, se relaja MFA ni se toca producción.

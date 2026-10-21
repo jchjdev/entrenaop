@@ -81,6 +81,9 @@ async function provider(c: VideoConfig, f: Fetcher, suffix: string, body?: unkno
   return object(await response.json());
 }
 async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
+  if (String(asset.library_id) !== c.libraryId || asset.cdn_host !== c.cdnHost) {
+    throw new VideoError(409, "video_environment_mismatch");
+  }
   const videoId = asset.provider_video_id;
   if (typeof videoId !== "string" || !uuid.test(videoId)) throw new VideoError(409, "video_creation_uncertain");
   if (asset.status !== "uploading") throw new VideoError(409, "video_upload_closed", { asset_id: id, status: asset.status });
@@ -91,6 +94,22 @@ async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
     signature: [...hash].map((x) => x.toString(16).padStart(2, "0")).join(""),
     scope: asset.scope, source_limit: asset.source_limit,
     duration_limit: asset.duration_limit, playback_limit: asset.playback_limit });
+}
+async function recoverUploadCredentials(c: VideoConfig, f: Fetcher, id: string, asset: Json) {
+  if (String(asset.library_id) !== c.libraryId || asset.cdn_host !== c.cdnHost) {
+    throw new VideoError(409, "video_environment_mismatch");
+  }
+  if (asset.status === "uploading" || asset.status === "processing") {
+    // Compatibilidad con reservas que versiones anteriores marcaron processing
+    // antes de enviar el archivo. No se rebaja el estado SQL ni se relaja su guard.
+    const video = await provider(c, f, `/${asset.provider_video_id}`);
+    if (video.guid !== asset.provider_video_id || String(video.videoLibraryId) !== c.libraryId) {
+      throw new VideoError(502, "invalid_response");
+    }
+    if (video.status === 0) return await uploadCredentials(c, id, { ...asset, status: "uploading" });
+    throw new VideoError(409, "video_upload_closed", { asset_id: id, status: "processing" });
+  }
+  return await uploadCredentials(c, id, asset);
 }
 async function reconcileCreation(c: VideoConfig, f: Fetcher, id: string): Promise<string> {
   // Bunny documenta búsqueda por título y totalItems. Solo una coincidencia
@@ -185,7 +204,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
       const asset = object(await db(c, f, "rpc/get_exercise_video_asset", { p_id: id, p_action: "create" }, authorization));
       const claimId = crypto.randomUUID();
       const claim = object(await db(c, f, "rpc/claim_exercise_video_creation", { p_id: id, p_claim: claimId }));
-      if (claim.state === "created") return await uploadCredentials(c, id, { ...asset, provider_video_id: claim.video_id });
+      if (claim.state === "created") return await recoverUploadCredentials(c, f, id, { ...asset, provider_video_id: claim.video_id });
       if (claim.state !== "claimed") {
         try {
           const recovered = await reconcileCreation(c, f, id);
@@ -214,7 +233,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     }
     const asset = object(await db(c, f, "rpc/get_exercise_video_asset", { p_id: body.id, p_action: body.action }, authorization));
     if (body.action === "recover") {
-      if (asset.creation_state === "created") return await uploadCredentials(c, body.id, asset);
+      if (asset.creation_state === "created") return await recoverUploadCredentials(c, f, body.id, asset);
       if (!["creating", "uncertain"].includes(String(asset.creation_state))) throw new VideoError(409, "video_creation_not_uncertain");
       const videoId = await reconcileCreation(c, f, body.id);
       await db(c, f, "rpc/complete_exercise_video_creation", { p_id: body.id, p_claim: null, p_video_id: videoId, p_recovery: true });
@@ -230,6 +249,11 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     if (video.guid !== asset.provider_video_id || String(video.videoLibraryId) !== c.libraryId) {
       throw new VideoError(502, "invalid_response");
     }
+    console.info(JSON.stringify({ event: "exercise_video_provider_state", provider_status: Number.isInteger(video.status) ? video.status : "unknown",
+      has_mp4: video.hasMP4Fallback === true, has_playback_resolution: ["720p", "480p", "360p"].some((r) => String(video.availableResolutions).split(",").includes(r)) }));
+    // Created no acredita transferencia ni debe inventar preparación. La lectura
+    // conserva el guard SQL monotónico incluso para reservas antiguas afectadas.
+    if (video.status === 0) return json({ status: "uploading", scope: asset.scope });
     let status = "processing";
     let duration: number | null = null;
     let playbackBytes: number | null = null;

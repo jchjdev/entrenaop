@@ -335,13 +335,14 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
                           onPressed: _busy ? null : () => _check(row),
                           child: const Text('Comprobar estado'),
                         ),
-                        if (row['status'] == 'uploading')
-                          TextButton(
-                            onPressed: _busy ? null : () => _upload(row),
-                            child: const Text(
-                              'Recuperar y continuar con el archivo original',
-                            ),
+                        TextButton(
+                          onPressed: _busy ? null : () => _upload(row),
+                          child: Text(
+                            row['status'] == 'processing'
+                                ? 'Revisar reserva y continuar'
+                                : 'Recuperar y continuar con el archivo original',
                           ),
+                        ),
                       ],
                     ),
                 ],

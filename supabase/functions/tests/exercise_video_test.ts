@@ -242,10 +242,10 @@ test("timeout del proveedor conserva ID recuperable y no marca fallo definitivo"
 });
 
 test("activo ya creado renueva el mismo vídeo sin otra creación", async () => {
-  const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "created" });
+  const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "created", provider: { status: 0 } });
   const response = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
   assert.equal(response.status, 200); assert.equal((await response.json()).video_id, video);
-  assert.equal(f.calls.some((s) => s.startsWith("https://video.bunnycdn.com")), false);
+  assert.equal(f.calls.some((s) => s === "https://video.bunnycdn.com/library/42/videos"), false);
 });
 
 test("confirmación void 204 entrega credenciales tras crear sin inventar incertidumbre", async () => {
@@ -333,4 +333,39 @@ test("estados terminales y espera de resolución conservan el scope privado", as
     assert.deepEqual(await response.json(), { status: "processing", scope });
     assert.equal(f.writes.length, 0);
   }
+});
+
+test("un vídeo creado sin archivo conserva la recuperación aunque antes figurara processing", async () => {
+  for (const scope of ["official", "trainer_exercise", "client_technique"]) {
+    const f = fixture({ manage: true, scope, ready: false, provider: { status: 0 } });
+    const response = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+    const data = await response.json();
+    assert.equal(data.status, "uploading"); assert.equal(data.scope, scope);
+    assert.equal(f.asset.status, "processing"); assert.equal(f.writes.length, 0);
+    const recovery = await handleExerciseVideo(request({ action: "recover", id }), config, f.fetcher);
+    const upload = await recovery.json();
+    assert.equal(recovery.status, 200); assert.equal(upload.id, id); assert.equal(upload.video_id, video);
+    assert.equal(f.calls.filter((path) => path.endsWith("/rpc/reserve_exercise_video_upload")).length, 0);
+    assert.equal(f.calls.filter((path) => path === "https://video.bunnycdn.com/library/42/videos").length, 0);
+  }
+});
+
+test("recuperar processing no permite sobrescribir un archivo ya entregado", async () => {
+  for (const status of [1, 2, 3, 4, 5, 6, 7, 8]) for (const local of ["uploading", "processing"]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise", ready: false, provider: { status } });
+    f.asset.status = local;
+    const response = await handleExerciseVideo(request({ action: "recover", id }), config, f.fetcher);
+    const data = await response.json();
+    assert.equal(response.status, 409); assert.equal(data.error, "video_upload_closed");
+    assert.equal(data.signature, undefined); assert.equal(f.writes.length, 0);
+  }
+});
+
+test("recuperar no firma ni consulta el proveedor con un activo de otro entorno", async () => {
+  const f = fixture({ manage: true, scope: "trainer_exercise", ready: false, provider: { status: 0 } });
+  f.asset.library_id = 99;
+  const response = await handleExerciseVideo(request({ action: "recover", id }), config, f.fetcher);
+  const data = await response.json();
+  assert.equal(response.status, 409); assert.equal(data.error, "video_environment_mismatch");
+  assert.equal(data.signature, undefined); assert.equal(f.calls.some((path) => path.startsWith("https://video.bunnycdn.com")), false);
 });
