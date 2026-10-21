@@ -34,6 +34,8 @@ migrate_working_dir/
 /coverage/
 # Los archivos de actividades reales se prueban localmente, nunca se versionan.
 *.[fF][iI][tT]
+# Evidencia real autorizada para desarrollo local, fuera del historial publicado.
+/local_evidence/
 
 # Symbolication related
 app.*.symbols

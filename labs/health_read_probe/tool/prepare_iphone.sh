@@ -28,6 +28,13 @@ if ! flutter --version --machine | grep -Eq '"frameworkVersion"[[:space:]]*:[[:s
   echo 'Selecciona Flutter 3.47.5 antes de preparar el ensayo.' >&2
   exit 1
 fi
+# El ensayo usa el mismo adaptador que consumirá la aplicación del deportista.
+(
+  cd ../../packages/device_health
+  flutter pub get --enforce-lockfile
+  flutter analyze
+  flutter test
+)
 flutter pub get --enforce-lockfile
 flutter analyze
 flutter test

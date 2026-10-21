@@ -1,0 +1,5 @@
+.dart_tool/
+build/
+.flutter-plugins-dependencies
+# El plugin interno se comprueba en CI con sus dependencias bloqueadas.
+!pubspec.lock

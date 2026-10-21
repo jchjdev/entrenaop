@@ -2,23 +2,31 @@ import Flutter
 import HealthKit
 import UIKit
 
-final class RunningHealthReader {
+public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
   private let store = HKHealthStore()
   private let channel: FlutterMethodChannel
   private var activeQuery: HKSampleQuery?
   private var activeToken: UUID?
   private var pendingResult: FlutterResult?
+  private var consentToken: UUID?
+  private var pendingConsent: FlutterResult?
   private var backgroundObserver: NSObjectProtocol?
 
-  init(messenger: FlutterBinaryMessenger) {
-    channel = FlutterMethodChannel(name: "es.entrenaop.health_read_probe/reader", binaryMessenger: messenger)
-    channel.setMethodCallHandler { [weak self] call, result in self?.handle(call, result) }
+  public static func register(with registrar: FlutterPluginRegistrar) {
+    let instance = DeviceHealthPlugin(messenger: registrar.messenger())
+    registrar.addMethodCallDelegate(instance, channel: instance.channel)
+    registrar.publish(instance)
+  }
+
+  private init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "es.entrenaop.device_health/reader", binaryMessenger: messenger)
+    super.init()
     backgroundObserver = NotificationCenter.default.addObserver(
       forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main
     ) { [weak self] _ in self?.cancelRead() }
   }
 
-  private func handle(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if call.method == "status" {
       result(HKHealthStore.isHealthDataAvailable() ? "available" : "unavailable")
       return
@@ -29,9 +37,19 @@ final class RunningHealthReader {
     }
     switch call.method {
     case "requestReadAccess":
+      guard consentToken == nil, activeToken == nil else {
+        result(FlutterError(code: "readFailed", message: nil, details: nil))
+        return
+      }
+      let token = UUID()
+      consentToken = token
+      pendingConsent = result
       // Completar el diálogo no acredita que el titular haya concedido lectura.
-      store.requestAuthorization(toShare: [], read: [HKObjectType.workoutType()]) { success, _ in
+      store.requestAuthorization(toShare: [], read: [HKObjectType.workoutType()]) { [weak self] success, _ in
         DispatchQueue.main.async {
+          guard let self = self, self.consentToken == token else { return }
+          self.consentToken = nil
+          self.pendingConsent = nil
           if success {
             result("queryAllowedUnknown")
           } else {
@@ -45,7 +63,7 @@ final class RunningHealthReader {
   }
 
   private func read(_ arguments: Any?, _ result: @escaping FlutterResult) {
-    guard activeToken == nil,
+    guard activeToken == nil, consentToken == nil,
       let arguments = arguments as? [String: Any],
       let startNumber = arguments["startMicros"] as? NSNumber,
       let endNumber = arguments["endMicros"] as? NSNumber
@@ -128,5 +146,16 @@ final class RunningHealthReader {
   deinit {
     if let observer = backgroundObserver { NotificationCenter.default.removeObserver(observer) }
     if let query = activeQuery { store.stop(query) }
+  }
+
+  public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+    cancelRead()
+    consentToken = nil
+    let consent = pendingConsent
+    pendingConsent = nil
+    consent?(FlutterError(code: "readFailed", message: nil, details: nil))
+    channel.setMethodCallHandler(nil)
+    if let observer = backgroundObserver { NotificationCenter.default.removeObserver(observer) }
+    backgroundObserver = nil
   }
 }

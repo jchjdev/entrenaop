@@ -51,6 +51,14 @@ jobs:
           dart pub get --enforce-lockfile
           cd ../../labs/health_read_probe
           flutter pub get --enforce-lockfile
+          cd ../../packages/device_health
+          flutter pub get --enforce-lockfile
+      - name: Validar adaptador local de Salud
+        working-directory: packages/device_health
+        run: |
+          dart format --output=none --set-exit-if-changed lib test
+          flutter analyze
+          flutter test
       - name: Validar dominio puro de dispositivos
         working-directory: packages/device_activity_core
         run: |
@@ -74,9 +82,9 @@ jobs:
             else
               echo 'athlete=false' >> "$GITHUB_OUTPUT"
             fi
-            # El dominio y el ensayo aislados no se consumen en ADMIN.
-            if printf '%s\n' "$changed_files" | grep -Eq '^(packages/device_activity_core/|labs/health_read_probe/)' &&
-               ! printf '%s\n' "$changed_files" | grep -Ev '^(packages/device_activity_core/|labs/health_read_probe/|docs/|\.github/workflows/(admin-dev|health-read-probe)\.yml$)' | grep -q .; then
+            # El dominio, adaptador y ensayo aislados no se consumen en ADMIN.
+            if printf '%s\n' "$changed_files" | grep -Eq '^(packages/(device_activity_core|device_health)/|labs/health_read_probe/)' &&
+               ! printf '%s\n' "$changed_files" | grep -Ev '^(packages/(device_activity_core|device_health)/|labs/health_read_probe/|docs/|\.github/workflows/(admin-dev|health-read-probe)\.yml$)' | grep -q .; then
               echo 'publish_required=false' >> "$GITHUB_OUTPUT"
             else
               echo 'publish_required=true' >> "$GITHUB_OUTPUT"

@@ -16,6 +16,8 @@ dependencies:
   fit_tool: 1.0.5
   device_activity_core:
     path: ../../packages/device_activity_core
+  device_health:
+    path: ../../packages/device_health
 
 dev_dependencies:
   flutter_test:

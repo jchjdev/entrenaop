@@ -49,3 +49,7 @@ check_scope health-probe-only 'labs/health_read_probe/lib/main.dart' push true f
 check_scope health-probe-ci $'labs/health_read_probe/lib/main.dart\ndocs/DEVICE_HEALTH_READ_PROBE.md\n.github/workflows/health-read-probe.yml\n.github/workflows/admin-dev.yml' push true false false
 check_scope health-probe-admin $'labs/health_read_probe/lib/main.dart\nadmin_app/lib/main.dart' push true false true
 check_scope health-probe-trainer $'labs/health_read_probe/lib/main.dart\ntrainer_app/lib/main.dart' push true false true
+check_scope health-plugin-only 'packages/device_health/lib/device_health.dart' push true true false
+check_scope health-plugin-lab $'packages/device_health/lib/device_health.dart\nlabs/health_read_probe/lib/main.dart\n.github/workflows/health-read-probe.yml' push true true false
+check_scope health-plugin-admin $'packages/device_health/lib/device_health.dart\nadmin_app/lib/main.dart' push true true true
+check_scope health-plugin-editor $'packages/device_health/lib/device_health.dart\npackages/workout_editor_ui/lib/editor.dart' push true true true

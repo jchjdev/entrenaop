@@ -3,6 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 lab_dir="$PWD"
+plugin_dir="$(cd ../../packages/device_health && pwd)"
 fixture_dir="$lab_dir/.dart_tool/iphone_preflight_fixture"
 mkdir -p "$fixture_dir/bin"
 export PROBE_FIXTURE_LOG="$fixture_dir/commands.log"
@@ -43,6 +44,9 @@ bash "$script" > "$fixture_dir/success.out"
 grep -Fx "flutter|$lab_dir|pub get --enforce-lockfile" "$PROBE_FIXTURE_LOG"
 grep -Fx "flutter|$lab_dir|test" "$PROBE_FIXTURE_LOG"
 grep -Fx "flutter|$lab_dir|devices" "$PROBE_FIXTURE_LOG"
+grep -Fx "flutter|$plugin_dir|pub get --enforce-lockfile" "$PROBE_FIXTURE_LOG"
+grep -Fx "flutter|$plugin_dir|analyze" "$PROBE_FIXTURE_LOG"
+grep -Fx "flutter|$plugin_dir|test" "$PROBE_FIXTURE_LOG"
 if grep -Eq '\|(run|install|build)( |$)' "$PROBE_FIXTURE_LOG"; then exit 1; fi
 echo 'Correcto: fija la carpeta del ensayo y nunca instala ni firma.'
 

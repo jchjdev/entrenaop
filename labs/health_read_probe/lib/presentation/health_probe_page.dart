@@ -79,6 +79,7 @@ class _HealthProbePageState extends State<HealthProbePage>
                       'El almacén de salud no está disponible.',
                     HealthStoreAvailability.unsupported =>
                       'Esta plataforma no permite realizar el ensayo móvil.',
+                    HealthStoreAvailability.notIntegrated => 'Este consumidor aún no integra la lectura en esta plataforma.',
                   }),
                 ),
               FilledButton.tonal(
@@ -165,9 +166,31 @@ class _ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String duration(Duration? value) => value == null
-        ? 'No informado'
-        : '${value.inMicroseconds / Duration.microsecondsPerSecond} s';
+    String duration(Duration? value) {
+      if (value == null) return 'No informada';
+      // Redondeo solo de presentación: la duración original conserva microsegundos.
+      final seconds = (value.inMicroseconds / Duration.microsecondsPerSecond)
+          .round();
+      final hours = seconds ~/ 3600;
+      final minutes = (seconds % 3600) ~/ 60;
+      return '${hours > 0 ? '$hours h ' : ''}$minutes min '
+          '${(seconds % 60).toString().padLeft(2, '0')} s';
+    }
+
+    final localizations = MaterialLocalizations.of(context);
+    final localStart = activity.startedAtUtc!.toLocal();
+    final date = localizations.formatMediumDate(localStart);
+    final time = localizations.formatTimeOfDay(
+      TimeOfDay.fromDateTime(localStart),
+      alwaysUse24HourFormat: true,
+    );
+    final distance = activity.metrics.distanceMeters;
+    final writer = activity.writerApplication;
+    final origin = switch (writer) {
+      'com.garmin.connect.mobile' => 'Garmin Connect',
+      null => 'Origen sin informar',
+      _ => writer,
+    };
     return Card(
       margin: const EdgeInsets.only(top: 12),
       child: Padding(
@@ -176,17 +199,34 @@ class _ActivityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Carrera · ${activity.writerApplication ?? 'Origen sin informar'}',
+              'Carrera · $origin',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            Text('Inicio UTC: ${activity.startedAtUtc!.toIso8601String()}'),
-            Text('Entre inicio y fin: ${duration(activity.metrics.elapsed)}'),
-            Text('Temporizador: ${duration(activity.metrics.timer)}'),
+            Text('$date · $time (hora de este dispositivo)'),
             Text(
-              'Distancia: ${activity.metrics.distanceMeters == null ? 'No informada' : '${activity.metrics.distanceMeters} m'}',
+              'Distancia: ${distance == null ? 'No informada' : '${(distance / 1000).toStringAsFixed(2).replaceAll('.', ',')} km'}',
             ),
-            Text(
-              'Zona de origen: ${activity.timeZoneId ?? (activity.startUtcOffset == null ? 'No informada' : 'Offset ${activity.startUtcOffset!.inMinutes} min')}',
+            Text('Duración: ${duration(activity.metrics.elapsed)}'),
+            Text('Temporizador: ${duration(activity.metrics.timer)}'),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Ver datos técnicos'),
+              children: [
+                Text('Inicio UTC: ${activity.startedAtUtc!.toIso8601String()}'),
+                Text('Origen: ${writer ?? 'Sin informar'}'),
+                Text(
+                  'Distancia original: ${distance == null ? 'No informada' : '$distance m'}',
+                ),
+                Text(
+                  'Duración original: ${activity.metrics.elapsed == null ? 'No informada' : '${activity.metrics.elapsed!.inMicroseconds / Duration.microsecondsPerSecond} s'}',
+                ),
+                Text(
+                  'Temporizador original: ${activity.metrics.timer == null ? 'No informado' : '${activity.metrics.timer!.inMicroseconds / Duration.microsecondsPerSecond} s'}',
+                ),
+                Text(
+                  'Zona de origen: ${activity.timeZoneId ?? (activity.startUtcOffset == null ? 'No informada' : 'Offset ${activity.startUtcOffset!.inMinutes} min')}',
+                ),
+              ],
             ),
           ],
         ),

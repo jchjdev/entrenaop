@@ -6,6 +6,7 @@ on:
     paths:
       - 'labs/health_read_probe/**'
       - 'packages/device_activity_core/**'
+      - 'packages/device_health/**'
       - '.github/workflows/health-read-probe.yml'
   workflow_dispatch:
 
@@ -32,6 +33,12 @@ jobs:
       - name: Resolver, analizar y probar
         run: |
           flutter config --jdk-dir "$JAVA_HOME_17_X64"
+          cd ../../packages/device_health
+          flutter pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed lib test
+          flutter analyze
+          flutter test
+          cd ../../labs/health_read_probe
           flutter pub get --enforce-lockfile
           bash tool/test_prepare_iphone.sh
           dart format --output=none --set-exit-if-changed lib test

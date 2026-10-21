@@ -32,8 +32,9 @@ void main() {
     expect(info, isNot(contains('NSHealthUpdateUsageDescription')));
     expect(entitlement, contains('<key>com.apple.developer.healthkit</key>'));
     expect(entitlement, isNot(contains('background-delivery')));
-    final swift = File('ios/Runner/RunningHealthReader.swift')
-        .readAsStringSync();
+    final swift = File(
+      '../../packages/device_health/ios/device_health/Sources/device_health/DeviceHealthPlugin.swift',
+    ).readAsStringSync();
     expect(swift, contains('toShare: [], read: [HKObjectType.workoutType()]'));
     expect(swift, isNot(contains('store.save(')));
   });

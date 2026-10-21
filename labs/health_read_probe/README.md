@@ -2,8 +2,9 @@
 
 Aplicación independiente de deportista, ADMIN y Trainer. No usa Supabase,
 identidad de producto, almacenamiento, telemetría ni conexiones de fabricantes.
-Consume el dominio puro `device_activity_core` mediante adaptadores de HealthKit
-y Health Connect. No se importa desde ninguna de las tres aplicaciones.
+Consume el dominio puro `device_activity_core` y el plugin interno
+`device_health` para HealthKit; mantiene su puente Health Connect propio.
+No se importa desde ninguna de las tres aplicaciones.
 
 El recorrido es explícito: comprobar disponibilidad → solicitar lectura → leer
 los últimos siete días → vaciar memoria. No lee al abrir ni al regresar del
@@ -21,8 +22,8 @@ En el Mac se puede preparar antes de conectar el iPhone:
 bash tool/prepare_iphone.sh
 ```
 
-El script fija la carpeta del ensayo, comprueba SDK/Xcode, resuelve el lockfile,
-analiza, prueba y lista destinos. No instala, firma, cambia Git ni solicita
+El script fija la carpeta del ensayo, comprueba SDK/Xcode, resuelve los lockfiles
+del plugin y el ensayo, analiza, prueba y lista destinos. No instala, firma, cambia Git ni solicita
 acceso a Salud. Al conectar el iPhone, revisar el equipo propio en Xcode y seguir
 el comando Release que imprime. La firma/provisión de este identificador debe
 validarse en el Mac; no se acredita por compilar sin firma en CI. No hacen falta
@@ -60,10 +61,11 @@ un reloj. No se distribuye este ensayo a tiendas.
 
 ## Fronteras
 
-- `domain/`: puerto local, ventana acotada y estados; sin Flutter ni SDK nativo.
-- `data/`: canal nativo, validación, precisión, identidad y revisión de snapshot.
+- `domain/`: reexportación del puerto puro extraído a `device_health` y alias del ensayo.
+- `data/`: reexportación del adaptador compartido y lector FIT offline.
 - `presentation/`: Cubit, acciones explícitas y descarte de resultados tardíos.
-- `android/` e `ios/`: permisos mínimos y consultas a los SDK oficiales.
+- `android/`: permisos mínimos y puente Health Connect; aún sin extracción al plugin.
+- `ios/`: permisos mínimos y consumo de `device_health`, sin lector duplicado en Runner.
 - `main.dart`: composición de dependencias; ningún dominio conoce el puente.
 
 El hash de revisión describe el snapshot leído, no permite ordenar dos
@@ -75,6 +77,12 @@ apartados por validación sin imprimir su contenido ni mensajes nativos.
 
 Contrato, fuentes y protocolo físico:
 [DEVICE_HEALTH_READ_PROBE.md](../../docs/DEVICE_HEALTH_READ_PROBE.md).
+
+Javier confirma correspondencia de distancias reales y autoriza guardar métricas
+para desarrollo. Esa evidencia se conserva en `local_evidence/`, ignorada por
+Git. No es persistencia de la app: el ensayo sigue mostrando datos en memoria.
+La interfaz actual presenta kilómetros, duración y fecha local legibles; un
+desplegable conserva los datos técnicos originales.
 
 ## Lectura FIT sin móvil
 

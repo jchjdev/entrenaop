@@ -16,7 +16,11 @@ void main() {
           TargetPlatform.android => LocalHealthPlatform.healthConnect,
           _ => LocalHealthPlatform.unsupported,
         };
-  runApp(HealthProbeApp(source: NativeRunningHealth(platform: platform)));
+  runApp(
+    HealthProbeApp(
+      source: NativeRunningHealth(ownerId: 'local-probe', platform: platform),
+    ),
+  );
 }
 
 class HealthProbeApp extends StatelessWidget {

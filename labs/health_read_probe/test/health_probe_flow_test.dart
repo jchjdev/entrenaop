@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:device_activity_core/device_activity_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_read_probe/domain/local_running_health.dart';
@@ -182,12 +183,38 @@ void main() {
         tester.view.resetDevicePixelRatio();
         tester.platformDispatcher.clearTextScaleFactorTestValue();
       });
+      source.onRead = () async => LocalHealthRead(
+        activities: [
+          ExternalActivity(
+            identity: ActivityIdentity(
+              ownerId: 'fixture',
+              channel: ActivityChannel.appleHealth,
+              accountScope: 'fixture',
+              externalId: 'fixture-run',
+            ),
+            revision: ActivityRevision('fixture-revision'),
+            receivedAtUtc: now,
+            sport: ActivitySport.running,
+            startedAtUtc: now.subtract(const Duration(hours: 1)),
+            endedAtUtc: now.subtract(const Duration(minutes: 30)),
+            writerApplication: 'com.garmin.connect.mobile',
+            metrics: const ActivityMetrics(
+              elapsed: Duration(microseconds: 1800000123),
+              timer: Duration(microseconds: 1700812345),
+              distanceMeters: 5000.125,
+            ),
+          ),
+        ],
+        rejectedRecords: 0,
+        truncated: false,
+      );
       await tester.pumpWidget(HealthProbeApp(source: source));
       expect(source.reads, 0);
       Future<void> press(String text) async {
         final target = find.text(text);
         await tester.scrollUntilVisible(target, 160, maxScrolls: 40);
         await tester.ensureVisible(target);
+        await tester.pumpAndSettle();
         await tester.tap(target);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
@@ -197,12 +224,22 @@ void main() {
       await press('2. Solicitar lectura de entrenamientos');
       expect(find.textContaining('Apple no revela'), findsOneWidget);
       await press('3. Leer carreras de los últimos 7 días');
-      await tester.scrollUntilVisible(find.text('Carreras legibles: 0'), 160);
-      expect(find.text('Carreras legibles: 0'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Carreras legibles: 1'), 160);
+      expect(find.text('Carreras legibles: 1'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Distancia: 5,00 km'), 160);
+      expect(find.text('Carrera · Garmin Connect'), findsOneWidget);
+      expect(find.text('Duración: 30 min 00 s'), findsOneWidget);
+      expect(find.text('Temporizador: 28 min 21 s'), findsOneWidget);
+      await press('Ver datos técnicos');
+      await tester.scrollUntilVisible(
+        find.text('Distancia original: 5000.125 m'),
+        160,
+      );
+      expect(find.text('Distancia original: 5000.125 m'), findsOneWidget);
       expect(source.reads, 1);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pumpAndSettle();
-      expect(find.text('Carreras legibles: 0'), findsNothing);
+      expect(find.text('Carreras legibles: 1'), findsNothing);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
       expect(source.reads, 1);

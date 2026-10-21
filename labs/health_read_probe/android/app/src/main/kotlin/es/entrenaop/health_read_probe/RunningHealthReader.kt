@@ -26,7 +26,7 @@ internal class RunningHealthReader(
     private var channel: MethodChannel? = null
 
     fun attach(messenger: BinaryMessenger) {
-        channel = MethodChannel(messenger, "es.entrenaop.health_read_probe/reader").also {
+        channel = MethodChannel(messenger, "es.entrenaop.device_health/reader").also {
             it.setMethodCallHandler(::handle)
         }
     }

@@ -14,10 +14,14 @@ contrato y acceso a proveedores, y aislamiento del trabajo profesional activo.
 públicas de acceso. **INT-002:** dominio puro de importación/asociación y pruebas
 implementados en `device_activity_core`, sin consumo desde las apps.
 **INT-003:** puentes HealthKit/Health Connect y lectura
-explícita implementados en el ensayo aislado, compilado y probado con muestras;
-su prueba física sigue pendiente. Faltan conectores de producción, persistencia
+explícita implementados en el ensayo aislado, con primera lectura física iPhone
+desde Garmin Connect acreditada y distancia/duración contrastadas con Garmin
+en dos carreras a precisión de pantalla; pausas, repetición, revocación y Android físico pendientes. El puente
+iOS y adaptador Dart se extraen a `device_health` para su entrega coordinada;
+la app principal aún no los consume. Faltan conectores de producción, persistencia
 real, exportación, pantallas de las tres apps, nuevas tablas y permisos de
-servidor. No hay reloj ni cuenta externa conectados y el bloque funcional
+servidor. No hay acceso API propio de Garmin ni cuenta de fabricante conectada
+a EntrenaOP y el bloque funcional
 sigue abierto. [API y fronteras](../packages/device_activity_core/README.md).
 
 La cobertura de todas las marcas es un objetivo del producto. Cada combinación
@@ -177,13 +181,16 @@ Se implementa el ensayo independiente en `labs/health_read_probe`, con puentes
 mínimos a SDK oficiales y consulta explícita de siete días. Mantiene el dominio
 puro y no incorpora dependencias ni conexiones a deportista, ADMIN o Trainer.
 Android compila y las pruebas con muestras pasan; CI confirma además ambos
-builds nativos, incluido iOS Simulator. Falta lectura física en ambos sistemas.
-La fase móvil permanece abierta.
+builds nativos, incluido iOS Simulator. Javier aporta primera lectura física
+positiva de Salud en iPhone y contrasta distancia/duración con Garmin en dos carreras.
+La fase móvil permanece abierta por pausas, ciclo de permisos,
+repetición y Android pendientes.
 
-Javier usa iPhone y Garmin Connect: el primer recorrido real recomendado es
-reloj → Connect → Salud → ensayo, con permisos del titular y límites de los
-datos que Garmin comparte. Android no necesita bloquear esta preparación;
-el eventual voluntario con Huawei debe comprobar primero su llegada a
+Javier usa iPhone y Garmin Connect: queda acreditado el recorrido
+Connect → Salud → ensayo, con permisos del titular y límites de los
+datos que Garmin comparte. Android no necesita bloquear la primera integración
+iOS; se mantiene su ensayo sin elevar el mínimo Android de la app principal.
+El eventual voluntario con Huawei debe comprobar primero su llegada a
 Health Connect. [Contrato local, fuentes y protocolo](DEVICE_HEALTH_READ_PROBE.md).
 
 ## Propiedad y coordinación transversal · 21/10/2026

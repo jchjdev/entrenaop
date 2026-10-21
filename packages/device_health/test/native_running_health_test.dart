@@ -1,8 +1,8 @@
 import 'package:device_activity_core/device_activity_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:health_read_probe/data/native_running_health.dart';
-import 'package:health_read_probe/domain/local_running_health.dart';
+import 'package:device_health/device_health.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +31,7 @@ void main() {
   NativeRunningHealth source([
     LocalHealthPlatform platform = LocalHealthPlatform.appleHealth,
   ]) => NativeRunningHealth(
+    ownerId: 'fixture-owner',
     platform: platform,
     channel: channel,
     nowUtc: () => received,
@@ -40,8 +41,8 @@ void main() {
   ]) =>
       source(platform)
           .read(window: window, localSessionScope: 'ephemeral-fixture');
-  Matcher problem(HealthProbeProblem code) =>
-      isA<HealthProbeException>().having((e) => e.problem, 'problem', code);
+  Matcher problem(HealthReadProblem code) =>
+      isA<HealthReadException>().having((e) => e.problem, 'problem', code);
 
   setUp(() {
     failure = null;
@@ -66,11 +67,48 @@ void main() {
     );
     await expectLater(
       read(LocalHealthPlatform.unsupported),
-      throwsA(problem(HealthProbeProblem.unavailable)),
+      throwsA(problem(HealthReadProblem.unavailable)),
     );
     expect(lastCall, isNull);
   });
+  test(
+    'an unintegrated Android consumer never invokes a missing channel',
+    () async {
+      final adapter = NativeRunningHealth(
+        ownerId: 'fixture-owner',
+        platform: LocalHealthPlatform.healthConnect,
+        nativeIntegrationEnabled: false,
+        channel: channel,
+      );
+      expect(
+        await adapter.availability(),
+        HealthStoreAvailability.notIntegrated,
+      );
+      await expectLater(
+        adapter.requestReadAccess(),
+        throwsA(problem(HealthReadProblem.unavailable)),
+      );
+      await expectLater(
+        adapter.read(window: window, localSessionScope: 'fixture'),
+        throwsA(problem(HealthReadProblem.unavailable)),
+      );
+      expect(lastCall, isNull);
+    },
+  );
+  test('the caller supplies the owner; native permission does not authenticate an account', () async {
+    final activity = (await read()).activities.single;
+    expect(activity.identity.ownerId, 'fixture-owner');
+    expect(activity.identity.accountScope, 'ephemeral-fixture');
+    expect(
+      () => NativeRunningHealth(
+        ownerId: ' ',
+        platform: LocalHealthPlatform.appleHealth,
+      ),
+      throwsArgumentError,
+    );
+  });
   test('availability distinguishes install/update from unsupported', () async {
+    // Solo este ensayo inyecta un puente Android propio; el factory productivo lo desactiva.
     for (final item in {
       'available': HealthStoreAvailability.available,
       'unavailable': HealthStoreAvailability.unavailable,
@@ -82,8 +120,26 @@ void main() {
     response = 'unknown';
     await expectLater(
       source().availability(),
-      throwsA(problem(HealthProbeProblem.invalidResponse)),
+      throwsA(problem(HealthReadProblem.invalidResponse)),
     );
+  });
+  test('the production factory reports Android as not integrated and desktop as unsupported', () async {
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    final android = NativeRunningHealth.forCurrentPlatform(ownerId: 'fixture');
+    expect(android.platform, LocalHealthPlatform.healthConnect);
+    expect(await android.availability(), HealthStoreAvailability.notIntegrated);
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    expect(
+      await NativeRunningHealth.forCurrentPlatform(ownerId: 'fixture')
+          .availability(),
+      HealthStoreAvailability.unsupported,
+    );
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final ios = NativeRunningHealth.forCurrentPlatform(ownerId: 'fixture');
+    expect(ios.platform, LocalHealthPlatform.appleHealth);
+    expect(ios.nativeIntegrationEnabled, isTrue);
+    expect(lastCall, isNull);
   });
   test(
     'Apple authorization never claims read permission was granted',
@@ -96,7 +152,7 @@ void main() {
       response = 'granted';
       await expectLater(
         source().requestReadAccess(),
-        throwsA(problem(HealthProbeProblem.invalidResponse)),
+        throwsA(problem(HealthReadProblem.invalidResponse)),
       );
       response = 'denied';
       expect(
@@ -230,7 +286,7 @@ void main() {
     );
     await expectLater(
       read(),
-      throwsA(problem(HealthProbeProblem.permissionRequired)),
+      throwsA(problem(HealthReadProblem.permissionRequired)),
     );
   });
   test('malformed or oversized envelopes fail as a whole', () async {
@@ -243,7 +299,7 @@ void main() {
       response = envelope;
       await expectLater(
         read(),
-        throwsA(problem(HealthProbeProblem.invalidResponse)),
+        throwsA(problem(HealthReadProblem.invalidResponse)),
       );
     }
   });
@@ -257,7 +313,7 @@ void main() {
       await read();
       fail('Expected failure');
     } catch (error) {
-      expect(error, problem(HealthProbeProblem.readFailed));
+      expect(error, problem(HealthReadProblem.readFailed));
       expect(error.toString(), isNot(contains('private')));
       expect(error.toString(), isNot(contains('fixture-run')));
     }
