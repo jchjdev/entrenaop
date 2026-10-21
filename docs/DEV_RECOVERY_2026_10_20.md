@@ -89,7 +89,7 @@ texto libre y tiene límite de servidor. Se revisan los avisos esperados del ase
 deniega acceso directo; [RPC autenticadas](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable)
 tienen guard de servidor. Los avisos anteriores no se declaran solucionados.
 
-## Activación preparada
+## Activación comprobada · 21/10/2026
 
 El entorno GitHub `admin-dev` necesita:
 
@@ -102,7 +102,8 @@ El entorno GitHub `admin-dev` necesita:
 
 Crear esos accesos persistentes y guardar los valores requiere la intervención
 del propietario. Nunca se pegan en el chat ni en el repositorio. La activación
-no queda acreditada hasta la primera copia real y su evidencia en ADMIN.
+se acredita mediante la primera copia real y su recibo privado `verified`,
+consultado por ADMIN. No se han compartido los valores en el repositorio.
 
 ## Procedimiento de recuperación
 
@@ -130,7 +131,7 @@ Fuentes comprobadas: [copias de Supabase](https://supabase.com/docs/guides/platf
 [consulta de logs](https://supabase.com/docs/guides/observability/advanced-log-filtering)
 y [tokens limitados](https://supabase.com/docs/guides/platform/personal-access-tokens).
 
-## Verificación del punto de preparación
+## Verificación y cierre · 21/10/2026
 
 30 pruebas Python correctas, incluido cifrado/descifrado real en Windows,
 aislamiento de entorno, privacidad de eventos, presupuesto y análisis de COPY.
@@ -141,7 +142,7 @@ La migración nueva es `20261020205917_dev_recovery_observability.sql`.
 
 El ensayo Docker con datos ficticios y las 19 pruebas Python pasan en GitHub
 ([ejecución 39499687926](https://github.com/jchjdev/entrenaop/actions/runs/39499687926)).
-La interfaz está publicada en `admin.entrenaop.es` con revisión
+La comprobación previa de la interfaz en `admin.entrenaop.es` corresponde a
 `50bb45c52350cb17a537e603784b8076d895bda5`: despliegue correcto e identidad Dev,
 hash de JavaScript, activación, caché y cabeceras comprobados por HTTPS.
 
@@ -187,8 +188,41 @@ regresiones de retención cubren exclusiones, versión publicada, contexto y mod
 sin mutaciones. Los paquetes conservados siguen sujetos al vencimiento de 14
 días del proveedor; esta limpieza no amplía su caducidad.
 
-**Pendiente en este punto:** ejecutar la retención autorizada, liberar el espacio
-de compilados y repetir la copia hasta comprobar artefacto y recibo `verified`.
+### Resultado real comprobado
+
+La ejecución [39549982599](https://github.com/jchjdev/entrenaop/actions/runs/39549982599)
+pasa análisis, 280 pruebas ADMIN (dos omisiones previas), 30 Python, build,
+publicación y retención. La revisión publicada es
+`fda22a5ffa9a00ecd0bac2cd1625a4adda0b6527`, contrastada de forma independiente por
+HTTPS. Retira 27 compilados (incluido el desplazado por la nueva compilación),
+423.611.569 bytes; quedan cinco, 78.801.647 bytes. No retira copias de datos.
+
+La ejecución [39551387164](https://github.com/jchjdev/entrenaop/actions/runs/39551387164)
+termina correctamente el 21/10: ensayo ficticio, exportación real, restauración
+SQL/Storage aislada, cifrado y descifrado de comprobación, subida y registro de
+evidencia. La consulta directa en Dev confirma:
+
+- Recibo `39551387164-1`: `verified`; artefacto GitHub `12323941684`,
+  `entrenaop-dev-39551387164-1`, disponible y no caducado.
+- Archivo cifrado: 2.253.989 bytes; ZIP contenedor de GitHub: 2.254.179 bytes.
+  SHA-256 del archivo cifrado:
+  `bf8020cb14838325c4e9e725042a51ece298c5d6b8d7e9126db32717bbb9d0e1`.
+- 11 objetos de Storage; ensayo correcto a las 05:49:37 UTC, recibo a las
+  05:49:41 UTC; caducidad del artefacto: 28/10/2026 a las 05:49:38 UTC.
+- Recogida de servicios correcta a las 05:46:37 UTC, tres eventos reducidos a
+  códigos, sin truncar. Su presencia no acredita tres incidencias de producto.
+
+La automatización diaria queda activa, con siete días de retención de copias;
+la primera ejecución manual completa está comprobada. La ejecución programada
+00:37 UTC también acredita recogida de errores. No se afirma haber observado
+ya una copia diaria programada: su primera comprobación llegará con el horario
+normal. La interfaz ya desplegada consulta estos recibos reales; no se ha
+recargado el trabajo abierto de Javier ni sobrescrito contenido del catálogo.
+
+**Bloque cerrado:** copia disponible, ensayo aislado y registro real de errores.
+Se conservan los límites y exclusiones de este contrato. **Único siguiente bloque
+recomendado:** papelera recuperable de programas, definiendo antes qué ocurre
+con borradores, versiones y sesiones reutilizadas.
 
 ## Borrado de programas
 

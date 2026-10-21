@@ -64,11 +64,12 @@ iniciar otra recuperación deliberada desde una nueva pantalla.
 
 ## Ampliación de recuperación y errores · ADM-002
 
-Javier autoriza continuar con copias y errores. El contrato de preparación,
+ADM-002 queda activada y comprobada el 21/10: primera copia cifrada disponible,
+restauración aislada y recogida real de errores. El contrato de preparación,
 activación, pruebas y límites se mantiene en
 [DEV_RECOVERY_2026_10_20.md](DEV_RECOVERY_2026_10_20.md). Los párrafos siguientes
-describen el límite de la primera entrega ADM-001, no una confirmación de que la
-ampliación ya haya producido una copia real.
+describen el límite histórico de la primera entrega ADM-001; el estado actual
+de la ampliación queda acreditado en ese documento.
 
 ## Límites operativos explícitos
 
@@ -155,5 +156,6 @@ tocan producción.
   despliegue, pruebas de interfaz y contrato SQL, no una sesión física en iPhone.
 
 
-**Único siguiente bloque recomendado:** conectar evidencia real de copias y
-recuperación y los errores de servicios, con alcance y coste revisados antes.
+**Seguimiento:** ADM-002 cierra copias y errores con evidencia el 21/10. El único
+siguiente bloque recomendado es la papelera recuperable de programas, definiendo
+antes el alcance sobre borradores, versiones y sesiones reutilizadas.

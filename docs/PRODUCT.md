@@ -8,9 +8,10 @@ pendiente y llevan al recurso. Cuentas amplía su ficha de soporte para el
 responsable único; Herramientas muestra versión desplegada y conexión puntual.
 ADM-002 añade recibos de copias y errores reducidos a códigos, con captura de
 fallos no controlados del admin. La interfaz está publicada y la recogida real
-de servicios funciona en Dev. La restauración aislada real pasa, pero la primera
-copia cifrada aún requiere liberar presupuesto de compilados y comprobar el artefacto disponible.
-No se presenta una copia disponible sin evidencia real.
+de servicios funciona en Dev. El 21/10 se comprueba la primera copia cifrada
+almacenada y su recibo verificado: SQL y archivos de Storage restaurados en un
+ensayo aislado. Copias diarias con siete días de retención; no incluyen vídeos
+Bunny ni secretos de servicios. Restaurar sobre Dev requiere revisar el destino.
 [Alcance y límites](ADMIN_OPERATIONS_2026_10_20.md).
 [Recuperación de Dev](DEV_RECOVERY_2026_10_20.md).
 

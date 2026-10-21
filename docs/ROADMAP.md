@@ -1,18 +1,18 @@
 # Roadmap de EntrenaOP
 
-**ADM-002 · 20/10/2026 · recuperación de Dev:** Javier autoriza continuar con
-copias y errores. Preparación local/SQL verificada: copia cifrada con límites y
-siete días de retención, ensayo aislado, recibos privados y registro reducido a
-códigos. Cinco SQL correctas, 280 pruebas ADMIN y 30 Python correctas, análisis
-y build Dev limpios. Ensayos ficticio y real en Docker y despliegue de la interfaz
-verificados en GitHub/HTTPS. Recogida real conectada con token Dev. La frase ya
-es válida: restauración y cifrado pasan, pero el presupuesto de artefactos impide
-subir la primera copia. El 21/10 Javier autoriza retener cinco compilados ADMIN y
-la versión publicada, con limpieza limitada tras despliegue correcto.
-**Siguiente paso único:** ejecutar esa retención y comprobar el primer artefacto
-cifrado y su recibo. Todavía no se
-acredita una copia disponible. No se añade borrado de programas ni restauración
-sobre Dev. [Contrato, alcance y pendientes](DEV_RECOVERY_2026_10_20.md).
+**ADM-002 · 21/10/2026 · recuperación de Dev cerrada:** copia cifrada real
+almacenada y recibo `verified` contrastado en Dev. La ejecución `39551387164`
+restaura SQL y 11 objetos de Storage en contenedor aislado, comprueba cifrado y
+descifrado, sube el artefacto y registra su caducidad de siete días. Registro real
+de errores conectado y recogida programada observada. Cinco SQL correctas,
+174 migraciones coincidentes, 280 pruebas ADMIN (dos omisiones previas), 30 Python,
+análisis/build/despliegue limpios. Retención autorizada de compilados aplicada:
+cinco paquetes recientes y protección de la revisión publicada, sin tocar copias
+de datos. Límites: no incluye Bunny ni secretos/clave raíz de servicios; no hay
+restauración remota automática; primera copia diaria programada aún no observada.
+**Único siguiente bloque recomendado:** papelera recuperable de programas,
+acordando borradores, versiones y sesiones compartidas antes de implementarla.
+[Contrato, pruebas y recuperación](DEV_RECOVERY_2026_10_20.md).
 
 **ADM-001 y UI-063 · 20/10/2026 · eficiencia y operaciones de ADMIN:** se cierra
 la implementación de copia independiente, resumen plegado, deshacer y estado

@@ -13,12 +13,15 @@ La calidad distingue errores, campos pendientes y borradores; consulta portadas
 por familia y abre los editores existentes. El sistema informa despliegue y
 acceso puntual. ADM-002 añade tres tablas privadas con RLS para recibos y códigos
 de errores, RPC con guard administrativo/MFA y captura Flutter sin mensajes ni
-formularios. GitHub prepara exportación SQL/Storage cifrada y ensayo en un
+formularios. GitHub ejecuta exportación SQL/Storage cifrada y ensayo en un
 contenedor sin red. El inventario gestionado de roles complementa el dump oficial
 sin contraseñas y solo prepara roles ausentes del contenedor. Los ensayos ficticio
 y real pasan, la interfaz está desplegada y la recogida real funciona con token
-limitado a Dev. La primera copia cifrada está pendiente de ejecutar la retención de compilados
-autorizada el 21/10 y comprobar artefacto y recibo; no hay restauración remota automatizada.
+limitado a Dev. La primera copia cifrada está almacenada y su recibo `verified`
+contrastado el 21/10, con siete días de retención y ensayo real aislado. Un job
+separado tras despliegue limita los ZIP ADMIN a cinco recientes y protege la
+revisión publicada frente a esa limpieza; solo ese job tiene `actions: write`,
+sin credenciales de Supabase/Hostinger. No hay restauración remota automatizada.
 [Contrato, seguridad y límites](ADMIN_OPERATIONS_2026_10_20.md).
 [Contrato de copias y errores](DEV_RECOVERY_2026_10_20.md).
 
