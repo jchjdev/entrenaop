@@ -57,7 +57,7 @@ Las contraseñas y el OTP los introduce Javier directamente en los formularios;
 no se solicitan por el chat ni se guardan en el repositorio. La comprobación
 humana debe ver el reto MFA y después el panel con el cupo concedido.
 
-## Publicación comprobada; aceptación humana pendiente
+## Publicación y entrada humana comprobadas
 
 Javier confirma de nuevo la creación y publicación. Hostinger acredita el alta de
 `trainer.entrenaop.es` en `public_html/trainer` el 21/10/2026. La confirmación
@@ -67,7 +67,8 @@ El paquete se ha cargado y extraído en `public_html/trainer`, sin sobrescribir
 archivos ajenos. El verificador HTTPS acredita host, proyecto Dev, revisión,
 SHA-256 de JavaScript, arranque versionado, no-store, X-Frame-Options DENY y MIME
 WebAssembly. Chrome muestra el formulario real de acceso con logo, estilos y
-recursos locales. No se acredita todavía una entrada humana con TOTP.
+recursos locales. Javier completa después la entrada con contraseña y TOTP,
+y se comprueba el panel protegido.
 El contrato de pagos queda separado en [TRN-012](TRAINER_PAYMENTS.md).
 
 ## Habilitación inicial comprobada
@@ -107,6 +108,27 @@ La validación GitHub ADMIN 39573481003 pasó, pero su transferencia terminó en
 HTTPS y conservación de paquetes correctamente. No se alteró el transporte FTPS
 para resolver esa incidencia.
 
-Queda la comprobación humana de contraseña → reto del autenticador → panel
-profesional con cinco plazas. Se ha dejado la página abierta para Javier. No se
-inician asignaciones antes de resolver esta aceptación.
+Javier completa contraseña → reto del autenticador → panel profesional en
+Chrome. Se acredita acceso activo con 0/5 plazas ocupadas y carga de alumnos e
+invitaciones sin error. Actualizar vuelve a consultar correctamente; Finalizados
+muestra su estado vacío; una recarga completa conserva la sesión verificada y
+regresa al panel de alumnos activos. Los RPC que alimentan acceso y vínculos
+exigen AAL2/TOTP en servidor; esta comprobación no lee ni exporta tokens.
+
+Los tres errores de consola observados proceden de una extensión de Chrome
+(`Receiving end does not exist`), no del origen del panel. No se crean invitaciones,
+vínculos ni datos de alumnos durante esta comprobación.
+[Captura del panel autenticado](visual-audit/trainer-access-2026-10-21/published-clients.png).
+
+El autenticador pertenece a cada identidad EntrenaOP: cada preparador usa el
+suyo y lo configura con QR si aún no lo tiene. La cuenta de Javier reutiliza su
+factor existente de ADMIN porque es la misma identidad; esto no comparte códigos
+entre personas ni concede permisos administrativos a otros preparadores.
+
+Se cierra publicación y primera entrada humana del piloto Dev. Siguen sin
+ensayo humano remoto la caducidad de sesión y la recuperación de un autenticador
+perdido. Las pruebas anteriores cubren invitaciones, cupo e aislamiento; esta
+entrada manual no acredita el recorrido con un alumno real ni asignaciones.
+El único siguiente bloque recomendado es concretar derechos tras fin de vínculo
+y convivencia con el plan, y completar sesión privada → asignación versionada →
+ejecución existente → resultados autorizados. No se activan cobros aquí.

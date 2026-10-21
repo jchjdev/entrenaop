@@ -10,7 +10,8 @@ aceptación/finalización en Perfil → Mi preparador de la app habitual.
 El panel está publicado en `trainer.entrenaop.es`, separado de ADMIN, y
 verificado por HTTPS y formulario real en Chrome. La gestión manual está
 habilitada solo en Dev, con la cuenta de Javier y cinco plazas auditadas.
-La prueba humana TOTP sigue pendiente. [Estado de publicación](TRAINER_HOSTING_2026_10_21.md).
+La entrada humana con TOTP, el panel con 0/5 plazas y la sesión tras recarga
+están comprobados en Chrome. [Estado de publicación](TRAINER_HOSTING_2026_10_21.md).
 No se han implementado contenido privado, asignaciones, resultados profesionales
 ni cobros. Una identidad puede ser administradora, preparadora y alumna a la vez.
 

@@ -2,8 +2,8 @@
 
 ## Panel profesional: acceso y clientes · TRN-010 · 21/10/2026
 
-`trainer_app/` es una aplicación Flutter web propia para trainer.entrenaop.es
-sin desplegar. Comparte `trainer_access` (contratos/adaptadores) y `entrena_ui`
+`trainer_app/` es una aplicación Flutter web propia publicada en trainer.entrenaop.es
+con Dev mediante TRN-011, con primera entrada TOTP y sesión tras recarga comprobadas. Comparte `trainer_access` (contratos/adaptadores) y `entrena_ui`
 (identidad y QR TOTP trasladado con adaptadores ADMIN). El acceso profesional
 exige AAL2 y factor TOTP verificado en RPC y RLS, sin rol administrativo.
 Los resúmenes solo devuelven contraparte de vínculos propios; el gestor comercial

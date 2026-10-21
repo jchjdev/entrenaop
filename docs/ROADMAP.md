@@ -1,12 +1,16 @@
 # Roadmap de EntrenaOP
 
-**TRN-011 · 21/10/2026 · en curso:** publicación del panel Dev y habilitación de
+**TRN-011 · 21/10/2026 · publicación y primera entrada cerradas:** publicación del panel Dev y habilitación de
 la cuenta de Javier para probar TOTP antes de las asignaciones. Paquete separado
 y corrección del contexto de dependencias de trainer_app en GitHub; la creación
 del subdominio está confirmada por Javier y acreditada en Hostinger.
 Cuenta habilitada en Dev con cinco plazas y auditoría operativa. Panel publicado,
 verificado por HTTPS (revisión, hash, cabeceras y WebAssembly) y acceso visible en
-Chrome. Solo queda la entrada humana con contraseña y TOTP antes de asignaciones.
+Chrome. Javier completa contraseña y TOTP: panel con 0/5 plazas, actualización,
+consulta de finalizados y sesión tras recarga verificados. Límites: sin ensayo
+humano de caducidad/recuperación del factor ni recorrido con alumno real.
+Único siguiente bloque: derechos tras fin de vínculo y convivencia con el plan,
+y sesión privada → asignación versionada → ejecución → resultados autorizados.
 [Preparación y estado](TRAINER_HOSTING_2026_10_21.md).
 
 **TRN-010 · 21/10/2026 · acceso y clientes: cierre técnico en Dev:** panel

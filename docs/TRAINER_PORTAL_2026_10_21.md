@@ -2,7 +2,7 @@
 
 > Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
 > cinco plazas solo en Dev; el panel está publicado y verificado por HTTPS.
-> La entrada humana con TOTP sigue pendiente. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
+> Javier completa TOTP; panel con 0/5 plazas y sesión tras recarga comprobados. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
 
 ## Alcance comprobado · TRN-010
 
@@ -120,10 +120,10 @@ ni grants, descritos en el contrato de TRN-008.
 
 ## Límites y siguiente bloque
 
-No se habilita el piloto ni se publica el subdominio. Queda comprobar la entrada
-TOTP en navegador con una cuenta profesional de piloto autorizada, incluida la
-caducidad de sesión y la recuperación operativa del autenticador perdido.
-No se presenta ese recorrido humano como completado mediante pruebas de widgets.
+El cierre inicial TRN-010 no publicó ni habilitó el piloto. TRN-011 acredita
+después publicación, alta operativa y entrada TOTP humana en Chrome. Caducidad
+de sesión y recuperación operativa del autenticador perdido siguen sin ensayo
+humano remoto; las pruebas de widgets no sustituyen esos recorridos.
 
 El siguiente bloque profesional es un único recorrido de **sesión privada →
 asignación versionada → ejecución en la app existente → resultados autorizados**.

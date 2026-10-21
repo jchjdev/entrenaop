@@ -2,7 +2,7 @@
 
 > Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
 > cinco plazas solo en Dev; el panel está publicado y verificado por HTTPS.
-> La entrada humana con TOTP sigue pendiente. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
+> Javier completa TOTP; panel con 0/5 plazas y sesión tras recarga comprobados. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
 
 ## Estado comprobado · 20/10/2026
 

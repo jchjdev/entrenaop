@@ -5,8 +5,11 @@ preparado para trainer.entrenaop.es, con contraseña y TOTP obligatorio. ADMIN
 gestiona acceso/cupo y lista entrenadores; Perfil → Mi preparador permite
 aceptar y finalizar vínculos. Una cuenta puede ser admin, preparador y alumno
 simultáneamente. Los entrenamientos futuros solo aparecerán al alumno cuando
-tenga contenido autorizado asignado. Piloto deshabilitado y subdominio sin
-publicar; contratación autónoma web, tarifas y límites de recursos pendientes.
+tenga contenido autorizado asignado. TRN-011 publica el panel y habilita solo
+en Dev la cuenta de Javier con cinco plazas; entrada humana TOTP y sesión tras
+recarga comprobadas en Chrome. Cada preparador usa el autenticador de su propia
+identidad, sin permisos ADMIN. Contratación autónoma web, tarifas y límites de
+recursos pendientes.
 [Recorridos y validación](TRAINER_PORTAL_2026_10_21.md).
 
 **ADM-004 · 21/10/2026 · sesiones y borrado manual:** Sesiones incorpora papelera
