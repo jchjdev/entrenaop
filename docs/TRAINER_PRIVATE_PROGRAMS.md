@@ -113,6 +113,23 @@ la barra lateral pintada antes. El shell pinta la navegación después, conserva
 su posición visual; una regresión recorre el árbol accesible y comprueba los
 cuatro destinos. Las capturas se regeneran tras la corrección.
 
+## Publicación Dev comprobada
+
+La versión final `834e3b649f8f797df7e1dcd77f620b07a7f9126c-20261021-6`
+se publica en `public_html/trainer`, conservando las versiones anteriores en
+`releases/`. El verificador HTTPS acredita manifiesto, revisión, SHA-256 de
+JavaScript, entrada, cabeceras y MIME WebAssembly. ZIP SHA-256
+`e8140b94dbccc13ff34895129c85f1ba407a24b0b6d9d70aee3ff17b3bc66ebe`;
+JavaScript `4db094e4cde42182eb326570020ed0b4c8da7fcd16acd61aae9985ddef88458d`.
+
+Chrome con la sesión existente abre Agenda, Programas y el creador privado.
+La navegación lateral aparece ahora en el árbol accesible. La cuenta conserva
+cinco plazas y cero alumnos activos; no se guarda contenido ni se asigna a
+personas durante esta comprobación. Los contratos de ensayo dejan cero cuentas,
+programas y pautas temporales en Dev. Las capturas `published-*.png` acreditan
+la interfaz servida, aparte de los diez ejemplos con datos ficticios.
+Falta el recorrido humano con alumno en dispositivos y distribuir la app móvil.
+
 ## Referencia observada en Harbiz
 
 Se usa la sesión abierta de Javier. Inicio muestra actividad reciente, tareas

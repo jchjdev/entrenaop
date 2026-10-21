@@ -162,3 +162,20 @@ correcto por HTTPS. Chrome conserva la sesión MFA y acredita biblioteca vacía,
 creador compartido y catálogo autorizado sin guardar datos de prueba. Consola
 del portal sin errores en la comprobación. Los resultados no se atribuyen a una
 prueba humana con alumnos: [contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
+
+## Programas privados y agenda · TRN-017 · 21/10/2026
+
+Publicación final `834e3b649f8f797df7e1dcd77f620b07a7f9126c-20261021-6`, ZIP
+SHA-256 `e8140b94dbccc13ff34895129c85f1ba407a24b0b6d9d70aee3ff17b3bc66ebe`.
+Se carga en `trainer-releases` y se extrae solo en `public_html/trainer`,
+conservando publicaciones anteriores. El verificador HTTPS acredita revisión,
+hash de JavaScript, entrada, cabeceras y WebAssembly. El empaquetado comprueba
+los paquetes locales resueltos de Trainer, sin incluir trabajo paralelo de
+paquetes que aún no consume.
+
+Chrome acredita agenda mensual, biblioteca de programas y creador con la sesión
+MFA existente, cero errores de consola y los cuatro destinos en el árbol
+accesible. Se corrige el bloqueo semántico de la barra lateral antes del cierre.
+No se guarda contenido de prueba ni se toca ADMIN o producción durante la
+publicación. La actualización móvil y el recorrido humano con alumno siguen
+pendientes. [Contrato, pruebas y capturas](TRAINER_PRIVATE_PROGRAMS.md).
