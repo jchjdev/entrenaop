@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 
 import '../widgets/week_swipe_region.dart';
+import '../widgets/coach_plan_coincidence_notice.dart';
 
 class WorkoutSchedulePage extends StatelessWidget {
   const WorkoutSchedulePage({super.key, this.focusedWorkoutId});
@@ -212,6 +213,10 @@ class _ScheduleContentState extends State<_ScheduleContent> {
                     ],
                   ),
                   const SizedBox(height: 14),
+                  CoachPlanCoincidenceNotice(
+                    workouts: state.selectedItems,
+                    day: state.selectedDay,
+                  ),
                   if (state.selectedItems.isEmpty)
                     _EmptyDay(
                       hasProgram: state.currentProgram != null,

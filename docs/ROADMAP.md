@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**TRN-013/014 · 21/10/2026 · entrega integrada en curso, objetivo 30/10:** Javier
+pide desarrollar portal y deportista conjuntamente. Confirma convivencia de
+pauta profesional y automática sin sustitución: aviso de coincidencia por día
+conectado en Inicio y agenda, con regresión de acceso profesional en Inicio.
+Autoría/asignaciones privadas, recepción real, programas y resultados siguen
+pendientes. Derechos tras el vínculo y condiciones de pago se están concretando.
+Análisis raíz limpio, 41 pruebas dirigidas y 1144 raíz correctas (una omisión
+preexistente). No hay cambios SQL ni publicación del deportista en esta entrega.
+La fecha no acredita publicación de producción ni permite omitir verificaciones.
+[Alcance, estado y puntos de control](TRAINER_APP.md#entrega-integrada-con-objetivo-30102026--trn-013).
+
 **TRN-011 · 21/10/2026 · publicación y primera entrada cerradas:** publicación del panel Dev y habilitación de
 la cuenta de Javier para probar TOTP antes de las asignaciones. Paquete separado
 y corrección del contexto de dependencias de trainer_app en GitHub; la creación

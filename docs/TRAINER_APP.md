@@ -328,3 +328,83 @@ de EntrenaOP al alumno y no convierte en gratuito el trabajo del entrenador.
 Javier pide facilitar el pago al preparador desde la web. Pasarela, proveedor y
 condiciones quedan pendientes en un bloque propio; no se activan cobros aquí.
 [Contrato pendiente de pagos](TRAINER_PAYMENTS.md).
+
+
+## Entrega integrada con objetivo 30/10/2026 · TRN-013
+
+Javier pide trabajar todo el alcance de forma conjunta y fija nueve días desde
+el 21/10/2026. El objetivo es 30/10/2026. Se desarrollan superficies y contratos
+en paralelo cuando no dependan de decisiones pendientes; se mantienen guardados
+validados en main y pruebas de integración. La fecha no permite afirmar que la
+pasarela, la app publicada o el algoritmo profesional estén acabados.
+
+La app del deportista forma parte de la entrega, no una aplicación secundaria:
+
+| Superficie | Trabajo necesario y criterio de utilidad |
+| --- | --- |
+| Inicio | Sesión pautada con origen y fecha; acceso a todas las del día y aviso de coincidencia. No mostrar módulos profesionales vacíos. |
+| Mi semana | Asignaciones profesionales junto a las existentes, sin sustituciones automáticas, con estados de realización y cambios autorizados. |
+| Mi plan y biblioteca | Consultar programas/material asignados; diferenciar catálogo oficial, personal y del preparador sin convertir contenido privado en público. La ubicación definitiva se valida con el recorrido. |
+| Detalle y ejecutor | Receta/versiones e indicaciones autorizadas; ejecutar mediante el motor actual, conservando vínculo, estado y reanudación. |
+| Historial | Resultados de lo realizado conservados, con origen profesional y sin convertirlos en sesiones propias ni gastar cuota personal. |
+| Perfil → Mi preparador | Invitación y vínculo ya conectados; ampliar ficha y explicar qué información se comparte. |
+| Seguimiento y avisos | Entrega de resultados autorizados, comentarios y notificaciones vinculadas a asignaciones; preferencias de aviso y estados claros. |
+| Derechos | Servicio asignado sin otra compra EntrenaOP, sin elevar Pro ni las cuotas Free personales. Fin de vínculo/caducidad pendientes de concretar. |
+
+En el portal se desarrollan catálogo/ejercicios privados, adaptador del creador
+compartido, composición reutilizable de programas, agenda/ficha del alumno,
+asignación versionada, resultados/comentarios y resumen de trabajo pendiente.
+Los medios requieren límites y autorización por recurso. La propuesta de
+preparaciones privadas y asistencia del algoritmo debe respetar pruebas,
+baremos oficiales y revisión manual; no se presume ya implementada.
+
+Dos circuitos de contratación: preparador → EntrenaOP y alumno → preparador.
+Precios, proveedor, recepción de fondos, comisiones y efectos de impago siguen
+pendientes; se solicita esa información mientras continúa el desarrollo que no
+depende de ella. No se abren cuentas financieras ni se activan cargos por la
+petición de acelerar. [Pagos](TRAINER_PAYMENTS.md).
+
+Puntos de control propuestos para la fecha objetivo, sujetos a los contratos y
+verificación, no estimaciones cerradas ni habilitaciones de producción:
+
+- 21–24/10: conectar autoría privada, permisos, asignación y recepción en la app.
+- 25–27/10: programas, ficha/seguimiento y resultados; contratación/recursos
+  avanzan en cuanto existan sus condiciones concretas.
+- 28/10: revisar el alcance real y cerrar incorporaciones que impidan validar.
+- 29–30/10: recorridos con entrenador sin ADMIN y alumno Free, recuperación,
+  regresiones y prueba en dispositivos; preparar la distribución de la versión
+  validada. La publicación de producción conserva su autorización propia.
+
+No se declara cumplida la entrega por completar pantallas: debe poder crearse,
+asignarse, ejecutarse y revisarse una prescripción, con aislamiento entre
+entrenadores y sin una compra adicional obligatoria al alumno. La distribución
+real de la app, configuración productiva y pagos requieren comprobación propia.
+
+## Convivencia confirmada · TRN-014 · 21/10/2026
+
+El alumno puede mantener el plan automático y la pauta del preparador. Ninguna
+pauta sustituye, pausa o regenera la otra automáticamente por el vínculo.
+Inicio y Mi semana avisan si una fecha tiene sesiones `coach` y `algorithm`
+pendientes o en curso. Es coincidencia de día, no un diagnóstico de sobrecarga ni
+un cálculo de intervalos horarios. Sesiones completadas, abandonadas u omitidas
+no disparan el aviso; sesiones personales o de biblioteca no se confunden con
+el plan automático. El aviso no realiza escrituras ni reordena la agenda.
+
+Inicio identifica la sesión como pautada por el preparador y no la oculta por
+la tarjeta de revisión del plan automático. Conserva el acceso a la cita y su
+ID; no inicia una copia suelta. El cambio Flutter está conectado, pero todavía
+no hay autoría/asignación privada ni recepción remota profesional implementadas.
+No se presenta como recorrido de alumno real cerrado.
+
+Continúa pendiente la respuesta sobre consulta/repetición del contenido tras
+terminar el vínculo. Conservar el historial está acordado; derechos futuros de
+lectura, nuevas ejecuciones y cierre de consulta profesional necesitan regla
+expresa antes de aplicar la autorización correspondiente.
+
+
+Verificación de esta integración Flutter (21/10/2026): análisis raíz limpio;
+41 pruebas dirigidas de convivencia/Inicio/agenda y batería completa raíz con
+1144 aprobadas y una omisión preexistente, salida 0. Once regresiones nuevas
+cubren fechas, orígenes, estados, conservación de pautas, navegación a la cita,
+revisión automática coexistente y 320 px con texto 2×. No se modifican SQL,
+políticas de acceso, cuotas ni la publicación del deportista en este cambio.

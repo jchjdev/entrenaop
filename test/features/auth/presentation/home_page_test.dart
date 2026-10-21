@@ -155,6 +155,65 @@ void main() {
     return router;
   }
 
+  testWidgets(
+    'la sesión del preparador no queda oculta por la revisión del plan automático',
+    (tester) async {
+      final coach = ScheduledWorkout(
+        id: 'coach',
+        templateId: 'private',
+        templateName: 'Sesión de mi preparador',
+        templateVersion: 1,
+        scheduledDate: today,
+        source: ScheduledWorkoutSource.coach,
+        status: ScheduledWorkoutStatus.planned,
+      );
+      final router = await mount(
+        tester,
+        overview(workouts: [coach], needsReview: true),
+      );
+      expect(find.text('Sesión de mi preparador'), findsOneWidget);
+      expect(find.text('Sesión pautada por tu preparador'), findsOneWidget);
+      expect(find.text('Dos planificaciones el mismo día'), findsNothing);
+      await tester.ensureVisible(find.text('Ver sesión'));
+      await tester.tap(find.text('Ver sesión'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.queryParameters['session'], 'coach');
+    },
+  );
+
+  testWidgets(
+    'inicio avisa de ambas planificaciones a 320 px con texto doble',
+    (tester) async {
+      await mount(
+        tester,
+        overview(
+          workouts: [
+            workout(ScheduledWorkoutStatus.planned),
+            ScheduledWorkout(
+              id: 'coach',
+              templateId: 'private',
+              templateName: 'Sesión de mi preparador',
+              templateVersion: 1,
+              scheduledDate: today,
+              source: ScheduledWorkoutSource.coach,
+              status: ScheduledWorkoutStatus.planned,
+            ),
+          ],
+        ),
+        width: 320,
+        textScale: 2,
+      );
+      expect(find.text('Dos planificaciones el mismo día'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('2 sesiones en esta fecha'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('2 sesiones en esta fecha'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   for (final width in [320.0, 1100.0]) {
     testWidgets(
       'primer acceso conserva calendario y siguiente paso a $width px',

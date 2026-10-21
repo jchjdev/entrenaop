@@ -16,6 +16,7 @@ import 'package:entrenaop/features/dashboard/presentation/widgets/home_section_h
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/adaptive_program_progress.dart';
 import 'package:entrenaop/features/workout_schedule/domain/entities/scheduled_workout.dart';
+import 'package:entrenaop/features/workout_schedule/presentation/widgets/coach_plan_coincidence_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:entrenaop/core/presentation/images/editorial_cover_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -199,6 +200,10 @@ class _DashboardContentState extends State<_DashboardContent> {
                       ),
                     ),
                   const SizedBox(height: 22),
+                  CoachPlanCoincidenceNotice(
+                    workouts: overview.weeklyWorkouts,
+                    day: _selectedDay,
+                  ),
                   _DayHero(
                     overview: overview,
                     selectedDay: _selectedDay,
@@ -384,6 +389,11 @@ class _DayHero extends StatelessWidget {
     final program = overview.activeProgram;
     // Un dato pendiente del programa se muestra sin alterar su estado ni agenda.
     if (item?.status != ScheduledWorkoutStatus.inProgress &&
+        !items.any(
+          (workout) =>
+              workout.source == ScheduledWorkoutSource.coach &&
+              workout.status != ScheduledWorkoutStatus.skipped,
+        ) &&
         (program?.needsReview == true ||
             (item == null &&
                 (overview.goals.isEmpty || program?.isCurrent != true)))) {
@@ -424,6 +434,8 @@ class _DayHero extends StatelessWidget {
         ? 'Sesión terminada sin completar.'
         : skipped
         ? 'Esta sesión se ha omitido.'
+        : item.source == ScheduledWorkoutSource.coach
+        ? 'Sesión pautada por tu preparador'
         : item.preparationGoalId != null
         ? 'Sesión de ${overview.programs.where((p) => p.goalId == item.preparationGoalId).firstOrNull?.name ?? 'tu preparación'}'
         : 'Sesión que has añadido a tu semana';

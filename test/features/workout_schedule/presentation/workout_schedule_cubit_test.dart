@@ -22,6 +22,53 @@ import '../../../helpers/performance_visual_review.dart';
 
 void main() {
   setUpAll(loadReviewFont);
+  testWidgets('agenda conserva ambas pautas y limita el aviso a su fecha', (
+    tester,
+  ) async {
+    final day = DateTime(2026, 9, 23);
+    final items = [
+      for (final source in [
+        ScheduledWorkoutSource.coach,
+        ScheduledWorkoutSource.algorithm,
+      ])
+        ScheduledWorkout(
+          id: source.name,
+          templateId: 'template-${source.name}',
+          templateName: 'Pauta ${source.name}',
+          templateVersion: 1,
+          scheduledDate: day,
+          source: source,
+          status: ScheduledWorkoutStatus.planned,
+        ),
+    ];
+    final repository = _FakeScheduleRepository(items: items);
+    final cubit = _cubit(repository, _FakeWorkoutRepository());
+    addTearDown(cubit.close);
+    await cubit.load();
+    final router = GoRouter(
+      initialLocation: '/plan/week',
+      routes: [
+        GoRoute(
+          path: '/plan/week',
+          builder: (_, _) => BlocProvider.value(
+            value: cubit,
+            child: const WorkoutSchedulePage(),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Dos planificaciones el mismo día'), findsOneWidget);
+    expect(cubit.state.selectedItems.map((w) => w.id), ['coach', 'algorithm']);
+    cubit.selectDay(day.add(const Duration(days: 1)));
+    await tester.pumpAndSettle();
+    expect(find.text('Dos planificaciones el mismo día'), findsNothing);
+    expect(repository.items, items);
+  });
   testWidgets(
     'deslizar cambia semanas y conserva flechas, selección y scroll vertical',
     (tester) async {
