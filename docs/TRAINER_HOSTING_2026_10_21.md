@@ -8,7 +8,7 @@ continuar las asignaciones. Solo EntrenaOP Dev (`sxbxfjqgoddzhtcyhalw`).
 Cupo operativo concedido: cinco alumnos de prueba, sin cobros y sin conceder
 otros permisos ni Pro personal. No se modifica producción.
 
-El subdominio tendrá la carpeta propia `public_html/trainer` del alojamiento
+El subdominio tiene la carpeta propia `public_html/trainer` del alojamiento
 existente. La publicación no usa la cuenta FTPS confinada de ADMIN ni cambia
 la web principal. La identidad es la de EntrenaOP; cada origen web tiene su
 sesión y el acceso profesional exige AAL2 y un TOTP verificado en servidor.
@@ -57,15 +57,18 @@ Las contraseñas y el OTP los introduce Javier directamente en los formularios;
 no se solicitan por el chat ni se guardan en el repositorio. La comprobación
 humana debe ver el reto MFA y después el panel con el cupo concedido.
 
-## Estado pendiente de acreditar
+## Publicación comprobada; aceptación humana pendiente
 
 Javier confirma de nuevo la creación y publicación. Hostinger acredita el alta de
 `trainer.entrenaop.es` en `public_html/trainer` el 21/10/2026. La confirmación
 inmediata exigida por el navegador se ha recibido antes de pulsar Crear.
 
-Aún no se acredita carga, acceso HTTPS ni entrada TOTP humana. Las pruebas y
-la publicación real se registrarán al completarse. El contrato de pagos al
-entrenador queda separado en [TRN-012](TRAINER_PAYMENTS.md).
+El paquete se ha cargado y extraído en `public_html/trainer`, sin sobrescribir
+archivos ajenos. El verificador HTTPS acredita host, proyecto Dev, revisión,
+SHA-256 de JavaScript, arranque versionado, no-store, X-Frame-Options DENY y MIME
+WebAssembly. Chrome muestra el formulario real de acceso con logo, estilos y
+recursos locales. No se acredita todavía una entrada humana con TOTP.
+El contrato de pagos queda separado en [TRN-012](TRAINER_PAYMENTS.md).
 
 ## Habilitación inicial comprobada
 
@@ -88,8 +91,22 @@ propio sin registro de service worker, con el mismo contrato del publicador.
 ZIP preparado de `6b7f0d5`, SHA-256
 `a9c836e1492280bce02e7674265621ecbfc2d1f3bb4e3c578f78f457959258ff`.
 
-La carga está pendiente del permiso «Permitir acceso a URL de archivo» de la
-extensión de Chrome. El gestor de Hostinger ya tiene `trainer-releases` fuera
-de `public_html`; todavía no contiene el ZIP. La validación GitHub del flujo
-ADMIN 39573481003 pasa, pero su transferencia termina en `OSError`; el dominio
-ADMIN conserva `4b2759d`. La corrección del análisis no acredita despliegue.
+Javier confirma que ha activado el permiso de archivos de la extensión. Se sube
+el ZIP a `trainer-releases` fuera de `public_html` y se extrae en la carpeta
+independiente de Trainer, sin crear credenciales persistentes de publicación.
+La entrada pública está verificada el 21/10/2026:
+
+- Dominio: https://trainer.entrenaop.es
+- Revisión: `6b7f0d5c2bebba0c742f2fa3b1a7c1b44789b91d`.
+- Publicación: `6b7f0d5c2bebba0c742f2fa3b1a7c1b44789b91d-20261021-1`.
+- Verificador: `python trainer_app/tool/trainer_release.py verify --output build/trainer-release-20261021`, correcto.
+- [Captura del acceso publicado](visual-audit/trainer-access-2026-10-21/published-login.png).
+
+La validación GitHub ADMIN 39573481003 pasó, pero su transferencia terminó en
+`OSError`. La siguiente ejecución 39574069062 completa validación, publicación
+HTTPS y conservación de paquetes correctamente. No se alteró el transporte FTPS
+para resolver esa incidencia.
+
+Queda la comprobación humana de contraseña → reto del autenticador → panel
+profesional con cinco plazas. Se ha dejado la página abierta para Javier. No se
+inician asignaciones antes de resolver esta aceptación.

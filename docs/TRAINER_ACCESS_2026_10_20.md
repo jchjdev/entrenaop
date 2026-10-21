@@ -1,8 +1,8 @@
 # Acceso profesional y relación del piloto · TRN-008/009
 
 > Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
-> cinco plazas solo en Dev; el subdominio está creado y su carga/prueba humana
-> siguen pendientes. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
+> cinco plazas solo en Dev; el panel está publicado y verificado por HTTPS.
+> La entrada humana con TOTP sigue pendiente. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
 
 ## Estado comprobado · 20/10/2026
 

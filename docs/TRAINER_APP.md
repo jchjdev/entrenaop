@@ -7,8 +7,8 @@ panel web independiente en `trainer_app/`, entrada con TOTP obligatorio también
 en servidor, gestión profesional/cupo y directorio en ADMIN, invitaciones y
 aceptación/finalización en Perfil → Mi preparador de la app habitual.
 
-Hostinger ya tiene `trainer.entrenaop.es`, separado de ADMIN. La carga del panel
-sigue pendiente del permiso de archivos de Chrome. La gestión manual está
+El panel está publicado en `trainer.entrenaop.es`, separado de ADMIN, y
+verificado por HTTPS y formulario real en Chrome. La gestión manual está
 habilitada solo en Dev, con la cuenta de Javier y cinco plazas auditadas.
 La prueba humana TOTP sigue pendiente. [Estado de publicación](TRAINER_HOSTING_2026_10_21.md).
 No se han implementado contenido privado, asignaciones, resultados profesionales

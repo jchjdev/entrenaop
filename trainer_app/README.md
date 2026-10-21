@@ -1,7 +1,10 @@
 # Panel profesional de EntrenaOP
 
 Flutter web independiente para el destino acordado `trainer.entrenaop.es`.
-El subdominio no se publica con el flujo de ADMIN.
+Publicado y verificado por HTTPS con EntrenaOP Dev el 21/10/2026.
+El subdominio no se publica con el flujo de ADMIN; la primera carga usa el
+paquete de `tool/trainer_release.py` y el gestor de Hostinger.
+[Publicación y aceptación pendiente](../docs/TRAINER_HOSTING_2026_10_21.md).
 
 ```powershell
 cd trainer_app
