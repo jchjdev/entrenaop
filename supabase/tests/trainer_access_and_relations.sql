@@ -20,6 +20,9 @@ begin
     (a,a||'@trainer-contract.invalid'),(b,b||'@trainer-contract.invalid'),
     (x,x||'@trainer-contract.invalid'),(y,y||'@trainer-contract.invalid'),
     (z,z||'@trainer-contract.invalid'),(outsider,outsider||'@trainer-contract.invalid');
+  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values
+    (gen_random_uuid(),a,'totp','verified',now(),now()),
+    (gen_random_uuid(),b,'totp','verified',now(),now());
   insert into public.admin_permissions(user_id) values(manager),(editor);
   update public.commercial_access_settings set account_manager_user_id=manager where singleton;
   update public.profiles set full_name='Preparador de prueba' where id=a;
@@ -83,7 +86,7 @@ begin
 
   reset role;
   perform set_config('request.jwt.claim.sub',a::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   begin perform public.admin_set_trainer_access(a,99,true,1,'Autoconcesión'); raise exception 'El preparador se concede capacidad';
@@ -116,7 +119,7 @@ begin
 
   reset role;
   perform set_config('request.jwt.claim.sub',b::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   if exists(select 1 from public.trainer_invitations where id=first_invite) then raise exception 'Filtra invitaciones entre preparadores.'; end if;
@@ -200,7 +203,7 @@ begin
 
   reset role;
   perform set_config('request.jwt.claim.sub',a::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   if (public.get_trainer_access()->>'active_clients')::integer<>1 then raise exception 'El cupo no refleja la aceptación.'; end if;
@@ -244,7 +247,7 @@ begin
   if relation2=relation1 then raise exception 'Se reescribe el vínculo histórico.'; end if;
   reset role;
   perform set_config('request.jwt.claim.sub',a::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   perform public.end_trainer_relation(relation2);
@@ -259,7 +262,7 @@ begin
 
   reset role;
   perform set_config('request.jwt.claim.sub',b::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   -- Recupera otra invitación válida sin alterar la ya cancelada.
@@ -285,7 +288,7 @@ begin
     raise exception 'Deshabilitar borra vínculos o mantiene acceso efectivo.'; end if;
   reset role;
   perform set_config('request.jwt.claim.sub',b::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   begin perform public.create_trainer_invitation(gen_random_uuid(),secret2); raise exception 'Un acceso retirado crea invitaciones';
@@ -308,7 +311,7 @@ begin
   update public.trainer_access set valid_until=clock_timestamp()-interval '1 second' where trainer_id=b;
   reset role;
   perform set_config('request.jwt.claim.sub',b::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   if (public.get_trainer_access()->>'effective')::boolean then raise exception 'La vigencia caducada sigue activa.'; end if;
@@ -319,7 +322,7 @@ begin
 
   reset role;
   perform set_config('request.jwt.claim.sub',a::text,true);
-  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal1')::text,true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
 
   begin

@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**TRN-010 · 21/10/2026 · acceso y clientes profesionales:** panel web independiente
+preparado para trainer.entrenaop.es, con contraseña y TOTP obligatorio. ADMIN
+gestiona acceso/cupo y lista entrenadores; Perfil → Mi preparador permite
+aceptar y finalizar vínculos. Una cuenta puede ser admin, preparador y alumno
+simultáneamente. Los entrenamientos futuros solo aparecerán al alumno cuando
+tenga contenido autorizado asignado. Piloto deshabilitado y subdominio sin
+publicar; contratación autónoma web, tarifas y límites de recursos pendientes.
+[Recorridos y validación](TRAINER_PORTAL_2026_10_21.md).
+
 **ADM-004 · 21/10/2026 · sesiones y borrado manual:** Sesiones incorpora papelera
 recuperable. Ambas papeleras permiten eliminación definitiva confirmada: los
 programas conservan todas sus sesiones; las referencias y entrenamientos impiden
@@ -583,7 +592,7 @@ actual debe evitar bloquearla, pero no implementarla anticipadamente.
 
 ### Administración y entrenadores · TRN-001/002/004 · 18/10/2026
 
-**Criterio de producto acordado; espacio profesional aún no implementado.**
+**Criterio de producto acordado; acceso/clientes implementados en TRN-010. Contenido privado y asignaciones pendientes.**
 La aplicación del deportista es la aplicación actual: los clientes del entrenador
 recibirían allí sus entrenamientos y registrarían sus resultados.
 
@@ -650,10 +659,10 @@ ajustes manuales y el alcance de las preparaciones oficiales o privadas. No se
 ha acordado que crear una preparación permita aplicar automáticamente el motor
 a pruebas deportivas que este todavía no soporte.
 
-Una aplicación profesional separada dentro del mismo repositorio, compartiendo
-modelos y componentes existentes, es una recomendación pendiente de decisión.
-Esta definición no implementa relaciones entrenador-cliente, permisos,
-suscripciones profesionales ni cambios en el algoritmo.
+Javier confirma el 21/10/2026 una aplicación profesional web separada en
+trainer.entrenaop.es. TRN-010 implementa acceso y clientes reutilizando identidad,
+componentes y contratos. No implementa cobros, contenido privado ni algoritmo
+profesional; su publicación es independiente de ADMIN.
 
 **Aclaración de TRN-003 · 19/10/2026:** Javier confirma reutilizar las herramientas
 existentes sin duplicar ADMIN. La revisión técnica y la propuesta de una primera

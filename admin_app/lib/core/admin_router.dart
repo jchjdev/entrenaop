@@ -27,6 +27,10 @@ import 'package:entrenaop_admin/features/guided_programs/presentation/admin_guid
 import '../features/guided_programs/presentation/admin_guided_review_page.dart';
 
 import 'admin_shell.dart';
+
+import 'package:trainer_access/trainer_access.dart';
+
+import '../features/trainer_access/presentation/admin_trainers_page.dart';
 import '../features/guided_programs/domain/admin_guided_work.dart';
 import '../features/guided_programs/domain/admin_guided_trash.dart';
 import '../features/guided_programs/presentation/admin_guided_trash_page.dart';
@@ -41,6 +45,7 @@ GoRouter createAdminRouter({
   ProgramCoverRepository? covers,
   ProgramCoverRepository? guidedCovers,
   AdminProAccessRepository? proAccess,
+  TrainerRepository? trainers,
   AdminOperationsRepository? operations,
   AdminGuidedRepository? guided,
   AdminGuidedWorkRepository? guidedWork,
@@ -466,6 +471,7 @@ GoRouter createAdminRouter({
                 (repository) => AdminProAccessPage(
                   repository: repository,
                   operations: operations,
+                  trainers: trainers,
                 ),
               ),
             ),
@@ -564,6 +570,18 @@ GoRouter createAdminRouter({
               ),
             ],
           ),
+          if (trainers != null && proAccess != null)
+            GoRoute(
+              path: '/trainers',
+              builder: (_, _) => load(() async {
+                if (!await proAccess.canManageAccounts()) {
+                  throw const _RouteUnavailable(
+                    'Solo el responsable de cuentas puede gestionar entrenadores.',
+                  );
+                }
+                return trainers;
+              }, (repository) => AdminTrainersPage(repository: repository)),
+            ),
           GoRoute(
             path: '/sessions',
             builder: (context, state) => load(

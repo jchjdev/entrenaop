@@ -311,6 +311,20 @@ class _ProfilePageState extends State<ProfilePage> {
                             onTap: () => _open('/profile/preferences'),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(
+                              Icons.supervisor_account_outlined,
+                            ),
+                            title: const Text('Mi preparador'),
+                            subtitle: const Text(
+                              'Invitaciones y vínculo con tu preparador.',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open('/profile/trainer'),
+                          ),
+                        ),
                         const SizedBox(height: 22),
                         Card(
                           child: ListTile(

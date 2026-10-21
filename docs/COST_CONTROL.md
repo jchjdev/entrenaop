@@ -72,3 +72,13 @@ de proyectos mediante lecturas; tamaños agregados solo en Dev; facturación y
 presupuestos de GitHub y plan/recursos existentes de Hostinger en sus paneles.
 El saldo, consumo y recarga automática de Bunny requieren sesión autenticada:
 las tarifas públicas y la configuración documentada no acreditan estos datos.
+
+## Preparadores · criterio del 21/10/2026 · TRN-010
+
+Javier pide contemplar contratación autónoma web y límites que eviten que un
+preparador consuma recursos ilimitados. El cupo manual de vínculos activos ya
+existe; no equivale a una cuota de almacenamiento o vídeo. Antes de cobrar,
+medir y acordar alumnos activos, ejercicios/planes privados, tamaño por archivo,
+almacenamiento total y transferencia. Las invitaciones no ocupan plaza.
+Precios, tramos, excesos y política de reducción siguen pendientes. No se
+contrata infraestructura ni se introducen cobros en el bloque de acceso/clientes.

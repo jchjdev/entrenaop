@@ -307,7 +307,9 @@ class _AdminSection {
   final bool guided, operations;
 
   bool contains(String location) =>
-      location == path || location.startsWith('$path/');
+      location == path ||
+      location.startsWith('$path/') ||
+      (path == '/accounts' && location == '/trainers');
 }
 
 const _sections = [

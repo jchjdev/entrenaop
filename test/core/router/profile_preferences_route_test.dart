@@ -13,6 +13,9 @@ import 'package:entrenaop/features/training_plan/domain/repositories/training_co
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show SupabaseClient, GoTrueClient, User;
+import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
 
 void main() {
   for (final route in ['/profile/preferences', '/plan/preferences']) {
@@ -56,6 +59,54 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets(
+    'Mi preparador abre desde Perfil como tarea y vuelve sin datos de otra identidad',
+    (tester) async {
+      final client = _ClientWithoutSession();
+      sl.registerSingleton<SupabaseClient>(client);
+      sl.registerSingleton<PreparationGoalRepository>(_Goals());
+      sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
+      addTearDown(sl.reset);
+      final auth = _Auth();
+      final router = AppRouter(auth);
+      addTearDown(router.dispose);
+      router.config.go('/profile');
+      await tester.pumpWidget(
+        BlocProvider<AuthCubit>.value(
+          value: auth,
+          child: MaterialApp.router(
+            theme: EntrenaTheme.dark,
+            routerConfig: router.config,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Mi preparador'), 250);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Mi preparador'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mi preparador'));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/trainer');
+      expect(find.byType(MyTrainerPage), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      // El cliente simulado carece de la sesión de route-user: falla cerrado.
+      expect(find.textContaining('No se ha podido confirmar'), findsOneWidget);
+      router.config.pop();
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile');
+    },
+  );
+}
+
+class _ClientWithoutSession extends Fake implements SupabaseClient {
+  @override
+  GoTrueClient get auth => _EmptyAuth();
+}
+
+class _EmptyAuth extends Fake implements GoTrueClient {
+  @override
+  User? get currentUser => null;
 }
 
 class _Auth implements AuthCubit {

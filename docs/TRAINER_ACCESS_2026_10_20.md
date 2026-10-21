@@ -79,7 +79,7 @@ La versión interna de membresía cambia al aceptar/terminar para que un snapsho
 obsoleto de REPEATABLE READ produzca conflicto en lugar de exceder el cupo.
 La unicidad de preparador está además en un índice SQL independiente de la RPC.
 
-## Verificaciones y límites
+## Verificaciones y límites del 20/10/2026 · ampliados en TRN-010
 
 - `trainer_access_and_relations.sql`: concesión reservada al gestor, MFA,
   configuración cerrada, revisiones/reintentos, anonimato y metadata editable,
@@ -107,3 +107,20 @@ cuentas del piloto. Tampoco acredita interfaces, asignación/ejecución profesio
 acceso incluido con cuotas agotadas o consulta de resultados. El recorrido
 profesional permanece abierto; el siguiente bloque integra estas interfaces y
 completa esa verificación. No se ejecuta Flutter por un cambio solo SQL/documental.
+
+## Ampliación comprobada · 21/10/2026 · TRN-010
+
+El contrato base se conserva y ahora tiene interfaces en ADMIN, trainer_app y
+Perfil → Mi preparador. Se añaden resumen autorizado de contraparte y directorio
+profesional del gestor, sin abrir perfiles ni historiales. TOTP verificado y AAL2
+son obligatorios en servidor para operar como profesional; el alumno mantiene
+su autenticación habitual para aceptar/finalizar. Las implementaciones internas
+sin MFA ya no se pueden ejecutar desde roles cliente. La prueba original se
+actualiza con factores/sesiones profesionales MFA.
+
+La limitación del ensayo secuencial descrita arriba se amplía con quince
+contenciones reales en PostgreSQL local 17.6 desechable, ejecutando las migraciones
+originales; Auth/RLS y cuotas se acreditan aparte con ROLLBACK contra Dev.
+178 migraciones coinciden y no quedan usuarios ni concesiones de prueba.
+Esto no acredita un recorrido TOTP humano remoto ni habilita el piloto.
+[Contrato ampliado, interfaces y evidencia](TRAINER_PORTAL_2026_10_21.md).

@@ -1,5 +1,21 @@
 # Arquitectura de EntrenaOP
 
+## Panel profesional: acceso y clientes · TRN-010 · 21/10/2026
+
+`trainer_app/` es una aplicación Flutter web propia para trainer.entrenaop.es
+sin desplegar. Comparte `trainer_access` (contratos/adaptadores) y `entrena_ui`
+(identidad y QR TOTP trasladado con adaptadores ADMIN). El acceso profesional
+exige AAL2 y factor TOTP verificado en RPC y RLS, sin rol administrativo.
+Los resúmenes solo devuelven contraparte de vínculos propios; el gestor comercial
+tiene un directorio separado, sin alumnos privados. Los routers y repositorios
+descartan identidad anterior; los reintentos conservan la orden original.
+
+Perfil → Mi preparador usa el router raíz y las relaciones existentes. No se
+modifican ejecución, agenda ni catálogo; la asignación autorizada sigue pendiente.
+Las quince carreras observan bloqueos reales de las migraciones en PostgreSQL
+17.6 desechable; el contrato Auth/RLS se prueba aparte en Dev con ROLLBACK.
+[Integración, seguridad y límites](TRAINER_PORTAL_2026_10_21.md).
+
 ## Papelera de sesiones y purga manual · ADM-004 · 21/10/2026
 
 La ampliación de ADM-003 añade marcas de retirada a recetas oficiales y una RPC
@@ -635,7 +651,7 @@ los catálogos autenticados contra Dev.
 El acceso usa la misma identidad Dev del deportista, con contraseña compartida
 y segundo factor para las facultades administrativas. El requisito persistente
 de MFA se activa al verificar el autenticador y se aplica desde `is_admin()`;
-la interfaz no puede retirarlo. No existe todavía un portal de entrenadores.
+la interfaz no puede retirarlo. TRN-010 incorpora el panel profesional separado, todavía sin publicar.
 Los permisos administrativos y las relaciones entrenador-cliente conservan
 contratos distintos. [Despliegue y límites](ADMIN_HOSTING_2026_10_19.md).
 WEB-006 publica desde GitHub Actions con cuenta FTPS confinada al admin,
@@ -675,7 +691,7 @@ textos y campos adicionales; no depende de tipos administrativos ni del router.
 existentes, `show_in_library` y el retorno por go_router. El paquete depende del
 `entrena_ui` existente para la protección de salida, sin dependencias externas
 nuevas. El creador de programas y el editor personal mantienen sus contenedores;
-no existen todavía permisos ni asignaciones profesionales.
+en ese primer tramo aún no existían permisos ni asignaciones profesionales; TRN-008/010 amplían acceso y clientes.
 
 **Base de vínculo · TRN-008 · 20/10/2026:** `trainer_access`, su auditoría,
 `trainer_invitations` y `trainer_client_relations` separan derecho profesional,
@@ -685,7 +701,7 @@ esquema no expuesto `trainer_private`, con comprobaciones de identidad y
 capacidad. Las tablas no admiten escritura del cliente. El gestor de cuentas
 administra el acceso comercial, sin lectura de relaciones privadas por ese
 permiso. No se cambia Pro ni su creación personal. Configuración manual
-deshabilitada, sin cuentas habilitadas; panel y asignaciones pendientes.
+deshabilitada, sin cuentas habilitadas; TRN-010 añade panel de acceso/clientes y las asignaciones siguen pendientes.
 [Contrato y alcance de verificación en Dev](TRAINER_ACCESS_2026_10_20.md).
 
 `website/next/` contiene un borrador local de la futura web de presentación.

@@ -1,5 +1,8 @@
 library;
 
+export 'src/auth/totp_qr.dart';
+export 'src/auth/totp_qr_source.dart';
+
 export 'src/entrena_card.dart';
 export 'src/entrena_program_card.dart';
 export 'src/entrena_dialog_actions.dart';

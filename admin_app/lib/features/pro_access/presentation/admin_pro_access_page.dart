@@ -9,14 +9,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/admin_pro_access_repository.dart';
 
+import 'package:trainer_access/trainer_access.dart';
+
+import '../../trainer_access/presentation/admin_trainer_access_card.dart';
+
+import 'package:go_router/go_router.dart';
+
 class AdminProAccessPage extends StatefulWidget {
   const AdminProAccessPage({
     required this.repository,
     this.operations,
+    this.trainers,
     super.key,
   });
   final AdminProAccessRepository repository;
   final AdminOperationsRepository? operations;
+  final TrainerRepository? trainers;
   @override
   State<AdminProAccessPage> createState() => _AdminProAccessPageState();
 }
@@ -368,6 +376,12 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
                   : 'Las compras se gestionan por separado del acceso gratuito.',
             ),
             const SizedBox(height: 24),
+            if (widget.trainers != null)
+              OutlinedButton.icon(
+                onPressed: _busy ? null : () => context.go('/trainers'),
+                icon: const Icon(Icons.badge_outlined),
+                label: const Text('Gestionar entrenadores'),
+              ),
             if (_account == null)
               ..._directoryWidgets()
             else
@@ -399,6 +413,12 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
                 child: Text(_error!),
               ),
             if (_account case final account?) ...[
+              if (widget.trainers case final trainers?)
+                AdminTrainerAccessCard(
+                  key: ValueKey('trainer-${account.userId}'),
+                  repository: trainers,
+                  userId: account.userId,
+                ),
               if (widget.operations case final operations?)
                 AdminAccountSupport(
                   key: ValueKey(account.userId),

@@ -7,6 +7,8 @@ environment:
   sdk: '>=3.13.0 <4.0.0'
 
 dependencies:
+  # Render del QR TOTP web compartido, ya fijado y usado en ADMIN.
+  web: 1.1.1
   flutter:
     sdk: flutter
 

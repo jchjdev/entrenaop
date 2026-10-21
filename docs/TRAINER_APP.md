@@ -1,26 +1,26 @@
 # Espacio de entrenadores
 
-## Estado · 20/10/2026
+## Estado · 21/10/2026 · TRN-010
 
-La preparación de la nube del 19/10/2026, basada en `39f24ff`, se integra en
-Windows mediante avance directo hasta `18e5d03`, conservando los cambios locales.
-TRN-007 completa el primer tramo técnico: el creador de sesiones queda en el
-paquete compartido y ADMIN lo consume mediante su adaptador. Todavía no hay
-aplicación profesional. La extracción no cambió SQL ni permisos. TRN-008 añade
-después el contrato base de acceso y vínculos en Dev, sin habilitar cuentas;
-su integración visual, las asignaciones y el acceso incluido siguen pendientes.
+El primer bloque de acceso y clientes tiene interfaces y contrato verificados:
+panel web independiente en `trainer_app/`, entrada con TOTP obligatorio también
+en servidor, gestión profesional/cupo y directorio en ADMIN, invitaciones y
+aceptación/finalización en Perfil → Mi preparador de la app habitual.
 
-Javier confirma en TRN-003 que las herramientas existentes deben reutilizarse
-sin duplicar ADMIN. Los criterios de TRN-001/004/005 siguen vigentes: preparadores
-de oposiciones, contenido privado y clientes en la app actual, con acceso
-profesional separado de Pro y de los permisos administrativos.
+El destino acordado es `trainer.entrenaop.es`, separado de ADMIN. Aún no está
+publicado y la configuración manual sigue deshabilitada, sin cuentas habilitadas.
+No se han implementado contenido privado, asignaciones, resultados profesionales
+ni cobros. Una identidad puede ser administradora, preparadora y alumna a la vez.
 
-Javier confirma también crear un panel profesional con un acabado visual
-especialmente cuidado y contemplar paquetes según número de clientes. Sus
-ejemplos de cantidades y precios son ilustrativos, no tarifas acordadas.
-La estructura, secuencia y primera versión descritas a continuación son
-recomendaciones revisables. La intervención del algoritmo sigue pendiente en
-TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
+TRN-007 mantiene el creador de sesiones compartido y TRN-008/009 el vínculo y las
+cuotas personales independientes. No se modifican los creadores ni el algoritmo
+en este bloque. El siguiente recorrido es sesión privada → asignación →
+ejecución → resultados autorizados, concretando antes los derechos pendientes.
+[Interfaces, contratos, pruebas y límites actuales](TRAINER_PORTAL_2026_10_21.md).
+
+Javier prioriza preparadores de oposiciones, reutilización sin duplicar ADMIN,
+acabado visual coherente y paquetes según alumnos. Cantidades, precios y límites
+de recursos siguen pendientes; no son tarifas acordadas.
 
 ## Base comprobada y dependencias
 
@@ -37,8 +37,7 @@ TRN-002; tarifas, derechos y límites concretos siguen pendientes en TRN-004.
 `WorkoutTemplateOrigin.coach` y `ScheduledWorkoutSource.coach` ya existían en la
 inspección inicial sin circuito profesional. TRN-008 añade el vínculo aceptado
 con preparador único; los valores de origen siguen sin acreditar asignaciones
-ni permiso para leer resultados ajenos. No hay todavía un módulo profesional
-funcional para el usuario.
+ni permiso para leer resultados ajenos. TRN-010 incorpora el panel de acceso y clientes; las asignaciones siguen pendientes.
 
 ## Primer tramo cerrado: creador compartido · TRN-007 · 20/10/2026
 
@@ -106,14 +105,15 @@ comercial definitiva sigue pendiente. La retirada/caducidad no borra relaciones,
 y se permite terminarlas aunque el acceso profesional ya no esté vigente.
 
 [Contrato, permisos, pruebas SQL y límites de verificación](TRAINER_ACCESS_2026_10_20.md).
-El siguiente bloque profesional es integrar visualmente acceso, cupo, invitación
-y aceptación sobre este contrato, con verificación de contención concurrente
-antes de habilitar un piloto. El panel y las asignaciones todavía no existen.
+TRN-010 integra acceso, cupo, invitación y aceptación, y verifica quince carreras
+con conexiones reales en PostgreSQL local desechable de la misma versión.
+El panel no está publicado ni hay cuentas habilitadas. Las asignaciones siguen
+pendientes. [Cierre técnico y límites del piloto](TRAINER_PORTAL_2026_10_21.md).
 
-## Distribución recomendada
+## Distribución implementada para acceso y clientes
 
 - `trainer_app/`: inicio profesional, clientes, selección de cliente, navegación
-  y adaptadores para las operaciones autorizadas al entrenador. Nombre propuesto.
+  y adaptadores para las operaciones autorizadas al entrenador. Destino acordado: trainer.entrenaop.es.
 - `admin_app/`: contenido oficial y administración general. Sus herramientas de
   creación consumirían las mismas piezas compartidas que el panel profesional.
 - Paquetes existentes: modelos, validación, formularios y componentes comunes,
@@ -231,7 +231,7 @@ Cerrar primero un recorrido de asignación manual y resultados:
 
 1. Habilitar el acceso de un entrenador de prueba sin permiso administrativo.
 2. Vincular una cuenta de cliente mediante una aceptación explícita. El método
-   de invitación y el número de relaciones simultáneas aún requieren decisión.
+   de invitación es el código secreto; se admite un único preparador activo.
 3. Crear una sesión privada mediante el creador compartido y seleccionar una
    versión para un cliente y una fecha.
 4. Mostrar esa asignación en la app actual, con su origen profesional, e iniciar
@@ -302,6 +302,16 @@ suscripción individual automáticos. Son verificaciones futuras, no ejecutadas
 en esta preparación documental.
 
 La preparación del 19/10/2026 era documental; TRN-007 acredita únicamente las
-pruebas del creador compartido descritas arriba. Las verificaciones profesionales
-siguen siendo futuras. No se habilitan usuarios, permisos, planes de pago ni
+pruebas del creador compartido descritas arriba. TRN-010 acredita acceso/clientes; las verificaciones de asignación y resultados
+siguen pendientes. No se conceden accesos profesionales reales ni se habilitan planes de pago o
 subdominios. Se reutiliza la infraestructura existente según `COST_CONTROL.md`.
+
+## Decisiones confirmadas el 21/10/2026 · TRN-010
+
+Panel profesional web independiente en trainer.entrenaop.es, con el mismo correo, contraseña y autenticador TOTP de la identidad EntrenaOP. La sesión web pertenece a su origen y no se comparte con ADMIN. El doble factor es obligatorio en servidor para las operaciones profesionales; no se concede permiso administrativo. El subdominio no está publicado por este bloque.
+
+Una cuenta puede ser administradora, disponer de acceso profesional y ser alumna de otro preparador a la vez. Cada dimensión mantiene sus permisos y derechos. Un único preparador activo por alumno; queda prohibido el vínculo consigo mismo.
+
+El entrenamiento asignado debe aparecer en el recorrido habitual del alumno únicamente cuando haya contenido autorizado: no se mostrarán secciones profesionales vacías a todos los usuarios. Mi preparador gestiona el vínculo; la integración concreta en inicio, agenda, biblioteca o Mi plan se resolverá al implementar asignaciones.
+
+ADMIN necesita un directorio de accesos profesionales y control manual del cupo. Javier quiere también contratación autónoma desde web en un bloque posterior. Tarifas y límites por alumnos, ejercicios, planes, almacenamiento y transferencia siguen pendientes de medición y acuerdo; no se habilitan cobros en este bloque.

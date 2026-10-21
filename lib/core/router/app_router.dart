@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:trainer_access/trainer_access.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
+import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
+
 import 'package:entrenaop/core/router/material_app_route.dart';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
@@ -947,6 +951,22 @@ class AppRouter {
                     birthDateRepository: sl(),
                   ),
                   routes: [
+                    materialAppRoute(
+                      path: 'trainer',
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                        bloc: authCubit,
+                        builder: (_, auth) => auth is! AuthAuthenticated
+                            ? const SizedBox.shrink()
+                            : MyTrainerPage(
+                                key: ValueKey(auth.user.id),
+                                repository: SupabaseTrainerRepository(
+                                  sl<SupabaseClient>(),
+                                  userId: auth.user.id,
+                                ),
+                              ),
+                      ),
+                    ),
                     _workflowRoute(
                       path: 'preferences',
                       builder: (context, state) => TrainingContextPage(

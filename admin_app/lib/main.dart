@@ -3,6 +3,8 @@ import 'features/operations/data/admin_error_reporter.dart';
 
 import 'dart:async';
 
+import 'package:trainer_access/trainer_access.dart';
+
 import 'features/auth/data/supabase_admin_security_repository.dart';
 import 'features/auth/presentation/admin_security_page.dart';
 
@@ -104,6 +106,12 @@ class _AdminAppState extends State<AdminApp> {
         resource: ProgramCoverResource.guided,
       ),
       proAccess: SupabaseAdminProAccessRepository(client),
+      trainers: client.auth.currentUser == null
+          ? null
+          : SupabaseTrainerRepository(
+              client,
+              userId: client.auth.currentUser!.id,
+            ),
       operations: SupabaseAdminOperationsRepository(client),
       guided: SupabaseAdminGuidedRepository(client),
       guidedWork: SupabaseAdminGuidedWorkRepository(client),

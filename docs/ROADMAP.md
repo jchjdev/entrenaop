@@ -1,5 +1,27 @@
 # Roadmap de EntrenaOP
 
+**TRN-010 · 21/10/2026 · acceso y clientes: cierre técnico en Dev:** panel
+`trainer_app/` independiente para trainer.entrenaop.es, TOTP obligatorio en
+RPC/RLS, acceso/cupo y directorio profesional en Cuentas, e invitación/aceptación/
+finalización desde Perfil → Mi preparador. Una identidad puede ser admin,
+preparador y alumno simultáneamente. No se tocan creadores ni algoritmo.
+Análisis limpio en las tres apps y paquetes afectados; 1.133 pruebas raíz
+(una omisión previa), 301 ADMIN (dos previas), siete panel, tres contrato de
+acceso y quince entrena_ui correctas. Las pruebas dirigidas acreditan las rutas
+reales y los reintentos; compilación web del panel y capturas 1200/390/320 px
+con texto 2× revisadas. Dos SQL contra Dev terminan con ROLLBACK, y quince
+carreras reales en PostgreSQL 17.6 local desechable verifican cupo, preparador
+único e idempotencia. 178 migraciones coinciden; cero cuentas/vínculos de ensayo.
+**Límites:** subdominio sin publicar, configuración manual deshabilitada y
+ninguna cuenta habilitada. Entrada TOTP humana en navegador, recuperación del
+factor, cobros y asignaciones no acreditados por este cierre técnico.
+**Único siguiente bloque funcional profesional:** sesión privada → asignación
+versionada → ejecución existente → resultados autorizados, acordando antes los
+derechos tras finalizar/caducar y la convivencia con el plan automático.
+Publicar y probar una cuenta de piloto queda como preparación operativa previa
+a habilitar ese piloto, sin afirmar que ya se haya realizado.
+[Contrato y evidencia](TRAINER_PORTAL_2026_10_21.md).
+
 **ADM-004 · 21/10/2026 · papelera de sesiones y purga manual cerrada:** implementación
 verificada en ADMIN/Dev: confirmación explícita, sesiones compartidas preservadas,
 seguimientos/ejecuciones/referencias bloquean el borrado, recuperación sin republicar
@@ -152,11 +174,10 @@ aceptada/terminada implementados. Prueba SQL con ROLLBACK correcta, también
 Free 8/4 con alumno vinculado; regresiones de cuotas y directorio correctas.
 167 migraciones local/Dev coincidentes; no quedan usuarios ni concesiones de
 prueba. Configuración manual deshabilitada, sin cambios en producción o Flutter.
-**Recorrido profesional abierto:** faltan panel, asignaciones, acceso incluido,
-resultados y ensayo de aceptaciones realmente simultáneas antes del piloto.
-**Único siguiente bloque profesional recomendado:** integrar acceso/cupo,
-invitación y aceptación en las interfaces y comprobar la contención concurrente
-antes de habilitar cuentas. [Contrato y límites](TRAINER_ACCESS_2026_10_20.md).
+Este punto de partida se amplía en TRN-010: interfaces de acceso/clientes y
+ensayo concurrente local completados, manteniendo el piloto deshabilitado.
+Asignaciones, acceso incluido y resultados siguen pendientes.
+[Contrato y límites originales](TRAINER_ACCESS_2026_10_20.md).
 
 **TRN-007 · 20/10/2026 · creador compartido para el espacio profesional:**
 se recuperan e integran los tres commits documentales de la nube y se completa

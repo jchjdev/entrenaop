@@ -32,6 +32,8 @@ dependencies:
     path: packages/workout_editor_ui
   entrena_ui:
     path: packages/entrena_ui
+  trainer_access:
+    path: packages/trainer_access
 
   # Video
   video_player: ^2.14.0
