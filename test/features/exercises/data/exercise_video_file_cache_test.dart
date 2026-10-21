@@ -126,4 +126,75 @@ void main() {
     expect(await stale.exists(), isFalse);
     expect((await directory.list().toList()).length, lessThanOrEqualTo(20));
   });
+  test(
+    'un privado mayor de cinco MiB exige cota autorizada explícita',
+    () async {
+      final large = Uint8List(6 * 1024 * 1024)
+        ..setRange(0, bytes.length, bytes);
+      var downloads = 0;
+      final cache = ExerciseVideoFileCache(
+        directory,
+        transport: MockClient((_) async {
+          downloads++;
+          return http.Response.bytes(
+            large,
+            200,
+            headers: {'content-type': 'video/mp4'},
+          );
+        }),
+      );
+      final uri = Uri.parse('https://fixture.b-cdn.net/clip.mp4');
+      await expectLater(cache.get(uri, 'private'), throwsFormatException);
+      expect(await directory.list().toList(), isEmpty);
+      final file = await cache.get(
+        uri,
+        'private',
+        limitBytes: ExerciseVideoFileCache.maxPrivateBytes,
+      );
+      expect(await file.length(), large.length);
+      await cache.get(
+        uri,
+        'private',
+        limitBytes: ExerciseVideoFileCache.maxPrivateBytes,
+      );
+      expect(downloads, 2);
+      await expectLater(cache.get(uri, 'private'), throwsFormatException);
+      expect(await directory.list().toList(), isEmpty);
+    },
+  );
+  test('caché privada conserva el máximo global de cien MiB', () async {
+    final cache = ExerciseVideoFileCache(
+      directory,
+      transport: MockClient(
+        (_) async => http.Response.bytes(
+          bytes,
+          200,
+          headers: {'content-type': 'video/mp4'},
+        ),
+      ),
+    );
+    final uri = Uri.parse('https://fixture.b-cdn.net/clip.mp4');
+    for (var i = 0; i < 3; i++) {
+      final file = await cache.get(
+        uri,
+        'large$i',
+        limitBytes: ExerciseVideoFileCache.maxPrivateBytes,
+      );
+      final handle = await file.open(mode: FileMode.append);
+      await handle.truncate(40 * 1024 * 1024);
+      await handle.close();
+    }
+    await cache.get(uri, 'trigger-trim');
+    final files = await directory
+        .list()
+        .where((e) => e is File)
+        .cast<File>()
+        .toList();
+    final sizes = await Future.wait(files.map((f) => f.length()));
+    expect(
+      sizes.fold<int>(0, (a, b) => a + b),
+      lessThanOrEqualTo(ExerciseVideoFileCache.maxTotalBytes),
+    );
+    expect(files.length, lessThanOrEqualTo(ExerciseVideoFileCache.maxFiles));
+  });
 }

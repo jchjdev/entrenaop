@@ -2,30 +2,16 @@
 -- Ejecutar con: supabase db query --linked --file supabase/tests/exercise_creator_security_smoke.sql
 begin;
 
-select set_config(
-  'request.jwt.claim.sub',
-  (select user_id::text from public.admin_permissions limit 1),
-  true
-);
-select set_config(
-  'test.admin_id',
-  (select user_id::text from public.admin_permissions limit 1),
-  true
-);
-select set_config(
-  'test.user_id',
-  (
-    select id::text
-    from auth.users as candidate
-    where not exists (
-      select 1
-      from public.admin_permissions as permission
-      where permission.user_id = candidate.id
-    )
-    limit 1
-  ),
-  true
-);
+-- Actores nuevos por ensayo: no depende del contenido de cuentas reales.
+select set_config('test.admin_id',gen_random_uuid()::text,true);
+select set_config('test.user_id',gen_random_uuid()::text,true);
+insert into auth.users(id,email) values
+ (current_setting('test.admin_id')::uuid,current_setting('test.admin_id')||'@exercise-creator.invalid'),
+ (current_setting('test.user_id')::uuid,current_setting('test.user_id')||'@exercise-creator.invalid');
+insert into public.admin_permissions(user_id,reason)
+ values(current_setting('test.admin_id')::uuid,'Fixture transaccional del creador');
+insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
+ values(gen_random_uuid(),current_setting('test.admin_id')::uuid,'totp','verified',now(),now());
 set local role authenticated;
 
 do $$
@@ -43,6 +29,7 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub', v_admin_id::text, true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',v_admin_id,'role','authenticated','aal','aal2')::text,true);
 
   v_official_id := public.create_admin_exercise(
     '  Ejercicio oficial temporal  ',
@@ -90,6 +77,7 @@ begin
   end if;
 
   perform set_config('request.jwt.claim.sub', v_user_id::text, true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',v_user_id,'role','authenticated','aal','aal1')::text,true);
 
   begin
     perform public.create_admin_exercise(

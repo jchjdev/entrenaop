@@ -4,8 +4,13 @@ import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_followup_codec.dart';
 
 import '../../../packages/trainer_access/test_support/fake_trainer_repository.dart';
+import 'trainer_forms_page_test.dart' show StudentFormsFixture, fixture;
+import 'trainer_assessments_page_test.dart' show AssessmentFixture, delivery;
+
+import 'package:workout_core/professional_assessment.dart';
 
 Future<void> press(WidgetTester tester, String text) async {
   FocusManager.instance.primaryFocus?.unfocus();
@@ -17,6 +22,67 @@ Future<void> press(WidgetTester tester, String text) async {
 }
 
 void main() {
+  testWidgets(
+    'pruebas visibles solo con entregas, incluido histórico sin vínculo',
+    (tester) async {
+      final assessments = _AssessmentPresence();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(
+            repository: FakeTrainerRepository(),
+            assessments: assessments,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Pruebas de mi preparador'), findsNothing);
+      assessments.rows = [delivery(status: 'completed', active: false)];
+      await press(tester, 'Actualizar');
+      expect(find.text('Pruebas de mi preparador'), findsOneWidget);
+      expect(
+        find.textContaining('Todavía no tienes preparador'),
+        findsOneWidget,
+      );
+      assessments.rows = [];
+      await press(tester, 'Actualizar');
+      expect(find.text('Pruebas de mi preparador'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('sin entregas no aparece sección profesional vacía', (
+    tester,
+  ) async {
+    final forms = _EmptyForms();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MyTrainerPage(repository: FakeTrainerRepository(), forms: forms),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Formularios de mi preparador'), findsNothing);
+    expect(find.textContaining('Todavía no tienes preparador'), findsOneWidget);
+  });
+  testWidgets(
+    'entregas históricas conservan acceso aunque no haya vínculo activo',
+    (tester) async {
+      final forms = StudentFormsFixture()
+        ..row = fixture(submitted: true, active: false);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(
+            repository: FakeTrainerRepository(),
+            forms: forms,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Formularios de mi preparador'), findsOneWidget);
+      expect(
+        find.textContaining('Todavía no tienes preparador'),
+        findsOneWidget,
+      );
+    },
+  );
   testWidgets(
     'vista previa no vincula y editar el código invalida el consentimiento',
     (tester) async {
@@ -93,4 +159,19 @@ void main() {
     expect(find.text('Privado A'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _EmptyForms extends StudentFormsFixture {
+  @override
+  Future<List<TrainerFormAssignment>> mine({
+    TrainerFormAssignment? before,
+  }) async => [];
+}
+
+class _AssessmentPresence extends AssessmentFixture {
+  List<ProfessionalAssessmentDelivery> rows = [];
+  @override
+  Future<List<ProfessionalAssessmentDelivery>> mine({
+    ProfessionalAssessmentDelivery? before,
+  }) async => rows;
 }

@@ -11,6 +11,10 @@ dependencies:
     sdk: flutter
   image: ^4.10.1
   image_picker: ^1.2.3
+  # Reutiliza reproducción y captura web ya fijadas en los consumidores.
+  video_player: 2.14.0
+  web: 1.1.1
+  http: 1.6.0
   workout_core:
     path: ../workout_core
   # Tema, miniaturas y protección de salida existentes; sin paquetes externos nuevos.

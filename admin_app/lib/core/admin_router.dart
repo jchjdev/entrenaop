@@ -18,6 +18,7 @@ import 'package:entrenaop_admin/features/workouts/presentation/admin_program_wor
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_editor_page.dart';
 import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_preview_page.dart';
 import 'package:flutter/material.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
 import 'package:entrenaop_admin/features/pro_access/presentation/admin_pro_access_page.dart';
@@ -51,6 +52,7 @@ GoRouter createAdminRouter({
   AdminGuidedWorkRepository? guidedWork,
   AdminGuidedTrashRepository? guidedTrash,
   AdminExerciseVideoRepository? exerciseVideos,
+  ExerciseCatalogPreferences? exercisePreferences,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -118,6 +120,9 @@ GoRouter createAdminRouter({
         program,
         load,
         (owner) => AdminWorkoutEditorPage(
+          exerciseRepository: exercises,
+          exerciseVideos: exerciseVideos,
+          exercisePreferences: exercisePreferences,
           program: owner,
           repository: workouts,
           initialShowInLibrary:
@@ -178,6 +183,9 @@ GoRouter createAdminRouter({
                 return template;
               },
               (template) => AdminWorkoutEditorPage(
+                exerciseRepository: exercises,
+                exerciseVideos: exerciseVideos,
+                exercisePreferences: exercisePreferences,
                 program: owner,
                 repository: workouts,
                 originalTemplate: template,
@@ -352,6 +360,9 @@ GoRouter createAdminRouter({
                                 ),
                               )
                             : AdminGuidedEditorPage(
+                                exerciseRepository: exercises,
+                                exerciseVideos: exerciseVideos,
+                                exercisePreferences: exercisePreferences,
                                 repository: guided,
                                 workouts: workouts,
                                 original: data.$2,
@@ -366,6 +377,9 @@ GoRouter createAdminRouter({
                   (_, _) => load(
                     () async => true,
                     (_) => AdminGuidedEditorPage(
+                      exerciseRepository: exercises,
+                      exerciseVideos: exerciseVideos,
+                      exercisePreferences: exercisePreferences,
                       repository: guided,
                       workouts: workouts,
                     ),
@@ -391,6 +405,9 @@ GoRouter createAdminRouter({
                   (_, state) => load(
                     () => guided.program(state.pathParameters['guidedId']!),
                     (p) => AdminGuidedEditorPage(
+                      exerciseRepository: exercises,
+                      exerciseVideos: exerciseVideos,
+                      exercisePreferences: exercisePreferences,
                       repository: guided,
                       workouts: workouts,
                       original: p,
@@ -417,6 +434,9 @@ GoRouter createAdminRouter({
                   (_, state) => load(
                     () async => true,
                     (_) => AdminWorkoutEditorPage(
+                      exerciseRepository: exercises,
+                      exerciseVideos: exerciseVideos,
+                      exercisePreferences: exercisePreferences,
                       program: null,
                       repository: workouts,
                       warmup: true,
@@ -445,6 +465,9 @@ GoRouter createAdminRouter({
                       return (warmup, template);
                     },
                     (data) => AdminWorkoutEditorPage(
+                      exerciseRepository: exercises,
+                      exerciseVideos: exerciseVideos,
+                      exercisePreferences: exercisePreferences,
                       program: null,
                       repository: workouts,
                       warmup: true,

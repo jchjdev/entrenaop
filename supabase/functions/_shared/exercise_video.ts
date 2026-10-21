@@ -9,6 +9,7 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const maxSource = 20 * 1024 * 1024;
 const maxPlayback = 5 * 1024 * 1024;
 const maxDurationSeconds = 10;
+const privateSource = 100 * 1024 * 1024;
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
@@ -17,7 +18,8 @@ const cors = {
 export class VideoError extends Error {
   status: number;
   code: string;
-  constructor(status: number, code: string) { super(code); this.status = status; this.code = code; }
+  details?: Json;
+  constructor(status: number, code: string, details?: Json) { super(code); this.status = status; this.code = code; this.details = details; }
 }
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -53,6 +55,8 @@ async function db(c: VideoConfig, f: Fetcher, path: string, body?: unknown, toke
   if (!response.ok) {
     const failure = await response.json().catch(() => ({}));
     if (failure.code === "54000") throw new VideoError(429, "upload_limit");
+    if (failure.code === "42501") throw new VideoError(403, "forbidden");
+    if (failure.code === "22023") throw new VideoError(400, "invalid_request");
     throw new VideoError(response.status === 403 ? 403 : 503, "video_database_error");
   }
   return await response.json();
@@ -65,6 +69,32 @@ async function provider(c: VideoConfig, f: Fetcher, suffix: string, body?: unkno
   });
   if (!response.ok) throw new VideoError(502, "video_provider_error");
   return object(await response.json());
+}
+async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
+  const videoId = asset.provider_video_id;
+  if (typeof videoId !== "string" || !uuid.test(videoId)) throw new VideoError(409, "video_creation_uncertain");
+  if (asset.status !== "uploading") throw new VideoError(409, "video_upload_closed", { asset_id: id, status: asset.status });
+  const expiration = Math.floor(Date.now() / 1000) + 3600;
+  const hash = new Uint8Array(await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(`${c.libraryId}${c.apiKey}${expiration}${videoId}`)));
+  return json({ id, video_id: videoId, library_id: c.libraryId, expiration,
+    signature: [...hash].map((x) => x.toString(16).padStart(2, "0")).join(""),
+    scope: asset.scope, source_limit: asset.source_limit,
+    duration_limit: asset.duration_limit, playback_limit: asset.playback_limit });
+}
+async function reconcileCreation(c: VideoConfig, f: Fetcher, id: string): Promise<string> {
+  // Bunny documenta búsqueda por título y totalItems. Solo una coincidencia
+  // exacta, en un resultado completo, acredita una creación ya aceptada.
+  const title = `EntrenaOP ${id}`;
+  const page = await provider(c, f, `?page=1&itemsPerPage=100&search=${encodeURIComponent(title)}`);
+  if (!Array.isArray(page.items) || !Number.isInteger(page.totalItems) || Number(page.totalItems) > page.items.length) {
+    throw new VideoError(409, "video_creation_uncertain");
+  }
+  const exact = page.items.map(object).filter((v) => v.title === title && String(v.videoLibraryId) === c.libraryId);
+  if (exact.length !== 1 || typeof exact[0].guid !== "string" || !uuid.test(exact[0].guid)) {
+    throw new VideoError(409, "video_creation_uncertain");
+  }
+  return exact[0].guid;
 }
 export async function signPlayback(url: string, key: string, expires: number) {
   const uri = new URL(url);
@@ -98,10 +128,8 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     let body: Json;
     try { body = object(JSON.parse(text)); } catch { throw new VideoError(400, "invalid_request"); }
     if (body.expected_user_id !== user) throw new VideoError(409, "account_changed");
-    const admin = await db(c, f, "rpc/is_admin", {}, authorization) === true;
     const expires = Math.floor(Date.now() / 1000) + 900;
     if (body.action === "playback" || body.action === "thumbnail") {
-      if (body.action === "thumbnail" && !admin) throw new VideoError(403, "forbidden");
       const url = body.url;
       if (typeof url !== "string" || url.length > 500) throw new VideoError(400, "invalid_video_url");
       // Búsqueda exacta: nunca firmar una ruta aportada libremente por el cliente.
@@ -109,10 +137,10 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
       if (!Array.isArray(rows) || rows.length !== 1) throw new VideoError(404, "video_not_managed");
       configured(c);
       const asset = object(rows[0]);
-      if (asset.status !== "ready") throw new VideoError(409, "video_not_ready");
-      if (!admin && await db(c, f, "rpc/can_read_exercise_video", { p_video_url: url }, authorization) !== true) {
+      if (await db(c, f, "rpc/authorize_exercise_video_asset", { p_id: asset.id, p_action: body.action }, authorization) !== true) {
         throw new VideoError(403, "forbidden");
       }
+      if (asset.status !== "ready") throw new VideoError(409, "video_not_ready");
       if (asset.cdn_host !== c.cdnHost || String(asset.library_id) !== c.libraryId) throw new VideoError(409, "video_environment_mismatch");
       if (body.action === "thumbnail") {
         // Ruta fija de un activo registrado: nunca firmar imágenes arbitrarias.
@@ -123,49 +151,70 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         return json({ url: await signPlayback(thumbnail, c.tokenKey, expires), expires });
       }
       return json({ url: await signPlayback(url, c.tokenKey, expires), expires,
-        cache_key: String(asset.id), bytes: asset.playback_bytes });
+        cache_key: String(asset.id), bytes: asset.playback_bytes,
+        scope: asset.scope, playback_limit: asset.playback_limit, duration_limit: asset.duration_limit });
     }
     configured(c);
-    if (!admin) throw new VideoError(403, "forbidden");
     if (body.action === "create") {
-      if (!Number.isInteger(body.bytes) || Number(body.bytes) < 1 || Number(body.bytes) > maxSource) {
+      const scope = body.scope ?? "official";
+      if (!["official", "trainer_exercise", "client_technique"].includes(String(scope))) throw new VideoError(400, "invalid_scope");
+      if (!Number.isInteger(body.bytes) || Number(body.bytes) < 1 || Number(body.bytes) > (scope === "official" ? maxSource : privateSource)) {
         throw new VideoError(400, "invalid_file_size");
       }
-      const id = await db(c, f, "rpc/reserve_official_exercise_video", {
+      // ADMIN antiguo puede no enviar operación. El flujo nuevo la conserva
+      // desde el formulario; los scopes privados la exigen para reintentar.
+      const operation = body.operation_id ?? (scope === "official" ? crypto.randomUUID() : null);
+      if (typeof operation !== "string" || !uuid.test(operation)) throw new VideoError(400, "invalid_operation_id");
+      const id = await db(c, f, "rpc/reserve_exercise_video_upload", {
+        p_scope: scope, p_operation_id: operation,
         p_library_id: Number(c.libraryId), p_cdn_host: c.cdnHost, p_source_bytes: body.bytes,
+        p_assignment_id: body.assignment_id ?? null, p_execution_id: body.execution_id ?? null,
+        p_execution_set_id: body.execution_set_id ?? null,
       }, authorization);
       if (typeof id !== "string" || !uuid.test(id)) throw new VideoError(503, "video_database_error");
+      const asset = object(await db(c, f, "rpc/get_exercise_video_asset", { p_id: id, p_action: "create" }, authorization));
+      const claimId = crypto.randomUUID();
+      const claim = object(await db(c, f, "rpc/claim_exercise_video_creation", { p_id: id, p_claim: claimId }));
+      if (claim.state === "created") return await uploadCredentials(c, id, { ...asset, provider_video_id: claim.video_id });
+      if (claim.state !== "claimed") {
+        try {
+          const recovered = await reconcileCreation(c, f, id);
+          await db(c, f, "rpc/complete_exercise_video_creation", { p_id: id, p_claim: null, p_video_id: recovered, p_recovery: true });
+          return await uploadCredentials(c, id, { ...asset, provider_video_id: recovered });
+        } catch {
+          throw new VideoError(409, "video_creation_uncertain", { asset_id: id, operation_id: operation });
+        }
+      }
       try {
         const created = await provider(c, f, "", { title: `EntrenaOP ${id}` });
         if (typeof created.guid !== "string" || !uuid.test(created.guid) || String(created.videoLibraryId) !== c.libraryId) {
           throw new VideoError(502, "invalid_response");
         }
         const videoId = created.guid;
-        const stableUrl = `https://${c.cdnHost}/${videoId}/play_720p.mp4`;
-        await db(c, f, `exercise_video_assets?id=eq.${id}`, {
-          provider_video_id: videoId, playback_url: stableUrl, updated_at: new Date().toISOString(),
-        }, undefined, "PATCH");
-        const expiration = Math.floor(Date.now() / 1000) + 3600;
-        const hash = new Uint8Array(await crypto.subtle.digest("SHA-256",
-          new TextEncoder().encode(`${c.libraryId}${c.apiKey}${expiration}${videoId}`)));
-        const signature = [...hash].map((x) => x.toString(16).padStart(2, "0")).join("");
-        return json({ id, video_id: videoId, library_id: c.libraryId, expiration, signature });
+        await db(c, f, "rpc/complete_exercise_video_creation", { p_id: id, p_claim: claimId, p_video_id: videoId, p_recovery: false });
+        return await uploadCredentials(c, id, { ...asset, provider_video_id: videoId });
       } catch (error) {
-        await db(c, f, `exercise_video_assets?id=eq.${id}`, { status: "failed" }, undefined, "PATCH").catch(() => {});
-        throw error;
+        await db(c, f, "rpc/mark_exercise_video_creation_uncertain", { p_id: id, p_claim: claimId }).catch(() => {});
+        if (error instanceof VideoError && error.code === "video_upload_closed") throw error;
+        throw new VideoError(503, "video_creation_uncertain", { asset_id: id, operation_id: operation });
       }
     }
-    if (body.action !== "status" || typeof body.id !== "string" || !uuid.test(body.id)) {
+    if (!["status", "recover"].includes(String(body.action)) || typeof body.id !== "string" || !uuid.test(body.id)) {
       throw new VideoError(400, "invalid_request");
     }
-    const rows = await db(c, f, `exercise_video_assets?id=eq.${body.id}&select=*`, undefined, undefined, "GET");
-    if (!Array.isArray(rows) || rows.length !== 1) throw new VideoError(404, "video_not_found");
-    const asset = object(rows[0]);
+    const asset = object(await db(c, f, "rpc/get_exercise_video_asset", { p_id: body.id, p_action: body.action }, authorization));
+    if (body.action === "recover") {
+      if (asset.creation_state === "created") return await uploadCredentials(c, body.id, asset);
+      if (!["creating", "uncertain"].includes(String(asset.creation_state))) throw new VideoError(409, "video_creation_not_uncertain");
+      const videoId = await reconcileCreation(c, f, body.id);
+      await db(c, f, "rpc/complete_exercise_video_creation", { p_id: body.id, p_claim: null, p_video_id: videoId, p_recovery: true });
+      return await uploadCredentials(c, body.id, { ...asset, provider_video_id: videoId });
+    }
     if (String(asset.library_id) !== c.libraryId || asset.cdn_host !== c.cdnHost ||
       typeof asset.provider_video_id !== "string" || !uuid.test(asset.provider_video_id)) {
       throw new VideoError(409, "video_environment_mismatch");
     }
-    if (asset.status === "ready") return json({ status: "ready", url: asset.playback_url });
+    if (asset.status === "ready") return json({ status: "ready", url: asset.playback_url, scope: asset.scope, playback_limit: asset.playback_limit, duration_limit: asset.duration_limit });
     if (["failed", "rejected"].includes(String(asset.status))) return json({ status: asset.status });
     const video = await provider(c, f, `/${asset.provider_video_id}`);
     if (video.guid !== asset.provider_video_id || String(video.videoLibraryId) !== c.libraryId) {
@@ -177,7 +226,11 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
     if ([5, 6].includes(Number(video.status))) status = "failed";
     if (Number(video.status) === 4) {
       duration = Number(video.length);
-      if (!Number.isFinite(duration) || duration <= 0 || duration > maxDurationSeconds || Number(video.storageSize) > 100 * 1024 * 1024) {
+      const durationLimit = asset.scope === "official" ? maxDurationSeconds : Number(asset.duration_limit);
+      const playbackLimit = asset.scope === "official" ? maxPlayback : Number(asset.playback_limit);
+      const storedBytes = Number(video.storageSize);
+      const storageLimit = asset.scope === "official" ? 100 * 1024 * 1024 : Number(asset.source_limit);
+      if (!Number.isFinite(duration) || duration <= 0 || duration > durationLimit || !Number.isSafeInteger(storedBytes) || storedBytes <= 0 || storedBytes > storageLimit) {
         status = "rejected"; duration = null;
       } else if (video.hasMP4Fallback === true) {
         const resolution = ["720p", "480p", "360p"].find((r) => String(video.availableResolutions).split(",").includes(r));
@@ -186,17 +239,22 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         const signed = await signPlayback(String(asset.playback_url), c.tokenKey, expires);
         const mp4 = await call(f, signed, { method: "HEAD" });
         const size = Number(mp4.headers.get("Content-Length"));
-        if (mp4.ok && Number.isSafeInteger(size) && size > 0 && size <= maxPlayback &&
+        if (mp4.ok && Number.isSafeInteger(size) && size > 0 && size <= playbackLimit &&
           (mp4.headers.get("Content-Type") ?? "").split(";")[0] === "video/mp4") {
           status = "ready"; playbackBytes = size;
-        } else if (mp4.ok && size > maxPlayback) { status = "rejected"; duration = null; }
+        } else if (mp4.ok && size > playbackLimit) { status = "rejected"; duration = null; }
       }
     }
     await db(c, f, `exercise_video_assets?id=eq.${body.id}&status=in.(uploading,processing)`, {
-      status, playback_url: asset.playback_url, duration_seconds: duration, playback_bytes: playbackBytes, updated_at: new Date().toISOString(),
+      status, playback_url: asset.playback_url, duration_seconds: duration, playback_bytes: playbackBytes,
+      provider_storage_bytes: status === "ready" ? Number(video.storageSize) : null, updated_at: new Date().toISOString(),
     }, undefined, "PATCH");
-    return json({ status, ...(status === "ready" ? { url: asset.playback_url } : {}) });
+    // La respuesta puede haber perdido la carrera con otra consulta. Devolver
+    // el estado persistido evita mostrar processing después de ready.
+    const settled = object(await db(c, f, "rpc/get_exercise_video_asset", { p_id: body.id, p_action: "status" }, authorization));
+    return json({ status: settled.status, scope: settled.scope, playback_limit: settled.playback_limit,
+      duration_limit: settled.duration_limit, ...(settled.status === "ready" ? { url: settled.playback_url } : {}) });
   } catch (error) {
-    return error instanceof VideoError ? json({ error: error.code }, error.status) : json({ error: "video_unavailable" }, 503);
+    return error instanceof VideoError ? json({ error: error.code, ...error.details }, error.status) : json({ error: "video_unavailable" }, 503);
   }
 }

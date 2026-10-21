@@ -7,6 +7,9 @@ import 'package:entrenaop_admin/features/exercises/presentation/admin_exercise_v
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:entrena_ui/entrena_ui.dart';
+
+import '../../../../../test/helpers/performance_visual_review.dart';
 
 class _Videos implements AdminExerciseVideoRepository {
   AdminVideoStatus result = const AdminVideoStatus('processing');
@@ -42,6 +45,43 @@ class _Videos implements AdminExerciseVideoRepository {
 }
 
 void main() {
+  setUpAll(() => loadReviewFont(always: true));
+  testWidgets(
+    'ADMIN ofrece solo subida sin exponer edición HTTPS ni borrar el vídeo guardado',
+    (tester) async {
+      final videos = _Videos();
+      final controller = TextEditingController(
+        text: 'https://fixture.b-cdn.net/video/play_360p.mp4',
+      );
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (_, child) => RepaintBoundary(
+            key: const ValueKey('review-boundary'),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: AdminExerciseVideoField(
+              controller: controller,
+              repository: videos,
+              onBusyChanged: (_) {},
+              pickVideo: () async => null,
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.textContaining('HTTPS'), findsNothing);
+      expect(find.text('Sustituir vídeo'), findsOneWidget);
+      expect(find.text('Previsualizar vídeo'), findsOneWidget);
+      await capturePerformanceWidget(tester, 'admin-video-upload-only');
+      await tester.tap(find.text('Sustituir vídeo'));
+      await tester.pumpAndSettle();
+      expect(controller.text, 'https://fixture.b-cdn.net/video/play_360p.mp4');
+      expect(videos.creates, 0);
+    },
+  );
   for (final scenario in ['chosen', 'cancelled', 'failed', 'changed-video']) {
     testWidgets(
       'elegir fotograma: $scenario conserva el vídeo y libera guardado',

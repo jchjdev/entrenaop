@@ -5,29 +5,35 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
-/// Solo clips oficiales autorizados, hasta 20 archivos de 5 MB (100 MB).
+/// Clips autorizados: oficiales hasta 5 MiB, privados hasta 50 MiB.
+/// Se conservan como máximo veinte archivos y 100 MiB en total.
 /// El propietario y el proyecto forman parte de la clave, nunca la firma temporal.
 class ExerciseVideoFileCache {
   ExerciseVideoFileCache(this.directory, {this._transport});
   final Directory directory;
   final http.Client? _transport;
   static const maxBytes = 5 * 1024 * 1024;
+  static const maxPrivateBytes = 50 * 1024 * 1024;
+  static const maxTotalBytes = 100 * 1024 * 1024;
   static const maxFiles = 20;
   static final _pending = <String, Future<File>>{};
 
-  Future<File> get(Uri uri, String key) {
+  Future<File> get(Uri uri, String key, {int limitBytes = maxBytes}) {
+    if (limitBytes <= 0 || limitBytes > maxPrivateBytes) {
+      throw const FormatException('El límite de reproducción no es válido.');
+    }
     final name = sha256.convert(utf8.encode(key)).toString();
-    final pendingKey = '${directory.absolute.path}/$name';
+    final pendingKey = '${directory.absolute.path}/$name/$limitBytes';
     return _pending.putIfAbsent(pendingKey, () async {
       try {
-        return await _get(uri, name);
+        return await _get(uri, name, limitBytes);
       } finally {
         _pending.remove(pendingKey);
       }
     });
   }
 
-  Future<File> _get(Uri uri, String name) async {
+  Future<File> _get(Uri uri, String name, int limitBytes) async {
     if (uri.scheme != 'https' ||
         !uri.host.endsWith('.b-cdn.net') ||
         uri.port != 443 ||
@@ -39,7 +45,7 @@ class ExerciseVideoFileCache {
     if (await file.exists()) {
       final stat = await file.stat();
       if (stat.size > 0 &&
-          stat.size <= maxBytes &&
+          stat.size <= limitBytes &&
           DateTime.now().difference(stat.modified) < const Duration(days: 15)) {
         await file.setLastModified(DateTime.now());
         await _trim(keep: file.path);
@@ -56,18 +62,18 @@ class ExerciseVideoFileCache {
       if (response.statusCode != 200 ||
           (response.headers['content-type'] ?? '').split(';').first !=
               'video/mp4' ||
-          (response.contentLength ?? maxBytes + 1) > maxBytes) {
+          (response.contentLength ?? limitBytes + 1) > limitBytes) {
         await response.stream.listen((_) {}).cancel();
         throw const FormatException(
-          'El vídeo no es un MP4 compatible de hasta 5 MB.',
+          'El vídeo no es un MP4 compatible dentro del tamaño permitido.',
         );
       }
       final bytes = BytesBuilder(copy: false);
       await for (final chunk in response.stream.timeout(
         const Duration(seconds: 20),
       )) {
-        if (bytes.length + chunk.length > maxBytes) {
-          throw const FormatException('El vídeo supera 5 MB.');
+        if (bytes.length + chunk.length > limitBytes) {
+          throw const FormatException('El vídeo supera el tamaño permitido.');
         }
         bytes.add(chunk);
       }
@@ -87,7 +93,7 @@ class ExerciseVideoFileCache {
   }
 
   Future<void> _trim({required String keep}) async {
-    final files = <({File file, DateTime modified})>[];
+    final files = <({File file, DateTime modified, int size})>[];
     await for (final entry in directory.list(followLinks: false)) {
       if (entry is! File ||
           !RegExp(r'[/\\][a-f0-9]{64}\.mp4$').hasMatch(entry.path)) {
@@ -95,21 +101,23 @@ class ExerciseVideoFileCache {
       }
       final stat = await entry.stat();
       if (entry.path != keep &&
-          (stat.size > maxBytes ||
+          (stat.size > maxPrivateBytes ||
               DateTime.now().difference(stat.modified) >=
                   const Duration(days: 15))) {
         await entry.delete();
       } else {
-        files.add((file: entry, modified: stat.modified));
+        files.add((file: entry, modified: stat.modified, size: stat.size));
       }
     }
     files.sort((a, b) => a.modified.compareTo(b.modified));
     var extra = files.length - maxFiles;
+    var total = files.fold<int>(0, (sum, entry) => sum + entry.size);
     for (final entry in files) {
-      if (extra <= 0) break;
+      if (extra <= 0 && total <= maxTotalBytes) break;
       if (entry.file.path != keep) {
         await entry.file.delete();
         extra--;
+        total -= entry.size;
       }
     }
   }

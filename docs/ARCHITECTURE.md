@@ -1,5 +1,45 @@
 # Arquitectura de EntrenaOP
 
+## Creadores comunes y aplicaciones independientes · TRN-020 · 21/10/2026
+
+Javier ratifica que las mejoras generales de los editores de programas, sesiones
+y ejercicios deben servir a ADMIN y Trainer mediante componentes compartidos.
+Ambas aplicaciones consumen los paquetes; `trainer_app` no importa `admin_app`
+ni recibe sus permisos. Compartir composición no comparte identidad, catálogo,
+audiencia ni autorización. Los adaptadores aportan guardado, navegación y
+capacidades de su contexto; las RPC y RLS mantienen los límites por recurso.
+
+`workout_core` conserva modelos y reglas de receta; `workout_editor_ui` ofrece
+formularios, composición y lectura; `entrena_ui` mantiene presentación común.
+Las mejoras transversales se implementan en su pieza responsable y se integran
+y verifican en los consumidores afectados. Una función exclusiva se inyecta
+desde su aplicación, sin introducir comprobaciones de rol administrativo en el
+editor común. El deportista reutiliza las piezas adecuadas con sus contratos y
+cuotas personales. No es necesario acabar ADMIN ni copiarlo para ampliar Trainer.
+La ampliación profesional sigue en curso; esta ratificación no acredita su cierre.
+[Alcance y contratos](TRAINER_OPERATIONAL_WORKFLOW.md).
+
+La ampliación local de TRN-020 mantiene fachadas invoker y autorización por
+recurso en `trainer_private`. Agenda editable y revisión usan revisiones
+esperadas y recibos inmutables; cambiar una pauta no modifica su orden original.
+Grupos, copia y recurrencia finita reutilizan el motor de entrega, con fechas y
+destinatarios explícitos y confirmación del conjunto. Formularios y notas tienen
+versionado propio; los informes completan sus páginas bajo una huella coherente.
+La conversación reutiliza una presentación común inyectada; las notas internas
+no se envían al alumno ni entran al CSV. Vídeo comparte transporte/cliente/lector,
+manteniendo oficial, demostración privada y técnica de ejecución separados.
+Las pruebas deportivas requieren entregas tipadas, sin fabricar ejecuciones de
+entrenamiento ni importar historial personal. Dominio/captura de baterías y
+eventos de agenda tipados se consumen mediante adaptadores independientes.
+Favoritos y recientes usan un puerto puro de `workout_core`, controlador y cliente
+compartidos de `workout_editor_ui`, y adaptadores de identidad propios de cada
+portal. El esquema `editor_private` separa cuenta/contexto, CAS de favorito y
+fecha de selección; ledger por operación y consulta puntual evitan duplicados y
+conflictos falsos del snapshot acotado. No almacena medios ni concede permisos.
+Las diez migraciones profesionales se han aplicado en Dev y se han revalidado
+24 contratos con ROLLBACK sobre el esquema aplicado. La distribución de las
+interfaces y la aceptación física se acreditan por separado.
+
 ## Ejercicios profesionales · TRN-019 · 21/10/2026
 
 Trainer reutiliza `ExerciseForm` con adaptador propio. `exercises.origin=coach`

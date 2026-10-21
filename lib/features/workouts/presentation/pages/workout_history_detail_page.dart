@@ -2,6 +2,7 @@ import 'package:entrenaop/features/workouts/domain/entities/workout_execution.da
 
 import '../widgets/workout_execution_labels.dart';
 import '../widgets/workout_effort_field.dart';
+import '../widgets/workout_technique_section.dart';
 
 import 'package:entrenaop/features/workouts/domain/services/running_execution_assessment.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
@@ -88,6 +89,7 @@ class _DetailContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SummaryCard(execution: execution),
+                WorkoutTechniqueSection(execution: execution),
                 if (execution.notes case final notes?
                     when notes.trim().isNotEmpty) ...[
                   const SizedBox(height: 12),

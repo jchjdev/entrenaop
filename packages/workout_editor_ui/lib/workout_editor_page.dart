@@ -7,6 +7,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/running_step_fields.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
@@ -14,6 +15,7 @@ import 'package:workout_editor_ui/strength_set_fields.dart';
 import 'package:workout_editor_ui/compact_field_layout.dart';
 
 import 'workout_editor_exercise.dart';
+import 'exercise_preferences_controller.dart';
 
 /// Creador común: edita la receta; el consumidor aporta catálogo, guardado y salida.
 /// La visibilidad y los permisos pertenecen a la aplicación y al servidor.
@@ -36,9 +38,15 @@ class WorkoutEditorPage extends StatefulWidget {
     this.saveErrorMessage =
         'No se pudo guardar el borrador. Revisa permisos y conexión.',
     this.embedded = false,
+    this.onCreateExercise,
+    this.exercisePreferences,
   });
 
   final Future<List<WorkoutEditorExercise>> Function() loadExercises;
+
+  /// El consumidor crea en su catálogo autorizado y devuelve la identidad guardada.
+  final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
+  final ExerciseCatalogPreferences? exercisePreferences;
   final Future<String> Function(CreatePersonalWorkoutInput) onSave;
   final ValueChanged<String> onSaved;
   final String title, heading, instructions, saveLabel;
@@ -67,6 +75,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   List<WorkoutEditorExercise> _catalog = const [];
   bool _running = true;
   bool _busy = false;
+  bool _creatingExercise = false;
+  ExercisePreferencesController? _exercisePreferences;
   String? _error;
   late String _savedStamp;
   String get _draftStamp => jsonEncode([
@@ -122,6 +132,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   @override
   void initState() {
     super.initState();
+    _exercisePreferences = widget.exercisePreferences == null
+        ? null
+        : ExercisePreferencesController(widget.exercisePreferences!);
     if (widget.originalTemplate case final original?) _populate(original);
     if (widget.warmup) {
       _running = false;
@@ -133,13 +146,31 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     widget
         .loadExercises()
         .then((items) {
-          if (mounted) setState(() => _catalog = items);
+          if (mounted) {
+            setState(
+              () => _catalog = {
+                for (final item in items) item.id: item,
+                for (final item in _catalog) item.id: item,
+              }.values.toList(),
+            );
+          }
         })
         .catchError((Object _) {
           if (mounted) {
             setState(() => _error = 'No se pudo cargar el catálogo.');
           }
         });
+  }
+
+  @override
+  void didUpdateWidget(covariant WorkoutEditorPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.exercisePreferences, widget.exercisePreferences)) {
+      _exercisePreferences?.dispose();
+      _exercisePreferences = widget.exercisePreferences == null
+          ? null
+          : ExercisePreferencesController(widget.exercisePreferences!);
+    }
   }
 
   void _populate(WorkoutTemplate template) {
@@ -174,6 +205,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 
   @override
   void dispose() {
+    _exercisePreferences?.dispose();
     _name.dispose();
     _description.dispose();
     _duration.dispose();
@@ -527,8 +559,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   @override
   Widget build(BuildContext context) => WorkflowDraftGuard(
     hasUnsavedChanges: () => _draftStamp != _savedStamp,
-    isBusy: () => _busy,
-    child: AbsorbPointer(absorbing: _busy, child: _buildPage(context)),
+    isBusy: () => _busy || _creatingExercise,
+    child: AbsorbPointer(
+      absorbing: _busy || _creatingExercise,
+      child: _buildPage(context),
+    ),
   );
 
   Widget _buildPage(BuildContext context) => widget.embedded
@@ -776,6 +811,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           _blocks.length > 1
               ? () => setState(() => _blocks.removeAt(index).dispose())
               : null,
+          duplicate: _blocks.length >= 10
+              ? null
+              : () => setState(() => _blocks.insert(index + 1, block.clone())),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -897,6 +935,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
+              if (block.format != WorkoutBlockFormat.tabata &&
+                  block.format != WorkoutBlockFormat.intervals &&
+                  block.format != WorkoutBlockFormat.superset &&
+                  block.exercises.length < 20)
+                IconButton(
+                  tooltip: 'Duplicar posición',
+                  onPressed: () => setState(
+                    () => block.exercises.insert(index + 1, item.clone()),
+                  ),
+                  icon: const Icon(Icons.copy_outlined),
+                ),
               if (index > 0)
                 IconButton(
                   tooltip: 'Subir posición',
@@ -928,12 +977,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: _catalog.isEmpty
+            onPressed: _catalog.isEmpty && widget.onCreateExercise == null
                 ? null
                 : () async {
                     final selected = await _chooseExercise();
                     if (selected != null && mounted) {
                       setState(() => item.exerciseId = selected.id);
+                      _exercisePreferences?.recordSelection(selected.id);
                     }
                   },
             icon: item.exerciseId == null
@@ -1136,16 +1186,24 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     );
   }
 
-  Future<WorkoutEditorExercise?> _chooseExercise() {
-    return showDialog<WorkoutEditorExercise>(
+  Future<WorkoutEditorExercise?> _chooseExercise() async {
+    final preferences = _exercisePreferences;
+    var create = false;
+    final selected = await showDialog<WorkoutEditorExercise>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Buscar ejercicio'),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+        titlePadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        actionsPadding: const EdgeInsets.all(12),
         content: SizedBox(
           width: 480,
           height: 430,
           child: ExerciseSearchList<WorkoutEditorExercise>(
             exercises: _catalog,
+            idOf: (exercise) => exercise.id,
+            preferences: preferences,
             nameOf: (exercise) => exercise.name,
             searchTermsOf: (exercise) => [
               exercise.name,
@@ -1153,12 +1211,23 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               ...exercise.equipment,
             ],
             thumbnailOf: (exercise) => exercise.thumbnailUrl,
+            muscleGroupsOf: (exercise) => exercise.muscleGroups,
+            equipmentOf: (exercise) => exercise.equipment,
             subtitleOf: (exercise) =>
                 [...exercise.muscleGroups, ...exercise.equipment].join(' · '),
             onSelected: (exercise) => Navigator.of(dialogContext).pop(exercise),
           ),
         ),
         actions: [
+          if (widget.onCreateExercise != null)
+            TextButton.icon(
+              onPressed: () {
+                create = true;
+                Navigator.of(dialogContext).pop();
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Crear ejercicio'),
+            ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancelar'),
@@ -1166,6 +1235,35 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         ],
       ),
     );
+    if (!mounted || !identical(preferences, _exercisePreferences)) return null;
+    if (!create) return selected;
+    setState(() {
+      _creatingExercise = true;
+      _error = null;
+    });
+    try {
+      final created = await widget.onCreateExercise!(context);
+      if (!mounted || !identical(preferences, _exercisePreferences)) return null;
+      if (created != null && mounted) {
+        setState(
+          () => _catalog = {
+            for (final exercise in _catalog) exercise.id: exercise,
+            created.id: created,
+          }.values.toList(),
+        );
+      }
+      return created;
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'No se pudo crear el ejercicio. La sesión conserva tus cambios.',
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _creatingExercise = false);
+    }
   }
 
   String _formatHelp(WorkoutBlockFormat format) => switch (format) {
@@ -1186,11 +1284,21 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     _ => '',
   };
 
-  Widget _rowTitle(String title, VoidCallback? remove) => Row(
+  Widget _rowTitle(
+    String title,
+    VoidCallback? remove, {
+    VoidCallback? duplicate,
+  }) => Row(
     children: [
       Expanded(
         child: Text(title, style: Theme.of(context).textTheme.titleMedium),
       ),
+      if (duplicate != null)
+        IconButton(
+          tooltip: 'Duplicar bloque',
+          onPressed: duplicate,
+          icon: const Icon(Icons.copy_outlined),
+        ),
       if (remove != null)
         IconButton(
           tooltip: 'Quitar',
@@ -1321,6 +1429,20 @@ class _Segment {
 class _StrengthBlock {
   _StrengthBlock();
 
+  _StrengthBlock clone() {
+    final copy = _StrengthBlock();
+    copy.name.text = name.text;
+    copy.rounds.text = rounds.text;
+    copy.rest.text = rest.text;
+    copy.cap.text = cap.text;
+    copy.format = format;
+    copy.exercises.single.dispose();
+    copy.exercises
+      ..clear()
+      ..addAll(exercises.map((e) => e.clone(preserveAutomaticSlot: true)));
+    return copy;
+  }
+
   factory _StrengthBlock.fromBlock(WorkoutBlock source) {
     final block = _StrengthBlock();
     block.name.text = source.name;
@@ -1357,6 +1479,29 @@ class _StrengthBlock {
 
 class _Exercise {
   _Exercise({this.automaticSlot = false});
+
+  _Exercise clone({bool preserveAutomaticSlot = false}) {
+    final copy =
+        _Exercise(automaticSlot: preserveAutomaticSlot && automaticSlot)
+          ..exerciseId = exerciseId
+          ..type = type
+          ..customSets = customSets;
+    copy.count.text = count.text;
+    copy.target.text = target.text;
+    copy.amrapRepetitions.text = amrapRepetitions.text;
+    copy.amrapRir.text = amrapRir.text;
+    copy.rest.text = rest.text;
+    copy.load.text = load.text;
+    copy.rir.text = rir.text;
+    for (final entry in variations.entries) {
+      copy.variations[entry.key] = _SetVariation()
+        ..target.text = entry.value.target.text
+        ..rest.text = entry.value.rest.text
+        ..load.text = entry.value.load.text
+        ..rir.text = entry.value.rir.text;
+    }
+    return copy;
+  }
 
   final bool automaticSlot;
 

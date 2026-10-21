@@ -4,18 +4,51 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
+import 'package:workout_editor_ui/workout_editor_exercise.dart';
+import 'package:workout_editor_ui/exercise_video_field.dart';
+import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_exercise_repository.dart';
 import 'trainer_workout_repository.dart';
+
+/// El creador común recibe únicamente un ejercicio privado ya confirmado.
+Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
+  BuildContext context,
+  TrainerExerciseRepository repository, {
+  TrainerExercise? previous,
+  ExerciseVideoSource? videoSource,
+}) async {
+  WorkoutEditorExercise? saved;
+  await showDialog<ExerciseFormSubmission<ExerciseDraft>>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => _ExerciseDialog(
+      repository: repository,
+      previous: previous,
+      videoSource: videoSource,
+      onSaved: (id, draft) {
+        saved = WorkoutEditorExercise(
+          id: id,
+          name: draft.name,
+          muscleGroups: draft.muscleGroups,
+          equipment: draft.equipment,
+        );
+      },
+    ),
+  );
+  return saved;
+}
 
 class TrainerExercisePage extends StatefulWidget {
   const TrainerExercisePage({
     super.key,
     required this.repository,
     required this.access,
+    this.videoSource,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
+  final ExerciseVideoSource? videoSource;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -57,11 +90,11 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   }
 
   Future<void> _edit([TrainerExercise? previous]) async {
-    await showDialog<ExerciseFormSubmission<ExerciseDraft>>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) =>
-          _ExerciseDialog(repository: widget.repository, previous: previous),
+    await showTrainerExerciseEditor(
+      context,
+      widget.repository,
+      previous: previous,
+      videoSource: widget.videoSource,
     );
     if (mounted) await _load();
   }
@@ -100,7 +133,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 Padding(
                   padding: EdgeInsets.only(bottom: 16),
                   child: Text(
-                    'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. Los vídeos se añaden mediante enlace HTTPS y su visibilidad depende del servicio donde los alojes.',
+                    'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. Puedes enlazar un vídeo HTTPS del proveedor que ya utilices o subir un archivo privado cuando la subida esté disponible. Los enlaces externos dependen de la disponibilidad y privacidad de ese proveedor.',
                   ),
                 ),
               ],
@@ -151,9 +184,16 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
 }
 
 class _ExerciseDialog extends StatefulWidget {
-  const _ExerciseDialog({required this.repository, this.previous});
+  const _ExerciseDialog({
+    required this.repository,
+    required this.onSaved,
+    this.previous,
+    this.videoSource,
+  });
   final TrainerExerciseRepository repository;
+  final void Function(String, ExerciseDraft) onSaved;
   final TrainerExercise? previous;
+  final ExerciseVideoSource? videoSource;
   @override
   State<_ExerciseDialog> createState() => _ExerciseDialogState();
 }
@@ -172,11 +212,12 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
             _reason = null;
           });
           try {
-            await widget.repository.save(
+            final id = await widget.repository.save(
               _operation,
               _pending!,
               previous: widget.previous,
             );
+            widget.onSaved(id, _pending!.draft);
           } catch (error) {
             if (mounted) setState(() => _reason = trainerExerciseError(error));
             rethrow;
@@ -214,6 +255,17 @@ class _ExerciseDialogState extends State<_ExerciseDialog> {
                         fieldKeyPrefix: 'trainer-exercise',
                         onDirtyChanged: markDirty,
                         onSubmit: submit,
+                        videoFieldBuilder: widget.videoSource == null
+                            ? null
+                            : (controller, onBusyChanged, applyCover) =>
+                                  ExerciseVideoField(
+                                    controller: controller,
+                                    repository: widget.videoSource!,
+                                    onBusyChanged: onBusyChanged,
+                                    onCoverReady: applyCover,
+                                    maxVideoBytes: 100 * 1024 * 1024,
+                                    maxVideoDurationSeconds: 180,
+                                  ),
                       ),
                     ),
                   ),

@@ -1,6 +1,2 @@
-import 'dart:typed_data';
-
-import 'package:flutter/material.dart';
-
-Future<Uint8List?> pickExerciseVideoFrame(BuildContext context, Uri video) =>
-    Future.error(UnsupportedError('El selector requiere ADMIN web.'));
+export 'package:workout_editor_ui/exercise_video_frame_picker_stub.dart'
+    show pickExerciseVideoFrame;

@@ -5,6 +5,9 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:workout_editor_ui/workout_editor_exercise.dart';
+import 'package:entrena_ui/conversation_view.dart';
+import 'package:trainer_access/trainer_messages.dart';
 
 import 'trainer_clients_page.dart';
 import 'trainer_security_page.dart';
@@ -17,6 +20,26 @@ import 'trainer_agenda_page.dart';
 import 'trainer_shell.dart';
 import 'trainer_exercise_page.dart';
 import 'trainer_exercise_repository.dart';
+import 'trainer_video_repository.dart';
+import 'trainer_operations_repository.dart';
+import 'trainer_operations_pages.dart';
+import 'trainer_home_page.dart';
+import 'trainer_form_repository.dart';
+import 'trainer_form_pages.dart';
+import 'trainer_groups_repository.dart';
+import 'trainer_groups_page.dart';
+import 'trainer_week_copy_dialog.dart';
+import 'trainer_client_workspace.dart';
+import 'trainer_client_workspace_repository.dart';
+import 'trainer_client_forms_route.dart';
+import 'trainer_media_repository.dart';
+import 'trainer_media_page.dart';
+import 'trainer_technique_page.dart';
+import 'trainer_recurrence_repository.dart';
+import 'trainer_recurrence_page.dart';
+import 'trainer_assessment_pages.dart';
+import 'trainer_assessment_repository.dart';
+import 'trainer_exercise_preferences_repository.dart';
 
 import 'package:trainer_access/trainer_security.dart';
 
@@ -102,12 +125,38 @@ class _TrainerAppState extends State<TrainerApp> {
         SupabaseTrainerProgramRepository(widget.client, identity!);
     SupabaseTrainerRepository access() =>
         SupabaseTrainerRepository(widget.client, userId: identity!);
+    SupabaseTrainerOperationsRepository operations() =>
+        SupabaseTrainerOperationsRepository(widget.client, identity!);
+    SupabaseTrainerAgendaRepository agenda() =>
+        SupabaseTrainerAgendaRepository(widget.client, identity!);
+    SupabaseTrainerAssessmentRepository assessments() =>
+        SupabaseTrainerAssessmentRepository(widget.client, identity!);
+    SupabaseTrainerFormRepository forms() =>
+        SupabaseTrainerFormRepository(widget.client, identity!);
+    SupabaseTrainerGroupsRepository groups() =>
+        SupabaseTrainerGroupsRepository(widget.client, identity!);
+    SupabaseTrainerClientWorkspaceRepository workspace() =>
+        SupabaseTrainerClientWorkspaceRepository(widget.client, identity!);
+    SupabaseTrainerMediaRepository media() =>
+        SupabaseTrainerMediaRepository(widget.client, identity!);
+    final exercisePreferences = identity == null
+        ? null
+        : SupabaseTrainerExercisePreferences(widget.client, identity);
+    final videos = identity == null
+        ? null
+        : SupabaseTrainerVideoRepository(widget.client, identity);
+    Future<WorkoutEditorExercise?> createExercise(BuildContext context) =>
+        showTrainerExerciseEditor(
+          context,
+          SupabaseTrainerExerciseRepository(widget.client, identity!),
+          videoSource: videos,
+        );
     Widget guarded(GoRouterState state, Widget child) => WorkflowExitScope(
       controller: exits.controller(state.pageKey),
       child: child,
     );
     return GoRouter(
-      initialLocation: identity == null ? '/login' : '/clients',
+      initialLocation: identity == null ? '/login' : '/home',
       redirect: (_, state) async {
         if (_identity == null && state.matchedLocation != '/login') {
           return '/login';
@@ -129,7 +178,7 @@ class _TrainerAppState extends State<TrainerApp> {
           if (assured &&
               (state.matchedLocation == '/login' ||
                   state.matchedLocation == '/security')) {
-            return '/clients';
+            return '/home';
           }
         }
         return null;
@@ -146,7 +195,7 @@ class _TrainerAppState extends State<TrainerApp> {
               : TrainerSecurityPage(
                   key: ValueKey('security-$identity'),
                   repository: SupabaseTrainerSecurity(widget.client, identity),
-                  onComplete: () => context.go('/clients'),
+                  onComplete: () => context.go('/home'),
                   onSignOut: () => widget.client.auth.signOut(),
                 ),
         ),
@@ -155,6 +204,205 @@ class _TrainerAppState extends State<TrainerApp> {
               TrainerShell(location: state.uri.path, child: child),
           routes: [
             GoRoute(
+              path: '/assessments',
+              builder: (_, _) => TrainerAssessmentsPage(
+                repository: assessments(),
+                access: access(),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'new',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerAssessmentEditorPage(repository: assessments()),
+                  ),
+                ),
+                GoRoute(
+                  path: ':id/revise',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerAssessmentEditorPage(
+                      repository: assessments(),
+                      assessmentId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
+              path: '/clients/:id/assessments',
+              builder: (_, state) => TrainerClientContentRoute(
+                workspace: workspace(),
+                assessments: assessments(),
+                clientId: state.pathParameters['id']!,
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id/assessments/:delivery',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                TrainerAssessmentDeliveryPage(
+                  repository: assessments(),
+                  deliveryId: state.pathParameters['delivery']!,
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/recurrence',
+              builder: (_, _) => TrainerRecurrencePage(
+                repository: SupabaseTrainerRecurrenceRepository(
+                  widget.client,
+                  identity!,
+                ),
+                access: access(),
+                workouts: workouts(),
+              ),
+            ),
+            GoRoute(
+              path: '/groups',
+              builder: (_, _) => TrainerGroupsPage(
+                repository: groups(),
+                access: access(),
+                workouts: workouts(),
+                programs: programs(),
+              ),
+            ),
+            GoRoute(
+              path: '/media',
+              builder: (_, _) => TrainerMediaPage(repository: media()),
+            ),
+            GoRoute(
+              path: '/assignments/:id/technique',
+              builder: (_, state) => TrainerTechniquePage(
+                repository: media(),
+                assignmentId: state.pathParameters['id']!,
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                TrainerClientWorkspacePage(
+                  repository: workspace(),
+                  clientId: state.pathParameters['id']!,
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id/forms',
+              builder: (_, state) => TrainerClientContentRoute(
+                workspace: workspace(),
+                forms: forms(),
+                clientId: state.pathParameters['id']!,
+              ),
+            ),
+            GoRoute(
+              path: '/conversations/:id',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) {
+                final messages = SupabaseTrainerMessageRepository(
+                  widget.client,
+                  identity!,
+                );
+                final relationId = state.pathParameters['id']!;
+                return guarded(
+                  state,
+                  ConversationView(
+                    header: () async {
+                      final detail = await messages.context(relationId);
+                      return ConversationHeader(
+                        title: detail.name,
+                        canSend: detail.canSend,
+                      );
+                    },
+                    load: (before) async =>
+                        (await messages.list(
+                              relationId,
+                              beforeAt: before?.createdAt,
+                              beforeId: before?.id,
+                            ))
+                            .map(
+                              (m) => ConversationEntry(
+                                id: m.id,
+                                body: m.body,
+                                createdAt: m.createdAt,
+                                mine: m.mine,
+                                contextLabel: m.assignmentId == null
+                                    ? null
+                                    : 'Sobre una pauta del servicio',
+                              ),
+                            )
+                            .toList(),
+                    send: (id, body) => messages.send(
+                      operationId: id,
+                      relationId: relationId,
+                      body: body,
+                      assignmentId: state.uri.queryParameters['assignment'],
+                    ),
+                    newOperationId: trainerMessageOperationId,
+                    errorLabel: trainerError,
+                  ),
+                );
+              },
+            ),
+            GoRoute(
+              path: '/home',
+              builder: (_, _) => TrainerHomePage(
+                access: access(),
+                agenda: agenda(),
+                operations: operations(),
+              ),
+            ),
+            GoRoute(
+              path: '/reviews',
+              builder: (_, _) =>
+                  TrainerReviewQueuePage(repository: operations()),
+            ),
+            GoRoute(
+              path: '/assignments/:id/adapt',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                TrainerAssignmentAdaptationPage(
+                  operations: operations(),
+                  workouts: workouts(),
+                  assignmentId: state.pathParameters['id']!,
+                  onCreateExercise: createExercise,
+                  exercisePreferences: exercisePreferences,
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/forms',
+              builder: (_, _) =>
+                  TrainerFormsPage(repository: forms(), access: access()),
+              routes: [
+                GoRoute(
+                  path: 'new',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerFormEditorPage(repository: forms()),
+                  ),
+                ),
+                GoRoute(
+                  path: ':id/revise',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerFormEditorPage(
+                      repository: forms(),
+                      formId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            GoRoute(
               path: '/exercises',
               builder: (_, _) => TrainerExercisePage(
                 repository: SupabaseTrainerExerciseRepository(
@@ -162,6 +410,7 @@ class _TrainerAppState extends State<TrainerApp> {
                   identity!,
                 ),
                 access: access(),
+                videoSource: videos,
               ),
             ),
             GoRoute(
@@ -173,17 +422,31 @@ class _TrainerAppState extends State<TrainerApp> {
                       repository: access(),
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),
-                      onOpenClient: (id) =>
-                          context.push('/clients/$id/workouts'),
+                      onOpenClient: (id) => context.push('/clients/$id'),
                     ),
             ),
             GoRoute(
               path: '/agenda',
-              builder: (_, _) => TrainerAgendaPage(
-                repository: SupabaseTrainerAgendaRepository(
-                  widget.client,
-                  identity!,
+              builder: (context, _) => TrainerAgendaPage(
+                repository: agenda(),
+                assessments: assessments(),
+                onMove: (assignment, date) => showTrainerMoveDialog(
+                  context,
+                  operations(),
+                  assignment,
+                  date,
                 ),
+                onAdapt: (assignment) async {
+                  await context.push('/assignments/${assignment.id}/adapt');
+                },
+                onCopyWeek: (weekStart, offsetDays) async {
+                  await showTrainerWeekCopyDialog(
+                    context,
+                    groups(),
+                    weekStart,
+                    offsetDays,
+                  );
+                },
               ),
             ),
             GoRoute(
@@ -201,6 +464,8 @@ class _TrainerAppState extends State<TrainerApp> {
                     TrainerProgramEditorPage(
                       repository: programs(),
                       workouts: workouts(),
+                      onCreateExercise: createExercise,
+                      exercisePreferences: exercisePreferences,
                     ),
                   ),
                 ),
@@ -220,6 +485,8 @@ class _TrainerAppState extends State<TrainerApp> {
                         TrainerProgramEditorPage(
                           repository: programs(),
                           workouts: workouts(),
+                          onCreateExercise: createExercise,
+                          exercisePreferences: exercisePreferences,
                           programId: state.pathParameters['id']!,
                         ),
                       ),
@@ -240,7 +507,11 @@ class _TrainerAppState extends State<TrainerApp> {
                   onExit: (_, state) => exits.requestExit(state.pageKey),
                   builder: (_, state) => guarded(
                     state,
-                    TrainerWorkoutEditorPage(repository: workouts()),
+                    TrainerWorkoutEditorPage(
+                      repository: workouts(),
+                      onCreateExercise: createExercise,
+                      exercisePreferences: exercisePreferences,
+                    ),
                   ),
                 ),
                 GoRoute(
@@ -257,6 +528,8 @@ class _TrainerAppState extends State<TrainerApp> {
                         state,
                         TrainerWorkoutEditorPage(
                           repository: workouts(),
+                          onCreateExercise: createExercise,
+                          exercisePreferences: exercisePreferences,
                           templateId: state.pathParameters['id']!,
                         ),
                       ),
@@ -278,6 +551,7 @@ class _TrainerAppState extends State<TrainerApp> {
                   path: ':assignment/result',
                   builder: (_, state) => TrainerWorkoutResultPage(
                     repository: workouts(),
+                    operations: operations(),
                     assignmentId: state.pathParameters['assignment']!,
                   ),
                 ),

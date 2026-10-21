@@ -17,23 +17,50 @@ function request(body: Record<string, unknown>, token = "Bearer fixture-user") {
     body: JSON.stringify({ expected_user_id: user, ...body }) });
 }
 function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
-  provider?: Record<string, unknown>; auth?: boolean; asset?: boolean } = {}) {
+  provider?: Record<string, unknown>; auth?: boolean; asset?: boolean;
+  scope?: string; manage?: boolean; creationState?: string; searchItems?: unknown[];
+  searchTotal?: number; providerTimeout?: boolean } = {}) {
   const writes: Record<string, unknown>[] = [];
   const calls: string[] = [];
+  const asset: Record<string, unknown> = {
+    id, created_by: user, library_id: 42, provider_video_id: video, cdn_host: config.cdnHost,
+    playback_url: url, playback_bytes: 1000, status: options.ready === false ? "processing" : "ready",
+    scope: options.scope ?? "official", creation_state: options.creationState ?? "created",
+    source_limit: options.scope && options.scope !== "official" ? 100 * 1024 * 1024 : 20 * 1024 * 1024,
+    duration_limit: options.scope && options.scope !== "official" ? 180 : 10,
+    playback_limit: options.scope && options.scope !== "official" ? 50 * 1024 * 1024 : 5 * 1024 * 1024,
+  };
   const fetcher: typeof fetch = async (target, init) => {
     const path = String(target); calls.push(path);
     if (path.endsWith("/auth/v1/user")) return Response.json({ id: user }, { status: options.auth === false ? 401 : 200 });
     if (path.endsWith("/rpc/is_admin")) return Response.json(options.admin !== false);
     if (path.endsWith("/rpc/can_read_exercise_video")) return Response.json(options.canRead === true);
-    if (path.endsWith("/rpc/reserve_official_exercise_video")) return Response.json(id);
-    if (path.includes("/exercise_video_assets?") && init?.method === "GET") return Response.json(options.asset === false ? [] : [{
-      id, created_by: user, library_id: 42, provider_video_id: video, cdn_host: config.cdnHost,
-      playback_url: url, playback_bytes: 1000, status: options.ready === false ? "processing" : "ready",
-    }]);
+    if (path.endsWith("/rpc/authorize_exercise_video_asset")) {
+      const b = JSON.parse(String(init?.body));
+      return Response.json(b.p_action === "playback" ? options.canRead === true || (options.scope === undefined && options.admin !== false) : options.manage ?? options.admin !== false);
+    }
+    if (path.endsWith("/rpc/reserve_exercise_video_upload")) {
+      if (options.admin === false && options.manage !== true) return Response.json({ code: "42501" }, { status: 403 });
+      asset.status = "uploading"; return Response.json(id);
+    }
+    if (path.endsWith("/rpc/get_exercise_video_asset")) {
+      if (options.manage === false || (options.manage === undefined && options.admin === false)) return Response.json({ code: "42501" }, { status: 403 });
+      return Response.json(asset);
+    }
+    if (path.endsWith("/rpc/claim_exercise_video_creation")) return Response.json({ state: options.creationState ?? "claimed", video_id: video });
+    if (path.endsWith("/rpc/complete_exercise_video_creation")) {
+      asset.provider_video_id = video; asset.creation_state = "created";
+      writes.push({ playback_url: url }); return Response.json(null);
+    }
+    if (path.endsWith("/rpc/mark_exercise_video_creation_uncertain")) { asset.creation_state = "uncertain"; return Response.json(null); }
+    if (path.includes("/exercise_video_assets?") && init?.method === "GET") return Response.json(options.asset === false ? [] : [asset]);
     if (path.includes("/exercise_video_assets?") && init?.method === "PATCH") {
-      writes.push(JSON.parse(String(init.body))); return Response.json([]);
+      const change = JSON.parse(String(init.body)); Object.assign(asset, change);
+      writes.push(change); return Response.json([]);
     }
     if (path.startsWith("https://video.bunnycdn.com/library/42/videos")) {
+      if (options.providerTimeout && init?.method === "POST") throw new Error("timeout después de aceptar Bunny");
+      if (path.includes("?")) return Response.json({ items: options.searchItems ?? [{ guid: video, videoLibraryId: 42, title: `EntrenaOP ${id}` }], totalItems: options.searchTotal ?? options.searchItems?.length ?? 1 });
       return Response.json({ guid: video, videoLibraryId: 42, status: 4, length: 5,
         hasMP4Fallback: true, availableResolutions: "360p,480p,720p", storageSize: 10000, ...options.provider });
     }
@@ -41,7 +68,7 @@ function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
       headers: { "Content-Length": "1000", "Content-Type": "video/mp4" } });
     throw new Error(`Solicitud inesperada: ${path}`);
   };
-  return { fetcher, calls, writes };
+  return { fetcher, calls, writes, asset };
 }
 test("sin JWT no consulta Auth, base de datos ni Bunny", async () => {
   const f = fixture();
@@ -64,7 +91,7 @@ test("rechaza JWT inválido, cambio de cuenta y configuración de producción", 
 test("un deportista no puede crear subidas ni inspeccionar su estado", async () => {
   for (const action of ["create", "status", "thumbnail"]) {
     const f = fixture({ admin: false });
-    assert.equal((await handleExerciseVideo(request({ action, bytes: 10, id }), config, f.fetcher)).status, 403);
+    assert.equal((await handleExerciseVideo(request({ action, bytes: 10, id, url }), config, f.fetcher)).status, 403);
     assert.equal(f.calls.some((s) => s.includes("bunnycdn")), false);
   }
 });
@@ -89,7 +116,7 @@ test("leer un vídeo público no concede permiso de generar portadas ni subidas"
   const result = await handleExerciseVideo(request({ action: "thumbnail", url }), config, f.fetcher);
   assert.equal(result.status, 403);
   assert.equal(f.writes.length, 0);
-  assert.equal(f.calls.some((s) => s.includes("exercise_video_assets") || s.includes("bunnycdn")), false);
+  assert.equal(f.calls.some((s) => s.includes("bunnycdn")), false);
 });
 test("no firma un vídeo oculto o una URL arbitraria aunque el cliente conozca el ID", async () => {
   for (const options of [{ admin: false }, { admin: true, asset: false }]) {
@@ -162,6 +189,110 @@ test("un resultado en proceso no publica ni permite reproducción", async () => 
   assert.equal((await result.json()).status, "processing");
   const playback = await handleExerciseVideo(request({ action: "playback", url }), config, f.fetcher);
   assert.equal(playback.status, 409);
+});
+
+test("ADMIN no abre vídeo privado ajeno por su permiso global", async () => {
+  const f = fixture({ admin: true, scope: "trainer_exercise", manage: false, canRead: false });
+  for (const action of ["playback", "thumbnail", "status"]) {
+    assert.equal((await handleExerciseVideo(request({ action, id, url }), config, f.fetcher)).status, 403);
+  }
+  assert.equal(f.calls.some((s) => s.startsWith("https://video.bunnycdn.com")), false);
+});
+
+test("autor profesional obtiene subida scoped y exige operación estable", async () => {
+  const f = fixture({ admin: false, manage: true, scope: "trainer_exercise" });
+  const invalid = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", bytes: 21 * 1024 * 1024 }), config, f.fetcher);
+  assert.equal(invalid.status, 400);
+  const result = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 21 * 1024 * 1024 }), config, f.fetcher);
+  const data = await result.json();
+  assert.equal(result.status, 200); assert.equal(data.scope, "trainer_exercise");
+  assert.equal(data.duration_limit, 180); assert.equal(data.playback_limit, 50 * 1024 * 1024);
+});
+
+test("una creación incierta se reconcilia por título único sin otro POST", async () => {
+  const f = fixture({ admin: false, manage: true, scope: "trainer_exercise", creationState: "uncertain" });
+  const result = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
+  assert.equal(result.status, 200);
+  assert.ok(f.calls.some((s) => s.includes("search=EntrenaOP%20")));
+  assert.equal(f.calls.filter((s) => s === "https://video.bunnycdn.com/library/42/videos").length, 0);
+});
+
+test("recuperación con cero, múltiples o resultados incompletos conserva incertidumbre", async () => {
+  for (const options of [
+    { searchItems: [] },
+    { searchItems: [{ guid: video, videoLibraryId: 42, title: `EntrenaOP ${id}` }, { guid: user, videoLibraryId: 42, title: `EntrenaOP ${id}` }] },
+    { searchTotal: 101 },
+    { searchItems: [{ guid: video, videoLibraryId: 999, title: `EntrenaOP ${id}` }] },
+    { searchItems: [{ guid: video, videoLibraryId: 42, title: "Otro título" }] },
+  ]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "uncertain", ...options });
+    const response = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
+    const data = await response.json(); assert.equal(response.status, 409);
+    assert.equal(data.error, "video_creation_uncertain"); assert.equal(data.asset_id, id);
+    assert.equal(f.writes.length, 0);
+  }
+});
+
+test("timeout del proveedor conserva ID recuperable y no marca fallo definitivo", async () => {
+  const f = fixture({ manage: true, scope: "trainer_exercise", providerTimeout: true });
+  const response = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
+  const data = await response.json(); assert.equal(response.status, 503);
+  assert.equal(data.asset_id, id); assert.equal(data.error, "video_creation_uncertain");
+  assert.equal(f.asset.creation_state, "uncertain"); assert.equal(f.asset.status, "uploading");
+});
+
+test("activo ya creado renueva el mismo vídeo sin otra creación", async () => {
+  const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "created" });
+  const response = await handleExerciseVideo(request({ action: "create", scope: "trainer_exercise", operation_id: id, bytes: 1000 }), config, f.fetcher);
+  assert.equal(response.status, 200); assert.equal((await response.json()).video_id, video);
+  assert.equal(f.calls.some((s) => s.startsWith("https://video.bunnycdn.com")), false);
+});
+
+test("recuperar un activo listo nunca vuelve a emitir autorización de subida", async () => {
+  const f = fixture({ manage: true, scope: "trainer_exercise", creationState: "created" });
+  const response = await handleExerciseVideo(request({ action: "recover", id }), config, f.fetcher);
+  const data = await response.json(); assert.equal(response.status, 409);
+  assert.equal(data.error, "video_upload_closed"); assert.equal(data.signature, undefined);
+});
+
+test("duración privada no amplía las demostraciones oficiales", async () => {
+  const privateClip = fixture({ manage: true, scope: "client_technique", ready: false, provider: { length: 120 } });
+  const allowed = await handleExerciseVideo(request({ action: "status", id }), config, privateClip.fetcher);
+  assert.equal((await allowed.json()).status, "ready");
+  const official = fixture({ ready: false, provider: { length: 120 } });
+  const rejected = await handleExerciseVideo(request({ action: "status", id }), config, official.fetcher);
+  assert.equal((await rejected.json()).status, "rejected");
+});
+
+test("reproducción entrega cota privada autenticada sin claves", async () => {
+  const f = fixture({ admin: false, scope: "client_technique", canRead: true });
+  const response = await handleExerciseVideo(request({ action: "playback", url }), config, f.fetcher);
+  const data = await response.json(); assert.equal(response.status, 200);
+  assert.equal(data.scope, "client_technique"); assert.equal(data.playback_limit, 50 * 1024 * 1024);
+  assert.equal(JSON.stringify(data).includes(config.apiKey), false);
+});
+
+test("bytes declarados no sustituyen el almacenamiento medido por Bunny", async () => {
+  for (const storageSize of [0, -1, "invalid", 100 * 1024 * 1024 + 1]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise", ready: false, provider: { storageSize } });
+    const result = await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher);
+    assert.equal((await result.json()).status, "rejected");
+    assert.equal(f.writes[0].provider_storage_bytes, null);
+  }
+  const f = fixture({ manage: true, scope: "client_technique", ready: false, provider: { storageSize: 12345 } });
+  assert.equal((await handleExerciseVideo(request({ action: "status", id }), config, f.fetcher)).status, 200);
+  assert.equal(f.writes[0].provider_storage_bytes, 12345);
+});
+
+test("archivo privado fuera de cota o scope desconocido no llega al proveedor", async () => {
+  for (const body of [
+    { scope: "trainer_exercise", bytes: 100 * 1024 * 1024 + 1 },
+    { scope: "arbitrary", bytes: 100 },
+  ]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise" });
+    const result = await handleExerciseVideo(request({ action: "create", operation_id: id, ...body }), config, f.fetcher);
+    assert.equal(result.status, 400); assert.equal(f.calls.some((s) => s.includes("bunnycdn")), false);
+  }
 });
 test("preflight devuelve CORS y nunca consulta secretos ni proveedores", async () => {
   const f = fixture();

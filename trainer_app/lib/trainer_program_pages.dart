@@ -1,3 +1,4 @@
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import 'package:workout_editor_ui/guided_program_editor_page.dart';
 import 'package:workout_editor_ui/guided_program_editor_adapter.dart';
 import 'package:workout_editor_ui/program_session_catalog.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 import 'package:workout_core/workout_template.dart';
 
@@ -79,9 +81,9 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
         if (snapshot.hasError || p == null) {
           return Center(
             child: TextButton(
-              onPressed: () => setState(
-                () => _program = widget.repository.program(widget.programId),
-              ),
+              onPressed: () => setState(() {
+                _program = widget.repository.program(widget.programId);
+              }),
               child: const Text('No se pudo cargar el programa. Reintentar'),
             ),
           );
@@ -253,10 +255,14 @@ class TrainerProgramEditorPage extends StatefulWidget {
     required this.repository,
     required this.workouts,
     this.programId,
+    this.onCreateExercise,
+    this.exercisePreferences,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final String? programId;
+  final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   State<TrainerProgramEditorPage> createState() =>
       _TrainerProgramEditorPageState();
@@ -289,7 +295,9 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
           appBar: AppBar(title: const Text('Programa privado')),
           body: Center(
             child: TextButton(
-              onPressed: () => setState(() => _initial = _load()),
+              onPressed: () => setState(() {
+                _initial = _load();
+              }),
               child: const Text('No se pudo cargar el programa. Reintentar'),
             ),
           ),
@@ -299,15 +307,25 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
         repository: _composition!,
         workouts: _composition!,
         original: snapshot.data,
-        adapter: _TrainerProgramAdapter(widget.workouts),
+        adapter: _TrainerProgramAdapter(
+          widget.workouts,
+          widget.onCreateExercise,
+          widget.exercisePreferences,
+        ),
       );
     },
   );
 }
 
 class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
-  const _TrainerProgramAdapter(this.workouts);
+  const _TrainerProgramAdapter(
+    this.workouts,
+    this.onCreateExercise,
+    this.exercisePreferences,
+  );
   final TrainerWorkoutRepository workouts;
+  final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   bool get professional => true;
   @override
@@ -338,6 +356,8 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
       barrierDismissible: false,
       builder: (_) => _PrivateSessionWorkspace(
         repository: workouts,
+        onCreateExercise: onCreateExercise,
+        exercisePreferences: exercisePreferences,
         sessionId: sessionId,
         duplicate: copy,
         onSaved: onSaved,
@@ -385,11 +405,15 @@ class _PrivateSessionWorkspace extends StatefulWidget {
     required this.sessionId,
     required this.duplicate,
     required this.onSaved,
+    this.onCreateExercise,
+    this.exercisePreferences,
   });
   final TrainerWorkoutRepository repository;
   final String? sessionId;
   final bool duplicate;
   final Future<void> Function(String) onSaved;
+  final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   State<_PrivateSessionWorkspace> createState() =>
       _PrivateSessionWorkspaceState();
@@ -517,6 +541,8 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
                             controller: _exit,
                             child: WorkoutEditorPage(
                               embedded: true,
+                              onCreateExercise: widget.onCreateExercise,
+                              exercisePreferences: widget.exercisePreferences,
                               loadExercises: () => widget.repository.exercises(
                                 retainedIds: {
                                   for (final block

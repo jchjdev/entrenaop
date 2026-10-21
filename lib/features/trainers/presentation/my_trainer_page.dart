@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_followup_codec.dart';
+import 'package:go_router/go_router.dart';
+import 'package:workout_core/professional_assessment.dart';
 
 class MyTrainerPage extends StatefulWidget {
-  const MyTrainerPage({super.key, required this.repository});
+  const MyTrainerPage({
+    super.key,
+    required this.repository,
+    this.forms,
+    this.assessments,
+    this.onOpenConversation,
+  });
   final TrainerRepository repository;
+  final TrainerStudentFormRepository? forms;
+  final ProfessionalAssessmentStudentRepository? assessments;
+  final ValueChanged<String>? onOpenConversation;
   @override
   State<MyTrainerPage> createState() => _MyTrainerPageState();
 }
@@ -15,6 +27,9 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
   TrainerInvitationPreview? _preview;
   bool _busy = true, _loaded = false, _moreHistory = false;
   String? _error, _notice;
+  bool _hasForms = false, _hasAssessments = false;
+  String? _assessmentsError;
+  String? _formsError;
 
   @override
   void initState() {
@@ -56,6 +71,34 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
       _moreHistory = _history.length == 50;
       _loaded = true;
     });
+    if (widget.assessments case final assessments?) {
+      try {
+        final items = await assessments.mine();
+        if (mounted) {
+          setState(() {
+            _hasAssessments = items.isNotEmpty;
+            _assessmentsError = null;
+          });
+        }
+      } catch (error) {
+        if (mounted) setState(() => _assessmentsError = trainerError(error));
+      }
+    }
+    final forms = widget.forms;
+    if (forms != null) {
+      try {
+        final deliveries = await forms.mine();
+        if (mounted) {
+          setState(() {
+            _hasForms = deliveries.isNotEmpty;
+            _formsError = null;
+          });
+        }
+      } catch (error) {
+        // Un fallo de seguimiento no borra ni bloquea la invitación o el vínculo.
+        if (mounted) setState(() => _formsError = trainerError(error));
+      }
+    }
   }
 
   Future<void> _refresh() async {
@@ -142,6 +185,54 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
               ),
             ),
             if (_loaded) ...[
+              if (_hasAssessments)
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.timer_outlined),
+                    title: const Text('Pruebas de mi preparador'),
+                    subtitle: const Text(
+                      'Protocolos recibidos y marcas registradas',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _busy
+                        ? null
+                        : () async {
+                            await context.push('/my-trainer/assessments');
+                            if (mounted) await _refresh();
+                          },
+                  ),
+                ),
+              if (_assessmentsError != null)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'No se pudieron comprobar tus pruebas. Pulsa Actualizar para reintentar.',
+                  ),
+                ),
+              if (_hasForms)
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.assignment_outlined),
+                    title: const Text('Formularios de mi preparador'),
+                    subtitle: const Text(
+                      'Revisiones recibidas y respuestas anteriores',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _busy
+                        ? null
+                        : () async {
+                            await context.push('/my-trainer/forms');
+                            if (mounted) await _refresh();
+                          },
+                  ),
+                ),
+              if (_formsError != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'No se pudo comprobar si tienes formularios. Pulsa Actualizar para reintentar.',
+                  ),
+                ),
               if (_active.isEmpty) ...[
                 const Card(
                   child: Padding(
@@ -237,6 +328,17 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           Text('Desde el ${trainerDate(relation.acceptedAt)}'),
+                          if (widget.onOpenConversation != null)
+                            OutlinedButton.icon(
+                              onPressed: _busy
+                                  ? null
+                                  : () =>
+                                        widget.onOpenConversation!(relation.id),
+                              icon: const Icon(Icons.chat_bubble_outline),
+                              label: const Text(
+                                'Conversación con mi preparador',
+                              ),
+                            ),
                           const SizedBox(height: 12),
                           const Text(
                             'Tu acceso personal Free o Pro se mantiene por separado.',
@@ -263,6 +365,9 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                     subtitle: Text(
                       'Finalizado el ${trainerDate(relation.endedAt!)}',
                     ),
+                    onTap: widget.onOpenConversation == null
+                        ? null
+                        : () => widget.onOpenConversation!(relation.id),
                   ),
                 if (_moreHistory)
                   TextButton(

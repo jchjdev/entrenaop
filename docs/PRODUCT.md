@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**TRN-020 · 21/10/2026 · ampliación profesional en desarrollo:** los dieciséis
+puntos se trabajan coordinadamente. ADMIN y Trainer consumen los mismos
+creadores mediante adaptadores independientes; publicación oficial y contenido
+privado conservan sus permisos. La implementación local amplía operativa,
+seguimiento, formularios, comunicación y medios. Se validan integración y
+concurrencia antes de distribuirla. Las pruebas/simulacros tipados fijan protocolo, intentos y marcas sin crear
+ejecuciones de entrenamiento ficticias; los cobros reales y el algoritmo profesional no se presentan como
+operativos. [Estado y límites](TRAINER_OPERATIONAL_WORKFLOW.md).
+
 **TRN-019 · 21/10/2026 · ejercicios profesionales:** creador compartido con
 ADMIN, biblioteca privada, versiones conservadas e imágenes privadas, conectados
 a sesiones/programas y lectura autorizada del alumno. Límites piloto confirmados:

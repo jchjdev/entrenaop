@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_workout_repository.dart';
+import 'trainer_operations_repository.dart';
+import 'trainer_operations_pages.dart';
 
 /// Consulta sin controles de corrección: los resultados pertenecen al alumno.
 class TrainerWorkoutResultPage extends StatefulWidget {
@@ -9,9 +12,11 @@ class TrainerWorkoutResultPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.assignmentId,
+    this.operations,
   });
   final TrainerWorkoutRepository repository;
   final String assignmentId;
+  final TrainerOperationsRepository? operations;
   @override
   State<TrainerWorkoutResultPage> createState() =>
       _TrainerWorkoutResultPageState();
@@ -25,15 +30,19 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
     _future = widget.repository.result(widget.assignmentId);
   }
 
+  void _refresh() {
+    setState(() {
+      _future = widget.repository.result(widget.assignmentId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: const Text('Resultado del alumno'),
       actions: [
         IconButton(
-          onPressed: () => setState(
-            () => _future = widget.repository.result(widget.assignmentId),
-          ),
+          onPressed: _refresh,
           icon: const Icon(Icons.refresh),
           tooltip: 'Actualizar',
         ),
@@ -54,11 +63,7 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
                 children: [
                   Text(trainerError(snapshot.error!)),
                   TextButton(
-                    onPressed: () => setState(
-                      () => _future = widget.repository.result(
-                        widget.assignmentId,
-                      ),
-                    ),
+                    onPressed: _refresh,
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -72,7 +77,87 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
             child: Text('Todavía no hay una ejecución de esta pauta.'),
           );
         }
-        return TrainerWorkoutResultContent(result: row);
+        final review = row['review'] as Map?;
+        final revision = (row['result_revision'] as num?)?.toInt() ?? 0;
+        final reviewed = review?['result_revision'] == revision;
+        return Column(
+          children: [
+            if (widget.operations != null &&
+                ['completed', 'abandoned'].contains(row['status']))
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      reviewed ? 'Resultado revisado' : 'Pendiente de revisión',
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await showTrainerReviewDialog(
+                          context,
+                          widget.operations!,
+                          widget.assignmentId,
+                          revision,
+                          review?['private_note'] as String?,
+                        );
+                        if (mounted) {
+                          _refresh();
+                        }
+                      },
+                      icon: const Icon(Icons.fact_check_outlined),
+                      label: Text(
+                        reviewed
+                            ? 'Actualizar nota interna'
+                            : 'Marcar revisado',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (widget.operations != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Wrap(
+                  spacing: 12,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.video_camera_front_outlined),
+                      label: const Text('Vídeos de técnica'),
+                      onPressed: () => context.push(
+                        '/assignments/${widget.assignmentId}/technique',
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      label: const Text('Comentar con el alumno'),
+                      onPressed: () async {
+                        try {
+                          final detail = await widget.operations!.assignment(
+                            widget.assignmentId,
+                          );
+                            if (context.mounted) {
+                            await context.push(
+                              '/conversations/${detail.relationId}?assignment=${widget.assignmentId}',
+                            );
+                            }
+                        } catch (e) {
+                            if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(trainerError(e))),
+                            );
+                            }
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(child: TrainerWorkoutResultContent(result: row)),
+          ],
+        );
       },
     ),
   );

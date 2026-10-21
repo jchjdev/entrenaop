@@ -1,5 +1,32 @@
 # Plataforma para preparadores · alcance acordado · 21/10/2026
 
+## Ampliación TRN-020 en curso
+
+El alcance vigente incluye los dieciséis recorridos de
+[la coordinación profesional](PROFESSIONAL_DELIVERY_COORDINATION.md). El código
+local conecta inicio, ficha, agenda editable, adaptación individual, grupos,
+copia semanal, recurrencia finita, evolución/CSV, revisión de resultados,
+formularios, conversaciones y medios privados. La app recibe formularios,
+conversaciones, técnica y baterías de pruebas; su sección de formularios/pruebas
+aparece solo cuando existen entregas propias. Las baterías son un circuito
+versionado de marcas, sin crear ejecuciones ficticias ni puntos oficiales.
+
+Los creadores conservan composición única y adaptadores de cada portal. ADMIN
+recibe búsqueda y creación contextual, duplicación y herramientas de vídeo;
+solo permite subir vídeos, mientras Trainer admite además enlaces HTTPS.
+El seguimiento, las conversaciones y el contenido profesional no se vuelven
+administrativos por compartir editor.
+
+La implementación y las evidencias de integración están en
+[el contrato operativo](TRAINER_OPERATIONAL_WORKFLOW.md) y en los contratos
+específicos que enlaza. Las diez migraciones y veinticuatro contratos han pasado
+juntos en Dev con ROLLBACK, se han aplicado las migraciones y se han repetido
+los 24 contratos sobre el esquema real aplicado. Publicación web y aceptación
+móvil se acreditan por separado. El núcleo comercial tiene únicamente un ensayo
+tipado con proveedor ficticio: no hay cobros reales. Favoritos/recientes se integran en los mismos creadores; recuperación persistente
+de borradores, motor profesional y conexión de relojes
+con la app principal requieren sus siguientes entregas y comprobaciones.
+
 ## Objetivo y propiedad del contenido
 
 Javier concreta que el portal debe ser una herramienta de trabajo profesional
@@ -53,10 +80,11 @@ evolución por prueba o ejercicio. Las métricas deben explicar su periodo, orig
 y tratamiento de sesiones omitidas/retiradas. No contar una sesión futura como
 incumplimiento ni convertir rondas AMRAP en series inventadas.
 
-Para la jornada profesional se proponen accesos a alumnos sin pauta próxima y
-resultados recientes por revisar. Aún no existe marca persistente de revisión,
-alertas, mensajería, formularios ni gráficos comparativos profesionales. Añadir
-un indicador requiere datos completos o señalar expresamente su paginación.
+La ampliación local añade una bandeja persistente de revisión, conversaciones,
+formularios y consulta longitudinal del servicio. El inicio declara sus periodos
+y paginación; no afirma detectar a todos los alumnos sin pauta ni enviar alertas
+push. Abrir un resultado no lo marca automáticamente como revisado. Véanse los
+contratos específicos antes de interpretar una cifra parcial como total.
 
 La planificación debe permitir adaptar una receta para una persona conservando
 la biblioteca reutilizable, revisar fechas y avisar de coincidencias con el plan
@@ -73,7 +101,9 @@ de almacenamiento/subida verificadas en servidor. No se acuerdan creaciones ni
 medios infinitos, ni se reutiliza por accidente la cuota personal Free. TRN-019
 concreta el piloto confirmado: 500 ejercicios/versiones y 1.000 reservas de imagen
 de hasta 500 KB. Son límites técnicos configurables, no planes de pago. Los
-archivos de vídeo profesionales siguen pendientes; se admiten enlaces externos.
+archivos de vídeo profesionales se añaden en la ampliación local descrita en
+[TRAINER_PRIVATE_VIDEOS.md](TRAINER_PRIVATE_VIDEOS.md), con límites propios;
+los enlaces externos HTTPS siguen disponibles sin realojarlos.
 
 La baja conserva la cartera e historial del servicio y libera la plaza conforme
 a TRN-015/016. Retornar requiere nueva aceptación. El archivo es recuperable;

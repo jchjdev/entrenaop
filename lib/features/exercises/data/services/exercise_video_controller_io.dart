@@ -5,11 +5,15 @@ import 'package:video_player/video_player.dart';
 
 import 'exercise_video_file_cache.dart';
 
-Future<VideoPlayerController> createController(Uri uri, String cacheKey) async {
+Future<VideoPlayerController> createController(
+  Uri uri,
+  String cacheKey, {
+  int maxBytes = ExerciseVideoFileCache.maxBytes,
+}) async {
   final root = await getTemporaryDirectory();
   final cache = ExerciseVideoFileCache(
     Directory('${root.path}/entrenaop-exercise-videos-v1'),
   );
-  final file = await cache.get(uri, cacheKey);
+  final file = await cache.get(uri, cacheKey, limitBytes: maxBytes);
   return VideoPlayerController.file(file);
 }

@@ -1,14 +1,46 @@
 # Roadmap de EntrenaOP
 
-**INT-003 · 21/10/2026 · ensayo de lectura preparado, prueba física pendiente:**
+**TRN-020 · 21/10/2026 · ampliación coordinada de los dieciséis puntos en curso:**
+Javier autoriza avanzar en paralelo con agentes, manteniendo creadores comunes y
+portales independientes. Ya hay implementación local integrada de inicio,
+agenda editable, adaptación individual, grupos/copia/recurrencia finita,
+revisión, formularios, conversación, vídeos privados/técnica y ficha/informes.
+Diez migraciones nuevas y veinticuatro contratos juntos pasaron en Dev con ROLLBACK;
+después se han aplicado en Dev y repetido los 24 contratos. Las 195 migraciones
+locales/remotas coinciden y `exercise-video` se ha desplegado solo en Dev.
+Esto no acredita publicación de las interfaces ni aceptación física.
+Pruebas/simulacros tipados integrados en código con protocolos versionados y
+captura propia; 36 carreras locales verifican inicio/baja, guardado/cierre y
+reintentos. Reutilizar el motor profesional requiere un contrato de paridad
+independiente. Cobros: núcleo de ensayo con 21 pruebas, sin proveedor/políticas
+elegidos ni dinero real. Favoritos/recientes y cambios individuales revisados
+están conectados a los creadores comunes. Matriz final: raíz 1204 correctas/una
+omisión previa, ADMIN 306/dos previas, Trainer 101 y editor compartido 110;
+análisis raíz/ADMIN/Trainer/UI limpios, compilaciones web ADMIN/Trainer Dev
+correctas. La planificación acredita 306 contenciones/solapes locales y los
+vídeos, evaluaciones y preferencias 36 cada uno, con sus límites de fixtures.
+**Tramo operativo técnico verificado; ampliación de los dieciséis puntos abierta.**
+**Único siguiente tramo técnico recomendado tras guardado y publicación Dev:**
+recuperación persistente de los creadores, reutilizando `GuidedWorkRepository`
+y un puerto opcional para sesiones; concretar cuotas/retención/acceso antes de
+añadir su persistencia. Motor, cobros reales y aceptación física mantienen sus
+dependencias de contexto, decisiones comerciales y dispositivos.
+La aceptación física con dos cuentas sigue pendiente y no bloquea por sí sola
+el desarrollo autorizado de los dieciséis puntos.
+[Contrato operativo y estado](TRAINER_OPERATIONAL_WORKFLOW.md),
+[responsables y mapa completo](PROFESSIONAL_DELIVERY_COORDINATION.md).
+
+**INT-003 · 21/10/2026 · primera lectura física iPhone, aceptación parcial:**
 app independiente `labs/health_read_probe` con puentes HealthKit/Health Connect,
 sin persistencia ni integración con las tres apps. Análisis local limpio,
-25 pruebas con muestras correctas y APK Android compilado; CI confirma
-compilación Android e iOS Simulator, sin acreditar instalación. El ensayo no
-modifica Trainer ni SQL.
-Javier utiliza Garmin Connect en iPhone; primera prueba real recomendada:
-carrera de Connect ya presente en Salud → lectura autorizada desde el ensayo.
-Después, Android con datos reales; Huawei requiere comprobar primero que
+Plugin iOS extraído con 16 pruebas y ensayo consumidor con 30; compilación
+Android e iOS Simulator acreditadas en CI de `124fa76`. Javier confirma lectura
+física con el lector previo: contraste de distancia/duración a precisión de
+pantalla, ritmo derivado compatible, descarte al volver de Garmin, relectura sin
+duplicados y revocar/restaurar lectura de Salud. Resumen técnico autorizado,
+sin métricas personales ni capturas en Git. Reinstalación del plugin extraído,
+conexión/persistencia en la app principal y Android real siguen pendientes.
+El ensayo no modifica Trainer ni SQL. Huawei requiere comprobar primero que
 su actividad llegue a Health Connect. **La fase móvil sigue abierta.**
 [Protocolo, capacidades y límites](DEVICE_HEALTH_READ_PROBE.md).
 
@@ -29,9 +61,10 @@ Portal publicado desde `cb435e2` y verificado por HTTPS y sesión de Chrome;
 185 migraciones coincidentes en Dev. Biblioteca/formulario y cinco destinos
 comprobados, sin datos de ensayo guardados. No se declara cerrado el recorrido
 físico completo.
-**Único siguiente recorrido profesional recomendado:** aceptación con dos cuentas
+**Aceptación física pendiente de TRN-019:** recorrido con dos cuentas
 y app instalada: crear ejercicio con foto → sesión/programa → pauta → ejecución
-del alumno → resultado del preparador, antes de ampliar seguimiento y cobros.
+del alumno → resultado del preparador. TRN-020 amplía en paralelo seguimiento y
+contratos comerciales por instrucción posterior de Javier.
 [Contrato y límites](TRAINER_PRIVATE_EXERCISES.md).
 
 **INT-002 · 21/10/2026 · dominio de carrera aislado y verificado:** paquete

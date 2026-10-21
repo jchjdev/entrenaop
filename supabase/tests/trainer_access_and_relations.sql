@@ -311,7 +311,9 @@ begin
 
   perform public.admin_set_trainer_access(b,2,true,2,'Restaurar piloto');
   reset role;
-  update public.trainer_access set valid_until=clock_timestamp()-interval '1 second' where trainer_id=b;
+  -- La RPC evalúa vigencia al inicio de la sentencia; el fixture usa ese mismo
+  -- reloj aunque se ejecute dentro de una tanda transaccional larga.
+  update public.trainer_access set valid_until=statement_timestamp()-interval '1 second' where trainer_id=b;
   reset role;
   perform set_config('request.jwt.claim.sub',b::text,true);
   perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal2')::text,true);

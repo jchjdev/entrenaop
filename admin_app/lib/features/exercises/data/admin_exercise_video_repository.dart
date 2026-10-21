@@ -1,33 +1,14 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:workout_editor_ui/exercise_video_source.dart';
+import 'package:workout_editor_ui/exercise_video_transport.dart';
 
-class AdminVideoUpload {
-  const AdminVideoUpload({required this.id, required this.headers});
-  final String id;
-  final Map<String, String> headers;
-}
-
-class AdminVideoStatus {
-  const AdminVideoStatus(this.status, [this.url]);
-  final String status;
-  final String? url;
-}
-
-abstract class AdminExerciseVideoRepository {
-  Future<AdminVideoUpload> create(int bytes);
-  Future<void> upload(
-    AdminVideoUpload upload,
-    Uint8List bytes,
-    String contentType,
-    void Function(double) onProgress,
-  );
-  Future<AdminVideoStatus> status(String id);
-  Future<Uri> playback(String url);
-  Future<Uint8List> thumbnail(String url);
-}
+// Compatibilidad de ADMIN: la UI común recibe un puerto, no este cliente oficial.
+typedef AdminVideoUpload = ExerciseVideoUpload;
+typedef AdminVideoStatus = ExerciseVideoStatus;
+typedef AdminExerciseVideoRepository = ExerciseVideoSource;
 
 class SupabaseAdminExerciseVideoRepository
     implements AdminExerciseVideoRepository {
@@ -41,49 +22,13 @@ class SupabaseAdminExerciseVideoRepository
     final data = await _call({'action': 'thumbnail', 'url': url});
     final target = Uri.parse(data['url'] as String);
     final reference = Uri.parse(url);
-    final parts = reference.pathSegments;
-    if (parts.length != 2 ||
-        !reference.host.endsWith('.b-cdn.net') ||
-        target.scheme != 'https' ||
-        target.host != reference.host ||
-        target.port != 443 ||
-        target.userInfo.isNotEmpty ||
-        target.path != '/${parts.first}/thumbnail.jpg') {
-      throw const FormatException('La portada recibida no es válida.');
-    }
-    final client = _transport ?? http.Client();
-    try {
-      final request = http.Request('GET', target)..followRedirects = false;
-      final response = await client
-          .send(request)
-          .timeout(const Duration(seconds: 20));
-      if (response.statusCode != 200 ||
-          response.headers['content-type']
-                  ?.split(';')
-                  .first
-                  .trim()
-                  .toLowerCase() !=
-              'image/jpeg' ||
-          (response.contentLength ?? 0) > 2 * 1024 * 1024) {
-        await response.stream.listen((_) {}).cancel();
-        throw const FormatException('No se pudo obtener la portada del vídeo.');
-      }
-      final bytes = BytesBuilder(copy: false);
-      await for (final chunk in response.stream.timeout(
-        const Duration(seconds: 20),
-      )) {
-        if (bytes.length + chunk.length > 2 * 1024 * 1024) {
-          throw const FormatException('La portada supera el tamaño permitido.');
-        }
-        bytes.add(chunk);
-      }
-      if (bytes.isEmpty) throw const FormatException('La portada está vacía.');
-      if (_client.auth.currentUser?.id != owner) {
-        throw StateError('La cuenta ha cambiado.');
-      }
-      return bytes.takeBytes();
-    } finally {
-      if (_transport == null) client.close();
+    return ExerciseVideoTransport(transport: _transport)
+        .thumbnail(target, reference, checkIdentity: () => _checkOwner(owner));
+  }
+
+  void _checkOwner(String? owner) {
+    if (_client.auth.currentUser?.id != owner) {
+      throw StateError('La cuenta ha cambiado.');
     }
   }
 
@@ -128,81 +73,15 @@ class SupabaseAdminExerciseVideoRepository
     if (bytes.isEmpty || bytes.length > 20 * 1024 * 1024) {
       throw const FormatException('El archivo debe ocupar como máximo 20 MB.');
     }
-    final client = _transport ?? http.Client();
-    try {
-      final endpoint = Uri.parse('https://video.bunnycdn.com/tusupload');
-      final create = http.Request('POST', endpoint)..followRedirects = false;
-      create.headers.addAll({
-        ...upload.headers,
-        'Upload-Length': '${bytes.length}',
-        'Upload-Metadata': 'filetype ${base64Encode(utf8.encode(contentType))}',
-      });
-      final created = await client
-          .send(create)
-          .timeout(const Duration(seconds: 30));
-      await created.stream.drain<void>();
-      final location = created.headers['location'];
-      if (created.statusCode != 201 || location == null) {
-        throw StateError('No se pudo iniciar la subida.');
-      }
-      final target = endpoint.resolve(location);
-      // Nunca enviar la autorización de subida a otro host ni seguir redirecciones.
-      if (target.scheme != 'https' ||
-          target.host != endpoint.host ||
-          target.port != 443 ||
-          target.userInfo.isNotEmpty ||
-          !target.path.startsWith('/tusupload/')) {
-        throw StateError('El destino de subida no es válido.');
-      }
-      var offset = 0;
-      var failures = 0;
-      while (offset < bytes.length) {
-        final end = (offset + 512 * 1024).clamp(0, bytes.length);
-        try {
-          final request = http.Request('PATCH', target)
-            ..followRedirects = false
-            ..headers.addAll({
-              ...upload.headers,
-              'Upload-Offset': '$offset',
-              'Content-Type': 'application/offset+octet-stream',
-            })
-            ..bodyBytes = Uint8List.sublistView(bytes, offset, end);
-          final response = await client
-              .send(request)
-              .timeout(const Duration(seconds: 45));
-          await response.stream.drain<void>();
-          final next = int.tryParse(response.headers['upload-offset'] ?? '');
-          if (response.statusCode != 204 || next != end) {
-            throw StateError('Subida interrumpida.');
-          }
-          offset = end;
-          failures = 0;
-          onProgress(offset / bytes.length);
-        } catch (_) {
-          if (++failures > 2) rethrow;
-          // Recupera el offset confirmado: no repite a ciegas un fragmento ya recibido.
-          final head = http.Request('HEAD', target)
-            ..followRedirects = false
-            ..headers.addAll(upload.headers);
-          final response = await client
-              .send(head)
-              .timeout(const Duration(seconds: 15));
-          await response.stream.drain<void>();
-          final recovered = int.tryParse(
-            response.headers['upload-offset'] ?? '',
-          );
-          if (response.statusCode != 200 && response.statusCode != 204 ||
-              recovered == null ||
-              recovered < offset ||
-              recovered > end) {
-            rethrow;
-          }
-          offset = recovered;
-        }
-      }
-    } finally {
-      if (_transport == null) client.close();
-    }
+    final owner = _client.auth.currentUser?.id;
+    await ExerciseVideoTransport(transport: _transport).upload(
+      upload,
+      bytes,
+      contentType,
+      onProgress,
+      maxBytes: 20 * 1024 * 1024,
+      checkIdentity: () => _checkOwner(owner),
+    );
   }
 
   @override

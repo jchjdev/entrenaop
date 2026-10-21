@@ -1,9 +1,11 @@
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_workout_repository.dart';
@@ -118,9 +120,13 @@ class TrainerWorkoutEditorPage extends StatefulWidget {
     super.key,
     required this.repository,
     this.templateId,
+    this.onCreateExercise,
+    this.exercisePreferences,
   });
   final TrainerWorkoutRepository repository;
   final String? templateId;
+  final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   State<TrainerWorkoutEditorPage> createState() =>
       _TrainerWorkoutEditorPageState();
@@ -169,6 +175,8 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
     }
     final revision = widget.templateId != null;
     return WorkoutEditorPage(
+      onCreateExercise: widget.onCreateExercise,
+      exercisePreferences: widget.exercisePreferences,
       loadExercises: () => widget.repository.exercises(
         retainedIds: {
           for (final block in _template?.blocks ?? <WorkoutBlock>[])
@@ -227,9 +235,9 @@ class _TrainerWorkoutPreviewPageState extends State<TrainerWorkoutPreviewPage> {
           return _frame([
             _retry(
               'No se pudo cargar la sesión.',
-              () => setState(
-                () => _future = widget.repository.template(widget.templateId),
-              ),
+              () => setState(() {
+                _future = widget.repository.template(widget.templateId);
+              }),
             ),
           ]);
         }
@@ -336,6 +344,12 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
     if (mounted) await _load();
   }
 
+  Future<void> _conversation() async {
+    if (_relation != null) {
+      await context.push('/conversations/${_relation!.id}');
+    }
+  }
+
   Future<void> _cancel(TrainerAssignment item) async {
     final yes = await showDialog<bool>(
       context: context,
@@ -400,6 +414,12 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
             : 'Servicio inactivo. Conservas las pautas y los resultados de tus etapas.',
       ),
       const SizedBox(height: 16),
+      if (_relation != null)
+        OutlinedButton.icon(
+          onPressed: _busy ? null : _conversation,
+          icon: const Icon(Icons.chat_bubble_outline),
+          label: const Text('Conversación del servicio'),
+        ),
       FilledButton.icon(
         onPressed:
             _busy ||

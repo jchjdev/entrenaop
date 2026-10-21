@@ -1,9 +1,12 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 
 import '../../workouts/data/admin_workout_repository.dart';
 import '../../workouts/presentation/admin_workout_editor_page.dart';
+import '../../exercises/data/admin_exercise_repository.dart';
+import '../../exercises/data/admin_exercise_video_repository.dart';
 
 /// Mantiene el programa montado y abre directamente el creador compartido.
 /// El guard local protege el panel sin reemplazar el guard de la página padre.
@@ -15,11 +18,17 @@ class GuidedSessionWorkspace extends StatefulWidget {
     required this.onSaved,
     this.sessionId,
     this.duplicate = false,
+    this.exerciseRepository,
+    this.exerciseVideos,
+    this.exercisePreferences,
   });
   final AdminWorkoutRepository workouts;
   final String programName;
   final String? sessionId;
   final bool duplicate;
+  final AdminExerciseRepository? exerciseRepository;
+  final AdminExerciseVideoRepository? exerciseVideos;
+  final ExerciseCatalogPreferences? exercisePreferences;
   final Future<void> Function(String) onSaved;
 
   @override
@@ -170,6 +179,10 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                                     ),
                                   ),
                                 AdminWorkoutEditorPage(
+                                  exerciseRepository: widget.exerciseRepository,
+                                  exerciseVideos: widget.exerciseVideos,
+                                  exercisePreferences:
+                                      widget.exercisePreferences,
                                   program: null,
                                   repository: widget.workouts,
                                   originalTemplate: original == null

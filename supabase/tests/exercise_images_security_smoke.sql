@@ -31,7 +31,10 @@ begin
   insert into public.admin_permissions (user_id, reason)
   values (admin_id, 'Prueba transaccional de imágenes');
 
+  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
+  values(gen_random_uuid(),admin_id,'totp','verified',now(),now());
   perform set_config('request.jwt.claim.sub', admin_id::text, true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',admin_id,'role','authenticated','aal','aal2')::text,true);
   set local role authenticated;
   official_id := public.create_admin_exercise(
     'Ejercicio imagen oficial', null, null, array['piernas'], '{}',
@@ -48,6 +51,7 @@ begin
   );
 
   perform set_config('request.jwt.claim.sub', user_id::text, true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',user_id,'role','authenticated','aal','aal1')::text,true);
   personal_id := public.create_personal_exercise(
     'Ejercicio imagen personal', null, null, array['espalda'], '{}',
     'inicial', 'repeticiones'
@@ -63,6 +67,7 @@ begin
   );
 
   perform set_config('request.jwt.claim.sub', other_user_id::text, true);
+  perform set_config('request.jwt.claims',jsonb_build_object('sub',other_user_id,'role','authenticated','aal','aal1')::text,true);
   if exists (
     select 1 from storage.objects
     where bucket_id = 'exercise-images-private'

@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 
 import '../../../core/admin_shell.dart';
 import '../../../core/catalog_search.dart';
@@ -22,6 +23,8 @@ import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
 import 'admin_guided_program_card.dart';
 import 'guided_session_workspace.dart';
+import '../../exercises/data/admin_exercise_repository.dart';
+import '../../exercises/data/admin_exercise_video_repository.dart';
 
 class AdminGuidedCatalogPage extends StatefulWidget {
   const AdminGuidedCatalogPage({
@@ -477,12 +480,18 @@ class AdminGuidedEditorPage extends StatelessWidget {
     this.original,
     this.workRepository,
     this.work,
+    this.exerciseRepository,
+    this.exerciseVideos,
+    this.exercisePreferences,
   });
   final AdminGuidedRepository repository;
   final AdminWorkoutRepository workouts;
   final GuidedProgram? original;
   final AdminGuidedWorkRepository? workRepository;
   final GuidedWork? work;
+  final AdminExerciseRepository? exerciseRepository;
+  final AdminExerciseVideoRepository? exerciseVideos;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   Widget build(BuildContext context) => GuidedProgramEditorPage(
     repository: repository,
@@ -490,14 +499,29 @@ class AdminGuidedEditorPage extends StatelessWidget {
     original: original,
     workRepository: workRepository,
     work: work,
-    adapter: _AdminProgramAdapter(repository, workouts),
+    adapter: _AdminProgramAdapter(
+      repository,
+      workouts,
+      exerciseRepository,
+      exerciseVideos,
+      exercisePreferences,
+    ),
   );
 }
 
 class _AdminProgramAdapter extends GuidedProgramEditorAdapter {
-  const _AdminProgramAdapter(this.repository, this.workouts);
+  const _AdminProgramAdapter(
+    this.repository,
+    this.workouts,
+    this.exerciseRepository,
+    this.exerciseVideos,
+    this.exercisePreferences,
+  );
   final AdminGuidedRepository repository;
   final AdminWorkoutRepository workouts;
+  final AdminExerciseRepository? exerciseRepository;
+  final AdminExerciseVideoRepository? exerciseVideos;
+  final ExerciseCatalogPreferences? exercisePreferences;
   @override
   Future<void> openSession(
     BuildContext context, {
@@ -510,6 +534,9 @@ class _AdminProgramAdapter extends GuidedProgramEditorAdapter {
       context: context,
       barrierDismissible: false,
       builder: (_) => GuidedSessionWorkspace(
+        exerciseRepository: exerciseRepository,
+        exerciseVideos: exerciseVideos,
+        exercisePreferences: exercisePreferences,
         workouts: workouts,
         programName: programName,
         sessionId: sessionId,

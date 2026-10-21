@@ -12,7 +12,7 @@ class _FakeRepository implements AdminExerciseRepository {
   bool failSave = false;
 
   @override
-  Future<void> createOfficial(
+  Future<String> createOfficial(
     ExerciseDraft draft, {
     ExerciseImageUpload? image,
   }) async {
@@ -30,6 +30,7 @@ class _FakeRepository implements AdminExerciseRepository {
         exerciseType: draft.exerciseType,
       ),
     );
+    return 'new-id';
   }
 
   @override
@@ -101,6 +102,7 @@ void main() {
 
     await tester.tap(find.text('Nuevo ejercicio'));
     await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextFormField, 'Vídeo externo'), findsNothing);
     await tester.enterText(
       find.byKey(const ValueKey('admin-exercise-name')),
       'Dominada estricta',

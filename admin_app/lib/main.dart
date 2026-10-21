@@ -27,6 +27,8 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:entrenaop_admin/features/pro_access/data/admin_pro_access_repository.dart';
 
+import 'features/exercises/data/admin_exercise_preferences_repository.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.validate();
@@ -100,6 +102,12 @@ class _AdminAppState extends State<AdminApp> {
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(client),
       exerciseVideos: SupabaseAdminExerciseVideoRepository(client),
+      exercisePreferences: client.auth.currentUser == null
+          ? null
+          : SupabaseAdminExercisePreferencesRepository(
+              client,
+              client.auth.currentUser!.id,
+            ),
       covers: SupabaseProgramCoverRepository(client),
       guidedCovers: SupabaseProgramCoverRepository(
         client,

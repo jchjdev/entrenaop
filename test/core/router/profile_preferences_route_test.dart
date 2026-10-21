@@ -16,8 +16,57 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, GoTrueClient, User;
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/trainer_forms_page.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessments_page.dart';
 
 void main() {
+  for (final route in [
+    '/my-trainer/forms',
+    '/my-trainer/forms/assignment',
+    '/my-trainer/assessments',
+    '/my-trainer/assessments/delivery',
+  ]) {
+    testWidgets(
+      '$route exige coincidencia de identidad y no muestra datos de otra cuenta',
+      (tester) async {
+        sl.registerSingleton<SupabaseClient>(_ClientWithoutSession());
+        addTearDown(sl.reset);
+        final auth = _Auth();
+        final router = AppRouter(auth);
+        addTearDown(router.dispose);
+        router.config.go(route);
+        await tester.pumpWidget(
+          BlocProvider<AuthCubit>.value(
+            value: auth,
+            child: MaterialApp.router(
+              theme: EntrenaTheme.dark,
+              routerConfig: router.config,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(router.config.state.uri.path, route);
+        expect(
+          find.textContaining('No se ha podido confirmar'),
+          findsOneWidget,
+        );
+        expect(find.byType(NavigationBar), findsNothing);
+        expect(
+          find.byType(
+            route.contains('/assessments')
+                ? (route.endsWith('delivery')
+                      ? TrainerStudentAssessmentPage
+                      : TrainerStudentAssessmentsPage)
+                : (route.endsWith('assignment')
+                      ? TrainerStudentFormPage
+                      : TrainerStudentFormsPage),
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
   for (final route in ['/profile/preferences', '/plan/preferences']) {
     testWidgets('$route conserva datos y selecciona Perfil', (tester) async {
       final preferences = _Preferences();

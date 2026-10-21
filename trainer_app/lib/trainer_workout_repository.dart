@@ -44,10 +44,12 @@ class TrainerAssignment {
       createdAt = DateTime.parse(row['created_at'] as String),
       status = row['status'] as String,
       executionId = row['execution_id'] as String?,
-      note = row['note'] as String?;
+      note = row['note'] as String?,
+      revision = (row['planning_revision'] as num?)?.toInt() ?? 0,
+      resultRevision = (row['result_revision'] as num?)?.toInt() ?? 0;
   final String id, templateId, name, status;
   final String? executionId, note;
-  final int version;
+  final int version, revision, resultRevision;
   final DateTime date, createdAt;
   String get statusLabel => switch (status) {
     'planned' => 'Pendiente',

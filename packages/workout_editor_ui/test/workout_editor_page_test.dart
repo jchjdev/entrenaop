@@ -4,12 +4,14 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
 import 'package:workout_editor_ui/workout_format_field.dart';
 import 'package:workout_editor_ui/strength_set_fields.dart';
 
 import '../../../test/helpers/performance_visual_review.dart';
+import 'exercise_preferences_controller_test.dart' show PreferenceSource;
 
 const _catalog = [
   WorkoutEditorExercise(id: 'base', name: 'Ejercicio de partida'),
@@ -65,6 +67,8 @@ Widget _app({
   String stamp = '',
   Widget? additionalFields,
   Future<List<WorkoutEditorExercise>> Function()? load,
+  Future<WorkoutEditorExercise?> Function(BuildContext)? create,
+  ExerciseCatalogPreferences? preferences,
   double scale = 1,
   WorkoutTemplate original = _original,
 }) => RepaintBoundary(
@@ -80,6 +84,8 @@ Widget _app({
       controller: exit ?? WorkflowExitController(),
       child: WorkoutEditorPage(
         loadExercises: load ?? () async => _catalog,
+        onCreateExercise: create,
+        exercisePreferences: preferences,
         onSave: save,
         onSaved: saved,
         title: 'Crear sesión privada',
@@ -148,6 +154,280 @@ Future<void> _setField(WidgetTester tester, Finder field, String text) async {
 
 void main() {
   setUpAll(() => loadReviewFont(always: true));
+  testWidgets(
+    'solo aceptar ejercicio registra reciente una vez; cancelar no registra',
+    (tester) async {
+      final source = PreferenceSource();
+      await tester.pumpWidget(
+        _app(save: (_) async => 's', saved: (_) {}, preferences: source),
+      );
+      await tester.pumpAndSettle();
+      final choose = find.textContaining('Cambiar ejercicio ·');
+      await tester.ensureVisible(choose);
+      await tester.pumpAndSettle();
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Alba');
+      await tester.pumpAndSettle();
+      expect(source.selections, isEmpty);
+      await tester.tap(find.text('Cancelar').last);
+      await tester.pumpAndSettle();
+      expect(source.selections, isEmpty);
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ejercicio privado de Alba'));
+      await tester.pumpAndSettle();
+      expect(source.selections, hasLength(1));
+      expect(source.selections.single.$1, 'private');
+      expect(
+        find.textContaining('Cambiar ejercicio · Ejercicio privado de Alba'),
+        findsOneWidget,
+      );
+    },
+  );
+  testWidgets(
+    'selector real con preferencias y fallo cabe a 320 px texto doble',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        _app(
+          save: (_) async => 's',
+          saved: (_) {},
+          scale: 2,
+          preferences: PreferenceSource()..failRead = true,
+          create: (_) async => null,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final choose = find.textContaining('Cambiar ejercicio ·');
+      await tester.ensureVisible(choose);
+      await tester.pumpAndSettle();
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      expect(find.text('Reintentar'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await capturePerformanceWidget(
+        tester,
+        'exercise-picker-preferences-error-320-2x',
+      );
+    },
+  );
+  testWidgets('selector con filtros y creación cabe en móvil con texto doble', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      _app(
+        save: (_) async => 's',
+        saved: (_) {},
+        scale: 2,
+        create: (_) async => null,
+        preferences: PreferenceSource(),
+        load: () async => const [
+          WorkoutEditorExercise(
+            id: 'base',
+            name: 'Ejercicio de partida',
+            muscleGroups: ['Glúteos'],
+            equipment: ['Banda'],
+          ),
+          WorkoutEditorExercise(
+            id: 'private',
+            name: 'Otro',
+            muscleGroups: ['Espalda'],
+            equipment: ['Polea'],
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    final choose = find.textContaining('Cambiar ejercicio ·');
+    await tester.ensureVisible(choose);
+    await tester.pumpAndSettle();
+    await tester.tap(choose);
+    await tester.pumpAndSettle();
+    expect(find.text('Crear ejercicio'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await capturePerformanceWidget(tester, 'exercise-picker-320-2x');
+  });
+  testWidgets(
+    'crear dentro del selector conserva la receta y selecciona el UUID confirmado',
+    (tester) async {
+      CreatePersonalWorkoutInput? saved;
+      await tester.pumpWidget(
+        _app(
+          save: (v) async {
+            saved = v;
+            return 's';
+          },
+          saved: (_) {},
+          create: (_) async => const WorkoutEditorExercise(
+            id: 'created',
+            name: 'Nuevo ejercicio propio',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final choose = find.textContaining('Cambiar ejercicio ·');
+      await tester.ensureVisible(choose);
+      await tester.pumpAndSettle();
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear ejercicio'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Cambiar ejercicio · Nuevo ejercicio propio'),
+        findsOneWidget,
+      );
+      await _save(tester);
+      final sets = saved!.blocks.single.exercises.single.sets;
+      expect(saved!.blocks.single.exercises.single.exerciseId, 'created');
+      expect(saved!.name, _original.name);
+      expect(sets.map((s) => s.targetValue), [10, 12]);
+      expect(sets.map((s) => s.targetRir), [2.5, 3]);
+    },
+  );
+
+  for (final fails in [false, true]) {
+    testWidgets(
+      'crear ${fails ? 'falla' : 'se cancela'} sin perder ejercicio ni series',
+      (tester) async {
+        CreatePersonalWorkoutInput? saved;
+        await tester.pumpWidget(
+          _app(
+            save: (v) async {
+              saved = v;
+              return 's';
+            },
+            saved: (_) {},
+            create: (_) async {
+              if (fails) throw StateError('red');
+              return null;
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+        final choose = find.textContaining('Cambiar ejercicio ·');
+        await tester.ensureVisible(choose);
+        await tester.pumpAndSettle();
+        await tester.tap(choose);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Crear ejercicio'));
+        await tester.pumpAndSettle();
+        await _save(tester);
+        expect(saved!.blocks.single.exercises.single.exerciseId, 'base');
+        expect(
+          saved!.blocks.single.exercises.single.sets.map((s) => s.targetValue),
+          [10, 12],
+        );
+      },
+    );
+  }
+
+  testWidgets('catálogo vacío permite crear sin inventar otros ejercicios', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        save: (_) async => 's',
+        saved: (_) {},
+        load: () async => [],
+        create: (_) async => const WorkoutEditorExercise(
+          id: 'first',
+          name: 'Primero autorizado',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final choose = find.textContaining('Cambiar ejercicio ·');
+    await tester.ensureVisible(choose);
+    await tester.pumpAndSettle();
+    await tester.tap(choose);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Crear ejercicio'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Cambiar ejercicio · Primero autorizado'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'duplicar posición copia excepciones y permite editarlas independientemente',
+    (tester) async {
+      CreatePersonalWorkoutInput? saved;
+      await tester.pumpWidget(
+        _app(
+          save: (v) async {
+            saved = v;
+            return 's';
+          },
+          saved: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      final duplicate = find.byTooltip('Duplicar posición');
+      await tester.ensureVisible(duplicate);
+      await tester.pumpAndSettle();
+      await tester.tap(duplicate);
+      await tester.pumpAndSettle();
+      await _setField(
+        tester,
+        find.widgetWithText(TextFormField, 'Cantidad').last,
+        '17',
+      );
+      await _save(tester);
+      final exercises = saved!.blocks.single.exercises;
+      expect(exercises.length, 2);
+      expect(exercises.first.sets.map((s) => s.targetValue), [10, 12]);
+      expect(exercises.last.sets.map((s) => s.targetValue), [17, 12]);
+      expect(exercises.last.sets.map((s) => s.targetLoadKg), [12.5, 15]);
+      expect(exercises.last.sets.map((s) => s.restAfterSeconds), [90, 60]);
+    },
+  );
+
+  testWidgets(
+    'duplicar bloque conserva la receta y limpia los huecos automáticos al salir de Tabata',
+    (tester) async {
+      CreatePersonalWorkoutInput? saved;
+      await tester.pumpWidget(
+        _app(
+          save: (v) async {
+            saved = v;
+            return 's';
+          },
+          saved: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _chooseFormat(tester, 'Tabata · 8 × 20/10');
+      final duplicate = find.byTooltip('Duplicar bloque');
+      await tester.ensureVisible(duplicate);
+      await tester.pumpAndSettle();
+      await tester.tap(duplicate);
+      await tester.pumpAndSettle();
+      final secondFormat = find.byType(WorkoutFormatField).last;
+      await tester.ensureVisible(secondFormat);
+      await tester.pumpAndSettle();
+      await tester.tap(secondFormat);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Series convencionales').last);
+      await tester.pumpAndSettle();
+      // Se quita el original Tabata para guardar únicamente la copia revisada.
+      final remove = find.byTooltip('Quitar').first;
+      await tester.ensureVisible(remove);
+      await tester.pumpAndSettle();
+      await tester.tap(remove);
+      await tester.pumpAndSettle();
+      await _save(tester);
+      expect(saved!.blocks.single.exercises.length, 1);
+      expect(
+        saved!.blocks.single.exercises.single.sets.map((s) => s.targetValue),
+        [10, 12],
+      );
+    },
+  );
   for (final width in [320.0, 390.0, 1100.0]) {
     for (final scale in [1.0, 2.0]) {
       testWidgets('series sin solapar título y etiquetas a $width / $scale', (

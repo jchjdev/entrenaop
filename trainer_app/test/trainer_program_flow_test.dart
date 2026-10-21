@@ -576,7 +576,11 @@ void main() {
       expect(find.text('Listado de alumnos'), findsOneWidget);
       expect(find.text('Agenda'), findsOneWidget);
       expect(find.text('Sesiones'), findsOneWidget);
+      await tester.tap(find.text('Más'));
+      await tester.pumpAndSettle();
       expect(find.text('Programas'), findsOneWidget);
+      expect(find.text('Ejercicios'), findsOneWidget);
+      expect(find.text('Formularios'), findsOneWidget);
     },
   );
 }

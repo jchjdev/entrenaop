@@ -3,8 +3,13 @@ import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+
+import '../../exercises/data/admin_exercise_repository.dart';
+import '../../exercises/data/admin_exercise_video_repository.dart';
+import '../../exercises/presentation/admin_exercise_dialog.dart';
 
 /// Adaptador de autoría oficial. El creador común no conoce estos permisos,
 /// el escaparate de EntrenaOP ni las rutas de administración.
@@ -22,6 +27,9 @@ class AdminWorkoutEditorPage extends StatefulWidget {
     this.onSaved,
     this.programName,
     this.embedded = false,
+    this.exerciseRepository,
+    this.exerciseVideos,
+    this.exercisePreferences,
   });
 
   final AdminProgram? program;
@@ -35,6 +43,9 @@ class AdminWorkoutEditorPage extends StatefulWidget {
   final ValueChanged<String>? onSaved;
   final String? programName;
   final bool embedded;
+  final AdminExerciseRepository? exerciseRepository;
+  final AdminExerciseVideoRepository? exerciseVideos;
+  final ExerciseCatalogPreferences? exercisePreferences;
 
   @override
   State<AdminWorkoutEditorPage> createState() => _AdminWorkoutEditorPageState();
@@ -73,6 +84,25 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
         : 'Revisar sesión';
     return WorkoutEditorPage(
       loadExercises: _loadExercises,
+      exercisePreferences: widget.exercisePreferences,
+      onCreateExercise: widget.exerciseRepository == null
+          ? null
+          : (context) async {
+              final created = await showAdminExerciseDialog(
+                context,
+                repository: widget.exerciseRepository!,
+                videos: widget.exerciseVideos,
+              );
+              return created == null
+                  ? null
+                  : WorkoutEditorExercise(
+                      id: created.id,
+                      name: created.name,
+                      muscleGroups: created.muscleGroups,
+                      equipment: created.equipment,
+                      thumbnailUrl: created.imageUrl,
+                    );
+            },
       onSave: _save,
       onSaved:
           widget.onSaved ??

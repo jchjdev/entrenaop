@@ -24,10 +24,10 @@ import 'package:workout_core/exercise_image.dart';
 
 class _FakeExercises implements AdminExerciseRepository {
   @override
-  Future<void> createOfficial(
+  Future<String> createOfficial(
     ExerciseDraft draft, {
     ExerciseImageUpload? image,
-  }) async {}
+  }) async => 'created';
 
   @override
   Future<List<AdminCatalogExercise>> listOfficial() async => const [];

@@ -9,6 +9,23 @@ import 'package:entrenaop_admin/features/workouts/presentation/admin_workout_edi
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_image.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
+
+class _CreateExercise extends Fake implements AdminExerciseRepository {
+  int calls = 0;
+  bool fail = true;
+  @override
+  Future<String> createOfficial(
+    ExerciseDraft draft, {
+    ExerciseImageUpload? image,
+  }) async {
+    calls++;
+    if (fail) throw StateError('red');
+    return '30000000-0000-4000-8000-000000000099';
+  }
+}
 
 class _FakeWorkouts implements AdminWorkoutRepository {
   @override
@@ -82,6 +99,131 @@ Finder _field(String label) => find.byWidgetPredicate(
 
 void main() {
   setUpAll(loadReviewFont);
+  testWidgets(
+    'cancelar ejercicio incompleto vuelve a la misma sesión sin guardar nada',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1100, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final exercises = _CreateExercise();
+      await tester.pumpWidget(
+        AdminTestApp(
+          home: AdminWorkoutEditorPage(
+            program: null,
+            repository: _FakeWorkouts(),
+            exerciseRepository: exercises,
+            warmup: true,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(_field('Nombre de la sesión'), 'Sigue aquí');
+      await tester.ensureVisible(find.text('Buscar ejercicio del catálogo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Buscar ejercicio del catálogo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear ejercicio'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('admin-exercise-name')),
+        'Sin terminar',
+      );
+      await tester.ensureVisible(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+      await tester.tap(find.text('Salir sin guardar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nuevo ejercicio oficial'), findsNothing);
+      expect(exercises.calls, 0);
+      expect(
+        (tester.widget(
+          _field('Nombre de la sesión'),
+        ) as TextField).controller!.text,
+        'Sigue aquí',
+      );
+    },
+  );
+  testWidgets(
+    'crear ejercicio desde la sesión retiene formulario ante error y devuelve el UUID sin salir',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1100, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final exercises = _CreateExercise();
+      CreatePersonalWorkoutInput? saved;
+      await tester.pumpWidget(
+        AdminTestApp(
+          home: AdminWorkoutEditorPage(
+            program: null,
+            repository: _FakeWorkouts(),
+            exerciseRepository: exercises,
+            warmup: true,
+            saveInput: (input) async {
+              saved = input;
+              return 'saved';
+            },
+            onSaved: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        _field('Nombre de la sesión'),
+        'Mi sesión conservada',
+      );
+      await tester.ensureVisible(find.text('Buscar ejercicio del catálogo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Buscar ejercicio del catálogo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Crear ejercicio'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('admin-exercise-name')),
+        'Remo nuevo',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('admin-exercise-muscles')),
+        'espalda',
+      );
+      final create = find.text('Crear ejercicio');
+      await tester.ensureVisible(create);
+      await tester.pumpAndSettle();
+      await tester.tap(create);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
+      exercises.fail = false;
+      await tester.ensureVisible(create);
+      await tester.pumpAndSettle();
+      await tester.tap(create);
+      await tester.pumpAndSettle();
+      expect(exercises.calls, 2);
+      expect(
+        find.textContaining('Cambiar ejercicio · Remo nuevo'),
+        findsOneWidget,
+      );
+      expect(
+        (tester.widget(
+          _field('Nombre de la sesión'),
+        ) as TextField).controller!.text,
+        'Mi sesión conservada',
+      );
+      final amount = find.widgetWithText(TextFormField, 'Cantidad');
+      await tester.ensureVisible(amount);
+      await tester.pumpAndSettle();
+      await tester.enterText(amount, '8');
+      final save = find.text('Guardar calentamiento');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(saved!.name, 'Mi sesión conservada');
+      expect(
+        saved!.blocks.single.exercises.single.exerciseId,
+        '30000000-0000-4000-8000-000000000099',
+      );
+      expect(saved!.blocks.single.exercises.single.sets.first.targetValue, 8);
+    },
+  );
   for (final initial in [true, false]) {
     testWidgets(
       'crear sesión conserva la elección editorial inicial $initial',

@@ -68,7 +68,7 @@ class AdminCatalogExercise {
 
 abstract class AdminExerciseRepository {
   Future<List<AdminCatalogExercise>> listOfficial();
-  Future<void> createOfficial(
+  Future<String> createOfficial(
     ExerciseDraft draft, {
     ExerciseImageUpload? image,
   });
@@ -117,7 +117,7 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
   }
 
   @override
-  Future<void> createOfficial(
+  Future<String> createOfficial(
     ExerciseDraft draft, {
     ExerciseImageUpload? image,
   }) async {
@@ -126,7 +126,7 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
       'create_admin_exercise',
       params: _params(value),
     );
-    if (image == null) return;
+    if (image == null) return id as String;
     String? uploadedPath;
     try {
       uploadedPath = await _upload(id as String, image);
@@ -139,6 +139,7 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
       await _client.from('exercises').delete().eq('id', id);
       rethrow;
     }
+    return id;
   }
 
   @override

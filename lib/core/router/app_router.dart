@@ -1,8 +1,14 @@
 import 'dart:async';
 
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_messages.dart';
+import 'package:entrenaop/features/trainers/presentation/trainer_conversation_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
+import 'package:entrenaop/features/trainers/data/trainer_student_form_repository.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/trainer_forms_page.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessments_page.dart';
+import 'package:entrenaop/features/trainers/data/trainer_assessment_repository.dart';
 
 import 'package:entrenaop/core/router/material_app_route.dart';
 
@@ -956,13 +962,25 @@ class AppRouter {
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
                         bloc: authCubit,
-                        builder: (_, auth) => auth is! AuthAuthenticated
+                        builder: (context, auth) => auth is! AuthAuthenticated
                             ? const SizedBox.shrink()
                             : MyTrainerPage(
                                 key: ValueKey(auth.user.id),
                                 repository: SupabaseTrainerRepository(
                                   sl<SupabaseClient>(),
                                   userId: auth.user.id,
+                                ),
+                                forms: SupabaseTrainerStudentFormRepository(
+                                  sl<SupabaseClient>(),
+                                  auth.user.id,
+                                ),
+                                assessments:
+                                    SupabaseProfessionalAssessmentStudentRepository(
+                                      sl<SupabaseClient>(),
+                                      auth.user.id,
+                                    ),
+                                onOpenConversation: (id) => context.push(
+                                  '/my-trainer/conversations/$id',
                                 ),
                               ),
                       ),
@@ -984,6 +1002,90 @@ class AppRouter {
           builder: (context, state) => FasPeriodicCalculatorPage(
             birthDateRepository: sl(),
             repository: sl(),
+          ),
+        ),
+        materialAppRoute(
+          path: '/my-trainer/assessments',
+          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : TrainerStudentAssessmentsPage(
+                    key: ValueKey('assessments-${auth.user.id}'),
+                    repository: SupabaseProfessionalAssessmentStudentRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
+          ),
+        ),
+        _workflowRoute(
+          path: '/my-trainer/assessments/:id',
+          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : TrainerStudentAssessmentPage(
+                    key: ValueKey(
+                      'assessment-${auth.user.id}-${state.pathParameters['id']}',
+                    ),
+                    repository: SupabaseProfessionalAssessmentStudentRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                    deliveryId: state.pathParameters['id']!,
+                  ),
+          ),
+        ),
+        materialAppRoute(
+          path: '/my-trainer/forms',
+          builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : TrainerStudentFormsPage(
+                    key: ValueKey('trainer-forms-${auth.user.id}'),
+                    repository: SupabaseTrainerStudentFormRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
+          ),
+        ),
+        _workflowRoute(
+          path: '/my-trainer/conversations/:id',
+          builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : TrainerStudentConversationPage(
+                    key: ValueKey(
+                      'conversation-${auth.user.id}-${state.pathParameters['id']}',
+                    ),
+                    relationId: state.pathParameters['id']!,
+                    repository: SupabaseTrainerMessageRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
+          ),
+        ),
+        _workflowRoute(
+          path: '/my-trainer/forms/:id',
+          builder: (context, state) => BlocBuilder<AuthCubit, AuthState>(
+            bloc: authCubit,
+            builder: (_, auth) => auth is! AuthAuthenticated
+                ? const SizedBox.shrink()
+                : TrainerStudentFormPage(
+                    key: ValueKey(
+                      'trainer-form-${auth.user.id}-${state.pathParameters['id']}',
+                    ),
+                    assignmentId: state.pathParameters['id']!,
+                    repository: SupabaseTrainerStudentFormRepository(
+                      sl<SupabaseClient>(),
+                      auth.user.id,
+                    ),
+                  ),
           ),
         ),
         materialAppRoute(
