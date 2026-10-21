@@ -455,7 +455,35 @@ asistencia del algoritmo y las preparaciones privadas conservan su contrato
 pendiente. Nutrición, marketing y equipos de profesionales aparecen en Harbiz,
 pero observarlos no amplía automáticamente el alcance de esta entrega.
 
-Para estudiar mejor la interacción faltan dos vistas concretas: editar una
-sesión existente y previsualizar/asignar lo que verá el alumno; y consultar los
-resultados de una sesión ya realizada. No hace falta resolver precios ni pagar
-una prueba para avanzar con la infraestructura actual.
+### Revisión directa con la sesión de Javier · 21/10/2026
+
+Javier autoriza usar su pestaña abierta de Harbiz para investigar estos flujos,
+sin pedirle vídeos de pantallas que ya son accesibles. Se utiliza el alumno de
+demostración y se vuelve a su planificación sin guardar sesiones ni asignaciones.
+
+Se abre una sesión pautada desde el calendario y su editor Normal. La receta
+reúne bloque de calentamiento, series, objetivos, descansos, instrucciones y una
+superserie; la biblioteca de ejercicios ocupa un lateral con búsqueda y filtros.
+«Ver histórico» permite consultar al alumno y ejercicio sin salir del editor;
+en el mes consultado no hay registros, por lo que no acredita resultados reales.
+
+En Tarea → Workout se selecciona una sesión de biblioteca y aparecen Guardar,
+Modificar y añadir y Vista previa de cliente. «Modificar y añadir» abre Crear
+nuevo workout con la receta precargada; se cancela antes de guardar. Se observa
+el recorrido de adaptación, pero no se presupone cómo persiste versiones Harbiz
+ni qué efecto tendría editar después el contenido de biblioteca.
+
+Las vistas del cliente abiertas desde editor y asignación son carruseles con
+capturas explicativas del tipo de workout. No se comprueba una representación
+dinámica de la receta seleccionada. Para EntrenaOP se recomienda previsualizar
+la receta concreta con el lector compartido, pendiente de implementar.
+
+Evolución → Panel de progreso ofrece periodo, RPE medio, récord personal,
+volumen por ejercicio/grupo y desglose de series, repeticiones, récord y tonelaje.
+Actividad muestra indicadores de dispositivos. El ejemplo consultado tiene cero
+tareas completadas e histórico vacío: se ha revisado la interfaz de seguimiento,
+no un registro deportivo completado. No se inventan ejecuciones para rellenarla.
+
+Estas observaciones orientan la ficha y la revisión de pautas de EntrenaOP, sin
+cambiar los contratos de permisos ni convertir propuestas en funciones ya
+implementadas. No hace falta resolver precios ni pagar una prueba para avanzar.
