@@ -10,9 +10,13 @@ class TrainerClientsPage extends StatefulWidget {
     super.key,
     required this.repository,
     this.onSignOut,
+    this.onOpenWorkouts,
+    this.onOpenClient,
   });
   final TrainerRepository repository;
   final Future<void> Function()? onSignOut;
+  final VoidCallback? onOpenWorkouts;
+  final ValueChanged<String>? onOpenClient;
   @override
   State<TrainerClientsPage> createState() => _TrainerClientsPageState();
 }
@@ -145,6 +149,15 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
           padding: const EdgeInsets.all(24),
           children: [
             const Text('ESPACIO PROFESIONAL'),
+            if (widget.onOpenWorkouts != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: OutlinedButton.icon(
+                  onPressed: _busy ? null : widget.onOpenWorkouts,
+                  icon: const Icon(Icons.fitness_center),
+                  label: const Text('Mis sesiones privadas'),
+                ),
+              ),
             const SizedBox(height: 8),
             Text(
               'Tus alumnos',
@@ -319,6 +332,20 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                                 relation.name,
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
+                              if (widget.onOpenClient != null)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: TextButton(
+                                    onPressed: _busy
+                                        ? null
+                                        : () => widget.onOpenClient!(
+                                            relation.personId,
+                                          ),
+                                    child: const Text(
+                                      'Planificación y resultados',
+                                    ),
+                                  ),
+                                ),
                               Text(
                                 relation.active
                                     ? 'Servicio activo desde el ${trainerDate(relation.acceptedAt)}'

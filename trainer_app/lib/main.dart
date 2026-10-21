@@ -8,6 +8,9 @@ import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_clients_page.dart';
 import 'trainer_security_page.dart';
+import 'trainer_workout_pages.dart';
+import 'trainer_workout_result.dart';
+import 'trainer_workout_repository.dart';
 
 import 'package:trainer_access/trainer_security.dart';
 
@@ -129,7 +132,7 @@ class _TrainerAppState extends State<TrainerApp> {
       ),
       GoRoute(
         path: '/clients',
-        builder: (_, _) => _identity == null
+        builder: (context, _) => _identity == null
             ? const SizedBox.shrink()
             : TrainerClientsPage(
                 key: ValueKey(_identity),
@@ -138,7 +141,81 @@ class _TrainerAppState extends State<TrainerApp> {
                   userId: _identity!,
                 ),
                 onSignOut: () => widget.client.auth.signOut(),
+                onOpenWorkouts: () => context.push('/workouts'),
+                onOpenClient: (id) => context.push('/clients/$id/workouts'),
               ),
+      ),
+      GoRoute(
+        path: '/workouts',
+        builder: (_, _) => TrainerWorkoutLibraryPage(
+          repository: SupabaseTrainerWorkoutRepository(
+            widget.client,
+            _identity!,
+          ),
+          accessRepository: SupabaseTrainerRepository(
+            widget.client,
+            userId: _identity!,
+          ),
+        ),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (_, _) => TrainerWorkoutEditorPage(
+              repository: SupabaseTrainerWorkoutRepository(
+                widget.client,
+                _identity!,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => TrainerWorkoutPreviewPage(
+              repository: SupabaseTrainerWorkoutRepository(
+                widget.client,
+                _identity!,
+              ),
+              templateId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'revise',
+                builder: (_, state) => TrainerWorkoutEditorPage(
+                  repository: SupabaseTrainerWorkoutRepository(
+                    widget.client,
+                    _identity!,
+                  ),
+                  templateId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/clients/:id/workouts',
+        builder: (_, state) => TrainerClientWorkoutsPage(
+          repository: SupabaseTrainerWorkoutRepository(
+            widget.client,
+            _identity!,
+          ),
+          accessRepository: SupabaseTrainerRepository(
+            widget.client,
+            userId: _identity!,
+          ),
+          clientId: state.pathParameters['id']!,
+        ),
+        routes: [
+          GoRoute(
+            path: ':assignment/result',
+            builder: (_, state) => TrainerWorkoutResultPage(
+              repository: SupabaseTrainerWorkoutRepository(
+                widget.client,
+                _identity!,
+              ),
+              assignmentId: state.pathParameters['assignment']!,
+            ),
+          ),
+        ],
       ),
     ],
   );

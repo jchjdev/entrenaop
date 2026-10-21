@@ -38,7 +38,13 @@ void main() {
           templateVersion: 1,
           scheduledDate: day,
           source: source,
+          preparationGoalId: source == ScheduledWorkoutSource.algorithm
+              ? 'goal'
+              : null,
           status: ScheduledWorkoutStatus.planned,
+          coachNote: source == ScheduledWorkoutSource.coach
+              ? 'Cuida la técnica'
+              : null,
         ),
     ];
     final repository = _FakeScheduleRepository(items: items);
@@ -64,6 +70,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Dos planificaciones el mismo día'), findsOneWidget);
     expect(cubit.state.selectedItems.map((w) => w.id), ['coach', 'algorithm']);
+    await tester.ensureVisible(
+      find.text('Indicaciones del preparador: Cuida la técnica'),
+    );
+    expect(
+      find.text('Indicaciones del preparador: Cuida la técnica'),
+      findsOneWidget,
+    );
+    // Ninguna de estas pautas se gestiona como una cita personal del alumno.
+    expect(find.byTooltip('Opciones'), findsNothing);
     cubit.selectDay(day.add(const Duration(days: 1)));
     await tester.pumpAndSettle();
     expect(find.text('Dos planificaciones el mismo día'), findsNothing);

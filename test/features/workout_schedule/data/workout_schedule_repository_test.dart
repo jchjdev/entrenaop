@@ -21,6 +21,7 @@ void main() {
             'scheduled_time': '18:30:00',
             'source': 'user',
             'status': 'planned',
+            'trainer_assignments': {'note': 'Cuida la técnica'},
           },
         ],
       );
@@ -40,6 +41,7 @@ void main() {
       expect(result.single.source, ScheduledWorkoutSource.user);
       expect(result.single.status, ScheduledWorkoutStatus.planned);
       expect(result.single.preparationGoalId, 'goal-1');
+      expect(result.single.coachNote, 'Cuida la técnica');
     },
   );
 

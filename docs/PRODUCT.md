@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**TRN-016 · 21/10/2026 · sesiones privadas, pautas y resultados en Dev:** el
+preparador crea y revisa recetas con el editor compartido, las pauta desde la
+ficha del alumno y consulta sus resultados. El alumno utiliza agenda, ejecutor
+e historial sin Pro adicional y mantiene sus cuotas personales. La baja retira
+pendientes y conserva lo realizado; una revisión no altera pautas anteriores.
+ADMIN reutiliza el lector sin obtener acceso a entrenamientos privados ajenos.
+El código nuevo del deportista aún no está distribuido ni hay aceptación humana
+con dos cuentas. [Alcance y evidencia](TRAINER_PRIVATE_WORKOUTS.md).
+
 **TRN-010 · 21/10/2026 · acceso y clientes profesionales:** panel web independiente
 preparado para trainer.entrenaop.es, con contraseña y TOTP obligatorio. ADMIN
 gestiona acceso/cupo y lista entrenadores; Perfil → Mi preparador permite

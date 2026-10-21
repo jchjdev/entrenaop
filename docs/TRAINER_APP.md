@@ -487,3 +487,12 @@ no un registro deportivo completado. No se inventan ejecuciones para rellenarla.
 Estas observaciones orientan la ficha y la revisión de pautas de EntrenaOP, sin
 cambiar los contratos de permisos ni convertir propuestas en funciones ya
 implementadas. No hace falta resolver precios ni pagar una prueba para avanzar.
+
+## Recorrido implementado de sesiones privadas · TRN-016 · 21/10/2026
+
+Mis sesiones privadas y Planificación y resultados conectan autoría común,
+revisión versionada, vista previa real de receta, asignación con indicaciones y
+consulta del resultado propio del servicio. El deportista usa agenda, ejecución
+e historial existentes; no recibe una biblioteca repetible al acabar el vínculo.
+ADMIN y portal comparten el lector de recetas, manteniendo permisos separados.
+[Implementación, pruebas y límites actuales](TRAINER_PRIVATE_WORKOUTS.md).

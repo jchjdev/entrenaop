@@ -48,9 +48,9 @@ los resultados que conserva ni registros de pagos. Esta entrega no purga datos.
   del preparador → ficha. La última aceptación no puede dejar un activo archivado.
 - Migración `20261021115014_trainer_client_portfolio.sql`, aplicada solo en Dev.
 
-Esta entrega almacena y muestra **el historial de etapas del vínculo**. El
-historial de entrenamientos/resultados profesionales todavía no existe y no se
-presenta como implementado por conservar esas fechas.
+La entrega de cartera almacena **el historial de etapas del vínculo**.
+TRN-016 incorpora después las pautas y la consulta de los resultados propios
+del servicio. [Sesiones privadas y resultados](TRAINER_PRIVATE_WORKOUTS.md).
 
 ## Derechos que deben aplicar las asignaciones futuras
 
@@ -61,8 +61,8 @@ se conserva conforme al criterio previo de no interrumpirla por la baja.
 
 El preparador conserva consulta del trabajo de sus propias etapas, incluso con
 la ficha inactiva. No recibe el historial personal general, resultados de otro
-preparador ni datos nuevos fuera de su servicio. Es un contrato acordado para
-las próximas asignaciones, todavía sin RPC/RLS de resultados implementadas.
+preparador ni datos nuevos fuera de su servicio. TRN-016 implementa estos
+derechos para sesiones privadas, asignaciones y resultados en Dev.
 
 Cancelación/caducidad del acceso comercial del preparador, impago y reducción
 de paquete conservan reglas propias pendientes. No se crean estados de pago
@@ -101,7 +101,6 @@ las transiciones con datos se acreditan mediante SQL y pruebas de widgets,
 no mediante una aceptación humana nueva.
 [Captura publicada](visual-audit/trainer-portfolio-2026-10-21/published-clients.png).
 
-Las pautas y resultados privados, la purga definitiva y los cobros siguen
-pendientes. El único siguiente recorrido funcional es sesión privada →
-asignación versionada → ejecución en la app existente → resultados autorizados,
-aplicando los derechos tras la baja acordados aquí.
+TRN-016 implementa y verifica después sesión privada → asignación versionada →
+ejecución existente → resultados autorizados. La purga definitiva y los cobros
+siguen pendientes; la aceptación humana con dos cuentas se acredita aparte.

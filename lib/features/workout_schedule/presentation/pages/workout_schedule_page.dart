@@ -465,7 +465,8 @@ class _ScheduledWorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final canModify =
         item.status == ScheduledWorkoutStatus.planned &&
-        item.preparationGoalId == null;
+        item.preparationGoalId == null &&
+        item.source != ScheduledWorkoutSource.coach;
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -530,6 +531,10 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+              ],
+              if (item.coachNote?.trim().isNotEmpty == true) ...[
+                const SizedBox(height: 8),
+                Text('Indicaciones del preparador: ${item.coachNote}'),
               ],
               const SizedBox(height: 6),
               Wrap(

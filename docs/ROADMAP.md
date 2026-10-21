@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**TRN-016 · 21/10/2026 · sesión privada implementada en Dev:** crear/revisar con
+el editor común, previsualizar receta, asignar desde la ficha y consultar
+resultados propios. Agenda/ejecutor/historial se reutilizan; indicaciones y
+controles nuevos del deportista aún no distribuidos. 181 migraciones coinciden;
+doce contratos transaccionales, 33 contenciones locales y baterías correctos.
+Publicación del panel por acreditar y aceptación humana con dos cuentas pendiente.
+El único siguiente bloque recomendado es programas privados con composición
+reutilizada y asignación versionada. [Contrato y límites](TRAINER_PRIVATE_WORKOUTS.md).
+
 **TRN-015 · 21/10/2026 · cartera duradera implementada en Dev:** activos,
 inactivos y archivados, una ficha por alumno/preparador, historial paginado de
 etapas y vuelta con aceptación nueva sin perder la ficha. Tres SQL con ROLLBACK

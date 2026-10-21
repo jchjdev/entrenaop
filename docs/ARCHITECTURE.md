@@ -1,5 +1,15 @@
 # Arquitectura de EntrenaOP
 
+## Sesiones privadas y resultados profesionales · TRN-016 · 21/10/2026
+
+El portal consume el creador de `workout_editor_ui` mediante su adaptador.
+El lector existente de ADMIN pasa a `WorkoutTemplateContent`; ADMIN conserva
+su API y pantallas. `trainer_assignments` fija la etapa aceptada y enlaza con
+`scheduled_workouts`; se reutilizan ejecución, snapshots, resultados y agenda.
+Origen coach y privacidad quedan protegidos también frente al ADMIN ajeno.
+Consultar resultados profesionales requiere asignación propia y MFA, sin abrir
+el historial global del alumno. [Contrato y pruebas](TRAINER_PRIVATE_WORKOUTS.md).
+
 ## Panel profesional: acceso y clientes · TRN-010 · 21/10/2026
 
 `trainer_app/` es una aplicación Flutter web propia publicada en trainer.entrenaop.es

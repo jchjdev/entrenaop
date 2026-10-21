@@ -9,6 +9,8 @@ class WorkoutScheduleRemoteDataSourceImpl
 
   @override
   Future<List<Map<String, dynamic>>> getRange(String start, String end) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) return const [];
     // Corrige únicamente vínculos manuales creados antes de cerrar la frontera
     // de los planes oficiales. La función está acotada al usuario autenticado.
     await supabaseClient.rpc('cleanup_own_legacy_preparation_links');
@@ -25,8 +27,10 @@ class WorkoutScheduleRemoteDataSourceImpl
           scheduled_date,
           scheduled_time,
           source,
-          status
+          status,
+          trainer_assignments(note)
         ''')
+        .eq('user_id', userId)
         .gte('scheduled_date', start)
         .lte('scheduled_date', end)
         .neq('status', 'cancelled')
