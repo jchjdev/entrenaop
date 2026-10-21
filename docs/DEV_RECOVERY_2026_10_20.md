@@ -226,9 +226,8 @@ con borradores, versiones y sesiones reutilizadas.
 
 ## Borrado de programas
 
-La consulta de Javier se contrasta en el código: Programas guiados no ofrece
-borrado definitivo. Los publicados tienen «⋯ → Retirar del catálogo», que
-conserva versiones, sesiones y seguimientos. Los borradores no tienen esa acción
-en la tarjeta actual. No se elimina ningún programa ni se añade borrado por el
-hecho de preparar copias. Una futura papelera recuperable necesita definir su
-efecto sobre familias/versiones y borradores de trabajo antes de implementarse.
+La consulta inicial de Javier no añadía borrado por preparar copias. El 21/10
+pide expresamente la papelera recuperable: ADM-003 implementa retirada por
+familia y recuperación de trabajos incompletos, conservando las sesiones
+reutilizadas. No hay borrado físico ni vaciado automático.
+[Contrato y pruebas de la papelera](ADMIN_PROGRAM_TRASH_2026_10_21.md).

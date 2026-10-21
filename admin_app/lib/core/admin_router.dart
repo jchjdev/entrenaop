@@ -28,6 +28,8 @@ import '../features/guided_programs/presentation/admin_guided_review_page.dart';
 
 import 'admin_shell.dart';
 import '../features/guided_programs/domain/admin_guided_work.dart';
+import '../features/guided_programs/domain/admin_guided_trash.dart';
+import '../features/guided_programs/presentation/admin_guided_trash_page.dart';
 
 /// Las URLs contienen identidad, nunca una entidad que solo exista en `extra`.
 /// Recargar resuelve el contenido mediante los repositorios actuales y sus RLS.
@@ -42,6 +44,7 @@ GoRouter createAdminRouter({
   AdminOperationsRepository? operations,
   AdminGuidedRepository? guided,
   AdminGuidedWorkRepository? guidedWork,
+  AdminGuidedTrashRepository? guidedTrash,
   AdminExerciseVideoRepository? exerciseVideos,
   String? initialLocation,
   Listenable? authChanges,
@@ -280,10 +283,19 @@ GoRouter createAdminRouter({
                     repository: guided,
                     covers: guidedCovers,
                     workRepository: guidedWork,
+                    trashRepository: guidedTrash,
                   ),
                 ),
               ),
               routes: [
+                if (guidedTrash != null)
+                  GoRoute(
+                    path: 'trash',
+                    builder: (_, _) => load(
+                      () async => true,
+                      (_) => AdminGuidedTrashPage(repository: guidedTrash),
+                    ),
+                  ),
                 if (guidedWork != null)
                   workflow(
                     'work/:workId',
@@ -302,7 +314,7 @@ GoRouter createAdminRouter({
                               );
                           if (work.discarded) {
                             throw const _RouteUnavailable(
-                              'Este trabajo se ha descartado.',
+                              'Este trabajo o su programa de origen están en la papelera. Recupéralo desde Programas guiados → Papelera.',
                             );
                           }
                           final base = work.baseProgramId;

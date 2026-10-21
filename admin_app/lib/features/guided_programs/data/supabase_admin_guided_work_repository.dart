@@ -14,7 +14,9 @@ class SupabaseAdminGuidedWorkRepository implements AdminGuidedWorkRepository {
     baseProgramId: row['base_program_id'] as String?,
     finalizedProgramId: row['finalized_program_id'] as String?,
     updatedAt: DateTime.parse(row['updated_at'] as String),
-    discarded: row['discarded_at'] != null,
+    discarded:
+        row['discarded_at'] != null ||
+        (row['base_program'] as Map?)?['trashed_at'] != null,
   );
   // El servidor verifica administrador y propiedad; no se confía en un filtro Flutter.
   @override
@@ -22,19 +24,20 @@ class SupabaseAdminGuidedWorkRepository implements AdminGuidedWorkRepository {
       (await client
               .from('admin_guided_work_drafts')
               .select(
-                'id,state,revision,base_program_id,finalized_program_id,updated_at,discarded_at',
+                'id,state,revision,base_program_id,finalized_program_id,updated_at,discarded_at,base_program:guided_programs!admin_guided_work_drafts_base_program_id_fkey(trashed_at)',
               )
               .isFilter('finalized_program_id', null)
               .isFilter('discarded_at', null)
               .order('updated_at', ascending: false))
           .map(_decode)
+          .where((work) => !work.discarded)
           .toList();
   @override
   Future<GuidedWork?> load(String id) async {
     final row = await client
         .from('admin_guided_work_drafts')
         .select(
-          'id,state,revision,base_program_id,finalized_program_id,updated_at,discarded_at',
+          'id,state,revision,base_program_id,finalized_program_id,updated_at,discarded_at,base_program:guided_programs!admin_guided_work_drafts_base_program_id_fkey(trashed_at)',
         )
         .eq('id', id)
         .maybeSingle();

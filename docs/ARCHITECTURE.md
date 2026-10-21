@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+## Papelera de programas · ADM-003 · 21/10/2026
+
+`guided_programs.trashed_at` agrupa la retirada reversible de una familia mediante
+el bloqueo de autoría existente. El CHECK excluye publicación en papelera y los
+triggers cierran guardado/publicación/portadas y trabajos vinculados obsoletos.
+Las RPC con admin/MFA recuperan el lote exacto sin clonar ni publicar; los trabajos
+privados conservan propiedad y usan revisión nueva al descartar/recuperar.
+ADMIN añade un repositorio acotado y ruta `/guided-programs/trash` bajo el guard
+existente. No hay DELETE ni cambios de recetas, ejecutores o derechos comerciales.
+[Contrato, bloqueos y validación](ADMIN_PROGRAM_TRASH_2026_10_21.md).
+
 ## Operaciones de ADMIN · ADM-001 · 20/10/2026
 
 `AdminOperationsRepository` centraliza historial, calidad, soporte y diagnóstico;

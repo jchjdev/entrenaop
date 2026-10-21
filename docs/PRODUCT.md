@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**ADM-003 · 21/10/2026 · papelera de programas:** Programas guiados permite
+mover familias y trabajos incompletos a una papelera recuperable. Conserva las
+sesiones reutilizadas y los resultados. Recuperar no vuelve a publicar: devuelve
+borradores y versiones retiradas para revisión. No se vacía automáticamente.
+[Alcance y pruebas](ADMIN_PROGRAM_TRASH_2026_10_21.md).
+
 **ADM-001 · 20/10/2026 · operaciones del administrador:** Gestión incorpora
 Historial editorial y Calidad del catálogo. Las sesiones/programas pueden
 recuperarse desde un cambio registrado como borrador independiente; se conserva

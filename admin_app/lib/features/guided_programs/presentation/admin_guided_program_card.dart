@@ -9,10 +9,11 @@ class AdminGuidedProgramCard extends StatelessWidget {
     required this.onReview,
     required this.onRetire,
     this.onCover,
+    this.onTrash,
   });
 
   final GuidedProgram program;
-  final VoidCallback? onEdit, onReview, onRetire, onCover;
+  final VoidCallback? onEdit, onReview, onRetire, onCover, onTrash;
 
   @override
   Widget build(BuildContext context) {
@@ -134,16 +135,23 @@ class AdminGuidedProgramCard extends StatelessWidget {
                     icon: const Icon(Icons.image_outlined, size: 18),
                     label: const Text('Portada'),
                   ),
-                if (p.status == 'published')
+                if (p.status == 'published' || onTrash != null)
                   PopupMenuButton<String>(
-                    enabled: onRetire != null,
+                    enabled: onRetire != null || onTrash != null,
                     tooltip: 'Más opciones de ${p.name}',
-                    onSelected: (_) => onRetire?.call(),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(
-                        value: 'retire',
-                        child: Text('Retirar del catálogo'),
-                      ),
+                    onSelected: (action) =>
+                        action == 'trash' ? onTrash?.call() : onRetire?.call(),
+                    itemBuilder: (_) => [
+                      if (p.status == 'published')
+                        const PopupMenuItem(
+                          value: 'retire',
+                          child: Text('Retirar del catálogo'),
+                        ),
+                      if (onTrash != null)
+                        const PopupMenuItem(
+                          value: 'trash',
+                          child: Text('Mover a papelera'),
+                        ),
                     ],
                     icon: const Icon(Icons.more_horiz),
                   ),

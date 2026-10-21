@@ -7,6 +7,7 @@ import 'features/auth/data/supabase_admin_security_repository.dart';
 import 'features/auth/presentation/admin_security_page.dart';
 
 import 'features/guided_programs/data/supabase_admin_guided_work_repository.dart';
+import 'features/guided_programs/data/supabase_admin_guided_trash_repository.dart';
 
 import 'package:entrenaop_admin/features/guided_programs/data/supabase_admin_guided_repository.dart';
 
@@ -106,6 +107,7 @@ class _AdminAppState extends State<AdminApp> {
       operations: SupabaseAdminOperationsRepository(client),
       guided: SupabaseAdminGuidedRepository(client),
       guidedWork: SupabaseAdminGuidedWorkRepository(client),
+      guidedTrash: SupabaseAdminGuidedTrashRepository(client),
       onSignOut: () => unawaited(client.auth.signOut()),
       authChanges: _authChanges,
       isAuthenticated: () => client.auth.currentSession != null,

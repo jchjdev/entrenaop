@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**ADM-003 · 21/10/2026 · papelera de programas:** implementación y contratos
+Dev verificados: retirada por familia, recuperación de trabajos incompletos,
+identidad y sesiones reutilizadas conservadas; recuperar no publica. Análisis
+limpio, 289 pruebas ADMIN (dos omisiones previas), nueve SQL con ROLLBACK y
+175 migraciones coincidentes. Capturas de escritorio y 320 px/texto 2× revisadas.
+Publicación automática y comprobación HTTPS pendientes del punto de guardado.
+Límites: sin vaciado automático ni borrado definitivo, continuidad de seguimientos
+existentes conservada; no afecta preparaciones ni producción. **Único siguiente
+paso recomendado:** aceptación de Javier retirando/recuperando un borrador y un
+programa que reutilice sesiones. [Contrato y pruebas](ADMIN_PROGRAM_TRASH_2026_10_21.md).
+
 **ADM-002 · 21/10/2026 · recuperación de Dev cerrada:** copia cifrada real
 almacenada y recibo `verified` contrastado en Dev. La ejecución `39551387164`
 restaura SQL y 11 objetos de Storage en contenedor aislado, comprueba cifrado y

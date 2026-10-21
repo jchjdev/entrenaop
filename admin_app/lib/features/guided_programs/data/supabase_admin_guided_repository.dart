@@ -16,6 +16,7 @@ class SupabaseAdminGuidedRepository implements AdminGuidedRepository {
               .select(
                 '*,category_links:guided_program_category_links(is_primary,guided_program_categories(*))',
               )
+              .isFilter('trashed_at', null)
               .order('created_at', ascending: false))
           .map(guidedProgramFromJson)
           .toList();
@@ -27,6 +28,7 @@ class SupabaseAdminGuidedRepository implements AdminGuidedRepository {
           '*,category_links:guided_program_category_links(is_primary,guided_program_categories(*))',
         )
         .eq('id', id)
+        .isFilter('trashed_at', null)
         .single(),
   );
   @override

@@ -1,5 +1,17 @@
 # Programas guiados oficiales
 
+## Papelera administrativa · ADM-003 · 21/10/2026
+
+Programas guiados ofrece **Papelera** y **⋯ → Mover a papelera** en cada versión.
+La acción confirmada retira la familia completa y oculta sus trabajos vinculados,
+conservando sesiones reutilizadas, calentamientos, categorías, portadas y
+seguimientos/resultados. Los trabajos incompletos pueden retirarse por separado.
+Recuperar conserva identidad y contenido: borradores como borradores, antiguas
+publicaciones como retiradas hasta revisar/publicar de nuevo. No hay vaciado
+automático ni borrado definitivo. El servidor impide publicar o modificar una
+familia en papelera desde pestañas antiguas; exige admin/MFA y protege lote y
+revisión. [Contrato y comprobaciones](ADMIN_PROGRAM_TRASH_2026_10_21.md).
+
 ## Autoría integrada · UI-062 · 20/10/2026
 
 Las tarjetas de «Sesiones del programa» muestran la receta escrita mediante el

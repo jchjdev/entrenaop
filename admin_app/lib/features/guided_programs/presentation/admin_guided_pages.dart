@@ -18,6 +18,7 @@ import '../../workouts/presentation/admin_workout_content.dart';
 import '../../workouts/presentation/admin_workout_summary.dart';
 import '../domain/admin_guided_repository.dart';
 import '../domain/admin_guided_work.dart';
+import '../domain/admin_guided_trash.dart';
 import '../../editorial_covers/domain/program_cover.dart';
 import '../../editorial_covers/presentation/program_cover_editor.dart';
 import 'guided_category_editor.dart';
@@ -32,11 +33,13 @@ class AdminGuidedCatalogPage extends StatefulWidget {
     this.warmups = false,
     this.covers,
     this.workRepository,
+    this.trashRepository,
   });
   final AdminGuidedRepository repository;
   final bool warmups;
   final ProgramCoverRepository? covers;
   final AdminGuidedWorkRepository? workRepository;
+  final AdminGuidedTrashRepository? trashRepository;
   @override
   State<AdminGuidedCatalogPage> createState() => _AdminGuidedCatalogPageState();
 }
@@ -226,6 +229,12 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                     icon: const Icon(Icons.category_outlined),
                     label: const Text('Categorías'),
                   ),
+                if (!widget.warmups && widget.trashRepository != null)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _open('trash'),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Papelera'),
+                  ),
                 if (!widget.warmups)
                   IconButton.outlined(
                     onPressed: _busy ? null : _load,
@@ -272,7 +281,7 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                               ),
                               TextButton(
                                 onPressed: _busy ? null : () => _discard(work),
-                                child: const Text('Descartar trabajo'),
+                                child: const Text('Mover a papelera'),
                               ),
                             ],
                           ),
@@ -365,6 +374,13 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                 onEdit: _busy ? null : () => _open('${p.id}/edit'),
                 onReview: _busy ? null : () => _open('${p.id}/review'),
                 onRetire: _busy ? null : () => _status(p, 'archived'),
+                onTrash: widget.trashRepository == null || _busy
+                    ? null
+                    : () => _moveToTrash(
+                        p.name,
+                        () => widget.trashRepository!.trashProgram(p.id!),
+                        family: true,
+                      ),
                 onCover: widget.covers == null || _busy
                     ? null
                     : () => _cover(p),
@@ -391,35 +407,62 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
     ),
   );
 
-  Future<void> _discard(GuidedWork work) async {
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Descartar este trabajo?'),
-        content: const Text(
-          'Se quitará de la lista. Las sesiones del catálogo y el programa de origen se conservan.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Descartar'),
-          ),
-        ],
-      ),
-    );
-    if (yes != true || !mounted) return;
+  Future<void> _discard(GuidedWork work) => _moveToTrash(
+    work.name,
+    () => widget.workRepository!.discard(work),
+    family: false,
+  );
+
+  Future<void> _moveToTrash(
+    String name,
+    Future<void> Function() move, {
+    required bool family,
+  }) async {
+    if (_busy) return;
     setState(() => _busy = true);
     try {
-      await widget.workRepository!.discard(work);
+      final yes = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => EntrenaDialog(
+          title: const Text('¿Mover a papelera?'),
+          content: Text(
+            family
+                ? 'Se retirarán del catálogo todas las versiones de «$name» y se ocultarán sus trabajos vinculados. Podrás recuperarlos desde Papelera. Las sesiones reutilizadas y los resultados se conservan.'
+                : '«$name» saldrá de Continuar trabajando y podrás recuperarlo desde Papelera. Sus sesiones y el programa de origen se conservan.',
+          ),
+          actions: [
+            EntrenaDialogActions(
+              primaryLabel: 'Mover a papelera',
+              onPrimary: () => Navigator.of(ctx).pop(true),
+              secondary: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      if (yes != true || !mounted) return;
+      await move();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Programa movido a la papelera.'),
+          action: widget.trashRepository == null
+              ? null
+              : SnackBarAction(
+                  label: 'Ver papelera',
+                  onPressed: () => _open('trash'),
+                ),
+        ),
+      );
       await _load();
     } catch (_) {
       if (mounted) {
         setState(
-          () => _workError = 'No se pudo descartar. Actualiza el catálogo antes de reintentarlo.',
+          () => _error = 'No se pudo confirmar el movimiento. Actualiza el catálogo para comprobar su estado antes de reintentar.',
         );
       }
     } finally {
