@@ -179,3 +179,14 @@ accesible. Se corrige el bloqueo semántico de la barra lateral antes del cierre
 No se guarda contenido de prueba ni se toca ADMIN o producción durante la
 publicación. La actualización móvil y el recorrido humano con alumno siguen
 pendientes. [Contrato, pruebas y capturas](TRAINER_PRIVATE_PROGRAMS.md).
+
+
+## Plataforma profesional ampliada · TRN-020 · 21/10/2026
+
+Publicada la revisión `a2c467fe9a1a2a1c854304f7701879b509827aee`, release8 del día.
+Diez migraciones aplicadas solo en Dev y 24 contratos repetidos con ROLLBACK sobre
+el esquema aplicado; `exercise-video` actualizado en ese proyecto. Verificador
+HTTPS correcto y Chrome acredita sesión MFA, cinco plazas, doce destinos,
+inicio/agenda/formularios/pruebas/medios y catálogo compartido con preferencias.
+No se guarda contenido de ensayo. Fuentes, hashes, matriz, capturas y límites en
+[la evidencia de publicación](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).

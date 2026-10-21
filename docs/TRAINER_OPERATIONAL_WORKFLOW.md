@@ -101,8 +101,10 @@ mantiene esos puntos pendientes y separa cualquier ensayo de los derechos reales
 Las diez migraciones ya se han aplicado en Dev: 195 coinciden local/remoto y
 los 24 contratos vuelven a pasar con ROLLBACK sobre el esquema aplicado.
 La función `exercise-video` se ha desplegado solo en ese proyecto Dev.
-No acredita pantallas distribuidas, instalación física ni cierre de los dieciséis
-puntos. Quedan guardado, publicación del portal y aceptación real; las pruebas/simulacros tipados
+Portal Dev publicado desde `a2c467f` y verificado por HTTPS y Chrome, con sesión
+MFA y cinco plazas. [Evidencia completa](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
+No acredita instalación móvil, aceptación con dos cuentas ni cierre de los
+dieciséis puntos; las pruebas/simulacros tipados
 se integran con su [contrato de pruebas](TRAINER_ASSESSMENTS.md); el motor
 profesional/cobros tienen dependencias explícitas.
 

@@ -8,7 +8,10 @@ revisión, formularios, conversación, vídeos privados/técnica y ficha/informe
 Diez migraciones nuevas y veinticuatro contratos juntos pasaron en Dev con ROLLBACK;
 después se han aplicado en Dev y repetido los 24 contratos. Las 195 migraciones
 locales/remotas coinciden y `exercise-video` se ha desplegado solo en Dev.
-Esto no acredita publicación de las interfaces ni aceptación física.
+Portal Dev publicado desde `a2c467f`, HTTPS/Chrome correctos y sesión MFA de
+cinco plazas conservada; doce destinos y selector común comprobados.
+No acredita distribución móvil ni aceptación física con dos cuentas.
+[Evidencia de publicación](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
 Pruebas/simulacros tipados integrados en código con protocolos versionados y
 captura propia; 36 carreras locales verifican inicio/baja, guardado/cierre y
 reintentos. Reutilizar el motor profesional requiere un contrato de paridad
