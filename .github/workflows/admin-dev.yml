@@ -49,6 +49,8 @@ jobs:
           flutter pub get --enforce-lockfile
           cd ../packages/device_activity_core
           dart pub get --enforce-lockfile
+          cd ../../labs/health_read_probe
+          flutter pub get --enforce-lockfile
       - name: Validar dominio puro de dispositivos
         working-directory: packages/device_activity_core
         run: |
@@ -72,9 +74,9 @@ jobs:
             else
               echo 'athlete=false' >> "$GITHUB_OUTPUT"
             fi
-            # El paquete aislado no se consume en ADMIN y no autoriza publicarlo.
-            if printf '%s\n' "$changed_files" | grep -q '^packages/device_activity_core/' &&
-               ! printf '%s\n' "$changed_files" | grep -Ev '^(packages/device_activity_core/|docs/|\.github/workflows/admin-dev\.yml$)' | grep -q .; then
+            # El dominio y el ensayo aislados no se consumen en ADMIN.
+            if printf '%s\n' "$changed_files" | grep -Eq '^(packages/device_activity_core/|labs/health_read_probe/)' &&
+               ! printf '%s\n' "$changed_files" | grep -Ev '^(packages/device_activity_core/|labs/health_read_probe/|docs/|\.github/workflows/(admin-dev|health-read-probe)\.yml$)' | grep -q .; then
               echo 'publish_required=false' >> "$GITHUB_OUTPUT"
             else
               echo 'publish_required=true' >> "$GITHUB_OUTPUT"

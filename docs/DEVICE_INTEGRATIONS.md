@@ -167,3 +167,17 @@ desconocido, retención y datos reales requiere su flujo de integración.
 **Único siguiente tramo técnico recomendado:** ensayo móvil aislado de lectura
 de carrera desde Salud de Apple y Health Connect, contrastando SDK, permisos y
 una actividad real antes de conectar almacenamiento o pantallas profesionales.
+
+## Ensayo móvil preparado · INT-003 · 21/10/2026
+
+Se implementa el ensayo independiente en `labs/health_read_probe`, con puentes
+mínimos a SDK oficiales y consulta explícita de siete días. Mantiene el dominio
+puro y no incorpora dependencias ni conexiones a deportista, ADMIN o Trainer.
+Android compila y las pruebas con muestras pasan; faltan lectura física en
+ambos sistemas y contraste del build iOS en CI. La fase móvil permanece abierta.
+
+Javier usa iPhone y Garmin Connect: el primer recorrido real recomendado es
+reloj → Connect → Salud → ensayo, con permisos del titular y límites de los
+datos que Garmin comparte. Android no necesita bloquear esta preparación;
+el eventual voluntario con Huawei debe comprobar primero su llegada a
+Health Connect. [Contrato local, fuentes y protocolo](DEVICE_HEALTH_READ_PROBE.md).

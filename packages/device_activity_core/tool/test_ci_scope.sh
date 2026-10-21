@@ -45,3 +45,7 @@ check_scope admin-only 'admin_app/lib/main.dart' push true false true
 check_scope workflow-only '.github/workflows/admin-dev.yml' push true false true
 check_scope manual 'packages/device_activity_core/lib/src/activity.dart' workflow_dispatch true true true
 check_scope unknown-base 'packages/device_activity_core/lib/src/activity.dart' push false true true
+check_scope health-probe-only 'labs/health_read_probe/lib/main.dart' push true false false
+check_scope health-probe-ci $'labs/health_read_probe/lib/main.dart\ndocs/DEVICE_HEALTH_READ_PROBE.md\n.github/workflows/health-read-probe.yml\n.github/workflows/admin-dev.yml' push true false false
+check_scope health-probe-admin $'labs/health_read_probe/lib/main.dart\nadmin_app/lib/main.dart' push true false true
+check_scope health-probe-trainer $'labs/health_read_probe/lib/main.dart\ntrainer_app/lib/main.dart' push true false true

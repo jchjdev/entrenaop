@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-003 · 21/10/2026 · ensayo de lectura preparado, prueba física pendiente:**
+app independiente `labs/health_read_probe` con puentes HealthKit/Health Connect,
+sin persistencia ni integración con las tres apps. Análisis local limpio,
+25 pruebas con muestras correctas y APK Android compilado; iOS se comprueba
+en CI macOS, sin acreditar instalación. El ensayo no modifica Trainer ni SQL.
+Javier utiliza Garmin Connect en iPhone; primera prueba real recomendada:
+carrera de Connect ya presente en Salud → lectura autorizada desde el ensayo.
+Después, Android con datos reales; Huawei requiere comprobar primero que
+su actividad llegue a Health Connect. **La fase móvil sigue abierta.**
+[Protocolo, capacidades y límites](DEVICE_HEALTH_READ_PROBE.md).
+
 **TRN-019 · 21/10/2026 · ejercicios profesionales implementados y verificados en Dev:**
 formulario compartido con ADMIN, catálogo privado y revisiones inmutables,
 imágenes privadas y selección de versiones en sesiones/programas. El deportista
