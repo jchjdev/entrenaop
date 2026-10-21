@@ -4,7 +4,8 @@
 la cuenta de Javier para probar TOTP antes de las asignaciones. Paquete separado
 y corrección del contexto de dependencias de trainer_app en GitHub; la creación
 del subdominio está confirmada por Javier y acreditada en Hostinger.
-No se acredita despliegue ni entrada humana hasta comprobarlos.
+Cuenta habilitada en Dev con cinco plazas y auditoría operativa. Carga pendiente
+del permiso de archivos de Chrome; no se acredita entrada humana.
 [Preparación y estado](TRAINER_HOSTING_2026_10_21.md).
 
 **TRN-010 · 21/10/2026 · acceso y clientes: cierre técnico en Dev:** panel

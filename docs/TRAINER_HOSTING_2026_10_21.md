@@ -5,7 +5,7 @@
 Javier solicita publicar `trainer.entrenaop.es` y habilitar su cuenta
 administrativa existente como preparador para probar el mismo TOTP antes de
 continuar las asignaciones. Solo EntrenaOP Dev (`sxbxfjqgoddzhtcyhalw`).
-Cupo operativo propuesto: cinco alumnos de prueba, sin cobros y sin conceder
+Cupo operativo concedido: cinco alumnos de prueba, sin cobros y sin conceder
 otros permisos ni Pro personal. No se modifica producción.
 
 El subdominio tendrá la carpeta propia `public_html/trainer` del alojamiento
@@ -66,3 +66,30 @@ inmediata exigida por el navegador se ha recibido antes de pulsar Crear.
 Aún no se acredita carga, acceso HTTPS ni entrada TOTP humana. Las pruebas y
 la publicación real se registrarán al completarse. El contrato de pagos al
 entrenador queda separado en [TRN-012](TRAINER_PAYMENTS.md).
+
+## Habilitación inicial comprobada
+
+Se activa `manual_access_enabled` exclusivamente en Dev y se concede acceso
+profesional a la cuenta existente del responsable de cuentas, previamente
+contrastada con `admin_permissions` y un factor TOTP verificado. Cinco plazas,
+revisión 1, sin fecha automática de caducidad y sin cambios de Pro o permisos
+administrativos. No se fija una política comercial de caducidad.
+
+Alta operativa mediante conexión administrativa de confianza, en una transacción
+con bloqueo asesor y comprobación de ausencia de concesiones previas. Incluye
+un registro `trainer_access_audit`; `actor_id` y `updated_by` nulos identifican
+la operación de infraestructura, no una sesión humana AAL2. El motivo conserva
+la autorización, fecha y alcance. No se suplantan claims ni se altera MFA/RLS.
+
+Validación del paquete: 30 pruebas del publicador ADMIN y cinco profesionales;
+análisis raíz y profesional limpios; 1133 pruebas raíz aprobadas (una omitida
+preexistente) y siete profesionales aprobadas. Se incorpora el arranque web
+propio sin registro de service worker, con el mismo contrato del publicador.
+ZIP preparado de `6b7f0d5`, SHA-256
+`a9c836e1492280bce02e7674265621ecbfc2d1f3bb4e3c578f78f457959258ff`.
+
+La carga está pendiente del permiso «Permitir acceso a URL de archivo» de la
+extensión de Chrome. El gestor de Hostinger ya tiene `trainer-releases` fuera
+de `public_html`; todavía no contiene el ZIP. La validación GitHub del flujo
+ADMIN 39573481003 pasa, pero su transferencia termina en `OSError`; el dominio
+ADMIN conserva `4b2759d`. La corrección del análisis no acredita despliegue.

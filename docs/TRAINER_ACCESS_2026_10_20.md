@@ -1,5 +1,9 @@
 # Acceso profesional y relación del piloto · TRN-008/009
 
+> Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
+> cinco plazas solo en Dev; el subdominio está creado y su carga/prueba humana
+> siguen pendientes. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
+
 ## Estado comprobado · 20/10/2026
 
 La migración `20261020072345_trainer_access_and_client_relations.sql` está aplicada

@@ -1,14 +1,16 @@
 # Espacio de entrenadores
 
-## Estado · 21/10/2026 · TRN-010
+## Estado · 21/10/2026 · TRN-010/011
 
 El primer bloque de acceso y clientes tiene interfaces y contrato verificados:
 panel web independiente en `trainer_app/`, entrada con TOTP obligatorio también
 en servidor, gestión profesional/cupo y directorio en ADMIN, invitaciones y
 aceptación/finalización en Perfil → Mi preparador de la app habitual.
 
-El destino acordado es `trainer.entrenaop.es`, separado de ADMIN. Aún no está
-publicado y la configuración manual sigue deshabilitada, sin cuentas habilitadas.
+Hostinger ya tiene `trainer.entrenaop.es`, separado de ADMIN. La carga del panel
+sigue pendiente del permiso de archivos de Chrome. La gestión manual está
+habilitada solo en Dev, con la cuenta de Javier y cinco plazas auditadas.
+La prueba humana TOTP sigue pendiente. [Estado de publicación](TRAINER_HOSTING_2026_10_21.md).
 No se han implementado contenido privado, asignaciones, resultados profesionales
 ni cobros. Una identidad puede ser administradora, preparadora y alumna a la vez.
 
@@ -98,8 +100,9 @@ expresamente que la vinculación no permite un noveno ejercicio ni una quinta
 sesión propia en Free. Consumir asignaciones del preparador sin cuota personal
 ni otra compra sigue siendo un requisito pendiente de conectar al recorrido.
 
-La configuración manual permanece deshabilitada y las pruebas no dejan cuentas,
-concesiones ni relaciones de ensayo. La bajada manual con acceso habilitado se
+El cierre inicial TRN-008 dejó la configuración manual deshabilitada y las
+pruebas no dejaron cuentas, concesiones ni relaciones de ensayo. TRN-011 habilita
+después la primera cuenta real del piloto exclusivamente en Dev. La bajada manual con acceso habilitado se
 rechaza si el nuevo límite es inferior a los vínculos activos; la política
 comercial definitiva sigue pendiente. La retirada/caducidad no borra relaciones,
 y se permite terminarlas aunque el acceso profesional ya no esté vigente.
@@ -107,8 +110,8 @@ y se permite terminarlas aunque el acceso profesional ya no esté vigente.
 [Contrato, permisos, pruebas SQL y límites de verificación](TRAINER_ACCESS_2026_10_20.md).
 TRN-010 integra acceso, cupo, invitación y aceptación, y verifica quince carreras
 con conexiones reales en PostgreSQL local desechable de la misma versión.
-El panel no está publicado ni hay cuentas habilitadas. Las asignaciones siguen
-pendientes. [Cierre técnico y límites del piloto](TRAINER_PORTAL_2026_10_21.md).
+El cierre TRN-010 no publicó el panel ni habilitó cuentas; TRN-011 registra el
+alta posterior y su publicación en curso. Las asignaciones siguen pendientes. [Cierre técnico y límites del piloto](TRAINER_PORTAL_2026_10_21.md).
 
 ## Distribución implementada para acceso y clientes
 

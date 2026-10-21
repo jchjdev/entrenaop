@@ -1,5 +1,9 @@
 # Acceso y clientes del panel profesional · 21/10/2026
 
+> Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
+> cinco plazas solo en Dev; el subdominio está creado y su carga/prueba humana
+> siguen pendientes. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).
+
 ## Alcance comprobado · TRN-010
 
 Primera interfaz del contrato TRN-008/009, dentro de un único producto:
