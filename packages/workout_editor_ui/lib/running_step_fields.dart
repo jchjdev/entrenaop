@@ -87,7 +87,7 @@ class RunningStepFields extends StatelessWidget {
                 ),
                 DropdownMenuItem(
                   value: WorkoutTargetType.duration,
-                  child: Text('Duración'),
+                  child: Text('Tiempo'),
                 ),
               ],
               onChanged: (value) {
@@ -184,7 +184,7 @@ class RunningStepFields extends StatelessWidget {
                   itemHeight: null,
                   decoration: const InputDecoration(labelText: 'Medida'),
                   items: const [
-                    DropdownMenuItem(value: false, child: Text('Duración')),
+                    DropdownMenuItem(value: false, child: Text('Tiempo')),
                     DropdownMenuItem(value: true, child: Text('Distancia')),
                   ],
                   onChanged: (value) {

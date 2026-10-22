@@ -13,6 +13,17 @@ comprobación física del fēnix siguen pendientes.
 [Implementación y verificación](RUNNING_STEPS_V2.md).
 [Contrato y secuencia propuesta](WORKOUT_EDITOR_SHARED_2026_10_22.md#siguiente-contrato-de-carrera-int-009).
 
+**INT-009 · ajuste de aceptación · 22/10/2026:** Javier confirma que la sesión
+muestra calentamiento, series y recuperaciones, y prefiere «Tiempo» en los
+selectores de carrera frente a «Duración». Se cambia la presentación común sin
+alterar unidades ni datos guardados. Confirma dos necesidades para fartlek:
+ritmo propio en el tramo suave y repetir combinaciones de varios pasos. El
+trote asociado todavía no admite un objetivo de ritmo propio. El envío
+manual actual es un ensayo controlado; la expectativa de producto es enviar
+automáticamente las pautas autorizadas una vez vinculada la cuenta. Esa
+automatización y su ciclo de revisión/cancelación siguen pendientes, no se
+activan mediante este ajuste de interfaz.
+
 **INT-008 · 22/10/2026 · creador único para deportista, ADMIN y Trainer:**
 Javier autoriza corregir las tres apps mediante el mismo creador. Se sustituyen
 los formularios propios del deportista por adaptadores a `workout_editor_ui`,

@@ -15,6 +15,23 @@ tramos con cinco recuperaciones asociadas; Garmin recibe doce pasos ordenados.
 No se prometen grupos nativos `WorkoutRepeatStep`: la expansión actual conserva
 la pauta completa y el límite de cien pasos, incluyendo recuperaciones.
 
+En la aceptación del creador, Javier confirma que la sesión muestra sus fases y
+series con recuperaciones. Los selectores compartidos pasan a decir «Tiempo»;
+los valores y unidades conservan el contrato anterior. La recuperación asociada
+permite pasiva/andar/trotar y tiempo/distancia, pero aún no tiene objetivo de
+ritmo propio ni repeticiones de grupos de varios tramos. Esto limita la autoría
+de fartlek con pautas suaves precisas; no debe presentarse como soporte completo.
+Javier confirma ambas necesidades. El ajuste de terminología supera los análisis
+de deportista, ADMIN y Trainer, y las 161 pruebas del creador compartido.
+
+El envío con selección y confirmación de cada cita es el recorrido de ensayo.
+La experiencia de producto esperada es vincular la cuenta y entregar las pautas
+autorizadas automáticamente, conservando en servidor autoridad, versión,
+compatibilidad y recibos. Antes de activarla hay que resolver cómo actualizar o
+retirar sesiones ya enviadas y conciliar resultados inciertos; el servicio actual
+no implementa aún ese ciclo. La sincronización del dispositivo con Garmin Connect
+es un tramo distinto de la entrega de EntrenaOP al calendario Garmin.
+
 ## Contrato y fronteras
 
 | Parte | Contrato |
