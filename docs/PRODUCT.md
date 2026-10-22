@@ -1,5 +1,10 @@
 # Producto EntrenaOP
 
+INT-011 compacta el creador común de carrera: resúmenes plegables, series iguales
+agrupadas y recuperación con objetivo propio dentro de su tramo. «Sin objetivo»
+oculta y retira los ritmos; solo se ofrecen objetivos libres y de ritmo.
+[Interfaz y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
+
 INT-010 permite activar en Dev la sincronización de las carreras próximas del
 entrenador y del plan adaptativo, incluidos cambios y cancelaciones, sin abrir
 EntrenaOP para cada envío. Requiere derechos y permiso Garmin en servidor;

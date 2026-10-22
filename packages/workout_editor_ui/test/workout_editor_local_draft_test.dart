@@ -192,6 +192,13 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
+      final objective = find.byType(DropdownButtonFormField<bool>).first;
+      await t.ensureVisible(objective);
+      await t.pumpAndSettle();
+      await t.tap(objective);
+      await t.pumpAndSettle();
+      await t.tap(find.text('Ritmo').last);
+      await t.pumpAndSettle();
       final pace = find.widgetWithText(TextFormField, 'Ritmo (m:ss/km)');
       await t.scrollUntilVisible(
         pace,

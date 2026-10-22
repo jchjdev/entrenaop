@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**INT-011 · 22/10/2026 · creador común de carrera compacto:** resúmenes
+plegables, series iguales agrupadas, edición individual de excepciones y
+recuperación con objetivo propio dentro de la serie. Libre oculta y retira
+ritmos. Conserva receta plana V2, schema 1, omisión y límite de cuarenta; no
+cambia SQL ni permisos profesionales. Capturas reales sintéticas en móvil y
+escritorio, también texto 2×. Análisis de las tres apps limpios; raíz 1.294
+(una omisión previa), ADMIN 314 (dos previas), Trainer 170 y creador común 189. Distribución
+anotada en su documento responsable. **Siguiente recorrido
+único:** actualizar el creador y contrastar en fēnix una pauta nueva con Lap,
+ritmo rápido/suave y última recuperación omitida, dentro del ciclo automático
+Dev. Pulso/cadencia/potencia y fuerza Garmin siguen pendientes.
+[Interfaz y aceptación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
+
 **INT-010 · 22/10/2026 · ciclo automático implementado y activo solo en Dev:**
 preferencia por cuenta/generación, cola durable, creación compartida, cambios
 con PUT y retirada con DELETE; historial de versiones y guardas de autoridad,

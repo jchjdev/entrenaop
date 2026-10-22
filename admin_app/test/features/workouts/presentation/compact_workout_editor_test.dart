@@ -181,6 +181,13 @@ void main() {
             t,
             'compacto-admin-${warmup ? 'warmup' : format.name}-${width.toInt()}-$scale-ficha',
           );
+          if (format == WorkoutBlockFormat.running) {
+            final header = find.byKey(const ValueKey('running-step-header-0'));
+            await t.ensureVisible(header);
+            await t.pumpAndSettle();
+            await t.tap(header);
+            await t.pumpAndSettle();
+          }
           final fields = format == WorkoutBlockFormat.running
               ? find.byType(RunningStepFields).first
               : format == WorkoutBlockFormat.tabata

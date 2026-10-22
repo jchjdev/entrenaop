@@ -323,6 +323,7 @@ void main() {
         t,
         'compacto-carrera-${width.toInt()}-$scale-ficha',
       );
+      await _chooseRunningPace(t);
       final pace = _editorField('Ritmo (m:ss/km)');
       await _show(t, pace);
       await t.pumpAndSettle();
@@ -659,9 +660,10 @@ void main() {
     await tester.tap(find.text('Aplicar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tramo 1 × 4'), findsOneWidget);
-    expect(find.text('1 bloque · 4/40 tramos'), findsOneWidget);
+    expect(find.text('Carrera × 4'), findsOneWidget);
+    expect(find.text('4/40'), findsOneWidget);
 
+    await _chooseRunningPace(tester);
     final paceFrom = _editorField('Ritmo (m:ss/km)');
     final paceTo = _editorField('Hasta (m:ss/km)');
     await _show(tester, paceFrom);
@@ -1170,5 +1172,33 @@ Future<void> _show(WidgetTester tester, Finder finder) async {
   }
   expect(found(), isTrue, reason: 'Control compartido visible: $finder');
   await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _chooseRunningPace(WidgetTester tester) async {
+  final header = find.byKey(const ValueKey('running-step-header-0'));
+  final fields = find.byKey(const ValueKey('work-fields-0'));
+  if (fields.evaluate().isEmpty) {
+    await tester.ensureVisible(header);
+    await tester.pumpAndSettle();
+    await tester.tap(header);
+    await tester.pumpAndSettle();
+  }
+  final pace = find.descendant(
+    of: fields,
+    matching: find.widgetWithText(TextFormField, 'Ritmo (m:ss/km)'),
+  );
+  if (pace.evaluate().isNotEmpty) return;
+  final goal = find
+      .descendant(
+        of: fields,
+        matching: find.byType(DropdownButtonFormField<bool>),
+      )
+      .first;
+  await tester.ensureVisible(goal);
+  await tester.pumpAndSettle();
+  await tester.tap(goal);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Ritmo').last);
   await tester.pumpAndSettle();
 }

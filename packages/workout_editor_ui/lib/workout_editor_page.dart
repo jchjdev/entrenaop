@@ -7,6 +7,8 @@ import 'dart:async';
 import 'workout_editor_work.dart';
 import 'editor_work_checkpoint.dart';
 import 'running_editor_actions.dart';
+import 'running_editor_groups.dart';
+import 'running_step_card.dart';
 
 import 'package:workout_core/workout_draft_codec.dart';
 
@@ -93,6 +95,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   final _description = TextEditingController();
   final _duration = TextEditingController();
   final _segments = <_Segment>[_Segment()];
+  _Segment? _expandedSegment;
+  _Segment? _invalidSegment;
+  final _separateRepetitions = <_Segment>{};
+  final _groupBreaks = <_Segment>{};
   final _blocks = <_StrengthBlock>[_StrengthBlock()];
   List<WorkoutEditorExercise> _catalog = const [];
   bool _running = true;
@@ -494,6 +500,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _workLoadError = 'No se puede recuperar este trabajo con esta versión del editor. Se conserva sin sobrescribir.';
       }
     }
+    if (_segments.length == 1 &&
+        !_segments.single.manual &&
+        _segments.single.target.text.isEmpty) {
+      _expandedSegment = _segments.single;
+    }
     _savedStamp = _draftStamp;
     if (widget.saveLocalDraft != null) {
       _observedWork = canonicalEditorState(_rawSnapshot());
@@ -576,11 +587,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     super.dispose();
   }
 
-  CreatePersonalWorkoutInput _input() =>
-      projectWorkoutEditorSnapshot(WorkoutEditorSnapshot(_rawSnapshot()));
+  CreatePersonalWorkoutInput _input() {
+    if (_running &&
+        _segments.any((s) => s.wantsPace && s.pace.text.trim().isEmpty)) {
+      throw const FormatException('Indica el ritmo o selecciona Sin objetivo.');
+    }
+    return projectWorkoutEditorSnapshot(WorkoutEditorSnapshot(_rawSnapshot()));
+  }
 
   Future<void> _save() async {
     if (_busy) return;
+    setState(() => _invalidSegment = null);
     FocusScope.of(context).unfocus();
     try {
       if (_work?.finalizing == true) {
@@ -630,7 +647,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         widget.onSaved(savedId);
       }
     } on FormatException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(() => _error = error.message);
+        _openInvalidRunningSegment();
+      }
     } catch (error) {
       if (_work?.finalizing == true &&
           widget.workBinding!.definitiveError(error)) {
@@ -671,51 +691,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     }
   }
 
-  void _moveSegment(int index, int offset) {
-    setState(() {
-      final segment = _segments.removeAt(index);
-      _segments.insert(index + offset, segment);
-    });
-  }
-
   int get _runningCount =>
       _segments.fold(0, (sum, s) => sum + (int.tryParse(s.count.text) ?? 0));
 
-  Future<void> _repeatLast() async {
-    var count = _segments.last.count.text;
-    final value = await showDialog<int>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Repetir último tramo'),
-        content: TextFormField(
-          initialValue: count,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Repeticiones totales'),
-          onChanged: (v) => count = v,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(int.tryParse(count)),
-            child: const Text('Aplicar'),
-          ),
-        ],
-      ),
-    );
-    if (value == null || !mounted) return;
-    final previous = int.tryParse(_segments.last.count.text) ?? 0;
-    if (value < 1 || _runningCount - previous + value > 40) {
-      setState(() => _error = 'La carrera no puede superar 40 tramos.');
-      return;
-    }
-    setState(() => _segments.last.count.text = '$value');
-  }
-
-  void _applyRunningAction(WorkoutEditorSnapshot snapshot) {
+  void _applyRunningAction(
+    WorkoutEditorSnapshot snapshot, {
+    int? expandedIndex,
+  }) {
     final next = [
       for (final row in snapshot.value['segments'] as List)
         _Segment.fromRaw(row as Map),
@@ -727,36 +709,28 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       _segments
         ..clear()
         ..addAll(next);
+      _expandedSegment = expandedIndex == null ? null : next[expandedIndex];
+      _invalidSegment = null;
+      _separateRepetitions.clear();
+      _groupBreaks.clear();
       _error = null;
     });
   }
 
-  void _separateRecovery(int index) {
-    try {
-      _applyRunningAction(
-        separateRunningEditorRecovery(
-          WorkoutEditorSnapshot(_rawSnapshot()),
-          index,
-        ),
-      );
-    } on FormatException catch (error) {
-      setState(() => _error = error.message);
-    }
-  }
-
   Future<void> _repeatGroup() async {
     final snapshot = WorkoutEditorSnapshot(_rawSnapshot());
+    final groups = _runningGroups;
     var count = '2';
-    var first = _segments.indexWhere(
-      (s) =>
-          s.kind != RunningStepKind.warmup &&
-          s.kind != RunningStepKind.cooldown,
+    var first = groups.indexWhere(
+      (g) =>
+          _segments[g.first].kind != RunningStepKind.warmup &&
+          _segments[g.first].kind != RunningStepKind.cooldown,
     );
     if (first < 0) first = 0;
-    var last = _segments.lastIndexWhere(
-      (s) =>
-          s.kind != RunningStepKind.warmup &&
-          s.kind != RunningStepKind.cooldown,
+    var last = groups.lastIndexWhere(
+      (g) =>
+          _segments[g.first].kind != RunningStepKind.warmup &&
+          _segments[g.first].kind != RunningStepKind.cooldown,
     );
     if (last < first) last = first;
     var omit = false;
@@ -767,8 +741,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         builder: (context, update) {
           final canOmit = canOmitRunningGroupRecovery(
             snapshot,
-            first: first,
-            last: last,
+            first: groups[first].first,
+            last: groups[last].last,
           );
           return AlertDialog(
             title: const Text('Repetir grupo'),
@@ -786,8 +760,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Se crearán tramos individuales en el mismo orden. '
-                  'Después podrás editarlos por separado.',
+                  'Repite estos tramos en orden. Cada serie conserva su recuperación.',
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
@@ -798,11 +771,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   decoration: InputDecoration(
                     labelText: 'Desde tramo',
                     helperText:
-                        (_segments[first].kind ?? RunningStepKind.run).label,
+                        (_segments[groups[first].first].kind ??
+                                RunningStepKind.run)
+                            .label,
                     helperMaxLines: 2,
                   ),
                   items: [
-                    for (var i = 0; i < _segments.length; i++)
+                    for (var i = 0; i < groups.length; i++)
                       DropdownMenuItem(value: i, child: Text('Tramo ${i + 1}')),
                   ],
                   onChanged: (value) => update(() {
@@ -822,11 +797,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   decoration: InputDecoration(
                     labelText: 'Hasta tramo',
                     helperText:
-                        (_segments[last].kind ?? RunningStepKind.run).label,
+                        (_segments[groups[last].first].kind ??
+                                RunningStepKind.run)
+                            .label,
                     helperMaxLines: 2,
                   ),
                   items: [
-                    for (var i = first; i < _segments.length; i++)
+                    for (var i = first; i < groups.length; i++)
                       DropdownMenuItem(value: i, child: Text('Tramo ${i + 1}')),
                   ],
                   onChanged: (value) => update(() {
@@ -879,8 +856,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   try {
                     final next = repeatRunningEditorGroup(
                       snapshot,
-                      first: first,
-                      last: last,
+                      first: groups[first].first,
+                      last: groups[last].last,
                       repetitions: int.tryParse(count) ?? 0,
                       omitLastRecovery: omit,
                     );
@@ -1067,7 +1044,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       ?widget.additionalFields,
       const SizedBox(height: 20),
       if (_running) _runningEditor() else _strengthEditor(),
-      if (_error != null) ...[
+      if (_error != null && _invalidSegment == null) ...[
         const SizedBox(height: 16),
         Text(
           _error!,
@@ -1105,146 +1082,640 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     );
   }
 
-  Widget _runningEditor() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('Tramos de carrera', style: Theme.of(context).textTheme.titleLarge),
-      Text('1 bloque · $_runningCount/40 tramos'),
-      const Text(
-        'Las series iguales se muestran juntas, pero se guardan como parciales individuales para registrar resultados.',
-      ),
-      const Text(
-        'Para un fartlek, cada paso rápido y suave puede llevar su '
-        'ritmo. Usa Repetir grupo para repetirlos juntos.',
-      ),
-      const SizedBox(height: 12),
+  List<RunningEditorGroup> get _runningGroups => runningEditorGroups(
+    WorkoutEditorSnapshot(_rawSnapshot()),
+    separateRepetitions: {
       for (var i = 0; i < _segments.length; i++)
-        Card(
-          key: ValueKey(_segments[i]),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _rowTitle(
-                  'Tramo ${i + 1}${_segments[i].count.text == '1' ? '' : ' × ${_segments[i].count.text}'}',
-                  _segments.length > 1
-                      ? () => setState(() => _segments.removeAt(i).dispose())
-                      : null,
+        if (_separateRepetitions.contains(_segments[i])) i,
+    },
+    breakBefore: {
+      for (var i = 0; i < _segments.length; i++)
+        if (_groupBreaks.contains(_segments[i])) i,
+    },
+  );
+
+  void _copySegment(_Segment source, _Segment target) {
+    target.target.text = source.target.text;
+    target.pace.text = source.pace.text;
+    target.paceMax.text = source.paceMax.text;
+    target.recoveryTime.text = source.recoveryTime.text;
+    target.kind = source.kind;
+    target.manual = source.manual;
+    target.byDistance = source.byDistance;
+    target.recovery = source.recovery;
+    target.recoveryByDistance = source.recoveryByDistance;
+    target.paceEnabled = source.paceEnabled;
+  }
+
+  void _editGrouped(
+    List<int> indices,
+    void Function(_Segment) edit, {
+    bool omitLastRecovery = false,
+  }) {
+    setState(() {
+      final first = _segments[indices.first];
+      edit(first);
+      for (final index in indices.skip(1)) {
+        _copySegment(first, _segments[index]);
+        if (omitLastRecovery && index == indices.last) {
+          _segments[index].recovery = null;
+        }
+      }
+      _invalidSegment = null;
+    });
+  }
+
+  void _paceMode(
+    List<int> indices,
+    bool value, {
+    bool omitLastRecovery = false,
+  }) => _editGrouped(indices, (s) {
+    s.paceEnabled = value;
+    if (!value) {
+      s.pace.clear();
+      s.paceMax.clear();
+    }
+  }, omitLastRecovery: omitLastRecovery);
+
+  void _addRunningSegment(int index) => setState(() {
+    final next = _Segment();
+    _segments.insert(index, next);
+    _expandedSegment = next;
+    _groupBreaks.add(next);
+    _invalidSegment = null;
+  });
+
+  void _expandRecovery(
+    RunningEditorGroup group, {
+    bool pace = false,
+    bool manual = false,
+  }) {
+    FocusScope.of(context).unfocus();
+    if (pace &&
+        _segments[group.first].recovery == RunningRecoveryType.passive) {
+      return;
+    }
+    try {
+      var next = WorkoutEditorSnapshot(_rawSnapshot());
+      // La recuperación se representa con los mismos pasos V2 de siempre,
+      // pero la presentación conserva cada pareja dentro de su serie.
+      for (final index in group.work.reversed) {
+        if (_segments[index].recovery == null) continue;
+        next = separateRunningEditorRecovery(next, index);
+      }
+      _applyRunningAction(next, expandedIndex: group.first);
+      final paired = _runningGroups.firstWhere((g) => g.first == group.first);
+      if (pace) _paceMode(paired.recovery, true);
+      if (manual) {
+        _editGrouped(paired.recovery, (s) {
+          s.manual = true;
+          s.byDistance = false;
+        });
+      }
+    } on FormatException catch (error) {
+      setState(() => _error = error.message);
+    }
+  }
+
+  Future<void> _repeatRunningRow(RunningEditorGroup group) async {
+    var count = '${group.repetitions}';
+    var omit = group.omitLastRecovery;
+    String? error;
+    final next = await showDialog<WorkoutEditorSnapshot>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, update) => AlertDialog(
+          title: const Text('Repeticiones del tramo'),
+          scrollable: true,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                initialValue: count,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Veces'),
+                onChanged: (v) => count = v,
+              ),
+              if (group.paired || _segments[group.first].recovery != null)
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Omitir última recuperación'),
+                  value: omit,
+                  onChanged: (v) => update(() => omit = v ?? false),
                 ),
-                Wrap(
-                  spacing: 4,
+              if (error != null)
+                Text(
+                  error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                try {
+                  Navigator.pop(
+                    dialogContext,
+                    resizeRunningEditorGroup(
+                      WorkoutEditorSnapshot(_rawSnapshot()),
+                      group,
+                      int.tryParse(count) ?? 0,
+                      omitLastRecovery: omit,
+                    ),
+                  );
+                } on FormatException catch (failure) {
+                  update(() => error = failure.message);
+                }
+              },
+              child: const Text('Aplicar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (next != null && mounted) {
+      _applyRunningAction(next, expandedIndex: group.first);
+    }
+  }
+
+  void _runningMenu(
+    String action,
+    RunningEditorGroup group,
+    int row,
+    List<RunningEditorGroup> groups,
+  ) {
+    FocusScope.of(context).unfocus();
+    try {
+      switch (action) {
+        case 'add':
+          _addRunningSegment(group.last + 1);
+        case 'repeat':
+          unawaited(_repeatRunningRow(group));
+        case 'duplicate':
+          _applyRunningAction(
+            duplicateRunningEditorGroup(
+              WorkoutEditorSnapshot(_rawSnapshot()),
+              group,
+            ),
+            expandedIndex: group.last + 1,
+          );
+          _groupBreaks.add(_segments[group.last + 1]);
+          final after = group.last + 1 + group.last - group.first + 1;
+          if (after < _segments.length) _groupBreaks.add(_segments[after]);
+        case 'separate':
+          final length = group.last - group.first + 1;
+          _applyRunningAction(
+            repeatRunningEditorGroup(
+              WorkoutEditorSnapshot(_rawSnapshot()),
+              first: group.first,
+              last: group.last,
+              repetitions: 1,
+            ),
+            expandedIndex: group.first,
+          );
+          final expandedLength = group.paired ? length : group.repetitions;
+          _separateRepetitions.addAll(
+            _segments.sublist(group.first, group.first + expandedLength),
+          );
+        case 'up':
+          _applyRunningAction(
+            moveRunningEditorGroup(
+              WorkoutEditorSnapshot(_rawSnapshot()),
+              group,
+              groups[row - 1],
+            ),
+            expandedIndex: groups[row - 1].first,
+          );
+        case 'down':
+          final next = groups[row + 1];
+          _applyRunningAction(
+            moveRunningEditorGroup(
+              WorkoutEditorSnapshot(_rawSnapshot()),
+              group,
+              next,
+            ),
+            expandedIndex: group.first + next.last - next.first + 1,
+          );
+        case 'remove':
+          setState(() {
+            for (final segment in _segments.sublist(
+              group.first,
+              group.last + 1,
+            )) {
+              if (_expandedSegment == segment) _expandedSegment = null;
+              _separateRepetitions.remove(segment);
+              _groupBreaks.remove(segment);
+              segment.dispose();
+            }
+            _segments.removeRange(group.first, group.last + 1);
+          });
+      }
+    } on FormatException catch (error) {
+      setState(() => _error = error.message);
+    }
+  }
+
+  String _measureSummary(_Segment s) => s.manual
+      ? 'Hasta Lap'
+      : s.target.text.trim().isEmpty
+      ? 'Completa ${s.byDistance ? 'la distancia' : 'el tiempo'}'
+      : '${s.target.text}${s.byDistance ? ' m' : ' min'}';
+  String _paceSummary(_Segment s) => s.pace.text.trim().isEmpty
+      ? (s.wantsPace ? 'Completa el ritmo' : 'Sin objetivo')
+      : '${s.pace.text}${s.paceMax.text.isNotEmpty && s.paceMax.text != s.pace.text ? '–${s.paceMax.text}' : ''} min/km';
+  String _runningSummary(RunningEditorGroup group) {
+    final work = _segments[group.first];
+    final main = '${_measureSummary(work)} · ${_paceSummary(work)}';
+    if (group.paired) {
+      final soft = _segments[group.recovery.first];
+      return '$main\nRec. ${_measureSummary(soft)} · ${_paceSummary(soft)}${group.omitLastRecovery ? ' · sin última rec.' : ''}';
+    }
+    return work.recovery == null
+        ? main
+        : '$main\nRec. ${work.recoveryTime.text}${work.recoveryByDistance ? ' m' : ' min'} · ${work.recovery!.name == 'passive'
+              ? 'Pasiva'
+              : work.recovery == RunningRecoveryType.walking
+              ? 'Andando'
+              : 'Trote'}${group.omitLastRecovery ? ' · sin última rec.' : ''}';
+  }
+
+  Color _runningColor(RunningStepKind kind) => switch (kind) {
+    RunningStepKind.warmup => Colors.orange.shade300,
+    RunningStepKind.cooldown => Colors.teal.shade300,
+    RunningStepKind.run => Theme.of(context).colorScheme.primary,
+    _ => Theme.of(context).colorScheme.outline,
+  };
+
+  Widget _runningFields(RunningEditorGroup group, {bool recovery = false}) {
+    final indices = recovery ? group.recovery : group.work;
+    final s = _segments[indices.first];
+    final kind = s.kind ?? RunningStepKind.run;
+    void edit(void Function(_Segment) change) => _editGrouped(
+      indices,
+      change,
+      omitLastRecovery: !recovery && group.omittedAttachedRecovery,
+    );
+    return RunningStepFields(
+      key: ValueKey('${recovery ? 'recovery' : 'work'}-fields-${group.first}'),
+      adminLabels: true,
+      compact: true,
+      stepKind: kind,
+      kindLabel: 'Tipo de paso',
+      objectiveLabel: 'Objetivo',
+      stepKindOptions: recovery
+          ? const [
+              RunningStepKind.recovery,
+              RunningStepKind.rest,
+              RunningStepKind.walking,
+              RunningStepKind.jogging,
+            ]
+          : null,
+      showRecovery:
+          !recovery &&
+          (s.recovery != null ||
+              !const [
+                RunningStepKind.rest,
+                RunningStepKind.recovery,
+              ].contains(kind)),
+      onStepKindChanged: (value) => edit((s) {
+        s.kind = value;
+        if (value == RunningStepKind.rest) {
+          s.byDistance = false;
+          s.target.text = '01:00';
+          s.pace.clear();
+          s.paceMax.clear();
+          s.paceEnabled = false;
+        }
+      }),
+      targetType: s.manual
+          ? WorkoutTargetType.manual
+          : s.byDistance
+          ? WorkoutTargetType.distance
+          : WorkoutTargetType.duration,
+      targetController: s.target,
+      paceMinController: s.pace,
+      paceMaxController: s.paceMax,
+      paceEnabled: s.wantsPace,
+      onPaceModeChanged: (value) => _paceMode(
+        indices,
+        value,
+        omitLastRecovery: !recovery && group.omittedAttachedRecovery,
+      ),
+      recoveryType: s.recovery,
+      recoveryByDistance: s.recoveryByDistance,
+      recoveryController: s.recoveryTime,
+      onEdited: () => edit((_) {}),
+      onTargetTypeChanged: (value) => edit((s) {
+        s.manual = value == WorkoutTargetType.manual;
+        s.byDistance = value == WorkoutTargetType.distance;
+        s.target.text = s.byDistance ? '1000' : '20:00';
+      }),
+      onRecoveryTypeChanged: (value) => edit((s) {
+        s.recovery = value;
+        if (value == RunningRecoveryType.passive) {
+          s.recoveryByDistance = false;
+          s.recoveryTime.text = '01:00';
+        } else if (value != null && s.recoveryTime.text.isEmpty) {
+          s.recoveryTime.text = '01:00';
+        }
+      }),
+      onRecoveryMeasureChanged: (value) => edit((s) {
+        s.recoveryByDistance = value;
+        s.recoveryTime.text = value ? '200' : '01:00';
+      }),
+      onRecoveryPaceModeChanged:
+          recovery ||
+              const [
+                RunningStepKind.rest,
+                RunningStepKind.recovery,
+              ].contains(kind)
+          ? null
+          : (value) {
+              if (value) _expandRecovery(group, pace: true);
+            },
+      onRecoveryTargetTypeChanged:
+          recovery ||
+              const [
+                RunningStepKind.rest,
+                RunningStepKind.recovery,
+              ].contains(kind)
+          ? null
+          : (value) {
+              if (value == WorkoutTargetType.manual) {
+                _expandRecovery(group, manual: true);
+              } else {
+                edit((s) {
+                  s.recoveryByDistance = value == WorkoutTargetType.distance;
+                  s.recoveryTime.text = s.recoveryByDistance ? '200' : '01:00';
+                });
+              }
+            },
+      recoveryEditor: !recovery && group.paired
+          ? DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    IconButton(
-                      tooltip: 'Subir tramo',
-                      onPressed: i == 0 ? null : () => _moveSegment(i, -1),
-                      icon: const Icon(Icons.arrow_upward),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Recuperación',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() {
+                            for (final index in group.recovery.reversed) {
+                              _segments.removeAt(index).dispose();
+                            }
+                          }),
+                          child: const Text('Quitar'),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      tooltip: 'Bajar tramo',
-                      onPressed: i == _segments.length - 1
-                          ? null
-                          : () => _moveSegment(i, 1),
-                      icon: const Icon(Icons.arrow_downward),
-                    ),
+                    _runningFields(group, recovery: true),
                   ],
                 ),
-                _field(
-                  _segments[i].count,
-                  'Veces',
-                  100,
-                  onChanged: (_) => setState(() {}),
+              ),
+            )
+          : null,
+    );
+  }
+
+  void _openInvalidRunningSegment() {
+    if (!_running) return;
+    for (var i = 0; i < _segments.length; i++) {
+      final segment = _segments[i];
+      try {
+        if (segment.wantsPace && segment.pace.text.trim().isEmpty) {
+          throw const FormatException('Ritmo incompleto');
+        }
+        validateWorkoutDraft(
+          projectWorkoutEditorSnapshot(
+            WorkoutEditorSnapshot({
+              ..._rawSnapshot(),
+              'nameText': 'Comprobar tramo',
+              'segments': [segment.raw],
+            }),
+          ),
+        );
+      } on FormatException {
+        final group = _runningGroups.firstWhere(
+          (g) => i >= g.first && i <= g.last,
+        );
+        setState(() {
+          _expandedSegment = _segments[group.first];
+          _invalidSegment = segment;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = _segments[group.first].anchor.currentContext;
+          if (mounted && target != null) {
+            Scrollable.ensureVisible(
+              target,
+              duration: const Duration(milliseconds: 180),
+              alignment: .1,
+            );
+          }
+        });
+        break;
+      }
+    }
+  }
+
+  bool _runningGroupExpanded(RunningEditorGroup group) {
+    final index = _expandedSegment == null
+        ? -1
+        : _segments.indexOf(_expandedSegment!);
+    return index >= group.first && index <= group.last;
+  }
+
+  Widget _runningEditor() {
+    final groups = _runningGroups;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Tramos de carrera',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Text('$_runningCount/40'),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Abre un tramo para editarlo. Las series iguales se ajustan juntas.',
+        ),
+        const SizedBox(height: 8),
+        for (var row = 0; row < groups.length; row++)
+          RunningStepCard(
+            key: _segments[groups[row].first].anchor,
+            index: row,
+            title:
+                '${(_segments[groups[row].first].kind ?? RunningStepKind.run).label}${groups[row].repetitions > 1 ? ' × ${groups[row].repetitions}' : ''}',
+            summary: _runningSummary(groups[row]),
+            color: _runningColor(
+              _segments[groups[row].first].kind ?? RunningStepKind.run,
+            ),
+            expanded: _runningGroupExpanded(groups[row]),
+            onToggle: () {
+              FocusScope.of(context).unfocus();
+              setState(
+                () => _expandedSegment = _runningGroupExpanded(groups[row])
+                    ? null
+                    : _segments[groups[row].first],
+              );
+            },
+            menu: PopupMenuButton<String>(
+              key: ValueKey('running-step-menu-$row'),
+              tooltip: 'Opciones del tramo ${row + 1}',
+              onSelected: (action) =>
+                  _runningMenu(action, groups[row], row, groups),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'add',
+                  enabled: _runningCount < 40,
+                  child: const Text('Añadir debajo'),
                 ),
-                const SizedBox(height: 12),
-                RunningStepFields(
-                  adminLabels: true,
-                  stepKind: _segments[i].kind ?? RunningStepKind.run,
-                  onStepKindChanged: (kind) => setState(() {
-                    _segments[i].kind = kind;
-                    if (kind == RunningStepKind.rest) {
-                      _segments[i].byDistance = false;
-                      _segments[i].target.text = '01:00';
-                      _segments[i].pace.clear();
-                      _segments[i].paceMax.clear();
-                    }
-                  }),
-                  targetType: _segments[i].manual
-                      ? WorkoutTargetType.manual
-                      : _segments[i].byDistance
-                      ? WorkoutTargetType.distance
-                      : WorkoutTargetType.duration,
-                  targetController: _segments[i].target,
-                  paceMinController: _segments[i].pace,
-                  paceMaxController: _segments[i].paceMax,
-                  recoveryType: _segments[i].recovery,
-                  recoveryByDistance: _segments[i].recoveryByDistance,
-                  recoveryController: _segments[i].recoveryTime,
-                  onEdited: () => setState(() {}),
-                  onTargetTypeChanged: (value) => setState(() {
-                    _segments[i].manual = value == WorkoutTargetType.manual;
-                    _segments[i].byDistance =
-                        value == WorkoutTargetType.distance;
-                    _segments[i].target.text = _segments[i].byDistance
-                        ? '1000'
-                        : '20:00';
-                  }),
-                  onRecoveryTypeChanged: (value) => setState(() {
-                    _segments[i].recovery = value;
-                    if (value == RunningRecoveryType.passive) {
-                      _segments[i].recoveryByDistance = false;
-                      _segments[i].recoveryTime.text = '01:00';
-                    } else if (value != null &&
-                        _segments[i].recoveryTime.text.isEmpty) {
-                      _segments[i].recoveryTime.text = '01:00';
-                    }
-                  }),
-                  onRecoveryMeasureChanged: (value) => setState(() {
-                    _segments[i].recoveryByDistance = value;
-                    _segments[i].recoveryTime.text = value ? '200' : '1:00';
-                  }),
+                PopupMenuItem(
+                  value: 'duplicate',
+                  enabled:
+                      _runningCount +
+                          groups[row].repetitions *
+                              (groups[row].paired ? 2 : 1) -
+                          (groups[row].paired && groups[row].omitLastRecovery
+                              ? 1
+                              : 0) <=
+                      40,
+                  child: const Text('Duplicar tramo'),
                 ),
-                if (_segments[i].recovery != null)
-                  TextButton.icon(
-                    key: ValueKey('separate-recovery-$i'),
-                    onPressed: () => _separateRecovery(i),
-                    icon: const Icon(Icons.call_split),
-                    label: const Text('Editar recuperación como paso'),
+                const PopupMenuItem(
+                  value: 'repeat',
+                  child: Text('Cambiar repeticiones'),
+                ),
+                if (groups[row].repetitions > 1)
+                  const PopupMenuItem(
+                    value: 'separate',
+                    child: Text('Editar repeticiones por separado'),
                   ),
+                PopupMenuItem(
+                  value: 'up',
+                  enabled: row > 0,
+                  child: const Text('Subir tramo'),
+                ),
+                PopupMenuItem(
+                  value: 'down',
+                  enabled: row < groups.length - 1,
+                  child: const Text('Bajar tramo'),
+                ),
+                PopupMenuItem(
+                  value: 'remove',
+                  enabled: groups.length > 1,
+                  child: const Text('Eliminar tramo'),
+                ),
+              ],
+            ),
+            editor: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (groups[row].paired || groups[row].work.length > 1)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      key: ValueKey('running-repeat-$row'),
+                      onPressed: () => _repeatRunningRow(groups[row]),
+                      icon: const Icon(Icons.repeat),
+                      label: Text(
+                        '${groups[row].repetitions} ${groups[row].repetitions == 1 ? 'vez' : 'veces'}',
+                      ),
+                    ),
+                  )
+                else
+                  _field(
+                    _segments[groups[row].first].count,
+                    'Veces',
+                    110,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                const SizedBox(height: 12),
+                _runningFields(groups[row]),
+                if (_invalidSegment != null &&
+                    groups[row].first <= _segments.indexOf(_invalidSegment!) &&
+                    groups[row].last >= _segments.indexOf(_invalidSegment!))
+                  Text(
+                    _error ?? 'Revisa este tramo.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      setState(() => _expandedSegment = null);
+                    },
+                    icon: const Icon(Icons.check),
+                    label: const Text('Listo'),
+                  ),
+                ),
               ],
             ),
           ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [
+            TextButton.icon(
+              onPressed: _runningCount >= 40
+                  ? null
+                  : () => _addRunningSegment(_segments.length),
+              icon: const Icon(Icons.add),
+              label: const Text('Añadir tramo distinto'),
+            ),
+            TextButton.icon(
+              onPressed: () => _repeatRunningRow(groups.last),
+              icon: const Icon(Icons.repeat),
+              label: const Text('Repetir último'),
+            ),
+            TextButton.icon(
+              onPressed: _repeatGroup,
+              icon: const Icon(Icons.repeat),
+              label: const Text('Repetir grupo'),
+            ),
+            TextButton.icon(
+              onPressed: _addPyramid,
+              icon: const Icon(Icons.stacked_line_chart),
+              label: const Text('Crear pirámide'),
+            ),
+          ],
         ),
-      Wrap(
-        spacing: 8,
-        children: [
-          TextButton.icon(
-            onPressed: _segments.length >= 40
-                ? null
-                : () => setState(() => _segments.add(_Segment())),
-            icon: const Icon(Icons.add),
-            label: const Text('Añadir tramo distinto'),
+        if (_runningEstimate() case final estimate?)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(estimate),
           ),
-          TextButton.icon(
-            onPressed: _repeatLast,
-            icon: const Icon(Icons.repeat),
-            label: const Text('Repetir último'),
-          ),
-          TextButton.icon(
-            onPressed: _repeatGroup,
-            icon: const Icon(Icons.repeat),
-            label: const Text('Repetir grupo'),
-          ),
-          TextButton.icon(
-            onPressed: _addPyramid,
-            icon: const Icon(Icons.stacked_line_chart),
-            label: const Text('Crear pirámide'),
-          ),
-        ],
-      ),
-      if (_runningEstimate() case final estimate?)
-        Padding(padding: const EdgeInsets.only(top: 12), child: Text(estimate)),
-    ],
-  );
+      ],
+    );
+  }
 
   Widget _strengthEditor() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1911,12 +2382,21 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
 class _Segment {
   _Segment();
+  final anchor = GlobalKey();
+  bool paceEnabled = false;
+  bool get wantsPace =>
+      paceEnabled ||
+      pace.text.trim().isNotEmpty ||
+      paceMax.text.trim().isNotEmpty;
 
   factory _Segment.fromRaw(Map row) => _Segment()
     ..count.text = row['countText'] as String
     ..target.text = row['targetText'] as String
     ..pace.text = row['paceText'] as String
     ..paceMax.text = row['paceMaxText'] as String
+    ..paceEnabled =
+        (row['paceText'] as String).isNotEmpty ||
+        (row['paceMaxText'] as String).isNotEmpty
     ..recoveryTime.text = row['recoveryTimeText'] as String
     ..kind = row['stepKind'] == null
         ? null
@@ -1958,6 +2438,8 @@ class _Segment {
             set.targetPaceMaxSecondsPerKm == set.targetPaceMinSecondsPerKm
         ? ''
         : _time(set.targetPaceMaxSecondsPerKm!);
+    segment.paceEnabled =
+        segment.pace.text.isNotEmpty || segment.paceMax.text.isNotEmpty;
     segment.recovery = set.recoveryType;
     segment.recoveryByDistance = set.recoveryDistanceMeters != null;
     segment.recoveryTime.text = set.recoveryDistanceMeters != null

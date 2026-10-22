@@ -1,5 +1,10 @@
 # Arquitectura de EntrenaOP
 
+INT-011 añade agrupación de presentación y tarjetas plegables al paquete común
+del editor. Se mantienen los pasos planos V2, snapshots schema 1 y autoridades
+de cada consumidor; no introduce otro modelo de sesión ni cambios SQL.
+[Detalle de presentación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
+
 INT-010 añade el ciclo automático de las citas de carrera mediante un dominio
 de sincronización, un puerto de ciclo de vida del fabricante y una cola privada
 de servidor. Reutiliza la primera entrega y el lease de conexión; observa las

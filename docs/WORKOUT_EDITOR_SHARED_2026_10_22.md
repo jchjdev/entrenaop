@@ -55,6 +55,49 @@ recibos y RPC de ADMIN/Trainer, sin cambios SQL. INT-009 amplía después la
 persistencia y validación de pasos, manteniendo las autoridades existentes.
 [Estado actual de carrera V2](RUNNING_STEPS_V2.md).
 
+## Creador de carrera compacto · INT-011
+
+El 22/10/2026 Javier señala el exceso de desplazamiento y la conversión visible
+de una recuperación en otro paso. Se contrasta el editor abierto de Garmin
+Connect sin modificar ni guardar su sesión. La solución común a deportista,
+ADMIN y Trainer incorpora:
+
+- Resumen de cada tramo con fase, tiempo/distancia/Lap, objetivo y recuperación.
+  Solo se abre uno. Las diez parejas iguales se presentan como una tarjeta
+  «Carrera × 10», más calentamiento y enfriamiento.
+- Selectores «Sin objetivo / Ritmo». Elegir libre elimina ambos límites de ese
+  trabajo o recuperación; los campos ocultos no siguen enviando un ritmo viejo.
+  No se anuncian pulso/cadencia/potencia como opciones funcionales.
+- Recuperación dentro de la misma tarjeta, con tipo, finalización y objetivo
+  propios. Cambiar su objetivo o finalizarla manualmente usa internamente los
+  pasos V2 existentes, sin botón de conversión ni otra tarjeta visible.
+- Repeticiones por tramo, omisión explícita de última recuperación y menú para
+  añadir debajo, duplicar, mover, eliminar o editar repeticiones por separado.
+  Una variación conserva su pauta y no se fusiona con las demás.
+- Error de un paso plegado abre su tarjeta. Plegar/desplegar no ensucia el
+  borrador ni provoca guardados. Un objetivo de ritmo vacío impide guardar.
+
+`running_editor_groups.dart` opera sobre snapshots y devuelve índices originales;
+`running_step_card.dart` presenta el resumen. No crea un modelo deportivo nuevo.
+La receta publicada sigue plana, el snapshot conserva schema 1 y no hay cambios
+SQL, SDK, algoritmo, permisos o bindings de Trainer. Al reabrir se agrupan solo
+pasos semánticamente iguales; las excepciones permanecen separadas. La omisión
+se reconoce tanto en pasos V2 independientes como en recuperaciones asociadas.
+El máximo de cuarenta sigue aplicándose a pasos expandidos, no a tarjetas.
+
+Se revisan capturas sintéticas del widget real en escritorio y móvil, incluyendo
+texto 2×. Las regresiones cubren plegado sin autoguardado, edición de diez parejas,
+objetivos libres, excepción individual, omisión y recuperación/publicación de
+las recetas anteriores. Las pruebas de consumidores abren los nuevos resúmenes
+antes de editar, manteniendo sus verificaciones de prescripción y permisos.
+Resultado local INT-011: análisis de raíz, ADMIN y Trainer sin incidencias;
+1.294 pruebas raíz correctas (una omisión previa), 314 ADMIN (dos previas),
+170 Trainer y 189 del paquete común. Compilación web Release de Trainer Dev
+correcta. No se ejecutan migraciones ni se despliegan funciones por este cambio.
+
+Esta entrega requiere actualizar la app iOS para usar el nuevo creador local;
+no acredita todavía la siguiente prueba física en el fēnix.
+
 ## Límites y siguiente bloque
 
 El creador guarda un bloque `running` con tramos individuales. Desde INT-009,

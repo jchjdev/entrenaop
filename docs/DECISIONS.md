@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-011 · 22/10/2026 · creador de carrera compacto:** Javier pide reducir
+el desplazamiento y editar la recuperación dentro de su serie mediante
+selectores, sin la acción visible «Editar recuperación como paso». La interfaz
+común muestra resúmenes plegables, un tramo abierto y repeticiones iguales
+agrupadas con posibilidad de editar una repetición por separado. «Sin objetivo»
+oculta y elimina los ritmos elegidos; «Ritmo» muestra sus límites independientes
+para trabajo y recuperación. La omisión de la última recuperación se conserva.
+Es una agrupación de presentación sobre los pasos planos V2 existentes: no
+cambia contratos, permisos ni datos SQL. Pulso/cadencia/potencia continúan
+pendientes de implementación completa.
+[Alcance y aceptación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
+
 **INT-010 · 22/10/2026 · publicación automática de carrera en Garmin:** Javier
 autoriza envío, cambios y cancelaciones del entrenador y del algoritmo, solo
 en Dev y manteniendo Clean Architecture. Se añade una preferencia persistente

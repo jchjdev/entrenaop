@@ -265,6 +265,17 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _enterRunningDistance(WidgetTester tester, String value) async {
+  final field = find.widgetWithText(TextField, 'Distancia (m)');
+  if (field.evaluate().isEmpty) {
+    await _tap(tester, find.byKey(const ValueKey('running-step-header-0')));
+  }
+  await tester.ensureVisible(field);
+  await tester.pumpAndSettle();
+  await tester.enterText(field, value);
+  await tester.pumpAndSettle();
+}
+
 Future<void> _create(WidgetTester tester, String name) async {
   await _tap(tester, find.text('Crear nueva sesión').last);
   expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
@@ -273,10 +284,10 @@ Future<void> _create(WidgetTester tester, String name) async {
     find.widgetWithText(TextField, 'Nombre de la sesión'),
     name,
   );
-  await tester.enterText(
-    find.widgetWithText(TextField, 'Distancia (m)'),
-    '400',
-  );
+  await _enterRunningDistance(tester, '400');
+  final objective = find.byType(DropdownButtonFormField<bool>).first;
+  await _tap(tester, objective);
+  await _tap(tester, find.text('Ritmo').last);
   await tester.enterText(
     find.widgetWithText(TextField, 'Ritmo (m:ss/km)'),
     '6:00',
@@ -311,10 +322,7 @@ void main() {
         find.widgetWithText(TextField, 'Nombre de la sesión'),
         'Recuperar enlace',
       );
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Distancia (m)'),
-        '400',
-      );
+      await _enterRunningDistance(tester, '400');
       await _tap(tester, find.text('Guardar en programa'));
       expect(find.text('Reintentar enlace'), findsOneWidget);
       await _tap(tester, find.text('Reintentar enlace'));
@@ -491,10 +499,7 @@ void main() {
         find.widgetWithText(TextField, 'Nombre de la sesión'),
         'Recuperable',
       );
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Distancia (m)'),
-        '400',
-      );
+      await _enterRunningDistance(tester, '400');
       workouts.failList = true;
       await _tap(tester, find.text('Guardar en programa'));
       expect(find.text('Reintentar enlace'), findsOneWidget);
@@ -517,10 +522,7 @@ void main() {
         find.widgetWithText(TextField, 'Nombre de la sesión'),
         'Pendiente recuperable',
       );
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Distancia (m)'),
-        '400',
-      );
+      await _enterRunningDistance(tester, '400');
       workouts.failList = true;
       await _tap(tester, find.text('Guardar en programa'));
       expect(find.text('Reintentar enlace'), findsOneWidget);
@@ -577,10 +579,7 @@ void main() {
           find.widgetWithText(TextField, 'Nombre de la sesión'),
           'Sesión revisada',
         );
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Distancia (m)'),
-          '800',
-        );
+        await _enterRunningDistance(tester, '800');
         await _tap(tester, find.text('Guardar en programa'));
         expect(router.routeInformationProvider.value.uri, location);
         expect(find.text('1 sesión en esta rutina'), findsOneWidget);
@@ -609,10 +608,7 @@ void main() {
       await _mount(tester, _Guided(), workouts);
       await _create(tester, 'Sesión original');
       await _tap(tester, find.widgetWithText(FilledButton, 'Editar sesión'));
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Distancia (m)'),
-        '800',
-      );
+      await _enterRunningDistance(tester, '800');
       await _tap(tester, find.byTooltip('Volver al programa'));
       expect(find.text('¿Salir sin guardar?'), findsOneWidget);
       await _tap(tester, find.text('Continuar'));
@@ -651,10 +647,7 @@ void main() {
       expect(edit.hitTestable(), findsOneWidget);
       await _tap(tester, edit);
       expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Distancia (m)'),
-        '800',
-      );
+      await _enterRunningDistance(tester, '800');
       await _tap(tester, find.text('Guardar en programa'));
       expect(find.byType(AdminWorkoutContent), findsNothing);
       expect(find.text('Ver contenido'), findsOneWidget);
@@ -696,10 +689,7 @@ void main() {
               .text,
           'Base · copia',
         );
-        await tester.enterText(
-          find.widgetWithText(TextField, 'Distancia (m)'),
-          '800',
-        );
+        await _enterRunningDistance(tester, '800');
         await _tap(tester, find.text('Guardar en programa'));
         expect(workouts.creates, 2);
         expect(workouts.revisions, 0);

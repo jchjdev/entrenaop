@@ -272,6 +272,9 @@ void main() {
         await tester.drag(find.byType(Scrollable).first, const Offset(0, 5000));
         await tester.pumpAndSettle();
         Future<void> enter(String label, String value) async {
+          if (label.startsWith('Ritmo') || label.startsWith('Hasta')) {
+            await _chooseRunningPace(tester);
+          }
           final field = _field(label);
           await tester.scrollUntilVisible(
             field,
@@ -291,6 +294,7 @@ void main() {
           200,
           scrollable: find.byType(Scrollable).first,
         );
+        await _showSharedField(tester, find.text('Guardar borrador'));
         await tester.tap(find.text('Guardar borrador'));
         await tester.pumpAndSettle();
         expect(repository.savedVisibility, initial);
@@ -358,10 +362,12 @@ void main() {
       );
       await _showSharedField(tester, _field('Distancia (m)'));
       await tester.enterText(_field('Distancia (m)'), '200');
+      await _chooseRunningPace(tester);
       await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
       await tester.pumpAndSettle();
       await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.pumpAndSettle();
+      await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       expect(repository.saved, isNull);
@@ -380,6 +386,7 @@ void main() {
       await tester.pumpAndSettle();
       await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.pumpAndSettle();
+      await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       expect(repository.saved?.name, 'Series recuperables');
@@ -403,6 +410,7 @@ void main() {
     await tester.enterText(_field('Nombre de la sesión'), 'Series de 200 m');
     await tester.enterText(_field('Veces'), '5');
     await tester.enterText(_field('Distancia (m)'), '200');
+    await _chooseRunningPace(tester);
     await tester.enterText(_field('Ritmo (m:ss/km)'), '350');
     await tester.scrollUntilVisible(
       find.text('Guardar borrador'),
@@ -412,6 +420,7 @@ void main() {
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -434,10 +443,12 @@ void main() {
 
     await tester.enterText(_field('Nombre de la sesión'), 'Series de 200 m');
     await tester.enterText(_field('Distancia (m)'), '200');
+    await _chooseRunningPace(tester);
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:99');
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -456,6 +467,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _chooseRunningPace(tester);
     await _showSharedField(tester, _field('Ritmo (m:ss/km)'));
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
@@ -463,10 +475,12 @@ void main() {
     );
     await tester.enterText(_field('Nombre de la sesión'), 'Ritmo manual');
     await tester.enterText(_field('Distancia (m)'), '400');
+    await _chooseRunningPace(tester);
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     expect(
@@ -494,6 +508,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _chooseRunningPace(tester);
     await tester.enterText(_field('Ritmo (m:ss/km)'), '555');
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).controller!.text,
@@ -517,6 +532,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(_field('Nombre de la sesión'), 'Series con trote');
     await tester.enterText(_field('Distancia (m)'), '400');
+    await _chooseRunningPace(tester);
     await tester.enterText(_field('Ritmo (m:ss/km)'), '350');
     await tester.enterText(_field('Hasta (m:ss/km)'), '410');
     await tester.tap(
@@ -525,7 +541,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Trote').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButtonFormField<bool>));
+    await _showSharedField(
+      tester,
+      find.byKey(const ValueKey('attached-recovery-end-false')),
+    );
+    await tester.tap(find.byKey(const ValueKey('attached-recovery-end-false')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Distancia').last);
     await tester.pumpAndSettle();
@@ -533,6 +553,7 @@ void main() {
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -572,6 +593,7 @@ void main() {
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -618,6 +640,7 @@ void main() {
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     final exercise = repository.saved!.blocks.single.exercises.single;
@@ -661,6 +684,7 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -707,6 +731,7 @@ void main() {
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
 
@@ -751,6 +776,7 @@ void main() {
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     expect(repository.saved!.blocks.single.timeCapSeconds, 900);
@@ -793,6 +819,7 @@ void main() {
     await tester.pumpAndSettle();
     await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     final sets = repository.saved!.blocks.single.exercises.single.sets;
@@ -932,7 +959,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Tramo 1 × 2'), findsOneWidget);
+      expect(find.text('Carrera × 2'), findsOneWidget);
+      await _chooseRunningPace(tester);
       expect(
         (tester.widget(_field('Veces')) as TextField).controller!.text,
         '2',
@@ -969,4 +997,33 @@ Future<void> _showSharedField(WidgetTester tester, Finder finder) async {
     );
   }
   await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _chooseRunningPace(WidgetTester tester) async {
+  final header = find.byKey(const ValueKey('running-step-header-0'));
+  final fields = find.byKey(const ValueKey('work-fields-0'));
+  if (fields.evaluate().isEmpty) {
+    await tester.ensureVisible(header);
+    await tester.pumpAndSettle();
+    await tester.tap(header);
+    await tester.pumpAndSettle();
+  }
+  final pace = find.descendant(
+    of: fields,
+    matching: find.widgetWithText(TextFormField, 'Ritmo (m:ss/km)'),
+  );
+  if (pace.evaluate().isNotEmpty) return;
+  final goal = find
+      .descendant(
+        of: fields,
+        matching: find.byType(DropdownButtonFormField<bool>),
+      )
+      .first;
+  await tester.ensureVisible(goal);
+  await tester.pumpAndSettle();
+  await tester.tap(goal);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Ritmo').last);
+  await tester.pumpAndSettle();
 }

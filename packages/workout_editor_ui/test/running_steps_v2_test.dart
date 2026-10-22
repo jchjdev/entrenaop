@@ -103,6 +103,16 @@ void main() {
     );
     await t.pumpAndSettle();
     await t.scrollUntilVisible(
+      find.byKey(const ValueKey('running-step-header-0')),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.byKey(const ValueKey('running-step-header-0')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('running-step-header-0')));
+    await t.pumpAndSettle();
+    await t.scrollUntilVisible(
       find.text('En el reloj, termina al pulsar Lap.').first,
       150,
       scrollable: find.byType(Scrollable).first,

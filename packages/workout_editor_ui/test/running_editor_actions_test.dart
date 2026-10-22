@@ -342,13 +342,18 @@ void main() {
         await t.pumpAndSettle();
       }
 
-      await show(find.text('Editar recuperación como paso'));
-      await t.tap(find.text('Editar recuperación como paso'));
+      await show(find.byKey(const ValueKey('running-step-header-1')));
+      await t.tap(find.byKey(const ValueKey('running-step-header-1')));
       await t.pumpAndSettle();
-      final softCard = find.ancestor(
-        of: find.text('Tramo 3'),
-        matching: find.byType(Card),
+      final objective = find.byKey(
+        const ValueKey('attached-recovery-objective'),
       );
+      await show(objective);
+      await t.tap(objective);
+      await t.pumpAndSettle();
+      await t.tap(find.text('Ritmo').last);
+      await t.pumpAndSettle();
+      final softCard = find.byKey(const ValueKey('recovery-fields-1'));
       Finder field(String label) => find.descendant(
         of: softCard,
         matching: find.widgetWithText(TextFormField, label),
