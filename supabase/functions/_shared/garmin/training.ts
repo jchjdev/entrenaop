@@ -3,6 +3,7 @@ import {TrainingError} from "../device_training/prescription.ts";
 import type {RunningPrescription} from "../device_training/prescription.ts";
 import {DeliveryFailure} from "../device_training/delivery.ts";
 import type {TrainingGateway} from "../device_training/delivery.ts";
+import type {TrainingLifecycleGateway} from "../device_training/sync.ts";
 export const garminRunningCapabilities={canSend:true,maxSteps:100,
   kinds:['run','warmup','cooldown','recovery','rest','walk','jog'],
   completions:['seconds','meters','manual'],pace:true} as const;
@@ -23,16 +24,19 @@ export function garminRunningWorkout(p:RunningPrescription) {
 function id(value:unknown):number {
   if(typeof value!=="number"||!Number.isSafeInteger(value)||value<=0) throw new DeliveryFailure("invalid_provider_response",true);return value;
 }
-export class GarminTrainingClient implements TrainingGateway {
+export class GarminTrainingClient implements TrainingGateway,TrainingLifecycleGateway {
   readonly capabilities=garminRunningCapabilities;
   private readonly f:typeof fetch;
   constructor(f:typeof fetch=fetch){this.f=f;}
-  private async request(path:string,token:string,body?:unknown):Promise<unknown> {
-    const write=body!==undefined;
+  private async request(path:string,token:string,body?:unknown,method=body===undefined?'GET':'POST'):Promise<unknown> {
+    const write=method!=='GET';
     try {
-      const result=await this.f(`https://apis.garmin.com${path}`,{method:write?"POST":"GET",
-        headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:write?JSON.stringify(body):undefined,
+      const result=await this.f(`https://apis.garmin.com${path}`,{method,
+        headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body),
         signal:AbortSignal.timeout(10000),redirect:"error"});
+      if(result.status===404){await result.body?.cancel().catch(()=>{});
+        if(method==='DELETE')return null;
+        throw new DeliveryFailure('provider_missing');}
       if(!result.ok){await result.body?.cancel().catch(()=>{});
         const code=result.status===429?"rate_limited":result.status===401?"reauthorization_required":
           [403,412].includes(result.status)?"permission_denied":result.status===400?"provider_rejected":"provider_unavailable";
@@ -63,5 +67,19 @@ export class GarminTrainingClient implements TrainingGateway {
     const matches=result.filter(x=>x&&x.workoutId===workout&&x.date===date);
     if(matches.length!==1)throw new DeliveryFailure("schedule_not_confirmed",true);
     return id(matches[0].scheduleId);
+  }
+  async update(token:string,workout:number,p:RunningPrescription):Promise<void>{
+    id(workout);
+    await this.request(`/training-api/workout/v2/${workout}`,token,{...garminRunningWorkout(p),workoutId:workout},'PUT');
+  }
+  async updateSchedule(token:string,schedule:number,workout:number,date:string):Promise<void>{
+    id(schedule);id(workout);
+    await this.request(`/training-api/schedule/${schedule}`,token,{scheduleId:schedule,workoutId:workout,date},'PUT');
+  }
+  async removeSchedule(token:string,schedule:number):Promise<void>{
+    id(schedule);await this.request(`/training-api/schedule/${schedule}`,token,undefined,'DELETE');
+  }
+  async remove(token:string,workout:number):Promise<void>{
+    id(workout);await this.request(`/training-api/workout/v2/${workout}`,token,undefined,'DELETE');
   }
 }

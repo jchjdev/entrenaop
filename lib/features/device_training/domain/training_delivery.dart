@@ -59,3 +59,13 @@ abstract interface class TrainingDeliveryRepository {
   Future<TrainingPreview> preview(String scheduledId);
   Future<TrainingReceipt> send(String scheduledId, String revision);
 }
+
+class TrainingSyncSettings {
+  const TrainingSyncSettings(this.enabled, this.pending, this.review);
+  final bool enabled;
+  final int pending, review;
+}
+
+abstract interface class TrainingSyncRepository {
+  Future<TrainingSyncSettings> syncSettings({bool? enabled});
+}

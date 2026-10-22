@@ -1,5 +1,9 @@
 # Envío común de carrera · INT-007 · 22/10/2026
 
+Esta página conserva la primera fase manual y su aceptación. INT-010 amplía
+ahora el ciclo con publicación automática, cambios y retirada de citas futuras,
+solo en Dev: [contrato y estado actual](DEVICE_GARMIN_AUTOMATIC_SYNC.md).
+
 Javier autoriza implementar y probar una primera carrera en Garmin, solo en
 desarrollo, manteniendo Clean Architecture y reutilización por entrenadores.
 El recorrido de cuenta de INT-005 está aceptado desde navegador. El equipo

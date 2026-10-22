@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**INT-010 · 22/10/2026 · publicación automática de carrera en Garmin:** Javier
+autoriza envío, cambios y cancelaciones del entrenador y del algoritmo, solo
+en Dev y manteniendo Clean Architecture. Se añade una preferencia persistente
+por cuenta/generación, conciliador y cola privados, reutilizando la entrega
+común. La primera implementación usa catorce días y procesamiento periódico;
+es una política Dev revisable. Desactivar no cancela, cancelar no borra
+actividades realizadas y un resultado incierto no autoriza duplicar sesiones.
+La prueba física del ciclo nuevo sigue pendiente.
+[Contrato, operación y comprobaciones](DEVICE_GARMIN_AUTOMATIC_SYNC.md).
+
 **INT-009 · 22/10/2026 · pasos de carrera independientes del proveedor:**
 Javier confirma un modelo propio de EntrenaOP y adaptadores por fabricante,
 con capacidades explícitas y sin perder pasos o alterar la pauta silenciosamente.

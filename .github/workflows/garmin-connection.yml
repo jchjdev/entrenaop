@@ -7,6 +7,7 @@ on:
       - 'supabase/functions/_shared/garmin/**'
       - 'supabase/functions/_shared/device_training/**'
       - 'supabase/functions/garmin-training/**'
+      - 'supabase/functions/garmin-training-sync/**'
       - 'supabase/functions/garmin-connection/**'
       - 'supabase/functions/garmin-oauth-callback/**'
       - 'supabase/functions/tests/garmin*'
@@ -57,6 +58,8 @@ jobs:
           supabase/functions/_shared/device_training/prescription.ts
           supabase/functions/_shared/device_training/capabilities.ts
           supabase/functions/_shared/device_training/delivery.ts
+          supabase/functions/_shared/device_training/sync.ts
+          supabase/functions/_shared/garmin/sync_http.ts
 
   consumer:
     runs-on: ubuntu-24.04

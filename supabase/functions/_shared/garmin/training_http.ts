@@ -12,7 +12,7 @@ const codes=new Set(["account_changed","access_required","source_not_available",
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const headers={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, apikey, x-client-info, content-type",
  "Access-Control-Allow-Methods":"POST, OPTIONS","Cache-Control":"no-store"};
-class SupabaseTrainingStore implements TrainingDeliveryStore {
+export class SupabaseTrainingStore implements TrainingDeliveryStore {
   private readonly c:GarminServerConfig;private readonly f:typeof fetch;
   constructor(c:GarminServerConfig,f:typeof fetch){this.c=c;this.f=f;}
   async command(action:string,who:DeliveryActor,input:Record<string,unknown>){
@@ -36,6 +36,17 @@ export async function handleGarminTraining(request:Request,c:GarminServerConfig,
     if(typeof owner!=="string"||!uuid.test(owner))throw new HttpError(400,"invalid_request");
     if(owner!==actor.user&&actor.aal!=="aal2")throw new HttpError(403,"mfa_required");
     const who={actor:actor.user,owner,session:actor.session};
+    if(body.action==='sync_status'||body.action==='set_sync'){
+      if(owner!==actor.user)throw new HttpError(403,'permission_denied');
+      if(body.action==='set_sync'&&typeof body.enabled!=='boolean')throw new HttpError(400,'invalid_request');
+      const response=await f(`${c.supabaseUrl}/rest/v1/rpc/garmin_training_sync_preferences`,{method:'POST',
+        headers:{apikey:c.serviceKey,Authorization:`Bearer ${c.serviceKey}`,'Content-Type':'application/json'},
+        body:JSON.stringify({p_owner:owner,p_session:actor.session,p_enabled:body.action==='set_sync'?body.enabled:null}),
+        redirect:'error',signal:AbortSignal.timeout(10000)});
+      const data=await response.json();
+      if(!response.ok)throw new DeliveryFailure(codes.has(data?.message)?data.message:'garmin_unavailable');
+      return Response.json(data,{headers});
+    }
     const delivery=new TrainingDeliveryService(new SupabaseTrainingStore(c,f),new GarminTrainingClient(f),
       new GarminOAuthClient({clientId:c.clientId,clientSecret:c.clientSecret,redirectUri:`${c.supabaseUrl}/functions/v1/garmin-oauth-callback`},f),
       new GarminCipher(c.encryptionKey),Date.now,(target)=>service(c,f).finishPendingDisconnect(target));

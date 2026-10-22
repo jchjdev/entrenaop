@@ -4,7 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/training_delivery.dart';
 
-class SupabaseTrainingDeliveryRepository implements TrainingDeliveryRepository {
+class SupabaseTrainingDeliveryRepository
+    implements TrainingDeliveryRepository, TrainingSyncRepository {
   const SupabaseTrainingDeliveryRepository(this.client, this.ownerId);
   final SupabaseClient client;
   final String ownerId;
@@ -96,6 +97,18 @@ class SupabaseTrainingDeliveryRepository implements TrainingDeliveryRepository {
           'revision': revision,
         }),
       );
+
+  @override
+  Future<TrainingSyncSettings> syncSettings({bool? enabled}) async {
+    final json = await _call(enabled == null ? 'sync_status' : 'set_sync', {
+      'enabled': ?enabled,
+    });
+    return TrainingSyncSettings(
+      json['enabled'] as bool,
+      json['pending'] as int,
+      json['review'] as int,
+    );
+  }
 }
 
 TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
@@ -167,6 +180,9 @@ TrainingReceipt decodeTrainingReceipt(Map<String, dynamic> json) {
     'sent',
     'failed',
     'uncertain',
+    'updating',
+    'cancelling',
+    'cancelled',
   ].contains(status)) {
     throw const FormatException('Estado desconocido');
   }

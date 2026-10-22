@@ -1,5 +1,11 @@
 # Arquitectura de EntrenaOP
 
+INT-010 añade el ciclo automático de las citas de carrera mediante un dominio
+de sincronización, un puerto de ciclo de vida del fabricante y una cola privada
+de servidor. Reutiliza la primera entrega y el lease de conexión; observa las
+publicaciones existentes sin modificar los flujos de Trainer o del algoritmo.
+[Arquitectura y recuperación](DEVICE_GARMIN_AUTOMATIC_SYNC.md).
+
 ## Creador único en las tres apps · INT-008 · 22/10/2026
 
 Deportista, ADMIN y Trainer consumen `WorkoutEditorPage` del paquete

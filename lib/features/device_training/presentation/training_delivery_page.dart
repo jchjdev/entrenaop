@@ -14,6 +14,43 @@ class TrainingDeliveryPage extends StatefulWidget {
 class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
   late final cubit = TrainingDeliveryCubit(widget.repository)..load();
   bool reviewed = false;
+  TrainingSyncSettings? sync;
+  bool syncBusy = false;
+  String? syncError;
+
+  @override
+  void initState() {
+    super.initState();
+    loadSync();
+  }
+
+  Future<void> loadSync({bool? enabled}) async {
+    final repository = widget.repository;
+    if (repository is! TrainingSyncRepository || syncBusy) return;
+    setState(() {
+      syncBusy = true;
+      syncError = null;
+    });
+    try {
+      final result = await (repository as TrainingSyncRepository).syncSettings(
+        enabled: enabled,
+      );
+      if (mounted) {
+        setState(() => sync = result);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(
+          () => syncError = e is TrainingDeliveryException
+              ? e.code
+              : 'garmin_unavailable',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => syncBusy = false);
+    }
+  }
+
   @override
   void dispose() {
     cubit.close();
@@ -63,6 +100,9 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
           const SizedBox(height: 8),
           Text(switch (r.status) {
             'sent' => 'Enviada y confirmada en el calendario de Garmin. Sincroniza Garmin Connect y comprueba el reloj.',
+            'cancelled' => 'Retirada de Garmin por cancelación de la cita. Tu historial de actividades se conserva.',
+            'updating' => 'Actualizando la sesión en Garmin.',
+            'cancelling' => 'Retirando la sesión de Garmin.',
             'uncertain' => 'Envío sin confirmar. Revisa Garmin; no se creará otra copia automáticamente.',
             'failed' => error(r.error ?? 'garmin_unavailable'),
             'workout_created' =>
@@ -76,7 +116,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Enviar carrera a Garmin')),
+    appBar: AppBar(title: const Text('Carreras en Garmin')),
     body: BlocBuilder<TrainingDeliveryCubit, TrainingDeliveryState>(
       bloc: cubit,
       builder: (context, state) {
@@ -93,6 +133,9 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
               'creating',
               'scheduling',
               'refreshing',
+              'updating',
+              'cancelling',
+              'cancelled',
             ].contains(result.status);
         return Center(
           child: ConstrainedBox(
@@ -100,6 +143,29 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                if (widget.repository is TrainingSyncRepository) ...[
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Sincronización automática'),
+                    subtitle: const Text(
+                      'Enviar las carreras de los próximos 14 días de tu entrenador y del plan adaptativo, incluidos cambios y cancelaciones. Funciona aunque EntrenaOP esté cerrada.',
+                    ),
+                    value: sync?.enabled ?? false,
+                    onChanged: syncBusy || sync == null
+                        ? null
+                        : (value) => loadSync(enabled: value),
+                  ),
+                  const Text(
+                    'Garmin Connect debe sincronizar con el reloj. Desactivar esta opción detiene nuevos envíos; no retira lo que ya se ha enviado.',
+                  ),
+                  if (sync != null)
+                    Text(
+                      '${sync!.pending} pendientes · ${sync!.review} requieren revisión',
+                    ),
+                  if (syncError != null) Text(error(syncError!)),
+                  if (syncBusy) const LinearProgressIndicator(),
+                  const Divider(height: 32),
+                ],
                 const Text(
                   'Elige una carrera programada por tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
                 ),
@@ -193,6 +259,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                       : () {
                           setState(() => reviewed = false);
                           cubit.load();
+                          loadSync();
                         },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Actualizar estado'),

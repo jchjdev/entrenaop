@@ -56,7 +56,61 @@ class FakeTraining implements TrainingDeliveryRepository {
   }
 }
 
+class FakeSyncTraining extends FakeTraining implements TrainingSyncRepository {
+  bool enabled = false;
+  bool reject = false;
+  @override
+  Future<TrainingSyncSettings> syncSettings({bool? enabled}) async {
+    if (reject) throw const TrainingDeliveryException('access_required');
+    this.enabled = enabled ?? this.enabled;
+    return TrainingSyncSettings(this.enabled, 2, 1);
+  }
+}
+
 void main() {
+  testWidgets(
+    'activar y desactivar el envío guarda la preferencia por cuenta',
+    (tester) async {
+      final repository = FakeSyncTraining();
+      await tester.pumpWidget(
+        MaterialApp(home: TrainingDeliveryPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        false,
+      );
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(repository.enabled, true);
+      expect(find.text('2 pendientes · 1 requieren revisión'), findsOneWidget);
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(repository.enabled, false);
+      expect(repository.sends, 0);
+    },
+  );
+
+  testWidgets('un rechazo del servidor no simula la activación automática', (
+    tester,
+  ) async {
+    final repository = FakeSyncTraining();
+    await tester.pumpWidget(
+      MaterialApp(home: TrainingDeliveryPage(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+    repository.reject = true;
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+      false,
+    );
+    expect(
+      find.text('Necesitas Pro vigente o tu servicio de entrenador activo.'),
+      findsOneWidget,
+    );
+  });
   test(
     'respuesta HTTP antigua se descarta si cambia la cuenta en vuelo',
     () async {

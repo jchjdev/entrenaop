@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+INT-010 permite activar en Dev la sincronización de las carreras próximas del
+entrenador y del plan adaptativo, incluidos cambios y cancelaciones, sin abrir
+EntrenaOP para cada envío. Requiere derechos y permiso Garmin en servidor;
+Garmin Connect sigue sincronizando con el reloj. Primera ventana: catorce días.
+[Estado y límites de aceptación](DEVICE_GARMIN_AUTOMATIC_SYNC.md).
+
 **INT-008 · 22/10/2026 · un creador de sesiones para las tres apps:** deportista,
 ADMIN y Trainer consumen el mismo formulario de carrera/fuerza mediante sus
 adaptadores y permisos propios. Se conservan versiones y recuperación de

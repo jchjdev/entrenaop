@@ -403,6 +403,10 @@ verify_jwt = false
 [functions.garmin-training]
 verify_jwt = false
 
+# El trabajador verifica un Bearer aleatorio cuyo hash solo conoce la base.
+[functions.garmin-training-sync]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

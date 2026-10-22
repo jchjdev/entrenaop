@@ -3,7 +3,7 @@ import type {RunningTrainingCapabilities} from "./capabilities.ts";
 import {runningPrescription,TrainingError} from "./prescription.ts";
 import type {RunningPrescription} from "./prescription.ts";
 type Json=Record<string,unknown>;
-export type DeliveryActor={actor:string;owner:string;session:string};
+export type DeliveryActor={actor:string;owner:string;session:string|null};
 export type AccessGrant={accessToken:string;refreshToken:string;expiresInSeconds:number;refreshExpiresInSeconds:number;scope:string};
 export interface TrainingDeliveryStore {command(action:string,who:DeliveryActor,input:Json):Promise<Json>}
 export interface TrainingGateway {

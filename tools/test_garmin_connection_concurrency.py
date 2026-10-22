@@ -18,7 +18,10 @@ sys.stdout.reconfigure(encoding='utf-8')
 parser = argparse.ArgumentParser()
 parser.add_argument('--pg-bin', required=True, type=Path)
 parser.add_argument('--training', action='store_true', help='Añadir fronteras y concurrencia del envío común de carrera.')
+parser.add_argument('--automatic', action='store_true')
 args = parser.parse_args()
+if args.automatic and not args.training:
+    parser.error('--automatic necesita --training')
 root = Path(__file__).resolve().parents[1]
 bin_dir = args.pg_bin.resolve()
 if os.name == 'nt':
@@ -262,6 +265,45 @@ try:
         db.query(f"delete from public.scheduled_workouts where id='{scheduled}'")
         assert db.query(f"select workout_id from device_private.training_deliveries where id='{jid}'")[0][0]=='123'
         print('Correcto: un solo worker de envío, desconexión concurrente, revocación diferida y recibo conservado tras borrar agenda.')
+        if args.automatic:
+            db.query("alter table public.running_week_decisions add column superseded_at timestamptz")
+            db.query((root/'supabase/migrations/20261022194351_garmin_automatic_training_sync.sql').read_text(encoding='utf-8'))
+            scheduled=str(uuid.uuid4())
+            db.query(f"""update device_private.garmin_connections set status='connected',can_send=true,training_lease=null,training_lease_until=null,disconnect_lease=null,disconnect_lease_until=null where owner_id='{owner}';
+              delete from device_private.training_deliveries where owner_id='{owner}';
+              insert into public.scheduled_workouts(id,user_id,template_id,template_name,template_version,status,source,scheduled_date)
+              values('{scheduled}','{owner}','{template}','Carrera sintética',1,'planned','coach',current_date+1);
+              insert into public.trainer_assignments values('{scheduled}','{owner}','{trainer}','{relation}',0);
+              select set_config('fixture.owner','{owner}',false),set_config('fixture.session','{session}',false),set_config('fixture.scheduled','{scheduled}',false)""")
+            db.query(f"select device_private.training_source('{owner}','{owner}','{scheduled}')")
+            contract=(root/'supabase/tests/garmin_automatic_training.sql').read_text(encoding='utf-8').split('-- Contract shared with isolated PostgreSQL concurrency fixture.')[1]
+            db.query('begin;'+contract.split('-- Publicación real del algoritmo')[0]+'rollback;')
+            print('Correcto: contrato automático, revisiones, cancelaciones, autorización persistente y conservación del historial.')
+            db.query(f"select public.garmin_training_sync_preferences('{owner}','{session}',true);select public.garmin_training_sync_command('scan','{{}}')")
+            def take_once(_):
+                conn=DB()
+                try:return json.loads(conn.query("select public.garmin_training_sync_command('take','{}')")[0][0])
+                finally:conn.close()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                jobs=list(pool.map(take_once,range(2)))
+            assert sum(bool(value.get('id')) for value in jobs)==1
+            job=next(value for value in jobs if value.get('id'))
+            def compete(auto):
+                conn=DB()
+                try:
+                    body=dict(scheduled_id=scheduled,revision=job['target']['revision'],lease_id=str(uuid.uuid4()))
+                    if auto:body.update(auto_job=job['id'],auto_lease=job['lease'])
+                    payload=json.dumps(body).replace("'","''")
+                    actor_session='null' if auto else f"'{session}'"
+                    try:return json.loads(conn.query(f"select public.garmin_training_command('claim','{owner}','{owner}',{actor_session},'{payload}')")[0][0])
+                    except SqlError as error:
+                        assert error.code=='40001',str(error)
+                        return None
+                finally:conn.close()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                winners=list(pool.map(compete,[False,True]))
+            assert sum(value is not None for value in winners)==1
+            print('Correcto: una sola toma automática y exclusión real entre envío manual y automático.')
 finally:
     if db is not None:db.close()
     try:
