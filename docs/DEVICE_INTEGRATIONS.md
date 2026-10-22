@@ -39,9 +39,11 @@ API Configuration acredita Activity y Training activadas y Approved, con cero
 endpoints de recepción activos. Se implementa el adaptador OAuth de servidor
 según especificación autenticada 2.0 y después el servicio de conexión por cuenta,
 tokens cifrados y dos handlers Edge, con pantalla propia dentro de Perfil.
-La migración y las funciones aún no están aplicadas/desplegadas: el contrato se
-prueba en PostgreSQL local y Dev con ROLLBACK. Quedan secretos, activación Dev y
-aceptación real antes de recepción/envío. Salud y Trainer conservan sus contratos;
+Javier autoriza después activar solo Dev: migración aplicada y funciones ACTIVE
+v1, con contrato SQL repetido con ROLLBACK y CI correcta. Secretos cargados
+directamente desde el helper local; queda aceptación real. Se comprueban 401
+sin sesión y 400 para callback inválido.
+Salud y Trainer conservan sus contratos;
 el bloque funcional sigue abierto.
 [Contrato, evidencia y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),

@@ -18,7 +18,7 @@ Edit bloquea su selector: las capacidades se configuran en API Tools.
 
 El retorno registrado es
 `https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-oauth-callback`.
-Tiene handler implementado, todavía sin despliegue ni secretos configurados. El
+Tiene handler publicado y secretos configurados solo en Dev. El
 nombre público podría ser EntrenaOP; no es el sufijo Dev lo que separa entornos.
 Se conserva el nombre observado, sin renombrar ni crear otra aplicación.
 
@@ -26,11 +26,15 @@ Se contrasta la especificación autenticada OAuth2 PKCE 2.0, páginas 2–6, y s
 implementa el adaptador de servidor de autorización/canje/renovación,
 identidad y permisos. Después se implementan el servicio por cuenta, intentos de
 consumo único, tokens cifrados, desconexión y handlers, con consumidor en Perfil.
-El SQL se valida localmente y en Dev con ROLLBACK, sin dejarlo aplicado.
-Quedan activación Dev, secretos y autorización/recepción reales.
+Tras validar el SQL con ROLLBACK, Javier autoriza la activación solo Dev: se
+aplica la migración y se publican los dos handlers ACTIVE v1. El contrato se
+repite sin fixtures restantes. Javier introduce las credenciales con el helper
+local y se cargan directamente sus cuatro valores en secretos Edge Dev, sin
+imprimirlos. Quedan autorización/recepción reales.
 No hay una cuenta Garmin de deportista conectada ni importación
 directa en EntrenaOP. Salud mantiene su recorrido independiente. No se han usado
-credenciales reales ni modificado base de datos, Trainer o producción.
+credenciales en el cliente o Git. La base de datos Dev incorpora solo esta migración;
+Trainer y producción no cambian.
 [Estado técnico y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 
 La revisión inicial del 21/10 que sigue describe el estado anterior. La fila y
@@ -209,7 +213,7 @@ asignaciones. No solicitamos inicialmente salud diaria ni GPS en directo».
 | Lectura solicitada | Carrera terminada: tiempos, distancia, segmentos y pulso cuando estén disponibles y autorizados. |
 | Escritura solicitada | Prescripción de carrera versionada, agenda y pasos compatibles; no subir actividad en nombre del alumno como sustituto del envío. |
 | Política de privacidad y explicación de datos | Revisar que cubran integración, subida, destinatarios y revocación antes de adjuntarlas o activar datos reales. |
-| Callback OAuth/webhooks | Garmin tiene registrado el retorno Dev indicado al principio, aún no implementado. Recepción de notificaciones pendiente de documentación/configuración. No reservar rutas en Trainer ni presentar URLs como desplegadas. |
+| Callback OAuth/webhooks | Retorno Dev implementado, publicado y configurado. Rechazo 400 de callback inválido comprobado; aceptación OAuth real pendiente. Recepción de notificaciones pendiente de documentación/configuración. No reservar rutas en Trainer. |
 | Credenciales y entornos | Una configuración identificada por entorno y proveedor; secretos únicamente en servidor/gestor seguro, sin valores en Git ni logs. |
 | Condiciones, tarifas y límites | Revisión por proveedor antes de aceptación. El acceso público a docs no acredita acceso gratuito ni contrato aceptado. |
 

@@ -20,7 +20,8 @@ del algoritmo o del entrenador; otras sesiones compatibles podrán añadirse
 después para esos usuarios con acceso. La baja conserva el historial y la
 lectura/importación de Salud/Health Connect; detiene operaciones comerciales
 nuevas. INT-005 prepara en código el control de acceso de la conexión Garmin;
-su servidor aún no está activado y recepción/envío mantienen implementación
+su servidor está publicado y configurado solo en Dev, pendiente de aceptación
+real; recepción/envío mantienen implementación
 pendiente. No corresponde bloquear Salud o Health Connect por ser Free.
 [Reglas y límites](DEVICE_INTEGRATIONS.md).
 

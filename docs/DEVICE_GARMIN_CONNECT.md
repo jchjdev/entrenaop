@@ -16,8 +16,10 @@ recargada, no la extrapolación del antiguo modelo Evaluation/Production.
 
 Habilitar una API en la aplicación no conecta una cuenta de deportista ni
 acredita entrega de carreras o de sesiones al reloj. El usuario puede conceder
-solo algunos permisos. No se han leído ni conservado valores de Client ID,
-Client Secret, tokens o datos deportivos de cuentas Garmin en esta revisión.
+solo algunos permisos. Los valores de Client ID y Client Secret se introducen
+después con el helper local y se cargan directamente en secretos Edge Dev;
+no se imprimen ni se versionan. Todavía no hay tokens o actividades de una
+cuenta Garmin real en la conexión de EntrenaOP.
 
 ## Primer tramo implementado: adaptador OAuth de servidor
 
@@ -45,10 +47,10 @@ páginas 2–6, y con OAuth2 Tools del portal el 22/10/2026.
   en errores. No interpreta un 400 genérico como revocación del usuario.
 
 Este adaptador lo consumen ahora el servicio de conexión y dos handlers Edge
-descritos a continuación. **No están desplegados ni configurados con claves
-reales.** Salud conserva su persistencia y su acceso Free independientes.
+descritos a continuación. **Publicados y configurados solo en Dev; aceptación
+real pendiente.** Salud conserva su persistencia y su acceso Free independientes.
 
-## Segundo tramo implementado: conexión por cuenta, pendiente de activar
+## Segundo tramo implementado: conexión por cuenta, pendiente de aceptación real
 
 Javier autoriza conectar, autorizar y desconectar Garmin, y aclara que otro chat
 está reorganizando Inicio, la pantalla de entrenador y la ubicación de Perfil.
@@ -111,11 +113,27 @@ Terminal y preparar `.dart_tool/garmin-dev/secrets.env`, ignorado por Git. Solo
 la primera instalación usa `--first-setup`; una actualización sin la clave local
 previa se detiene y requiere recuperarla en vez de reemplazarla automáticamente.
 No envía nada y conserva la clave de cifrado existente; no debe regenerarse
-si ya existen tokens cifrados. No se ha ejecutado con secretos reales.
+si ya existen tokens cifrados. Javier lo ejecuta con las credenciales de
+`EntrenaOP Dev` y confirma que el archivo está preparado; se comprueba que Git
+lo ignora y se cargan directamente sus cuatro valores en secretos Edge Dev,
+sin imprimirlos. El archivo local se conserva para mantener la clave de cifrado.
 
-**Único siguiente tramo:** autorizar la activación exclusivamente Dev, aplicar
-solo esta migración, cargar secretos y publicar `garmin-connection` y
-`garmin-oauth-callback`. Después comprobar con cuenta real: Pro/alumno habilitado
+Javier autoriza el 22/10/2026 la activación y los ajustes de esta prueba solo en
+desarrollo. Se comprueba el destino `entrenaop-dev` (`sxbxfjqgoddzhtcyhalw`), se
+aplica únicamente `20261022113416_garmin_account_connection.sql` y se publican
+`garmin-connection` y `garmin-oauth-callback`, ambas ACTIVE, versión 1. El historial
+de migraciones queda sincronizado. El contrato SQL vuelve a pasar con ROLLBACK;
+después se comprueban cero conexiones y cero usuarios sintéticos. Los endpoints
+reales responden inicialmente 503 por configuración ausente. Tras cargar los
+cuatro secretos Garmin, la función de cuenta rechaza una petición sin sesión
+con 401 y el callback sin parámetros rechaza con 400. Se comprueban los cuatro
+nombres remotos, sin leer sus valores. La cuenta de Javier tiene Pro efectivo
+y acceso Garmin; no se cambia su derecho comercial. Todavía no hay autorización
+Garmin real. El asesor de seguridad solo señala para
+esta tabla privada RLS sin políticas, intencional al carecer de acceso directo:
+se mantiene la fachada exclusiva de servidor. No se modifica producción.
+
+**Único siguiente tramo:** comprobar con cuenta real: Pro/alumno habilitado
 → Conectar Garmin → autorizar permisos → volver a Perfil → estado y permisos
 correctos → desconectar → comprobar retirada en Garmin. Repetir denegación,
 cancelación y acceso comercial perdido. No se declara cerrado el recorrido hasta
@@ -163,5 +181,7 @@ PostgreSQL local real: migración y contrato transaccional, dos callbacks
 concurrentes, callback/desconexión en ambos órdenes RC/RR, identidad externa
 única entre cuentas y trabajo de revocación exclusivo. El contrato también se
 ejecuta sobre Dev con el DDL dentro de `BEGIN`/`ROLLBACK`: se confirma después que
-la tabla no existe y quedan cero usuarios `@garmin.invalid`. No se ha aplicado
-la migración ni desplegado las funciones. No hay prueba contra Garmin real.
+la tabla no existe y quedan cero usuarios `@garmin.invalid` en aquella preparación.
+Tras la autorización de activación, la migración queda aplicada, las funciones
+publicadas y se repite correctamente el contrato con ROLLBACK, sin conexiones
+ni fixtures restantes. No hay todavía prueba contra Garmin real.

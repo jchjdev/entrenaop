@@ -11,15 +11,18 @@ compilación en el iPhone y aceptar el recorrido desde la pestaña, la campana y
 Perfil con la cuenta vinculada. No cierra los dieciséis puntos profesionales.
 [Evidencia](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md).
 
-**INT-005 · 22/10/2026 · conexión Garmin preparada, pendiente de activar:**
+**INT-005 · 22/10/2026 · servidor Garmin publicado solo en Dev:**
 Activity y Training Enabled/Approved; servicio por cuenta, PKCE, tokens cifrados,
 consumo único y desconexión implementados con handlers Edge. Perfil incorpora
 una entrada y ruta interna conservando TRN-025. Análisis limpio, 1.270 pruebas
 raíz correctas/una omisión previa, 91 de backend y tipos estrictos comprobados.
 Contrato SQL y concurrencia local RC/RR correctos; DDL/contrato también pasan en
-Dev con ROLLBACK, sin migración aplicada ni usuarios sintéticos restantes.
-**Único siguiente tramo de Garmin:** activar solo Dev con autorización, secretos
-y dos funciones, y aceptar conexión/permisos/desconexión con cuenta real. No hay
+Dev con ROLLBACK. Tras autorización de Javier, migración aplicada y dos funciones
+ACTIVE v1 en `entrenaop-dev`; contrato repetido sin usuarios sintéticos restantes.
+CI de servidor y consumidor correcta. Cuatro secretos cargados directamente
+desde el helper local; petición sin sesión 401 y callback inválido 400.
+**Único siguiente tramo de Garmin:** aceptar
+conexión/permisos/desconexión con cuenta real. No hay
 recepción o envío de entrenamientos; producción y Trainer no cambian.
 El bloque funcional de dispositivos permanece abierto.
 [Contrato y límites](DEVICE_GARMIN_CONNECT.md).

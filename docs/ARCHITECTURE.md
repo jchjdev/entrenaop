@@ -10,8 +10,9 @@ son adaptadores. Tokens/verifier no llegan al cliente, a las entidades deportiva
 ni al historial de Salud. La RPC solo permite backend, exige sesión y acceso
 efectivo, y usa generación, consumo único y leases para evitar callbacks tardíos
 o dos revocaciones simultáneas. Salud permanece Free conforme a INT-006.
-Implementación y pruebas locales/SQL con ROLLBACK preparadas; migración, secretos
-y handlers aún sin activar en Dev. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
+Implementación y pruebas locales/SQL con ROLLBACK comprobadas. Tras autorización,
+migración aplicada, handlers publicados y secretos configurados solo en Dev; falta aceptación
+real. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
 
 ## Navegación profesional del alumno · TRN-025 · 22/10/2026
 
