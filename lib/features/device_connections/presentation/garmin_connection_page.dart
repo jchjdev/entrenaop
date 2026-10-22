@@ -10,10 +10,12 @@ class GarminConnectionPage extends StatefulWidget {
     required this.repository,
     required this.openAuthorization,
     required this.onOpenPro,
+    this.onOpenTraining,
   });
   final GarminConnectionRepository repository;
   final Future<bool> Function(Uri) openAuthorization;
   final VoidCallback onOpenPro;
+  final VoidCallback? onOpenTraining;
   @override
   State<GarminConnectionPage> createState() => _GarminConnectionPageState();
 }
@@ -151,6 +153,14 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                 const Text(
                   'Desde aquí puedes consultar los permisos y desconectar tu cuenta.',
                 ),
+                if (snapshot.allowed &&
+                    snapshot.canSend &&
+                    widget.onOpenTraining != null)
+                  FilledButton.icon(
+                    onPressed: state.busy ? null : widget.onOpenTraining,
+                    icon: const Icon(Icons.watch),
+                    label: const Text('Enviar una carrera'),
+                  ),
               ],
               if (!snapshot.allowed) ...[
                 const Text(

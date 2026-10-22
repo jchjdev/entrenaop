@@ -75,7 +75,7 @@ EntrenaOP. Cursores, colas y selección de importación se aíslan por cuenta.
 
 ## 4. Capacidades y permisos
 
-**INT-006 · 22/10/2026 · regla comercial acordada, aún no implementada:**
+**INT-006 · 22/10/2026 · regla comercial acordada; control de conexión aplicado en Dev:**
 Salud y Health Connect permiten lectura/importación a todos, incluido Free.
 La conexión directa a fabricantes y sus nuevas lecturas/importaciones exigen
 Pro vigente o servicio profesional vigente del alumno. Esta aclaración de
@@ -180,6 +180,10 @@ que ya lo admitan. Importar no modifica baremos, no acredita un test oficial y
 no activa automáticamente una nueva política del algoritmo.
 
 ## 8. Exportación de carrera
+
+INT-007 implementa la primera vertical de envío con servicio común de servidor,
+receta/cita verificadas y cliente del deportista. La aceptación de calendario y
+reloj se acredita aparte. [Contrato implementado](DEVICE_GARMIN_TRAINING.md).
 
 **INT-006:** la primera fase envía únicamente prescripciones del algoritmo o
 asignaciones del preparador que el titular pueda consumir con sus derechos

@@ -11,7 +11,7 @@ const devUrl="https://sxbxfjqgoddzhtcyhalw.supabase.co";
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, apikey, x-client-info, content-type",
   "Access-Control-Allow-Methods":"POST, OPTIONS"};
-class HttpError extends Error {
+export class HttpError extends Error {
   readonly status: number;
   constructor(status:number,code:string) { super(code); this.status=status; }
 }
@@ -20,7 +20,7 @@ function object(value:unknown):Record<string,unknown> {
   return value as Record<string,unknown>;
 }
 function response(body:unknown,status=200) { return Response.json(body,{status,headers:{...cors,"Cache-Control":"no-store"}}); }
-function ready(c:GarminServerConfig) {
+export function ready(c:GarminServerConfig) {
   // Primera entrega exclusivamente Dev y cerrada por defecto; no activar producción por accidente.
   if(c.environment!=="DEVELOPMENT" || c.supabaseUrl!==devUrl ||
     !c.anonKey || !c.serviceKey || !c.clientId || !c.clientSecret || !c.encryptionKey) throw new HttpError(503,"garmin_not_configured");
@@ -49,13 +49,13 @@ class SupabaseGarminStore implements GarminConnectionStore {
     return body;
   }
 }
-function service(c:GarminServerConfig,f:typeof fetch) {
+export function service(c:GarminServerConfig,f:typeof fetch) {
   return new GarminConnectionService(new SupabaseGarminStore(c,f),new GarminOAuthClient({
     clientId:c.clientId,clientSecret:c.clientSecret,redirectUri:`${c.supabaseUrl}/functions/v1/garmin-oauth-callback`},f),
     new GarminCipher(c.encryptionKey),{clientId:c.clientId,
       redirectUri:`${c.supabaseUrl}/functions/v1/garmin-oauth-callback`});
 }
-async function identity(req:Request,c:GarminServerConfig,f:typeof fetch) {
+export async function identity(req:Request,c:GarminServerConfig,f:typeof fetch) {
   const authorization=req.headers.get("Authorization");
   if(!authorization?.startsWith("Bearer ")) throw new HttpError(401,"unauthorized");
   const auth=await f(`${c.supabaseUrl}/auth/v1/user`,{headers:{apikey:c.anonKey,Authorization:authorization},
@@ -63,16 +63,17 @@ async function identity(req:Request,c:GarminServerConfig,f:typeof fetch) {
   if(!auth.ok) throw new HttpError(401,"unauthorized");
   const user=object(await auth.json()).id;
   if(typeof user!=="string" || !uuid.test(user)) throw new HttpError(401,"unauthorized");
-  let session:unknown;
+  let session:unknown,aal:unknown;
   // Auth ha verificado el JWT. El claim no verificado no se usa para autorizar.
   // SQL comprueba además que esta sesión pertenezca al usuario y siga existiendo.
   try { const payload=authorization.slice(7).split(".")[1];
-    session=JSON.parse(atob(payload.replaceAll("-","+").replaceAll("_","/"))).session_id;
+    const verifiedClaims=JSON.parse(atob(payload.replaceAll("-","+").replaceAll("_","/")));
+    session=verifiedClaims.session_id;aal=verifiedClaims.aal;
   } catch {throw new HttpError(401,"unauthorized");}
   if(typeof session!=="string" || !uuid.test(session)) throw new HttpError(401,"unauthorized");
-  return {user,session};
+  return {user,session,aal};
 }
-async function requestBody(request:Request) {
+export async function requestBody(request:Request) {
   const reader=request.body?.getReader();
   if(!reader) throw new HttpError(400,"invalid_request");
   let text=""; const decoder=new TextDecoder();

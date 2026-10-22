@@ -17,6 +17,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pg-bin', required=True, type=Path)
+parser.add_argument('--training', action='store_true', help='Añadir fronteras y concurrencia del envío común de carrera.')
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 bin_dir = args.pg_bin.resolve()
@@ -193,6 +194,74 @@ try:
             results=list(pool.map(lambda _:lease_once(),range(2)))
         assert sum('tokens_cipher' in result for result in results)==1
         print('Correcto: dos workers no reciben simultáneamente credenciales de revocación.')
+    if args.training:
+        # Solo la forma mínima de las fronteras reales; no sustituye el contrato
+        # transaccional completo contra Dev ni los constructores profesionales.
+        db.query("""
+          alter table auth.sessions add column aal text default 'aal1';
+          alter table public.trainer_client_relations add column id uuid default gen_random_uuid();
+          create table public.preparation_goals(id uuid primary key,user_id uuid,status text);
+          create table public.workout_templates(id uuid primary key,status text,version integer,origin text,owner_user_id uuid,description text);
+          create table public.scheduled_workouts(id uuid primary key,user_id uuid,template_id uuid,template_name text,template_version integer,
+            status text,execution_id uuid,source text,scheduled_date date,order_index integer default 0,preparation_goal_id uuid);
+          create table public.trainer_assignments(scheduled_id uuid primary key,client_id uuid,trainer_id uuid,relation_id uuid,planning_revision bigint default 0);
+          create table public.running_week_decisions(id uuid primary key,user_id uuid,preparation_goal_id uuid,policy_version text);
+          create table public.running_week_sessions(scheduled_workout_id uuid,decision_id uuid);
+          create table public.workout_blocks(id uuid primary key,template_id uuid,order_index integer,name text,format text,rounds integer,rest_after_seconds integer,time_cap_seconds integer);
+          create table public.workout_items(id uuid primary key,block_id uuid,order_index integer,exercise_id uuid,notes text);
+          create table public.workout_sets(item_id uuid,order_index integer,target_duration_seconds integer,rest_after_seconds integer);
+        """)
+        db.query((root/'supabase/migrations/20261022132601_garmin_running_training_delivery.sql').read_text(encoding='utf-8'))
+        owner,session,state,claim,generation=prepare()
+        rpc(db,'claim',body=dict(state_hash=state,claim_id=claim))
+        rpc(db,'complete',owner,body=secret(generation,claim))
+        trainer,_=actor()
+        relation,template,scheduled,block,item=[str(uuid.uuid4()) for _ in range(5)]
+        db.query(f"""
+          insert into public.trainer_access(trainer_id,enabled) values('{trainer}',true);
+          insert into public.trainer_client_relations(id,trainer_id,client_id) values('{relation}','{trainer}','{owner}');
+          insert into public.workout_templates values('{template}','published',1,'coach','{trainer}',null);
+          insert into public.scheduled_workouts(id,user_id,template_id,template_name,template_version,status,source,scheduled_date)
+            values('{scheduled}','{owner}','{template}','Carrera sintética',1,'planned','coach',current_date+1);
+          insert into public.trainer_assignments values('{scheduled}','{owner}','{trainer}','{relation}',0);
+          insert into public.workout_blocks values('{block}','{template}',0,'Carrera','running',1,0,null);
+          insert into public.workout_items values('{item}','{block}',0,'20000000-0000-4000-8000-000000000004',null);
+          insert into public.workout_sets values('{item}',0,120,0);
+        """)
+        def training(conn,action,body):
+            payload=json.dumps(body).replace("'","''")
+            return json.loads(conn.query(f"select public.garmin_training_command('{action}','{owner}','{owner}','{session}','{payload}'::jsonb)")[0][0])
+        preview=training(db,'preview',dict(scheduled_id=scheduled))
+        def delivery_once(_):
+            conn=DB()
+            try:
+                try:return training(conn,'claim',dict(scheduled_id=scheduled,revision=preview['revision'],lease_id=str(uuid.uuid4())))
+                except SqlError as error:
+                    assert error.code=='40001',str(error)
+                    return None
+            finally:conn.close()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            deliveries=list(pool.map(delivery_once,range(2)))
+        assert sum(result is not None for result in deliveries)==1
+        delivered=next(result for result in deliveries if result is not None)
+        jid=delivered['id']
+        lease=db.query(f"select lease_id from device_private.training_deliveries where id='{jid}'")[0][0]
+        fields=dict(id=jid,lease_id=lease)
+        training(db,'mark_creating',fields)
+        rpc(db,'disconnect',owner,session,dict(generation=generation))
+        assert rpc(db,'claim_revoke',owner,body=dict(lease_id=str(uuid.uuid4())))['pending']
+        training(db,'save_workout',dict(**fields,workout_id=123))
+        try:
+            training(db,'mark_scheduling',fields)
+            raise AssertionError('Un envío desconectado agenda otra operación')
+        except SqlError as error:
+            assert error.code=='40001',str(error)
+        training(db,'fail',dict(**fields,code='connection_changed',uncertain=False))
+        training(db,'release',fields)
+        assert 'tokens_cipher' in rpc(db,'claim_revoke',owner,body=dict(lease_id=str(uuid.uuid4())))
+        db.query(f"delete from public.scheduled_workouts where id='{scheduled}'")
+        assert db.query(f"select workout_id from device_private.training_deliveries where id='{jid}'")[0][0]=='123'
+        print('Correcto: un solo worker de envío, desconexión concurrente, revocación diferida y recibo conservado tras borrar agenda.')
 finally:
     if db is not None:db.close()
     try:

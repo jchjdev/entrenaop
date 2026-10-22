@@ -186,6 +186,8 @@ finaliza correctamente para `4d9dfb215458885518dff3f80a51ea8122793eb8`.
 El envío de una primera sesión compatible con Training API será el siguiente
 bloque recomendado. No requiere esperar a otros fabricantes,
 pero sí traducción de receta, orden/versiones autorizadas y comprobación física.
+Javier autoriza después INT-007: [primer envío común de carrera](DEVICE_GARMIN_TRAINING.md),
+preparado con servidor reutilizable por entrenadores y aceptación física pendiente.
 
 ### Límites operativos que no acredita esta entrega
 

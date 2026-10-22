@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+## Envío común de carrera · INT-007 · 22/10/2026
+
+Dominio y servicio de aplicación en `device_training` del servidor, con puertos
+de cuenta, cifrado, persistencia y envío; Garmin implementa su traducción y HTTP.
+La autoridad y revisión proceden de la cita y receta publicadas, no del cliente.
+Alumno y preparador con MFA consumen el mismo endpoint; el secreto pertenece al
+alumno y no se expone a Trainer. Primera UI en Perfil del deportista. Recibos
+persistentes, lease compartido con revocación y hechos confirmados evitan
+duplicar POST inciertos. Activación Dev/prueba física se acreditan aparte.
+[Contrato y límites](DEVICE_GARMIN_TRAINING.md).
+
 ## Conexión directa Garmin por cuenta · INT-005 · 22/10/2026
 
 `device_connections` separa dominio/puerto, adaptador Supabase y Cubit/página;

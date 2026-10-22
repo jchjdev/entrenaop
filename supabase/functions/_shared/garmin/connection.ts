@@ -102,6 +102,9 @@ export class GarminConnectionService {
     if(snapshot.status !== "disconnected") await this.revoke(owner);
     return this.status(owner,session);
   }
+  // Limpieza interna tras liberar un envío que coincidió con desconectar.
+  // claim_revoke no concede trabajo mientras la conexión siga operativa.
+  async finishPendingDisconnect(owner:string){await this.revoke(owner);}
   private expirations(tokens: GarminTokens) {
     const now = this.now();
     return { access_expires_at:new Date(now+tokens.expiresInSeconds*1000).toISOString(),
