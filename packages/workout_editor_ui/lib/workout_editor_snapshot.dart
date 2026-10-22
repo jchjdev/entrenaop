@@ -186,6 +186,9 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
         recoveryDistanceMeters: segment.recoveryByDistance ? recovery : null,
       );
       sets.addAll(List.filled(count, set));
+      if (sets.length > 40) {
+        throw const FormatException('La carrera no puede superar 40 tramos.');
+      }
     }
     final estimate = estimateRunningWorkout(sets);
     return CreatePersonalWorkoutInput(

@@ -119,6 +119,18 @@ class WorkoutEditorCubit extends Cubit<WorkoutEditorState> {
 
   Future<void> discardDraft() => _draftStore.clear(_draftId);
 
+  Future<void> persistEditorDraft(
+    Map<String, dynamic> editor,
+    CreatePersonalWorkoutInput lastProjection,
+  ) => _draftStore.write(
+    _draftId,
+    WorkoutEditorDraftSnapshot(
+      input: lastProjection,
+      editorState: editor,
+      savedAt: DateTime.now(),
+    ),
+  );
+
   Future<void> save(CreatePersonalWorkoutInput input) async {
     emit(
       WorkoutEditorState(

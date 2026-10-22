@@ -117,7 +117,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(_field('Nombre de la sesión'), 'Sigue aquí');
-      await tester.ensureVisible(find.text('Buscar ejercicio del catálogo'));
+      await _showSharedField(
+        tester,
+        find.text('Buscar ejercicio del catálogo'),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Buscar ejercicio del catálogo'));
       await tester.pumpAndSettle();
@@ -127,7 +130,7 @@ void main() {
         find.byKey(const ValueKey('admin-exercise-name')),
         'Sin terminar',
       );
-      await tester.ensureVisible(find.text('Cancelar'));
+      await _showSharedField(tester, find.text('Cancelar'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
@@ -171,7 +174,10 @@ void main() {
         _field('Nombre de la sesión'),
         'Mi sesión conservada',
       );
-      await tester.ensureVisible(find.text('Buscar ejercicio del catálogo'));
+      await _showSharedField(
+        tester,
+        find.text('Buscar ejercicio del catálogo'),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Buscar ejercicio del catálogo'));
       await tester.pumpAndSettle();
@@ -186,13 +192,13 @@ void main() {
         'espalda',
       );
       final create = find.text('Crear ejercicio');
-      await tester.ensureVisible(create);
+      await _showSharedField(tester, create);
       await tester.pumpAndSettle();
       await tester.tap(create);
       await tester.pumpAndSettle();
       expect(find.textContaining('Tus datos siguen aquí'), findsOneWidget);
       exercises.fail = false;
-      await tester.ensureVisible(create);
+      await _showSharedField(tester, create);
       await tester.pumpAndSettle();
       await tester.tap(create);
       await tester.pumpAndSettle();
@@ -208,11 +214,11 @@ void main() {
         'Mi sesión conservada',
       );
       final amount = find.widgetWithText(TextFormField, 'Cantidad');
-      await tester.ensureVisible(amount);
+      await _showSharedField(tester, amount);
       await tester.pumpAndSettle();
       await tester.enterText(amount, '8');
       final save = find.text('Guardar calentamiento');
-      await tester.ensureVisible(save);
+      await _showSharedField(tester, save);
       await tester.pumpAndSettle();
       await tester.tap(save);
       await tester.pumpAndSettle();
@@ -272,7 +278,7 @@ void main() {
             200,
             scrollable: find.byType(Scrollable).first,
           );
-          await tester.ensureVisible(field);
+          await _showSharedField(tester, field);
           await tester.enterText(field, value);
           await tester.pumpAndSettle();
         }
@@ -350,10 +356,11 @@ void main() {
         _field('Nombre de la sesión'),
         'Series recuperables',
       );
+      await _showSharedField(tester, _field('Distancia (m)'));
       await tester.enterText(_field('Distancia (m)'), '200');
       await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar borrador'));
+      await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
@@ -371,7 +378,7 @@ void main() {
       );
       repository.failSave = false;
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar borrador'));
+      await _showSharedField(tester, find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
@@ -403,7 +410,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -429,7 +436,7 @@ void main() {
     await tester.enterText(_field('Distancia (m)'), '200');
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:99');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -449,6 +456,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await _showSharedField(tester, _field('Ritmo (m:ss/km)'));
     expect(
       tester.widget<TextField>(_field('Ritmo (m:ss/km)')).keyboardType,
       TextInputType.number,
@@ -457,7 +465,7 @@ void main() {
     await tester.enterText(_field('Distancia (m)'), '400');
     await tester.enterText(_field('Ritmo (m:ss/km)'), '3:50');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -523,7 +531,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(_field('Recuperación (m)'), '100');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -561,7 +569,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
@@ -608,7 +616,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -696,7 +704,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
@@ -740,7 +748,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
@@ -783,7 +791,7 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Guardar borrador'));
+    await _showSharedField(tester, find.text('Guardar borrador'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar borrador'));
     await tester.pumpAndSettle();
@@ -854,7 +862,10 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await _showSharedField(
+        tester,
+        find.text('Guardar revisión como borrador'),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar revisión como borrador'));
       await tester.pumpAndSettle();
@@ -921,13 +932,16 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Tramo 1'), findsOneWidget);
+      expect(find.text('Tramo 1 × 2'), findsOneWidget);
       expect(
         (tester.widget(_field('Veces')) as TextField).controller!.text,
         '2',
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar revisión como borrador'));
+      await _showSharedField(
+        tester,
+        find.text('Guardar revisión como borrador'),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar revisión como borrador'));
       await tester.pumpAndSettle();
@@ -938,4 +952,21 @@ void main() {
       );
     },
   );
+}
+
+Future<void> _showSharedField(WidgetTester tester, Finder finder) async {
+  if (finder.evaluate().isEmpty) {
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position;
+    position.jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      finder,
+      250,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 50,
+    );
+  }
+  await tester.ensureVisible(finder);
 }

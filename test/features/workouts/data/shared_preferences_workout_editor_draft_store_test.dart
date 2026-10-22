@@ -7,6 +7,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  test(
+    'conserva textos incompletos del formulario común aislados por cuenta',
+    () async {
+      final preferences = await SharedPreferences.getInstance();
+      final store = SharedPreferencesWorkoutEditorDraftStore(
+        preferences,
+        userId: 'user-A',
+      );
+      final snapshot = WorkoutEditorDraftSnapshot(
+        input: const CreatePersonalWorkoutInput(name: '', blocks: []),
+        savedAt: DateTime.utc(2026, 10, 22),
+        editorState: const {
+          'schema': 1,
+          'nameText': 'Sin terminar',
+          'segments': [
+            {'paceText': '4:', 'targetText': ''},
+          ],
+        },
+      );
+      await store.write('new', snapshot);
+      expect(await store.read('new'), snapshot);
+      expect(
+        await SharedPreferencesWorkoutEditorDraftStore(
+          preferences,
+          userId: 'user-B',
+        ).read('new'),
+        isNull,
+      );
+    },
+  );
+
   test('restaura toda la estructura de un borrador', () async {
     final preferences = await SharedPreferences.getInstance();
     final store = SharedPreferencesWorkoutEditorDraftStore(

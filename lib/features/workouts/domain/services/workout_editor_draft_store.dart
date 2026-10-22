@@ -5,13 +5,18 @@ class WorkoutEditorDraftSnapshot extends Equatable {
   const WorkoutEditorDraftSnapshot({
     required this.input,
     required this.savedAt,
+    this.editorState,
   });
 
   final CreatePersonalWorkoutInput input;
   final DateTime savedAt;
 
+  /// Formulario incompleto del editor común; input conserva compatibilidad
+  /// con los borradores anteriores y la última proyección recuperable.
+  final Map<String, dynamic>? editorState;
+
   @override
-  List<Object?> get props => [input, savedAt];
+  List<Object?> get props => [input, savedAt, editorState];
 }
 
 abstract class WorkoutEditorDraftStore {

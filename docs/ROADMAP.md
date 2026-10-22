@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-008 · 22/10/2026 · creador común en las tres apps:** las entradas personales
+de carrera y fuerza montan el mismo formulario que ADMIN/Trainer. Se conservan
+catálogos, Pro, cuotas, rutas, versiones y borradores por cuenta; mejora común de
+autoguardado de excepciones, valores opcionales por serie y límite expandido.
+El contrato SQL sigue intacto. **Siguiente bloque único:** fases explícitas de
+carrera con persistencia, recuperación, ejecución y exportación coherentes;
+fuerza Garmin sigue pendiente. La interfaz nueva requiere reinstalar en iPhone.
+Análisis de las tres apps limpios; raíz 1.279, ADMIN 314, Trainer 170 y paquete
+común 155 pruebas correctas, con las omisiones previas conservadas.
+[Alcance y verificaciones](WORKOUT_EDITOR_SHARED_2026_10_22.md).
+
 **INT-007 · 22/10/2026 · primer envío Garmin común activo solo en Dev:** contrato de cita
 autorizada/versionada, normalización pura de carrera, servicio de entrega y
 adaptador Training API; servidor común para alumno y entrenador con MFA, sin

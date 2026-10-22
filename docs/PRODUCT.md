@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**INT-008 · 22/10/2026 · un creador de sesiones para las tres apps:** deportista,
+ADMIN y Trainer consumen el mismo formulario de carrera/fuerza mediante sus
+adaptadores y permisos propios. Se conservan versiones y recuperación de
+borradores; crear fuerza no implica todavía poder enviarla a Garmin. Las fases
+de carrera necesitan ampliar el contrato vigente del bloque único.
+[Implementación y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md).
+
 **TRN-025 · 22/10/2026 · navegación del alumno:** Inicio, Mi plan, Biblioteca y
 Evolución son destinos generales. Preparador se añade cuando existe vínculo
 activo/anterior o seguimiento propio que consultar. Perfil se abre desde el
@@ -21,8 +28,10 @@ después para esos usuarios con acceso. La baja conserva el historial y la
 lectura/importación de Salud/Health Connect; detiene operaciones comerciales
 nuevas. INT-005 prepara en código el control de acceso de la conexión Garmin;
 su servidor está publicado y configurado solo en Dev, con conexión y retirada
-reales aceptadas desde navegador; recepción/envío mantienen implementación
-pendiente. No corresponde bloquear Salud o Health Connect por ser Free.
+reales aceptadas desde navegador. INT-007 acredita además el primer envío y
+recepción/inicio en fēnix 8 desde iPhone; recepción de actividades y fidelidad
+completa de pasos/alertas siguen pendientes. No corresponde bloquear Salud o
+Health Connect por ser Free.
 [Reglas y límites](DEVICE_INTEGRATIONS.md).
 
 **TRN-022 · 21/10/2026 · continuidad y seguimiento visible:** Trainer permite

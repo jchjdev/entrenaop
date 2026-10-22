@@ -33,6 +33,9 @@ class SharedPreferencesWorkoutEditorDraftStore
       return WorkoutEditorDraftSnapshot(
         input: _inputFromJson(Map<String, dynamic>.from(json['input'] as Map)),
         savedAt: DateTime.parse(json['saved_at'] as String),
+        editorState: json['editor'] == null
+            ? null
+            : Map<String, dynamic>.from(json['editor'] as Map),
       );
     } on Object {
       // Conservar el contenido ilegible para poder recuperarlo; v1 tampoco se borra.
@@ -47,6 +50,7 @@ class SharedPreferencesWorkoutEditorDraftStore
         jsonEncode({
           'saved_at': snapshot.savedAt.toUtc().toIso8601String(),
           'input': _inputToJson(snapshot.input),
+          if (snapshot.editorState != null) 'editor': snapshot.editorState,
         }),
       );
 

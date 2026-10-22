@@ -7,9 +7,13 @@ class WorkoutEditorExercise {
     this.muscleGroups = const [],
     this.equipment = const [],
     this.thumbnailUrl,
+    this.catalogScope,
   });
 
   final String id, name;
   final List<String> muscleGroups, equipment;
   final String? thumbnailUrl;
+
+  /// Etiqueta del catálogo autorizado; no concede acceso ni cambia permisos.
+  final String? catalogScope;
 }

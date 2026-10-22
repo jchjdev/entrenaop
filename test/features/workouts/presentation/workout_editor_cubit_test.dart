@@ -69,8 +69,8 @@ void main() {
           ),
         );
         await t.pumpAndSettle();
-        final name = find.widgetWithText(TextFormField, 'Nombre del bloque');
-        await t.ensureVisible(name);
+        final name = _editorField('Nombre del bloque');
+        await _show(t, name);
         await t.pumpAndSettle();
         await capturePerformanceWidget(
           t,
@@ -86,11 +86,11 @@ void main() {
           ('amrap', 'AMRAP · máximas vueltas'),
           ('tabata', 'Tabata · 8 × 20/10'),
         ]) {
-          await t.ensureVisible(selector);
+          await _show(t, selector);
           await t.pumpAndSettle();
           await t.tap(selector);
           await t.pumpAndSettle();
-          await t.ensureVisible(find.text(format).last);
+          await _show(t, find.text(format).last);
           await t.pumpAndSettle();
           await t.tap(find.text(format).last);
           await t.pumpAndSettle();
@@ -117,7 +117,15 @@ void main() {
             t,
             'compacto-editor-$slug-${width.toInt()}-$scale',
           );
+          if (slug == 'tabata') {
+            expect(
+              find.text('20 s de trabajo · 10 s de recuperación'),
+              findsWidgets,
+            );
+            continue;
+          }
           final fields = find.byType(StrengthSetFields).first;
+          await _show(t, fields);
           await Scrollable.ensureVisible(t.element(fields), alignment: .1);
           await t.pumpAndSettle();
           final position = t
@@ -135,7 +143,7 @@ void main() {
             'compacto-editor-$slug-campos-${width.toInt()}-$scale',
           );
           if (format == 'Circuito' || format == 'AMRAP · máximas vueltas') {
-            await t.ensureVisible(selector);
+            await _show(t, selector);
             await t.pumpAndSettle();
             await capturePerformanceWidget(
               t,
@@ -180,64 +188,53 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    await t.ensureVisible(find.byTooltip('Añadir serie'));
+    final series = _editorField('Series');
+    await _show(t, series);
+    await t.enterText(series, '2');
     await t.pumpAndSettle();
-    await t.tap(find.byTooltip('Añadir serie'));
-    await t.pumpAndSettle();
-    expect(find.text('Series (2)'), findsOneWidget);
-    expect(find.byType(StrengthSetFields), findsNWidgets(2));
-    await t.tap(find.byTooltip('Quitar última serie'));
-    await t.pumpAndSettle();
-    expect(find.text('Series (1)'), findsOneWidget);
-    expect(find.byType(StrengthSetFields), findsOneWidget);
-
-    final effort = find.byType(WorkoutEffortField);
-    await t.ensureVisible(effort);
-    await t.pumpAndSettle();
+    final effort = find.byType(WorkoutEffortField).first;
+    await _show(t, effort);
     await t.tap(effort);
     await t.pumpAndSettle();
     await t.tap(find.widgetWithText(ChoiceChip, '3'));
     await t.pumpAndSettle();
-    expect(t.widget<WorkoutEffortField>(effort).value, 3);
-    await t.pump(const Duration(seconds: 1));
-    expect(
-      drafts.draft!.input.blocks.single.exercises.single.sets.single.targetRir,
-      3,
-    );
-
-    final target = find.widgetWithText(TextFormField, 'Reps');
-    await t.ensureVisible(target);
-    await t.pumpAndSettle();
+    final target = _editorField('Cantidad').first;
+    await _show(t, target);
     await t.enterText(target, '8');
-    await t.pump();
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetValue,
+      ),
+      [8, 8],
+    );
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetRir,
+      ),
+      [3, 3],
+    );
     expect(t.testTextInput.isVisible, isTrue);
-    await t.tap(find.text('Serie 1'));
+    await _show(t, find.text('Bloque 1'));
+    await t.tap(find.text('Bloque 1'));
     await t.pumpAndSettle();
     expect(t.testTextInput.isVisible, isFalse);
-    await Scrollable.ensureVisible(
-      t.element(
-        find
-            .ancestor(
-              of: find.widgetWithText(TextFormField, 'Nombre del bloque'),
-              matching: find.byType(Card),
-            )
-            .first,
-      ),
-      alignment: .08,
-    );
-    await t.pumpAndSettle();
     await capturePerformanceWidget(t, 'editor-series-repeticiones-390');
-    await t.tap(target);
-    await t.pump();
-    expect(t.testTextInput.isVisible, isTrue);
-    await t.drag(find.byType(ListView), const Offset(0, -80));
+    final customize = find.text('Personalizar cada serie');
+    await _show(t, customize);
+    await t.tap(customize);
     await t.pumpAndSettle();
-    expect(t.testTextInput.isVisible, isFalse);
-    await t.ensureVisible(find.byTooltip('Añadir serie'));
-    await t.pumpAndSettle();
-    await t.tap(find.byTooltip('Añadir serie'));
-    await t.pumpAndSettle();
-    expect(find.text('Series (2)'), findsOneWidget);
+    final second = _editorField('Objetivo').last;
+    await _show(t, second);
+    await t.enterText(second, '12');
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetValue,
+      ),
+      [8, 12],
+    );
+    await t.enterText(second, '');
     await t.pump(const Duration(seconds: 1));
     expect(
       drafts.draft!.input.blocks.single.exercises.single.sets.map(
@@ -245,59 +242,37 @@ void main() {
       ),
       [8, 8],
     );
-    final targets = find.widgetWithText(TextFormField, 'Reps');
-    await t.ensureVisible(targets.last);
-    await t.pumpAndSettle();
-    await t.enterText(targets.last, '12');
-    await t.ensureVisible(find.text('Igualar'));
-    await t.pumpAndSettle();
-    await t.tap(find.text('Igualar'));
-    await t.pumpAndSettle();
-    await t.pump(const Duration(seconds: 1));
-    expect(
-      drafts.draft!.input.blocks.single.exercises.single.sets.map(
-        (s) => s.targetValue,
-      ),
-      [8, 8],
-    );
-    for (final field in targets.evaluate()) {
-      expect(
-        t
-            .widget<EditableText>(
-              find.descendant(
-                of: find.byWidget(field.widget),
-                matching: find.byType(EditableText),
-              ),
-            )
-            .controller
-            .text,
-        '8',
-      );
-    }
-    await Scrollable.ensureVisible(
-      t.element(
-        find
-            .ancestor(
-              of: find.widgetWithText(TextFormField, 'Nombre del bloque'),
-              matching: find.byType(Card),
-            )
-            .first,
-      ),
-      alignment: .08,
-    );
-    await t.pumpAndSettle();
     await capturePerformanceWidget(t, 'compacto-series-dos-390');
     final selector = find.byType(DropdownButtonFormField<WorkoutTargetType>);
-    await t.ensureVisible(selector);
-    await t.pumpAndSettle();
+    await _show(t, selector);
     await t.tap(selector);
     await t.pumpAndSettle();
-    await t.tap(find.text('Tiempo').last);
+    await t.tap(find.text('Duración').last);
     await t.pumpAndSettle();
-    final time = find.widgetWithText(TextFormField, 'Tiempo').first;
-    await t.ensureVisible(time);
-    await t.pumpAndSettle();
+    expect(find.byType(WorkoutEffortField), findsNothing);
+    final time = _editorField('Tiempo').first;
+    await _show(t, time);
+    await t.enterText(time, '40');
+    await t.pump(const Duration(seconds: 1));
+    expect(
+      drafts.draft!.input.blocks.single.exercises.single.sets.map(
+        (s) => s.targetValue,
+      ),
+      [40, 40],
+    );
     await capturePerformanceWidget(t, 'editor-series-tiempo-390');
+    await t.drag(find.byType(ListView).first, const Offset(0, -80));
+    await t.pumpAndSettle();
+    expect(t.testTextInput.isVisible, isFalse);
+    await _show(t, selector);
+    await t.tap(selector);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Repeticiones').last);
+    await t.pumpAndSettle();
+    expect(
+      t.widget<WorkoutEffortField>(find.byType(WorkoutEffortField).first).value,
+      3,
+    );
     expect(t.takeException(), isNull);
   });
 
@@ -339,7 +314,7 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      final name = find.widgetWithText(TextFormField, 'Nombre de la sesión');
+      final name = _editorField('Nombre de la sesión');
       await t.enterText(name, 'Series de carrera');
       await t.pumpAndSettle();
       await t.tapAt(const Offset(5, 200));
@@ -348,8 +323,8 @@ void main() {
         t,
         'compacto-carrera-${width.toInt()}-$scale-ficha',
       );
-      final pace = find.widgetWithText(TextFormField, 'Desde (min/km)');
-      await t.ensureVisible(pace);
+      final pace = _editorField('Ritmo (m:ss/km)');
+      await _show(t, pace);
       await t.pumpAndSettle();
       await capturePerformanceWidget(
         t,
@@ -477,8 +452,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final addExercise = find.text('Añadir ejercicio al bloque');
-      await tester.ensureVisible(addExercise);
+      final addExercise = find.text('Buscar ejercicio del catálogo').first;
+      await _show(tester, addExercise);
       await tester.pumpAndSettle();
       await tester.tap(addExercise);
       await tester.pumpAndSettle();
@@ -493,8 +468,11 @@ void main() {
       expect(find.text('Dominada prona personal'), findsNothing);
       await tester.tap(find.text('Dominada prona').last);
       await tester.pumpAndSettle();
-      expect(find.text('Elige un ejercicio'), findsNothing);
-      expect(find.text('Dominada prona'), findsWidgets);
+      expect(find.text('Buscar ejercicio'), findsNothing);
+      expect(
+        find.textContaining('Cambiar ejercicio · Dominada prona'),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     },
   );
@@ -591,50 +569,46 @@ void main() {
     final formatSelector = find.byType(
       DropdownButtonFormField<WorkoutBlockFormat>,
     );
-    await tester.ensureVisible(formatSelector);
-    await tester.drag(find.byType(ListView), const Offset(0, -180));
-    await tester.pumpAndSettle();
+    await _show(tester, formatSelector);
+    await _show(tester, formatSelector);
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Superserie').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Rondas'), findsOneWidget);
-    expect(find.textContaining('exactamente dos ejercicios'), findsOneWidget);
-
+    expect(
+      find.byType(DropdownButtonFormField<WorkoutBlockFormat>),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Dos ejercicios alternados'), findsOneWidget);
+    await _show(tester, formatSelector);
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tabata · 8 × 20/10').last);
     await tester.pumpAndSettle();
-
-    expect(
-      find.text('8 rondas · 20 s de trabajo · 10 s de recuperación'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('El tiempo es cerrado'), findsOneWidget);
-
+    expect(find.text('20 s de trabajo · 10 s de recuperación'), findsWidgets);
+    expect(find.byType(StrengthSetFields), findsNothing);
+    await _show(tester, formatSelector);
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();
     await tester.tap(find.text('EMOM · cada minuto').last);
     await tester.pumpAndSettle();
-
-    expect(find.text('Vueltas'), findsOneWidget);
-    expect(find.textContaining('minutos con un ejercicio'), findsOneWidget);
     expect(
-      find.textContaining('Cada ejercicio ocupa un minuto'),
+      find.textContaining('Cada estación ocupa un minuto'),
       findsOneWidget,
     );
-
+    await _show(tester, formatSelector);
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();
     await tester.tap(find.text('AMRAP · máximas vueltas').last);
     await tester.pumpAndSettle();
-
-    expect(find.text('Límite de tiempo'), findsOneWidget);
-    expect(find.textContaining('vueltas completas'), findsOneWidget);
-
+    await _show(tester, _editorField('Límite global (m:ss)'));
+    expect(
+      find.textContaining('Tantas vueltas como sea posible'),
+      findsOneWidget,
+    );
     final addBlock = find.byKey(const ValueKey('add-workout-block'));
-    await tester.ensureVisible(addBlock);
+    await _show(tester, addBlock);
     await tester.pumpAndSettle();
     await tester.tap(addBlock);
     await tester.pump();
@@ -675,7 +649,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Repetir último'));
+    await _show(tester, _editorField('Distancia (m)'));
+    await tester.enterText(_editorField('Distancia (m)'), '1000');
+    await _show(tester, find.text('Repetir último'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Repetir último'));
     await tester.pumpAndSettle();
@@ -686,9 +662,9 @@ void main() {
     expect(find.text('Tramo 1 × 4'), findsOneWidget);
     expect(find.text('1 bloque · 4/40 tramos'), findsOneWidget);
 
-    final paceFrom = find.widgetWithText(TextFormField, 'Desde (min/km)');
-    final paceTo = find.widgetWithText(TextFormField, 'Hasta (min/km)');
-    await tester.ensureVisible(paceFrom);
+    final paceFrom = _editorField('Ritmo (m:ss/km)');
+    final paceTo = _editorField('Hasta (m:ss/km)');
+    await _show(tester, paceFrom);
     await tester.enterText(paceFrom, '4:00');
     await tester.enterText(paceTo, '4:30');
     await tester.pump(const Duration(milliseconds: 800));
@@ -734,30 +710,31 @@ void main() {
     final formatSelector = find.byType(
       DropdownButtonFormField<WorkoutBlockFormat>,
     );
-    await tester.ensureVisible(formatSelector);
-    await tester.drag(find.byType(ListView), const Offset(0, -180));
-    await tester.pumpAndSettle();
+    await _show(tester, formatSelector);
+    await _show(tester, formatSelector);
     await tester.tap(formatSelector);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Superserie').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Pendiente de elegir'), findsNWidgets(2));
-    await tester.tap(find.text('Elegir ejercicio A1'));
+    final choose = find.text('Buscar ejercicio del catálogo');
+    expect(choose, findsNWidgets(2));
+    await _show(tester, choose.first);
+    await tester.tap(choose.first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dominadas').last);
     await tester.pumpAndSettle();
-
-    expect(find.text('Elegir ejercicio A2'), findsOneWidget);
-    await tester.ensureVisible(find.text('Elegir ejercicio A2'));
-    await tester.tap(find.text('Elegir ejercicio A2'));
+    await _show(tester, choose);
+    await tester.tap(choose);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dominadas').last);
     await tester.pumpAndSettle();
-
+    expect(
+      find.textContaining('Cambiar ejercicio · Dominadas'),
+      findsNWidgets(2),
+    );
     expect(find.text('A1'), findsWidgets);
     expect(find.text('A2'), findsWidgets);
-    expect(find.text('Superserie completa'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -792,8 +769,8 @@ void main() {
     );
     await tester.pump();
 
-    final addExercise = find.text('Añadir ejercicio al bloque');
-    await tester.ensureVisible(addExercise);
+    final addExercise = find.text('Buscar ejercicio del catálogo').first;
+    await _show(tester, addExercise);
     await tester.pumpAndSettle();
     await tester.tap(addExercise);
     await tester.pumpAndSettle();
@@ -801,7 +778,7 @@ void main() {
     expect(find.text('Buscar'), findsOneWidget);
     expect(find.text('EntrenaOP'), findsOneWidget);
     expect(find.text('Míos'), findsOneWidget);
-    await tester.tap(find.text('Crear ejercicio propio'));
+    await tester.tap(find.text('Crear ejercicio'));
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -831,7 +808,7 @@ void main() {
       'tríceps',
     );
     final createAndAdd = find.text('Crear y añadir');
-    await tester.ensureVisible(createAndAdd);
+    await _show(tester, createAndAdd);
     await tester.pumpAndSettle();
     await tester.tap(createAndAdd);
     await tester.pumpAndSettle();
@@ -840,7 +817,7 @@ void main() {
       cubit.state.exercises.map((item) => item.name),
       contains('Press francés'),
     );
-    expect(find.text('Press francés'), findsWidgets);
+    expect(find.textContaining('Press francés'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
@@ -875,20 +852,17 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -250));
     await tester.pumpAndSettle();
-    final addExercise = find.text('Añadir ejercicio al bloque');
-    await tester.ensureVisible(addExercise);
+    final addExercise = find.text('Buscar ejercicio del catálogo').first;
+    await _show(tester, addExercise);
     await tester.pumpAndSettle();
     await tester.tap(addExercise);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Dominadas').last);
     await tester.pumpAndSettle();
 
-    final menu = find.byTooltip('Organizar ejercicio');
-    await tester.ensureVisible(menu);
-    await tester.pumpAndSettle();
-    await tester.tap(menu);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Cambiar ejercicio'));
+    final change = find.textContaining('Cambiar ejercicio · Dominadas');
+    await _show(tester, change);
+    await tester.tap(change);
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Buscar'),
@@ -898,9 +872,13 @@ void main() {
     await tester.tap(find.text('Sentadillas').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Sentadillas'), findsOneWidget);
+    expect(
+      find.textContaining('Cambiar ejercicio · Sentadillas'),
+      findsOneWidget,
+    );
     expect(find.text('Dominadas'), findsNothing);
-    expect(find.byTooltip('Organizar ejercicio'), findsOneWidget);
+    expect(find.text('Posición 1'), findsOneWidget);
+    expect(find.text('Posición 2'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -966,7 +944,7 @@ void main() {
 
     final nameField = find.byKey(const ValueKey('workout-name'));
     expect(
-      tester.widget<TextFormField>(nameField).controller?.text,
+      tester.widget<TextField>(nameField).controller?.text,
       'Borrador recuperado',
     );
 
@@ -1159,4 +1137,38 @@ class _WorkoutRepository implements WorkoutRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Finder _editorField(String label) => find.byWidgetPredicate(
+  (w) =>
+      w is TextField &&
+      (w.key == ValueKey('editor-field-$label') ||
+          w.decoration?.labelText == label),
+);
+
+Future<void> _show(WidgetTester tester, Finder finder) async {
+  bool found() {
+    try {
+      return finder.evaluate().isNotEmpty;
+    } on StateError {
+      return false;
+    }
+  }
+
+  if (!found()) {
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position;
+    position.jumpTo(0);
+    await tester.pumpAndSettle();
+    for (var i = 0; !found() && i < 80; i++) {
+      final next = (position.pixels + 250).clamp(0.0, position.maxScrollExtent);
+      if (next == position.pixels) break;
+      position.jumpTo(next);
+      await tester.pumpAndSettle();
+    }
+  }
+  expect(found(), isTrue, reason: 'Control compartido visible: $finder');
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
 }

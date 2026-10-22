@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**INT-008 · 22/10/2026 · creador único para deportista, ADMIN y Trainer:**
+Javier autoriza corregir las tres apps mediante el mismo creador. Se sustituyen
+los formularios propios del deportista por adaptadores a `workout_editor_ui`,
+con catálogo, Pro y borradores por cuenta propios. ADMIN/Trainer conservan sus
+bindings y permisos. Se corrigen autoguardado inicial de excepciones, herencia
+accidental de carga/RIR y límite total de tramos. No cambia el contrato SQL de
+carrera ni habilita fuerza en Garmin; fases y su persistencia son el siguiente
+bloque. [Alcance y comprobaciones](WORKOUT_EDITOR_SHARED_2026_10_22.md).
+
 **INT-007 · primera recepción física · 22/10/2026:** Javier instala la app en
 iPhone y aporta capturas de Garmin Connect y vídeo de la sesión en fēnix 8.
 Dev confirma workout y calendario guardados sin error; el vídeo acredita carga,

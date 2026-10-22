@@ -12,6 +12,7 @@ import 'package:workout_core/workout_draft_codec.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:workout_core/workout_draft_validator.dart';
 import 'package:workout_core/workout_template.dart';
+import 'package:workout_core/running_workout_estimator.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_search_list.dart';
 import 'package:workout_editor_ui/running_step_fields.dart';
@@ -46,6 +47,10 @@ class WorkoutEditorPage extends StatefulWidget {
     this.onCreateExercise,
     this.exercisePreferences,
     this.workBinding,
+    this.initialEditorState,
+    this.fixedRunningMode,
+    this.saveLocalDraft,
+    this.onClose,
   });
 
   final Future<List<WorkoutEditorExercise>> Function() loadExercises;
@@ -54,6 +59,14 @@ class WorkoutEditorPage extends StatefulWidget {
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
   final WorkoutEditorWorkBinding? workBinding;
+  final Map<String, dynamic>? initialEditorState;
+
+  /// El acceso de carrera/fuerza del deportista conserva su modalidad.
+  final bool? fixedRunningMode;
+
+  /// Persistencia local aportada por el consumidor, sin SDK ni cuentas aquí.
+  final Future<void> Function(Map<String, dynamic>)? saveLocalDraft;
+  final VoidCallback? onClose;
   final Future<String> Function(CreatePersonalWorkoutInput) onSave;
   final ValueChanged<String> onSaved;
   final String title, heading, instructions, saveLabel;
@@ -73,7 +86,8 @@ class WorkoutEditorPage extends StatefulWidget {
   State<WorkoutEditorPage> createState() => _WorkoutEditorPageState();
 }
 
-class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
+class _WorkoutEditorPageState extends State<WorkoutEditorPage>
+    with WidgetsBindingObserver {
   final _name = TextEditingController();
   final _description = TextEditingController();
   final _duration = TextEditingController();
@@ -91,6 +105,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   String? _workLoadError;
   bool _canReopen = false;
   final _observedControllers = <TextEditingController>{};
+  Future<void>? _localWrite;
+  bool _localFinalized = false;
 
   Map<String, dynamic> _rawSnapshot() => {
     'schema': 1,
@@ -227,7 +243,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   void _observeWork() {
-    if (_work == null || _workLoadError != null || _work!.finalizing) return;
+    if ((_work == null && widget.saveLocalDraft == null) ||
+        _workLoadError != null ||
+        _work?.finalizing == true ||
+        _localFinalized) {
+      return;
+    }
     final fields = [
       _name,
       _description,
@@ -268,7 +289,21 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   void _queueWork() {
-    if (_work == null || _work!.finalizing || _workLoadError != null) return;
+    if ((_work == null && widget.saveLocalDraft == null) ||
+        _work?.finalizing == true ||
+        _workLoadError != null ||
+        _localFinalized ||
+        _busy) {
+      return;
+    }
+    if (_work == null) {
+      final stamp = canonicalEditorState(_rawSnapshot());
+      if (stamp == _observedWork) return;
+      _observedWork = stamp;
+      _workTimer?.cancel();
+      _workTimer = Timer(const Duration(milliseconds: 700), _saveWork);
+      return;
+    }
     final state = _workState();
     final stamp = canonicalEditorState(state);
     if (stamp == _observedWork) return;
@@ -281,8 +316,30 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   Future<bool> _saveWork() async {
-    final work = _work!;
     _workTimer?.cancel();
+    if (_work == null) {
+      if (_localFinalized || widget.saveLocalDraft == null) return true;
+      final snapshot = _rawSnapshot();
+      final previous = _localWrite;
+      // Serializar también las escrituras locales: una antigua no puede
+      // terminar después del borrado que sigue a guardar la sesión.
+      final write = () async {
+        try {
+          await previous;
+        } catch (_) {
+          /* Permitir recuperar un fallo previo. */
+        }
+        await widget.saveLocalDraft!(snapshot);
+      }();
+      _localWrite = write;
+      try {
+        await write;
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    final work = _work!;
     if (!work.finalizing) work.update(_workState());
     try {
       await work.flush();
@@ -415,10 +472,18 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _running = widget.fixedRunningMode ?? true;
     _exercisePreferences = widget.exercisePreferences == null
         ? null
         : ExercisePreferencesController(widget.exercisePreferences!);
     if (widget.originalTemplate case final original?) _populate(original);
+    if (widget.initialEditorState case final raw?) _restoreRaw(raw);
+    if (widget.fixedRunningMode != null &&
+        _running != widget.fixedRunningMode) {
+      _workLoadError =
+          'El borrador pertenece a otra modalidad. Se conserva sin modificar.';
+    }
     if (widget.warmup) {
       _running = false;
       for (final block in _blocks) {
@@ -453,6 +518,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       }
     }
     _savedStamp = _draftStamp;
+    if (widget.saveLocalDraft != null) {
+      _observedWork = canonicalEditorState(_rawSnapshot());
+    }
     widget
         .loadExercises()
         .then((items) {
@@ -515,6 +583,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _workTimer?.cancel();
     _work?.dispose();
     _exercisePreferences?.dispose();
@@ -568,9 +637,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         );
         return;
       }
+      _workTimer?.cancel();
+      try {
+        await _localWrite;
+      } catch (_) {
+        /* Guardar la receta sigue permitido. */
+      }
       final savedId = await widget.onSave(input);
       if (mounted) {
         setState(() {
+          _localFinalized = true;
           _busy = false;
           _savedStamp = _draftStamp;
         });
@@ -598,9 +674,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     }
     try {
       final input = _input();
-      return input.estimatedDurationMinutes == null
-          ? 'Completa los ritmos para calcular la duración.'
-          : 'Duración estimada: ${input.estimatedDurationMinutes} min';
+      final estimate = estimateRunningWorkout(
+        input.blocks.single.exercises.single.sets,
+      );
+      if (!estimate.isComplete) {
+        return 'Completa los ritmos para calcular la duración.';
+      }
+      final low = (estimate.minimumSeconds / 60).round();
+      final high = (estimate.maximumSeconds / 60).round();
+      return low == high
+          ? 'Duración estimada: $low min'
+          : 'Duración estimada: $low min–$high min';
     } on FormatException {
       return null;
     }
@@ -611,6 +695,43 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       final segment = _segments.removeAt(index);
       _segments.insert(index + offset, segment);
     });
+  }
+
+  int get _runningCount =>
+      _segments.fold(0, (sum, s) => sum + (int.tryParse(s.count.text) ?? 0));
+
+  Future<void> _repeatLast() async {
+    var count = _segments.last.count.text;
+    final value = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Repetir último tramo'),
+        content: TextFormField(
+          initialValue: count,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'Repeticiones totales'),
+          onChanged: (v) => count = v,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(int.tryParse(count)),
+            child: const Text('Aplicar'),
+          ),
+        ],
+      ),
+    );
+    if (value == null || !mounted) return;
+    final previous = int.tryParse(_segments.last.count.text) ?? 0;
+    if (value < 1 || _runningCount - previous + value > 40) {
+      setState(() => _error = 'La carrera no puede superar 40 tramos.');
+      return;
+    }
+    setState(() => _segments.last.count.text = '$value');
   }
 
   Future<void> _addPyramid() async {
@@ -668,6 +789,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // El guardado final ya espera a los borradores pendientes. No encolar uno
+    // nuevo al suspender durante esa operación: podría resucitarlo tras limpiarlo.
+    if (_busy || _localFinalized) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      if (_work != null || widget.saveLocalDraft != null) {
+        unawaited(_saveWork());
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     _observeWork();
     if (_workLoadError != null) {
@@ -681,7 +815,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     return WorkflowDraftGuard(
       hasUnsavedChanges: () => _draftStamp != _savedStamp,
       isBusy: () => _busy || _creatingExercise,
-      saveDraftBeforeExit: _work == null ? null : _saveBeforeExit,
+      saveDraftBeforeExit: _work == null && widget.saveLocalDraft == null
+          ? null
+          : _saveBeforeExit,
       child: AbsorbPointer(
         absorbing: _busy || _creatingExercise,
         child: _work?.finalizing == true
@@ -701,6 +837,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       ? _editorContent()
       : Scaffold(
           appBar: AppBar(
+            leading: widget.onClose == null
+                ? null
+                : IconButton(
+                    tooltip: 'Volver',
+                    onPressed: _busy ? null : widget.onClose,
+                    icon: const Icon(Icons.arrow_back),
+                  ),
             toolbarHeight: MediaQuery.textScalerOf(context).scale(16) > 24
                 ? 128
                 : null,
@@ -712,7 +855,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               maxLines: 3,
             ),
           ),
-          body: _editorContent(),
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: _editorContent(),
+          ),
         );
 
   Widget _editorContent() {
@@ -728,6 +875,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
       const SizedBox(height: 24),
       if (_work != null) _workStatus(),
       TextField(
+        key: const ValueKey('workout-name'),
         controller: _name,
         maxLength: 80,
         decoration: const InputDecoration(labelText: 'Nombre de la sesión'),
@@ -740,7 +888,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         decoration: const InputDecoration(labelText: 'Indicaciones (opcional)'),
       ),
       const SizedBox(height: 12),
-      if (!widget.warmup)
+      if (!widget.warmup && widget.fixedRunningMode == null)
         SegmentedButton<bool>(
           showSelectedIcon: false,
           segments: const [
@@ -782,7 +930,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
                   children: children,
                 ),
               )
-            : ListView(padding: const EdgeInsets.all(24), children: children),
+            : ListView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(24),
+                children: children,
+              ),
       ),
     );
   }
@@ -791,6 +944,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text('Tramos de carrera', style: Theme.of(context).textTheme.titleLarge),
+      Text('1 bloque · $_runningCount/40 tramos'),
       const Text(
         'Las series iguales se muestran juntas, pero se guardan como parciales individuales para registrar resultados.',
       ),
@@ -804,7 +958,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _rowTitle(
-                  'Tramo ${i + 1}',
+                  'Tramo ${i + 1}${_segments[i].count.text == '1' ? '' : ' × ${_segments[i].count.text}'}',
                   _segments.length > 1
                       ? () => setState(() => _segments.removeAt(i).dispose())
                       : null,
@@ -875,9 +1029,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
         spacing: 8,
         children: [
           TextButton.icon(
-            onPressed: () => setState(() => _segments.add(_Segment())),
+            onPressed: _segments.length >= 40
+                ? null
+                : () => setState(() => _segments.add(_Segment())),
             icon: const Icon(Icons.add),
             label: const Text('Añadir tramo distinto'),
+          ),
+          TextButton.icon(
+            onPressed: _repeatLast,
+            icon: const Icon(Icons.repeat),
+            label: const Text('Repetir último'),
           ),
           TextButton.icon(
             onPressed: _addPyramid,
@@ -912,6 +1073,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           ),
         ),
       TextButton.icon(
+        key: const ValueKey('add-workout-block'),
         onPressed: _blocks.length >= 10
             ? null
             : () => setState(() => _blocks.add(_StrengthBlock())),
@@ -1063,7 +1225,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
             children: [
               Expanded(
                 child: Text(
-                  tabata ? 'Intervalo ${index + 1}' : 'Posición ${index + 1}',
+                  tabata
+                      ? 'Intervalo ${index + 1}'
+                      : format == WorkoutBlockFormat.superset
+                      ? 'A${index + 1}'
+                      : 'Posición ${index + 1}',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -1282,6 +1448,18 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
 
   Widget _variationFields(_Exercise item, int index, {required bool showRest}) {
     final variation = item.variations.putIfAbsent(index, _SetVariation.new);
+    if (_work != null || widget.saveLocalDraft != null) {
+      // Estas filas nacen durante build, después de observar los campos comunes.
+      // Sus cambios deben guardar borrador aunque no provoquen otro rebuild.
+      for (final field in [
+        variation.target,
+        variation.rest,
+        variation.load,
+        variation.rir,
+      ]) {
+        if (_observedControllers.add(field)) field.addListener(_queueWork);
+      }
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Column(
@@ -1321,50 +1499,91 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
   Future<WorkoutEditorExercise?> _chooseExercise() async {
     final preferences = _exercisePreferences;
     var create = false;
+    String? scope;
+    final scopes = _catalog
+        .map((e) => e.catalogScope)
+        .whereType<String>()
+        .toSet();
+    if (scopes.contains('EntrenaOP') || scopes.contains('Míos')) {
+      scopes.addAll({'EntrenaOP', 'Míos'});
+    }
     final selected = await showDialog<WorkoutEditorExercise>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Buscar ejercicio'),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-        titlePadding: const EdgeInsets.all(16),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        actionsPadding: const EdgeInsets.all(12),
-        content: SizedBox(
-          width: 480,
-          height: 430,
-          child: ExerciseSearchList<WorkoutEditorExercise>(
-            exercises: _catalog,
-            idOf: (exercise) => exercise.id,
-            preferences: preferences,
-            nameOf: (exercise) => exercise.name,
-            searchTermsOf: (exercise) => [
-              exercise.name,
-              ...exercise.muscleGroups,
-              ...exercise.equipment,
-            ],
-            thumbnailOf: (exercise) => exercise.thumbnailUrl,
-            muscleGroupsOf: (exercise) => exercise.muscleGroups,
-            equipmentOf: (exercise) => exercise.equipment,
-            subtitleOf: (exercise) =>
-                [...exercise.muscleGroups, ...exercise.equipment].join(' · '),
-            onSelected: (exercise) => Navigator.of(dialogContext).pop(exercise),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, changeScope) => AlertDialog(
+          title: const Text('Buscar ejercicio'),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 20,
           ),
-        ),
-        actions: [
-          if (widget.onCreateExercise != null)
-            TextButton.icon(
-              onPressed: () {
-                create = true;
-                Navigator.of(dialogContext).pop();
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Crear ejercicio'),
+          titlePadding: const EdgeInsets.all(16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          actionsPadding: const EdgeInsets.all(12),
+          content: SizedBox(
+            width: 480,
+            height: 430,
+            child: Column(
+              children: [
+                if (scopes.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final label in <String?>[null, ...scopes])
+                        ChoiceChip(
+                          label: Text(label ?? 'Todos'),
+                          selected: scope == label,
+                          onSelected: (_) => changeScope(() => scope = label),
+                        ),
+                    ],
+                  ),
+                Expanded(
+                  child: ExerciseSearchList<WorkoutEditorExercise>(
+                    searchLabel: scopes.isEmpty
+                        ? 'Buscar por nombre, músculo o material'
+                        : 'Buscar',
+                    exercises: scope == null
+                        ? _catalog
+                        : _catalog
+                              .where((e) => e.catalogScope == scope)
+                              .toList(),
+                    idOf: (exercise) => exercise.id,
+                    preferences: preferences,
+                    nameOf: (exercise) => exercise.name,
+                    searchTermsOf: (exercise) => [
+                      exercise.name,
+                      ...exercise.muscleGroups,
+                      ...exercise.equipment,
+                    ],
+                    thumbnailOf: (exercise) => exercise.thumbnailUrl,
+                    muscleGroupsOf: (exercise) => exercise.muscleGroups,
+                    equipmentOf: (exercise) => exercise.equipment,
+                    subtitleOf: (exercise) => [
+                      ...exercise.muscleGroups,
+                      ...exercise.equipment,
+                    ].join(' · '),
+                    onSelected: (exercise) =>
+                        Navigator.of(dialogContext).pop(exercise),
+                  ),
+                ),
+              ],
             ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancelar'),
           ),
-        ],
+          actions: [
+            if (widget.onCreateExercise != null)
+              TextButton.icon(
+                onPressed: () {
+                  create = true;
+                  Navigator.of(dialogContext).pop();
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Crear ejercicio'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        ),
       ),
     );
     if (!mounted || !identical(preferences, _exercisePreferences)) return null;
@@ -1472,6 +1691,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage> {
           top: MediaQuery.textScalerOf(context).scale(8),
         ),
         child: TextField(
+          key: ValueKey('editor-field-$label'),
           controller: controller,
           onChanged: onChanged,
           keyboardType: text
@@ -1670,14 +1890,20 @@ class _Exercise {
     };
     exercise.target.text = targetText(first);
     exercise.rest.text = first.restAfterSeconds.toString();
-    exercise.load.text = first.targetLoadKg?.toString() ?? '';
-    exercise.rir.text = first.targetRir?.toString() ?? '';
-    for (var index = 1; index < source.sets.length; index++) {
+    final commonLoad = source.sets.any((s) => s.targetLoadKg == null)
+        ? null
+        : first.targetLoadKg;
+    final commonRir = source.sets.any((s) => s.targetRir == null)
+        ? null
+        : first.targetRir;
+    exercise.load.text = commonLoad?.toString() ?? '';
+    exercise.rir.text = commonRir?.toString() ?? '';
+    for (var index = 0; index < source.sets.length; index++) {
       final set = source.sets[index];
       if (targetText(set) != exercise.target.text ||
           set.restAfterSeconds != first.restAfterSeconds ||
-          set.targetLoadKg != first.targetLoadKg ||
-          set.targetRir != first.targetRir) {
+          set.targetLoadKg != commonLoad ||
+          set.targetRir != commonRir) {
         exercise.customSets = true;
         final variation = exercise.variations.putIfAbsent(
           index,
