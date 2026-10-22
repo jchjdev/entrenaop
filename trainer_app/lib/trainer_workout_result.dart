@@ -1,6 +1,8 @@
+import 'package:workout_core/running_step_codec.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:workout_core/running_step.dart';
 
 import 'trainer_workout_repository.dart';
 import 'trainer_operations_repository.dart';
@@ -275,6 +277,15 @@ String _setStatus(dynamic status) => switch (status) {
 };
 String _measures(Map row, String prefix) {
   final values = <String>[];
+  if (prefix == 'target_') {
+    final step = RunningStepCodec.decode(row['running_step']);
+    if (step != null) {
+      values.add(step.kind.label);
+      if (step.completion == RunningStepCompletion.manual) {
+        values.add('Hasta avance manual');
+      }
+    }
+  }
   for (final field in const [
     ('reps', 'rep'),
     ('distance_meters', 'm'),

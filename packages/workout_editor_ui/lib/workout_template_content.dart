@@ -107,14 +107,19 @@ class WorkoutTemplateContent extends StatelessWidget {
 }
 
 String _setText(WorkoutSet set, WorkoutBlockFormat format) {
-  final target = set.targetReps != null
+  final target = set.runningStep?.completion == RunningStepCompletion.manual
+      ? 'Hasta avance manual'
+      : set.targetReps != null
       ? '${set.targetReps} rep'
       : set.targetDurationSeconds != null
       ? _time(set.targetDurationSeconds!)
       : set.targetDistanceMeters != null
       ? '${_number(set.targetDistanceMeters!)} m'
       : 'Objetivo sin definir';
-  final details = <String>[target];
+  final details = <String>[
+    if (set.runningStep != null) set.runningStep!.kind.label,
+    target,
+  ];
   if (set.targetPaceMinSecondsPerKm case final minPace?) {
     final maxPace = set.targetPaceMaxSecondsPerKm;
     details.add(

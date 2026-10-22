@@ -55,6 +55,7 @@ jobs:
           supabase/functions/_shared/garmin/training.ts
           supabase/functions/_shared/garmin/training_http.ts
           supabase/functions/_shared/device_training/prescription.ts
+          supabase/functions/_shared/device_training/capabilities.ts
           supabase/functions/_shared/device_training/delivery.ts
 
   consumer:
@@ -83,7 +84,7 @@ jobs:
           dart format --output=none --set-exit-if-changed lib/features/device_connections lib/features/device_training lib/core/router/garmin_connection_route.dart test/features/device_connections test/features/device_training
           flutter analyze
           flutter test test/features/device_connections test/features/device_training test/features/device_activities
-          flutter test test/features/workouts/presentation/workout_editor_cubit_test.dart test/features/workouts/data/shared_preferences_workout_editor_draft_store_test.dart
+          flutter test test/features/workouts/presentation/workout_editor_cubit_test.dart test/features/workouts/data/shared_preferences_workout_editor_draft_store_test.dart test/features/workouts/domain/running_steps_v2_test.dart
           # Reutilizar el package_config resuelto con el lockfile de la raíz;
           # este paquete no versiona otro lockfile independiente.
           (cd packages/workout_editor_ui && flutter --packages ../../.dart_tool/package_config.json test --no-pub)

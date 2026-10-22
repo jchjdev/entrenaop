@@ -156,7 +156,10 @@ void validateWorkoutDraft(CreatePersonalWorkoutInput input) {
         );
       }
       for (final set in exercise.sets) {
-        if (set.targetValue <= 0) {
+        if (!set.targetValue.isFinite ||
+            (set.targetType == WorkoutTargetType.manual
+                ? set.targetValue != 0
+                : set.targetValue <= 0)) {
           throw const FormatException(
             'El objetivo de cada serie debe ser mayor que cero.',
           );
@@ -183,9 +186,30 @@ void validateWorkoutDraft(CreatePersonalWorkoutInput input) {
         }
         if (block.format == WorkoutBlockFormat.running) {
           if (set.targetType != WorkoutTargetType.distance &&
-              set.targetType != WorkoutTargetType.duration) {
+              set.targetType != WorkoutTargetType.duration &&
+              set.targetType != WorkoutTargetType.manual) {
             throw const FormatException(
-              'Cada tramo de carrera debe medirse por distancia o duración.',
+              'Cada tramo necesita distancia, duración o avance manual.',
+            );
+          }
+          final completion = switch (set.targetType) {
+            WorkoutTargetType.manual => RunningStepCompletion.manual,
+            WorkoutTargetType.distance => RunningStepCompletion.distance,
+            _ => RunningStepCompletion.time,
+          };
+          if ((set.targetType == WorkoutTargetType.manual &&
+                  set.runningStep == null) ||
+              (set.runningStep != null &&
+                  set.runningStep!.completion != completion)) {
+            throw const FormatException(
+              'La finalización del paso no coincide con su medida.',
+            );
+          }
+          if (set.runningStep?.kind == RunningStepKind.rest &&
+              (set.targetType == WorkoutTargetType.distance ||
+                  set.targetPaceMinSecondsPerKm != null)) {
+            throw const FormatException(
+              'Un descanso no prescribe distancia ni ritmo.',
             );
           }
           final minimumPace = set.targetPaceMinSecondsPerKm;
@@ -222,7 +246,9 @@ void validateWorkoutDraft(CreatePersonalWorkoutInput input) {
               'Los tramos de carrera usan su recuperación propia.',
             );
           }
-        } else if (set.targetPaceMinSecondsPerKm != null ||
+        } else if (set.runningStep != null ||
+            set.targetType == WorkoutTargetType.manual ||
+            set.targetPaceMinSecondsPerKm != null ||
             set.targetPaceMaxSecondsPerKm != null ||
             set.recoveryType != null ||
             set.recoveryDurationSeconds != null ||

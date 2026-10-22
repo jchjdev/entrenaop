@@ -21,7 +21,11 @@ RunningExecutionAssessment assessRunningExecution(
 bool _matchesPrescription(WorkoutExecutionSet set) {
   final duration = set.actualDurationSeconds;
   final distance = set.actualDistanceMeters;
-  if (duration == null || distance == null || duration <= 0 || distance <= 0) {
+  if (duration == null ||
+      distance == null ||
+      duration <= 0 ||
+      (distance < 0 ||
+          (distance == 0 && set.runningStep?.kind != RunningStepKind.rest))) {
     return false;
   }
   if (set.targetDistanceMeters case final target?) {

@@ -70,7 +70,9 @@ class WorkoutSessionSetDraft extends Equatable {
         (result.actualDurationSeconds == null ||
             result.actualDurationSeconds! <= 0 ||
             result.actualDistanceMeters == null ||
-            result.actualDistanceMeters! <= 0)) {
+            (result.actualDistanceMeters! < 0 ||
+                (result.actualDistanceMeters == 0 &&
+                    set.runningStep?.kind != RunningStepKind.rest)))) {
       return false;
     }
     if (result.actualRecoveryDurationSeconds != null &&

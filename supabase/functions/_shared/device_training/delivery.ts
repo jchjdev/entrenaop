@@ -1,3 +1,5 @@
+import {runningTrainingCompatibility} from "./capabilities.ts";
+import type {RunningTrainingCapabilities} from "./capabilities.ts";
 import {runningPrescription,TrainingError} from "./prescription.ts";
 import type {RunningPrescription} from "./prescription.ts";
 type Json=Record<string,unknown>;
@@ -5,6 +7,7 @@ export type DeliveryActor={actor:string;owner:string;session:string};
 export type AccessGrant={accessToken:string;refreshToken:string;expiresInSeconds:number;refreshExpiresInSeconds:number;scope:string};
 export interface TrainingDeliveryStore {command(action:string,who:DeliveryActor,input:Json):Promise<Json>}
 export interface TrainingGateway {
+  readonly capabilities:RunningTrainingCapabilities;
   create(token:string,prescription:RunningPrescription):Promise<number>;
   schedule(token:string,workout:number,date:string):Promise<void>;
   confirmSchedule(token:string,workout:number,date:string):Promise<number>;
@@ -31,7 +34,9 @@ export class TrainingDeliveryService {
   list(who:DeliveryActor){return this.store.command("list",who,{});}
   async preview(who:DeliveryActor,scheduled:string) {
     const source=await this.store.command("preview",who,{scheduled_id:scheduled});
-    return {revision:source.revision,prescription:runningPrescription(source.snapshot)};
+    const prescription=runningPrescription(source.snapshot);
+    if(runningTrainingCompatibility(prescription,this.gateway.capabilities).length) throw new TrainingError('unsupported_prescription');
+    return {revision:source.revision,prescription};
   }
   async send(who:DeliveryActor,scheduled:string,revision:string):Promise<Json> {
     // Validar antes de reservar trabajo; claim vuelve a fijar la misma revisión.

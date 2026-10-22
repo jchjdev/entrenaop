@@ -21,6 +21,7 @@ const workoutTemplateSelect = '''
       workout_sets (
         id,
         performance_prescription,
+        running_step,
         order_index,
         target_reps,
         target_duration_seconds,

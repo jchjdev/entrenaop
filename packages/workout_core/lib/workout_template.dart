@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 import 'performance_set.dart';
+import 'running_step.dart';
+export 'running_step.dart';
 
 enum WorkoutBlockFormat {
   straightSets,
@@ -17,7 +19,7 @@ enum WorkoutBlockFormat {
 
 enum WorkoutTemplateOrigin { system, user, coach, algorithm }
 
-enum WorkoutTargetType { repetitions, duration, distance }
+enum WorkoutTargetType { repetitions, duration, distance, manual }
 
 extension WorkoutTargetEffort on WorkoutTargetType {
   bool get supportsRir => switch (this) {
@@ -43,9 +45,12 @@ class WorkoutSetDraft extends Equatable {
     this.recoveryType,
     this.recoveryDurationSeconds,
     this.recoveryDistanceMeters,
+    this.runningStep,
   });
 
   final WorkoutTargetType targetType;
+
+  /// Manual usa cero en el borrador; el codec omite cualquier medida prescrita.
   final double targetValue;
   final int restAfterSeconds;
   final double? targetLoadKg;
@@ -55,6 +60,7 @@ class WorkoutSetDraft extends Equatable {
   double? get applicableTargetRir => targetType.supportsRir ? targetRir : null;
   final int? targetPaceMinSecondsPerKm;
   final int? targetPaceMaxSecondsPerKm;
+  final RunningStepMetadata? runningStep;
   final RunningRecoveryType? recoveryType;
   final int? recoveryDurationSeconds;
   final double? recoveryDistanceMeters;
@@ -71,6 +77,7 @@ class WorkoutSetDraft extends Equatable {
     recoveryType,
     recoveryDurationSeconds,
     recoveryDistanceMeters,
+    runningStep,
   ];
 }
 
@@ -277,6 +284,7 @@ class WorkoutSet extends Equatable {
     this.recoveryType,
     this.recoveryDurationSeconds,
     this.recoveryDistanceMeters,
+    this.runningStep,
   });
 
   final String id;
@@ -301,6 +309,7 @@ class WorkoutSet extends Equatable {
   final double? targetRir;
   final int? targetPaceMinSecondsPerKm;
   final int? targetPaceMaxSecondsPerKm;
+  final RunningStepMetadata? runningStep;
   final RunningRecoveryType? recoveryType;
   final int? recoveryDurationSeconds;
   final double? recoveryDistanceMeters;
@@ -322,6 +331,7 @@ class WorkoutSet extends Equatable {
     recoveryType,
     recoveryDurationSeconds,
     recoveryDistanceMeters,
+    runningStep,
     restAfterSeconds,
   ];
 }

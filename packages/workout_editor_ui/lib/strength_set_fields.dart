@@ -140,6 +140,7 @@ class StrengthSetFields extends StatelessWidget {
     WorkoutTargetType.repetitions => 'Reps',
     WorkoutTargetType.duration => 'Tiempo',
     WorkoutTargetType.distance => 'Distancia',
+    WorkoutTargetType.manual => 'Avance manual',
   };
 
   String _displayValue(String value, bool clock) =>
@@ -165,6 +166,7 @@ class StrengthSetFields extends StatelessWidget {
                 WorkoutTargetType.repetitions => 'reps',
                 WorkoutTargetType.duration => 's',
                 WorkoutTargetType.distance => 'm',
+                WorkoutTargetType.manual => '',
               },
       ),
     if (showLoad)

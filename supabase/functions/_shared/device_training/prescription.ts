@@ -1,9 +1,12 @@
 // Contrato de carrera independiente de Garmin, Flutter y la persistencia.
-export type RunningStep={kind:"run"|"warmup"|"cooldown"|"rest"|"walk"|"jog";
-  measure:"seconds"|"meters";value:number;description:string;pace?:{fast:number;slow:number}};
+export type RunningStep={kind:"run"|"warmup"|"cooldown"|"rest"|"walk"|"jog"|"recovery";
+  measure:"seconds"|"meters"|"manual";value:number|null;description:string;pace?:{fast:number;slow:number}};
 export type RunningPrescription={name:string;description:string;date:string;source:"algorithm"|"coach";steps:RunningStep[]};
 export class TrainingError extends Error {constructor(code:string){super(code);this.name="TrainingError";}}
 type Json=Record<string,unknown>;
+const setFields=new Set(['order_index','target_reps','target_duration_seconds','target_distance_meters','target_load_kg','target_rpe','target_rir',
+  'target_pace_min_seconds_per_km','target_pace_max_seconds_per_km','recovery_type','recovery_duration_seconds','recovery_distance_meters',
+  'rest_after_seconds','performance_prescription','running_step']);
 function object(value:unknown):Json {
   if(!value || typeof value!=="object" || Array.isArray(value)) throw new TrainingError("invalid_prescription");
   return value as Json;
@@ -45,6 +48,8 @@ export function runningPrescription(value:unknown):RunningPrescription {
       if(item.exercise_id!=="20000000-0000-4000-8000-000000000004") throw new TrainingError("unsupported_prescription");
       const note=item.notes==null?"":text(item.notes,400);
       for(const set of list(item.sets,100)) {
+        // Una ampliación futura de objetivos no puede degradarse a libre en un adaptador antiguo.
+        if(Object.entries(set).some(([key,value])=>!setFields.has(key)&&value!=null)) throw new TrainingError('unsupported_prescription');
         if(set.target_reps!=null||set.target_load_kg!=null||set.target_rir!=null||set.performance_prescription!=null||set.rest_after_seconds!==0) {
           throw new TrainingError("unsupported_prescription");
         }
@@ -54,11 +59,28 @@ export function runningPrescription(value:unknown):RunningPrescription {
           description+=` · RPE orientativo ${rpe}/10`;
         }
         text(description,512);
-        const step:RunningStep={kind:block.format==="warm_up"?"warmup":block.format==="cool_down"?"cooldown":"run",
-          ...measure(set.target_duration_seconds,set.target_distance_meters),description};
+        const metadata=set.running_step;
+        let kind:RunningStep['kind']|undefined;
+        let manual=false;
+        if(metadata!=null) {
+          const m=object(metadata);
+          const kinds:Record<string,RunningStep['kind']>={warmup:'warmup',run:'run',recovery:'recovery',rest:'rest',cooldown:'cooldown',walking:'walk',jogging:'jog'};
+          if(m.schema_version!==2 || Object.keys(m).length!==3 || !Object.hasOwn(kinds,String(m.kind)) ||
+            !['time','distance','manual'].includes(String(m.completion))) throw new TrainingError('unsupported_prescription');
+          kind=kinds[String(m.kind)]; manual=m.completion==='manual';
+          if(manual ? set.target_duration_seconds!=null||set.target_distance_meters!=null :
+            m.completion!==(set.target_duration_seconds!=null?'time':'distance')) throw new TrainingError('invalid_prescription');
+        }
+        const step:RunningStep={kind:kind??(block.format==="warm_up"?"warmup":block.format==="cool_down"?"cooldown":"run"),
+          ...(manual?{measure:'manual' as const,value:null}:measure(set.target_duration_seconds,set.target_distance_meters)),description};
+        if(kind) {
+          const labels:Record<string,string>={warmup:'Calentamiento',run:'Carrera',cooldown:'Enfriamiento',rest:'Descanso',recovery:'Recuperación',walk:'Caminar',jog:'Trotar'};
+          step.description=[labels[kind],note].filter(Boolean).join(' · ')+(set.target_rpe!=null?` · RPE orientativo ${set.target_rpe}/10`:'');
+        }
         const fast=set.target_pace_min_seconds_per_km,slow=set.target_pace_max_seconds_per_km;
         if((fast==null)!==(slow==null)) throw new TrainingError("invalid_prescription");
         if(fast!=null){const f=positive(fast),s=positive(slow);if(!Number.isInteger(f)||!Number.isInteger(s)||f>s||s>3600) throw new TrainingError("invalid_prescription");step.pace={fast:f,slow:s};}
+        if(step.kind==='rest' && (step.measure==='meters'||step.pace)) throw new TrainingError('unsupported_prescription');
         steps.push(step);
         if(set.recovery_type!=null) {
           const kind=({passive:"rest",walking:"walk",jogging:"jog"} as const)[String(set.recovery_type) as "passive"|"walking"|"jogging"];

@@ -106,12 +106,14 @@ TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
   }
   final steps = (p['steps'] as List)
       .map((v) {
-        final value = (v['value'] as num).toDouble();
-        if (!value.isFinite ||
-            value <= 0 ||
-            !['seconds', 'meters'].contains(v['measure']) ||
+        final value = (v['value'] as num?)?.toDouble();
+        if ((v['measure'] == 'manual'
+                ? value != null
+                : value == null || !value.isFinite || value <= 0) ||
+            !['seconds', 'meters', 'manual'].contains(v['measure']) ||
             ![
               'run',
+              'recovery',
               'warmup',
               'cooldown',
               'rest',

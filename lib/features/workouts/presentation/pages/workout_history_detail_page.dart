@@ -842,6 +842,12 @@ String _target(WorkoutExecutionSet set) {
     return '${_number(p.targetValue)} ${p.unit}';
   }
   final parts = <String>[];
+  if (set.runningStep != null) {
+    parts.add(set.runningStep!.kind.label);
+    if (set.runningStep!.completion == RunningStepCompletion.manual) {
+      parts.add('Hasta avance manual');
+    }
+  }
   if (set.targetReps != null) parts.add('${set.targetReps} rep');
   if (set.targetDurationSeconds != null) {
     parts.add('${set.targetDurationSeconds} s');

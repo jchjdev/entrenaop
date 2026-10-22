@@ -21,9 +21,13 @@ class RunningStepFields extends StatelessWidget {
     required this.onRecoveryMeasureChanged,
     required this.onEdited,
     this.targetValidator,
+    this.stepKind = RunningStepKind.run,
+    this.onStepKindChanged,
     this.adminLabels = false,
   });
 
+  final RunningStepKind stepKind;
+  final ValueChanged<RunningStepKind>? onStepKindChanged;
   final WorkoutTargetType targetType;
   final TextEditingController targetController;
   final TextEditingController paceMinController;
@@ -44,6 +48,23 @@ class RunningStepFields extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (onStepKindChanged != null) ...[
+          DropdownButtonFormField<RunningStepKind>(
+            key: ValueKey('step-kind-$stepKind'),
+            initialValue: stepKind,
+            isExpanded: true,
+            itemHeight: null,
+            decoration: const InputDecoration(labelText: 'Tipo de paso'),
+            items: [
+              for (final kind in RunningStepKind.values)
+                DropdownMenuItem(value: kind, child: Text(kind.label)),
+            ],
+            onChanged: (value) {
+              if (value != null) onStepKindChanged!(value);
+            },
+          ),
+          const SizedBox(height: 12),
+        ],
         ResponsiveFieldGroup(
           children: [
             DropdownButtonFormField<WorkoutTargetType>(
@@ -54,13 +75,15 @@ class RunningStepFields extends StatelessWidget {
               isExpanded: true,
               isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
               itemHeight: null,
-              decoration: InputDecoration(
-                labelText: adminLabels ? 'Tipo de objetivo' : 'Objetivo',
-              ),
+              decoration: InputDecoration(labelText: 'Cuándo termina'),
               items: const [
                 DropdownMenuItem(
                   value: WorkoutTargetType.distance,
                   child: Text('Distancia'),
+                ),
+                DropdownMenuItem(
+                  value: WorkoutTargetType.manual,
+                  child: Text('Avance manual'),
                 ),
                 DropdownMenuItem(
                   value: WorkoutTargetType.duration,
@@ -71,21 +94,32 @@ class RunningStepFields extends StatelessWidget {
                 if (value != null) onTargetTypeChanged(value);
               },
             ),
-            _valueField(
-              targetController,
-              clock: !byDistance,
-              label: adminLabels
-                  ? byDistance
-                        ? 'Distancia (m)'
-                        : 'Tiempo (m:ss)'
-                  : byDistance
-                  ? 'Metros'
-                  : 'Min:seg',
-              validator: targetValidator,
-            ),
+            if (targetType != WorkoutTargetType.manual)
+              _valueField(
+                targetController,
+                clock: !byDistance,
+                label: adminLabels
+                    ? byDistance
+                          ? 'Distancia (m)'
+                          : 'Tiempo (m:ss)'
+                    : byDistance
+                    ? 'Metros'
+                    : 'Min:seg',
+                validator: targetValidator,
+              ),
           ],
         ),
         const SizedBox(height: 12),
+        if (targetType == WorkoutTargetType.manual)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text('En el reloj, termina al pulsar Lap.'),
+          ),
+        if (adminLabels)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Text('Intensidad libre si no indicas ritmo'),
+          ),
         if (!adminLabels) ...[
           const Text('Ritmo opcional', style: TextStyle(color: Colors.white70)),
           const SizedBox(height: 7),

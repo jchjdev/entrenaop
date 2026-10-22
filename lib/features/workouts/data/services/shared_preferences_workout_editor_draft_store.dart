@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:workout_core/running_step_codec.dart';
+
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:entrenaop/features/workouts/domain/services/workout_editor_draft_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,6 +79,10 @@ Map<String, dynamic> _inputToJson(CreatePersonalWorkoutInput input) => {
                   'sets': exercise.sets
                       .map(
                         (set) => {
+                          if (set.runningStep != null)
+                            'running_step': RunningStepCodec.encode(
+                              set.runningStep!,
+                            ),
                           'target_type': set.targetType.name,
                           'target_value': set.targetValue,
                           'rest_after_seconds': set.restAfterSeconds,
@@ -126,6 +132,9 @@ CreatePersonalWorkoutInput _inputFromJson(
                       .map((value) => Map<String, dynamic>.from(value as Map))
                       .map(
                         (set) => WorkoutSetDraft(
+                          runningStep: RunningStepCodec.decode(
+                            set['running_step'],
+                          ),
                           targetType: WorkoutTargetType.values.byName(
                             set['target_type'] as String,
                           ),

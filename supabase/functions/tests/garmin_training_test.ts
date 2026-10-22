@@ -1,9 +1,10 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {runningTrainingCompatibility} from "../_shared/device_training/capabilities.ts";
 import {runningPrescription} from "../_shared/device_training/prescription.ts";
 import {TrainingDeliveryService,DeliveryFailure} from "../_shared/device_training/delivery.ts";
 import type {TrainingDeliveryStore,DeliveryActor,AccessGrant,TrainingGateway} from "../_shared/device_training/delivery.ts";
-import {garminRunningWorkout,GarminTrainingClient} from "../_shared/garmin/training.ts";
+import {garminRunningWorkout,GarminTrainingClient,garminRunningCapabilities} from "../_shared/garmin/training.ts";
 import {handleGarminTraining} from "../_shared/garmin/training_http.ts";
 const owner="10000000-0000-4000-8000-000000000001",session="20000000-0000-4000-8000-000000000001";
 const scheduled="30000000-0000-4000-8000-000000000001",revision="a".repeat(64);
@@ -33,6 +34,7 @@ test("rechaza degradación, orden ambiguo, recetas ajenas y duración/distancia 
   (p:any)=>p.blocks[0].items[0].exercise_id="strength",(p:any)=>p.blocks[0].items[0].sets[0].target_duration_seconds=600,
   (p:any)=>p.blocks[0].items[0].sets[0].order_index=9,(p:any)=>p.blocks[0].items[0].sets[0].target_distance_meters=Infinity,
   (p:any)=>p.blocks[0].items[0].sets[0].rest_after_seconds=45,(p:any)=>p.blocks[0].items[0].sets[0].target_load_kg=20,
+  (p:any)=>p.blocks[0].items[0].sets[0].target_heart_rate_bpm=150,
   (p:any)=>p.blocks[0].items[0].sets[0].recovery_type="unknown",(p:any)=>p.blocks[0].items[0].sets[0].target_pace_max_seconds_per_km=200];
  for(const edit of edits){const raw=source();edit(raw);assert.throws(()=>runningPrescription(raw));}
 });
@@ -81,7 +83,7 @@ test("un calendario ambiguo o sin referencia no se anuncia como enviado",async()
   await assert.rejects(new GarminTrainingClient(async()=>Response.json(result)).confirmSchedule("fixture",123,"2026-10-27"),/schedule_not_confirmed/);
  }
 });
-function fixture(options:{expired?:boolean;permission?:boolean;saveLost?:boolean;createUnknown?:boolean;scheduleUnknown?:boolean;confirmFail?:boolean;rejectSchedule?:boolean}={}){
+function fixture(options:{expired?:boolean;permission?:boolean;saveLost?:boolean;createUnknown?:boolean;scheduleUnknown?:boolean;confirmFail?:boolean;rejectSchedule?:boolean;unsupported?:boolean}={}){
  const calls:string[]=[],row:any={id:"delivery",status:"prepared",workout_id:null,garmin_user_id:"fixture-user",generation:2};
  const receipt=()=>({id:row.id,scheduled_id:scheduled,status:row.status,name:"Carrera",date:"2026-10-27",error_code:row.error_code??null});
  const store:TrainingDeliveryStore={async command(action,actor,input){
@@ -98,7 +100,7 @@ function fixture(options:{expired?:boolean;permission?:boolean;saveLost?:boolean
   if(action==="fail"){row.status=input.uncertain?"uncertain":"failed";row.error_code=input.code;}
   return receipt();
  }};
- const gateway:TrainingGateway={async create(){calls.push("POST_workout");if(options.createUnknown)throw new DeliveryFailure("provider_unavailable",true);return 123;},
+ const gateway:TrainingGateway={capabilities:options.unsupported?{...garminRunningCapabilities,canSend:false}:garminRunningCapabilities,async create(){calls.push("POST_workout");if(options.createUnknown)throw new DeliveryFailure("provider_unavailable",true);return 123;},
   async schedule(){calls.push("POST_schedule");if(options.scheduleUnknown)throw new DeliveryFailure("provider_unavailable",true);if(options.rejectSchedule)throw new DeliveryFailure("rate_limited");},
   async confirmSchedule(){calls.push("GET_schedule");if(options.confirmFail)throw new DeliveryFailure("rate_limited");return 456;}};
  const account={async refresh(){calls.push("refresh");return grant;},async userId(){calls.push("identity");return "fixture-user";},
@@ -169,4 +171,39 @@ test("Trainer exige también aal2 en el JWT verificado antes de acceder al alumn
  }
  assert.equal((await handleGarminTraining(request("aal1"),config,fetcher)).status,403);assert.equal(sqlCalls,0);
  assert.equal((await handleGarminTraining(request("aal2"),config,fetcher)).status,200);assert.equal(sqlCalls,1);
+});
+
+
+test('V2 conserva Lap, cinco series con recuperación final y enfriamiento en Garmin',()=>{
+ const raw:any=source(),work={...raw.blocks[0].items[0].sets[0],target_distance_meters:400,recovery_type:'passive',recovery_duration_seconds:90,
+  running_step:{schema_version:2,kind:'run',completion:'distance'}};
+ const open=(kind:string,order:number)=>({order_index:order,rest_after_seconds:0,running_step:{schema_version:2,kind,completion:'manual'}});
+ raw.blocks[0].items[0].sets=[open('warmup',0),...Array.from({length:5},(_,i)=>({...work,order_index:i+1})),open('cooldown',6)];
+ const before=JSON.stringify(raw),p=runningPrescription(raw),out=garminRunningWorkout(p),steps=out.segments[0].steps;
+ assert.equal(JSON.stringify(raw),before); assert.equal(out.sport,'RUNNING'); assert.equal(steps.length,12);
+ assert.equal(steps[0].intensity,'WARMUP'); assert.equal(steps.at(-1)!.intensity,'COOLDOWN');
+ for(const step of [steps[0],steps.at(-1)!]) {assert.equal(step.durationType,'OPEN');assert.equal(Object.hasOwn(step,'durationValue'),false);}
+ assert.equal(p.steps[0].value,null);
+ for(let i=1;i<11;i+=2) {assert.equal(steps[i].durationValue,400);assert.equal(steps[i+1].durationValue,90);assert.equal(steps[i+1].intensity,'REST');}
+ assert.equal(steps[1].targetValueLow,1000/360);assert.equal(steps[1].targetValueHigh,1000/300);
+ assert.equal(steps[0].description,'Calentamiento · Ritmo cómodo');
+});
+test('V2 rechaza versión, tipo, fin contradictorio y descanso con distancia',()=>{
+ const mutations=[(s:any)=>s.running_step.schema_version=3,(s:any)=>s.running_step.kind='alien',
+  (s:any)=>s.running_step.completion='manual',(s:any)=>s.running_step.completion='time',
+  (s:any)=>s.running_step.extra='drop-me',(s:any)=>s.running_step.kind='rest'];
+ for(const edit of mutations){const raw:any=source(),set=raw.blocks[0].items[0].sets[0];
+  set.running_step={schema_version:2,kind:'run',completion:'distance'};edit(set);assert.throws(()=>runningPrescription(raw));}
+});
+test('las capacidades detectan incompatibilidad por paso sin adaptar la receta',()=>{
+ const p=runningPrescription(source()),before=JSON.stringify(p);
+ const issues=runningTrainingCompatibility(p,{canSend:false,maxSteps:1,kinds:['run'],completions:['seconds'],pace:false});
+ assert.deepEqual(issues,[{step:null,reason:'send_unavailable'},{step:null,reason:'step_limit'},
+  {step:0,reason:'completion'},{step:0,reason:'pace'},{step:1,reason:'step_kind'}]);
+ assert.equal(JSON.stringify(p),before);
+});
+
+test('capacidad no admitida se bloquea en vista previa antes de claim o llamadas externas',async()=>{
+ const f=fixture({unsupported:true});await assert.rejects(f.service.send(who,scheduled,revision),/unsupported_prescription/);
+ assert.deepEqual(f.calls,['preview']);
 });

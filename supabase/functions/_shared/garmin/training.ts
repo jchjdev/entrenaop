@@ -1,12 +1,19 @@
+import {runningTrainingCompatibility} from "../device_training/capabilities.ts";
+import {TrainingError} from "../device_training/prescription.ts";
 import type {RunningPrescription} from "../device_training/prescription.ts";
 import {DeliveryFailure} from "../device_training/delivery.ts";
 import type {TrainingGateway} from "../device_training/delivery.ts";
+export const garminRunningCapabilities={canSend:true,maxSteps:100,
+  kinds:['run','warmup','cooldown','recovery','rest','walk','jog'],
+  completions:['seconds','meters','manual'],pace:true} as const;
 export function garminRunningWorkout(p:RunningPrescription) {
+  if(runningTrainingCompatibility(p,garminRunningCapabilities).length) throw new TrainingError('unsupported_prescription');
   return {workoutName:p.name,description:p.description||"Sesión de carrera prescrita en EntrenaOP.",sport:"RUNNING",
     workoutProvider:"EntrenaOP",workoutSourceId:"EntrenaOP",segments:[{segmentOrder:1,sport:"RUNNING",steps:p.steps.map((step,index)=>({
       type:"WorkoutStep",stepOrder:index+1,description:step.description,
-      intensity:({run:"ACTIVE",warmup:"WARMUP",cooldown:"COOLDOWN",rest:"REST",walk:"RECOVERY",jog:"RECOVERY"} as const)[step.kind],
-      durationType:step.measure==="seconds"?"TIME":"DISTANCE",durationValue:step.value,
+      intensity:({run:"ACTIVE",warmup:"WARMUP",cooldown:"COOLDOWN",rest:"REST",walk:"RECOVERY",jog:"RECOVERY",recovery:"RECOVERY"} as const)[step.kind],
+      durationType:step.measure==="manual"?"OPEN":step.measure==="seconds"?"TIME":"DISTANCE",
+      ...(step.measure==="manual"?{}:{durationValue:step.value}),
       // TIME usa segundos y DISTANCE metros; durationValueType solo modifica HR/POWER.
       targetType:step.pace?"PACE":"OPEN",
       // Garmin espera velocidad m/s: el extremo lento corresponde al mínimo.
@@ -17,6 +24,7 @@ function id(value:unknown):number {
   if(typeof value!=="number"||!Number.isSafeInteger(value)||value<=0) throw new DeliveryFailure("invalid_provider_response",true);return value;
 }
 export class GarminTrainingClient implements TrainingGateway {
+  readonly capabilities=garminRunningCapabilities;
   private readonly f:typeof fetch;
   constructor(f:typeof fetch=fetch){this.f=f;}
   private async request(path:string,token:string,body?:unknown):Promise<unknown> {

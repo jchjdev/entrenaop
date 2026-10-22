@@ -29,9 +29,11 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
 
   String pace(double value) =>
       '${value ~/ 60}:${(value.round() % 60).toString().padLeft(2, '0')}';
-  String measure(TrainingStep step) => step.measure == 'seconds'
-      ? '${step.value.toStringAsFixed(0)} s'
-      : '${step.value % 1 == 0 ? step.value.toStringAsFixed(0) : step.value.toString()} m';
+  String measure(TrainingStep step) => step.measure == 'manual'
+      ? 'Hasta pulsar Lap'
+      : step.measure == 'seconds'
+      ? '${step.value!.toStringAsFixed(0)} s'
+      : '${step.value! % 1 == 0 ? step.value!.toStringAsFixed(0) : step.value.toString()} m';
   String error(String code) => switch (code) {
     'account_changed' =>
       'Tu sesión ha cambiado. Vuelve a entrar antes de enviar.',

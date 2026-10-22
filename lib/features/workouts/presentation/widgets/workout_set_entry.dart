@@ -453,6 +453,11 @@ class _WorkoutSetEntryState extends State<WorkoutSetEntry> {
                 onPressed: widget.saving ? null : widget.onSkipWarmUp,
                 child: const Text('Omitir calentamiento'),
               ),
+            if (set.runningStep?.completion == RunningStepCompletion.manual)
+              const Text(
+                'Avanza cuando estés preparado. En el reloj, pulsa Lap.',
+                textAlign: TextAlign.center,
+              ),
             const SizedBox(height: 12),
             Wrap(
               alignment: WrapAlignment.center,

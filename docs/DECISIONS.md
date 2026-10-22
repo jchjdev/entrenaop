@@ -6,7 +6,11 @@ con capacidades explícitas y sin perder pasos o alterar la pauta silenciosament
 La definición separa tipo de paso, condición de finalización y objetivo.
 El avance manual es un concepto del dominio; Lap es su presentación en Garmin.
 La misma receta debe servir al creador de las tres apps y a su ejecución.
-Es una decisión para el siguiente bloque, no una capacidad ya implementada.
+Primera vertical implementada: tipos de paso, tiempo/distancia/manual y
+libre/ritmo en las tres apps, guardado compatible, ejecución y exportador Garmin.
+Migraciones y servidor activos solo en Dev. Pulso/cadencia/potencia y la nueva
+comprobación física del fēnix siguen pendientes.
+[Implementación y verificación](RUNNING_STEPS_V2.md).
 [Contrato y secuencia propuesta](WORKOUT_EDITOR_SHARED_2026_10_22.md#siguiente-contrato-de-carrera-int-009).
 
 **INT-008 · 22/10/2026 · creador único para deportista, ADMIN y Trainer:**

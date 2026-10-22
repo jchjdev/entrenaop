@@ -7,9 +7,13 @@ Deportista, ADMIN y Trainer consumen `WorkoutEditorPage` del paquete
 son fachadas sobre `PersonalWorkoutEditor`: catálogo, recuperación local y
 guardado mediante su Cubit, sin repetir el formulario o su proyección. El
 paquete recibe opcionalmente persistencia local opaca o binding durable;
-no obtiene SDK, identidad ni permisos del consumidor. Se conserva la receta
-actual de `workout_core` y el SQL existente. Fases de carrera y exportación
-de fuerza requieren su bloque posterior, no se simulan con etiquetas.
+no obtiene SDK, identidad ni permisos del consumidor. INT-009 amplía la receta
+de `workout_core` con tipos de paso y finalización manual; un codec separado
+persiste metadatos V2 en columnas JSONB aditivas de receta/ejecución. Las recetas
+V1 conservan sus datos y huellas. Los bindings siguen propios de cada app.
+El puerto de envío declara capacidades que el servicio verifica en la vista
+previa; Garmin traduce avance manual a OPEN. Fuerza Garmin sigue pendiente.
+[Contrato de pasos V2](RUNNING_STEPS_V2.md).
 [Contrato y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md).
 
 ## Envío común de carrera · INT-007 · 22/10/2026

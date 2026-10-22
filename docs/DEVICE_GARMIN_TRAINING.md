@@ -39,7 +39,8 @@ no incorpora ese botón. No se cambia Inicio, Preparador ni el portal profesiona
 
 Se reutiliza la receta común, sin copiar el algoritmo o el editor ni introducir
 paquetes externos. El endpoint compartido evita otro motor de Garmin para
-entrenadores. No modifica el contrato de ejecución o cumplimiento de una pauta.
+entrenadores. INT-009 añade la semántica de paso/manual a la receta y su snapshot de
+ejecución sin cambiar autoridades de pauta. [Detalle](RUNNING_STEPS_V2.md).
 
 ## Compatibilidad de la primera entrega
 
@@ -49,8 +50,9 @@ El archivo completo y sus anexos permanecen locales e ignorados por Git.
 
 - Carrera de un deporte, secuencia plana de hasta cien pasos contando
   recuperaciones. No representa circuitos/rondas o modalidades mixtas.
-- Duración en segundos o distancia en metros, nunca ambas ni una estimación de
-  una a partir de la otra. Se conserva recuperación final prescrita.
+- Duración en segundos, distancia en metros o avance manual OPEN; nunca se
+  mezclan medidas ni se inventa duración para Lap. Se conserva recuperación
+  final prescrita. Los metadatos V2 ya distinguen calentamiento y enfriamiento.
 - Ritmo opcional en segundos/km convertido a PACE en m/s, invirtiendo extremos:
   mínimo de velocidad = 1000 / ritmo lento. No se inventan zonas o pulso.
 - Recuperación pasiva, andando o trotando en su medida original. Andar/trotar y
@@ -180,9 +182,10 @@ en Dev como `garmin-training` ACTIVE v2. Petición sin sesión: 401. El recibo
 anterior conserva `sent`, referencias confirmadas y lease liberado; no se
 reescribe ni se vuelve a enviar. Este cambio de servidor no exige reinstalar iOS.
 
-Siguiente tramo único: concretar la diferencia señalada por Javier, comparar
-receta/vista previa y detalle del reloj y verificar rangos/instrucciones/avisos
-antes de extender repeticiones o capacidades. Las capturas, el vídeo y las
+Siguiente tramo único tras INT-009: comparar la nueva receta con calentamiento
+y enfriamiento hasta Lap, cinco series y recuperación en EntrenaOP y fēnix;
+verificar transiciones y ambos límites de ritmo antes de ampliar objetivos.
+[Implementación y pruebas](RUNNING_STEPS_V2.md). Las capturas, el vídeo y las
 métricas exactas se conservan fuera de Git; solo se registra el resumen técnico.
 
 Sigue pendiente antes de producción la limpieza de la cuenta externa al borrar

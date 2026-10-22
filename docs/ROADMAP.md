@@ -1,20 +1,22 @@
 # Roadmap de EntrenaOP
 
-**INT-009 · 22/10/2026 · siguiente contrato de carrera acordado:** tipo de paso,
-finalización y objetivo propios de EntrenaOP, traducidos por proveedor y con
-comprobación de capacidades. Sin pérdidas ni adaptación silenciosa de la pauta.
-Secuencia propuesta: contrato compatible/versionado → vertical común con
-fases, tiempo/distancia/manual y libre/ritmo → prueba fēnix → objetivos de
-pulsaciones/cadencia/potencia. Todavía no implementado.
-[Contrato y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md#siguiente-contrato-de-carrera-int-009).
+**INT-009 · 22/10/2026 · pasos de carrera V2 implementados:** tipos de paso,
+finalización por tiempo/distancia/manual y objetivos libre/ritmo en el creador
+común, borradores, guardado, vistas y ejecución. Metadatos versionados aditivos,
+huellas V1 conservadas, revisión antigua bloqueada y capacidades por proveedor
+comprobadas antes de reservar el envío. Dos migraciones aplicadas solo en Dev;
+servidor 114 pruebas y tipos estrictos, raíz 1.292, ADMIN 314, Trainer 170 y
+paquete 161; omisiones previas conservadas. **Siguiente recorrido único:**
+comprobar en fēnix una pauta nueva con Lap → 5 × (400 m + 90 s) → Lap y ambos
+límites de ritmo. Pulso/cadencia/potencia y fuerza Garmin siguen pendientes.
+[Implementación y límites](RUNNING_STEPS_V2.md).
 
 **INT-008 · 22/10/2026 · creador común en las tres apps:** las entradas personales
 de carrera y fuerza montan el mismo formulario que ADMIN/Trainer. Se conservan
 catálogos, Pro, cuotas, rutas, versiones y borradores por cuenta; mejora común de
 autoguardado de excepciones, valores opcionales por serie y límite expandido.
-El contrato SQL sigue intacto. **Siguiente bloque único:** fases explícitas de
-carrera con persistencia, recuperación, ejecución y exportación coherentes;
-fuerza Garmin sigue pendiente. La interfaz nueva requiere reinstalar en iPhone.
+El contrato SQL se conservó en INT-008 y se amplía después con INT-009 para
+los pasos de carrera; fuerza Garmin sigue pendiente. La interfaz nueva requiere reinstalar en iPhone.
 Análisis de las tres apps limpios; raíz 1.279, ADMIN 314, Trainer 170 y paquete
 común 155 pruebas correctas, con las omisiones previas conservadas.
 Trainer y ADMIN Dev publicados y verificados por HTTPS en `f12df112`; CI Garmin

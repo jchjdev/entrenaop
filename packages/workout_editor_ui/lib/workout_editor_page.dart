@@ -123,6 +123,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           'paceMaxText': v.paceMax.text,
           'recoveryTimeText': v.recoveryTime.text,
           'byDistance': v.byDistance,
+          if (v.kind != null) 'stepKind': v.kind!.name,
+          if (v.manual) 'manual': true,
           'recoveryByDistance': v.recoveryByDistance,
           'recoveryType': v.recovery?.name,
         },
@@ -191,6 +193,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ..pace.text = row['paceText'] as String
           ..paceMax.text = row['paceMaxText'] as String
           ..recoveryTime.text = row['recoveryTimeText'] as String
+          ..kind = row['stepKind'] == null
+              ? null
+              : RunningStepKind.values.byName(row['stepKind'] as String)
+          ..manual = row['manual'] == true
           ..byDistance = row['byDistance'] as bool
           ..recoveryByDistance = row['recoveryByDistance'] as bool
           ..recovery = row['recoveryType'] == null
@@ -433,6 +439,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         segment.paceMax.text,
         segment.recoveryTime.text,
         segment.byDistance,
+        segment.kind?.name,
+        segment.manual,
         segment.recoveryByDistance,
         segment.recovery?.name,
       ],
@@ -669,7 +677,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
   String? _runningEstimate() {
     if (!_running ||
-        _segments.any((segment) => segment.target.text.trim().isEmpty)) {
+        _segments.any(
+          (segment) => !segment.manual && segment.target.text.trim().isEmpty,
+        )) {
       return null;
     }
     try {
@@ -678,7 +688,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         input.blocks.single.exercises.single.sets,
       );
       if (!estimate.isComplete) {
-        return 'Completa los ritmos para calcular la duración.';
+        return _segments.any((s) => s.manual)
+            ? 'Duración abierta: hay pasos hasta avance manual.'
+            : 'Completa los ritmos para calcular la duración.';
       }
       final low = (estimate.minimumSeconds / 60).round();
       final high = (estimate.maximumSeconds / 60).round();
@@ -989,7 +1001,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                 const SizedBox(height: 12),
                 RunningStepFields(
                   adminLabels: true,
-                  targetType: _segments[i].byDistance
+                  stepKind: _segments[i].kind ?? RunningStepKind.run,
+                  onStepKindChanged: (kind) => setState(() {
+                    _segments[i].kind = kind;
+                    if (kind == RunningStepKind.rest) {
+                      _segments[i].byDistance = false;
+                      _segments[i].target.text = '01:00';
+                      _segments[i].pace.clear();
+                      _segments[i].paceMax.clear();
+                    }
+                  }),
+                  targetType: _segments[i].manual
+                      ? WorkoutTargetType.manual
+                      : _segments[i].byDistance
                       ? WorkoutTargetType.distance
                       : WorkoutTargetType.duration,
                   targetController: _segments[i].target,
@@ -1000,6 +1024,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   recoveryController: _segments[i].recoveryTime,
                   onEdited: () => setState(() {}),
                   onTargetTypeChanged: (value) => setState(() {
+                    _segments[i].manual = value == WorkoutTargetType.manual;
                     _segments[i].byDistance =
                         value == WorkoutTargetType.distance;
                     _segments[i].target.text = _segments[i].byDistance
@@ -1720,6 +1745,9 @@ class _Segment {
 
   factory _Segment.fromSet(WorkoutSet set) {
     final segment = _Segment();
+    segment.kind = set.runningStep?.kind;
+    segment.manual =
+        set.runningStep?.completion == RunningStepCompletion.manual;
     segment.byDistance = set.targetDistanceMeters != null;
     segment.target.text = set.targetDistanceMeters != null
         ? _number(set.targetDistanceMeters!)
@@ -1741,6 +1769,8 @@ class _Segment {
   }
 
   bool matches(WorkoutSet set) =>
+      kind == set.runningStep?.kind &&
+      manual == (set.runningStep?.completion == RunningStepCompletion.manual) &&
       byDistance == (set.targetDistanceMeters != null) &&
       target.text ==
           (set.targetDistanceMeters != null
@@ -1767,6 +1797,8 @@ class _Segment {
   final pace = TextEditingController();
   final paceMax = TextEditingController();
   final recoveryTime = TextEditingController(text: '01:00');
+  RunningStepKind? kind = RunningStepKind.run;
+  bool manual = false;
   bool byDistance = true;
   bool recoveryByDistance = false;
   RunningRecoveryType? recovery;

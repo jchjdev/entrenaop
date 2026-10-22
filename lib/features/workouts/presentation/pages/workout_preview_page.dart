@@ -697,6 +697,7 @@ bool _setsAreEquivalent(List<WorkoutSet> sets) {
       .skip(1)
       .every(
         (set) =>
+            set.runningStep == first.runningStep &&
             set.performancePrescription == first.performancePrescription &&
             set.targetReps == first.targetReps &&
             set.targetDurationSeconds == first.targetDurationSeconds &&
@@ -755,7 +756,12 @@ String _setPrescription(
     (_, _, final double meters) => '${_number(meters)} m',
     _ => 'objetivo configurado',
   };
-  parts.add(target);
+  if (set.runningStep != null) parts.add(set.runningStep!.kind.label);
+  parts.add(
+    set.runningStep?.completion == RunningStepCompletion.manual
+        ? 'Hasta avance manual'
+        : target,
+  );
   if (set.targetLoadKg case final load?) {
     parts.add('${_number(load)} kg');
   }

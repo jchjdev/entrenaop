@@ -1,3 +1,4 @@
+import 'package:workout_core/running_step_codec.dart';
 import 'package:workout_core/workout_template.dart';
 
 Map<String, dynamic> workoutDraftToJson(CreatePersonalWorkoutInput input) => {
@@ -61,5 +62,7 @@ Map<String, dynamic> _setDraftToJson(WorkoutSetDraft set) => {
   },
   'recovery_duration_seconds': set.recoveryDurationSeconds,
   'recovery_distance_meters': set.recoveryDistanceMeters,
+  if (set.runningStep != null)
+    'running_step': RunningStepCodec.encode(set.runningStep!),
   'rest_after_seconds': set.restAfterSeconds,
 };

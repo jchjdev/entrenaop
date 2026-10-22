@@ -3,8 +3,12 @@
 **INT-008 · 22/10/2026 · un creador de sesiones para las tres apps:** deportista,
 ADMIN y Trainer consumen el mismo formulario de carrera/fuerza mediante sus
 adaptadores y permisos propios. Se conservan versiones y recuperación de
-borradores; crear fuerza no implica todavía poder enviarla a Garmin. Las fases
-de carrera necesitan ampliar el contrato vigente del bloque único.
+borradores; crear fuerza no implica todavía poder enviarla a Garmin. INT-009
+incorpora tipos de paso de carrera, tiempo/distancia/avance manual y objetivos
+libre o ritmo en las tres apps. Se conserva su semántica al guardar y ejecutar;
+el exportador Dev admite avance hasta Lap. La prueba física nueva y los
+objetivos de pulso/cadencia/potencia siguen pendientes.
+[Alcance de carrera V2](RUNNING_STEPS_V2.md).
 [Implementación y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md).
 
 **TRN-025 · 22/10/2026 · navegación del alumno:** Inicio, Mi plan, Biblioteca y

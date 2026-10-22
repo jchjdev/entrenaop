@@ -50,18 +50,18 @@ tres aplicaciones; sus servicios, catálogos, cuotas y permisos siguen separados
   expandido y rango de duración estimada. El límite de cuarenta se comprueba
   sumando todas las tarjetas, no solo el contador de cada una.
 
-Los borradores durables de ADMIN y Trainer mantienen su binding, revisión,
-intención congelada, recibos y RPC. No se modifican tablas, migraciones, RLS,
-sesiones publicadas, asignaciones, algoritmo o trabajo de dos preparadores.
+La entrega INT-008 conservó bindings durables, revisión, intención congelada,
+recibos y RPC de ADMIN/Trainer, sin cambios SQL. INT-009 amplía después la
+persistencia y validación de pasos, manteniendo las autoridades existentes.
+[Estado actual de carrera V2](RUNNING_STEPS_V2.md).
 
 ## Límites y siguiente bloque
 
-La unificación no cambia el contrato de carrera publicado: actualmente el
-creador guarda un bloque `running` con tramos individuales. No se añaden
-etiquetas que aparenten calentamiento/vuelta a la calma sin persistir esa
-semántica. El siguiente bloque es ampliar esa representación de forma coherente
-en modelo, validación/SQL, recuperación y ejecución, y comprobar su traducción
-a Garmin con receta versionada. También debe preservar las sesiones antiguas.
+El creador guarda un bloque `running` con tramos individuales. Desde INT-009,
+cada paso puede conservar semántica V2 de fase y finalización, incluida manual,
+en receta, borradores y ejecución. Las sesiones antiguas siguen admitidas.
+La siguiente comprobación es física: transiciones y avisos de la nueva receta
+en el fēnix. [Implementación y límites](RUNNING_STEPS_V2.md).
 
 La fuerza se crea y revisa con el mismo formulario, pero su exportación a Garmin
 sigue pendiente del adaptador de ejercicios/series y de una matriz de capacidad.
@@ -91,7 +91,8 @@ Una adaptación que cambie la pauta requerirá elección explícita; nunca se
 suprimen pasos silenciosamente. No se presume que todas las opciones del
 creador de Garmin Connect estén disponibles por API ni en todos los relojes.
 
-Secuencia propuesta de implementación, aún pendiente:
+Secuencia acordada: los puntos 1–2 se implementan en [Carrera V2](RUNNING_STEPS_V2.md);
+los puntos 3–4 continúan pendientes:
 
 1. Versionar el contrato de receta y concretar compatibilidad con las sesiones
    anteriores, validación, borradores, almacenamiento y ejecución. Evitar otra
@@ -106,10 +107,9 @@ Secuencia propuesta de implementación, aún pendiente:
    validaciones y capacidades verificadas. Mantener deshabilitada cualquier
    opción todavía no implementada de extremo a extremo.
 
-Esta decisión no modifica todavía SQL, permisos, algoritmos, publicación de
-sesiones, integraciones de otras marcas ni el envío de fuerza. La siguiente
-entrega exige inspección de las fronteras afectadas y sus pruebas antes de
-considerar implementada cada opción.
+La primera vertical modifica SQL de forma aditiva y se verifica en Dev.
+Mantiene permisos, algoritmo y autoridades de publicación. Otras marcas,
+nuevos objetivos y fuerza conservan sus adaptadores y pruebas pendientes.
 
 ## Verificación y distribución
 

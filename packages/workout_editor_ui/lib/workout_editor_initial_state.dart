@@ -25,6 +25,8 @@ WorkoutEditorSnapshot workoutEditorStateFromInput(
     }
     for (final set in input.blocks.single.exercises.single.sets) {
       final row = <String, dynamic>{
+        if (set.runningStep != null) 'stepKind': set.runningStep!.kind.name,
+        if (set.targetType == WorkoutTargetType.manual) 'manual': true,
         'countText': '1',
         'targetText': set.targetType == WorkoutTargetType.duration
             ? formatDurationSeconds(set.targetValue.round())

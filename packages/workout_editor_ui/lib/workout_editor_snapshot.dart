@@ -46,6 +46,8 @@ class WorkoutEditorSnapshot {
     texts(value, ['nameText', 'descriptionText', 'durationText']);
     for (final s in rows(value, 'segments', 40)) {
       shape(s, [
+        'stepKind',
+        'manual',
         'countText',
         'targetText',
         'paceText',
@@ -63,6 +65,11 @@ class WorkoutEditorSnapshot {
         'recoveryTimeText',
       ]);
       require(s['byDistance'] is bool && s['recoveryByDistance'] is bool);
+      require(!s.containsKey('manual') || s['manual'] is bool);
+      require(
+        !s.containsKey('stepKind') ||
+            RunningStepKind.values.any((v) => v.name == s['stepKind']),
+      );
       require(
         s['recoveryType'] == null ||
             RunningRecoveryType.values.any((v) => v.name == s['recoveryType']),
@@ -105,7 +112,11 @@ class WorkoutEditorSnapshot {
         ]);
         require(e['exerciseId'] == null || e['exerciseId'] is String);
         require(e['automaticSlot'] is bool && e['customSets'] is bool);
-        require(WorkoutTargetType.values.any((v) => v.name == e['targetType']));
+        require(
+          WorkoutTargetType.values
+              .where((v) => v != WorkoutTargetType.manual)
+              .any((v) => v.name == e['targetType']),
+        );
         final indices = <int>{};
         for (final v in rows(e, 'variations', 20)) {
           shape(v, [
@@ -146,7 +157,9 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
     final sets = <WorkoutSetDraft>[];
     for (final segment in segments) {
       final count = int.tryParse(segment.count);
-      final target = segment.byDistance
+      final target = segment.manual
+          ? 0.0
+          : segment.byDistance
           ? double.tryParse(segment.target.replaceAll(',', '.'))
           : _clock(segment.target)?.toDouble();
       final pace = segment.pace.trim().isEmpty ? null : _pace(segment.pace);
@@ -162,7 +175,7 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
           count < 1 ||
           count > 40 ||
           target == null ||
-          target <= 0 ||
+          (!segment.manual && target <= 0) ||
           (segment.pace.trim().isNotEmpty && pace == null) ||
           (segment.paceMax.trim().isNotEmpty &&
               (pace == null || paceMax == null)) ||
@@ -172,9 +185,21 @@ CreatePersonalWorkoutInput projectWorkoutEditorSnapshot(
         );
       }
       final set = WorkoutSetDraft(
-        targetType: segment.byDistance
+        targetType: segment.manual
+            ? WorkoutTargetType.manual
+            : segment.byDistance
             ? WorkoutTargetType.distance
             : WorkoutTargetType.duration,
+        runningStep: segment.kind == null && !segment.manual
+            ? null
+            : RunningStepMetadata(
+                kind: segment.kind ?? RunningStepKind.run,
+                completion: segment.manual
+                    ? RunningStepCompletion.manual
+                    : segment.byDistance
+                    ? RunningStepCompletion.distance
+                    : RunningStepCompletion.time,
+              ),
         targetValue: target,
         restAfterSeconds: 0,
         targetPaceMinSecondsPerKm: pace,
@@ -378,6 +403,10 @@ class _RawSegment {
   String get pace => raw['paceText'] as String;
   String get paceMax => raw['paceMaxText'] as String;
   String get recoveryTime => raw['recoveryTimeText'] as String;
+  bool get manual => raw['manual'] == true;
+  RunningStepKind? get kind => raw['stepKind'] == null
+      ? null
+      : RunningStepKind.values.byName(raw['stepKind'] as String);
   bool get byDistance => raw['byDistance'] as bool;
   bool get recoveryByDistance => raw['recoveryByDistance'] as bool;
   RunningRecoveryType? get recovery => raw['recoveryType'] == null

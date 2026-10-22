@@ -13,7 +13,7 @@ class TrainingStep {
     this.slow,
   );
   final String kind, measure, description;
-  final double value;
+  final double? value;
   final double? fast, slow;
 }
 

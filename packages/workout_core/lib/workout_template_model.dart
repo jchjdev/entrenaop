@@ -1,3 +1,4 @@
+import 'package:workout_core/running_step_codec.dart';
 import 'package:workout_core/workout_template.dart';
 import 'performance_set_codec.dart';
 
@@ -78,6 +79,7 @@ class WorkoutTemplateModel {
                 ),
               ),
         id: json['id'] as String,
+        runningStep: RunningStepCodec.decode(json['running_step']),
         order: order,
         targetReps: json['target_reps'] as int?,
         targetDurationSeconds: json['target_duration_seconds'] as int?,

@@ -4,6 +4,9 @@ import '../../domain/entities/workout_template.dart';
 import 'duration_input_formatter.dart';
 
 String workoutTargetLabel(WorkoutExecutionSet set) {
+  if (set.runningStep?.completion == RunningStepCompletion.manual) {
+    return 'Hasta avanzar al siguiente paso';
+  }
   if (set.targetReps != null) return '${set.targetReps} repeticiones';
   if (set.targetDurationSeconds != null) {
     final seconds = set.targetDurationSeconds!;
@@ -126,7 +129,8 @@ String workoutPositionLabel(
   WorkoutBlockFormat.tabata => 'Intervalo ${set.itemOrder + 1} de 8',
   WorkoutBlockFormat.emom =>
     'Minuto ${set.itemOrder + 1} · vuelta ${set.roundNumber}',
-  WorkoutBlockFormat.running => 'Tramo ${set.setOrder + 1}',
+  WorkoutBlockFormat.running =>
+    '${set.runningStep?.kind.label ?? 'Tramo'} ${set.setOrder + 1}',
   _ => '${workoutBlockFormatLabel(set.blockFormat)} · ronda ${set.roundNumber}',
 };
 

@@ -1,3 +1,4 @@
+import 'package:workout_core/running_step_codec.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_template.dart';
 import 'package:workout_core/performance_set_codec.dart';
@@ -61,6 +62,7 @@ class WorkoutExecutionModel {
       exerciseVideoUrl: json['exercise_video_url'] as String?,
       setOrder: json['set_order'] as int,
       targetReps: json['target_reps'] as int?,
+      runningStep: RunningStepCodec.decode(json['running_step']),
       targetDurationSeconds: json['target_duration_seconds'] as int?,
       targetDistanceMeters: _doubleOrNull(json['target_distance_meters']),
       targetLoadKg: _doubleOrNull(json['target_load_kg']),
