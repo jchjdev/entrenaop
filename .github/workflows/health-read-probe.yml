@@ -84,4 +84,4 @@ jobs:
         working-directory: .
         run: |
           flutter pub get --enforce-lockfile
-          flutter build ios --simulator --debug --no-codesign --no-pub --dart-define=APP_ENV=development
+          dart run tools/run_app.dart build ios --simulator --debug --no-codesign --no-pub --dart-define=APP_ENV=development

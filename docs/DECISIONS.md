@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**UI-064 · 22/10/2026 · identidad de la instalación:** Javier pide identificar la
+app instalada al no encontrar el seguimiento profesional. Perfil incorpora
+versión/build reales, entorno y detalle copiable de revisión/fecha/estado de
+fuentes; los metadatos ausentes se declaran desconocidos y no acreditan estar
+actualizado. Preparación con estampado Git, sin permisos nuevos ni comprobación
+remota de actualizaciones. [Contrato y procedimiento](APP_BUILD_IDENTITY.md).
+
 Este archivo es el índice de las decisiones de producto, dominio y arquitectura
 que deben sobrevivir a una conversación concreta. No sustituye a los documentos
 especializados: indica qué está acordado, su estado real y dónde se explica.

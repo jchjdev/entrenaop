@@ -7,6 +7,7 @@ import 'package:entrenaop/features/preparation_goal/domain/repositories/preparat
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
+import 'package:entrenaop/features/profile/presentation/widgets/app_build_info_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -361,6 +362,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             onTap: () => _open('/pro/subscription'),
                           ),
                         ),
+                        const SizedBox(height: 22),
+                        const AppBuildInfoTile(),
                         const SizedBox(height: 22),
                         OutlinedButton.icon(
                           onPressed: () => context.read<AuthCubit>().signOut(),

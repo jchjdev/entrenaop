@@ -1,7 +1,7 @@
 name: entrenaop
 description: "App de entrenamiento personal y preparación de oposiciones militares"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.13.0 <4.0.0'
@@ -51,6 +51,8 @@ dependencies:
   intl: ^0.20.3
   uuid: ^4.6.0
   shared_preferences: ^2.2.3
+  # Versión real del paquete instalado, también si se sobrescribe al compilar.
+  package_info_plus: 10.2.2
 
   # UI
   cupertino_icons: ^1.0.8
