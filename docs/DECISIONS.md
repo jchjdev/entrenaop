@@ -17,6 +17,12 @@ servicio conserva contenido, permisos, historial y cupo propios. Javier pide
 anotar, sin implementar aún, el recorrido complejo de asignación, arrastrar
 ejercicios y bloques/series de carrera para reordenarlos y revisar el creador de
 carrera. Describirá después el recorrido de asignación deseado.
+Javier aclara que el caso de fuerza y carrera es una preparación conjunta:
+los profesionales necesitan consultar la planificación compartida para coordinar
+sus sesiones. Se prioriza este caso de equipo; compartir planificación requiere
+un ámbito autorizado, sin abrir todos los datos privados por añadir un segundo
+preparador. Membresía, edición cruzada, comunicación y facturación del equipo
+siguen por definir. Esta aclaración tampoco modifica código ni SQL.
 [Pendientes y límites](TRAINER_UX_NOTES_2026_10_22.md).
 
 **INT-007 · ampliación iPhone · 22/10/2026:** Javier pide trasladar la prueba

@@ -7,6 +7,9 @@ de fuerza y otro de carrera. Sustituye el acuerdo anterior de preparador único;
 las referencias siguientes a ese límite describen todavía el comportamiento
 implementado. También pide registrar, sin cambios de código, simplificación de
 asignaciones, reordenación por arrastre y revisión del creador de carrera.
+Aclara que fuerza y carrera se preparan conjuntamente: priorizar el caso de
+equipo con planificación compartida autorizada para coordinar las sesiones.
+Los permisos de edición, la comunicación y los pagos del equipo están por definir.
 [Notas y alcance pendiente](TRAINER_UX_NOTES_2026_10_22.md).
 
 ## Actualización · 22/10/2026 · TRN-023

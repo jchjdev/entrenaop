@@ -43,6 +43,26 @@ los permisos sobre su propio servicio; añadir otro no abre automáticamente sus
 contenidos privados ni sus resultados a terceros. La planificación conserva
 origen y coexistencia, sin sustituirse automáticamente.
 
+## Aclaración: preparación conjunta como equipo
+
+Javier confirma que fuerza y carrera se preparan conjuntamente: necesita ver
+las series intensas pautadas por el otro profesional para ajustar su propia
+sesión de fuerza. El caso prioritario es un equipo que coordina una misma
+preparación, además de admitir dos identidades profesionales.
+
+Se recomienda una agenda conjunta para el alumno y una vista de planificación
+compartida para los preparadores autorizados, conservando autor y origen de
+cada sesión. Cada uno debe poder consultar lo pautado dentro de ese ámbito;
+no implica permiso automático para modificar sesiones del otro ni consultar
+notas privadas, catálogos o datos de otros servicios.
+
+Como propuesta posterior, se pueden indicar foco e intensidad prevista de las
+sesiones para facilitar la coordinación. No se ha acordado ni implementado un
+algoritmo que detecte interferencias o cambie automáticamente entrenamientos.
+Quedan por definir membresía, permisos de edición cruzada, conversación conjunta
+o individual y servicio/cupos/pagos. No se decide que dos preparadores siempre
+pertenezcan al mismo equipo. Sigue vigente en código y SQL el límite anterior.
+
 ## Estado y comprobación
 
 Solo documentación. Se revisan diff y formato; no se ejecuta Flutter, SQL ni se
