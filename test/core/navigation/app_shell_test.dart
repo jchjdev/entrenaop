@@ -1,4 +1,7 @@
 import 'package:entrenaop/core/navigation/app_shell.dart';
+import 'package:entrenaop/core/navigation/app_account_actions.dart';
+import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
+import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,6 +9,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  testWidgets('campana abre Avisos y selecciona Preparador', (tester) async {
+    final router = _createRouter(unread: 2);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('2 avisos sin leer'));
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/my-trainer');
+    expect(router.state.uri.queryParameters['view'], 'notices');
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      4,
+    );
+  });
+  testWidgets(
+    'sin preparador quedan cuatro destinos y Perfil sigue accesible arriba',
+    (tester) async {
+      final router = _createRouter(hasTrainer: false);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).destinations,
+        hasLength(4),
+      );
+      expect(find.text('Preparador'), findsNothing);
+      expect(find.text('Perfil'), findsNothing);
+      await tester.tap(find.byTooltip('Mi perfil'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/profile');
+      expect(find.byType(NavigationBar), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/home');
+    },
+  );
+
   for (final width in [320.0, 390.0]) {
     for (final scale in [1.0, 2.0]) {
       testWidgets('etiquetas completas y separadas: $width px, texto $scale', (
@@ -38,7 +78,7 @@ void main() {
             'Mi plan',
             'Biblioteca',
             'Evolución',
-            'Perfil',
+            'Preparador',
           ]) {
             final finder = find.text(label);
             final paragraph = tester.renderObject<RenderParagraph>(finder);
@@ -88,12 +128,16 @@ void main() {
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations, hasLength(5));
     expect(bar.selectedIndex, 2);
-    await tester.tap(find.text('Perfil'));
+    await tester.tap(find.byTooltip('Mi perfil'));
     await tester.pumpAndSettle();
     expect(router.state.matchedLocation, '/profile');
+    expect(find.byType(NavigationBar), findsNothing);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(router.state.matchedLocation, '/library');
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-      4,
+      2,
     );
   });
 
@@ -122,38 +166,65 @@ void main() {
       final router = _createRouter();
       addTearDown(router.dispose);
       await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-      router.go('/profile/detail');
+      router.go('/my-trainer/detail');
       await tester.pumpAndSettle();
-      expect(find.text('Detalle de Perfil'), findsOneWidget);
+      expect(find.text('Detalle de Preparador'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.event_note_outlined));
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.person_outline_rounded));
+      await tester.tap(find.byIcon(Icons.people_outline));
       await tester.pumpAndSettle();
-      expect(router.state.matchedLocation, '/profile/detail');
-      expect(find.text('Detalle de Perfil'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.person_rounded));
+      expect(router.state.matchedLocation, '/my-trainer/detail');
+      expect(find.text('Detalle de Preparador'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.people));
       await tester.pumpAndSettle();
-      expect(router.state.matchedLocation, '/profile');
-      expect(find.text('Contenido de Perfil'), findsOneWidget);
-      expect(find.text('Detalle de Perfil'), findsNothing);
+      expect(router.state.matchedLocation, '/my-trainer');
+      expect(find.text('Contenido de Preparador'), findsOneWidget);
+      expect(find.text('Detalle de Preparador'), findsNothing);
     });
   }
 }
 
-GoRouter _createRouter() {
+GoRouter _createRouter({bool hasTrainer = true, int unread = 0}) {
+  final controller = StudentNavigationController(
+    loadSnapshot: () async => const StudentNoticeSnapshot(
+      items: [],
+      hasMore: false,
+      unreadCount: 0,
+      resources: StudentNoticeResources(),
+    ),
+    loadHasRelationship: () async => hasTrainer,
+  )..hasRelationship = hasTrainer;
+  controller.acceptSnapshot(
+    StudentNoticeSnapshot(
+      items: const [],
+      hasMore: false,
+      unreadCount: unread,
+      resources: const StudentNoticeResources(),
+    ),
+  );
+  addTearDown(controller.dispose);
   return GoRouter(
     initialLocation: '/home',
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => StudentNavigationScope(
+          controller: controller,
+          child: AppShell(navigationShell: navigationShell),
+        ),
         branches: [
           _branch('/home', 'Inicio'),
           _branch('/plan', 'Mi plan'),
           _branch('/library', 'Biblioteca'),
           _branch('/assessment/history', 'Evolución'),
-          _branch('/profile', 'Perfil'),
+          _branch('/my-trainer', 'Preparador'),
         ],
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(leading: BackButton(onPressed: context.pop)),
+          body: const Text('Contenido de Perfil'),
+        ),
       ),
     ],
   );
@@ -164,8 +235,15 @@ StatefulShellBranch _branch(String path, String name) {
     routes: [
       GoRoute(
         path: path,
-        builder: (context, state) =>
-            Scaffold(body: Center(child: Text('Contenido de $name'))),
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(
+            leading: name == 'Perfil'
+                ? BackButton(onPressed: context.pop)
+                : null,
+            actions: const [AppAccountActions()],
+          ),
+          body: Center(child: Text('Contenido de $name')),
+        ),
         routes: [
           GoRoute(
             path: 'detail',

@@ -89,6 +89,10 @@ class _ProfilePageState extends State<ProfilePage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           title: const Text('Perfil'),
+          leading: BackButton(
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/home'),
+          ),
         ),
         body: SafeArea(
           child: RefreshIndicator(

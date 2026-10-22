@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**TRN-025 · 22/10/2026 · navegación del alumno implementada:** Preparador ocupa
+una pestaña condicional y Perfil pasa arriba. Inicio muestra solo el resumen de
+novedades; la campana desaparece con cero avisos sin leer. Avisos e historial
+siguen accesibles y se preservan enlaces, tareas sin barra y retorno al origen.
+Batería completa de raíz: 1.270 correctas y una omisión previa; análisis limpio y cinco capturas
+de widgets reales a 390/320 px, incluido texto 2×. No cambia ADMIN, SQL ni la
+web publicada de Trainer. **Siguiente paso de este tramo:** instalar la nueva
+compilación en el iPhone y aceptar el recorrido desde la pestaña, la campana y
+Perfil con la cuenta vinculada. No cierra los dieciséis puntos profesionales.
+[Evidencia](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md).
+
 **INT-005 · 22/10/2026 · Garmin, primer tramo técnico:** Activity y Training
 Enabled/Approved comprobadas recargando API Configuration después del guardado
 de Javier. Adaptador OAuth de servidor aislado, según especificación PKCE 2.0,

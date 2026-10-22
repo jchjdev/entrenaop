@@ -1,6 +1,7 @@
 import '../widgets/training_equipment_labels.dart';
 
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
+import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/dashboard/domain/entities/preparation_overview.dart';
@@ -90,6 +91,7 @@ class TrainingHubPage extends StatelessWidget {
               onPressed: context.read<DashboardCubit>().load,
               icon: const Icon(Icons.refresh_rounded),
             ),
+          const AppAccountActions(),
         ],
       ),
       body: SafeArea(

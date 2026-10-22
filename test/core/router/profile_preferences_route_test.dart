@@ -68,7 +68,9 @@ void main() {
     );
   }
   for (final route in ['/profile/preferences', '/plan/preferences']) {
-    testWidgets('$route conserva datos y selecciona Perfil', (tester) async {
+    testWidgets('$route conserva datos y regresa a Perfil sin barra', (
+      tester,
+    ) async {
       final preferences = _Preferences();
       sl.registerSingleton<PreparationGoalRepository>(_Goals());
       sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
@@ -99,11 +101,11 @@ void main() {
       expect(find.text('El mismo contexto para tu programa'), findsOneWidget);
       expect(preferences.saves, 0);
       expect(preferences.reads, 1);
-      // La tarea está en el navegador raíz, sobre la rama Perfil.
+      // Perfil y su tarea permanecen en el navegador raíz, sin pestaña propia.
       await tester.dragFrom(const Offset(2, 300), const Offset(600, 0));
       await tester.pumpAndSettle();
       expect(router.config.state.uri.path, '/profile');
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
       expect(preferences.saves, 0);
       expect(tester.takeException(), isNull);
     });

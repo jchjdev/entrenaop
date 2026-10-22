@@ -1,4 +1,5 @@
 import 'package:entrenaop/core/presentation/widgets/entrena_card.dart';
+import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:entrenaop/core/theme/entrena_theme.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/session_creation.dart';
@@ -39,7 +40,10 @@ class LibraryHubPage extends StatelessWidget {
       _ => guided == null ? 0 : 1,
     },
     child: Scaffold(
-      appBar: AppBar(title: const EntrenaWordmark(width: 164)),
+      appBar: AppBar(
+        title: const EntrenaWordmark(width: 148),
+        actions: const [AppAccountActions()],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),

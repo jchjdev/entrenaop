@@ -2,6 +2,8 @@ import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/trainers/presentation/student_navigation.dart';
+
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -18,6 +20,15 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showTrainer =
+        StudentNavigationScope.maybeOf(context)?.hasTrainer == true ||
+        navigationShell.currentIndex == 4;
+    final indices = [0, 1, 2, 3, if (showTrainer) 4];
+    final destinations = [
+      ..._barDestinations.take(4),
+      if (showTrainer) _barDestinations.last,
+    ];
+    final selectedIndex = indices.indexOf(navigationShell.currentIndex);
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 840) {
@@ -26,8 +37,9 @@ class AppShell extends StatelessWidget {
               children: [
                 SafeArea(
                   child: NavigationRail(
-                    selectedIndex: navigationShell.currentIndex,
-                    onDestinationSelected: _selectDestination,
+                    selectedIndex: selectedIndex,
+                    onDestinationSelected: (index) =>
+                        _selectDestination(indices[index]),
                     extended: constraints.maxWidth >= 1180,
                     labelType: constraints.maxWidth >= 1180
                         ? NavigationRailLabelType.none
@@ -38,7 +50,10 @@ class AppShell extends StatelessWidget {
                         width: constraints.maxWidth >= 1180 ? 132 : 58,
                       ),
                     ),
-                    destinations: _railDestinations,
+                    destinations: [
+                      ..._railDestinations.take(4),
+                      if (showTrainer) _railDestinations.last,
+                    ],
                   ),
                 ),
                 const VerticalDivider(width: 1, thickness: 1),
@@ -48,15 +63,20 @@ class AppShell extends StatelessWidget {
           );
         }
 
-        final labelStyle = _barLabelStyle(context, constraints.maxWidth);
+        final labelStyle = _barLabelStyle(
+          context,
+          constraints.maxWidth,
+          destinations,
+        );
         return Scaffold(
           body: navigationShell,
           bottomNavigationBar: NavigationBar(
             labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
             labelTextStyle: labelStyle,
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: _selectDestination,
-            destinations: _barDestinations,
+            selectedIndex: selectedIndex,
+            onDestinationSelected: (index) =>
+                _selectDestination(indices[index]),
+            destinations: destinations,
           ),
         );
       },
@@ -67,6 +87,7 @@ class AppShell extends StatelessWidget {
 WidgetStateProperty<TextStyle> _barLabelStyle(
   BuildContext context,
   double width,
+  List<NavigationDestination> destinations,
 ) {
   final theme = Theme.of(context);
   TextStyle style(Set<WidgetState> states) => theme.textTheme.labelMedium!
@@ -74,7 +95,7 @@ WidgetStateProperty<TextStyle> _barLabelStyle(
       .copyWith(letterSpacing: 0);
   final selected = style({WidgetState.selected});
   final baseSize = selected.fontSize!;
-  final available = width / _barDestinations.length - 12;
+  final available = width / destinations.length - 12;
   final painter = TextPainter(
     textDirection: Directionality.of(context),
     // Mantener el límite nativo de NavigationBar sin reducir el texto de
@@ -83,7 +104,7 @@ WidgetStateProperty<TextStyle> _barLabelStyle(
     maxLines: 1,
   );
   var widest = 0.0;
-  for (final destination in _barDestinations) {
+  for (final destination in destinations) {
     painter.text = TextSpan(text: destination.label, style: selected);
     painter.layout();
     if (painter.width > widest) widest = painter.width;
@@ -119,9 +140,9 @@ const _barDestinations = [
     label: 'Evolución',
   ),
   NavigationDestination(
-    icon: Icon(Icons.person_outline_rounded),
-    selectedIcon: Icon(Icons.person_rounded),
-    label: 'Perfil',
+    icon: Icon(Icons.people_outline),
+    selectedIcon: Icon(Icons.people),
+    label: 'Preparador',
   ),
 ];
 
@@ -147,8 +168,8 @@ const _railDestinations = [
     label: Text('Evolución'),
   ),
   NavigationRailDestination(
-    icon: Icon(Icons.person_outline_rounded),
-    selectedIcon: Icon(Icons.person_rounded),
-    label: Text('Perfil'),
+    icon: Icon(Icons.people_outline),
+    selectedIcon: Icon(Icons.people),
+    label: Text('Preparador'),
   ),
 ];

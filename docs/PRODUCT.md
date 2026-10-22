@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**TRN-025 · 22/10/2026 · navegación del alumno:** Inicio, Mi plan, Biblioteca y
+Evolución son destinos generales. Preparador se añade cuando existe vínculo
+activo/anterior o seguimiento propio que consultar. Perfil se abre desde el
+icono superior y conserva cuenta, preferencias y suscripción personal. La
+campana solo aparece con avisos sin leer. Inicio resume esas novedades en una
+tarjeta; Preparador concentra recursos, avisos e historial, sin borrar el acceso
+cuando termina un vínculo. Implementación Flutter verificada; actualización en
+el dispositivo pendiente. [Detalle](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md).
+
 **INT-006 · 22/10/2026 · Salud para todos e integraciones directas de pago:**
 Javier aclara que Salud y Health Connect permiten lectura/importación también
 en Free. Se corrige la interpretación anterior que los reservaba al pago.
@@ -16,8 +25,8 @@ no corresponde bloquear Salud o Health Connect por ser Free.**
 
 **TRN-022 · 21/10/2026 · continuidad y seguimiento visible:** Trainer permite
 retomar sesiones incompletas y nuevas versiones de biblioteca con el editor
-compartido. El alumno encuentra recursos y avisos en Inicio solo cuando existen
-entregas propias; dispone de formularios, conversación, pruebas y acceso directo
+compartido. TRN-025 traslada los recursos al espacio Preparador y deja en Inicio
+un resumen compacto de avisos; dispone de formularios, conversación, pruebas y acceso directo
 a técnica de sus sesiones profesionales. Abrir un aviso no lo marca leído ni
 completa su tarea. Las demostraciones preparadas se pueden elegir al crear o
 editar ejercicios sin subirlas otra vez. Servidor Dev aplicado y contratos
@@ -223,7 +232,7 @@ la programación deportiva. Alcance en `VISUAL_DESIGN.md`.
 con confirmación y conexión, la ejecución en curso y sus series; su cita vuelve
 a pendiente. Retomar y abandonar conservando resultados siguen siendo opciones
 distintas; las sesiones cerradas no se eliminan mediante este recorrido.
-Inicio conserva Perfil en la barra inferior y retira su acceso duplicado.
+El criterio entonces aplicado de Perfil inferior queda sustituido por TRN-025.
 Mi semana usa Añadir entrenamiento; Disponibilidad separa días y minutos.
 FAS ofrece reintento ante fallo/espera de carga, conservando lo escrito.
 Análisis limpio, 685 pruebas correctas con una omisión web existente y tres

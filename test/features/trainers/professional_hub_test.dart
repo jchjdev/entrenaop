@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:entrenaop/features/trainers/domain/student_notice_repository.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/professional_hub_page.dart';
 import 'package:entrenaop/features/trainers/presentation/widgets/home_professional_hub.dart';
+import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 const allResources = StudentNoticeResources(
   hasForms: true,
@@ -92,6 +94,63 @@ Future<void> reveal(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  testWidgets('volver de Resumen permite abrir Avisos otra vez por su URL', (
+    tester,
+  ) async {
+    final repository = NoticeFixture()..data = snapshot(items: [notice('a')]);
+    final router = GoRouter(
+      initialLocation: '/my-trainer?view=notices',
+      routes: [
+        GoRoute(
+          path: '/my-trainer',
+          builder: (_, state) => ProfessionalHubPage(
+            repository: repository,
+            userId: 'owner',
+            focusNotices: state.uri.queryParameters['view'] == 'notices',
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+    await press(tester, 'Resumen');
+    expect(router.state.uri.queryParameters['view'], isNull);
+    expect(find.text('Formulario recibido a'), findsNothing);
+    router.go('/my-trainer?view=notices');
+    await tester.pumpAndSettle();
+    expect(find.text('Formulario recibido a'), findsOneWidget);
+  });
+  testWidgets(
+    'Resumen conserva entrada al vínculo e historial aunque no queden recursos',
+    (tester) async {
+      final repository = NoticeFixture()
+        ..data = snapshot(resources: const StudentNoticeResources(), unread: 0);
+      final opened = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ProfessionalHubPage(
+            repository: repository,
+            userId: 'owner',
+            onOpen: (route) async {
+              opened.add(route);
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Vínculo e historial con mi preparador'),
+        findsOneWidget,
+      );
+      expect(find.text('No hay avisos en esta categoría.'), findsNothing);
+      await press(tester, 'Vínculo e historial con mi preparador');
+      expect(opened, ['/profile/trainer']);
+      await press(tester, 'Avisos');
+      expect(find.text('No hay avisos en esta categoría.'), findsOneWidget);
+    },
+  );
+
   Future<void> home(
     WidgetTester tester,
     NoticeFixture repository, {
@@ -99,33 +158,41 @@ void main() {
     int refresh = 0,
     List<String>? opened,
     double scale = 1,
-  }) => tester.pumpWidget(
-    MaterialApp(
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context)
-            .copyWith(textScaler: TextScaler.linear(scale)),
-        child: child!,
-      ),
-      home: Scaffold(
-        body: SingleChildScrollView(
-          child: HomeProfessionalHub(
-            repository: repository,
-            userId: owner,
-            refreshVersion: refresh,
-            onOpen: (route) async {
-              opened?.add(route);
-            },
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+        home: StudentNavigationEntry(
+          key: ValueKey(owner),
+          loadSnapshot: repository.snapshot,
+          loadHasRelationship: () async => false,
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: HomeProfessionalHub(
+                onOpen: (route) async {
+                  opened?.add(route);
+                },
+              ),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+    if (refresh > 0) {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    }
+  }
 
   testWidgets(
     'Inicio oculta todo profesional sin recursos, incluido contador vacío',
     (tester) async {
       final repository = NoticeFixture()
-        ..data = snapshot(resources: const StudentNoticeResources());
+        ..data = snapshot(resources: const StudentNoticeResources(), unread: 0);
       await home(tester, repository);
       await tester.pumpAndSettle();
       expect(find.text('Con mi preparador'), findsNothing);
@@ -134,7 +201,7 @@ void main() {
     },
   );
 
-  testWidgets('Inicio usa total servidor y muestra solo accesos existentes', (
+  testWidgets('Inicio usa total servidor sin duplicar módulos profesionales', (
     tester,
   ) async {
     final repository = NoticeFixture()
@@ -145,11 +212,12 @@ void main() {
     final opened = <String>[];
     await home(tester, repository, opened: opened);
     await tester.pumpAndSettle();
-    expect(find.text('120 avisos sin leer'), findsOneWidget);
+    expect(find.text('120 novedades de tu preparador'), findsOneWidget);
+    expect(find.text('Formularios'), findsNothing);
     expect(find.text('Técnica de mis sesiones'), findsNothing);
     expect(find.text('Conversación'), findsNothing);
-    await press(tester, 'Formularios');
-    expect(opened, ['/my-trainer/forms']);
+    await press(tester, 'Consultar avisos');
+    expect(opened, ['/my-trainer?view=notices']);
   });
 
   for (final confirmedEmpty in [false, true]) {
@@ -157,7 +225,10 @@ void main() {
       'fallo sin recursos profesionales confirmados no muestra panel: vacío conocido=$confirmedEmpty',
       (tester) async {
         final repository = NoticeFixture()
-          ..data = snapshot(resources: const StudentNoticeResources())
+          ..data = snapshot(
+            resources: const StudentNoticeResources(),
+            unread: 0,
+          )
           ..fail = !confirmedEmpty;
         await home(tester, repository);
         await tester.pumpAndSettle();
@@ -177,7 +248,7 @@ void main() {
     );
   }
 
-  testWidgets('fallo del resumen profesional conserva accesos y se recupera', (
+  testWidgets('fallo del resumen conserva el contador conocido y se recupera', (
     tester,
   ) async {
     final repository = NoticeFixture();
@@ -186,14 +257,12 @@ void main() {
     repository.fail = true;
     await home(tester, repository, refresh: 1);
     await tester.pumpAndSettle();
-    expect(find.text('Formularios'), findsOneWidget);
-    expect(
-      find.text('No se pudieron actualizar tus novedades.'),
-      findsOneWidget,
-    );
+    expect(find.text('120 novedades de tu preparador'), findsOneWidget);
     repository.fail = false;
-    await press(tester, 'Reintentar novedades');
-    expect(find.text('No se pudieron actualizar tus novedades.'), findsNothing);
+    repository.data = snapshot(unread: 0);
+    await home(tester, repository, refresh: 2);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('novedades de tu preparador'), findsNothing);
   });
 
   testWidgets('cambiar identidad descarta respuesta tardía de Inicio', (
@@ -203,7 +272,7 @@ void main() {
     final old = NoticeFixture()..pending = () => delayed.future;
     await home(tester, old);
     final next = NoticeFixture()
-      ..data = snapshot(resources: const StudentNoticeResources());
+      ..data = snapshot(resources: const StudentNoticeResources(), unread: 0);
     await home(tester, next, owner: 'new-owner');
     await tester.pumpAndSettle();
     delayed.complete(snapshot());
@@ -220,7 +289,7 @@ void main() {
     final repository = NoticeFixture();
     await home(tester, repository, scale: 2);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Técnica de mis sesiones'));
+    await tester.ensureVisible(find.text('120 novedades de tu preparador'));
     expect(tester.takeException(), isNull);
     final before = repository.loads;
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
@@ -245,6 +314,7 @@ void main() {
       home: ProfessionalHubPage(
         repository: repository,
         userId: owner,
+        focusNotices: true,
         onOpen: (route) async {
           opened?.add(route);
         },
@@ -278,7 +348,10 @@ void main() {
     await press(tester, 'Abrir contenido');
     expect(opened, isEmpty);
     expect(repository.acknowledgements, isEmpty);
-    await tester.drag(find.byType(ListView), const Offset(0, 1600));
+    await tester.scrollUntilVisible(
+      find.textContaining('ya no está disponible'),
+      -200,
+    );
     await tester.pumpAndSettle();
     expect(find.textContaining('ya no está disponible'), findsOneWidget);
     await reveal(tester, find.text('Formulario recibido a'));

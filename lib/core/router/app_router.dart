@@ -18,6 +18,7 @@ import 'package:entrenaop/core/router/material_app_route.dart';
 import 'package:entrenaop/core/router/device_activities_route.dart';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
+import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
@@ -255,7 +256,37 @@ class AppRouter {
               MaterialPage<Object?>(
                 key: state.pageKey,
                 restorationId: state.pageKey.value,
-                child: AppShell(navigationShell: navigationShell),
+                child: BlocBuilder<AuthCubit, AuthState>(
+                  bloc: authCubit,
+                  // Renovar el token no debe desmontar las pilas de navegación.
+                  buildWhen: (_, next) =>
+                      next is AuthAuthenticated || next is AuthUnauthenticated,
+                  builder: (context, auth) => auth is! AuthAuthenticated
+                      ? const SizedBox.shrink()
+                      : StudentNavigationEntry(
+                          key: ValueKey('navigation-${auth.user.id}'),
+                          loadSnapshot: () => SupabaseStudentNoticeRepository(
+                            sl<SupabaseClient>(),
+                            auth.user.id,
+                          ).snapshot(),
+                          loadHasRelationship: () async {
+                            final repository = SupabaseTrainerRepository(
+                              sl<SupabaseClient>(),
+                              userId: auth.user.id,
+                            );
+                            final active = await repository.relations(
+                              asTrainer: false,
+                            );
+                            if (active.isNotEmpty) return true;
+                            final history = await repository.relations(
+                              asTrainer: false,
+                              ended: true,
+                            );
+                            return history.isNotEmpty;
+                          },
+                          child: AppShell(navigationShell: navigationShell),
+                        ),
+                ),
               ),
           branches: [
             StatefulShellBranch(
@@ -273,10 +304,6 @@ class AppRouter {
                       child: HomePage(
                         favoritesRepository: sl(),
                         userId: auth.user.id,
-                        studentNotices: SupabaseStudentNoticeRepository(
-                          sl<SupabaseClient>(),
-                          auth.user.id,
-                        ),
                         guidedPrograms:
                             sl.isRegistered<GuidedProgramRepository>()
                             ? sl<GuidedProgramRepository>()
@@ -960,63 +987,78 @@ class AppRouter {
             StatefulShellBranch(
               routes: [
                 materialAppRoute(
-                  path: '/profile',
-                  builder: (context, state) => ProfilePage(
-                    preparations: sl(),
-                    birthDateRepository: sl(),
+                  path: '/my-trainer',
+                  builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+                    bloc: authCubit,
+                    builder: (_, auth) => auth is! AuthAuthenticated
+                        ? const SizedBox.shrink()
+                        : ProfessionalHubPage(
+                            key: ValueKey('professional-hub-${auth.user.id}'),
+                            userId: auth.user.id,
+                            focusNotices:
+                                state.uri.queryParameters['view'] == 'notices',
+                            repository: SupabaseStudentNoticeRepository(
+                              sl<SupabaseClient>(),
+                              auth.user.id,
+                            ),
+                          ),
                   ),
-                  routes: [
-                    materialAppRoute(
-                      path: 'trainer',
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                        bloc: authCubit,
-                        builder: (context, auth) => auth is! AuthAuthenticated
-                            ? const SizedBox.shrink()
-                            : MyTrainerPage(
-                                key: ValueKey(auth.user.id),
-                                repository: SupabaseTrainerRepository(
-                                  sl<SupabaseClient>(),
-                                  userId: auth.user.id,
-                                ),
-                                forms: SupabaseTrainerStudentFormRepository(
-                                  sl<SupabaseClient>(),
-                                  auth.user.id,
-                                ),
-                                assessments:
-                                    SupabaseProfessionalAssessmentStudentRepository(
-                                      sl<SupabaseClient>(),
-                                      auth.user.id,
-                                    ),
-                                onOpenConversation: (id) => context.push(
-                                  '/my-trainer/conversations/$id',
-                                ),
-                              ),
-                      ),
-                    ),
-                    materialAppRoute(
-                      path: 'activities',
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                        bloc: authCubit,
-                        builder: (_, auth) => auth is! AuthAuthenticated
-                            ? const SizedBox.shrink()
-                            : DeviceActivitiesRoute(
-                                key: ValueKey('activities-${auth.user.id}'),
-                                ownerId: auth.user.id,
-                                client: sl<SupabaseClient>(),
-                              ),
-                      ),
-                    ),
-                    _workflowRoute(
-                      path: 'preferences',
-                      builder: (context, state) => TrainingContextPage(
-                        repository: sl<TrainingContextRepository>(),
-                      ),
-                    ),
-                  ],
                 ),
               ],
+            ),
+          ],
+        ),
+        materialAppRoute(
+          path: '/profile',
+          builder: (context, state) =>
+              ProfilePage(preparations: sl(), birthDateRepository: sl()),
+          routes: [
+            materialAppRoute(
+              path: 'trainer',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (context, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : MyTrainerPage(
+                        key: ValueKey(auth.user.id),
+                        repository: SupabaseTrainerRepository(
+                          sl<SupabaseClient>(),
+                          userId: auth.user.id,
+                        ),
+                        forms: SupabaseTrainerStudentFormRepository(
+                          sl<SupabaseClient>(),
+                          auth.user.id,
+                        ),
+                        assessments:
+                            SupabaseProfessionalAssessmentStudentRepository(
+                              sl<SupabaseClient>(),
+                              auth.user.id,
+                            ),
+                        onOpenConversation: (id) =>
+                            context.push('/my-trainer/conversations/$id'),
+                      ),
+              ),
+            ),
+            materialAppRoute(
+              path: 'activities',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (_, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : DeviceActivitiesRoute(
+                        key: ValueKey('activities-${auth.user.id}'),
+                        ownerId: auth.user.id,
+                        client: sl<SupabaseClient>(),
+                      ),
+              ),
+            ),
+            _workflowRoute(
+              path: 'preferences',
+              builder: (context, state) => TrainingContextPage(
+                repository: sl<TrainingContextRepository>(),
+              ),
             ),
           ],
         ),
@@ -1025,22 +1067,6 @@ class AppRouter {
           builder: (context, state) => FasPeriodicCalculatorPage(
             birthDateRepository: sl(),
             repository: sl(),
-          ),
-        ),
-        materialAppRoute(
-          path: '/my-trainer',
-          builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
-            bloc: authCubit,
-            builder: (_, auth) => auth is! AuthAuthenticated
-                ? const SizedBox.shrink()
-                : ProfessionalHubPage(
-                    key: ValueKey('professional-hub-${auth.user.id}'),
-                    userId: auth.user.id,
-                    repository: SupabaseStudentNoticeRepository(
-                      sl<SupabaseClient>(),
-                      auth.user.id,
-                    ),
-                  ),
           ),
         ),
         materialAppRoute(

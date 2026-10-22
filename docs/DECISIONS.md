@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-025 · 22/10/2026 · Preparador abajo, Perfil arriba:** Javier elige la
+propuesta de pestaña profesional y avatar superior. Inicio conserva una sola
+tarjeta de novedades, sin repetir formularios/chat/técnica. La campana aparece
+solo con avisos sin leer; cero avisos la oculta por completo. Se mantienen
+historial de vínculos, rutas anteriores y convivencia de planificación. La
+pestaña se basa en vínculo activo/anterior o recursos propios autorizados; sin
+ellos quedan cuatro destinos. Implementado y verificado en Flutter, instalación
+física pendiente. Sustituye el criterio de Perfil inferior de UI-022.
+[Implementación y evidencia](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md).
+
 **TRN-024 · 22/10/2026 · trabajo directo y revisión de la app del alumno:** Javier
 detiene subagentes y coordinación entre chats y confirma continuar únicamente
 con este chat. La autorización anterior de coordinación queda revocada hasta

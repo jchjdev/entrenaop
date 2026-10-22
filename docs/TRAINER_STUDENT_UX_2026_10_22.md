@@ -1,5 +1,14 @@
 # Trainer y app del alumno: revisión · 22/10/2026
 
+## Elección y continuación · TRN-025
+
+Javier elige «Preparador abajo» y Perfil arriba; confirma despejar Inicio sin
+perder avisos ni historial y pide ocultar la campana cuando no haya avisos sin
+leer. Esa elección se implementa después de esta propuesta, con su evidencia en
+[la entrega de navegación](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md). Las
+alternativas y frases de «sin modificar la app» de las secciones siguientes
+describen la fase de propuesta anterior a esa confirmación.
+
 ## Alcance de esta revisión
 
 Javier confirma continuar sin agentes ni coordinación con otros chats. Aporta

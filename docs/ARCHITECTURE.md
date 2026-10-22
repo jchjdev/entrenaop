@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Navegación profesional del alumno · TRN-025 · 22/10/2026
+
+El shell mantiene cuatro ramas generales y una profesional condicional. Perfil
+conserva `/profile` como ruta del navegador raíz, con retorno a la pantalla de
+origen. Se conservan sus rutas de preferencias, vínculo e historial de Salud.
+`StudentNavigationEntry` mantiene un resumen por identidad con las consultas
+existentes de avisos/vínculos, sin endpoints ni permisos nuevos. Compartir ese
+resumen evita cargar el mismo feed para la campana y la tarjeta de Inicio.
+Los refrescos simultáneos se agrupan; una lectura nueva del hub prevalece sobre
+una respuesta antigua y un cambio de cuenta invalida el estado anterior.
+Renovar la sesión no desmonta las ramas ni elimina filtros de Evolución.
+[Contrato y límites](ATHLETE_TRAINER_NAVIGATION_2026_10_22.md).
+
 ## Continuidad profesional y avisos · TRN-022 · 21/10/2026
 
 Trainer conecta el mismo binding de recuperación de ADMIN mediante sus propias

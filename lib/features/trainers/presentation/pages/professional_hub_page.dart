@@ -1,9 +1,11 @@
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
+import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/student_notice_repository.dart';
 import '../widgets/professional_resources.dart';
+import '../student_navigation.dart';
 
 String? studentNoticeTargetRoute(StudentNoticeTarget target) {
   final id = Uri.encodeComponent(target.targetId);
@@ -28,10 +30,12 @@ class ProfessionalHubPage extends StatefulWidget {
     required this.repository,
     required this.userId,
     this.onOpen,
+    this.focusNotices = false,
   });
   final StudentNoticeRepository repository;
   final String userId;
   final Future<void> Function(String)? onOpen;
+  final bool focusNotices;
 
   @override
   State<ProfessionalHubPage> createState() => _ProfessionalHubPageState();
@@ -45,6 +49,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
   bool _busy = true;
   String? _error, _action;
   int _request = 0;
+  late bool _showNotices = widget.focusNotices;
 
   @override
   void initState() {
@@ -56,6 +61,9 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
   @override
   void didUpdateWidget(covariant ProfessionalHubPage oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNotices != widget.focusNotices) {
+      _showNotices = widget.focusNotices;
+    }
     if (oldWidget.userId != widget.userId ||
         oldWidget.repository != widget.repository) {
       _data = null;
@@ -88,6 +96,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
         kind: _kind,
       );
       if (!mounted || request != _request) return;
+      StudentNavigationScope.maybeOf(context)?.acceptSnapshot(data);
       setState(() {
         _data = data;
         _items = more ? [..._items, ...data.items] : data.items;
@@ -112,6 +121,14 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
       await context.push(route);
     }
     if (mounted && owner == widget.userId) await _load();
+  }
+
+  void _selectView(bool notices) {
+    setState(() => _showNotices = notices);
+    // La campana puede volver a abrir Avisos después de visitar Resumen.
+    if (GoRouter.maybeOf(context)?.state.uri.path == '/my-trainer') {
+      context.go(notices ? '/my-trainer?view=notices' : '/my-trainer');
+    }
   }
 
   Future<void> _noticeAction(
@@ -181,7 +198,10 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
     location: '/my-trainer',
     onVisible: _load,
     child: Scaffold(
-      appBar: AppBar(title: const Text('Con mi preparador')),
+      appBar: AppBar(
+        title: const Text('Mi preparador'),
+        actions: const [AppAccountActions()],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: Center(
@@ -199,21 +219,53 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
                     child: const Text('Reintentar seguimiento'),
                   ),
                 ],
-                if (_data case final data?) ...[
-                  if (data.resources.hasContent) ...[
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Resumen'),
+                      selected: !_showNotices,
+                      onSelected: (_) => _selectView(false),
+                    ),
+                    ChoiceChip(
+                      label: Text(
+                        _data?.unreadCount == null || _data!.unreadCount == 0
+                            ? 'Avisos'
+                            : 'Avisos · ${_data!.unreadCount}',
+                      ),
+                      selected: _showNotices,
+                      onSelected: (_) => _selectView(true),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (!_showNotices) ...[
+                  if (_data case final data?)
                     ProfessionalResources(
                       resources: data.resources,
                       onOpen: _openRoute,
                     ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () => _openRoute('/profile/trainer'),
-                        icon: const Icon(Icons.person_outline),
-                        label: const Text('Ver vínculo con mi preparador'),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _openRoute('/profile/trainer'),
+                      icon: const Icon(Icons.person_outline),
+                      label: const Text(
+                        'Vínculo e historial con mi preparador',
                       ),
                     ),
-                    const SizedBox(height: 24),
+                  ),
+                  if (!_busy && _data?.resources.hasContent == false)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        'Aquí aparecerá el contenido que recibas. Puedes consultar tus vínculos actuales y anteriores sin perder el historial.',
+                      ),
+                    ),
+                ],
+                if (_showNotices)
+                  if (_data case final data?) ...[
                     Text(
                       'Avisos',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -293,11 +345,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
                         onPressed: _busy ? null : () => _load(more: true),
                         child: const Text('Cargar avisos anteriores'),
                       ),
-                  ] else if (!_busy)
-                    const Text(
-                      'No tienes contenido de un preparador. Tus sesiones y preparaciones siguen en Inicio.',
-                    ),
-                ],
+                  ],
               ],
             ),
           ),
