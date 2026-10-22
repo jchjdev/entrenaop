@@ -146,6 +146,13 @@ estrictos de los cuatro módulos de servidor, sin dependencias nuevas en la app.
 La CI `garmin-connection.yml` repite Node/tipos y el consumidor Flutter con su
 regresión de Salud, sin cuentas, secretos o despliegues.
 
+Comprobación remota del 22/10/2026: [ejecución 39777384514](https://github.com/jchjdev/entrenaop/actions/runs/39777384514)
+correcta para `655a6c5cbe64df3cad72fea6952f88d6a9df160d`, con ambos trabajos
+`backend` y `consumer` terminados satisfactoriamente. Incluye análisis Flutter
+global, pruebas de conexión y regresión de Salud, pruebas Node y tipos estrictos.
+Esta evidencia valida el código preparado; no acredita despliegue ni conexión
+con una cuenta Garmin real.
+
 Flutter: diez pruebas nuevas y dieciséis de regresión de Salud correctas;
 análisis del módulo y global limpios. La batería raíz final con la entrada y
 ruta Garmin sobre el punto de navegación compartido pasa 1270 pruebas con una
