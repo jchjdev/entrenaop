@@ -143,11 +143,30 @@ avanzar `main`; se ejecuta de nuevo sobre el punto actualizado sin eludir la
 guarda ni modificar el trabajo ajeno. Se verifica además desde este equipo la
 identidad pública, la huella JavaScript, los recursos y las cabeceras.
 
+La ampliación de fartlek queda guardada en `8998d25c` (terminología previa en
+`f2838af4`). Trainer Dev publicado con release
+`8998d25c4e8c309c528bc8c2169791a698d106d5-20261022-1`, verificado por HTTPS
+y en Chrome: recuperación como paso, «Tiempo», selector desde/hasta, vueltas y
+omisión desactivada por defecto visibles. Se abre y cancela el diálogo en una
+pestaña de comprobación; no se aplica la repetición ni se publica una nueva
+versión de la sesión real. La pestaña original del usuario se conserva.
+
+[CI Garmin 39837977581](https://github.com/jchjdev/entrenaop/actions/runs/39837977581)
+correcta, incluida compilación iOS; ADMIN Dev publicado con la misma revisión
+y verificado por HTTPS en la
+[CI 39837977717](https://github.com/jchjdev/entrenaop/actions/runs/39837977717).
+El paquete público contiene únicamente el compilado Dev; el ZIP queda en la
+carpeta privada de versiones. No hay nuevas migraciones o despliegues Edge.
+
 La interfaz del iPhone requiere actualizar desde GitHub Desktop (Fetch/Pull de
 `main`), ejecutar `bash tools/prepare_iphone_dev.sh` en el Mac y compilar desde
 Xcode con el esquema «Runner iPhone» y el iPhone físico. No hay que copiar
-credenciales Garmin. Javier confirma que hará la prueba más tarde: queda
-aplazada por disponibilidad, sin declarar comprobado el nuevo recorrido.
+credenciales Garmin. Tras aplazar inicialmente la prueba, Javier confirma que
+ha instalado la app V2 en el iPhone. Para crear este fartlek en Trainer y
+enviarlo desde ese iPhone no necesita otra instalación: no cambia el contrato
+de pasos. Las nuevas acciones del creador personal móvil sí requieren actualizar
+su compilación. La recepción y fidelidad de la nueva pauta en fēnix siguen
+pendientes de comprobación física.
 
 ## Único siguiente recorrido
 

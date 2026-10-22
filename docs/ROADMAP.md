@@ -22,7 +22,13 @@ expansión ordenada de grupos y omisión explícita desactivada por defecto; los
 selectores dicen «Tiempo». No cambia SQL ni el contrato V2: se conservan pasos
 individuales al guardar/reabrir, con un máximo de 40. Análisis de las tres apps
 limpios; raíz 1.292, ADMIN 314, Trainer 170, creador 171 y servidor 115 pruebas
-correctas, con las omisiones previas conservadas. **Único siguiente recorrido:**
+correctas, con las omisiones previas conservadas.
+Código `8998d25c`, CI Garmin 39837977581 correcta incluida iOS; Trainer y ADMIN
+Dev publicados en esa revisión y verificados por HTTPS, CI ADMIN 39837977717
+correcta. El diálogo se abre/cancela en Chrome sin aplicar cambios a la sesión
+real. Javier ya tiene instalada la app V2: puede enviar esta receta sin
+reinstalar; solo las acciones nuevas del creador móvil requieren actualización.
+**Único siguiente recorrido:**
 comprobar la pauta nueva en fēnix con Lap, ritmo propio rápido/suave y última
 recuperación omitida. El envío automático sigue pendiente de su ciclo completo
 de actualización/cancelación; no se activa por este ajuste del editor.
