@@ -9,6 +9,9 @@ carrera con persistencia, recuperación, ejecución y exportación coherentes;
 fuerza Garmin sigue pendiente. La interfaz nueva requiere reinstalar en iPhone.
 Análisis de las tres apps limpios; raíz 1.279, ADMIN 314, Trainer 170 y paquete
 común 155 pruebas correctas, con las omisiones previas conservadas.
+Trainer y ADMIN Dev publicados y verificados por HTTPS en `f12df112`; CI Garmin
+correcta, incluida compilación iOS. ADMIN supera validación y su reintento de
+publicación resuelve el error inicial de transporte con Hostinger.
 [Alcance y verificaciones](WORKOUT_EDITOR_SHARED_2026_10_22.md).
 
 **INT-007 · 22/10/2026 · primer envío Garmin común activo solo en Dev:** contrato de cita

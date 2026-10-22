@@ -90,3 +90,21 @@ personal y se añaden recuperación de estados incompletos por cuenta, conversi�
 de todos los formatos, ausencia de valores por serie y suspensión durante un
 guardado pendiente. Revisión de dos capturas sintéticas del widget real de
 carrera a 390 px; pruebas responsivas también a 320 px y texto 2×.
+
+### Publicación Dev y CI de la revisión f12df112
+
+Javier autoriza expresamente publicar el paquete validado en Trainer Dev.
+El 22/10/2026 se extrae únicamente en `public_html/trainer` la versión
+`f12df1129d12d4b17c8cefd9c7662336a06f72e4-20261022-1`, conservando las
+versiones anteriores. El verificador HTTPS confirma revisión, proyecto Dev,
+SHA-256 del JavaScript, arranque versionado, cabeceras y MIME WebAssembly.
+Chrome carga el panel profesional y su biblioteca de sesiones. No se crean
+cuentas, sesiones ni asignaciones durante esta comprobación.
+
+La CI Garmin [39812426828](https://github.com/jchjdev/entrenaop/actions/runs/39812426828)
+termina correctamente en backend, consumidor y compilación iOS Release sin
+firma. ADMIN [39812426894](https://github.com/jchjdev/entrenaop/actions/runs/39812426894)
+supera su validación; la primera publicación falla con `OSError` de transporte
+con Hostinger. El reintento solo del trabajo fallido publica y verifica ADMIN
+correctamente a las 16:31 UTC; el manifiesto HTTPS confirma `f12df112` y la
+versión `f12df1129d12d4b17c8cefd9c7662336a06f72e4-39812426894-1`.
