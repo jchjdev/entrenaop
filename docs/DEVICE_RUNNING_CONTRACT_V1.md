@@ -75,6 +75,13 @@ EntrenaOP. Cursores, colas y selección de importación se aíslan por cuenta.
 
 ## 4. Capacidades y permisos
 
+**INT-006 · 22/10/2026 · regla comercial acordada, aún no implementada:**
+conexión y nuevas lecturas/importaciones de todos los canales, incluidos Salud
+y Health Connect, exigen Pro vigente o servicio profesional vigente del alumno.
+El historial conservado sigue siendo consultable tras perder ese acceso.
+Capacidad técnica, permiso del proveedor y derecho comercial son comprobaciones
+independientes. La exportación añade las restricciones de origen de la sección 8.
+
 Las capacidades se consultan por operación, no con un booleano «marca compatible»:
 
 | Operación | Qué debe acreditar |
@@ -171,6 +178,16 @@ que ya lo admitan. Importar no modifica baremos, no acredita un test oficial y
 no activa automáticamente una nueva política del algoritmo.
 
 ## 8. Exportación de carrera
+
+**INT-006:** la primera fase envía únicamente prescripciones del algoritmo o
+asignaciones del preparador que el titular pueda consumir con sus derechos
+vigentes. Tener Pro no basta para exportar cualquier programa guiado o sesión
+personal. Otras sesiones compatibles podrán habilitarse después para usuarios
+con acceso Pro/profesional; es una ampliación posible, no implementada ahora.
+El origen se verifica en servidor sobre la prescripción/asignación concreta:
+no se confía en una etiqueta del móvil ni se confunde autor de la plantilla con
+prescriptor. Consentimiento del alumno, versiones y compatibilidad siguen siendo
+necesarios; no se añade una suscripción Pro al alumno profesional para su pauta.
 
 El adaptador parte de la receta existente: bloque/serie, objetivo por distancia
 o duración, intervalo de ritmo opcional, recuperación pasiva/andando/trotando,
