@@ -1,5 +1,24 @@
 # Acceso a proveedores de dispositivos · INT-001 · 21/10/2026
 
+## Actualización Garmin · 22/10/2026
+
+Javier aporta un correo de Garmin que confirma la aprobación de su solicitud al
+Garmin Connect Developer Program e indica completar la cuenta creando una
+contraseña en el portal. Se registra la aprobación comunicada por el titular,
+sin copiar su dirección, el correo completo ni credenciales al repositorio.
+
+La admisión al programa deja de estar pendiente. Completar el alta, comprobar
+los productos/API habilitados, sus condiciones y límites, crear/configurar una
+aplicación y verificar una primera petición autenticada siguen pendientes.
+Este cambio no acredita acceso operativo a Activity API o Training API, una
+cuenta Garmin de deportista conectada ni importación directa en EntrenaOP.
+La comprobación del portal debe preceder a implementar el adaptador; Salud
+conserva su recorrido independiente. No se han usado credenciales ni cambiado
+código, permisos, base de datos o Trainer como parte de este registro.
+
+La revisión inicial del 21/10 que sigue describe el estado anterior. La fila y
+sección Garmin incorporan esta actualización; las demás marcas no cambian.
+
 **Actualización del mismo día:** el dominio puro y el ensayo local de
 Salud/Health Connect ya están implementados y compilados, con prueba física
 pendiente. Después se añade el [lector FIT offline](DEVICE_FIT_READ_PROBE.md)
@@ -28,7 +47,7 @@ credenciales de desarrollador.
 | --- | --- | --- | --- | --- |
 | Salud de Apple / HealthKit | Lectura nativa en iPhone de actividades y métricas que realmente estén en Salud, con permiso. | Es otro contrato: WorkoutKit para sesiones planificadas compatibles. Escribir una actividad completada en Salud no programa una sesión en el reloj. | Documentación pública; capacidad, firma y lectura real pendientes. | Habilitar capability y propósitos en un ensayo móvil aislado; verificar cuenta/firma y permiso con una carrera real. |
 | Health Connect | Lectura nativa Android de registros que otras apps hayan compartido, con permiso y disponibilidad. | Health Connect no acredita envío universal a los relojes de fabricantes. No se habilita esa capacidad en V1. | Documentación pública; SDK, permisos, declaración Play y ensayo pendientes. | Contrastar SDK/Gradle y teléfono compatibles antes de elegir adaptador; ensayar lectura de una carrera. |
-| Garmin Connect | Activity API directa tras acceso aprobado; posible vía indirecta Salud/Health Connect para los datos que Garmin comparta. | Training API para sesiones/planes y dispositivos compatibles, tras aprobación. | Sin API, confirmado por Javier. | Confirmar un canal de solicitud operativo y elegibilidad empresarial; preparar petición de Activity + Training. |
+| Garmin Connect | Evaluar Activity API directa con los productos y permisos del portal; Salud conserva su vía independiente. | Evaluar Training API para sesiones/planes si está habilitada y los dispositivos son compatibles. | Programa aprobado según correo aportado por Javier el 22/10; alta y acceso API operativo pendientes. | Completar la cuenta; verificar productos, documentación, condiciones y credenciales de aplicación antes de una primera llamada autenticada. |
 | COROS | Partner API para actividades; la cobertura indirecta se comprobará por plataforma y campos. | Partner API documenta sesiones estructuradas y planes. | Documentación pública, sin credenciales verificadas. | Contrastar elegibilidad de plataforma/empresa y preparar solicitud con aplicación y callbacks. |
 | Suunto | Cloud API y FIT mediante programa de partners. | Evaluar SuuntoPlus Guides; la API de subida de actividad completada no demuestra envío de prescripción. | Documentación/portal públicos; aceptación y claves pendientes. | Obtener acceso de partner y confirmar el producto de prescripción, modelos y cuotas admitidos. |
 | Huawei Health | Health Kit documenta lectura/escritura consentida de datos expuestos. | Envío de sesiones estructuradas a reloj no acreditado en esta revisión. | Documentación pública; permisos de producto/región y credenciales no verificados. | Confirmar vía aplicable en España/UE, permisos de entrenamientos y detalle de segmentos/pulso para una integración de servidor/móvil. |
@@ -75,32 +94,37 @@ será con permisos mínimos; segundo plano e historial ampliado se evaluarán
 separadamente. No se diseña sobre Google Fit.
 [Publicación](https://developer.android.com/health-and-fitness/health-connect/publish).
 
-## Garmin: qué podemos hacer sin API y qué queda condicionado
+## Garmin: aprobación del programa y acceso operativo pendiente
 
-La documentación diferencia Activity API para recibir actividad de Training API
-para publicar recetas/planes. El programa exige aprobación y uso empresarial.
-La FAQ describe OAuth 2.0; no acredita que EntrenaOP tenga alta ni que una
-solicitud se tramite ahora. Las páginas actuales muestran un aviso de próximas
-actualizaciones y no se ha acreditado formulario operativo ni plazo efectivo.
-No se interpreta el plazo orientativo de la FAQ como fecha de entrega.
+El 22/10 Javier comunica la aprobación descrita al principio del documento.
+Sustituye el bloqueo anterior de admisión, pero aún no se ha accedido al portal
+ni contrastado sus productos, condiciones, entorno o credenciales de aplicación.
+La revisión pública inicial distinguía Activity API para recibir actividades y
+Training API para publicar recetas/planes. Su habilitación para esta cuenta se
+comprobará en el portal; no se deduce del mensaje de bienvenida ni de una FAQ
+anterior. Los enlaces se conservan como referencias, sin afirmar verificación
+pública nueva de sus contenidos el 22/10.
 [Programa](https://developer.garmin.com/gc-developer-program/overview/),
 [Training API](https://developer.garmin.com/gc-developer-program/training-api/)
 y [FAQ](https://developer.garmin.com/gc-developer-program/program-faq/).
 
-Garmin documenta compartir datos con Salud de Apple y Health Connect. Eso permite
-plantear una primera lectura indirecta, limitada a los datos exportados y con
-prueba real pendiente. La ayuda de Apple Health advierte limitaciones del detalle
+Garmin documenta compartir datos con Salud de Apple y Health Connect. La primera
+lectura indirecta iPhone desde Garmin Connect ya fue probada por Javier en el
+ensayo. El consumidor principal e historial privado tienen su
+[evidencia y aceptación física propia](DEVICE_RUNNING_HISTORY.md); no equivalen
+a conexión directa con Garmin. La ayuda de Apple Health advierte límites del detalle
 cardíaco de actividades; no se promete fidelidad de la API directa.
 [Garmin → Apple Health](https://support.garmin.com/en-US/?faq=lK5FPB9iPF5PXFkIpFlFPA)
 y [Garmin → Health Connect](https://support.garmin.com/en-US/?faq=JToBEy0jfe6pIygark2Ui5).
 
-**Recomendación operativa:** avanzar con la entrada de salud y el dominio común;
-preparar Activity + Training sin bloquearlos. No usar contraseñas de Garmin,
+**Siguiente paso:** completar el alta y comprobar acceso oficial; después definir
+el adaptador Garmin detrás del dominio común, sin acoplarlo a Salud o Trainer.
+La contraseña del portal no será una credencial de integración de EntrenaOP.
+No usar contraseñas de deportistas Garmin,
 scraping, endpoints privados o bibliotecas que simulen iniciar sesión. Connect
 IQ es otro programa y una app para reloj tendría un alcance propio.
-Si la admisión directa sigue sin resolverse, se puede evaluar importación manual
-FIT/TCX como entrega adicional; no se da por aprobada ni implementada aquí, ni
-resuelve automáticamente el envío de planes.
+La importación de archivos conserva su contrato separado; no acredita acceso
+API ni resuelve automáticamente el envío de planes.
 
 ## COROS: requisitos explícitos de partner
 

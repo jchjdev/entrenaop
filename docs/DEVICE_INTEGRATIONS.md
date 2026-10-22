@@ -31,9 +31,14 @@ principal; la aceptación física del recorrido de lectura/guardado sigue pendie
 [Contrato y evidencia](DEVICE_RUNNING_HISTORY.md).
 Faltan conectores de producción, exportación, interfaces/autorización de ADMIN
 y Trainer, y lectura Android en la app principal.
-No hay acceso API propio de Garmin ni cuenta de fabricante conectada
-a EntrenaOP y el bloque funcional
-sigue abierto. [API y fronteras](../packages/device_activity_core/README.md).
+**Actualización Garmin · 22/10/2026:** Javier aporta el correo que confirma su
+admisión al Garmin Connect Developer Program. Quedan completar la cuenta y
+verificar productos/API habilitados, condiciones y credenciales; no se ha
+acreditado todavía una llamada autenticada ni una cuenta Garmin conectada a
+EntrenaOP. La integración directa será un adaptador del bloque común, separado
+de Salud y de Trainer. El bloque funcional sigue abierto.
+[Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),
+[API y fronteras](../packages/device_activity_core/README.md).
 
 La cobertura de todas las marcas es un objetivo del producto. Cada combinación
 de reloj, firmware, teléfono, sistema y proveedor necesitará evidencia propia.
