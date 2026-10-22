@@ -255,15 +255,38 @@ Los eventos SQL de las capturas (`42703`, `42702`, `42725`, `42601` y `P0001`)
 proceden de `mgmt-api` con usuario de desarrollo. Los mensajes contrastados
 incluyen consultas de diagnóstico erróneas y validaciones de reglas de negocio.
 El registro no atribuye cada evento a una avería del cliente ni permite afirmar
-que todos sean inocuos. Los cuatro 503 corresponden a `exercise-video` y a las
-dos funciones de conexión Garmin; no se ocultan ni se reclasifican sin evidencia.
+que todos sean inocuos. Dos 503 corresponden a `exercise-video`, con causa aún
+sin confirmar. Los otros dos corresponden a las funciones Garmin durante su
+primera prueba antes de cargar secretos, documentada en
+[activación Garmin Dev](DEVICE_GARMIN_CONNECT.md). No se borran estos eventos.
+La consulta de `function_edge_logs` entre 12:45 y 17:00 UTC del 22/10 no devuelve
+nuevos 5xx. Esa ventana no acredita el motivo de los anteriores ni ausencia
+universal de incidencias.
 
 Validación local de la corrección: 36 pruebas Python correctas, incluido cifrado
-real de ida y vuelta. El ensayo con PostgreSQL y la nueva copia completa deben
-acreditarse en GitHub; este Windows no dispone de Docker. La comprobación de
+real de ida y vuelta. El ensayo PostgreSQL pasa en
+[39818144968](https://github.com/jchjdev/entrenaop/actions/runs/39818144968),
+incluida la detección del huérfano privado. La comprobación de
 migraciones contra Dev detectó también una migración de pasos de carrera aún
 local y perteneciente al trabajo simultáneo del editor; no se aplica aquí.
-`flutter test` desde ADMIN encontró 11 cargas fallidas por cambios simultáneos
-sin guardar del editor compartido (`WorkoutTargetType.manual` y un identificador
-`value` fuera de ámbito). No se incluyen ni se corrigen en este cambio de Python;
-esta ejecución no acredita la batería completa de la aplicación.
+Una primera ejecución de `flutter test` encontró 11 cargas fallidas mientras
+se editaba el creador compartido desde otro trabajo. Sin intervenir en esos
+archivos, la repetición posterior de ADMIN pasó: `flutter analyze --no-pub`
+sin incidencias y `flutter test --no-pub` con 314 pruebas correctas y dos
+omisiones previas. Esa comprobación describe la instantánea local de las 19:00;
+no incorpora las ediciones del otro trabajo al commit de infraestructura.
+
+La [copia real 39818963669](https://github.com/jchjdev/entrenaop/actions/runs/39818963669)
+termina correctamente en 5 min 14 s sobre `746fc4edfba797216baaf40daa63776d36940294`.
+Se contrasta el recibo directamente en Dev y el artefacto en GitHub:
+
+- Recibo `39818963669-1`, estado `verified`; artefacto `12444560534` disponible.
+- Archivo cifrado de 2.526.247 bytes; 11 objetos Storage restaurados y comprobados.
+- Ensayo real correcto el 22/10 a las 17:06:12 UTC; caducidad el 29/10 a las
+  17:06:14 UTC. No se restauró ni sobrescribió ninguna base remota.
+
+La [publicación 39818144978](https://github.com/jchjdev/entrenaop/actions/runs/39818144978)
+también pasa validación, compilación, FTPS, comprobación HTTPS y retención.
+Los reintentos nuevos cubren transferencias temporales previas a activación;
+no prueban una causa concreta para los `OSError` históricos de Hostinger.
+No se cambia la preferencia de correos de GitHub ni se ocultan fallos futuros.
