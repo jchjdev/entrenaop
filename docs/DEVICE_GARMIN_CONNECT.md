@@ -18,8 +18,9 @@ Habilitar una API en la aplicación no conecta una cuenta de deportista ni
 acredita entrega de carreras o de sesiones al reloj. El usuario puede conceder
 solo algunos permisos. Los valores de Client ID y Client Secret se introducen
 después con el helper local y se cargan directamente en secretos Edge Dev;
-no se imprimen ni se versionan. Todavía no hay tokens o actividades de una
-cuenta Garmin real en la conexión de EntrenaOP.
+no se imprimen ni se versionan. La autorización real posterior queda comprobada
+con tokens cifrados, identidad persistida y permisos efectivos; todavía no se
+reciben actividades por esta conexión directa.
 
 ## Primer tramo implementado: adaptador OAuth de servidor
 
@@ -47,10 +48,11 @@ páginas 2–6, y con OAuth2 Tools del portal el 22/10/2026.
   en errores. No interpreta un 400 genérico como revocación del usuario.
 
 Este adaptador lo consumen ahora el servicio de conexión y dos handlers Edge
-descritos a continuación. **Publicados y configurados solo en Dev; aceptación
-real pendiente.** Salud conserva su persistencia y su acceso Free independientes.
+descritos a continuación. **Publicados y configurados solo en Dev; recorrido
+nominal de conexión y desconexión real comprobado desde navegador.** Salud
+conserva su persistencia y su acceso Free independientes.
 
-## Segundo tramo implementado: conexión por cuenta, pendiente de aceptación real
+## Segundo tramo implementado: conexión y retirada reales comprobadas
 
 Javier autoriza conectar, autorizar y desconectar Garmin, y aclara que otro chat
 está reorganizando Inicio, la pantalla de entrenador y la ubicación de Perfil.
@@ -102,7 +104,7 @@ El historial de carreras permanece intacto. Salud y Health Connect mantienen
 el acceso para todos de INT-006. Este tramo no recibe actividades, no exporta
 recetas y no modifica programas/asignaciones profesionales.
 
-## Activación y aceptación real pendientes
+## Activación Dev y aceptación del recorrido nominal
 
 Los handlers están cerrados por defecto con `GARMIN_ENVIRONMENT=DISABLED` y solo
 aceptan configuración DEVELOPMENT contra `sxbxfjqgoddzhtcyhalw`. Requieren los
@@ -128,16 +130,16 @@ reales responden inicialmente 503 por configuración ausente. Tras cargar los
 cuatro secretos Garmin, la función de cuenta rechaza una petición sin sesión
 con 401 y el callback sin parámetros rechaza con 400. Se comprueban los cuatro
 nombres remotos, sin leer sus valores. La cuenta de Javier tiene Pro efectivo
-y acceso Garmin; no se cambia su derecho comercial. Todavía no hay autorización
-Garmin real. El asesor de seguridad solo señala para
+y acceso Garmin; no se cambia su derecho comercial. La autorización real se
+comprueba después en el recorrido descrito a continuación. El asesor de seguridad solo señala para
 esta tabla privada RLS sin políticas, intencional al carecer de acceso directo:
 se mantiene la fachada exclusiva de servidor. No se modifica producción.
 
-**Único siguiente tramo:** comprobar con cuenta real: Pro/alumno habilitado
-→ Conectar Garmin → autorizar permisos → volver a Perfil → estado y permisos
-correctos → desconectar → comprobar retirada en Garmin. Repetir denegación,
-cancelación y acceso comercial perdido. No se declara cerrado el recorrido hasta
-esa aceptación; compilar/probar con fixtures no la sustituye.
+**Único siguiente bloque recomendado:** traducir una prescripción autorizada y
+versionada de carrera a Training API, enviarla al calendario Garmin y comprobar
+su llegada al reloj. El recorrido nominal de cuenta queda aceptado en navegador;
+denegación, cancelación y pérdida de acceso comercial mantienen cobertura
+automatizada, sin aceptación manual adicional acreditada en esta sesión.
 
 ### Primer intento real y diagnóstico · 22/10/2026
 
@@ -156,11 +158,33 @@ state, código OAuth, cuentas, tokens, cuerpos de respuesta ni objetos Error.
 Hay cobertura de fallo en canje, identidad, permisos y persistencia, y de la
 ausencia de datos privados en mensajes y logs. Ambos handlers se publican en
 Dev, versión 4, sin modificar el esquema, las credenciales o Flutter. La causa
-de conexión sigue pendiente de reproducir; el cambio de presentación no se
-declara solución de la autorización. No se reutiliza el código ya consumido.
+del primer fallo no queda identificada; no se atribuye al cambio de presentación
+una corrección del protocolo OAuth. No se reutiliza el código ya consumido.
 
-El envío de una primera sesión compatible con Training API será otro bloque
-después de aceptar la conexión real. No requiere esperar a otros fabricantes,
+### Autorización real comprobada · 22/10/2026
+
+Javier aporta el retorno «Conexión completada» y la pantalla de EntrenaOP
+«Cuenta conectada», con lectura de actividades y envío de sesiones autorizados.
+Se contrasta en Dev: estado `connected`, generación 2, `can_read=true`,
+`can_send=true`, grant cifrado e identidad Garmin persistidos. La huella del
+intento, verifier y claim han quedado limpiados: el intento no es reutilizable.
+No se leen ni documentan los valores de tokens o identidad externa.
+
+Después Javier confirma que «Desconectar Garmin» deja la pantalla desconectada.
+Dev acredita generación 2 en `disconnected`, ambos permisos desactivados,
+tokens/caducidades e identidad externa eliminados e intentos/leases limpiados.
+Ese borrado se produce exclusivamente tras una respuesta satisfactoria de
+`DELETE /user/registration`, conforme al código desplegado y las regresiones
+de retirada fallida; no se hace ninguna limpieza manual para simular el resultado.
+
+Esta evidencia acepta el recorrido nominal conectar/autorizar/desconectar por
+cuenta desde navegador. No acredita recepción de actividades, exportación de
+recetas, instalación móvil o ejecución en el reloj. La
+[CI 39780738347](https://github.com/jchjdev/entrenaop/actions/runs/39780738347)
+finaliza correctamente para `4d9dfb215458885518dff3f80a51ea8122793eb8`.
+
+El envío de una primera sesión compatible con Training API será el siguiente
+bloque recomendado. No requiere esperar a otros fabricantes,
 pero sí traducción de receta, orden/versiones autorizadas y comprobación física.
 
 ### Límites operativos que no acredita esta entrega
@@ -204,4 +228,6 @@ ejecuta sobre Dev con el DDL dentro de `BEGIN`/`ROLLBACK`: se confirma después 
 la tabla no existe y quedan cero usuarios `@garmin.invalid` en aquella preparación.
 Tras la autorización de activación, la migración queda aplicada, las funciones
 publicadas y se repite correctamente el contrato con ROLLBACK, sin conexiones
-ni fixtures restantes. No hay todavía prueba contra Garmin real.
+ni fixtures restantes en esa comprobación inicial. Después se acredita la
+autorización y retirada reales descritas arriba; las actividades y el envío
+siguen pendientes.

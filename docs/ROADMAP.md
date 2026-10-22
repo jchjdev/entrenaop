@@ -21,12 +21,19 @@ Dev con ROLLBACK. Tras autorización de Javier, migración aplicada y dos funcio
 ACTIVE v1 en `entrenaop-dev`; contrato repetido sin usuarios sintéticos restantes.
 CI de servidor y consumidor correcta. Cuatro secretos cargados directamente
 desde el helper local; petición sin sesión 401 y callback inválido 400.
-**Único siguiente tramo de Garmin:** aceptar
-conexión/permisos/desconexión con cuenta real. No hay
-recepción o envío de entrenamientos; producción y Trainer no cambian.
+Javier aporta capturas de autorización completada y cuenta conectada; Dev
+confirma generación 2, ambos permisos, grant cifrado e intento consumido.
+Después confirma desconexión; Dev acredita permisos desactivados, grant,
+identidad e intentos/leases eliminados tras retirada satisfactoria en Garmin.
+**Recorrido nominal conectar/autorizar/desconectar aceptado en navegador el
+22/10/2026. Único siguiente bloque recomendado:** primera prescripción de carrera
+autorizada/versionada → Training API → calendario Garmin → comprobación en reloj.
+No hay recepción o envío de entrenamientos; producción y Trainer no cambian.
 El primer retorno real falla: se corrige la presentación a texto UTF-8 y se
 añade diagnóstico sin datos privados (handlers Dev v4, 93 pruebas de servidor).
-La causa de autorización y la aceptación siguen pendientes de un nuevo intento.
+El segundo intento completa la conexión real; la causa inicial no se reproduce.
+CI 39780738347 correcta. Denegación/cancelación/pérdida de acceso probadas de
+forma automatizada; instalación móvil y esas variantes manuales no acreditadas.
 El bloque funcional de dispositivos permanece abierto.
 [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
 

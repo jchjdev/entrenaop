@@ -11,8 +11,10 @@ ni al historial de Salud. La RPC solo permite backend, exige sesión y acceso
 efectivo, y usa generación, consumo único y leases para evitar callbacks tardíos
 o dos revocaciones simultáneas. Salud permanece Free conforme a INT-006.
 Implementación y pruebas locales/SQL con ROLLBACK comprobadas. Tras autorización,
-migración aplicada, handlers publicados y secretos configurados solo en Dev; falta aceptación
-real. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
+migración aplicada, handlers publicados y secretos configurados solo en Dev.
+Conexión real con ambos permisos, tokens cifrados e intento consumido comprobada;
+retirada real y limpieza de grant/identidad/permisos también acreditadas desde
+navegador. Recepción y envío pendientes. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
 
 ## Navegación profesional del alumno · TRN-025 · 22/10/2026
 

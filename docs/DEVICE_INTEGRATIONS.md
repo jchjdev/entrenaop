@@ -41,7 +41,10 @@ según especificación autenticada 2.0 y después el servicio de conexión por c
 tokens cifrados y dos handlers Edge, con pantalla propia dentro de Perfil.
 Javier autoriza después activar solo Dev: migración aplicada y funciones ACTIVE
 v1, con contrato SQL repetido con ROLLBACK y CI correcta. Secretos cargados
-directamente desde el helper local; queda aceptación real. Se comprueban 401
+directamente desde el helper local; la conexión real queda verificada desde
+navegador, con lectura/envío autorizados, tokens cifrados e intento consumido.
+La desconexión real queda también verificada: permisos desactivados y grant e
+identidad eliminados tras retirada satisfactoria en Garmin. Se comprueban 401
 sin sesión y 400 para callback inválido.
 Salud y Trainer conservan sus contratos;
 el bloque funcional sigue abierto.
