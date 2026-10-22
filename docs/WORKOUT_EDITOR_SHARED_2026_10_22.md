@@ -68,6 +68,49 @@ sigue pendiente del adaptador de ejercicios/series y de una matriz de capacidad.
 No se habilita por esta entrega el envío de sesiones personales: INT-006 sigue
 limitando el primer envío a pautas autorizadas del algoritmo o entrenador.
 
+## Siguiente contrato de carrera INT-009
+
+Javier confirma el 22/10/2026 que EntrenaOP debe mantener su propio modelo de
+sesión y traducirlo mediante adaptadores por proveedor. El contrato separará:
+
+| Concepto | Significado previsto |
+| --- | --- |
+| Tipo de paso | Calentamiento, carrera, recuperación, descanso y enfriamiento. Conservar también la distinción deportiva existente entre caminar y trotar. |
+| Finalización | Tiempo, distancia o avance manual; este último se presenta como Lap en Garmin, sin introducir esa marca en el dominio. |
+| Objetivo | Libre, ritmo, frecuencia cardiaca, cadencia o potencia, con unidades y límites explícitos; las zonas deberán distinguirse de los valores absolutos. |
+
+Las repeticiones conservan el orden de sus pasos y recuperaciones. La receta,
+su versión y sus valores originales son la fuente de verdad, también cuando
+un proveedor requiera otra representación. No se sustituyen rangos por medias
+ni se estiman condiciones de fin manual para fabricar una duración total.
+
+Cada adaptador declarará las capacidades contrastadas: lectura, envío y tipos
+de paso, finalización y objetivo admitidos. Antes de entregar, una evaluación
+común indicará compatibilidad o los motivos concretos que impiden enviar.
+Una adaptación que cambie la pauta requerirá elección explícita; nunca se
+suprimen pasos silenciosamente. No se presume que todas las opciones del
+creador de Garmin Connect estén disponibles por API ni en todos los relojes.
+
+Secuencia propuesta de implementación, aún pendiente:
+
+1. Versionar el contrato de receta y concretar compatibilidad con las sesiones
+   anteriores, validación, borradores, almacenamiento y ejecución. Evitar otra
+   receta exclusiva de Garmin o una capa de modelos distinta por aplicación.
+2. Completar una primera vertical común con los tipos de paso, fin por tiempo,
+   distancia o avance manual y objetivos libre/ritmo. Verificar guardado y
+   recuperación en deportista, ADMIN y Trainer y traducción Garmin en Dev.
+3. Comparar la receta y el detalle del fēnix: calentamiento hasta Lap,
+   repeticiones de trabajo/recuperación y enfriamiento hasta Lap; comprobar
+   transiciones y ambos límites de las alertas de ritmo.
+4. Incorporar frecuencia cardiaca, cadencia y potencia con sus unidades,
+   validaciones y capacidades verificadas. Mantener deshabilitada cualquier
+   opción todavía no implementada de extremo a extremo.
+
+Esta decisión no modifica todavía SQL, permisos, algoritmos, publicación de
+sesiones, integraciones de otras marcas ni el envío de fuerza. La siguiente
+entrega exige inspección de las fronteras afectadas y sus pruebas antes de
+considerar implementada cada opción.
+
 ## Verificación y distribución
 
 Se comprueban deportista, ADMIN, Trainer y paquete compartido, incluyendo

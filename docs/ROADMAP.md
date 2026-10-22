@@ -1,5 +1,13 @@
 # Roadmap de EntrenaOP
 
+**INT-009 · 22/10/2026 · siguiente contrato de carrera acordado:** tipo de paso,
+finalización y objetivo propios de EntrenaOP, traducidos por proveedor y con
+comprobación de capacidades. Sin pérdidas ni adaptación silenciosa de la pauta.
+Secuencia propuesta: contrato compatible/versionado → vertical común con
+fases, tiempo/distancia/manual y libre/ritmo → prueba fēnix → objetivos de
+pulsaciones/cadencia/potencia. Todavía no implementado.
+[Contrato y límites](WORKOUT_EDITOR_SHARED_2026_10_22.md#siguiente-contrato-de-carrera-int-009).
+
 **INT-008 · 22/10/2026 · creador común en las tres apps:** las entradas personales
 de carrera y fuerza montan el mismo formulario que ADMIN/Trainer. Se conservan
 catálogos, Pro, cuotas, rutas, versiones y borradores por cuenta; mejora común de
