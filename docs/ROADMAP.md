@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**INT-005 · 22/10/2026 · Garmin, primer tramo técnico:** Activity y Training
+Enabled/Approved comprobadas recargando API Configuration después del guardado
+de Javier. Adaptador OAuth de servidor aislado, según especificación PKCE 2.0,
+con nueve pruebas nuevas; batería de funciones: 80 correctas. Sin handler,
+almacenamiento de intentos/tokens, despliegue ni cuenta Garmin conectada.
+No cambia Trainer, Salud o SQL. **Único siguiente tramo de Garmin:** autorización
+persistente por cuenta en Dev, con consumo único y tokens cifrados antes de
+exponer el callback. El bloque funcional de dispositivos permanece abierto.
+[Contrato y límites](DEVICE_GARMIN_CONNECT.md).
+
 **TRN-022 · 21/10/2026 · integración de continuidad y seguimiento:** recuperación
 privada de sesiones de biblioteca/nuevas versiones conectada al binding común;
 Inicio del alumno y bandeja profesional hacen visibles formularios, conversación,

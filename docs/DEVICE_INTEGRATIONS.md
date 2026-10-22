@@ -34,11 +34,14 @@ y Trainer, y lectura Android en la app principal.
 **Actualización Garmin · 22/10/2026:** Javier aporta el correo que confirma su
 admisión al Garmin Connect Developer Program; después confirma aceptación de
 condiciones y muestra `EntrenaOP Dev`, OAuth 2.0, Starter habilitado y credenciales
-aprobadas con valores ocultos. Solo figura Activity API; Training API sigue sin
-acreditarse en esta aplicación. El retorno Dev está registrado pero todavía no
-implementado. Quedan documentación autenticada, configuración segura y primera
-conexión real. El adaptador seguirá separado de Salud y de Trainer; el bloque
-funcional permanece abierto.
+aprobadas con valores ocultos. Después activa Training desde API Tools; recargar
+API Configuration acredita Activity y Training activadas y Approved, con cero
+endpoints de recepción activos. Se implementa el adaptador OAuth de servidor
+según especificación autenticada 2.0, con nueve pruebas de fixtures. El retorno
+Dev aún no tiene handler ni persistencia de intentos/tokens; no está desplegado.
+Quedan autorización segura por cuenta y primera conexión/recepción real. El
+adaptador permanece separado de Salud y Trainer; el bloque funcional sigue abierto.
+[Contrato, evidencia y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),
 [API y fronteras](../packages/device_activity_core/README.md).
 
@@ -279,7 +282,7 @@ implementadas por el paquete puro ni por el ensayo móvil.
 | Dominio, precisión, cuarentena, duplicados y revisión/asociación | Implementados y probados en el paquete puro. | Persistencia atómica, permisos y confirmación real se validarán en su integración. |
 | Puentes locales, permiso mínimo y compilación nativa | Implementados en el ensayo y compilados en CI; preparación de iPhone disponible. | Firma/provisión, diálogo real, carrera de Connect en Salud, lectura y revocación en iPhone; recorrido equivalente Android. |
 | Contrato con planificación/resultados y privacidad profesional | Se puede contrastar con sus propietarios y probar con muestras sin conectar las apps. | Acuerdo coordinado antes de cambiar contratos, datos o dependencias; aceptación del recorrido con alumno y preparador. |
-| Conectores de Garmin, COROS, Suunto y Huawei | Se pueden preparar expedientes, matrices de capacidad y adaptadores con muestras documentadas. | Alta/credenciales y condiciones de cada proveedor; OAuth y actividad real antes de habilitar un conector. Garmin no tiene acceso concedido para EntrenaOP. |
+| Conectores de Garmin, COROS, Suunto y Huawei | Se pueden preparar expedientes, matrices de capacidad y adaptadores con muestras documentadas. Garmin ya tiene Activity y Training activadas y adaptador OAuth probado con fixtures. | Garmin: autorización persistente por cuenta y actividad real antes de exponer el conector. COROS, Suunto y Huawei: alta/credenciales pendientes. |
 | Envío de receta al proveedor/reloj | Se pueden comprobar compatibilidad y traducción pura de la receta. | Acceso al canal de envío, recepción real en el reloj y ejecución; leer desde Salud no prueba ese envío. |
 
 **Siguiente entrega operativa:** instalar el ensayo en el iPhone cuando Javier
