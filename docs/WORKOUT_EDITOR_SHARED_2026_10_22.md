@@ -98,6 +98,31 @@ correcta. No se ejecutan migraciones ni se despliegan funciones por este cambio.
 Esta entrega requiere actualizar la app iOS para usar el nuevo creador local;
 no acredita todavía la siguiente prueba física en el fēnix.
 
+### Distribución comprobada de INT-011
+
+Código funcional `9deb71a4db25faaa05ff24bb20295aa15a9011f1` subido a main.
+La [CI Garmin 39859543902](https://github.com/jchjdev/entrenaop/actions/runs/39859543902)
+termina correctamente en backend, consumidor y compilación iOS Release sin firma.
+La [ejecución ADMIN 39859543838](https://github.com/jchjdev/entrenaop/actions/runs/39859543838)
+supera validación y publicación. El manifiesto HTTPS acredita la revisión
+`9deb71a4` y la versión `9deb71a4db25faaa05ff24bb20295aa15a9011f1-39859543838-1`
+exclusivamente en Dev.
+
+Después falla el job auxiliar `retain-packages` con `HTTPError`, antes de imprimir
+su plan. La ejecución global queda fallida por ese paso, aunque pruebas y
+publicación estén correctas. No se atribuye al creador ni se modifica el mecanismo
+de retención. La revisión automática de permisos rechaza el reintento del job
+120111221060 por su capacidad para borrar compilados; se solicita autorización
+específica y se deja pendiente, sin ejecutar una alternativa de borrado.
+
+Trainer Dev conserva su versión publicada anterior. Paquete preparado, sin
+publicar todavía: `build/trainer-compact-20261022.zip`, revisión `9deb71a4`,
+versión `9deb71a4db25faaa05ff24bb20295aa15a9011f1-20261022-1`, SHA-256
+`2d80b003f7e11dcea06f21833d9828d6d98964aa819dd28097c3e40f28765ee5`.
+Publicación solicitada a Javier y pendiente de respuesta. No se recarga ni se
+guarda su sesión real abierta en Trainer. La distribución queda preparada;
+no se presenta como publicada ni como CI ADMIN globalmente correcta.
+
 ## Límites y siguiente bloque
 
 El creador guarda un bloque `running` con tramos individuales. Desde INT-009,
