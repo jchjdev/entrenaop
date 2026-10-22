@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -15,6 +16,22 @@ import dev_restore_drill as drill
 
 
 class DevOperationsTests(unittest.TestCase):
+    def test_all_application_schemas_declared_in_migrations_are_backed_up(self):
+        migrations = Path(__file__).resolve().parents[3] / "supabase/migrations"
+        declared = set()
+        for path in migrations.glob("*.sql"):
+            declared.update(re.findall(r'create\s+schema\s+(?:if\s+not\s+exists\s+)?"?([a-z_]+)',
+                                       path.read_text(encoding="utf-8"), re.I))
+        self.assertTrue(declared)
+        self.assertEqual(declared - set(drill.BACKUP_SCHEMAS), set())
+
+    def test_unknown_private_schema_stops_before_export(self):
+        with patch.object(ops, "sql", return_value=[{"nspname": "new_private"}]):
+            with self.assertRaisesRegex(ops.OperationsError, "backup_schema_scope_incomplete"):
+                ops.assert_backup_scope()
+        with patch.object(ops, "sql", return_value=[{"nspname": s} for s in drill.BACKUP_SCHEMAS if s.endswith('_private')]):
+            ops.assert_backup_scope()
+
     def test_production_wrong_repo_and_branch_are_refused(self):
         settings = {"DEV_PROJECT_REF": ops.PROJECT, "GITHUB_REPOSITORY": ops.REPO,
                     "GITHUB_REF": "refs/heads/main", "SUPABASE_ACCESS_TOKEN": "fixture"}

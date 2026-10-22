@@ -91,16 +91,18 @@ def verify_public(expected):
             raise ValueError("Hostinger no está sirviendo el MIME de WebAssembly.")
 
 
-def publish(ftp, package, verifier=verify_public):
+def publish(ftp, package, verifier=verify_public, *, progress=lambda phase: None):
     package = Path(package)
     expected = json.loads((package / "build-info.json").read_text(encoding="utf-8"))
     identity(expected)
+    progress("read_previous")
     ftp.cwd("/")
     # Una cuenta que empiece en la web principal no pasa este control. La cuenta
     # debe estar confinada por Hostinger a public_html/admin, no solo por el script.
     previous = {name: retrieve(ftp, name) for name in ROOT_FILES}
     identity(json.loads(previous["build-info.json"].decode("utf-8-sig")))
     token = expected["releaseId"]
+    progress("upload_assets")
     made = set()
     for path in sorted((package / "releases").rglob("*")):
         if not path.is_file():
@@ -120,9 +122,11 @@ def publish(ftp, package, verifier=verify_public):
         with path.open("rb") as data:
             ftp.storbinary("STOR " + relative, data)
     try:
+        progress("activate")
         # La entrada se activa al final; los recursos de la versión anterior se conservan.
         for name in ROOT_FILES:
             replace_file(ftp, name, (package / name).read_bytes(), token)
+        progress("verify_https")
         last_error = None
         for attempt in range(4):
             try:
@@ -134,9 +138,64 @@ def publish(ftp, package, verifier=verify_public):
                     time.sleep(3)
         raise RuntimeError("La comprobación HTTPS no ha pasado.") from last_error
     except Exception:
+        progress("restore_previous")
         for name in ROOT_FILES:
             replace_file(ftp, name, previous[name], token + "-restore")
         raise RuntimeError("Publicación fallida; entrada y configuración anteriores restauradas.") from None
+
+
+def transient_transfer(error):
+    if isinstance(error, ssl.SSLError):
+        return isinstance(error, ssl.SSLEOFError)
+    return isinstance(error, (OSError, EOFError, ftplib.error_temp))
+
+
+def transfer_diagnostic(phase, error):
+    # Solo fase y categorías cerradas: los mensajes del servidor pueden incluir
+    # rutas, usuarios o credenciales. errno y la respuesta FTP son numéricos.
+    parts = [phase, type(error).__name__]
+    if isinstance(error, OSError) and isinstance(error.errno, int):
+        parts.append("errno=" + str(error.errno))
+    if isinstance(error, ftplib.Error) and re.match(r"^[0-9]{3}", str(error)):
+        parts.append("ftp=" + str(error)[:3])
+    return " · ".join(parts)
+
+
+def deploy(package):
+    expected = json.loads((Path(package) / "build-info.json").read_text(encoding="utf-8"))
+    identity(expected)
+    user, password = os.environ["HOSTINGER_ADMIN_FTPS_USER"], os.environ["HOSTINGER_ADMIN_FTPS_PASSWORD"]
+    if not user.strip() or not password:
+        raise ValueError("Faltan los secretos de la cuenta de publicación.")
+    context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    for attempt in range(3):
+        # Cada conexión nueva contrasta main; nunca recuperar un despliegue
+        # obsoleto por el mero hecho de reintentar una transferencia.
+        require_current_main(expected["revision"])
+        phase = "connect"
+        ftp = ftplib.FTP_TLS(context=context, timeout=45)
+        def progress(value):
+            nonlocal phase
+            phase = value
+        try:
+            ftp.connect("srv1589.hstgr.io", 21)
+            phase = "authenticate"
+            ftp.auth()
+            ftp.login(user, password)
+            ftp.prot_p()
+            return publish(ftp, package, progress=progress)
+        except Exception as error:
+            print("Transferencia ADMIN Dev:", transfer_diagnostic(phase, error), file=sys.stderr)
+            # Antes de activar solo se han escrito recursos aislados. Se
+            # pueden sobrescribir completos desde otra conexión. Una caída
+            # durante activación/restauración exige revisión, no otro intento.
+            safe = phase in ("connect", "authenticate", "read_previous", "upload_assets")
+            if not safe or not transient_transfer(error) or attempt == 2:
+                raise
+        finally:
+            ftp.close()
+        time.sleep(5 * (attempt + 1))
 
 
 def main():
@@ -154,19 +213,7 @@ def main():
         release_id = args.revision + "-" + os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"]
         package_web("admin_app/build/web", args.package, args.revision, release_id, "admin_app/deployment")
     else:
-        expected = json.loads((Path(args.package) / "build-info.json").read_text(encoding="utf-8"))
-        require_current_main(expected["revision"])
-        user, password = os.environ["HOSTINGER_ADMIN_FTPS_USER"], os.environ["HOSTINGER_ADMIN_FTPS_PASSWORD"]
-        if not user.strip() or not password:
-            raise ValueError("Faltan los secretos de la cuenta de publicación.")
-        context = ssl.create_default_context()
-        context.minimum_version = ssl.TLSVersion.TLSv1_2
-        with ftplib.FTP_TLS(context=context, timeout=45) as ftp:
-            ftp.connect("srv1589.hstgr.io", 21)
-            ftp.auth()
-            ftp.login(user, password)
-            ftp.prot_p()
-            result = publish(ftp, args.package)
+        result = deploy(args.package)
         print("ADMIN Dev publicado y verificado:", result["revision"])
 
 

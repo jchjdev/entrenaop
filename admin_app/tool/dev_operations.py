@@ -19,6 +19,8 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
+from dev_restore_drill import BACKUP_SCHEMAS, RestoreError, verify_restore
+
 PROJECT = "sxbxfjqgoddzhtcyhalw"
 REPO = "jchjdev/entrenaop"
 URL = f"https://{PROJECT}.supabase.co"
@@ -274,7 +276,10 @@ def backup(output):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp) / "source"
             source.mkdir()
-            schemas = "public,auth,storage,admin_ops_private,trainer_private,supabase_migrations"
+            # Los RPC públicos pueden devolver tipos de esquemas privados. No
+            # basta con copiar public ni crear esquemas vacíos para el ensayo.
+            assert_backup_scope()
+            schemas = ",".join(BACKUP_SCHEMAS)
             for name, flags in [("roles.sql", ["--role-only"]),
                 ("schema.sql", ["--schema", schemas]),
                 ("data.sql", ["--schema", schemas, "--data-only", "--use-copy"])]:
@@ -297,13 +302,12 @@ def backup(output):
             if sum(p.stat().st_size for p in source.rglob('*') if p.is_file()) > MAX_SOURCE:
                 raise OperationsError("source_size_limit")
             manifest = {"format": 1, "project": PROJECT, "environment": "development", "created_at": stamp(),
-                "revision": revision, "database": "17", "storage_objects": count,
+                "revision": revision, "database": "17", "storage_objects": count, "schemas": list(BACKUP_SCHEMAS),
                 "excludes": ["Bunny videos", "Edge secrets", "Auth encryption root key", "provider settings"],
                 "files": tree_digest(source)}
             (source / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             # El ensayo acepta únicamente el contenedor temporal creado por el
             # script; jamás una URL o contraseña de un proyecto remoto.
-            from dev_restore_drill import verify_restore, RestoreError
             try:
                 verify_restore(source)
             except RestoreError as error:
@@ -322,6 +326,14 @@ def backup(output):
     except Exception:
         sql("update admin_ops_private.backup_runs set status='failed',finished_at=now(),failure_code='backup_failed' where run_id=" + literal(run))
         raise
+
+
+def assert_backup_scope():
+    private = sql("select nspname from pg_namespace where right(nspname,8)='_private'", read_only=True)
+    if any(row["nspname"] not in BACKUP_SCHEMAS for row in private):
+        # Un esquema nuevo exige ampliar exportación y ensayo explícitamente;
+        # nunca declarar completa una copia que lo omite en silencio.
+        raise OperationsError("backup_schema_scope_incomplete")
 
 
 def publish_receipt(path, artifact_id):

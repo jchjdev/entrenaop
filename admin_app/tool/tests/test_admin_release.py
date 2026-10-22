@@ -1,10 +1,13 @@
 import ftplib
+import errno
 import json
+import os
 from pathlib import Path
 import sys
+import ssl
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import admin_release as release
@@ -146,6 +149,75 @@ class ReleaseTests(unittest.TestCase):
         responses = [(json.dumps(manifest).encode(), {}), (b"wrong application", {})]
         with patch.object(release, "https_get", side_effect=responses), self.assertRaisesRegex(ValueError, "SHA-256"):
             release.verify_public(manifest)
+
+    def test_transient_asset_failure_reconnects_before_activating(self):
+        self.package()
+        first, second = Remote(), Remote()
+        first.fail_assets = True
+        second.files = first.files
+        sessions = []
+        for remote in (first, second):
+            session = Mock(wraps=remote)
+            sessions.append(session)
+        publish = release.publish
+        def isolated_publish(ftp, package, *, progress):
+            return publish(ftp, package, lambda expected: None, progress=progress)
+        with patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
+                patch.object(release.ftplib, "FTP_TLS", side_effect=sessions) as factory, \
+                patch.object(release, "require_current_main") as current, \
+                patch.object(release, "publish", side_effect=isolated_publish), \
+                patch.object(release.time, "sleep"), patch("builtins.print"):
+            # Las operaciones de sesión no forman parte del almacenamiento ficticio.
+            for session in sessions:
+                for method in ("connect", "auth", "login", "prot_p", "close"):
+                    setattr(session, method, Mock())
+            result = release.deploy(self.output)
+        self.assertEqual(result["revision"], SHA)
+        self.assertEqual(factory.call_count, 2)
+        self.assertEqual(current.call_count, 2)
+        self.assertNotIn("index.html", first.writes)
+        self.assertEqual(second.writes[-1], "index.html")
+        for session in sessions:
+            session.close.assert_called_once()
+
+    def test_activation_failure_credentials_and_certificate_are_never_retried(self):
+        self.package()
+        for phase, error in (("activate", OSError(errno.ECONNRESET, "private")),
+                             ("restore_previous", OSError("private")),
+                             ("authenticate", ftplib.error_perm("530 private")),
+                             ("connect", ssl.SSLCertVerificationError("private"))):
+            with self.subTest(phase=phase):
+                session = Mock()
+                def fail(ftp, package, *, progress):
+                    progress(phase)
+                    raise error
+                with patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
+                        patch.object(release.ftplib, "FTP_TLS", return_value=session) as factory, \
+                        patch.object(release, "require_current_main"), \
+                        patch.object(release, "publish", side_effect=fail), patch("builtins.print"):
+                    with self.assertRaises(type(error)):
+                        release.deploy(self.output)
+                factory.assert_called_once()
+                session.close.assert_called_once()
+
+    def test_retry_stops_if_main_advances_and_attempts_are_bounded(self):
+        self.package()
+        for advance in (False, True):
+            with self.subTest(advance=advance), \
+                    patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
+                    patch.object(release.ftplib, "FTP_TLS") as factory, \
+                    patch.object(release, "require_current_main", side_effect=[None, ValueError("main advanced")] if advance else None), \
+                    patch.object(release.time, "sleep"), patch("builtins.print"):
+                factory.return_value.connect.side_effect = TimeoutError("private")
+                with self.assertRaises(ValueError if advance else TimeoutError):
+                    release.deploy(self.output)
+                self.assertEqual(factory.call_count, 1 if advance else 3)
+
+    def test_transfer_diagnostics_never_expose_remote_messages(self):
+        for error in (OSError(errno.ECONNRESET, "password=private"), ftplib.error_perm("530 private user")):
+            diagnostic = release.transfer_diagnostic("connect", error)
+            self.assertNotIn("private", diagnostic)
+            self.assertIn("connect", diagnostic)
 
 
 if __name__ == "__main__":

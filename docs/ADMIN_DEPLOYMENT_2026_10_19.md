@@ -42,6 +42,12 @@ un build local que pueda tener fuentes pendientes de otros equipos.
 6. Sube los archivos a `releases/<sha>-<run>-<attempt>/` antes de activar el
    índice mediante rename. El `<base href="/">` conserva las URLs del admin;
    bootstrap, aplicación, CanvasKit y assets usan la misma carpeta de versión.
+   Desde la corrección del 22/10, los errores temporales de conexión o transferencia
+   anteriores a activar permiten hasta tres intentos, con conexión nueva y otra
+   comprobación de main. No se reintentan credenciales rechazadas, certificados
+   inválidos ni fallos durante activación o recuperación de la entrada anterior.
+   Se registra fase, categoría de excepción y códigos numéricos, sin mensajes
+   privados del servidor.
 7. Verifica manifiesto, SHA-256 remoto del JavaScript, entrada, cabeceras y MIME
    WebAssembly por HTTPS. Si falla tras activar la entrada, intenta restaurar los
    cuatro archivos raíz anteriores y marca la ejecución fallida. Las versiones

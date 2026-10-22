@@ -12,7 +12,8 @@ manual permite solicitar otra copia. Sin secretos, el trabajo no accede a Dev
 y el admin sigue mostrando que no existe evidencia verificada.
 
 La copia contiene roles sin contraseñas, su inventario gestionado, esquema y datos de `public`, `auth`,
-`storage`, `admin_ops_private`, `trainer_private` y `supabase_migrations`, las
+`storage`, `admin_ops_private`, `trainer_private`, `editor_private`,
+`device_private`, `admin_work_private` y `supabase_migrations`, las
 extensiones necesarias, migraciones del repositorio y los archivos reales de
 Storage, incluidos los privados. Los nombres originales de objetos se guardan
 en un índice dentro del cifrado; en disco se usan nombres derivados por hash.
@@ -41,6 +42,14 @@ CREATE/ALTER de roles gestionados. En el ensayo solo se crean los ausentes,
 sin LOGIN y conservando los privilegios inventariados; no se reemplaza el
 superusuario local. El arranque espera TCP local para evitar el servidor
 transitorio de inicialización. Ninguno de estos preparativos se ejecuta en Dev.
+
+Exportación, limpieza del contenedor y comprobación de claves foráneas usan el
+mismo inventario de esquemas. Antes de exportar se comprueba que no haya otro
+esquema `*_private` sin incluir. Una prueba contrasta además los `CREATE SCHEMA`
+de las migraciones. El ensayo ficticio incluye tipos públicos que dependen de
+tablas privadas y rechaza una referencia huérfana en `admin_work_private`.
+Las conexiones Garmin se incluyen con sus campos ya cifrados; su clave de Edge
+sigue excluida y debe conservarse por separado.
 
 La frase se comprueba antes de exportar. GPG cifra con AES-256 y una frase de al menos 24 caracteres transmitida por
 entrada estándar, nunca como argumento visible. Se descifra el paquete y se
@@ -231,3 +240,30 @@ pide expresamente la papelera recuperable: ADM-003 implementa retirada por
 familia y recuperación de trabajos incompletos, conservando las sesiones
 reutilizadas. No hay borrado físico ni vaciado automático.
 [Contrato y pruebas de la papelera](ADMIN_PROGRAM_TRASH_2026_10_21.md).
+
+## Incidencia del 22/10/2026
+
+La ejecución [39749950888](https://github.com/jchjdev/entrenaop/actions/runs/39749950888)
+falló en el ensayo, con `isolated_restore_schema:3F000`. El inventario anterior
+omitía `editor_private`, `device_private` y `admin_work_private`, creados después
+de la primera copia comprobada. El catálogo Dev confirma los tres esquemas; no
+era suficiente restaurar solo los esquemas iniciales. Se amplía la exportación
+real de esquema **y datos**, sin simular dependencias vacías ni omitir el ensayo.
+Las copias de ayer conservan su fecha y alcance originales.
+
+Los eventos SQL de las capturas (`42703`, `42702`, `42725`, `42601` y `P0001`)
+proceden de `mgmt-api` con usuario de desarrollo. Los mensajes contrastados
+incluyen consultas de diagnóstico erróneas y validaciones de reglas de negocio.
+El registro no atribuye cada evento a una avería del cliente ni permite afirmar
+que todos sean inocuos. Los cuatro 503 corresponden a `exercise-video` y a las
+dos funciones de conexión Garmin; no se ocultan ni se reclasifican sin evidencia.
+
+Validación local de la corrección: 36 pruebas Python correctas, incluido cifrado
+real de ida y vuelta. El ensayo con PostgreSQL y la nueva copia completa deben
+acreditarse en GitHub; este Windows no dispone de Docker. La comprobación de
+migraciones contra Dev detectó también una migración de pasos de carrera aún
+local y perteneciente al trabajo simultáneo del editor; no se aplica aquí.
+`flutter test` desde ADMIN encontró 11 cargas fallidas por cambios simultáneos
+sin guardar del editor compartido (`WorkoutTargetType.manual` y un identificador
+`value` fuera de ámbito). No se incluyen ni se corrigen en este cambio de Python;
+esta ejecución no acredita la batería completa de la aplicación.

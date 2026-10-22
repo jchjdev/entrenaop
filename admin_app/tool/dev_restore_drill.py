@@ -11,6 +11,8 @@ import tempfile
 # Misma versión mayor y distribución de extensiones que Dev. Nunca es una URL
 # de base de datos configurable: el ensayo no puede sobrescribir Dev ni Prod.
 IMAGE = "supabase/postgres:17.6.1.166@sha256:b3bfedb107413abb3b8cb0d0874b0414a1dceb3d55bc0c778de6ad22d1f7dc86"
+BACKUP_SCHEMAS = ("public", "auth", "storage", "admin_ops_private", "trainer_private",
+                  "editor_private", "device_private", "admin_work_private", "supabase_migrations")
 
 
 class RestoreError(RuntimeError):
@@ -129,7 +131,7 @@ def verify_restore(source):
             "'" + m[1].strip('"') + "') then create role " + m[1] + "; end if; end$$;", roles, flags=re.M)
         query(roles, "roles")
         # Solo se limpian esquemas del contenedor recién creado por este proceso.
-        query("drop schema if exists public,auth,storage,admin_ops_private,trainer_private,supabase_migrations cascade;", "prepare")
+        query("drop schema if exists " + ",".join(BACKUP_SCHEMAS) + " cascade;", "prepare")
         query((source / "extensions.sql").read_text(encoding="utf-8"), "extensions")
         query((source / "schema.sql").read_text(encoding="utf-8"), "schema")
         query("set session_replication_role=replica;\n" + (source / "data.sql").read_text(encoding="utf-8"), "data")
@@ -150,7 +152,7 @@ def verify_restore(source):
             cross join lateral unnest(con.conkey,con.confkey) with ordinality k(ca,pa,ord)
             join pg_attribute a on a.attrelid=con.conrelid and a.attnum=k.ca
             join pg_attribute b on b.attrelid=con.confrelid and b.attnum=k.pa
-            where con.contype='f' and ns.nspname in ('public','auth','storage','admin_ops_private','trainer_private')
+            where con.contype='f' and ns.nspname in (""" + ",".join("'" + schema + "'" for schema in BACKUP_SCHEMAS) + """)
             group by con.oid,con.conrelid,con.confrelid loop
               execute format('select count(*) from %s c where %s and not exists(select 1 from %s p where %s)',
                 c.child,c.present,c.parent,c.comparison) into n;
@@ -173,10 +175,15 @@ def self_test():
             "rolcanlogin": True, "rolreplication": False, "rolbypassrls": False,
         }]), encoding="utf-8")
         (source / "extensions.sql").write_text("select 1;", encoding="utf-8")
-        (source / "schema.sql").write_text("""create schema auth; create schema storage; create schema public;
+        (source / "schema.sql").write_text("\n".join("create schema " + schema + ";" for schema in BACKUP_SCHEMAS) + """
           create table auth.users(id uuid primary key);
           create table public.recipe(id uuid primary key, owner_id uuid references auth.users(id), name text);
-          create table storage.objects(bucket_id text,name text,primary key(bucket_id,name));""", encoding="utf-8")
+          create table storage.objects(bucket_id text,name text,primary key(bucket_id,name));
+          create table device_private.fixture(id uuid primary key references public.recipe(id));
+          create table editor_private.fixture(id uuid primary key references device_private.fixture(id));
+          create table admin_work_private.fixture(id uuid primary key references editor_private.fixture(id));
+          create function public.fixture_device() returns device_private.fixture language sql
+            set search_path='' as 'select * from device_private.fixture limit 1';""", encoding="utf-8")
         (source / "data.sql").write_text('''COPY auth.users (id) FROM stdin;
 10000000-0000-4000-8000-000000000001
 \\.
@@ -185,6 +192,15 @@ COPY public.recipe (id, owner_id, name) FROM stdin;
 \\.
 COPY storage.objects (bucket_id, name) FROM stdin;
 images\tfixture.jpg
+\\.
+COPY device_private.fixture (id) FROM stdin;
+20000000-0000-4000-8000-000000000001
+\\.
+COPY editor_private.fixture (id) FROM stdin;
+20000000-0000-4000-8000-000000000001
+\\.
+COPY admin_work_private.fixture (id) FROM stdin;
+20000000-0000-4000-8000-000000000001
 \\.
 ''', encoding="utf-8")
         storage = source / "storage"
@@ -199,7 +215,23 @@ images\tfixture.jpg
         (source / "manifest.json").write_text(json.dumps({"project": "sxbxfjqgoddzhtcyhalw",
             "environment": "development", "files": files}), encoding="utf-8")
         result = verify_restore(source)
-        assert result == {"tables": 3, "storage_objects": 1}, result
+        assert result == {"tables": 6, "storage_objects": 1}, result
+        # La comprobación de integridad también debe recorrer los esquemas
+        # privados: cargar con triggers desactivados puede admitir huérfanos.
+        data_path = source / "data.sql"
+        data_path.write_text(data_path.read_text(encoding="utf-8").replace(
+            "COPY admin_work_private.fixture (id) FROM stdin;\n20000000-0000-4000-8000-000000000001",
+            "COPY admin_work_private.fixture (id) FROM stdin;\n20000000-0000-4000-8000-000000000002"), encoding="utf-8")
+        files["data.sql"] = hashlib.sha256(data_path.read_bytes()).hexdigest()
+        (source / "manifest.json").write_text(json.dumps({"project": "sxbxfjqgoddzhtcyhalw",
+            "environment": "development", "files": files}), encoding="utf-8")
+        try:
+            verify_restore(source)
+        except RestoreError as error:
+            if str(error) != "isolated_restore_foreign_keys:P0001":
+                raise
+        else:
+            raise AssertionError("private_orphan_not_detected")
         print("Ensayo aislado con datos ficticios: correcto.")
 
 
