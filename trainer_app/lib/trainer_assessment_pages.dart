@@ -81,12 +81,42 @@ class _TrainerAssessmentsPageState extends State<TrainerAssessmentsPage> {
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'Baterías privadas con protocolos y versiones. Registra marcas de entrenamiento; no se calculan puntos ni aptitud oficial.',
+        EntrenaCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Evalúa y compara marcas',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Una batería agrupa las pruebas de una evaluación o simulacro. Crea las instrucciones, asígnala a un alumno y consulta sus intentos y resultados.',
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Por ejemplo: dominadas en repeticiones, carrera de 1.000 m en tiempo y salto en metros.',
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Se registran marcas de entrenamiento; no se calculan puntos ni aptitud oficial.',
+              ),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: const Text('Cómo usar las pruebas'),
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      '1. Crea una batería con sus pruebas e instrucciones.\n2. Abre Alumnos → ficha del alumno → Pruebas y simulacros para asignarla.\n3. El alumno registra sus intentos en la app.\n4. Consulta sus marcas y compara entregas con las mismas condiciones.',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        const Text(
-          'Captura disponible: repeticiones, segundos y metros. El catálogo excluye contratos que todavía no podemos aplicar íntegramente.',
-        ),
+        const SizedBox(height: 16),
         FilledButton.icon(
           onPressed: _busy || !_enabled ? null : () => _edit(),
           icon: const Icon(Icons.add),

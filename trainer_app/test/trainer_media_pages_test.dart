@@ -103,6 +103,27 @@ class _PickerSource extends Fake implements ExerciseVideoSource {
 }
 
 void main() {
+  testWidgets('vídeos ofrece acceso a técnica sin reproducir ni reservar', (
+    tester,
+  ) async {
+    final fixture = PickerMediaFixture()..media.add(readyMedia());
+    var opens = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TrainerMediaPage(
+          repository: fixture,
+          onOpenTechnique: () => opens++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Consultar técnica de alumnos'));
+    await tester.tap(find.text('Consultar técnica de alumnos'));
+    expect(opens, 1);
+    expect(fixture.reservations, 0);
+    await tester.scrollUntilVisible(find.textContaining('Listo ·'), 250);
+    expect(find.textContaining('Listo ·'), findsOneWidget);
+  });
   testWidgets(
     'selector reutiliza medios, ofrece solo listos válidos y no reserva',
     (tester) async {
@@ -230,14 +251,18 @@ void main() {
         MaterialApp(home: TrainerMediaPage(repository: fixture)),
       );
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Almacenamiento y límites'));
+      await tester.tap(find.text('Almacenamiento y límites'));
+      await tester.pumpAndSettle();
       expect(
         find.textContaining('El presupuesto puede agotarse antes'),
         findsNWidgets(2),
       );
       expect(find.text('Demostraciones propias'), findsOneWidget);
       expect(find.text('Técnica de alumnos'), findsOneWidget);
-      await tester.ensureVisible(
+      await tester.scrollUntilVisible(
         find.text('Recuperar y continuar con el archivo original'),
+        250,
       );
       await tester.pumpAndSettle();
       await tester.tap(
@@ -291,7 +316,10 @@ void main() {
         MaterialApp(home: TrainerMediaPage(repository: fixture)),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Revisar reserva y continuar'));
+      await tester.scrollUntilVisible(
+        find.text('Revisar reserva y continuar'),
+        250,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Revisar reserva y continuar'));
       await tester.pumpAndSettle();

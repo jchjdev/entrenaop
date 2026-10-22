@@ -302,6 +302,7 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/media',
               builder: (context, _) => TrainerMediaPage(
                 repository: media(),
+                onOpenTechnique: () => context.push('/clients?view=technique'),
                 onCreateExercise: (url) async {
                   await showTrainerExerciseEditor(
                     context,
@@ -455,14 +456,20 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/clients',
-              builder: (context, _) => identity == null
+              builder: (context, state) => identity == null
                   ? const SizedBox.shrink()
                   : TrainerClientsPage(
-                      key: ValueKey(identity),
+                      key: ValueKey(
+                        '$identity-${state.uri.queryParameters['view']}',
+                      ),
                       repository: access(),
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),
                       onOpenClient: (id) => context.push('/clients/$id'),
+                      techniqueMode:
+                          state.uri.queryParameters['view'] == 'technique',
+                      onOpenTechnique: (id) =>
+                          context.push('/clients/$id/workouts?view=technique'),
                     ),
             ),
             GoRoute(
@@ -601,6 +608,7 @@ class _TrainerAppState extends State<TrainerApp> {
                 programs: programs(),
                 accessRepository: access(),
                 clientId: state.pathParameters['id']!,
+                techniqueMode: state.uri.queryParameters['view'] == 'technique',
               ),
               routes: [
                 GoRoute(

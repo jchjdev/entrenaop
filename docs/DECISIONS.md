@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**TRN-023 · 22/10/2026 · navegación de alumnos y vídeos:** Javier pide tarjetas
+pulsables para entrar en cada alumno, invitaciones más claras y acceso visible a
+su técnica, manteniendo este cambio en Trainer y dejando el rediseño del
+deportista para después. Se reutilizan consultas y permisos existentes: Vídeos →
+alumno → sesión ejecutada → clips compartidos, con paginación y sin barrer todas
+las cuentas. Las demostraciones propias siguen separadas de la técnica del
+alumno. Incluye explicación de pruebas privadas y favicon de marca.
+[Alcance y comprobaciones](TRAINER_CLIENT_NAVIGATION_2026_10_22.md).
+
 **UI-064 · 22/10/2026 · identidad de la instalación:** Javier pide identificar la
 app instalada al no encontrar el seguimiento profesional. Perfil incorpora
 versión/build reales, entorno y detalle copiable de revisión/fecha/estado de

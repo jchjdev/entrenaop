@@ -290,6 +290,13 @@ class _TrainerClientWorkspacePageState
                         label: const Text('Planificación y resultados'),
                       ),
                       OutlinedButton.icon(
+                        onPressed: () => context.push(
+                          '/clients/${widget.clientId}/workouts?view=technique',
+                        ),
+                        icon: const Icon(Icons.video_library_outlined),
+                        label: const Text('Vídeos de técnica'),
+                      ),
+                      OutlinedButton.icon(
                         onPressed: () =>
                             context.push('/clients/${widget.clientId}/forms'),
                         icon: const Icon(Icons.assignment_outlined),

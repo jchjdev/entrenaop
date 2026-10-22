@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_video_field.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
+import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_media_repository.dart';
 
@@ -22,16 +23,27 @@ String trainerMediaBytes(num bytes) => bytes >= 1024 * 1024 * 1024
     ? '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GiB'
     : '${(bytes / (1024 * 1024)).toStringAsFixed(0)} MiB';
 
+String trainerVideoStatusLabel(Object? status) => switch (status) {
+  'ready' => 'Listo',
+  'uploading' => 'Subida sin completar',
+  'processing' => 'Preparando vídeo',
+  'failed' => 'No se pudo preparar',
+  'rejected' => 'No admitido',
+  _ => 'Estado no disponible',
+};
+
 class TrainerMediaPage extends StatefulWidget {
   const TrainerMediaPage({
     super.key,
     required this.repository,
     this.onSelect,
     this.onCreateExercise,
+    this.onOpenTechnique,
   });
   final TrainerMediaRepository repository;
   final ValueChanged<String>? onSelect;
   final Future<void> Function(String videoUrl)? onCreateExercise;
+  final VoidCallback? onOpenTechnique;
   @override
   State<TrainerMediaPage> createState() => _TrainerMediaPageState();
 }
@@ -213,9 +225,7 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text(
-        widget.onSelect == null
-            ? 'Medios privados'
-            : 'Elegir vídeo de mi biblioteca',
+        widget.onSelect == null ? 'Vídeos' : 'Elegir vídeo de mi biblioteca',
       ),
       leading: widget.onSelect == null
           ? null
@@ -242,32 +252,77 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
         ),
         const SizedBox(height: 12),
         if (widget.onSelect == null) ...[
-          const Text(
-            'Tus demostraciones y el presupuesto de técnica de tus alumnos se cuentan por separado. Las reservas abandonadas también cuentan; no se borran vídeos históricos.',
-          ),
-          for (final usage in _usage)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      usage['scope'] == 'trainer_exercise'
-                          ? 'Demostraciones propias'
-                          : 'Técnica de alumnos',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      '${usage['asset_used']} / ${usage['asset_limit']} reservas · ${trainerMediaBytes(usage['bytes_reserved'] as num)} / ${trainerMediaBytes(usage['byte_limit'] as num)} reservados',
-                    ),
-                    Text(
-                      'Cada reserva consume ${trainerMediaBytes(usage['source_limit'] as num)}. El presupuesto puede agotarse antes del máximo de archivos.',
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Vídeos de tus alumnos',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Se guardan en la sesión que el alumno comparte contigo. Elige un alumno y consulta sus sesiones con ejecución.',
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Las reservas también incluyen subidas sin completar. Solo aparecen los clips compartidos contigo.',
+                  ),
+                  if (widget.onOpenTechnique != null) ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : widget.onOpenTechnique,
+                        icon: const Icon(Icons.video_library_outlined),
+                        label: const Text('Consultar técnica de alumnos'),
+                      ),
                     ),
                   ],
-                ),
+                ],
               ),
             ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Mis demostraciones',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Almacenamiento y límites'),
+            subtitle: const Text(
+              'Presupuesto separado para demostraciones y técnica',
+            ),
+            children: [
+              for (final usage in _usage)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          usage['scope'] == 'trainer_exercise'
+                              ? 'Demostraciones propias'
+                              : 'Técnica de alumnos',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          '${usage['asset_used']} / ${usage['asset_limit']} reservas · ${trainerMediaBytes(usage['bytes_reserved'] as num)} / ${trainerMediaBytes(usage['byte_limit'] as num)} reservados',
+                        ),
+                        Text(
+                          'Cada reserva consume ${trainerMediaBytes(usage['source_limit'] as num)}. El presupuesto puede agotarse antes del máximo de archivos.',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: _busy ? null : () => _upload(),
@@ -300,11 +355,11 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Vídeo del ${(row['created_at'] as String).split('T').first}',
+                    'Vídeo del ${trainerDate(DateTime.parse(row['created_at'] as String))}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    '${row['status']} · ${trainerMediaBytes(row['reserved_bytes'] as num)} reservados${row['duration_seconds'] == null ? '' : ' · ${row['duration_seconds']} s'}',
+                    '${trainerVideoStatusLabel(row['status'])} · ${trainerMediaBytes(row['reserved_bytes'] as num)} reservados${row['duration_seconds'] == null ? '' : ' · ${row['duration_seconds']} s'}',
                   ),
                   if (_readyUrl(row) case final url?) ...[
                     ExerciseVideoPreview(

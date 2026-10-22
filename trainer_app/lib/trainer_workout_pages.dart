@@ -403,11 +403,13 @@ class TrainerClientWorkoutsPage extends StatefulWidget {
     required this.accessRepository,
     required this.clientId,
     this.programs,
+    this.techniqueMode = false,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
   final String clientId;
   final TrainerProgramRepository? programs;
+  final bool techniqueMode;
   @override
   State<TrainerClientWorkoutsPage> createState() =>
       _TrainerClientWorkoutsPageState();
@@ -530,7 +532,11 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Planificación y resultados'),
+      title: Text(
+        widget.techniqueMode
+            ? 'Vídeos de técnica por sesión'
+            : 'Planificación y resultados',
+      ),
       actions: [
         IconButton(
           onPressed: _busy ? null : _load,
@@ -546,12 +552,14 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       ),
       const SizedBox(height: 8),
       Text(
-        _relation?.endedAt == null
+        widget.techniqueMode
+            ? 'Abre una sesión para ver los vídeos que el alumno ha compartido contigo. Si retiró la compartición, el clip deja de estar disponible.'
+            : _relation?.endedAt == null
             ? 'Las pautas conviven con su planificación automática. Revisa las fechas antes de asignar.'
             : 'Servicio inactivo. Conservas las pautas y los resultados de tus etapas.',
       ),
       const SizedBox(height: 16),
-      if (_relation != null) ...[
+      if (!widget.techniqueMode && _relation != null) ...[
         OutlinedButton.icon(
           onPressed: _busy ? null : _conversation,
           icon: const Icon(Icons.chat_bubble_outline),
@@ -559,18 +567,19 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
         ),
         const SizedBox(height: 12),
       ],
-      FilledButton.icon(
-        onPressed:
-            _busy ||
-                !_effective ||
-                _relation == null ||
-                _relation!.endedAt != null
-            ? null
-            : _assign,
-        icon: const Icon(Icons.event_available),
-        label: const Text('Asignar sesión privada'),
-      ),
-      if (widget.programs != null) ...[
+      if (!widget.techniqueMode)
+        FilledButton.icon(
+          onPressed:
+              _busy ||
+                  !_effective ||
+                  _relation == null ||
+                  _relation!.endedAt != null
+              ? null
+              : _assign,
+          icon: const Icon(Icons.event_available),
+          label: const Text('Asignar sesión privada'),
+        ),
+      if (!widget.techniqueMode && widget.programs != null) ...[
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed:
@@ -587,12 +596,24 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       const SizedBox(height: 16),
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) _retry(_error!, () => _load()),
-      if (!_busy && _items.isEmpty && _error == null)
-        const Padding(
+      if (!_busy &&
+          _error == null &&
+          (widget.techniqueMode
+              ? !_items.any((i) => i.executionId != null)
+              : _items.isEmpty))
+        Padding(
           padding: EdgeInsets.all(24),
-          child: Text('Todavía no has pautado sesiones a este alumno.'),
+          child: Text(
+            widget.techniqueMode
+                ? (_more
+                      ? 'No hay sesiones con ejecución en esta página. Puedes cargar más sesiones.'
+                      : 'Todavía no hay sesiones con ejecución que consultar.')
+                : 'Todavía no has pautado sesiones a este alumno.',
+          ),
         ),
-      for (final item in _items)
+      for (final item in _items.where(
+        (i) => !widget.techniqueMode || i.executionId != null,
+      ))
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: EntrenaCard(
@@ -608,12 +629,22 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    if (item.executionId != null)
+                    if (item.executionId != null && !widget.techniqueMode)
                       TextButton(
                         onPressed: _busy ? null : () => _result(item),
                         child: const Text('Ver resultados'),
                       ),
-                    if (item.status == 'planned')
+                    if (item.executionId != null)
+                      TextButton.icon(
+                        onPressed: _busy
+                            ? null
+                            : () => context.push(
+                                '/assignments/${item.id}/technique',
+                              ),
+                        icon: const Icon(Icons.video_library_outlined),
+                        label: const Text('Ver vídeos compartidos'),
+                      ),
+                    if (!widget.techniqueMode && item.status == 'planned')
                       TextButton(
                         onPressed: _busy ? null : () => _cancel(item),
                         child: const Text('Retirar pauta'),

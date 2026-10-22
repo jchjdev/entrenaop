@@ -1,4 +1,5 @@
 import 'client_relation_history.dart';
+import 'trainer_client_card.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,11 +13,15 @@ class TrainerClientsPage extends StatefulWidget {
     this.onSignOut,
     this.onOpenWorkouts,
     this.onOpenClient,
+    this.onOpenTechnique,
+    this.techniqueMode = false,
   });
   final TrainerRepository repository;
   final Future<void> Function()? onSignOut;
   final VoidCallback? onOpenWorkouts;
   final ValueChanged<String>? onOpenClient;
+  final ValueChanged<String>? onOpenTechnique;
+  final bool techniqueMode;
   @override
   State<TrainerClientsPage> createState() => _TrainerClientsPageState();
 }
@@ -40,7 +45,9 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
   Future<void> _load() async {
     final access = await widget.repository.access();
     final clients = await widget.repository.clients(state: _clientState);
-    final invitations = await widget.repository.invitations();
+    final invitations = widget.techniqueMode
+        ? <TrainerInvitation>[]
+        : await widget.repository.invitations();
     if (!mounted) return;
     setState(() {
       _access = access;
@@ -124,6 +131,187 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
         ),
       );
 
+  Future<void> _manage(TrainerClient client, TrainerClientAction action) async {
+    if (_busy) return;
+    if (action == TrainerClientAction.history) {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => ClientRelationHistory(
+          repository: widget.repository,
+          client: client,
+        ),
+      );
+      return;
+    }
+    final deactivate = action == TrainerClientAction.deactivate;
+    final archive = action == TrainerClientAction.archive;
+    final confirmed = await _confirm(
+      deactivate
+          ? 'Desactivar servicio'
+          : archive
+          ? 'Archivar cliente'
+          : 'Recuperar cliente',
+      deactivate
+          ? 'Se liberará la plaza de ${client.name}. Su ficha y las etapas del servicio se conservan. Para volver necesitará aceptar una nueva invitación.'
+          : archive
+          ? 'La ficha pasará a Archivados. No se borran etapas ni resultados del alumno.'
+          : 'La ficha volverá a Inactivos. Esto no reactiva el servicio ni ocupa plaza.',
+    );
+    if (!confirmed || !mounted) return;
+    await _run(() async {
+      if (deactivate) {
+        await widget.repository.endRelation(client.activeRelationId!);
+      } else {
+        await widget.repository.archiveClient(
+          client.personId,
+          archived: archive,
+        );
+      }
+      await _load();
+    });
+  }
+
+  Widget _clientCards() => LayoutBuilder(
+    builder: (context, constraints) {
+      final openClient = widget.techniqueMode
+          ? widget.onOpenTechnique
+          : widget.onOpenClient;
+      final twoColumns =
+          constraints.maxWidth >= 740 &&
+          MediaQuery.textScalerOf(context).scale(14) < 21;
+      final width = twoColumns
+          ? (constraints.maxWidth - 16) / 2
+          : constraints.maxWidth;
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: [
+          for (final client in _clients)
+            SizedBox(
+              width: width,
+              child: TrainerClientCard(
+                key: ValueKey(client.personId),
+                client: client,
+                busy: _busy,
+                techniqueMode: widget.techniqueMode,
+                onOpen: openClient != null
+                    ? () => openClient(client.personId)
+                    : null,
+                onTechnique: widget.onOpenTechnique == null
+                    ? null
+                    : () => widget.onOpenTechnique!(client.personId),
+                onManage: (action) => _manage(client, action),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+
+  Widget _invitation(TrainerInvitation invite) => Card(
+    margin: const EdgeInsets.only(bottom: 12),
+    child: Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            invite.status == 'Pendiente'
+                ? 'Invitación pendiente'
+                : invite.status,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 6),
+          Text('Creada el ${trainerDate(invite.createdAt)}'),
+          Text(
+            invite.acceptedAt != null
+                ? 'Aceptada el ${trainerDate(invite.acceptedAt!)}'
+                : invite.revokedAt != null
+                ? 'Cancelada el ${trainerDate(invite.revokedAt!)}'
+                : '${invite.status == 'Caducada' ? 'Caducó' : 'Caduca'} el ${trainerDate(invite.expiresAt)}',
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Referencia ${invite.id.substring(0, 8)}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          if (invite.status == 'Pendiente' && invite.canCancel)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: _busy
+                    ? null
+                    : () async {
+                        if (!await _confirm(
+                              'Cancelar invitación',
+                              'Este código dejará de admitir alumnos. Los vínculos ya aceptados se mantienen.',
+                            ) ||
+                            !mounted) {
+                          return;
+                        }
+                        await _run(() async {
+                          await widget.repository.cancelInvitation(invite.id);
+                          if (_draft?.id == invite.id) {
+                            _draft = null;
+                          }
+                          await _load();
+                        });
+                      },
+                child: const Text('Cancelar invitación'),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _invitationsSection() {
+    final pending = _invitations.where((i) => i.status == 'Pendiente').toList();
+    final history = _invitations.where((i) => i.status != 'Pendiente').toList();
+    return _section(
+      'Invitaciones',
+      'Pendientes de aceptar. No reservan plaza.',
+      [
+        if (pending.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              _moreInvitations
+                  ? 'No hay pendientes en las invitaciones mostradas.'
+                  : 'No tienes invitaciones pendientes.',
+            ),
+          ),
+        for (final invitation in pending) _invitation(invitation),
+        if (history.isNotEmpty)
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Historial de invitaciones'),
+            subtitle: const Text('Aceptadas, canceladas y caducadas'),
+            children: [
+              for (final invitation in history) _invitation(invitation),
+            ],
+          ),
+        if (_moreInvitations)
+          TextButton(
+            onPressed: _busy
+                ? null
+                : () => _run(() async {
+                    final more = await widget.repository.invitations(
+                      before: _invitations.last,
+                    );
+                    if (mounted) {
+                      setState(() {
+                        _invitations.addAll(more);
+                        _moreInvitations = more.length == 50;
+                      });
+                    }
+                  }),
+            child: const Text('Más invitaciones'),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -149,7 +337,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
           padding: const EdgeInsets.all(24),
           children: [
             const Text('ESPACIO PROFESIONAL'),
-            if (widget.onOpenWorkouts != null)
+            if (!widget.techniqueMode && widget.onOpenWorkouts != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: OutlinedButton.icon(
@@ -160,11 +348,15 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
               ),
             const SizedBox(height: 8),
             Text(
-              'Tus alumnos',
+              widget.techniqueMode ? 'Vídeos de tus alumnos' : 'Tus alumnos',
               style: Theme.of(context).textTheme.headlineLarge,
             ),
             const SizedBox(height: 8),
-            const Text('Invita, consulta y gestiona tus vínculos.'),
+            Text(
+              widget.techniqueMode
+                  ? 'Elige un alumno y abre los vídeos compartidos de sus sesiones.'
+                  : 'Abre la ficha de un alumno para planificar y revisar su evolución.',
+            ),
             const SizedBox(height: 24),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
@@ -178,65 +370,66 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
             if (_notice != null)
               Padding(padding: const EdgeInsets.all(12), child: Text(_notice!)),
             if (_access case final access?) ...[
-              EntrenaCard(
-                tone: EntrenaCardTone.accent,
-                child: Wrap(
-                  spacing: 32,
-                  runSpacing: 16,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          access.status,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text(
-                          '${access.activeClients} de ${access.limit} plazas ocupadas',
-                        ),
-                        if (access.validUntil != null)
+              if (!widget.techniqueMode)
+                EntrenaCard(
+                  tone: EntrenaCardTone.accent,
+                  child: Wrap(
+                    spacing: 32,
+                    runSpacing: 16,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            'Vigente hasta el ${trainerDate(access.validUntil!)}',
+                            access.status,
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                      ],
-                    ),
-                    if (!access.effective)
-                      const SizedBox(
-                        width: 360,
-                        child: Text(
-                          'Consulta con EntrenaOP tu acceso profesional. Puedes consultar y finalizar tus vínculos anteriores.',
-                        ),
+                          Text(
+                            '${access.activeClients} de ${access.limit} plazas ocupadas',
+                          ),
+                          if (access.validUntil != null)
+                            Text(
+                              'Vigente hasta el ${trainerDate(access.validUntil!)}',
+                            ),
+                        ],
                       ),
-                    if (access.effective && access.full)
-                      const SizedBox(
-                        width: 360,
-                        child: Text(
-                          'Todas tus plazas están ocupadas. Las invitaciones no reservan plaza; se comprueba al aceptarlas.',
+                      if (!access.effective)
+                        const SizedBox(
+                          width: 360,
+                          child: Text(
+                            'Consulta con EntrenaOP tu acceso profesional. Puedes consultar y finalizar tus vínculos anteriores.',
+                          ),
                         ),
+                      if (access.effective && access.full)
+                        const SizedBox(
+                          width: 360,
+                          child: Text(
+                            'Todas tus plazas están ocupadas. Las invitaciones no reservan plaza; se comprueba al aceptarlas.',
+                          ),
+                        ),
+                      FilledButton.icon(
+                        onPressed:
+                            _busy ||
+                                !access.effective ||
+                                access.full ||
+                                _draft != null
+                            ? null
+                            : () {
+                                setState(() {
+                                  _draft = TrainerInvitationDraft.secure();
+                                  _created = false;
+                                });
+                                _create();
+                              },
+                        icon: const Icon(Icons.person_add_alt_1),
+                        label: const Text('Invitar alumno'),
                       ),
-                    FilledButton.icon(
-                      onPressed:
-                          _busy ||
-                              !access.effective ||
-                              access.full ||
-                              _draft != null
-                          ? null
-                          : () {
-                              setState(() {
-                                _draft = TrainerInvitationDraft.secure();
-                                _created = false;
-                              });
-                              _create();
-                            },
-                      icon: const Icon(Icons.person_add_alt_1),
-                      label: const Text('Invitar alumno'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 20),
-              if (_draft case final draft?) ...[
+              if (!widget.techniqueMode && _draft != null) ...[
                 _section(
                   _created ? 'Invitación preparada' : 'Confirmar invitación',
                   _created
@@ -245,7 +438,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                   [
                     if (_created) ...[
                       SelectableText(
-                        draft.secret,
+                        _draft!.secret,
                         style: const TextStyle(fontFamily: 'monospace'),
                       ),
                       const SizedBox(height: 12),
@@ -258,7 +451,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                             ? null
                             : () => _run(() async {
                                 await Clipboard.setData(
-                                  ClipboardData(text: draft.secret),
+                                  ClipboardData(text: _draft!.secret),
                                 );
                                 if (mounted) {
                                   setState(() => _notice = 'Código copiado.');
@@ -322,122 +515,8 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                               'No tienes clientes archivados.',
                           }),
                         ),
-                      for (final relation in _clients)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                relation.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              if (widget.onOpenClient != null)
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: TextButton(
-                                    onPressed: _busy
-                                        ? null
-                                        : () => widget.onOpenClient!(
-                                            relation.personId,
-                                          ),
-                                    child: const Text(
-                                      'Planificación y resultados',
-                                    ),
-                                  ),
-                                ),
-                              Text(
-                                relation.active
-                                    ? 'Servicio activo desde el ${trainerDate(relation.acceptedAt)}'
-                                    : 'Servicio inactivo desde el ${trainerDate(relation.endedAt ?? relation.updatedAt)}',
-                              ),
-                              if (relation.active)
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: TextButton(
-                                    onPressed: _busy
-                                        ? null
-                                        : () async {
-                                            if (!await _confirm(
-                                              'Desactivar servicio',
-                                              'Se liberará la plaza de ${relation.name}. Su ficha y las etapas del servicio se conservan. Para volver necesitará aceptar una nueva invitación.',
-                                            )) {
-                                              return;
-                                            }
-                                            if (!mounted) return;
-                                            await _run(() async {
-                                              await widget.repository
-                                                  .endRelation(
-                                                    relation.activeRelationId!,
-                                                  );
-                                              await _load();
-                                            });
-                                          },
-                                    child: const Text('Desactivar servicio'),
-                                  ),
-                                ),
-                              Text(
-                                '${relation.episodeCount} ${relation.episodeCount == 1 ? 'etapa de seguimiento' : 'etapas de seguimiento'}',
-                              ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: TextButton(
-                                  onPressed: _busy
-                                      ? null
-                                      : () => showDialog<void>(
-                                          context: context,
-                                          builder: (_) => ClientRelationHistory(
-                                            repository: widget.repository,
-                                            client: relation,
-                                          ),
-                                        ),
-                                  child: const Text('Historial del vínculo'),
-                                ),
-                              ),
-                              if (!relation.active) ...[
-                                const Text(
-                                  'No ocupa plaza. Una nueva aceptación permite retomar el servicio conservando la ficha.',
-                                ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: TextButton(
-                                    onPressed: _busy
-                                        ? null
-                                        : () async {
-                                            final archived =
-                                                relation.archivedAt == null;
-                                            if (!await _confirm(
-                                                  archived
-                                                      ? 'Archivar cliente'
-                                                      : 'Recuperar cliente',
-                                                  archived
-                                                      ? 'La ficha pasará a Archivados. No se borran etapas ni resultados del alumno.'
-                                                      : 'La ficha volverá a Inactivos. Esto no reactiva el servicio ni ocupa plaza.',
-                                                ) ||
-                                                !mounted) {
-                                              return;
-                                            }
-                                            await _run(() async {
-                                              await widget.repository
-                                                  .archiveClient(
-                                                    relation.personId,
-                                                    archived: archived,
-                                                  );
-                                              await _load();
-                                            });
-                                          },
-                                    child: Text(
-                                      relation.archivedAt == null
-                                          ? 'Archivar cliente'
-                                          : 'Recuperar cliente',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const Divider(),
-                            ],
-                          ),
-                        ),
+                      _clientCards(),
+                      const SizedBox(height: 16),
                       if (_moreClients)
                         TextButton(
                           onPressed: _busy
@@ -458,77 +537,10 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                         ),
                     ],
                   );
-                  final invitations = _section(
-                    'Invitaciones',
-                    'Las pendientes no ocupan plaza.',
-                    [
-                      if (_invitations.isEmpty)
-                        const Text('Aún no has creado invitaciones.'),
-                      for (final invite in _invitations)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                'Invitación ${invite.id.substring(0, 8)}',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Text(
-                                '${invite.status} · Creada el ${trainerDate(invite.createdAt)}',
-                              ),
-                              Text(
-                                'Caduca el ${trainerDate(invite.expiresAt)}',
-                              ),
-                              if (invite.canCancel)
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: TextButton(
-                                    onPressed: _busy
-                                        ? null
-                                        : () async {
-                                            if (!await _confirm(
-                                              'Cancelar invitación',
-                                              'Este código dejará de admitir alumnos. Los vínculos ya aceptados se mantienen.',
-                                            )) {
-                                              return;
-                                            }
-                                            if (!mounted) return;
-                                            await _run(() async {
-                                              await widget.repository
-                                                  .cancelInvitation(invite.id);
-                                              if (_draft?.id == invite.id) {
-                                                _draft = null;
-                                              }
-                                              await _load();
-                                            });
-                                          },
-                                    child: const Text('Cancelar invitación'),
-                                  ),
-                                ),
-                              const Divider(),
-                            ],
-                          ),
-                        ),
-                      if (_moreInvitations)
-                        TextButton(
-                          onPressed: _busy
-                              ? null
-                              : () => _run(() async {
-                                  final more = await widget.repository
-                                      .invitations(before: _invitations.last);
-                                  if (mounted) {
-                                    setState(() {
-                                      _invitations.addAll(more);
-                                      _moreInvitations = more.length == 50;
-                                    });
-                                  }
-                                }),
-                          child: const Text('Más invitaciones'),
-                        ),
-                    ],
-                  );
-                  if (constraints.maxWidth < 800) {
+                  if (widget.techniqueMode) return clients;
+                  final invitations = _invitationsSection();
+                  if (constraints.maxWidth < 1000 ||
+                      MediaQuery.textScalerOf(context).scale(14) >= 21) {
                     return Column(
                       children: [
                         clients,
@@ -542,7 +554,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                     children: [
                       Expanded(flex: 3, child: clients),
                       const SizedBox(width: 20),
-                      Expanded(flex: 2, child: invitations),
+                      Expanded(child: invitations),
                     ],
                   );
                 },

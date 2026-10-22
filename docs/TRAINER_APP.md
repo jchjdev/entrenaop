@@ -1,5 +1,15 @@
 # Espacio de entrenadores
 
+## Actualización · 22/10/2026 · TRN-023
+
+Alumnos incorpora tarjetas pulsables y gestión secundaria con confirmación.
+Invitaciones distingue pendientes e historial y muestra la fecha de aceptación
+sin anunciar caducidad de códigos ya aceptados. Vídeos ofrece entrada a los
+clips compartidos por alumno y sesión, separada de las demostraciones propias.
+Las pruebas privadas explican su uso y el límite actual de puntuación oficial.
+Cambio exclusivo de Trainer, con favicon de marca, sin alterar ADMIN, el
+deportista ni contratos de acceso. [Detalle](TRAINER_CLIENT_NAVIGATION_2026_10_22.md).
+
 ## Actualización · 21/10/2026 · TRN-022
 
 El estado vigente incluye sesiones, programas y ejercicios privados asignables,
