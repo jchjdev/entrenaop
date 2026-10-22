@@ -58,8 +58,9 @@ jobs:
         run: |
           flutter pub get --enforce-lockfile
           # El análisis global incluye proyectos anidados; un runner limpio no
-          # conserva sus package_config.json locales. Resolver sin actualizar locks.
-          for project in admin_app trainer_app packages/workout_core packages/workout_editor_ui packages/entrena_ui packages/trainer_access packages/device_health labs/health_read_probe; do
+          # conserva sus package_config.json locales. Usar los lockfiles versionados,
+          # como la CI de ADMIN; los demás paquetes se resuelven desde sus consumidores.
+          for project in admin_app trainer_app packages/device_health labs/health_read_probe; do
             (cd "$project" && flutter pub get --enforce-lockfile)
           done
           (cd packages/device_activity_core && dart pub get --enforce-lockfile)
