@@ -57,6 +57,12 @@ jobs:
       - name: Resolver y comprobar el consumidor de Garmin y Salud
         run: |
           flutter pub get --enforce-lockfile
+          # El análisis global incluye proyectos anidados; un runner limpio no
+          # conserva sus package_config.json locales. Resolver sin actualizar locks.
+          for project in admin_app trainer_app packages/workout_core packages/workout_editor_ui packages/entrena_ui packages/trainer_access packages/device_health labs/health_read_probe; do
+            (cd "$project" && flutter pub get --enforce-lockfile)
+          done
+          (cd packages/device_activity_core && dart pub get --enforce-lockfile)
           dart format --output=none --set-exit-if-changed lib/features/device_connections lib/core/router/garmin_connection_route.dart test/features/device_connections
           flutter analyze
           flutter test test/features/device_connections test/features/device_activities
