@@ -16,6 +16,7 @@ import 'package:entrenaop/features/workouts/data/services/client_technique_repos
 
 import 'package:entrenaop/core/router/material_app_route.dart';
 import 'package:entrenaop/core/router/device_activities_route.dart';
+import 'package:entrenaop/core/router/garmin_connection_route.dart';
 
 import 'package:entrenaop/core/navigation/app_shell.dart';
 import 'package:entrenaop/features/trainers/presentation/student_navigation.dart';
@@ -1037,6 +1038,20 @@ class AppRouter {
                             ),
                         onOpenConversation: (id) =>
                             context.push('/my-trainer/conversations/$id'),
+                      ),
+              ),
+            ),
+            materialAppRoute(
+              path: 'garmin',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (_, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : GarminConnectionRoute(
+                        key: ValueKey('garmin-${auth.user.id}'),
+                        ownerId: auth.user.id,
+                        client: sl<SupabaseClient>(),
                       ),
               ),
             ),

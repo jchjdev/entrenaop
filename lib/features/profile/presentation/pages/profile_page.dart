@@ -354,6 +354,18 @@ class _ProfilePageState extends State<ProfilePage> {
                             onTap: () => _open('/profile/activities'),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.link),
+                            title: const Text('Conexión con Garmin'),
+                            subtitle: const Text(
+                              'Autoriza o desconecta tu cuenta Garmin.',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open('/profile/garmin'),
+                          ),
+                        ),
                         const SizedBox(height: 22),
                         Card(
                           child: ListTile(

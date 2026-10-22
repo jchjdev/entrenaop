@@ -132,6 +132,21 @@ export class GarminOAuthClient {
     return garminPermissions(body.permissions);
   }
 
+  async disconnect(accessToken: string): Promise<void> {
+    if (!opaque(accessToken)) throw new GarminOAuthError("invalid_configuration");
+    try {
+      const response = await this.fetcher(userEndpoint + "/registration", {method:"DELETE",
+        headers:{Authorization:`Bearer ${accessToken}`},redirect:"error",signal:AbortSignal.timeout(10_000)});
+      await response.body?.cancel().catch(()=>{});
+      if(response.status===401) throw new GarminOAuthError("reauthorization_required");
+      if(response.status===429) throw new GarminOAuthError("rate_limited");
+      if(!response.ok) throw new GarminOAuthError("provider_unavailable");
+    } catch(error) {
+      if(error instanceof GarminOAuthError) throw error;
+      throw new GarminOAuthError("provider_unavailable");
+    }
+  }
+
   private userRequest(path: "/id" | "/permissions", token: string) {
     if (!opaque(token)) throw new GarminOAuthError("invalid_configuration");
     return this.request(userEndpoint + path, { headers: { Authorization: `Bearer ${token}` } });

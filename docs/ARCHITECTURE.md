@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+## Conexión directa Garmin por cuenta · INT-005 · 22/10/2026
+
+`device_connections` separa dominio/puerto, adaptador Supabase y Cubit/página;
+la composición añade solo `/profile/garmin` y su entrada dentro de Perfil. Se
+conserva la navegación de TRN-025 y no se importa código de Trainer. El servicio
+Edge coordina puertos de proveedor, persistencia y cifrado; HTTP/Auth y AES-GCM
+son adaptadores. Tokens/verifier no llegan al cliente, a las entidades deportivas
+ni al historial de Salud. La RPC solo permite backend, exige sesión y acceso
+efectivo, y usa generación, consumo único y leases para evitar callbacks tardíos
+o dos revocaciones simultáneas. Salud permanece Free conforme a INT-006.
+Implementación y pruebas locales/SQL con ROLLBACK preparadas; migración, secretos
+y handlers aún sin activar en Dev. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
+
 ## Navegación profesional del alumno · TRN-025 · 22/10/2026
 
 El shell mantiene cuatro ramas generales y una profesional condicional. Perfil

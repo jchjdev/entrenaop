@@ -18,15 +18,17 @@ Edit bloquea su selector: las capacidades se configuran en API Tools.
 
 El retorno registrado es
 `https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-oauth-callback`.
-Es una ruta reservada de Dev, todavía sin implementación ni despliegue. El
+Tiene handler implementado, todavía sin despliegue ni secretos configurados. El
 nombre público podría ser EntrenaOP; no es el sufijo Dev lo que separa entornos.
 Se conserva el nombre observado, sin renombrar ni crear otra aplicación.
 
 Se contrasta la especificación autenticada OAuth2 PKCE 2.0, páginas 2–6, y se
 implementa el adaptador de servidor de autorización/canje/renovación,
-identidad y permisos, con nueve pruebas de fixtures. Quedan almacenamiento
-privado de intentos/tokens, handlers, configuración de secretos y autorización/
-recepción reales. No hay una cuenta Garmin de deportista conectada ni importación
+identidad y permisos. Después se implementan el servicio por cuenta, intentos de
+consumo único, tokens cifrados, desconexión y handlers, con consumidor en Perfil.
+El SQL se valida localmente y en Dev con ROLLBACK, sin dejarlo aplicado.
+Quedan activación Dev, secretos y autorización/recepción reales.
+No hay una cuenta Garmin de deportista conectada ni importación
 directa en EntrenaOP. Salud mantiene su recorrido independiente. No se han usado
 credenciales reales ni modificado base de datos, Trainer o producción.
 [Estado técnico y siguiente tramo](DEVICE_GARMIN_CONNECT.md).

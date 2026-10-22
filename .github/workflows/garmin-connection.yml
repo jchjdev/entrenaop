@@ -1,0 +1,62 @@
+name: Verificar conexión Garmin sin publicar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/_shared/garmin/**'
+      - 'supabase/functions/garmin-connection/**'
+      - 'supabase/functions/garmin-oauth-callback/**'
+      - 'supabase/functions/tests/garmin*'
+      - 'lib/features/device_connections/**'
+      - 'lib/core/router/garmin_connection_route.dart'
+      - 'test/features/device_connections/**'
+      - '.github/workflows/garmin-connection.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Pruebas de servidor con fixtures, sin cuentas ni secretos
+        working-directory: supabase/functions
+        run: node --test tests/*_test.ts
+      - name: Comprobar tipos del adaptador de servidor
+        run: >-
+          npm exec --yes --package=typescript@5.9.3 -- tsc
+          --noEmit --strict --target es2022 --lib es2023,dom
+          --module esnext --moduleResolution bundler --allowImportingTsExtensions
+          supabase/functions/_shared/garmin/oauth.ts
+          supabase/functions/_shared/garmin/cipher.ts
+          supabase/functions/_shared/garmin/connection.ts
+          supabase/functions/_shared/garmin/http.ts
+
+  consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: SDK Flutter oficial fijado y verificado
+        run: |
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/flutter.tar.xz" https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.5-stable.tar.xz
+          echo "2132e990f236f8d22e7c6314b29a191a95b10d7cbcfec9b4e2e303d996652cbb  $RUNNER_TEMP/flutter.tar.xz" | sha256sum --check
+          tar -xf "$RUNNER_TEMP/flutter.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Resolver y comprobar el consumidor de Garmin y Salud
+        run: |
+          flutter pub get --enforce-lockfile
+          dart format --output=none --set-exit-if-changed lib/features/device_connections lib/core/router/garmin_connection_route.dart test/features/device_connections
+          flutter analyze
+          flutter test test/features/device_connections test/features/device_activities

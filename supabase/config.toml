@@ -393,6 +393,13 @@ verify_jwt = false
 [functions.exercise-video]
 verify_jwt = false
 
+# El backend verifica Auth y sesión viva; Garmin devuelve el callback sin JWT de Supabase.
+[functions.garmin-connection]
+verify_jwt = false
+
+[functions.garmin-oauth-callback]
+verify_jwt = false
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

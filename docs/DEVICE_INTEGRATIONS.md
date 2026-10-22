@@ -37,10 +37,12 @@ condiciones y muestra `EntrenaOP Dev`, OAuth 2.0, Starter habilitado y credencia
 aprobadas con valores ocultos. Después activa Training desde API Tools; recargar
 API Configuration acredita Activity y Training activadas y Approved, con cero
 endpoints de recepción activos. Se implementa el adaptador OAuth de servidor
-según especificación autenticada 2.0, con nueve pruebas de fixtures. El retorno
-Dev aún no tiene handler ni persistencia de intentos/tokens; no está desplegado.
-Quedan autorización segura por cuenta y primera conexión/recepción real. El
-adaptador permanece separado de Salud y Trainer; el bloque funcional sigue abierto.
+según especificación autenticada 2.0 y después el servicio de conexión por cuenta,
+tokens cifrados y dos handlers Edge, con pantalla propia dentro de Perfil.
+La migración y las funciones aún no están aplicadas/desplegadas: el contrato se
+prueba en PostgreSQL local y Dev con ROLLBACK. Quedan secretos, activación Dev y
+aceptación real antes de recepción/envío. Salud y Trainer conservan sus contratos;
+el bloque funcional sigue abierto.
 [Contrato, evidencia y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),
 [API y fronteras](../packages/device_activity_core/README.md).
