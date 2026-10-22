@@ -76,8 +76,10 @@ EntrenaOP. Cursores, colas y selección de importación se aíslan por cuenta.
 ## 4. Capacidades y permisos
 
 **INT-006 · 22/10/2026 · regla comercial acordada, aún no implementada:**
-conexión y nuevas lecturas/importaciones de todos los canales, incluidos Salud
-y Health Connect, exigen Pro vigente o servicio profesional vigente del alumno.
+Salud y Health Connect permiten lectura/importación a todos, incluido Free.
+La conexión directa a fabricantes y sus nuevas lecturas/importaciones exigen
+Pro vigente o servicio profesional vigente del alumno. Esta aclaración de
+Javier corrige la interpretación anterior que también restringía Salud.
 El historial conservado sigue siendo consultable tras perder ese acceso.
 Capacidad técnica, permiso del proveedor y derecho comercial son comprobaciones
 independientes. La exportación añade las restricciones de origen de la sección 8.

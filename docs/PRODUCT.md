@@ -1,14 +1,17 @@
 # Producto EntrenaOP
 
-**INT-006 · 22/10/2026 · integraciones como valor Pro/profesional:** Javier
-confirma reservar conexiones y nuevas lecturas/sincronizaciones de todos los
-proveedores, incluidos Salud y Health Connect, a Pro vigente o alumnos con
-servicio profesional vigente. Estos últimos no necesitan Pro adicional para
+**INT-006 · 22/10/2026 · Salud para todos e integraciones directas de pago:**
+Javier aclara que Salud y Health Connect permiten lectura/importación también
+en Free. Se corrige la interpretación anterior que los reservaba al pago.
+Las conexiones directas a fabricantes y sus nuevas lecturas/sincronizaciones
+se reservan a Pro vigente o alumnos con servicio profesional vigente.
+Estos últimos no necesitan Pro adicional para
 su servicio. El envío inicial al reloj se limita a prescripciones autorizadas
 del algoritmo o del entrenador; otras sesiones compatibles podrán añadirse
-después para esos usuarios con acceso. La baja conserva el historial y detiene
-operaciones nuevas. **Decisión comercial pendiente de controles en servidor y
-cliente; no describe un bloqueo ya implementado en Salud.**
+después para esos usuarios con acceso. La baja conserva el historial y la
+lectura/importación de Salud/Health Connect; detiene operaciones comerciales
+nuevas. **Controles comerciales de fabricantes/envío pendientes de implementar;
+no corresponde bloquear Salud o Health Connect por ser Free.**
 [Reglas y límites](DEVICE_INTEGRATIONS.md).
 
 **TRN-022 · 21/10/2026 · continuidad y seguimiento visible:** Trainer permite

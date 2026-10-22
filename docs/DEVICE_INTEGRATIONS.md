@@ -151,15 +151,16 @@ ausencia, nunca como cero, incumplimiento o dato inventado.
 
 ### Acceso comercial confirmado · INT-006 · 22/10/2026
 
-Javier reserva todas las integraciones a Pro vigente o al acceso incluido del
-alumno con servicio profesional vigente. Incluye conexiones directas a Garmin,
-COROS, Suunto y Huawei, y nuevas lecturas/importaciones desde Salud de Apple y
-Health Connect. No se exige Pro adicional al alumno del preparador ni se le
+Javier confirma que Salud de Apple y Health Connect están disponibles para
+todos los usuarios, incluido Free. Corrige expresamente la interpretación
+anterior que los reservaba al pago. Las conexiones directas a Garmin, COROS,
+Suunto y Huawei se reservan a Pro vigente o al acceso incluido del alumno con
+servicio profesional vigente. No se exige Pro adicional al alumno ni se le
 concede todo Pro por tener esa relación. Se utilizan derechos efectivos del
 servidor, no un pago declarado desde Flutter ni la mera existencia de un vínculo
 histórico. Las concesiones Pro autorizadas conservan el contrato comercial actual.
 
-Salud/Health Connect se incluyen por su valor para la oferta Pro/profesional;
+Salud/Health Connect ofrecen una entrada básica también para usuarios Free;
 una lectura por esos canales no equivale a una conexión directa a la API Garmin.
 La capacidad Starter comunicada se refiere a usuarios Garmin conectados, no al
 total de cuentas Pro ni al origen de las sesiones. No se presupone cómo libera
@@ -167,7 +168,8 @@ Garmin una plaza tras una baja ni se fijan aquí tarifas de ampliación.
 
 | Operación | Regla acordada |
 | --- | --- |
-| Conectar y leer/importar/sincronizar actividades nuevas | Pro vigente o servicio profesional vigente, además de consentimiento y capacidad real del canal. |
+| Leer/importar/sincronizar desde Salud o Health Connect | Todos los usuarios, incluido Free, con consentimiento y capacidad real del canal. |
+| Conectar y leer/importar/sincronizar directamente con fabricantes | Pro vigente o servicio profesional vigente, además de consentimiento y capacidad real del canal. |
 | Enviar una sesión del algoritmo | Acceso comercial y derecho vigente a consumir esa prescripción del algoritmo, receta compatible y permiso de envío del titular. |
 | Enviar una asignación del entrenador | Servicio profesional y autorización sobre la asignación concreta; sin Pro personal adicional. El entrenador no concede el consentimiento Garmin del alumno. |
 | Enviar otras sesiones/programas compatibles | Posible ampliación futura para usuarios con acceso; no se habilita en la primera fase ni se excluye permanentemente. |
@@ -179,15 +181,17 @@ misma ahorrar plazas Garmin. La procedencia se acredita desde la prescripción y
 asignación autorizadas del servidor, nunca desde una etiqueta enviada por el
 cliente o desde quien creó originalmente una plantilla reutilizada.
 
-La pérdida de acceso comercial detiene nuevas lecturas, importaciones y envíos;
-los trabajos pendientes deberán revalidar acceso y generación antes de actuar.
+La pérdida de acceso comercial detiene nuevas operaciones directas con
+fabricantes y envíos; Salud/Health Connect siguen disponibles en Free. Los
+trabajos pendientes deberán revalidar acceso y generación antes de actuar.
 No implica borrar historial ni retirar silenciosamente sesiones ya entregadas
 al proveedor. Desconexión y borrado conservan recorridos propios.
 
-**Pendiente de implementación:** el lector e historial de INT-004 todavía no
-incorporan este control comercial. INT-006 no afirma un bloqueo ya aplicado,
-no modifica ahora Trainer/Flutter/SQL y debe cubrirse en servidor antes de
-presentar el recorrido como funcionalidad comercial terminada.
+**Pendiente de implementación:** proteger en servidor las operaciones directas
+con fabricantes y el envío conforme a este acceso comercial. No se debe añadir
+un bloqueo Pro a la lectura/importación de Salud de INT-004 ni a Health Connect.
+INT-006 no afirma controles comerciales ya aplicados y no modifica ahora
+Trainer/Flutter/SQL.
 
 Antes de almacenar datos reales quedarán concretados el inventario mínimo de
 datos, información/consentimiento de subida y comunicación al preparador,
