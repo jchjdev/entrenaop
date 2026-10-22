@@ -111,8 +111,8 @@ primera fase. Desconectar la cuenta no elimina entrenamientos que ya están en G
 Activado exclusivamente en `entrenaop-dev` (`sxbxfjqgoddzhtcyhalw`): migración
 `20261022132601` aplicada y sincronizada con el historial; `garmin-training`
 ACTIVE v1 y handlers de cuenta/callback ACTIVE v5. Las credenciales de INT-005
-se reutilizan sin reenviarlas ni regenerar la clave de cifrado. La app de
-localhost se recompila con la pantalla nueva. No hay aún un envío real acreditado.
+se reutilizan sin reenviarlas ni regenerar la clave de cifrado. Después se
+instala la app en iPhone y se acredita el primer envío/recepción nominal.
 
 Validación: 109 pruebas Node, tipos estrictos, ocho pruebas Flutter nuevas y
 batería raíz completa 1.278 correctas/una omisión previa; análisis limpio.
@@ -124,8 +124,8 @@ esperada de RLS sin políticas en la tabla privada sin acceso directo.
 
 [CI 39791868190](https://github.com/jchjdev/entrenaop/actions/runs/39791868190)
 correcta para `7c05f8cd2edf015ed4062ca3bcd46250bdaf5fd8`. Petición al endpoint
-nuevo sin sesión: 401. Falta la prueba del usuario con cita real y reloj;
-estas comprobaciones no se presentan como confirmación de entrega.
+nuevo sin sesión: 401. Esta evidencia automática no acredita por sí sola una
+entrega. La comprobación física posterior se describe debajo.
 
 La API crea el workout y después su cita de calendario. En la especificación
 consultada, creación usa `/workoutportal/workout/v2` y agenda/consulta usan
@@ -134,17 +134,56 @@ Solo se permiten destinos oficiales fijos, sin redirecciones; timeout por petici
 de diez segundos y respuestas limitadas. Logs de errores: operación/estado/código
 cerrados, nunca cuerpos, fechas, nombres, tokens o URLs de retorno.
 
-La primera prueba elegirá una cita real pendiente de entrenador del alumno, con
-vista previa; no se crea una prescripción artificial ni se cambia su agenda.
-Tras confirmar el calendario en Garmin, se sincroniza Garmin Connect del móvil
-y se comprueban nombre, fecha y pasos en fēnix 8. La app mostrará «enviada a
-Garmin», sin fingir confirmación física del reloj. No hace falta instalar esta
-compilación de EntrenaOP en el móvil para probar el canal de nube. Javier pide
-después probar desde el iPhone al no tener el PC disponible: el preparador
+La prueba utiliza una cita de entrenador autorizada y revisada por el alumno.
+Javier pide probar desde el iPhone al no tener el PC disponible: el preparador
 `bash tools/prepare_iphone_dev.sh` deja Release Dev listo para instalar desde
 el esquema existente Runner iPhone en el Mac, sin copiar secretos. El recorrido
 de instalación y autorización móvil está en [la guía iOS](IOS_DEVELOPMENT.md).
-Esto prepara la distribución local; no acredita todavía envío ni recepción.
+La [CI 39796122054](https://github.com/jchjdev/entrenaop/actions/runs/39796122054)
+de `87f63de69a5f0fbeb804e347cc82cd663520cac6` termina correctamente en backend,
+consumidor Flutter e iOS Release sin firma.
+
+### Primera recepción física y diagnóstico · 22/10/2026
+
+Javier confirma la instalación en iPhone. Las capturas muestran la sesión de
+EntrenaOP en Garmin Connect y el vídeo muestra su carga, listado de pasos,
+inicio y avance en fēnix 8 durante una prueba de banco. Dev acredita `sent`,
+sin error, con referencias de workout y calendario persistidas. Es evidencia
+del recorrido nominal de nube y reloj, no de completar la carrera o de validar
+todos los rangos, avisos y recuperaciones durante su ejecución.
+
+Javier señala que los pasos necesitan perfeccionamiento. La comparación del
+vídeo con la receta persistida permite separar tres cuestiones:
+
+- Garmin Connect muestra origen y notas, pero oculta el desglose de la sesión
+  externa. Garmin lo describe también para sesiones de TrainingPeaks en su
+  [soporte oficial](https://support.garmin.com/en-HK/?faq=jnm4aY5LM880wNP6LWm1n8&searchType=noProduct).
+  Esa pantalla no demuestra por sí sola pérdida de pasos.
+- El listado del reloj muestra ritmos únicos compatibles con valores centrales
+  de los rangos prescritos. El adaptador conserva ambos extremos en m/s; el
+  vídeo no demuestra todavía que las alertas respeten ambos límites. No se
+  reemplaza el rango por una media para imitar el resumen del reloj.
+- La receta agrupa los tramos bajo una etiqueta genérica y Garmin presenta
+  recuperación andando/trotando bajo su intensidad común RECOVERY. Las
+  instrucciones distintivas se envían como descripción. No inventar objetivos
+  de ritmo o cambiar la prescripción para obtener otro rótulo del fabricante.
+
+Al contrastar el formato se elimina `durationValueType=METER`: la especificación
+V2 2.0 reserva ese modificador a HR/POWER (`PERCENT`); TIME ya expresa segundos
+y DISTANCE metros. Una regresión comprueba unidades nativas y conversión
+inversa de ambos límites de ritmo. No hay evidencia de que ese campo causase
+la presentación observada; la corrección no se presenta como solución probada
+de las etiquetas ni modifica o duplica la sesión ya entregada.
+
+El ajuste pasa las 110 pruebas de servidor y tipos estrictos y se publica solo
+en Dev como `garmin-training` ACTIVE v2. Petición sin sesión: 401. El recibo
+anterior conserva `sent`, referencias confirmadas y lease liberado; no se
+reescribe ni se vuelve a enviar. Este cambio de servidor no exige reinstalar iOS.
+
+Siguiente tramo único: concretar la diferencia señalada por Javier, comparar
+receta/vista previa y detalle del reloj y verificar rangos/instrucciones/avisos
+antes de extender repeticiones o capacidades. Las capturas, el vídeo y las
+métricas exactas se conservan fuera de Git; solo se registra el resumen técnico.
 
 Sigue pendiente antes de producción la limpieza de la cuenta externa al borrar
 Auth, conciliación de permisos fuera de la app, rotación operativa de clave y

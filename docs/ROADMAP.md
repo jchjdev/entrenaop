@@ -5,11 +5,15 @@ autorizada/versionada, normalización pura de carrera, servicio de entrega y
 adaptador Training API; servidor común para alumno y entrenador con MFA, sin
 modificar el portal de Trainer. Perfil del deportista incorpora selección,
 fecha/pasos y revisión explícita. SQL con ROLLBACK y concurrencia local pasan;
-raíz 1.278 pruebas correctas/una omisión previa, 109 de servidor y análisis limpio.
-Migración aplicada, función nueva ACTIVE v1, cuenta/callback v5 y CI 39791868190
+raíz 1.278 pruebas correctas/una omisión previa, 110 de servidor y tipos limpios
+tras corregir el modificador de unidades sin reenviar la sesión anterior.
+Migración aplicada, función de envío ACTIVE v2, cuenta/callback v5 y CI 39791868190
 correcta; regresiones SQL de agenda/revisión profesional con ROLLBACK correctas.
-No hay aún entrega real. **Siguiente recorrido único:** elegir una cita
-real pendiente, confirmar calendario Garmin y comprobar pasos en fēnix 8.
+Javier instala en iPhone y aporta capturas/vídeo de la sesión en Garmin Connect
+y fēnix 8; Dev confirma workout/calendario, el vídeo acredita inicio y avance
+en banco. CI 39796122054 también compila iOS Release sin firma correctamente.
+**Siguiente recorrido único:** verificar fidelidad de receta/pasos e instrucciones
+y rangos de ritmo en el reloj; no se cierra todavía una carrera completa o sus alertas.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md).
 
 **TRN-025 · 22/10/2026 · navegación del alumno implementada:** Preparador ocupa

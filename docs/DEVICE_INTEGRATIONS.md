@@ -50,7 +50,8 @@ Salud y Trainer conservan sus contratos;
 el bloque funcional sigue abierto.
 INT-007 añade después el primer envío de carrera con servicio común para
 algoritmo y asignaciones, y revisión en la app del deportista. Servidor activo
-solo en Dev, con pruebas/CI correctas; entrega y recepción física aún pendientes.
+solo en Dev, con pruebas/CI correctas. Primera entrega y recepción/inicio en
+fēnix 8 acreditados desde iPhone; revisión completa de pasos y alertas pendiente.
 [Contrato](DEVICE_GARMIN_TRAINING.md).
 [Contrato, evidencia y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),

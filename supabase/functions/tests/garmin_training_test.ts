@@ -19,6 +19,15 @@ test("normaliza carrera, conserva recuperación final e invierte extremos al con
  assert.equal(out.segments[0].steps[1].durationValue,30);assert.equal(out.segments[0].steps[1].targetType,"OPEN");
  assert.equal(out.segments[0].steps[1].durationType,"TIME");
 });
+test("tiempo y distancia usan las unidades nativas de Garmin sin modificador HR/POWER",()=>{
+ const p=runningPrescription(source()),out=garminRunningWorkout(p),steps=out.segments[0].steps;
+ assert.equal(steps[0].durationType,"DISTANCE");assert.equal(steps[0].durationValue,1000);
+ assert.equal(steps[1].durationType,"TIME");assert.equal(steps[1].durationValue,30);
+ for(const step of steps)assert.equal(Object.hasOwn(step,"durationValueType"),false);
+ // La conversión inversa conserva ambos extremos; no sustituye el rango por su media.
+ assert.ok(Math.abs(1000/steps[0].targetValueLow!-p.steps[0].pace!.slow)<1e-9);
+ assert.ok(Math.abs(1000/steps[0].targetValueHigh!-p.steps[0].pace!.fast)<1e-9);
+});
 test("rechaza degradación, orden ambiguo, recetas ajenas y duración/distancia simultáneas",()=>{
  const edits=[(p:any)=>p.source="user",(p:any)=>p.blocks[0].rounds=2,(p:any)=>p.blocks[0].format="circuit",
   (p:any)=>p.blocks[0].items[0].exercise_id="strength",(p:any)=>p.blocks[0].items[0].sets[0].target_duration_seconds=600,

@@ -7,7 +7,8 @@ export function garminRunningWorkout(p:RunningPrescription) {
       type:"WorkoutStep",stepOrder:index+1,description:step.description,
       intensity:({run:"ACTIVE",warmup:"WARMUP",cooldown:"COOLDOWN",rest:"REST",walk:"RECOVERY",jog:"RECOVERY"} as const)[step.kind],
       durationType:step.measure==="seconds"?"TIME":"DISTANCE",durationValue:step.value,
-      durationValueType:step.measure==="seconds"?null:"METER",targetType:step.pace?"PACE":"OPEN",
+      // TIME usa segundos y DISTANCE metros; durationValueType solo modifica HR/POWER.
+      targetType:step.pace?"PACE":"OPEN",
       // Garmin espera velocidad m/s: el extremo lento corresponde al mínimo.
       targetValueLow:step.pace?1000/step.pace.slow:null,targetValueHigh:step.pace?1000/step.pace.fast:null,
     }))}]};

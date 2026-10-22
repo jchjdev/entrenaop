@@ -29,11 +29,16 @@ credenciales privadas permanecen en las funciones de Dev. En el iPhone:
 a EntrenaOP y actualizar el estado si hace falta. **Enviar una carrera** abre
 la cita y la revisión antes del envío. Después sincronizar Garmin Connect con
 el fēnix 8. Crear la sesión en Garmin y verla en el reloj son comprobaciones
-distintas, ambas todavía pendientes de esta instalación.
+distintas. Javier confirma después la instalación en el iPhone y aporta vídeo
+de recepción e inicio en fēnix 8; eso acredita este recorrido nominal, sin cerrar
+la revisión de instrucciones, rangos y avisos durante una carrera completa.
 
 `--no-open` prepara lo mismo sin abrir Xcode para automatización. La CI de
 Garmin incluye ahora el preparador y una compilación iOS Release sin firma ni
 publicación; no genera un instalador firmado ni sustituye la prueba física.
+La [ejecución 39796122054](https://github.com/jchjdev/entrenaop/actions/runs/39796122054)
+termina correctamente en backend, consumidor y compilación iOS Release sin firma
+para `87f63de69a5f0fbeb804e347cc82cd663520cac6`.
 
 ## Herramientas y configuración
 

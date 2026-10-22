@@ -187,7 +187,9 @@ El envío de una primera sesión compatible con Training API será el siguiente
 bloque recomendado. No requiere esperar a otros fabricantes,
 pero sí traducción de receta, orden/versiones autorizadas y comprobación física.
 Javier autoriza después INT-007: [primer envío común de carrera](DEVICE_GARMIN_TRAINING.md),
-activo solo en Dev con servidor reutilizable por entrenadores y aceptación física pendiente.
+activo solo en Dev con servidor reutilizable por entrenadores. Después se
+acreditan primera entrega y recepción/inicio en fēnix 8 desde iPhone; la revisión
+completa de pasos/alertas sigue abierta en ese documento.
 
 ### Límites operativos que no acredita esta entrega
 
@@ -231,5 +233,6 @@ la tabla no existe y quedan cero usuarios `@garmin.invalid` en aquella preparaci
 Tras la autorización de activación, la migración queda aplicada, las funciones
 publicadas y se repite correctamente el contrato con ROLLBACK, sin conexiones
 ni fixtures restantes en esa comprobación inicial. Después se acredita la
-autorización y retirada reales descritas arriba; las actividades y el envío
-siguen pendientes.
+autorización y retirada reales descritas arriba; la recepción de actividades
+sigue pendiente. INT-007 acredita después el primer envío y recepción en reloj,
+con la fidelidad completa de instrucciones y alertas aún en revisión.

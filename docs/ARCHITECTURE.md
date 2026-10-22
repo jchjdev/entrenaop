@@ -9,7 +9,8 @@ Alumno y preparador con MFA consumen el mismo endpoint; el secreto pertenece al
 alumno y no se expone a Trainer. Primera UI en Perfil del deportista. Recibos
 persistentes, lease compartido con revocación y hechos confirmados evitan
 duplicar POST inciertos. Migración y función aplicadas solo en Dev, pruebas y CI
-correctas; entrega real y recepción física pendientes.
+correctas. Primera entrega, recepción e inicio en fēnix 8 acreditados desde
+iPhone; fidelidad completa de instrucciones/alertas durante la carrera pendiente.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md).
 
 ## Conexión directa Garmin por cuenta · INT-005 · 22/10/2026
@@ -26,7 +27,8 @@ Implementación y pruebas locales/SQL con ROLLBACK comprobadas. Tras autorizaci�
 migración aplicada, handlers publicados y secretos configurados solo en Dev.
 Conexión real con ambos permisos, tokens cifrados e intento consumido comprobada;
 retirada real y limpieza de grant/identidad/permisos también acreditadas desde
-navegador. Recepción y envío pendientes. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
+navegador. Recepción de actividades pendiente; el primer envío se acredita en
+INT-007. [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
 
 ## Navegación profesional del alumno · TRN-025 · 22/10/2026
 
