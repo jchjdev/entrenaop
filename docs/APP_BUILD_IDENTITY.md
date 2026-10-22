@@ -64,5 +64,21 @@ fuentes/test/herramienta, limpios. La captura usa widgets reales a390px y texto
 Se comprueban la versión nativa sobrescrita, metadatos desconocidos, copia solo
 técnica, error seguro del lector y rechazo de sustitución del estampado desde
 parámetros o JSON (ruta Windows incluida). Dry-run real correcto.
-La compilación Android y la comprobación iOS se registran aparte al terminar;
-no se repiten baterías completas por la captura o el cambio de posición.
+No se repiten baterías completas por la captura o el cambio de posición.
+
+## Artefacto Android verificado
+
+Fuente `661b279753d6121139a1933bccdc327e5c4ff0da`, preparada
+`2026-10-22T02:23:04.679782Z`, `APP_SOURCE_DIRTY=false`. El comando real
+`dart run tools/run_app.dart build apk --debug --no-pub --dart-define=APP_ENV=development`
+compila correctamente. `aapt dump badging` contrasta bundle
+`com.entrenaOp.entrenaop`, versionName1.0.0/versionCode2, mínimo24/target36;
+los mínimos no se modifican.
+
+APK local ignorado: `build/app/outputs/flutter-apk/app-debug.apk`,186.725.184bytes,
+SHA-256 `9b66a2c43230e0b7aaa339b548bd7879afca1e98831e130fb768d83669283b73`.
+No instalado ni distribuido por esta comprobación. La advertencia de herramientas
+SDK XML3/4 no impide la compilación; no se actualiza el SDK como parte del cambio.
+La CI iOS existente se dispara con el push de pubspec; su ejecución y la
+instalación física se acreditarán por separado. No se declara iOS verificado por
+haber compilado Android, ni se confunde un APK debug con una distribución iPhone.
