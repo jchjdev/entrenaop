@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**TRN-024 · 22/10/2026 · trabajo directo y revisión de la app del alumno:** Javier
+detiene subagentes y coordinación entre chats y confirma continuar únicamente
+con este chat. La autorización anterior de coordinación queda revocada hasta
+petición expresa; no se cancelan por ello los encargos independientes de otros
+chats. Pide revisar el exceso de contenido profesional en Inicio y dónde ubicar
+seguimiento, avisos y pagos. Las alternativas de navegación son propuestas,
+todavía sin decisión final ni cambio en el router.
+[Estado de los dieciséis puntos y propuesta](TRAINER_STUDENT_UX_2026_10_22.md).
+
 **TRN-023 · 22/10/2026 · navegación de alumnos y vídeos:** Javier pide tarjetas
 pulsables para entrar en cada alumno, invitaciones más claras y acceso visible a
 su técnica, manteniendo este cambio en Trainer y dejando el rediseño del

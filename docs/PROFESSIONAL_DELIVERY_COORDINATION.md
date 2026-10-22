@@ -1,5 +1,15 @@
 # Entrega profesional coordinada · 21/10/2026
 
+## Coordinación detenida · 22/10/2026
+
+Javier ordena detener subagentes y coordinación entre chats, incluidos mensajes,
+avisos y reservas. Se comunica la instrucción a Dispositivos, ADMIN y Arquitectura.
+Trainer continúa directamente con Javier. Los permisos de coordinación descritos
+abajo son históricos y quedan revocados hasta nueva petición expresa. Las tareas
+que Javier encargue por separado en otros chats siguen siendo independientes.
+El estado posterior y la propuesta de navegación del deportista se registran en
+[la revisión del 22/10](TRAINER_STUDENT_UX_2026_10_22.md).
+
 ## Alcance autorizado y estado de esta hoja
 
 Javier autoriza en el chat de entrenadores ejecutar los dieciséis puntos de la
