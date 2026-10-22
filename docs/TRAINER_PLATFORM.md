@@ -1,5 +1,11 @@
 # Plataforma para preparadores · alcance acordado · 21/10/2026
 
+**TRN-026 · 22/10/2026 · nuevo criterio pendiente:** un alumno debe poder tener
+dos preparadores activos, con servicios y permisos separados. El contrato
+implementado sigue siendo de preparador único hasta desarrollar y verificar
+esta ampliación. Javier pide anotar los cambios de fluidez, sin implementarlos
+todavía. [Detalle](TRAINER_UX_NOTES_2026_10_22.md).
+
 ## Ampliación TRN-020 en curso
 
 El alcance vigente incluye los dieciséis recorridos de

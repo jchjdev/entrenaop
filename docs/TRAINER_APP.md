@@ -1,5 +1,14 @@
 # Espacio de entrenadores
 
+## Criterio nuevo pendiente de implementar · 22/10/2026 · TRN-026
+
+Javier solicita poder tener dos preparadores activos a la vez, por ejemplo uno
+de fuerza y otro de carrera. Sustituye el acuerdo anterior de preparador único;
+las referencias siguientes a ese límite describen todavía el comportamiento
+implementado. También pide registrar, sin cambios de código, simplificación de
+asignaciones, reordenación por arrastre y revisión del creador de carrera.
+[Notas y alcance pendiente](TRAINER_UX_NOTES_2026_10_22.md).
+
 ## Actualización · 22/10/2026 · TRN-023
 
 Alumnos incorpora tarjetas pulsables y gestión secundaria con confirmación.

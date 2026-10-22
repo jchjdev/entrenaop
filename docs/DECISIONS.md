@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-026 · 22/10/2026 · dos preparadores y pendientes de fluidez:** Javier
+confirma que un alumno debe poder tener dos preparadores activos, por ejemplo
+fuerza y carrera. Sustituye como criterio de producto al preparador único de
+TRN-008; el código y SQL siguen aplicando todavía el límite anterior. Cada
+servicio conserva contenido, permisos, historial y cupo propios. Javier pide
+anotar, sin implementar aún, el recorrido complejo de asignación, arrastrar
+ejercicios y bloques/series de carrera para reordenarlos y revisar el creador de
+carrera. Describirá después el recorrido de asignación deseado.
+[Pendientes y límites](TRAINER_UX_NOTES_2026_10_22.md).
+
 **INT-007 · ampliación iPhone · 22/10/2026:** Javier pide trasladar la prueba
 de Garmin al iPhone desde su Mac mediante GitHub. Se conserva el esquema
 Runner iPhone y la firma existentes; un preparador deja Release Dev explícito
