@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**INT-007 · ampliación iPhone · 22/10/2026:** Javier pide trasladar la prueba
+de Garmin al iPhone desde su Mac mediante GitHub. Se conserva el esquema
+Runner iPhone y la firma existentes; un preparador deja Release Dev explícito
+y abre Xcode sin copiar secretos ni introducir otra integración de Garmin.
+La compilación sin firma de CI y la instalación física son evidencias distintas;
+la llegada de la primera carrera al reloj sigue pendiente.
+[Instalación local](IOS_DEVELOPMENT.md).
+
 **TRN-025 · 22/10/2026 · Preparador abajo, Perfil arriba:** Javier elige la
 propuesta de pestaña profesional y avatar superior. Inicio conserva una sola
 tarjeta de novedades, sin repetir formularios/chat/técnica. La campana aparece

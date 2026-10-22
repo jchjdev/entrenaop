@@ -1,5 +1,40 @@
 # Desarrollo iOS en macOS
 
+## Instalar la versión actual con Garmin · 22/10/2026
+
+En GitHub Desktop del Mac, seleccionar `main`, hacer **Fetch origin → Pull
+origin** y abrir Terminal en la carpeta de EntrenaOP. Con el iPhone conectado:
+
+```sh
+bash tools/prepare_iphone_dev.sh
+```
+
+El comando resuelve el lockfile, prepara **Release con Supabase de desarrollo**
+y los metadatos de revisión, y abre `ios/Runner.xcworkspace`. En Xcode elegir
+**Runner iPhone**, seleccionar el iPhone físico y pulsar **▶︎ / Cmd+R**. La firma
+automática existente utiliza el equipo de Javier; si aparece el aviso del
+llavero, permitir el uso de la clave directamente en el Mac. El comando prepara
+la configuración; Xcode compila, firma e instala. No acredita instalación hasta
+que esa ejecución termine en el dispositivo.
+
+No desinstalar la app anterior. Release permite abrirla después desde su icono
+sin el Mac. Revisar Perfil → Versión de la app para distinguir el código
+descargado del ejecutable instalado. El script fija `APP_ENV=development` y la
+URL Dev y sustituye la configuración generada anterior; no lee archivos `.env`
+ni incluye la clave de compras de prueba.
+
+Para Garmin no se copian Client ID, Client Secret ni archivos locales: las
+credenciales privadas permanecen en las funciones de Dev. En el iPhone:
+**Perfil → Conexión con Garmin → Conectar Garmin**; autorizar en Safari, volver
+a EntrenaOP y actualizar el estado si hace falta. **Enviar una carrera** abre
+la cita y la revisión antes del envío. Después sincronizar Garmin Connect con
+el fēnix 8. Crear la sesión en Garmin y verla en el reloj son comprobaciones
+distintas, ambas todavía pendientes de esta instalación.
+
+`--no-open` prepara lo mismo sin abrir Xcode para automatización. La CI de
+Garmin incluye ahora el preparador y una compilación iOS Release sin firma ni
+publicación; no genera un instalador firmado ni sustituye la prueba física.
+
 ## Herramientas y configuración
 
 - Usar Flutter **3.47.5** con Dart **3.13.4**, la versión contrastada al

@@ -139,7 +139,12 @@ vista previa; no se crea una prescripción artificial ni se cambia su agenda.
 Tras confirmar el calendario en Garmin, se sincroniza Garmin Connect del móvil
 y se comprueban nombre, fecha y pasos en fēnix 8. La app mostrará «enviada a
 Garmin», sin fingir confirmación física del reloj. No hace falta instalar esta
-compilación de EntrenaOP en el móvil para probar el canal de nube.
+compilación de EntrenaOP en el móvil para probar el canal de nube. Javier pide
+después probar desde el iPhone al no tener el PC disponible: el preparador
+`bash tools/prepare_iphone_dev.sh` deja Release Dev listo para instalar desde
+el esquema existente Runner iPhone en el Mac, sin copiar secretos. El recorrido
+de instalación y autorización móvil está en [la guía iOS](IOS_DEVELOPMENT.md).
+Esto prepara la distribución local; no acredita todavía envío ni recepción.
 
 Sigue pendiente antes de producción la limpieza de la cuenta externa al borrar
 Auth, conciliación de permisos fuera de la app, rotación operativa de clave y

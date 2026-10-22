@@ -15,6 +15,10 @@ on:
       - 'lib/core/router/garmin_connection_route.dart'
       - 'test/features/device_connections/**'
       - 'test/features/device_training/**'
+      - 'tools/prepare_iphone_dev.sh'
+      - 'tools/test_prepare_iphone_dev.sh'
+      - 'tools/run_app.dart'
+      - 'ios/**'
       - '.github/workflows/garmin-connection.yml'
   workflow_dispatch:
 
@@ -75,3 +79,33 @@ jobs:
           dart format --output=none --set-exit-if-changed lib/features/device_connections lib/features/device_training lib/core/router/garmin_connection_route.dart test/features/device_connections test/features/device_training
           flutter analyze
           flutter test test/features/device_connections test/features/device_training test/features/device_activities
+
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: SDK Flutter oficial fijado y verificado
+        run: |
+          if [ "$(uname -m)" = arm64 ]; then
+            archive=flutter_macos_arm64_3.47.5-stable.zip
+            hash=d4dd908b5f8f65515831b6d68ae33307a813f2b68947dded7a1994ee5ea7cead
+          else
+            archive=flutter_macos_3.47.5-stable.zip
+            hash=a7893bb0feecd8bd066f4f7e850356f896a6fc3b862e6c506d21c76691a66b72
+          fi
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/flutter.zip" "https://storage.googleapis.com/flutter_infra_release/releases/stable/macos/$archive"
+          echo "$hash  $RUNNER_TEMP/flutter.zip" | shasum -a 256 --check
+          unzip -q "$RUNNER_TEMP/flutter.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Verificar el preparador de iPhone
+        run: bash tools/test_prepare_iphone_dev.sh
+      - name: Preparar EntrenaOP Release con desarrollo explícito
+        run: bash tools/prepare_iphone_dev.sh --no-open
+      - name: Compilar iOS Release con Garmin sin firmar ni publicar
+        run: >-
+          dart run tools/run_app.dart build ios --release --no-codesign --no-pub
+          --dart-define=APP_ENV=development
+          --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co
