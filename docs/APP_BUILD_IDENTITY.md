@@ -79,6 +79,16 @@ APK local ignorado: `build/app/outputs/flutter-apk/app-debug.apk`,186.725.184byt
 SHA-256 `9b66a2c43230e0b7aaa339b548bd7879afca1e98831e130fb768d83669283b73`.
 No instalado ni distribuido por esta comprobación. La advertencia de herramientas
 SDK XML3/4 no impide la compilación; no se actualiza el SDK como parte del cambio.
-La CI iOS existente se dispara con el push de pubspec; su ejecución y la
-instalación física se acreditarán por separado. No se declara iOS verificado por
-haber compilado Android, ni se confunde un APK debug con una distribución iPhone.
+No se confunde un APK debug con una distribución iPhone.
+
+## Compilación iOS verificada en CI
+
+La [ejecución automática 39711352509](https://github.com/jchjdev/entrenaop/actions/runs/39711352509)
+del commit `0c6244e577150cda7ec21f65b0b0c576bbc50b5f` termina correctamente.
+Android `119603178009` e iOS `119603177841` pasan. El paso de la app principal iOS
+registra ese SHA, preparación `2026-10-22T02:29:14.182759Z` y fuentes sin cambios;
+a `02:32:25Z` confirma `build/ios/iphonesimulator/Runner.app` compilado.
+Esto acredita compilación del plugin y estampado en la app principal para
+simulador, sin firma ni publicación. La instalación física y su identificación
+visible en el iPhone siguen pendientes. No se relanza CI ni se repiten pruebas
+locales para registrar este resultado documental.

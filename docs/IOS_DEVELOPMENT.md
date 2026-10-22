@@ -61,8 +61,14 @@ el Mac conectado, usar release **con el entorno de desarrollo explícito**:
 
 ```sh
 flutter pub get --enforce-lockfile
-flutter run --release -d <identificador-del-iphone> --dart-define=APP_ENV=development
+dart run tools/run_app.dart run --release -d <identificador-del-iphone> --dart-define=APP_ENV=development
 ```
+
+Antes de probar funciones nuevas, comprobar Perfil → Versión de la app y copiar
+la identificación si es necesario. La herramienta anterior añade revisión Git,
+fecha UTC y estado de fuentes a la versión/build real del paquete instalado.
+[Contrato y evidencia de compilación](APP_BUILD_IDENTITY.md). Actualizar Git o
+publicar los portales web no reinstala la app en el iPhone.
 
 Si aparece la pantalla negra que indica que las apps Flutter debug solo pueden
 arrancar desde las herramientas, la app instalada sigue siendo debug. La

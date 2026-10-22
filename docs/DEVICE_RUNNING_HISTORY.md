@@ -188,8 +188,10 @@ Después de guardar el bloque y actualizar `main` en el Mac, ejecutar desde la
 raíz `flutter pub get --enforce-lockfile`. Abrir `ios/Runner.xcworkspace` y
 comprobar firma y HealthKit de la app principal. No activar datos clínicos ni
 entrega en segundo plano. Conectar el iPhone, elegir su identificador físico
-en `flutter devices` e instalar con `flutter run --release -d ID_DEL_IPHONE
---dart-define=APP_ENV=development`.
+en `flutter devices` e instalar con `dart run tools/run_app.dart run --release
+-d ID_DEL_IPHONE --dart-define=APP_ENV=development`. Este comando conserva el
+estampado de fuente/fecha; antes de probar Salud, abrir Perfil → Versión de la app
+y contrastar los datos de la instalación. [Identidad y evidencia actual](APP_BUILD_IDENTITY.md).
 
 Iniciar sesión en la propia cuenta y abrir Perfil → Carreras de Salud. Leer,
 revisar y guardar una selección; cerrar/reabrir y comprobar que sigue guardada.
