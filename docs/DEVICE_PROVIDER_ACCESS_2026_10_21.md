@@ -7,14 +7,25 @@ Garmin Connect Developer Program e indica completar la cuenta creando una
 contraseña en el portal. Se registra la aprobación comunicada por el titular,
 sin copiar su dirección, el correo completo ni credenciales al repositorio.
 
-La admisión al programa deja de estar pendiente. Completar el alta, comprobar
-los productos/API habilitados, sus condiciones y límites, crear/configurar una
-aplicación y verificar una primera petición autenticada siguen pendientes.
-Este cambio no acredita acceso operativo a Activity API o Training API, una
-cuenta Garmin de deportista conectada ni importación directa en EntrenaOP.
-La comprobación del portal debe preceder a implementar el adaptador; Salud
-conserva su recorrido independiente. No se han usado credenciales ni cambiado
-código, permisos, base de datos o Trainer como parte de este registro.
+Después Javier confirma que aceptó las condiciones y muestra la aplicación
+creada en el portal: `EntrenaOP Dev`, autorización OAuth 2.0, producto Connect
+Developer – Starter habilitado y estado de credenciales Approved. Se ven
+Client ID y Client Secret emitidos, con sus valores ocultos; no se han recibido
+ni copiado. En la lista de APIs solo figura Activity API: Training API no queda
+acreditada para esta aplicación.
+
+El retorno registrado es
+`https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-oauth-callback`.
+Es una ruta reservada de Dev, todavía sin implementación ni despliegue. El
+nombre público podría ser EntrenaOP; no es el sufijo Dev lo que separa entornos.
+Se conserva el nombre observado, sin renombrar ni crear otra aplicación.
+
+Quedan contrastar la documentación OAuth 2.0 y Activity API, configurar secretos
+en servidor y verificar autorización, recepción de actividades y primera
+petición autenticada. No hay aún una cuenta Garmin de deportista conectada ni
+importación directa en EntrenaOP. Salud mantiene su recorrido independiente.
+No se han usado credenciales ni cambiado código, permisos, base de datos o
+Trainer como parte de este registro documental.
 
 La revisión inicial del 21/10 que sigue describe el estado anterior. La fila y
 sección Garmin incorporan esta actualización; las demás marcas no cambian.
@@ -47,7 +58,7 @@ credenciales de desarrollador.
 | --- | --- | --- | --- | --- |
 | Salud de Apple / HealthKit | Lectura nativa en iPhone de actividades y métricas que realmente estén en Salud, con permiso. | Es otro contrato: WorkoutKit para sesiones planificadas compatibles. Escribir una actividad completada en Salud no programa una sesión en el reloj. | Documentación pública; capacidad, firma y lectura real pendientes. | Habilitar capability y propósitos en un ensayo móvil aislado; verificar cuenta/firma y permiso con una carrera real. |
 | Health Connect | Lectura nativa Android de registros que otras apps hayan compartido, con permiso y disponibilidad. | Health Connect no acredita envío universal a los relojes de fabricantes. No se habilita esa capacidad en V1. | Documentación pública; SDK, permisos, declaración Play y ensayo pendientes. | Contrastar SDK/Gradle y teléfono compatibles antes de elegir adaptador; ensayar lectura de una carrera. |
-| Garmin Connect | Evaluar Activity API directa con los productos y permisos del portal; Salud conserva su vía independiente. | Evaluar Training API para sesiones/planes si está habilitada y los dispositivos son compatibles. | Programa aprobado según correo aportado por Javier el 22/10; alta y acceso API operativo pendientes. | Completar la cuenta; verificar productos, documentación, condiciones y credenciales de aplicación antes de una primera llamada autenticada. |
+| Garmin Connect | Activity API figura en EntrenaOP Dev; autorización OAuth 2.0. Salud conserva su vía independiente. | Training API no figura en la captura de esta aplicación; habilitación y envío pendientes. | Programa aprobado, condiciones aceptadas y aplicación Starter habilitada según evidencia aportada por Javier el 22/10. Credenciales emitidas con valores ocultos; no configuradas ni utilizadas. | Revisar documentación OAuth 2.0/Activity, implementar callback y recepción en Dev, configurar secretos y verificar autorización consentida real. |
 | COROS | Partner API para actividades; la cobertura indirecta se comprobará por plataforma y campos. | Partner API documenta sesiones estructuradas y planes. | Documentación pública, sin credenciales verificadas. | Contrastar elegibilidad de plataforma/empresa y preparar solicitud con aplicación y callbacks. |
 | Suunto | Cloud API y FIT mediante programa de partners. | Evaluar SuuntoPlus Guides; la API de subida de actividad completada no demuestra envío de prescripción. | Documentación/portal públicos; aceptación y claves pendientes. | Obtener acceso de partner y confirmar el producto de prescripción, modelos y cuotas admitidos. |
 | Huawei Health | Health Kit documenta lectura/escritura consentida de datos expuestos. | Envío de sesiones estructuradas a reloj no acreditado en esta revisión. | Documentación pública; permisos de producto/región y credenciales no verificados. | Confirmar vía aplicable en España/UE, permisos de entrenamientos y detalle de segmentos/pulso para una integración de servidor/móvil. |
@@ -96,14 +107,13 @@ separadamente. No se diseña sobre Google Fit.
 
 ## Garmin: aprobación del programa y acceso operativo pendiente
 
-El 22/10 Javier comunica la aprobación descrita al principio del documento.
-Sustituye el bloqueo anterior de admisión, pero aún no se ha accedido al portal
-ni contrastado sus productos, condiciones, entorno o credenciales de aplicación.
-La revisión pública inicial distinguía Activity API para recibir actividades y
-Training API para publicar recetas/planes. Su habilitación para esta cuenta se
-comprobará en el portal; no se deduce del mensaje de bienvenida ni de una FAQ
-anterior. Los enlaces se conservan como referencias, sin afirmar verificación
-pública nueva de sus contenidos el 22/10.
+El 22/10 se acreditan por la información y capturas aportadas por Javier la
+admisión, aceptación y aplicación descritas al principio. Se supera el bloqueo
+de alta; los valores de credenciales, documentación autenticada y conexión real
+siguen sin verificarse. La revisión pública inicial diferenciaba Activity API
+para recibir actividades y Training API para publicar recetas/planes. La app
+creada solo muestra Activity API. Los enlaces siguientes se conservan como
+referencias, sin afirmar verificación pública nueva de sus contenidos el 22/10.
 [Programa](https://developer.garmin.com/gc-developer-program/overview/),
 [Training API](https://developer.garmin.com/gc-developer-program/training-api/)
 y [FAQ](https://developer.garmin.com/gc-developer-program/program-faq/).
@@ -117,8 +127,8 @@ cardíaco de actividades; no se promete fidelidad de la API directa.
 [Garmin → Apple Health](https://support.garmin.com/en-US/?faq=lK5FPB9iPF5PXFkIpFlFPA)
 y [Garmin → Health Connect](https://support.garmin.com/en-US/?faq=JToBEy0jfe6pIygark2Ui5).
 
-**Siguiente paso:** completar el alta y comprobar acceso oficial; después definir
-el adaptador Garmin detrás del dominio común, sin acoplarlo a Salud o Trainer.
+**Siguiente paso:** revisar la documentación oficial de OAuth 2.0 y Activity API;
+después definir el adaptador detrás del dominio común, sin acoplarlo a Salud o Trainer.
 La contraseña del portal no será una credencial de integración de EntrenaOP.
 No usar contraseñas de deportistas Garmin,
 scraping, endpoints privados o bibliotecas que simulen iniciar sesión. Connect
@@ -193,7 +203,7 @@ asignaciones. No solicitamos inicialmente salud diaria ni GPS en directo».
 | Lectura solicitada | Carrera terminada: tiempos, distancia, segmentos y pulso cuando estén disponibles y autorizados. |
 | Escritura solicitada | Prescripción de carrera versionada, agenda y pasos compatibles; no subir actividad en nombre del alumno como sustituto del envío. |
 | Política de privacidad y explicación de datos | Revisar que cubran integración, subida, destinatarios y revocación antes de adjuntarlas o activar datos reales. |
-| Callback OAuth/webhooks | URLs exactas pendientes de diseñar y registrar en infraestructura propia de desarrollo. No reservar rutas en Trainer ni inventar subdominios desplegados. |
+| Callback OAuth/webhooks | Garmin tiene registrado el retorno Dev indicado al principio, aún no implementado. Recepción de notificaciones pendiente de documentación/configuración. No reservar rutas en Trainer ni presentar URLs como desplegadas. |
 | Credenciales y entornos | Una configuración identificada por entorno y proveedor; secretos únicamente en servidor/gestor seguro, sin valores en Git ni logs. |
 | Condiciones, tarifas y límites | Revisión por proveedor antes de aceptación. El acceso público a docs no acredita acceso gratuito ni contrato aceptado. |
 

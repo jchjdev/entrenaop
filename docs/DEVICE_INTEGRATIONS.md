@@ -32,11 +32,13 @@ principal; la aceptación física del recorrido de lectura/guardado sigue pendie
 Faltan conectores de producción, exportación, interfaces/autorización de ADMIN
 y Trainer, y lectura Android en la app principal.
 **Actualización Garmin · 22/10/2026:** Javier aporta el correo que confirma su
-admisión al Garmin Connect Developer Program. Quedan completar la cuenta y
-verificar productos/API habilitados, condiciones y credenciales; no se ha
-acreditado todavía una llamada autenticada ni una cuenta Garmin conectada a
-EntrenaOP. La integración directa será un adaptador del bloque común, separado
-de Salud y de Trainer. El bloque funcional sigue abierto.
+admisión al Garmin Connect Developer Program; después confirma aceptación de
+condiciones y muestra `EntrenaOP Dev`, OAuth 2.0, Starter habilitado y credenciales
+aprobadas con valores ocultos. Solo figura Activity API; Training API sigue sin
+acreditarse en esta aplicación. El retorno Dev está registrado pero todavía no
+implementado. Quedan documentación autenticada, configuración segura y primera
+conexión real. El adaptador seguirá separado de Salud y de Trainer; el bloque
+funcional permanece abierto.
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),
 [API y fronteras](../packages/device_activity_core/README.md).
 
