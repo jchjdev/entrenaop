@@ -8,7 +8,8 @@ La autoridad y revisión proceden de la cita y receta publicadas, no del cliente
 Alumno y preparador con MFA consumen el mismo endpoint; el secreto pertenece al
 alumno y no se expone a Trainer. Primera UI en Perfil del deportista. Recibos
 persistentes, lease compartido con revocación y hechos confirmados evitan
-duplicar POST inciertos. Activación Dev/prueba física se acreditan aparte.
+duplicar POST inciertos. Migración y función aplicadas solo en Dev, pruebas y CI
+correctas; entrega real y recepción física pendientes.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md).
 
 ## Conexión directa Garmin por cuenta · INT-005 · 22/10/2026

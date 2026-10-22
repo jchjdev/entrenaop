@@ -108,10 +108,24 @@ primera fase. Desconectar la cuenta no elimina entrenamientos que ya están en G
 
 ## Aceptación y operación Dev
 
-Preparado: pruebas de dominio/orquestación/transporte, SQL transaccional contra
-Dev con ROLLBACK y concurrencia real en PostgreSQL local. La activación y el envío
-real se acreditan por separado. Las credenciales de INT-005 se reutilizan, sin
-reenviarlas ni regenerar la clave de cifrado.
+Activado exclusivamente en `entrenaop-dev` (`sxbxfjqgoddzhtcyhalw`): migración
+`20261022132601` aplicada y sincronizada con el historial; `garmin-training`
+ACTIVE v1 y handlers de cuenta/callback ACTIVE v5. Las credenciales de INT-005
+se reutilizan sin reenviarlas ni regenerar la clave de cifrado. La app de
+localhost se recompila con la pantalla nueva. No hay aún un envío real acreditado.
+
+Validación: 109 pruebas Node, tipos estrictos, ocho pruebas Flutter nuevas y
+batería raíz completa 1.278 correctas/una omisión previa; análisis limpio.
+SQL transaccional completo contra Dev con ROLLBACK antes y después de aplicar,
+sin usuarios sintéticos ni entregas restantes; concurrencia real en PostgreSQL
+local. También pasan las regresiones transaccionales existentes de agenda y
+revisión de asignaciones del preparador. El asesor solo añade la información
+esperada de RLS sin políticas en la tabla privada sin acceso directo.
+
+[CI 39791868190](https://github.com/jchjdev/entrenaop/actions/runs/39791868190)
+correcta para `7c05f8cd2edf015ed4062ca3bcd46250bdaf5fd8`. Petición al endpoint
+nuevo sin sesión: 401. Falta la prueba del usuario con cita real y reloj;
+estas comprobaciones no se presentan como confirmación de entrega.
 
 La API crea el workout y después su cita de calendario. En la especificación
 consultada, creación usa `/workoutportal/workout/v2` y agenda/consulta usan

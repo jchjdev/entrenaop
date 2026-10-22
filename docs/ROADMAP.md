@@ -1,12 +1,14 @@
 # Roadmap de EntrenaOP
 
-**INT-007 · 22/10/2026 · primer envío Garmin común preparado:** contrato de cita
+**INT-007 · 22/10/2026 · primer envío Garmin común activo solo en Dev:** contrato de cita
 autorizada/versionada, normalización pura de carrera, servicio de entrega y
 adaptador Training API; servidor común para alumno y entrenador con MFA, sin
 modificar el portal de Trainer. Perfil del deportista incorpora selección,
 fecha/pasos y revisión explícita. SQL con ROLLBACK y concurrencia local pasan;
-raíz 1.278 pruebas correctas/una omisión previa y análisis limpio. No hay aún
-entrega real. **Siguiente recorrido único:** activar solo Dev, elegir una cita
+raíz 1.278 pruebas correctas/una omisión previa, 109 de servidor y análisis limpio.
+Migración aplicada, función nueva ACTIVE v1, cuenta/callback v5 y CI 39791868190
+correcta; regresiones SQL de agenda/revisión profesional con ROLLBACK correctas.
+No hay aún entrega real. **Siguiente recorrido único:** elegir una cita
 real pendiente, confirmar calendario Garmin y comprobar pasos en fēnix 8.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md).
 

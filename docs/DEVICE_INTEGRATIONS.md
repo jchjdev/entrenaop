@@ -49,8 +49,9 @@ sin sesión y 400 para callback inválido.
 Salud y Trainer conservan sus contratos;
 el bloque funcional sigue abierto.
 INT-007 añade después el primer envío de carrera con servicio común para
-algoritmo y asignaciones, y revisión en la app del deportista. Activación Dev y
-recepción física aún pendientes. [Contrato](DEVICE_GARMIN_TRAINING.md).
+algoritmo y asignaciones, y revisión en la app del deportista. Servidor activo
+solo en Dev, con pruebas/CI correctas; entrega y recepción física aún pendientes.
+[Contrato](DEVICE_GARMIN_TRAINING.md).
 [Contrato, evidencia y siguiente tramo](DEVICE_GARMIN_CONNECT.md).
 [Estado de acceso](DEVICE_PROVIDER_ACCESS_2026_10_21.md),
 [API y fronteras](../packages/device_activity_core/README.md).
