@@ -6,7 +6,11 @@ común, borradores, guardado, vistas y ejecución. Metadatos versionados aditivo
 huellas V1 conservadas, revisión antigua bloqueada y capacidades por proveedor
 comprobadas antes de reservar el envío. Dos migraciones aplicadas solo en Dev;
 servidor 114 pruebas y tipos estrictos, raíz 1.292, ADMIN 314, Trainer 170 y
-paquete 161; omisiones previas conservadas. **Siguiente recorrido único:**
+paquete 161; omisiones previas conservadas. Código funcional `a3018544`, CI
+Garmin 39822294290 correcta incluida compilación iOS Release sin firma; función
+de envío ACTIVE v5 solo en Dev. Trainer publicado en `a3018544` y ADMIN en
+`6924e967`, con CI 39823651874 correcta; ambos verificados por HTTPS. Javier
+aplaza la prueba física. **Siguiente recorrido único:**
 comprobar en fēnix una pauta nueva con Lap → 5 × (400 m + 90 s) → Lap y ambos
 límites de ritmo. Pulso/cadencia/potencia y fuerza Garmin siguen pendientes.
 [Implementación y límites](RUNNING_STEPS_V2.md).

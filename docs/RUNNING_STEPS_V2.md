@@ -80,10 +80,33 @@ el cliente autenticado; el helper inmutable de validación sí admite ejecución
 autenticada sin acceder a datos. Los avisos globales previos quedan fuera del
 alcance de este bloque.
 
-`garmin-training` actualizado en Dev; una petición sin sesión devuelve 401.
-La instalación iOS y la distribución web deben corresponder a esta revisión
-antes de probar la interfaz nueva. El script de iPhone sigue siendo
-`bash tools/prepare_iphone_dev.sh` tras Fetch/Pull de `main` en el Mac.
+Código funcional guardado en `a3018544`. La
+[CI Garmin 39822294290](https://github.com/jchjdev/entrenaop/actions/runs/39822294290)
+termina correctamente en servidor, consumidor y compilación iOS Release sin
+firma. Esto acredita compilación, no instalación ni aceptación física.
+
+`garmin-training` queda ACTIVE v5 únicamente en Dev; una petición sin sesión
+devuelve 401. Trainer Dev está publicado y verificado por HTTPS con la revisión
+`a3018544e1c086c53e1cf68a9575006155a129b2` y release
+`a3018544e1c086c53e1cf68a9575006155a129b2-20261022-1`; se comprueban identidad,
+huella JavaScript, recursos versionados y cabeceras. La biblioteca también
+abre correctamente en Chrome tras recargar la nueva publicación.
+
+ADMIN Dev también está publicado y verificado por HTTPS con revisión
+`6924e9673c4595e10b78fcd34c6b043c2365a92e`, que conserva el código funcional y
+añade la documentación de recuperación de otro chat. Su
+[CI 39823651874](https://github.com/jchjdev/entrenaop/actions/runs/39823651874)
+termina correctamente en validación, publicación y retención. La ejecución
+anterior `39822294381` superó la validación, pero su publicación se detuvo al
+avanzar `main`; se ejecuta de nuevo sobre el punto actualizado sin eludir la
+guarda ni modificar el trabajo ajeno. Se verifica además desde este equipo la
+identidad pública, la huella JavaScript, los recursos y las cabeceras.
+
+La interfaz del iPhone requiere actualizar desde GitHub Desktop (Fetch/Pull de
+`main`), ejecutar `bash tools/prepare_iphone_dev.sh` en el Mac y compilar desde
+Xcode con el esquema «Runner iPhone» y el iPhone físico. No hay que copiar
+credenciales Garmin. Javier confirma que hará la prueba más tarde: queda
+aplazada por disponibilidad, sin declarar comprobado el nuevo recorrido.
 
 ## Único siguiente recorrido
 
@@ -93,6 +116,21 @@ EntrenaOP y enviarla conscientemente desde el perfil del alumno; comprobar
 calentamiento hasta Lap, las cinco parejas de pasos, recuperación final,
 enfriamiento hasta Lap y avisos de ambos límites de ritmo. No reutilizar ni
 reenviar por defecto la cita que ya tiene un recibo anterior.
+
+Para la aceptación posterior:
+
+1. Crear una sesión nueva desde ADMIN o Trainer con calentamiento manual,
+   cinco series de 400 m con el rango de ritmo elegido para la prueba y
+   recuperación de 90 s, y enfriamiento manual; guardarla y volver a abrirla.
+2. Pautarla al alumno de prueba. Desde su iPhone actualizado, abrir Perfil →
+   Conexión con Garmin → Enviar una carrera y revisar fecha y doce pasos antes
+   de confirmar. La biblioteca personal no concede autoridad de envío.
+3. Abrir Garmin Connect y sincronizar el fēnix. Comprobar la sesión recibida y
+   el orden de sus pasos; iniciar el ensayo en el reloj.
+4. Verificar que calentamiento y enfriamiento esperan a Lap, que cada serie
+   acaba a los 400 m y cada recuperación a los 90 s, y que los avisos respetan
+   ambos límites del ritmo. Conservar las discrepancias para corregirlas antes
+   de ampliar objetivos o fabricantes.
 
 Después de esa comprobación se ampliarán objetivos de intensidad y capacidades
 de otros proveedores. No se declara cerrado el ensayo físico ni un recorrido
