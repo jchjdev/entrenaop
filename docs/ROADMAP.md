@@ -7,7 +7,9 @@ sin modificar el flujo profesional. Tres migraciones aplicadas; cron acredita
 200 con cero cuentas activadas. Análisis limpio, raíz 1.294 y una omisión
 previa, servidor 128 y tipos estrictos; contratos transaccionales Dev del
 entrenador y del algoritmo/reset, regresiones de cuenta/envío y competencia real
-manual/automática en PostgreSQL aislado. **Siguiente recorrido único:** actualizar
+manual/automática en PostgreSQL aislado.
+Código funcional `37a32d83`; CI Garmin 39847659243 correcta en backend,
+consumidor e iOS Release sin firma. **Siguiente recorrido único:** actualizar
 iPhone, activar la opción Dev y acreditar crear → cambiar → cancelar en
 Connect/fēnix. La prueba física Lap/fartlek sigue pendiente y forma parte de
 esa comprobación. No se abre otro bloque de objetivos o fabricantes todavía.

@@ -101,6 +101,9 @@ desplegados. Cron acredita respuestas 200 con cero trabajos y ninguna cuenta
 activada; las fixtures terminan con ROLLBACK y no dejan usuarios sintéticos.
 Versiones observadas: `garmin-training` ACTIVE v6 y `garmin-training-sync`
 ACTIVE v1. No se despliegan cambios de Trainer o ADMIN.
+Código funcional `37a32d8315e725f1b5035d38acfd936d134016a1`, subido a main.
+La [CI 39847659243](https://github.com/jchjdev/entrenaop/actions/runs/39847659243)
+termina correctamente en backend, consumidor Flutter e iOS Release sin firma.
 
 Validación local: análisis Flutter limpio, batería raíz 1.294 correctas y una
 omisión previa; 128 pruebas de servidor correctas y tipos estrictos. Los
