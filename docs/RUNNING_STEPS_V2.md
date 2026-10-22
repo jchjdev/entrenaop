@@ -17,12 +17,30 @@ la pauta completa y el límite de cien pasos, incluyendo recuperaciones.
 
 En la aceptación del creador, Javier confirma que la sesión muestra sus fases y
 series con recuperaciones. Los selectores compartidos pasan a decir «Tiempo»;
-los valores y unidades conservan el contrato anterior. La recuperación asociada
-permite pasiva/andar/trotar y tiempo/distancia, pero aún no tiene objetivo de
-ritmo propio ni repeticiones de grupos de varios tramos. Esto limita la autoría
-de fartlek con pautas suaves precisas; no debe presentarse como soporte completo.
-Javier confirma ambas necesidades. El ajuste de terminología supera los análisis
-de deportista, ADMIN y Trainer, y las 161 pruebas del creador compartido.
+los valores y unidades conservan el contrato anterior. Javier confirma dos
+necesidades para fartlek y solicita además omitir la última recuperación:
+
+- «Editar recuperación como paso» desdobla cada pareja de trabajo/recuperación
+  sin alterar su orden, repeticiones, tiempo o distancia. El paso suave tiene
+  sus propios campos de ritmo; el pasivo conserva tipo descanso y objetivo libre.
+- «Repetir grupo» permite seleccionar desde/hasta tramo y las vueltas totales,
+  incluyendo la primera. Se expande en pasos individuales editables. Guardar,
+  reabrir, ejecutar y exportar usan esa misma secuencia V2, sin un árbol nuevo
+  ni agrupación inferida al reabrir. El máximo actual sigue siendo 40 tramos.
+- «Omitir última recuperación» está desactivado por defecto. Solo se habilita
+  cuando la selección termina en una recuperación asociada o un paso suave.
+  Retira exclusivamente esa última recuperación de la última vuelta: no borra
+  la serie ni modifica calentamiento o enfriamiento. El resultado se guarda
+  como la dosis elegida; el exportador no decide omisiones.
+
+La referencia adicional es calentamiento Lap → 3 × (4 min a 4:10–4:25/km +
+3 min suaves a 5:00–5:20/km), omitiendo la última recuperación → enfriamiento
+Lap: siete pasos en total. Sin omitirla son ocho. Son valores de un ejemplo de
+aceptación, no una nueva pauta creada o enviada a una cuenta real.
+
+La ampliación mantiene el esquema, las RPC, snapshots y funciones desplegadas:
+son acciones puras sobre el formulario común que proyectan recetas ya admitidas.
+No se modifica la arquitectura profesional ni se añaden permisos o dependencias.
 
 El envío con selección y confirmación de cada cita es el recorrido de ensayo.
 La experiencia de producto esperada es vincular la cuenta y entregar las pautas
@@ -87,9 +105,15 @@ editor antiguo, y preservación del snapshot V1. Las pruebas no dejan datos.
 
 Análisis limpios de las tres apps; batería raíz de 1.292 pruebas correctas y una
 omisión previa, ADMIN 314 y dos omisiones previas, Trainer 170 y creador común
-161. Tras separar el codec se repiten las 391 regresiones de workouts/envío.
-Servidor: 114 pruebas correctas y tipos TypeScript estrictos. Captura sintética
+161 en el cierre inicial; la ampliación de fartlek eleva el creador a 171.
+Tras separar el codec se repiten las 391 regresiones de workouts/envío.
+La ampliación repite las baterías completas de las tres apps y sus análisis;
+servidor: 115 pruebas correctas y tipos TypeScript estrictos. Captura sintética
 del widget real a 320 px con texto 2×, sin datos privados en Git.
+Diez regresiones nuevas cubren orden, ambos ritmos, reapertura, omisión explícita,
+conversión de recuperaciones, límites y conservación de entradas incompletas;
+el diálogo se comprueba visualmente a 320/1200 px con texto doble. La prueba
+de servidor verifica intensidades, tiempo y ambos límites PACE de la fase suave.
 
 Se revisan los avisos de seguridad del proyecto y los ACL de las funciones
 afectadas: ninguna nueva función privilegiada queda ejecutable por `anon` o por

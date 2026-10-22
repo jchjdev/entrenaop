@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'workout_editor_work.dart';
 import 'editor_work_checkpoint.dart';
+import 'running_editor_actions.dart';
 
 import 'package:workout_core/workout_draft_codec.dart';
 
@@ -114,21 +115,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     'descriptionText': _description.text,
     'durationText': _duration.text,
     'running': _running,
-    'segments': [
-      for (final v in _segments)
-        {
-          'countText': v.count.text,
-          'targetText': v.target.text,
-          'paceText': v.pace.text,
-          'paceMaxText': v.paceMax.text,
-          'recoveryTimeText': v.recoveryTime.text,
-          'byDistance': v.byDistance,
-          if (v.kind != null) 'stepKind': v.kind!.name,
-          if (v.manual) 'manual': true,
-          'recoveryByDistance': v.recoveryByDistance,
-          'recoveryType': v.recovery?.name,
-        },
-    ],
+    'segments': [for (final v in _segments) v.raw],
     'blocks': [
       for (final b in _blocks)
         {
@@ -186,25 +173,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     }
     _segments.clear();
     for (final row in raw['segments'] as List) {
-      _segments.add(
-        _Segment()
-          ..count.text = row['countText'] as String
-          ..target.text = row['targetText'] as String
-          ..pace.text = row['paceText'] as String
-          ..paceMax.text = row['paceMaxText'] as String
-          ..recoveryTime.text = row['recoveryTimeText'] as String
-          ..kind = row['stepKind'] == null
-              ? null
-              : RunningStepKind.values.byName(row['stepKind'] as String)
-          ..manual = row['manual'] == true
-          ..byDistance = row['byDistance'] as bool
-          ..recoveryByDistance = row['recoveryByDistance'] as bool
-          ..recovery = row['recoveryType'] == null
-              ? null
-              : RunningRecoveryType.values.byName(
-                  row['recoveryType'] as String,
-                ),
-      );
+      _segments.add(_Segment.fromRaw(row as Map));
     }
     for (final v in _blocks) {
       v.dispose();
@@ -746,6 +715,190 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     setState(() => _segments.last.count.text = '$value');
   }
 
+  void _applyRunningAction(WorkoutEditorSnapshot snapshot) {
+    final next = [
+      for (final row in snapshot.value['segments'] as List)
+        _Segment.fromRaw(row as Map),
+    ];
+    setState(() {
+      for (final old in _segments) {
+        old.dispose();
+      }
+      _segments
+        ..clear()
+        ..addAll(next);
+      _error = null;
+    });
+  }
+
+  void _separateRecovery(int index) {
+    try {
+      _applyRunningAction(
+        separateRunningEditorRecovery(
+          WorkoutEditorSnapshot(_rawSnapshot()),
+          index,
+        ),
+      );
+    } on FormatException catch (error) {
+      setState(() => _error = error.message);
+    }
+  }
+
+  Future<void> _repeatGroup() async {
+    final snapshot = WorkoutEditorSnapshot(_rawSnapshot());
+    var count = '2';
+    var first = _segments.indexWhere(
+      (s) =>
+          s.kind != RunningStepKind.warmup &&
+          s.kind != RunningStepKind.cooldown,
+    );
+    if (first < 0) first = 0;
+    var last = _segments.lastIndexWhere(
+      (s) =>
+          s.kind != RunningStepKind.warmup &&
+          s.kind != RunningStepKind.cooldown,
+    );
+    if (last < first) last = first;
+    var omit = false;
+    String? error;
+    final result = await showDialog<WorkoutEditorSnapshot>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, update) {
+          final canOmit = canOmitRunningGroupRecovery(
+            snapshot,
+            first: first,
+            last: last,
+          );
+          return AlertDialog(
+            title: const Text('Repetir grupo'),
+            constraints: const BoxConstraints(maxWidth: 560),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 24,
+            ),
+            titlePadding: const EdgeInsets.all(16),
+            contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            actionsPadding: const EdgeInsets.all(16),
+            scrollable: true,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Se crearán tramos individuales en el mismo orden. '
+                  'Después podrás editarlos por separado.',
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  key: ValueKey('group-first-$first'),
+                  initialValue: first,
+                  isExpanded: true,
+                  itemHeight: null,
+                  decoration: InputDecoration(
+                    labelText: 'Desde tramo',
+                    helperText:
+                        (_segments[first].kind ?? RunningStepKind.run).label,
+                    helperMaxLines: 2,
+                  ),
+                  items: [
+                    for (var i = 0; i < _segments.length; i++)
+                      DropdownMenuItem(value: i, child: Text('Tramo ${i + 1}')),
+                  ],
+                  onChanged: (value) => update(() {
+                    if (value == null) return;
+                    first = value;
+                    if (last < first) last = first;
+                    omit = false;
+                    error = null;
+                  }),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  key: ValueKey('group-last-$last'),
+                  initialValue: last,
+                  isExpanded: true,
+                  itemHeight: null,
+                  decoration: InputDecoration(
+                    labelText: 'Hasta tramo',
+                    helperText:
+                        (_segments[last].kind ?? RunningStepKind.run).label,
+                    helperMaxLines: 2,
+                  ),
+                  items: [
+                    for (var i = first; i < _segments.length; i++)
+                      DropdownMenuItem(value: i, child: Text('Tramo ${i + 1}')),
+                  ],
+                  onChanged: (value) => update(() {
+                    if (value == null) return;
+                    last = value;
+                    omit = false;
+                    error = null;
+                  }),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  initialValue: count,
+                  onChanged: (value) => count = value,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Veces',
+                    helperText: 'Incluye la primera vuelta.',
+                  ),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('Omitir última recuperación'),
+                  subtitle: Text(
+                    canOmit
+                        ? 'Solo se omite al terminar la última vuelta.'
+                        : 'El grupo debe terminar en una recuperación.',
+                  ),
+                  value: omit,
+                  onChanged: canOmit
+                      ? (value) => update(() => omit = value ?? false)
+                      : null,
+                ),
+                if (error != null)
+                  Text(
+                    error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  try {
+                    final next = repeatRunningEditorGroup(
+                      snapshot,
+                      first: first,
+                      last: last,
+                      repetitions: int.tryParse(count) ?? 0,
+                      omitLastRecovery: omit,
+                    );
+                    Navigator.pop(dialogContext, next);
+                  } on FormatException catch (failure) {
+                    update(() => error = failure.message);
+                  }
+                },
+                child: const Text('Aplicar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (result != null && mounted) _applyRunningAction(result);
+  }
+
   Future<void> _addPyramid() async {
     var distances = '200, 400, 600, 400, 200';
     final values = await showDialog<List<int>>(
@@ -960,6 +1113,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       const Text(
         'Las series iguales se muestran juntas, pero se guardan como parciales individuales para registrar resultados.',
       ),
+      const Text(
+        'Para un fartlek, cada paso rápido y suave puede llevar su '
+        'ritmo. Usa Repetir grupo para repetirlos juntos.',
+      ),
       const SizedBox(height: 12),
       for (var i = 0; i < _segments.length; i++)
         Card(
@@ -1046,6 +1203,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     _segments[i].recoveryTime.text = value ? '200' : '1:00';
                   }),
                 ),
+                if (_segments[i].recovery != null)
+                  TextButton.icon(
+                    key: ValueKey('separate-recovery-$i'),
+                    onPressed: () => _separateRecovery(i),
+                    icon: const Icon(Icons.call_split),
+                    label: const Text('Editar recuperación como paso'),
+                  ),
               ],
             ),
           ),
@@ -1064,6 +1228,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             onPressed: _repeatLast,
             icon: const Icon(Icons.repeat),
             label: const Text('Repetir último'),
+          ),
+          TextButton.icon(
+            onPressed: _repeatGroup,
+            icon: const Icon(Icons.repeat),
+            label: const Text('Repetir grupo'),
           ),
           TextButton.icon(
             onPressed: _addPyramid,
@@ -1742,6 +1911,35 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
 class _Segment {
   _Segment();
+
+  factory _Segment.fromRaw(Map row) => _Segment()
+    ..count.text = row['countText'] as String
+    ..target.text = row['targetText'] as String
+    ..pace.text = row['paceText'] as String
+    ..paceMax.text = row['paceMaxText'] as String
+    ..recoveryTime.text = row['recoveryTimeText'] as String
+    ..kind = row['stepKind'] == null
+        ? null
+        : RunningStepKind.values.byName(row['stepKind'] as String)
+    ..manual = row['manual'] == true
+    ..byDistance = row['byDistance'] as bool
+    ..recoveryByDistance = row['recoveryByDistance'] as bool
+    ..recovery = row['recoveryType'] == null
+        ? null
+        : RunningRecoveryType.values.byName(row['recoveryType'] as String);
+
+  Map<String, dynamic> get raw => {
+    'countText': count.text,
+    'targetText': target.text,
+    'paceText': pace.text,
+    'paceMaxText': paceMax.text,
+    'recoveryTimeText': recoveryTime.text,
+    'byDistance': byDistance,
+    if (kind != null) 'stepKind': kind!.name,
+    if (manual) 'manual': true,
+    'recoveryByDistance': recoveryByDistance,
+    'recoveryType': recovery?.name,
+  };
 
   factory _Segment.fromSet(WorkoutSet set) {
     final segment = _Segment();

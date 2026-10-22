@@ -18,7 +18,13 @@ muestra calentamiento, series y recuperaciones, y prefiere «Tiempo» en los
 selectores de carrera frente a «Duración». Se cambia la presentación común sin
 alterar unidades ni datos guardados. Confirma dos necesidades para fartlek:
 ritmo propio en el tramo suave y repetir combinaciones de varios pasos. El
-trote asociado todavía no admite un objetivo de ritmo propio. El envío
+trote asociado puede convertirse ahora en un paso editable con ritmo propio.
+`Repetir grupo` expande una selección contigua en vueltas ordenadas, con
+«Omitir última recuperación» desactivado por defecto. Javier solicita esta
+opción explícita tras mostrar su fartlek de Garmin; la omisión elegida forma
+parte de los pasos guardados, nunca de una adaptación silenciosa del exportador.
+La secuencia expandida se conserva y edita por pasos; no incorpora grupos
+jerárquicos persistentes ni repeticiones nativas del fabricante. El envío
 manual actual es un ensayo controlado; la expectativa de producto es enviar
 automáticamente las pautas autorizadas una vez vinculada la cuenta. Esa
 automatización y su ciclo de revisión/cancelación siguen pendientes, no se

@@ -15,6 +15,19 @@ comprobar en fēnix una pauta nueva con Lap → 5 × (400 m + 90 s) → Lap y am
 límites de ritmo. Pulso/cadencia/potencia y fuerza Garmin siguen pendientes.
 [Implementación y límites](RUNNING_STEPS_V2.md).
 
+**INT-009 · aceptación del creador y fartlek · 22/10/2026:** Javier confirma las
+fases visibles y solicita ritmo suave, repetir combinaciones y omitir la última
+recuperación. El creador común añade conversión de recuperación en paso editable,
+expansión ordenada de grupos y omisión explícita desactivada por defecto; los
+selectores dicen «Tiempo». No cambia SQL ni el contrato V2: se conservan pasos
+individuales al guardar/reabrir, con un máximo de 40. Análisis de las tres apps
+limpios; raíz 1.292, ADMIN 314, Trainer 170, creador 171 y servidor 115 pruebas
+correctas, con las omisiones previas conservadas. **Único siguiente recorrido:**
+comprobar la pauta nueva en fēnix con Lap, ritmo propio rápido/suave y última
+recuperación omitida. El envío automático sigue pendiente de su ciclo completo
+de actualización/cancelación; no se activa por este ajuste del editor.
+[Receta y comprobaciones](RUNNING_STEPS_V2.md).
+
 **INT-008 · 22/10/2026 · creador común en las tres apps:** las entradas personales
 de carrera y fuerza montan el mismo formulario que ADMIN/Trainer. Se conservan
 catálogos, Pro, cuotas, rutas, versiones y borradores por cuenta; mejora común de

@@ -20,6 +20,31 @@ test("normaliza carrera, conserva recuperación final e invierte extremos al con
  assert.equal(out.segments[0].steps[1].durationValue,30);assert.equal(out.segments[0].steps[1].targetType,"OPEN");
  assert.equal(out.segments[0].steps[1].durationType,"TIME");
 });
+test("fartlek conserva el ritmo suave y solo omite la recuperación ausente en la receta",()=>{
+ const raw:any=source();
+ const step=(kind:string,seconds:number,fast:number,slow:number)=>({
+  rest_after_seconds:0,target_duration_seconds:seconds,
+  target_pace_min_seconds_per_km:fast,target_pace_max_seconds_per_km:slow,
+  running_step:{schema_version:2,kind,completion:'time'}
+ });
+ const open=(kind:string)=>({rest_after_seconds:0,running_step:{schema_version:2,kind,completion:'manual'}});
+ for(const omit of [false,true]){
+  const rows:any[]=[open('warmup')];
+  for(let i=0;i<3;i++){
+   rows.push(step('run',240,250,265));
+   if(!omit||i<2)rows.push(step('recovery',180,300,320));
+  }
+  rows.push(open('cooldown'));
+  raw.blocks[0].items[0].sets=rows.map((s,i)=>({...s,order_index:i}));
+  const out=garminRunningWorkout(runningPrescription(raw)).segments[0].steps;
+  assert.equal(out.length,omit?7:8);
+  assert.equal(out[2].intensity,'RECOVERY');assert.equal(out[2].durationValue,180);
+  assert.equal(out[2].targetType,'PACE');
+  assert.equal(out[2].targetValueLow,1000/320);assert.equal(out[2].targetValueHigh,1000/300);
+  assert.equal(out.at(-2)!.intensity,omit?'ACTIVE':'RECOVERY');
+  assert.equal(out.at(-1)!.intensity,'COOLDOWN');
+ }
+});
 test("tiempo y distancia usan las unidades nativas de Garmin sin modificador HR/POWER",()=>{
  const p=runningPrescription(source()),out=garminRunningWorkout(p),steps=out.segments[0].steps;
  assert.equal(steps[0].durationType,"DISTANCE");assert.equal(steps[0].durationValue,1000);
