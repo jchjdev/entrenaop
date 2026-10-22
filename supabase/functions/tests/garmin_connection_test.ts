@@ -75,6 +75,10 @@ async function connect(f:typeof fetch,callbackBase=callback) {
   const body=await start.json();const url=new URL(body.authorization_url);
   const result=await handleGarminCallback(new Request(`${callbackBase}?state=${url.searchParams.get("state")}&code=fixture-code`),c,f);
   assert.equal(result.status,200);
+  assert.equal(result.headers.get("Content-Type"),"text/plain; charset=utf-8");
+  const message=await result.text();
+  assert.match(message,/Conexión completada/);
+  assert.equal(message.includes("<!doctype"),false);
   return url.searchParams.get("state")!;
 }
 
@@ -134,13 +138,48 @@ test("el callback Edge reescrito conserva el retorno público fijado",async()=>{
   assert.equal(fx.row.status,"connected");
 });
 
-test("denegar consume el intento sin pedir tokens; el HTML no refleja parámetros",async()=>{
+test("denegar consume el intento sin pedir tokens; el texto no refleja parámetros",async()=>{
   const fx=fixture();const response=await handleGarminConnection(request("begin"),c,fx.f);
   const state=new URL((await response.json()).authorization_url).searchParams.get("state");
   const result=await handleGarminCallback(new Request(`${callback}?state=${state}&error=access_denied&error_description=PRIVATE_DETAIL`),c,fx.f);
   assert.equal(fx.row.status,"authorization_failed");assert.equal(fx.calls.some(url=>url.includes("diauth")),false);
-  const html=await result.text();assert.equal(html.includes("PRIVATE_DETAIL"),false);assert.equal(html.includes(String(state)),false);
+  const text=await result.text();assert.equal(text.includes("PRIVATE_DETAIL"),false);assert.equal(text.includes(String(state)),false);
+  assert.equal(result.headers.get("Content-Type"),"text/plain; charset=utf-8");
+  assert.match(text,/Has cancelado la autorización/);
   assert.equal(result.headers.get("Referrer-Policy"),"no-referrer");
+});
+
+test("diagnóstico del callback identifica la etapa sin registrar datos privados",async(t)=>{
+  const warnings:unknown[][]=[];
+  t.mock.method(console,"warn",(...args:unknown[])=>{warnings.push(args);});
+  for(const [stage,path] of [["exchange_code","/oauth/token"],["read_identity","/user/id"],["read_permissions","/user/permissions"]]) {
+    const fx=fixture();const original=fx.f;
+    const f:typeof fetch=(url,init)=>String(url).endsWith(path)
+      ? Promise.resolve(Response.json({unexpected:"PRIVATE_DETAIL"})) : original(url,init);
+    const start=await handleGarminConnection(request("begin"),c,f);
+    const state=new URL((await start.json()).authorization_url).searchParams.get("state")!;
+    const result=await handleGarminCallback(new Request(`${callback}?state=${state}&code=PRIVATE_CODE`),c,f);
+    assert.equal(result.status,400);
+    assert.deepEqual(JSON.parse(String(warnings.at(-1)?.[0])),{event:"garmin_callback_failed",stage,code:"invalid_response"});
+    const output=JSON.stringify(warnings)+await result.text();
+    for(const secret of [state,"PRIVATE_CODE","PRIVATE_DETAIL","fixture-access","fixture-refresh","fixture-secret",owner]) {
+      assert.equal(output.includes(secret),false);
+    }
+  }
+});
+
+test("diagnóstico SQL solo admite códigos cerrados y no cuerpos del servidor",async(t)=>{
+  const warnings:unknown[][]=[];
+  t.mock.method(console,"warn",(...args:unknown[])=>{warnings.push(args);});
+  const fx=fixture();const original=fx.f;
+  const f:typeof fetch=(url,init)=>String(url).endsWith("/rpc/garmin_account_command") && JSON.parse(String(init?.body)).p_action==="complete"
+    ? Promise.resolve(Response.json({message:"PRIVATE_DATABASE_DETAIL"},{status:500})) : original(url,init);
+  const start=await handleGarminConnection(request("begin"),c,f);
+  const state=new URL((await start.json()).authorization_url).searchParams.get("state");
+  const result=await handleGarminCallback(new Request(`${callback}?state=${state}&code=fixture-code`),c,f);
+  assert.equal(result.status,409);
+  assert.deepEqual(JSON.parse(String(warnings.at(-1)?.[0])),{event:"garmin_callback_failed",stage:"complete",code:"garmin_unavailable"});
+  assert.equal((JSON.stringify(warnings)+await result.text()).includes("PRIVATE_DATABASE_DETAIL"),false);
 });
 
 test("desconectar revoca en Garmin y limpia tokens solo tras confirmación",async()=>{

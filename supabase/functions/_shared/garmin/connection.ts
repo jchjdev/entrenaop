@@ -22,6 +22,15 @@ export interface GarminSecretBox {
   open<T>(value:string,context:string):Promise<T>;
 }
 type AuthorizationConfig=Pick<GarminOAuthConfig,"clientId"|"redirectUri">;
+type CallbackStage="authorization"|"open_verifier"|"exchange_code"|"save_grant"|"read_identity"|"read_permissions"|"complete";
+export class GarminCallbackError extends Error {
+  readonly stage:CallbackStage;
+  constructor(stage:CallbackStage,error:unknown) {
+    super(error instanceof Error ? error.message : "garmin_unavailable",{cause:error});
+    this.name="GarminCallbackError";
+    this.stage=stage;
+  }
+}
 export class GarminConnectionService {
   private readonly store: GarminConnectionStore;
   private readonly provider: GarminAccountProvider;
@@ -57,17 +66,24 @@ export class GarminConnectionService {
     const attempt = await this.store.command("claim",null,null,{state_hash:await garminStateHash(state),claim_id:claim});
     const owner = String(attempt.owner_id), generation = Number(attempt.generation);
     let exchanged = false;
+    let stage:CallbackStage="authorization";
     try {
       if (denied) throw new Error("authorization_denied");
+      stage="open_verifier";
       const verifier = await this.cipher.open<string>(String(attempt.verifier_cipher),`verifier:${owner}:${attempt.state_hash}`);
+      stage="exchange_code";
       const tokens = await this.provider.exchange(authorizationCode!,verifier);
       exchanged=true;
+      stage="save_grant";
       const encrypted = await this.cipher.seal(tokens,`tokens:${owner}:${generation}`);
       const expirations=this.expirations(tokens);
       await this.store.command("stash_grant",owner,null,{generation,claim_id:claim,
         tokens_cipher:encrypted,...expirations});
+      stage="read_identity";
       const userId = await this.provider.userId(tokens.accessToken);
+      stage="read_permissions";
       const permissions = await this.provider.permissions(tokens.accessToken);
+      stage="complete";
       const snapshot = await this.store.command("complete",owner,null,{generation,claim_id:claim,
         garmin_user_id:userId,tokens_cipher:encrypted,can_read:permissions.canReadActivities,can_send:permissions.canSendWorkouts,
         ...expirations});
@@ -78,7 +94,7 @@ export class GarminConnectionService {
       await this.store.command("fail",owner,null,{generation,claim_id:claim,no_grant:denied && !exchanged,account_in_use:accountInUse}).catch(()=>{});
       // No revocar una identidad que podría pertenecer a otra conexión legítima.
       if(exchanged && !accountInUse) await this.revoke(owner).catch(()=>{});
-      throw error;
+      throw new GarminCallbackError(stage,error);
     }
   }
   async disconnect(owner: string, session: string, generation: number) {

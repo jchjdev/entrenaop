@@ -94,7 +94,7 @@ propietario, permisos o tokens directamente en SQL.
   permite reconectar a ciegas mientras sigue pendiente una retirada.
 - Cancelar antes de canjear descarta el intento. Si ya había canje en curso, su
   respuesta no vuelve a activar la conexión y solo puede preparar su retirada.
-- El callback devuelve texto fijo sin parámetros OAuth y sin redirecciones
+- El callback devuelve texto plano UTF-8 fijo sin parámetros OAuth y sin redirecciones
   elegidas por el navegador. El usuario vuelve a EntrenaOP y la pantalla recarga
   estado; no se introduce ahora un esquema nuevo de enlaces profundos móviles.
 
@@ -139,6 +139,26 @@ correctos → desconectar → comprobar retirada en Garmin. Repetir denegación,
 cancelación y acceso comercial perdido. No se declara cerrado el recorrido hasta
 esa aceptación; compilar/probar con fixtures no la sustituye.
 
+### Primer intento real y diagnóstico · 22/10/2026
+
+Javier comunica un retorno fallido que muestra HTML sin renderizar y caracteres
+mal decodificados. Se contrasta la [limitación de HTML en Edge](https://supabase.com/docs/guides/functions/development-tips):
+el dominio estándar transforma HTML en texto. Se cambia el retorno a
+`text/plain; charset=utf-8`, manteniendo el callback registrado y sin reflejar
+parámetros OAuth. La comprobación HTTP remota confirma texto español UTF-8
+legible y 400 para un callback sin parámetros.
+
+El estado observado tras ese intento es desconectado, sin grant o identidad
+Garmin conservados. Ese estado no identifica por sí solo la causa del fallo ni
+acredita que el usuario haya completado el consentimiento. Para el siguiente
+intento se añade diagnóstico de etapa y código cerrado; nunca incluye URL,
+state, código OAuth, cuentas, tokens, cuerpos de respuesta ni objetos Error.
+Hay cobertura de fallo en canje, identidad, permisos y persistencia, y de la
+ausencia de datos privados en mensajes y logs. Ambos handlers se publican en
+Dev, versión 4, sin modificar el esquema, las credenciales o Flutter. La causa
+de conexión sigue pendiente de reproducir; el cambio de presentación no se
+declara solución de la autorización. No se reutiliza el código ya consumido.
+
 El envío de una primera sesión compatible con Training API será otro bloque
 después de aceptar la conexión real. No requiere esperar a otros fabricantes,
 pero sí traducción de receta, orden/versiones autorizadas y comprobación física.
@@ -158,8 +178,8 @@ formato, sin rotación automatizada de claves en esta entrega.
 
 ## Validación de este tramo
 
-`node --test tests/*_test.ts` desde `supabase/functions`: 91 pruebas correctas,
-veinte de Garmin entre protocolo y conexión. TypeScript 5.9.3 comprueba tipos
+`node --test tests/*_test.ts` desde `supabase/functions`: 93 pruebas correctas,
+veintidós de Garmin entre protocolo y conexión. TypeScript 5.9.3 comprueba tipos
 estrictos de los cuatro módulos de servidor, sin dependencias nuevas en la app.
 La CI `garmin-connection.yml` repite Node/tipos y el consumidor Flutter con su
 regresión de Salud, sin cuentas, secretos o despliegues.

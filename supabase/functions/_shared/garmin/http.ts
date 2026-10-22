@@ -1,5 +1,5 @@
 import { GarminCipher } from "./cipher.ts";
-import { GarminConnectionService } from "./connection.ts";
+import { GarminCallbackError, GarminConnectionService } from "./connection.ts";
 import type { GarminConnectionStore } from "./connection.ts";
 import { GarminOAuthClient } from "./oauth.ts";
 
@@ -111,12 +111,20 @@ export async function handleGarminCallback(request:Request,c:GarminServerConfig,
     const result=await service(c,f).callback(`${c.supabaseUrl}/functions/v1/garmin-oauth-callback${new URL(request.url).search}`);
     if(result!=="connected") message="La conexión no se ha activado. Vuelve a EntrenaOP para revisar su estado.";
   } catch(error) {
-    status=error instanceof HttpError?error.status:400;
+    const original=error instanceof GarminCallbackError?error.cause:error;
+    status=original instanceof HttpError?original.status:400;
+    // Solo etapa y códigos de una lista cerrada: nunca URL, state, código OAuth,
+    // cuenta, cuerpos de Garmin ni el objeto Error/cause con datos privados.
+    const code=error instanceof Error && ["invalid_response","invalid_configuration","invalid_ciphertext"].includes(error.message)
+      ? error.message : safeCode(error);
+    console.warn(JSON.stringify({event:"garmin_callback_failed",
+      stage:error instanceof GarminCallbackError?error.stage:"validate_or_claim",code}));
     message=safeCode(error)==="authorization_denied" ? "Has cancelado la autorización. Puedes volver a EntrenaOP." :
       "No se pudo completar la conexión. Vuelve a EntrenaOP y revisa su estado antes de volver a intentarlo.";
   }
-  // Solo texto fijo: ningún parámetro OAuth se refleja ni se envía a una redirección.
-  return new Response(`<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EntrenaOP · Garmin</title><body><main><h1>EntrenaOP · Garmin</h1><p>${message}</p></main></body></html>`,{
-    status,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store","Referrer-Policy":"no-referrer",
+  // El dominio estándar de Edge transforma HTML en texto. Devolver texto UTF-8
+  // explícito evita código visible y conserva el retorno registrado en Garmin.
+  return new Response(`EntrenaOP · Garmin\n\n${message}\n`,{
+    status,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"no-store","Referrer-Policy":"no-referrer",
       "Content-Security-Policy":"default-src 'none'; frame-ancestors 'none'; base-uri 'none'","X-Content-Type-Options":"nosniff"}});
 }

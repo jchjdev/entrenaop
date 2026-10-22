@@ -24,6 +24,9 @@ desde el helper local; petición sin sesión 401 y callback inválido 400.
 **Único siguiente tramo de Garmin:** aceptar
 conexión/permisos/desconexión con cuenta real. No hay
 recepción o envío de entrenamientos; producción y Trainer no cambian.
+El primer retorno real falla: se corrige la presentación a texto UTF-8 y se
+añade diagnóstico sin datos privados (handlers Dev v4, 93 pruebas de servidor).
+La causa de autorización y la aceptación siguen pendientes de un nuevo intento.
 El bloque funcional de dispositivos permanece abierto.
 [Contrato y límites](DEVICE_GARMIN_CONNECT.md).
 
