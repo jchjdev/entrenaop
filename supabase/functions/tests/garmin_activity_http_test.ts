@@ -64,3 +64,26 @@ test('identidad del alumno procede de Auth y nunca del cuerpo ni del JWT sin ver
   assert.equal(requests[0].p_owner,owner);assert.equal(requests[0].p_session,session);
   assert.equal((await handleActivityUser(request(owner),c,async()=>new Response(null,{status:401}))).status,401);
 });
+test('el cliente anterior recibe solo carrera; V2 solicita fuerza sin cambiar la operación persistida',async()=>{
+  const owner='10000000-0000-4000-8000-000000000001',session='20000000-0000-4000-8000-000000000001';
+  const jwt=`fixture.${Buffer.from(JSON.stringify({session_id:session})).toString('base64url')}.fixture`;
+  let saved:Record<string,unknown>={};
+  const f:typeof fetch=async(url,options)=>{
+    if(String(url).endsWith('/auth/v1/user'))return Response.json({id:owner});
+    const input=JSON.parse(String(options?.body));saved=input.p_input;
+    if(input.p_action==='confirm')return Response.json({execution_id:'fixture-execution'});
+    if(input.p_action==='preview')return Response.json({activity:{schemaVersion:2}});
+    return Response.json({activities:[{id:'running',activity:{schemaVersion:1,distanceMeters:400}},
+      {id:'strength',activity:{schemaVersion:2,distanceMeters:null}}],candidates:[{sport:'running'},{sport:'strength'}],problems:[]});
+  };
+  const request=(fields:Record<string,unknown>)=>new Request(c.supabaseUrl,{method:'POST',headers:{Authorization:`Bearer ${jwt}`},
+    body:JSON.stringify({expected_user_id:owner,...fields})});
+  const legacy=await (await handleActivityUser(request({action:'list'}),c,f)).json();
+  assert.deepEqual(legacy.activities.map((a:any)=>a.id),['running']);assert.equal(legacy.candidates.length,1);
+  const current=await (await handleActivityUser(request({action:'list',activity_schema_version:2}),c,f)).json();
+  assert.equal(current.activities.length,2);assert.equal(current.candidates.length,2);
+  assert.equal((await handleActivityUser(request({action:'list',activity_schema_version:3}),c,f)).status,400);
+  assert.equal((await handleActivityUser(request({action:'preview'}),c,f)).status,409);
+  assert.equal((await handleActivityUser(request({action:'confirm',operation_id:'fixture-operation',activity_schema_version:2}),c,f)).status,200);
+  assert.deepEqual(saved,{operation_id:'fixture-operation'});
+});

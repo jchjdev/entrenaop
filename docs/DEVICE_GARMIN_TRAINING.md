@@ -286,7 +286,7 @@ no crea otra ejecución para Trainer ni completa por recibir una notificación.
 Migración `20261023123635_garmin_strength_roundtrip.sql` y funciones
 `garmin-training`, `garmin-training-sync`, `garmin-activities` y
 `garmin-activity-ingest` activas exclusivamente en Dev. Verificados fixtures
-SDK oficiales, tipos estrictos, 150 pruebas de servidor, 1.308 pruebas raíz
+SDK oficiales, tipos estrictos, 151 pruebas de servidor, 1.308 pruebas raíz
 (una omisión previa), 172 Trainer y compilación web Release Dev. Contratos
 SQL de carrera y fuerza pasan con ROLLBACK: precisión, carga ausente,
 repeticiones distintas de la pauta, duplicación, descanso usado como trabajo,
@@ -308,6 +308,13 @@ La aceptación física de fuerza en el fēnix sigue pendiente. La actualización
 de menús y tiempos requiere instalar main en iPhone; la revisión existente de
 Trainer ya muestra repeticiones, kilos y reloj `m:ss`. No se ha publicado otro
 paquete web de Trainer ni de ADMIN en esta entrega.
+
+Compatibilidad de lectura: el cliente nuevo pide `activity_schema_version: 2`.
+Sin esa petición el receptor de usuario devuelve solo observaciones/candidatas
+de carrera V1, conservando la fuerza privada para cuando se actualice la app.
+Una vista previa V2 se rechaza en un cliente V1. El indicador de protocolo se
+retira antes de llamar al RPC, por lo que no altera el hash ni los reintentos
+de una confirmación anterior. No cambia permisos, recepción automática o cierre.
 
 ## Tiempos, comparación y perfil del reloj · INT-014
 

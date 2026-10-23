@@ -21,6 +21,7 @@ void main() {
         httpClient: MockClient((request) {
           if (request.url.path.contains('/functions/')) {
             expect(jsonDecode(request.body)['expected_user_id'], owner);
+            expect(jsonDecode(request.body)['activity_schema_version'], 2);
             started.complete();
             return pending.future;
           }

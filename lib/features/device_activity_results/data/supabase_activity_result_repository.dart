@@ -35,7 +35,12 @@ class SupabaseActivityResultRepository implements ActivityResultRepository {
     try {
       final response = await client.functions.invoke(
         'garmin-activities',
-        body: {'action': action, 'expected_user_id': ownerId, ...fields},
+        body: {
+          'action': action,
+          'expected_user_id': ownerId,
+          'activity_schema_version': 2,
+          ...fields,
+        },
       );
       if (_session() != session) {
         throw const ActivityResultException('account_changed');

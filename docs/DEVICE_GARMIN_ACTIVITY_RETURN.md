@@ -4,6 +4,8 @@ Este documento conserva el bloque de carrera aceptado. INT-013 amplía después
 el mismo servicio a series convencionales de fuerza mediante observación V2,
 sin alterar la evidencia V1 ni la aceptación física de carrera.
 [Cobertura actual de fuerza](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+El endpoint de lectura conserva V1 para el cliente anterior; el nuevo pide V2
+explícitamente para recibir fuerza. La evidencia permanece en la misma cuenta.
 
 Javier solicita recibir la actividad realizada, asociarla a la cita de su semana
 y completarla con mediciones reales. La recepción guarda evidencia; completar

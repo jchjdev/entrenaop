@@ -9,7 +9,7 @@ type Json = Record<string, unknown>;
 export type ActivityReturnConfig = GarminServerConfig & {webhookSecret: string};
 const codes = new Set(['account_changed','access_required','source_not_available','source_not_allowed','stale_prescription',
   'activity_not_found','activity_already_confirmed','stale_activity','stale_review','operation_reused','invalid_mapping',
-  'invalid_rpe','invalid_offset','invalid_activity_clock','connection_changed','activity_queue_full']);
+  'invalid_rpe','invalid_offset','invalid_activity_clock','connection_changed','activity_queue_full','unsupported_activity']);
 const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, apikey, x-client-info, content-type',
   'Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store'};
 export class SupabaseActivityReturnStore implements ActivityReturnStore {
@@ -106,11 +106,22 @@ export async function handleActivityUser(request: Request, c: GarminServerConfig
     ready(c); if (request.method!=='POST') throw new HttpError(405,'method_not_allowed');
     const who = await identity(request,c,f), data = await body(request,32768);
     if (data.expected_user_id!==who.user) throw new HttpError(409,'account_changed');
+    const schema = data.activity_schema_version ?? 1;
+    if (schema!==1 && schema!==2) throw new HttpError(400,'invalid_request');
     const store = new SupabaseActivityReturnStore(c,f), action = data.action;
-    if (action==='list') return Response.json(await store.command('list',who.user,who.session,{}),{headers});
+    if (action==='list') {
+      const catalog = await store.command('list',who.user,who.session,{});
+      // El iPhone anterior solo conoce vueltas de carrera y distancia numérica.
+      // La evidencia de fuerza se conserva; solo la muestran clientes que piden V2.
+      return Response.json(schema===2 ? catalog : {...catalog,
+        activities:(catalog.activities as Json[]).filter(row=>(row.activity as Json).schemaVersion===1),
+        candidates:(catalog.candidates as Json[]).filter(row=>(row.sport??'running')==='running'),
+      },{headers});
+    }
     if (!['preview','confirm'].includes(String(action))) throw new HttpError(400,'invalid_request');
-    const input = {...data}; delete input.action; delete input.expected_user_id;
+    const input = {...data}; delete input.action; delete input.expected_user_id; delete input.activity_schema_version;
     const value = await store.command(String(action),who.user,who.session,input);
+    if(action==='preview' && schema===1 && (value.activity as Json).schemaVersion!==1) throw new HttpError(409,'unsupported_activity');
     return Response.json(action==='preview' ? activityReview(value) : value,{headers});
   } catch (error) { return failure(error); }
 }
