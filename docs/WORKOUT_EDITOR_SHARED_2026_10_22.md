@@ -273,6 +273,24 @@ selector de objetivo de fuerza admite varias líneas con texto grande y usa
 manual del creador de fuerza en navegador/móvil sigue pendiente; esta UI no
 modifica ni reenvía la sesión de carrera realizada.
 
+Javier autoriza expresamente la publicación de fuerza en Trainer Dev. Código
+funcional `e2294d73fa5106dc08db2046c5c382c9c96308dc`, paquete
+`trainer-strength-20261023.zip`, SHA-256
+`4dc1054e0751b6a16f749e28796a5da90a94c8454b2da9fe4de67ed7fca7e5ae`.
+Se publica el 23/10/2026 únicamente en `public_html/trainer`, conservando las
+versiones anteriores. El verificador HTTPS confirma revisión, entorno Dev,
+JavaScript, arranque y cabeceras; Chrome carga Inicio y Sesiones. No se crean,
+modifican ni asignan sesiones durante esta comprobación. Captura privada local,
+sin incluirla en Git. La aceptación manual de fuerza sigue pendiente.
+
+La [CI Garmin 39926567864](https://github.com/jchjdev/entrenaop/actions/runs/39926567864)
+termina correctamente en servidor, consumidor e iOS Release sin firma. La
+[CI ADMIN 39926567729](https://github.com/jchjdev/entrenaop/actions/runs/39926567729)
+termina correctamente en validación, publicación y retención. El manifiesto
+HTTPS de ADMIN confirma la misma revisión `e2294d73`, entorno de desarrollo y
+release `e2294d73fa5106dc08db2046c5c382c9c96308dc-39926567729-1`.
+La compilación iOS no acredita instalación física de esta nueva UI.
+
 ## Verificación y distribución
 
 Se comprueban deportista, ADMIN, Trainer y paquete compartido, incluyendo

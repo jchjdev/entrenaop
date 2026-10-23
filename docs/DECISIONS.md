@@ -7,7 +7,9 @@ por serie; color y nombre permiten identificarlo sin depender solo del color.
 Se abre un bloque a la vez y se pueden mover bloques completos y ejercicios
 dentro de su bloque. Se mantienen las acciones de subir/bajar. Es presentación
 compartida entre deportista, ADMIN y Trainer: no añade otro contrato, modifica
-permisos ni habilita el envío de fuerza a Garmin.
+permisos ni habilita el envío de fuerza a Garmin. Paquete `e2294d73` publicado
+en Trainer Dev con autorización expresa y comprobado por HTTPS y Chrome.
+ADMIN Dev también publicado y verificado; CI ADMIN y Garmin/iOS correctas.
 [Alcance y verificación](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
 
 **INT-009 · aceptación física parcial · 23/10/2026:** Javier completa una

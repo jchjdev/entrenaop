@@ -8,8 +8,10 @@ dependencias ni cambios de servidor. Las regresiones conservan duplicación,
 cambio de formato, dosis, teclado y guardado, y añaden cancelación sin escritura
 y revisión móvil/escritorio con texto grande. Verificación local: análisis de
 las tres apps limpios; raíz 1.294 (una omisión previa), ADMIN 314 (dos previas),
-Trainer 170 y paquete común 212 pruebas correctas. Paquete web Dev preparado;
-publicación de esta revisión en Trainer pendiente de autorización expresa.
+Trainer 170 y paquete común 212 pruebas correctas. Código `e2294d73`;
+Trainer Dev publicado con autorización expresa y verificado por HTTPS y Chrome.
+ADMIN Dev publicado y verificado por HTTPS; CI ADMIN 39926567729 y Garmin
+39926567864 completamente correctas, incluida compilación iOS Release sin firma.
 **Siguiente recorrido único:** aceptar el creador de fuerza publicado con una
 sesión de varios formatos, moviendo bloques y comprobando su receta guardada.
 [Alcance, límites y distribución](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
