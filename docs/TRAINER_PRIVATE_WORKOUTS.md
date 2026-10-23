@@ -21,12 +21,23 @@ La consulta, las marcas, las revisiones, la asignación y el cierre no cambian.
 Análisis Trainer correcto y 179 pruebas aprobadas, incluidas diez series en una
 tarjeta, separación por posición/bloque/identidad, resultados variables,
 omisiones, carga ausente, tramos de carrera y superserie a 320/1200 px con
-texto ampliado al doble. Publicación web nueva pendiente de autorización.
+texto ampliado al doble. Publicación web autorizada después por Javier.
 Compilación Release local y comprobación en Chrome sin errores de consola:
 una sesión de ejemplo con dieciséis series ocupa tres tarjetas cerradas;
 desplegar conserva las dosis variables y la comparación por serie. La vista
 previa utiliza el mismo widget con datos ficticios, sin consultas ni escrituras
-de alumnos. No acredita aún el paquete publicado en Trainer Dev.
+de alumnos. Esa vista previa se complementa con la comprobación publicada.
+Fuentes funcionales guardadas en `3c7ff9a1`. Compilación completa de Trainer
+Release Dev correcta; release preparada
+`3c7ff9a1e10d982ac5544f4cef5f712be01ea87a-20261023-1`, ZIP SHA-256
+`efc21dd919d67389cf30ab25d64d24dc23b26746223f11e3e6bf76d259799c6f`.
+Paquete publicado con autorización expresa en `public_html/trainer`, conservando
+las releases anteriores. Verificador HTTPS correcto: revisión, JavaScript,
+arranque, cabeceras y WebAssembly. Chrome acredita la sesión profesional y el
+resultado existente de fuerza: sus tres series ocupan una tarjeta plegable,
+con pauta y mediciones originales por serie al abrirla. No hay errores ni
+avisos de consola en esa comprobación ni escrituras de resultados/revisiones.
+La captura real queda privada fuera de Git. No se despliega ADMIN o producción.
 
 ## Recorrido implementado
 

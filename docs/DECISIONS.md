@@ -9,6 +9,8 @@ distintos ni copia objetivos como mediciones; cada excepción, omisión, tiempo
 original y marca sigue disponible al desplegar. Los tramos de carrera y la
 receta AMRAP conservan su semántica. Es presentación de Trainer, sin cambios
 en resultados, permisos, contrato de recepción o creador compartido.
+Versión `3c7ff9a1` publicada con autorización expresa en Trainer Dev y contrastada
+por HTTPS y Chrome sobre el resultado existente, sin alterar sus marcas.
 [Agrupación y verificación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
 
 **INT-014 · 23/10/2026 · tiempos legibles y comparación explicada:** Javier

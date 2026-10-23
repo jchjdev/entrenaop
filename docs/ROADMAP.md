@@ -7,8 +7,11 @@ No mezcla nombres repetidos, posiciones, bloques o tramos de carrera, ni
 promedia excepciones. Análisis limpio y 179 pruebas Trainer correctas,
 incluidas pantallas estrechas con texto doble. Release local comprobada en
 Chrome con dieciséis series en tres tarjetas; captura con datos ficticios,
-sin escrituras de resultados. **Siguiente paso único de UI-065:** publicación
-autorizada en Trainer Dev y comprobación del resultado existente del alumno.
+sin escrituras de resultados. Publicado después en Trainer Dev con autorización
+expresa: verificador HTTPS correcto y Chrome acredita tres series reales
+agrupadas, con detalle original al desplegar y sin errores de consola.
+**Siguiente paso único de UI-065:** aceptación de Javier en su revisión habitual
+de una sesión larga; no amplía la cobertura de fuerza Garmin.
 [Contrato de presentación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
 
 **INT-013 · primera entrega de fuerza en Dev · 23/10/2026:** reutilizar el creador
