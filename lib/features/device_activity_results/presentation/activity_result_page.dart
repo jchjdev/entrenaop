@@ -26,7 +26,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Carreras recibidas de Garmin')),
+    appBar: AppBar(title: const Text('Actividades recibidas de Garmin')),
     body: BlocBuilder<ActivityResultCubit, ActivityResultState>(
       bloc: cubit,
       builder: (context, state) {
@@ -47,7 +47,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                   ),
                   FilledButton(
                     onPressed: cubit.load,
-                    child: const Text('Volver a las carreras'),
+                    child: const Text('Volver a las actividades'),
                   ),
                 ] else ...[
                   if (state.problem != null)
@@ -63,7 +63,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                   TextButton.icon(
                     onPressed: state.busy ? null : cubit.load,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Actualizar carreras'),
+                    label: const Text('Actualizar actividades'),
                   ),
                 ],
               ],
@@ -78,10 +78,10 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
     final catalog = state.catalog;
     return [
       const Text(
-        'Después de sincronizar el reloj con Garmin Connect, tus carreras aparecerán aquí.',
+        'Después de sincronizar el reloj con Garmin Connect, tus actividades compatibles aparecerán aquí.',
       ),
       const Text(
-        'Recibir una carrera no completa la semana: revisa sus vueltas y confirma a qué sesión corresponde.',
+        'Recibir una actividad no completa la semana: revisa sus datos y confirma a qué sesión corresponde.',
       ),
       if (catalog != null && catalog.problems.isNotEmpty)
         const Padding(
@@ -93,7 +93,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       if (catalog != null && catalog.runs.isEmpty && !state.busy)
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
-          child: Text('Todavía no hay carreras recibidas.'),
+          child: Text('Todavía no hay actividades recibidas.'),
         ),
       if (catalog != null)
         for (final run in catalog.runs)
@@ -108,7 +108,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    '${_date(run.startedAt)} UTC · ${_distance(run.meters)} · ${_time(run.seconds)}',
+                    '${_date(run.startedAt)} UTC · ${run.sport == 'strength' ? 'Fuerza' : _distance(run.meters)} · ${_time(run.seconds)}',
                   ),
                   if (run.executionId != null)
                     const Text('Asociada a una sesión completada')
@@ -121,7 +121,9 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                       DropdownButtonFormField<String>(
                         initialValue:
                             catalog.appointments.any(
-                              (v) => v.id == _selected[run.id],
+                              (v) =>
+                                  v.id == _selected[run.id] &&
+                                  v.sport == run.sport,
                             )
                             ? _selected[run.id]
                             : null,
@@ -130,7 +132,9 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                           labelText: 'Sesión de tu semana',
                         ),
                         items: [
-                          for (final appointment in catalog.appointments)
+                          for (final appointment in catalog.appointments.where(
+                            (a) => a.sport == run.sport,
+                          ))
                             DropdownMenuItem(
                               value: appointment.id,
                               child: Text(
@@ -146,10 +150,16 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                               }),
                       ),
                       FilledButton.tonal(
-                        onPressed: state.busy || _selected[run.id] == null
+                        onPressed:
+                            state.busy ||
+                                !catalog.appointments.any(
+                                  (a) =>
+                                      a.id == _selected[run.id] &&
+                                      a.sport == run.sport,
+                                )
                             ? null
                             : () => cubit.preview(run.id, _selected[run.id]!),
-                        child: const Text('Revisar vueltas y sesión'),
+                        child: const Text('Revisar datos y sesión'),
                       ),
                     ],
                   ],
@@ -165,7 +175,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
     return [
       Text(review.name, style: Theme.of(context).textTheme.titleLarge),
       Text(
-        '${_distance(review.meters)} · ${_time(review.seconds)}'
+        '${review.sport == 'strength' ? 'Fuerza' : _distance(review.meters)} · ${_time(review.seconds)}'
         '${review.averageHeartRate == null ? '' : ' · ${review.averageHeartRate} ppm medias'}',
       ),
       const SizedBox(height: 12),
@@ -173,8 +183,12 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
         'Comprueba cada correspondencia. Las sugerencias se basan en la estructura de las vueltas; puedes corregirlas.',
       ),
       const Text(
-        'El archivo original conserva las décimas. El historial de series guarda el tiempo redondeado al segundo.',
+        'El historial conserva el tiempo original del reloj y lo muestra en minutos y segundos. No se estiman los datos ausentes.',
       ),
+      if (review.sport == 'strength')
+        const Text(
+          'Mostramos las repeticiones y el peso registrados por el reloj. Un dato ausente no se rellena con la pauta. Una serie por repeticiones requiere ese registro para confirmarse.',
+        ),
       for (var index = 0; index < state.rows.length; index++)
         _row(state, review, index, locked),
       if (review.offsetMinutes == null)
@@ -182,7 +196,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
           initialValue: state.offsetMinutes,
           isExpanded: true,
           decoration: const InputDecoration(
-            labelText: 'Zona horaria al realizar la carrera',
+            labelText: 'Zona horaria al realizar la actividad',
           ),
           items: [
             for (var minutes = -840; minutes <= 840; minutes += 15)
@@ -269,7 +283,9 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
             ),
             if (!row.skipped) ...[
               _lapPicker(
-                'Vuelta de trabajo',
+                review.sport == 'strength'
+                    ? 'Serie registrada'
+                    : 'Vuelta de trabajo',
                 row.laps,
                 review.laps,
                 locked ? null : (value) => change(row.select(laps: value)),
@@ -305,6 +321,8 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       subtitle: Text(
         selected.isEmpty
             ? 'Elegir vueltas'
+            : chosen.length == 1 && chosen.single.strength
+            ? _strengthMetrics(chosen.single)
             : 'Vueltas ${selected.map((i) => i + 1).join(', ')} · ${_time(seconds)} · ${_distance(meters)}',
       ),
       trailing: const Icon(Icons.edit_outlined),
@@ -323,17 +341,20 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'Selecciona una vuelta o varias consecutivas del mismo paso.',
+                            Text(
+                              laps.any((l) => l.strength)
+                                  ? 'Selecciona una única serie activa del reloj.'
+                                  : 'Selecciona una vuelta o varias consecutivas del mismo paso.',
                             ),
                             for (final lap in laps)
                               CheckboxListTile(
                                 value: draft.contains(lap.index),
                                 title: Text(
-                                  '${lap.index + 1} · ${_time(lap.seconds)} · ${_distance(lap.meters)}',
+                                  '${lap.index + 1} · ${lap.strength ? _strengthMetrics(lap) : '${_time(lap.seconds)} · ${_distance(lap.meters)}'}',
                                 ),
                                 onChanged: (checked) => update(() {
                                   if (checked == true) {
+                                    if (lap.strength) draft.clear();
                                     draft.add(lap.index);
                                   } else {
                                     draft.remove(lap.index);
@@ -352,7 +373,7 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
                       FilledButton(
                         onPressed: () =>
                             Navigator.pop(context, draft.toList()..sort()),
-                        child: const Text('Usar estas vueltas'),
+                        child: const Text('Usar selección'),
                       ),
                     ],
                   ),
@@ -367,6 +388,8 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
 String _date(DateTime date) =>
     '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 String _distance(double meters) => '${(meters / 1000).toStringAsFixed(2)} km';
+String _strengthMetrics(RecordedLap lap) =>
+    '${lap.kind == 'rest' ? 'Descanso' : 'Serie'} · ${_time(lap.seconds)} · ${lap.repetitions == null ? 'Repeticiones sin dato' : '${lap.repetitions} rep'} · ${lap.loadKg == null ? 'Peso sin dato' : '${lap.loadKg} kg'}';
 String _time(double seconds) {
   final tenths = (seconds * 10).round(), whole = (seconds * 10).round() ~/ 10;
   return '${whole ~/ 60}:${(whole % 60).toString().padLeft(2, '0')}.${tenths % 10}';

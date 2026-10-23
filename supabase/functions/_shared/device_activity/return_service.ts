@@ -1,10 +1,13 @@
 import {ActivityReturnError, validateRunningObservation, proposeLapMapping} from './running_result.ts';
 import type {ObservedRunningActivity} from './running_result.ts';
+import {isStrengthActivity,validateStrengthObservation} from './strength_result.ts';
+import type {ObservedActivity} from './strength_result.ts';
+import {strengthPrescription} from '../device_training/strength.ts';
 import {runningPrescription} from '../device_training/prescription.ts';
 import type {AccessGrant, AccountGateway, GrantCipher} from '../device_training/delivery.ts';
 type Json = Record<string, unknown>;
 export interface ActivityReturnStore {command(action: string, owner: string | null, session: string | null, input: Json): Promise<Json>}
-export interface ActivityFileGateway {read(callback: string, accessToken: string, metadata: Json): Promise<ObservedRunningActivity>}
+export interface ActivityFileGateway {read(callback: string, accessToken: string, metadata: Json): Promise<ObservedActivity>}
 export type ActivityJob = {id: string; owner: string; generation: number; lease: string; callback: string; metadata: Json;
   tokens: string; accessExpiresAt: string; refreshExpiresAt: string; providerUserId: string};
 
@@ -41,7 +44,7 @@ export class ActivityReturnService {
       await command('downloading'); downloading = true;
       const activity = await this.files.read(callback, grant.accessToken, job.metadata);
       received = true;
-      validateRunningObservation(activity);
+      if(isStrengthActivity(activity))validateStrengthObservation(activity);else validateRunningObservation(activity);
       await command('save', {activity});
     } catch (error) {
       const allowed = ['connection_changed', 'permission_denied', 'reauthorization_required', 'activity_file_expired',
@@ -59,6 +62,19 @@ export class ActivityReturnService {
 }
 
 export function activityReview(source: Json): Json {
+  const observed=source.activity as ObservedActivity;
+  if(isStrengthActivity(observed)){
+    validateStrengthObservation(observed);
+    const p=strengthPrescription(source.snapshot);
+    const rows=p.steps.filter(s=>s.kind==='strength').map(s=>{
+      const position=p.steps.indexOf(s);
+      const matches=observed.sets.filter(a=>a.kind==='active'&&a.workoutStepIndex===position&&a.exerciseCode===s.exerciseCode);
+      return {block_order:s.block,item_order:s.item,set_order:s.set,label:s.description,kind:s.kind,measure:s.measure,value:s.value,
+        lap_indices:matches.length===1?[matches[0].index]:[],requires_recovery:false,recovery_lap_indices:[]};
+    });
+    return {...source,rows};
+  }
+  if((source.snapshot as Json).sport==='strength')throw new ActivityReturnError('unsupported_activity');
   const prescription = runningPrescription(source.snapshot);
   const activity = source.activity as ObservedRunningActivity;
   validateRunningObservation(activity);

@@ -1,14 +1,22 @@
 # Roadmap de EntrenaOP
 
-**INT-013 · fuerza con reloj solicitada · 23/10/2026:** reutilizar el creador
+**INT-013 · primera entrega de fuerza en Dev · 23/10/2026:** reutilizar el creador
 común y el ciclo de cuenta, asignación, envío/cambios/cancelaciones y retorno
-para cerrar la misma cita con mediciones reales. Pendiente de contrato e
-implementación: la exportación y recepción actuales siguen siendo de carrera.
-El primer bloque de fuerza recomendado es contrastar catálogo, capacidades
-Training API y resultados FIT antes de ampliar el contrato; la primera prueba
-física se limitará a un ejercicio con series, carga, repeticiones y descansos.
-No sustituye la aceptación pendiente del nuevo menú iPhone de INT-012 ni
-habilita cierres automáticos sin revisión.
+para cerrar la misma cita con mediciones reales. Implementada la vía profesional
+por series para banca con barra, flexiones estándar y dominadas pronadas; otros
+formatos y las prescripciones especializadas del algoritmo siguen fuera.
+Dos migraciones y cuatro funciones actualizadas solo en Dev. Raíz 1.308 pruebas y
+una omisión previa, Trainer 172, servidor 150, tipos y análisis correctos;
+contratos SQL de carrera y fuerza correctos con ROLLBACK, incluida lectura MFA
+del mismo resultado desde Trainer. Los tiempos de detalle conservan segundos
+legibles y el ritmo usa el tiempo decimal original de cada serie. Una corrección
+manual descarta esa precisión de dispositivo. Primera sesión creada/asignada
+desde Trainer y envío real desde EntrenaOP confirmados en calendario Garmin.
+La sincronización automática de esa cuenta estaba desactivada; esta aceptación
+es de un envío explícito, sin modificar su preferencia ni enviar otras citas.
+**Siguiente recorrido único:** aceptar físicamente una sesión convencional de
+fuerza en el fēnix y revisar sus repeticiones y carga devueltas. Actualizar el
+iPhone desde main antes de probar el menú ampliado. No habilita cierres sin revisión.
 [Alcance solicitado](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
 
 **INT-012 · retorno de carrera aceptado en Dev · 23/10/2026:** observación FIT

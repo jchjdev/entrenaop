@@ -82,6 +82,8 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
       status,
       actual_reps,
       actual_duration_seconds,
+      observed_duration_seconds,
+      observed_recovery_duration_seconds,
       actual_distance_meters,
       actual_load_kg,
       actual_rpe,

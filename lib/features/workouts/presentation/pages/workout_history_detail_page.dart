@@ -13,6 +13,7 @@ import 'package:entrenaop/features/workouts/presentation/widgets/performance_res
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:entrenaop/features/workouts/presentation/widgets/duration_input_formatter.dart';
 import 'package:intl/intl.dart';
+import 'package:workout_core/performance_time.dart';
 
 class WorkoutHistoryDetailPage extends StatelessWidget {
   const WorkoutHistoryDetailPage({super.key});
@@ -249,12 +250,12 @@ class _SummaryCard extends StatelessWidget {
               set.blockFormat == WorkoutBlockFormat.running &&
               set.status == WorkoutSetStatus.completed,
         )
-        .fold<int>(
+        .fold<double>(
           0,
           (total, set) =>
               total +
-              (set.actualDurationSeconds ?? 0) +
-              (set.actualRecoveryDurationSeconds ?? 0),
+              (set.measuredDurationSeconds ?? 0) +
+              (set.measuredRecoverySeconds ?? 0),
         );
     return Card(
       child: Padding(
@@ -291,7 +292,9 @@ class _SummaryCard extends StatelessWidget {
             if (reportedRunningSeconds > 0)
               _SummaryMetric(
                 value: _compactDuration(
-                  Duration(seconds: reportedRunningSeconds),
+                  Duration(
+                    milliseconds: (reportedRunningSeconds * 1000).round(),
+                  ),
                 ),
                 label: 'Tiempo de carrera registrado',
                 width: 155,
@@ -311,6 +314,19 @@ class _SummaryCard extends StatelessWidget {
                 ),
                 label: 'Comparación con la pauta',
                 width: 230,
+              ),
+            if (execution.sets.any(
+              (s) => s.blockFormat == WorkoutBlockFormat.running,
+            ))
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  [
+                    ...runningAssessmentDifferences(execution.sets),
+                    'Comparamos los datos registrados con la pauta. No es una nota de calidad ni la puntuación de Garmin. Para calcular el ritmo usamos el tiempo original del reloj cuando está disponible.',
+                  ].join('\n'),
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ),
           ],
         ),
@@ -862,7 +878,7 @@ String _target(WorkoutExecutionSet set) {
   }
   if (set.targetReps != null) parts.add('${set.targetReps} rep');
   if (set.targetDurationSeconds != null) {
-    parts.add('${set.targetDurationSeconds} s');
+    parts.add(workoutClock(set.targetDurationSeconds!));
   }
   if (set.targetDistanceMeters != null) {
     parts.add('${_number(set.targetDistanceMeters!)} m');
@@ -918,7 +934,12 @@ String _result(WorkoutExecutionSet set) {
   final parts = <String>[];
   if (set.actualReps != null) parts.add('${set.actualReps} rep');
   if (set.actualDurationSeconds != null) {
-    parts.add('${set.actualDurationSeconds} s');
+    parts.add(
+      set.resultSource == WorkoutResultSource.device &&
+              set.observedDurationSeconds != null
+          ? formatPerformanceTime(set.observedDurationSeconds!)
+          : workoutClock(set.actualDurationSeconds!),
+    );
   }
   if (set.actualDistanceMeters != null) {
     parts.add('${_number(set.actualDistanceMeters!)} m');
@@ -929,8 +950,9 @@ String _result(WorkoutExecutionSet set) {
       set.actualDurationSeconds != null &&
       set.actualDistanceMeters != null &&
       set.actualDistanceMeters! > 0) {
-    final pace = (set.actualDurationSeconds! * 1000 / set.actualDistanceMeters!)
-        .round();
+    final pace =
+        (set.measuredDurationSeconds! * 1000 / set.actualDistanceMeters!)
+            .round();
     parts.add('${_pace(pace)}/km');
   }
   if (set.actualRecoveryDurationSeconds != null) {
@@ -945,9 +967,7 @@ String _result(WorkoutExecutionSet set) {
 String _pace(int seconds) =>
     '${(seconds ~/ 60).toString().padLeft(2, '0')}:${(seconds % 60).toString().padLeft(2, '0')}';
 
-String _shortDuration(int seconds) => seconds < 60
-    ? '$seconds s'
-    : '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')} min';
+String _shortDuration(int seconds) => workoutClock(seconds);
 
 String _reasonLabel(WorkoutAbandonmentReason reason) => switch (reason) {
   WorkoutAbandonmentReason.lackOfTime => 'Falta de tiempo',
@@ -957,12 +977,7 @@ String _reasonLabel(WorkoutAbandonmentReason reason) => switch (reason) {
 };
 
 String _compactDuration(Duration duration) {
-  if (duration.inMinutes < 1) return '<1 min';
-  if (duration.inHours < 1) return '${duration.inMinutes} min';
-  final minutes = duration.inMinutes.remainder(60);
-  return minutes == 0
-      ? '${duration.inHours} h'
-      : '${duration.inHours} h $minutes min';
+  return workoutClock(duration.inSeconds);
 }
 
 String _number(double value) =>

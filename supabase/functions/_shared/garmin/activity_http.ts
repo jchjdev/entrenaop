@@ -2,7 +2,7 @@ import {ready, identity, HttpError} from './http.ts';
 import type {GarminServerConfig} from './http.ts';
 import {GarminCipher} from './cipher.ts';
 import {GarminOAuthClient} from './oauth.ts';
-import {garminActivityCallback, downloadGarminFit, garminFitActivity} from './activity_fit.ts';
+import {garminActivityCallback, downloadGarminFit, garminFitObservation} from './activity_fit.ts';
 import {ActivityReturnService, activityReview} from '../device_activity/return_service.ts';
 import type {ActivityReturnStore, ActivityJob} from '../device_activity/return_service.ts';
 type Json = Record<string, unknown>;
@@ -50,7 +50,7 @@ export async function drainActivityReturns(c: GarminServerConfig, f: typeof fetc
   const cipher = new GarminCipher(c.encryptionKey);
   const account = new GarminOAuthClient({clientId:c.clientId,clientSecret:c.clientSecret,redirectUri:`${c.supabaseUrl}/functions/v1/garmin-oauth-callback`},f);
   const service = new ActivityReturnService(store,account,cipher,{read:async (url,token,metadata)=>
-    garminFitActivity(await downloadGarminFit(url,token,f),{activityId:String(metadata.activityId),activityName:String(metadata.activityName)})});
+    garminFitObservation(await downloadGarminFit(url,token,f),{activityId:String(metadata.activityId),activityName:String(metadata.activityName)})});
   let processed = 0; const deadline = Date.now()+40000;
   for (const id of pending.ids as string[]) {
     if (Date.now()>deadline) break;

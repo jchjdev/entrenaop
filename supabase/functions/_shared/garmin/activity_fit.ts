@@ -1,6 +1,8 @@
 import {Decoder, Stream} from '@garmin/fitsdk';
 import {ActivityReturnError, validateRunningObservation} from '../device_activity/running_result.ts';
 import type {ObservedRunningActivity} from '../device_activity/running_result.ts';
+import {validateStrengthObservation} from '../device_activity/strength_result.ts';
+import type {ObservedActivity, ObservedStrengthActivity} from '../device_activity/strength_result.ts';
 
 export const maxActivityFileBytes = 4 * 1024 * 1024;
 type Message = Record<string, unknown>;
@@ -18,6 +20,11 @@ function optional(value: unknown): number | null { return value == null ? null :
 
 /** El SDK solo pertenece al adaptador. No se conservan posiciones GPS ni muestras crudas. */
 export function garminFitActivity(bytes: Uint8Array, metadata: {activityId: string; activityName: string}): ObservedRunningActivity {
+  const result=garminFitObservation(bytes,metadata);
+  if(result.schemaVersion!==1)throw new ActivityReturnError('unsupported_activity');
+  return result;
+}
+export function garminFitObservation(bytes: Uint8Array, metadata: {activityId: string; activityName: string}): ObservedActivity {
   if (bytes.length < 16 || bytes.length > maxActivityFileBytes) throw new ActivityReturnError('activity_file_too_large');
   const stream = Stream.fromArrayBuffer(bytes.slice().buffer);
   const decoder = new Decoder(stream);
@@ -27,12 +34,29 @@ export function garminFitActivity(bytes: Uint8Array, metadata: {activityId: stri
     throw new ActivityReturnError('unsupported_activity_file');
   }
   const session = messages.sessionMesgs[0] as Message;
-  if (session.sport !== 'running') throw new ActivityReturnError('unsupported_activity');
   const activity = messages.activityMesgs?.[0] as Message | undefined;
   let offset: number | null = null;
   if (activity?.localTimestamp != null && activity.timestamp != null) {
     offset = (Date.parse(date(activity.localTimestamp)) - Date.parse(date(activity.timestamp))) / 1000;
   }
+  if(session.sport==='training'&&session.subSport==='strengthTraining'){
+    const result:ObservedStrengthActivity={schemaVersion:2,sport:'strength',externalId:metadata.activityId,name:metadata.activityName,
+      startedAt:date(session.startTime),offsetSeconds:offset,elapsedSeconds:number(session.totalElapsedTime),timerSeconds:number(session.totalTimerTime),
+      distanceMeters:null,averageHeartRate:optional(session.avgHeartRate),maxHeartRate:optional(session.maxHeartRate),
+      sets:(messages.setMesgs??[]).map((raw,index)=>{
+        const s=raw as Message;
+        const categories=Array.isArray(s.category)?s.category:[],subtypes=Array.isArray(s.categorySubtype)?s.categorySubtype:[];
+        // El SDK decodifica categorías; el subtipo conserva el índice del perfil FIT.
+        const key=categories.length===1&&subtypes.length===1?`${categories[0]}:${subtypes[0]}`:'';
+        const exerciseCode:Record<string,string>={'benchPress:1':'bench_press_barbell','pushUp:77':'push_up_standard','pullUp:38':'pull_up_pronated'};
+        if(s.setType!=='active'&&s.setType!=='rest')throw new ActivityReturnError('unsupported_activity_file');
+        return {index,startedAt:date(s.startTime),seconds:number(s.duration),kind:s.setType,
+          repetitions:optional(s.repetitions),loadKg:optional(s.weight),exerciseCode:exerciseCode[key]??null,workoutStepIndex:optional(s.wktStepIndex)};
+      }),
+    };
+    validateStrengthObservation(result);return result;
+  }
+  if (session.sport !== 'running') throw new ActivityReturnError('unsupported_activity');
   const result: ObservedRunningActivity = {
     schemaVersion: 1, externalId: metadata.activityId, name: metadata.activityName,
     startedAt: date(session.startTime), offsetSeconds: offset,

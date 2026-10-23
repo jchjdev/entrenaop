@@ -65,6 +65,7 @@ Map<String, dynamic> setRow(
 
 class WorkspaceFixture extends TrainerClientWorkspaceRepository {
   bool fail = false;
+  bool timedReport = false;
   final writes =
       <({String operation, int revision, String notes, String goal})>[];
   @override
@@ -97,7 +98,17 @@ class WorkspaceFixture extends TrainerClientWorkspaceRepository {
     endExclusive: endExclusive,
     asOfDate: DateTime.now().toUtc(),
     assignments: [],
-    sets: [],
+    sets: timedReport
+        ? [
+            {
+              ...setRow(
+                'one',
+                DateTime.now().toUtc().toIso8601String().substring(0, 10),
+              ),
+              'actual_duration_seconds': 89,
+            },
+          ]
+        : [],
     amrap: [],
   );
 }
@@ -147,6 +158,31 @@ Future<void> tapText(WidgetTester tester, String label) async {
 }
 
 void main() {
+  testWidgets(
+    'el informe profesional muestra mínimos y máximos en minutos y segundos',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1200, 1000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: TrainerClientWorkspacePage(
+            repository: WorkspaceFixture()..timedReport = true,
+            clientId: 'client',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Duración'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('1:29'), findsNWidgets(2));
+      expect(find.text('89 s'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('cancelar salida lateral conserva objetivo y notas sucios', (
     tester,
   ) async {

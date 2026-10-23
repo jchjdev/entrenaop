@@ -72,8 +72,9 @@ class SupabaseActivityResultRepository implements ActivityResultRepository {
             run['activity']['name'] as String,
             DateTime.parse(run['activity']['startedAt'] as String),
             (run['activity']['timerSeconds'] as num).toDouble(),
-            (run['activity']['distanceMeters'] as num).toDouble(),
+            (run['activity']['distanceMeters'] as num?)?.toDouble() ?? 0,
             run['execution_id'] as String?,
+            sport: run['activity']['sport'] as String? ?? 'running',
           ),
       ],
       [
@@ -82,6 +83,7 @@ class SupabaseActivityResultRepository implements ActivityResultRepository {
             appointment['id'] as String,
             appointment['name'] as String,
             appointment['date'] as String,
+            sport: appointment['sport'] as String? ?? 'running',
           ),
       ],
       [
@@ -144,16 +146,27 @@ ActivityResultReview decodeActivityReview(Map<String, dynamic> data) {
     name: activity['name'] as String,
     startedAt: DateTime.parse(activity['startedAt'] as String),
     seconds: (activity['timerSeconds'] as num).toDouble(),
-    meters: (activity['distanceMeters'] as num).toDouble(),
+    meters: (activity['distanceMeters'] as num?)?.toDouble() ?? 0,
+    sport: activity['sport'] as String? ?? 'running',
     offsetMinutes: offset == null ? null : offset ~/ 60,
     averageHeartRate: (activity['averageHeartRate'] as num?)?.round(),
     laps: [
-      for (final lap in activity['laps'] as List)
+      for (final lap
+          in (activity['sport'] == 'strength'
+                  ? activity['sets']
+                  : activity['laps'])
+              as List)
         RecordedLap(
           lap['index'] as int,
-          (lap['timerSeconds'] as num).toDouble(),
-          (lap['distanceMeters'] as num).toDouble(),
-          lap['intensity'] as String?,
+          (lap[activity['sport'] == 'strength' ? 'seconds' : 'timerSeconds']
+                  as num)
+              .toDouble(),
+          (lap['distanceMeters'] as num?)?.toDouble() ?? 0,
+          lap[activity['sport'] == 'strength' ? 'kind' : 'intensity']
+              as String?,
+          strength: activity['sport'] == 'strength',
+          repetitions: lap['repetitions'] as int?,
+          loadKg: (lap['loadKg'] as num?)?.toDouble(),
         ),
     ],
     rows: [
@@ -164,6 +177,8 @@ ActivityResultReview decodeActivityReview(Map<String, dynamic> data) {
           set: row['set_order'] as int,
           label: row['label'] as String,
           requiresRecovery: row['requires_recovery'] as bool,
+          strength: activity['sport'] == 'strength',
+          requiresReps: row['measure'] == 'reps',
           laps: List<int>.unmodifiable(row['lap_indices'] as List),
           recoveryLaps: List<int>.unmodifiable(
             row['recovery_lap_indices'] as List,

@@ -1,12 +1,31 @@
 # Registro de decisiones vigentes
 
-**INT-013 · 23/10/2026 · recorrido de fuerza con reloj solicitado:** Javier
+**INT-014 · 23/10/2026 · tiempos legibles y comparación explicada:** Javier
+pide minutos y segundos en lugar de totales de segundos en objetivos y resultados.
+El detalle y sus totales usan reloj `m:ss`, como el resultado profesional existente.
+«Diferencias con la pauta» sustituye al rótulo tajante anterior y explica los
+tramos afectados, manteniendo los criterios de comparación y los datos originales.
+No es una nota deportiva ni la puntuación de Garmin. Cada serie de dispositivo
+conserva además tiempo nativo numérico para calcular el ritmo sin cuantizarlo;
+una corrección manual descarta esa precisión heredada. Se enriquece el historial
+solo desde evidencia original y marcas de dispositivo coincidentes. El envío
+de carrera sigue usando `RUNNING`,
+sin un cambio verificado de perfil nativo de reloj.
+[Comportamiento y límites](DEVICE_GARMIN_TRAINING.md#tiempos-comparación-y-perfil-del-reloj--int-014).
+
+**INT-013 · 23/10/2026 · recorrido de fuerza con reloj:** Javier
 pide que fuerza reutilice el creador común y tenga el recorrido de carrera:
 asignación, envío, cambios/cancelaciones y retorno de mediciones para cerrar
-la cita y alimentar el seguimiento. Es alcance solicitado, todavía no
-implementado. Antes de ampliar el contrato se contrastarán ejercicios,
-formatos y resultados admitidos por Garmin; no se promete equivalencia de
-todos los formatos ni se confunde la pauta enviada con lo realizado.
+la cita y alimentar el seguimiento. Autoriza después su implementación solo
+en Dev. Primera entrega: series convencionales profesionales con tres variantes
+de catálogo contrastadas, envío/cambios/cancelaciones por la infraestructura
+existente y retorno FIT de series, repeticiones y carga. Contratos SQL con
+ROLLBACK y fixtures SDK verificados; primera creación/asignación desde Trainer
+y envío real desde EntrenaOP aceptados por Garmin y confirmados en calendario.
+Aceptación física de fuerza pendiente; no se ha fabricado un retorno real.
+Otros formatos, ejercicios y prescripciones especializadas del algoritmo
+permanecen incompatibles, sin degradación silenciosa. No se confunde la pauta
+enviada con lo realizado ni se rellenan mediciones ausentes.
 El cierre actual de carrera sigue requiriendo revisión y esfuerzo declarado;
 esta petición no autoriza convertirlo en cierre automático.
 [Alcance y primer recorrido recomendado](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).

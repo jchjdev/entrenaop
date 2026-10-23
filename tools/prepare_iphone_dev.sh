@@ -43,7 +43,7 @@ EntrenaOP Release Dev preparada. Todavía falta compilar e instalar desde Xcode.
 3. Pulsa ▶︎ (Cmd+R). Si se solicita, permite a codesign usar el llavero.
 Después podrás abrir EntrenaOP desde su icono y desconectar el cable.
 Perfil → Versión de la app permite comprobar la revisión instalada.
-Perfil → Conexión con Garmin → Conectar Garmin → Enviar una carrera.
+Perfil → Conexión con Garmin → Conectar Garmin → Enviar una sesión.
 Tras autorizar en Safari, vuelve a EntrenaOP y pulsa Actualizar estado si hace falta.
 No hay que copiar credenciales ni archivos .env para Garmin.
 NEXT

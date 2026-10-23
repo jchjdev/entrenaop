@@ -69,7 +69,9 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
   String measure(TrainingStep step) => step.measure == 'manual'
       ? 'Hasta pulsar Lap'
       : step.measure == 'seconds'
-      ? '${step.value!.toStringAsFixed(0)} s'
+      ? pace(step.value!)
+      : step.measure == 'reps'
+      ? '${step.value!.toStringAsFixed(0)} rep'
       : '${step.value! % 1 == 0 ? step.value!.toStringAsFixed(0) : step.value.toString()} m';
   String error(String code) => switch (code) {
     'account_changed' =>
@@ -116,7 +118,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Carreras en Garmin')),
+    appBar: AppBar(title: const Text('Sesiones en Garmin')),
     body: BlocBuilder<TrainingDeliveryCubit, TrainingDeliveryState>(
       bloc: cubit,
       builder: (context, state) {
@@ -148,7 +150,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Sincronización automática'),
                     subtitle: const Text(
-                      'Enviar las carreras de los próximos 14 días de tu entrenador y del plan adaptativo, incluidos cambios y cancelaciones. Funciona aunque EntrenaOP esté cerrada.',
+                      'Enviar las sesiones compatibles de los próximos 14 días de tu entrenador y del plan adaptativo, incluidos cambios y cancelaciones. Funciona aunque EntrenaOP esté cerrada.',
                     ),
                     value: sync?.enabled ?? false,
                     onChanged: syncBusy || sync == null
@@ -167,7 +169,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                   const Divider(height: 32),
                 ],
                 const Text(
-                  'Elige una carrera programada por tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
+                    'Elige una sesión compatible de tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
                 ),
                 if (state.busy)
                   const Padding(
@@ -188,7 +190,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      'No hay carreras pendientes del algoritmo o de tu entrenador disponibles para enviar.',
+                      'No hay sesiones compatibles pendientes del algoritmo o de tu entrenador disponibles para enviar.',
                     ),
                   ),
                 for (final candidate
@@ -219,15 +221,19 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Text('${index + 1}'),
-                      title: Text('${step.description} · ${measure(step)}'),
+                      title: Text(
+                        '${step.description} · ${measure(step)}${step.loadKg == null ? '' : ' · ${step.loadKg} kg'}',
+                      ),
                       subtitle: step.fast == null
                           ? null
                           : Text(
                               'Ritmo: ${pace(step.fast!)}–${pace(step.slow!)} min/km',
                             ),
                     ),
-                  const Text(
-                    'Andar, trotar y el esfuerzo orientativo se muestran como instrucciones. Los ritmos se envían como objetivos cuando están prescritos.',
+                  Text(
+                    preview.sport == 'strength'
+                        ? 'Se envían series, repeticiones o tiempo, carga indicada y descansos. RIR y esfuerzo orientativos se muestran como instrucciones.'
+                        : 'Andar, trotar y el esfuerzo orientativo se muestran como instrucciones. Los ritmos se envían como objetivos cuando están prescritos.',
                   ),
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,

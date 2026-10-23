@@ -37,6 +37,36 @@ class PageRepository implements ActivityResultRepository {
 }
 
 void main() {
+  test('el codec conserva el tiempo nativo de cada serie y copyWith no lo redondea', () {
+    final e = WorkoutExecutionModel.fromJson({
+      'id': 'execution',
+      'template_id': 'template',
+      'template_name': 'Fixture',
+      'template_version': 1,
+      'status': 'completed',
+      'started_at': '2026-10-20T08:00:00Z',
+      'result_source': 'device',
+      'workout_execution_sets': [
+        {
+          'id': 'set',
+          'block_order': 0,
+          'block_name': 'Series',
+          'item_order': 0,
+          'exercise_id': 'exercise',
+          'exercise_name': 'Carrera',
+          'set_order': 0,
+          'rest_after_seconds': 0,
+          'status': 'completed',
+          'result_source': 'device',
+          'actual_duration_seconds': 88,
+          'observed_duration_seconds': 87.625,
+          'observed_recovery_duration_seconds': 30.25,
+        },
+      ],
+    });
+    expect(e.sets.single.measuredDurationSeconds, 87.625);
+    expect(e.sets.single.copyWith().observedRecoveryDurationSeconds, 30.25);
+  });
   for (final width in [390.0, 1280.0]) {
     testWidgets('revisión a $width px, texto grande y sin completar al abrir', (
       tester,
@@ -59,7 +89,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('2026-10-20 · Series de prueba').last);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Revisar vueltas y sesión'));
+      await tester.tap(find.text('Revisar datos y sesión'));
       await tester.pumpAndSettle();
       expect(find.text('1. Serie'), findsOneWidget);
       expect(repository.confirmations, 0);

@@ -1,14 +1,16 @@
 import {runningTrainingCompatibility} from "./capabilities.ts";
 import type {RunningTrainingCapabilities} from "./capabilities.ts";
-import {runningPrescription,TrainingError} from "./prescription.ts";
-import type {RunningPrescription} from "./prescription.ts";
+import {TrainingError} from "./prescription.ts";
+import {trainingPrescription,isStrength} from './strength.ts';
+import type {TrainingPrescription} from './strength.ts';
 type Json=Record<string,unknown>;
 export type DeliveryActor={actor:string;owner:string;session:string|null};
 export type AccessGrant={accessToken:string;refreshToken:string;expiresInSeconds:number;refreshExpiresInSeconds:number;scope:string};
 export interface TrainingDeliveryStore {command(action:string,who:DeliveryActor,input:Json):Promise<Json>}
 export interface TrainingGateway {
   readonly capabilities:RunningTrainingCapabilities;
-  create(token:string,prescription:RunningPrescription):Promise<number>;
+  supportsStrength?(prescription:TrainingPrescription):boolean;
+  create(token:string,prescription:TrainingPrescription):Promise<number>;
   schedule(token:string,workout:number,date:string):Promise<void>;
   confirmSchedule(token:string,workout:number,date:string):Promise<number>;
 }
@@ -34,8 +36,8 @@ export class TrainingDeliveryService {
   list(who:DeliveryActor){return this.store.command("list",who,{});}
   async preview(who:DeliveryActor,scheduled:string) {
     const source=await this.store.command("preview",who,{scheduled_id:scheduled});
-    const prescription=runningPrescription(source.snapshot);
-    if(runningTrainingCompatibility(prescription,this.gateway.capabilities).length) throw new TrainingError('unsupported_prescription');
+    const prescription=trainingPrescription(source.snapshot);
+    if(isStrength(prescription)?!this.gateway.supportsStrength?.(prescription):runningTrainingCompatibility(prescription,this.gateway.capabilities).length) throw new TrainingError('unsupported_prescription');
     return {revision:source.revision,prescription};
   }
   async send(who:DeliveryActor,scheduled:string,revision:string):Promise<Json> {
@@ -49,7 +51,7 @@ export class TrainingDeliveryService {
     const command=(action:string,fields:Json={})=>this.store.command(action,who,{...input,...fields});
     let inFlight=false,awaitingReceipt=false;
     try {
-      const prescription=runningPrescription(claim.snapshot);
+      const prescription=trainingPrescription(claim.snapshot);
       const context=`tokens:${who.owner}:${claim.generation}`;
       let grant=await this.cipher.open<AccessGrant>(String(claim.tokens_cipher),context);
       if(Date.parse(String(claim.access_expires_at))<=this.now()+60000){

@@ -1,4 +1,5 @@
 import 'package:workout_core/running_step_codec.dart';
+import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -302,8 +303,11 @@ String _measures(Map row, String prefix) {
     final value = row['$prefix${field.$1}'];
     if (value != null) values.add('$value ${field.$2}');
   }
-  final duration = row['${prefix}duration_seconds'] as num?;
-  if (duration != null) values.add(_time(duration.toInt()));
+  final native = prefix == 'actual_' && row['result_source'] == 'device'
+      ? row['observed_duration_seconds'] as num?
+      : null;
+  final duration = native ?? row['${prefix}duration_seconds'] as num?;
+  if (duration != null) values.add(formatPerformanceTime(duration));
   final recovery =
       row['${prefix == 'target_' ? '' : prefix}recovery_duration_seconds']
           as num?;

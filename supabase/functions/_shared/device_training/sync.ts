@@ -1,15 +1,15 @@
 import {DeliveryFailure} from './delivery.ts';
 import type {TrainingDeliveryService} from './delivery.ts';
 import type {AccessGrant,AccountGateway,GrantCipher,DeliveryActor} from './delivery.ts';
-import {runningPrescription} from './prescription.ts';
-import type {RunningPrescription} from './prescription.ts';
+import {trainingPrescription} from './strength.ts';
+import type {TrainingPrescription} from './strength.ts';
 
 type Json=Record<string,unknown>;
 export interface TrainingSyncStore {
   command(action:string,input:Json):Promise<Json>;
 }
 export interface TrainingLifecycleGateway {
-  update(token:string,id:number,p:RunningPrescription):Promise<void>;
+  update(token:string,id:number,p:TrainingPrescription):Promise<void>;
   updateSchedule(token:string,id:number,workout:number,date:string):Promise<void>;
   removeSchedule(token:string,id:number):Promise<void>;
   remove(token:string,id:number):Promise<void>;
@@ -65,7 +65,7 @@ export class TrainingSyncService {
         await command('before_write');inFlight=true;
         await this.gateway.remove(grant.accessToken,workout);inFlight=false;
       }else{
-        const prescription=runningPrescription(target.snapshot);
+        const prescription=trainingPrescription(target.snapshot);
         await command('before_write');inFlight=true;
         await this.gateway.update(grant.accessToken,workout,prescription);inFlight=false;
         if(schedule===null)throw new DeliveryFailure('delivery_uncertain',true);

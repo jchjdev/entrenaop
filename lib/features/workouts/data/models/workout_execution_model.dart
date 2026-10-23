@@ -95,6 +95,10 @@ class WorkoutExecutionModel {
             ),
       actualReps: json['actual_reps'] as int?,
       actualDurationSeconds: json['actual_duration_seconds'] as int?,
+      observedDurationSeconds: _doubleOrNull(json['observed_duration_seconds']),
+      observedRecoveryDurationSeconds: _doubleOrNull(
+        json['observed_recovery_duration_seconds'],
+      ),
       actualDistanceMeters: _doubleOrNull(json['actual_distance_meters']),
       actualLoadKg: _doubleOrNull(json['actual_load_kg']),
       actualRpe: _doubleOrNull(json['actual_rpe']),

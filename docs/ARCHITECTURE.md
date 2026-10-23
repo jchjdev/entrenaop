@@ -1,5 +1,13 @@
 # Arquitectura de EntrenaOP
 
+INT-013 amplía el contrato de envío con una receta pura de fuerza convencional;
+el adaptador Garmin contiene sus equivalencias de ejercicio y `STRENGTH_TRAINING`.
+La observación de fuerza V2 guarda series, repeticiones y carga reales sin
+distancia ficticia. Comparte servicios de cuenta, entrega, revisión y cierre
+con carrera, manteniendo los snapshots de carrera anteriores. No duplica
+editor, ejecución o reglas profesionales para las tres apps.
+[Cobertura y límites](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+
 INT-012 añade observación de carrera y aplicación mediante puertos, adaptador
 FIT Garmin y confirmación SQL atómica que reutiliza la ejecución existente.
 El SDK oficial queda en servidor; Flutter tiene repositorio y Cubit propios.

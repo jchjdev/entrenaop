@@ -13,6 +13,8 @@ on:
       - 'supabase/functions/pnpm-lock.yaml'
       - 'supabase/migrations/*garmin_activity*'
       - 'supabase/tests/garmin_activity_return.sql'
+      - 'supabase/tests/garmin_strength_roundtrip.sql'
+      - 'supabase/migrations/*garmin_strength*'
       - 'supabase/functions/garmin-training/**'
       - 'supabase/functions/garmin-training-sync/**'
       - 'supabase/functions/garmin-connection/**'
@@ -68,6 +70,7 @@ jobs:
           supabase/functions/_shared/garmin/training.ts
           supabase/functions/_shared/garmin/training_http.ts
           supabase/functions/_shared/device_training/prescription.ts
+          supabase/functions/_shared/device_training/strength.ts
           supabase/functions/_shared/device_training/capabilities.ts
           supabase/functions/_shared/device_training/delivery.ts
           supabase/functions/_shared/device_training/sync.ts
@@ -75,6 +78,7 @@ jobs:
           supabase/functions/_shared/garmin/activity_fit.ts
           supabase/functions/_shared/garmin/activity_http.ts
           supabase/functions/_shared/device_activity/running_result.ts
+          supabase/functions/_shared/device_activity/strength_result.ts
           supabase/functions/_shared/device_activity/return_service.ts
 
   consumer:

@@ -102,6 +102,8 @@ begin
    and observed_timer_seconds=151.5 and observed_elapsed_seconds=151.5 and observed_distance_meters=405.5) then
   raise exception 'Cierre sin valoración o reloj'; end if;
  if (select a.observation->'laps'->0->>'timerSeconds' from device_private.activity_observations a where a.id=aid)<>'60.125' then raise exception 'Pierde precisión de evidencia'; end if;
+ if not exists(select 1 from public.workout_execution_sets where execution_id=e and observed_duration_seconds=121.25
+   and observed_recovery_duration_seconds=30.25) then raise exception 'Ritmo pierde precisión original'; end if;
  if not(public.garmin_activity_command('confirm',pupil,ps,input)->>'replayed')::boolean then raise exception 'No recupera respuesta perdida'; end if;
  perform set_config('request.jwt.claim.sub',trainer::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
@@ -117,6 +119,12 @@ begin
  if not(public.garmin_activity_command('authorize',null,null,'{"token":"fixture-ticket"}')->>'authorized')::boolean
    or (public.garmin_activity_command('authorize',null,null,'{"token":"fixture-ticket"}')->>'authorized')::boolean then
   raise exception 'Ticket reutilizable'; end if;
+ if has_column_privilege('authenticated','public.workout_execution_sets','observed_duration_seconds','UPDATE') then
+  raise exception 'Cliente puede alterar precisión'; end if;
+ update public.workout_execution_sets set result_source='manual' where execution_id=e;
+ perform device_private.store_activity_timing(e,(select a.observation from device_private.activity_observations a where a.id=aid),input->'mapping');
+ if exists(select 1 from public.workout_execution_sets where execution_id=e and (observed_duration_seconds is not null or observed_recovery_duration_seconds is not null)) then
+  raise exception 'Una corrección manual hereda o recupera tiempo nativo'; end if;
 end $$;
 select 'garmin activity return contract passed' as result;
 rollback;

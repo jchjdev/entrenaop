@@ -12,6 +12,33 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'objetivo, resultado y total conservan minutos y segundos legibles',
+    (tester) async {
+      final cubit = WorkoutHistoryDetailCubit(
+        executionId: 'execution-1',
+        getExecution: GetWorkoutExecutionUseCase(_ClockRepository()),
+        correctSet: CorrectWorkoutSetUseCase(_ClockRepository()),
+      );
+      addTearDown(cubit.close);
+      await cubit.load();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider.value(
+            value: cubit,
+            child: const WorkoutHistoryDetailPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('13:23'), findsWidgets);
+      await tester.scrollUntilVisible(find.textContaining('Realizado ·'), 200);
+      expect(find.textContaining('Realizado · 01:29'), findsOneWidget);
+      expect(find.textContaining('Objetivo · 01:30'), findsOneWidget);
+      expect(find.textContaining('803 s'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('el historial de sesiones cabe en una pantalla móvil', (
     tester,
   ) async {
@@ -311,6 +338,37 @@ class _Repository implements WorkoutRepository {
 
   @override
   Future<String> startExecution(String templateId) async => 'execution-1';
+}
+
+class _ClockRepository extends _Repository {
+  @override
+  Future<WorkoutExecution?> getExecution(String executionId) async =>
+      WorkoutExecution(
+        id: 'execution-1',
+        templateId: 'template-clock',
+        templateName: 'Reloj',
+        templateVersion: 1,
+        status: WorkoutExecutionStatus.completed,
+        startedAt: DateTime.utc(2026, 10, 20),
+        observedTimerSeconds: 803,
+        observedElapsedSeconds: 810,
+        observedDistanceMeters: 2000,
+        sets: [
+          const WorkoutExecutionSet(
+            id: 'set-clock',
+            blockOrder: 0,
+            blockName: 'Principal',
+            itemOrder: 0,
+            exerciseId: 'exercise-clock',
+            exerciseName: 'Ejercicio',
+            setOrder: 0,
+            targetDurationSeconds: 90,
+            actualDurationSeconds: 89,
+            restAfterSeconds: 0,
+            status: WorkoutSetStatus.completed,
+          ),
+        ],
+      );
 }
 
 class _CorrectionRepository extends _Repository {

@@ -10,11 +10,13 @@ class TrainingStep {
     this.value,
     this.description,
     this.fast,
-    this.slow,
-  );
+    this.slow, {
+    this.loadKg,
+  });
   final String kind, measure, description;
   final double? value;
   final double? fast, slow;
+  final double? loadKg;
 }
 
 class TrainingPreview {
@@ -24,9 +26,11 @@ class TrainingPreview {
     this.date,
     this.steps, {
     this.description = '',
+    this.sport = 'running',
   });
   final String revision, name, date;
   final String description;
+  final String sport;
   final List<TrainingStep> steps;
 }
 

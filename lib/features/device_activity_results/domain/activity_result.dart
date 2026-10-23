@@ -11,17 +11,20 @@ class ReceivedRun {
     this.startedAt,
     this.seconds,
     this.meters,
-    this.executionId,
-  );
+    this.executionId, {
+    this.sport = 'running',
+  });
   final String id, revision, name;
   final DateTime startedAt;
   final double seconds, meters;
   final String? executionId;
+  final String sport;
 }
 
 class RunAppointment {
-  const RunAppointment(this.id, this.name, this.date);
+  const RunAppointment(this.id, this.name, this.date, {this.sport = 'running'});
   final String id, name, date;
+  final String sport;
 }
 
 class ActivityResultCatalog {
@@ -32,10 +35,21 @@ class ActivityResultCatalog {
 }
 
 class RecordedLap {
-  const RecordedLap(this.index, this.seconds, this.meters, this.kind);
+  const RecordedLap(
+    this.index,
+    this.seconds,
+    this.meters,
+    this.kind, {
+    this.strength = false,
+    this.repetitions,
+    this.loadKg,
+  });
   final int index;
   final double seconds, meters;
   final String? kind;
+  final bool strength;
+  final int? repetitions;
+  final double? loadKg;
 }
 
 class LapAssignment {
@@ -48,10 +62,13 @@ class LapAssignment {
     this.laps = const [],
     this.recoveryLaps = const [],
     this.skipped = false,
+    this.strength = false,
+    this.requiresReps = false,
   });
   final int block, item, set;
   final String label;
   final bool requiresRecovery, skipped;
+  final bool strength, requiresReps;
   final List<int> laps, recoveryLaps;
   LapAssignment select({
     List<int>? laps,
@@ -66,6 +83,8 @@ class LapAssignment {
     laps: List.unmodifiable(laps ?? this.laps),
     recoveryLaps: List.unmodifiable(recoveryLaps ?? this.recoveryLaps),
     skipped: skipped ?? this.skipped,
+    strength: strength,
+    requiresReps: requiresReps,
   );
 }
 
@@ -83,6 +102,7 @@ class ActivityResultReview {
     required this.averageHeartRate,
     required this.laps,
     required this.rows,
+    this.sport = 'running',
   });
   final String activityId, activityRevision, scheduledId, sourceRevision, name;
   final DateTime startedAt;
@@ -90,6 +110,7 @@ class ActivityResultReview {
   final int? offsetMinutes, averageHeartRate;
   final List<RecordedLap> laps;
   final List<LapAssignment> rows;
+  final String sport;
 }
 
 class ConfirmActivityResult {
@@ -127,6 +148,13 @@ bool validLapAssignments(List<LapAssignment> rows, List<RecordedLap> laps) {
   for (final row in rows) {
     if (row.skipped) continue;
     if (!validGroup(row.laps)) {
+      return false;
+    }
+    if (row.strength &&
+        (row.laps.length != 1 ||
+            !laps[row.laps.single].strength ||
+            laps[row.laps.single].kind != 'active' ||
+            row.requiresReps && laps[row.laps.single].repetitions == null)) {
       return false;
     }
     if (row.requiresRecovery) {

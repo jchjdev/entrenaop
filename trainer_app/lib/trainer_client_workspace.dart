@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/trainer_progress.dart';
+import 'package:workout_core/performance_time.dart';
 
 import 'trainer_client_workspace_repository.dart';
 import 'trainer_csv_export.dart';
@@ -466,6 +467,8 @@ class _ReportContent extends StatelessWidget {
   final TrainerClientProgressReport report;
   String _value(num? value, String unit) => value == null
       ? 'Sin dato'
+      : unit == 's'
+      ? formatPerformanceTime(value)
       : '${value.toStringAsFixed(value % 1 == 0 ? 0 : 2)} $unit';
   @override
   Widget build(BuildContext context) {

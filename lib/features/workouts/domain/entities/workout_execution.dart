@@ -331,6 +331,8 @@ class WorkoutExecutionSet extends Equatable {
     this.actualRecoveryDistanceMeters,
     this.resultSource,
     this.completedAt,
+    this.observedDurationSeconds,
+    this.observedRecoveryDurationSeconds,
   });
 
   final String id;
@@ -373,6 +375,16 @@ class WorkoutExecutionSet extends Equatable {
   final double? actualRecoveryDistanceMeters;
   final WorkoutResultSource? resultSource;
   final DateTime? completedAt;
+  final double? observedDurationSeconds, observedRecoveryDurationSeconds;
+  double? get measuredDurationSeconds =>
+      resultSource == WorkoutResultSource.device
+      ? observedDurationSeconds ?? actualDurationSeconds?.toDouble()
+      : actualDurationSeconds?.toDouble();
+  double? get measuredRecoverySeconds =>
+      resultSource == WorkoutResultSource.device
+      ? observedRecoveryDurationSeconds ??
+            actualRecoveryDurationSeconds?.toDouble()
+      : actualRecoveryDurationSeconds?.toDouble();
 
   /// Los objetivos heredados de duración no habilitan nuevos registros de RIR.
   bool get usesRir =>
@@ -469,6 +481,21 @@ class WorkoutExecutionSet extends Equatable {
         : actualRecoveryDistanceMeters ?? this.actualRecoveryDistanceMeters,
     resultSource: resultSource ?? this.resultSource,
     completedAt: completedAt ?? this.completedAt,
+    observedDurationSeconds:
+        replaceResult ||
+            resultSource == WorkoutResultSource.manual ||
+            actualDurationSeconds != null &&
+                actualDurationSeconds != this.actualDurationSeconds
+        ? null
+        : observedDurationSeconds,
+    observedRecoveryDurationSeconds:
+        replaceResult ||
+            resultSource == WorkoutResultSource.manual ||
+            actualRecoveryDurationSeconds != null &&
+                actualRecoveryDurationSeconds !=
+                    this.actualRecoveryDurationSeconds
+        ? null
+        : observedRecoveryDurationSeconds,
   );
 
   @override
@@ -511,5 +538,7 @@ class WorkoutExecutionSet extends Equatable {
     actualRecoveryDistanceMeters,
     resultSource,
     completedAt,
+    observedDurationSeconds,
+    observedRecoveryDurationSeconds,
   ];
 }

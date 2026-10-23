@@ -133,7 +133,7 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                 TextButton.icon(
                   onPressed: state.busy ? null : widget.onOpenActivities,
                   icon: const Icon(Icons.fact_check_outlined),
-                  label: const Text('Carreras recibidas y completar sesión'),
+                  label: const Text('Actividades recibidas y completar sesión'),
                 ),
               Text(switch (status!) {
                 GarminConnectionStatus.disconnected => 'Sin conexión',
@@ -167,7 +167,7 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                   FilledButton.icon(
                     onPressed: state.busy ? null : widget.onOpenTraining,
                     icon: const Icon(Icons.watch),
-                    label: const Text('Enviar una carrera'),
+                    label: const Text('Enviar una sesión'),
                   ),
               ],
               if (!snapshot.allowed) ...[

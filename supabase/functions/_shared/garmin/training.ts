@@ -1,6 +1,9 @@
 import {runningTrainingCompatibility} from "../device_training/capabilities.ts";
 import {TrainingError} from "../device_training/prescription.ts";
 import type {RunningPrescription} from "../device_training/prescription.ts";
+import {isStrength} from '../device_training/strength.ts';
+import type {TrainingPrescription} from '../device_training/strength.ts';
+import {garminStrengthWorkout,supportsGarminStrength} from './strength.ts';
 import {DeliveryFailure} from "../device_training/delivery.ts";
 import type {TrainingGateway} from "../device_training/delivery.ts";
 import type {TrainingLifecycleGateway} from "../device_training/sync.ts";
@@ -26,6 +29,7 @@ function id(value:unknown):number {
 }
 export class GarminTrainingClient implements TrainingGateway,TrainingLifecycleGateway {
   readonly capabilities=garminRunningCapabilities;
+  supportsStrength(p:TrainingPrescription):boolean{return isStrength(p)&&supportsGarminStrength(p);}
   private readonly f:typeof fetch;
   constructor(f:typeof fetch=fetch){this.f=f;}
   private async request(path:string,token:string,body?:unknown,method=body===undefined?'GET':'POST'):Promise<unknown> {
@@ -53,9 +57,9 @@ export class GarminTrainingClient implements TrainingGateway,TrainingLifecycleGa
       try{return JSON.parse(new TextDecoder().decode(bytes));}catch{throw new DeliveryFailure("invalid_provider_response",write);}
     }catch(error){if(error instanceof DeliveryFailure)throw error;throw new DeliveryFailure("provider_unavailable",write);}
   }
-  async create(token:string,p:RunningPrescription):Promise<number> {
+  async create(token:string,p:TrainingPrescription):Promise<number> {
     // URL de creación especificada en Training API V2 2.0, p.18.
-    const result=await this.request("/workoutportal/workout/v2",token,garminRunningWorkout(p));
+    const result=await this.request("/workoutportal/workout/v2",token,isStrength(p)?garminStrengthWorkout(p):garminRunningWorkout(p));
     return id(result&&typeof result==="object"?(result as Record<string,unknown>).workoutId:null);
   }
   async schedule(token:string,workout:number,date:string):Promise<void> {
@@ -68,9 +72,9 @@ export class GarminTrainingClient implements TrainingGateway,TrainingLifecycleGa
     if(matches.length!==1)throw new DeliveryFailure("schedule_not_confirmed",true);
     return id(matches[0].scheduleId);
   }
-  async update(token:string,workout:number,p:RunningPrescription):Promise<void>{
+  async update(token:string,workout:number,p:TrainingPrescription):Promise<void>{
     id(workout);
-    await this.request(`/training-api/workout/v2/${workout}`,token,{...garminRunningWorkout(p),workoutId:workout},'PUT');
+    await this.request(`/training-api/workout/v2/${workout}`,token,{...(isStrength(p)?garminStrengthWorkout(p):garminRunningWorkout(p)),workoutId:workout},'PUT');
   }
   async updateSchedule(token:string,schedule:number,workout:number,date:string):Promise<void>{
     id(schedule);id(workout);

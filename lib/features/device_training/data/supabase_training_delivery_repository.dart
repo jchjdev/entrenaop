@@ -123,7 +123,12 @@ TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
         if ((v['measure'] == 'manual'
                 ? value != null
                 : value == null || !value.isFinite || value <= 0) ||
-            !['seconds', 'meters', 'manual'].contains(v['measure']) ||
+            ![
+              'seconds',
+              'meters',
+              'manual',
+              if (p['sport'] == 'strength') 'reps',
+            ].contains(v['measure']) ||
             ![
               'run',
               'recovery',
@@ -132,6 +137,7 @@ TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
               'rest',
               'walk',
               'jog',
+              if (p['sport'] == 'strength') 'strength',
             ].contains(v['kind'])) {
           throw const FormatException('Paso incompatible');
         }
@@ -154,6 +160,7 @@ TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
           v['description'] as String,
           fast,
           slow,
+          loadKg: (v['loadKg'] as num?)?.toDouble(),
         );
       })
       .toList(growable: false);
@@ -166,6 +173,7 @@ TrainingPreview decodeTrainingPreview(Map<String, dynamic> json) {
     p['date'] as String,
     steps,
     description: p['description'] as String? ?? '',
+    sport: p['sport'] as String? ?? 'running',
   );
 }
 

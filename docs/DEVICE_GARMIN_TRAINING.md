@@ -232,10 +232,10 @@ requiere actualizar desde main. [Contrato y aceptación](DEVICE_GARMIN_ACTIVITY_
 
 ## Fuerza · recorrido solicitado INT-013
 
-Javier solicita el mismo recorrido para fuerza el 23/10/2026. El creador común
-ya existe en deportista, ADMIN y Trainer; el adaptador de envío y el lector FIT
-actuales siguen limitados a carrera. Esta sección define trabajo pendiente,
-no soporte disponible ni un cambio de contrato aplicado.
+Javier solicita y autoriza implementar el mismo recorrido para fuerza el
+23/10/2026, solo en desarrollo. El creador común ya existe en deportista,
+ADMIN y Trainer y conserva su receta. La primera entrega amplía el adaptador
+de envío y el lector FIT; no añade un editor paralelo.
 
 El recorrido deseado es crear una única receta propia, asignarla a la semana,
 enviarla al reloj con cambios y cancelaciones, recibir lo realizado y completar
@@ -250,10 +250,94 @@ de superseries, Tabata ni los demás formatos del creador. Antes de modificar
 el contrato se contrastarán esas capacidades y los campos realmente devueltos
 en FIT con el catálogo propio y los resultados existentes.
 
-Primer recorrido funcional recomendado: un ejercicio reconocido, varias
-series, repeticiones, carga y descansos; comprobar envío, ejecución física,
-retorno y cierre sin duplicados. Ampliar después por formatos comprobados.
-La prescripción no rellenará repeticiones o cargas ausentes del reloj: lo
-desconocido seguirá ausente y cualquier corrección del usuario será explícita.
-La recepción automática no implica completar automáticamente; se conserva la
-revisión con esfuerzo declarado mientras no se acuerde otro criterio.
+Primera cobertura implementada: `straight_sets`, una ronda, trabajo por
+repeticiones o tiempo, carga opcional y descansos individuales explícitos.
+Equivalencias de catálogo versión 1: `bench_press_barbell`, `push_up_standard`
+y `pull_up_pronated`. Se contrastan con los anexos oficiales A/B y con categorías
+y subtipos del perfil FIT. No se asocian por nombre traducido ni semejanza muscular.
+La primera fuente exportable de fuerza es una asignación profesional vigente;
+la política comercial y las autoridades de prescripción existentes se conservan.
+Superseries, circuitos, Tabata, otros ejercicios, calentamientos de fuerza y las
+prescripciones especializadas de rendimiento del algoritmo siguen sin soporte.
+Se bloquean; no se aplanan ni se convierten en carrera.
+
+El dominio puro `device_training/strength.ts` normaliza la receta propia; el
+adaptador `garmin/strength.ts` traduce a `STRENGTH_TRAINING`, `REPS`/`TIME`,
+ejercicio de catálogo y kilogramos. Entrega, renovación, exclusión mutua,
+actualización y cancelación reutilizan los servicios existentes. El snapshot
+de fuerza añade deporte y código propio de ejercicio; los snapshots y hashes
+anteriores de carrera permanecen iguales. Los datos del fabricante siguen
+fuera del creador, de los motores y de los modelos compartidos de autoría.
+
+El lector reconoce FIT de una sesión `training/strengthTraining`. Guarda una
+observación V2 con series activas y descansos, tiempo, repeticiones y carga
+medida; distancia ausente se conserva como NULL. No guarda GPS ni FIT completo.
+Una propuesta automática exige índice nativo y ejercicio inequívocos; si falta
+evidencia se elige la serie explícitamente. Solo una serie activa por resultado;
+no se reutilizan series ni se mezclan deportes. El backend obtiene todas las
+marcas de la evidencia privada, nunca de campos aportados por Flutter.
+
+La prescripción no rellena repeticiones o cargas ausentes del reloj. Una serie
+por repeticiones exige ese dato para confirmarse; un peso ausente sigue ausente.
+El esfuerzo global continúa siendo declarado por el alumno. Confirmar reutiliza
+el cierre deportivo, completa la cita y expone el mismo resultado profesional;
+no crea otra ejecución para Trainer ni completa por recibir una notificación.
+
+Migración `20261023123635_garmin_strength_roundtrip.sql` y funciones
+`garmin-training`, `garmin-training-sync`, `garmin-activities` y
+`garmin-activity-ingest` activas exclusivamente en Dev. Verificados fixtures
+SDK oficiales, tipos estrictos, 150 pruebas de servidor, 1.308 pruebas raíz
+(una omisión previa), 172 Trainer y compilación web Release Dev. Contratos
+SQL de carrera y fuerza pasan con ROLLBACK: precisión, carga ausente,
+repeticiones distintas de la pauta, duplicación, descanso usado como trabajo,
+mezcla de deporte, atomicidad y lectura profesional MFA. Avisos globales del
+asesor de seguridad previos al bloque se conservan; las tablas privadas siguen
+cerradas por RLS/grants y RPC específicas.
+
+Primera salida real comprobada: sesión convencional creada y asignada mediante
+Trainer Dev, revisada y enviada desde EntrenaOP Dev. Garmin acepta la creación
+y se comprueba el identificador de calendario: recibo `sent`, sin errores.
+La cuenta tenía desactivada la sincronización automática; no se altera esa
+preferencia ni se envían otras citas. Las referencias, la cuenta y las capturas
+quedan privadas fuera de Git. La infraestructura admite cambios/cancelaciones
+de recetas compatibles; fuerza automática y retirada en proveedor conservan
+aceptación externa pendiente. Los formatos incompatibles requieren revisión,
+sin publicarse como otra receta.
+
+La aceptación física de fuerza en el fēnix sigue pendiente. La actualización
+de menús y tiempos requiere instalar main en iPhone; la revisión existente de
+Trainer ya muestra repeticiones, kilos y reloj `m:ss`. No se ha publicado otro
+paquete web de Trainer ni de ADMIN en esta entrega.
+
+## Tiempos, comparación y perfil del reloj · INT-014
+
+El detalle de historial muestra tiempos de objetivo, realizado, recuperación
+y totales como reloj `m:ss`; no recorta los segundos de los totales. Trainer
+ya utiliza ese formato en sus resultados y su informe de evolución también
+lo aplica a mínimos/máximos; el CSV mantiene números y unidades explícitas.
+No se modifica ninguna medición.
+La comparación conserva sus tolerancias y explica tiempo, distancia, ritmo o
+recuperación diferentes por tramo. El rótulo pasa a «Diferencias con la pauta»
+y aclara que no es una nota deportiva ni la puntuación de Garmin.
+
+La migración `20261023132658_garmin_activity_native_timing.sql` añade
+`observed_duration_seconds` y `observed_recovery_duration_seconds` numéricos
+en cada resultado, manteniendo intactos los enteros anteriores. Mostrar tiempo
+original y calcular el ritmo desde él evita que redondear primero cambie la marca.
+Solo RPC internas los escriben; el cliente conserva SELECT con su RLS vigente.
+Una corrección manual o un cambio de tiempo entero elimina la precisión previa.
+El enriquecimiento histórico usa exclusivamente el recibo y observación privados,
+cuando fuente, estado y marcas actuales coinciden con lo medido; no toca marcas
+corregidas ni atribuye totales a series. El dominio, su codec y proyección de
+consulta conservan esa precisión y retrocompatibilidad; Trainer puede leerla
+en el mismo resultado. SQL prueba descarte manual y prohibición de escritura
+directa; Dart prueba cálculo de ritmo y conservación del dato en copias.
+
+El envío de carrera sigue con deporte genérico `RUNNING`; la implementación
+no selecciona Pista o Trail ni ha cambiado ahora ese comportamiento. El manual
+del fēnix 8 permite elegir primero la actividad y después Biblioteca/Calendario
+de entrenamiento, mostrando solo sesiones compatibles. Sin repetir el recorrido
+del usuario no se atribuye a un fallo o a una elección suya el perfil observado.
+Su puntuación Garmin pondera sobre todo los pasos activos y no puntúa el
+enfriamiento; los promedios de las series no permiten reconstruir esa nota.
+[Puntuación del fēnix 8](https://www8.garmin.com/manuals/webhelp/GUID-EECCAC99-90D6-4AB1-9A3A-EC433D3365E2/EN-US/GUID-FD71D73A-C744-4779-A6C3-2FA9AB89B228.html).

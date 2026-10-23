@@ -1,5 +1,10 @@
 # Retorno de carrera Garmin · INT-012 · 23/10/2026
 
+Este documento conserva el bloque de carrera aceptado. INT-013 amplía después
+el mismo servicio a series convencionales de fuerza mediante observación V2,
+sin alterar la evidencia V1 ni la aceptación física de carrera.
+[Cobertura actual de fuerza](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+
 Javier solicita recibir la actividad realizada, asociarla a la cita de su semana
 y completarla con mediciones reales. La recepción guarda evidencia; completar
 requiere revisión del titular. No se atribuyen vueltas por nombre o fecha ni se
@@ -49,8 +54,11 @@ iniciada o de otra cuenta exige revisión o impide completar.
 - Se guardan resumen y vueltas con su precisión original. No se guardan FIT,
   coordenadas, ruta GPS ni muestras crudas. Los callbacks cifrados se vacían tras
   uso o revisión; las entradas resueltas de cola se purgan después de siete días.
-- La precisión de series del resultado existente es segundos enteros: se redondea
-  expresamente y la UI lo explica. La evidencia conserva decimales; los totales
+- El resultado heredado conserva segundos enteros. INT-014 añade tiempo nativo
+  numérico por serie y recuperación para mostrarlo y calcular el ritmo sin ese
+  redondeo. Una corrección manual lo descarta; el enriquecimiento de ejecuciones
+  anteriores exige evidencia original y marcas de dispositivo coincidentes.
+  La evidencia conserva decimales; los totales
   `observed_timer_seconds`, `observed_elapsed_seconds` y `observed_distance_meters`
   de la ejecución son numéricos y conservan la medición. No se presenta el tiempo
   entre actividad y confirmación como duración entrenada.
