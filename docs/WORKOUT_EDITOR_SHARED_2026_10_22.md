@@ -108,20 +108,26 @@ supera validación y publicación. El manifiesto HTTPS acredita la revisión
 `9deb71a4` y la versión `9deb71a4db25faaa05ff24bb20295aa15a9011f1-39859543838-1`
 exclusivamente en Dev.
 
-Después falla el job auxiliar `retain-packages` con `HTTPError`, antes de imprimir
-su plan. La ejecución global queda fallida por ese paso, aunque pruebas y
-publicación estén correctas. No se atribuye al creador ni se modifica el mecanismo
-de retención. La revisión automática de permisos rechaza el reintento del job
-120111221060 por su capacidad para borrar compilados; se solicita autorización
-específica y se deja pendiente, sin ejecutar una alternativa de borrado.
+El primer intento del job auxiliar `retain-packages` falla con `HTTPError`,
+antes de imprimir su plan. El 23/10/2026 Javier autoriza expresamente reintentar
+solo ese paso y publicar el paquete validado de Trainer Dev. El reintento
+(job 120251390252 de la misma ejecución) termina correctamente: conserva los
+cinco compilados recientes, incluida la revisión publicada, y elimina un único
+compilado antiguo de 15.921.775 bytes. La CI ADMIN queda completamente correcta.
+No se cambia el mecanismo de retención ni se repiten pruebas o despliegues.
 
-Trainer Dev conserva su versión publicada anterior. Paquete preparado, sin
-publicar todavía: `build/trainer-compact-20261022.zip`, revisión `9deb71a4`,
-versión `9deb71a4db25faaa05ff24bb20295aa15a9011f1-20261022-1`, SHA-256
+Trainer Dev publicado el 23/10/2026: paquete
+`build/trainer-compact-20261022.zip`, revisión `9deb71a4`, versión
+`9deb71a4db25faaa05ff24bb20295aa15a9011f1-20261022-1`, SHA-256
 `2d80b003f7e11dcea06f21833d9828d6d98964aa819dd28097c3e40f28765ee5`.
-Publicación solicitada a Javier y pendiente de respuesta. No se recarga ni se
-guarda su sesión real abierta en Trainer. La distribución queda preparada;
-no se presenta como publicada ni como CI ADMIN globalmente correcta.
+Carga privada en `trainer-releases` y extracción únicamente en
+`public_html/trainer`, conservando publicaciones anteriores. El verificador
+HTTPS acredita manifiesto, revisión, SHA-256 del JavaScript, arranque versionado,
+cabeceras y MIME WebAssembly. Una pestaña nueva abre el panel profesional con
+su acceso existente; no se recarga ni guarda la sesión real abierta del usuario.
+La captura de comprobación permanece local y no se suben datos de alumnos a Git.
+La distribución Dev de INT-011 queda completada. La siguiente aceptación
+funcional continúa siendo física en el fēnix.
 
 ## Límites y siguiente bloque
 

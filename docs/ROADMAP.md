@@ -11,11 +11,12 @@ anotada en su documento responsable. **Siguiente recorrido
 único:** actualizar el creador y contrastar en fēnix una pauta nueva con Lap,
 ritmo rápido/suave y última recuperación omitida, dentro del ciclo automático
 Dev. Pulso/cadencia/potencia y fuerza Garmin siguen pendientes.
-Código funcional `9deb71a4`: CI Garmin correcta incluida iOS; ADMIN validado,
-publicado y verificado por HTTPS. El job auxiliar de retención falla con HTTPError
-(reintento rechazado por revisión automática y pendiente de autorización).
-Trainer Dev tiene paquete preparado; su publicación también espera confirmación.
-La distribución permanece pendiente de esos dos pasos.
+Código funcional `9deb71a4`: CI Garmin correcta incluida iOS. Distribución
+comprobada el 23/10/2026: ADMIN y Trainer Dev publicados y verificados por HTTPS.
+Javier autoriza publicación y reintento de retención; el job auxiliar conserva
+cinco compilados incluida la versión publicada y retira un compilado antiguo.
+CI ADMIN completamente correcta tras ese reintento. Distribución Dev cerrada;
+la siguiente aceptación sigue siendo física en el fēnix.
 [Interfaz y aceptación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
 
 **INT-010 · 22/10/2026 · ciclo automático implementado y activo solo en Dev:**

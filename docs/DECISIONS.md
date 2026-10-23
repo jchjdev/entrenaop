@@ -10,6 +10,8 @@ para trabajo y recuperación. La omisión de la última recuperación se conserv
 Es una agrupación de presentación sobre los pasos planos V2 existentes: no
 cambia contratos, permisos ni datos SQL. Pulso/cadencia/potencia continúan
 pendientes de implementación completa.
+El 23/10 Javier autoriza publicar el paquete validado en Trainer Dev y
+reintentar solo la retención fallida de ADMIN; ambos terminan correctamente.
 [Alcance y aceptación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
 
 **INT-010 · 22/10/2026 · publicación automática de carrera en Garmin:** Javier
