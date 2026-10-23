@@ -16,6 +16,9 @@ La sincronización automática de esa cuenta estaba desactivada; esta aceptació
 es de un envío explícito, sin modificar su preferencia ni enviar otras citas.
 La app anterior sigue recibiendo solo carreras V1; el cliente nuevo solicita
 V2 para mostrar fuerza, sin cambiar los reintentos de confirmación previos.
+Punto de guardado funcional `9c5c9a27`, con CI completa correcta el 23/10/2026
+(backend, aplicación e iOS Release). El paquete web de Trainer con los ajustes
+de tiempos está preparado; su publicación continúa pendiente de autorización.
 **Siguiente recorrido único:** aceptar físicamente una sesión convencional de
 fuerza en el fēnix y revisar sus repeticiones y carga devueltas. Actualizar el
 iPhone desde main antes de probar el menú ampliado. No habilita cierres sin revisión.

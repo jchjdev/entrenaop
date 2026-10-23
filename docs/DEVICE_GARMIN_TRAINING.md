@@ -294,6 +294,14 @@ mezcla de deporte, atomicidad y lectura profesional MFA. Avisos globales del
 asesor de seguridad previos al bloque se conservan; las tablas privadas siguen
 cerradas por RLS/grants y RPC específicas.
 
+Punto de guardado funcional `9c5c9a27`, verificado el 23/10/2026:
+[CI completa](https://github.com/jchjdev/entrenaop/actions/runs/39968612833)
+correcta en backend, aplicación e iOS Release. El compilado web de Trainer
+`6f15d325ed6d0fc64a451cc526b1172821dbba47-20261023-1` está validado y preparado,
+con publicación pendiente de autorización; los cambios posteriores no afectan
+a sus fuentes consumidas. La actualización del iPhone sigue el flujo habitual
+Fetch/Pull de main y Xcode, conservando la configuración de desarrollo.
+
 Primera salida real comprobada: sesión convencional creada y asignada mediante
 Trainer Dev, revisada y enviada desde EntrenaOP Dev. Garmin acepta la creación
 y se comprueba el identificador de calendario: recibo `sent`, sin errores.
