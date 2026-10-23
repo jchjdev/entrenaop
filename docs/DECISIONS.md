@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Revisión y evolución de resultados · 24/10/2026 · criterios pendientes:**
+«Ver solo diferencias con la pauta» será un filtro opcional, desactivado al
+entrar, disponible para deportista y Trainer dentro de sus permisos actuales.
+La vista completa seguirá siendo el punto de partida. Se propone comparar
+sesiones de distintas fechas y la misma variante de ejercicio, conservando
+versión, bloque y contexto para valorar repeticiones, carga y RIR. Una sesión
+aislada no acredita mejora ni pérdida de nivel. Son criterios de diseño;
+el filtro y la comparación histórica todavía no están implementados.
+[Alcance previsto](TRAINER_PRIVATE_WORKOUTS.md#próximas-mejoras-de-revisión--criterios-del-24102026).
+
 **Publicación Dev sin confirmaciones repetidas · 24/10/2026:** Javier indica
 que los cambios terminados y validados se suban y publiquen directamente.
 La autorización continua de commit y push en main se amplía a los despliegues

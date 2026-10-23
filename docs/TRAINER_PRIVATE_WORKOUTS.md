@@ -39,6 +39,24 @@ con pauta y mediciones originales por serie al abrirla. No hay errores ni
 avisos de consola en esa comprobación ni escrituras de resultados/revisiones.
 La captura real queda privada fuera de Git. No se despliega ADMIN o producción.
 
+## Próximas mejoras de revisión · criterios del 24/10/2026
+
+Diseño pendiente, sin implementación funcional en esta entrega:
+
+- «Ver solo diferencias con la pauta» será opcional y comenzará desactivado.
+  Deportista y preparador podrán activarlo y volver a todos los resultados
+  desde sus respectivos historiales autorizados; no concede nuevos permisos.
+- La comparación propuesta permitirá revisar una misma sesión en distintas
+  fechas y sus variantes de ejercicio. Mantendrá la versión de la receta y el
+  contexto de bloque, posición, series, repeticiones, carga, RIR y tiempos
+  relevantes. No equiparará ejercicios solo por compartir un nombre ni
+  ocultará cambios de pauta que afecten a la comparación.
+- La lectura de evolución usará resultados comparables y su tendencia:
+  más repeticiones con la misma carga y esfuerzo similar puede ser una señal
+  favorable, pero una marca aislada no demuestra progreso o retroceso.
+  Se conservarán los valores ausentes, sin inventar RIR o cargas ni generar
+  una puntuación automática de calidad.
+
 ## Recorrido implementado
 
 La agrupación de UI-065 se extiende el 24/10/2026 al historial del deportista
