@@ -19,6 +19,8 @@ conjunto de apertura/cierre, conservando correcciones, tiempos del reloj y
 separación entre bloques. No cambia datos, recepción, cierre o permisos.
 Análisis limpio y batería raíz completa: 1.314 pruebas y una omisión previa.
 Distribuir en iPhone requiere actualizar main; no se publica otra web de Trainer.
+Web Release local y apertura/plegado del resultado existente comprobados sin
+errores de consola, conservando controles de corrección y mediciones originales.
 
 **INT-013 · primera entrega de fuerza en Dev · 23/10/2026:** reutilizar el creador
 común y el ciclo de cuenta, asignación, envío/cambios/cancelaciones y retorno

@@ -53,6 +53,15 @@ el plegado conjunto, los tiempos originales, identidades separadas, datos
 variables/ausentes, la corrección con RIR heredado y móvil a 320 px con texto
 doble. AMRAP conserva sus vueltas y parciales; carrera no se convierte en series
 de fuerza ni se ocultan sus tramos con este control.
+Código funcional `bad6d08c` subido a main. Web Release Dev compilada desde
+fuentes limpias; la vista local autenticada acredita el resultado de fuerza
+existente en una tarjeta cerrada, apertura de sus tres series, correcciones
+visibles y plegado conjunto. No hay errores ni avisos de consola en ese
+recorrido. Capturas privadas fuera de Git; ninguna corrección o marca se guarda
+durante la comprobación. La aceptación física del menú en iPhone requiere Pull
+de main y la instalación habitual con Xcode.
+La [CI 40036880351](https://github.com/jchjdev/entrenaop/actions/runs/40036880351)
+termina correcta en servidor, consumidor e iOS Release sobre `bad6d08c`.
 
 Javier pide aprovechar Harbiz e implementar el recorrido con nuestros creadores.
 El preparador entra en Mis sesiones privadas, crea una receta con el editor
