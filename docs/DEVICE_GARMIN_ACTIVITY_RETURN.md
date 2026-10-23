@@ -144,3 +144,16 @@ La evidencia real, los identificadores y las métricas exactas quedan fuera de G
 Fuentes oficiales: [Activity API 2.0](https://developerportal.garmin.com/sites/default/files/Activity_API%202.0_0.pdf),
 [SDK FIT JavaScript](https://github.com/garmin/fit-javascript-sdk),
 [dependencias Edge](https://supabase.com/docs/guides/functions/dependencies).
+
+
+## Punto de guardado y CI · 23/10/2026
+
+Código funcional `4160082f` subido y contrastado con `origin/main`. CI
+[39942562157](https://github.com/jchjdev/entrenaop/actions/runs/39942562157)
+correcta: servidor, consumidor y compilación iOS Release sin firma ni publicación.
+La comprobación visual final acredita «Completada» y «Ver resultado» en la cita
+de la semana, y totales del reloj en el historial. El receptor deja una
+observación, una confirmación y el callback consumido vacío, sin error pendiente.
+Nuevo menú físico iPhone y publicación de los dos totales nuevos en Trainer Dev
+siguen pendientes de distribución/aceptación; no impiden consultar la ejecución
+ya completada por el contrato profesional existente.

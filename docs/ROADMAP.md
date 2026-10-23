@@ -9,6 +9,8 @@ web comprobados: semana completada, siete resultados, cinco series y un recibo.
 Auto Lap conserva vueltas originales y la versión archivada exige entrega exacta
 y autoridad vigente. Raíz 1.302 pruebas y una omisión previa, Trainer 171,
 servidor 145, tipos y análisis correctos. Tres migraciones aplicadas solo en Dev.
+Código `4160082f` en GitHub; CI 39942562157 correcta con servidor, consumidor
+y compilación iOS Release sin firma ni publicación.
 **Siguiente recorrido único:** actualizar iPhone desde main y comprobar el nuevo
 menú y el mismo resultado ya cerrado, sin volver a enviar la sesión al reloj.
 Fuerza Garmin, otros proveedores y producción permanecen fuera de este cierre.
