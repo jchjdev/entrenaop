@@ -50,7 +50,11 @@ histórica.
 - Javier autoriza desde el 06/10/2026 hacer commit y subir a GitHub cada bloque
   terminado y validado, sin pedir confirmación de nuevo. Revisar el diff antes;
   no guardar como cerrado un bloque con comprobaciones fallidas o pendientes.
-  Esta autorización no incluye despliegues, producción ni reescribir historial.
+  Desde el 24/10/2026, Javier amplía esta autorización a los despliegues y
+  publicaciones necesarios en los entornos de desarrollo del proyecto, sin
+  pedir confirmación en cada subida o publicación. Completar la validación,
+  comprobar el destino Dev y verificar la versión publicada. La autorización
+  no incluye producción ni reescribir historial.
 - Mantener secretos fuera del repositorio y separar los entornos de desarrollo
   y producción. Una clave pública/anónima de Supabase puede estar en el cliente,
   pero debe configurarse por entorno.

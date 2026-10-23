@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Publicación Dev sin confirmaciones repetidas · 24/10/2026:** Javier indica
+que los cambios terminados y validados se suban y publiquen directamente.
+La autorización continua de commit y push en main se amplía a los despliegues
+y publicaciones necesarios en los entornos Dev del proyecto. No se vuelve a
+pedir permiso por cada paquete; se conserva la validación, la comprobación de
+destino y la verificación del resultado publicado. Producción y reescritura
+de historial conservan sus límites anteriores. Regla operativa responsable:
+[AGENTS.md](../AGENTS.md#reglas-del-repositorio).
+
 **UI-065 · 23/10/2026 · resultados profesionales compactos:** Javier pide
 agrupar las series de fuerza del mismo ejercicio en una tarjeta plegable,
 con resumen, colores por formato y detalle claro, evitando una tarjeta por
