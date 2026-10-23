@@ -212,6 +212,12 @@ class TrainerWorkoutResultContent extends StatelessWidget {
               Text('Pulso medio: ${result['average_heart_rate_bpm']} lpm'),
             if (result['max_heart_rate_bpm'] != null)
               Text('Pulso máximo: ${result['max_heart_rate_bpm']} lpm'),
+            if (result['observed_timer_seconds'] case final num seconds)
+              Text('Tiempo del reloj: ${_time(seconds.round())}'),
+            if (result['observed_distance_meters'] case final num meters)
+              Text(
+                'Distancia del reloj: ${(meters / 1000).toStringAsFixed(2)} km',
+              ),
             if (abandonment != null) Text('Motivo: $abandonment'),
             if ((result['notes'] as String?)?.isNotEmpty == true)
               Card(

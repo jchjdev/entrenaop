@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**INT-012 · retorno de carrera aceptado en Dev · 23/10/2026:** observación FIT
+privada por cuenta, revisión de vueltas/cita y confirmación atómica que completa
+la semana mediante el cierre existente. Servidor activo solo en Dev, contrato
+SQL transaccional y concurrencia local correctos; app con recorrido de revisión
+y totales medidos. Reenvío oficial del FIT real, revisión y cierre desde la app
+web comprobados: semana completada, siete resultados, cinco series y un recibo.
+Auto Lap conserva vueltas originales y la versión archivada exige entrega exacta
+y autoridad vigente. Raíz 1.302 pruebas y una omisión previa, Trainer 171,
+servidor 145, tipos y análisis correctos. Tres migraciones aplicadas solo en Dev.
+**Siguiente recorrido único:** actualizar iPhone desde main y comprobar el nuevo
+menú y el mismo resultado ya cerrado, sin volver a enviar la sesión al reloj.
+Fuerza Garmin, otros proveedores y producción permanecen fuera de este cierre.
+[Contrato y comprobaciones](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
 **UI-061 · fuerza compacta común · 23/10/2026:** bloques con color y nombre
 por formato, resumen plegable, un bloque abierto y arrastre de bloques y de
 ejercicios dentro de su bloque. Conserva las siete prescripciones, campos

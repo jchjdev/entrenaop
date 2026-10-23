@@ -1,5 +1,13 @@
 # Arquitectura de EntrenaOP
 
+INT-012 añade observación de carrera y aplicación mediante puertos, adaptador
+FIT Garmin y confirmación SQL atómica que reutiliza la ejecución existente.
+El SDK oficial queda en servidor; Flutter tiene repositorio y Cubit propios.
+Evidencia privada inmutable, idempotencia y lease compartido con envío/retirada
+mantienen separados recibir, asociar y completar. Los totales medidos conservan
+precisión y no se calculan desde la fecha de confirmación.
+[Retorno de actividad](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
 UI-061 reutiliza tarjetas y arrastre comunes para carrera y fuerza. El estado
 de plegado es efímero; reordenar mueve las identidades y controladores completos,
 incluidas excepciones e entradas incompletas. No cambia dominio, codecs, SQL,

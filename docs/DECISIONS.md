@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-012 · 23/10/2026 · retorno de carrera y cierre de cita:** Javier pide
+recibir la actividad de Garmin y completar su sesión con mediciones reales.
+Se conserva evidencia por cuenta y se exige revisión explícita de cita/vueltas,
+sin inferir parciales ni duplicar resultados. La confirmación atómica reutiliza
+el cierre deportivo y la visibilidad profesional existentes. Esfuerzo declarado
+y mediciones del reloj son hechos distintos; tiempo entrenado y confirmación
+también. Implementación y servidor activos solo en Dev; retorno real confirmado
+desde la app web con una única ejecución y semana completada. Auto Lap se agrupa
+por evidencia nativa y una versión anterior archivada exige recibo exacto y
+asignación vigente. La actualización del menú en iPhone sigue pendiente.
+[Contrato, seguridad y verificación](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
 **UI-061 · 23/10/2026 · fuerza con tarjetas por formato:** Javier solicita
 extender al creador común de fuerza los colores, plegado y arrastre de carrera.
 Cada bloque conserva su formato explícito, ejercicios, rondas y excepciones

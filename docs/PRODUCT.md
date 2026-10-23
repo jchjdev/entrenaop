@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+INT-012 incorpora en Dev la recepción de carreras Garmin y su revisión desde
+Perfil → Garmin → Carreras recibidas. El alumno elige una sesión pendiente,
+comprueba vueltas y esfuerzo y confirma para completar su semana e historial.
+No se completa nada por recibir una notificación. El retorno de la carrera
+física del alumno queda aceptado desde la app web en Dev: recibe FIT, revisa
+vueltas y completa la cita con un solo resultado. Nuevo menú iPhone por actualizar.
+[Estado y límites](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
 UI-061 extiende a fuerza las tarjetas por formato, colores, plegado y arrastre
 del creador común. Se puede mover el bloque completo o sus ejercicios sin
 perder series, rondas y descansos. No habilita todavía fuerza en Garmin.

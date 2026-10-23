@@ -353,7 +353,11 @@ class _WorkoutHistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final abandoned = execution.status == WorkoutExecutionStatus.abandoned;
     final completedAt = execution.completedAt;
-    final duration = completedAt?.difference(execution.startedAt);
+    final duration =
+        execution.measuredDuration ??
+        (execution.resultSource == WorkoutResultSource.device
+            ? null
+            : completedAt?.difference(execution.startedAt));
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(

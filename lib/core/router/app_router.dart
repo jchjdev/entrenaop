@@ -1070,6 +1070,20 @@ class AppRouter {
               ),
             ),
             materialAppRoute(
+              path: 'garmin-activities',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (_, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : GarminActivitiesRoute(
+                        key: ValueKey('garmin-activities-${auth.user.id}'),
+                        ownerId: auth.user.id,
+                        client: sl<SupabaseClient>(),
+                      ),
+              ),
+            ),
+            materialAppRoute(
               path: 'activities',
               parentNavigatorKey: _rootNavigatorKey,
               builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(

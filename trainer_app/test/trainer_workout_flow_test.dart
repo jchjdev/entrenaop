@@ -349,6 +349,26 @@ void main() {
       expect(find.text('Corregir resultado'), findsNothing);
     },
   );
+  testWidgets('muestra totales medidos sin calcularlos desde la confirmación', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TrainerWorkoutResultContent(
+            result: {
+              ...resultFixture,
+              'observed_timer_seconds': 137.3,
+              'observed_distance_meters': 410.25,
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Tiempo del reloj: 2:17'), findsOneWidget);
+    expect(find.text('Distancia del reloj: 0.41 km'), findsOneWidget);
+  });
   for (final width in [320.0, 1200.0]) {
     testWidgets('resultados y asignación legibles a $width con texto 2x', (
       tester,

@@ -6,6 +6,13 @@ on:
     paths:
       - 'supabase/functions/_shared/garmin/**'
       - 'supabase/functions/_shared/device_training/**'
+      - 'supabase/functions/_shared/device_activity/**'
+      - 'supabase/functions/garmin-activities/**'
+      - 'supabase/functions/garmin-activity-ingest/**'
+      - 'supabase/functions/package.json'
+      - 'supabase/functions/pnpm-lock.yaml'
+      - 'supabase/migrations/*garmin_activity*'
+      - 'supabase/tests/garmin_activity_return.sql'
       - 'supabase/functions/garmin-training/**'
       - 'supabase/functions/garmin-training-sync/**'
       - 'supabase/functions/garmin-connection/**'
@@ -13,12 +20,14 @@ on:
       - 'supabase/functions/tests/garmin*'
       - 'lib/features/device_connections/**'
       - 'lib/features/device_training/**'
+      - 'lib/features/device_activity_results/**'
       - 'lib/features/workouts/**'
       - 'packages/workout_editor_ui/**'
       - 'packages/workout_core/**'
       - 'lib/core/router/garmin_connection_route.dart'
       - 'test/features/device_connections/**'
       - 'test/features/device_training/**'
+      - 'test/features/device_activity_results/**'
       - 'test/features/workouts/**'
       - 'tools/prepare_iphone_dev.sh'
       - 'tools/test_prepare_iphone_dev.sh'
@@ -41,13 +50,16 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24.19.0'
+      - name: Resolver el SDK oficial FIT con versiones e integridad fijadas
+        working-directory: supabase/functions
+        run: npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile --ignore-scripts
       - name: Pruebas de servidor con fixtures, sin cuentas ni secretos
         working-directory: supabase/functions
         run: node --test tests/*_test.ts
       - name: Comprobar tipos del adaptador de servidor
         run: >-
           npm exec --yes --package=typescript@5.9.3 -- tsc
-          --noEmit --strict --target es2022 --lib es2023,dom
+          --noEmit --strict --target es2022 --lib es2023,dom,dom.iterable
           --module esnext --moduleResolution bundler --allowImportingTsExtensions
           supabase/functions/_shared/garmin/oauth.ts
           supabase/functions/_shared/garmin/cipher.ts
@@ -60,6 +72,10 @@ jobs:
           supabase/functions/_shared/device_training/delivery.ts
           supabase/functions/_shared/device_training/sync.ts
           supabase/functions/_shared/garmin/sync_http.ts
+          supabase/functions/_shared/garmin/activity_fit.ts
+          supabase/functions/_shared/garmin/activity_http.ts
+          supabase/functions/_shared/device_activity/running_result.ts
+          supabase/functions/_shared/device_activity/return_service.ts
 
   consumer:
     runs-on: ubuntu-24.04
@@ -84,9 +100,9 @@ jobs:
             (cd "$project" && flutter pub get --enforce-lockfile)
           done
           (cd packages/device_activity_core && dart pub get --enforce-lockfile)
-          dart format --output=none --set-exit-if-changed lib/features/device_connections lib/features/device_training lib/core/router/garmin_connection_route.dart test/features/device_connections test/features/device_training
+          dart format --output=none --set-exit-if-changed lib/features/device_connections lib/features/device_training lib/features/device_activity_results lib/core/router/garmin_connection_route.dart test/features/device_connections test/features/device_training test/features/device_activity_results
           flutter analyze
-          flutter test test/features/device_connections test/features/device_training test/features/device_activities
+          flutter test test/features/device_connections test/features/device_training test/features/device_activities test/features/device_activity_results
           flutter test test/features/workouts/presentation/workout_editor_cubit_test.dart test/features/workouts/data/shared_preferences_workout_editor_draft_store_test.dart test/features/workouts/domain/running_steps_v2_test.dart
           # Reutilizar el package_config resuelto con el lockfile de la raíz;
           # este paquete no versiona otro lockfile independiente.

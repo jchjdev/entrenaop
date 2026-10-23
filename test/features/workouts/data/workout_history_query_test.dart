@@ -53,6 +53,9 @@ void main() {
     expect(p['status'], 'eq.completed');
     expect(p['session_type'], 'eq.mixed');
     expect(p['select'], contains('session_type_policy'));
+    expect(p['select'], contains('observed_timer_seconds'));
+    expect(p['select'], contains('observed_elapsed_seconds'));
+    expect(p['select'], contains('observed_distance_meters'));
     expect(p['select'], isNot(contains('workout_templates')));
     expect(p['or'], contains('id.lt.00000000-0000-0000-0000-000000000001'));
     expect(p['or'], contains('started_at.lt.2026-09-20T00:00:00.000Z'));

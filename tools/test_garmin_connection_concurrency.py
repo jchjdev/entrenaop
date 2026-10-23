@@ -19,9 +19,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--pg-bin', required=True, type=Path)
 parser.add_argument('--training', action='store_true', help='Añadir fronteras y concurrencia del envío común de carrera.')
 parser.add_argument('--automatic', action='store_true')
+parser.add_argument('--activity', action='store_true', help='Concurrencia de recepción y confirmación; cierres deportivos probados aparte en Dev con ROLLBACK.')
 args = parser.parse_args()
 if args.automatic and not args.training:
     parser.error('--automatic necesita --training')
+if args.activity and not args.training:
+    parser.error('--activity necesita --training')
 root = Path(__file__).resolve().parents[1]
 bin_dir = args.pg_bin.resolve()
 if os.name == 'nt':
@@ -304,6 +307,75 @@ try:
                 winners=list(pool.map(compete,[False,True]))
             assert sum(value is not None for value in winners)==1
             print('Correcto: una sola toma automática y exclusión real entre envío manual y automático.')
+    if args.activity:
+        # Fronteras mínimas para probar los bloqueos reales del nuevo contrato.
+        # La receta, cierre y triggers reales se prueban en garmin_activity_return.sql.
+        db.query("""
+          create table public.workout_executions(id uuid primary key,user_id uuid,status text,started_at timestamptz);
+          create table public.workout_execution_sets(id uuid primary key,execution_id uuid,block_order integer,item_order integer,set_order integer,block_format text,recovery_type text);
+          create function public.start_scheduled_workout(p_id uuid) returns uuid language plpgsql as $$
+          declare e uuid:=gen_random_uuid(); s public.scheduled_workouts;
+          begin select * into s from public.scheduled_workouts where id=p_id;
+            insert into public.workout_executions values(e,s.user_id,'in_progress',now());
+            insert into public.workout_execution_sets values(gen_random_uuid(),e,0,0,0,'running',null);
+            update public.scheduled_workouts set execution_id=e,status='in_progress' where id=p_id; return e; end $$;
+          create function public.skip_workout_set(uuid) returns void language sql as $$select$$;
+          create function public.complete_workout_set(uuid,p_actual_duration_seconds integer,p_actual_distance_meters numeric,
+            p_actual_recovery_duration_seconds integer,p_actual_recovery_distance_meters numeric,p_result_source text)
+            returns void language sql as $$select$$;
+          create function public.finish_workout_observed_idempotent(uuid,uuid,integer,timestamptz,integer,text,integer,integer,text)
+            returns void language sql as $$ update public.workout_executions set status='completed' where id=$2;
+            update public.scheduled_workouts set status='completed' where execution_id=$2; $$;
+        """)
+        db.query((root/'supabase/migrations/20261023091748_garmin_activity_return.sql').read_text(encoding='utf-8'))
+        db.query((root/'supabase/migrations/20261023102552_garmin_activity_lap_groups.sql').read_text(encoding='utf-8'))
+        db.query('alter table public.workout_sets add column running_step jsonb')
+        db.query((root/'supabase/migrations/20261023103429_garmin_activity_prescribed_version.sql').read_text(encoding='utf-8'))
+        def activity(conn, action, owner=None, session=None, body=None):
+            payload=json.dumps(body or {}).replace("'","''")
+            o='null' if owner is None else f"'{owner}'"
+            s='null' if session is None else f"'{session}'"
+            return json.loads(conn.query(f"select public.garmin_activity_command('{action}',{o},{s},'{payload}')")[0][0])
+        owner,session,state,claim,generation=prepare()
+        rpc(db,'claim',body=dict(state_hash=state,claim_id=claim))
+        identity=str(uuid.uuid4())
+        rpc(db,'complete',owner,body=secret(generation,claim,identity))
+        job=str(uuid.uuid4())
+        activity(db,'enqueue',body=dict(id=job,event_key='a'*64,provider_user_id=identity,callback_cipher='fixture',metadata={}))
+        def claim_activity(_):
+            conn=DB()
+            try:return activity(conn,'claim',body=dict(id=job,lease_id=str(uuid.uuid4())))
+            finally:conn.close()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            jobs=list(pool.map(claim_activity,range(2)))
+        winner=next(value for value in jobs if value.get('tokens'))
+        assert sum(bool(value.get('tokens')) for value in jobs)==1
+        fields=dict(id=job,lease_id=winner['lease'])
+        observation=dict(schemaVersion=1,externalId='12345',name='Fixture',startedAt='2026-01-01T08:00:00Z',
+          offsetSeconds=0,timerSeconds=100,elapsedSeconds=100,distanceMeters=400,averageHeartRate=None,maxHeartRate=None,
+          laps=[dict(index=0,timerSeconds=100,distanceMeters=400)])
+        activity(db,'save',body=dict(**fields,activity=observation));activity(db,'release',body=fields)
+        scheduled=str(uuid.uuid4())
+        db.query(f"""insert into public.scheduled_workouts(id,user_id,template_id,template_name,template_version,status,source,scheduled_date)
+          values('{scheduled}','{owner}','{template}','Carrera sintética',1,'planned','coach',current_date);
+          insert into public.trainer_client_relations(id,trainer_id,client_id) values(gen_random_uuid(),'{trainer}','{owner}');
+          insert into public.trainer_assignments(scheduled_id,client_id,trainer_id,relation_id)
+          select '{scheduled}','{owner}','{trainer}',id from public.trainer_client_relations where client_id='{owner}' limit 1;""")
+        aid=db.query(f"select id from device_private.activity_observations where owner_id='{owner}'")[0][0]
+        preview=activity(db,'preview',owner,session,dict(activity_id=aid,scheduled_id=scheduled))
+        confirmation=dict(operation_id=str(uuid.uuid4()),activity_id=aid,scheduled_id=scheduled,
+          activity_revision=preview['activity_revision'],source_revision=preview['source_revision'],rpe=4,
+          mapping=[dict(block_order=0,item_order=0,set_order=0,lap_index=0)])
+        def confirm_activity(_):
+            conn=DB()
+            try:return activity(conn,'confirm',owner,session,confirmation)
+            finally:conn.close()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            receipts=list(pool.map(confirm_activity,range(2)))
+        assert receipts[0]['execution_id']==receipts[1]['execution_id']
+        assert sum(value['replayed'] for value in receipts)==1
+        assert db.query(f"select count(*) from public.workout_executions where user_id='{owner}'")[0][0]=='1'
+        print('Correcto: una sola descarga concurrente y una única ejecución ante dos confirmaciones simultáneas de la misma operación.')
 finally:
     if db is not None:db.close()
     try:

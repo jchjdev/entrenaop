@@ -218,3 +218,14 @@ confirma resultados del alumno. El ciclo de cambios/cancelaciones automático,
 la omisión de última recuperación, nuevos objetivos y otras marcas conservan
 su aceptación pendiente. No se guardan en Git correo, identificadores de
 cuenta/asignación/actividad, recorrido, capturas ni métricas exactas.
+
+
+## Retorno de esa carrera · actualización del 23/10/2026
+
+La comprobación anterior era de solo lectura. INT-012 implementa después el
+retorno: reenvío oficial del FIT, recepción privada y confirmación desde la app
+web Dev con el esfuerzo declarado por el alumno. La cita ahora figura
+completada, con una única ejecución sobre la versión original, parciales del
+reloj y un recibo. Auto Lap se agrupa por evidencia nativa; no se atribuyen los
+totales a las series ni se envía otra pauta al reloj. El nuevo menú del iPhone
+requiere actualizar desde main. [Contrato y aceptación](DEVICE_GARMIN_ACTIVITY_RETURN.md).

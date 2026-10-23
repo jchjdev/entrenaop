@@ -7,6 +7,8 @@ import '../../features/device_connections/data/supabase_garmin_connection_reposi
 import '../../features/device_connections/presentation/garmin_connection_page.dart';
 import '../../features/device_training/data/supabase_training_delivery_repository.dart';
 import '../../features/device_training/presentation/training_delivery_page.dart';
+import '../../features/device_activity_results/data/supabase_activity_result_repository.dart';
+import '../../features/device_activity_results/presentation/activity_result_page.dart';
 
 class GarminConnectionRoute extends StatelessWidget {
   const GarminConnectionRoute({
@@ -24,6 +26,22 @@ class GarminConnectionRoute extends StatelessWidget {
         launchUrl(uri, mode: LaunchMode.externalApplication),
     onOpenPro: () => context.push('/pro/subscription'),
     onOpenTraining: () => context.push('/profile/garmin-training'),
+    onOpenActivities: () => context.push('/profile/garmin-activities'),
+  );
+}
+
+class GarminActivitiesRoute extends StatelessWidget {
+  const GarminActivitiesRoute({
+    super.key,
+    required this.client,
+    required this.ownerId,
+  });
+  final SupabaseClient client;
+  final String ownerId;
+  @override
+  Widget build(BuildContext context) => ActivityResultPage(
+    key: ValueKey(ownerId),
+    repository: SupabaseActivityResultRepository(client, ownerId),
   );
 }
 

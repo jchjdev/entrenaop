@@ -42,6 +42,12 @@ class WorkoutExecutionModel {
       averageHeartRateBpm: json['average_heart_rate_bpm'] as int?,
       maxHeartRateBpm: json['max_heart_rate_bpm'] as int?,
       resultSource: _resultSource(json['result_source']),
+      observedTimerSeconds: (json['observed_timer_seconds'] as num?)
+          ?.toDouble(),
+      observedElapsedSeconds: (json['observed_elapsed_seconds'] as num?)
+          ?.toDouble(),
+      observedDistanceMeters: (json['observed_distance_meters'] as num?)
+          ?.toDouble(),
       sets: sets,
       amrapResults: amrapResults,
     );

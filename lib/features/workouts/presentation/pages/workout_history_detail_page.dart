@@ -238,7 +238,11 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final completedAt = execution.completedAt;
-    final duration = completedAt?.difference(execution.startedAt);
+    final duration =
+        execution.measuredDuration ??
+        (execution.resultSource == WorkoutResultSource.device
+            ? null
+            : completedAt?.difference(execution.startedAt));
     final reportedRunningSeconds = execution.sets
         .where(
           (set) =>
@@ -274,7 +278,15 @@ class _SummaryCard extends StatelessWidget {
             if (duration != null)
               _SummaryMetric(
                 value: _compactDuration(duration),
-                label: 'Tiempo en la app',
+                label: execution.measuredDuration == null
+                    ? 'Tiempo en la app'
+                    : 'Tiempo del reloj',
+              ),
+            if (execution.observedDistanceMeters != null)
+              _SummaryMetric(
+                value:
+                    '${(execution.observedDistanceMeters! / 1000).toStringAsFixed(2)} km',
+                label: 'Distancia del reloj',
               ),
             if (reportedRunningSeconds > 0)
               _SummaryMetric(

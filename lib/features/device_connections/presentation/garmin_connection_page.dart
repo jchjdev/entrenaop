@@ -11,11 +11,13 @@ class GarminConnectionPage extends StatefulWidget {
     required this.openAuthorization,
     required this.onOpenPro,
     this.onOpenTraining,
+    this.onOpenActivities,
   });
   final GarminConnectionRepository repository;
   final Future<bool> Function(Uri) openAuthorization;
   final VoidCallback onOpenPro;
   final VoidCallback? onOpenTraining;
+  final VoidCallback? onOpenActivities;
   @override
   State<GarminConnectionPage> createState() => _GarminConnectionPageState();
 }
@@ -127,6 +129,12 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                 }),
               ),
             if (snapshot != null) ...[
+              if (widget.onOpenActivities != null)
+                TextButton.icon(
+                  onPressed: state.busy ? null : widget.onOpenActivities,
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Carreras recibidas y completar sesión'),
+                ),
               Text(switch (status!) {
                 GarminConnectionStatus.disconnected => 'Sin conexión',
                 GarminConnectionStatus.authorizing => 'Autorización pendiente',

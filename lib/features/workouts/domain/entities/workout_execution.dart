@@ -32,6 +32,9 @@ class WorkoutExecution extends Equatable {
     this.averageHeartRateBpm,
     this.maxHeartRateBpm,
     this.resultSource,
+    this.observedTimerSeconds,
+    this.observedElapsedSeconds,
+    this.observedDistanceMeters,
   });
 
   final String id;
@@ -49,6 +52,12 @@ class WorkoutExecution extends Equatable {
   final int? averageHeartRateBpm;
   final int? maxHeartRateBpm;
   final WorkoutResultSource? resultSource;
+  final double? observedTimerSeconds;
+  final double? observedElapsedSeconds;
+  final double? observedDistanceMeters;
+  Duration? get measuredDuration => observedTimerSeconds == null
+      ? null
+      : Duration(microseconds: (observedTimerSeconds! * 1000000).round());
   final List<WorkoutExecutionSet> sets;
   final List<WorkoutAmrapResult> amrapResults;
 
@@ -103,6 +112,9 @@ class WorkoutExecution extends Equatable {
     averageHeartRateBpm: averageHeartRateBpm ?? this.averageHeartRateBpm,
     maxHeartRateBpm: maxHeartRateBpm ?? this.maxHeartRateBpm,
     resultSource: resultSource ?? this.resultSource,
+    observedTimerSeconds: observedTimerSeconds,
+    observedElapsedSeconds: observedElapsedSeconds,
+    observedDistanceMeters: observedDistanceMeters,
     sets: sets ?? this.sets,
     amrapResults: amrapResults ?? this.amrapResults,
   );
@@ -124,6 +136,9 @@ class WorkoutExecution extends Equatable {
     averageHeartRateBpm,
     maxHeartRateBpm,
     resultSource,
+    observedTimerSeconds,
+    observedElapsedSeconds,
+    observedDistanceMeters,
     sets,
     amrapResults,
   ];

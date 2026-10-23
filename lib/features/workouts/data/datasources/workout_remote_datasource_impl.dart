@@ -41,6 +41,9 @@ class WorkoutRemoteDataSourceImpl implements WorkoutRemoteDataSource {
     average_heart_rate_bpm,
     max_heart_rate_bpm,
     result_source,
+    observed_timer_seconds,
+    observed_elapsed_seconds,
+    observed_distance_meters,
     workout_amrap_results (
       block_order,
       completed_rounds,

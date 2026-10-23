@@ -1,5 +1,13 @@
 # Garmin Connect · integración directa · INT-005
 
+**Actualización INT-012 · 23/10/2026:** Garmin ya recibe actividades FIT en Dev
+y permite asociarlas con revisión explícita a una cita pendiente. La primera
+carrera física queda completada desde la app web con resultados reales y sin
+duplicar la ejecución. La edición de la biblioteca conserva la versión enviada;
+Auto Lap se agrupa por su índice nativo. No amplía otros proveedores, fuerza o
+producción. [Estado y límites actuales](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
+
 ## Estado comprobado · 22/10/2026
 
 La aplicación existente `EntrenaOP Dev` utiliza OAuth 2.0 y Starter. Javier ha

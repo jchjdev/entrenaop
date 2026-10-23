@@ -1,5 +1,13 @@
 # Dispositivos y actividades · bloque común · INT-001
 
+**Actualización INT-012 · 23/10/2026:** Garmin ya recibe actividades FIT en Dev
+y permite asociarlas con revisión explícita a una cita pendiente. La primera
+carrera física queda completada desde la app web con resultados reales y sin
+duplicar la ejecución. La edición de la biblioteca conserva la versión enviada;
+Auto Lap se agrupa por su índice nativo. No amplía otros proveedores, fuerza o
+producción. [Estado y límites actuales](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
+
 ## Decisión y estado · 21/10/2026
 
 Javier aprueba trabajar las integraciones como un bloque común de la app del

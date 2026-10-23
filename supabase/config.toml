@@ -407,6 +407,16 @@ verify_jwt = false
 [functions.garmin-training-sync]
 verify_jwt = false
 
+# Garmin aporta una capacidad secreta en la ruta; el worker usa un ticket de un solo uso.
+[functions.garmin-activity-ingest]
+verify_jwt = false
+import_map = "./functions/garmin-activity-ingest/deno.json"
+
+# Auth verifica al titular y SQL comprueba su sesión antes de consultar o completar.
+[functions.garmin-activities]
+verify_jwt = false
+import_map = "./functions/garmin-activities/deno.json"
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
