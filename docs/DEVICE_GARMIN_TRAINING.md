@@ -314,10 +314,31 @@ de recetas compatibles; fuerza automática y retirada en proveedor conservan
 aceptación externa pendiente. Los formatos incompatibles requieren revisión,
 sin publicarse como otra receta.
 
-La aceptación física de fuerza en el fēnix sigue pendiente. La actualización
+El ensayo técnico con fēnix 8 se completa después con una actividad simulada,
+no con una sesión física de fuerza realizada. La actualización
 de menús y tiempos requiere instalar main en iPhone; la revisión existente de
 Trainer ya muestra repeticiones, kilos y reloj `m:ss`. El paquete web de Trainer
 se actualiza con la autorización posterior; ADMIN no se despliega en esta entrega.
+
+Aceptación técnica con dispositivo real · 23/10/2026: el vídeo acredita la
+receta de banca y sus instrucciones en el fēnix; Garmin Connect conserva las
+series y la actividad FIT entra automáticamente en Dev (`done/stored`, sin
+error). Se contrastan sus repeticiones, cargas y tiempos con la vista Garmin.
+El archivo no resuelve el código propio de ejercicio de forma inequívoca;
+la revisión exige seleccionar explícitamente cada serie activa, como establece
+el contrato, conservando descansos separados y sin reutilizar registros.
+
+Desde la app se revisan las tres correspondencias y se completa exclusivamente
+la cita de prueba, conservando como esfuerzo la autoevaluación declarada en
+Garmin. SQL acredita una confirmación, la misma cita/ejecución completadas y
+resultados de fuente `device` con los tiempos originales. Trainer muestra ese
+mismo resultado sin errores ni avisos de consola; no se marca la revisión
+profesional como realizada. Identificadores, métricas exactas, vídeo y capturas
+permanecen privados fuera de Git. Es aceptación de transporte, revisión y cierre
+con actividad simulada, no de ejercicio físico, carga efectiva ni detección
+automática de repeticiones. No acredita otros ejercicios, formatos, cambios o
+cancelaciones automáticos de fuerza. Siguiente ensayo: sesión convencional
+real con marcas distintas de la pauta, sin ampliar todavía las equivalencias.
 
 Compatibilidad de lectura: el cliente nuevo pide `activity_schema_version: 2`.
 Sin esa petición el receptor de usuario devuelve solo observaciones/candidatas

@@ -20,8 +20,12 @@ Punto de guardado funcional `9c5c9a27`, con CI completa correcta el 23/10/2026
 (backend, aplicación e iOS Release). Javier autoriza después publicar el paquete
 web de Trainer `6f15d325`: desplegado y contrastado por HTTPS y Chrome, con
 tiempos originales del reloj en la misma ejecución y sin escrituras de resultados.
-**Siguiente recorrido único:** aceptar físicamente una sesión convencional de
-fuerza en el fēnix y revisar sus repeticiones y carga devueltas. Actualizar el
+Aceptación técnica posterior con fēnix 8 y actividad simulada: recepción
+automática correcta, tres series activas revisadas sin reutilización, cierre
+de la misma cita desde la app y resultado visible en Trainer sin errores.
+No acredita haber realizado físicamente esas series ni otras variantes.
+**Siguiente recorrido único:** ensayar una sesión convencional real con marcas
+distintas de la pauta para contrastar la fidelidad del resultado. Actualizar el
 iPhone desde main antes de probar el menú ampliado. No habilita cierres sin revisión.
 [Alcance solicitado](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
 

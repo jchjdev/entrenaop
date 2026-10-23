@@ -22,7 +22,11 @@ de catálogo contrastadas, envío/cambios/cancelaciones por la infraestructura
 existente y retorno FIT de series, repeticiones y carga. Contratos SQL con
 ROLLBACK y fixtures SDK verificados; primera creación/asignación desde Trainer
 y envío real desde EntrenaOP aceptados por Garmin y confirmados en calendario.
-Aceptación física de fuerza pendiente; no se ha fabricado un retorno real.
+Ensayo técnico posterior con fēnix 8 y actividad simulada: receta visible en
+el reloj, retorno FIT recibido automáticamente, series revisadas y misma cita
+completada desde la app, con resultado legible en Trainer. No acredita una
+sesión física de fuerza realizada. La autoevaluación se conserva desde la
+declaración visible en Garmin; no se inventa esfuerzo ni se cambia el cierre.
 Otros formatos, ejercicios y prescripciones especializadas del algoritmo
 permanecen incompatibles, sin degradación silenciosa. No se confunde la pauta
 enviada con lo realizado ni se rellenan mediciones ausentes.

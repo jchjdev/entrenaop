@@ -4,8 +4,9 @@ INT-013 amplía en Dev el ciclo Garmin a fuerza profesional por series para
 tres variantes de catálogo comprobadas. Mantiene el creador de las tres apps,
 los derechos de cuenta y el cierre revisado del alumno; guarda repeticiones y
 kilos observados sin copiar la pauta como resultado. Otros formatos y fuerza
-especializada del algoritmo siguen pendientes, igual que la aceptación física
-en fēnix. INT-014 muestra tiempos legibles y explica diferencias sin una nota
+especializada del algoritmo siguen pendientes. El ciclo técnico completo se
+comprueba con fēnix 8 y una actividad simulada, sin acreditar ejercicio físico
+real. INT-014 muestra tiempos legibles y explica diferencias sin una nota
 de calidad. [Cobertura y límites](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
 
 INT-012 incorpora en Dev la recepción de carreras Garmin y su revisión desde
