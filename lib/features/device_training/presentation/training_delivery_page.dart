@@ -169,7 +169,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                   const Divider(height: 32),
                 ],
                 const Text(
-                    'Elige una sesión compatible de tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
+                  'Elige una sesión compatible de tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
                 ),
                 if (state.busy)
                   const Padding(
