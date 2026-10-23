@@ -229,3 +229,31 @@ completada, con una única ejecución sobre la versión original, parciales del
 reloj y un recibo. Auto Lap se agrupa por evidencia nativa; no se atribuyen los
 totales a las series ni se envía otra pauta al reloj. El nuevo menú del iPhone
 requiere actualizar desde main. [Contrato y aceptación](DEVICE_GARMIN_ACTIVITY_RETURN.md).
+
+## Fuerza · recorrido solicitado INT-013
+
+Javier solicita el mismo recorrido para fuerza el 23/10/2026. El creador común
+ya existe en deportista, ADMIN y Trainer; el adaptador de envío y el lector FIT
+actuales siguen limitados a carrera. Esta sección define trabajo pendiente,
+no soporte disponible ni un cambio de contrato aplicado.
+
+El recorrido deseado es crear una única receta propia, asignarla a la semana,
+enviarla al reloj con cambios y cancelaciones, recibir lo realizado y completar
+la misma cita con sus datos y esfuerzo declarado. Se reutilizarán las fronteras
+de cuenta, permisos, entrega e historial, manteniendo los detalles de Garmin
+en sus adaptadores; no se creará un segundo editor o resultado para Trainer.
+
+La especificación oficial Training API V2 2.0 consultada (páginas 4–9 y anexos
+A/B locales) contempla `STRENGTH_TRAINING`, ejercicios de catálogo, duración
+por repeticiones y carga en kilogramos. Esto no acredita equivalencia completa
+de superseries, Tabata ni los demás formatos del creador. Antes de modificar
+el contrato se contrastarán esas capacidades y los campos realmente devueltos
+en FIT con el catálogo propio y los resultados existentes.
+
+Primer recorrido funcional recomendado: un ejercicio reconocido, varias
+series, repeticiones, carga y descansos; comprobar envío, ejecución física,
+retorno y cierre sin duplicados. Ampliar después por formatos comprobados.
+La prescripción no rellenará repeticiones o cargas ausentes del reloj: lo
+desconocido seguirá ausente y cualquier corrección del usuario será explícita.
+La recepción automática no implica completar automáticamente; se conserva la
+revisión con esfuerzo declarado mientras no se acuerde otro criterio.

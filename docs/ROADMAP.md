@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-013 · fuerza con reloj solicitada · 23/10/2026:** reutilizar el creador
+común y el ciclo de cuenta, asignación, envío/cambios/cancelaciones y retorno
+para cerrar la misma cita con mediciones reales. Pendiente de contrato e
+implementación: la exportación y recepción actuales siguen siendo de carrera.
+El primer bloque de fuerza recomendado es contrastar catálogo, capacidades
+Training API y resultados FIT antes de ampliar el contrato; la primera prueba
+física se limitará a un ejercicio con series, carga, repeticiones y descansos.
+No sustituye la aceptación pendiente del nuevo menú iPhone de INT-012 ni
+habilita cierres automáticos sin revisión.
+[Alcance solicitado](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+
 **INT-012 · retorno de carrera aceptado en Dev · 23/10/2026:** observación FIT
 privada por cuenta, revisión de vueltas/cita y confirmación atómica que completa
 la semana mediante el cierre existente. Servidor activo solo en Dev, contrato

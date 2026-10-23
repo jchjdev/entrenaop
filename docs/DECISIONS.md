@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**INT-013 · 23/10/2026 · recorrido de fuerza con reloj solicitado:** Javier
+pide que fuerza reutilice el creador común y tenga el recorrido de carrera:
+asignación, envío, cambios/cancelaciones y retorno de mediciones para cerrar
+la cita y alimentar el seguimiento. Es alcance solicitado, todavía no
+implementado. Antes de ampliar el contrato se contrastarán ejercicios,
+formatos y resultados admitidos por Garmin; no se promete equivalencia de
+todos los formatos ni se confunde la pauta enviada con lo realizado.
+El cierre actual de carrera sigue requiriendo revisión y esfuerzo declarado;
+esta petición no autoriza convertirlo en cierre automático.
+[Alcance y primer recorrido recomendado](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+
 **INT-012 · 23/10/2026 · retorno de carrera y cierre de cita:** Javier pide
 recibir la actividad de Garmin y completar su sesión con mediciones reales.
 Se conserva evidencia por cuenta y se exige revisión explícita de cita/vueltas,
