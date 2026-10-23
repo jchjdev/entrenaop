@@ -6,9 +6,11 @@ formulario. La serie conserva colores, repeticiones, recuperación/omisión y
 texto incompleto; cancelar no guarda. Mantiene Subir/Bajar, contrato V2,
 snapshot y permisos. Análisis de las tres apps limpios; raíz 1.294, ADMIN 314,
 Trainer 170 y creador común 196 pruebas correctas, con las omisiones previas.
-La publicación de esta ampliación se acredita por separado de la versión
-compacta ya distribuida. **Siguiente recorrido único:** distribuir el arrastre
-validado y continuar la aceptación física de la receta en el fēnix.
+Código funcional `f050b422`, CI Garmin 39906487372 correcta incluida iOS;
+CI ADMIN 39906487330 correcta incluida publicación y retención. ADMIN y Trainer
+Dev publicados y verificados por HTTPS el 23/10/2026, con autorización expresa
+para esta ampliación de Trainer. **Siguiente recorrido único:** continuar la
+aceptación física de la receta en el fēnix.
 [Arrastre y verificación](WORKOUT_EDITOR_SHARED_2026_10_22.md#reordenación-por-arrastre--23102026).
 
 **INT-011 · 22/10/2026 · creador común de carrera compacto:** resúmenes

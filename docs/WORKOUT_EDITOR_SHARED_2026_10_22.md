@@ -122,6 +122,26 @@ Verificación del arrastre: análisis sin incidencias en raíz, ADMIN y Trainer;
 170 Trainer y 196 del creador común. Capturas sintéticas del widget real durante
 el arrastre y revisiones responsivas a 320/390/1200 px, también texto 2×.
 
+Distribución del arrastre comprobada el 23/10/2026: código funcional
+`f050b4227ce9f4cfc6404b9c80ea07228ee37018` guardado en main. Javier autoriza
+expresamente publicar esta ampliación en Trainer Dev. Paquete
+`build/trainer-drag-20261023.zip`, versión
+`f050b4227ce9f4cfc6404b9c80ea07228ee37018-20261023-1`, SHA-256
+`b82fa25f43eb3211150b7c84e41f357f9ecb50fe02658e7a0f4d457456e0280a`.
+Se carga y extrae solo en `public_html/trainer`, conservando versiones previas.
+El verificador acredita revisión, JavaScript, arranque, cabeceras y WebAssembly
+por HTTPS. Una pestaña nueva abre la biblioteca profesional existente; no se
+modifican sus sesiones reales durante la comprobación.
+
+[CI Garmin 39906487372](https://github.com/jchjdev/entrenaop/actions/runs/39906487372)
+correcta en backend, consumidor y compilación iOS Release sin firma.
+[CI ADMIN 39906487330](https://github.com/jchjdev/entrenaop/actions/runs/39906487330)
+correcta en validación, publicación y retención automática. Los manifiestos de
+ADMIN y Trainer Dev sirven `f050b422` exclusivamente en desarrollo.
+La entrega de arrastre queda distribuida; el siguiente recorrido continúa
+siendo la aceptación física de la receta en fēnix. La app del iPhone necesita
+actualización desde main para incorporar el asa en su creador local.
+
 ### Distribución comprobada de INT-011
 
 Código funcional `9deb71a4db25faaa05ff24bb20295aa15a9011f1` subido a main.
