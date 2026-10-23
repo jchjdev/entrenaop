@@ -1,5 +1,33 @@
 # Sesiones privadas, pautas y resultados · TRN-016 · 21/10/2026
 
+## Resultados compactos · UI-065 · 23/10/2026
+
+La vista de resultado profesional presenta una cabecera por bloque con nombre
+y formato, y una tarjeta plegable por posición de ejercicio de fuerza. Los
+colores mantienen las familias usadas en el creador; nombre y estado escritos
+evitan depender del color. La tarjeta cerrada resume completadas, omitidas y
+pendientes. Solo resume una dosis uniforme observada; si las marcas varían,
+lo indica sin promediarlas. Al desplegar, cada serie conserva su pauta y su
+resultado, con tiempos originales del reloj y valores ausentes intactos.
+En escritorio se comparan en columnas; en móvil o con texto ampliado se apilan.
+
+La agrupación es local a presentación y recorre el orden recibido del servidor.
+Exige posiciones consecutivas con el mismo `block_order`, `item_order` y
+`exercise_id`; no agrupa por nombre ni mezcla posiciones de bloques diferentes.
+Si falta identidad suficiente, conserva tarjetas separadas. Carrera mantiene
+sus tramos individuales y AMRAP no convierte su receta en series realizadas.
+La consulta, las marcas, las revisiones, la asignación y el cierre no cambian.
+
+Análisis Trainer correcto y 179 pruebas aprobadas, incluidas diez series en una
+tarjeta, separación por posición/bloque/identidad, resultados variables,
+omisiones, carga ausente, tramos de carrera y superserie a 320/1200 px con
+texto ampliado al doble. Publicación web nueva pendiente de autorización.
+Compilación Release local y comprobación en Chrome sin errores de consola:
+una sesión de ejemplo con dieciséis series ocupa tres tarjetas cerradas;
+desplegar conserva las dosis variables y la comparación por serie. La vista
+previa utiliza el mismo widget con datos ficticios, sin consultas ni escrituras
+de alumnos. No acredita aún el paquete publicado en Trainer Dev.
+
 ## Recorrido implementado
 
 Javier pide aprovechar Harbiz e implementar el recorrido con nuestros creadores.

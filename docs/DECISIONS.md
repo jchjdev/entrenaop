@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**UI-065 · 23/10/2026 · resultados profesionales compactos:** Javier pide
+agrupar las series de fuerza del mismo ejercicio en una tarjeta plegable,
+con resumen, colores por formato y detalle claro, evitando una tarjeta por
+serie. Se conserva la separación por bloque y posición de ejercicio: repetir
+un nombre no autoriza mezclar sus resultados. El resumen no promedia valores
+distintos ni copia objetivos como mediciones; cada excepción, omisión, tiempo
+original y marca sigue disponible al desplegar. Los tramos de carrera y la
+receta AMRAP conservan su semántica. Es presentación de Trainer, sin cambios
+en resultados, permisos, contrato de recepción o creador compartido.
+[Agrupación y verificación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
+
 **INT-014 · 23/10/2026 · tiempos legibles y comparación explicada:** Javier
 pide minutos y segundos en lugar de totales de segundos en objetivos y resultados.
 El detalle y sus totales usan reloj `m:ss`, como el resultado profesional existente.

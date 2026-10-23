@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**UI-065 · resultados profesionales compactos · 23/10/2026:** cabecera por
+bloque y tarjeta plegable por posición de ejercicio de fuerza, con colores
+por formato, resumen de cumplimiento y detalle de pauta/resultado por serie.
+No mezcla nombres repetidos, posiciones, bloques o tramos de carrera, ni
+promedia excepciones. Análisis limpio y 179 pruebas Trainer correctas,
+incluidas pantallas estrechas con texto doble. Release local comprobada en
+Chrome con dieciséis series en tres tarjetas; captura con datos ficticios,
+sin escrituras de resultados. **Siguiente paso único de UI-065:** publicación
+autorizada en Trainer Dev y comprobación del resultado existente del alumno.
+[Contrato de presentación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
+
 **INT-013 · primera entrega de fuerza en Dev · 23/10/2026:** reutilizar el creador
 común y el ciclo de cuenta, asignación, envío/cambios/cancelaciones y retorno
 para cerrar la misma cita con mediciones reales. Implementada la vía profesional

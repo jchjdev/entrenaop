@@ -173,6 +173,7 @@ class TrainerWorkoutResultContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final sets = (result['workout_execution_sets'] as List? ?? []).cast<Map>();
     final amrap = (result['workout_amrap_results'] as List? ?? []).cast<Map>();
+    final blocks = _resultBlocks(sets);
     final hasSeries = sets.any((set) => set['block_format'] != 'amrap');
     final status = switch (result['status']) {
       'completed' => 'Completada',
@@ -246,35 +247,290 @@ class TrainerWorkoutResultContent extends StatelessWidget {
                   ),
                 ),
               ),
-            for (final set in sets)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        '${set['block_name']} · ${set['exercise_name']}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        'Serie ${(set['set_order'] as int) + 1} · ${set['block_format'] == 'amrap' ? 'Receta AMRAP' : _setStatus(set['status'])}',
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Pautado: ${_measures(set, 'target_')}'),
-                      if (set['block_format'] != 'amrap')
-                        Text(
-                          'Realizado: ${set['status'] == 'completed' ? _measures(set, 'actual_') : 'Sin registro de resultado'}',
-                        ),
-                    ],
+            for (final block in blocks) ...[
+              _ResultBlockHeading(block: block),
+              for (final exercise in block.exercises)
+                if (block.format == 'running')
+                  _RunningResultCard(set: exercise.sets.single)
+                else
+                  _ExerciseResultCard(
+                    key: ValueKey(exercise.key),
+                    exercise: exercise,
+                    format: block.format,
                   ),
-                ),
-              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
+
+class _ResultExercise {
+  _ResultExercise(this.key, Map first) : sets = [first];
+  final String key;
+  final List<Map> sets;
+  Map get first => sets.first;
+}
+
+class _ResultBlock {
+  _ResultBlock(this.first);
+  final Map first;
+  final List<_ResultExercise> exercises = [];
+  String get format => first['block_format'] as String? ?? 'straight_sets';
+}
+
+List<_ResultBlock> _resultBlocks(List<Map> sets) {
+  final blocks = <_ResultBlock>[];
+  for (final (index, set) in sets.indexed) {
+    // Los nombres se repiten. Solo agrupamos posiciones consecutivas de la
+    // misma receta; una identidad incompleta conserva su tarjeta individual.
+    final previousBlock = blocks.lastOrNull;
+    final sameBlock =
+        set['block_order'] != null &&
+        previousBlock?.first['block_order'] == set['block_order'] &&
+        previousBlock?.first['block_format'] == set['block_format'];
+    final block = sameBlock ? previousBlock! : _ResultBlock(set);
+    if (!sameBlock) blocks.add(block);
+    final previous = block.exercises.lastOrNull;
+    final sameExercise =
+        block.format != 'running' &&
+        set['item_order'] != null &&
+        set['exercise_id'] != null &&
+        previous?.first['item_order'] == set['item_order'] &&
+        previous?.first['exercise_id'] == set['exercise_id'];
+    if (sameExercise) {
+      previous!.sets.add(set);
+    } else {
+      block.exercises.add(
+        _ResultExercise(
+          '${set['block_order']}:${set['item_order']}:$index',
+          set,
+        ),
+      );
+    }
+  }
+  return blocks;
+}
+
+(String, Color) _blockStyle(String format) => switch (format) {
+  'superset' => ('Superserie', const Color(0xffce93d8)),
+  'circuit' => ('Circuito', const Color(0xff80cbc4)),
+  'intervals' => ('Intervalos', const Color(0xffffb74d)),
+  'emom' => ('EMOM', const Color(0xff81d4fa)),
+  'amrap' => ('AMRAP', const Color(0xffffd54f)),
+  'tabata' => ('Tabata', const Color(0xffef9a9a)),
+  'warm_up' => ('Calentamiento', const Color(0xffffb74d)),
+  'cool_down' => ('Enfriamiento', const Color(0xff80cbc4)),
+  'running' => ('Carrera', const Color(0xffff9c68)),
+  _ => ('Por series', const Color(0xff82b1ff)),
+};
+
+class _ResultBlockHeading extends StatelessWidget {
+  const _ResultBlockHeading({required this.block});
+  final _ResultBlock block;
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = _blockStyle(block.format);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            block.first['block_name'] as String,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Text(label, style: TextStyle(color: color)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExerciseResultCard extends StatelessWidget {
+  const _ExerciseResultCard({
+    super.key,
+    required this.exercise,
+    required this.format,
+  });
+  final _ResultExercise exercise;
+  final String format;
+  @override
+  Widget build(BuildContext context) {
+    final sets = exercise.sets;
+    final completed = sets.where((s) => s['status'] == 'completed').toList();
+    final skipped = sets.where((s) => s['status'] == 'skipped').length;
+    final pending = sets.length - completed.length - skipped;
+    final recipe = format == 'amrap';
+    final color = _blockStyle(format).$2;
+    final doses = completed.map(_resultDose).toSet();
+    final summary = recipe
+        ? 'Receta AMRAP · ${sets.length} ${sets.length == 1 ? 'posición' : 'posiciones'}'
+        : [
+            '${completed.length}/${sets.length} completadas',
+            if (skipped > 0)
+              '$skipped ${skipped == 1 ? 'omitida' : 'omitidas'}',
+            if (pending > 0)
+              '$pending ${pending == 1 ? 'pendiente' : 'pendientes'}',
+          ].join(' · ');
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: color, width: 4)),
+        ),
+        child: ExpansionTile(
+          key: PageStorageKey(exercise.key),
+          maintainState: true,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          title: Text(
+            exercise.first['exercise_name'] as String,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(summary),
+                if (!recipe && completed.isNotEmpty)
+                  Text(
+                    doses.length == 1
+                        ? 'Realizado: ${completed.length > 1 ? '${completed.length} × ' : ''}${doses.single}'
+                        : 'Resultados variables · ver series',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          children: [
+            for (final set in sets) _ResultSeriesRow(set: set, recipe: recipe),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _resultDose(Map set) {
+  // El resumen no confunde pautado con realizado ni promedia excepciones.
+  // Si hay repeticiones, el tiempo medido queda en el detalle de la serie.
+  if (set['actual_reps'] != null) {
+    return '${set['actual_reps']} rep${set['actual_load_kg'] == null ? '' : ' · ${set['actual_load_kg']} kg'}';
+  }
+  return _measures(set, 'actual_');
+}
+
+class _ResultSeriesRow extends StatelessWidget {
+  const _ResultSeriesRow({required this.set, required this.recipe});
+  final Map set;
+  final bool recipe;
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final (icon, color) = switch (set['status']) {
+      'completed' => (Icons.check_circle_outline, const Color(0xff80cbc4)),
+      'skipped' => (Icons.remove_circle_outline, const Color(0xffffb74d)),
+      _ => (Icons.schedule, scheme.onSurfaceVariant),
+    };
+    final target = Text(
+      'Pautado: ${_measures(set, 'target_')}',
+      style: TextStyle(color: scheme.onSurfaceVariant),
+    );
+    final actual = Text(
+      'Realizado: ${set['status'] == 'completed' ? _measures(set, 'actual_') : 'Sin registro de resultado'}',
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Icon(recipe ? Icons.repeat : icon, color: color, size: 18),
+                Text(
+                  'Serie ${(set['set_order'] as int) + 1} · ${recipe ? 'Receta AMRAP' : _setStatus(set['status'])}',
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final stacked =
+                    constraints.maxWidth < 660 ||
+                    MediaQuery.textScalerOf(context).scale(14) > 21;
+                if (recipe) return target;
+                return stacked
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [target, const SizedBox(height: 4), actual],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: target),
+                          const SizedBox(width: 20),
+                          Expanded(child: actual),
+                        ],
+                      );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RunningResultCard extends StatelessWidget {
+  const _RunningResultCard({required this.set});
+  final Map set;
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            set['exercise_name'] as String,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Text(
+            'Tramo ${(set['set_order'] as int) + 1} · ${_setStatus(set['status'])}',
+          ),
+          const SizedBox(height: 8),
+          Text('Pautado: ${_measures(set, 'target_')}'),
+          Text(
+            'Realizado: ${set['status'] == 'completed' ? _measures(set, 'actual_') : 'Sin registro de resultado'}',
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 String _setStatus(dynamic status) => switch (status) {

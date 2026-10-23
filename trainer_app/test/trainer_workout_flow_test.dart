@@ -344,7 +344,8 @@ void main() {
       await press(tester, 'Ver resultados');
       expect(find.text('Buenas sensaciones'), findsOneWidget);
       expect(find.text('Esfuerzo final: 6/10'), findsOneWidget);
-      expect(find.textContaining('Realizado: 8 rep'), findsOneWidget);
+      await press(tester, 'Dominadas');
+      expect(find.text('Realizado: 8 rep · 5 kg · 1 RIR'), findsOneWidget);
       expect(find.textContaining('Pautado: 10 rep'), findsOneWidget);
       expect(find.text('Corregir resultado'), findsNothing);
     },
