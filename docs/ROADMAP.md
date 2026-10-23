@@ -17,8 +17,9 @@ es de un envío explícito, sin modificar su preferencia ni enviar otras citas.
 La app anterior sigue recibiendo solo carreras V1; el cliente nuevo solicita
 V2 para mostrar fuerza, sin cambiar los reintentos de confirmación previos.
 Punto de guardado funcional `9c5c9a27`, con CI completa correcta el 23/10/2026
-(backend, aplicación e iOS Release). El paquete web de Trainer con los ajustes
-de tiempos está preparado; su publicación continúa pendiente de autorización.
+(backend, aplicación e iOS Release). Javier autoriza después publicar el paquete
+web de Trainer `6f15d325`: desplegado y contrastado por HTTPS y Chrome, con
+tiempos originales del reloj en la misma ejecución y sin escrituras de resultados.
 **Siguiente recorrido único:** aceptar físicamente una sesión convencional de
 fuerza en el fēnix y revisar sus repeticiones y carga devueltas. Actualizar el
 iPhone desde main antes de probar el menú ampliado. No habilita cierres sin revisión.

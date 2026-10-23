@@ -190,3 +190,21 @@ HTTPS correcto y Chrome acredita sesión MFA, cinco plazas, doce destinos,
 inicio/agenda/formularios/pruebas/medios y catálogo compartido con preferencias.
 No se guarda contenido de ensayo. Fuentes, hashes, matriz, capturas y límites en
 [la evidencia de publicación](TRAINER_PROFESSIONAL_RELEASE_2026_10_21.md).
+
+## Tiempos y resultados originales del reloj · 23/10/2026
+
+Javier autoriza expresamente publicar el paquete validado `6f15d325` en
+Trainer Dev. Release `6f15d325ed6d0fc64a451cc526b1172821dbba47-20261023-1`,
+ZIP SHA-256 `b45ef5244886d63af8428afe8474ec1a231345f17867b9f76010272b604f4615`.
+El ZIP se carga en `trainer-releases/trainer-package.zip`, fuera de la raíz
+pública, y se extrae exclusivamente en `public_html/trainer` con carpeta `.`.
+Se conservan las releases anteriores y no se utiliza el acceso FTP de ADMIN.
+
+El verificador `trainer_release.py verify` acredita revisión, release, SHA-256
+del JavaScript, arranque, cabeceras y MIME WebAssembly por HTTPS. Chrome abre
+la nueva versión con la sesión profesional existente, consulta el resultado
+ya completado y muestra tiempos `m:ss` y precisión original por serie. No hay
+errores ni avisos de consola en el recorrido. La captura de datos del usuario
+se conserva de forma privada fuera de Git. No se cambian marcas, revisiones,
+pautas ni sesiones pendientes durante la comprobación; tampoco se publica ADMIN
+o producción. La aceptación física del regreso de fuerza sigue pendiente.
