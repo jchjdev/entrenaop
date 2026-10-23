@@ -13,6 +13,7 @@ class RunningStepCard extends StatelessWidget {
     required this.onToggle,
     required this.menu,
     required this.editor,
+    this.dragHandle,
   });
 
   final int index;
@@ -21,6 +22,7 @@ class RunningStepCard extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
   final Widget menu, editor;
+  final Widget? dragHandle;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -35,6 +37,7 @@ class RunningStepCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              ?dragHandle,
               Expanded(
                 child: Semantics(
                   expanded: expanded,

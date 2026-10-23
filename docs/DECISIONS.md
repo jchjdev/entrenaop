@@ -12,6 +12,9 @@ cambia contratos, permisos ni datos SQL. Pulso/cadencia/potencia continúan
 pendientes de implementación completa.
 El 23/10 Javier autoriza publicar el paquete validado en Trainer Dev y
 reintentar solo la retención fallida de ADMIN; ambos terminan correctamente.
+Javier confirma el 23/10 que quiere coger y arrastrar las tarjetas, además de
+Subir/Bajar. Se añade un asa común con ratón y tacto; mueve toda la serie con
+repeticiones/recuperaciones, conserva colores y solo modifica el orden al soltar.
 [Alcance y aceptación](WORKOUT_EDITOR_SHARED_2026_10_22.md#creador-de-carrera-compacto--int-011).
 
 **INT-010 · 22/10/2026 · publicación automática de carrera en Garmin:** Javier

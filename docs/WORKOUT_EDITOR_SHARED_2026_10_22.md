@@ -98,6 +98,30 @@ correcta. No se ejecutan migraciones ni se despliegan funciones por este cambio.
 Esta entrega requiere actualizar la app iOS para usar el nuevo creador local;
 no acredita todavía la siguiente prueba física en el fēnix.
 
+### Reordenación por arrastre · 23/10/2026
+
+Javier pide poder coger las tarjetas y moverlas dentro de la carrera. El asa
+lateral permite arrastrar con ratón o dedo; el encabezado sigue abriendo/cerrando
+el tramo y el menú mantiene Subir/Bajar como alternativa accesible. Una línea
+indica el punto de inserción y el formulario se desplaza en sus bordes.
+
+La serie mueve juntas sus repeticiones y recuperaciones, incluida la última
+omitida. Se mueven los controladores existentes: conserva texto incompleto,
+objetivo seleccionado y tarjeta abierta. Cancelar no cambia la receta ni guarda
+un borrador. Solo al aceptar se cambia el orden, que pasa al guardado común.
+
+`RunningReorderableSteps` usa los controles de arrastre de Flutter y el scroll
+exterior del consumidor. No introduce un scroll anidado que impida recorrer
+listas largas en formularios incrustados. No cambia snapshot, contrato deportivo,
+SQL, permisos ni exportadores; el envío interpreta el orden guardado existente.
+Pruebas de ratón/tacto en móvil y escritorio, omisión, guardado por cuenta,
+cancelación, valores incompletos y desplazamiento del formulario exterior.
+
+Verificación del arrastre: análisis sin incidencias en raíz, ADMIN y Trainer;
+1.294 pruebas raíz correctas (una omisión previa), 314 ADMIN (dos previas),
+170 Trainer y 196 del creador común. Capturas sintéticas del widget real durante
+el arrastre y revisiones responsivas a 320/390/1200 px, también texto 2×.
+
 ### Distribución comprobada de INT-011
 
 Código funcional `9deb71a4db25faaa05ff24bb20295aa15a9011f1` subido a main.

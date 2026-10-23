@@ -9,6 +9,7 @@ import 'editor_work_checkpoint.dart';
 import 'running_editor_actions.dart';
 import 'running_editor_groups.dart';
 import 'running_step_card.dart';
+import 'running_reorderable_steps.dart';
 
 import 'package:workout_core/workout_draft_codec.dart';
 
@@ -1543,6 +1544,54 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     return index >= group.first && index <= group.last;
   }
 
+  void _reorderRunning(int from, int to) {
+    if (_busy || from == to) return;
+    final groups = _runningGroups;
+    if (from < 0 || to < 0 || from >= groups.length || to >= groups.length) {
+      return;
+    }
+    final chunks = [
+      for (final group in groups)
+        _segments.sublist(group.first, group.last + 1),
+    ];
+    final moved = chunks.removeAt(from);
+    chunks.insert(to, moved);
+    setState(() {
+      // Mover los controladores conserva texto incompleto, foco lógico y las
+      // excepciones. La receta solo cambia su orden al aceptar el destino.
+      _segments
+        ..clear()
+        ..addAll(chunks.expand((chunk) => chunk));
+      _groupBreaks
+        ..clear()
+        ..addAll(chunks.map((chunk) => chunk.first));
+    });
+  }
+
+  Widget _runningDragFeedback(BuildContext context, int row) {
+    final group = _runningGroups[row];
+    final kind = _segments[group.first].kind ?? RunningStepKind.run;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: _runningColor(kind), width: 4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${kind.label}${group.repetitions > 1 ? ' × ${group.repetitions}' : ''}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          Text(
+            _runningSummary(group),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _runningEditor() {
     final groups = _runningGroups;
     return Column(
@@ -1561,11 +1610,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ),
         const SizedBox(height: 4),
         const Text(
-          'Abre un tramo para editarlo. Las series iguales se ajustan juntas.',
+          'Arrastra el asa para ordenar. Las series iguales se editan juntas.',
         ),
         const SizedBox(height: 8),
-        for (var row = 0; row < groups.length; row++)
-          RunningStepCard(
+        RunningReorderableSteps(
+          identities: [for (final group in groups) _segments[group.first]],
+          enabled: !_busy,
+          onReorder: _reorderRunning,
+          feedbackBuilder: _runningDragFeedback,
+          itemBuilder: (context, row, handle) => RunningStepCard(
+            dragHandle: handle,
             key: _segments[groups[row].first].anchor,
             index: row,
             title:
@@ -1680,6 +1734,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               ],
             ),
           ),
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,

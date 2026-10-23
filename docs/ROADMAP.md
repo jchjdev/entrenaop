@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-011 · arrastre de carrera · 23/10/2026:** el creador común añade asa
+para reordenar con ratón y tacto, indicador de inserción y desplazamiento del
+formulario. La serie conserva colores, repeticiones, recuperación/omisión y
+texto incompleto; cancelar no guarda. Mantiene Subir/Bajar, contrato V2,
+snapshot y permisos. Análisis de las tres apps limpios; raíz 1.294, ADMIN 314,
+Trainer 170 y creador común 196 pruebas correctas, con las omisiones previas.
+La publicación de esta ampliación se acredita por separado de la versión
+compacta ya distribuida. **Siguiente recorrido único:** distribuir el arrastre
+validado y continuar la aceptación física de la receta en el fēnix.
+[Arrastre y verificación](WORKOUT_EDITOR_SHARED_2026_10_22.md#reordenación-por-arrastre--23102026).
+
 **INT-011 · 22/10/2026 · creador común de carrera compacto:** resúmenes
 plegables, series iguales agrupadas, edición individual de excepciones y
 recuperación con objetivo propio dentro de la serie. Libre oculta y retira
