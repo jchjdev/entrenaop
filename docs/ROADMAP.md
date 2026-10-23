@@ -13,6 +13,12 @@ agrupadas, con detalle original al desplegar y sin errores de consola.
 **Siguiente paso único de UI-065:** aceptación de Javier en su revisión habitual
 de una sesión larga; no amplía la cobertura de fuerza Garmin.
 [Contrato de presentación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
+**Extensión al deportista · 24/10/2026:** el historial incorpora tarjetas de
+fuerza plegables por posición, colores por formato, resumen fiel y control
+conjunto de apertura/cierre, conservando correcciones, tiempos del reloj y
+separación entre bloques. No cambia datos, recepción, cierre o permisos.
+Análisis limpio y batería raíz completa: 1.314 pruebas y una omisión previa.
+Distribuir en iPhone requiere actualizar main; no se publica otra web de Trainer.
 
 **INT-013 · primera entrega de fuerza en Dev · 23/10/2026:** reutilizar el creador
 común y el ciclo de cuenta, asignación, envío/cambios/cancelaciones y retorno

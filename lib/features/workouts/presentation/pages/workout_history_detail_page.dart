@@ -52,11 +52,25 @@ class WorkoutHistoryDetailPage extends StatelessWidget {
   }
 }
 
-class _DetailContent extends StatelessWidget {
+class _DetailContent extends StatefulWidget {
   const _DetailContent({required this.execution, required this.isCorrecting});
 
   final WorkoutExecution execution;
   final bool isCorrecting;
+
+  @override
+  State<_DetailContent> createState() => _DetailContentState();
+}
+
+class _DetailContentState extends State<_DetailContent> {
+  final Set<String> _expanded = {};
+  WorkoutExecution get execution => widget.execution;
+
+  @override
+  void didUpdateWidget(covariant _DetailContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.execution.id != execution.id) _expanded.clear();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,9 +136,41 @@ class _DetailContent extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 24),
-                const Text(
-                  'Objetivo y resultado',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text(
+                      'Objetivo y resultado',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (groups.any((group) => group.isFoldable))
+                      TextButton.icon(
+                        onPressed: () => setState(() {
+                          if (_expanded.isNotEmpty) {
+                            _expanded.clear();
+                          } else {
+                            _expanded.addAll(
+                              groups
+                                  .where((g) => g.isFoldable)
+                                  .map((g) => g.key),
+                            );
+                          }
+                        }),
+                        icon: Icon(
+                          _expanded.isEmpty
+                              ? Icons.unfold_more
+                              : Icons.unfold_less,
+                        ),
+                        label: Text(
+                          _expanded.isEmpty ? 'Desplegar todo' : 'Plegar todo',
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 ...amrapBlocks.map(
@@ -134,8 +180,17 @@ class _DetailContent extends StatelessWidget {
                   ),
                 ),
                 ...groups.map(
-                  (group) =>
-                      _ExerciseResultCard(group, isCorrecting: isCorrecting),
+                  (group) => _ExerciseResultCard(
+                    group,
+                    key: ValueKey(group.key),
+                    isCorrecting: widget.isCorrecting,
+                    expanded: _expanded.contains(group.key),
+                    onToggle: () => setState(() {
+                      if (!_expanded.add(group.key)) {
+                        _expanded.remove(group.key);
+                      }
+                    }),
+                  ),
                 ),
               ],
             ),
@@ -369,39 +424,148 @@ class _SummaryMetric extends StatelessWidget {
 }
 
 class _ExerciseResultCard extends StatelessWidget {
-  const _ExerciseResultCard(this.group, {required this.isCorrecting});
+  const _ExerciseResultCard(
+    this.group, {
+    super.key,
+    required this.isCorrecting,
+    required this.expanded,
+    required this.onToggle,
+  });
 
   final _ExerciseGroup group;
   final bool isCorrecting;
+  final bool expanded;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              group.blockName.toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFFFF8A50),
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-              ),
+    final format = group.sets.first.blockFormat;
+    final (formatName, color) = _resultFormatStyle(format);
+    final completed = group.sets
+        .where((set) => set.status == WorkoutSetStatus.completed)
+        .toList();
+    final skipped = group.sets
+        .where((set) => set.status == WorkoutSetStatus.skipped)
+        .length;
+    final pending = group.sets.length - completed.length - skipped;
+    final doses = completed.map(_resultDose).toSet();
+    final detailsVisible = !group.isFoldable || expanded;
+    final heading = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 5,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      group.blockName,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          formatName,
+                          style: TextStyle(color: color, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  group.exerciseName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (group.isFoldable) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    [
+                      '${completed.length}/${group.sets.length} completadas',
+                      if (skipped > 0)
+                        '$skipped ${skipped == 1 ? 'omitida' : 'omitidas'}',
+                      if (pending > 0)
+                        '$pending ${pending == 1 ? 'pendiente' : 'pendientes'}',
+                    ].join(' · '),
+                  ),
+                  if (completed.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      doses.length == 1
+                          ? 'Realizado · ${completed.length > 1 ? '${completed.length} × ' : ''}${doses.single}'
+                          : 'Resultados variables · ver series',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ],
+              ],
             ),
-            const SizedBox(height: 5),
-            Text(
-              group.exerciseName,
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 14),
-            ...group.sets.map(
-              (set) => _SetResultRow(set, isCorrecting: isCorrecting),
+          ),
+          if (group.isFoldable) ...[
+            const SizedBox(width: 12),
+            Icon(
+              expanded ? Icons.expand_less : Icons.expand_more,
+              color: color,
             ),
           ],
+        ],
+      ),
+    );
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: color, width: 4)),
+        ),
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (group.isFoldable)
+                Semantics(
+                  button: true,
+                  expanded: expanded,
+                  child: InkWell(onTap: onToggle, child: heading),
+                )
+              else
+                heading,
+              if (detailsVisible)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Column(
+                    children: [
+                      for (final set in group.sets) ...[
+                        const Divider(height: 1),
+                        _SetResultRow(set, isCorrecting: isCorrecting),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -804,6 +968,9 @@ class _ExerciseGroup {
   final String blockName;
   final String exerciseName;
   final List<WorkoutExecutionSet> sets;
+  String get key =>
+      '${sets.first.blockOrder}:${sets.first.itemOrder}:${sets.first.exerciseId}:${sets.first.id}';
+  bool get isFoldable => sets.first.blockFormat != WorkoutBlockFormat.running;
 }
 
 class _AmrapBlock {
@@ -845,7 +1012,8 @@ List<_ExerciseGroup> _groupSets(List<WorkoutExecutionSet> sets) {
     if (last != null &&
         last.sets.first.exerciseId == set.exerciseId &&
         last.sets.first.itemOrder == set.itemOrder &&
-        last.sets.first.blockOrder == set.blockOrder) {
+        last.sets.first.blockOrder == set.blockOrder &&
+        last.sets.first.blockFormat == set.blockFormat) {
       last.sets.add(set);
     } else {
       groups.add(
@@ -858,6 +1026,35 @@ List<_ExerciseGroup> _groupSets(List<WorkoutExecutionSet> sets) {
     }
   }
   return groups;
+}
+
+(String, Color) _resultFormatStyle(WorkoutBlockFormat format) =>
+    switch (format) {
+      WorkoutBlockFormat.straightSets => (
+        'Por series',
+        const Color(0xff82b1ff),
+      ),
+      WorkoutBlockFormat.superset => ('Superserie', const Color(0xffce93d8)),
+      WorkoutBlockFormat.circuit => ('Circuito', const Color(0xff80cbc4)),
+      WorkoutBlockFormat.intervals => ('Intervalos', const Color(0xffffb74d)),
+      WorkoutBlockFormat.emom => ('EMOM', const Color(0xff81d4fa)),
+      WorkoutBlockFormat.amrap => ('AMRAP', const Color(0xffffd54f)),
+      WorkoutBlockFormat.tabata => ('Tabata', const Color(0xffef9a9a)),
+      WorkoutBlockFormat.warmUp => ('Calentamiento', const Color(0xffffb74d)),
+      WorkoutBlockFormat.coolDown => ('Enfriamiento', const Color(0xff80cbc4)),
+      WorkoutBlockFormat.running => ('Carrera', const Color(0xffff9c68)),
+    };
+
+String _resultDose(WorkoutExecutionSet set) {
+  // Resumimos solo mediciones uniformes; las excepciones quedan en cada serie.
+  if (set.performancePrescription == null && set.actualReps != null) {
+    return '${set.actualReps} rep${set.actualLoadKg == null ? '' : ' · ${_number(set.actualLoadKg!)} kg'}';
+  }
+  final result = _result(set);
+  final dose = result.startsWith('Realizado · ')
+      ? result.substring('Realizado · '.length)
+      : result;
+  return dose.isEmpty ? 'Sin valores registrados' : dose;
 }
 
 String _target(WorkoutExecutionSet set) {

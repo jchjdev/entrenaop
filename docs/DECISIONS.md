@@ -12,6 +12,12 @@ en resultados, permisos, contrato de recepción o creador compartido.
 Versión `3c7ff9a1` publicada con autorización expresa en Trainer Dev y contrastada
 por HTTPS y Chrome sobre el resultado existente, sin alterar sus marcas.
 [Agrupación y verificación](TRAINER_PRIVATE_WORKOUTS.md#resultados-compactos--ui-065--23102026).
+El 24/10 Javier pide aplicar el mismo criterio al historial del deportista.
+Se amplía la presentación local con tarjetas de fuerza plegables, colores por
+formato, resumen de series completadas/omitidas/pendientes y control conjunto
+«Desplegar todo / Plegar todo». Conserva identidad de bloque y posición,
+correcciones por serie, datos originales, AMRAP agregado y tramos de carrera.
+No modifica el cierre, la recepción, los permisos ni las mediciones guardadas.
 
 **INT-014 · 23/10/2026 · tiempos legibles y comparación explicada:** Javier
 pide minutos y segundos en lugar de totales de segundos en objetivos y resultados.

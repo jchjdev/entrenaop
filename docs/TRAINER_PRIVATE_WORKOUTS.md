@@ -41,6 +41,19 @@ La captura real queda privada fuera de Git. No se despliega ADMIN o producción.
 
 ## Recorrido implementado
 
+La agrupación de UI-065 se extiende el 24/10/2026 al historial del deportista
+mediante su modelo de ejecución existente. Fuerza comienza plegada, con el
+mismo criterio de bloque/posición/ejercicio y paleta por formato. Ofrece
+«Desplegar todo / Plegar todo» y conserva los controles de corrección dentro
+del detalle; plegar no escribe datos ni modifica las series. La vista profesional
+publicada conserva su paquete y sus permisos. Esta extensión no despliega Trainer.
+Verificación de la extensión: 1.314 pruebas raíz correctas, una omisión previa
+y análisis completo sin incidencias. Trece pruebas del historial cubren además
+el plegado conjunto, los tiempos originales, identidades separadas, datos
+variables/ausentes, la corrección con RIR heredado y móvil a 320 px con texto
+doble. AMRAP conserva sus vueltas y parciales; carrera no se convierte en series
+de fuerza ni se ocultan sus tramos con este control.
+
 Javier pide aprovechar Harbiz e implementar el recorrido con nuestros creadores.
 El preparador entra en Mis sesiones privadas, crea una receta con el editor
 compartido y abre Planificación y resultados de un alumno. Selecciona sesión y

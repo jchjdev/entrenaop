@@ -13,6 +13,113 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
+    'diez series del mismo ejercicio quedan plegadas con sus tiempos originales',
+    (tester) async {
+      await _pumpGroups(tester, List.generate(10, (i) => _historySet(i)));
+      expect(find.text('Press banca'), findsOneWidget);
+      expect(find.text('10/10 completadas'), findsOneWidget);
+      expect(find.text('Realizado · 10 × 5 rep · 20 kg'), findsOneWidget);
+      expect(find.textContaining('Objetivo ·'), findsNothing);
+      await tester.ensureVisible(find.text('Press banca'));
+      await tester.tap(find.text('Press banca'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Realizado · 5 rep · 0:04.67 · 20 kg'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Objetivo · 5 rep · 20 kg'),
+        findsNWidgets(10),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'repetir un ejercicio en otra posición o bloque no mezcla sus series',
+    (tester) async {
+      await _pumpGroups(tester, [
+        _historySet(0),
+        _historySet(1),
+        _historySet(0, item: 1),
+        _historySet(0, block: 1),
+      ]);
+      expect(find.text('Press banca'), findsNWidgets(3));
+      expect(find.text('2/2 completadas'), findsOneWidget);
+      expect(find.text('1/1 completadas'), findsNWidgets(2));
+      await _toggleAll(tester, 'Desplegar todo');
+      expect(find.textContaining('Objetivo ·'), findsNWidgets(4));
+      await _toggleAll(tester, 'Plegar todo');
+      expect(find.textContaining('Objetivo ·'), findsNothing);
+      expect(find.text('Press banca'), findsNWidgets(3));
+    },
+  );
+
+  testWidgets(
+    'la tarjeta resume omisiones y pendientes sin inventar kilos o uniformidad',
+    (tester) async {
+      await _pumpGroups(tester, [
+        _historySet(0, reps: 4),
+        _historySet(1, reps: 3, load: null),
+        _historySet(2, status: WorkoutSetStatus.skipped),
+        _historySet(3, status: WorkoutSetStatus.pending),
+      ]);
+      expect(
+        find.text('2/4 completadas · 1 omitida · 1 pendiente'),
+        findsOneWidget,
+      );
+      expect(find.text('Resultados variables · ver series'), findsOneWidget);
+      await _toggleAll(tester, 'Desplegar todo');
+      expect(
+        find.textContaining('Realizado · 4 rep · 0:04.67 · 20 kg'),
+        findsOneWidget,
+      );
+      expect(find.text('Realizado · 3 rep · 0:05.67'), findsOneWidget);
+      expect(find.text('Serie omitida'), findsOneWidget);
+      expect(find.text('No realizada'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'carrera conserva sus tramos y no ofrece plegado de series de fuerza',
+    (tester) async {
+      await _pumpGroups(tester, [
+        _historySet(0, format: WorkoutBlockFormat.running),
+        _historySet(1, format: WorkoutBlockFormat.running),
+      ]);
+      expect(find.textContaining('Objetivo ·'), findsNWidgets(2));
+      expect(find.text('Desplegar todo'), findsNothing);
+    },
+  );
+
+  for (final format in [
+    WorkoutBlockFormat.superset,
+    WorkoutBlockFormat.tabata,
+  ]) {
+    testWidgets(
+      'historial $format a 320 px y texto doble mantiene acceso a todas las series',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(320, 844));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await _pumpGroups(tester, [
+          for (var item = 0; item < 2; item++)
+            for (var i = 0; i < 3; i++)
+              _historySet(i, item: item, format: format),
+        ], scale: 2);
+        await _toggleAll(tester, 'Desplegar todo');
+        await tester.scrollUntilVisible(
+          find.textContaining('Objetivo ·').last,
+          200,
+        );
+        expect(tester.takeException(), isNull);
+        await _toggleAll(tester, 'Plegar todo');
+        expect(find.textContaining('Objetivo ·'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
+  testWidgets(
     'objetivo, resultado y total conservan minutos y segundos legibles',
     (tester) async {
       final cubit = WorkoutHistoryDetailCubit(
@@ -32,8 +139,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('13:23'), findsWidgets);
-      await tester.scrollUntilVisible(find.textContaining('Realizado ·'), 200);
-      expect(find.textContaining('Realizado · 01:29'), findsOneWidget);
+      await _toggleAll(tester, 'Desplegar todo');
+      await tester.scrollUntilVisible(
+        find.textContaining('Realizado ·').last,
+        200,
+      );
+      expect(find.text('Realizado · 01:29'), findsNWidgets(2));
       expect(find.textContaining('Objetivo · 01:30'), findsOneWidget);
       expect(find.textContaining('803 s'), findsNothing);
       expect(tester.takeException(), isNull);
@@ -93,6 +204,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _toggleAll(tester, 'Desplegar todo');
     expect(find.text('Objetivo · 10 rep'), findsOneWidget);
     expect(find.text('Realizado · 8 rep · RIR 2'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -119,6 +231,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await _toggleAll(tester, 'Desplegar todo');
         await tester.ensureVisible(find.byTooltip('Corregir resultado'));
         await tester.tap(find.byTooltip('Corregir resultado'));
         await tester.pumpAndSettle();
@@ -171,6 +284,83 @@ void main() {
       },
     );
   }
+}
+
+Future<void> _toggleAll(WidgetTester tester, String label) async {
+  await tester.ensureVisible(find.text(label));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpGroups(
+  WidgetTester tester,
+  List<WorkoutExecutionSet> sets, {
+  double scale = 1,
+}) async {
+  final repository = _GroupedHistoryRepository(sets);
+  final cubit = WorkoutHistoryDetailCubit(
+    executionId: 'history-groups',
+    getExecution: GetWorkoutExecutionUseCase(repository),
+    correctSet: CorrectWorkoutSetUseCase(repository),
+  );
+  addTearDown(cubit.close);
+  await cubit.load();
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: ThemeData.dark(useMaterial3: true),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(scale)),
+        child: child!,
+      ),
+      home: BlocProvider.value(
+        value: cubit,
+        child: const WorkoutHistoryDetailPage(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+WorkoutExecutionSet _historySet(
+  int order, {
+  int block = 0,
+  int item = 0,
+  int reps = 5,
+  double? load = 20,
+  WorkoutSetStatus status = WorkoutSetStatus.completed,
+  WorkoutBlockFormat format = WorkoutBlockFormat.straightSets,
+}) => WorkoutExecutionSet(
+  id: 'set-$block-$item-$order',
+  blockOrder: block,
+  blockName: 'Bloque ${block + 1}',
+  blockFormat: format,
+  itemOrder: item,
+  exerciseId: 'bench',
+  exerciseName: 'Press banca',
+  setOrder: order,
+  targetReps: 5,
+  targetLoadKg: 20,
+  restAfterSeconds: 60,
+  status: status,
+  actualReps: status == WorkoutSetStatus.completed ? reps : null,
+  actualLoadKg: status == WorkoutSetStatus.completed ? load : null,
+  actualDurationSeconds: status == WorkoutSetStatus.completed
+      ? 5 + order
+      : null,
+  observedDurationSeconds: status == WorkoutSetStatus.completed
+      ? 4.665 + order
+      : null,
+  resultSource: WorkoutResultSource.device,
+);
+
+class _GroupedHistoryRepository extends _Repository {
+  _GroupedHistoryRepository(this.sets);
+  final List<WorkoutExecutionSet> sets;
+  @override
+  Future<WorkoutExecution?> getExecution(String executionId) async =>
+      execution.copyWith(sets: sets);
 }
 
 class _AmrapRepository extends _Repository {
