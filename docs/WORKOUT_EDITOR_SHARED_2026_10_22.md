@@ -229,6 +229,50 @@ La primera vertical modifica SQL de forma aditiva y se verifica en Dev.
 Mantiene permisos, algoritmo y autoridades de publicación. Otras marcas,
 nuevos objetivos y fuerza conservan sus adaptadores y pruebas pendientes.
 
+## Fuerza compacta · UI-061
+
+Javier solicita el 23/10 aplicar a fuerza el patrón visual aceptado en carrera.
+Los siete formatos conservan sus reglas: Por series, Superserie, Circuito,
+Intervalos, Tabata, EMOM y AMRAP. Cada bloque tiene color y nombre explícito,
+resumen plegable de formato/dosis/ejercicios y menú con subir, bajar, duplicar
+y quitar según sus límites. Se abre inicialmente el primer bloque; abrir otro
+pliega el anterior, y añadir/duplicar abre el nuevo. Los ejercicios siguen
+editándose dentro de su bloque, con sus campos y ajustes por serie existentes.
+
+El asa permite arrastrar bloques completos y ejercicios dentro de un bloque
+con ratón o dedo sobre el scroll del consumidor. Se conservan subir/bajar y
+los límites de ejercicios/formatos. No se mueven ejercicios entre bloques con
+formatos distintos mediante arrastre, para evitar reinterpretar su dosis.
+
+`WorkoutEditorCard` y `WorkoutReorderableCards` extraen los componentes ya
+probados de carrera; sus fachadas conservan claves y nombres accesibles de
+carrera. En móvil y con texto grande las acciones ocupan su propia fila,
+evitando estrechar el resumen hasta partir palabras. Los resúmenes largos
+admiten tres líneas; la receta completa sigue en el editor desplegado.
+Se mueve la identidad del bloque/ejercicio con todos sus controladores, no se
+reconstruye desde una proyección que eliminaría entradas incompletas. Plegar y
+cancelar un arrastre no ensucian el borrador; soltar un orden nuevo activa la
+persistencia existente. No cambia schema 1, codecs, SQL, permisos, SDK ni
+bindings de cada aplicación, y no se añaden dependencias.
+
+Las regresiones incluyen los siete formatos, conservación de ajustes por serie,
+arrastre táctil de una superserie, cancelación sin escritura, controlador
+incompleto que conserva identidad y capturas a 320/1200 px con texto 1×/2×.
+La prueba anterior de duplicación/cambio de Tabata mantiene sus aserciones de
+receta y usa ahora el menú de cabecera. La distribución de esta ampliación
+se registra tras la validación; no queda publicada por una autorización de
+otra revisión. El envío de fuerza a Garmin conserva su bloque pendiente.
+
+Comprobación local del 23/10/2026: análisis de raíz, ADMIN y Trainer limpios;
+1.294 pruebas raíz (una omisión previa), 314 ADMIN (dos previas), 170 Trainer y
+212 del paquete compartido correctas. Revisión de capturas sintéticas del
+widget real: siete formatos plegados en escritorio, superserie a 320 px/texto
+2× y acciones del ejercicio central de un circuito sin desbordamiento. El
+selector de objetivo de fuerza admite varias líneas con texto grande y usa
+«Tiempo». Compilación web Release Dev de Trainer correcta. La aceptación
+manual del creador de fuerza en navegador/móvil sigue pendiente; esta UI no
+modifica ni reenvía la sesión de carrera realizada.
+
 ## Verificación y distribución
 
 Se comprueban deportista, ADMIN, Trainer y paquete compartido, incluyendo

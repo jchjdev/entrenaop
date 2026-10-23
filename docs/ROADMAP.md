@@ -1,5 +1,29 @@
 # Roadmap de EntrenaOP
 
+**UI-061 · fuerza compacta común · 23/10/2026:** bloques con color y nombre
+por formato, resumen plegable, un bloque abierto y arrastre de bloques y de
+ejercicios dentro de su bloque. Conserva las siete prescripciones, campos
+incompletos, ajustes por serie, schema 1 y permisos de las tres apps. Sin
+dependencias ni cambios de servidor. Las regresiones conservan duplicación,
+cambio de formato, dosis, teclado y guardado, y añaden cancelación sin escritura
+y revisión móvil/escritorio con texto grande. Verificación local: análisis de
+las tres apps limpios; raíz 1.294 (una omisión previa), ADMIN 314 (dos previas),
+Trainer 170 y paquete común 212 pruebas correctas. Paquete web Dev preparado;
+publicación de esta revisión en Trainer pendiente de autorización expresa.
+**Siguiente recorrido único:** aceptar el creador de fuerza publicado con una
+sesión de varios formatos, moviendo bloques y comprobando su receta guardada.
+[Alcance, límites y distribución](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
+
+**INT-009 · primera carrera física · 23/10/2026:** se contrasta en solo lectura
+la pauta profesional entregada con la actividad realizada en fēnix 8. Javier
+confirma pasos, recuperaciones, Lap y avisos; Garmin registra las cinco
+repeticiones. El enfriamiento era temporizado, por lo que no acredita el caso
+de enfriamiento manual ni los dos umbrales medidos por separado. No se altera
+la cita, que continúa planificada; importar y asociar la actividad es un
+recorrido distinto. Cambios/cancelaciones automáticos y omisión de última
+recuperación conservan aceptación pendiente. Evidencia privada fuera de Git.
+[Prueba física y límites](DEVICE_GARMIN_TRAINING.md#carrera-física-completa--23102026).
+
 **INT-011 · arrastre de carrera · 23/10/2026:** el creador común añade asa
 para reordenar con ratón y tacto, indicador de inserción y desplazamiento del
 formulario. La serie conserva colores, repeticiones, recuperación/omisión y

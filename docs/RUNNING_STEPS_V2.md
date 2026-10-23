@@ -1,5 +1,11 @@
 # Pasos de carrera V2 · INT-009 · 22/10/2026
 
+Aceptación física del 23/10: pauta de Trainer recibida y realizada con fēnix 8,
+cinco trabajos, recuperaciones, calentamiento hasta Lap y alertas confirmados
+por Javier. El enfriamiento de esta pauta era temporizado; enfriamiento hasta
+Lap y ciclo automático de cambios/cancelaciones conservan pruebas pendientes.
+[Contraste de receta, entrega y actividad](DEVICE_GARMIN_TRAINING.md#carrera-física-completa--23102026).
+
 ## Recorrido implementado
 
 El creador común de deportista, ADMIN y Trainer permite definir calentamiento,

@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+UI-061 extiende a fuerza las tarjetas por formato, colores, plegado y arrastre
+del creador común. Se puede mover el bloque completo o sus ejercicios sin
+perder series, rondas y descansos. No habilita todavía fuerza en Garmin.
+La primera carrera física de Trainer en fēnix 8 queda contrastada el 23/10;
+su enfriamiento era por tiempo. La recepción no completa automáticamente la
+cita en EntrenaOP ni acredita el ciclo de cambios/cancelaciones del reloj.
+[Creador de fuerza](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
+[Prueba física](DEVICE_GARMIN_TRAINING.md#carrera-física-completa--23102026).
+
 INT-011 compacta el creador común de carrera: resúmenes plegables, series iguales
 agrupadas y recuperación con objetivo propio dentro de su tramo. «Sin objetivo»
 oculta y retira los ritmos; solo se ofrecen objetivos libres y de ritmo.

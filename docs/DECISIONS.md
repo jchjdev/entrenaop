@@ -1,5 +1,26 @@
 # Registro de decisiones vigentes
 
+**UI-061 · 23/10/2026 · fuerza con tarjetas por formato:** Javier solicita
+extender al creador común de fuerza los colores, plegado y arrastre de carrera.
+Cada bloque conserva su formato explícito, ejercicios, rondas y excepciones
+por serie; color y nombre permiten identificarlo sin depender solo del color.
+Se abre un bloque a la vez y se pueden mover bloques completos y ejercicios
+dentro de su bloque. Se mantienen las acciones de subir/bajar. Es presentación
+compartida entre deportista, ADMIN y Trainer: no añade otro contrato, modifica
+permisos ni habilita el envío de fuerza a Garmin.
+[Alcance y verificación](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
+
+**INT-009 · aceptación física parcial · 23/10/2026:** Javier completa una
+carrera creada en Trainer y enviada al fēnix 8. Confirma funcionamiento de
+pasos, recuperaciones, avance con Lap y avisos de ritmo. La revisión de solo
+lectura en Dev confirma la entrega y su receta; Garmin registra las cinco
+repeticiones previstas. La receta real tiene calentamiento manual y
+enfriamiento por tiempo, por lo que no acredita enfriamiento hasta Lap ni
+umbrales de alerta medidos por separado. Cambios/cancelaciones automáticos,
+omisión de recuperación y nuevos objetivos necesitan sus pruebas específicas.
+La actividad externa no confirma por sí sola el resultado en EntrenaOP.
+[Evidencia y límites](DEVICE_GARMIN_TRAINING.md#carrera-física-completa--23102026).
+
 **INT-011 · 22/10/2026 · creador de carrera compacto:** Javier pide reducir
 el desplazamiento y editar la recuperación dentro de su serie mediante
 selectores, sin la acción visible «Editar recuperación como paso». La interfaz
@@ -37,8 +58,8 @@ El avance manual es un concepto del dominio; Lap es su presentación en Garmin.
 La misma receta debe servir al creador de las tres apps y a su ejecución.
 Primera vertical implementada: tipos de paso, tiempo/distancia/manual y
 libre/ritmo en las tres apps, guardado compatible, ejecución y exportador Garmin.
-Migraciones y servidor activos solo en Dev. Pulso/cadencia/potencia y la nueva
-comprobación física del fēnix siguen pendientes.
+Migraciones y servidor activos solo en Dev. Carrera física aceptada con los
+límites anotados el 23/10; pulso/cadencia/potencia siguen pendientes.
 [Implementación y verificación](RUNNING_STEPS_V2.md).
 [Contrato y secuencia propuesta](WORKOUT_EDITOR_SHARED_2026_10_22.md#siguiente-contrato-de-carrera-int-009).
 

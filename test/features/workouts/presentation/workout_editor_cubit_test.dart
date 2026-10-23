@@ -215,8 +215,11 @@ void main() {
       [3, 3],
     );
     expect(t.testTextInput.isVisible, isTrue);
-    await _show(t, find.text('Bloque 1'));
-    await t.tap(find.text('Bloque 1'));
+    final outsideField = find.text(
+      'Cada ejercicio tiene sus propias series y descansos.',
+    );
+    await _show(t, outsideField);
+    await t.tap(outsideField);
     await t.pumpAndSettle();
     expect(t.testTextInput.isVisible, isFalse);
     await capturePerformanceWidget(t, 'editor-series-repeticiones-390');
@@ -247,7 +250,7 @@ void main() {
     await _show(t, selector);
     await t.tap(selector);
     await t.pumpAndSettle();
-    await t.tap(find.text('Duración').last);
+    await t.tap(find.text('Tiempo').last);
     await t.pumpAndSettle();
     expect(find.byType(WorkoutEffortField), findsNothing);
     final time = _editorField('Tiempo').first;
@@ -614,7 +617,10 @@ void main() {
     await tester.tap(addBlock);
     await tester.pump();
 
-    expect(find.text('Bloque 2'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('strength-block-header-1')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

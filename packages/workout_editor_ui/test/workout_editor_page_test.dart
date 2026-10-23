@@ -402,10 +402,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _chooseFormat(tester, 'Tabata · 8 × 20/10');
-      final duplicate = find.byTooltip('Duplicar bloque');
+      final duplicate = find.byTooltip('Acciones del bloque 1');
       await tester.ensureVisible(duplicate);
       await tester.pumpAndSettle();
       await tester.tap(duplicate);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Duplicar bloque'));
       await tester.pumpAndSettle();
       final secondFormat = find.byType(WorkoutFormatField).last;
       await tester.ensureVisible(secondFormat);
@@ -415,10 +417,12 @@ void main() {
       await tester.tap(find.text('Series convencionales').last);
       await tester.pumpAndSettle();
       // Se quita el original Tabata para guardar únicamente la copia revisada.
-      final remove = find.byTooltip('Quitar').first;
+      final remove = find.byTooltip('Acciones del bloque 1');
       await tester.ensureVisible(remove);
       await tester.pumpAndSettle();
       await tester.tap(remove);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Quitar bloque'));
       await tester.pumpAndSettle();
       await _save(tester);
       expect(saved!.blocks.single.exercises.length, 1);

@@ -195,3 +195,26 @@ métricas exactas se conservan fuera de Git; solo se registra el resumen técnic
 Sigue pendiente antes de producción la limpieza de la cuenta externa al borrar
 Auth, conciliación de permisos fuera de la app, rotación operativa de clave y
 recuperación de efectos inciertos ya señaladas en INT-005. No se modifica producción.
+
+## Carrera física completa · 23/10/2026
+
+Javier realiza una carrera con la pauta creada en Trainer, asignada a su cuenta
+de alumno y entregada al fēnix 8. Confirma expresamente que funcionaron los pasos,
+recuperaciones, avance con Lap y avisos de ritmo. La actividad en Garmin Connect,
+consultada en navegador y contrastada con sus capturas, contiene las cinco
+repeticiones esperadas. Es aceptación de una ejecución real, además del ensayo
+de recepción del día anterior.
+
+La consulta de solo lectura a Supabase Dev comprueba origen profesional,
+entrega `sent`, referencias de entrenamiento y calendario presentes y snapshot
+V2 con calentamiento manual, cinco trabajos con recuperación por tiempo y
+enfriamiento por tiempo. No se vuelve a enviar ni se altera la pauta. La
+pregunta de aceptación mencionaba enfriamiento hasta Lap; el snapshot acredita
+enfriamiento temporizado, por lo que ese caso sigue pendiente. Tampoco se han
+medido separadamente ambos umbrales de alerta.
+
+La cita continúa planificada: esta comprobación no importa la actividad ni
+confirma resultados del alumno. El ciclo de cambios/cancelaciones automático,
+la omisión de última recuperación, nuevos objetivos y otras marcas conservan
+su aceptación pendiente. No se guardan en Git correo, identificadores de
+cuenta/asignación/actividad, recorrido, capturas ni métricas exactas.

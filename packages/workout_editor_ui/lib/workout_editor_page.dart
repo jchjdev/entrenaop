@@ -10,6 +10,8 @@ import 'running_editor_actions.dart';
 import 'running_editor_groups.dart';
 import 'running_step_card.dart';
 import 'running_reorderable_steps.dart';
+import 'workout_editor_card.dart';
+import 'workout_reorderable_cards.dart';
 
 import 'package:workout_core/workout_draft_codec.dart';
 
@@ -101,6 +103,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   final _separateRepetitions = <_Segment>{};
   final _groupBreaks = <_Segment>{};
   final _blocks = <_StrengthBlock>[_StrengthBlock()];
+  _StrengthBlock? _expandedStrengthBlock;
   List<WorkoutEditorExercise> _catalog = const [];
   bool _running = true;
   bool _busy = false;
@@ -506,6 +509,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _segments.single.target.text.isEmpty) {
       _expandedSegment = _segments.single;
     }
+    _expandedStrengthBlock = _blocks.firstOrNull;
     _savedStamp = _draftStamp;
     if (widget.saveLocalDraft != null) {
       _observedWork = canonicalEditorState(_rawSnapshot());
@@ -1772,6 +1776,128 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     );
   }
 
+  String _strengthFormatName(WorkoutBlockFormat format) => switch (format) {
+    WorkoutBlockFormat.straightSets => 'Por series',
+    WorkoutBlockFormat.superset => 'Superserie',
+    WorkoutBlockFormat.circuit => 'Circuito',
+    WorkoutBlockFormat.intervals => 'Intervalos',
+    WorkoutBlockFormat.emom => 'EMOM',
+    WorkoutBlockFormat.amrap => 'AMRAP',
+    WorkoutBlockFormat.tabata => 'Tabata',
+    WorkoutBlockFormat.warmUp => 'Calentamiento',
+    WorkoutBlockFormat.coolDown => 'Enfriamiento',
+    WorkoutBlockFormat.running => 'Carrera',
+  };
+
+  Color _strengthColor(WorkoutBlockFormat format) => switch (format) {
+    WorkoutBlockFormat.straightSets => const Color(0xff82b1ff),
+    WorkoutBlockFormat.superset => const Color(0xffce93d8),
+    WorkoutBlockFormat.circuit => const Color(0xff80cbc4),
+    WorkoutBlockFormat.intervals => const Color(0xffffb74d),
+    WorkoutBlockFormat.emom => const Color(0xff81d4fa),
+    WorkoutBlockFormat.amrap => const Color(0xffffd54f),
+    WorkoutBlockFormat.tabata => const Color(0xffef9a9a),
+    WorkoutBlockFormat.warmUp => const Color(0xffffb74d),
+    WorkoutBlockFormat.coolDown => const Color(0xff80cbc4),
+    WorkoutBlockFormat.running => Theme.of(context).colorScheme.primary,
+  };
+
+  String _strengthSummary(_StrengthBlock block) {
+    final names = block.exercises.map(
+      (item) =>
+          _catalog
+              .where((exercise) => exercise.id == item.exerciseId)
+              .map((exercise) => exercise.name)
+              .firstOrNull ??
+          'Elegir ejercicio',
+    );
+    final dose = switch (block.format) {
+      WorkoutBlockFormat.tabata => '8 × 20 s / 10 s',
+      WorkoutBlockFormat.amrap => '${block.cap.text} de trabajo',
+      WorkoutBlockFormat.emom => '${block.rounds.text} rondas · cada minuto',
+      WorkoutBlockFormat.superset ||
+      WorkoutBlockFormat.circuit ||
+      WorkoutBlockFormat.intervals =>
+        '${block.rounds.text} rondas · descanso ${block.rest.text}',
+      _ =>
+        '${block.exercises.length} ${block.exercises.length == 1 ? 'ejercicio' : 'ejercicios'}',
+    };
+    return '$dose · ${names.take(3).join(' / ')}${names.length > 3 ? ' / …' : ''}';
+  }
+
+  void _reorderStrength(int from, int to) {
+    if (_busy || from == to) return;
+    // Se mueve la identidad con todos sus controladores y excepciones por serie.
+    // Reconstruir desde una receta válida perdería campos aún incompletos.
+    setState(() => _blocks.insert(to, _blocks.removeAt(from)));
+  }
+
+  Widget _strengthCard(int index, {Widget? handle, bool feedback = false}) {
+    final block = _blocks[index];
+    return WorkoutEditorCard(
+      key: ValueKey(block),
+      index: index,
+      headerKeyPrefix: 'strength-block-header',
+      title: '${_strengthFormatName(block.format)} · ${block.name.text}',
+      summary: _strengthSummary(block),
+      color: _strengthColor(block.format),
+      expanded: !feedback && _expandedStrengthBlock == block,
+      onToggle: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+        setState(
+          () => _expandedStrengthBlock = _expandedStrengthBlock == block
+              ? null
+              : block,
+        );
+      },
+      dragHandle: handle,
+      menu: feedback
+          ? const SizedBox.shrink()
+          : PopupMenuButton<String>(
+              tooltip: 'Acciones del bloque ${index + 1}',
+              onSelected: (action) {
+                if (action == 'up') _reorderStrength(index, index - 1);
+                if (action == 'down') _reorderStrength(index, index + 1);
+                if (action == 'duplicate') {
+                  setState(() {
+                    final copy = block.clone();
+                    _blocks.insert(index + 1, copy);
+                    _expandedStrengthBlock = copy;
+                  });
+                }
+                if (action == 'remove') {
+                  setState(() {
+                    _blocks.removeAt(index).dispose();
+                    if (_expandedStrengthBlock == block) {
+                      _expandedStrengthBlock = null;
+                    }
+                  });
+                }
+              },
+              itemBuilder: (_) => [
+                if (index > 0)
+                  const PopupMenuItem(value: 'up', child: Text('Subir bloque')),
+                if (index < _blocks.length - 1)
+                  const PopupMenuItem(
+                    value: 'down',
+                    child: Text('Bajar bloque'),
+                  ),
+                if (_blocks.length < 10)
+                  const PopupMenuItem(
+                    value: 'duplicate',
+                    child: Text('Duplicar bloque'),
+                  ),
+                if (_blocks.length > 1)
+                  const PopupMenuItem(
+                    value: 'remove',
+                    child: Text('Quitar bloque'),
+                  ),
+              ],
+            ),
+      editor: feedback ? const SizedBox.shrink() : _strengthBlock(index, block),
+    );
+  }
+
   Widget _strengthEditor() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -1784,19 +1910,24 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       ),
       const SizedBox(height: 12),
       if (_catalog.isEmpty) Text(widget.emptyCatalogMessage),
-      for (var i = 0; i < _blocks.length; i++)
-        Card(
-          key: ValueKey(_blocks[i]),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: _strengthBlock(i, _blocks[i]),
-          ),
-        ),
+      WorkoutReorderableCards(
+        identities: _blocks,
+        keyPrefix: 'strength-drag-handle',
+        itemLabel: 'bloque',
+        enabled: !_busy,
+        onReorder: _reorderStrength,
+        feedbackBuilder: (_, index) => _strengthCard(index, feedback: true),
+        itemBuilder: (_, index, handle) => _strengthCard(index, handle: handle),
+      ),
       TextButton.icon(
         key: const ValueKey('add-workout-block'),
         onPressed: _blocks.length >= 10
             ? null
-            : () => setState(() => _blocks.add(_StrengthBlock())),
+            : () => setState(() {
+                final block = _StrengthBlock();
+                _blocks.add(block);
+                _expandedStrengthBlock = block;
+              }),
         icon: const Icon(Icons.add),
         label: const Text('Añadir bloque'),
       ),
@@ -1820,16 +1951,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _rowTitle(
-          'Bloque ${index + 1}',
-          _blocks.length > 1
-              ? () => setState(() => _blocks.removeAt(index).dispose())
-              : null,
-          duplicate: _blocks.length >= 10
-              ? null
-              : () => setState(() => _blocks.insert(index + 1, block.clone())),
-        ),
-        const SizedBox(height: 8),
         Wrap(
           spacing: 14,
           runSpacing: 12,
@@ -1905,12 +2026,33 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             'AMRAP necesita un objetivo de repeticiones. Los tiempos y distancias anteriores se conservan mientras editas; no se convierten en repeticiones.',
           ),
         const SizedBox(height: 12),
-        for (var j = 0; j < block.exercises.length; j++)
-          Padding(
-            key: ValueKey(block.exercises[j]),
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _strengthExercise(block, j),
+        WorkoutReorderableCards(
+          key: ValueKey(block),
+          identities: block.exercises,
+          keyPrefix: 'strength-exercise-handle-$index',
+          itemLabel: 'ejercicio',
+          enabled: !_busy,
+          onReorder: (from, to) => setState(
+            () => block.exercises.insert(to, block.exercises.removeAt(from)),
           ),
+          feedbackBuilder: (_, position) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              _catalog
+                      .where(
+                        (e) => e.id == block.exercises[position].exerciseId,
+                      )
+                      .map((e) => e.name)
+                      .firstOrNull ??
+                  'Ejercicio ${position + 1}',
+            ),
+          ),
+          itemBuilder: (_, position, handle) => Padding(
+            key: ValueKey(block.exercises[position]),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _strengthExercise(block, position, handle: handle),
+          ),
+        ),
         if (canAddExercise)
           TextButton.icon(
             onPressed: () => setState(() => block.exercises.add(_Exercise())),
@@ -1921,7 +2063,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     );
   }
 
-  Widget _strengthExercise(_StrengthBlock block, int index) {
+  Widget _strengthExercise(_StrengthBlock block, int index, {Widget? handle}) {
     final item = block.exercises[index];
     final format = block.format;
     final fixedRounds = format != WorkoutBlockFormat.straightSets;
@@ -1941,57 +2083,79 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  tabata
-                      ? 'Intervalo ${index + 1}'
-                      : format == WorkoutBlockFormat.superset
-                      ? 'A${index + 1}'
-                      : 'Posición ${index + 1}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              if (block.format != WorkoutBlockFormat.tabata &&
-                  block.format != WorkoutBlockFormat.intervals &&
-                  block.format != WorkoutBlockFormat.superset &&
-                  block.exercises.length < 20)
-                IconButton(
-                  tooltip: 'Duplicar posición',
-                  onPressed: () => setState(
-                    () => block.exercises.insert(index + 1, item.clone()),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final actions = <Widget>[
+                if (block.format != WorkoutBlockFormat.tabata &&
+                    block.format != WorkoutBlockFormat.intervals &&
+                    block.format != WorkoutBlockFormat.superset &&
+                    block.exercises.length < 20)
+                  IconButton(
+                    tooltip: 'Duplicar posición',
+                    onPressed: () => setState(
+                      () => block.exercises.insert(index + 1, item.clone()),
+                    ),
+                    icon: const Icon(Icons.copy_outlined),
                   ),
-                  icon: const Icon(Icons.copy_outlined),
-                ),
-              if (index > 0)
-                IconButton(
-                  tooltip: 'Subir posición',
-                  onPressed: () => setState(() {
-                    final previous = block.exercises[index - 1];
-                    block.exercises[index - 1] = item;
-                    block.exercises[index] = previous;
-                  }),
-                  icon: const Icon(Icons.arrow_upward),
-                ),
-              if (index < block.exercises.length - 1)
-                IconButton(
-                  tooltip: 'Bajar posición',
-                  onPressed: () => setState(() {
-                    final next = block.exercises[index + 1];
-                    block.exercises[index + 1] = item;
-                    block.exercises[index] = next;
-                  }),
-                  icon: const Icon(Icons.arrow_downward),
-                ),
-              if (canRemove)
-                IconButton(
-                  tooltip: 'Quitar posición',
-                  onPressed: () =>
-                      setState(() => block.exercises.removeAt(index).dispose()),
-                  icon: const Icon(Icons.delete_outline),
-                ),
-            ],
+                if (index > 0)
+                  IconButton(
+                    tooltip: 'Subir posición',
+                    onPressed: () => setState(() {
+                      final previous = block.exercises[index - 1];
+                      block.exercises[index - 1] = item;
+                      block.exercises[index] = previous;
+                    }),
+                    icon: const Icon(Icons.arrow_upward),
+                  ),
+                if (index < block.exercises.length - 1)
+                  IconButton(
+                    tooltip: 'Bajar posición',
+                    onPressed: () => setState(() {
+                      final next = block.exercises[index + 1];
+                      block.exercises[index + 1] = item;
+                      block.exercises[index] = next;
+                    }),
+                    icon: const Icon(Icons.arrow_downward),
+                  ),
+                if (canRemove)
+                  IconButton(
+                    tooltip: 'Quitar posición',
+                    onPressed: () => setState(
+                      () => block.exercises.removeAt(index).dispose(),
+                    ),
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+              ];
+              final title = Text(
+                tabata
+                    ? 'Intervalo ${index + 1}'
+                    : format == WorkoutBlockFormat.superset
+                    ? 'A${index + 1}'
+                    : 'Posición ${index + 1}',
+                style: Theme.of(context).textTheme.titleMedium,
+              );
+              if (constraints.maxWidth < 440) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        ?handle,
+                        Expanded(child: title),
+                      ],
+                    ),
+                    Wrap(alignment: WrapAlignment.end, children: actions),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  ?handle,
+                  Expanded(child: title),
+                  ...actions,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -2039,6 +2203,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     label: 'Objetivo',
                     child: DropdownButtonFormField<WorkoutTargetType>(
                       isExpanded: true,
+                      isDense: MediaQuery.textScalerOf(context).scale(16) <= 24,
+                      itemHeight: null,
+                      selectedItemBuilder: (_) => [
+                        for (final label in [
+                          'Repeticiones',
+                          'Tiempo',
+                          'Metros',
+                        ])
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(label),
+                          ),
+                      ],
                       key: ValueKey(item.type),
                       initialValue: item.type,
                       style: Theme.of(context).textTheme.bodyLarge
@@ -2051,7 +2228,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                         ),
                         DropdownMenuItem(
                           value: WorkoutTargetType.duration,
-                          child: Text('Duración'),
+                          child: Text('Tiempo'),
                         ),
                         DropdownMenuItem(
                           value: WorkoutTargetType.distance,
@@ -2356,30 +2533,6 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       'Ocho intervalos fijos de 20 s de trabajo y 10 s de recuperación.',
     _ => '',
   };
-
-  Widget _rowTitle(
-    String title,
-    VoidCallback? remove, {
-    VoidCallback? duplicate,
-  }) => Row(
-    children: [
-      Expanded(
-        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      ),
-      if (duplicate != null)
-        IconButton(
-          tooltip: 'Duplicar bloque',
-          onPressed: duplicate,
-          icon: const Icon(Icons.copy_outlined),
-        ),
-      if (remove != null)
-        IconButton(
-          tooltip: 'Quitar',
-          onPressed: remove,
-          icon: const Icon(Icons.delete_outline),
-        ),
-    ],
-  );
 
   Widget _field(
     TextEditingController controller,

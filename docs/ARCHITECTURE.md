@@ -1,5 +1,11 @@
 # Arquitectura de EntrenaOP
 
+UI-061 reutiliza tarjetas y arrastre comunes para carrera y fuerza. El estado
+de plegado es efímero; reordenar mueve las identidades y controladores completos,
+incluidas excepciones e entradas incompletas. No cambia dominio, codecs, SQL,
+bindings ni permisos de los consumidores. Fuerza conserva sus siete formatos.
+[Creador de fuerza](WORKOUT_EDITOR_SHARED_2026_10_22.md#fuerza-compacta--ui-061).
+
 INT-011 añade agrupación de presentación y tarjetas plegables al paquete común
 del editor. Se mantienen los pasos planos V2, snapshots schema 1 y autoridades
 de cada consumidor; no introduce otro modelo de sesión ni cambios SQL.
@@ -37,7 +43,8 @@ alumno y no se expone a Trainer. Primera UI en Perfil del deportista. Recibos
 persistentes, lease compartido con revocación y hechos confirmados evitan
 duplicar POST inciertos. Migración y función aplicadas solo en Dev, pruebas y CI
 correctas. Primera entrega, recepción e inicio en fēnix 8 acreditados desde
-iPhone; fidelidad completa de instrucciones/alertas durante la carrera pendiente.
+iPhone; el 23/10 se acredita una carrera real con pasos, recuperaciones y avisos.
+Enfriamiento hasta Lap y umbrales medidos por separado conservan prueba pendiente.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md).
 
 ## Conexión directa Garmin por cuenta · INT-005 · 22/10/2026
