@@ -10,12 +10,18 @@ import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/guided_program.dart';
 import 'package:workout_editor_ui/guided_program_editor_page.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
+import 'package:workout_editor_ui/workout_editor_work.dart';
+import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:entrenaop_trainer/trainer_session_work_editor.dart';
 
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import 'trainer_program_flow_test.dart'
     show ChangingLibraryFixture, ProgramFixture, privateProgram, visibleTap;
 import 'trainer_program_work_repository_test.dart' show rawState, workId;
 import 'trainer_workout_flow_test.dart' show WorkoutFixture;
+import 'trainer_session_work_editor_test.dart'
+    as session
+    show SessionWorkFixture, rawState;
 
 GuidedWork checkpoint({
   int revision = 3,
@@ -144,6 +150,49 @@ Widget routed(GoRouter router, {double scale = 1}) => MaterialApp.router(
 );
 
 void main() {
+  testWidgets('retoma sesión hija desde el programa con el editor común', (
+    tester,
+  ) async {
+    const childId = '20000000-0000-4000-8000-000000000033';
+    final origin = trainerSessionWorkOrigin(
+      parentWorkId: workId,
+      phaseId: 'phase',
+      positionId: 'new-position',
+    );
+    final state = rawState();
+    final phase = (state['phases'] as List).single as Map;
+    phase['phaseId'] = 'phase';
+    phase['sessionWorks'] = {childId: origin};
+    phase['sessions'][0]['positionId'] = 'position';
+    final works = WorkFixture()
+      ..stored = GuidedWork(id: workId, state: state, revision: 2);
+    final sessions = session.SessionWorkFixture()
+      ..stored = WorkoutEditorWork(
+        id: childId,
+        origin: origin,
+        state: session.rawState(),
+        revision: 4,
+      );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: TrainerProgramWorkPage(
+          repository: ProgramFixture(),
+          workouts: WorkoutFixture(),
+          workRepository: works,
+          sessionWorkRepository: sessions,
+          workId: workId,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await visibleTap(tester, find.text('Retomar sesión'));
+    expect(find.byType(TrainerSessionWorkEditor), findsOneWidget);
+    expect(find.byType(WorkoutEditorPage), findsOneWidget);
+    expect(find.text('Sesión recuperable'), findsOneWidget);
+    expect(sessions.saved, isEmpty);
+  });
+
   testWidgets(
     'recupera texto crudo y autosave utiliza el controlador compartido',
     (tester) async {

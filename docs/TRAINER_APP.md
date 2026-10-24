@@ -1,5 +1,14 @@
 # Espacio de entrenadores
 
+## Recuperación contextual · TRN-029 · 24/10/2026
+
+Trainer conecta al creador compartido las sesiones internas de programa y las
+adaptaciones individuales recuperables. Contrato aplicado y probado en Dev;
+análisis limpio, 199 pruebas Trainer y 48 contenciones locales correctas.
+No amplía permisos ni cambia el catálogo de ADMIN. La publicación web, etiquetas
+y preparación del transporte push siguen pendientes.
+[Contrato y límites](TRAINER_SESSION_WORK_DRAFTS.md).
+
 ## Varios preparadores · TRN-028 · 24/10/2026
 
 El piloto admite dos preparadores activos por alumno. El alumno decide compartir

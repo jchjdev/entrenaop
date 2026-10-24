@@ -188,15 +188,29 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
             child: ListTile(
               title: Text(work.name),
               subtitle: Text(
-                work.state['intent'] != null
+                work.origin['parentWorkId'] != null
+                    ? 'Sesión de un programa · retomar desde el programa'
+                    : work.origin['assignmentId'] != null
+                    ? 'Adaptación individual · borrador guardado'
+                    : work.state['intent'] != null
                     ? 'Guardado pendiente de confirmar'
                     : 'Trabajo guardado · revisión ${work.revision}',
               ),
               onTap: _busy || _discardBusy
                   ? null
                   : () async {
+                      final parent = work.origin['parentWorkId'] as String?;
+                      final assignment = work.origin['assignmentId'] as String?;
                       await context.push(
-                        '/workouts/work/${Uri.encodeComponent(work.id)}',
+                        parent != null
+                            ? '/programs/work/${Uri.encodeComponent(parent)}'
+                            : assignment != null
+                            ? Uri(
+                                path:
+                                    '/assignments/${Uri.encodeComponent(assignment)}/adapt',
+                                queryParameters: {'workId': work.id},
+                              ).toString()
+                            : '/workouts/work/${Uri.encodeComponent(work.id)}',
                       );
                       if (mounted) await _load();
                     },

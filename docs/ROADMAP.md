@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**TRN-029 · 24/10/2026 · recuperación contextual:** cerrado el recorrido de
+persistir/retomar sesiones de programa y adaptaciones sin aplicar borradores ni
+duplicar resultados. Contrato aplicado solo en Dev y tres pruebas SQL con
+`ROLLBACK`; 199 pruebas Trainer, análisis limpio y 48 contenciones locales
+RC/RR correctas. La publicación web y aceptación humana siguen pendientes.
+No se modifican ADMIN ni la app del deportista. El encargo continúa abierto:
+siguiente tramo recomendado, etiquetas privadas de biblioteca; después,
+transporte push configurable, sin acreditar recepción física ni incluir cobros.
+[Evidencia y fronteras](TRAINER_SESSION_WORK_DRAFTS.md).
+
 **TRN-028 · 24/10/2026 · varios preparadores:** Recorrido: alumno acepta dos
 invitaciones, habilita la compartición, cada preparador consulta agenda/pauta de ese
 alumno y mantiene aislada su cartera. La revocación y la baja parcial/total se

@@ -25,6 +25,8 @@ import 'trainer_program_work_repository.dart';
 import 'trainer_program_work_pages.dart';
 import 'trainer_agenda_page.dart';
 import 'trainer_shared_calendar_page.dart';
+import 'trainer_assignment_work_page.dart';
+import 'trainer_assignment_work_repository.dart';
 
 import 'package:trainer_access/trainer_calendar.dart';
 
@@ -421,10 +423,31 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/assignments/:id/adapt',
+              redirect: (_, state) =>
+                  state.uri.queryParameters['workId'] == null
+                  ? state.uri
+                        .replace(
+                          queryParameters: {
+                            ...state.uri.queryParameters,
+                            'workId': newGuidedWorkId(),
+                          },
+                        )
+                        .toString()
+                  : null,
               onExit: (_, state) => exits.requestExit(state.pageKey),
               builder: (_, state) => guarded(
                 state,
-                TrainerAssignmentAdaptationPage(
+                TrainerAssignmentWorkPage(
+                  key: ValueKey(
+                    'adapt-work-$identity-${state.pathParameters['id']}-${state.uri.queryParameters['workId']}',
+                  ),
+                  workId: state.uri.queryParameters['workId'],
+                  repository: (review) =>
+                      SupabaseTrainerAssignmentWorkRepository(
+                        widget.client,
+                        identity!,
+                        review: review,
+                      ),
                   operations: operations(),
                   workouts: workouts(),
                   assignmentId: state.pathParameters['id']!,
@@ -531,6 +554,7 @@ class _TrainerAppState extends State<TrainerApp> {
                   builder: (_, state) => guarded(
                     state,
                     TrainerProgramWorkPage(
+                      sessionWorkRepository: sessionWorks(),
                       key: ValueKey(
                         'program-work-$identity-${state.pathParameters['workId']}',
                       ),

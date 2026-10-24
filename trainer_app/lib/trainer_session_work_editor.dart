@@ -12,13 +12,22 @@ import 'trainer_workout_repository.dart';
 Map<String, dynamic> trainerSessionWorkOrigin({
   String? baseId,
   bool duplicate = false,
+  String? parentWorkId,
+  String? phaseId,
+  String? positionId,
+  String? assignmentId,
+  int? planningRevision,
 }) => {
   'baseId': baseId,
   'programId': null,
-  'parentWorkId': null,
-  'phaseId': null,
-  'positionId': null,
+  'parentWorkId': parentWorkId,
+  'phaseId': phaseId,
+  'positionId': positionId,
   'duplicate': duplicate,
+  if (assignmentId != null) ...{
+    'assignmentId': assignmentId,
+    'planningRevision': planningRevision,
+  },
 };
 
 /// Recupera primero el trabajo íntegro. Fallar nunca monta un formulario vacío.
@@ -32,6 +41,10 @@ class TrainerSessionWorkEditor extends StatefulWidget {
     this.initialOrigin,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.embedded = false,
+    this.heading,
+    this.instructions,
+    this.saveLabel,
   });
 
   final String workId;
@@ -41,6 +54,8 @@ class TrainerSessionWorkEditor extends StatefulWidget {
   final Map<String, dynamic>? initialOrigin;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final bool embedded;
+  final String? heading, instructions, saveLabel;
 
   @override
   State<TrainerSessionWorkEditor> createState() =>
@@ -77,6 +92,11 @@ class _TrainerSessionWorkEditorState extends State<TrainerSessionWorkEditor> {
           trainerSessionWorkOrigin(
             baseId: origin['baseId'] as String?,
             duplicate: origin['duplicate'] as bool,
+            parentWorkId: origin['parentWorkId'] as String?,
+            phaseId: origin['phaseId'] as String?,
+            positionId: origin['positionId'] as String?,
+            assignmentId: origin['assignmentId'] as String?,
+            planningRevision: origin['planningRevision'] as int?,
           ),
         )) {
       throw const FormatException('Contexto profesional incompatible.');
@@ -108,35 +128,39 @@ class _TrainerSessionWorkEditorState extends State<TrainerSessionWorkEditor> {
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done ||
           snapshot.hasError) {
+        final content = snapshot.hasError
+            ? Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'No se pudo recuperar la sesión. El trabajo guardado se conserva.',
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _data = _load();
+                      }),
+                      child: const Text('Reintentar recuperación'),
+                    ),
+                  ],
+                ),
+              )
+            : const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              );
+        if (widget.embedded) return content;
         return Scaffold(
           appBar: AppBar(title: const Text('Sesión privada')),
-          body: Center(
-            child: snapshot.hasError
-                ? Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'No se pudo recuperar la sesión. El trabajo guardado se conserva.',
-                        ),
-                        TextButton(
-                          onPressed: () => setState(() {
-                            _data = _load();
-                          }),
-                          child: const Text('Reintentar recuperación'),
-                        ),
-                      ],
-                    ),
-                  )
-                : const CircularProgressIndicator(),
-          ),
+          body: Center(child: content),
         );
       }
       final (work, original) = snapshot.data!;
       final revision =
           work.origin['baseId'] != null && work.origin['duplicate'] != true;
       return WorkoutEditorPage(
+        embedded: widget.embedded,
         key: ValueKey('trainer-session-work-${work.id}'),
         workBinding: _TrainerSessionWorkBinding(
           work: work,
@@ -164,13 +188,19 @@ class _TrainerSessionWorkEditorState extends State<TrainerSessionWorkEditor> {
             throw StateError('Confirma primero el trabajo guardado.'),
         onSaved: (_) {},
         title: revision ? 'Revisar sesión privada' : 'Crear sesión privada',
-        heading: 'Biblioteca del preparador',
-        instructions: revision
-            ? 'Se guarda una nueva versión. Las pautas anteriores conservan la receta que recibieron.'
-            : 'Guárdala en tu biblioteca y después asígnala a tus alumnos.',
-        saveLabel: revision
-            ? 'Guardar nueva versión'
-            : 'Guardar sesión privada',
+        heading:
+            widget.heading ??
+            (work.origin['parentWorkId'] != null
+                ? 'Sesión del programa privado'
+                : 'Biblioteca del preparador'),
+        instructions:
+            widget.instructions ??
+            (revision
+                ? 'Se guarda una nueva versión. Las pautas anteriores conservan la receta que recibieron.'
+                : 'Guárdala en tu biblioteca y después asígnala a tus alumnos.'),
+        saveLabel:
+            widget.saveLabel ??
+            (revision ? 'Guardar nueva versión' : 'Guardar sesión privada'),
       );
     },
   );

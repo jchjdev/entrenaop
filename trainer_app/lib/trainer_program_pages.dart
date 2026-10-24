@@ -10,12 +10,14 @@ import 'package:workout_editor_ui/guided_program_editor_adapter.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
 import 'package:workout_editor_ui/program_session_catalog.dart';
 import 'package:workout_editor_ui/workout_editor_page.dart';
+import 'package:workout_editor_ui/workout_editor_work.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 import 'package:workout_core/workout_template.dart';
 
 import 'trainer_program_repository.dart';
 import 'trainer_workout_repository.dart';
+import 'trainer_session_work_editor.dart';
 
 class TrainerProgramDetailPage extends StatefulWidget {
   const TrainerProgramDetailPage({
@@ -389,6 +391,7 @@ class TrainerProgramEditorPage extends StatefulWidget {
     this.exercisePreferences,
     this.workRepository,
     this.work,
+    this.sessionWorkRepository,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
@@ -397,6 +400,7 @@ class TrainerProgramEditorPage extends StatefulWidget {
   final ExerciseCatalogPreferences? exercisePreferences;
   final GuidedWorkRepository? workRepository;
   final GuidedWork? work;
+  final WorkoutEditorWorkRepository? sessionWorkRepository;
   @override
   State<TrainerProgramEditorPage> createState() =>
       _TrainerProgramEditorPageState();
@@ -451,6 +455,7 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
           widget.workouts,
           widget.onCreateExercise,
           widget.exercisePreferences,
+          widget.sessionWorkRepository,
         ),
       );
     },
@@ -517,10 +522,44 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
     this.workouts,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.sessionWorkRepository,
   );
   final TrainerWorkoutRepository workouts;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final WorkoutEditorWorkRepository? sessionWorkRepository;
+  @override
+  bool get recoverableSessions => sessionWorkRepository != null;
+  @override
+  Future<void> openSessionWork(
+    BuildContext context, {
+    required String workId,
+    required Map<String, dynamic> origin,
+    required String programName,
+    required Future<void> Function(String) onSaved,
+  }) => showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => _PrivateSessionWorkspace(
+      repository: workouts,
+      sessionId: null,
+      duplicate: false,
+      onSaved: onSaved,
+      onCreateExercise: onCreateExercise,
+      exercisePreferences: exercisePreferences,
+      workId: workId,
+      origin: origin,
+      workRepository: sessionWorkRepository,
+    ),
+  );
+  @override
+  Future<void> discardSessionWork(String workId) async {
+    final work = await sessionWorkRepository!.load(workId);
+    if (work != null && !work.discarded) {
+      await sessionWorkRepository!.discard(work);
+    }
+  }
+
   @override
   bool get professional => true;
   @override
@@ -603,6 +642,9 @@ class _PrivateSessionWorkspace extends StatefulWidget {
     required this.onSaved,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.workId,
+    this.origin,
+    this.workRepository,
   });
   final TrainerWorkoutRepository repository;
   final String? sessionId;
@@ -610,6 +652,9 @@ class _PrivateSessionWorkspace extends StatefulWidget {
   final Future<void> Function(String) onSaved;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
+  final String? workId;
+  final Map<String, dynamic>? origin;
+  final WorkoutEditorWorkRepository? workRepository;
   @override
   State<_PrivateSessionWorkspace> createState() =>
       _PrivateSessionWorkspaceState();
@@ -699,6 +744,21 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
                               child: const Text('Reintentar enlace'),
                             ),
                           ],
+                        ),
+                      )
+                    : widget.workRepository != null && widget.workId != null
+                    ? WorkflowExitScope(
+                        controller: _exit,
+                        child: TrainerSessionWorkEditor(
+                          workId: widget.workId!,
+                          initialOrigin: widget.origin,
+                          repository: widget.workRepository!,
+                          workouts: widget.repository,
+                          onSaved: _link,
+                          onCreateExercise: widget.onCreateExercise,
+                          exercisePreferences: widget.exercisePreferences,
+                          embedded: true,
+                          saveLabel: 'Guardar e incorporar sesión',
                         ),
                       )
                     : FutureBuilder<WorkoutTemplate?>(

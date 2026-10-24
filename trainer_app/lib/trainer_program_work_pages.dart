@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/guided_program_work.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
+import 'package:workout_editor_ui/workout_editor_work.dart';
 
 import 'trainer_program_pages.dart';
 import 'trainer_program_repository.dart';
@@ -20,10 +21,12 @@ class TrainerProgramWorkPage extends StatefulWidget {
     this.initialBaseProgramId,
     this.onCreateExercise,
     this.exercisePreferences,
+    this.sessionWorkRepository,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final GuidedWorkRepository workRepository;
+  final WorkoutEditorWorkRepository? sessionWorkRepository;
   final String workId;
   final String? initialBaseProgramId;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
@@ -120,6 +123,7 @@ class _TrainerProgramWorkPageState extends State<TrainerProgramWorkPage> {
         work: work,
         onCreateExercise: widget.onCreateExercise,
         exercisePreferences: widget.exercisePreferences,
+        sessionWorkRepository: widget.sessionWorkRepository,
       );
     },
   );

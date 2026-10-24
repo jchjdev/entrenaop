@@ -190,6 +190,45 @@ Future<void> tapLabel(WidgetTester tester, String label) async {
 }
 
 void main() {
+  for (final contextualOrigin in [
+    trainerSessionWorkOrigin(
+      parentWorkId: 'program-work',
+      phaseId: 'phase',
+      positionId: 'position',
+    ),
+    trainerSessionWorkOrigin(
+      baseId: 'base',
+      assignmentId: 'assignment',
+      planningRevision: 2,
+    ),
+  ]) {
+    testWidgets('recupera contexto $contextualOrigin sin reconstruir campos', (
+      tester,
+    ) async {
+      final works = SessionWorkFixture()
+        ..stored = WorkoutEditorWork(
+          id: workId,
+          origin: contextualOrigin,
+          state: rawState(),
+          revision: 4,
+        );
+      await tester.pumpWidget(editor(works, WorkoutFixture()));
+      await tester.pumpAndSettle();
+      expect(find.byType(WorkoutEditorPage), findsOneWidget);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre de la sesión'),
+        'Cambio recuperable',
+      );
+      await tester.pump(const Duration(milliseconds: 800));
+      await tester.pumpAndSettle();
+      expect(works.saved.last.origin, contextualOrigin);
+      expect(
+        works.saved.last.state['editor']['segments'],
+        rawState()['editor']['segments'],
+      );
+    });
+  }
+
   testWidgets('fallar carga conserva trabajo y no abre formulario nuevo', (
     tester,
   ) async {

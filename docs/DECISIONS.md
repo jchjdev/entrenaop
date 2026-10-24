@@ -1,5 +1,21 @@
 # Registro de decisiones vigentes
 
+**TRN-029 · 24/10/2026 · continuidad, etiquetas y push:** Javier encarga cerrar
+la recuperación de sesiones hijas de programa y adaptaciones, añadir etiquetas
+privadas de biblioteca y preparar notificaciones push. Cobros y la instalación
+con Xcode quedan fuera. Se reutilizan editores y checkpoints comunes; recuperar
+un formulario no publica ni aplica una pauta. Los enlaces al programa y la
+revisión de la asignación se validan también en servidor. Las etiquetas son
+organización privada por autor, separada de las categorías oficiales.
+Javier confirma que todavía no dispone de Firebase/configuración Apple de push
+y autoriza preparar la integración en Dev para activarla después. Firebase es
+una opción de transporte, no un requisito de los avisos ni una sustitución de
+Supabase. El envío no expondrá contenido privado ni concederá acceso al recurso.
+La entrega preparada no se presentará como recepción push física acreditada.
+También señala el desaprovechamiento de pantallas de escritorio: se registra
+como revisión de composición y flujo, sin decidir una migración de framework.
+[Continuidad](TRAINER_SESSION_WORK_DRAFTS.md), [avisos](TRAINER_STUDENT_NOTICES.md).
+
 **TRN-028 · 24/10/2026 · varios preparadores y calendario autorizado:**
 Javier confirma implementar la colaboración por alumno. El piloto admite dos
 preparadores activos, cada uno con cupo e historial independientes. El alumno
