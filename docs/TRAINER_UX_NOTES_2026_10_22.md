@@ -63,7 +63,26 @@ Quedan por definir membresía, permisos de edición cruzada, conversación conju
 o individual y servicio/cupos/pagos. No se decide que dos preparadores siempre
 pertenezcan al mismo equipo. Sigue vigente en código y SQL el límite anterior.
 
-## Estado y comprobación
+## Precisión del 24/10/2026: colaboración limitada al alumno
+
+Javier concreta que puede atender alumnos en solitario y compartir la preparación
+de una alumna con otro profesional. La colaboración se establece por alumno:
+el segundo profesional no recibe acceso a los demás alumnos del primero.
+No requiere crear un equipo global ni equipara colaboración a los grupos de
+alumnos, cuya negociación en otro chat no se modifica aquí.
+
+El criterio es admitir varios preparadores y consultar el calendario compartido
+del alumno autorizado para coordinar sus respectivas pautas. Cada sesión conserva
+autor y origen. No se abre automáticamente la edición de sesiones ajenas, notas
+privadas o bibliotecas. Antes de implementarlo deben concretarse la autorización
+del alumno y el alcance de lectura, revocación, comunicación y servicio/cupos.
+La referencia anterior al equipo describe preparación conjunta, sin exigir una
+organización compartida. Sigue siendo un criterio futuro: el contrato vigente
+en código y SQL continúa limitando a un preparador activo.
+
+## Estado de esta nota y comprobación
 
 Solo documentación. Se revisan diff y formato; no se ejecuta Flutter, SQL ni se
 publican aplicaciones. No se emplean agentes ni coordinación entre chats.
+La calculadora flotante solicitada el 24/10 se implementa y valida por separado
+en [herramientas profesionales](PROFESSIONAL_TOOLS_2026_10_24.md).

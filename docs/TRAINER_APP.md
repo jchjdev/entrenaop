@@ -9,7 +9,9 @@ implementado. También pide registrar, sin cambios de código, simplificación d
 asignaciones, reordenación por arrastre y revisión del creador de carrera.
 Aclara que fuerza y carrera se preparan conjuntamente: priorizar el caso de
 equipo con planificación compartida autorizada para coordinar las sesiones.
-Los permisos de edición, la comunicación y los pagos del equipo están por definir.
+Javier precisa el 24/10 que la colaboración se limita al alumno compartido, sin
+abrir el resto de clientes ni exigir un equipo global. Los permisos de edición,
+la comunicación y los pagos compartidos están por definir.
 [Notas y alcance pendiente](TRAINER_UX_NOTES_2026_10_22.md).
 
 ## Actualización · 22/10/2026 · TRN-023

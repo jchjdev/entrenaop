@@ -1,6 +1,7 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/professional_tools_workspace.dart';
 
 import 'app_config.dart';
 
@@ -63,7 +64,10 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProfessionalToolsWorkspace(child: _buildShell(context));
+
+  Widget _buildShell(BuildContext context) {
     final section = _sections.firstWhere(
       (section) => section.contains(widget.path),
       orElse: () => _sections.first,
@@ -108,6 +112,7 @@ class _AdminShellState extends State<AdminShell> {
                           )
                         : const EntrenaWordmark(width: 132),
                     actions: [
+                      const ProfessionalToolsButton(iconOnly: true),
                       if (wide)
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
@@ -227,6 +232,19 @@ class _AdminShellState extends State<AdminShell> {
                         ),
                       ),
                     ],
+                    Builder(
+                      builder: (toolContext) => ListTile(
+                        key: const ValueKey('admin-tool-calculator'),
+                        leading: const Icon(Icons.speed),
+                        title: const Text('Calculadora de ritmos'),
+                        onTap: () {
+                          _scaffold.currentState?.closeDrawer();
+                          ProfessionalToolsWorkspace.openCalculator(
+                            toolContext,
+                          );
+                        },
+                      ),
+                    ),
                     if (snapshot.data!.accountsFailed)
                       Padding(
                         padding: const EdgeInsets.all(12),

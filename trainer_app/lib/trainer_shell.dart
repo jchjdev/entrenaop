@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:workout_editor_ui/professional_tools_workspace.dart';
 
 /// Los formularios mantienen toda la pantalla y su guard de salida propio.
 class TrainerShell extends StatelessWidget {
@@ -21,11 +22,24 @@ class TrainerShell extends StatelessWidget {
     ('/recurrence', 'Programar semanas', Icons.event_repeat_outlined),
   ];
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProfessionalToolsWorkspace(child: Builder(builder: _buildShell));
+
+  Widget _buildShell(BuildContext context) {
     if (location.endsWith('/new') ||
         location.endsWith('/revise') ||
         location.endsWith('/adapt')) {
-      return child;
+      return Material(
+        child: Column(
+          children: [
+            const Align(
+              alignment: Alignment.centerRight,
+              child: ProfessionalToolsButton(),
+            ),
+            Expanded(child: child),
+          ],
+        ),
+      );
     }
     final index = destinations.indexWhere((d) => location.startsWith(d.$1));
     final selected = index >= 0
@@ -50,6 +64,12 @@ class TrainerShell extends StatelessWidget {
           child: ListView(
             shrinkWrap: true,
             children: [
+              ListTile(
+                leading: const Icon(Icons.speed),
+                title: const Text('Calculadora de ritmos'),
+                subtitle: const Text('Herramientas'),
+                onTap: () => Navigator.pop(sheetContext, -1),
+              ),
               for (var i = 4; i < destinations.length; i++)
                 ListTile(
                   leading: Icon(destinations[i].$3),
@@ -61,7 +81,13 @@ class TrainerShell extends StatelessWidget {
           ),
         ),
       );
-      if (destination != null && context.mounted) go(destination);
+      if (destination != null && context.mounted) {
+        if (destination == -1) {
+          ProfessionalToolsWorkspace.openCalculator(context);
+        } else {
+          go(destination);
+        }
+      }
     }
 
     return LayoutBuilder(
@@ -102,6 +128,11 @@ class TrainerShell extends StatelessWidget {
                               title: Text(destinations[i].$2),
                               onTap: () => go(i),
                             ),
+                          const Divider(),
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: ProfessionalToolsButton(),
+                          ),
                         ],
                       ),
                     ),

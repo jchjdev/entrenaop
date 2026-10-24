@@ -1,5 +1,20 @@
 # Registro de decisiones vigentes
 
+**TRN-027 · 24/10/2026 · colaboración por alumno y herramientas flotantes:**
+Javier precisa TRN-026: compartir una preparación se limita al alumno concreto.
+Sus preparadores deben poder consultar la planificación compartida de ese alumno
+para coordinar fuerza y carrera, sin acceso a las respectivas carteras de clientes.
+No exige una organización o equipo global; consentimiento, permisos de detalle,
+edición cruzada y comunicación quedan por concretar antes del cambio de servidor.
+Los grupos negociados en otro chat quedan fuera de este trabajo. Se registra el
+criterio futuro; el contrato implementado continúa admitiendo un único preparador.
+[Criterio de colaboración](TRAINER_UX_NOTES_2026_10_22.md#precisión-del-24102026-colaboración-limitada-al-alumno).
+Pide además reutilizar la calculadora de ritmos en Trainer y ADMIN desde
+Herramientas, en una ventana desplazable que permita seguir usando el editor.
+El cálculo pasa a `workout_core`, la interfaz a `workout_editor_ui` y el contenedor
+flotante genérico a `entrena_ui`, sin dependencias nuevas ni cambios de reglas.
+[Alcance y verificación](PROFESSIONAL_TOOLS_2026_10_24.md).
+
 **Revisión y comparación de resultados · 24/10/2026:** filtro opcional
 «Solo diferencias con la pauta», desactivado al entrar, y comparación por fecha
 para deportista y Trainer dentro de sus permisos actuales. Reutiliza el dominio
