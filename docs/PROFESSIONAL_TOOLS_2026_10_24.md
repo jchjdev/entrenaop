@@ -103,3 +103,11 @@ Conserva límites de ventana, minimizado, valores y movimiento por teclado.
 
 Las regresiones de ratón y táctil envían tres movimientos sin repintar entre
 ellos y verifican todo el recorrido y que no se reconstruye el contenido.
+
+La corrección publica Trainer Dev desde `c0933f54`, release del 24/10/2026.
+HTTPS verifica revisión y hash; Chrome acredita un desplazamiento completo de
+480×30 px, navegación y minimizado/restaurado conservando 4:15/km y 1:42 para
+400 m, sin errores de consola. La misma implementación se entrega a ADMIN.
+
+ADMIN Dev publica también `c0933f54` mediante el workflow #66: validación y
+despliegue correctos, con revisión y hash acreditados por HTTPS.

@@ -55,6 +55,38 @@ def accept_pair(observer,pool,*,repeatable=False,prior=False,duplicate=False,sam
     finally:
         first.close();second.close()
 
+def consent_end_race(observer,pool,*,end_first,repeatable):
+    _,_,x,_,codes=setup_case(observer,limit=5)
+    observer.query('begin');identity(observer,x)
+    relation=observer.query(f"select public.accept_trainer_invitation('{codes[0]}')")[0][0]
+    observer.query('commit')
+    first,second=DB(),DB()
+    enable=f"select public.set_my_trainer_calendar_sharing('{x}',true,0)"
+    end=f"select public.end_trainer_relation('{relation}')"
+    try:
+        first.query('begin');identity(first,x);first.query(end if end_first else enable)
+        second.query('begin isolation level '+('repeatable read' if repeatable else 'read committed'));identity(second,x)
+        second.query('select count(*) from public.trainer_client_relations')
+        pid=int(second.query('select pg_backend_pid()')[0][0])
+        future=pool.submit(second.query,enable if end_first else end)
+        wait_locked(observer,pid,future);first.query('commit')
+        expected='40001' if repeatable else '23514' if end_first else None
+        try:
+            future.result(timeout=10);assert expected is None;second.query('commit')
+        except SqlError as error:
+            assert error.code==expected,(error.code,expected,str(error));second.query('rollback')
+        if repeatable:
+            second.query('begin');identity(second,x)
+            try:
+                second.query(enable if end_first else end)
+                assert not end_first;second.query('commit')
+            except SqlError as error:
+                assert end_first and error.code=='23514';second.query('rollback')
+        assert observer.query(f"select count(*) from trainer_private.calendar_sharing where client_id='{x}' and enabled")==[['0']]
+        assert observer.query(f"select count(*) from public.trainer_client_relations where client_id='{x}' and ended_at is null")==[['0']]
+    finally:
+        first.close();second.close()
+
 with tempfile.TemporaryDirectory(prefix='entrenaop-multi-coach-') as work:
     work=Path(work).resolve();data=work/'data';started=False;observer=None
     subprocess.run([str(bin_dir/'initdb'),'-D',str(data),'-U','postgres','-A','trust','--no-locale','-E','UTF8'],check=True,capture_output=True)
@@ -67,6 +99,12 @@ with tempfile.TemporaryDirectory(prefix='entrenaop-multi-coach-') as work:
         observer.query('create table trainer_private.calendar_revisions(user_id uuid primary key,revision bigint not null)')
         migration=(root/'supabase/migrations/20261024175746_trainer_multi_coach_calendar.sql').read_text(encoding='utf-8')
         observer.query(migration.split('create function trainer_private.my_calendar_sharing',1)[0]+'commit;')
+        for name in ['my_calendar_sharing','set_my_calendar_sharing']:
+            observer.query(re.search(r'create function trainer_private\.'+name+r'\([\s\S]*?end \$\$;',migration).group())
+        for name in ['get_my_trainer_calendar_sharing','set_my_trainer_calendar_sharing']:
+            observer.query(re.search(r'create function public\.'+name+r'\([\s\S]*?\$\$;',migration).group())
+        observer.query('grant execute on function trainer_private.my_calendar_sharing(uuid),trainer_private.set_my_calendar_sharing(uuid,boolean,bigint),public.get_my_trainer_calendar_sharing(uuid),public.set_my_trainer_calendar_sharing(uuid,boolean,bigint) to authenticated')
+        observer.query((root/'supabase/migrations/20261024183546_trainer_calendar_consent_membership_guard.sql').read_text(encoding='utf-8'))
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             for repeatable in (False,True):
                 for label,options in [('dos preparadores',{}),('ultima plaza de preparador',{'prior':True}),('pareja duplicada',{'duplicate':True}),('mismo codigo idempotente',{'same_code':True})]:
@@ -75,7 +113,11 @@ with tempfile.TemporaryDirectory(prefix='entrenaop-multi-coach-') as work:
             # También conserva la última plaza comercial del mismo preparador.
             for repeatable in (False,True):
                 for _ in range(3):race(observer,pool,repeatable=repeatable)
-        print('OK: 30 contenciones reales; cupo del alumno y del preparador, identidad de pareja y reintentos RC/RR',flush=True)
+            for repeatable in (False,True):
+                for end_first in (False,True):
+                    for _ in range(3):consent_end_race(observer,pool,end_first=end_first,repeatable=repeatable)
+                    print(f'OK: consentimiento/baja, baja primero={end_first}, RR={repeatable} (3 contenciones)',flush=True)
+        print('OK: 42 contenciones reales; cupos, pareja, consentimiento/baja y reintentos RC/RR',flush=True)
     finally:
         if observer is not None:observer.close()
         if started:subprocess.run([str(bin_dir/'pg_ctl'),'-D',str(data),'-m','immediate','-w','stop'],check=True,capture_output=True)
