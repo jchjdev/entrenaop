@@ -91,3 +91,15 @@ ventana manteniendo la biblioteca y su URL. Solo cambia estado temporal de la
 calculadora: no se guardan sesiones, resultados, notas ni asignaciones.
 La captura de comprobación permanece privada y fuera de Git en
 `.dart_tool/garmin-strength/trainer-tools-published-793adbf8.png`.
+
+## Arrastre continuo · revisión del 24/10/2026
+
+Javier detecta desplazamiento poco fluido. El cierre de build conservaba una
+posición anterior: varios eventos entre repintados perdían parte del movimiento.
+Se fija un origen de puntero global al iniciar el arrastre y se calcula desde él
+la posición absoluta. Un ValueNotifier desplaza solo el Positioned, con el
+contenido de la calculadora retenido fuera de ese repintado y RepaintBoundary.
+Conserva límites de ventana, minimizado, valores y movimiento por teclado.
+
+Las regresiones de ratón y táctil envían tres movimientos sin repintar entre
+ellos y verifican todo el recorrido y que no se reconstruye el contenido.

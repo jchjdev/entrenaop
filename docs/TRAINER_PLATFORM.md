@@ -1,14 +1,11 @@
 # Plataforma para preparadores · alcance acordado · 21/10/2026
 
-**TRN-026 · 22/10/2026 · nuevo criterio pendiente:** un alumno debe poder tener
-dos preparadores activos, con permisos delimitados por servicio y por el ámbito
-compartido autorizado. El caso confirmado de fuerza y carrera es una preparación
-conjunta; Javier precisa el 24/10 que la colaboración se limita a cada alumno
-compartido, sin acceso al resto de clientes ni necesidad de un equipo global.
-Sus reglas de edición, comunicación y pagos están por definir.
-El contrato implementado sigue siendo de preparador único hasta desarrollar y verificar
-esta ampliación. Javier pide anotar los cambios de fluidez, sin implementarlos
-todavía. [Detalle](TRAINER_UX_NOTES_2026_10_22.md).
+**TRN-028 · 24/10/2026:** dos preparadores activos por alumno en el piloto,
+con calendario y pauta compartidos solo si lo habilita el alumno. Cada
+preparador conserva su cupo, cartera, biblioteca, notas, resultados y
+conversaciones; solo modifica sus propias pautas. Sustituye la exclusividad
+anterior, sin equipos globales ni edición cruzada.
+[Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
 
 ## Ampliación TRN-020 en curso
 

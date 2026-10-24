@@ -512,6 +512,12 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Alumno'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.widgetWithText(TextField, 'Notas internas'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Notas internas'),
       'Mi borrador',

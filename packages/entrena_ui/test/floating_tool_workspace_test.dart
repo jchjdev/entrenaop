@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:entrena_ui/floating_tool_workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +9,7 @@ void main() {
   Future<void> mount(
     WidgetTester tester, {
     Size size = const Size(1400, 900),
+    VoidCallback? onToolBuild,
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -14,7 +17,10 @@ void main() {
       MaterialApp(
         home: FloatingToolWorkspace(
           title: 'Ritmos',
-          toolBuilder: (_) => const TextField(key: ValueKey('tool-input')),
+          toolBuilder: (_) {
+            onToolBuild?.call();
+            return const TextField(key: ValueKey('tool-input'));
+          },
           child: Builder(
             builder: (context) => Scaffold(
               body: Align(
@@ -120,4 +126,30 @@ void main() {
       expect(find.byKey(const ValueKey('tool-input')), findsOneWidget);
     },
   );
+
+  for (final kind in [PointerDeviceKind.mouse, PointerDeviceKind.touch]) {
+    testWidgets('conserva movimientos entre fotogramas con ${kind.name}', (
+      tester,
+    ) async {
+      var builds = 0;
+      await mount(tester, onToolBuild: () => builds++);
+      final window = find.byKey(const ValueKey('floating-tool-window'));
+      final handle = find.byKey(const ValueKey('floating-tool-handle'));
+      final before = tester.getRect(window);
+      final beforeBuilds = builds;
+      final gesture = await tester.startGesture(
+        tester.getCenter(handle),
+        kind: kind,
+      );
+      // Tres eventos antes de repintar deben conservar todo el recorrido.
+      await gesture.moveBy(const Offset(-40, 0));
+      await gesture.moveBy(const Offset(-40, 0));
+      await gesture.moveBy(const Offset(-40, 0));
+      await tester.pump();
+      expect(tester.getRect(window).left, closeTo(before.left - 120, 0.01));
+      expect(builds, beforeBuilds);
+      await gesture.up();
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

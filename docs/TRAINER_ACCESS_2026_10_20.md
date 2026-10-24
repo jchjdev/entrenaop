@@ -1,5 +1,9 @@
 # Acceso profesional y relación del piloto · TRN-008/009
 
+> TRN-028 · 24/10/2026 sustituye el límite de un preparador por dos vínculos
+> activos, con consentimiento explícito para leer agenda/pauta.
+> [Contrato vigente](TRAINER_MULTI_COACH_2026_10_24.md).
+
 > Estado posterior: TRN-011 habilita la gestión manual y la primera cuenta de
 > cinco plazas solo en Dev; el panel está publicado y verificado por HTTPS.
 > Javier completa TOTP; panel con 0/5 plazas y sesión tras recarga comprobados. [Publicación actual](TRAINER_HOSTING_2026_10_21.md).

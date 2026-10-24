@@ -20,7 +20,7 @@ begin
  perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
  set local role authenticated;
  j:=public.get_my_trainer_notices(pupil);
- if j->'items'<>'[]'::jsonb or (j->>'unread_count')::integer<>0 or j->'resources'<>'{"has_forms":false,"has_assessments":false,"has_conversations":false,"has_technique":false,"has_assigned_workouts":false,"conversation_relation_id":null}'::jsonb then raise exception 'Vínculo vacío crea contenido'; end if;
+ if j->'items'<>'[]'::jsonb or (j->>'unread_count')::integer<>0 or j->'resources'<>'{"has_forms":false,"has_assessments":false,"has_conversations":false,"has_technique":false,"has_assigned_workouts":false,"conversation_relation_id":null,"conversations":[]}'::jsonb then raise exception 'Vínculo vacío crea contenido'; end if;
  if public.list_my_trainer_technique(pupil)->'items'<>'[]'::jsonb then raise exception 'Índice técnico vacío incorrecto'; end if;
  perform set_config('request.jwt.claim.sub',trainer::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);

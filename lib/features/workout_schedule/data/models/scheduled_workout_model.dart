@@ -29,6 +29,7 @@ abstract final class ScheduledWorkoutModel {
       },
       executionId: json['execution_id'] as String?,
       coachNote: (json['trainer_assignments'] as Map?)?['note'] as String?,
+      coachName: json['trainer_name'] as String?,
     );
   }
 }

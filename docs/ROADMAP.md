@@ -1,5 +1,14 @@
 # Roadmap de EntrenaOP
 
+**TRN-028 · 24/10/2026 · varios preparadores:** Recorrido: alumno acepta dos
+invitaciones, habilita la compartición, cada preparador consulta agenda/pauta de ese
+alumno y mantiene aislada su cartera. La revocación y la baja parcial/total se
+comprueban en servidor. El arrastre de herramientas conserva todos los movimientos entre
+fotogramas. Siguiente recorrido único de este bloque: aceptación con dos preparadores y
+un alumno de prueba en la app actualizada. No incluye edición cruzada ni pagos
+compartidos.
+[Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
+
 **Revisión y comparación histórica · 24/10/2026:** implementados filtro
 opcional de diferencias y comparación por fecha para deportista y Trainer,
 con dominio y controles compartidos. La lectura mantiene permisos actuales,

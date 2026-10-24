@@ -177,7 +177,7 @@ begin
     get stacked diagnostics quota_detail=pg_exception_detail;
     if quota_detail is distinct from 'free_session_limit' then raise; end if;
   end;
-  begin perform public.accept_trainer_invitation(secret3); raise exception 'Un alumno tiene dos preparadores activos';
+  begin perform public.accept_trainer_invitation(secret2); raise exception 'Duplica el mismo preparador activo';
     exception when unique_violation then null; end;
 
   begin update public.trainer_client_relations set trainer_id=b where id=relation1; raise exception 'El alumno cambia el preparador sin aceptación';
@@ -216,7 +216,7 @@ begin
 
   reset role;
   -- La restricción independiente de la RPC protege también la integridad.
-  begin insert into public.trainer_client_relations(trainer_id,client_id) values(b,x); raise exception 'Falta la restricción de preparador único';
+  begin insert into public.trainer_client_relations(trainer_id,client_id) values(a,x); raise exception 'Falta la restricción de pareja activa única';
     exception when unique_violation then null; end;
 
   if public.has_pro_access(x) then raise exception 'El vínculo concede Pro al alumno.'; end if;

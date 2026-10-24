@@ -1,5 +1,6 @@
 import 'package:entrenaop/features/workout_schedule/data/datasources/workout_schedule_remote_datasource.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 
 class WorkoutScheduleRemoteDataSourceImpl
     implements WorkoutScheduleRemoteDataSource {
@@ -37,7 +38,28 @@ class WorkoutScheduleRemoteDataSourceImpl
         .order('scheduled_date')
         .order('scheduled_time')
         .order('order_index');
-    return response.cast<Map<String, dynamic>>();
+    if (supabaseClient.auth.currentUser?.id != userId) {
+      throw StateError('La cuenta ha cambiado.');
+    }
+    final rows = response.cast<Map<String, dynamic>>();
+    final ids = rows
+        .where((r) => r['source'] == 'coach')
+        .map((r) => r['id'] as String)
+        .toList();
+    final names = <String, String>{};
+    for (var start = 0; start < ids.length; start += 200) {
+      final end = (start + 200).clamp(0, ids.length);
+      final value = await authenticatedTrainerRpc(
+        supabaseClient,
+        userId,
+        'get_my_schedule_coaches',
+        params: {'p_expected_owner': userId, 'p_ids': ids.sublist(start, end)},
+      ) as List;
+      for (final item in value.cast<Map>()) {
+        names[item['id'] as String] = item['trainer_name'] as String;
+      }
+    }
+    return rows.map((r) => {...r, 'trainer_name': ?names[r['id']]}).toList();
   }
 
   @override

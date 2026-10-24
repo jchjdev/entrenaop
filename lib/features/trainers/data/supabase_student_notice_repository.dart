@@ -75,6 +75,14 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
         hasAssignedWorkouts: resources['has_assigned_workouts'] as bool,
         conversationRelationId:
             resources['conversation_relation_id'] as String?,
+        conversations: ((resources['conversations'] as List?) ?? const [])
+            .map(
+              (value) => StudentConversationLink(
+                (value as Map)['relation_id'] as String,
+                value['trainer_name'] as String,
+              ),
+            )
+            .toList(growable: false),
       ),
     );
   }

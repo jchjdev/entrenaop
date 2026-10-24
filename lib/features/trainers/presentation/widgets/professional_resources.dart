@@ -18,7 +18,7 @@ class ProfessionalResources extends StatelessWidget {
       if (resources.hasAssignedWorkouts)
         _link(
           Icons.calendar_month_outlined,
-          'Sesiones de mi preparador',
+          'Sesiones pautadas',
           'Consulta tus pautas en la agenda',
           '/plan/week',
         ),
@@ -36,7 +36,14 @@ class ProfessionalResources extends StatelessWidget {
           'Protocolos y marcas de tu preparador',
           '/my-trainer/assessments',
         ),
-      if (resources.hasConversations)
+      for (final conversation in resources.conversations)
+        _link(
+          Icons.chat_bubble_outline,
+          'Conversación con ${conversation.trainerName}',
+          'Mensajes privados con este preparador',
+          '/my-trainer/conversations/${Uri.encodeComponent(conversation.relationId)}',
+        ),
+      if (resources.hasConversations && resources.conversations.isEmpty)
         _link(
           Icons.chat_bubble_outline,
           'Conversación',

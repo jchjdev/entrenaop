@@ -446,7 +446,7 @@ class _DayHero extends StatelessWidget {
         : skipped
         ? 'Esta sesión se ha omitido.'
         : item.source == ScheduledWorkoutSource.coach
-        ? 'Sesión pautada por tu preparador'
+        ? 'Sesión pautada por ${item.coachName ?? 'tu preparador'}'
         : item.preparationGoalId != null
         ? 'Sesión de ${overview.programs.where((p) => p.goalId == item.preparationGoalId).firstOrNull?.name ?? 'tu preparación'}'
         : 'Sesión que has añadido a tu semana';

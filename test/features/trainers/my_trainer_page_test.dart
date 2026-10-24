@@ -4,6 +4,7 @@ import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_followup_codec.dart';
 
 import '../../../packages/trainer_access/test_support/fake_trainer_repository.dart';
@@ -22,6 +23,64 @@ Future<void> press(WidgetTester tester, String text) async {
 }
 
 void main() {
+  testWidgets(
+    'otro preparador se invita sin sustituir al actual; compartir es explícito',
+    (tester) async {
+      final repository = FakeTrainerRepository()
+        ..active = [trainerRelation('Javier')];
+      final sharing = _SharingFixture();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(repository: repository, calendarSharing: sharing),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Javier'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsOneWidget);
+      expect(
+        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isFalse,
+      );
+      await tester.ensureVisible(find.byType(SwitchListTile));
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      expect(sharing.enabled, isTrue);
+      expect(sharing.revision, 1);
+      expect(repository.ends, 0);
+    },
+  );
+  testWidgets(
+    'dos preparadores tienen conversaciones individuales y se respeta el máximo',
+    (tester) async {
+      final repository = FakeTrainerRepository()
+        ..active = [
+          trainerRelation('Javier', id: 'fuerza', personId: 'javier'),
+          trainerRelation('Ervi', id: 'carrera', personId: 'ervi'),
+        ];
+      final opened = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(
+            repository: repository,
+            calendarSharing: _SharingFixture()..count = 2,
+            onOpenConversation: opened.add,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Mis preparadores'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      final chats = find.text('Conversación con mi preparador');
+      for (var i = 0; i < 2; i++) {
+        await tester.ensureVisible(chats.at(i));
+        await tester.tap(chats.at(i));
+        await tester.pump();
+      }
+      expect(opened, ['fuerza', 'carrera']);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'pruebas visibles solo con entregas, incluido histórico sin vínculo',
     (tester) async {
@@ -159,6 +218,25 @@ void main() {
     expect(find.text('Privado A'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _SharingFixture implements TrainerCalendarSharingRepository {
+  bool enabled = false;
+  int revision = 0, count = 1;
+  @override
+  Future<TrainerCalendarSharing> get() async => TrainerCalendarSharing(
+    enabled: enabled,
+    revision: revision,
+    activeTrainers: count,
+    maxActiveTrainers: 2,
+  );
+  @override
+  Future<TrainerCalendarSharing> set(bool value, int expectedRevision) async {
+    expect(expectedRevision, revision);
+    enabled = value;
+    revision++;
+    return get();
+  }
 }
 
 class _EmptyForms extends StudentFormsFixture {

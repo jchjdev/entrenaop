@@ -283,6 +283,14 @@ class _TrainerClientWorkspacePageState
                     spacing: 8,
                     runSpacing: 8,
                     children: [
+                      if (workspace.client.active)
+                        OutlinedButton.icon(
+                          onPressed: () => context.push(
+                            '/clients/${widget.clientId}/calendar',
+                          ),
+                          icon: const Icon(Icons.groups_outlined),
+                          label: const Text('Calendario compartido'),
+                        ),
                       OutlinedButton.icon(
                         onPressed: () => context.push(
                           '/clients/${widget.clientId}/workouts',

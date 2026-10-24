@@ -1,5 +1,13 @@
 # Arquitectura de EntrenaOP
 
+**Calendario compartido por alumno · TRN-028:** La relación deja de ser exclusiva por
+alumno: un trigger serializa la admisión y limita parejas activas. Las funciones invoker
+delegan en internos con controles de identidad, MFA, acceso, vínculo y consentimiento
+revisionado. La lectura específica por alumno/cita no amplía RLS del catálogo ni
+asignaciones. Los contratos de trainer_access y la vista común de pauta evitan duplicar
+creadores.
+[Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
+
 La revisión histórica comparte instantáneas y comparación pura en `workout_core`
 y controles de lectura en `workout_editor_ui`. Los consumidores aportan sus
 adaptadores y repositorios autorizados; ni el filtro ni la comparación escriben

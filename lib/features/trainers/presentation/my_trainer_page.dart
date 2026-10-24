@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_followup_codec.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/professional_assessment.dart';
@@ -12,11 +13,13 @@ class MyTrainerPage extends StatefulWidget {
     this.forms,
     this.assessments,
     this.onOpenConversation,
+    this.calendarSharing,
   });
   final TrainerRepository repository;
   final TrainerStudentFormRepository? forms;
   final ProfessionalAssessmentStudentRepository? assessments;
   final ValueChanged<String>? onOpenConversation;
+  final TrainerCalendarSharingRepository? calendarSharing;
   @override
   State<MyTrainerPage> createState() => _MyTrainerPageState();
 }
@@ -30,6 +33,8 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
   bool _hasForms = false, _hasAssessments = false;
   String? _assessmentsError;
   String? _formsError;
+  TrainerCalendarSharing? _sharing;
+  String? _sharingError;
 
   @override
   void initState() {
@@ -71,6 +76,24 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
       _moreHistory = _history.length == 50;
       _loaded = true;
     });
+    if (widget.calendarSharing case final repository?) {
+      try {
+        final sharing = await repository.get();
+        if (mounted) {
+          setState(() {
+            _sharing = sharing;
+            _sharingError = null;
+          });
+        }
+      } catch (error) {
+        if (mounted) {
+          setState(() {
+            _sharing = null;
+            _sharingError = trainerError(error);
+          });
+        }
+      }
+    }
     if (widget.assessments case final assessments?) {
       try {
         final items = await assessments.mine();
@@ -153,7 +176,9 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Mi preparador')),
+    appBar: AppBar(
+      title: Text(_active.length > 1 ? 'Mis preparadores' : 'Mi preparador'),
+    ),
     body: Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
@@ -166,7 +191,7 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Acepta solo invitaciones de un preparador que conozcas. Puedes tener un único preparador activo.',
+              'Acepta solo invitaciones de preparadores que conozcas. Sus pautas conviven en tu agenda y cada conversación se mantiene separada.',
             ),
             const SizedBox(height: 16),
             if (_busy) const LinearProgressIndicator(),
@@ -233,7 +258,42 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                     'No se pudo comprobar si tienes formularios. Pulsa Actualizar para reintentar.',
                   ),
                 ),
-              if (_active.isEmpty) ...[
+              if (_sharingError != null)
+                Text(
+                  'No se pudo comprobar la compartición del calendario. Pulsa Actualizar. $_sharingError',
+                ),
+              if (_sharing case final sharing?) ...[
+                Text(
+                  '${_active.length} / ${sharing.maxActiveTrainers} preparadores activos',
+                ),
+                if (_active.isNotEmpty)
+                  Card(
+                    child: SwitchListTile(
+                      title: const Text(
+                        'Compartir mi calendario con mis preparadores',
+                      ),
+                      subtitle: const Text(
+                        'Podrán consultar todas tus sesiones y sus pautas para coordinarse. No comparte conversaciones, resultados ni notas privadas. Puedes desactivarlo cuando quieras.',
+                      ),
+                      value: sharing.enabled,
+                      onChanged: _busy
+                          ? null
+                          : (enabled) => _run(() async {
+                              try {
+                                final value = await widget.calendarSharing!.set(
+                                  enabled,
+                                  sharing.revision,
+                                );
+                                if (mounted) setState(() => _sharing = value);
+                              } catch (_) {
+                                await _load();
+                                rethrow;
+                              }
+                            }),
+                    ),
+                  ),
+              ],
+              if (_active.isEmpty)
                 const Card(
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -242,6 +302,7 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                     ),
                   ),
                 ),
+              if (_active.length < (_sharing?.maxActiveTrainers ?? 1)) ...[
                 const SizedBox(height: 16),
                 TextField(
                   controller: _secret,
@@ -292,8 +353,16 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                             'Al aceptar confirmas el vínculo con este preparador. No se contrata ninguna suscripción ni se amplían tus cuotas de creación personal.',
                           ),
                           const SizedBox(height: 12),
+                          if (_sharing?.enabled == true)
+                            const Text(
+                              'Tienes la agenda compartida: este preparador también podrá consultar tu calendario y las pautas de tus sesiones al aceptar.',
+                            ),
                           FilledButton(
-                            onPressed: _busy
+                            onPressed:
+                                _busy ||
+                                    _active.any(
+                                      (r) => r.personId == preview.trainerId,
+                                    )
                                 ? null
                                 : () => _run(() async {
                                     await widget.repository.accept(
@@ -313,45 +382,42 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                       ),
                     ),
                   ),
-              ] else
-                for (final relation in _active)
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text('PREPARADOR ACTIVO'),
-                          const SizedBox(height: 8),
-                          Text(
-                            relation.name,
-                            style: Theme.of(context).textTheme.titleLarge,
+              ],
+              for (final relation in _active)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text('PREPARADOR ACTIVO'),
+                        const SizedBox(height: 8),
+                        Text(
+                          relation.name,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        Text('Desde el ${trainerDate(relation.acceptedAt)}'),
+                        if (widget.onOpenConversation != null)
+                          OutlinedButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => widget.onOpenConversation!(relation.id),
+                            icon: const Icon(Icons.chat_bubble_outline),
+                            label: const Text('Conversación con mi preparador'),
                           ),
-                          Text('Desde el ${trainerDate(relation.acceptedAt)}'),
-                          if (widget.onOpenConversation != null)
-                            OutlinedButton.icon(
-                              onPressed: _busy
-                                  ? null
-                                  : () =>
-                                        widget.onOpenConversation!(relation.id),
-                              icon: const Icon(Icons.chat_bubble_outline),
-                              label: const Text(
-                                'Conversación con mi preparador',
-                              ),
-                            ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Tu acceso personal Free o Pro se mantiene por separado.',
-                          ),
-                          const SizedBox(height: 12),
-                          OutlinedButton(
-                            onPressed: _busy ? null : () => _end(relation),
-                            child: const Text('Finalizar vínculo'),
-                          ),
-                        ],
-                      ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Tu acceso personal Free o Pro se mantiene por separado.',
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: _busy ? null : () => _end(relation),
+                          child: const Text('Finalizar vínculo'),
+                        ),
+                      ],
                     ),
                   ),
+                ),
               if (_history.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Text(

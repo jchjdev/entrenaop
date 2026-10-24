@@ -24,6 +24,10 @@ import 'trainer_program_pages.dart';
 import 'trainer_program_work_repository.dart';
 import 'trainer_program_work_pages.dart';
 import 'trainer_agenda_page.dart';
+import 'trainer_shared_calendar_page.dart';
+
+import 'package:trainer_access/trainer_calendar.dart';
+
 import 'trainer_shell.dart';
 import 'trainer_exercise_page.dart';
 import 'trainer_exercise_repository.dart';
@@ -337,6 +341,19 @@ class _TrainerAppState extends State<TrainerApp> {
               builder: (_, state) => TrainerClientContentRoute(
                 workspace: workspace(),
                 forms: forms(),
+                clientId: state.pathParameters['id']!,
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id/calendar',
+              builder: (_, state) => TrainerSharedCalendarPage(
+                key: ValueKey(
+                  'shared-calendar-$identity-${state.pathParameters['id']}',
+                ),
+                repository: SupabaseTrainerSharedCalendarRepository(
+                  widget.client,
+                  identity!,
+                ),
                 clientId: state.pathParameters['id']!,
               ),
             ),

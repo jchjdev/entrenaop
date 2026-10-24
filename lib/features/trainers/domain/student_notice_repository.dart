@@ -39,6 +39,11 @@ class StudentNoticeTarget {
   final DateTime? scheduledDate;
 }
 
+class StudentConversationLink {
+  const StudentConversationLink(this.relationId, this.trainerName);
+  final String relationId, trainerName;
+}
+
 class StudentNoticeResources {
   const StudentNoticeResources({
     this.hasForms = false,
@@ -47,10 +52,12 @@ class StudentNoticeResources {
     this.hasTechnique = false,
     this.hasAssignedWorkouts = false,
     this.conversationRelationId,
+    this.conversations = const [],
   });
   final bool hasForms, hasAssessments, hasConversations, hasTechnique;
   final bool hasAssignedWorkouts;
   final String? conversationRelationId;
+  final List<StudentConversationLink> conversations;
 
   bool get hasContent =>
       hasForms ||

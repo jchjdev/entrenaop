@@ -532,6 +532,7 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                   ),
                 ),
               ],
+              if (item.coachName case final name?) Text('Preparador: $name'),
               if (item.coachNote?.trim().isNotEmpty == true) ...[
                 const SizedBox(height: 8),
                 Text('Indicaciones del preparador: ${item.coachNote}'),

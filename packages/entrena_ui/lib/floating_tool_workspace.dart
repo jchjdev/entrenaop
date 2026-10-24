@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -30,11 +31,13 @@ class _FloatingToolWorkspaceState extends State<FloatingToolWorkspace> {
   bool _opened = false;
   bool _minimized = false;
   bool _expanded = false;
-  Offset? _position;
+  final _position = ValueNotifier<Offset?>(null);
+  Offset? _dragPointerStart, _dragWindowStart;
   final _headerFocus = FocusNode();
 
   @override
   void dispose() {
+    _position.dispose();
     _headerFocus.dispose();
     super.dispose();
   }
@@ -66,161 +69,198 @@ class _FloatingToolWorkspaceState extends State<FloatingToolWorkspace> {
         final height = math.min(_expanded ? 780.0 : 700.0, bottom - top);
         final headerHeight = math.min(64.0, height);
         final visibleHeight = _minimized ? headerHeight : height;
-        final requested = _position ?? Offset(right - width, top + 64);
-        final position = Offset(
+        Offset bounded(Offset requested) => Offset(
           requested.dx.clamp(left, right - width),
           requested.dy.clamp(top, bottom - visibleHeight),
         );
-        void move(Offset delta) => setState(() => _position = position + delta);
+        Offset currentPosition() =>
+            bounded(_position.value ?? Offset(right - width, top + 64));
+        void move(Offset delta) =>
+            _position.value = bounded(currentPosition() + delta);
 
         return Stack(
           children: [
             Positioned.fill(child: widget.child),
             if (_opened && width > 0 && height > 0)
-              Positioned(
-                left: position.dx,
-                top: position.dy,
-                width: width,
-                height: visibleHeight,
-                child: Material(
-                  key: const ValueKey('floating-tool-window'),
-                  elevation: 16,
-                  color: Theme.of(context).colorScheme.surface,
-                  clipBehavior: Clip.antiAlias,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.outlineVariant,
+              ValueListenableBuilder<Offset?>(
+                valueListenable: _position,
+                builder: (context, _, panel) {
+                  final position = currentPosition();
+                  return Positioned(
+                    left: position.dx,
+                    top: position.dy,
+                    width: width,
+                    height: visibleHeight,
+                    child: panel!,
+                  );
+                },
+                child: RepaintBoundary(
+                  child: Material(
+                    key: const ValueKey('floating-tool-window'),
+                    elevation: 16,
+                    color: Theme.of(context).colorScheme.surface,
+                    clipBehavior: Clip.antiAlias,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: headerHeight,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Focus(
-                                focusNode: _headerFocus,
-                                onKeyEvent: (_, event) {
-                                  if (event is! KeyDownEvent &&
-                                      event is! KeyRepeatEvent) {
-                                    return KeyEventResult.ignored;
-                                  }
-                                  final delta = switch (event.logicalKey) {
-                                    LogicalKeyboardKey.arrowLeft =>
-                                      const Offset(-20, 0),
-                                    LogicalKeyboardKey.arrowRight =>
-                                      const Offset(20, 0),
-                                    LogicalKeyboardKey.arrowUp => const Offset(
-                                      0,
-                                      -20,
-                                    ),
-                                    LogicalKeyboardKey.arrowDown =>
-                                      const Offset(0, 20),
-                                    _ => null,
-                                  };
-                                  if (delta == null) {
-                                    return KeyEventResult.ignored;
-                                  }
-                                  move(delta);
-                                  return KeyEventResult.handled;
-                                },
-                                child: Semantics(
-                                  label: 'Mover ${widget.title}',
-                                  hint: 'Arrastra la cabecera o usa las flechas del teclado',
-                                  child: MouseRegion(
-                                    cursor: SystemMouseCursors.move,
-                                    child: GestureDetector(
-                                      key: const ValueKey(
-                                        'floating-tool-handle',
-                                      ),
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: _headerFocus.requestFocus,
-                                      onPanStart: (_) =>
-                                          _headerFocus.requestFocus(),
-                                      onPanUpdate: (details) =>
-                                          move(details.delta),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: headerHeight,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Focus(
+                                  focusNode: _headerFocus,
+                                  onKeyEvent: (_, event) {
+                                    if (event is! KeyDownEvent &&
+                                        event is! KeyRepeatEvent) {
+                                      return KeyEventResult.ignored;
+                                    }
+                                    final delta = switch (event.logicalKey) {
+                                      LogicalKeyboardKey.arrowLeft =>
+                                        const Offset(-20, 0),
+                                      LogicalKeyboardKey.arrowRight =>
+                                        const Offset(20, 0),
+                                      LogicalKeyboardKey.arrowUp =>
+                                        const Offset(0, -20),
+                                      LogicalKeyboardKey.arrowDown =>
+                                        const Offset(0, 20),
+                                      _ => null,
+                                    };
+                                    if (delta == null) {
+                                      return KeyEventResult.ignored;
+                                    }
+                                    move(delta);
+                                    return KeyEventResult.handled;
+                                  },
+                                  child: Semantics(
+                                    label: 'Mover ${widget.title}',
+                                    hint: 'Arrastra la cabecera o usa las flechas del teclado',
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.move,
+                                      child: GestureDetector(
+                                        key: const ValueKey(
+                                          'floating-tool-handle',
                                         ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.drag_indicator,
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Text(
-                                                width < 380
-                                                    ? widget.shortTitle ??
-                                                          widget.title
-                                                    : widget.title,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleSmall,
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: _headerFocus.requestFocus,
+                                        dragStartBehavior:
+                                            DragStartBehavior.down,
+                                        onPanStart: (details) {
+                                          _headerFocus.requestFocus();
+                                          _dragPointerStart =
+                                              details.globalPosition;
+                                          _dragWindowStart = currentPosition();
+                                        },
+                                        onPanUpdate: (details) {
+                                          final pointer = _dragPointerStart;
+                                          final window = _dragWindowStart;
+                                          if (pointer == null ||
+                                              window == null) {
+                                            return;
+                                          }
+                                          // La posición absoluta conserva todos los eventos
+                                          // entre fotogramas y evita depender del origen móvil.
+                                          _position.value = bounded(
+                                            window +
+                                                details.globalPosition -
+                                                pointer,
+                                          );
+                                        },
+                                        onPanEnd: (_) {
+                                          _dragPointerStart = _dragWindowStart =
+                                              null;
+                                        },
+                                        onPanCancel: () {
+                                          _dragPointerStart = _dragWindowStart =
+                                              null;
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.drag_indicator,
+                                                size: 18,
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  width < 380
+                                                      ? widget.shortTitle ??
+                                                            widget.title
+                                                      : widget.title,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            if (constraints.maxWidth >= 600 && !_minimized)
+                              if (constraints.maxWidth >= 600 && !_minimized)
+                                IconButton(
+                                  tooltip: _expanded
+                                      ? 'Restaurar tamaño'
+                                      : 'Ampliar calculadora',
+                                  onPressed: () =>
+                                      setState(() => _expanded = !_expanded),
+                                  icon: Icon(
+                                    _expanded
+                                        ? Icons.fullscreen_exit
+                                        : Icons.fullscreen,
+                                  ),
+                                ),
                               IconButton(
-                                tooltip: _expanded
-                                    ? 'Restaurar tamaño'
-                                    : 'Ampliar calculadora',
+                                tooltip: _minimized
+                                    ? 'Restaurar calculadora'
+                                    : 'Minimizar calculadora',
                                 onPressed: () =>
-                                    setState(() => _expanded = !_expanded),
+                                    setState(() => _minimized = !_minimized),
                                 icon: Icon(
-                                  _expanded
-                                      ? Icons.fullscreen_exit
-                                      : Icons.fullscreen,
+                                  _minimized
+                                      ? Icons.open_in_full
+                                      : Icons.minimize,
                                 ),
                               ),
-                            IconButton(
-                              tooltip: _minimized
-                                  ? 'Restaurar calculadora'
-                                  : 'Minimizar calculadora',
-                              onPressed: () =>
-                                  setState(() => _minimized = !_minimized),
-                              icon: Icon(
-                                _minimized
-                                    ? Icons.open_in_full
-                                    : Icons.minimize,
+                              IconButton(
+                                tooltip: 'Cerrar calculadora',
+                                onPressed: () => setState(() {
+                                  _opened = false;
+                                  _minimized = false;
+                                }),
+                                icon: const Icon(Icons.close),
                               ),
-                            ),
-                            IconButton(
-                              tooltip: 'Cerrar calculadora',
-                              onPressed: () => setState(() {
-                                _opened = false;
-                                _minimized = false;
-                              }),
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Ocultar conserva campos y desplazamiento, pero retira
-                      // los controles del foco y de la lectura accesible.
-                      Expanded(
-                        child: Offstage(
-                          offstage: _minimized,
-                          child: ExcludeFocus(
-                            excluding: _minimized,
-                            child: widget.toolBuilder(context),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                        // Ocultar conserva campos y desplazamiento, pero retira
+                        // los controles del foco y de la lectura accesible.
+                        Expanded(
+                          child: Offstage(
+                            offstage: _minimized,
+                            child: ExcludeFocus(
+                              excluding: _minimized,
+                              child: widget.toolBuilder(context),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

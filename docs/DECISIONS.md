@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**TRN-028 · 24/10/2026 · varios preparadores y calendario autorizado:**
+Javier confirma implementar la colaboración por alumno. El piloto admite dos
+preparadores activos, cada uno con cupo e historial independientes. El alumno
+activa o revoca explícitamente la lectura de su agenda y pautas para coordinar
+fuerza y carrera. No comparte carteras, bibliotecas privadas, resultados,
+conversaciones ni notas internas; cada preparador edita únicamente sus pautas.
+El último vínculo finalizado desactiva la compartición. La app identifica
+autores y conversaciones y conserva avisos e historial.
+[Contrato, verificación y límites](TRAINER_MULTI_COACH_2026_10_24.md).
+Sustituye la exclusividad anterior y concreta TRN-026/027; grupos, pagos
+conjuntos y edición cruzada quedan fuera. También se corrige el arrastre
+flotante con coordenadas absolutas, sin reconstruir la calculadora por evento.
+
 **TRN-027 · 24/10/2026 · colaboración por alumno y herramientas flotantes:**
 Javier precisa TRN-026: compartir una preparación se limita al alumno concreto.
 Sus preparadores deben poder consultar la planificación compartida de ese alumno
@@ -18,7 +31,7 @@ El 24/10 Javier autoriza retomar la coordinación con el otro chat para publicar
 esta entrega Dev. Tras reiniciar el entorno, Trainer publica las fuentes
 `793adbf8`, que incluyen la calculadora de `07c35746`; HTTPS y la interfaz real
 acreditan cálculo, desplazamiento y conservación de valores al minimizar.
-La colaboración entre varios preparadores sigue sin habilitarse.
+TRN-028 implementa posteriormente la colaboración con consentimiento del alumno.
 
 **Revisión y comparación de resultados · 24/10/2026:** filtro opcional
 «Solo diferencias con la pauta», desactivado al entrar, y comparación por fecha

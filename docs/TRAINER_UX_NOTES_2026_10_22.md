@@ -86,3 +86,12 @@ Solo documentación. Se revisan diff y formato; no se ejecuta Flutter, SQL ni se
 publican aplicaciones. No se emplean agentes ni coordinación entre chats.
 La calculadora flotante solicitada el 24/10 se implementa y valida por separado
 en [herramientas profesionales](PROFESSIONAL_TOOLS_2026_10_24.md).
+
+## Implementación posterior · TRN-028 · 24/10/2026
+
+Javier confirma pasar a código la colaboración limitada al alumno. Las notas
+anteriores conservan el estado de su fecha; la exclusividad ya queda sustituida
+por dos vínculos activos y compartición explícita de agenda/pauta en lectura.
+No se implementan equipos globales ni escritura cruzada. La calculadora recibe
+además un arrastre continuo independiente de la frecuencia de repintado.
+[Contrato y validación](TRAINER_MULTI_COACH_2026_10_24.md).

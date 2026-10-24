@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_messages.dart';
 import 'package:entrenaop/features/trainers/presentation/trainer_conversation_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
@@ -1022,6 +1023,11 @@ class AppRouter {
                 builder: (context, auth) => auth is! AuthAuthenticated
                     ? const SizedBox.shrink()
                     : MyTrainerPage(
+                        calendarSharing:
+                            SupabaseTrainerCalendarSharingRepository(
+                              sl<SupabaseClient>(),
+                              auth.user.id,
+                            ),
                         key: ValueKey(auth.user.id),
                         repository: SupabaseTrainerRepository(
                           sl<SupabaseClient>(),

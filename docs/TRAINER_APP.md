@@ -1,11 +1,19 @@
 # Espacio de entrenadores
 
-## Criterio nuevo pendiente de implementar · 22/10/2026 · TRN-026
+## Varios preparadores · TRN-028 · 24/10/2026
+
+El piloto admite dos preparadores activos por alumno. El alumno decide compartir
+su calendario y pautas; cada preparador conserva cartera, notas, conversaciones,
+resultados y autoría independientes. Trainer añade Calendario compartido en la
+ficha, en lectura, sin equipos globales ni edición cruzada.
+[Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
+
+## Criterio inicial · 22/10/2026 · TRN-026 (concretado por TRN-028)
 
 Javier solicita poder tener dos preparadores activos a la vez, por ejemplo uno
 de fuerza y otro de carrera. Sustituye el acuerdo anterior de preparador único;
-las referencias siguientes a ese límite describen todavía el comportamiento
-implementado. También pide registrar, sin cambios de código, simplificación de
+las referencias siguientes a ese límite describen el comportamiento
+histórico. También pide registrar, sin cambios de código, simplificación de
 asignaciones, reordenación por arrastre y revisión del creador de carrera.
 Aclara que fuerza y carrera se preparan conjuntamente: priorizar el caso de
 equipo con planificación compartida autorizada para coordinar las sesiones.

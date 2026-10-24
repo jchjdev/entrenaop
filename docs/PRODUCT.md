@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**Preparación compartida · TRN-028 · 24/10/2026:** El alumno puede recibir pautas de dos
+preparadores. Decide si ambos pueden consultar su calendario y pautas para coordinar
+carga; no comparte los demás alumnos, conversaciones, resultados ni notas privadas de
+los profesionales.
+[Contrato y evidencia](TRAINER_MULTI_COACH_2026_10_24.md).
+
 El historial del deportista y el resultado profesional permiten filtrar
 opcionalmente las diferencias con la pauta y comparar dos ejecuciones de la
 misma sesión/versión. Se conservan datos ausentes, omisiones y contexto; las
