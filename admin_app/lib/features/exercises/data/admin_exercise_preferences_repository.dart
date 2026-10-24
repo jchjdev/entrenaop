@@ -12,6 +12,7 @@ class SupabaseAdminExercisePreferencesRepository
     SupabaseClient client,
     String userId,
   ) : super(
+        expectedOwner: userId,
         context: ExercisePreferenceContext.adminOfficial,
         operationId: newGuidedWorkId,
         isConflict: (error) =>

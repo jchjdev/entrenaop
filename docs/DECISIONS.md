@@ -16,6 +16,13 @@ También señala el desaprovechamiento de pantallas de escritorio: se registra
 como revisión de composición y flujo, sin decidir una migración de framework.
 [Continuidad](TRAINER_SESSION_WORK_DRAFTS.md), [avisos](TRAINER_STUDENT_NOTICES.md).
 
+Avance del 24/10: recuperación contextual aplicada y verificada en Dev. El
+selector compartido incorpora etiquetas privadas de ejercicios (ocho de hasta
+32 caracteres por referencia, 5.000 referencias técnicas por autor/contexto),
+con CAS/recibos, búsqueda y filtro. No modifica el contenido ni añade todavía
+etiquetas a sesiones/programas completos. [Contrato](TRAINER_EDITOR_PREFERENCES.md).
+El transporte push sigue pendiente; no se acredita recepción con la app cerrada.
+
 **TRN-028 · 24/10/2026 · varios preparadores y calendario autorizado:**
 Javier confirma implementar la colaboración por alumno. El piloto admite dos
 preparadores activos, cada uno con cupo e historial independientes. El alumno

@@ -10,6 +10,8 @@ import 'package:workout_editor_ui/exercise_image_draft.dart';
 import '../../packages/trainer_access/test_support/fake_trainer_repository.dart';
 import 'trainer_media_pages_test.dart'
     show PickerMediaFixture, readyMedia, readyUrl;
+import '../../packages/workout_editor_ui/test/exercise_labels_test.dart'
+    show LabelsSource;
 
 class ExerciseFixture extends TrainerExerciseRepository {
   bool fail = false;
@@ -74,6 +76,29 @@ Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
 }
 
 void main() {
+  testWidgets('la biblioteca propia encuentra ejercicios por etiquetas', (
+    tester,
+  ) async {
+    final repo = ExerciseFixture()
+      ..rows = [entry('Dominadas'), entry('Sentadillas')];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: EntrenaTheme.dark,
+        home: TrainerExercisePage(
+          repository: repo,
+          access: FakeTrainerRepository(),
+          preferences: LabelsSource(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Etiquetas: Dominadas'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'tecnica');
+    await tester.pumpAndSettle();
+    expect(find.text('Dominadas'), findsOneWidget);
+    expect(find.text('Sentadillas'), findsNothing);
+  });
+
   testWidgets(
     'creador común vincula vídeo listo seleccionado sin subir ni guardar antes de confirmar',
     (tester) async {

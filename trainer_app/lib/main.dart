@@ -485,6 +485,8 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/exercises',
               builder: (_, _) => TrainerExercisePage(
+                key: ValueKey('trainer-exercises-$identity'),
+                preferences: exercisePreferences,
                 repository: SupabaseTrainerExerciseRepository(
                   widget.client,
                   identity!,

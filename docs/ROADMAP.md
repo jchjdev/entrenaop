@@ -6,8 +6,10 @@ duplicar resultados. Contrato aplicado solo en Dev y tres pruebas SQL con
 `ROLLBACK`; 199 pruebas Trainer, análisis limpio y 48 contenciones locales
 RC/RR correctas. La publicación web y aceptación humana siguen pendientes.
 No se modifican ADMIN ni la app del deportista. El encargo continúa abierto:
-siguiente tramo recomendado, etiquetas privadas de biblioteca; después,
-transporte push configurable, sin acreditar recepción física ni incluir cobros.
+siguiente tramo recomendado, transporte push configurable, sin acreditar
+recepción física ni incluir cobros. Etiquetas privadas de ejercicios aplicadas
+en Dev y conectadas al selector compartido; búsqueda/filtro y 54 contenciones
+locales verificadas. No incluye etiquetas de sesiones/programas completos.
 [Evidencia y fronteras](TRAINER_SESSION_WORK_DRAFTS.md).
 
 **TRN-028 · 24/10/2026 · varios preparadores:** Recorrido: alumno acepta dos

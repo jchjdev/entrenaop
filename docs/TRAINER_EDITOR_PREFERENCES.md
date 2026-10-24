@@ -1,5 +1,38 @@
 # Preferencias de ejercicios de los editores
 
+## Etiquetas privadas · TRN-029 · 24/10/2026
+
+`20261024195234_editor_private_exercise_labels.sql` y
+`20261024200231_editor_labels_expected_owner.sql` están aplicadas solo en Dev.
+El selector compartido de ADMIN/Trainer permite etiquetar ejercicios, buscar
+por esas etiquetas y filtrarlas junto con músculo/material/favoritos. Son
+privadas por autor y contexto; no cambian categorías oficiales, pautas ni
+derechos personales del alumno. Este tramo etiqueta ejercicios del selector,
+no programas ni sesiones completos. La biblioteca propia de Ejercicios en
+Trainer también permite editarlas, buscarlas y filtrarlas con los mismos
+controles. El selector compartido aporta esta mejora a los creadores de ADMIN.
+
+Se reutilizan identidad, selección autorizada y bloqueo del propietario de las
+preferencias. Las nuevas RPC fijan `p_expected_owner` también en servidor para
+rechazar un cambio A→B durante el transporte antes de escribir como B; las firmas
+iniciales sin identidad esperada quedan revocadas. Hasta ocho etiquetas distintas
+por ejercicio, de 1–32 caracteres;
+sin comas/control, hasta 5.000 referencias por autor/contexto como límite técnico.
+Quitar todas conserva su revisión. El servidor exige CAS y registra la operación
+en el ledger existente: mismo UUID/payload devuelve el recibo; otro payload o
+revisión antigua no sobrescriben. La lectura intersecta las referencias con el
+catálogo seleccionable actual. El diálogo consulta antes de editar; un fallo
+de lectura no permite enviar un formulario vacío. Un envío incierto conserva
+UUID, revisión y texto, y ofrece repetir esa misma petición.
+
+Análisis limpio en raíz, ADMIN, Trainer y paquete compartido. Baterías completas:
+1.336 pruebas raíz (una omisión previa), 315 ADMIN (dos omisiones previas),
+200 Trainer, 217 del paquete compartido y contrato SQL con `ROLLBACK`
+correctos. El runner local de preferencias acredita 54 contenciones RC/RR,
+incluidas CAS/recibos y favoritos simultáneos con etiquetas. Usa un catálogo
+mínimo y no sustituye el ensayo SQL sobre Dev. Publicación de las nuevas
+interfaces y aceptación con biblioteca grande pendientes.
+
 21/10/2026. Contrato de servidor compartido para ADMIN y Trainer, sin publicar
 contenido ni trasladar permisos administrativos al espacio profesional. La
 migración local es `20261021162903_trainer_editor_exercise_preferences.sql`.

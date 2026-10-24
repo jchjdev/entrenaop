@@ -2,12 +2,54 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
+import 'package:workout_core/exercise_catalog_labels.dart';
 
 /// Estado de una única instancia de editor y un único puerto de cuenta/contexto.
 /// No almacena catálogo, medios ni credenciales y no comparte caché global.
 class ExercisePreferencesController extends ChangeNotifier {
   ExercisePreferencesController(this.source);
   final ExerciseCatalogPreferences source;
+  final _labels = <String, ExerciseLabelEntry>{};
+  String? labelsError;
+  bool labelsLoaded = false;
+  bool get supportsLabels => source is ExerciseCatalogLabels;
+  List<String> labels(String id) => _labels[id]?.labels ?? const [];
+  int labelsRevision(String id) => _labels[id]?.revision ?? 0;
+
+  Future<void> refreshLabels() async {
+    if (!supportsLabels) return;
+    try {
+      final rows = await (source as ExerciseCatalogLabels).readLabels();
+      if (_disposed) return;
+      _labels
+        ..clear()
+        ..addEntries(rows.map((e) => MapEntry(e.exerciseId, e)));
+      labelsError = null;
+      labelsLoaded = true;
+    } catch (_) {
+      if (!_disposed) labelsError = 'No se pudieron cargar tus etiquetas.';
+      rethrow;
+    } finally {
+      _notify();
+    }
+  }
+
+  Future<void> saveLabels(
+    String id,
+    List<String> labels,
+    int revision,
+    String operationId,
+  ) async {
+    final result = await (source as ExerciseCatalogLabels).setLabels(
+      id,
+      labels,
+      expectedRevision: revision,
+      operationId: operationId,
+    );
+    if (_disposed) return;
+    if (result.revision >= labelsRevision(id)) _labels[id] = result;
+    _notify();
+  }
 
   final _entries = <String, ExercisePreferenceEntry>{};
   final _pending = <_Action>[];
@@ -44,6 +86,13 @@ class ExercisePreferencesController extends ChangeNotifier {
       if (_disposed) return;
       _replace(snapshot);
       if (_pending.isEmpty) error = null;
+      if (supportsLabels) {
+        try {
+          await refreshLabels();
+        } catch (_) {
+          /* El catálogo sigue utilizable. */
+        }
+      }
     } catch (_) {
       if (!_disposed) error = 'No se pudieron cargar favoritos y recientes.';
     } finally {

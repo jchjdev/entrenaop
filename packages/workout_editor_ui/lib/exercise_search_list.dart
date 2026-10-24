@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'catalog_search.dart';
 import 'exercise_preferences_controller.dart';
+import 'exercise_labels_dialog.dart';
 
 enum _View { all, favorites, recent }
 
@@ -44,6 +45,7 @@ class ExerciseSearchList<T> extends StatefulWidget {
 class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
   final _search = TextEditingController();
   String? _muscle, _equipment;
+  String? _label;
   bool _filtersOpen = false;
   _View _view = _View.all;
 
@@ -69,6 +71,7 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
       oldWidget.preferences?.removeListener(_preferencesChanged);
       _search.clear();
       _muscle = _equipment = null;
+      _label = null;
       _view = _View.all;
       _listen();
     }
@@ -155,10 +158,13 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
                     _View.favorites => preferences.favorite(idOf(exercise)),
                     _View.recent => recentIds.contains(idOf(exercise)),
                   }) &&
-              matchesCatalogSearch(
-                _search.text,
-                widget.searchTermsOf(exercise),
-              ) &&
+              matchesCatalogSearch(_search.text, [
+                ...widget.searchTermsOf(exercise),
+                ...?preferences?.labels(idOf(exercise)),
+              ]) &&
+              (_label == null ||
+                  (preferences?.labels(idOf(exercise)).contains(_label) ??
+                      false)) &&
               _matchesFilter(exercise, muscle, widget.muscleGroupsOf) &&
               _matchesFilter(exercise, material, widget.equipmentOf);
         })
@@ -212,18 +218,31 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
                   ),
                 ),
               ),
+            if (preferences?.supportsLabels == true &&
+                preferences!.labelsLoaded)
+              ExerciseLabelFilter(
+                labels: widget.exercises.expand(
+                  (e) => preferences.labels(idOf(e)),
+                ),
+                selected: _label,
+                onChanged: (label) => setState(() => _label = label),
+              ),
             if (muscles.isNotEmpty || equipment.isNotEmpty)
               IconButton(
                 tooltip: _filtersOpen ? 'Ocultar filtros' : 'Mostrar filtros',
                 icon: const Icon(Icons.tune),
                 onPressed: () => setState(() => _filtersOpen = !_filtersOpen),
               ),
-            if (_search.text.isNotEmpty || muscle != null || material != null)
+            if (_search.text.isNotEmpty ||
+                muscle != null ||
+                material != null ||
+                _label != null)
               TextButton(
                 onPressed: () => setState(() {
                   _search.clear();
                   _muscle = null;
                   _equipment = null;
+                  _label = null;
                 }),
                 child: const Text('Limpiar'),
               ),
@@ -265,6 +284,7 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
           const SizedBox(height: 6),
         ],
         if (preferences?.loading == true) const LinearProgressIndicator(),
+        if (preferences?.labelsError case final error?) Text(error),
         if (preferences?.error case final error?)
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -296,26 +316,50 @@ class _ExerciseSearchListState<T> extends State<ExerciseSearchList<T>> {
                               url: widget.thumbnailOf(exercise),
                             ),
                       title: Text(widget.nameOf(exercise)),
-                      subtitle: widget.subtitleOf == null
-                          ? null
-                          : Text(widget.subtitleOf!(exercise) ?? ''),
+                      subtitle: Text(
+                        [
+                          ?widget.subtitleOf?.call(exercise),
+                          ...?preferences?.labels(idOf(exercise)),
+                        ].join(' · '),
+                      ),
                       onTap: () => widget.onSelected(exercise),
                       trailing: preferences == null
                           ? null
-                          : IconButton(
-                              tooltip:
-                                  '${preferences.favorite(idOf(exercise)) ? 'Quitar de' : 'Añadir a'} favoritos: ${widget.nameOf(exercise)}',
-                              isSelected: preferences.favorite(idOf(exercise)),
-                              selectedIcon: const Icon(Icons.star),
-                              icon: const Icon(Icons.star_border),
-                              onPressed:
-                                  !preferences.loaded ||
-                                      preferences.loading ||
-                                      preferences.pending(idOf(exercise))
-                                  ? null
-                                  : () => preferences.toggleFavorite(
-                                      idOf(exercise),
-                                    ),
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (preferences.supportsLabels)
+                                  IconButton(
+                                    tooltip:
+                                        'Etiquetas: ${widget.nameOf(exercise)}',
+                                    icon: const Icon(Icons.label_outline),
+                                    onPressed: preferences.loading
+                                        ? null
+                                        : () => editExerciseLabels(
+                                            context,
+                                            preferences,
+                                            idOf(exercise),
+                                            widget.nameOf(exercise),
+                                          ),
+                                  ),
+                                IconButton(
+                                  tooltip:
+                                      '${preferences.favorite(idOf(exercise)) ? 'Quitar de' : 'Añadir a'} favoritos: ${widget.nameOf(exercise)}',
+                                  isSelected: preferences.favorite(
+                                    idOf(exercise),
+                                  ),
+                                  selectedIcon: const Icon(Icons.star),
+                                  icon: const Icon(Icons.star_border),
+                                  onPressed:
+                                      !preferences.loaded ||
+                                          preferences.loading ||
+                                          preferences.pending(idOf(exercise))
+                                      ? null
+                                      : () => preferences.toggleFavorite(
+                                          idOf(exercise),
+                                        ),
+                                ),
+                              ],
                             ),
                     );
                   },

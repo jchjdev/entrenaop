@@ -31,6 +31,8 @@ def install_preferences(db):
     ]:
         db.query(re.search(pattern,(root/'supabase/migrations'/filename).read_text(encoding='utf-8')).group())
     db.query((root/'supabase/migrations/20261021162903_trainer_editor_exercise_preferences.sql').read_text(encoding='utf-8'))
+    db.query((root/'supabase/migrations/20261024195234_editor_private_exercise_labels.sql').read_text(encoding='utf-8'))
+    db.query((root/'supabase/migrations/20261024200231_editor_labels_expected_owner.sql').read_text(encoding='utf-8'))
 
 
 def fixture(db):
@@ -50,10 +52,14 @@ def selection(op,exercise):
 
 def race(observer,pool,kind,repeatable,selection_first=False):
     owner,ids=fixture(observer);first_op=str(uuid.uuid4());second_op=str(uuid.uuid4())
-    if kind=='same':second_op=first_op
+    if kind in ('same','labels_same'):second_op=first_op
     if kind=='quota':
         observer.query(f"insert into editor_private.exercise_preference_owners values('{owner}','trainer_private',0);insert into editor_private.exercise_preferences(user_id,context,exercise_id,favorite,favorite_revision) select '{owner}','trainer_private',gen_random_uuid(),true,1 from generate_series(1,499)")
-    if kind=='recents':
+    if kind.startswith('labels_'):
+        first_sql=f"select public.set_editor_exercise_labels('{owner}','trainer_private','{first_op}','{ids[0]}',array['Técnica'],0)"
+        second_sql=(favorite(second_op,ids[0]) if kind=='labels_mixed' else
+            f"select public.set_editor_exercise_labels('{owner}','trainer_private','{second_op}','{ids[0]}',array['{'Otra' if kind=='labels_cas' else 'Técnica'}'],0)")
+    elif kind=='recents':
         observer.query(f"insert into editor_private.exercise_preference_owners values('{owner}','trainer_private',0)")
         for exercise in ids[:20]:observer.query(f"insert into editor_private.exercise_preferences values('{owner}','trainer_private','{exercise}',false,7,clock_timestamp()-interval '1 second')")
         first_sql=selection(first_op,ids[20]);second_sql=selection(second_op,ids[21])
@@ -69,7 +75,7 @@ def race(observer,pool,kind,repeatable,selection_first=False):
         second.query('select public.get_editor_exercise_preferences(\'trainer_private\')')
         pid=int(second.query('select pg_backend_pid()')[0][0]);future=pool.submit(second.query,second_sql)
         wait_locked(observer,pid,future);first.query('commit')
-        expected='40001' if repeatable or kind=='cas' else '54000' if kind=='quota' else None
+        expected='40001' if repeatable or kind in ('cas','labels_cas') else '54000' if kind=='quota' else None
         try:
             result=future.result(timeout=10)
             assert expected is None,(kind,repeatable,expected,result)
@@ -77,9 +83,13 @@ def race(observer,pool,kind,repeatable,selection_first=False):
             second.query('commit')
         except SqlError as error:
             assert error.code==expected,(kind,repeatable,error.code,expected,str(error));second.query('rollback')
-        if repeatable and kind in ('same','mixed','recents'):
+        if repeatable and kind in ('same','mixed','recents','labels_same','labels_mixed'):
             second.query('begin');identity(second,owner,'aal2');result=second.query(second_sql);second.query('commit')
-            if kind=='same':assert result==confirmed
+            if kind in ('same','labels_same'):assert result==confirmed
+        if kind.startswith('labels_'):
+            assert observer.query(f"select labels,revision from editor_private.exercise_labels where user_id='{owner}'")==[['{Técnica}','1']]
+            if kind=='labels_mixed':
+                assert observer.query(f"select favorite,favorite_revision from editor_private.exercise_preferences where user_id='{owner}'")==[['t','1']]
         if repeatable and kind=='quota':
             second.query('begin');identity(second,owner,'aal2')
             try:second.query(second_sql);raise AssertionError('Reintento supera cuota500')
@@ -105,11 +115,11 @@ with tempfile.TemporaryDirectory(prefix='entrenaop-editor-preferences-race-') as
         started=True;observer=DB();assert observer.query('show server_version')[0][0].startswith('17.')
         install_preferences(observer)
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-            for kind,selection_first in [('cas',False),('same',False),('mixed',False),('mixed',True),('quota',False),('recents',False)]:
+            for kind,selection_first in [('cas',False),('same',False),('mixed',False),('mixed',True),('quota',False),('recents',False),('labels_same',False),('labels_cas',False),('labels_mixed',False)]:
                 for repeatable in (False,True):
                     for _ in range(3):race(observer,pool,kind,repeatable,selection_first)
                     print(f'OK: {kind},seleccion_primero={selection_first},RR={repeatable} (3 contenciones observadas)',flush=True)
-        print('OK: 36 contenciones CAS/recibos/seleccion/cuota/recencia; sin Dev ni produccion',flush=True)
+        print('OK: 54 contenciones CAS/recibos/seleccion/cuota/recencia/etiquetas; sin Dev ni produccion',flush=True)
     finally:
         if observer is not None:observer.close()
         if started:subprocess.run([str(bin_dir/'pg_ctl'),'-D',str(data),'-m','immediate','-w','stop'],check=True,capture_output=True)

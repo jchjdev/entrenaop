@@ -37,6 +37,59 @@ class Fixture {
 }
 
 void main() {
+  test(
+    'etiquetas fijan contexto y rechazan respuesta de otra intención',
+    () async {
+      final client = ExercisePreferencesClient(
+        expectedOwner: 'owner',
+        context: ExercisePreferenceContext.trainerPrivate,
+        operationId: () => 'op',
+        isConflict: (_) => false,
+        checkIdentity: () {},
+        call: (name, params) async {
+          expect(name, 'set_editor_exercise_labels');
+          expect(params['p_context'], 'trainer_private');
+          expect(params['p_expected_owner'], 'owner');
+          expect(params['p_labels'], ['Técnica']);
+          return {
+            'exercise_id': 'exercise',
+            'labels': ['Otra pestaña'],
+            'revision': 1,
+          };
+        },
+      );
+      await expectLater(
+        client.setLabels(
+          'exercise',
+          ['Técnica'],
+          expectedRevision: 0,
+          operationId: 'op',
+        ),
+        throwsStateError,
+      );
+    },
+  );
+
+  test('etiquetas no entregan una lectura de la cuenta anterior', () async {
+    var sameIdentity = true;
+    final client = ExercisePreferencesClient(
+      expectedOwner: 'owner',
+      context: ExercisePreferenceContext.adminOfficial,
+      operationId: () => 'op',
+      isConflict: (_) => false,
+      checkIdentity: () {
+        if (!sameIdentity) throw StateError('Otra cuenta');
+      },
+      call: (name, params) async {
+        expect(params['p_context'], 'admin_official');
+        expect(params['p_expected_owner'], 'owner');
+        sameIdentity = false;
+        return <dynamic>[];
+      },
+    );
+    await expectLater(client.readLabels(), throwsStateError);
+  });
+
   test('CAS omitido del snapshot conserva revisión y payload tras respuesta perdida', () async {
     final fixture = Fixture();
     await expectLater(

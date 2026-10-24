@@ -8,6 +8,7 @@ import 'trainer_workout_repository.dart' show trainerOperationId;
 class SupabaseTrainerExercisePreferences extends ExercisePreferencesClient {
   SupabaseTrainerExercisePreferences(SupabaseClient client, String userId)
     : super(
+        expectedOwner: userId,
         context: ExercisePreferenceContext.trainerPrivate,
         operationId: trainerOperationId,
         isConflict: (error) =>

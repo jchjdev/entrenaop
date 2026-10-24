@@ -2,6 +2,10 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/exercise_draft.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
+import 'package:workout_editor_ui/catalog_search.dart';
+import 'package:workout_editor_ui/exercise_preferences_controller.dart';
+import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
 import 'package:workout_editor_ui/workout_editor_exercise.dart';
@@ -52,11 +56,13 @@ class TrainerExercisePage extends StatefulWidget {
     required this.access,
     this.videoSource,
     this.mediaRepository,
+    this.preferences,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
   final ExerciseVideoSource? videoSource;
   final TrainerMediaRepository? mediaRepository;
+  final ExerciseCatalogPreferences? preferences;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -65,13 +71,29 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   List<TrainerExercise> _items = [];
   TrainerExerciseUsage? _usage;
   bool _busy = true, _enabled = false;
+  bool _canOrganize = false;
   String _query = '';
+  String? _label;
+  late final _preferences = widget.preferences == null
+      ? null
+      : ExercisePreferencesController(widget.preferences!);
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _preferences?.addListener(_preferencesChanged);
     _load();
+  }
+
+  void _preferencesChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _preferences?.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -83,11 +105,13 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
       final access = await widget.access.access();
       final usage = await widget.repository.usage();
       final items = await widget.repository.list();
+      await _preferences?.load();
       if (mounted) {
         setState(() {
           _items = items.where((e) => e.current).toList();
           _usage = usage;
           _enabled = access.effective && usage.exercises < usage.exerciseLimit;
+          _canOrganize = access.effective;
         });
       }
     } catch (e) {
@@ -162,6 +186,13 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
               onChanged: (value) =>
                   setState(() => _query = value.trim().toLowerCase()),
             ),
+            if (_preferences?.labelsLoaded == true)
+              ExerciseLabelFilter(
+                labels: _items.expand((e) => _preferences!.labels(e.id)),
+                selected: _label,
+                onChanged: (v) => setState(() => _label = v),
+              ),
+            if (_preferences?.labelsError case final error?) Text(error),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null) ...[
               Text(_error!),
@@ -173,15 +204,38 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 child: Text('Todavía no has creado ejercicios propios.'),
               ),
             for (final exercise in _items.where(
-              (e) => e.draft.name.toLowerCase().contains(_query),
+              (e) =>
+                  matchesCatalogSearch(_query, [
+                    e.draft.name,
+                    ...?_preferences?.labels(e.id),
+                  ]) &&
+                  (_label == null ||
+                      (_preferences?.labels(e.id).contains(_label) ?? false)),
             ))
               Card(
                 child: ListTile(
                   title: Text(exercise.draft.name),
                   subtitle: Text(
-                    'Versión ${exercise.version} · ${exercise.draft.muscleGroups.join(', ')}',
+                    [
+                      'Versión ${exercise.version}',
+                      ...exercise.draft.muscleGroups,
+                      ...?_preferences?.labels(exercise.id),
+                    ].join(' · '),
                   ),
-                  trailing: const Icon(Icons.edit_outlined),
+                  trailing: _preferences == null
+                      ? const Icon(Icons.edit_outlined)
+                      : IconButton(
+                          tooltip: 'Etiquetas: ${exercise.draft.name}',
+                          icon: const Icon(Icons.label_outline),
+                          onPressed: _busy || !_canOrganize
+                              ? null
+                              : () => editExerciseLabels(
+                                  context,
+                                  _preferences,
+                                  exercise.id,
+                                  exercise.draft.name,
+                                ),
+                        ),
                   onTap: !_enabled || _busy ? null : () => _edit(exercise),
                 ),
               ),

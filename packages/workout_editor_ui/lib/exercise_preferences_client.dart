@@ -1,14 +1,17 @@
 import 'package:workout_core/exercise_catalog_preferences.dart';
+import 'package:workout_core/exercise_catalog_labels.dart';
 
 /// Adaptación del protocolo compartido. Cada app aporta transporte e identidad;
 /// este cliente no conoce Auth, Supabase ni permisos administrativos.
-class ExercisePreferencesClient implements ExerciseCatalogPreferences {
+class ExercisePreferencesClient
+    implements ExerciseCatalogPreferences, ExerciseCatalogLabels {
   ExercisePreferencesClient({
     required this.call,
     required this.checkIdentity,
     required String Function() operationId,
     required ExercisePreferenceContext context,
     required this.isConflict,
+    this.expectedOwner,
   }) : _operationId = operationId,
        _context = context == ExercisePreferenceContext.adminOfficial
            ? 'admin_official'
@@ -20,11 +23,53 @@ class ExercisePreferencesClient implements ExerciseCatalogPreferences {
   final bool Function(Object error) isConflict;
   final String Function() _operationId;
   final String _context;
+  final String? expectedOwner;
   final _orders = <String, _PreferenceOrder>{};
   final _inflight = <String, Future<ExercisePreferenceEntry>>{};
 
   @override
   String newOperationId() => _operationId();
+
+  static ExerciseLabelEntry _labelEntry(dynamic value) {
+    final row = Map<String, dynamic>.from(value as Map);
+    return ExerciseLabelEntry(
+      exerciseId: row['exercise_id'] as String,
+      labels: (row['labels'] as List).cast<String>(),
+      revision: row['revision'] as int,
+    );
+  }
+
+  @override
+  Future<List<ExerciseLabelEntry>> readLabels() async => (await _rpc(
+    'get_editor_exercise_labels',
+    {'p_expected_owner': expectedOwner},
+  ) as List).map(_labelEntry).toList();
+
+  @override
+  Future<ExerciseLabelEntry> setLabels(
+    String exerciseId,
+    List<String> labels, {
+    required int expectedRevision,
+    required String operationId,
+  }) async {
+    final proposed = List<String>.of(labels);
+    final result = _labelEntry(
+      await _rpc('set_editor_exercise_labels', {
+        'p_expected_owner': expectedOwner,
+        'p_operation_id': operationId,
+        'p_exercise_id': exerciseId,
+        'p_labels': proposed,
+        'p_expected_revision': expectedRevision,
+      }),
+    );
+    if (result.exerciseId != exerciseId ||
+        result.revision != expectedRevision + 1 ||
+        result.labels.length != proposed.length ||
+        proposed.indexed.any((e) => result.labels[e.$1] != e.$2)) {
+      throw StateError('El recibo no corresponde a estas etiquetas.');
+    }
+    return result;
+  }
 
   Future<dynamic> _rpc(String name, Map<String, dynamic> parameters) async {
     checkIdentity();

@@ -5,8 +5,10 @@
 Trainer conecta al creador compartido las sesiones internas de programa y las
 adaptaciones individuales recuperables. Contrato aplicado y probado en Dev;
 análisis limpio, 199 pruebas Trainer y 48 contenciones locales correctas.
-No amplía permisos ni cambia el catálogo de ADMIN. La publicación web, etiquetas
-y preparación del transporte push siguen pendientes.
+No amplía permisos ni cambia el catálogo de ADMIN. Las etiquetas privadas de
+ejercicios se reutilizan en el selector común y están aplicadas en Dev;
+[contrato](TRAINER_EDITOR_PREFERENCES.md). La publicación web y preparación del
+transporte push siguen pendientes.
 [Contrato y límites](TRAINER_SESSION_WORK_DRAFTS.md).
 
 ## Varios preparadores · TRN-028 · 24/10/2026
