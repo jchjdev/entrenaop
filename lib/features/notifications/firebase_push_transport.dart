@@ -7,6 +7,22 @@ import 'package:flutter/foundation.dart';
 import '../../core/config/app_config.dart';
 import 'push_notifications.dart';
 
+/// Con auto-init apagado, FlutterFire 17 no pide la dirección APNs al arrancar.
+/// Solo se habilita tras el consentimiento; esperar antes produciría un bloqueo
+/// permanente en el primer registro de iPhone.
+Future<void> prepareFirebasePushRegistration(
+  FirebaseMessaging messaging, {
+  required bool ios,
+}) async {
+  await messaging.setAutoInitEnabled(true);
+  if (!ios) return;
+  for (var attempt = 0; attempt < 40; attempt++) {
+    if (await messaging.getAPNSToken() != null) return;
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+  }
+  throw StateError('APNs todavía no está disponible.');
+}
+
 /// Solo transporte. No utiliza Firebase Auth, base de datos ni Analytics.
 class FirebasePushTransport implements PushTransport {
   static const _enabled = bool.fromEnvironment('PUSH_ENABLED');
@@ -101,13 +117,19 @@ class FirebasePushTransport implements PushTransport {
       }),
     );
     _subscriptions.add(
-      messaging.onRegistered.listen((fid) {
-        final changed = _fid != fid;
-        _fid = fid;
-        final pending = _registration;
-        if (pending != null && !pending.isCompleted) pending.complete(fid);
-        if (changed && !_registering) _tokens.add(null);
-      }),
+      messaging.onRegistered.listen(
+        (fid) {
+          final changed = _fid != fid;
+          _fid = fid;
+          final pending = _registration;
+          if (pending != null && !pending.isCompleted) pending.complete(fid);
+          if (changed && !_registering) _tokens.add(null);
+        },
+        onError: (Object _) {
+          // register() conserva su fallo/timeout; una renovación posterior o
+          // volver a la app reintenta sin propagar errores del canal al usuario.
+        },
+      ),
     );
     _messaging = messaging;
     final initial = await messaging.getInitialMessage();
@@ -131,15 +153,13 @@ class FirebasePushTransport implements PushTransport {
   @override
   Future<String?> token() async {
     final messaging = _messaging!;
-    if (platform == 'ios' && await messaging.getAPNSToken() == null) {
-      throw StateError('APNs todavía no está disponible.');
-    }
     // FlutterFire 17 registra un FID. No utiliza las API antiguas de tokens.
     final result = Completer<String>();
     _registration = result;
     _registering = true;
     try {
-      await messaging.setAutoInitEnabled(true);
+      await prepareFirebasePushRegistration(messaging, ios: platform == 'ios');
+      if (_disposed) throw StateError('Transporte cerrado.');
       await messaging.register().timeout(const Duration(seconds: 20));
       return await result.future.timeout(const Duration(seconds: 20));
     } finally {

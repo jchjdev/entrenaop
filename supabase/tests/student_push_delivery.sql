@@ -3,7 +3,7 @@ set local statement_timeout='90s';
 do $$
 declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();coach uuid:=gen_random_uuid();relation uuid:=gen_random_uuid();
  device uuid:=gen_random_uuid();binding_a uuid:=gen_random_uuid();binding_b uuid:=gen_random_uuid();secret text:=repeat('a',64);
- event uuid:=gen_random_uuid();job jsonb;result jsonb;before_generation bigint;idx integer;
+ event uuid:=gen_random_uuid();job jsonb;result jsonb;before_generation bigint;idx integer;limit_device uuid;limit_binding uuid;limit_token text;
 begin
  insert into auth.users(id,email) values(a,a||'@push.invalid'),(b,b||'@push.invalid'),(coach,coach||'@push.invalid');
  insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(coach,true,5,'Avisos');
@@ -75,6 +75,21 @@ begin
  end loop;
  begin perform public.register_my_push_device(a,gen_random_uuid(),secret,gen_random_uuid(),null,repeat('Y',22)||6,'android');raise exception 'Supera cinco dispositivos activos';exception when program_limit_exceeded then null;end;
  reset role;
+ -- Una transferencia también respeta los veinte registros retenidos del destino.
+ insert into push_private.installations(id,owner_id,secret_hash,binding_id,platform,active)
+ select gen_random_uuid(),b,encode(extensions.digest(secret,'sha256'),'hex'),gen_random_uuid(),'ios',false
+ from generate_series(1,19);
+ select id,binding_id,token into strict limit_device,limit_binding,limit_token
+ from push_private.installations where owner_id=a order by id limit 1;
+ perform set_config('request.jwt.claim.sub',b::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',b,'role','authenticated','aal','aal1')::text,true);
+ set local role authenticated;
+ begin
+  perform public.register_my_push_device(b,limit_device,secret,gen_random_uuid(),limit_binding,limit_token,'ios');
+  raise exception 'Una transferencia supera veinte dispositivos conservados';
+ exception when program_limit_exceeded then null;end;
+ reset role;
+ if (select owner_id from push_private.installations where id=limit_device)<>a then raise exception 'Transfiere aunque el destino está lleno';end if;
  if has_function_privilege('anon','public.get_my_push_configuration(uuid)','execute') or
   has_function_privilege('authenticated','public.get_student_push_worker_configuration()','execute') then raise exception 'Expone worker o configuración anónima';end if;
 end $$;

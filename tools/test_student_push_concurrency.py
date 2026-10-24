@@ -23,6 +23,7 @@ def install(db):
     notices=(root/'supabase/migrations/20261021201558_trainer_student_notices.sql').read_text(encoding='utf-8')
     db.query(re.search(r'create function trainer_private\.require_student_notice_owner\([\s\S]*?end \$\$;',notices).group())
     db.query((root/'supabase/migrations/20261024201618_student_push_delivery.sql').read_text(encoding='utf-8'))
+    db.query((root/'supabase/migrations/20261024212322_student_push_retained_transfer_limit.sql').read_text(encoding='utf-8'))
     db.query("update push_private.settings set enabled=true,firebase_project_id='push-fixture'")
 
 def as_user(db,user,sql):

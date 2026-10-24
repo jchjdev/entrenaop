@@ -4,11 +4,13 @@
 
 Preparación implementada en la app y Supabase Dev (`sxbxfjqgoddzhtcyhalw`),
 con envío desactivado. Migración `20261024201618_student_push_delivery.sql`
-aplicada; función `student-push` versión 1, JWT de plataforma activado y hash
+aplicada, ampliada por `20261024212322_student_push_retained_transfer_limit.sql`;
+función `student-push` versión 1, JWT de plataforma activado y hash
 `c002ce33a737df171a1cdef64df8be5bfcae6ae27794591d1d6c14e7846fd21f`.
 Sin proyecto Firebase configurado, dispositivos, trabajos pendientes ni Cron.
 La llamada pública sin credenciales devuelve HTTP 401. No acredita recepción
-real, configuración APNs ni compilación/instalación iOS; Javier se ocupa de Xcode.
+real, configuración APNs ni instalación iOS. CI acredita compilación iOS
+Release y simulador sin firmar, con push desactivada; Javier instala desde Xcode.
 
 Firebase no es un requisito universal de push: iPhone admite APNs directo. El
 adaptador preparado usa FCM para ambas plataformas, sin Firebase Auth, Firestore,
@@ -39,6 +41,10 @@ reconcilia consultando la asociación actual, sin duplicar dispositivos.
 FlutterFire 17 usa FID mediante `register`, `onRegistered` y `unregister`.
 Los manifiestos habilitan explícitamente `firebase_messaging_installation_id_enabled`
 y `FirebaseMessagingInstallationIdEnabled`, sin activar auto-init.
+En el primer registro, el consentimiento precede a habilitar auto-init. Solo
+después se espera APNs (hasta diez segundos); esperar con auto-init apagado
+bloquearía el primer registro con este SDK. Tres regresiones con SDK simulado
+cubren esa secuencia, el tiempo de espera y Android sin consulta APNs.
 El campo interno `token` representa esa dirección de entrega, no un permiso.
 En primer plano se refrescan los avisos; un evento durante una lectura fuerza
 un snapshot posterior. Pulsar una alerta abre los avisos de la cuenta conectada,
@@ -55,7 +61,10 @@ confirmar y retirar direcciones inválidas son operaciones exclusivas del worker
 Las asociaciones incluyen un secreto aleatorio de instalación, almacenado como
 hash en servidor, y una versión opaca para impedir altas/bajas antiguas.
 Límites técnicos: cinco dispositivos activos, veinte registros conservados por
-cuenta y treinta cambios de asociación por hora. No amplían Pro ni cuotas de
+cuenta y treinta cambios de asociación por hora. Recibir una instalación de
+otra cuenta también consume un registro conservado del destino. La regresión
+reprodujo el salto de ese límite sobre la versión inicial; pasa tras la ampliación
+transaccional aplicada en Dev, sin mover datos al rechazarse el alta. No amplían Pro ni cuotas de
 creación del alumno. La eliminación del perfil conserva la cascada de estos datos.
 
 La cola mantiene una fila por dispositivo y reúne novedades durante cinco
@@ -113,16 +122,25 @@ Los cobros de EntrenaOP/entrenador/alumno siguen fuera de este tramo.
 
 ## Evidencia y fuentes
 
-Análisis raíz limpio y 1.346 pruebas completas correctas (una omisión anterior).
-Nueve pruebas del coordinador/almacenamiento y regresión del refresco durante una
-lectura; 29 pruebas específicas de push/navegación/hub correctas. Cinco pruebas
+Análisis raíz limpio y 1.349 pruebas completas correctas, con una omisión
+previa; incluyen las tres regresiones APNs. APK debug recompilada después
+de esos ajustes, con envío apagado.
+Nueve pruebas del coordinador/almacenamiento y tres de arranque nativo correctas,
+más la regresión del refresco durante una lectura; las 29 pruebas previas de
+push/navegación/hub también pasaron. Cinco pruebas
 Node ejecutan autenticación, revalidación, reintentos, OAuth RSA y payload FID
 contra proveedores simulados. Tipos TypeScript estrictos correctos; el workflow
 `student-push.yml` repite esas pruebas sin secretos, envíos ni despliegues.
-El contrato SQL sobre Dev termina con `ROLLBACK`.
+El [workflow de push](https://github.com/jchjdev/entrenaop/actions/runs/40133604374)
+acredita esas pruebas y tipos en GitHub. El [ensayo de copias](https://github.com/jchjdev/entrenaop/actions/runs/40133604352)
+pasa sus controles y restauración aislada con el nuevo alcance; no ejecuta una
+operación sobre Dev por ser un evento push. Las 36 pruebas Python de publicación
+y operaciones también pasan localmente. El contrato SQL sobre Dev termina con
+`ROLLBACK`.
 El ensayo PostgreSQL17 local acredita 66 carreras RC/RR de cambios de cuenta,
 altas/bajas, cascada de instalación, avisos durante envío y reclamaciones
-concurrentes. Usa tablas mínimas y no acredita todo el borrado de cuenta.
+concurrentes, repetidas después de ampliar el límite. Usa tablas mínimas y no
+acredita todo el borrado de cuenta.
 
 APK debug compilada con las dependencias fijadas `firebase_core 5.1.0` y
 `firebase_messaging 17.0.1`, sin actualizar paquetes anteriores. Sus podspecs
@@ -130,8 +148,12 @@ declaran iOS 15; Android compila con el mínimo actual de Flutter. El SDK Apple
 Firebase 13.1.1 requiere Xcode 26.2/Swift 6.2.3: las primeras comprobaciones
 iOS de CI rechazaron Xcode 16.4, predeterminado en macos-15. Los dos workflows
 iOS seleccionan explícitamente el Xcode 26.2 ya instalado, sin otra acción ni
-modificar la firma. La compilación corregida se acredita aparte al terminar. La recepción
-física y la compilación iOS quedan pendientes de la configuración anterior.
+modificar la firma. La [CI de Release](https://github.com/jchjdev/entrenaop/actions/runs/40133604391)
+y la [CI de simulador y ensayo](https://github.com/jchjdev/entrenaop/actions/runs/40133604358)
+pasan sobre `46351527`, con el SDK integrado y envío desactivado. La corrección
+Dart posterior del orden APNs tiene las tres regresiones anteriores y batería
+raíz; no es una recepción física ni otra compilación iOS sobre ese ajuste.
+La recepción física y la instalación firmada siguen pendientes de configuración.
 Ensayo Android con identificadores públicos ficticios: genera los cuatro recursos
 nativos esperados y compila; después se recompila sin defines, restaurando la APK
 habitual con envío apagado. El contrato anterior de avisos internos sigue pasando

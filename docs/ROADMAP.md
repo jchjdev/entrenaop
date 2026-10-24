@@ -10,9 +10,14 @@ El selector compartido incorpora etiquetas privadas de ejercicios, con 54
 contenciones locales y aislamiento por cuenta/contexto. La app del deportista
 prepara consentimiento y transporte FCM opcional; cola/RPC y función de envío
 publicadas en Dev, con JWT y credenciales de worker, envío desactivado. Análisis
-limpio, 1.346 pruebas raíz, APK debug, cinco pruebas de servidor y 66 carreras de
+limpio, 1.349 pruebas raíz, APK debug, cinco pruebas de servidor y 66 carreras de
 push correctas. Chrome acredita acceso y lectura de etiquetas sin modificar
-datos en la web actualizada. ADMIN ya incorpora las etiquetas en `9fecfa2a`.
+datos en la web actualizada. ADMIN incorpora las etiquetas y verifica publicación
+desde `46351527` (run `40133604371`); los ensayos de transporte y restauración pasan en CI.
+CI de iOS Release/simulador correcta con Xcode 26.2 y envío apagado; el primer
+registro APNs tiene regresiones Dart, sin afirmar recepción física.
+El límite conservado también se aplica al cambiar de cuenta, acreditado por
+regresión SQL en Dev y las 66 carreras repetidas.
 Siguiente recorrido único: configurar Firebase/APNs de Dev y aceptar una entrega
 física completa cuando Javier disponga de Apple/configuración. No se acredita
 recepción física ni se incluyen cobros o etiquetas de programas/sesiones.

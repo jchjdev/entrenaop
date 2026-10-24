@@ -31,7 +31,10 @@ Análisis limpio en raíz, ADMIN, Trainer y paquete compartido. Baterías comple
 correctos. El runner local de preferencias acredita 54 contenciones RC/RR,
 incluidas CAS/recibos y favoritos simultáneos con etiquetas. Usa un catálogo
 mínimo y no sustituye el ensayo SQL sobre Dev. ADMIN publicó las etiquetas en
-`9fecfa2a269f1e7a10bc0334424db3dcb57f4c5c-40128554869-1`. Trainer las publica en
+`9fecfa2a269f1e7a10bc0334424db3dcb57f4c5c-40128554869-1`, y la verificación
+posterior confirma ADMIN Dev en
+`463515276aca7c808b37071cf9134e60fa1652cc-40133604371-1`, con su CI completa
+correcta. Trainer las publica en
 `95c0e8c8dc6615eb70da1448a6477759a9b6f476-20261024-2`, verificada por HTTPS.
 Chrome acredita biblioteca, filtro y lectura del diálogo de etiquetas mediante
 RPC, sin cambiar datos. La aceptación humana con biblioteca grande sigue pendiente.
