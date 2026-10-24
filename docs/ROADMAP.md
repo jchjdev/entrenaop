@@ -4,13 +4,15 @@
 persistir/retomar sesiones de programa y adaptaciones sin aplicar borradores ni
 duplicar resultados. Contrato aplicado solo en Dev y tres pruebas SQL con
 `ROLLBACK`; 199 pruebas Trainer, análisis limpio y 48 contenciones locales
-RC/RR correctas. La publicación web y aceptación humana siguen pendientes.
+RC/RR correctas. Web publicada en Trainer Dev desde `95c0e8c8`, verificada por
+HTTPS; aceptación humana de pérdida de respuesta pendiente.
 El selector compartido incorpora etiquetas privadas de ejercicios, con 54
 contenciones locales y aislamiento por cuenta/contexto. La app del deportista
 prepara consentimiento y transporte FCM opcional; cola/RPC y función de envío
 publicadas en Dev, con JWT y credenciales de worker, envío desactivado. Análisis
 limpio, 1.346 pruebas raíz, APK debug, cinco pruebas de servidor y 66 carreras de
-push correctas. Las interfaces web de Trainer aún pendientes de actualizar.
+push correctas. Chrome acredita acceso y lectura de etiquetas sin modificar
+datos en la web actualizada. ADMIN ya incorpora las etiquetas en `9fecfa2a`.
 Siguiente recorrido único: configurar Firebase/APNs de Dev y aceptar una entrega
 física completa cuando Javier disponga de Apple/configuración. No se acredita
 recepción física ni se incluyen cobros o etiquetas de programas/sesiones.

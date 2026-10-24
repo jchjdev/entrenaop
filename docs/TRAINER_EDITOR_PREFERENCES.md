@@ -30,8 +30,11 @@ Análisis limpio en raíz, ADMIN, Trainer y paquete compartido. Baterías comple
 200 Trainer, 217 del paquete compartido y contrato SQL con `ROLLBACK`
 correctos. El runner local de preferencias acredita 54 contenciones RC/RR,
 incluidas CAS/recibos y favoritos simultáneos con etiquetas. Usa un catálogo
-mínimo y no sustituye el ensayo SQL sobre Dev. Publicación de las nuevas
-interfaces y aceptación con biblioteca grande pendientes.
+mínimo y no sustituye el ensayo SQL sobre Dev. ADMIN publicó las etiquetas en
+`9fecfa2a269f1e7a10bc0334424db3dcb57f4c5c-40128554869-1`. Trainer las publica en
+`95c0e8c8dc6615eb70da1448a6477759a9b6f476-20261024-2`, verificada por HTTPS.
+Chrome acredita biblioteca, filtro y lectura del diálogo de etiquetas mediante
+RPC, sin cambiar datos. La aceptación humana con biblioteca grande sigue pendiente.
 
 21/10/2026. Contrato de servidor compartido para ADMIN y Trainer, sin publicar
 contenido ni trasladar permisos administrativos al espacio profesional. La

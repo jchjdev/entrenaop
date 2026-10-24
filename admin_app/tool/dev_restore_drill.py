@@ -12,7 +12,8 @@ import tempfile
 # de base de datos configurable: el ensayo no puede sobrescribir Dev ni Prod.
 IMAGE = "supabase/postgres:17.6.1.166@sha256:b3bfedb107413abb3b8cb0d0874b0414a1dceb3d55bc0c778de6ad22d1f7dc86"
 BACKUP_SCHEMAS = ("public", "auth", "storage", "admin_ops_private", "trainer_private",
-                  "editor_private", "device_private", "admin_work_private", "supabase_migrations")
+                  "editor_private", "device_private", "admin_work_private", "push_private",
+                  "supabase_migrations")
 
 
 class RestoreError(RuntimeError):

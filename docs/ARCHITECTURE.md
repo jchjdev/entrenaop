@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**TRN-029 · 24/10/2026:** Los trabajos contextuales reutilizan checkpoints y
+finalización revisada del editor común. Las etiquetas privadas reutilizan el ledger
+y aislamiento de preferencias por propietario/contexto. El transporte push nativo
+es opcional y está desactivado; Supabase conserva identidad, avisos y permisos.
+Una cola privada por instalación usa generaciones, lease y CAS; el worker FCM
+requiere JWT de servicio, secreto propio y activación doble. No incorpora Firebase
+como proveedor de cuentas ni base de datos.
+[Recuperación](TRAINER_SESSION_WORK_DRAFTS.md),
+[etiquetas](TRAINER_EDITOR_PREFERENCES.md) y
+[push preparada](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **Calendario compartido por alumno · TRN-028:** La relación deja de ser exclusiva por
 alumno: un trigger serializa la admisión y limita parejas activas. Las funciones invoker
 delegan en internos con controles de identidad, MFA, acceso, vínculo y consentimiento

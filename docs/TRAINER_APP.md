@@ -10,7 +10,10 @@ ejercicios se reutilizan en el selector común y están aplicadas en Dev;
 [contrato](TRAINER_EDITOR_PREFERENCES.md). Push nativa preparada y servidor
 publicado en Dev, desactivado hasta configurar proveedor/Apple y aceptar la
 recepción física; [evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
-La actualización de Trainer web aún queda pendiente.
+Trainer web publicado y verificado por HTTPS en la versión
+`95c0e8c8dc6615eb70da1448a6477759a9b6f476-20261024-2`.
+Chrome acredita acceso y lectura de etiquetas sin cambios en los datos.
+La aceptación humana de recuperación contextual sigue pendiente.
 [Contrato y límites](TRAINER_SESSION_WORK_DRAFTS.md).
 
 ## Varios preparadores · TRN-028 · 24/10/2026

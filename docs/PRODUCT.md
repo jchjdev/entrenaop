@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**TRN-029 · 24/10/2026:** Trainer permite retomar sesiones internas de programas
+y adaptaciones sin modificar la pauta hasta confirmar. Las etiquetas de ejercicios
+son privadas por autor/contexto y se comparten como capacidad de editor con ADMIN.
+La app del alumno prepara avisos push opcionales; permanecen desactivados en Dev
+hasta configurar proveedor/Apple y aceptar recepción física. Los avisos internos
+y la campana condicionada a novedades siguen siendo el acceso disponible.
+[Alcance y activación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **Preparación compartida · TRN-028 · 24/10/2026:** El alumno puede recibir pautas de dos
 preparadores. Decide si ambos pueden consultar su calendario y pautas para coordinar
 carga; no comparte los demás alumnos, conversaciones, resultados ni notas privadas de

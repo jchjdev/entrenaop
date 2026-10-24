@@ -37,6 +37,8 @@ reasociar ni desactivar una asociación posterior de B. Una respuesta perdida se
 reconcilia consultando la asociación actual, sin duplicar dispositivos.
 
 FlutterFire 17 usa FID mediante `register`, `onRegistered` y `unregister`.
+Los manifiestos habilitan explícitamente `firebase_messaging_installation_id_enabled`
+y `FirebaseMessagingInstallationIdEnabled`, sin activar auto-init.
 El campo interno `token` representa esa dirección de entrega, no un permiso.
 En primer plano se refrescan los avisos; un evento durante una lectura fuerza
 un snapshot posterior. Pulsar una alerta abre los avisos de la cuenta conectada,
@@ -46,7 +48,9 @@ recursos siguen resolviéndose mediante sus permisos habituales.
 ## Cola, permisos y coste
 
 Las cuatro tablas de `push_private` tienen RLS y ningún acceso directo del
-cliente. Solo las RPC propias aceptan identidades de alumno. Reclamar, preparar,
+cliente. El esquema se incluye en el alcance de copias cifradas de Dev; el
+control de esquemas de la primera CI detectó y corrigió esa omisión. Solo las
+RPC propias aceptan identidades de alumno. Reclamar, preparar,
 confirmar y retirar direcciones inválidas son operaciones exclusivas del worker.
 Las asociaciones incluyen un secreto aleatorio de instalación, almacenado como
 hash en servidor, y una versión opaca para impedir altas/bajas antiguas.
@@ -113,14 +117,20 @@ Análisis raíz limpio y 1.346 pruebas completas correctas (una omisión anterio
 Nueve pruebas del coordinador/almacenamiento y regresión del refresco durante una
 lectura; 29 pruebas específicas de push/navegación/hub correctas. Cinco pruebas
 Node ejecutan autenticación, revalidación, reintentos, OAuth RSA y payload FID
-contra proveedores simulados. El contrato SQL sobre Dev termina con `ROLLBACK`.
+contra proveedores simulados. Tipos TypeScript estrictos correctos; el workflow
+`student-push.yml` repite esas pruebas sin secretos, envíos ni despliegues.
+El contrato SQL sobre Dev termina con `ROLLBACK`.
 El ensayo PostgreSQL17 local acredita 66 carreras RC/RR de cambios de cuenta,
 altas/bajas, cascada de instalación, avisos durante envío y reclamaciones
 concurrentes. Usa tablas mínimas y no acredita todo el borrado de cuenta.
 
 APK debug compilada con las dependencias fijadas `firebase_core 5.1.0` y
 `firebase_messaging 17.0.1`, sin actualizar paquetes anteriores. Sus podspecs
-declaran iOS 15; Android compila con el mínimo actual de Flutter. La recepción
+declaran iOS 15; Android compila con el mínimo actual de Flutter. El SDK Apple
+Firebase 13.1.1 requiere Xcode 26.2/Swift 6.2.3: las primeras comprobaciones
+iOS de CI rechazaron Xcode 16.4, predeterminado en macos-15. Los dos workflows
+iOS seleccionan explícitamente el Xcode 26.2 ya instalado, sin otra acción ni
+modificar la firma. La compilación corregida se acredita aparte al terminar. La recepción
 física y la compilación iOS quedan pendientes de la configuración anterior.
 Ensayo Android con identificadores públicos ficticios: genera los cuatro recursos
 nativos esperados y compila; después se recompila sin defines, restaurando la APK
@@ -135,4 +145,6 @@ Fuentes primarias consultadas:
 - [Registro FID y mantenimiento](https://firebase.google.com/docs/cloud-messaging/manage-tokens).
 - [Contrato HTTP de mensajes](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages).
 - [Recursos nativos Android](https://firebase.google.com/docs/android/google-services-plugin-and-file).
+- [Requisitos del SDK Apple Firebase](https://firebase.google.com/support/release-notes/ios).
+- [Xcode disponible en macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md).
 - [Cambios FlutterFire 17](https://pub.dev/packages/firebase_messaging/changelog).

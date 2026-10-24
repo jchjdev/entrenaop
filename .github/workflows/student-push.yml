@@ -1,0 +1,33 @@
+name: Verificar transporte push sin enviar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/student-push/**'
+      - '.github/workflows/student-push.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      # Proveedores simulados y claves efímeras: no recibe secretos ni despliega.
+      - name: Autenticación, revalidación, reintentos y OAuth
+        run: node --test supabase/functions/student-push/worker_test.ts
+      - name: Comprobar tipos del transporte
+        run: >-
+          npm exec --yes --package=typescript@5.9.3 -- tsc
+          --noEmit --strict --target es2022 --lib es2023,dom,dom.iterable
+          --module esnext --moduleResolution bundler --allowImportingTsExtensions
+          supabase/functions/student-push/worker.ts

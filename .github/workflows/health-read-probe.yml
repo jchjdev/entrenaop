@@ -55,6 +55,9 @@ jobs:
 
   ios:
     runs-on: macos-15
+    env:
+      # Firebase 13 usa Swift 6.2.3; macos-15 conserva Xcode 16.4 por defecto.
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     timeout-minutes: 30
     defaults:
       run:
@@ -78,6 +81,7 @@ jobs:
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
       - name: Compilar iOS para simulador sin firmar ni publicar
         run: |
+          xcodebuild -version
           flutter pub get --enforce-lockfile
           flutter build ios --simulator --debug --no-codesign --no-pub
       - name: Compilar la app del deportista con Salud sin firmar ni publicar

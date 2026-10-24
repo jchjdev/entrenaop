@@ -39,11 +39,21 @@ observadas en RC/RR: padre/hijo, descarte, finalización simultánea, inicio del
 alumno y cierre del vínculo en ambos órdenes. Usa tablas/constructor deportivo
 mínimos y motores de permisos/checkpoint/planificación reales; no sustituye el
 contrato de recetas/RLS en Dev. Advisors de seguridad sin nuevos hallazgos
-respecto a la línea base. Publicación web y aceptación humana aún pendientes.
+respecto a la línea base. Web publicada en Trainer Dev el 24/10 desde
+`95c0e8c8`, verificada por HTTPS. La aceptación humana de pérdida de respuesta
+en programa/adaptación sigue pendiente; los ensayos anteriores no la sustituyen.
 Las etiquetas compartidas ya están implementadas y el transporte push está
 preparado y desactivado en Dev; sus contratos y evidencias se documentan en
 `TRAINER_EDITOR_PREFERENCES.md` y `TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md`.
 Este apartado acredita recuperación contextual, sin cobros ni Xcode.
+
+Publicación: `95c0e8c8dc6615eb70da1448a6477759a9b6f476-20261024-2`;
+ZIP `trainer-trn029-95c0e8c8-package.zip`, SHA-256
+`afd81b5ce78f8d6513e63900ac62272209b7e88a660ffa19831ce34e06af79ee`.
+`trainer_release.py verify` acredita revisión, entrada, hash del JavaScript,
+cabeceras y MIME WebAssembly sobre `trainer.entrenaop.es`, con destino Dev.
+Chrome acredita catálogo y trabajos incompletos existentes, sin mutarlos;
+consola sin errores durante esta comprobación.
 
 ## Instantánea inicial · 21/10/2026
 

@@ -25,6 +25,8 @@ El transporte push de FCM queda preparado, desactivado y aplicado en Dev;
 no se acredita recepción con la app cerrada. Firebase sigue siendo una elección
 de transporte; APNs directo es posible pero no se ha implementado ese adaptador.
 La activación exige configuración del proveedor, Apple y aceptación física.
+Firebase 13 exige Xcode 26.2/Swift 6.2.3; CI selecciona ese Xcode y el Mac
+local debe disponer de esa versión o superior, aunque el transporte esté apagado.
 [Contrato y evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **TRN-028 · 24/10/2026 · varios preparadores y calendario autorizado:**

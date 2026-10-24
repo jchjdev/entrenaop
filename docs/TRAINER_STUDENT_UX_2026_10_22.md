@@ -1,5 +1,18 @@
 # Trainer y app del alumno: revisión · 22/10/2026
 
+## Ampliación comprobada · TRN-029 · 24/10/2026
+
+La tabla del 22/10 se conserva como instantánea de aquella revisión. Desde
+TRN-029, los puntos 4/5 ya tienen recuperación contextual de sesiones hijas de
+programa y adaptaciones, publicada en Trainer Dev. El punto 6 añade etiquetas
+privadas a ejercicios del selector común y de la biblioteca propia; no etiqueta
+programas ni sesiones completos. El punto 12 tiene preparación nativa y servidor
+push en Dev, desactivados hasta configurar proveedor/Apple y aceptar recepción
+física. No equivale a que las push estén activadas. Los cobros siguen pospuestos.
+[Recuperación](TRAINER_SESSION_WORK_DRAFTS.md),
+[etiquetas](TRAINER_EDITOR_PREFERENCES.md) y
+[activación pendiente](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 ## Elección y continuación · TRN-025
 
 Javier elige «Preparador abajo» y Perfil arriba; confirma despejar Inicio sin
