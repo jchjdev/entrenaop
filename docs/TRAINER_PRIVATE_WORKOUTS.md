@@ -129,25 +129,28 @@ de las herramientas paralelas, pasan también las 186 pruebas Trainer y las
 315 ADMIN. Las regresiones cubren ceros, ausencia total y parcial, apertura y
 cierre repetidos, tiempos legibles, AMRAP y móvil a 320 px con texto doble.
 La captura de los widgets reales con datos de ejemplo se contrasta fuera de Git.
-La publicación de este ajuste permanece pendiente por un fallo del proceso de
-control del navegador; no se declara actualizado el hosting hasta verificarlo.
+La publicación se retrasa inicialmente por un fallo del proceso de control del
+navegador y se completa tras el reinicio de Codex, con comprobación del hosting.
 
 Fuentes funcionales `793adbf84d1ccc0fd8b62053ce293e1bc4332400` guardadas en main.
 Las compilaciones Release Dev de deportista y Trainer terminan correctamente,
 igual que la [CI de Garmin e iOS](https://github.com/jchjdev/entrenaop/actions/runs/40071871325).
-Paquete preparado para `trainer.entrenaop.es`, proyecto `sxbxfjqgoddzhtcyhalw`,
+Paquete publicado en `trainer.entrenaop.es`, proyecto `sxbxfjqgoddzhtcyhalw`,
 release `793adbf84d1ccc0fd8b62053ce293e1bc4332400-20261024-1`, ZIP SHA-256
 `b727205435bd5a9cad0c7e0e8ba74e3996345dedfe128c0931c9f1cf11a41a7c`.
 Se compila y empaqueta en salidas separadas del otro trabajo compartido.
 
-Con autorización expresa de Javier se retoma la coordinación con el chat de
-entrenadores para publicar ese paquete. Su control del navegador falla también
-al arrancar; confirma que no ha publicado ni modificado datos. La lectura HTTPS
-posterior de `build-info.json` sigue acreditando `b2bf067b`, no el ajuste nuevo.
-Queda pendiente cargar el ZIP ya validado en `public_html/trainer`, conservar
-las releases anteriores y ejecutar el verificador HTTPS del paquete antes de
-declarar actualizado Trainer Dev. No se modifica producción ni se utilizan las
-credenciales FTP confinadas de ADMIN para otro destino.
+Con autorización expresa de Javier se coordina la publicación con el chat de
+entrenadores, evitando cargas simultáneas. Tras el reinicio, el navegador vuelve
+a responder: se carga el ZIP en `trainer-releases` y se extrae únicamente en
+`public_html/trainer`, conservando las releases anteriores. El verificador HTTPS
+acredita la revisión exacta, JavaScript, entrada, cabeceras y WebAssembly.
+La ficha autenticada existente confirma ejercicios plegados al entrar; banca
+muestra solo repeticiones, tiempo y carga al abrirse, sin distancia, RPE o RIR
+ausentes. Carrera permanece plegada y separada. La comprobación no guarda notas,
+resultados ni revisiones; la captura real permanece privada fuera de Git.
+No se modifica producción ni se utilizan las credenciales FTP confinadas de
+ADMIN para otro destino.
 
 ## Recorrido implementado
 
