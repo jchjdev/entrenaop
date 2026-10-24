@@ -9,6 +9,8 @@
         android:label="entrenaop"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- El transporte solo genera token tras el consentimiento en la app. -->
+        <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

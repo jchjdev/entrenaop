@@ -32,6 +32,13 @@ class StudentNavigationController extends ChangeNotifier {
     _pending = null;
   });
 
+  Future<void> refreshAfterNotice() async {
+    final alreadyReading = _pending != null;
+    await refresh();
+    // Una push puede llegar después del snapshot que aún está viajando.
+    if (alreadyReading && !_disposed) await refresh();
+  }
+
   Future<void> _refresh() async {
     final generation = ++_generation;
     final snapshotRevision = _snapshotRevision;
@@ -92,10 +99,12 @@ class StudentNavigationEntry extends StatefulWidget {
     required this.loadSnapshot,
     required this.loadHasRelationship,
     required this.child,
+    this.noticeEvents,
   });
   final Future<StudentNoticeSnapshot> Function() loadSnapshot;
   final Future<bool> Function() loadHasRelationship;
   final Widget child;
+  final Stream<void>? noticeEvents;
 
   @override
   State<StudentNavigationEntry> createState() => _StudentNavigationEntryState();
@@ -109,12 +118,27 @@ class _StudentNavigationEntryState extends State<StudentNavigationEntry>
   );
   GoRouter? _router;
   String? _previousPath;
+  StreamSubscription<void>? _push;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(controller.refresh());
+    _listenPush();
+  }
+
+  void _listenPush() {
+    unawaited(_push?.cancel());
+    _push = widget.noticeEvents?.listen(
+      (_) => unawaited(controller.refreshAfterNotice()),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant StudentNavigationEntry oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.noticeEvents != widget.noticeEvents) _listenPush();
   }
 
   @override
@@ -149,6 +173,7 @@ class _StudentNavigationEntryState extends State<StudentNavigationEntry>
     WidgetsBinding.instance.removeObserver(this);
     _router?.routerDelegate.removeListener(_routeChanged);
     controller.dispose();
+    unawaited(_push?.cancel());
     super.dispose();
   }
 

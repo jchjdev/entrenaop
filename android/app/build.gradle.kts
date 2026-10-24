@@ -1,13 +1,37 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Los mismos identificadores públicos de Dart generan el arranque nativo de
+// Firebase. Sin estos recursos, Android no podría recibir al cerrar Flutter.
+// No se activa ni se añade configuración de proveedor en la build habitual.
+val pushDefines = (project.findProperty("dart-defines") as? String).orEmpty()
+    .split(',').filter { it.isNotBlank() }.associate { encoded ->
+        val decoded = String(Base64.getDecoder().decode(encoded), Charsets.UTF_8).split('=', limit = 2)
+        require(decoded.size == 2) { "dart-defines incompleto" }
+        decoded[0] to decoded[1]
+    }
+val nativePushEnabled = pushDefines["PUSH_ENABLED"] == "true" &&
+    (pushDefines["APP_ENV"] ?: "development") == "development"
+val nativePushResources = mapOf(
+    "google_app_id" to "PUSH_FIREBASE_ANDROID_APP_ID",
+    "google_api_key" to "PUSH_FIREBASE_ANDROID_API_KEY",
+    "gcm_defaultSenderId" to "PUSH_FIREBASE_SENDER_ID",
+    "project_id" to "PUSH_FIREBASE_PROJECT_ID",
+)
+
 android {
     namespace = "com.entrenaOp.entrenaop"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    buildFeatures {
+        resValues = nativePushEnabled
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -23,6 +47,13 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        if (nativePushEnabled) {
+            nativePushResources.forEach { (resourceName, defineName) ->
+                val configured = pushDefines[defineName]
+                require(!configured.isNullOrBlank()) { "Falta $defineName para activar push en Dev" }
+                resValue("string", resourceName, configured)
+            }
+        }
     }
 
     buildTypes {

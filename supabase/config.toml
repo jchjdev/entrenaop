@@ -413,6 +413,10 @@ verify_jwt = false
 import_map = "./functions/garmin-activity-ingest/deno.json"
 
 # Auth verifica al titular y SQL comprueba su sesión antes de consultar o completar.
+# JWT de plataforma, credencial de servicio y secreto exclusivo del worker.
+[functions.student-push]
+verify_jwt = true
+
 [functions.garmin-activities]
 verify_jwt = false
 import_map = "./functions/garmin-activities/deno.json"

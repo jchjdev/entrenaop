@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
+
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_messages.dart';
@@ -266,6 +268,8 @@ class AppRouter {
                   builder: (context, auth) => auth is! AuthAuthenticated
                       ? const SizedBox.shrink()
                       : StudentNavigationEntry(
+                          noticeEvents: PushNotificationsScope.readOf(context)
+                              ?.notices,
                           key: ValueKey('navigation-${auth.user.id}'),
                           loadSnapshot: () => SupabaseStudentNoticeRepository(
                             sl<SupabaseClient>(),
@@ -992,9 +996,11 @@ class AppRouter {
                   path: '/my-trainer',
                   builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
                     bloc: authCubit,
-                    builder: (_, auth) => auth is! AuthAuthenticated
+                    builder: (context, auth) => auth is! AuthAuthenticated
                         ? const SizedBox.shrink()
                         : ProfessionalHubPage(
+                            noticeEvents: PushNotificationsScope.readOf(context)
+                                ?.notices,
                             key: ValueKey('professional-hub-${auth.user.id}'),
                             userId: auth.user.id,
                             focusNotices:

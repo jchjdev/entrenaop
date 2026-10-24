@@ -11,7 +11,14 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:uuid/uuid.dart';
+
+import 'features/auth/presentation/bloc/auth_state.dart';
+import 'features/notifications/push_notifications.dart';
+import 'features/notifications/push_data.dart';
+import 'features/notifications/firebase_push_transport.dart';
+import 'features/notifications/push_notifications_scope.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,30 +35,78 @@ Future<void> main() async {
   // El SDK emite initialSession y passwordRecovery. Otra consulta al arrancar
   // podría tratar el enlace de recuperación como un acceso normal.
 
-  runApp(EntrenaOpApp(authCubit: authCubit));
+  runApp(
+    EntrenaOpApp(
+      authCubit: authCubit,
+      push: PushNotificationCoordinator(
+        transport: FirebasePushTransport(),
+        backend: SupabasePushBackend(Supabase.instance.client),
+        store: LocalPushStore(),
+        newId: const Uuid().v4,
+      ),
+    ),
+  );
 }
 
 class EntrenaOpApp extends StatefulWidget {
   final AuthCubit authCubit;
+  final PushNotificationCoordinator? push;
 
-  const EntrenaOpApp({super.key, required this.authCubit});
+  const EntrenaOpApp({super.key, required this.authCubit, this.push});
 
   @override
   State<EntrenaOpApp> createState() => _EntrenaOpAppState();
 }
 
-class _EntrenaOpAppState extends State<EntrenaOpApp> {
+class _EntrenaOpAppState extends State<EntrenaOpApp>
+    with WidgetsBindingObserver {
   late final AppRouter _appRouter;
+  StreamSubscription<AuthState>? _pushAuth;
+  StreamSubscription<void>? _pushOpens;
 
   @override
   void initState() {
     super.initState();
     _appRouter = AppRouter(widget.authCubit);
+    WidgetsBinding.instance.addObserver(this);
+    _pushOpens = widget.push?.opens.listen((_) {
+      if (mounted && widget.authCubit.state is AuthAuthenticated) {
+        _appRouter.config.go('/my-trainer?view=notices');
+      }
+    });
+    _pushAuth = widget.authCubit.stream.listen(_syncPush);
+    _syncPush(widget.authCubit.state);
+  }
+
+  void _syncPush(AuthState state) {
+    final push = widget.push;
+    if (push == null) return;
+    if (state is AuthAuthenticated) {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session?.user.id == state.user.id) {
+        unawaited(
+          push.setAccount(PushAccount(state.user.id, session!.accessToken)),
+        );
+      }
+    } else if (state is AuthUnauthenticated || state is AuthPasswordRecovery) {
+      unawaited(push.setAccount(null));
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && widget.push != null) {
+      unawaited(widget.push!.refresh());
+    }
   }
 
   @override
   void dispose() {
     _appRouter.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_pushAuth?.cancel());
+    unawaited(_pushOpens?.cancel());
+    widget.push?.dispose();
     unawaited(widget.authCubit.close());
     super.dispose();
   }
@@ -60,15 +115,18 @@ class _EntrenaOpAppState extends State<EntrenaOpApp> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: widget.authCubit,
-      child: MaterialApp.router(
-        title: 'EntrenaOP',
-        debugShowCheckedModeBanner: false,
-        locale: const Locale('es', 'ES'),
-        supportedLocales: const [Locale('es', 'ES')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        theme: withAppBackGesture(EntrenaTheme.dark),
-        builder: (context, child) => EntrenaInputPolicy(child: child!),
-        routerConfig: _appRouter.config,
+      child: PushNotificationsScope(
+        coordinator: widget.push,
+        child: MaterialApp.router(
+          title: 'EntrenaOP',
+          debugShowCheckedModeBanner: false,
+          locale: const Locale('es', 'ES'),
+          supportedLocales: const [Locale('es', 'ES')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          theme: withAppBackGesture(EntrenaTheme.dark),
+          builder: (context, child) => EntrenaInputPolicy(child: child!),
+          routerConfig: _appRouter.config,
+        ),
       ),
     );
   }

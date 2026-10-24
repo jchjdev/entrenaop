@@ -7,8 +7,10 @@ adaptaciones individuales recuperables. Contrato aplicado y probado en Dev;
 análisis limpio, 199 pruebas Trainer y 48 contenciones locales correctas.
 No amplía permisos ni cambia el catálogo de ADMIN. Las etiquetas privadas de
 ejercicios se reutilizan en el selector común y están aplicadas en Dev;
-[contrato](TRAINER_EDITOR_PREFERENCES.md). La publicación web y preparación del
-transporte push siguen pendientes.
+[contrato](TRAINER_EDITOR_PREFERENCES.md). Push nativa preparada y servidor
+publicado en Dev, desactivado hasta configurar proveedor/Apple y aceptar la
+recepción física; [evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+La actualización de Trainer web aún queda pendiente.
 [Contrato y límites](TRAINER_SESSION_WORK_DRAFTS.md).
 
 ## Varios preparadores · TRN-028 · 24/10/2026

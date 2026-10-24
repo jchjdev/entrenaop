@@ -15,6 +15,28 @@ StudentNoticeSnapshot data(int unread) => StudentNoticeSnapshot(
 
 void main() {
   test(
+    'push durante una lectura fuerza un snapshot posterior sin perder el aviso',
+    () async {
+      final pending = Completer<StudentNoticeSnapshot>();
+      var calls = 0;
+      final controller = StudentNavigationController(
+        loadSnapshot: () {
+          calls++;
+          return calls == 1 ? pending.future : Future.value(data(1));
+        },
+        loadHasRelationship: () async => true,
+      );
+      addTearDown(controller.dispose);
+      final first = controller.refresh();
+      final notification = controller.refreshAfterNotice();
+      pending.complete(data(0));
+      await Future.wait([first, notification]);
+      expect(calls, 2);
+      expect(controller.unreadCount, 1);
+    },
+  );
+
+  test(
     'un vínculo anterior mantiene Preparador sin contenido ni avisos',
     () async {
       final controller = StudentNavigationController(

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:entrenaop/core/navigation/section_refresh_boundary.dart';
+import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
 import 'package:entrenaop/core/navigation/app_account_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -31,11 +34,13 @@ class ProfessionalHubPage extends StatefulWidget {
     required this.userId,
     this.onOpen,
     this.focusNotices = false,
+    this.noticeEvents,
   });
   final StudentNoticeRepository repository;
   final String userId;
   final Future<void> Function(String)? onOpen;
   final bool focusNotices;
+  final Stream<void>? noticeEvents;
 
   @override
   State<ProfessionalHubPage> createState() => _ProfessionalHubPageState();
@@ -49,6 +54,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
   bool _busy = true;
   String? _error, _action;
   int _request = 0;
+  StreamSubscription<void>? _push;
   late bool _showNotices = widget.focusNotices;
 
   @override
@@ -56,11 +62,20 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _load();
+    _listenPush();
+  }
+
+  void _listenPush() {
+    unawaited(_push?.cancel());
+    _push = widget.noticeEvents?.listen((_) {
+      if (mounted) _load();
+    });
   }
 
   @override
   void didUpdateWidget(covariant ProfessionalHubPage oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.noticeEvents != widget.noticeEvents) _listenPush();
     if (oldWidget.focusNotices != widget.focusNotices) {
       _showNotices = widget.focusNotices;
     }
@@ -189,6 +204,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
   @override
   void dispose() {
     _request++;
+    unawaited(_push?.cancel());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -211,6 +227,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
+                const StudentPushSettings(),
                 if (_busy) const LinearProgressIndicator(),
                 if (_error != null) ...[
                   Text(_error!),

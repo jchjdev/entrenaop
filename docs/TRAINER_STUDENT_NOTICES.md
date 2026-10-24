@@ -1,5 +1,11 @@
 # Avisos profesionales del alumno · 21/10/2026
 
+Actualización TRN-029 · 24/10/2026: la app nativa y Dev preparan transporte push
+opcional sobre esta misma bandeja, con consentimiento por cuenta, agrupación y
+payload genérico. Está desactivado y la recepción real sigue pendiente de
+Firebase/APNs. La descripción siguiente es la instantánea anterior.
+[Estado, evidencia y activación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 ## Recorrido y límites
 
 El alumno dispone de una entrada contextual a los recursos de su preparador en

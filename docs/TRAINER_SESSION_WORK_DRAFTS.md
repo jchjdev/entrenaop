@@ -40,8 +40,10 @@ alumno y cierre del vínculo en ambos órdenes. Usa tablas/constructor deportivo
 mínimos y motores de permisos/checkpoint/planificación reales; no sustituye el
 contrato de recetas/RLS en Dev. Advisors de seguridad sin nuevos hallazgos
 respecto a la línea base. Publicación web y aceptación humana aún pendientes.
-Etiquetas y transporte push pertenecen al encargo TRN-029 y siguen pendientes;
-este cierre solo acredita recuperación contextual, sin cobros ni Xcode.
+Las etiquetas compartidas ya están implementadas y el transporte push está
+preparado y desactivado en Dev; sus contratos y evidencias se documentan en
+`TRAINER_EDITOR_PREFERENCES.md` y `TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md`.
+Este apartado acredita recuperación contextual, sin cobros ni Xcode.
 
 ## Instantánea inicial · 21/10/2026
 

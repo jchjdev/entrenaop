@@ -21,7 +21,11 @@ selector compartido incorpora etiquetas privadas de ejercicios (ocho de hasta
 32 caracteres por referencia, 5.000 referencias técnicas por autor/contexto),
 con CAS/recibos, búsqueda y filtro. No modifica el contenido ni añade todavía
 etiquetas a sesiones/programas completos. [Contrato](TRAINER_EDITOR_PREFERENCES.md).
-El transporte push sigue pendiente; no se acredita recepción con la app cerrada.
+El transporte push de FCM queda preparado, desactivado y aplicado en Dev;
+no se acredita recepción con la app cerrada. Firebase sigue siendo una elección
+de transporte; APNs directo es posible pero no se ha implementado ese adaptador.
+La activación exige configuración del proveedor, Apple y aceptación física.
+[Contrato y evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **TRN-028 · 24/10/2026 · varios preparadores y calendario autorizado:**
 Javier confirma implementar la colaboración por alumno. El piloto admite dos
