@@ -8,7 +8,10 @@ y versión y una posición/variante inequívoca. AMRAP mantiene vueltas y parcia
 Validación: análisis limpio en las tres apps, 1.330 pruebas raíz (una omisión
 previa), 182 Trainer y 314 ADMIN (dos omisiones previas). Componente web comprobado
 con datos de ejemplo. No modifica el cierre o envío Garmin ni interpreta dos
-marcas como tendencia deportiva. Publicación y prueba autenticada Dev en curso.
+marcas como tendencia deportiva. Fuentes `b2bf067b` subidas a main; Trainer Dev
+publicado y verificado por HTTPS. Filtro y consulta autenticada contrastados en
+ambas apps sin escrituras; sus pruebas actuales aún no tienen otra ejecución de
+la misma versión. CI de servidor/consumidor/iOS Release y ADMIN Dev correctas.
 **Siguiente recorrido único:** aceptación con dos ejecuciones reales de la misma
 sesión/versión, comprobando filtro y comparación en móvil y en la revisión del
 preparador. [Contrato](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).

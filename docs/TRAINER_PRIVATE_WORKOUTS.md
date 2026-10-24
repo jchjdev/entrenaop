@@ -85,6 +85,26 @@ identidades ambiguas, límites de versión, paginación y reintentos, AMRAP y
 comparación a 320 px con texto doble. La vista web del componente compartido
 se contrasta también con datos de ejemplo, sin escrituras de alumnos.
 
+Fuentes funcionales `b2bf067b` subidas a main. Compilaciones Release Dev de
+ambos consumidores correctas. Trainer publicado como
+`b2bf067bc287c17a0f84131b891e9394181eeee0-20261024-1`, ZIP SHA-256
+`dab79400e97034628b2cad2787f3fb0feb1f232627423ef71947f14a06d4cd5f`.
+Verificación HTTPS correcta de revisión, JavaScript, entrada, cabeceras y WASM.
+La consulta autenticada acredita filtro reversible sobre resultados existentes
+en ambas apps y el estado sin otra ejecución anterior de la misma versión.
+No se crean sesiones ficticias en el historial ni se guardan correcciones,
+marcas o revisiones. Las capturas de comprobación quedan privadas fuera de Git.
+La comparación con marcas distintas está cubierta por pruebas y vista previa
+con datos de ejemplo; falta la aceptación con dos ejecuciones reales comparables.
+La web local necesitó una entrada generada con ruta versionada para sortear
+el service worker previo, manteniendo intacto el JavaScript de aplicación.
+Se observó un aviso de fallback de fuentes Noto en la consola local, sin glifos
+ilegibles en las capturas contrastadas; no se declara una consola sin avisos.
+La [CI de Garmin e iOS Release](https://github.com/jchjdev/entrenaop/actions/runs/40068355597)
+terminó correcta sobre estas fuentes, igual que la publicación automática y
+retención de paquetes de [ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/40068355464).
+La instalación física del iPhone sigue el flujo habitual de Pull de main y Xcode.
+
 ## Recorrido implementado
 
 La agrupación de UI-065 se extiende el 24/10/2026 al historial del deportista
