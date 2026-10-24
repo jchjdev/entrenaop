@@ -39,23 +39,51 @@ con pauta y mediciones originales por serie al abrirla. No hay errores ni
 avisos de consola en esa comprobación ni escrituras de resultados/revisiones.
 La captura real queda privada fuera de Git. No se despliega ADMIN o producción.
 
-## Próximas mejoras de revisión · criterios del 24/10/2026
+## Revisión y comparación · 24/10/2026
 
-Diseño pendiente, sin implementación funcional en esta entrega:
+Deportista y preparador disponen de «Solo diferencias con la pauta», desactivado
+al entrar y reversible sin escrituras. Mantiene omisiones, pendientes y datos
+insuficientes, además de las diferencias numéricas. Las tarjetas conservan el
+orden y numeración originales. Fuerza compara los objetivos declarados;
+carrera respeta los márgenes existentes de tiempo (2 %), distancia (1 %) y
+recuperación (5 %), con límites de ritmo y precisión original del dispositivo.
+No es la puntuación de Garmin ni una calificación deportiva. AMRAP conserva su
+resultado por bloque, sin deducir series ejecutadas de la receta.
 
-- «Ver solo diferencias con la pauta» será opcional y comenzará desactivado.
-  Deportista y preparador podrán activarlo y volver a todos los resultados
-  desde sus respectivos historiales autorizados; no concede nuevos permisos.
-- La comparación propuesta permitirá revisar una misma sesión en distintas
-  fechas y sus variantes de ejercicio. Mantendrá la versión de la receta y el
-  contexto de bloque, posición, series, repeticiones, carga, RIR y tiempos
-  relevantes. No equiparará ejercicios solo por compartir un nombre ni
-  ocultará cambios de pauta que afecten a la comparación.
-- La lectura de evolución usará resultados comparables y su tendencia:
-  más repeticiones con la misma carga y esfuerzo similar puede ser una señal
-  favorable, pero una marca aislada no demuestra progreso o retroceso.
-  Se conservarán los valores ausentes, sin inventar RIR o cargas ni generar
-  una puntuación automática de calidad.
+«Comparar con otra sesión» abre una consulta de lectura bajo demanda. Se elige
+una ejecución anterior cerrada de la misma plantilla y versión. Se empareja
+cada serie por bloque, posición, ejercicio, formato y, en las prescripciones
+especializadas, protocolo/montaje/medición. Una identidad incompleta o duplicada
+no produce una correspondencia arbitraria. Se muestran las marcas anterior y
+actual y su diferencia numérica, junto al esfuerzo global declarado; los cambios
+de pauta/contexto se advierten y los valores ausentes permanecen como «—».
+Los resultados AMRAP se comparan como vueltas y parciales de cada bloque.
+
+`workout_core/workout_result_review.dart` contiene las instantáneas y reglas
+puras; `workout_editor_ui/workout_result_review_panel.dart` comparte controles,
+selección y comparación. La app del deportista adapta su entidad de ejecución
+y carga páginas desde un caso de uso a través de `WorkoutRepository`. Trainer
+consulta exclusivamente las pautas del mismo alumno y sus resultados mediante
+los RPC profesionales ya autorizados, con MFA e identidad del repositorio.
+No incorpora credenciales, consultas privilegiadas, tablas, migraciones,
+permisos ni endpoints nuevos. La comparación no altera resultados o revisiones.
+
+El historial del deportista se consulta de treinta en treinta ejecuciones;
+Trainer, de cincuenta en cincuenta pautas, cargando resultados solo de candidatas
+cerradas de la misma versión. Una página sin coincidencias permite continuar,
+y los errores conservan la consulta para reintentar. La selección ordena las
+sesiones consultadas por fecha de ejecución; no presume haber leído páginas
+posteriores. No compara automáticamente revisiones o copias distintas de una
+plantilla ni detecta tendencias de mejora/regresión: eso sigue siendo una
+interpretación contextual, no una conclusión de dos marcas aisladas.
+
+Verificación local del bloque: análisis raíz, Trainer y ADMIN sin incidencias;
+1.330 pruebas raíz con una omisión previa, 182 Trainer y 314 ADMIN con dos
+omisiones previas. Las nuevas regresiones cubren filtro reversible y numeración,
+precisión del reloj, RIR y cargas ausentes, variantes/protocolos distintos,
+identidades ambiguas, límites de versión, paginación y reintentos, AMRAP y
+comparación a 320 px con texto doble. La vista web del componente compartido
+se contrasta también con datos de ejemplo, sin escrituras de alumnos.
 
 ## Recorrido implementado
 

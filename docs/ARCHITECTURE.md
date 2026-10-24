@@ -1,5 +1,12 @@
 # Arquitectura de EntrenaOP
 
+La revisión histórica comparte instantáneas y comparación pura en `workout_core`
+y controles de lectura en `workout_editor_ui`. Los consumidores aportan sus
+adaptadores y repositorios autorizados; ni el filtro ni la comparación escriben
+resultados, amplían permisos o dependen de Garmin. El emparejamiento conserva
+plantilla/versión, bloque, posición y variante. La lectura es paginada y bajo
+demanda. [Contrato](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).
+
 INT-013 amplía el contrato de envío con una receta pura de fuerza convencional;
 el adaptador Garmin contiene sus equivalencias de ejercicio y `STRENGTH_TRAINING`.
 La observación de fuerza V2 guarda series, repeticiones y carga reales sin

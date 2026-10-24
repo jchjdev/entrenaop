@@ -13,6 +13,30 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
+    'filtro opcional conserva numeración y recupera todas las series',
+    (tester) async {
+      await _pumpGroups(tester, [
+        _historySet(0),
+        _historySet(1, reps: 4),
+        _historySet(2, status: WorkoutSetStatus.skipped),
+      ]);
+      final toggle = find.text('Solo diferencias con la pauta');
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await _toggleAll(tester, 'Desplegar todo');
+      expect(find.textContaining('Objetivo ·'), findsNWidgets(2));
+      expect(find.text('Serie omitida'), findsOneWidget);
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Objetivo ·'), findsNWidgets(3));
+    },
+  );
+
+  testWidgets(
     'diez series del mismo ejercicio quedan plegadas con sus tiempos originales',
     (tester) async {
       await _pumpGroups(tester, List.generate(10, (i) => _historySet(i)));

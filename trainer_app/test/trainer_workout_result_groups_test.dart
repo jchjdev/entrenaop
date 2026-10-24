@@ -173,9 +173,19 @@ void main() {
       ];
       await tester.pumpWidget(resultApp(sets, scale: 2));
       await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Superserie'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('Superserie'), findsOneWidget);
       final title = find.text('Ejercicio 1 con un nombre largo de catálogo');
-      await tester.ensureVisible(title);
+      await tester.scrollUntilVisible(
+        title,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(title);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(

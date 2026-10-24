@@ -1,3 +1,5 @@
+import 'package:workout_core/workout_result_review.dart';
+
 import 'dart:math';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -240,4 +242,36 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   Future<void> cancel(String assignmentId) async {
     await _rpc('cancel_trainer_assignment', {'p_id': assignmentId});
   }
+}
+
+/// Solo consulta pautas del alumno accesibles mediante el contrato profesional.
+Future<ReviewHistoryPage> loadTrainerComparisonPage(
+  TrainerWorkoutRepository repository,
+  WorkoutJson current,
+  Object? cursor,
+) async {
+  final clientId = current['user_id'] as String?;
+  if (clientId == null) throw StateError('Falta la identidad del alumno.');
+  final rows = await repository.assignments(
+    clientId,
+    before: cursor as TrainerAssignment?,
+  );
+  final snapshot = reviewSessionFromJson(current);
+  final sessions = <ReviewSession>[];
+  for (final assignment in rows) {
+    if (assignment.templateId != snapshot.templateId ||
+        assignment.version != snapshot.version ||
+        assignment.executionId == snapshot.id ||
+        !['completed', 'abandoned'].contains(assignment.status)) {
+      continue;
+    }
+    final result = await repository.result(assignment.id);
+    if (result == null || result['user_id'] != clientId) continue;
+    final session = reviewSessionFromJson(result);
+    if (snapshot.canCompare(session)) sessions.add(session);
+  }
+  return ReviewHistoryPage(
+    sessions,
+    nextCursor: rows.length == 50 ? rows.last : null,
+  );
 }

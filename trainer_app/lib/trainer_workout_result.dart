@@ -1,3 +1,5 @@
+import 'package:workout_core/workout_result_review.dart';
+import 'package:workout_editor_ui/workout_result_review_panel.dart';
 import 'package:workout_core/running_step_codec.dart';
 import 'package:workout_core/performance_time.dart';
 import 'package:flutter/material.dart';
@@ -158,7 +160,14 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
                   ],
                 ),
               ),
-            Expanded(child: TrainerWorkoutResultContent(result: row)),
+            Expanded(
+              child: TrainerWorkoutResultContent(
+                key: ValueKey(row['id']),
+                result: row,
+                loadHistory: (cursor) =>
+                    loadTrainerComparisonPage(widget.repository, row, cursor),
+              ),
+            ),
           ],
         );
       },
@@ -166,14 +175,36 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
   );
 }
 
-class TrainerWorkoutResultContent extends StatelessWidget {
-  const TrainerWorkoutResultContent({super.key, required this.result});
+class TrainerWorkoutResultContent extends StatefulWidget {
+  const TrainerWorkoutResultContent({
+    super.key,
+    required this.result,
+    this.loadHistory,
+  });
   final WorkoutJson result;
+  final ReviewHistoryLoader? loadHistory;
+  @override
+  State<TrainerWorkoutResultContent> createState() =>
+      _TrainerWorkoutResultContentState();
+}
+
+class _TrainerWorkoutResultContentState
+    extends State<TrainerWorkoutResultContent> {
+  bool _onlyDifferences = false;
+  WorkoutJson get result => widget.result;
   @override
   Widget build(BuildContext context) {
     final sets = (result['workout_execution_sets'] as List? ?? []).cast<Map>();
     final amrap = (result['workout_amrap_results'] as List? ?? []).cast<Map>();
-    final blocks = _resultBlocks(sets);
+    final review = reviewSessionFromJson(result);
+    final visible = sets
+        .where(
+          (s) =>
+              !_onlyDifferences ||
+              reviewSetFromJson(Map<String, dynamic>.from(s)).needsReview,
+        )
+        .toList();
+    final blocks = _resultBlocks(visible);
     final hasSeries = sets.any((set) => set['block_format'] != 'amrap');
     final status = switch (result['status']) {
       'completed' => 'Completada',
@@ -237,6 +268,15 @@ class TrainerWorkoutResultContent extends StatelessWidget {
                   ),
                 ),
               ),
+            WorkoutResultReviewControls(
+              session: review,
+              onlyDifferences: _onlyDifferences,
+              onFilterChanged: (value) =>
+                  setState(() => _onlyDifferences = value),
+              loadHistory: widget.loadHistory,
+            ),
+            if (_onlyDifferences && visible.isEmpty && amrap.isEmpty)
+              const Text('No hay diferencias ni datos pendientes de revisar.'),
             for (final block in amrap)
               Card(
                 child: Padding(

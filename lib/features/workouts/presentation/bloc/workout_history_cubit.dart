@@ -1,3 +1,7 @@
+import 'package:workout_core/workout_result_review.dart';
+
+import '../../domain/usecases/workout_result_review_usecase.dart';
+
 import 'package:bloc/bloc.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 import 'package:entrenaop/features/workouts/domain/entities/workout_history_query.dart';
@@ -131,9 +135,18 @@ class WorkoutHistoryDetailCubit extends Cubit<WorkoutHistoryDetailState> {
     required this.executionId,
     required GetWorkoutExecutionUseCase getExecution,
     required CorrectWorkoutSetUseCase correctSet,
-  }) : _getExecution = getExecution,
+    GetWorkoutComparisonPage? getComparison,
+  }) : _getComparison = getComparison,
+       _getExecution = getExecution,
        _correctSet = correctSet,
        super(const WorkoutHistoryDetailState());
+
+  final GetWorkoutComparisonPage? _getComparison;
+  ReviewHistoryLoader? get comparisonLoader {
+    final execution = state.execution, loader = _getComparison;
+    if (execution == null || loader == null) return null;
+    return (cursor) => loader(execution, cursor);
+  }
 
   final String executionId;
   final GetWorkoutExecutionUseCase _getExecution;

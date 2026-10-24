@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+El historial del deportista y el resultado profesional permiten filtrar
+opcionalmente las diferencias con la pauta y comparar dos ejecuciones de la
+misma sesión/versión. Se conservan datos ausentes, omisiones y contexto; las
+diferencias numéricas no son una nota deportiva ni una detección automática de
+progreso. [Alcance](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).
+
 INT-013 amplía en Dev el ciclo Garmin a fuerza profesional por series para
 tres variantes de catálogo comprobadas. Mantiene el creador de las tres apps,
 los derechos de cuenta y el cierre revisado del alumno; guarda repeticiones y

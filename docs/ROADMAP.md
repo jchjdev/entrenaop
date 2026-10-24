@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**Revisión y comparación histórica · 24/10/2026:** implementados filtro
+opcional de diferencias y comparación por fecha para deportista y Trainer,
+con dominio y controles compartidos. La lectura mantiene permisos actuales,
+paginación, datos ausentes, tiempos nativos y contexto; exige la misma plantilla
+y versión y una posición/variante inequívoca. AMRAP mantiene vueltas y parciales.
+Validación: análisis limpio en las tres apps, 1.330 pruebas raíz (una omisión
+previa), 182 Trainer y 314 ADMIN (dos omisiones previas). Componente web comprobado
+con datos de ejemplo. No modifica el cierre o envío Garmin ni interpreta dos
+marcas como tendencia deportiva. Publicación y prueba autenticada Dev en curso.
+**Siguiente recorrido único:** aceptación con dos ejecuciones reales de la misma
+sesión/versión, comprobando filtro y comparación en móvil y en la revisión del
+preparador. [Contrato](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).
+
 **UI-065 · resultados profesionales compactos · 23/10/2026:** cabecera por
 bloque y tarjeta plegable por posición de ejercicio de fuerza, con colores
 por formato, resumen de cumplimiento y detalle de pauta/resultado por serie.

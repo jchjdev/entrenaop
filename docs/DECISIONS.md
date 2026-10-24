@@ -1,14 +1,15 @@
 # Registro de decisiones vigentes
 
-**Revisión y evolución de resultados · 24/10/2026 · criterios pendientes:**
-«Ver solo diferencias con la pauta» será un filtro opcional, desactivado al
-entrar, disponible para deportista y Trainer dentro de sus permisos actuales.
-La vista completa seguirá siendo el punto de partida. Se propone comparar
-sesiones de distintas fechas y la misma variante de ejercicio, conservando
-versión, bloque y contexto para valorar repeticiones, carga y RIR. Una sesión
-aislada no acredita mejora ni pérdida de nivel. Son criterios de diseño;
-el filtro y la comparación histórica todavía no están implementados.
-[Alcance previsto](TRAINER_PRIVATE_WORKOUTS.md#próximas-mejoras-de-revisión--criterios-del-24102026).
+**Revisión y comparación de resultados · 24/10/2026:** filtro opcional
+«Solo diferencias con la pauta», desactivado al entrar, y comparación por fecha
+para deportista y Trainer dentro de sus permisos actuales. Reutiliza el dominio
+puro de `workout_core` y los controles de `workout_editor_ui`, con adaptadores
+sobre los repositorios existentes. La comparación inicial exige la misma
+plantilla y versión; empareja bloque, posición, variante y serie, nunca nombres.
+La carga es bajo demanda y paginada. Conserva valores ausentes, tiempos nativos,
+omisiones, RIR y cambios de pauta/contexto, sin nota automática de rendimiento.
+AMRAP compara vueltas y parciales; su receta no se transforma en series.
+[Alcance y verificación](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).
 
 **Publicación Dev sin confirmaciones repetidas · 24/10/2026:** Javier indica
 que los cambios terminados y validados se suban y publiquen directamente.

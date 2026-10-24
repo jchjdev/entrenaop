@@ -1,3 +1,7 @@
+import 'package:workout_editor_ui/workout_result_review_panel.dart';
+
+import '../../domain/services/workout_result_review.dart';
+
 import 'package:entrenaop/features/workouts/domain/entities/workout_execution.dart';
 
 import '../widgets/workout_execution_labels.dart';
@@ -64,22 +68,44 @@ class _DetailContent extends StatefulWidget {
 
 class _DetailContentState extends State<_DetailContent> {
   final Set<String> _expanded = {};
+  bool _onlyDifferences = false;
   WorkoutExecution get execution => widget.execution;
 
   @override
   void didUpdateWidget(covariant _DetailContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.execution.id != execution.id) _expanded.clear();
+    if (oldWidget.execution.id != execution.id) {
+      _expanded.clear();
+      _onlyDifferences = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final review = reviewExecution(execution);
+    final visibleIds = review.sets
+        .where((s) => !_onlyDifferences || s.needsReview)
+        .map((s) => s.id)
+        .toSet();
     final amrapBlocks = _groupAmrapBlocks(execution.sets);
-    final groups = _groupSets(
-      execution.sets
-          .where((set) => set.blockFormat != WorkoutBlockFormat.amrap)
-          .toList(growable: false),
-    );
+    final groups =
+        _groupSets(
+              execution.sets
+                  .where((set) => set.blockFormat != WorkoutBlockFormat.amrap)
+                  .toList(),
+            )
+            .map(
+              (group) => _ExerciseGroup(
+                blockName: group.blockName,
+                exerciseName: group.exerciseName,
+                sets: group.sets
+                    .where((s) => visibleIds.contains(s.id))
+                    .toList(),
+                originalKey: group.key,
+              ),
+            )
+            .where((group) => group.sets.isNotEmpty)
+            .toList();
     final abandoned = execution.status == WorkoutExecutionStatus.abandoned;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
@@ -136,6 +162,19 @@ class _DetailContentState extends State<_DetailContent> {
                   ),
                 ],
                 const SizedBox(height: 24),
+                WorkoutResultReviewControls(
+                  session: review,
+                  onlyDifferences: _onlyDifferences,
+                  onFilterChanged: (value) =>
+                      setState(() => _onlyDifferences = value),
+                  loadHistory: context
+                      .read<WorkoutHistoryDetailCubit>()
+                      .comparisonLoader,
+                ),
+                if (_onlyDifferences && groups.isEmpty && amrapBlocks.isEmpty)
+                  const Text(
+                    'No hay diferencias ni datos pendientes de revisar.',
+                  ),
                 Wrap(
                   spacing: 12,
                   runSpacing: 4,
@@ -963,12 +1002,15 @@ class _ExerciseGroup {
     required this.blockName,
     required this.exerciseName,
     required this.sets,
+    this.originalKey,
   });
 
+  final String? originalKey;
   final String blockName;
   final String exerciseName;
   final List<WorkoutExecutionSet> sets;
   String get key =>
+      originalKey ??
       '${sets.first.blockOrder}:${sets.first.itemOrder}:${sets.first.exerciseId}:${sets.first.id}';
   bool get isFoldable => sets.first.blockFormat != WorkoutBlockFormat.running;
 }
