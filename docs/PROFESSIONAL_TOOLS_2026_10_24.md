@@ -57,10 +57,37 @@ Capturas de widgets reales con datos ficticios y sin acceso de red:
 ![ADMIN y creador](visual-audit/professional-tools-2026-10-24/admin.png)
 ![Texto ampliado](visual-audit/professional-tools-2026-10-24/trainer-accesible.png)
 
-La publicación de Trainer sigue pendiente: el acceso de navegador y el control
-de aplicaciones alternativo no arrancan por un error de volumen de red del
-runtime (`T:`, error 64). No hay transporte de publicación profesional configurado
-en el entorno. No se solicita cambiar permisos ni se presenta el paquete local
-como publicado. ADMIN conserva su flujo automático Dev al subir fuentes a main;
-su activación y versión servida se deben contrastar después del push.
+El primer intento de publicación queda bloqueado por el control del navegador
+y el error de volumen de red del entorno (`T:`, error 64). Ese bloqueo se resuelve
+después del reinicio solicitado por Javier, sin ampliar permisos.
 La colaboración entre varios preparadores continúa únicamente documentada.
+
+## Publicación Dev comprobada · 24/10/2026
+
+Javier autoriza expresamente retomar la coordinación entre ambos chats para
+publicar. El otro chat realiza la única carga en `public_html/trainer`, conservando
+las releases anteriores; este chat contrasta de forma independiente el paquete,
+la versión pública y la calculadora en la interfaz real. No se crean agentes ni
+se cambian grupos, cuentas, permisos o datos de alumnos.
+
+- Fuentes: `793adbf84d1ccc0fd8b62053ce293e1bc4332400`, que incluyen `07c35746`.
+- Release Trainer: `793adbf84d1ccc0fd8b62053ce293e1bc4332400-20261024-1`.
+- ZIP: `.dart_tool/garmin-strength/trainer-report-793adbf8-package.zip`.
+- SHA-256 ZIP: `b727205435bd5a9cad0c7e0e8ba74e3996345dedfe128c0931c9f1cf11a41a7c`.
+- SHA-256 JavaScript: `319c900ccb9bc7aaa910f1cdee07393fe437ae473e1024a457f4318d71a12387`.
+- Destino: `trainer.entrenaop.es`, proyecto Dev `sxbxfjqgoddzhtcyhalw`.
+
+El verificador del publicador confirma manifiesto, revisión, hash del JavaScript,
+entrada versionada, cabeceras y MIME WebAssembly. El favicon servido coincide
+con el PNG del paquete, SHA-256
+`9963fc69a08debd3deb3d82d05ffdb25ec7ab6429583872ca3babda97e58b294`.
+ADMIN también sirve `793adbf8` mediante su publicación automática Dev,
+release `793adbf84d1ccc0fd8b62053ce293e1bc4332400-40071871420-1`.
+
+Chrome acredita la entrada autenticada desde la biblioteca de sesiones a
+Herramientas → Calculadora de ritmos. Se introduce 4:15/km para 400 m y se obtiene
+1:42; minimizar/restaurar conserva ese valor, y arrastrar la cabecera desplaza la
+ventana manteniendo la biblioteca y su URL. Solo cambia estado temporal de la
+calculadora: no se guardan sesiones, resultados, notas ni asignaciones.
+La captura de comprobación permanece privada y fuera de Git en
+`.dart_tool/garmin-strength/trainer-tools-published-793adbf8.png`.

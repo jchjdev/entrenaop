@@ -14,6 +14,11 @@ Herramientas, en una ventana desplazable que permita seguir usando el editor.
 El cálculo pasa a `workout_core`, la interfaz a `workout_editor_ui` y el contenedor
 flotante genérico a `entrena_ui`, sin dependencias nuevas ni cambios de reglas.
 [Alcance y verificación](PROFESSIONAL_TOOLS_2026_10_24.md).
+El 24/10 Javier autoriza retomar la coordinación con el otro chat para publicar
+esta entrega Dev. Tras reiniciar el entorno, Trainer publica las fuentes
+`793adbf8`, que incluyen la calculadora de `07c35746`; HTTPS y la interfaz real
+acreditan cálculo, desplazamiento y conservación de valores al minimizar.
+La colaboración entre varios preparadores sigue sin habilitarse.
 
 **Revisión y comparación de resultados · 24/10/2026:** filtro opcional
 «Solo diferencias con la pauta», desactivado al entrar, y comparación por fecha
