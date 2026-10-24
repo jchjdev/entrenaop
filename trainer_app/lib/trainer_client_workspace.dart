@@ -510,78 +510,125 @@ class _ReportContent extends StatelessWidget {
             'No hay series de ejercicios con resultados comparables en este periodo.',
           ),
         for (final progress in report.results.exercises.values)
+          _exerciseCard(context, progress),
+        if (report.results.amrapBlocks.isNotEmpty)
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    report.exerciseName(progress.exerciseId),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  Text(
-                    '${progress.count(TrainerProgressSetStatus.completed)} series completadas · ${progress.count(TrainerProgressSetStatus.skipped)} omitidas · ${progress.count(TrainerProgressSetStatus.pending)} pendientes',
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Medida registrada')),
-                        DataColumn(label: Text('Observaciones')),
-                        DataColumn(label: Text('Ausentes')),
-                        DataColumn(label: Text('Mínimo')),
-                        DataColumn(label: Text('Máximo')),
-                      ],
-                      rows: [
-                        _metric('Repeticiones', progress.reps, 'rep'),
-                        _metric('Duración', progress.durationSeconds, 's'),
-                        _metric('Distancia', progress.distanceMeters, 'm'),
-                        _metric('Carga externa', progress.loadKg, 'kg'),
-                        _metric('Esfuerzo', progress.rpe, 'RPE'),
-                        _metric('Margen', progress.rir, 'RIR'),
-                      ],
+            clipBehavior: Clip.antiAlias,
+            child: ExpansionTile(
+              key: PageStorageKey(
+                'progress-amrap-${report.start}-${report.endExclusive}',
+              ),
+              shape: const Border(),
+              collapsedShape: const Border(),
+              leading: const Icon(Icons.repeat, color: Color(0xffffd54f)),
+              title: const Text('AMRAP: resultados de bloque'),
+              subtitle: Text('${report.results.amrapBlocks.length} registros'),
+              childrenPadding: const EdgeInsets.all(16),
+              children: [
+                for (final block in report.results.amrapBlocks)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${_day(block.recordDate.value)} UTC · Bloque ${block.blockOrder + 1}: ${block.completedRounds} rondas completas'
+                      '${block.partialItemOrder == null ? '' : ' · ejercicio ${block.partialItemOrder! + 1}: ${block.partialReps} rep adicionales'}',
                     ),
                   ),
-                  const Text(
-                    'Esta tabla resume campos generales de series completadas. Los resultados deportivos tipados se muestran aparte, con su protocolo y unidad. Los ausentes no se sustituyen por cero. No se calcula tonelaje ni 1RM.',
-                  ),
-                  for (final record in progress.records.where(
-                    (r) =>
-                        r.performancePrescription != null &&
-                        r.performanceResult != null,
-                  ))
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Registro tipado · ${record.performancePrescription!.exerciseCode} · protocolo ${record.performancePrescription!.protocolKey} v${record.performancePrescription!.protocolVersion}: '
-                        '${_value(record.performanceResult!.value, record.performancePrescription!.unit)}'
-                        '${record.performanceResult!.succeeded == null
-                            ? ''
-                            : record.performanceResult!.succeeded!
-                            ? ' · Éxito declarado'
-                            : ' · Fallo declarado'}',
-                      ),
-                    ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _exerciseCard(BuildContext context, TrainerExerciseProgress progress) {
+    final metrics = [
+      ('Repeticiones', progress.reps, 'rep'),
+      ('Tiempo', progress.durationSeconds, 's'),
+      ('Distancia', progress.distanceMeters, 'm'),
+      ('Carga externa', progress.loadKg, 'kg'),
+      ('Esfuerzo', progress.rpe, 'RPE'),
+      ('Margen', progress.rir, 'RIR'),
+    ].where((metric) => metric.$2.recordedCount > 0).toList();
+    final typed = progress.records.where(
+      (record) =>
+          record.performancePrescription != null &&
+          record.performanceResult != null &&
+          (record.performanceResult!.value != null ||
+              record.performanceResult!.succeeded != null),
+    );
+    final running = progress.records.every(
+      (r) => r.blockFormat.name == 'running',
+    );
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        // Una nueva consulta de periodo no hereda el plegado de otra fecha.
+        key: PageStorageKey(
+          'progress-exercise-${report.start}-${report.endExclusive}-${progress.exerciseId}',
+        ),
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: Icon(
+          running ? Icons.directions_run : Icons.fitness_center,
+          color: running ? const Color(0xffff9c68) : const Color(0xff82b1ff),
+        ),
+        title: Text(
+          report.exerciseName(progress.exerciseId),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        subtitle: Text(
+          '${progress.count(TrainerProgressSetStatus.completed)} ${running ? 'tramos completados' : 'series completadas'} · ${progress.count(TrainerProgressSetStatus.skipped)} omitidas · ${progress.count(TrainerProgressSetStatus.pending)} pendientes',
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          if (metrics.isNotEmpty) ...[
+            SingleChildScrollView(
+              key: PageStorageKey(
+                'progress-metrics-${report.start}-${report.endExclusive}-${progress.exerciseId}',
+              ),
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('Medida registrada')),
+                  DataColumn(label: Text('Observaciones')),
+                  DataColumn(label: Text('Ausentes')),
+                  DataColumn(label: Text('Mínimo')),
+                  DataColumn(label: Text('Máximo')),
+                ],
+                rows: [
+                  for (final metric in metrics)
+                    _metric(metric.$1, metric.$2, metric.$3),
                 ],
               ),
             ),
-          ),
-        if (report.results.amrapBlocks.isNotEmpty) ...[
-          Text(
-            'AMRAP: resultados de bloque',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          for (final block in report.results.amrapBlocks)
-            Text(
-              '${_day(block.recordDate.value)} UTC · Bloque ${block.blockOrder + 1}: ${block.completedRounds} rondas completas'
-              '${block.partialItemOrder == null ? '' : ' · ejercicio ${block.partialItemOrder! + 1}: ${block.partialReps} rep adicionales'}',
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Mínimo y máximo de las series completadas.'),
             ),
-          Text(
-            '${report.results.amrapReferenceSetsExcluded} referencias de receta AMRAP excluidas de los totales de series.',
-          ),
+          ],
+          if (metrics.isEmpty && typed.isEmpty)
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('No hay mediciones registradas para este ejercicio.'),
+            ),
+          for (final record in typed)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Registro deportivo · ${record.performancePrescription!.exerciseCode} · protocolo ${record.performancePrescription!.protocolKey} v${record.performancePrescription!.protocolVersion}'
+                  '${record.performanceResult!.value == null ? '' : ': ${_value(record.performanceResult!.value, record.performancePrescription!.unit)}'}'
+                  '${record.performanceResult!.succeeded == null
+                      ? ''
+                      : record.performanceResult!.succeeded!
+                      ? ' · Éxito declarado'
+                      : ' · Fallo declarado'}',
+                ),
+              ),
+            ),
         ],
-      ],
+      ),
     );
   }
 

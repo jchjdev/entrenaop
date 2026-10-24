@@ -204,9 +204,17 @@ class _WorkoutSessionComparisonState extends State<WorkoutSessionComparison> {
                   ),
                 if (previous != null) ...[
                   const SizedBox(height: 12),
-                  Text(
-                    'Esfuerzo global · anterior: ${_effort(previous.finalRpe)} · actual: ${_effort(widget.current.finalRpe)}',
-                  ),
+                  if (previous.finalRpe != null ||
+                      widget.current.finalRpe != null)
+                    Text(
+                      [
+                        'Esfuerzo global',
+                        if (previous.finalRpe != null)
+                          'anterior: ${_effort(previous.finalRpe)}',
+                        if (widget.current.finalRpe != null)
+                          'actual: ${_effort(widget.current.finalRpe)}',
+                      ].join(' · '),
+                    ),
                   const Text(
                     'Δ = actual menos anterior. Más o menos no significa mejor o peor. «—» indica dato ausente.',
                   ),
@@ -260,11 +268,8 @@ class _ComparisonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = pair.current, previous = pair.previous;
-    final keys = {
-      ...?previous?.actual.keys,
-      ...current.actual.keys,
-      ...current.targets.keys,
-    }..removeAll({'paceMin', 'paceMax'});
+    final keys = {...?previous?.actual.keys, ...current.actual.keys}
+      ..removeAll({'paceMin', 'paceMax'});
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(

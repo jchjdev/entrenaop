@@ -66,6 +66,8 @@ Map<String, dynamic> setRow(
 class WorkspaceFixture extends TrainerClientWorkspaceRepository {
   bool fail = false;
   bool timedReport = false;
+  List<Map<String, dynamic>>? reportSets;
+  List<Map<String, dynamic>> reportAmrap = [];
   final writes =
       <({String operation, int revision, String notes, String goal})>[];
   @override
@@ -98,18 +100,20 @@ class WorkspaceFixture extends TrainerClientWorkspaceRepository {
     endExclusive: endExclusive,
     asOfDate: DateTime.now().toUtc(),
     assignments: [],
-    sets: timedReport
-        ? [
-            {
-              ...setRow(
-                'one',
-                DateTime.now().toUtc().toIso8601String().substring(0, 10),
-              ),
-              'actual_duration_seconds': 89,
-            },
-          ]
-        : [],
-    amrap: [],
+    sets:
+        reportSets ??
+        (timedReport
+            ? [
+                {
+                  ...setRow(
+                    'one',
+                    DateTime.now().toUtc().toIso8601String().substring(0, 10),
+                  ),
+                  'actual_duration_seconds': 89,
+                },
+              ]
+            : []),
+    amrap: reportAmrap,
   );
 }
 
@@ -159,6 +163,114 @@ Future<void> tapText(WidgetTester tester, String label) async {
 
 void main() {
   testWidgets(
+    'informe plegable oculta métricas sin observaciones y conserva los ceros reales',
+    (tester) async {
+      final date = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+      final repo = WorkspaceFixture()
+        ..reportSets = [
+          {...setRow('one', date), 'actual_duration_seconds': 87},
+          {...setRow('two', date), 'actual_reps': null, 'actual_load_kg': null},
+        ];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: TrainerClientWorkspacePage(
+            repository: repo,
+            clientId: 'client',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Dominadas'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Medida registrada'), findsNothing);
+      await tapText(tester, 'Dominadas');
+      expect(find.text('Repeticiones'), findsOneWidget);
+      expect(find.text('Tiempo'), findsOneWidget);
+      expect(find.text('Carga externa'), findsOneWidget);
+      expect(find.text('0 rep'), findsNWidgets(2));
+      expect(find.text('0 kg'), findsNWidgets(2));
+      expect(find.text('Distancia'), findsNothing);
+      expect(find.text('Esfuerzo'), findsNothing);
+      expect(find.text('Margen'), findsNothing);
+      expect(find.text('Sin dato'), findsNothing);
+      final rows = tester.widget<DataTable>(find.byType(DataTable)).rows;
+      expect((rows.first.cells[2].child as Text).data, '1');
+      await tapText(tester, 'Dominadas');
+      expect(find.text('Medida registrada'), findsNothing);
+      await tapText(tester, 'Dominadas');
+      expect(find.text('0 rep'), findsNWidgets(2));
+      expect(repo.writes, isEmpty);
+    },
+  );
+  testWidgets(
+    'ejercicio sin mediciones evita tabla vacía y AMRAP se puede plegar a 320 px',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      final date = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+      final repo = WorkspaceFixture()
+        ..reportSets = [
+          {
+            ...setRow('one', date),
+            'actual_reps': null,
+            'actual_load_kg': null,
+            'status': 'skipped',
+          },
+        ]
+        ..reportAmrap = [
+          {
+            'execution_id': 'execution',
+            'block_order': 1,
+            'record_date': date,
+            'completed_rounds': 4,
+            'partial_item_order': 0,
+            'partial_reps': 3,
+          },
+        ];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: TrainerClientWorkspacePage(
+            repository: repo,
+            clientId: 'client',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Las notas tienen scroll propio; aquí movemos la lista de la ficha.
+      for (
+        var i = 0;
+        i < 25 && find.text('Dominadas').evaluate().isEmpty;
+        i++
+      ) {
+        await tester.drag(find.byType(ListView).first, const Offset(0, -500));
+        await tester.pumpAndSettle();
+      }
+      await tapText(tester, 'Dominadas');
+      expect(find.byType(DataTable), findsNothing);
+      expect(
+        find.text('No hay mediciones registradas para este ejercicio.'),
+        findsOneWidget,
+      );
+      await tapText(tester, 'AMRAP: resultados de bloque');
+      expect(find.textContaining('4 rondas completas'), findsOneWidget);
+      await tapText(tester, 'AMRAP: resultados de bloque');
+      expect(find.textContaining('4 rondas completas'), findsNothing);
+      expect(tester.takeException(), isNull);
+      expect(repo.writes, isEmpty);
+    },
+  );
+
+  testWidgets(
     'el informe profesional muestra mínimos y máximos en minutos y segundos',
     (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 1000));
@@ -173,8 +285,9 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tapText(tester, 'Dominadas');
       await tester.scrollUntilVisible(
-        find.text('Duración'),
+        find.text('Tiempo'),
         250,
         scrollable: find.byType(Scrollable).first,
       );

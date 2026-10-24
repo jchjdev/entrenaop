@@ -105,6 +105,33 @@ terminó correcta sobre estas fuentes, igual que la publicación automática y
 retención de paquetes de [ADMIN Dev](https://github.com/jchjdev/entrenaop/actions/runs/40068355464).
 La instalación física del iPhone sigue el flujo habitual de Pull de main y Xcode.
 
+## Informe general compacto · 24/10/2026
+
+El informe de progreso del alumno comienza con cada ejercicio plegado y permite
+abrir/cerrar sus mediciones de forma independiente. AMRAP conserva sus resultados
+por bloque en otra tarjeta plegable. Las filas de repeticiones, tiempo, distancia,
+carga, RPE y RIR aparecen solo si existe alguna observación registrada. Un cero
+real sigue siendo un dato; si faltan otras observaciones de esa misma métrica,
+se mantiene el recuento de ausentes. Si un ejercicio no tiene ninguna medición,
+no se presenta una tabla vacía. Los registros deportivos conservan protocolo,
+unidad y declaraciones disponibles sin rellenar valores ausentes.
+
+La comparación común de sesiones aplica el mismo criterio: no muestra esfuerzo
+global si no está declarado en ninguna fecha, ni filas de medidas sin registro
+en ambas sesiones. Si una fecha tiene medición y la otra no, se mantiene la marca
+y la ausencia explícita para no sugerir que ambas fueron realizadas. Es una
+mejora de presentación; no cambia agregaciones, CSV, contratos, permisos o datos.
+
+Validación del ajuste aislado sobre main: análisis correcto de los tres
+consumidores, 1.331 pruebas raíz (una omisión previa), 184 Trainer y 314 ADMIN
+(dos omisiones previas). En el árbol compartido, después del punto de guardado
+de las herramientas paralelas, pasan también las 186 pruebas Trainer y las
+315 ADMIN. Las regresiones cubren ceros, ausencia total y parcial, apertura y
+cierre repetidos, tiempos legibles, AMRAP y móvil a 320 px con texto doble.
+La captura de los widgets reales con datos de ejemplo se contrasta fuera de Git.
+La publicación de este ajuste permanece pendiente por un fallo del proceso de
+control del navegador; no se declara actualizado el hosting hasta verificarlo.
+
 ## Recorrido implementado
 
 La agrupación de UI-065 se extiende el 24/10/2026 al historial del deportista

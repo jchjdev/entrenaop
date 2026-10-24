@@ -8,6 +8,35 @@ import '../domain/workout_result_review_test.dart'
 
 void main() {
   testWidgets(
+    'comparación oculta RPE no declarado y métricas sin medidas en ambas fechas',
+    (tester) async {
+      final now = reviewSession([
+        reviewRow()..['target_distance_meters'] = 400,
+      ]);
+      final older = reviewSession(
+        [reviewRow()..['target_distance_meters'] = 400],
+        id: 'older',
+        day: 23,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: WorkoutSessionComparison(
+            current: now,
+            loadHistory: (_) async => ReviewHistoryPage([older]),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Esfuerzo global'), findsNothing);
+      await tester.tap(find.text('Press'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Distancia ·'), findsNothing);
+      expect(find.textContaining('Repeticiones · anterior 5'), findsOneWidget);
+      expect(find.textContaining('Peso · anterior 20 kg'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'AMRAP compara vueltas y parciales sin convertir la receta en series',
     (tester) async {
       ReviewSession amrap(int rounds, int day, String id) =>

@@ -26,6 +26,15 @@ omisiones, RIR y cambios de pauta/contexto, sin nota automática de rendimiento.
 AMRAP compara vueltas y parciales; su receta no se transforma en series.
 [Alcance y verificación](TRAINER_PRIVATE_WORKOUTS.md#revisión-y-comparación--24102026).
 
+**Métricas registradas y plegado del informe · 24/10/2026:** Javier pide
+ocultar las métricas sin observaciones (por ejemplo, distancia en banca o RPE
+sin declarar) y reducir el informe general del alumno a tarjetas de ejercicio
+y AMRAP plegadas al entrar. Se conservan ceros reales, ausencias parciales y
+los resultados guardados. El comparador común también oculta el esfuerzo global
+si no está declarado y las medidas ausentes en ambas sesiones; si solo falta
+una fecha, conserva esa ausencia junto a la medición disponible.
+[Presentación del informe](TRAINER_PRIVATE_WORKOUTS.md#informe-general-compacto--24102026).
+
 **Publicación Dev sin confirmaciones repetidas · 24/10/2026:** Javier indica
 que los cambios terminados y validados se suban y publiquen directamente.
 La autorización continua de commit y push en main se amplía a los despliegues
