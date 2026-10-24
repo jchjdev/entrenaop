@@ -132,6 +132,23 @@ La captura de los widgets reales con datos de ejemplo se contrasta fuera de Git.
 La publicación de este ajuste permanece pendiente por un fallo del proceso de
 control del navegador; no se declara actualizado el hosting hasta verificarlo.
 
+Fuentes funcionales `793adbf84d1ccc0fd8b62053ce293e1bc4332400` guardadas en main.
+Las compilaciones Release Dev de deportista y Trainer terminan correctamente,
+igual que la [CI de Garmin e iOS](https://github.com/jchjdev/entrenaop/actions/runs/40071871325).
+Paquete preparado para `trainer.entrenaop.es`, proyecto `sxbxfjqgoddzhtcyhalw`,
+release `793adbf84d1ccc0fd8b62053ce293e1bc4332400-20261024-1`, ZIP SHA-256
+`b727205435bd5a9cad0c7e0e8ba74e3996345dedfe128c0931c9f1cf11a41a7c`.
+Se compila y empaqueta en salidas separadas del otro trabajo compartido.
+
+Con autorización expresa de Javier se retoma la coordinación con el chat de
+entrenadores para publicar ese paquete. Su control del navegador falla también
+al arrancar; confirma que no ha publicado ni modificado datos. La lectura HTTPS
+posterior de `build-info.json` sigue acreditando `b2bf067b`, no el ajuste nuevo.
+Queda pendiente cargar el ZIP ya validado en `public_html/trainer`, conservar
+las releases anteriores y ejecutar el verificador HTTPS del paquete antes de
+declarar actualizado Trainer Dev. No se modifica producción ni se utilizan las
+credenciales FTP confinadas de ADMIN para otro destino.
+
 ## Recorrido implementado
 
 La agrupación de UI-065 se extiende el 24/10/2026 al historial del deportista
