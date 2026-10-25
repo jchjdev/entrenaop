@@ -255,6 +255,22 @@ huérfana, 55 archivadas antes del límite, paginación y lectura READ ONLY. La
 migración está aplicada/cotejada solo en Dev; asesores sin WARN nuevo, con dos INFO
 esperados de RLS sin políticas en tablas privadas sin permisos directos.
 
-La publicación automática y la comprobación HTTPS de la versión se acreditan
-aparte al completar Actions. No se han eliminado ni archivado citas reales del
-usuario durante las pruebas. La aceptación humana del recorrido queda pendiente.
+### Publicación y revisión de Trainer Dev
+
+El [run 40238901174](https://github.com/jchjdev/entrenaop/actions/runs/40238901174)
+completa validación, compilación, artefacto y transferencia automática sin gestor
+de archivos. Fuente `2b9ea1b80e5f53ec2cc530d4b43576a2bdf6cce3`, entorno de
+desarrollo y proyecto `sxbxfjqgoddzhtcyhalw` confirmados por HTTPS. El verificador
+comprueba identidad, hash JavaScript, entrada, cabeceras y MIME WebAssembly.
+
+Chrome acredita la ficha cargada con los cuatro filtros, Retiradas excluyendo las
+realizadas y Archivadas vacío sin error. Al seleccionar retiradas aparecen las
+acciones; una con resultados muestra «Tiene una ejecución o resultados. Puedes
+archivarla» y otra con Garmin «Conserva vínculos con Garmin. Puedes archivarla»,
+con borrar deshabilitado y archivo disponible. Se deja el filtro Habitual.
+No se han eliminado ni archivado citas reales del usuario durante esta revisión.
+Archivo/restauración/borrado completos están comprobados con fixtures y ROLLBACK;
+la aceptación humana del recorrido sigue pendiente.
+
+Release: `/releases/2b9ea1b80e5f53ec2cc530d4b43576a2bdf6cce3-40238901174-1/`.
+JavaScript SHA-256: `9d3688fc621ffdfb7d3f1357c527dba70d6ebc0ee08c1a0aa496b26544666f64`.
