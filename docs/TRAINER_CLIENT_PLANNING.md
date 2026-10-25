@@ -86,9 +86,8 @@ Las migraciones y los contratos transaccionales se verifican solo en Dev.
 Comprobación del 25/10/2026:
 
 - Análisis limpio en deportista, ADMIN y Trainer. Baterías completas: 1.353
-  pruebas raíz (una omisión previa), 316 ADMIN (dos omisiones previas). La
-  batería final Trainer supera 236 pruebas. La revisión publicada se anota al
-  activar la release.
+  pruebas raíz (una omisión previa), 316 ADMIN (dos omisiones previas) y 236
+  Trainer.
 - Contrato `supabase/tests/trainer_client_goals.sql` correcto con `ROLLBACK`,
   primero sobre DDL transaccional y después sobre las dos migraciones aplicadas
   en Dev: `20261025181351` y `20261025183412`. Historial local/remoto cotejado.
@@ -107,5 +106,33 @@ Comprobación del 25/10/2026:
   carece de privilegios directos y se accede por funciones con guardas. No se
   amplían las advertencias de seguridad preexistentes del proyecto.
 
-No se presenta una compilación local como aceptación física móvil. La publicación
-se registra después de contrastar manifiesto, hashes y recorrido autenticado.
+Publicación Trainer Dev desde `04a1f87c2f503c6b656b02014e94fe39c670e769`:
+release `04a1f87c2f503c6b656b02014e94fe39c670e769-20261025-1`.
+ZIP SHA-256 `66001fe5d0f04ec105d9f9e87a0d7d2aa3e5dcf5aef5f3555947e365fb89e8ca`;
+JavaScript SHA-256 `0e9f3772403e53fc9dd711533a50f3c5dc735029b4ec50b073db2e2a75b7c999`.
+El paquete acredita fuentes relevantes limpias y proyecto Dev. Se extrae en un
+staging privado, se copia únicamente su carpeta versionada a las releases de
+Trainer y se verifica el asset por HTTPS antes de activar `index.html` y
+`build-info.json`. Se conservan las versiones anteriores y la configuración.
+`trainer_release.py verify` confirma revisión, entorno, manifiesto, JavaScript,
+entrada, cabeceras y MIME WebAssembly.
+
+Chrome con la sesión profesional existente acredita Alumnos → ficha → semana,
+biblioteca de seis sesiones, selección del 28/10 y confirmación de una receta
+con ese día ya elegido, sin otro selector de alumno. Se vuelve sin confirmar;
+no se crean pautas de ensayo. El editor de objetivo muestra convocatoria, fecha
+y la indicación de crear una batería cuando todavía no hay protocolos propios.
+Resultados conserva las sesiones completadas del alumno. Consola sin errores ni
+avisos en el recorrido. Las ventanas temporales de Hostinger se cierran al terminar.
+La vista ajena se acredita con contratos SQL/widget, no como aceptación humana
+con dos cuentas reales: el alumno comprobado aún no comparte su calendario.
+
+No se presenta la comprobación web como aceptación física móvil. Siguiente
+recorrido único: Javier define un objetivo, crea o arrastra una pauta y confirma
+su planificación con el alumno y el otro preparador en la web publicada.
+
+La incorporación del modelo puro compartido activa la publicación automática de
+ADMIN sin modificar su interfaz. Run `40222767612`: validación, despliegue y
+retención correctos. ADMIN Dev confirma por HTTPS la misma revisión de fuentes,
+release `04a1f87c2f503c6b656b02014e94fe39c670e769-40222767612-1` y JavaScript SHA-256
+`3ace39c409ddcc76f75500e1f18ff58908fa062929a217a2f24ff1021b493bd2`. No se usa una subida manual de ADMIN.

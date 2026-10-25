@@ -1,14 +1,15 @@
 # Roadmap de EntrenaOP
 
-**TRN-031 · 25/10/2026 · planificación desde el alumno · cierre en validación:**
+**TRN-031 · 25/10/2026 · planificación desde el alumno · publicada en Dev:**
 la ficha reúne biblioteca propia, semana conjunta y detalle, con retorno de los
 creadores existentes al mismo alumno/día. Arrastrar prepara la confirmación;
 pautas ajenas solo permiten lectura y desaparecen si se revoca la compartición.
 Objetivo de oposición por servicio: convocatoria, fecha y metas de protocolos
 propios, con última evaluación, anterior y mejor marca separadas. Dos migraciones
 aplicadas solo en Dev, contrato transaccional correcto antes/después y sin datos
-de ensayo persistentes. Análisis limpios y baterías completas: 1.353 pruebas raíz, 316 ADMIN y
-236 Trainer; la publicación se añade al activar la release.
+de ensayo persistentes. Análisis limpios y baterías completas: 1.353 pruebas raíz,
+316 ADMIN y 236 Trainer. Trainer Dev publicado desde `04a1f87c`, verificado por HTTPS y
+en Chrome: ficha, semana, objetivos, biblioteca y confirmación sin crear pautas.
 **Siguiente recorrido único:** aceptación con Javier de alumno → objetivo →
 crear/arrastrar → confirmar pauta → consultar calendario junto al otro preparador.
 No incluye cambios de Inicio del deportista, puntuación oficial, cobros o push.
