@@ -43,14 +43,15 @@ validación y comprobación de la versión servida.
 
 ## Implementación y evidencia
 
-Estado: implementado y validado localmente. Publicación Dev pendiente de verificar.
+Estado: implementado, validado y publicado en ambos portales Dev;
+revisión de fuentes `527f2c5d`. Aceptación humana del recorrido pendiente.
 
 - [x] Marco y distribución comunes; catálogos y gestión en ambos portales.
 - [x] Ficha profesional y accesos visibles a conversación, técnica e informes.
 - [x] Creadores compartidos de fuerza/carrera y programas con sus arrastres.
 - [x] Agenda y biblioteca contextual con asignación y movimiento revisados.
 - [x] Revisión del resto de pantallas y diálogos, ventana estrecha y texto ampliado.
-- [ ] Análisis, regresiones, baterías de consumidores, compilación y publicación Dev.
+- [x] Análisis, regresiones, baterías de consumidores, compilación y publicación Dev.
 
 Los guards, modelos y RPC existentes son la fuente de verdad. Si una integración
 necesita ampliar su contrato o servidor se explicará antes y se añadirá su prueba
@@ -113,5 +114,47 @@ La comprobación real con la sesión Dev detectó que el `Navigator` ocultaba en
 semántica las pestañas pintadas antes, aunque funcionaban visualmente. El marco
 común y la navegación de alumno pintan ahora primero la ruta y después su
 cabecera, con el mismo orden visual. Se añaden regresiones de recorrido semántico
-para las ocho áreas y las acciones del marco. La publicación final debe acreditar
-también esta corrección; la primera revisión publicada fue `a2162024`.
+para las ocho áreas y las acciones del marco. La revisión `527f2c5d` publicada
+en Trainer acredita también esta corrección; la primera fue `a2162024`.
+
+## Publicación y recorrido comprobado · 25/10/2026
+
+Trainer Dev sirve la revisión `527f2c5d067d3f444d2cf0497eb55214e21ad74c`,
+publicación `527f2c5d067d3f444d2cf0497eb55214e21ad74c-20261025-1`.
+El publicador contrasta manifiesto, entrada, SHA-256 del JavaScript, cabeceras
+de acceso y MIME de WebAssembly por HTTPS. ZIP:
+`450aa3ebc91e78498fc5f786376ff75c817edb41e89c4845467f0d3db7563394`.
+Los recursos se copiaron completos antes de activar entrada y manifiesto;
+se conservan las publicaciones anteriores.
+
+Con la sesión profesional Dev existente se comprobó el catálogo de sesiones,
+la revisión de una receta y la ficha real del alumno: ocho áreas accesibles,
+planificación en rejilla, resultados filtrados, conversación dentro de la ficha
+y evolución cargada en su pestaña. Estas comprobaciones no asignaron sesiones,
+no guardaron recetas ni enviaron mensajes. También se arrastró una sesión de
+la biblioteca a un día de la semana en Chrome: abrió la elección de alumno,
+con revisión deshabilitada hasta elegirlo; cancelar volvió a la agenda sin
+asignar. Las demás variantes se ensayaron en las pruebas de widgets; queda la
+aceptación humana del trabajo real publicado.
+
+ADMIN Dev sirve la misma revisión de fuentes, publicación
+`527f2c5d067d3f444d2cf0497eb55214e21ad74c-40186938110-1`. El run
+`40186938110` terminó correctamente: validación, publicación y retención de
+paquetes. Se repitió la verificación HTTPS del manifiesto, entrada, cabeceras,
+WebAssembly y JavaScript; SHA-256:
+`2a7a6a8988a7bbcaa637051aef218880662d4761cc67324d3cce25c583d6efe3`.
+El primer intento `40185961549` había restaurado la publicación anterior al
+fallar su comprobación; no se tomó ese intento por entrega. El paquete local
+de contingencia no se activó: la publicación final de ADMIN procede de CI.
+Con la sesión administrativa existente se comprobó la carga de Pendientes y
+la navegación al catálogo de programas guiados, con rejilla, cabecera y
+barra lateral accesibles. No se editó ni publicó contenido durante la revisión.
+
+Los cambios ajenos de `.gitignore` y `devtools_options.yaml` se conservan sin
+incluirlos en esta entrega. Sin modificaciones de datos, permisos, cuotas,
+dependencias ni migraciones.
+
+Siguiente recorrido único: aceptación con Javier de crear/reordenar una receta,
+componer un programa, revisar una asignación desde agenda y consultar resultado,
+técnica y notas en los portales publicados. Push y cobros continúan fuera de este
+bloque; no se acredita recepción física ni instalación iOS.

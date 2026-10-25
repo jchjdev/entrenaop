@@ -1,6 +1,6 @@
 # Producto EntrenaOP
 
-**TRN-030 · 25/10/2026 · validado localmente:** Trainer y ADMIN aprovechan el espacio
+**TRN-030 · 25/10/2026 · publicado y verificado en Dev:** Trainer y ADMIN aprovechan el espacio
 de escritorio mediante bibliotecas, composición y detalle en contexto. La ficha
 del alumno separa planificación, resultados, técnica, evolución, formularios,
 conversación, notas e historial; mantiene pruebas y calendario compartido.

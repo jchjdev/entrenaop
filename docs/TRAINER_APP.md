@@ -2,7 +2,8 @@
 
 ## Escritorio profesional · TRN-030 · 25/10/2026
 
-Implementado y validado localmente, pendiente de publicación: marco de escritorio compartido con ADMIN, catálogos
+Publicado y verificado en ambos portales Dev desde `527f2c5d`: marco de
+escritorio compartido con ADMIN, catálogos
 adaptables, ficha por áreas y bibliotecas junto al creador. Arrastrar modifica
 borradores o abre una asignación/movimiento revisado; no concede permisos ni
 publica contenido. Sin agentes, pagos ni activación push.
