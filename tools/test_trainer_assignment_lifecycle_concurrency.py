@@ -45,6 +45,7 @@ def install(db):
     db.query(lifecycle.split('-- Filtrar ANTES',1)[0]+'commit;')
     confirmed=(root/'supabase/migrations/20261025222416_trainer_delete_after_confirmed_garmin_withdrawal.sql').read_text(encoding='utf-8')
     db.query(confirmed.split('-- Los recibos permanecen.',1)[0]+'commit;')
+    db.query((root/'supabase/migrations/20261025223841_trainer_expired_garmin_withdrawal_leases.sql').read_text(encoding='utf-8'))
 
 
 def fixture(db):
@@ -132,6 +133,10 @@ def confirmed_reopen_race(db,pool,rr,reopen_first,table):
     c=fixture(db)
     db.query(f"insert into device_private.training_deliveries(scheduled_id,owner_id,status) values('{c['id']}','{c['pupil']}','cancelled')")
     db.query(f"insert into device_private.training_sync_jobs(scheduled_id,owner_id,state) values('{c['id']}','{c['pupil']}','done')")
+    # Simula que se perdió la liberación final: el recibo y el trabajo están
+    # cerrados, y los leases ya no dan autoridad para ninguna petición externa.
+    db.query(f"update device_private.training_deliveries set lease_id=gen_random_uuid(),lease_until=clock_timestamp()-interval '1 day' where scheduled_id='{c['id']}'")
+    db.query(f"update device_private.training_sync_jobs set lease_id=gen_random_uuid(),lease_until=clock_timestamp()-interval '1 day' where scheduled_id='{c['id']}'")
     assert db.query(f"select trainer_private.assignment_delete_block('{c['id']}')")==[['']]
     change="status='cancelling'" if table=='training_deliveries' else "state='pending'"
     reopen=f"update device_private.{table} set {change} where scheduled_id='{c['id']}'"

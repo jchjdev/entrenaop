@@ -72,6 +72,14 @@ begin
  update device_private.training_delivery_versions set workout_id=999 where delivery_id=delivery;
  if trainer_private.assignment_delete_block(scheduled)<>'garmin' then raise exception 'Olvida otro ID remoto histórico';end if;
  update device_private.training_delivery_versions set workout_id=123 where delivery_id=delivery;
+ -- Una liberación tardía no deja atascada una operación terminada.
+ update device_private.training_deliveries set lease_id=gen_random_uuid(),lease_until=clock_timestamp()-interval '1 day' where id=delivery;
+ update device_private.training_sync_jobs set lease_id=gen_random_uuid(),lease_until=clock_timestamp()-interval '1 day' where id=job;
+ if trainer_private.assignment_delete_block(scheduled) is not null then raise exception 'Lease caducado bloquea retirada terminada';end if;
+ update device_private.training_deliveries set lease_until=clock_timestamp()+interval '1 minute' where id=delivery;
+ if trainer_private.assignment_delete_block(scheduled)<>'garmin' then raise exception 'Ignora lease vigente';end if;
+ update device_private.training_deliveries set lease_id=null,lease_until=null where id=delivery;
+ update device_private.training_sync_jobs set lease_id=null,lease_until=null where id=job;
  select count(*) into versions from device_private.training_delivery_versions where delivery_id=delivery;
  if versions<1 then raise exception 'No guarda versiones anteriores';end if;
  select to_jsonb(d) into history from device_private.training_deliveries d where id=delivery;

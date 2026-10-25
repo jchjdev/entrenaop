@@ -2,10 +2,11 @@
 
 **TRN-031 · 25/10/2026 · borrado tras retirada Garmin confirmada:** ajuste
 implementado y aplicado en Dev. Permite quitar la cita de prueba sin resultados
-cuando la retirada remota está confirmada y la cola terminada, sin leases; conserva
+cuando la retirada remota está confirmada y la cola terminada, sin leases vigentes; conserva
 recibos y versiones. Scan/take ignoran las identidades borradas. Análisis limpio,
 245 pruebas Trainer, 84 carreras RC/RR y cinco contratos SQL con ROLLBACK correctos;
-asesores sin avisos nuevos. La publicación de textos se acredita al cerrar Actions.
+asesores sin avisos nuevos. Trainer Dev publicado automáticamente desde `605a3020`
+y verificado por HTTPS; run 40240963267 correcto.
 **Siguiente recorrido único:** probar en Trainer publicado una retirada de Garmin
 confirmada y comprobar permiso de borrado, frente a otra pendiente que sigue
 bloqueada; las notificaciones mantienen su prueba humana prevista.

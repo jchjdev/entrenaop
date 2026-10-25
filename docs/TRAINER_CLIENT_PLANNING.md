@@ -205,7 +205,7 @@ en el servidor, con identidad esperada y MFA profesional:
 - Cita propia y retirada. No borra pautas pendientes, en curso, realizadas o ajenas.
 - Sin ejecución, revisión de resultados, recibo de revisión ni resultado registrado.
 - Garmin: si hubo entrega, retirada confirmada (`cancelled`), sin incertidumbre,
-  error ni lease; la cola debe estar terminada (`done`) y sin lease. Un recibo
+  error ni lease vigente; la cola debe estar terminada (`done`) y sin lease vigente. Un recibo
   histórico cerrado no impide borrar. Otros IDs remotos históricos no confirmados
   mantienen el bloqueo. Las confirmaciones de actividad protegen resultados.
   Se conservan entrega y versiones: nunca se borran para eludir el control.
@@ -280,10 +280,11 @@ JavaScript SHA-256: `9d3688fc621ffdfb7d3f1357c527dba70d6ebc0ee08c1a0aa496b265446
 ### Ajuste: retirada de Garmin confirmada · 25/10/2026
 
 Javier corrige el criterio inicial: una sesión de prueba retirada de Garmin y
-sin resultados no debe quedar bloqueada solo por su recibo histórico. La migración
-`20261025222416_trainer_delete_after_confirmed_garmin_withdrawal.sql` permite borrar
+sin resultados no debe quedar bloqueada solo por su recibo histórico. Las migraciones
+`20261025222416_trainer_delete_after_confirmed_garmin_withdrawal.sql` y
+`20261025223841_trainer_expired_garmin_withdrawal_leases.sql` permiten borrar
 la cita propia retirada cuando el servidor acredita el cierre remoto y no hay
-operaciones pendientes/en curso/en revisión ni leases, manteniendo los demás
+operaciones pendientes/en curso/en revisión ni leases vigentes, manteniendo los demás
 controles de identidad, resultados, conversación, vídeo y planificación.
 
 El historial de entrega y sus versiones permanecen íntegros fuera del calendario.
@@ -298,7 +299,10 @@ las transiciones done→pending/cancelled→cancelling. El borrado sigue seriali
 scan, take y la revalidación de trabajo excluyen las identidades eliminadas, para
 que conservar el recibo no vuelva a crear trabajo ni frene a los otros alumnos.
 El texto del bloqueo distingue confirmación u operación pendiente de la mera
-existencia de historial.
+existencia de historial. Un lease caducado de una operación ya terminada no deja
+la sesión atascada; los leases vigentes o incompletos mantienen el bloqueo.
+Las 24 carreras de reapertura de entrega/cola parten también de leases caducados,
+para comprobar que dejan borrar y que no permiten una operación tardía.
 
 Validación: análisis Trainer limpio y **245 pruebas** correctas. El ensayo local
 se amplía a **84 carreras RC/RR**, incluidas reaperturas de entrega/cola antes y
@@ -311,6 +315,13 @@ nueva a Garmin ni aceptación física.
 
 Ese contrato y las regresiones de ciclo de asignaciones, progreso Garmin READ
 ONLY, agrupación/recordatorios y avisos antiguos pasan con ROLLBACK sobre Dev.
-Migración aplicada/cotejada solo en Dev; asesores sin avisos nuevos. Ninguna cita
-real del usuario se borra para validar. Publicación de los textos de Trainer y
-comprobación HTTPS se acreditan al cerrar Actions.
+Ambas migraciones aplicadas/cotejadas solo en Dev; asesores sin avisos nuevos.
+Ninguna cita real del usuario se borra para validar. El run
+[40240963267](https://github.com/jchjdev/entrenaop/actions/runs/40240963267) completa
+validación y deploy automático de la fuente
+`605a30207cf34581020db9f24e977e6832c91492`. Verificación HTTPS correcta: identidad,
+entorno Dev, proyecto, JavaScript, entrada, cabeceras y MIME WebAssembly.
+La aceptación humana de borrar su cita concreta sigue pendiente.
+
+Publicación del ajuste: `/releases/605a30207cf34581020db9f24e977e6832c91492-40240963267-1/`.
+JavaScript SHA-256: `6d4a2be23e4a8d18a0151d397ec79b43747b1aea056e1451d0370dbd24568222`.

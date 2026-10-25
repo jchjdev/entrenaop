@@ -3,12 +3,12 @@
 **TRN-031 · ajuste del 25/10/2026 · borrar tras retirada confirmada de Garmin:**
 Javier aclara que el recibo histórico no debe impedir quitar sesiones de prueba.
 Se permite borrar la cita propia retirada sin ejecución/resultados cuando Garmin
-tiene la retirada confirmada y no quedan operaciones ni leases pendientes. Se
+tiene la retirada confirmada y no quedan operaciones pendientes ni leases vigentes. Se
 conservan recibos/versiones, autoría, identidad eliminada y protección frente a
 reaperturas concurrentes; el sincronizador excluye las citas borradas. La falta de
 confirmación, incertidumbre, otros IDs remotos no cerrados y referencias deportivas
-protegidas mantienen el bloqueo. Implementado/aplicado en Dev; publicación se
-acredita en el documento responsable.
+protegidas mantienen el bloqueo. Implementado/aplicado y publicado/verificado
+en Trainer Dev; evidencia en el documento responsable.
 [Contrato y evidencia](TRAINER_CLIENT_PLANNING.md#ajuste-retirada-de-garmin-confirmada--25102026).
 
 **TRN-031 · 25/10/2026 · archivo y borrado protegido:** Javier confirma ambos
