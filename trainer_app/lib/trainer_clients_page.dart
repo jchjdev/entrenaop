@@ -302,22 +302,24 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const EntrenaWordmark(),
-      actions: [
-        IconButton(
-          onPressed: _busy ? null : _refresh,
-          icon: const Icon(Icons.refresh),
-          tooltip: 'Actualizar',
-        ),
-        if (widget.onSignOut != null)
-          IconButton(
-            onPressed: () => _run(widget.onSignOut!),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
+    appBar: ProfessionalWorkspaceScope.isDesktop(context)
+        ? null
+        : AppBar(
+            title: const EntrenaWordmark(),
+            actions: [
+              IconButton(
+                onPressed: _busy ? null : _refresh,
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Actualizar',
+              ),
+              if (widget.onSignOut != null)
+                IconButton(
+                  onPressed: () => _run(widget.onSignOut!),
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'Cerrar sesión',
+                ),
+            ],
           ),
-      ],
-    ),
     body: Center(
       child: ConstrainedBox(
         constraints: ProfessionalWorkspaceScope.pageConstraints(
@@ -327,8 +329,11 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const Text('ESPACIO PROFESIONAL'),
-            if (!widget.techniqueMode && widget.onOpenWorkouts != null)
+            if (!ProfessionalWorkspaceScope.isDesktop(context))
+              const Text('ESPACIO PROFESIONAL'),
+            if (!ProfessionalWorkspaceScope.isDesktop(context) &&
+                !widget.techniqueMode &&
+                widget.onOpenWorkouts != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: OutlinedButton.icon(
@@ -337,17 +342,35 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                   label: const Text('Mis sesiones privadas'),
                 ),
               ),
-            const SizedBox(height: 8),
-            Text(
-              widget.techniqueMode ? 'Vídeos de tus alumnos' : 'Tus alumnos',
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.techniqueMode
-                  ? 'Elige un alumno y abre los vídeos compartidos de sus sesiones.'
-                  : 'Abre la ficha de un alumno para planificar y revisar su evolución.',
-            ),
+            if (ProfessionalWorkspaceScope.isDesktop(context))
+              ProfessionalSectionHeader(
+                title: widget.techniqueMode
+                    ? 'Vídeos de tus alumnos'
+                    : 'Tus alumnos',
+                subtitle: widget.techniqueMode
+                    ? 'Elige un alumno y abre los vídeos compartidos de sus sesiones.'
+                    : 'Abre la ficha de un alumno para planificar y revisar su evolución.',
+                actions: [
+                  IconButton(
+                    onPressed: _busy ? null : _refresh,
+                    tooltip: 'Actualizar',
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              )
+            else ...[
+              const SizedBox(height: 8),
+              Text(
+                widget.techniqueMode ? 'Vídeos de tus alumnos' : 'Tus alumnos',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.techniqueMode
+                    ? 'Elige un alumno y abre los vídeos compartidos de sus sesiones.'
+                    : 'Abre la ficha de un alumno para planificar y revisar su evolución.',
+              ),
+            ],
             const SizedBox(height: 24),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
@@ -363,7 +386,11 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
             if (_access case final access?) ...[
               if (!widget.techniqueMode)
                 EntrenaCard(
-                  tone: EntrenaCardTone.accent,
+                  tone:
+                      ProfessionalWorkspaceScope.isDesktop(context) &&
+                          access.effective
+                      ? EntrenaCardTone.quiet
+                      : EntrenaCardTone.accent,
                   child: Wrap(
                     spacing: 32,
                     runSpacing: 16,

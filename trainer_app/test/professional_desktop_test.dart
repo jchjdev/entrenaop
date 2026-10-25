@@ -7,6 +7,7 @@ import 'package:entrenaop_trainer/trainer_client_workspace.dart';
 import 'trainer_client_workspace_test.dart' show WorkspaceFixture;
 
 import 'package:entrenaop_trainer/trainer_shell.dart';
+import 'package:entrenaop_trainer/trainer_clients_page.dart';
 import 'package:entrenaop_trainer/trainer_workout_pages.dart';
 
 import '../../test/helpers/performance_visual_review.dart';
@@ -80,6 +81,13 @@ void main() {
                 TrainerShell(location: state.uri.path, child: child),
             routes: [
               GoRoute(
+                path: '/clients',
+                builder: (_, _) => TrainerClientsPage(
+                  repository: FakeTrainerRepository(),
+                  onOpenWorkouts: () {},
+                ),
+              ),
+              GoRoute(
                 path: '/workouts',
                 builder: (_, _) => TrainerWorkoutLibraryPage(
                   repository: workouts,
@@ -134,6 +142,16 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Sesiones para asignar'), findsOneWidget);
       await capturePerformanceWidget(t, 'trainer-desktop-agenda');
+      router.go('/clients');
+      await t.pumpAndSettle();
+      expect(find.byType(EntrenaWordmark), findsOneWidget);
+      expect(find.text('ESPACIO PROFESIONAL'), findsNothing);
+      expect(
+        find.widgetWithText(OutlinedButton, 'Mis sesiones privadas'),
+        findsNothing,
+      );
+      expect(find.byTooltip('Actualizar'), findsOneWidget);
+      await capturePerformanceWidget(t, 'trainer-desktop-clients');
       expect(t.takeException(), isNull);
     },
   );

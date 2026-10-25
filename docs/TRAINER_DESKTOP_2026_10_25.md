@@ -177,3 +177,10 @@ Análisis limpios de raíz, Trainer, ADMIN e interfaz común. Baterías: 1.349,
 mantienen las regresiones de arrastre, cancelación, semántica y controladores
 al redimensionar. Capturas actualizadas de widgets reales con fuente cargada,
 sin datos personales ni imágenes del prototipo usadas como interfaz.
+
+La comprobación en Chrome detecta además cabecera y accesos heredados de móvil
+duplicados en Alumnos. En escritorio se elimina ese segundo logo y el atajo de
+sesiones ya disponible en la navegación; se conserva Actualizar en la cabecera
+de página y Cerrar sesión en Mi cuenta. El estado de acceso activo utiliza una
+superficie discreta. La ventana estrecha conserva sus accesos anteriores.
+Análisis Trainer limpio y 205 pruebas correctas tras este ajuste localizado.
