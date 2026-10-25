@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**Garmin · acceso visible al automático · 25/10/2026:** Javier señala que el
+envío automático resulta difícil de encontrar dentro de «Enviar una sesión».
+La conexión del deportista muestra directamente el interruptor y su estado,
+con alcance, cambios/cancelaciones y explicación plegable del recorrido. El
+envío manual queda como acción secundaria identificada. Ambas pantallas usan
+el mismo control y puerto existente; abrirlas no concede consentimiento ni
+modifica la preferencia. Se conservan derechos, permisos y comprobaciones de
+servidor. [Presentación y validación](DEVICE_GARMIN_AUTOMATIC_SYNC.md#acceso-visible-al-automático--25102026).
+
 **TRN-030 · prioridad profesional aclarada · 25/10/2026:** Javier descarta
 priorizar sueño, VFC y Body Battery para este pulido. El interés está en facilitar
 planificación por alumno, coordinación semanal de fuerza/carrera y objetivos de

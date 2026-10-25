@@ -32,14 +32,46 @@ conexión, derechos, preferencia, recibos, cola y cron de Dev. Pasan cuarenta
 pruebas existentes de servidor sobre envío, sincronización y fuerza y diez
 pruebas del consumidor de entregas. No acredita una nueva llegada al reloj.
 La identificación de la sesión comunicada por Javier y la prueba física de una
-cita futura con el automático activado siguen pendientes. La interfaz actual
-solo ofrece el interruptor y los contadores agregados, sin diagnóstico por cita
-en Trainer; esa limitación de visibilidad no debe confundirse con un envío hecho.
+cita futura con el automático activado siguen pendientes. En esa comprobación
+inicial, el interruptor estaba dentro del envío manual y solo había contadores
+agregados. El ajuste siguiente mejora su descubrimiento; el diagnóstico por cita
+en Trainer sigue pendiente. Esa limitación no debe confundirse con un envío hecho.
+
+## Acceso visible al automático · 25/10/2026
+
+Perfil → Conexión con Garmin muestra directamente «Sincronización automática»
+cuando la cuenta está conectada, con derecho vigente y permiso de envío. Expresa
+el estado activado/desactivado o sin confirmar; durante la consulta no admite
+cambios. «Envío manual y estado de sesiones» abre el recorrido anterior como
+acción secundaria. Los permisos se consultan en un desplegable; las actividades
+recibidas y la desconexión permanecen disponibles.
+
+`TrainingSyncPanel` reutiliza `TrainingSyncRepository` desde conexión y envío,
+sin duplicar preferencias, SQL o permisos. El router compone el adaptador para
+la misma cuenta. Una nueva generación descarta el panel anterior; las respuestas
+tardías no modifican otra conexión. Una escritura sin respuesta fiable muestra
+estado sin confirmar y exige volver a consultar, sin anunciar éxito ni repetir
+la escritura. No se activa el automático al conectar, al abrir la página o al
+instalar esta actualización.
+
+La ayuda plegable explica biblioteca frente a asignación, fechas de hoy y los
+próximos catorce días, cambios/cancelaciones y el paso Garmin → reloj. Desactivar
+no retira lo ya enviado. No se presenta la aceptación de Garmin como acuse del
+dispositivo físico.
+
+Validación local: análisis completo sin incidencias, 1.353 pruebas del deportista
+correctas y una omisión previa. Cuatro regresiones nuevas cubren acceso directo
+en móvil sin consentimiento implícito, permisos, respuesta perdida y consulta
+posterior, cambio de generación y 320 px con texto doble. La captura de widgets
+reales con datos de ejemplo se revisa fuera de Git. No hay escrituras de prueba
+en cuentas reales. La instalación y aceptación de esta pantalla en el iPhone
+requieren actualizar main y reinstalar con el preparador Dev y Xcode habituales.
 
 ## Comportamiento
 
-La cuenta activa «Sincronización automática» en Perfil → Garmin → Carreras en
-Garmin. Requiere conexión con permiso de escritura y derechos Pro o servicio
+La cuenta activa «Sincronización automática» directamente en Perfil → Conexión
+con Garmin; también sigue disponible dentro del envío manual. Requiere conexión
+con permiso de escritura y derechos Pro o servicio
 profesional vigentes, comprobados por el servidor. La opción empieza apagada y
 se liga a la generación de conexión: reconectar no autoriza otra cuenta Garmin.
 Desactivarla detiene nuevos pasos externos; no equivale a cancelar la agenda.

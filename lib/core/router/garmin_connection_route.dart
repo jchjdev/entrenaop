@@ -22,6 +22,7 @@ class GarminConnectionRoute extends StatelessWidget {
   Widget build(BuildContext context) => GarminConnectionPage(
     key: ValueKey(ownerId),
     repository: SupabaseGarminConnectionRepository(client, ownerId),
+    syncRepository: SupabaseTrainingDeliveryRepository(client, ownerId),
     openAuthorization: (uri) =>
         launchUrl(uri, mode: LaunchMode.externalApplication),
     onOpenPro: () => context.push('/pro/subscription'),

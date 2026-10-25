@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/training_delivery.dart';
 import 'training_delivery_cubit.dart';
+import 'training_sync_panel.dart';
 
 class TrainingDeliveryPage extends StatefulWidget {
   const TrainingDeliveryPage({super.key, required this.repository});
@@ -14,42 +15,7 @@ class TrainingDeliveryPage extends StatefulWidget {
 class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
   late final cubit = TrainingDeliveryCubit(widget.repository)..load();
   bool reviewed = false;
-  TrainingSyncSettings? sync;
-  bool syncBusy = false;
-  String? syncError;
-
-  @override
-  void initState() {
-    super.initState();
-    loadSync();
-  }
-
-  Future<void> loadSync({bool? enabled}) async {
-    final repository = widget.repository;
-    if (repository is! TrainingSyncRepository || syncBusy) return;
-    setState(() {
-      syncBusy = true;
-      syncError = null;
-    });
-    try {
-      final result = await (repository as TrainingSyncRepository).syncSettings(
-        enabled: enabled,
-      );
-      if (mounted) {
-        setState(() => sync = result);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(
-          () => syncError = e is TrainingDeliveryException
-              ? e.code
-              : 'garmin_unavailable',
-        );
-      }
-    } finally {
-      if (mounted) setState(() => syncBusy = false);
-    }
-  }
+  int syncRevision = 0;
 
   @override
   void dispose() {
@@ -145,27 +111,13 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                if (widget.repository is TrainingSyncRepository) ...[
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Sincronización automática'),
-                    subtitle: const Text(
-                      'Enviar las sesiones compatibles de los próximos 14 días de tu entrenador y del plan adaptativo, incluidos cambios y cancelaciones. Funciona aunque EntrenaOP esté cerrada.',
-                    ),
-                    value: sync?.enabled ?? false,
-                    onChanged: syncBusy || sync == null
-                        ? null
-                        : (value) => loadSync(enabled: value),
+                if (widget.repository
+                    case final TrainingSyncRepository syncRepository) ...[
+                  TrainingSyncPanel(
+                    repository: syncRepository,
+                    refreshToken: syncRevision,
+                    interactionEnabled: !state.busy,
                   ),
-                  const Text(
-                    'Garmin Connect debe sincronizar con el reloj. Desactivar esta opción detiene nuevos envíos; no retira lo que ya se ha enviado.',
-                  ),
-                  if (sync != null)
-                    Text(
-                      '${sync!.pending} pendientes · ${sync!.review} requieren revisión',
-                    ),
-                  if (syncError != null) Text(error(syncError!)),
-                  if (syncBusy) const LinearProgressIndicator(),
                   const Divider(height: 32),
                 ],
                 const Text(
@@ -265,7 +217,7 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                       : () {
                           setState(() => reviewed = false);
                           cubit.load();
-                          loadSync();
+                          setState(() => syncRevision++);
                         },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Actualizar estado'),

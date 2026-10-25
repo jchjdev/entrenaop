@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../device_training/domain/training_delivery.dart';
+import '../../device_training/presentation/training_sync_panel.dart';
 import '../domain/garmin_connection.dart';
 import 'garmin_connection_cubit.dart';
 
@@ -12,12 +14,14 @@ class GarminConnectionPage extends StatefulWidget {
     required this.onOpenPro,
     this.onOpenTraining,
     this.onOpenActivities,
+    this.syncRepository,
   });
   final GarminConnectionRepository repository;
   final Future<bool> Function(Uri) openAuthorization;
   final VoidCallback onOpenPro;
   final VoidCallback? onOpenTraining;
   final VoidCallback? onOpenActivities;
+  final TrainingSyncRepository? syncRepository;
   @override
   State<GarminConnectionPage> createState() => _GarminConnectionPageState();
 }
@@ -108,10 +112,12 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
               'Garmin Connect',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Autoriza tu cuenta Garmin para vincularla a tu cuenta EntrenaOP. Tú eliges los permisos en Garmin.',
-            ),
+            if (status != GarminConnectionStatus.connected) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Autoriza tu cuenta Garmin para vincularla a tu cuenta EntrenaOP. Tú eliges los permisos en Garmin.',
+              ),
+            ],
             const SizedBox(height: 16),
             if (state.busy) const LinearProgressIndicator(),
             if (state.problem != null)
@@ -129,12 +135,6 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
                 }),
               ),
             if (snapshot != null) ...[
-              if (widget.onOpenActivities != null)
-                TextButton.icon(
-                  onPressed: state.busy ? null : widget.onOpenActivities,
-                  icon: const Icon(Icons.fact_check_outlined),
-                  label: const Text('Actividades recibidas y completar sesión'),
-                ),
               Text(switch (status!) {
                 GarminConnectionStatus.disconnected => 'Sin conexión',
                 GarminConnectionStatus.authorizing => 'Autorización pendiente',
@@ -147,29 +147,47 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
               }, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               if (status == GarminConnectionStatus.connected) ...[
-                Text(
-                  snapshot.canRead
-                      ? 'Lectura de actividades autorizada.'
-                      : 'No has autorizado la lectura de actividades.',
-                ),
-                Text(
-                  snapshot.canSend
-                      ? 'Permiso para enviar sesiones concedido.'
-                      : 'No has autorizado el envío de sesiones.',
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Desde aquí puedes consultar los permisos y desconectar tu cuenta.',
-                ),
+                if (snapshot.allowed &&
+                    snapshot.canSend &&
+                    widget.syncRepository != null)
+                  TrainingSyncPanel(
+                    key: ValueKey(snapshot.generation),
+                    repository: widget.syncRepository!,
+                    refreshToken: snapshot,
+                    interactionEnabled: !state.busy,
+                  ),
                 if (snapshot.allowed &&
                     snapshot.canSend &&
                     widget.onOpenTraining != null)
-                  FilledButton.icon(
+                  OutlinedButton.icon(
                     onPressed: state.busy ? null : widget.onOpenTraining,
                     icon: const Icon(Icons.watch),
-                    label: const Text('Enviar una sesión'),
+                    label: const Text('Envío manual y estado de sesiones'),
                   ),
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  title: const Text('Permisos de Garmin'),
+                  children: [
+                    Text(
+                      snapshot.canRead
+                          ? 'Lectura de actividades autorizada.'
+                          : 'No has autorizado la lectura de actividades.',
+                    ),
+                    Text(
+                      snapshot.canSend
+                          ? 'Permiso para enviar sesiones concedido.'
+                          : 'No has autorizado el envío de sesiones.',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ],
+              if (widget.onOpenActivities != null)
+                TextButton.icon(
+                  onPressed: state.busy ? null : widget.onOpenActivities,
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Actividades recibidas y completar sesión'),
+                ),
               if (!snapshot.allowed) ...[
                 const Text(
                   'La conexión directa con Garmin está incluida en Pro o en tu servicio de entrenador vigente. Salud sigue disponible para todos.',
