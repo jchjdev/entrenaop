@@ -66,6 +66,27 @@ El código actual pide permiso de badge, pero el payload del worker no envía
 pendiente, separada del transporte ya preparado. No se acredita un globo
 funcionando ni recepción física por tener las dependencias instaladas.
 
+## Alerta de clave cliente · 25/10/2026
+
+GitHub detectó la clave Google del cliente en `config/firebase_dev.json:7`
+([alerta 1](https://github.com/jchjdev/entrenaop/security/secret-scanning/1)).
+Se comprobó en Google Cloud que es «Android key (auto created by Firebase)» y
+mantiene las restricciones automáticas a 25 APIs de Firebase; no incluye la
+API de Gemini Developer/Generative Language. La clave no está restringida a una
+firma Android concreta; las restricciones por aplicación son un endurecimiento
+adicional, no se presentan como configuradas. No se amplían permisos ni APIs.
+
+La [documentación oficial](https://firebase.google.com/docs/projects/api-keys)
+considera estas claves de cliente públicas por diseño cuando están restringidas
+a servicios Firebase: identifican el proyecto, pero no conceden acceso de IAM ni
+el envío FCM del servidor. Se contrastó el contenido completo del commit
+`b3b6a797`: no contiene la clave privada real, el secreto del worker ni el JWT de
+servicio del invocador; `.dart_tool/push-dev` sigue fuera de Git.
+
+La alerta se cierra como «Won't fix», con esa justificación y el enlace oficial,
+porque la distribución de esta configuración es intencionada. No se marca como
+revocada ni se desactiva Secret scanning o la detección de otras credenciales.
+
 ## App y consentimiento
 
 `PUSH_ENABLED` es falso por defecto. Sin configuración completa no se inicializa
