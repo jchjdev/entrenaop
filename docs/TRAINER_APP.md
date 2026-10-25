@@ -2,10 +2,13 @@
 
 ## Escritorio profesional · TRN-030 · 25/10/2026
 
-Publicado y verificado en ambos portales Dev: acabado compartido `e57c55ac`,
-con limpieza adicional de Alumnos en Trainer desde `007d7f3b`. Marco de
-escritorio compartido con ADMIN, catálogos
-adaptables, ficha por áreas y bibliotecas junto al creador. Arrastrar modifica
+Publicado y verificado en ambos portales Dev desde `6fe1d35c`: pasada visual
+completada de las pantallas actuales. Marco compartido con ADMIN, catálogos
+adaptables, ficha por áreas y bibliotecas junto al creador. Fuerza/carrera permite
+editar las propiedades de la selección; el creador de programas resume fases y
+sesiones, conserva la clasificación plegada y fija el guardado. El de ejercicios
+organiza medios y ficha en dos columnas. Formularios, pruebas y conversación
+aprovechan el escritorio. Arrastrar modifica
 borradores o abre una asignación/movimiento revisado; no concede permisos ni
 publica contenido. Sin agentes, pagos ni activación push.
 [Alcance y evidencia vigente](TRAINER_DESKTOP_2026_10_25.md).

@@ -1,18 +1,22 @@
 # Roadmap de EntrenaOP
 
-**TRN-030 · 25/10/2026 · escritorio profesional · publicado y verificado en Dev:**
-marco, catálogos, ficha, creadores y agenda con arrastre revisado compartidos
-por Trainer y ADMIN. Acabado visual ajustado a la preview: fuentes compartidas
-`e57c55ac`, ADMIN run `40188943836`; Trainer añade limpieza de Alumnos desde
-`007d7f3b`. Validación, publicación y HTTPS correctos. Análisis limpios,
-1.349 pruebas raíz, 315 ADMIN, 205 Trainer, 217 editor y 27 interfaz común;
-una omisión previa en raíz y dos en ADMIN. Compilaciones Release y HTTPS
-comprobados; navegación real y arrastre cancelado sin asignar en Trainer.
-No cambia permisos/esquema ni activa push o cobros. Se mantienen búsquedas
-sobre datos cargados, paginación y revisión explícita de asignaciones.
-Siguiente recorrido único: aceptación con Javier del trabajo de creación,
-programa, agenda y seguimiento en el escritorio publicado. Firebase y Apple
-quedan pospuestos. [Evidencia y límites](TRAINER_DESKTOP_2026_10_25.md).
+**TRN-030 · 25/10/2026 · escritorio profesional · revisión final publicada en Dev:**
+completada la pasada de las pantallas actuales y sus creadores compartidos.
+Fuerza/carrera usan lienzo y propiedades de la selección; el creador de programas
+mantiene fases/recetas resumidas, clasificación desplegable y guardado fijo. El
+creador de ejercicios se organiza en dos columnas. Catálogos, formularios, pruebas y conversación comparten
+el acabado. Fuente final en ambos portales: `6fe1d35c`.
+Análisis limpios; 1.349 pruebas raíz, 316 ADMIN, 207 Trainer, 218 editor y 28
+interfaz común, con las omisiones anteriores de raíz/ADMIN. Release, HTTPS y
+recorridos reales comprobados; 21 capturas finales optativas.
+ADMIN valida y compila en el run `40196467093`; su conexión FTPS falla antes de
+transferir. Se publica el artefacto original de CI mediante Hostinger y se
+verifica el mismo manifiesto/hash. El transporte automático sigue pendiente de
+reparación; no se declara correcto ese job. Trainer se publica en su directorio.
+Sin cambios de permisos, datos, cuotas, dependencias ni producción.
+Siguiente recorrido único: aceptación con Javier de creación, programa, agenda
+y seguimiento en el escritorio publicado. Cobros, Firebase/Apple y recepción
+push quedan pospuestos. [Evidencia y límites](TRAINER_DESKTOP_2026_10_25.md).
 
 **TRN-029 · 24/10/2026 · recuperación, etiquetas y push preparada:** cerrado el recorrido de
 persistir/retomar sesiones de programa y adaptaciones sin aplicar borradores ni

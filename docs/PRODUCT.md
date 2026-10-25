@@ -4,6 +4,10 @@
 de escritorio mediante bibliotecas, composición y detalle en contexto. La ficha
 del alumno separa planificación, resultados, técnica, evolución, formularios,
 conversación, notas e historial; mantiene pruebas y calendario compartido.
+La revisión final `6fe1d35c` añade propiedades de la selección en fuerza/carrera,
+fases y sesiones resumidas, guardado fijo y ejercicios en dos columnas, usando
+los mismos creadores en ambos portales. La pasada visual de las pantallas actuales
+está completada y publicada; la aceptación humana sigue pendiente.
 Arrastrar a la agenda exige revisar y confirmar. La autoría oficial y la privada
 conservan permisos independientes. Pagos y activación push siguen pospuestos.
 [Alcance y evidencia](TRAINER_DESKTOP_2026_10_25.md).

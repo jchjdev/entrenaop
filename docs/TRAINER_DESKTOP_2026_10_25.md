@@ -44,8 +44,9 @@ validación y comprobación de la versión servida.
 ## Implementación y evidencia
 
 Estado: implementado, validado y publicado en ambos portales Dev;
-acabado compartido `e57c55ac` y limpieza adicional de Trainer `007d7f3b`.
-Aceptación humana del recorrido pendiente; evidencia de la primera entrega abajo.
+revisión final compartida `6fe1d35c5e17bbd2ad4641fe0563a8a7949db27b`.
+Pasada visual actual completada; aceptación humana del recorrido pendiente.
+Las publicaciones anteriores quedan debajo como evidencia histórica.
 
 - [x] Marco y distribución comunes; catálogos y gestión en ambos portales.
 - [x] Ficha profesional y accesos visibles a conversación, técnica e informes.
@@ -274,3 +275,49 @@ Se repiten las baterías completas de raíz (1.349, una omisión previa), ADMIN
 La nueva regresión se añade después y pasan las 25 pruebas de autoría oficial.
 Análisis limpios en los cinco proyectos. No cambian contratos ni datos deportivos.
 La revisión de publicación que sustituye a `6b0fe679` se acredita a continuación.
+
+
+## Publicación final comprobada · 25/10/2026
+
+Ambos portales Dev sirven las fuentes
+`6fe1d35c5e17bbd2ad4641fe0563a8a7949db27b`.
+
+- Trainer: release `6fe1d35c5e17bbd2ad4641fe0563a8a7949db27b-20261025-1`;
+  JavaScript SHA-256
+  `9c9f647aa8c9358ddb7246b36127401a54d210a44c1bd4c999d46517af113515`;
+  ZIP `35ab22b33c7c48351f77c11d05cd1b85a279a7de20483e4e2eedfb033c1e1d2f`.
+- ADMIN: release `6fe1d35c5e17bbd2ad4641fe0563a8a7949db27b-40196467093-1`;
+  JavaScript SHA-256
+  `db5e1dbe09239b1d66c29efe20929c2fc30686bc23bf21e705b98a308aea2e83`.
+  El job validate del run `40196467093` termina correctamente: análisis, 1.349
+  pruebas raíz y 316 ADMIN, con una/dos omisiones previas; Release compilado.
+
+El job deploy de ese run falla al conectar por FTPS (`OSError`, errno 101),
+antes de transferir contenido; retención queda omitida. No se presenta el run
+como publicación automática correcta. Se descarga mediante el conector GitHub
+el artefacto original `12600657150`, cotejado con su digest
+`82d66c126e95f4eeae59c83126d6dbefec7ac625691b64fbf1ba4fff6717b1aa`.
+Se publica ese mismo paquete, sin recompilar ni alterar su manifiesto, mediante
+el administrador de archivos autorizado de Hostinger. Primero se copia la
+carpeta versionada a `public_html/admin/releases`, se verifica su JavaScript por
+HTTPS y después se sustituyen solo index y build-info en `public_html/admin`.
+Trainer utiliza el mismo orden en su propio directorio. Se conservan versiones
+anteriores; no se cambian permisos, robots, cabeceras ni producción.
+
+Las comprobaciones HTTPS finales contrastan revisión, entorno, entrada activa,
+SHA-256, cabeceras y MIME WebAssembly de ambos portales. Chrome confirma fuerza
+con propiedades/dosis reales y guardado fijo; programa privado y oficial con
+recetas resumidas; formulario de ejercicio en dos columnas y un único vídeo;
+cartera e invitaciones, catálogos y gestión administrativa. La revisión final
+comprueba la clasificación oficial plegada con sus categorías conservadas, el
+origen Oficial/Privada y la biblioteca compacta. La calculadora se desplaza en
+Chrome y se cierra sin modificar el trabajo. No se guardan recetas ni asignaciones,
+no se conceden accesos y no se envían mensajes durante esa revisión.
+
+La galería optativa genera 21 capturas finales de las 15 secciones, cinco
+pantallas de edición y el diálogo de ejercicio. Se repite correctamente tras
+el último ajuste. Permanecen los límites de producto ya descritos: búsquedas
+sobre lo cargado, permisos existentes y cobros/push pospuestos. El fallo del
+transporte FTPS queda registrado; su reparación no forma parte del acabado.
+El estado del sistema también muestra fallos previos de copias Dev del 23 al 25;
+esta tarea de presentación no los modifica ni acredita una copia nueva.
