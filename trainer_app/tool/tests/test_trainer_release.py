@@ -44,6 +44,8 @@ class TrainerReleaseTests(unittest.TestCase):
                 scope = release.source_scope()
             self.assertIn('packages/shared', scope)
             self.assertIn('trainer_app', scope)
+            self.assertIn('tools/static_web_deploy.py', scope)
+            self.assertIn('.github/workflows/trainer-dev.yml', scope)
             self.assertNotIn('packages', scope)
             self.assertNotIn('packages/device_activity_core', scope)
 

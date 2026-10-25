@@ -168,4 +168,12 @@ El botón se vincula al contexto del propio diálogo. La regresión con navegaci
 anidada falla antes de la corrección y comprueba después dos aperturas/cierres,
 conservación de ficha/ruta y regreso a Planificación. Sin cambios de datos,
 permisos o componentes de ADMIN. Análisis limpio y batería Trainer completa:
-237 pruebas correctas. La publicación se acredita tras verificarla.
+237 pruebas correctas. Publicada en Trainer Dev la fuente
+`19c7f83fca3c3d637d2324a1e0cfb0ac38c8786c`, release
+`19c7f83fca3c3d637d2324a1e0cfb0ac38c8786c-20261025-1`.
+ZIP SHA-256 `6f8cbe620623f91c1224897dceec11400a98e4f9ec21b001b5521183e3f7ce92`;
+JavaScript SHA-256 `6045f90ce7804147532d6d21fb06aedee0181528a2b1dcf6946b5a1f26ffcbd6`.
+Verificador HTTPS correcto. Chrome reproduce antes el fallo y después acredita
+abrir la respuesta existente, cerrar conservando la ficha y volver a Planificación,
+sin modificar respuestas ni asignaciones. No hay errores del portal; un aviso de
+conexión de una extensión del navegador queda fuera de esta corrección.

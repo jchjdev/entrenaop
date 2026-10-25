@@ -10,6 +10,7 @@ on:
       - 'pubspec.lock'
       - 'analysis_options.yaml'
       - 'tools/static_web_release.py'
+      - 'tools/static_web_deploy.py'
       - '.github/workflows/admin-dev.yml'
   workflow_dispatch:
 

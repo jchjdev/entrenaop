@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+
+**TRN-032 · 25/10/2026 · publicación automática de Trainer Dev:** Javier pide
+el mismo circuito automático que ADMIN, con validación, paquete y despliegue
+separados. Ambos portales reutilizan el motor FTPS seguro y la activación
+versionada, manteniendo adaptadores, identidad, cuenta confinada, secretos y
+entorno propios. Trainer solo puede publicar en `trainer.entrenaop.es`, proyecto
+Dev `sxbxfjqgoddzhtcyhalw`, desde `main`. La variable de repositorio
+`TRAINER_DEV_DEPLOY_ENABLED` controla el envío; sin habilitarla se valida y
+conserva el artefacto. No se reutiliza ni se amplía la cuenta ADMIN. La cuenta
+Trainer y sus secretos todavía necesitan configuración humana; no se presenta
+el envío real como operativo hasta comprobar una publicación automática por
+HTTPS. No se modifica producción ni se añade limpieza destructiva del servidor.
+[Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
+
 **TRN-031 · 25/10/2026 · planificación desde la ficha del alumno:** Javier
 aprueba implementar biblioteca, calendario conjunto, detalle y objetivos de
 oposición desde la ficha. Se reutilizan los creadores, pautas, resultados y

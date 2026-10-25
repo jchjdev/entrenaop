@@ -1,0 +1,130 @@
+name: Publicar Trainer Dev
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'trainer_app/**'
+      - 'packages/trainer_access/**'
+      - 'packages/entrena_ui/**'
+      - 'packages/workout_core/**'
+      - 'packages/workout_editor_ui/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+      - 'tools/static_web_release.py'
+      - 'tools/static_web_deploy.py'
+      - '.github/workflows/trainer-dev.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trainer-dev
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Comprobar transporte FTPS antes de compilar
+        if: vars.TRAINER_DEV_DEPLOY_ENABLED == 'true'
+        run: python3 trainer_app/tool/trainer_release.py connection-check
+      - name: Detectar cambios compartidos
+        id: scope
+        env:
+          BEFORE: ${{ github.event.before }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo 'shared=true' >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -Eq '^(packages/(trainer_access|entrena_ui|workout_core|workout_editor_ui)/|pubspec\.(yaml|lock)$|analysis_options\.yaml$)'; then
+            echo 'shared=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'shared=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: SDK Flutter oficial fijado y verificado
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 -o "$RUNNER_TEMP/flutter.tar.xz" https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.47.5-stable.tar.xz
+          echo "2132e990f236f8d22e7c6314b29a191a95b10d7cbcfec9b4e2e303d996652cbb  $RUNNER_TEMP/flutter.tar.xz" | sha256sum --check
+          tar -xf "$RUNNER_TEMP/flutter.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Resolver dependencias bloqueadas
+        run: |
+          flutter pub get --enforce-lockfile
+          cd admin_app
+          flutter pub get --enforce-lockfile
+          cd ../trainer_app
+          flutter pub get --enforce-lockfile
+      - name: Validar Trainer
+        working-directory: trainer_app
+        run: |
+          flutter analyze
+          flutter test
+      - name: Validar consumidores del código compartido
+        if: steps.scope.outputs.shared == 'true'
+        run: |
+          flutter analyze
+          flutter test
+          cd admin_app
+          flutter analyze
+          flutter test
+      - name: Probar ambos publicadores y su aislamiento
+        run: |
+          python3 -m unittest discover -s admin_app/tool/tests -v
+          python3 -m unittest discover -s trainer_app/tool/tests -v
+      - name: Compilar Trainer exclusivamente con Dev
+        working-directory: trainer_app
+        run: flutter build web --release --csp --no-web-resources-cdn --no-source-maps --no-wasm-dry-run --dart-define=APP_ENV=development --dart-define=APP_REVISION=${{ github.sha }} --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co
+      - name: Preparar versión aislada
+        run: python3 trainer_app/tool/trainer_release.py package --output trainer_app/build/trainer-release --revision ${{ github.sha }} --release-id ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Conservar el paquete validado
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: trainer-dev-${{ github.sha }}
+          path: trainer_app/build/trainer-release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Informar del estado de publicación
+        env:
+          DEPLOY_ENABLED: ${{ vars.TRAINER_DEV_DEPLOY_ENABLED }}
+        run: |
+          if [ "$DEPLOY_ENABLED" = true ]; then
+            echo 'Trainer Dev validado y empaquetado; continúa en el job deploy.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Trainer Dev validado y empaquetado. Despliegue deshabilitado: configurar la cuenta confinada y los secretos propios antes de activar TRAINER_DEV_DEPLOY_ENABLED.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && vars.TRAINER_DEV_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: trainer-dev
+      url: https://trainer.entrenaop.es/
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: trainer-dev-${{ github.sha }}
+          path: trainer_app/build/trainer-release
+      - name: Publicar y comprobar HTTPS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOSTINGER_TRAINER_FTPS_USER: ${{ secrets.HOSTINGER_TRAINER_FTPS_USER }}
+          HOSTINGER_TRAINER_FTPS_PASSWORD: ${{ secrets.HOSTINGER_TRAINER_FTPS_PASSWORD }}
+        run: python3 trainer_app/tool/trainer_release.py deploy --output trainer_app/build/trainer-release
+      - name: Resultado
+        run: echo 'Trainer Dev publicado y verificado en https://trainer.entrenaop.es/' >> "$GITHUB_STEP_SUMMARY"

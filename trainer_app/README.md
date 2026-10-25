@@ -2,9 +2,12 @@
 
 Flutter web independiente para el destino acordado `trainer.entrenaop.es`.
 Publicado y verificado por HTTPS con EntrenaOP Dev el 21/10/2026.
-El subdominio no se publica con el flujo de ADMIN; la primera carga usa el
-paquete de `tool/trainer_release.py` y el gestor de Hostinger.
-[Publicación y entrada humana verificadas](../docs/TRAINER_HOSTING_2026_10_21.md).
+La primera carga usó el paquete de `tool/trainer_release.py` y el gestor de
+Hostinger. El workflow `trainer-dev.yml` añade validación y artefacto propios;
+el envío automático se habilita después de configurar su cuenta FTPS confinada
+y sus secretos, sin utilizar la cuenta ADMIN.
+[Automatización y activación pendiente](../docs/TRAINER_DEPLOYMENT_2026_10_25.md).
+[Primera publicación y entrada verificadas](../docs/TRAINER_HOSTING_2026_10_21.md).
 
 ```powershell
 cd trainer_app

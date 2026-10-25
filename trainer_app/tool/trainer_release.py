@@ -1,11 +1,12 @@
-"""Paquete y comprobación HTTPS de trainer.entrenaop.es. Sin credenciales.
+"""Paquete, publicación y comprobación HTTPS de Trainer Dev.
 
-La primera carga se realiza desde el administrador de archivos de Hostinger.
-Nunca utiliza la cuenta FTP confinada de ADMIN.
+Usa una cuenta confinada propia; nunca reutiliza credenciales ADMIN.
 """
 import argparse
+import ftplib
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -17,6 +18,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 from static_web_release import package_web
+import static_web_deploy as shared_deploy
+from static_web_deploy import IPv4FTP_TLS, transfer_diagnostic
 
 HOST = "trainer.entrenaop.es"
 PROJECT = "sxbxfjqgoddzhtcyhalw"
@@ -26,7 +29,8 @@ def source_scope():
     # chat puede trabajar en un paquete aún no consumido sin entrar en el ZIP.
     config_path = ROOT / "trainer_app/.dart_tool/package_config.json"
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    paths = {"trainer_app", "pubspec.yaml", "pubspec.lock", "tools/static_web_release.py"}
+    paths = {"trainer_app", "pubspec.yaml", "pubspec.lock", "tools/static_web_release.py",
+             "tools/static_web_deploy.py", ".github/workflows/trainer-dev.yml"}
     for package in config["packages"]:
         uri = urllib.parse.urljoin(config_path.as_uri(), package["rootUri"])
         parsed = urllib.parse.urlparse(uri)
@@ -86,14 +90,40 @@ def verify(manifest):
         if response.headers.get_content_type() != "application/wasm":
             raise ValueError("MIME WebAssembly incorrecto.")
 
+def connection_check():
+    return shared_deploy.connection_check(label="Trainer Dev", ftp_factory=IPv4FTP_TLS)
+
+
+def require_current_main(revision):
+    return shared_deploy.require_current_main(revision)
+
+
+def publish(ftp, package, verifier=verify, *, progress=lambda phase: None):
+    return shared_deploy.publish(ftp, package, identity=identity,
+                                 verifier=verifier, progress=progress)
+
+
+def deploy(package):
+    return shared_deploy.deploy(
+        package, identity=identity, publisher=publish,
+        require_current_main=require_current_main,
+        credential_names=("HOSTINGER_TRAINER_FTPS_USER", "HOSTINGER_TRAINER_FTPS_PASSWORD"),
+        label="Trainer Dev", ftp_factory=IPv4FTP_TLS)
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("command",choices=("package","verify"))
-    parser.add_argument("--output",required=True,type=Path)
-    parser.add_argument("--revision")
+    parser.add_argument("command",choices=("package","verify","deploy","connection-check"))
+    parser.add_argument("--output",default=ROOT/"trainer_app/build/trainer-release",type=Path)
+    parser.add_argument("--revision",default=os.environ.get("GITHUB_SHA"))
     parser.add_argument("--release-id")
     args = parser.parse_args()
-    if args.command == "package":
+    if args.command == "connection-check":
+        connection_check()
+    elif args.command == "deploy":
+        result = deploy(args.output)
+        print("Trainer Dev publicado y verificado:",result["revision"])
+    elif args.command == "package":
         scope = source_scope()
         if subprocess.check_output(["git","status","--porcelain","--",*scope],cwd=ROOT,text=True).strip():
             raise ValueError("Guarda y valida las fuentes antes de empaquetarlas.")
@@ -109,4 +139,13 @@ def main():
         print("Panel profesional Dev publicado y verificado por HTTPS.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as error:
+        # No volcar respuestas FTPS, nombres de cuenta ni secretos en Actions.
+        print("Error de publicación Trainer Dev:",type(error).__name__,file=sys.stderr)
+        if isinstance(error,ftplib.Error) and re.match(r"^[0-9]{3}",str(error)):
+            print("Respuesta de transferencia:",str(error)[:3],file=sys.stderr)
+        if type(error) in (ValueError,RuntimeError):
+            print(str(error),file=sys.stderr)
+        sys.exit(1)
