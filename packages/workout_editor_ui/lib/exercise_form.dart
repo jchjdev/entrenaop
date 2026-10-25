@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:image_picker/image_picker.dart';
 import 'package:workout_core/exercise_draft.dart';
@@ -106,161 +107,204 @@ class _ExerciseFormState extends State<ExerciseForm> {
 
   @override
   Widget build(BuildContext context) {
+    final heading = <Widget>[
+      Text(
+        widget.title,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+      ),
+      const SizedBox(height: 6),
+      Text(widget.supportingText),
+      const SizedBox(height: 18),
+    ];
+    final imageFields = <Widget>[
+      _ImageHeader(
+        bytes: _image?.bytes,
+        initialUrl: _removeExistingImage ? null : widget.initialImageUrl,
+        processing: _processingImage,
+        error: _imageError,
+        onPick: _pickImage,
+        onRemove:
+            _image != null ||
+                (!_removeExistingImage && widget.initialImageUrl != null)
+            ? _removeImage
+            : null,
+        automaticCover: widget.videoFieldBuilder != null,
+      ),
+      const SizedBox(height: 18),
+    ];
+    final videoFields = <Widget>[
+      if (widget.videoFieldBuilder != null)
+        widget.videoFieldBuilder!(_videoController, (busy) {
+          if (mounted && _processingVideo != busy) {
+            setState(() => _processingVideo = busy);
+          }
+        }, _applyVideoCover)
+      else
+        TextFormField(
+          controller: _videoController,
+          keyboardType: TextInputType.url,
+          decoration: const InputDecoration(
+            labelText: 'Vídeo externo',
+            hintText: 'https://…',
+            helperText: 'Opcional. Solo se guarda el enlace; no sube archivos a EntrenaOP.',
+            helperMaxLines: 6,
+            prefixIcon: Icon(Icons.play_circle_outline_rounded),
+          ),
+          validator: ExerciseDraftValidator.videoUrlError,
+        ),
+      const SizedBox(height: 12),
+    ];
+    final identityFields = <Widget>[
+      TextFormField(
+        key: ValueKey('${widget.fieldKeyPrefix}-name'),
+        controller: _nameController,
+        autofocus: widget.autofocusName,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: const InputDecoration(
+          labelText: 'Nombre',
+          hintText: 'Ej. Press francés con mancuerna',
+        ),
+        validator: ExerciseDraftValidator.nameError,
+      ),
+      const SizedBox(height: 12),
+      TextFormField(
+        controller: _descriptionController,
+        minLines: 2,
+        maxLines: 4,
+        maxLength: 500,
+        decoration: const InputDecoration(
+          labelText: 'Descripción',
+          hintText: 'Opcional: técnica o indicaciones importantes',
+          alignLabelWithHint: true,
+        ),
+        validator: ExerciseDraftValidator.descriptionError,
+      ),
+      const SizedBox(height: 4),
+    ];
+    final details = <Widget>[
+      TextFormField(
+        key: ValueKey('${widget.fieldKeyPrefix}-muscles'),
+        controller: _musclesController,
+        decoration: const InputDecoration(
+          labelText: 'Grupos musculares',
+          hintText: 'tríceps, pecho',
+        ),
+        validator: (value) =>
+            ExerciseDraftValidator.muscleGroupsError(_tags(value)),
+      ),
+      const SizedBox(height: 12),
+      TextFormField(
+        controller: _equipmentController,
+        decoration: const InputDecoration(
+          labelText: 'Material (opcional)',
+          hintText: 'mancuerna, banco',
+        ),
+        validator: (value) =>
+            ExerciseDraftValidator.equipmentError(_tags(value)),
+      ),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<String>(
+        initialValue: _difficulty,
+        isExpanded: true,
+        isDense: false,
+        itemHeight: null,
+        decoration: const InputDecoration(labelText: 'Dificultad'),
+        items: const [
+          DropdownMenuItem(value: 'inicial', child: Text('Inicial')),
+          DropdownMenuItem(value: 'intermedio', child: Text('Intermedio')),
+          DropdownMenuItem(value: 'avanzado', child: Text('Avanzado')),
+        ],
+        selectedItemBuilder: (_) => const [
+          Align(alignment: Alignment.centerLeft, child: Text('Inicial')),
+          Align(alignment: Alignment.centerLeft, child: Text('Intermedio')),
+          Align(alignment: Alignment.centerLeft, child: Text('Avanzado')),
+        ],
+        onChanged: (value) {
+          if (value != null) _difficulty = value;
+          _notifyDirty();
+        },
+      ),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<String>(
+        initialValue: _exerciseType,
+        isExpanded: true,
+        isDense: false,
+        itemHeight: null,
+        decoration: const InputDecoration(labelText: 'Medición habitual'),
+        items: const [
+          DropdownMenuItem(value: 'repeticiones', child: Text('Repeticiones')),
+          DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
+        ],
+        selectedItemBuilder: (_) => const [
+          Align(alignment: Alignment.centerLeft, child: Text('Repeticiones')),
+          Align(alignment: Alignment.centerLeft, child: Text('Tiempo')),
+        ],
+        onChanged: (value) {
+          if (value != null) _exerciseType = value;
+          _notifyDirty();
+        },
+      ),
+    ];
+    final save = FilledButton.icon(
+      onPressed: _processingImage || _processingVideo ? null : _submit,
+      icon: const Icon(Icons.check_rounded),
+      label: Text(widget.submitLabel),
+    );
     return Form(
       key: _formKey,
       onChanged: _notifyDirty,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 6),
-            Text(widget.supportingText),
-            const SizedBox(height: 18),
-            _ImageHeader(
-              bytes: _image?.bytes,
-              initialUrl: _removeExistingImage ? null : widget.initialImageUrl,
-              processing: _processingImage,
-              error: _imageError,
-              onPick: _pickImage,
-              onRemove:
-                  _image != null ||
-                      (!_removeExistingImage && widget.initialImageUrl != null)
-                  ? _removeImage
-                  : null,
-              automaticCover: widget.videoFieldBuilder != null,
-            ),
-            const SizedBox(height: 18),
-            TextFormField(
-              key: ValueKey('${widget.fieldKeyPrefix}-name'),
-              controller: _nameController,
-              autofocus: widget.autofocusName,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                hintText: 'Ej. Press francés con mancuerna',
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final desktop =
+              ProfessionalWorkspaceScope.isDesktop(context) &&
+              constraints.maxWidth >= 800 &&
+              constraints.hasBoundedHeight;
+          if (!desktop) {
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ...heading,
+                  ...imageFields,
+                  ...identityFields,
+                  ...videoFields,
+                  ...details,
+                  const SizedBox(height: 22),
+                  save,
+                ],
               ),
-              validator: ExerciseDraftValidator.nameError,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _descriptionController,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: 500,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                hintText: 'Opcional: técnica o indicaciones importantes',
-                alignLabelWithHint: true,
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ...heading,
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      child: ListView(
+                        primary: false,
+                        children: [...imageFields, ...videoFields],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: ListView(
+                        primary: false,
+                        children: [...identityFields, ...details],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              validator: ExerciseDraftValidator.descriptionError,
-            ),
-            const SizedBox(height: 4),
-            if (widget.videoFieldBuilder != null)
-              widget.videoFieldBuilder!(_videoController, (busy) {
-                if (mounted && _processingVideo != busy) {
-                  setState(() => _processingVideo = busy);
-                }
-              }, _applyVideoCover)
-            else
-              TextFormField(
-                controller: _videoController,
-                keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
-                  labelText: 'Vídeo externo',
-                  hintText: 'https://…',
-                  helperText: 'Opcional. Solo se guarda el enlace; no sube archivos a EntrenaOP.',
-                  helperMaxLines: 6,
-                  prefixIcon: Icon(Icons.play_circle_outline_rounded),
-                ),
-                validator: ExerciseDraftValidator.videoUrlError,
-              ),
-            const SizedBox(height: 12),
-            TextFormField(
-              key: ValueKey('${widget.fieldKeyPrefix}-muscles'),
-              controller: _musclesController,
-              decoration: const InputDecoration(
-                labelText: 'Grupos musculares',
-                hintText: 'tríceps, pecho',
-              ),
-              validator: (value) =>
-                  ExerciseDraftValidator.muscleGroupsError(_tags(value)),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _equipmentController,
-              decoration: const InputDecoration(
-                labelText: 'Material (opcional)',
-                hintText: 'mancuerna, banco',
-              ),
-              validator: (value) =>
-                  ExerciseDraftValidator.equipmentError(_tags(value)),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _difficulty,
-              isExpanded: true,
-              isDense: false,
-              itemHeight: null,
-              decoration: const InputDecoration(labelText: 'Dificultad'),
-              items: const [
-                DropdownMenuItem(value: 'inicial', child: Text('Inicial')),
-                DropdownMenuItem(
-                  value: 'intermedio',
-                  child: Text('Intermedio'),
-                ),
-                DropdownMenuItem(value: 'avanzado', child: Text('Avanzado')),
-              ],
-              selectedItemBuilder: (_) => const [
-                Align(alignment: Alignment.centerLeft, child: Text('Inicial')),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Intermedio'),
-                ),
-                Align(alignment: Alignment.centerLeft, child: Text('Avanzado')),
-              ],
-              onChanged: (value) {
-                if (value != null) _difficulty = value;
-                _notifyDirty();
-              },
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _exerciseType,
-              isExpanded: true,
-              isDense: false,
-              itemHeight: null,
-              decoration: const InputDecoration(labelText: 'Medición habitual'),
-              items: const [
-                DropdownMenuItem(
-                  value: 'repeticiones',
-                  child: Text('Repeticiones'),
-                ),
-                DropdownMenuItem(value: 'duración', child: Text('Tiempo')),
-              ],
-              selectedItemBuilder: (_) => const [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Repeticiones'),
-                ),
-                Align(alignment: Alignment.centerLeft, child: Text('Tiempo')),
-              ],
-              onChanged: (value) {
-                if (value != null) _exerciseType = value;
-                _notifyDirty();
-              },
-            ),
-            const SizedBox(height: 22),
-            FilledButton.icon(
-              onPressed: _processingImage || _processingVideo ? null : _submit,
-              icon: const Icon(Icons.check_rounded),
-              label: Text(widget.submitLabel),
-            ),
-          ],
-        ),
+              const Divider(height: 24),
+              Align(alignment: Alignment.centerRight, child: save),
+            ],
+          );
+        },
       ),
     );
   }

@@ -448,22 +448,23 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
           minCardWidth: 340,
           children: [
             for (final item in _items)
-              Card(
-                child: ListTile(
-                  title: Text(item.clientName),
-                  subtitle: Text(
-                    '${item.assignment.name} · ${trainerCalendarDate(item.assignment.date)}',
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _busy
-                      ? null
-                      : () async {
-                          await context.push(
-                            '/clients/${item.clientId}/workouts/${item.assignment.id}/result',
-                          );
-                          if (mounted) await _load();
-                        },
+              ProfessionalResourceCard(
+                leading: const ProfessionalResourceIcon(
+                  Icons.fact_check_outlined,
                 ),
+                title: Text(item.clientName),
+                subtitle: Text(
+                  '${item.assignment.name} · ${trainerCalendarDate(item.assignment.date)}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy
+                    ? null
+                    : () async {
+                        await context.push(
+                          '/clients/${item.clientId}/workouts/${item.assignment.id}/result',
+                        );
+                        if (mounted) await _load();
+                      },
               ),
           ],
         ),

@@ -203,21 +203,17 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                     ProfessionalCatalogGrid(
                       children: [
                         for (final exercise in visible)
-                          Card(
-                            child: ListTile(
-                              leading: _ExerciseImage(url: exercise.imageUrl),
-                              title: Text(exercise.name),
-                              subtitle: Text(
-                                [
-                                  ...exercise.muscleGroups,
-                                  ...exercise.equipment,
-                                ].join(' · '),
-                              ),
-                              trailing: const Icon(Icons.edit_outlined),
-                              onTap: _saving
-                                  ? null
-                                  : () => _openEditor(exercise),
+                          ProfessionalResourceCard(
+                            leading: _ExerciseImage(url: exercise.imageUrl),
+                            title: Text(exercise.name),
+                            subtitle: Text(
+                              [
+                                ...exercise.muscleGroups,
+                                ...exercise.equipment,
+                              ].join(' · '),
                             ),
+                            trailing: const Icon(Icons.edit_outlined),
+                            onTap: _saving ? null : () => _openEditor(exercise),
                           ),
                       ],
                     ),

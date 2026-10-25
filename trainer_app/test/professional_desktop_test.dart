@@ -208,6 +208,22 @@ void main() {
           )
           .first;
       await t.enterText(dose, '8');
+      final rows = find.byWidgetPredicate(
+        (w) =>
+            w is ListTile &&
+            w.key is ValueKey<String> &&
+            (w.key as ValueKey<String>).value.startsWith(
+              'exercise-properties-',
+            ),
+      );
+      expect(rows, findsNWidgets(2));
+      await t.tap(rows.first);
+      await t.pumpAndSettle();
+      expect(t.widget<TextField>(dose).controller!.text, '10');
+      await t.tap(rows.last);
+      await t.pumpAndSettle();
+      expect(t.widget<TextField>(dose).controller!.text, '8');
+      expect(find.text('Guardar ensayo').hitTestable(), findsOneWidget);
       final name = t
           .widget<TextField>(find.byKey(const ValueKey('workout-name')))
           .controller!;
@@ -261,7 +277,10 @@ void main() {
       await dragTo(t, phases, t.getTopLeft(first) + const Offset(20, -8));
       final names = t
           .widgetList<TextFormField>(
-            find.byKey(const ValueKey('program-field-Nombre de la fase')),
+            find.byKey(
+              const ValueKey('program-field-Nombre de la fase'),
+              skipOffstage: false,
+            ),
           )
           .map((f) => f.controller!.text)
           .toList();
@@ -278,6 +297,48 @@ void main() {
       expect(repo.saved.single.program.phases.first.name, 'Progresión');
       expect(repo.saved.single.program.phases.first.sessions.length, 2);
       expect(repo.saved.single.program.phases.last.sessions.length, 1);
+      expect(t.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'guardar revela los campos inválidos de una fase plegada sin perder sus sesiones',
+    (t) async {
+      await resize(t, const Size(1700, 2000));
+      final repo = ProgramFixture();
+      await t.pumpWidget(
+        desktop(
+          TrainerProgramEditorPage(
+            repository: repo,
+            workouts: WorkoutFixture(),
+            programId: 'program',
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final configure = find.text('Configurar fase').first;
+      await t.tap(configure);
+      await t.pumpAndSettle();
+      final name = find
+          .byKey(const ValueKey('program-field-Nombre de la fase'))
+          .first;
+      await t.enterText(name, '');
+      await t.tap(configure);
+      await t.pumpAndSettle();
+      expect(find.text('Completa este campo.'), findsNothing);
+      await t.tap(find.text('Guardar programa privado'));
+      await t.pumpAndSettle();
+      expect(find.text('Completa este campo.'), findsOneWidget);
+      expect(repo.saved, isEmpty);
+      await t.enterText(name, 'Base recuperada');
+      await t.tap(find.text('Guardar programa privado'));
+      await t.pumpAndSettle();
+      expect(repo.saved.single.program.phases.first.name, 'Base recuperada');
+      expect(
+        repo.saved.single.program.phases.first.sessions.single.name,
+        'Fuerza A',
+      );
+      expect(repo.saved.single.program.phases.last.name, 'Progresión');
       expect(t.takeException(), isNull);
     },
   );

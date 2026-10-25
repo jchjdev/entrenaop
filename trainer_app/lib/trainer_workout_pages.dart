@@ -164,7 +164,12 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
       ),
       const SizedBox(height: 16),
-      if (widget.workRepository != null) ...[
+      if (widget.workRepository != null &&
+          (_busy ||
+              _works.isNotEmpty ||
+              _workError != null ||
+              _discardError != null ||
+              _discardAttempt != null)) ...[
         Text(
           'Trabajos incompletos',
           style: Theme.of(context).textTheme.titleLarge,
@@ -267,18 +272,17 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           for (final item in _items.where(
             (item) => item.name.toLowerCase().contains(_query.toLowerCase()),
           ))
-            Card(
-              child: ListTile(
-                title: Text(item.name),
-                subtitle: Text('Versión ${item.version} · Privada'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: _busy
-                    ? null
-                    : () async {
-                        await context.push('/workouts/${item.id}');
-                        if (mounted) await _load();
-                      },
-              ),
+            ProfessionalResourceCard(
+              leading: const ProfessionalResourceIcon(Icons.fitness_center),
+              title: Text(item.name),
+              subtitle: Text('Versión ${item.version} · Privada'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _busy
+                  ? null
+                  : () async {
+                      await context.push('/workouts/${item.id}');
+                      if (mounted) await _load();
+                    },
             ),
         ],
       ),

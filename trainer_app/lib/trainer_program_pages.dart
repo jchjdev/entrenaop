@@ -287,7 +287,12 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         'Organiza sesiones por rutinas o fases y reutiliza cada programa con tus alumnos. Cada pauta conserva la versión asignada.',
       ),
       const SizedBox(height: 16),
-      if (widget.workRepository != null) ...[
+      if (widget.workRepository != null &&
+          (_busy ||
+              _works.isNotEmpty ||
+              _workError != null ||
+              _discardError != null ||
+              _discardAttempt != null)) ...[
         Text(
           'Trabajos incompletos',
           style: Theme.of(context).textTheme.titleLarge,
@@ -383,18 +388,17 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
             (row) =>
                 row.program.name.toLowerCase().contains(_query.toLowerCase()),
           ))
-            Card(
-              child: ListTile(
-                title: Text(row.program.name),
-                subtitle: Text(
-                  '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  await context.push('/programs/${row.program.id}');
-                  if (mounted) await _load();
-                },
+            ProfessionalResourceCard(
+              leading: const ProfessionalResourceIcon(Icons.view_week_outlined),
+              title: Text(row.program.name),
+              subtitle: Text(
+                '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
               ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () async {
+                await context.push('/programs/${row.program.id}');
+                if (mounted) await _load();
+              },
             ),
         ],
       ),

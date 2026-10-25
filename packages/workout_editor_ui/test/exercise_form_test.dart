@@ -1,3 +1,5 @@
+import 'package:entrena_ui/entrena_ui.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -255,4 +257,61 @@ void main() {
     expect(submitted?.name, 'Sentadilla goblet');
     expect(submitted?.muscleGroups, ['piernas']);
   });
+  testWidgets(
+    'escritorio conserva una sola entrada de vídeo y los datos al estrechar',
+    (t) async {
+      t.view.devicePixelRatio = 1;
+      t.view.physicalSize = const Size(1400, 900);
+      addTearDown(t.view.reset);
+      ExerciseDraft? saved;
+      await t.pumpWidget(
+        MaterialApp(
+          home: ProfessionalWorkspaceScope(
+            desktop: true,
+            child: Scaffold(
+              body: ExerciseForm(
+                title: 'Ejercicio',
+                supportingText: 'Ensayo',
+                submitLabel: 'Guardar ficha',
+                autofocusName: false,
+                initialDraft: const ExerciseDraft(
+                  name: 'Dominadas',
+                  muscleGroups: ['espalda'],
+                  equipment: [],
+                  difficulty: 'inicial',
+                  exerciseType: 'repeticiones',
+                ),
+                onSubmit: (v) => saved = v.draft,
+              ),
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final video = find.byWidgetPredicate(
+        (w) => w is TextField && w.decoration?.labelText == 'Vídeo externo',
+      );
+      expect(video, findsOneWidget);
+      await t.enterText(video, 'https://example.test/dominada.mp4');
+      await t.enterText(
+        find.byKey(const ValueKey('exercise-name')),
+        'Dominada prona',
+      );
+      expect(find.text('Guardar ficha').hitTestable(), findsOneWidget);
+      t.view.physicalSize = const Size(620, 900);
+      await t.pumpAndSettle();
+      expect(video, findsOneWidget);
+      expect(
+        t.widget<TextField>(video).controller!.text,
+        'https://example.test/dominada.mp4',
+      );
+      await t.ensureVisible(find.text('Guardar ficha'));
+      await t.tap(find.text('Guardar ficha'));
+      await t.pumpAndSettle();
+      expect(saved?.name, 'Dominada prona');
+      expect(saved?.videoUrl, 'https://example.test/dominada.mp4');
+      expect(saved?.muscleGroups, ['espalda']);
+      expect(t.takeException(), isNull);
+    },
+  );
 }

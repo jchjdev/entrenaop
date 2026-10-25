@@ -109,16 +109,17 @@ class _TrainerFormsPageState extends State<TrainerFormsPage> {
             ProfessionalCatalogGrid(
               children: [
                 for (final form in _forms)
-                  Card(
-                    child: ListTile(
-                      title: Text(form.title),
-                      subtitle: Text(
-                        'Versión ${form.revision} · ${form.questions.length} preguntas',
-                      ),
-                      trailing: TextButton(
-                        onPressed: !_enabled ? null : () => _edit(form),
-                        child: const Text('Revisar'),
-                      ),
+                  ProfessionalResourceCard(
+                    leading: const ProfessionalResourceIcon(
+                      Icons.assignment_outlined,
+                    ),
+                    title: Text(form.title),
+                    subtitle: Text(
+                      'Versión ${form.revision} · ${form.questions.length} preguntas',
+                    ),
+                    trailing: TextButton(
+                      onPressed: !_enabled ? null : () => _edit(form),
+                      child: const Text('Revisar'),
                     ),
                   ),
               ],
@@ -350,6 +351,25 @@ class _TrainerFormEditorPageState extends State<TrainerFormEditorPage> {
           widget.formId == null ? 'Crear formulario' : 'Revisar formulario',
         ),
       ),
+      bottomNavigationBar: ProfessionalWorkspaceScope.isDesktop(context)
+          ? Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Align(
+                    heightFactor: 1,
+                    alignment: Alignment.centerRight,
+                    child: _saveAction(),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: Center(
         child: ConstrainedBox(
           constraints: ProfessionalWorkspaceScope.pageConstraints(
@@ -395,7 +415,14 @@ class _TrainerFormEditorPageState extends State<TrainerFormEditorPage> {
                         ),
                         onChanged: (_) => _changed(),
                       ),
-                      for (var i = 0; i < _questions.length; i++) _question(i),
+                      ProfessionalCatalogGrid(
+                        minCardWidth: 440,
+                        maxColumns: 2,
+                        children: [
+                          for (var i = 0; i < _questions.length; i++)
+                            _question(i),
+                        ],
+                      ),
                       OutlinedButton.icon(
                         onPressed: _questions.length >= 40
                             ? null
@@ -411,27 +438,28 @@ class _TrainerFormEditorPageState extends State<TrainerFormEditorPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed:
-                    _saving ||
-                        _loading ||
-                        (widget.formId != null && _initial == null)
-                    ? null
-                    : _save,
-                child: Text(
-                  _saving
-                      ? 'Guardando…'
-                      : _pending != null
-                      ? 'Reintentar el mismo guardado'
-                      : 'Guardar versión',
-                ),
-              ),
+              if (!ProfessionalWorkspaceScope.isDesktop(context))
+                Align(alignment: Alignment.centerRight, child: _saveAction()),
             ],
           ),
         ),
       ),
     ),
   );
+  Widget _saveAction() => FilledButton(
+    onPressed:
+        _saving || _loading || (widget.formId != null && _initial == null)
+        ? null
+        : _save,
+    child: Text(
+      _saving
+          ? 'Guardando…'
+          : _pending != null
+          ? 'Reintentar el mismo guardado'
+          : 'Guardar versión',
+    ),
+  );
+
   Widget _question(int index) {
     final q = _questions[index];
     final choice =

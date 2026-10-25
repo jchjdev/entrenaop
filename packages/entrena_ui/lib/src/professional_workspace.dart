@@ -144,13 +144,16 @@ class ProfessionalCatalogGrid extends StatelessWidget {
                 .clamp(1, maxColumns)
           : 1;
       final cardWidth = (width - spacing * (count - 1)) / count;
-      return Wrap(
-        spacing: spacing,
-        runSpacing: spacing,
-        children: [
-          for (final child in children)
-            SizedBox(width: cardWidth, child: child),
-        ],
+      return SizedBox(
+        width: width,
+        child: Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final child in children)
+              SizedBox(width: cardWidth, child: child),
+          ],
+        ),
       );
     },
   );
@@ -291,6 +294,7 @@ class _ProfessionalLibraryPaneState<T>
                     child: Text('No hay elementos que coincidan.'),
                   )
                 : ListView.builder(
+                    primary: false,
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
@@ -356,30 +360,90 @@ class ProfessionalEditorWorkspace extends StatelessWidget {
     required this.library,
     required this.child,
     this.inspector,
+    this.footer,
   });
   final Widget library, child;
-  final Widget? inspector;
+  final Widget? inspector, footer;
+
+  static bool hasInspector(BuildContext context, BoxConstraints constraints) =>
+      ProfessionalWorkspaceScope.isDesktop(context) &&
+      constraints.hasBoundedHeight &&
+      constraints.maxWidth >= 1100;
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      if (!ProfessionalWorkspaceScope.isDesktop(context) ||
-          constraints.maxWidth < 1000 ||
-          !constraints.hasBoundedHeight) {
-        return child;
-      }
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      final desktop =
+          ProfessionalWorkspaceScope.isDesktop(context) &&
+          constraints.hasBoundedHeight;
+      final panels = desktop && constraints.maxWidth >= 900;
+      final body = panels
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(width: 216, child: library),
+                const VerticalDivider(width: 1),
+                Expanded(child: child),
+                if (inspector != null &&
+                    hasInspector(context, constraints)) ...[
+                  const VerticalDivider(width: 1),
+                  SizedBox(width: 320, child: inspector),
+                ],
+              ],
+            )
+          : child;
+      if (!desktop || footer == null) return body;
+      return Column(
         children: [
-          SizedBox(width: 224, child: library),
-          const VerticalDivider(width: 1),
-          Expanded(child: child),
-          if (inspector != null && constraints.maxWidth >= 1200) ...[
-            const VerticalDivider(width: 1),
-            SizedBox(width: 240, child: inspector),
-          ],
+          Expanded(child: body),
+          const Divider(height: 1),
+          Material(
+            color: Theme.of(context).colorScheme.surface,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: footer,
+              ),
+            ),
+          ),
         ],
       );
     },
+  );
+}
+
+/// Propiedades con desplazamiento propio: el lienzo y las acciones siguen visibles.
+class ProfessionalInspector extends StatelessWidget {
+  const ProfessionalInspector({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.children,
+  });
+  final String title;
+  final String? subtitle;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Theme.of(context).colorScheme.surfaceContainerLow,
+    child: ListView(
+      primary: false,
+      key: const ValueKey('professional-inspector-scroll'),
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        if (subtitle != null) ...[
+          const SizedBox(height: 6),
+          Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
+        ],
+        const SizedBox(height: 16),
+        ...children,
+      ],
+    ),
   );
 }
 
@@ -504,4 +568,61 @@ class ProfessionalPageTab extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Tarjeta de biblioteca: misma acción y permisos que aporta el consumidor.
+class ProfessionalResourceCard extends StatelessWidget {
+  const ProfessionalResourceCard({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
+    this.onTap,
+  });
+  final Widget title;
+  final Widget? subtitle, leading, trailing;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    final desktop = ProfessionalWorkspaceScope.isDesktop(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: desktop
+            ? const EdgeInsets.symmetric(vertical: 12, horizontal: 6)
+            : EdgeInsets.zero,
+        child: ListTile(
+          title: DefaultTextStyle.merge(
+            style: Theme.of(context).textTheme.titleMedium,
+            child: title,
+          ),
+          subtitle: subtitle == null
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: subtitle,
+                ),
+          leading: leading,
+          trailing: trailing,
+          onTap: onTap,
+        ),
+      ),
+    );
+  }
+}
+
+class ProfessionalResourceIcon extends StatelessWidget {
+  const ProfessionalResourceIcon(this.icon, {super.key});
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 40,
+    height: 40,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+  );
 }

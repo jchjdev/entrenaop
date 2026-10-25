@@ -580,6 +580,12 @@ void main() {
         final router = await _mount(tester, guided, workouts);
         final location = router.routeInformationProvider.value.uri;
         await _create(tester, 'Sesión original');
+        // En escritorio la receta parte resumida y se abre a petición.
+        expect(find.byType(AdminWorkoutContent), findsNothing);
+        await _tap(
+          tester,
+          find.widgetWithText(OutlinedButton, 'Ver contenido'),
+        );
         expect(find.byType(AdminWorkoutContent), findsOneWidget);
         expect(find.textContaining('400 m'), findsOneWidget);
         if (published) workouts.published.add('session-1');
@@ -620,6 +626,7 @@ void main() {
       final workouts = _Workouts();
       await _mount(tester, _Guided(), workouts);
       await _create(tester, 'Sesión original');
+      await _tap(tester, find.widgetWithText(OutlinedButton, 'Ver contenido'));
       await _tap(tester, find.widgetWithText(FilledButton, 'Editar sesión'));
       await _enterRunningDistance(tester, '800');
       await _tap(tester, find.byTooltip('Volver al programa'));
@@ -649,6 +656,8 @@ void main() {
       final workouts = _Workouts();
       await _mount(tester, _Guided(), workouts);
       await _create(tester, 'Sesión plegable');
+      expect(find.byType(AdminWorkoutContent), findsNothing);
+      await _tap(tester, find.widgetWithText(OutlinedButton, 'Ver contenido'));
       expect(find.byType(AdminWorkoutContent), findsOneWidget);
       await _tap(
         tester,
@@ -774,6 +783,8 @@ void main() {
       expect(workouts.templateReads['session-1'], 1);
       workouts.failContent = false;
       await _tap(tester, retry);
+      expect(find.byType(AdminWorkoutContent), findsNothing);
+      await _tap(tester, find.widgetWithText(OutlinedButton, 'Ver contenido'));
       expect(find.byType(AdminWorkoutContent), findsOneWidget);
       expect(find.textContaining('400 m'), findsOneWidget);
       expect(workouts.templateReads['session-1'], 2);

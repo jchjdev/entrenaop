@@ -19,78 +19,85 @@ Future<AdminCatalogExercise?> showAdminExerciseDialog(
   final result = await showDialog<ExerciseFormSubmission<ExerciseDraft>>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => RetainedSaveDialog<ExerciseFormSubmission<ExerciseDraft>>(
-      errorMessage: 'No se pudo guardar. Tus datos siguen aquí; comprueba el permiso y la conexión.',
-      save: (submission) async {
-        if (exercise == null) {
-          savedId = await repository.createOfficial(
-            submission.draft,
-            image: submission.image,
-          );
-        } else {
-          await repository.updateOfficial(
-            exercise.id,
-            submission.draft,
-            image: submission.image,
-            removeImage: submission.removeExistingImage,
-          );
-        }
-      },
-      builder: (context, submit, saving, error, markDirty) => Dialog(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620, maxHeight: 820),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      error,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+    builder: (_) => ProfessionalWorkspaceViewport(
+      builder: (_) => RetainedSaveDialog<ExerciseFormSubmission<ExerciseDraft>>(
+        errorMessage: 'No se pudo guardar. Tus datos siguen aquí; comprueba el permiso y la conexión.',
+        save: (submission) async {
+          if (exercise == null) {
+            savedId = await repository.createOfficial(
+              submission.draft,
+              image: submission.image,
+            );
+          } else {
+            await repository.updateOfficial(
+              exercise.id,
+              submission.draft,
+              image: submission.image,
+              removeImage: submission.removeExistingImage,
+            );
+          }
+        },
+        builder: (context, submit, saving, error, markDirty) => Dialog(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: ProfessionalWorkspaceScope.isDesktop(context)
+                  ? 1060
+                  : 620,
+              maxHeight: 820,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        error,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  if (saving) const LinearProgressIndicator(),
+                  Flexible(
+                    child: AbsorbPointer(
+                      absorbing: saving,
+                      child: ExerciseForm(
+                        title: exercise == null
+                            ? 'Nuevo ejercicio oficial'
+                            : 'Editar ejercicio oficial',
+                        supportingText:
+                            'Se publicará en el catálogo general de EntrenaOP.',
+                        submitLabel: exercise == null
+                            ? 'Crear ejercicio'
+                            : 'Guardar cambios',
+                        fieldKeyPrefix: 'admin-exercise',
+                        initialDraft: exercise?.toDraft(),
+                        initialImageUrl: exercise?.imageUrl,
+                        onSubmit: submit,
+                        onDirtyChanged: markDirty,
+                        videoFieldBuilder: (controller, busy, cover) =>
+                            videos == null
+                            ? const Text('Subida de vídeo no disponible.')
+                            : AdminExerciseVideoField(
+                                controller: controller,
+                                repository: videos,
+                                onBusyChanged: busy,
+                                onCoverReady: cover,
+                              ),
                       ),
                     ),
                   ),
-                if (saving) const LinearProgressIndicator(),
-                Flexible(
-                  child: AbsorbPointer(
-                    absorbing: saving,
-                    child: ExerciseForm(
-                      title: exercise == null
-                          ? 'Nuevo ejercicio oficial'
-                          : 'Editar ejercicio oficial',
-                      supportingText:
-                          'Se publicará en el catálogo general de EntrenaOP.',
-                      submitLabel: exercise == null
-                          ? 'Crear ejercicio'
-                          : 'Guardar cambios',
-                      fieldKeyPrefix: 'admin-exercise',
-                      initialDraft: exercise?.toDraft(),
-                      initialImageUrl: exercise?.imageUrl,
-                      onSubmit: submit,
-                      onDirtyChanged: markDirty,
-                      videoFieldBuilder: (controller, busy, cover) =>
-                          videos == null
-                          ? const Text('Subida de vídeo no disponible.')
-                          : AdminExerciseVideoField(
-                              controller: controller,
-                              repository: videos,
-                              onBusyChanged: busy,
-                              onCoverReady: cover,
-                            ),
-                    ),
+                  TextButton(
+                    onPressed: saving
+                        ? null
+                        : () => Navigator.of(context).maybePop(),
+                    child: const Text('Cancelar'),
                   ),
-                ),
-                TextButton(
-                  onPressed: saving
-                      ? null
-                      : () => Navigator.of(context).maybePop(),
-                  child: const Text('Cancelar'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

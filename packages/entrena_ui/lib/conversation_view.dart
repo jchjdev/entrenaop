@@ -1,3 +1,5 @@
+import 'src/professional_workspace.dart';
+
 import 'package:flutter/material.dart';
 
 import 'src/workflow_exit_guard.dart';
@@ -151,6 +153,38 @@ class _ConversationViewState extends State<ConversationView> {
     }
   }
 
+  Widget _composer() => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      TextField(
+        controller: _body,
+        enabled: !_sending && _pending == null,
+        maxLength: 4000,
+        minLines: 2,
+        maxLines: 6,
+        onChanged: (_) => setState(() {}),
+        decoration: const InputDecoration(
+          labelText: 'Mensaje para la preparación',
+        ),
+      ),
+      if (_sendError != null) Text(_sendError!),
+      Align(
+        alignment: Alignment.centerRight,
+        child: FilledButton.icon(
+          onPressed:
+              _busy || _sending || (_pending ?? _body.text.trim()).isEmpty
+              ? null
+              : _send,
+          icon: const Icon(Icons.send_outlined),
+          label: Text(
+            _pending == null ? 'Enviar mensaje' : 'Reintentar el mismo envío',
+          ),
+        ),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -163,99 +197,108 @@ class _ConversationViewState extends State<ConversationView> {
         ),
       ],
     ),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            if (_busy) const LinearProgressIndicator(),
-            if (_error != null) ...[
-              Text(_error!),
-              TextButton(
-                onPressed: _load,
-                child: const Text('Reintentar consulta'),
+    body: Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ProfessionalWorkspaceScope.isDesktop(context)
+                    ? 1200
+                    : 900,
               ),
-            ],
-            if (_header?.canSend == false)
-              const Text(
-                'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
-              ),
-            if (_header?.canSend == true || _pending != null) ...[
-              TextField(
-                controller: _body,
-                enabled: !_sending && _pending == null,
-                maxLength: 4000,
-                minLines: 2,
-                maxLines: 6,
-                onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'Mensaje para la preparación',
-                ),
-              ),
-              if (_sendError != null) Text(_sendError!),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton.icon(
-                  onPressed:
-                      _busy ||
-                          _sending ||
-                          (_pending ?? _body.text.trim()).isEmpty
-                      ? null
-                      : _send,
-                  icon: const Icon(Icons.send_outlined),
-                  label: Text(
-                    _pending == null
-                        ? 'Enviar mensaje'
-                        : 'Reintentar el mismo envío',
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            const Text(
-              'Mensajes más recientes primero. Actualiza para consultar respuestas.',
-            ),
-            if (!_busy && _items.isEmpty && _error == null)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Todavía no hay mensajes.'),
-              ),
-            for (final entry in _items)
-              Align(
-                alignment: entry.mine
-                    ? Alignment.centerRight
-                    : Alignment.centerLeft,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          entry.mine ? 'Tú' : 'Respuesta recibida',
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        if (entry.contextLabel != null)
-                          Text(entry.contextLabel!),
-                        SelectableText(entry.body),
-                        Text(
-                          entry.createdAt.toLocal().toString().substring(0, 16),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  if (_busy) const LinearProgressIndicator(),
+                  if (_error != null) ...[
+                    Text(_error!),
+                    TextButton(
+                      onPressed: _load,
+                      child: const Text('Reintentar consulta'),
                     ),
+                  ],
+                  if (_header?.canSend == false)
+                    const Text(
+                      'Conversación conservada en consulta. El servicio no admite nuevos envíos ahora.',
+                    ),
+                  if (!ProfessionalWorkspaceScope.isDesktop(context) &&
+                      (_header?.canSend == true || _pending != null))
+                    _composer(),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Mensajes más recientes primero. Actualiza para consultar respuestas.',
                   ),
-                ),
+                  if (!_busy && _items.isEmpty && _error == null)
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('Todavía no hay mensajes.'),
+                    ),
+                  for (final entry in _items)
+                    Align(
+                      alignment: entry.mine
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth:
+                              ProfessionalWorkspaceScope.isDesktop(context)
+                              ? 720
+                              : double.infinity,
+                        ),
+                        child: Card(
+                          color:
+                              ProfessionalWorkspaceScope.isDesktop(context) &&
+                                  entry.mine
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  entry.mine ? 'Tú' : 'Respuesta recibida',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
+                                if (entry.contextLabel != null)
+                                  Text(entry.contextLabel!),
+                                SelectableText(entry.body),
+                                Text(
+                                  entry.createdAt
+                                      .toLocal()
+                                      .toString()
+                                      .substring(0, 16),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_more)
+                    TextButton(
+                      onPressed: _busy || _sending
+                          ? null
+                          : () => _load(more: true),
+                      child: const Text('Cargar mensajes anteriores'),
+                    ),
+                ],
               ),
-            if (_more)
-              TextButton(
-                onPressed: _busy || _sending ? null : () => _load(more: true),
-                child: const Text('Cargar mensajes anteriores'),
-              ),
-          ],
+            ),
+          ),
         ),
-      ),
+        if (ProfessionalWorkspaceScope.isDesktop(context) &&
+            (_header?.canSend == true || _pending != null))
+          Material(
+            color: Theme.of(context).colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _composer(),
+            ),
+          ),
+      ],
     ),
   );
 }

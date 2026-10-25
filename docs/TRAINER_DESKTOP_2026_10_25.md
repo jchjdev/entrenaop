@@ -208,3 +208,48 @@ siete días visibles a 1.646 px y la página Alumnos sin logo/atajos duplicados,
 con Actualizar e invitaciones disponibles. No se guardan recetas ni pautas ni
 se envían mensajes. La revisión visual aproxima la preview; no supone aceptar
 por Javier cada detalle estético ni cerrar futuras mejoras de fluidez.
+
+
+## Revisión completa de pantallas y creadores · 25/10/2026
+
+La primera entrega y su ajuste de tema no completaban el parecido funcional con
+la preview en los creadores. Esta revisión cambia la composición real, usando los
+mismos adaptadores de ADMIN y Trainer, sin copiar formularios ni recetas.
+
+| Área revisada | Composición y comportamiento |
+| --- | --- |
+| Inicio, alumnos e invitaciones | Resumen de trabajo, cartera en tarjetas y detalle por áreas; invitaciones separadas. |
+| Agenda | Biblioteca contextual; mes/semana/día/lista, filtros y revisión antes de asignar o mover. |
+| Sesiones de fuerza | Biblioteca, lienzo compacto ordenable y propiedades de la posición seleccionada; configuración del bloque desplegable. |
+| Sesiones de carrera | Biblioteca de tramos, lienzo ordenable y propiedades/repeticiones/recuperación en el lateral. |
+| Programas | Biblioteca, fases configurables, sesiones resumidas y estructura; guardado fijo y validación que revela campos plegados. |
+| Ejercicios | Tarjetas con etiquetas, búsqueda de ancho legible y creador compartido con medios/ficha en dos columnas. |
+| Formularios y pruebas | Tarjetas de catálogo; preguntas y protocolos en columnas, acciones de guardado fijas. |
+| Revisiones | Tarjetas de resultados con acceso a la consulta existente. |
+| Grupos, envíos y semanas | Distribución adaptable; conserva destinatarios, previsualización y confirmación. |
+| Vídeos | Demostraciones separadas de técnica de alumnos, límites desplegables y recuperación existente. |
+| Conversaciones e informes | Directorios de alumnos autorizados en tarjetas; escritura fija al pie e historial con burbujas de ancho legible. |
+| Cuenta y herramientas | Acceso profesional y seguridad separados; calculadora flotante y sesión existentes. |
+| ADMIN | El mismo editor de sesión/programa/ejercicio y sus estados oficiales, más los catálogos y gestión existentes. |
+
+La batería de revisión recorre las 15 secciones de Trainer, cinco pantallas de
+edición y el diálogo de ejercicio con el marco real a 1.600×1.000; genera 21 capturas optativas de widgets reales. Los
+datos son fixtures de prueba: no se publican clientes ficticios. Las regresiones
+comprueban selección de ejercicio, dosis, cambio de ancho, orden, fases plegadas,
+validación, guardado y reintento incierto en conversación. Los tests de ADMIN
+abren explícitamente «Ver contenido» en escritorio y siguen comprobando receta,
+versiones, lecturas, publicación conjunta y ausencia de duplicados.
+
+No cambia esquema, permisos, cuotas, dependencias ni la presentación móvil del
+deportista. El cierre de esta pasada visual se distingue de la aceptación humana
+y de los cobros/push pendientes. Publicación y comprobación de revisión final se
+registran al terminar la validación.
+
+
+Validación local de esta revisión: análisis limpio en raíz, ADMIN, Trainer,
+`workout_editor_ui` y `entrena_ui`; 1.349 pruebas raíz (una omisión previa), 315
+ADMIN (dos omisiones previas), 207 Trainer, 218 editor y 28 interfaz común.
+La selección lateral, validación de fases plegadas y reintento en conversación
+tienen regresiones explícitas. Tras ordenar los campos del formulario de
+ejercicio se repiten sus ocho pruebas, correctas. Diff y archivos nuevos revisados;
+los cambios previos de configuración local quedan fuera del guardado.

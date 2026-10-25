@@ -126,4 +126,57 @@ void main() {
       'Mi borrador',
     );
   });
+  testWidgets(
+    'escritorio mantiene el mensaje y el envío visibles al recorrer el historial',
+    (t) async {
+      t.view.devicePixelRatio = 1;
+      t.view.physicalSize = const Size(1400, 900);
+      addTearDown(t.view.reset);
+      final attempts = <(String, String)>[];
+      await t.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: ProfessionalWorkspaceScope(
+            desktop: true,
+            child: ConversationView(
+              header: () async =>
+                  const ConversationHeader(title: 'Alumno', canSend: true),
+              load: (_) async => List.generate(
+                25,
+                (i) => ConversationEntry(
+                  id: '$i',
+                  body: 'Mensaje $i',
+                  createdAt: DateTime(2026, 10, 25),
+                  mine: i.isEven,
+                ),
+              ),
+              send: (id, text) async {
+                attempts.add((id, text));
+                throw StateError('Sin confirmar');
+              },
+              newOperationId: () => 'única',
+              errorLabel: (_) => 'Sin confirmar',
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'Revisión pendiente');
+      final position = t.getTopLeft(find.byType(TextField));
+      await t.drag(find.byType(ListView), const Offset(0, -1800));
+      await t.pumpAndSettle();
+      expect(t.getTopLeft(find.byType(TextField)), position);
+      expect(find.text('Enviar mensaje').hitTestable(), findsOneWidget);
+      await t.tap(find.text('Enviar mensaje'));
+      await t.pumpAndSettle();
+      expect(t.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+      await t.tap(find.text('Reintentar el mismo envío'));
+      await t.pumpAndSettle();
+      expect(attempts, [
+        ('única', 'Revisión pendiente'),
+        ('única', 'Revisión pendiente'),
+      ]);
+      expect(t.takeException(), isNull);
+    },
+  );
 }

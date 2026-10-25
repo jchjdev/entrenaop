@@ -152,12 +152,18 @@ class _TrainerClientDirectoryPageState
           ],
         ),
         const SizedBox(height: 16),
-        TextField(
-          decoration: const InputDecoration(
-            labelText: 'Buscar entre los alumnos cargados',
-            prefixIcon: Icon(Icons.search),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'Buscar entre los alumnos cargados',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) => setState(() => _search = value),
+            ),
           ),
-          onChanged: (value) => setState(() => _search = value),
         ),
         const SizedBox(height: 16),
         if (_busy) const LinearProgressIndicator(),
@@ -170,26 +176,24 @@ class _TrainerClientDirectoryPageState
             for (final client in _items.where(
               (c) => c.name.toLowerCase().contains(_search.toLowerCase()),
             ))
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    widget.reports ? Icons.insights : Icons.chat_bubble_outline,
-                  ),
-                  title: Text(client.name),
-                  subtitle: Text(
-                    widget.reports
-                        ? 'Evolución y exportación del servicio'
-                        : client.active
-                        ? 'Conversación activa'
-                        : 'Historial de conversación',
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _busy
-                      ? null
-                      : () => context.go(
-                          '/clients/${client.personId}${widget.reports ? '?area=progress' : '/conversation'}',
-                        ),
+              ProfessionalResourceCard(
+                leading: ProfessionalResourceIcon(
+                  widget.reports ? Icons.insights : Icons.chat_bubble_outline,
                 ),
+                title: Text(client.name),
+                subtitle: Text(
+                  widget.reports
+                      ? 'Evolución y exportación del servicio'
+                      : client.active
+                      ? 'Conversación activa'
+                      : 'Historial de conversación',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy
+                    ? null
+                    : () => context.go(
+                        '/clients/${client.personId}${widget.reports ? '?area=progress' : '/conversation'}',
+                      ),
               ),
           ],
         ),

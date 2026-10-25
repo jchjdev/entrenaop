@@ -668,7 +668,28 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
   }
 
   Future<void> _save({bool reviewAfter = false}) async {
-    if (_busy || !_catalogsReady || !_form.currentState!.validate()) return;
+    if (_busy || !_catalogsReady) return;
+    if (ProfessionalWorkspaceScope.isDesktop(context) &&
+        _mode == GuidedProgramMode.phased) {
+      final invalid = _phases
+          .where(
+            (p) =>
+                p.name.text.trim().isEmpty ||
+                p.instructions.text.trim().isEmpty,
+          )
+          .toList();
+      if (invalid.isNotEmpty) {
+        setState(() {
+          for (final p in invalid) {
+            p.metadataExpanded = true;
+            p.validationReveal++;
+          }
+        });
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) return;
+      }
+    }
+    if (!_form.currentState!.validate()) return;
     _reviewAfterSave = reviewAfter;
     FocusScope.of(context).unfocus();
     try {
@@ -936,6 +957,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                   child: ProfessionalEditorWorkspace(
                     library: _sessionLibrary(),
                     inspector: _programOutline(),
+                    footer: ProfessionalWorkspaceScope.isDesktop(context)
+                        ? _programFooter()
+                        : null,
                     child: Center(
                       child: ConstrainedBox(
                         constraints: ProfessionalWorkspaceScope.pageConstraints(
@@ -1078,7 +1102,10 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                                   ),
                                 ],
                               ),
-                              if (_error != null)
+                              if (_error != null &&
+                                  !ProfessionalWorkspaceScope.isDesktop(
+                                    context,
+                                  ))
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
@@ -1098,30 +1125,10 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                                   child: const Text('Reintentar carga'),
                                 ),
                               const SizedBox(height: 16),
-                              if (!widget.adapter.professional)
-                                OutlinedButton.icon(
-                                  onPressed: _busy || !_catalogsReady
-                                      ? null
-                                      : () => _save(reviewAfter: true),
-                                  icon: const Icon(Icons.visibility_outlined),
-                                  label: const Text('Guardar y revisar'),
-                                ),
-                              const SizedBox(height: 12),
-                              FilledButton.icon(
-                                onPressed: _busy || !_catalogsReady
-                                    ? null
-                                    : _save,
-                                icon: const Icon(Icons.save_outlined),
-                                label: Text(
-                                  _busy
-                                      ? 'Guardando…'
-                                      : widget.adapter.professional
-                                      ? 'Guardar programa privado'
-                                      : _checkpoint == null
-                                      ? 'Guardar borrador'
-                                      : 'Guardar en catálogo',
-                                ),
-                              ),
+                              if (!ProfessionalWorkspaceScope.isDesktop(
+                                context,
+                              ))
+                                _programActions(),
                             ],
                           ),
                         ),
@@ -1164,6 +1171,51 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       !_sessionWorkspaceOpen &&
       _finalAttempt == null &&
       _catalogsReady;
+
+  Widget _programActions() => Wrap(
+    spacing: 12,
+    runSpacing: 8,
+    alignment: WrapAlignment.end,
+    children: [
+      if (!widget.adapter.professional)
+        OutlinedButton.icon(
+          onPressed: _busy || !_catalogsReady
+              ? null
+              : () => _save(reviewAfter: true),
+          icon: const Icon(Icons.visibility_outlined),
+          label: const Text('Guardar y revisar'),
+        ),
+      FilledButton.icon(
+        onPressed: _busy || !_catalogsReady ? null : _save,
+        icon: const Icon(Icons.save_outlined),
+        label: Text(
+          _busy
+              ? 'Guardando…'
+              : widget.adapter.professional
+              ? 'Guardar programa privado'
+              : _checkpoint == null
+              ? 'Guardar borrador'
+              : 'Guardar en catálogo',
+        ),
+      ),
+    ],
+  );
+
+  Widget _programFooter() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (_error != null)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            _error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
+      _programActions(),
+    ],
+  );
 
   Widget _sessionLibrary() => ProfessionalLibraryPane<ProgramSessionSummary>(
     title: widget.adapter.professional
@@ -1447,6 +1499,42 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       ),
     ],
   );
+  Widget _phaseConfiguration(_PhaseFields p) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final name = _field(p.name, 'Nombre de la fase', required: true);
+          final weeks = _field(
+            p.weeks,
+            'Duración orientativa (semanas)',
+            numeric: true,
+            required: true,
+          );
+          return constraints.maxWidth >= 650
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: name),
+                    const SizedBox(width: 16),
+                    SizedBox(width: 220, child: weeks),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [name, weeks],
+                );
+        },
+      ),
+      _field(
+        p.instructions,
+        'Indicaciones y condiciones de avance',
+        lines: 3,
+        required: true,
+      ),
+    ],
+  );
+
   Widget _phaseCard(_PhaseFields p, int index, {Widget? handle}) => Card(
     key: p.anchor,
     child: Padding(
@@ -1487,40 +1575,22 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                   ),
               ],
             ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final name = _field(
-                  p.name,
-                  'Nombre de la fase',
-                  required: true,
-                );
-                final weeks = _field(
-                  p.weeks,
-                  'Duración orientativa (semanas)',
-                  numeric: true,
-                  required: true,
-                );
-                return constraints.maxWidth >= 650
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: name),
-                          const SizedBox(width: 16),
-                          SizedBox(width: 220, child: weeks),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [name, weeks],
-                      );
-              },
-            ),
-            _field(
-              p.instructions,
-              'Indicaciones y condiciones de avance',
-              lines: 3,
-              required: true,
-            ),
+            if (ProfessionalWorkspaceScope.isDesktop(context))
+              ExpansionTile(
+                key: ValueKey(
+                  'phase-metadata-${p.phaseId}-${p.validationReveal}',
+                ),
+                maintainState: true,
+                tilePadding: EdgeInsets.zero,
+                initiallyExpanded:
+                    p.metadataExpanded ?? p.instructions.text.trim().isEmpty,
+                onExpansionChanged: (value) => p.metadataExpanded = value,
+                title: const Text('Configurar fase'),
+                subtitle: Text('${p.name.text} · ${p.weeks.text} semanas'),
+                children: [_phaseConfiguration(p)],
+              )
+            else
+              _phaseConfiguration(p),
           ] else
             Text(
               'Sesiones del programa',
@@ -1689,6 +1759,8 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     final source = _sessions.where((item) => item.id == s.id).firstOrNull;
     final hasWarmup = source?.hasWarmup == true;
     final supportsRest = source?.supportsAdjustableRest == true;
+    final expanded =
+        s.contentExpanded ?? !ProfessionalWorkspaceScope.isDesktop(context);
     return Card(
       key: ValueKey(s),
       child: Padding(
@@ -1812,14 +1884,10 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 ),
                 OutlinedButton.icon(
                   onPressed: () => setState(() {
-                    s.contentExpanded = !s.contentExpanded;
+                    s.contentExpanded = !expanded;
                   }),
-                  icon: Icon(
-                    s.contentExpanded ? Icons.expand_less : Icons.expand_more,
-                  ),
-                  label: Text(
-                    s.contentExpanded ? 'Ocultar contenido' : 'Ver contenido',
-                  ),
+                  icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                  label: Text(expanded ? 'Ocultar contenido' : 'Ver contenido'),
                 ),
               ],
             ),
@@ -1830,7 +1898,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               )
             else
-              _sessionContent(s.id, collapsed: !s.contentExpanded),
+              _sessionContent(s.id, collapsed: !expanded),
             if (!widget.adapter.professional)
               ExpansionTile(
                 initiallyExpanded: s.settingsExpanded,
@@ -2046,7 +2114,7 @@ class _SessionFields {
     'maximum': maximum.text,
   };
   String? warmup;
-  bool contentExpanded = true;
+  bool? contentExpanded;
   bool settingsExpanded = false;
   bool adjustable = false;
   final minimum = TextEditingController(text: '60'),
@@ -2076,6 +2144,8 @@ class _SessionFields {
 class _PhaseFields {
   _PhaseFields({String? phaseId}) : phaseId = phaseId ?? newGuidedWorkId();
   final anchor = GlobalKey();
+  bool? metadataExpanded;
+  int validationReveal = 0;
   final String phaseId;
   final sessionWorks = <String, Map<String, dynamic>>{};
   factory _PhaseFields.fromPhase(GuidedPhase p) => _PhaseFields()

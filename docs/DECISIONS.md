@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**TRN-030 · cierre visual de creadores y pantallas · 25/10/2026:** Javier pide
+terminar la revisión de todas las pantallas actuales de Trainer y ADMIN, con
+prioridad en los creadores compartidos. En escritorio, fuerza y carrera editan
+las propiedades de la selección en un panel lateral; guardar queda fijo al pie.
+Programas muestra fases y recetas resumidas, desplegables al trabajar sobre ellas;
+la validación debe revelar un campo obligatorio aunque su fase esté plegada.
+El creador de ejercicios presenta medios y ficha en dos columnas. La composición
+se adapta al ancho y conserva datos, versiones, borradores y alternativas al
+arrastre. No supone activar cobros/push ni cerrar funciones futuras de los 16
+puntos. [Matriz de pantallas y evidencia](TRAINER_DESKTOP_2026_10_25.md).
+
+
 **TRN-030 · precisión visual del 25/10/2026:** Javier confirma que el acabado
 del portal debe acercarse a la preview aprobada, además de compartir su
 estructura. Tema de escritorio acotado a los portales: superficies planas,

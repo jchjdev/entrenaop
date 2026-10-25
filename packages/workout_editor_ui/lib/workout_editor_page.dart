@@ -105,6 +105,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   final _groupBreaks = <_Segment>{};
   final _blocks = <_StrengthBlock>[_StrengthBlock()];
   _StrengthBlock? _expandedStrengthBlock;
+  _Exercise? _selectedStrengthExercise;
   List<WorkoutEditorExercise> _catalog = const [];
   bool _running = true;
   bool _busy = false;
@@ -1010,143 +1011,260 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ),
         );
 
-  Widget _editorContent() {
-    final children = <Widget>[
-      Text(
-        widget.heading,
-        style: widget.embedded
-            ? Theme.of(context).textTheme.titleLarge
-            : Theme.of(context).textTheme.headlineMedium,
-      ),
-      const SizedBox(height: 8),
-      Text(widget.instructions),
-      const SizedBox(height: 24),
-      if (_work != null) _workStatus(),
-      TextField(
-        key: const ValueKey('workout-name'),
-        controller: _name,
-        maxLength: 80,
-        decoration: const InputDecoration(labelText: 'Nombre de la sesión'),
-      ),
-      const SizedBox(height: 12),
-      TextField(
-        controller: _description,
-        maxLength: 500,
-        maxLines: 2,
-        decoration: const InputDecoration(labelText: 'Indicaciones (opcional)'),
-      ),
-      const SizedBox(height: 12),
-      if (!widget.warmup && widget.fixedRunningMode == null)
-        SegmentedButton<bool>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: true, label: Text('Carrera')),
-            ButtonSegment(value: false, label: Text('Fuerza')),
-          ],
-          selected: {_running},
-          onSelectionChanged: (selection) =>
-              setState(() => _running = selection.first),
+  Widget _saveButton() => FilledButton.icon(
+    onPressed: _busy ? null : _save,
+    icon: const Icon(Icons.save_outlined),
+    label: Text(_busy ? 'Guardando…' : widget.saveLabel),
+  );
+
+  Widget _editorContent() => LayoutBuilder(
+    builder: (context, constraints) {
+      final desktop =
+          ProfessionalWorkspaceScope.isDesktop(context) &&
+          constraints.hasBoundedHeight;
+      final properties = ProfessionalEditorWorkspace.hasInspector(
+        context,
+        constraints,
+      );
+      final embeddedFlow =
+          widget.embedded && (!desktop || constraints.maxWidth < 900);
+      final children = <Widget>[
+        if (!desktop) ...[
+          Text(
+            widget.heading,
+            style: widget.embedded
+                ? Theme.of(context).textTheme.titleLarge
+                : Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(widget.instructions),
+          const SizedBox(height: 24),
+        ],
+        if (_work != null) _workStatus(),
+        TextField(
+          key: const ValueKey('workout-name'),
+          controller: _name,
+          maxLength: 80,
+          decoration: const InputDecoration(labelText: 'Nombre de la sesión'),
         ),
-      ?widget.additionalFields,
-      const SizedBox(height: 20),
-      if (_running)
-        _catalogDrop<RunningStepKind>(
-          _runningEditor(),
-          (_) => _runningCount < 40,
-          _insertRunningKind,
-          'Soltar para añadir un tramo',
-        )
-      else
-        _strengthEditor(),
-      if (_error != null && _invalidSegment == null) ...[
-        const SizedBox(height: 16),
-        Text(
-          _error!,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
-      ],
-      const SizedBox(height: 24),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: FilledButton.icon(
-          onPressed: _busy ? null : _save,
-          icon: const Icon(Icons.save_outlined),
-          label: Text(_busy ? 'Guardando…' : widget.saveLabel),
-        ),
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final embeddedFlow =
-            widget.embedded &&
-            (!ProfessionalWorkspaceScope.isDesktop(context) ||
-                !constraints.hasBoundedHeight ||
-                constraints.maxWidth < 1000);
-        final content = Center(
-          child: ConstrainedBox(
-            constraints: ProfessionalWorkspaceScope.pageConstraints(
-              context,
-              maxWidth: 900,
+        const SizedBox(height: 12),
+        if (desktop)
+          ExpansionTile(
+            key: const PageStorageKey('workout-metadata'),
+            maintainState: true,
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Indicaciones y duración'),
+            children: [
+              TextField(
+                controller: _description,
+                maxLength: 500,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Indicaciones (opcional)',
+                ),
+              ),
+              if (!_running)
+                _field(_duration, 'Duración estimada (min, opcional)', 265),
+            ],
+          )
+        else ...[
+          TextField(
+            controller: _description,
+            maxLength: 500,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Indicaciones (opcional)',
             ),
-            child: embeddedFlow
-                ? Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: children,
-                    ),
-                  )
-                : ListView(
-                    key: const ValueKey('professional-editor-scroll'),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: const EdgeInsets.all(24),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (!widget.warmup && widget.fixedRunningMode == null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<bool>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(value: true, label: Text('Carrera')),
+                ButtonSegment(value: false, label: Text('Fuerza')),
+              ],
+              selected: {_running},
+              onSelectionChanged: (selection) =>
+                  setState(() => _running = selection.first),
+            ),
+          ),
+        ?widget.additionalFields,
+        const SizedBox(height: 20),
+        if (_running)
+          _catalogDrop<RunningStepKind>(
+            _runningEditor(properties: properties),
+            (_) => _runningCount < 40,
+            _insertRunningKind,
+            'Soltar para añadir un tramo',
+          )
+        else
+          _strengthEditor(properties: properties),
+        if (_error != null && _invalidSegment == null) ...[
+          const SizedBox(height: 16),
+          Text(
+            _error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
+        const SizedBox(height: 24),
+        if (!desktop)
+          Align(alignment: Alignment.centerLeft, child: _saveButton()),
+      ];
+      final content = Center(
+        child: ConstrainedBox(
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 900,
+          ),
+          child: embeddedFlow
+              ? Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: children,
                   ),
+                )
+              : ListView(
+                  key: const ValueKey('professional-editor-scroll'),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(20),
+                  children: children,
+                ),
+        ),
+      );
+      return embeddedFlow
+          ? content
+          : ProfessionalEditorWorkspace(
+              library: _running ? _runningLibrary() : _exerciseLibrary(),
+              inspector: _recipeInspector(),
+              footer: desktop
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _error ?? 'Los cambios pertenecen al borrador.',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: _error == null
+                                      ? null
+                                      : Theme.of(context).colorScheme.error,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        _saveButton(),
+                      ],
+                    )
+                  : null,
+              child: content,
+            );
+    },
+  );
+
+  Widget _recipeInspector() {
+    if (_running) {
+      final groups = _runningGroups;
+      final row = groups.indexWhere(_runningGroupExpanded);
+      return ProfessionalInspector(
+        title: 'Propiedades del tramo',
+        subtitle: row < 0
+            ? 'Selecciona un tramo del lienzo.'
+            : '${row + 1}. ${(_segments[groups[row].first].kind ?? RunningStepKind.run).label}',
+        children: [if (row >= 0) _runningGroupEditor(groups[row], row)],
+      );
+    }
+    final block = _blocks.where((b) => b == _expandedStrengthBlock).firstOrNull;
+    final item = block == null
+        ? null
+        : block.exercises
+                  .where((e) => e == _selectedStrengthExercise)
+                  .firstOrNull ??
+              block.exercises.firstOrNull;
+    return ProfessionalInspector(
+      title: 'Propiedades del ejercicio',
+      subtitle: block == null
+          ? 'Selecciona un bloque o ejercicio del lienzo.'
+          : block.name.text,
+      children: [
+        if (block != null) ...[
+          ExpansionTile(
+            key: ValueKey('block-properties-${identityHashCode(block)}'),
+            tilePadding: EdgeInsets.zero,
+            maintainState: true,
+            title: const Text('Configuración del bloque'),
+            children: [_strengthSettings(block)],
           ),
-        );
-        return embeddedFlow
-            ? content
-            : ProfessionalEditorWorkspace(
-                library: _running ? _runningLibrary() : _exerciseLibrary(),
-                inspector: _recipeInspector(),
-                child: content,
-              );
-      },
+          if (item != null)
+            _strengthExercise(block, block.exercises.indexOf(item)),
+        ],
+      ],
     );
   }
 
-  Widget _recipeInspector() => ListView(
-    padding: const EdgeInsets.all(20),
-    children: [
-      Text(
-        'Resumen de la receta',
-        style: Theme.of(context).textTheme.titleMedium,
+  Widget _professionalExerciseRow(
+    _StrengthBlock block,
+    int index,
+    Widget handle,
+  ) {
+    final item = block.exercises[index];
+    final exercise = _catalog.where((e) => e.id == item.exerciseId).firstOrNull;
+    final selected =
+        _expandedStrengthBlock == block &&
+        (item == _selectedStrengthExercise ||
+            (!block.exercises.contains(_selectedStrengthExercise) &&
+                index == 0));
+    final detail = [
+      if (block.format == WorkoutBlockFormat.straightSets)
+        '${item.count.text} series'
+      else if (block.format == WorkoutBlockFormat.amrap)
+        '${block.cap.text} de trabajo'
+      else if (block.format == WorkoutBlockFormat.tabata)
+        '20 s / 10 s'
+      else
+        '${block.rounds.text} rondas',
+      if (item.targetFor(block.format).text.isNotEmpty)
+        'Objetivo: ${item.targetFor(block.format).text}',
+      if (item.load.text.isNotEmpty) 'Carga: ${item.load.text}',
+      if (item.customSets) 'Ajustes por serie',
+    ].join(' · ');
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: BorderSide(
+          color: selected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).dividerColor,
+        ),
       ),
-      const SizedBox(height: 16),
-      Text(
-        _running
-            ? 'Carrera · $_runningCount tramos'
-            : 'Fuerza · ${_blocks.length} bloques',
-      ),
-      if (_runningEstimate() case final estimate? when _running) Text(estimate),
-      const SizedBox(height: 16),
-      const Text(
-        'Arrastra desde la biblioteca o utiliza los botones de añadir. Los cambios se guardan con la sesión.',
-      ),
-      const SizedBox(height: 16),
-      if (!_running)
-        for (var i = 0; i < _blocks.length; i++)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text('${i + 1}. ${_blocks[i].name.text}'),
-            subtitle: Text(
-              '${_blocks[i].exercises.length} posiciones · ${_strengthFormatName(_blocks[i].format)}',
+      child: Row(
+        children: [
+          handle,
+          Expanded(
+            child: ListTile(
+              key: ValueKey('exercise-properties-${identityHashCode(item)}'),
+              selected: selected,
+              title: Text(exercise?.name ?? 'Elegir ejercicio'),
+              subtitle: Text(detail),
+              trailing: const Icon(Icons.tune, size: 18),
+              onTap: () {
+                FocusScope.of(context).unfocus();
+                setState(() {
+                  _expandedStrengthBlock = block;
+                  _selectedStrengthExercise = item;
+                });
+              },
             ),
-            onTap: () => setState(() => _expandedStrengthBlock = _blocks[i]),
           ),
-    ],
-  );
+        ],
+      ),
+    );
+  }
 
   Widget _exerciseLibrary() => ProfessionalLibraryPane<WorkoutEditorExercise>(
     title: 'Biblioteca de ejercicios',
@@ -1218,8 +1336,11 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       if (slot != null) {
         // Completar un hueco conserva las series, cargas y variantes ya escritas.
         slot.exerciseId = exercise.id;
+        _selectedStrengthExercise = slot;
       } else {
-        block.exercises.add(_Exercise()..exerciseId = exercise.id);
+        final next = _Exercise()..exerciseId = exercise.id;
+        block.exercises.add(next);
+        _selectedStrengthExercise = next;
       }
       _expandedStrengthBlock = block;
     });
@@ -1797,7 +1918,53 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     );
   }
 
-  Widget _runningEditor() {
+  Widget _runningGroupEditor(RunningEditorGroup group, int row) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (group.paired || group.work.length > 1)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            key: ValueKey('running-repeat-$row'),
+            onPressed: () => _repeatRunningRow(group),
+            icon: const Icon(Icons.repeat),
+            label: Text(
+              '${group.repetitions} ${group.repetitions == 1 ? 'vez' : 'veces'}',
+            ),
+          ),
+        )
+      else
+        _field(
+          _segments[group.first].count,
+          'Veces',
+          110,
+          onChanged: (_) => setState(() {}),
+        ),
+      const SizedBox(height: 12),
+      _runningFields(group),
+      if (_invalidSegment != null &&
+          group.first <= _segments.indexOf(_invalidSegment!) &&
+          group.last >= _segments.indexOf(_invalidSegment!))
+        Text(
+          _error ?? 'Revisa este tramo.',
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      const SizedBox(height: 12),
+      Align(
+        alignment: Alignment.centerRight,
+        child: TextButton.icon(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            setState(() => _expandedSegment = null);
+          },
+          icon: const Icon(Icons.check),
+          label: const Text('Listo'),
+        ),
+      ),
+    ],
+  );
+
+  Widget _runningEditor({bool properties = false}) {
     final groups = _runningGroups;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1833,7 +2000,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
             color: _runningColor(
               _segments[groups[row].first].kind ?? RunningStepKind.run,
             ),
-            expanded: _runningGroupExpanded(groups[row]),
+            expanded: !properties && _runningGroupExpanded(groups[row]),
+            propertiesInPanel: properties,
+            selected: properties && _runningGroupExpanded(groups[row]),
             onToggle: () {
               FocusScope.of(context).unfocus();
               setState(
@@ -1891,53 +2060,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                 ),
               ],
             ),
-            editor: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (groups[row].paired || groups[row].work.length > 1)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: OutlinedButton.icon(
-                      key: ValueKey('running-repeat-$row'),
-                      onPressed: () => _repeatRunningRow(groups[row]),
-                      icon: const Icon(Icons.repeat),
-                      label: Text(
-                        '${groups[row].repetitions} ${groups[row].repetitions == 1 ? 'vez' : 'veces'}',
-                      ),
-                    ),
-                  )
-                else
-                  _field(
-                    _segments[groups[row].first].count,
-                    'Veces',
-                    110,
-                    onChanged: (_) => setState(() {}),
-                  ),
-                const SizedBox(height: 12),
-                _runningFields(groups[row]),
-                if (_invalidSegment != null &&
-                    groups[row].first <= _segments.indexOf(_invalidSegment!) &&
-                    groups[row].last >= _segments.indexOf(_invalidSegment!))
-                  Text(
-                    _error ?? 'Revisa este tramo.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
-                      setState(() => _expandedSegment = null);
-                    },
-                    icon: const Icon(Icons.check),
-                    label: const Text('Listo'),
-                  ),
-                ),
-              ],
-            ),
+            editor: _runningGroupEditor(groups[row], row),
           ),
         ),
         const SizedBox(height: 8),
@@ -2033,7 +2156,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     setState(() => _blocks.insert(to, _blocks.removeAt(from)));
   }
 
-  Widget _strengthCard(int index, {Widget? handle, bool feedback = false}) {
+  Widget _strengthCard(
+    int index, {
+    Widget? handle,
+    bool feedback = false,
+    bool properties = false,
+  }) {
     final block = _blocks[index];
     return WorkoutEditorCard(
       key: ValueKey(block),
@@ -2095,11 +2223,13 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   ),
               ],
             ),
-      editor: feedback ? const SizedBox.shrink() : _strengthBlock(index, block),
+      editor: feedback
+          ? const SizedBox.shrink()
+          : _strengthBlock(index, block, properties: properties),
     );
   }
 
-  Widget _strengthEditor() => Column(
+  Widget _strengthEditor({bool properties = false}) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
@@ -2119,7 +2249,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         onReorder: _reorderStrength,
         feedbackBuilder: (_, index) => _strengthCard(index, feedback: true),
         itemBuilder: (_, index, handle) => _catalogDrop<WorkoutEditorExercise>(
-          _strengthCard(index, handle: handle),
+          _strengthCard(index, handle: handle, properties: properties),
           (_) => _canReceiveExercise(_blocks[index]),
           (exercise) => _insertCatalogExercise(_blocks[index], exercise),
           'Soltar para añadir al bloque ${index + 1}',
@@ -2138,24 +2268,20 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         label: const Text('Añadir bloque'),
       ),
       const SizedBox(height: 12),
-      _field(_duration, 'Duración estimada (min, opcional)', 265),
+      if (!ProfessionalWorkspaceScope.isDesktop(context))
+        _field(_duration, 'Duración estimada (min, opcional)', 265),
     ],
   );
 
-  Widget _strengthBlock(int index, _StrengthBlock block) {
+  Widget _strengthSettings(_StrengthBlock block) {
     final format = block.format;
     final usesRounds =
         format == WorkoutBlockFormat.superset ||
         format == WorkoutBlockFormat.circuit ||
         format == WorkoutBlockFormat.intervals ||
         format == WorkoutBlockFormat.emom;
-    final canAddExercise =
-        format != WorkoutBlockFormat.tabata &&
-        format != WorkoutBlockFormat.intervals &&
-        format != WorkoutBlockFormat.superset &&
-        block.exercises.length < 20;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Wrap(
           spacing: 14,
@@ -2231,6 +2357,25 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           const Text(
             'AMRAP necesita un objetivo de repeticiones. Los tiempos y distancias anteriores se conservan mientras editas; no se convierten en repeticiones.',
           ),
+      ],
+    );
+  }
+
+  Widget _strengthBlock(
+    int index,
+    _StrengthBlock block, {
+    bool properties = false,
+  }) {
+    final format = block.format;
+    final canAddExercise =
+        format != WorkoutBlockFormat.tabata &&
+        format != WorkoutBlockFormat.intervals &&
+        format != WorkoutBlockFormat.superset &&
+        block.exercises.length < 20;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!properties) _strengthSettings(block),
         const SizedBox(height: 12),
         WorkoutReorderableCards(
           key: ValueKey(block),
@@ -2256,12 +2401,19 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           itemBuilder: (_, position, handle) => Padding(
             key: ValueKey(block.exercises[position]),
             padding: const EdgeInsets.only(bottom: 12),
-            child: _strengthExercise(block, position, handle: handle),
+            child: properties
+                ? _professionalExerciseRow(block, position, handle)
+                : _strengthExercise(block, position, handle: handle),
           ),
         ),
         if (canAddExercise)
           TextButton.icon(
-            onPressed: () => setState(() => block.exercises.add(_Exercise())),
+            onPressed: () => setState(() {
+              final exercise = _Exercise();
+              block.exercises.add(exercise);
+              _selectedStrengthExercise = exercise;
+              _expandedStrengthBlock = block;
+            }),
             icon: const Icon(Icons.add),
             label: const Text('Añadir ejercicio o estación'),
           ),
@@ -2282,6 +2434,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ? block.exercises.length > 8
         : block.exercises.length > 1;
     return Container(
+      // Cada selección monta sus campos con los valores de su propia posición.
+      key: ValueKey(item),
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),

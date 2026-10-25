@@ -12,6 +12,14 @@ y recurso al navegar. No cambia RPC, RLS ni el esquema.
 `ProfessionalAppearance` acota los tokens de escritorio al marco y sus editores;
 las superficies del deportista no heredan esa densidad. `EntrenaCard` conserva
 portadas y acciones al aplicar su variante plana profesional.
+El lienzo y las propiedades del creador usan los mismos modelos y controladores;
+no hay dos formularios montados para una posición. La selección tiene identidad
+propia para no reutilizar los valores internos de otra posición. Las fases
+plegadas conservan sus campos y la validación las revela antes de guardar.
+`ExerciseForm` comparte ficha, medios y operación entre ambos portales; el
+contexto profesional se inyecta también al abrirlo sobre el Navigator raíz.
+La conversación conserva su UUID de reintento y fija el compositor al pie solo
+en escritorio profesional.
 [Contrato y estado de entrega](TRAINER_DESKTOP_2026_10_25.md).
 
 **TRN-029 · 24/10/2026:** Los trabajos contextuales reutilizan checkpoints y

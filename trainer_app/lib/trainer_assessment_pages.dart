@@ -131,16 +131,15 @@ class _TrainerAssessmentsPageState extends State<TrainerAssessmentsPage> {
           minCardWidth: 340,
           children: [
             for (final item in _items)
-              Card(
-                child: ListTile(
-                  title: Text(item.title),
-                  subtitle: Text(
-                    '${item.tests.length} pruebas · versión ${item.version}',
-                  ),
-                  trailing: TextButton(
-                    onPressed: !_enabled ? null : () => _edit(item),
-                    child: const Text('Revisar'),
-                  ),
+              ProfessionalResourceCard(
+                leading: const ProfessionalResourceIcon(Icons.timer_outlined),
+                title: Text(item.title),
+                subtitle: Text(
+                  '${item.tests.length} pruebas · versión ${item.version}',
+                ),
+                trailing: TextButton(
+                  onPressed: !_enabled ? null : () => _edit(item),
+                  child: const Text('Revisar'),
                 ),
               ),
           ],
@@ -345,6 +344,25 @@ class _TrainerAssessmentEditorPageState
               : 'Revisar batería',
         ),
       ),
+      bottomNavigationBar: ProfessionalWorkspaceScope.isDesktop(context)
+          ? Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  child: Align(
+                    heightFactor: 1,
+                    alignment: Alignment.centerRight,
+                    child: _saveAction(),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: Center(
         child: ConstrainedBox(
           constraints: ProfessionalWorkspaceScope.pageConstraints(
@@ -387,7 +405,13 @@ class _TrainerAssessmentEditorPageState
                         ),
                         onChanged: (_) => setState(() => _dirty = true),
                       ),
-                      for (var i = 0; i < _tests.length; i++) _protocol(i),
+                      ProfessionalCatalogGrid(
+                        minCardWidth: 440,
+                        maxColumns: 2,
+                        children: [
+                          for (var i = 0; i < _tests.length; i++) _protocol(i),
+                        ],
+                      ),
                       Wrap(
                         spacing: 8,
                         children: [
@@ -414,27 +438,28 @@ class _TrainerAssessmentEditorPageState
                 const Text(
                   'Reintenta para confirmar exactamente la batería y revisión enviadas.',
                 ),
-              FilledButton(
-                onPressed:
-                    _busy ||
-                        _loading ||
-                        (widget.assessmentId != null && _initial == null)
-                    ? null
-                    : _save,
-                child: Text(
-                  _busy
-                      ? 'Guardando…'
-                      : _pending == null
-                      ? 'Guardar versión'
-                      : 'Reintentar el mismo guardado',
-                ),
-              ),
+              if (!ProfessionalWorkspaceScope.isDesktop(context))
+                Align(alignment: Alignment.centerRight, child: _saveAction()),
             ],
           ),
         ),
       ),
     ),
   );
+  Widget _saveAction() => FilledButton(
+    onPressed:
+        _busy || _loading || (widget.assessmentId != null && _initial == null)
+        ? null
+        : _save,
+    child: Text(
+      _busy
+          ? 'Guardando…'
+          : _pending == null
+          ? 'Guardar versión'
+          : 'Reintentar el mismo guardado',
+    ),
+  );
+
   Widget _protocol(int index) {
     final t = _tests[index];
     return Card(

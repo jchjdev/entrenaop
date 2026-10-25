@@ -13,5 +13,7 @@ class RunningStepCard extends WorkoutEditorCard {
     required super.menu,
     required super.editor,
     super.dragHandle,
+    super.propertiesInPanel,
+    super.selected,
   }) : super(headerKeyPrefix: 'running-step-header');
 }

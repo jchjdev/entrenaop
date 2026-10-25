@@ -14,13 +14,15 @@ class WorkoutEditorCard extends StatelessWidget {
     required this.menu,
     required this.editor,
     this.dragHandle,
+    this.propertiesInPanel = false,
+    this.selected = false,
     this.headerKeyPrefix = 'workout-card-header',
   });
 
   final int index;
   final String title, summary;
   final Color color;
-  final bool expanded;
+  final bool expanded, propertiesInPanel, selected;
   final VoidCallback onToggle;
   final Widget menu, editor;
   final Widget? dragHandle;
@@ -61,14 +63,25 @@ class WorkoutEditorCard extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   onPressed: onToggle,
-                  tooltip: expanded ? 'Plegar' : 'Desplegar',
-                  icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                  tooltip: propertiesInPanel
+                      ? 'Editar propiedades'
+                      : expanded
+                      ? 'Plegar'
+                      : 'Desplegar',
+                  icon: Icon(
+                    propertiesInPanel
+                        ? Icons.tune
+                        : expanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
+                  ),
                 ),
                 menu,
               ],
             ),
             Semantics(
-              expanded: expanded,
+              expanded: propertiesInPanel ? null : expanded,
+              selected: propertiesInPanel ? selected : null,
               child: InkWell(
                 key: ValueKey('$headerKeyPrefix-$index'),
                 onTap: onToggle,
@@ -86,7 +99,8 @@ class WorkoutEditorCard extends StatelessWidget {
           ?dragHandle,
           Expanded(
             child: Semantics(
-              expanded: expanded,
+              expanded: propertiesInPanel ? null : expanded,
+              selected: propertiesInPanel ? selected : null,
               child: InkWell(
                 key: ValueKey('$headerKeyPrefix-$index'),
                 onTap: onToggle,
@@ -105,7 +119,13 @@ class WorkoutEditorCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(child: _text(context)),
                       const SizedBox(width: 4),
-                      Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                      Icon(
+                        propertiesInPanel
+                            ? Icons.tune
+                            : expanded
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                      ),
                     ],
                   ),
                 ),
@@ -122,6 +142,12 @@ class WorkoutEditorCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.symmetric(vertical: 4),
     clipBehavior: Clip.antiAlias,
+    shape: selected
+        ? RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: color),
+          )
+        : null,
     child: DecoratedBox(
       decoration: BoxDecoration(
         border: Border(left: BorderSide(color: color, width: 4)),
