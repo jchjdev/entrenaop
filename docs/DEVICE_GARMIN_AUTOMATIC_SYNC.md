@@ -5,6 +5,37 @@ entrenador y del algoritmo, exclusivamente en desarrollo. Se reutiliza la
 prescripción independiente del proveedor y la conexión vinculada a la cuenta.
 No se modifican los RPC, pantallas o contratos de publicación de Trainer.
 
+## Revisión operativa · 25/10/2026
+
+La cuenta de ensayo consultada en Dev conserva conexión y permiso Training,
+pero no tiene una preferencia de sincronización automática registrada. El
+trabajador global está habilitado y cron activo; esto no activa el consentimiento
+de una cuenta. La entrega puntual de fuerza aceptada anteriormente no constituye
+una autorización automática para las siguientes asignaciones.
+
+Recorrido vigente: publicar una receta → asignarla al alumno con fecha → el
+alumno activa «Sincronización automática» en Perfil → Conexión con Garmin →
+Sesiones en Garmin → el servidor procesa las citas compatibles de hoy y los
+próximos catorce días → Garmin confirma su calendario → Connect sincroniza
+con el reloj. Una receta guardada sin cita no inicia ese recorrido. Las citas
+pasadas no se recuperan al activar el automático. «Enviado» acredita Garmin,
+no una recepción confirmada por el dispositivo físico.
+
+La fuerza ya participa en el automático mediante INT-013, con sus capacidades
+actuales: series convencionales de banca con barra, flexiones y dominadas
+pronadas identificadas por el catálogo. No equivale a exportar cualquier ejercicio
+o formato del creador; superseries, circuitos, EMOM y AMRAP siguen fuera de esta
+traducción. [Contrato de fuerza](DEVICE_GARMIN_TRAINING.md#fuerza--recorrido-solicitado-int-013).
+
+Revisión sin escrituras de preferencias, citas o resultados: se contrastan
+conexión, derechos, preferencia, recibos, cola y cron de Dev. Pasan cuarenta
+pruebas existentes de servidor sobre envío, sincronización y fuerza y diez
+pruebas del consumidor de entregas. No acredita una nueva llegada al reloj.
+La identificación de la sesión comunicada por Javier y la prueba física de una
+cita futura con el automático activado siguen pendientes. La interfaz actual
+solo ofrece el interruptor y los contadores agregados, sin diagnóstico por cita
+en Trainer; esa limitación de visibilidad no debe confundirse con un envío hecho.
+
 ## Comportamiento
 
 La cuenta activa «Sincronización automática» en Perfil → Garmin → Carreras en
@@ -16,7 +47,8 @@ Desactivarla detiene nuevos pasos externos; no equivale a cancelar la agenda.
 La primera entrega Dev usa una ventana móvil de catorce días, contando desde
 hoy en Europe/Madrid. Son candidatas las citas `planned` sin ejecución, de
 origen `coach` o `algorithm`, con receta publicada y versión coherente. Las
-sesiones de fuerza o de biblioteca no se exportan por esta vertical. La receta
+sesiones de biblioteca no se exportan por esta vertical. INT-013 incorpora
+después la fuerza convencional compatible descrita arriba. La receta
 se normaliza y se comprueban sus capacidades antes de crear un objeto remoto.
 
 El conciliador revisa transacciones confirmadas, sin triggers HTTP ni cambios
