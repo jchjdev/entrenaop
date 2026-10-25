@@ -37,6 +37,18 @@ class TrainerWorkout {
   final DateTime createdAt;
 }
 
+enum TrainerAssignmentVisibility {
+  current('Habitual'),
+  withdrawn('Retiradas'),
+  archived('Archivadas'),
+  all('Todas');
+
+  const TrainerAssignmentVisibility(this.label);
+  final String label;
+}
+
+enum TrainerAssignmentLifecycleAction { archive, restore, delete }
+
 class TrainerAssignment {
   TrainerAssignment.fromJson(WorkoutJson row)
     : id = row['id'] as String,
@@ -49,11 +61,31 @@ class TrainerAssignment {
       executionId = row['execution_id'] as String?,
       note = row['note'] as String?,
       revision = (row['planning_revision'] as num?)?.toInt() ?? 0,
-      resultRevision = (row['result_revision'] as num?)?.toInt() ?? 0;
+      resultRevision = (row['result_revision'] as num?)?.toInt() ?? 0,
+      archiveRevision = (row['archive_revision'] as num?)?.toInt() ?? 0,
+      archivedAt = row['archived_at'] == null
+          ? null
+          : DateTime.parse(row['archived_at'] as String),
+      deleteBlockReason = row['delete_block_reason'] as String?;
   final String id, templateId, name, status;
   final String? executionId, note;
   final int version, revision, resultRevision;
   final DateTime date, createdAt;
+  final DateTime? archivedAt;
+  final int archiveRevision;
+  final String? deleteBlockReason;
+  bool get archived => archivedAt != null;
+  String? get deletionExplanation =>
+      executionId != null ||
+          resultRevision > 0 ||
+          deleteBlockReason == 'results'
+      ? 'Tiene una ejecución o resultados. Puedes archivarla.'
+      : switch (deleteBlockReason) {
+          'garmin' => 'Conserva vínculos con Garmin. Puedes archivarla.',
+          'references' => 'Conserva conversaciones, vídeos u otras referencias. Puedes archivarla.',
+          null => status == 'cancelled' ? null : 'Retira primero la pauta.',
+          _ => 'Actualiza la planificación antes de continuar.',
+        };
   String get statusLabel => switch (status) {
     'planned' => 'Pendiente',
     'in_progress' => 'En curso',
@@ -86,9 +118,15 @@ abstract class TrainerWorkoutRepository {
   Future<List<TrainerAssignment>> assignments(
     String clientId, {
     TrainerAssignment? before,
+    TrainerAssignmentVisibility visibility = TrainerAssignmentVisibility.all,
   });
   Future<WorkoutJson?> result(String assignmentId);
   Future<void> cancel(String assignmentId);
+  Future<void> changeLifecycle({
+    required String operationId,
+    required TrainerAssignment assignment,
+    required TrainerAssignmentLifecycleAction action,
+  });
 }
 
 class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
@@ -222,8 +260,11 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   Future<List<TrainerAssignment>> assignments(
     String clientId, {
     TrainerAssignment? before,
+    TrainerAssignmentVisibility visibility = TrainerAssignmentVisibility.all,
   }) async =>
-      (await _rpc('list_trainer_assignments', {
+      (await _rpc('list_trainer_assignments_filtered', {
+            'p_expected_owner': userId,
+            'p_visibility': visibility.name,
             'p_client_id': clientId,
             'p_before_at': before?.createdAt.toUtc().toIso8601String(),
             'p_before_id': before?.id,
@@ -241,6 +282,21 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   @override
   Future<void> cancel(String assignmentId) async {
     await _rpc('cancel_trainer_assignment', {'p_id': assignmentId});
+  }
+
+  @override
+  Future<void> changeLifecycle({
+    required String operationId,
+    required TrainerAssignment assignment,
+    required TrainerAssignmentLifecycleAction action,
+  }) async {
+    await _rpc('change_trainer_assignment_lifecycle', {
+      'p_expected_owner': userId,
+      'p_operation_id': operationId,
+      'p_id': assignment.id,
+      'p_revision': assignment.archiveRevision,
+      'p_action': action.name,
+    });
   }
 }
 

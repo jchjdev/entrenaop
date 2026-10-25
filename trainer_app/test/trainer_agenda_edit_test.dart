@@ -1,3 +1,5 @@
+import 'package:entrenaop_trainer/trainer_workout_repository.dart';
+
 import 'dart:async';
 
 import 'package:entrena_ui/entrena_ui.dart';
@@ -33,6 +35,8 @@ class AgendaEditFixture implements TrainerAgendaRepository {
     DateTime from,
     DateTime to, {
     TrainerAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   }) async {
     calls.add((from: from, to: to, after: after?.assignment.id));
     return rows

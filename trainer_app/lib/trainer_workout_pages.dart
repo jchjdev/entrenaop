@@ -1,3 +1,5 @@
+import 'trainer_assignment_lifecycle_actions.dart';
+
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
@@ -462,6 +464,7 @@ class TrainerClientWorkoutsPage extends StatefulWidget {
 
 class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
   List<TrainerAssignment> _items = [];
+  TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
   TrainerRelation? _relation;
   bool _busy = true, _more = false, _effective = false;
   String? _error;
@@ -484,6 +487,9 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       final rows = await widget.repository.assignments(
         widget.clientId,
         before: more ? _items.last : null,
+        visibility: widget.resultsMode || widget.techniqueMode
+            ? TrainerAssignmentVisibility.all
+            : _visibility,
       );
       if (!mounted) return;
       setState(() {
@@ -542,7 +548,9 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Se retirará ${item.name} de la agenda del alumno.'),
+            Text(
+              'Se cancelará ${item.name}. Se conservará como retirada; después puedes archivarla o borrarla si no tiene datos protegidos.',
+            ),
             const SizedBox(height: 16),
             EntrenaDialogActions(
               primaryLabel: 'Volver',
@@ -670,6 +678,19 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                 : 'Todavía no has pautado sesiones a este alumno.',
           ),
         ),
+      if (!widget.techniqueMode && !widget.resultsMode)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: TrainerAssignmentVisibilityFilter(
+            value: _visibility,
+            onChanged: _busy
+                ? null
+                : (value) {
+                    setState(() => _visibility = value);
+                    _load();
+                  },
+          ),
+        ),
       ProfessionalCatalogGrid(
         minCardWidth: 400,
         maxColumns: 3,
@@ -692,11 +713,25 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                     Text(
                       '${trainerDate(item.date)} · ${item.statusLabel} · Versión ${item.version}',
                     ),
+                    if (item.archived) const Text('Archivada'),
                     if (item.note?.isNotEmpty == true) Text(item.note!),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
+                        if (!widget.techniqueMode && !widget.resultsMode)
+                          TrainerAssignmentLifecycleActions(
+                            key: ValueKey(
+                              'lifecycle-${item.id}-${item.archiveRevision}',
+                            ),
+                            assignment: item,
+                            repository: widget.repository,
+                            enabled: !_busy && _effective,
+                            onChanged: _load,
+                            onBusyChanged: (busy) {
+                              if (mounted) setState(() => _busy = busy);
+                            },
+                          ),
                         if (item.executionId != null && !widget.techniqueMode)
                           TextButton(
                             onPressed: _busy ? null : () => _result(item),

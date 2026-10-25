@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**Citas profesionales · 25/10/2026:** retirar conserva la marca; archivar la
+oculta solo en el portal del autor y permite recuperarla. Borrar definitivamente
+exige confirmación y ausencia de resultados/referencias protegidas, incluida
+Garmin. Los filtros mantienen el acceso a retiradas y archivadas sin modificar
+plantillas ni reactivar sesiones o avisos. [Contrato](TRAINER_CLIENT_PLANNING.md#archivo-y-borrado-de-asignaciones--25102026).
+
 **Avisos profesionales · 25/10/2026:** la planificación y los mensajes se agrupan
 por preparador. El alumno elige recordatorios apagados/mismo día/día anterior,
 hora, zona y descanso. Historial y lectura explícita se conservan; el servidor

@@ -127,6 +127,8 @@ class AgendaFixture extends TrainerAgendaRepository {
     DateTime from,
     DateTime to, {
     TrainerAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   }) async {
     calls.add((from: from, to: to, after: after?.assignment.id));
     if (from.month != 10) return [];

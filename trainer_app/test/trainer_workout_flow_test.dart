@@ -109,6 +109,7 @@ class WorkoutFixture extends TrainerWorkoutRepository {
   Future<List<TrainerAssignment>> assignments(
     String clientId, {
     TrainerAssignment? before,
+    TrainerAssignmentVisibility visibility = TrainerAssignmentVisibility.all,
   }) async => [
     TrainerAssignment.fromJson({
       'id': 'assignment',
@@ -126,6 +127,12 @@ class WorkoutFixture extends TrainerWorkoutRepository {
   Future<WorkoutJson?> result(String assignmentId) async => resultFixture;
   @override
   Future<void> cancel(String assignmentId) async {}
+  @override
+  Future<void> changeLifecycle({
+    required String operationId,
+    required TrainerAssignment assignment,
+    required TrainerAssignmentLifecycleAction action,
+  }) async {}
 }
 
 final resultFixture = <String, dynamic>{

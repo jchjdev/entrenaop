@@ -28,6 +28,7 @@ class PagedTechniqueWorkouts extends WorkoutFixture {
   Future<List<TrainerAssignment>> assignments(
     String clientId, {
     TrainerAssignment? before,
+    TrainerAssignmentVisibility visibility = TrainerAssignmentVisibility.all,
   }) async {
     requests.add(before);
     if (before != null) return super.assignments(clientId, before: before);

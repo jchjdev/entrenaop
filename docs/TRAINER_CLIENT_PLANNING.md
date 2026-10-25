@@ -178,23 +178,83 @@ abrir la respuesta existente, cerrar conservando la ficha y volver a Planificaci
 sin modificar respuestas ni asignaciones. No hay errores del portal; un aviso de
 conexión de una extensión del navegador queda fuera de esta corrección.
 
-## Sesiones retiradas: limitación comunicada el 25/10/2026
+## Archivo y borrado de asignaciones · 25/10/2026
 
-Javier valora conservar la señal de que una sesión fue retirada, pero necesita
-poder quitar de la vista una asignación si lo desea. Código contrastado:
-`cancel_trainer_assignment` cambia una sesión pendiente a `cancelled`; conserva
-la asignación y la cita. Trainer la muestra como «Retirada». No hay acción de
-borrado definitivo ni archivado individual de asignaciones en el portal. El
-diálogo actual dice que se retira de la agenda, aunque sigue visible, y necesita
-aclararse cuando se resuelva el recorrido.
+Javier confirma implementar archivo recuperable, filtro y borrado protegido. El
+alcance son las **citas asignadas**, no las plantillas de la biblioteca. Retirar
+cancela una pauta pendiente y conserva su tarjeta. El diálogo ahora lo explica.
 
-Propuesta pendiente, no implementada ni presentada como decisión cerrada:
-separar **Retirar** (cancelar y conservar la marca), **Archivar** (quitar una cita
-retirada de la vista habitual, recuperable desde un filtro de retiradas/archivadas)
-y cualquier borrado irreversible. Este último necesita definir protección de
-ejecuciones, resultados, versiones, notificaciones y referencias/retiradas Garmin.
-Archivar no debe borrar la plantilla de biblioteca ni contar como entrenamiento
-realizado; tampoco permite modificar una pauta de otro preparador. Falta cerrar
-el alcance de visibilidad para alumno/otros preparadores y el criterio de borrado
-antes de modificar el esquema o los contratos. En esta revisión no se borran ni
-se ocultan sesiones del usuario.
+En ficha del alumno, Agenda y listado de pautas se usan los mismos filtros y
+acciones. **Habitual** conserva todas las no archivadas, incluidas las retiradas;
+**Retiradas** muestra las canceladas no archivadas; **Archivadas** muestra las
+archivadas propias; **Todas** incluye ambos grupos. El filtro se aplica en SQL
+antes del límite/cursor. Agenda lo combina con alumno/estado. Resultados y técnica
+conservan la consulta histórica completa. La proyección compartida no puede
+reintroducir una cita propia que la consulta filtrada haya excluido.
+
+Seleccionar una pauta propia retirada permite **Archivar sesión**, **Restaurar en
+calendario** o **Borrar definitivamente**. Archivar solo cambia visibilidad privada
+del autor en Trainer. El alumno y los otros preparadores conservan la retirada;
+no se altera cita, receta, fecha, resultados, consentimientos ni estado Garmin.
+Restaurar la devuelve a la vista habitual **todavía retirada**. No vuelve a
+asignarla, no reactiva recordatorios ni genera push de planificación.
+
+Borrar exige confirmación explícita en la interfaz y las siguientes condiciones
+en el servidor, con identidad esperada y MFA profesional:
+
+- Cita propia y retirada. No borra pautas pendientes, en curso, realizadas o ajenas.
+- Sin ejecución, revisión de resultados, recibo de revisión ni resultado registrado.
+- Sin referencia Garmin: entrega de cualquier estado (también retirada/incierta),
+  sus versiones, confirmación de actividad o cola de sincronización de cualquier
+  estado. Nunca se borran esas referencias para permitir el borrado.
+- Sin conversación ligada, vídeo técnico ni dependencia de planificación interna.
+
+El botón bloqueado explica el motivo y permite archivar la retirada. La
+comprobación se repite después de tomar los bloqueos, aunque haya cambiado desde
+que se abrió el diálogo. Solo se elimina cita/asignación y metadatos dependientes
+sin resultados; se conserva la plantilla. Los avisos originales conservan su
+historial/lectura; su destino ya inexistente resuelve como no disponible. La cola
+push revalida existencia/estado y no envía planificación de una cita retirada o
+borrada. La generación de los grupos y los recordatorios existentes se conservan.
+
+### Persistencia y concurrencia
+
+Migración `20261025214951_trainer_assignment_archive_and_guarded_deletion.sql`:
+`trainer_private.assignment_lifecycle` almacena archivo/revisión y un marcador
+monotónico de referencia externa; `assignment_lifecycle_writes` conserva recibos
+idempotentes y la identidad de citas eliminadas. Son tablas privadas con RLS y
+sin concesiones directas. Una identidad eliminada no puede volver a asignarse por
+reintentar la operación original. Un fallo de conexión conserva el ID de operación
+en las acciones de interfaz para reintentar sin duplicar el cambio.
+
+Se reutiliza el bloqueo alumno → cita → asignación del motor existente, después
+el estado privado. Los triggers de entrega/cola/confirmación Garmin escriben ese
+estado: una referencia que gana la carrera impide borrar; si gana el borrado, el
+enlace tardío se rechaza. Bajo REPEATABLE READ el cambio de versión provoca
+reintento en vez de leer un snapshot antiguo. El marcador permanece aunque una
+operación posterior retire una fila externa: no se pierde evidencia de su vínculo.
+
+Las fachadas filtradas son aditivas, ligadas al propietario esperado. Reutilizan
+las proyecciones actuales; `device_training` sigue solo en citas propias y usa
+`training_progress`/fuente sin bloqueos. Las consultas STABLE siguen funcionando
+en transacciones READ ONLY de PostgREST. No se toca ADMIN ni el editor compartido.
+
+### Verificación del bloque
+
+Análisis Trainer limpio y **244 pruebas** correctas, incluidas seis nuevas de
+archivo/filtro, confirmación, reintento, propietario, protección y pantalla 320px
+con texto doble. **60 carreras RC/RR** sobre PostgreSQL17 local prueban ambas
+órdenes frente a entrega, cola, actividad, resultados, recibos y revisión obsoleta.
+El clúster mínimo comprueba bloqueos, no sustituye las políticas reales.
+
+En Dev pasan con ROLLBACK `trainer_assignment_lifecycle.sql`,
+`garmin_training_progress.sql`, `trainer_notification_policy.sql`,
+`trainer_student_notices.sql` y `trainer_private_workouts.sql`. Incluyen autoría y
+resultado reales, protección de otras cuentas/MFA, historial, supresión de push
+huérfana, 55 archivadas antes del límite, paginación y lectura READ ONLY. La
+migración está aplicada/cotejada solo en Dev; asesores sin WARN nuevo, con dos INFO
+esperados de RLS sin políticas en tablas privadas sin permisos directos.
+
+La publicación automática y la comprobación HTTPS de la versión se acreditan
+aparte al completar Actions. No se han eliminado ni archivado citas reales del
+usuario durante las pruebas. La aceptación humana del recorrido queda pendiente.

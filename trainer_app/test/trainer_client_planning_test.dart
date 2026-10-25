@@ -27,6 +27,8 @@ class PlanningFixture extends TrainerClientPlanningRepository {
     DateTime from,
     DateTime to, {
     TrainerClientAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   }) async {
     calls.add((id: clientId, from: from, to: to, after: after?.assignment.id));
     if (pending != null) return pending!.future;

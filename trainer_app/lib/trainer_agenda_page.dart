@@ -8,6 +8,7 @@ import 'package:trainer_access/trainer_access.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_agenda_client_picker.dart';
+import 'trainer_assignment_lifecycle_actions.dart';
 
 import 'package:workout_core/professional_assessment.dart';
 
@@ -28,6 +29,8 @@ abstract class TrainerAgendaRepository {
     DateTime from,
     DateTime to, {
     TrainerAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   });
 }
 
@@ -46,13 +49,17 @@ class SupabaseTrainerAgendaRepository implements TrainerAgendaRepository {
     DateTime from,
     DateTime to, {
     TrainerAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   }) async {
     _identity();
     final rows = await authenticatedTrainerRpc(
       client,
       userId,
-      'list_trainer_agenda',
+      'list_trainer_agenda_filtered',
       params: {
+        'p_visibility': visibility.name,
+        'p_expected_owner': userId,
         'p_from': agendaDate(from),
         'p_to': agendaDate(to),
         'p_after_date': after == null
@@ -109,6 +116,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   String? _assessmentError;
   final _clientNames = <String, String>{};
   String? _clientFilter, _statusFilter, _error;
+  TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
   bool _busy = true, _more = false, _mutating = false;
   int _request = 0;
   final _libraryOwner = Object();
@@ -373,7 +381,9 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
             Text(row.assignment.name),
             const SizedBox(height: 8),
             Text(
-              row.assignment.statusLabel,
+              row.assignment.archived
+                  ? 'Archivada · ${row.assignment.statusLabel}'
+                  : row.assignment.statusLabel,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             TextButton(
@@ -382,6 +392,19 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   : () => context.go('/clients/${row.clientId}/workouts'),
               child: const Text('Abrir'),
             ),
+            if (widget.workouts != null && row.assignment.status == 'cancelled')
+              TrainerAssignmentLifecycleActions(
+                key: ValueKey(
+                  'lifecycle-${row.assignment.id}-${row.assignment.archiveRevision}',
+                ),
+                assignment: row.assignment,
+                repository: widget.workouts!,
+                enabled: !_locked,
+                onChanged: _load,
+                onBusyChanged: (busy) {
+                  if (mounted) setState(() => _mutating = busy);
+                },
+              ),
             if (_editable(row.assignment) && widget.onMove != null)
               TextButton(
                 onPressed: _locked ? null : () => _proposeMove(row.assignment),
@@ -428,6 +451,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         from,
         to,
         after: more && _items.isNotEmpty ? _items.last : null,
+        visibility: _visibility,
       );
       if (!mounted || request != _request) return;
       setState(() {
@@ -485,6 +509,8 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   }
 
   bool _matchesAssessment(ProfessionalAssessmentEvent event) =>
+      _visibility != TrainerAssignmentVisibility.archived &&
+      _visibility != TrainerAssignmentVisibility.withdrawn &&
       (_clientFilter == null || _clientFilter == event.clientId) &&
       (_statusFilter == null ||
           _statusFilter ==
@@ -911,6 +937,20 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     );
                   },
                 ),
+                TrainerAssignmentVisibilityFilter(
+                  value: _visibility,
+                  onChanged: _locked
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _visibility = value;
+                            _items = [];
+                            _statusFilter = null;
+                          });
+                          _load();
+                        },
+                ),
+                const SizedBox(height: 12),
                 if (_locked) const LinearProgressIndicator(),
                 if (_error != null) ...[
                   Text(
@@ -1096,6 +1136,19 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   ),
               ],
             ),
+            if (widget.workouts != null)
+              TrainerAssignmentLifecycleActions(
+                key: ValueKey(
+                  'lifecycle-${assignment.id}-${assignment.archiveRevision}',
+                ),
+                assignment: assignment,
+                repository: widget.workouts!,
+                enabled: !_locked,
+                onChanged: _load,
+                onBusyChanged: (busy) {
+                  if (mounted) setState(() => _mutating = busy);
+                },
+              ),
             if (_editable(assignment) &&
                 widget.onMove != null &&
                 (_view == _AgendaView.month || _view == _AgendaView.week))

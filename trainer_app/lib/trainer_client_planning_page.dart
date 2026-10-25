@@ -11,6 +11,7 @@ import 'package:workout_editor_ui/device_training_progress_tile.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_client_planning_repository.dart';
+import 'trainer_assignment_lifecycle_actions.dart';
 import 'trainer_client_workspace_repository.dart';
 import 'trainer_operations_pages.dart';
 import 'trainer_operations_repository.dart';
@@ -140,12 +141,24 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   final _sessionDrag = Object(), _programDrag = Object();
   final _selection = ValueNotifier<_Selection?>(null);
   bool _programLibrary = false;
+  TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
   DateTime get _from => _civil(_day, 1 - _day.weekday);
   DateTime get _to => _civil(_from, 6);
   bool get _canAssign =>
       !_busy && !_mutation && _effective && _client?.client.active == true;
-  List<TrainerPlanningEntry> get _entries =>
-      mergeTrainerPlanningEntries(_own, _shared);
+  List<TrainerPlanningEntry>
+  get _entries => mergeTrainerPlanningEntries(_own, _shared).where((entry) {
+    if (entry.assignment != null) return true;
+    // La proyección compartida incluye también citas propias: no reintroducir
+    // una propia que el filtro de servidor haya excluido o archivado.
+    if (entry.shared?.own == true) return false;
+    return switch (_visibility) {
+      TrainerAssignmentVisibility.current ||
+      TrainerAssignmentVisibility.all => true,
+      TrainerAssignmentVisibility.withdrawn => entry.status == 'cancelled',
+      TrainerAssignmentVisibility.archived => false,
+    };
+  }).toList();
 
   @override
   void initState() {
@@ -218,6 +231,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
           from,
           to,
           after: moreOwn ? _own.lastOrNull : null,
+          visibility: _visibility,
         );
         if (!mounted || request != _generation) return;
         if (page.hasMore && page.items.isEmpty) {
@@ -493,7 +507,7 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
       builder: (dialog) => AlertDialog(
         title: const Text('Retirar pauta pendiente'),
         content: Text(
-          'Se retirará ${entry.name} de la agenda de ${_client!.client.name}.',
+          'Se cancelará ${entry.name} para ${_client!.client.name}. Se conservará como retirada; después puedes archivarla o borrarla si no tiene datos protegidos.',
         ),
         actions: [
           TextButton(
@@ -607,6 +621,16 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                 child: const Text('Retirar pauta'),
               ),
             ],
+            TrainerAssignmentLifecycleActions(
+              key: ValueKey('lifecycle-${own.id}-${own.archiveRevision}'),
+              assignment: own,
+              repository: widget.workouts,
+              enabled: !_busy && !_mutation && _effective,
+              onChanged: _load,
+              onBusyChanged: (busy) {
+                if (mounted) setState(() => _mutation = busy);
+              },
+            ),
             if (own.note?.isNotEmpty == true) Text(own.note!),
           ],
           const Divider(height: 24),
@@ -862,7 +886,9 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               Text(entry.name, style: Theme.of(context).textTheme.labelLarge),
               Text(entry.origin, style: Theme.of(context).textTheme.bodySmall),
               Text(
-                entry.statusLabel,
+                entry.assignment?.archived == true
+                    ? 'Archivada · ${entry.statusLabel}'
+                    : entry.statusLabel,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               if (entry.assignment == null)
@@ -940,6 +966,16 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
           ),
         ],
       ),
+      TrainerAssignmentVisibilityFilter(
+        value: _visibility,
+        onChanged: _busy || _mutation
+            ? null
+            : (value) {
+                setState(() => _visibility = value);
+                _load();
+              },
+      ),
+      const SizedBox(height: 12),
       Text('Fecha seleccionada: ${trainerDate(_day)}'),
       Wrap(
         spacing: 8,

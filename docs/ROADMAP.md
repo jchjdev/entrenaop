@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**TRN-031 · 25/10/2026 · archivo y borrado de citas:** recorrido implementado
+y aplicado en Dev. Ficha, Agenda y pautas comparten filtros Habitual/Retiradas/
+Archivadas/Todas y acciones recuperables. Borrado propio, retirado y protegido
+por servidor ante resultados, conversaciones, vídeos y cualquier vínculo Garmin.
+No elimina plantillas ni referencias externas; no reactiva sesiones ni push.
+Análisis Trainer limpio, 244 pruebas, 60 carreras RC/RR y cinco contratos SQL
+con ROLLBACK correctos. Publicación automática/HTTPS y aceptación humana se
+acreditan aparte. **Siguiente recorrido único:** revisar en Trainer publicado una
+retirada → archivo → filtro → restauración y la explicación de borrado bloqueado;
+los avisos se prueban mañana siguiendo el guion ya guardado.
+[Contrato y verificación](TRAINER_CLIENT_PLANNING.md#archivo-y-borrado-de-asignaciones--25102026).
+
 **TRN-029 · 25/10/2026 · agrupación y preferencias implementadas en Dev:**
 planificación/conversación agrupadas por preparador, contador por grupos y lectura
 con generación; historial íntegro. Cola con esperas y pausas, descanso editable

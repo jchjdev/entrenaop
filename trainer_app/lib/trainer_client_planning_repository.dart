@@ -48,6 +48,8 @@ abstract class TrainerClientPlanningRepository {
     DateTime from,
     DateTime to, {
     TrainerClientAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   });
 }
 
@@ -62,6 +64,8 @@ class SupabaseTrainerClientPlanningRepository
     DateTime from,
     DateTime to, {
     TrainerClientAgendaItem? after,
+    TrainerAssignmentVisibility visibility =
+        TrainerAssignmentVisibility.current,
   }) async {
     if (client.auth.currentUser?.id != userId) {
       throw StateError('La cuenta ha cambiado.');
@@ -69,8 +73,9 @@ class SupabaseTrainerClientPlanningRepository
     final result = await authenticatedTrainerRpc(
       client,
       userId,
-      'list_trainer_client_agenda',
+      'list_trainer_client_agenda_filtered',
       params: {
+        'p_visibility': visibility.name,
         'p_expected_owner': userId,
         'p_client_id': clientId,
         'p_from': trainerCalendarDate(from),

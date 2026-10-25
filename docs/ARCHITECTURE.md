@@ -1,5 +1,11 @@
 # Arquitectura de EntrenaOP
 
+**Citas profesionales · 25/10/2026:** estado privado de archivo/revisión y recibos
+idempotentes, sin añadir estados al calendario del alumno. Los enlaces Garmin
+marcan la misma fila privada que serializa el borrado. Las consultas filtradas
+son aditivas, filtran antes de paginar y conservan la proyección Garmin READ ONLY.
+[Contrato](TRAINER_CLIENT_PLANNING.md#archivo-y-borrado-de-asignaciones--25102026).
+
 **Avisos profesionales · 25/10/2026:** eventos íntegros en `student_notices`,
 proyección agrupada con generación de lectura y preferencias CAS por cuenta.
 La cola privada separa instalación/cuenta/grupo, conserva generaciones durante

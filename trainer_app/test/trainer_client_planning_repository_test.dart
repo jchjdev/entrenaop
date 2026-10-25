@@ -12,7 +12,8 @@ void main() {
     addTearDown(server.client.dispose);
     await server.login();
     server.respond = (request, name, params) async {
-      expect(name, 'list_trainer_client_agenda');
+      expect(name, 'list_trainer_client_agenda_filtered');
+      expect(params['p_visibility'], 'current');
       expect(params['p_expected_owner'], owner);
       expect(params['p_client_id'], 'student');
       expect(params['p_from'], '2026-10-26');
