@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import sys
 import ssl
+import socket
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -48,6 +49,89 @@ class Remote:
     def rename(self, source, destination):
         self.files[destination] = self.files.pop(source)
         self.writes.append(destination)
+
+
+class TransportTests(unittest.TestCase):
+    def address(self, ip):
+        return (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", (ip, 21))
+
+    def test_ipv4_resolution_preserves_hostname_for_tls_certificate_and_sni(self):
+        context = Mock(protocol=ssl.PROTOCOL_TLS_CLIENT)
+        ftp = release.IPv4FTP_TLS(context=context, timeout=45)
+        connection = Mock()
+        def connect(instance, host, port, timeout, source_address):
+            instance.host = host  # El conector estándar conserva la IP de transporte.
+            instance.sock = connection
+            return "220 ready"
+        addresses = [self.address("192.0.2.1"), self.address("192.0.2.1")]
+        with patch.object(release.socket, "getaddrinfo", return_value=addresses) as resolve, \
+                patch.object(ftplib.FTP_TLS, "connect", autospec=True, side_effect=connect) as transport:
+            self.assertEqual(ftp.connect(release.FTP_HOST, 21), "220 ready")
+        resolve.assert_called_once_with(release.FTP_HOST, 21, family=socket.AF_INET, type=socket.SOCK_STREAM)
+        transport.assert_called_once_with(ftp, "192.0.2.1", 21, -999, None)
+        ftp.voidcmd = Mock(return_value="234 secure")
+        ftp.auth()
+        ftp.voidcmd.assert_called_once_with("AUTH TLS")
+        context.wrap_socket.assert_called_once_with(connection, server_hostname=release.FTP_HOST)
+        self.assertEqual(ftp.host, release.FTP_HOST)
+
+    def test_failed_ipv4_socket_is_closed_before_trying_next_address(self):
+        ftp = release.IPv4FTP_TLS(context=release.ftps_context(), timeout=45)
+        failed_socket = Mock()
+        def connect(instance, host, port, timeout, source_address):
+            instance.host = host
+            if host == "192.0.2.1":
+                instance.sock = failed_socket
+                raise TimeoutError("private")
+            return "220 ready"
+        with patch.object(release.socket, "getaddrinfo", return_value=[self.address("192.0.2.1"), self.address("192.0.2.2")]), \
+                patch.object(ftplib.FTP_TLS, "connect", autospec=True, side_effect=connect) as transport:
+            ftp.connect(release.FTP_HOST, 21, timeout=10, source_address=("127.0.0.1", 0))
+        self.assertEqual(transport.call_count, 2)
+        self.assertEqual(transport.call_args.args[1:], ("192.0.2.2", 21, 10, ("127.0.0.1", 0)))
+        failed_socket.close.assert_called_once()
+        self.assertEqual(ftp.host, release.FTP_HOST)
+
+    def test_no_ipv4_address_fails_closed_without_connecting(self):
+        ftp = release.IPv4FTP_TLS(context=release.ftps_context())
+        with patch.object(release.socket, "getaddrinfo", return_value=[]), \
+                patch.object(ftplib.FTP_TLS, "connect") as transport, \
+                self.assertRaises(OSError):
+            ftp.connect(release.FTP_HOST, 21)
+        transport.assert_not_called()
+
+    def test_context_keeps_certificate_validation_and_tls_minimum(self):
+        context = release.ftps_context()
+        self.assertTrue(context.check_hostname)
+        self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+        self.assertGreaterEqual(context.minimum_version, ssl.TLSVersion.TLSv1_2)
+
+    def test_probe_needs_no_secrets_and_never_logs_in_or_writes(self):
+        ftp = Mock()
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(release, "IPv4FTP_TLS", return_value=ftp), patch("builtins.print"):
+            release.connection_check()
+        ftp.connect.assert_called_once_with(release.FTP_HOST, 21)
+        ftp.auth.assert_called_once()
+        ftp.login.assert_not_called()
+        ftp.storbinary.assert_not_called()
+        ftp.close.assert_called_once()
+
+    def test_probe_retries_only_transport_failures_and_closes_each_session(self):
+        for error, expected_attempts in ((TimeoutError("private"), 3),
+                                         (ssl.SSLCertVerificationError("private"), 1)):
+            sessions = [Mock() for _ in range(expected_attempts)]
+            for session in sessions:
+                session.auth.side_effect = error
+            with self.subTest(error=type(error)), \
+                    patch.object(release, "IPv4FTP_TLS", side_effect=sessions) as factory, \
+                    patch.object(release.time, "sleep"), patch("builtins.print"), \
+                    self.assertRaises(type(error)):
+                release.connection_check()
+            self.assertEqual(factory.call_count, expected_attempts)
+            for session in sessions:
+                session.close.assert_called_once()
+                session.login.assert_not_called()
 
 
 class ReleaseTests(unittest.TestCase):
@@ -163,7 +247,7 @@ class ReleaseTests(unittest.TestCase):
         def isolated_publish(ftp, package, *, progress):
             return publish(ftp, package, lambda expected: None, progress=progress)
         with patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
-                patch.object(release.ftplib, "FTP_TLS", side_effect=sessions) as factory, \
+                patch.object(release, "IPv4FTP_TLS", side_effect=sessions) as factory, \
                 patch.object(release, "require_current_main") as current, \
                 patch.object(release, "publish", side_effect=isolated_publish), \
                 patch.object(release.time, "sleep"), patch("builtins.print"):
@@ -192,7 +276,7 @@ class ReleaseTests(unittest.TestCase):
                     progress(phase)
                     raise error
                 with patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
-                        patch.object(release.ftplib, "FTP_TLS", return_value=session) as factory, \
+                        patch.object(release, "IPv4FTP_TLS", return_value=session) as factory, \
                         patch.object(release, "require_current_main"), \
                         patch.object(release, "publish", side_effect=fail), patch("builtins.print"):
                     with self.assertRaises(type(error)):
@@ -205,7 +289,7 @@ class ReleaseTests(unittest.TestCase):
         for advance in (False, True):
             with self.subTest(advance=advance), \
                     patch.dict(os.environ, {"HOSTINGER_ADMIN_FTPS_USER": "fixture", "HOSTINGER_ADMIN_FTPS_PASSWORD": "fixture"}), \
-                    patch.object(release.ftplib, "FTP_TLS") as factory, \
+                    patch.object(release, "IPv4FTP_TLS") as factory, \
                     patch.object(release, "require_current_main", side_effect=[None, ValueError("main advanced")] if advance else None), \
                     patch.object(release.time, "sleep"), patch("builtins.print"):
                 factory.return_value.connect.side_effect = TimeoutError("private")

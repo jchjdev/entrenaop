@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import socket
 import ssl
 import subprocess
 import sys
@@ -18,8 +19,60 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools"))
 from static_web_release import package_web as shared_package_web
 
 HOST = "admin.entrenaop.es"
+FTP_HOST = "srv1589.hstgr.io"
 PROJECT = "sxbxfjqgoddzhtcyhalw"
 ROOT_FILES = (".htaccess", "robots.txt", "build-info.json", "index.html")
+
+
+class IPv4FTP_TLS(ftplib.FTP_TLS):
+    """FTPS con transporte IPv4 y el nombre original para verificar TLS/SNI."""
+
+    def connect(self, host="", port=0, timeout=-999, source_address=None):
+        hostname, service = host or self.host, port or self.port
+        addresses = dict.fromkeys(record[4][0] for record in socket.getaddrinfo(
+            hostname, service, family=socket.AF_INET, type=socket.SOCK_STREAM)
+            if record[0] == socket.AF_INET)
+        last_error = None
+        for address in addresses:
+            try:
+                # Solo cambia el transporte: AUTH TLS debe seguir validando el
+                # certificado del servidor por su nombre, nunca por la IP.
+                return super().connect(address, service, timeout, source_address)
+            except OSError as error:
+                last_error = error
+                self.close()
+            finally:
+                self.host = hostname
+        if last_error is not None:
+            raise last_error
+        raise OSError("No hay direcciones IPv4 para el servidor de publicación.")
+
+
+def ftps_context():
+    context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    return context
+
+
+def connection_check():
+    # No lee secretos, no inicia sesión y no escribe archivos. Contrasta desde
+    # el runner la misma resolución IPv4 y el certificado usados al publicar.
+    for attempt in range(3):
+        ftp = IPv4FTP_TLS(context=ftps_context(), timeout=15)
+        phase = "connect_ipv4"
+        try:
+            ftp.connect(FTP_HOST, 21)
+            phase = "tls"
+            ftp.auth()
+            print("Transporte ADMIN Dev: IPv4 y certificado TLS verificados.")
+            return
+        except Exception as error:
+            print("Transporte ADMIN Dev:", transfer_diagnostic(phase, error), file=sys.stderr)
+            if not transient_transfer(error) or attempt == 2:
+                raise
+        finally:
+            ftp.close()
+        time.sleep(5 * (attempt + 1))
 
 
 def digest(data):
@@ -167,19 +220,18 @@ def deploy(package):
     user, password = os.environ["HOSTINGER_ADMIN_FTPS_USER"], os.environ["HOSTINGER_ADMIN_FTPS_PASSWORD"]
     if not user.strip() or not password:
         raise ValueError("Faltan los secretos de la cuenta de publicación.")
-    context = ssl.create_default_context()
-    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context = ftps_context()
     for attempt in range(3):
         # Cada conexión nueva contrasta main; nunca recuperar un despliegue
         # obsoleto por el mero hecho de reintentar una transferencia.
         require_current_main(expected["revision"])
-        phase = "connect"
-        ftp = ftplib.FTP_TLS(context=context, timeout=45)
+        phase = "connect_ipv4"
+        ftp = IPv4FTP_TLS(context=context, timeout=45)
         def progress(value):
             nonlocal phase
             phase = value
         try:
-            ftp.connect("srv1589.hstgr.io", 21)
+            ftp.connect(FTP_HOST, 21)
             phase = "authenticate"
             ftp.auth()
             ftp.login(user, password)
@@ -190,7 +242,7 @@ def deploy(package):
             # Antes de activar solo se han escrito recursos aislados. Se
             # pueden sobrescribir completos desde otra conexión. Una caída
             # durante activación/restauración exige revisión, no otro intento.
-            safe = phase in ("connect", "authenticate", "read_previous", "upload_assets")
+            safe = phase in ("connect_ipv4", "authenticate", "read_previous", "upload_assets")
             if not safe or not transient_transfer(error) or attempt == 2:
                 raise
         finally:
@@ -200,11 +252,13 @@ def deploy(package):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("package", "deploy"))
+    parser.add_argument("command", choices=("package", "deploy", "connection-check"))
     parser.add_argument("--package", default="admin_app/build/admin-release")
     parser.add_argument("--revision", default=os.environ.get("GITHUB_SHA"))
     args = parser.parse_args()
-    if args.command == "package":
+    if args.command == "connection-check":
+        connection_check()
+    elif args.command == "package":
         scope = ["admin_app", "packages", "pubspec.yaml", "pubspec.lock"]
         if subprocess.check_output(["git", "status", "--porcelain", "--", *scope], text=True).strip():
             raise ValueError("No se empaquetan fuentes con cambios pendientes.")

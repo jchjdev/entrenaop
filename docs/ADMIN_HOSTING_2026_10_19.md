@@ -201,3 +201,35 @@ Referencias: [MFA de Supabase](https://supabase.com/docs/guides/auth/auth-mfa),
 [contraseñas](https://supabase.com/docs/guides/auth/password-security),
 [alta de factores de Auth](https://github.com/supabase/auth/blob/master/internal/api/mfa.go)
 y [subdominios de Hostinger](https://www.hostinger.com/support/1583405-how-to-create-and-delete-subdomains-in-hostinger/).
+
+
+## Transporte automático de ADMIN Dev · 25/10/2026
+
+La ejecución `40196467093` de GitHub Actions validó y compiló ADMIN, pero la
+publicación falló en la conexión FTPS, antes de iniciar sesión o escribir:
+`OSError`, `errno=101`, en tres intentos. El mismo paquete se publicó después
+por el administrador de archivos de Hostinger; esa publicación manual no
+acredita que se haya recuperado el transporte automático.
+
+`srv1589.hstgr.io` publica direcciones IPv4 e IPv6. El publicador usa ahora
+resolución IPv4 explícita, sin fijar una IP que pueda quedar obsoleta. Conserva
+el nombre del servidor para SNI y la validación del certificado, TLS 1.2 como
+mínimo y el cifrado del canal de datos. No existe alternativa con FTP sin TLS
+ni se omite la verificación del certificado.
+
+El workflow incorpora `connection-check` antes de descargar Flutter cuando la
+publicación automática está habilitada. Esta comprobación establece la conexión
+y negocia TLS sin leer secretos, iniciar sesión ni escribir archivos. Reintenta
+solo fallos de transporte, como el despliegue; un certificado inválido detiene
+el proceso. Un fallo de esta comprobación no cambia la versión pública.
+
+La activación mantiene la cuenta confinada a ADMIN Dev, el contraste de `main`
+antes de cada conexión, los recursos versionados antes de activar la entrada y
+la restauración de la entrada anterior si falla la verificación HTTPS. Los
+reintentos no se amplían a fallos durante la activación o la restauración.
+
+Verificado localmente el 25/10: 42 pruebas Python del publicador y operaciones
+ADMIN correctas, incluidas seis regresiones de transporte; conexión pública
+IPv4 y certificado TLS correctos, sin credenciales. La recuperación completa
+queda pendiente de una nueva publicación automática desde GitHub Actions y
+su comprobación pública: la conectividad local no demuestra la del runner.

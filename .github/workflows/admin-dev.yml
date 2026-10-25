@@ -33,6 +33,9 @@ jobs:
         with:
           fetch-depth: 2
           persist-credentials: false
+      - name: Comprobar transporte FTPS antes de compilar
+        if: vars.ADMIN_DEV_DEPLOY_ENABLED == 'true'
+        run: python3 admin_app/tool/admin_release.py connection-check
       - name: SDK Flutter oficial fijado y verificado
         shell: bash
         run: |
