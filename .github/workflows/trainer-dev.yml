@@ -64,6 +64,14 @@ jobs:
           flutter pub get --enforce-lockfile
           cd ../trainer_app
           flutter pub get --enforce-lockfile
+          # El análisis de la raíz incluye los proyectos anidados. Un runner
+          # limpio necesita sus dependencias de pruebas, igual que ADMIN/Garmin.
+          cd ../packages/device_activity_core
+          dart pub get --enforce-lockfile
+          cd ../../packages/device_health
+          flutter pub get --enforce-lockfile
+          cd ../../labs/health_read_probe
+          flutter pub get --enforce-lockfile
       - name: Validar Trainer
         working-directory: trainer_app
         run: |

@@ -192,9 +192,25 @@ completas: 1.358 pruebas raíz (una omisión previa), 238 Trainer y 316 ADMIN
 (dos omisiones previas). Servidor: 154 pruebas y comprobación TypeScript estricta
 correctas. No se amplían permisos públicos ni se incorporan dependencias.
 
-La prueba física nueva de alta → cambio → retirada sigue pendiente de ejecutar
-con Javier. La conexión efectiva y el cron activo no acreditan por sí solos una
-entrega nueva. La publicación de esta revisión se registrará tras comprobarla.
+Prueba real: una cita futura creada desde Trainer se entrega por el trabajador
+sin envío manual. Javier confirma su presencia en el calendario del fēnix tras
+sincronizar Connect. Cambio de fecha, retirada y nueva vuelta de resultados
+siguen pendientes; no se presentan como aceptados por esa primera confirmación.
+
+La prueba del portal detecta que PostgREST ejecuta la agenda STABLE en una
+transacción READ ONLY: reutilizar la fuente con FOR SHARE hacía fallar su refresco,
+aunque la asignación ya estaba guardada. La migración `20261025203348` extrae la
+misma receta/autoridad a una función privada de snapshot sin bloqueos. El envío
+conserva los bloqueos previos y delega en ese snapshot. La proyección usa la misma
+política de selección sobre el snapshot de lectura; no puede autorizar escrituras.
+Se añade regresión con una cita pendiente en transacción READ ONLY, además del
+recorrido real con rol authenticated. Ambos pasan y las regresiones de envío,
+publicación automática, fuerza y retorno siguen correctas.
+
+La CI de Trainer detecta además que el runner limpio no resolvía las dependencias
+de pruebas de proyectos anidados antes del análisis raíz. Se alinea su resolución
+con ADMIN/Garmin, conservando lockfiles, análisis y todas las pruebas. La publicación
+de esta revisión se registrará tras comprobarla.
 
 ## Evidencia anterior y siguiente recorrido
 

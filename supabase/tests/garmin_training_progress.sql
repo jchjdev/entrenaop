@@ -69,5 +69,18 @@ begin
  state:=device_private.training_progress(owner,owner,scheduled);
  if state->>'state' is distinct from 'not_sent' or state->>'reason' is distinct from 'appointment_cancelled' then raise exception 'Cita nunca enviada se declara retirada remota';end if;
 end $$;
-select 'garmin progress, scope and lifecycle passed' as result;
+-- La fachada STABLE se ejecuta así en PostgREST. La otra cita sigue pendiente
+-- y obliga a leer su receta, sin ocultar un FOR SHARE detrás de un recibo enviado.
+set transaction read only;
+do $$declare owner uuid:=current_setting('fixture.owner')::uuid; teacher uuid:=auth.uid(); result jsonb;
+begin
+ result:=public.list_trainer_client_agenda(teacher,owner,current_date,current_date+5);
+ if jsonb_array_length(result->'items')<>2 then raise exception 'Agenda READ ONLY incompleta';end if;
+ if not exists(select 1 from jsonb_array_elements(result->'items') row where row->'device_training'->>'state'='pending') then
+  raise exception 'No consulta la receta pendiente en READ ONLY';end if;
+ if has_function_privilege('authenticated','device_private.training_source_snapshot(uuid,uuid,uuid)','EXECUTE')
+ or has_function_privilege('service_role','device_private.training_progress_target(uuid,uuid)','EXECUTE') then
+  raise exception 'Fuente privada expuesta';end if;
+end $$;
+select 'garmin progress, scope, lifecycle and read-only agenda passed' as result;
 rollback;
