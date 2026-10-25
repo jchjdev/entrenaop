@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
+import 'package:workout_core/device_training_progress.dart';
 
 import 'trainer_calendar_date.dart';
 import 'trainer_workout_repository.dart';
@@ -24,9 +25,21 @@ class TrainerClientAgendaPage {
 class TrainerClientAgendaItem {
   TrainerClientAgendaItem.fromJson(Map<String, dynamic> json)
     : assignment = TrainerAssignment.fromJson(json),
-      running = json['is_running'] == true;
+      running = json['is_running'] == true,
+      deviceTraining = json['device_training'] == null
+          ? null
+          : DeviceTrainingProgress.fromJson(
+              Map<String, dynamic>.from(json['device_training'] as Map),
+            ) {
+    if (deviceTraining != null && deviceTraining!.id != assignment.id) {
+      throw const FormatException(
+        'El estado de Garmin no corresponde a esta pauta.',
+      );
+    }
+  }
   final TrainerAssignment assignment;
   final bool running;
+  final DeviceTrainingProgress? deviceTraining;
 }
 
 abstract class TrainerClientPlanningRepository {

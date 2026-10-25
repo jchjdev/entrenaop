@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:workout_editor_ui/device_training_progress_tile.dart';
 
 import '../domain/training_delivery.dart';
 import 'training_delivery_cubit.dart';
 import 'training_sync_panel.dart';
 
 class TrainingDeliveryPage extends StatefulWidget {
-  const TrainingDeliveryPage({super.key, required this.repository});
+  const TrainingDeliveryPage({
+    super.key,
+    required this.repository,
+    this.onOpenActivities,
+  });
   final TrainingDeliveryRepository repository;
+  final VoidCallback? onOpenActivities;
   @override
   State<TrainingDeliveryPage> createState() => _TrainingDeliveryPageState();
 }
@@ -120,6 +126,34 @@ class _TrainingDeliveryPageState extends State<TrainingDeliveryPage> {
                   ),
                   const Divider(height: 32),
                 ],
+                if (widget.onOpenActivities != null)
+                  TextButton.icon(
+                    onPressed: state.busy ? null : widget.onOpenActivities,
+                    icon: const Icon(Icons.fact_check_outlined),
+                    label: const Text(
+                      'Revisar actividades recibidas y completar sesión',
+                    ),
+                  ),
+                if (catalog != null && catalog.progress.isNotEmpty)
+                  ExpansionTile(
+                    title: const Text('Estado de tus sesiones'),
+                    subtitle: Text(
+                      '${catalog.progress.length} citas consultadas',
+                    ),
+                    initiallyExpanded: true,
+                    children: [
+                      const Text(
+                        'Citas desde hace 7 días hasta los próximos 30. Abre una tarjeta para ver el motivo y el siguiente paso.',
+                      ),
+                      for (final progress in catalog.progress)
+                        DeviceTrainingProgressTile(progress: progress),
+                    ],
+                  ),
+                const SizedBox(height: 12),
+                Text(
+                  'Envío manual',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const Text(
                   'Elige una sesión compatible de tu entrenador o tu plan adaptativo. Revisa la fecha y todos los pasos antes de enviarla.',
                 ),

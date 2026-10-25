@@ -1,3 +1,5 @@
+import 'package:workout_core/device_training_progress.dart';
+
 class TrainingCandidate {
   const TrainingCandidate(this.id, this.name, this.date, this.source);
   final String id, name, date, source;
@@ -48,9 +50,14 @@ class TrainingReceipt {
 }
 
 class TrainingCatalog {
-  const TrainingCatalog(this.candidates, this.deliveries);
+  const TrainingCatalog(
+    this.candidates,
+    this.deliveries, {
+    this.progress = const [],
+  });
   final List<TrainingCandidate> candidates;
   final List<TrainingReceipt> deliveries;
+  final List<DeviceTrainingProgress> progress;
 }
 
 class TrainingDeliveryException implements Exception {

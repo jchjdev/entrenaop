@@ -20,6 +20,7 @@ class PlanningFixture extends TrainerClientPlanningRepository {
   final calls = <({String id, DateTime from, DateTime to, String? after})>[];
   Completer<TrainerClientAgendaPage>? pending;
   bool more = false;
+  Map<String, dynamic>? deliveryProgress;
   @override
   Future<TrainerClientAgendaPage> week(
     String clientId,
@@ -41,6 +42,7 @@ class PlanningFixture extends TrainerClientPlanningRepository {
           'created_at': '2026-10-25T10:00:00Z',
           'note': 'Técnica primero',
           'is_running': false,
+          'device_training': deliveryProgress,
         }),
       ],
       hasMore: more && after == null,
@@ -93,6 +95,28 @@ Future<void> mount(
 }
 
 void main() {
+  testWidgets(
+    'el estado Garmin solo aparece en la pauta propia y no se confunde cambio con envío',
+    (t) async {
+      final planning = PlanningFixture()
+        ..deliveryProgress = {
+          'id': '0',
+          'name': 'Fuerza propia',
+          'date': '2026-10-28',
+          'state': 'change_pending',
+          'reason': 'auto_disabled',
+        };
+      await mount(t, planning: planning);
+      await t.tap(find.byKey(const ValueKey('client-planning-entry-0')));
+      await t.pumpAndSettle();
+      expect(find.text('Cambios pendientes de enviar'), findsOneWidget);
+      await t.tap(find.byKey(const ValueKey('client-planning-entry-1')));
+      await t.pumpAndSettle();
+      expect(find.text('Cambios pendientes de enviar'), findsNothing);
+      expect(find.text('Garmin'), findsNothing);
+    },
+  );
+
   testWidgets(
     'reúne pautas por ID sin duplicar y la ajena solo permite lectura',
     (t) async {

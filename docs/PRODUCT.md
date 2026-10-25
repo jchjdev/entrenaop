@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Garmin · prioridad del 25/10/2026:** primero se pule el circuito de Garmin;
+las demás marcas se posponen. Alumno y preparador pueden distinguir el envío al
+calendario del fabricante de su recepción física y de la incorporación de
+resultados. Recibir una actividad conserva la revisión y confirmación para cerrar
+la cita; no inventa valoraciones ni convierte deportes no compatibles.
+[Estados y límites](DEVICE_GARMIN_AUTOMATIC_SYNC.md#revisión-del-ciclo-completo--25102026).
+
 **TRN-031 · 25/10/2026:** la ficha del alumno reúne su planificación con
 biblioteca y detalle, conserva el contexto al crear y prepara las asignaciones
 sin repetir destinatario. El calendario conjunto mantiene consentimiento y

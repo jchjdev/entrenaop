@@ -8,6 +8,7 @@ import 'activity_result_test.dart' show review;
 
 class PageRepository implements ActivityResultRepository {
   int confirmations = 0;
+  List<String> problems = const [];
   @override
   Future<ActivityResultCatalog> load() async => ActivityResultCatalog(
     [
@@ -22,7 +23,7 @@ class PageRepository implements ActivityResultRepository {
       ),
     ],
     const [RunAppointment('scheduled', 'Series de prueba', '2026-10-20')],
-    const [],
+    problems,
   );
   @override
   Future<ActivityResultReview> preview(
@@ -37,6 +38,26 @@ class PageRepository implements ActivityResultRepository {
 }
 
 void main() {
+  testWidgets(
+    'otro deporte no se presenta como fallo técnico ni completa una cita',
+    (tester) async {
+      final repository = PageRepository()..problems = ['unsupported_activity'];
+      await tester.pumpWidget(
+        MaterialApp(home: ActivityResultPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('de un tipo que esta integración'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('pendiente de revisión técnica'),
+        findsNothing,
+      );
+      expect(repository.confirmations, 0);
+    },
+  );
+
   test('el codec conserva el tiempo nativo de cada serie y copyWith no lo redondea', () {
     final e = WorkoutExecutionModel.fromJson({
       'id': 'execution',

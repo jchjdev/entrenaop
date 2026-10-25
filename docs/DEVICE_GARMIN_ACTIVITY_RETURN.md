@@ -156,6 +156,15 @@ Fuentes oficiales: [Activity API 2.0](https://developerportal.garmin.com/sites/d
 [dependencias Edge](https://supabase.com/docs/guides/functions/dependencies).
 
 
+## Revisión de presentación · 25/10/2026
+
+Las actividades recibidas de deportes todavía no compatibles se explican como
+tales, separadas de errores técnicos que requieren revisión. No completan citas.
+Desde la consulta de entregas se puede abrir la revisión de actividades recibidas.
+Se conserva el cierre explícito: importar no completa automáticamente la semana,
+ni inventa RPE, repeticiones o pesos. El estado «Resultados del reloj incorporados»
+solo procede de una confirmación de la actividad para esa cita concreta.
+
 ## Punto de guardado y CI · 23/10/2026
 
 Código funcional `4160082f` subido y contrastado con `origin/main`. CI

@@ -5,6 +5,11 @@ import {trainingPrescription} from './strength.ts';
 import type {TrainingPrescription} from './strength.ts';
 
 type Json=Record<string,unknown>;
+// La entrega manual puede devolver un recibo fallido en lugar de lanzar.
+// Ambos recorridos deben conservar la causa y aplicar la misma recuperación.
+const needsReview = new Set(['delivery_needs_review','delivery_uncertain','unsupported_prescription',
+  'invalid_prescription','provider_rejected','provider_missing','invalid_provider_response',
+  'connection_changed','reauthorization_required','permission_denied']);
 export interface TrainingSyncStore {
   command(action:string,input:Json):Promise<Json>;
 }
@@ -39,8 +44,9 @@ export class TrainingSyncService {
         // Se reutiliza íntegra la entrega manual, incluidos sus guardados antes
         // de agendar y su prohibición de repetir una creación incierta.
         const receipt=await this.delivery.send(who,String(job.scheduled),String(target.revision));
-        const outcome=receipt.status==='sent'?'done':receipt.status==='uncertain'?'review':'retry';
-        await command('finish',{outcome});return;
+        const code=typeof receipt.error_code==='string'?receipt.error_code:undefined;
+        const outcome=receipt.status==='sent'?'done':receipt.status==='uncertain'||code!=null&&needsReview.has(code)?'review':'retry';
+        await command('finish',{outcome,...(code?{code}:{})});return;
       }
       claim=await command('claim_change');
       const context=`tokens:${who.owner}:${claim.generation}`;
@@ -78,8 +84,7 @@ export class TrainingSyncService {
       // PUT/DELETE con ID conocido se pueden repetir. Un refresh ambiguo puede
       // haber consumido el token: requiere revisión y frena la concesión.
       const code=error instanceof Error?error.message:'garmin_unavailable';
-      const review=refreshing||['delivery_needs_review','delivery_uncertain','unsupported_prescription',
-        'invalid_prescription','provider_rejected','provider_missing','connection_changed','reauthorization_required','permission_denied'].includes(code);
+      const review=refreshing||needsReview.has(code);
       await command('finish',{outcome:review?'review':'retry',code,refresh_uncertain:refreshing,
         write_pending:inFlight||error instanceof DeliveryFailure&&error.uncertain}).catch(()=>{});
     }finally{

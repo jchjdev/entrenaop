@@ -58,5 +58,6 @@ class GarminTrainingRoute extends StatelessWidget {
   Widget build(BuildContext context) => TrainingDeliveryPage(
     key: ValueKey(ownerId),
     repository: SupabaseTrainingDeliveryRepository(client, ownerId),
+    onOpenActivities: () => context.push('/profile/garmin-activities'),
   );
 }

@@ -79,6 +79,9 @@ export class GarminTrainingClient implements TrainingGateway,TrainingLifecycleGa
   async updateSchedule(token:string,schedule:number,workout:number,date:string):Promise<void>{
     id(schedule);id(workout);
     await this.request(`/training-api/schedule/${schedule}`,token,{scheduleId:schedule,workoutId:workout,date},'PUT');
+    // Igual que en el alta, el ACK de escritura no acredita la fecha visible.
+    // Solo se guarda la revisión nueva al confirmar la referencia esperada.
+    if(await this.confirmSchedule(token,workout,date)!==schedule)throw new DeliveryFailure('schedule_not_confirmed',true);
   }
   async removeSchedule(token:string,schedule:number):Promise<void>{
     id(schedule);await this.request(`/training-api/schedule/${schedule}`,token,undefined,'DELETE');

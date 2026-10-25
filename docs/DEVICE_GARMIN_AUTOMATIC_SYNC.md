@@ -157,7 +157,46 @@ recibos, desactivar el job `garmin-training-sync-dev` y
 `device_private.training_sync_worker.enabled` mediante operación de servidor.
 No ejecutar esa configuración contra producción.
 
-## Evidencia y siguiente recorrido
+## Revisión del ciclo completo · 25/10/2026
+
+Javier prioriza Garmin: envío automático, cambios, retiradas y vuelta de
+resultados. Huawei, Suunto, COROS y Apple Watch se posponen. La receta común
+del editor conserva su independencia del proveedor.
+
+La consulta autenticada del deportista añade `progress` a su listado actual.
+La agenda profesional añade `device_training` exclusivamente a sus propias
+asignaciones; no expone el estado de otra relación por compartir calendario.
+Ambos clientes presentan el mismo modelo puro y tarjetas plegables. La consulta
+no reclama trabajos, modifica consentimiento ni llama al fabricante. Su ventana
+es de siete días anteriores a treinta posteriores, con máximo de sesenta citas;
+el número mostrado corresponde a citas consultadas, no al total histórico.
+
+El estado se calcula con cita, revisión, recibo, generación, preferencia y cola.
+Un trabajo terminado sin entrega no aparece como enviado. Cambios pendientes,
+retirada pendiente y retirada confirmada son estados distintos. Una cita pasada
+retirada conserva su entrega histórica; una creación incierta requiere revisión
+antes de cualquier copia. Completar manualmente no acredita resultados del reloj:
+se exige una confirmación de actividad asociada a esa misma cita.
+
+El trabajador conserva también el motivo de un recibo fallido devuelto por el
+servicio de entrega. Los rechazos permanentes requieren revisión; los fallos
+transitorios mantienen el reintento. Tras mover una entrega, el adaptador verifica
+fecha y referencia del calendario antes de guardar la revisión nueva; el ACK
+del PUT no basta. Se conservan los mismos identificadores.
+
+Migración `20261025202144` aplicada selectivamente solo en Dev y cotejada con
+el historial. Contratos transaccionales correctos, con ROLLBACK: progreso y
+autoridad profesional, publicación automática/algoritmo, carrera, fuerza,
+recepción de actividades, dispatch y conexión. Análisis limpios y baterías
+completas: 1.358 pruebas raíz (una omisión previa), 238 Trainer y 316 ADMIN
+(dos omisiones previas). Servidor: 154 pruebas y comprobación TypeScript estricta
+correctas. No se amplían permisos públicos ni se incorporan dependencias.
+
+La prueba física nueva de alta → cambio → retirada sigue pendiente de ejecutar
+con Javier. La conexión efectiva y el cron activo no acreditan por sí solos una
+entrega nueva. La publicación de esta revisión se registrará tras comprobarla.
+
+## Evidencia anterior y siguiente recorrido
 
 Las migraciones `20261022194351`, `20261022200041` y `20261022200710` están
 aplicadas solo en Dev y cotejadas con el historial. Trabajador y envío están

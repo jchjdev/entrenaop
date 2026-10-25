@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**Garmin · ciclo de entrega visible y prioridad · 25/10/2026:** Javier pide
+pulir primero Garmin y pospone otras marcas. Se mantienen receta independiente,
+consentimiento por cuenta y cierre explícito de resultados. Deportista y Trainer
+consultan estados plegables de sus citas: pendiente, enviada, cambios/retirada
+pendientes, retirada confirmada y resultados incorporados. El preparador no ve
+entregas de otra relación por compartir calendario. Los recibos fallidos conservan
+su causa y mover fecha exige confirmar el calendario, además del ACK del proveedor.
+Implementación y contratos comprobados solo en Dev; aceptación física nueva y
+publicación de esta revisión se acreditan por separado.
+[Contrato y evidencia](DEVICE_GARMIN_AUTOMATIC_SYNC.md#revisión-del-ciclo-completo--25102026).
+
 **TRN-029 · 25/10/2026 · Firebase separado y ensayo Android:** Javier autoriza
 crear `EntrenaOP Dev` (`entrenaop-dev`), en Spark, independiente de sus proyectos
 anteriores, y conectar una cuenta técnica de Cloud Messaging a Supabase Dev.

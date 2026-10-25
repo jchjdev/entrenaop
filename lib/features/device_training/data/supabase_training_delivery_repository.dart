@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:workout_core/device_training_progress.dart';
 
 import '../domain/training_delivery.dart';
 
@@ -78,6 +79,13 @@ class SupabaseTrainingDeliveryRepository
       (json['deliveries'] as List)
           .map(
             (v) => decodeTrainingReceipt(Map<String, dynamic>.from(v as Map)),
+          )
+          .toList(growable: false),
+      progress: (json['progress'] as List? ?? const [])
+          .map(
+            (v) => DeviceTrainingProgress.fromJson(
+              Map<String, dynamic>.from(v as Map),
+            ),
           )
           .toList(growable: false),
     );

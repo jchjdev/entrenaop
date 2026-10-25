@@ -25,10 +25,10 @@ function fixture(){
   const account={refresh:async()=>{calls.push('refresh');if(fail==='refresh')throw new DeliveryFailure('provider_unavailable',true);return grant;},
     userId:async()=> 'garmin',permissions:async()=>({canReadActivities:true,canSendWorkouts:true})};
   const cipher={open:async<T>()=>grant as T,seal:async()=> 'ROTATED'};
-  let sent='sent';
-  const delivery={send:async()=>{calls.push('send');return {status:sent};}};
+  let sent='sent';let sentError:string|undefined;
+  const delivery={send:async()=>{calls.push('send');return {status:sent,error_code:sentError};}};
   const service=new TrainingSyncService(store,delivery,gateway,account,cipher,()=>Date.parse('2026-10-22'));
-  return {calls,commands,claim,service,setFail:(code:string)=>fail=code,setCommandFail:(code:string)=>failCommand=code,setSent:(value:string)=>sent=value};
+  return {calls,commands,claim,service,setFail:(code:string)=>fail=code,setCommandFail:(code:string)=>failCommand=code,setSent:(value:string,code?:string)=>{sent=value;sentError=code;}};
 }
 test('cambio conserva IDs y guarda la revisión después de las dos escrituras',async()=>{
  const f=fixture();await f.service.run(job);
@@ -69,11 +69,11 @@ test('históricos y efectos desconocidos no producen escrituras',async()=>{
 });
 test('transporte PUT y DELETE usa los recursos oficiales sin crear copias',async()=>{
  const requests:{url:string;method:string;body:any}[]=[];
- const client=new GarminTrainingClient(async(url,init)=>{requests.push({url:String(url),method:init?.method??'GET',body:init?.body?JSON.parse(String(init.body)):null});return new Response(null,{status:204});});
+ const client=new GarminTrainingClient(async(url,init)=>{requests.push({url:String(url),method:init?.method??'GET',body:init?.body?JSON.parse(String(init.body)):null});return (init?.method??'GET')==='GET'?Response.json([{workoutId:123,scheduleId:456,date:'2026-10-27'}]):new Response(null,{status:204});});
  const p={name:'Carrera',description:'',date:'2026-10-27',source:'coach' as const,steps:[{kind:'run' as const,measure:'seconds' as const,value:120,description:'Carrera',pace:null}]};
  await client.update('token',123,p);await client.updateSchedule('token',456,123,p.date);await client.removeSchedule('token',456);await client.remove('token',123);
  assert.deepEqual(requests.map(x=>[new URL(x.url).pathname,x.method]),[
-  ['/training-api/workout/v2/123','PUT'],['/training-api/schedule/456','PUT'],['/training-api/schedule/456','DELETE'],['/training-api/workout/v2/123','DELETE']]);
+  ['/training-api/workout/v2/123','PUT'],['/training-api/schedule/456','PUT'],['/training-api/schedule','GET'],['/training-api/schedule/456','DELETE'],['/training-api/workout/v2/123','DELETE']]);
  assert.equal(requests[0].body.workoutId,123);assert.deepEqual(requests[1].body,{scheduleId:456,workoutId:123,date:p.date});
 });
 test('DELETE de un recurso ya retirado es idempotente; PUT ausente exige revisión',async()=>{
@@ -106,4 +106,30 @@ test('invocación autenticada usa solo trabajos del servidor y limita el lote',a
   return Response.json({});
  });
  assert.equal(response.status,200);assert.deepEqual(await response.json(),{processed:4});assert.equal(takes,4);assert.equal(finished,4);
+});
+
+
+test('un rechazo permanente del alta conserva la causa y no vuelve al bucle automático',async()=>{
+ for(const code of ['provider_rejected','permission_denied','reauthorization_required','connection_changed','invalid_provider_response']){
+  const f=fixture();f.setSent('failed',code);await f.service.run({...job,operation:'create'});
+  assert.equal(f.commands[0].outcome,'review');assert.equal(f.commands[0].code,code);
+  assert.deepEqual(f.calls,['send','finish']);
+ }
+});
+test('un fallo transitorio del alta conserva la causa para el reintento seguro',async()=>{
+ for(const code of ['rate_limited','provider_unavailable','garmin_unavailable']){
+  const f=fixture();f.setSent('failed',code);await f.service.run({...job,operation:'create'});
+  assert.equal(f.commands[0].outcome,'retry');assert.equal(f.commands[0].code,code);
+ }
+});
+test('no confirma el cambio si Garmin no devuelve una única referencia en la nueva fecha',async()=>{
+ for(const rows of [[],[{workoutId:123,scheduleId:999,date:'2026-10-27'}],
+  [{workoutId:123,scheduleId:456,date:'2026-10-26'}],
+  [{workoutId:123,scheduleId:456,date:'2026-10-27'},{workoutId:123,scheduleId:457,date:'2026-10-27'}]]){
+  const methods:string[]=[];
+  const client=new GarminTrainingClient(async(_url,init)=>{methods.push(init?.method??'GET');
+   return init?.method==='PUT'?new Response(null,{status:204}):Response.json(rows);});
+  await assert.rejects(client.updateSchedule('token',456,123,'2026-10-27'),/schedule_not_confirmed/);
+  assert.deepEqual(methods,['PUT','GET']);
+ }
 });

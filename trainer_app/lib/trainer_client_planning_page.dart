@@ -6,6 +6,8 @@ import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/workout_template.dart';
 import 'package:workout_core/guided_program_codec.dart';
 import 'package:workout_core/workout_template_model.dart';
+import 'package:workout_core/device_training_progress.dart';
+import 'package:workout_editor_ui/device_training_progress_tile.dart';
 import 'package:workout_editor_ui/workout_template_content.dart';
 
 import 'trainer_client_planning_repository.dart';
@@ -29,6 +31,7 @@ class TrainerPlanningEntry {
       running = row.running,
       origin = 'Tu pauta',
       assignment = row.assignment,
+      deviceTraining = row.deviceTraining,
       shared = null;
   TrainerPlanningEntry.shared(SharedCalendarEntry row)
     : id = row.id,
@@ -42,11 +45,13 @@ class TrainerPlanningEntry {
           ? 'Plan personal'
           : 'EntrenaOP',
       assignment = null,
+      deviceTraining = null,
       shared = row;
   final String id, name, status, origin;
   final DateTime date;
   final bool running;
   final TrainerAssignment? assignment;
+  final DeviceTrainingProgress? deviceTraining;
   final SharedCalendarEntry? shared;
   bool get editable =>
       assignment != null &&
@@ -559,6 +564,8 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               ),
             ),
           if (own != null) ...[
+            if (entry.deviceTraining case final progress?)
+              DeviceTrainingProgressTile(progress: progress, showName: false),
             if (own.executionId != null) ...[
               FilledButton.icon(
                 onPressed: _busy || _mutation

@@ -83,7 +83,15 @@ class _ActivityResultPageState extends State<ActivityResultPage> {
       const Text(
         'Recibir una actividad no completa la semana: revisa sus datos y confirma a qué sesión corresponde.',
       ),
-      if (catalog != null && catalog.problems.isNotEmpty)
+      if (catalog != null && catalog.problems.contains('unsupported_activity'))
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Text(
+            'Se han recibido actividades de un tipo que esta integración todavía no admite. No completan ninguna sesión.',
+          ),
+        ),
+      if (catalog != null &&
+          catalog.problems.any((p) => p != 'unsupported_activity'))
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 12),
           child: Text(
