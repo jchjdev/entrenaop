@@ -74,10 +74,13 @@ class ProfessionalWorkspaceShell extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(left: desktop ? navigationWidth : 0),
                 child: Column(
+                  // La ruta puede contener BlockSemantics: pintar la cabecera
+                  // después mantiene accesibles herramientas y acciones.
+                  verticalDirection: VerticalDirection.up,
                   children: [
-                    headerBuilder(context, desktop),
-                    const Divider(height: 1),
                     Expanded(child: child),
+                    const Divider(height: 1),
+                    headerBuilder(context, desktop),
                   ],
                 ),
               ),

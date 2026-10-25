@@ -109,4 +109,62 @@ void main() {
       expect(t.takeException(), isNull);
     },
   );
+  testWidgets(
+    'la ruta no oculta la cabecera ni la navegación al lector de pantalla',
+    (t) async {
+      await t.binding.setSurfaceSize(const Size(1400, 1000));
+      addTearDown(() => t.binding.setSurfaceSize(null));
+      final semantics = t.ensureSemantics();
+      await t.pumpWidget(
+        MaterialApp(
+          home: ProfessionalWorkspaceShell(
+            scaffoldKey: GlobalKey<ScaffoldState>(),
+            navigation: TextButton(
+              onPressed: () {},
+              child: const Text('Biblioteca profesional'),
+            ),
+            headerBuilder: (_, _) => AppBar(
+              title: const Text('Cabecera profesional'),
+              actions: [
+                IconButton(
+                  tooltip: 'Cerrar cuenta de ensayo',
+                  onPressed: () {},
+                  icon: const Icon(Icons.logout),
+                ),
+              ],
+            ),
+            child: Navigator(
+              onGenerateRoute: (_) => MaterialPageRoute<void>(
+                builder: (_) =>
+                    const Scaffold(body: Text('Contenido de la ruta')),
+              ),
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final labels = t.semantics.simulatedAccessibilityTraversal().map((node) {
+        final data = node.getSemanticsData();
+        return '${data.label} ${data.tooltip}';
+      }).toList();
+      for (final label in [
+        'Biblioteca profesional',
+        'Cerrar cuenta de ensayo',
+        'Cabecera profesional',
+        'Contenido de la ruta',
+      ]) {
+        expect(
+          labels.any((text) => text.contains(label)),
+          isTrue,
+          reason: '$label debe convivir en la semántica',
+        );
+      }
+      semantics.dispose();
+      expect(
+        t.getTopLeft(find.text('Cabecera profesional')).dy,
+        lessThan(t.getTopLeft(find.text('Contenido de la ruta')).dy),
+      );
+      expect(t.takeException(), isNull);
+    },
+  );
 }

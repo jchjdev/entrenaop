@@ -49,8 +49,13 @@ class TrainerClientNavigation extends StatelessWidget {
       ('history', 'Historial', '$base?area=history'),
     ];
     return Column(
+      // El Navigator bloquea semántica pintada antes: recorrer de abajo arriba
+      // conserva la cabecera después del contenido sin cambiar su posición.
+      verticalDirection: VerticalDirection.up,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Expanded(child: child),
+        const Divider(height: 1),
         Material(
           color: Theme.of(context).colorScheme.surfaceContainerLow,
           child: Row(
@@ -103,8 +108,6 @@ class TrainerClientNavigation extends StatelessWidget {
             ],
           ),
         ),
-        const Divider(height: 1),
-        Expanded(child: child),
       ],
     );
   }

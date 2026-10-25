@@ -602,44 +602,48 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
             : 'Servicio inactivo. Conservas las pautas y los resultados de tus etapas.',
       ),
       const SizedBox(height: 16),
-      if (!widget.techniqueMode &&
-          !widget.resultsMode &&
-          _relation != null) ...[
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _conversation,
-          icon: const Icon(Icons.chat_bubble_outline),
-          label: const Text('Conversación del servicio'),
-        ),
-        const SizedBox(height: 12),
-      ],
-      if (!widget.techniqueMode && !widget.resultsMode)
-        FilledButton.icon(
-          onPressed:
-              _busy ||
-                  !_effective ||
-                  _relation == null ||
-                  _relation!.endedAt != null
-              ? null
-              : _assign,
-          icon: const Icon(Icons.event_available),
-          label: const Text('Asignar sesión privada'),
-        ),
-      if (!widget.techniqueMode &&
-          !widget.resultsMode &&
-          widget.programs != null) ...[
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed:
-              _busy ||
-                  !_effective ||
-                  _relation == null ||
-                  _relation!.endedAt != null
-              ? null
-              : _assignProgram,
-          icon: const Icon(Icons.view_week_outlined),
-          label: const Text('Pautar programa privado'),
-        ),
-      ],
+      Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          if (!widget.techniqueMode &&
+              !widget.resultsMode &&
+              _relation != null) ...[
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _conversation,
+              icon: const Icon(Icons.chat_bubble_outline),
+              label: const Text('Conversación del servicio'),
+            ),
+          ],
+          if (!widget.techniqueMode && !widget.resultsMode)
+            FilledButton.icon(
+              onPressed:
+                  _busy ||
+                      !_effective ||
+                      _relation == null ||
+                      _relation!.endedAt != null
+                  ? null
+                  : _assign,
+              icon: const Icon(Icons.event_available),
+              label: const Text('Asignar sesión privada'),
+            ),
+          if (!widget.techniqueMode &&
+              !widget.resultsMode &&
+              widget.programs != null) ...[
+            OutlinedButton.icon(
+              onPressed:
+                  _busy ||
+                      !_effective ||
+                      _relation == null ||
+                      _relation!.endedAt != null
+                  ? null
+                  : _assignProgram,
+              icon: const Icon(Icons.view_week_outlined),
+              label: const Text('Pautar programa privado'),
+            ),
+          ],
+        ],
+      ),
       const SizedBox(height: 16),
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) _retry(_error!, () => _load()),
@@ -662,54 +666,63 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                 : 'Todavía no has pautado sesiones a este alumno.',
           ),
         ),
-      for (final item in _items.where(
-        (i) =>
-            (!widget.techniqueMode && !widget.resultsMode) ||
-            i.executionId != null,
-      ))
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: EntrenaCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(item.name, style: Theme.of(context).textTheme.titleMedium),
-                Text(
-                  '${trainerDate(item.date)} · ${item.statusLabel} · Versión ${item.version}',
-                ),
-                if (item.note?.isNotEmpty == true) Text(item.note!),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+      ProfessionalCatalogGrid(
+        minCardWidth: 400,
+        maxColumns: 3,
+        children: [
+          for (final item in _items.where(
+            (i) =>
+                (!widget.techniqueMode && !widget.resultsMode) ||
+                i.executionId != null,
+          ))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: EntrenaCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (item.executionId != null && !widget.techniqueMode)
-                      TextButton(
-                        onPressed: _busy ? null : () => _result(item),
-                        child: const Text('Ver resultados'),
-                      ),
-                    if (item.executionId != null)
-                      TextButton.icon(
-                        onPressed: _busy
-                            ? null
-                            : () => context.push(
-                                '/assignments/${item.id}/technique',
-                              ),
-                        icon: const Icon(Icons.video_library_outlined),
-                        label: const Text('Ver vídeos compartidos'),
-                      ),
-                    if (!widget.techniqueMode &&
-                        !widget.resultsMode &&
-                        item.status == 'planned')
-                      TextButton(
-                        onPressed: _busy ? null : () => _cancel(item),
-                        child: const Text('Retirar pauta'),
-                      ),
+                    Text(
+                      item.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      '${trainerDate(item.date)} · ${item.statusLabel} · Versión ${item.version}',
+                    ),
+                    if (item.note?.isNotEmpty == true) Text(item.note!),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (item.executionId != null && !widget.techniqueMode)
+                          TextButton(
+                            onPressed: _busy ? null : () => _result(item),
+                            child: const Text('Ver resultados'),
+                          ),
+                        if (item.executionId != null)
+                          TextButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => context.push(
+                                    '/assignments/${item.id}/technique',
+                                  ),
+                            icon: const Icon(Icons.video_library_outlined),
+                            label: const Text('Ver vídeos compartidos'),
+                          ),
+                        if (!widget.techniqueMode &&
+                            !widget.resultsMode &&
+                            item.status == 'planned')
+                          TextButton(
+                            onPressed: _busy ? null : () => _cancel(item),
+                            child: const Text('Retirar pauta'),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+        ],
+      ),
       if (_more)
         OutlinedButton(
           onPressed: _busy ? null : () => _load(more: true),

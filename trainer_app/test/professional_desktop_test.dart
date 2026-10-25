@@ -343,6 +343,28 @@ void main() {
         MaterialApp.router(theme: EntrenaTheme.dark, routerConfig: router),
       );
       await t.pumpAndSettle();
+      final semantics = t.ensureSemantics();
+      final labels = t.semantics
+          .simulatedAccessibilityTraversal()
+          .map((node) => node.getSemanticsData().label)
+          .toList();
+      for (final label in [
+        'Planificación',
+        'Resultados',
+        'Técnica',
+        'Evolución',
+        'Formularios',
+        'Conversación',
+        'Notas',
+        'Historial',
+      ]) {
+        expect(
+          labels.any((text) => text.contains(label)),
+          isTrue,
+          reason: '$label debe ser accesible junto a la ruta activa',
+        );
+      }
+      semantics.dispose();
       final notes = find.widgetWithText(TextField, 'Notas internas');
       await t.enterText(notes, 'Mi nota sin guardar');
       final controller = t.widget<TextField>(notes).controller;

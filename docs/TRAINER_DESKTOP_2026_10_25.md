@@ -71,7 +71,7 @@ no forman parte de esta aceptación.
 - Análisis sin incidencias en raíz, ADMIN, Trainer, `workout_editor_ui` y
   `entrena_ui`; formato y diff comprobados.
 - 1.349 pruebas del deportista, una omisión previa; 315 de ADMIN, dos omisiones
-  previas; 205 de Trainer; 217 del editor compartido y 26 de interfaz común.
+  previas; 205 de Trainer; 217 del editor compartido y 27 de interfaz común.
 - Compilaciones web Release de ambos portales con CSP, recursos locales,
   sin mapas de fuentes y configuración exclusiva de Dev.
 - Siete pruebas del paquete Trainer y 36 de publicación/operaciones de ADMIN.
@@ -106,3 +106,12 @@ Los permisos y la autoría son los existentes. El calendario compartido sigue
 siendo de lectura respecto a otro preparador. No se crean cobros, avisos push,
 notificaciones simuladas ni cambios de cuotas a través de la interfaz. La
 aceptación humana del recorrido publicado queda para Javier.
+
+### Revisión de accesibilidad tras publicar el primer paquete
+
+La comprobación real con la sesión Dev detectó que el `Navigator` ocultaba en
+semántica las pestañas pintadas antes, aunque funcionaban visualmente. El marco
+común y la navegación de alumno pintan ahora primero la ruta y después su
+cabecera, con el mismo orden visual. Se añaden regresiones de recorrido semántico
+para las ocho áreas y las acciones del marco. La publicación final debe acreditar
+también esta corrección; la primera revisión publicada fue `a2162024`.
