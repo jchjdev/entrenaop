@@ -345,3 +345,23 @@ publicación Dev de esta revisión se acreditará después de compilarla.
 ADMIN sí queda publicado automáticamente mediante el circuito reparado, con
 validación, despliegue, retención y HTTPS correctos; evidencia en
 [hosting ADMIN](ADMIN_HOSTING_2026_10_19.md#publicación-automática-acreditada).
+
+
+### Publicación del pulido comprobada
+
+Trainer Dev sirve revisión `63573854661c36df9a39fb839d631943cb93e6bf`, release
+`63573854661c36df9a39fb839d631943cb93e6bf-20261025-1`, desde fuentes guardadas.
+ZIP SHA-256 `a621ba61b84d05266781dc85ac6483f1fdc7de9a6a8ac08e17920e5b2ccc4399`;
+JavaScript SHA-256 `a54dc2c5bc884f05f2c8057e7c26766e60d0d2ed6a34235165c105a2a62e7bb6`.
+La compilación web Release termina correctamente. Se publica desde staging
+privado nuevo: primero recursos en `public_html/trainer/releases`, cotejo del
+JavaScript por HTTPS y después solo `index.html` y `build-info.json` en el portal.
+Se conservan versiones y archivos ajenos, sin utilizar las credenciales ADMIN.
+
+`trainer_release.py verify` contrasta entorno Dev, revisión, hash, entrada,
+cabeceras y MIME WebAssembly. Chrome con la sesión existente acredita agenda,
+resultado ya registrado con las tarjetas disponibles y diálogo de programa con
+resumen de fecha, cambio de inicio y confirmación. Se cierra sin confirmar ni
+cambiar pautas; no se modifican resultados. Cero errores o avisos de consola
+capturados en ese recorrido. La versión de ADMIN continúa siendo la publicación
+automática `e790a6af` antes acreditada; este pulido solo cambia Trainer.
