@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**TRN-031 · 25/10/2026:** la ficha del alumno reúne su planificación con
+biblioteca y detalle, conserva el contexto al crear y prepara las asignaciones
+sin repetir destinatario. El calendario conjunto mantiene consentimiento y
+pautas ajenas en lectura. Los objetivos de oposición del servicio distinguen
+metas, última/anterior evaluación y mejor registro compatible, separados de la
+preparación personal y sin puntuar aptitud oficial.
+[Contrato y evidencia](TRAINER_CLIENT_PLANNING.md).
+
 **TRN-030 · 25/10/2026 · publicado y verificado en Dev:** Trainer y ADMIN aprovechan el espacio
 de escritorio mediante bibliotecas, composición y detalle en contexto. La ficha
 del alumno separa planificación, resultados, técnica, evolución, formularios,

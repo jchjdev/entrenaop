@@ -22,12 +22,14 @@ class TrainerProgramWorkPage extends StatefulWidget {
     this.onCreateExercise,
     this.exercisePreferences,
     this.sessionWorkRepository,
+    this.onSaved,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final GuidedWorkRepository workRepository;
   final WorkoutEditorWorkRepository? sessionWorkRepository;
   final String workId;
+  final ValueChanged<String>? onSaved;
   final String? initialBaseProgramId;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
@@ -108,13 +110,28 @@ class _TrainerProgramWorkPageState extends State<TrainerProgramWorkPage> {
       final finalized = work.finalizedProgramId;
       if (finalized != null) {
         // Es el recibo de ESTA finalización; no se busca otra versión vigente.
-        return TrainerProgramDetailPage(
+        final detail = TrainerProgramDetailPage(
           repository: widget.repository,
           workouts: widget.workouts,
           programId: finalized,
         );
+        if (widget.onSaved == null) return detail;
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: FilledButton.icon(
+                onPressed: () => widget.onSaved!(finalized),
+                icon: const Icon(Icons.event_available),
+                label: const Text('Volver al alumno para pautar este programa'),
+              ),
+            ),
+            Expanded(child: detail),
+          ],
+        );
       }
       return TrainerProgramEditorPage(
+        onSaved: widget.onSaved,
         key: ValueKey('${work.id}:${work.revision}'),
         repository: widget.repository,
         workouts: widget.workouts,

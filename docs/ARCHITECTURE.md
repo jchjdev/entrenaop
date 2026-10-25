@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**TRN-031 · 25/10/2026:** `TrainerClientPlanningPage` compone biblioteca,
+calendario y detalle con `ProfessionalEditorWorkspace`; los creadores se abren
+con sus checkpoints y devuelven identidad confirmada al contexto del alumno.
+La semana combina citas por ID y mantiene consultas propias/compartidas separadas.
+Objetivos añade revisiones privadas por pareja y reutiliza los protocolos y
+validadores de pruebas; lectura histórica, CAS/recibos y permisos residen en
+servidor. No se amplía la compartición del calendario a resultados ajenos.
+[Contrato](TRAINER_CLIENT_PLANNING.md).
+
 **TRN-030 · 25/10/2026:** `entrena_ui` aporta el marco profesional, rejillas,
 composición biblioteca/contenido/detalle y el contexto de escritorio. Se activa
 solo desde los portales y sus ventanas de edición; el deportista conserva su

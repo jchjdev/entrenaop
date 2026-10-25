@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-031 · 25/10/2026 · planificación desde el alumno · cierre en validación:**
+la ficha reúne biblioteca propia, semana conjunta y detalle, con retorno de los
+creadores existentes al mismo alumno/día. Arrastrar prepara la confirmación;
+pautas ajenas solo permiten lectura y desaparecen si se revoca la compartición.
+Objetivo de oposición por servicio: convocatoria, fecha y metas de protocolos
+propios, con última evaluación, anterior y mejor marca separadas. Dos migraciones
+aplicadas solo en Dev, contrato transaccional correcto antes/después y sin datos
+de ensayo persistentes. Análisis limpios y baterías completas: 1.353 pruebas raíz, 316 ADMIN y
+236 Trainer; la publicación se añade al activar la release.
+**Siguiente recorrido único:** aceptación con Javier de alumno → objetivo →
+crear/arrastrar → confirmar pauta → consultar calendario junto al otro preparador.
+No incluye cambios de Inicio del deportista, puntuación oficial, cobros o push.
+[Contrato y evidencia](TRAINER_CLIENT_PLANNING.md).
+
 **TRN-030 · 25/10/2026 · escritorio profesional · revisión final publicada en Dev:**
 completada la pasada de las pantallas actuales y sus creadores compartidos.
 Fuerza/carrera usan lienzo y propiedades de la selección; el creador de programas
@@ -9,10 +23,10 @@ el acabado. Fuente final en ambos portales: `6fe1d35c`.
 Análisis limpios; 1.349 pruebas raíz, 316 ADMIN, 207 Trainer, 218 editor y 28
 interfaz común, con las omisiones anteriores de raíz/ADMIN. Release, HTTPS y
 recorridos reales comprobados; 21 capturas finales optativas.
-ADMIN valida y compila en el run `40196467093`; su conexión FTPS falla antes de
-transferir. Se publica el artefacto original de CI mediante Hostinger y se
-verifica el mismo manifiesto/hash. El transporte automático sigue pendiente de
-reparación; no se declara correcto ese job. Trainer se publica en su directorio.
+ADMIN tuvo un fallo FTPS en el run `40196467093` y se recuperó con su artefacto
+original. El transporte automático ya quedó reparado y acreditado en el run
+`40217442803`, con TLS/SNI conservados y publicación HTTPS verificada.
+[Corrección comprobada](ADMIN_DEPLOYMENT_2026_10_19.md). Trainer se publica en su directorio.
 Sin cambios de permisos, datos, cuotas, dependencias ni producción.
 Siguiente recorrido único: aceptación con Javier de creación, programa, agenda
 y seguimiento en el escritorio publicado. Cobros, Firebase/Apple y recepción

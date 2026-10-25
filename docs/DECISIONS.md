@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+**TRN-031 · 25/10/2026 · planificación desde la ficha del alumno:** Javier
+aprueba implementar biblioteca, calendario conjunto, detalle y objetivos de
+oposición desde la ficha. Se reutilizan los creadores, pautas, resultados y
+consentimiento existentes. Crear vuelve al alumno y día seleccionados, sin
+confirmar una asignación automáticamente. Tus pautas se pueden adaptar/mover;
+las ajenas conservan solo lectura. Los objetivos pertenecen al servicio de cada
+pareja preparador/alumno: título, fecha opcional y metas por protocolo, sin leer
+su preparación personal ni abrir resultados del otro profesional. Última y
+anterior evaluación comparable se distinguen del mejor registro consultado y
+no calculan puntos oficiales. La agenda propia se consulta por alumno/periodo,
+con paginación explícita; retirar el consentimiento elimina la vista ajena.
+[Contrato y verificación](TRAINER_CLIENT_PLANNING.md).
+
+
 **Garmin · acceso visible al automático · 25/10/2026:** Javier señala que el
 envío automático resulta difícil de encontrar dentro de «Enviar una sesión».
 La conexión del deportista muestra directamente el interruptor y su estado,
@@ -12,8 +26,7 @@ servidor. [Presentación y validación](DEVICE_GARMIN_AUTOMATIC_SYNC.md#acceso-v
 **TRN-030 · prioridad profesional aclarada · 25/10/2026:** Javier descarta
 priorizar sueño, VFC y Body Battery para este pulido. El interés está en facilitar
 planificación por alumno, coordinación semanal de fuerza/carrera y objetivos de
-oposición. El diseño detallado de ese recorrido sigue siendo propuesta, no una
-ampliación ya aprobada ni implementada. [Contexto](audits/harbiz-2026-10-21.md#revisión-final-del-25102026).
+oposición. El recorrido queda después aprobado y desarrollado en TRN-031. [Contexto](audits/harbiz-2026-10-21.md#revisión-final-del-25102026).
 
 **TRN-030 · contraste final con Harbiz/Garmin · 25/10/2026:** Javier pide
 aprovechar las sesiones abiertas antes del fin de la prueba y pulir Trainer.

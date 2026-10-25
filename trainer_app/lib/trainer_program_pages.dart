@@ -422,10 +422,12 @@ class TrainerProgramEditorPage extends StatefulWidget {
     this.workRepository,
     this.work,
     this.sessionWorkRepository,
+    this.onSaved,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final String? programId;
+  final ValueChanged<String>? onSaved;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
   final GuidedWorkRepository? workRepository;
@@ -486,6 +488,7 @@ class _TrainerProgramEditorPageState extends State<TrainerProgramEditorPage> {
           widget.onCreateExercise,
           widget.exercisePreferences,
           widget.sessionWorkRepository,
+          widget.onSaved,
         ),
       );
     },
@@ -553,8 +556,10 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
     this.onCreateExercise,
     this.exercisePreferences,
     this.sessionWorkRepository,
+    this.onSaved,
   );
   final TrainerWorkoutRepository workouts;
+  final ValueChanged<String>? onSaved;
   final Future<WorkoutEditorExercise?> Function(BuildContext)? onCreateExercise;
   final ExerciseCatalogPreferences? exercisePreferences;
   final WorkoutEditorWorkRepository? sessionWorkRepository;
@@ -631,7 +636,11 @@ class _TrainerProgramAdapter extends GuidedProgramEditorAdapter {
 
   @override
   void finish(BuildContext context, String id, bool review) {
-    context.canPop() ? context.pop(true) : context.go('/programs');
+    if (onSaved != null) {
+      onSaved!(id);
+    } else {
+      context.canPop() ? context.pop(true) : context.go('/programs');
+    }
   }
 
   @override
@@ -875,10 +884,12 @@ class TrainerProgramAssignmentDialog extends StatefulWidget {
     required this.repository,
     required this.relationId,
     this.initialDate,
+    this.initialProgram,
   });
   final TrainerProgramRepository repository;
   final String relationId;
   final DateTime? initialDate;
+  final GuidedProgram? initialProgram;
   @override
   State<TrainerProgramAssignmentDialog> createState() =>
       _TrainerProgramAssignmentDialogState();
@@ -897,6 +908,7 @@ class _TrainerProgramAssignmentDialogState
   void initState() {
     super.initState();
     _load();
+    if (widget.initialProgram != null) _choose(widget.initialProgram!);
   }
 
   @override

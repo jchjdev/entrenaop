@@ -35,14 +35,18 @@ class TrainerClientNavigation extends StatelessWidget {
                   ? 'results'
                   : 'planning',
             'forms' => 'forms',
+            'goals' => 'goals',
+            'results' => 'results',
+            'technique' => 'technique',
             'conversation' => 'conversation',
             'calendar' => 'planning',
             _ => '',
           };
     final tabs = [
       ('planning', 'Planificación', '$base/workouts'),
-      ('results', 'Resultados', '$base/workouts?view=results'),
-      ('technique', 'Técnica', '$base/workouts?view=technique'),
+      ('goals', 'Objetivos', '$base/goals'),
+      ('results', 'Resultados', '$base/results'),
+      ('technique', 'Técnica', '$base/technique'),
       ('progress', 'Evolución', '$base?area=progress'),
       ('forms', 'Formularios', '$base/forms'),
       ('conversation', 'Conversación', '$base/conversation'),
@@ -94,8 +98,8 @@ class TrainerClientNavigation extends StatelessWidget {
                 onSelected: (path) => context.go(path),
                 itemBuilder: (_) => [
                   PopupMenuItem(
-                    value: '$base/calendar',
-                    child: const Text('Calendario compartido'),
+                    value: '$base/workouts',
+                    child: const Text('Calendario conjunto'),
                   ),
                   PopupMenuItem(
                     value: '$base/assessments',

@@ -1,3 +1,8 @@
+import 'trainer_client_goals_repository.dart';
+import 'trainer_client_goals.dart';
+import 'trainer_client_planning_repository.dart';
+import 'trainer_client_planning_page.dart';
+
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'dart:async';
@@ -382,7 +387,51 @@ class _TrainerAppState extends State<TrainerApp> {
               ),
             ),
             GoRoute(
+              path: '/clients/:id/goals',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                Scaffold(
+                  appBar: AppBar(title: const Text('Objetivos de oposición')),
+                  body: ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      TrainerClientGoalsPanel(
+                        key: ValueKey(
+                          'client-goals-$identity-${state.pathParameters['id']}',
+                        ),
+                        repository: SupabaseTrainerClientGoalsRepository(
+                          widget.client,
+                          identity!,
+                        ),
+                        clientId: state.pathParameters['id']!,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            for (final view in ['results', 'technique'])
+              GoRoute(
+                path: '/clients/:id/$view',
+                builder: (_, state) => TrainerClientWorkoutsPage(
+                  key: ValueKey(
+                    'client-$view-$identity-${state.pathParameters['id']}',
+                  ),
+                  repository: workouts(),
+                  programs: programs(),
+                  accessRepository: access(),
+                  clientId: state.pathParameters['id']!,
+                  resultsMode: view == 'results',
+                  techniqueMode: view == 'technique',
+                ),
+              ),
+            GoRoute(
               path: '/clients/:id',
+              redirect: (_, state) =>
+                  state.uri.queryParameters['area'] == 'goals'
+                  ? '/clients/${Uri.encodeComponent(state.pathParameters['id']!)}/goals'
+                  : null,
               onExit: (_, state) => exits.requestExit(state.pageKey),
               builder: (_, state) => guarded(
                 state,
@@ -619,9 +668,18 @@ class _TrainerAppState extends State<TrainerApp> {
                 GoRoute(
                   path: 'work/:workId',
                   onExit: (_, state) => exits.requestExit(state.pageKey),
-                  builder: (_, state) => guarded(
+                  builder: (context, state) => guarded(
                     state,
                     TrainerProgramWorkPage(
+                      onSaved: state.uri.queryParameters['client'] == null
+                          ? null
+                          : (id) {
+                              context.canPop()
+                                  ? context.pop(id)
+                                  : context.go(
+                                      '/clients/${Uri.encodeComponent(state.uri.queryParameters['client']!)}/workouts',
+                                    );
+                            },
                       sessionWorkRepository: sessionWorks(),
                       key: ValueKey(
                         'program-work-$identity-${state.pathParameters['workId']}',
@@ -712,17 +770,52 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/clients/:id/workouts',
-              builder: (_, state) => TrainerClientWorkoutsPage(
-                key: ValueKey(
-                  'client-workouts-$identity-${state.pathParameters['id']}',
-                ),
-                repository: workouts(),
-                programs: programs(),
-                accessRepository: access(),
-                clientId: state.pathParameters['id']!,
-                techniqueMode: state.uri.queryParameters['view'] == 'technique',
-                resultsMode: state.uri.queryParameters['view'] == 'results',
-              ),
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              redirect: (_, state) {
+                final view = state.uri.queryParameters['view'];
+                if (state.uri.pathSegments.length == 3 &&
+                    ['results', 'technique'].contains(view)) {
+                  return '/clients/${Uri.encodeComponent(state.pathParameters['id']!)}/$view';
+                }
+                return null;
+              },
+              builder: (context, state) {
+                final id = state.pathParameters['id']!;
+                return guarded(
+                  state,
+                  TrainerClientPlanningPage(
+                    key: ValueKey('client-planning-$identity-$id'),
+                    clientId: id,
+                    workspace: workspace(),
+                    access: access(),
+                    planning: SupabaseTrainerClientPlanningRepository(
+                      widget.client,
+                      identity!,
+                    ),
+                    sharedCalendar: SupabaseTrainerSharedCalendarRepository(
+                      widget.client,
+                      identity,
+                    ),
+                    workouts: workouts(),
+                    programs: programs(),
+                    operations: operations(),
+                    goals: TrainerClientGoalsPanel(
+                      key: ValueKey('planning-goals-$identity-$id'),
+                      repository: SupabaseTrainerClientGoalsRepository(
+                        widget.client,
+                        identity,
+                      ),
+                      clientId: id,
+                    ),
+                    onCreateSession: (context) => context.push<String>(
+                      '/workouts/work/${newGuidedWorkId()}',
+                    ),
+                    onCreateProgram: (context) => context.push<String>(
+                      '/programs/work/${newGuidedWorkId()}?client=${Uri.encodeComponent(id)}',
+                    ),
+                  ),
+                );
+              },
               routes: [
                 GoRoute(
                   path: ':assignment/result',
