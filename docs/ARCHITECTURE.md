@@ -5,7 +5,10 @@ a las fachadas autenticadas existentes del deportista y de agenda profesional.
 No modifica cola ni concesiones y filtra la asignación por autor. El modelo puro
 `DeviceTrainingProgress` reside en `workout_core`; su presentación plegable común
 en `workout_editor_ui`. La orquestación conserva causas de recibos fallidos y el
-adaptador confirma calendario tras actualizar fecha. Editor, receta, autoridad y
+adaptador confirma calendario tras actualizar fecha. El snapshot privado comparte
+receta/autoridad; la fachada de envío conserva sus bloqueos y la consulta usa una
+proyección sin FOR SHARE. La prueba coteja objetivo consultado y objetivo del worker
+para detectar divergencias de política. Editor, receta, autoridad y
 cierre de resultados conservan sus contratos.
 [Alcance](DEVICE_GARMIN_AUTOMATIC_SYNC.md#revisión-del-ciclo-completo--25102026).
 

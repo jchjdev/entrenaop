@@ -194,8 +194,18 @@ correctas. No se amplían permisos públicos ni se incorporan dependencias.
 
 Prueba real: una cita futura creada desde Trainer se entrega por el trabajador
 sin envío manual. Javier confirma su presencia en el calendario del fēnix tras
-sincronizar Connect. Cambio de fecha, retirada y nueva vuelta de resultados
-siguen pendientes; no se presentan como aceptados por esa primera confirmación.
+sincronizar Connect. La misma cita se mueve un día desde Trainer: Garmin confirma
+fecha nueva con las mismas referencias de entrenamiento y calendario; Javier verifica martes
+sin copia el lunes. Retirar esa cita produce recibo `cancelled` y Javier confirma
+que desaparece del calendario del fēnix tras sincronizar. No se inicia la sesión
+ni se fabrica una actividad para cerrar la prueba.
+
+La recepción acredita además una carrera nueva de la cuenta el 25/10, pendiente
+de asociación, y conserva las confirmaciones anteriores de carrera/fuerza.
+No se completa una cita inexistente ni se reutiliza una medición para otra pauta.
+La nueva aceptación física del algoritmo y de una actividad asociada a su pauta
+queda pendiente; la publicación/reset del algoritmo y el cierre de resultados
+están cubiertos por sus contratos transaccionales.
 
 La prueba del portal detecta que PostgREST ejecuta la agenda STABLE en una
 transacción READ ONLY: reutilizar la fuente con FOR SHARE hacía fallar su refresco,
@@ -209,8 +219,16 @@ publicación automática, fuerza y retorno siguen correctas.
 
 La CI de Trainer detecta además que el runner limpio no resolvía las dependencias
 de pruebas de proyectos anidados antes del análisis raíz. Se alinea su resolución
-con ADMIN/Garmin, conservando lockfiles, análisis y todas las pruebas. La publicación
-de esta revisión se registrará tras comprobarla.
+con ADMIN/Garmin, conservando lockfiles, análisis y todas las pruebas.
+Trainer Dev queda publicado automáticamente desde `a4bfb355`, run
+[40231539951](https://github.com/jchjdev/entrenaop/actions/runs/40231539951),
+con revisión, hashes, host y proyecto Dev comprobados por HTTPS. La revisión
+Flutter/servidor `24368681` pasa también CI Garmin/iOS
+[40230967025](https://github.com/jchjdev/entrenaop/actions/runs/40230967025).
+Funciones Dev verificadas: `garmin-training` v13 y `garmin-training-sync` v8.
+Captura móvil del componente común revisada y prueba visual correcta; no sustituye
+instalar la nueva presentación en iPhone. Las métricas e identificadores reales
+permanecen fuera de Git. No se despliega producción.
 
 ## Evidencia anterior y siguiente recorrido
 

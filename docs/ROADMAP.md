@@ -1,15 +1,18 @@
 # Roadmap de EntrenaOP
 
-**Garmin · 25/10/2026 · revisión del circuito automático en Dev:** corregida
-la conservación del motivo de fallo y la confirmación de fecha tras cambios.
-Consulta por cita y tarjetas plegables comunes a deportista/Trainer, limitada a
-pautas propias. Migración Dev cotejada y siete contratos SQL con ROLLBACK correctos;
+**Garmin · 25/10/2026 · circuito profesional aceptado y publicado en Dev:**
+Javier confirma en fēnix alta automática, cambio de día sin duplicados y retirada
+tras sincronizar. Se conservan las referencias del proveedor. Estado por cita
+plegable común a deportista/Trainer; errores permanentes y transitorios separados,
+confirmación de calendario tras cambios y consulta profesional READ ONLY corregida.
+Dos migraciones Dev cotejadas; contratos SQL con ROLLBACK y autoridad real,
 análisis limpios, 1.358 pruebas raíz, 238 Trainer, 316 ADMIN y 154 de servidor.
-No se acredita todavía el recorrido físico nuevo ni la publicación de esta UI.
-**Siguiente recorrido único:** alta futura desde Trainer → envío automático →
-cambio con referencias conservadas → retirada confirmada → resultados revisados,
-con Javier y su fēnix. El algoritmo comparte orquestación y tiene cobertura de
-publicación/reset; su aceptación física se distingue de las fixtures.
+CI Garmin/iOS correcta y Trainer Dev `a4bfb355` publicado/verificado por HTTPS.
+La carrera nueva recibida queda pendiente de asociación, sin cierre supuesto.
+**Siguiente recorrido único:** aceptar una pauta real del algoritmo y su actividad
+de vuelta, revisando asociación y cierre. El algoritmo comparte orquestación y tiene
+cobertura de publicación/reset; no se presenta como aceptación física nueva.
+Las demás marcas se posponen y el editor conserva su receta independiente.
 [Estado, validación y límites](DEVICE_GARMIN_AUTOMATIC_SYNC.md#revisión-del-ciclo-completo--25102026).
 
 **TRN-029 · 25/10/2026 · Firebase y primera push Android:** creado

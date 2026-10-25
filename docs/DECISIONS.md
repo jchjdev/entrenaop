@@ -7,8 +7,10 @@ consultan estados plegables de sus citas: pendiente, enviada, cambios/retirada
 pendientes, retirada confirmada y resultados incorporados. El preparador no ve
 entregas de otra relación por compartir calendario. Los recibos fallidos conservan
 su causa y mover fecha exige confirmar el calendario, además del ACK del proveedor.
-Implementación y contratos comprobados solo en Dev; aceptación física nueva y
-publicación de esta revisión se acreditan por separado.
+Implementación y contratos comprobados solo en Dev. Javier acepta alta automática,
+cambio de día y retirada en fēnix; Trainer Dev publicado/verificado desde a4bfb355.
+La confirmación de resultados sigue siendo explícita. Aceptación física nueva del
+algoritmo y de sus resultados pendiente, sin extender el alcance a otras marcas.
 [Contrato y evidencia](DEVICE_GARMIN_AUTOMATIC_SYNC.md#revisión-del-ciclo-completo--25102026).
 
 **TRN-029 · 25/10/2026 · Firebase separado y ensayo Android:** Javier autoriza

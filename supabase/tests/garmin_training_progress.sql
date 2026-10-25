@@ -49,6 +49,8 @@ begin
  perform public.garmin_training_sync_preferences(owner,session,true);
  state:=device_private.training_progress(owner,owner,scheduled);
  if state->>'state' is distinct from 'pending' then raise exception 'No explica cola pendiente: %',state;end if;
+ if device_private.training_progress_target(owner,scheduled) is distinct from device_private.training_sync_target(owner,scheduled) then
+  raise exception 'La política de lectura se ha separado del objetivo de envío';end if;
  src:=device_private.training_source(owner,owner,scheduled);
  insert into device_private.training_deliveries(owner_id,scheduled_id,connection_generation,revision,snapshot,status,workout_id,schedule_id)
  values(owner,scheduled,1,src->>'revision',src->'snapshot','sent',123,456) returning id into delivery;
@@ -72,6 +74,7 @@ end $$;
 -- La fachada STABLE se ejecuta así en PostgREST. La otra cita sigue pendiente
 -- y obliga a leer su receta, sin ocultar un FOR SHARE detrás de un recibo enviado.
 set transaction read only;
+set local role authenticated;
 do $$declare owner uuid:=current_setting('fixture.owner')::uuid; teacher uuid:=auth.uid(); result jsonb;
 begin
  result:=public.list_trainer_client_agenda(teacher,owner,current_date,current_date+5);
