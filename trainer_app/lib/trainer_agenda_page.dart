@@ -261,7 +261,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   Widget _weekBoard(List<TrainerAgendaItem> rows) => LayoutBuilder(
     builder: (context, constraints) {
-      final width = (constraints.maxWidth / 7).clamp(180.0, double.infinity);
+      final width = (constraints.maxWidth / 7).clamp(
+        148.0 * MediaQuery.textScalerOf(context).scale(13) / 13,
+        double.infinity,
+      );
       return SizedBox(
         height: 570,
         child: SingleChildScrollView(
@@ -275,68 +278,78 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   child: _dateDrop(
                     _civilOffset(_from, day),
                     Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextButton(
-                            onPressed: _locked
-                                ? null
-                                : () => setState(
-                                    () => _selected = _civilOffset(_from, day),
-                                  ),
-                            child: Text(
-                              '${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day]} ${_civilOffset(_from, day).day}',
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            right: BorderSide(
+                              color: Theme.of(context).dividerColor,
                             ),
                           ),
-                          const Divider(),
-                          Expanded(
-                            child: ListView(
-                              children: [
-                                for (final row in rows.where(
-                                  (r) => DateUtils.isSameDay(
-                                    r.assignment.date,
-                                    _civilOffset(_from, day),
-                                  ),
-                                ))
-                                  _boardCard(row),
-                                for (final event
-                                    in _assessments
-                                        .where(_matchesAssessment)
-                                        .where(
-                                          (e) =>
-                                              e.status != 'withdrawn' &&
-                                              DateUtils.isSameDay(
-                                                e.date,
-                                                _civilOffset(_from, day),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TextButton(
+                              onPressed: _locked
+                                  ? null
+                                  : () => setState(
+                                      () =>
+                                          _selected = _civilOffset(_from, day),
+                                    ),
+                              child: Text(
+                                '${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day]} ${_civilOffset(_from, day).day}',
+                              ),
+                            ),
+                            const Divider(),
+                            Expanded(
+                              child: ListView(
+                                children: [
+                                  for (final row in rows.where(
+                                    (r) => DateUtils.isSameDay(
+                                      r.assignment.date,
+                                      _civilOffset(_from, day),
+                                    ),
+                                  ))
+                                    _boardCard(row),
+                                  for (final event
+                                      in _assessments
+                                          .where(_matchesAssessment)
+                                          .where(
+                                            (e) =>
+                                                e.status != 'withdrawn' &&
+                                                DateUtils.isSameDay(
+                                                  e.date,
+                                                  _civilOffset(_from, day),
+                                                ),
+                                          ))
+                                    Card(
+                                      child: ListTile(
+                                        leading: const Icon(
+                                          Icons.timer_outlined,
+                                          size: 18,
+                                        ),
+                                        title: Text(event.title),
+                                        subtitle: Text(event.personName),
+                                        onTap: _locked
+                                            ? null
+                                            : () => context.push(
+                                                '/clients/${event.clientId}/assessments/${event.id}',
                                               ),
-                                        ))
-                                  Card(
-                                    child: ListTile(
-                                      leading: const Icon(
-                                        Icons.timer_outlined,
-                                        size: 18,
                                       ),
-                                      title: Text(event.title),
-                                      subtitle: Text(event.personName),
-                                      onTap: _locked
-                                          ? null
-                                          : () => context.push(
-                                              '/clients/${event.clientId}/assessments/${event.id}',
-                                            ),
+                                    ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: Text(
+                                      'Soltar aquí',
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
-                                const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'Soltar aquí',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

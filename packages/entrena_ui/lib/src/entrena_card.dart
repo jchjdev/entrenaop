@@ -1,4 +1,5 @@
 import 'entrena_theme.dart';
+import 'professional_theme.dart';
 import 'entrena_cover_image.dart';
 
 import 'package:flutter/material.dart';
@@ -56,21 +57,35 @@ class EntrenaCard extends StatelessWidget {
         border: visuals.outline,
       ),
     };
-    const radius = BorderRadius.all(Radius.circular(22));
+    final professional =
+        Theme.of(context).extension<ProfessionalSurfaceStyle>() != null;
+    final radius = BorderRadius.all(Radius.circular(professional ? 8 : 22));
 
-    final content = Padding(padding: padding, child: child);
+    final content = Padding(
+      padding: professional && padding == const EdgeInsets.all(20)
+          ? const EdgeInsets.all(16)
+          : padding,
+      child: child,
+    );
 
     return Material(
       color: Colors.transparent,
-      shape: const RoundedRectangleBorder(borderRadius: radius),
+      shape: RoundedRectangleBorder(borderRadius: radius),
       clipBehavior: Clip.antiAlias,
       child: Ink(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          ),
+          color: professional
+              ? tone == EntrenaCardTone.accent
+                    ? visuals.surfaceWarm
+                    : visuals.surface
+              : null,
+          gradient: professional
+              ? null
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: colors,
+                ),
           borderRadius: radius,
           border: Border.all(color: border),
         ),
@@ -123,7 +138,7 @@ class EntrenaCard extends StatelessWidget {
               content
             else
               InkWell(onTap: onTap, child: content),
-            if (tone != EntrenaCardTone.quiet)
+            if (!professional && tone != EntrenaCardTone.quiet)
               Positioned(
                 right: 18,
                 top: 0,

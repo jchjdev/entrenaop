@@ -100,13 +100,16 @@ class _TrainerShellState extends State<TrainerShell> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Padding(
-                padding: EdgeInsets.fromLTRB(12, 8, 12, 24),
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    EntrenaWordmark(width: 156),
+                    EntrenaWordmark(width: 132),
                     SizedBox(height: 8),
-                    Text('PREPARADORES'),
+                    Text(
+                      'PREPARADORES',
+                      style: TextStyle(fontSize: 10, letterSpacing: 1.2),
+                    ),
                   ],
                 ),
               ),
@@ -114,8 +117,35 @@ class _TrainerShellState extends State<TrainerShell> {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   children: [
-                    for (var i = 0; i < destinations.length; i++)
+                    for (var i = 0; i < destinations.length; i++) ...[
+                      if (const {
+                        0: 'TU ESPACIO',
+                        3: 'BIBLIOTECA',
+                        6: 'SEGUIMIENTO',
+                        9: 'ORGANIZACIÓN',
+                        12: 'SERVICIO',
+                      }.containsKey(i))
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 14, 10, 7),
+                          child: Text(
+                            const {
+                              0: 'TU ESPACIO',
+                              3: 'BIBLIOTECA',
+                              6: 'SEGUIMIENTO',
+                              9: 'ORGANIZACIÓN',
+                              12: 'SERVICIO',
+                            }[i]!,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              letterSpacing: .9,
+                              color: Color(0xFFAAB5C4),
+                            ),
+                          ),
+                        ),
                       ListTile(
+                        dense: true,
+                        minTileHeight: 36,
+                        minVerticalPadding: 4,
                         key: ValueKey('trainer-nav-${destinations[i].$1}'),
                         selected: selected == i,
                         selectedTileColor: context.visuals.accentSoft,
@@ -124,12 +154,13 @@ class _TrainerShellState extends State<TrainerShell> {
                         ),
                         minLeadingWidth: 22,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        leading: Icon(destinations[i].$3, size: 21),
+                        leading: Icon(destinations[i].$3, size: 18),
                         title: Text(destinations[i].$2),
                         onTap: () => go(i),
                       ),
+                    ],
                   ],
                 ),
               ),

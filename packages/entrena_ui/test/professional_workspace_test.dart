@@ -45,6 +45,11 @@ void main() {
           ),
         ),
       );
+      expect(
+        Theme.of(t.element(find.byType(DraftProbe)))
+            .extension<ProfessionalSurfaceStyle>(),
+        isNotNull,
+      );
       await t.enterText(
         find.byKey(const ValueKey('draft')),
         'Borrador sin guardar',
@@ -55,6 +60,11 @@ void main() {
           .controller;
       await t.binding.setSurfaceSize(const Size(320, 900));
       await t.pumpAndSettle();
+      expect(
+        Theme.of(t.element(find.byType(DraftProbe)))
+            .extension<ProfessionalSurfaceStyle>(),
+        isNull,
+      );
       expect(t.state(find.byType(DraftProbe)), same(state));
       expect(
         t.widget<TextField>(find.byKey(const ValueKey('draft'))).controller,

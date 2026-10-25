@@ -1,5 +1,12 @@
 # Registro de decisiones vigentes
 
+**TRN-030 · precisión visual del 25/10/2026:** Javier confirma que el acabado
+del portal debe acercarse a la preview aprobada, además de compartir su
+estructura. Tema de escritorio acotado a los portales: superficies planas,
+tipografía y controles más ligeros, navegación agrupada, pestañas con indicador
+y paneles mejor proporcionados. No se cambia la presentación del deportista
+ni se añaden funciones o datos ficticios del prototipo.
+
 **TRN-030 · 25/10/2026 · escritorio y arrastre profesional:** Javier aprueba
 implementar el recorrido completo de la propuesta en Trainer y ADMIN, usando
 componentes y creadores compartidos. Se organiza la interfaz por el espacio real

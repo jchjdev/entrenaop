@@ -158,3 +158,22 @@ Siguiente recorrido único: aceptación con Javier de crear/reordenar una receta
 componer un programa, revisar una asignación desde agenda y consultar resultado,
 técnica y notas en los portales publicados. Push y cobros continúan fuera de este
 bloque; no se acredita recepción física ni instalación iOS.
+
+## Ajuste visual solicitado tras probar la publicación
+
+Javier señala que la primera entrega reproduce la estructura pero todavía no
+el acabado de la preview. Se aproxima la apariencia profesional mediante un
+tema de escritorio compartido: superficies planas sin el adorno de las tarjetas
+táctiles, radios menores, títulos y acciones ligeros, navegación por grupos y
+pestañas subrayadas. Biblioteca y detalle reservan menos ancho; la semana
+ajusta el mínimo de columna al texto para mostrar más días sin recortar datos.
+El tema solo se aplica desde el marco profesional y sus editores. El cambio a
+ventana estrecha conserva el editor y recupera las medidas táctiles. No cambian
+permisos, rutas, guardados, operaciones de agenda ni estados del servicio.
+
+Estado de esta revisión: validada localmente; publicación por verificar.
+Análisis limpios de raíz, Trainer, ADMIN e interfaz común. Baterías: 1.349,
+205, 315 y 27 pruebas respectivamente (omisiones previas sin cambios). Se
+mantienen las regresiones de arrastre, cancelación, semántica y controladores
+al redimensionar. Capturas actualizadas de widgets reales con fuente cargada,
+sin datos personales ni imágenes del prototipo usadas como interfaz.

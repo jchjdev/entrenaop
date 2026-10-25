@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// Mantiene visibles las áreas del alumno sin montar todos sus datos a la vez.
@@ -70,22 +71,19 @@ class TrainerClientNavigation extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
-                    vertical: 8,
+                    vertical: 0,
                   ),
                   child: Row(
                     children: [
                       for (final tab in tabs)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: ChoiceChip(
-                            label: Text(tab.$2),
-                            selected: area == tab.$1,
-                            onSelected: (_) {
-                              if (location.toString() != tab.$3) {
-                                context.go(tab.$3);
-                              }
-                            },
-                          ),
+                        ProfessionalPageTab(
+                          label: tab.$2,
+                          selected: area == tab.$1,
+                          onPressed: () {
+                            if (location.toString() != tab.$3) {
+                              context.go(tab.$3);
+                            }
+                          },
                         ),
                     ],
                   ),

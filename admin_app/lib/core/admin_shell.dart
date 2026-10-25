@@ -124,14 +124,14 @@ class _AdminShellState extends State<AdminShell> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(24, 28, 24, 8),
+            padding: EdgeInsets.fromLTRB(18, 20, 18, 8),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: EntrenaWordmark(width: 156),
+              child: EntrenaWordmark(width: 132),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
             child: Text(
               'ADMINISTRACIÓN',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -179,7 +179,7 @@ class _AdminShellState extends State<AdminShell> {
                     for (final section in sections) ...[
                       if (group != section.group)
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 20, 12, 8),
+                          padding: const EdgeInsets.fromLTRB(10, 14, 10, 7),
                           child: Text(
                             group = section.group,
                             style: Theme.of(context).textTheme.labelMedium
@@ -190,6 +190,9 @@ class _AdminShellState extends State<AdminShell> {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: ListTile(
                           key: ValueKey('admin-nav-${section.path}'),
+                          dense: true,
+                          minTileHeight: 38,
+                          minVerticalPadding: 4,
                           selected: section.contains(widget.path),
                           selectedTileColor: context.visuals.accentSoft,
                           selectedColor: Theme.of(context)
@@ -197,9 +200,9 @@ class _AdminShellState extends State<AdminShell> {
                               .secondary,
                           iconColor: context.visuals.textMuted,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          leading: Icon(section.icon, size: 21),
+                          leading: Icon(section.icon, size: 18),
                           title: Text(section.label),
                           minLeadingWidth: 22,
                           contentPadding: const EdgeInsets.symmetric(

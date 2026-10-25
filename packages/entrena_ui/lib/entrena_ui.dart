@@ -13,3 +13,4 @@ export 'src/entrena_wordmark.dart';
 export 'src/workflow_exit_guard.dart';
 export 'src/retained_save_dialog.dart';
 export 'src/professional_workspace.dart';
+export 'src/professional_theme.dart';

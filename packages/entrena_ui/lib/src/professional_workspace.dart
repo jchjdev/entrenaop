@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'professional_theme.dart';
+
 /// La presentación profesional no modifica permisos ni se activa en el deportista.
 class ProfessionalWorkspaceScope extends InheritedWidget {
   const ProfessionalWorkspaceScope({
@@ -39,7 +41,7 @@ class ProfessionalWorkspaceShell extends StatelessWidget {
     required this.headerBuilder,
     this.compactNavigation,
     this.showCompactNavigation = true,
-    this.navigationWidth = 216,
+    this.navigationWidth = 208,
   });
 
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -57,51 +59,59 @@ class ProfessionalWorkspaceShell extends StatelessWidget {
           MediaQuery.textScalerOf(context).scale(16) <= 24;
       return ProfessionalWorkspaceScope(
         desktop: desktop,
-        child: Scaffold(
-          key: scaffoldKey,
-          drawer: !desktop && showCompactNavigation && compactNavigation == null
-              ? Drawer(
-                  width: constraints.maxWidth.clamp(0, 320).toDouble(),
-                  child: navigation,
-                )
-              : null,
-          bottomNavigationBar: !desktop && showCompactNavigation
-              ? compactNavigation
-              : null,
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: desktop ? navigationWidth : 0),
-                child: Column(
-                  // La ruta puede contener BlockSemantics: pintar la cabecera
-                  // después mantiene accesibles herramientas y acciones.
-                  verticalDirection: VerticalDirection.up,
-                  children: [
-                    Expanded(child: child),
-                    const Divider(height: 1),
-                    headerBuilder(context, desktop),
-                  ],
-                ),
+        child: ProfessionalAppearance(
+          enabled: desktop,
+          child: Builder(
+            builder: (context) => Scaffold(
+              key: scaffoldKey,
+              drawer:
+                  !desktop && showCompactNavigation && compactNavigation == null
+                  ? Drawer(
+                      width: constraints.maxWidth.clamp(0, 320).toDouble(),
+                      child: navigation,
+                    )
+                  : null,
+              bottomNavigationBar: !desktop && showCompactNavigation
+                  ? compactNavigation
+                  : null,
+              body: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: desktop ? navigationWidth : 0,
+                    ),
+                    child: Column(
+                      // La ruta puede contener BlockSemantics: pintar la cabecera
+                      // después mantiene accesibles herramientas y acciones.
+                      verticalDirection: VerticalDirection.up,
+                      children: [
+                        Expanded(child: child),
+                        const Divider(height: 1),
+                        headerBuilder(context, desktop),
+                      ],
+                    ),
+                  ),
+                  // Los Navigator pueden bloquear semántica anterior. Dibujar la
+                  // navegación después mantiene sus destinos accesibles.
+                  if (desktop)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: navigationWidth,
+                      child: navigation,
+                    ),
+                  if (desktop)
+                    Positioned(
+                      left: navigationWidth - 1,
+                      top: 0,
+                      bottom: 0,
+                      child: const VerticalDivider(width: 1),
+                    ),
+                ],
               ),
-              // Los Navigator pueden bloquear semántica anterior. Dibujar la
-              // navegación después mantiene sus destinos accesibles.
-              if (desktop)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: navigationWidth,
-                  child: navigation,
-                ),
-              if (desktop)
-                Positioned(
-                  left: navigationWidth - 1,
-                  top: 0,
-                  bottom: 0,
-                  child: const VerticalDivider(width: 1),
-                ),
-            ],
+            ),
           ),
         ),
       );
@@ -284,15 +294,28 @@ class _ProfessionalLibraryPaneState<T>
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
-                      final tile = ListTile(
-                        title: Text(widget.nameOf(item)),
-                        subtitle: Text(widget.subtitleOf(item)),
-                        leading: widget.dragOwner == null
-                            ? null
-                            : const Icon(Icons.drag_indicator, size: 18),
-                        onTap: widget.enabled
-                            ? () => widget.onSelected(item)
-                            : null,
+                      final tile = Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 4, 10, 4),
+                        child: Material(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            side: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: ListTile(
+                            title: Text(widget.nameOf(item)),
+                            subtitle: Text(widget.subtitleOf(item)),
+                            leading: widget.dragOwner == null
+                                ? null
+                                : const Icon(Icons.drag_indicator, size: 18),
+                            onTap: widget.enabled
+                                ? () => widget.onSelected(item)
+                                : null,
+                          ),
+                        ),
                       );
                       if (widget.dragOwner == null || !widget.enabled) {
                         return tile;
@@ -347,12 +370,12 @@ class ProfessionalEditorWorkspace extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(width: 260, child: library),
+          SizedBox(width: 224, child: library),
           const VerticalDivider(width: 1),
           Expanded(child: child),
-          if (inspector != null && constraints.maxWidth >= 1450) ...[
+          if (inspector != null && constraints.maxWidth >= 1200) ...[
             const VerticalDivider(width: 1),
-            SizedBox(width: 250, child: inspector),
+            SizedBox(width: 240, child: inspector),
           ],
         ],
       );
@@ -401,7 +424,12 @@ class ProfessionalWorkspaceViewport extends StatelessWidget {
       desktop:
           constraints.maxWidth >= 1100 &&
           MediaQuery.textScalerOf(context).scale(16) <= 24,
-      child: Builder(builder: builder),
+      child: Builder(
+        builder: (context) => ProfessionalAppearance(
+          enabled: ProfessionalWorkspaceScope.isDesktop(context),
+          child: Builder(builder: builder),
+        ),
+      ),
     ),
   );
 }
@@ -430,4 +458,50 @@ class _ProfessionalEmbeddedScrollState
           : SingleChildScrollView(child: content);
     },
   );
+}
+
+/// Pestaña de página con indicador discreto y activación por teclado.
+class ProfessionalPageTab extends StatelessWidget {
+  const ProfessionalPageTab({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      selected: selected,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selected
+                    ? theme.colorScheme.primary
+                    : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: TextButton(
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              foregroundColor: selected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 12),
+              shape: const RoundedRectangleBorder(),
+            ),
+            child: Text(label),
+          ),
+        ),
+      ),
+    );
+  }
 }
