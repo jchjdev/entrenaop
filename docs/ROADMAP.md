@@ -1,13 +1,15 @@
 # Roadmap de EntrenaOP
 
-**TRN-032 · 25/10/2026 · publicación automática Trainer · preparada:** motor
-FTPS seguro común con ADMIN, adaptadores y destinos separados. Validación,
-compilación, artefacto y deploy condicionado en el nuevo workflow. 59 pruebas
-Python correctas y workflows contrastados. Entorno `trainer-dev` creado y limitado
-a `main`; faltan cuenta confinada y secretos nuevos. No se acredita envío real.
-**Siguiente recorrido único:** Javier introduce las credenciales propias,
-activar la variable y comprobar el primer despliegue automático por HTTPS.
-[Activación y límites](TRAINER_DEPLOYMENT_2026_10_25.md).
+**TRN-032 · 25/10/2026 · publicación automática Trainer · operativa en Dev:**
+motor FTPS común con ADMIN, adaptadores, cuentas y entornos separados. 59 pruebas
+Python correctas; Trainer valida, compila, conserva artefacto y publica en el run
+`40225422916`. ADMIN conserva su publicación tras la extracción: run `40225423177`
+con validación, deploy y retención correctos. Entorno Trainer limitado a main,
+cuenta confinada y secretos configurados por Javier para la contraseña. Ambos
+portales confirman por HTTPS fuente `3188c701` y sus hashes. Sin producción.
+**Siguiente recorrido único:** siguiente cambio funcional de Trainer → push a
+main → publicación automática y verificación de la versión servida.
+[Contrato y evidencia](TRAINER_DEPLOYMENT_2026_10_25.md).
 
 **TRN-031 · 25/10/2026 · planificación desde el alumno · publicada en Dev:**
 la ficha reúne biblioteca propia, semana conjunta y detalle, con retorno de los

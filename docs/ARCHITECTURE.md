@@ -3,8 +3,8 @@
 **TRN-032 · 25/10/2026:** ADMIN y Trainer comparten transporte, activación por
 versión y recuperación en `tools/static_web_deploy.py`; conservan adaptadores,
 verificadores HTTPS, cuentas confinadas, secretos, entornos y workflows propios.
-La preparación de Trainer no equivale a transferencia habilitada: cuenta y
-credenciales nuevas pendientes de Javier. [Contrato](TRAINER_DEPLOYMENT_2026_10_25.md).
+Trainer queda habilitado después de configurar su cuenta confinada y secretos;
+la validación y la transferencia reales se acreditan por portal. [Contrato](TRAINER_DEPLOYMENT_2026_10_25.md).
 
 **TRN-031 · 25/10/2026:** `TrainerClientPlanningPage` compone biblioteca,
 calendario y detalle con `ProfessionalEditorWorkspace`; los creadores se abren

@@ -11,15 +11,22 @@ El código incorpora el circuito de validación, compilación, artefacto y despl
 separado en `.github/workflows/trainer-dev.yml`. El despliegue queda omitido
 mientras la variable de repositorio `TRAINER_DEV_DEPLOY_ENABLED` no sea `true`.
 La validación y el artefacto funcionan independientemente de disponer de cuenta
-FTPS. Este estado no acredita todavía una publicación automática de Trainer.
+FTPS. La configuración y la primera publicación automática quedan verificadas
+el 25/10/2026, según la evidencia final de este documento.
 
-Comprobación de Hostinger del 25/10: existe la cuenta administrativa confinada,
-pero todavía no una cuenta Trainer. La creación de `trainerci` se prepara para
-que Javier introduzca su contraseña; no se inventa ni se copia una contraseña
-de ADMIN. El entorno GitHub `trainer-dev` ya está creado, limitado a una rama
-`main` y cero tags, sin bypass administrativo, con los secretos aún vacíos.
-Quedan pendientes la cuenta confinada, los secretos propios, la activación y una ejecución
-real que termine con la verificación pública correcta.
+Configuración contrastada el 25/10: Javier crea `u287240541.trainerci`,
+confinada a `/home/u287240541/domains/entrenaop.es/public_html/trainer`.
+El entorno GitHub `trainer-dev` está limitado a `main`, cero tags y sin bypass
+administrativo. Se guardan `HOSTINGER_TRAINER_FTPS_USER` y
+`HOSTINGER_TRAINER_FTPS_PASSWORD` en ese entorno; Javier introduce la contraseña
+directamente. Se activa `TRAINER_DEV_DEPLOY_ENABLED=true` en variables de repositorio.
+Ningún valor secreto se incorpora a archivos, mensajes ni compilados.
+
+El primer run `40225422916` valida, compila y conserva el paquete de `3188c701`;
+su despliegue inicial se omite porque todavía no estaba activado. Tras configurar
+el acceso se relanza solo el job de transferencia, reutilizando ese mismo artefacto.
+Validación y transferencia del run terminan correctamente; se contrasta además
+el manifiesto y el hash públicos de forma independiente.
 
 ## Motor común y adaptadores separados
 
@@ -75,9 +82,10 @@ Los mensajes contienen fases y categorías cerradas, no respuestas remotas ni
 credenciales. Una avería de red o de Hostinger puede seguir haciendo fallar una
 publicación: el circuito no promete disponibilidad del proveedor.
 
-## Activación pendiente
+## Configuración de la activación
 
-La implementación y sus pruebas se completan antes de habilitar la cuenta:
+La implementación y sus pruebas se completan antes de habilitar la cuenta.
+Los siguientes pasos se configuran el 25/10/2026:
 
 1. En Hostinger, crear `trainerci` restringida exclusivamente a
    `public_html/trainer`, con contraseña introducida por Javier. No usar el
@@ -108,6 +116,25 @@ configura limpieza automática destructiva del servidor. La retención inicial d
 - Sin cambios Flutter: no se repiten sus baterías por modificar solo Python,
   workflows y documentación. El primer workflow ejecutará su validación completa.
 
-La comprobación real de Trainer queda pendiente de la activación anterior. ADMIN
-ya tenía su publicación IPv4/TLS acreditada antes de esta extracción; conservar
-sus pruebas no sustituye la comprobación del siguiente despliegue automático.
+## Primera publicación automática comprobada
+
+- Fuentes: `3188c701b3d08fbb9b6a6bf64c40743b61a5b315`.
+- Trainer: run `40225422916`, validación y deploy correctos. Se relanza solo
+  deploy tras la configuración; no se repite compilación ni se sustituye el
+  artefacto de la validación original.
+- Artefacto `trainer-dev-3188c701b3d08fbb9b6a6bf64c40743b61a5b315`, ID
+  `12610489145`, SHA-256 del ZIP de Actions
+  `489069a435fa84ab73e144f6734d34780c254d615eedac53f05d1d9ece030a53`.
+- Release Trainer: `3188c701b3d08fbb9b6a6bf64c40743b61a5b315-40225422916-1`.
+  JavaScript SHA-256 `6045f90ce7804147532d6d21fb06aedee0181528a2b1dcf6946b5a1f26ffcbd6`.
+- ADMIN después de la extracción: run `40225423177`, validación, deploy y
+  retención correctos. Release `3188c701b3d08fbb9b6a6bf64c40743b61a5b315-40225423177-1`;
+  JavaScript SHA-256 `ca7e0e8e69058ccef132ae811f046cf21ef4d123bcceae261a08a9d2e1705957`.
+- Ambos portales confirman por HTTPS la fuente, proyecto Dev y hash remoto.
+  La comprobación del job incluye entrada, cabeceras y MIME WebAssembly.
+- Trainer utiliza su cuenta confinada y secretos propios. Ya no necesita la
+  subida manual habitual del gestor de archivos. Los fallos de red/proveedor
+  siguen siendo posibles y se comunican como fallos, no como publicaciones.
+
+Siguiente recorrido único: comprobar la siguiente modificación funcional de
+Trainer mediante su push habitual a main y su publicación automática.

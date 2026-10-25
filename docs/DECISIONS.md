@@ -9,9 +9,10 @@ entorno propios. Trainer solo puede publicar en `trainer.entrenaop.es`, proyecto
 Dev `sxbxfjqgoddzhtcyhalw`, desde `main`. La variable de repositorio
 `TRAINER_DEV_DEPLOY_ENABLED` controla el envío; sin habilitarla se valida y
 conserva el artefacto. No se reutiliza ni se amplía la cuenta ADMIN. La cuenta
-Trainer y sus secretos todavía necesitan configuración humana; no se presenta
-el envío real como operativo hasta comprobar una publicación automática por
-HTTPS. No se modifica producción ni se añade limpieza destructiva del servidor.
+Trainer y sus secretos se configuran con intervención de Javier para la
+contraseña. Activación y primera transferencia verificadas por HTTPS el
+25/10 en el run `40225422916`. No se modifica producción ni se añade limpieza
+destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
 **TRN-031 · 25/10/2026 · planificación desde la ficha del alumno:** Javier
