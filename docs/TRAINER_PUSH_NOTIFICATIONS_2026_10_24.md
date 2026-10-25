@@ -18,6 +18,38 @@ Storage ni Analytics. Las cuentas, permisos, historial y avisos permanecen en
 Supabase. APNs directo requeriría otro adaptador de transporte, aún no construido,
 sin rehacer la planificación ni los creadores.
 
+## Activación, indicadores y pagos · acuerdo del 25/10/2026
+
+Javier aplaza Apple Developer y las cuotas de las tiendas hasta pulir más la app.
+Diciembre de 2026 es orientativo; no se fija lanzamiento ni se inicia ningún pago.
+El ensayo Android puede prepararse con Firebase Spark y una instalación de prueba,
+sin pagar Google Play. La prueba física iOS queda para disponer del acceso Apple
+y su configuración APNs, antes de dar el recorrido por aceptado.
+
+FCM figura sin coste en la tarifa oficial de Firebase y Spark no requiere un
+método de pago. Usar solo este transporte no obliga a contratar Blaze. El backend
+sigue consumiendo recursos de Supabase según su plan; no se presenta toda la
+infraestructura como gratuita. Apple anuncia 99 USD anuales (importe local según
+región) y Google Play, 25 USD de registro único; son cuotas de distribución
+separadas del envío push. Fuentes contrastadas el 25/10/2026:
+[Firebase](https://firebase.google.com/pricing),
+[Apple](https://developer.apple.com/help/account/membership/program-enrollment),
+[Google Play](https://support.google.com/googleplay/android-developer/answer/6112435?hl=es).
+
+Los avisos internos y la campana no necesitan FCM. Las alertas remotas permiten
+recibir novedades sin mantener la app abierta; en iOS FCM se apoya en APNs.
+El número del icono iOS requiere permiso de badge y sincronización explícita
+con pendientes/lecturas; cero elimina el indicador. Android ofrece un punto
+asociado a notificaciones activas en launchers compatibles; algunos muestran
+números y el comportamiento no es universal entre fabricantes.
+[Badge iOS](https://developer.apple.com/documentation/usernotifications/unmutablenotificationcontent/badge),
+[Indicadores Android](https://developer.android.com/develop/ui/views/notifications/badges).
+
+El código actual pide permiso de badge, pero el payload del worker no envía
+`aps.badge` y no hay sincronización nativa de contador/reset. Esa parte queda
+pendiente, separada del transporte ya preparado. No se acredita un globo
+funcionando ni recepción física por tener las dependencias instaladas.
+
 ## App y consentimiento
 
 `PUSH_ENABLED` es falso por defecto. Sin configuración completa no se inicializa

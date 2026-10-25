@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**TRN-029 · 25/10/2026 · activación y pagos de las tiendas:** Javier pospone
+Apple Developer y los demás pagos de publicación mientras se pule la app;
+diciembre de 2026 es una referencia orientativa, no una fecha de lanzamiento.
+Se puede preparar y ensayar FCM en Android con Firebase Spark sin pagar Google
+Play. Los avisos internos, las alertas remotas y el indicador del icono son
+comportamientos separados: integrar FCM no acredita sincronización de badges.
+No se activa una suscripción o facturación por esta conversación.
+[Estado, requisitos y coste](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 
 **TRN-032 · 25/10/2026 · publicación automática de Trainer Dev:** Javier pide
 el mismo circuito automático que ADMIN, con validación, paquete y despliegue
