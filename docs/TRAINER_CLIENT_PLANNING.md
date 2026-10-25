@@ -177,3 +177,24 @@ Verificador HTTPS correcto. Chrome reproduce antes el fallo y después acredita
 abrir la respuesta existente, cerrar conservando la ficha y volver a Planificación,
 sin modificar respuestas ni asignaciones. No hay errores del portal; un aviso de
 conexión de una extensión del navegador queda fuera de esta corrección.
+
+## Sesiones retiradas: limitación comunicada el 25/10/2026
+
+Javier valora conservar la señal de que una sesión fue retirada, pero necesita
+poder quitar de la vista una asignación si lo desea. Código contrastado:
+`cancel_trainer_assignment` cambia una sesión pendiente a `cancelled`; conserva
+la asignación y la cita. Trainer la muestra como «Retirada». No hay acción de
+borrado definitivo ni archivado individual de asignaciones en el portal. El
+diálogo actual dice que se retira de la agenda, aunque sigue visible, y necesita
+aclararse cuando se resuelva el recorrido.
+
+Propuesta pendiente, no implementada ni presentada como decisión cerrada:
+separar **Retirar** (cancelar y conservar la marca), **Archivar** (quitar una cita
+retirada de la vista habitual, recuperable desde un filtro de retiradas/archivadas)
+y cualquier borrado irreversible. Este último necesita definir protección de
+ejecuciones, resultados, versiones, notificaciones y referencias/retiradas Garmin.
+Archivar no debe borrar la plantilla de biblioteca ni contar como entrenamiento
+realizado; tampoco permite modificar una pauta de otro preparador. Falta cerrar
+el alcance de visibilidad para alumno/otros preparadores y el criterio de borrado
+antes de modificar el esquema o los contratos. En esta revisión no se borran ni
+se ocultan sesiones del usuario.

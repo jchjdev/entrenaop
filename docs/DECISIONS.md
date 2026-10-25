@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Pendiente TRN-031 · 25/10/2026 · retirar frente a quitar del calendario:**
+Javier valora mantener la marca de sesión retirada, pero pide una forma de quitarla
+si lo necesita. Se confirma que Trainer solo cancela y conserva la cita. Propuesta
+abierta: archivo individual recuperable, separado de retirar y del borrado
+irreversible, con protección de resultados y referencias Garmin. No hay todavía
+acuerdo cerrado de visibilidad/borrado ni implementación nueva.
+[Estado y propuesta](TRAINER_CLIENT_PLANNING.md#sesiones-retiradas-limitación-comunicada-el-25102026).
+
 **TRN-029 · 25/10/2026 · avisos agrupados y recordatorios opcionales:**
 Javier aprueba agrupar planificación y conversación y elegir recordatorio el
 mismo día o el anterior. La bandeja agrupa por alumno, preparador y tipo sin

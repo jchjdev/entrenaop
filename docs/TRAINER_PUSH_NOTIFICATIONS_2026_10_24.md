@@ -72,6 +72,65 @@ no acredita todavía recepción/apertura física de la nueva agrupación ni de l
 recordatorios; no se envía una prueba nocturna saltándose el descanso. Apple/APNs,
 badges nativos, producción y cobros siguen pendientes. No hay paquetes nuevos.
 
+## Plan de pruebas físicas · 26/10/2026 · pendiente
+
+Javier probará mañana en el Samsung. No se envían pruebas nocturnas ni se da por
+aceptada la política por sus pruebas automáticas. Para el primer repaso bastan
+los casos 1–5; 6–8 pueden hacerse después. Trainer y teléfono deben usar la misma
+cuenta de alumno y el mismo entorno Dev. Usar sus sesiones de prueba, sin borrar
+resultados reales ni forzar la detención de Android.
+
+Preparación: abrir la APK instalada en el Samsung, comprobar **Preparador →
+Avisos del preparador** activado y permiso concedido en Android. Revisar los avisos
+anteriores y marcarlos leídos si ya están revisados. Mantener **Europe/Madrid** y
+hacer las pruebas fuera de 22:00–08:00. Volver a la pantalla de inicio del teléfono
+para dejar EntrenaOP en segundo plano; mantener conexión. Con la app en primer
+plano se refresca la bandeja, sin alerta de sistema adicional: es intencionado.
+
+| Caso | Acción | Resultado esperado |
+| --- | --- | --- |
+| 1. Lote de planificación | Desde Trainer pautar cinco sesiones seguidas para el alumno, en fechas visibles; no abrir ni leer la bandeja del teléfono mientras se agrupa. | Un aviso de planificación, no cinco; normalmente desde cinco minutos después del último cambio. La bandeja tiene un grupo y la agenda conserva las cinco sesiones. |
+| 2. Mensajes | Enviar tres mensajes consecutivos desde la conversación profesional. | Un aviso de mensajes tras aproximadamente un minuto; abrir lleva a la bandeja y desde el grupo se entra en la conversación correcta con los tres mensajes. |
+| 3. Ya leído | Enviar otro mensaje y marcar su grupo como leído en la app antes de que toque enviarse. | No vuelve a avisar por ese mensaje. Abrir la conversación por sí solo no equivale a marcar el grupo de avisos como leído. |
+| 4. Recordatorio de hoy | Tener dos sesiones profesionales pendientes hoy. Elegir «El mismo día» y una hora de dentro de diez minutos, fuera del descanso; guardar y dejar la app en segundo plano. | Un recordatorio para hoy, no uno por sesión o preparador. Pulsarlo abre la agenda propia del día. No se exige exactitud al segundo. |
+| 5. Recordatorio de mañana | Tener sesiones pendientes mañana. Elegir «El día anterior» y una hora posterior de dentro de diez minutos; guardar antes de esa hora. | Un recordatorio de entrenamiento para mañana; pulsarlo abre la fecha de mañana. La fecha no debe haber recibido ya otro recordatorio. |
+| 6. Retirada antes del aviso | En una fecha que aún no haya recibido recordatorio, configurar el caso correspondiente y retirar todas sus sesiones profesionales antes de la hora elegida. | No llega el recordatorio. Una tarjeta «Retirada» visible no cuenta como entrenamiento pendiente. Si queda otra sesión válida del día, sí corresponde un recordatorio. |
+| 7. Descanso | Configurar temporalmente descanso desde un minuto antes de la hora actual hasta cinco minutos después; la hora del recordatorio debe quedar fuera. Enviar mensajes y mantener la app en segundo plano. | Ninguna alerta durante el descanso; al terminar puede llegar un único aviso agrupado si sigue sin leer. Restaurar después 22:00–08:00. |
+| 8. Repetición y cuentas | Tras el primer aviso de planificación, modificar varias pautas dentro de los treinta minutos siguientes. Después salir de la cuenta del alumno y entrar con otra cuenta. | No hay otra alerta inmediata por cada cambio; las novedades siguen pendientes para el siguiente envío. No deben mostrarse recursos privados del alumno anterior en la nueva cuenta. |
+
+Los mensajes tienen separación mínima de cinco minutos y la planificación de
+los mismos preparadores/tipos, treinta. No confundir esas pausas con un fallo.
+Los recordatorios son uno por **fecha de entrenamiento y dispositivo**: cambiar
+hora o modalidad no debe volver a notificar una fecha ya enviada. El modo «día
+anterior» a las 09:00 recuerda las sesiones de mañana a las 09:00 de hoy; no resta
+24 horas a una hora individual de entrenamiento.
+
+Si falla algo, anotar caso, alumno, hora de la acción y del aviso, modalidad/zona,
+si la app estaba abierta o en segundo plano, y qué abrió al pulsar. Una captura o
+un vídeo corto basta; no enviar contraseñas, claves ni archivos de credenciales.
+No hace falta probarlo todo mañana ni dejar el teléfono esperando por la noche.
+
+## Actualizar iPhone y activar sus push · estado del 25/10/2026
+
+La interfaz, agenda y avisos internos pueden llegar al iPhone recompilando main
+por el circuito existente: GitHub Desktop Fetch/Pull, `bash tools/prepare_iphone_dev.sh`
+y ejecutar «Runner iPhone» desde Xcode, conservando la app instalada. Eso no activa
+push remotas: el preparador normal deja `PUSH_ENABLED` apagado, y la configuración
+Firebase Dev actual tiene Android, no un registro Apple terminado.
+
+Para push reales falta reactivar Apple Developer Program, registrar la app iOS
+con el bundle ID comprobado, crear/configurar la clave APNs en Firebase, habilitar
+las capacidades y un perfil de firma compatible, proporcionar los valores públicos
+iOS del adaptador y compilar/instalar para probar permiso, recepción y apertura.
+No exige publicar en App Store ni contratar ahora la cuenta: Javier conserva el
+aplazamiento acordado. El contador nativo/badge es un recorrido independiente.
+El SDK Firebase fijado requiere Xcode 26.2 o posterior; revisar la instalación del
+Mac si aún tiene otra versión. [Preparación](IOS_DEVELOPMENT.md).
+Fuentes: [configuración Flutter/APNs](https://firebase.google.com/docs/cloud-messaging/flutter/get-started),
+[capacidades Apple](https://developer.apple.com/help/account/reference/supported-capabilities-ios),
+[cuenta personal y programa](https://developer.apple.com/help/account/basics/about-your-developer-account),
+[requisitos del SDK](https://firebase.google.com/support/release-notes/ios).
+
 ## Estado comprobado · 25/10/2026
 
 Firebase `EntrenaOP Dev` (`entrenaop-dev`) creado en Spark, sin facturación,
