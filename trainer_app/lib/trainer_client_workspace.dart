@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/trainer_progress.dart';
 import 'package:workout_core/performance_time.dart';
@@ -22,9 +21,11 @@ class TrainerClientWorkspacePage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.clientId,
+    this.area = 'all',
   });
   final TrainerClientWorkspaceRepository repository;
   final String clientId;
+  final String area;
   @override
   State<TrainerClientWorkspacePage> createState() =>
       _TrainerClientWorkspacePageState();
@@ -51,6 +52,18 @@ class _TrainerClientWorkspacePageState
     ).add(const Duration(days: 1));
     _start = _endExclusive.subtract(const Duration(days: 30));
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant TrainerClientWorkspacePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.area == 'progress' &&
+        oldWidget.area != widget.area &&
+        _workspace != null &&
+        _report == null &&
+        !_reportLoading) {
+      _loadReport();
+    }
   }
 
   @override
@@ -92,13 +105,17 @@ class _TrainerClientWorkspacePageState
       if (!mounted) return;
       setState(() {
         _workspace = workspace;
+        _report = null;
+        _reportError = null;
         _revision = workspace.revision;
         _notes.text = workspace.notes;
         _goal.text = workspace.goal;
         _dirty = false;
         _pending = null;
       });
-      await _loadReport();
+      if (widget.area == 'all' || widget.area == 'progress') {
+        await _loadReport();
+      }
     } catch (e) {
       if (mounted) setState(() => _errorMessage = _error(e));
     } finally {
@@ -249,7 +266,10 @@ class _TrainerClientWorkspacePageState
         ),
         body: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
+            constraints: ProfessionalWorkspaceScope.pageConstraints(
+              context,
+              maxWidth: 1100,
+            ),
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
@@ -279,187 +299,147 @@ class _TrainerClientWorkspacePageState
                     '${workspace.client.episodeCount} etapas del servicio · solo datos de tu relación profesional.',
                   ),
                   const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (workspace.client.active)
-                        OutlinedButton.icon(
-                          onPressed: () => context.push(
-                            '/clients/${widget.clientId}/calendar',
-                          ),
-                          icon: const Icon(Icons.groups_outlined),
-                          label: const Text('Calendario compartido'),
-                        ),
-                      OutlinedButton.icon(
-                        onPressed: () => context.push(
-                          '/clients/${widget.clientId}/workouts',
-                        ),
-                        icon: const Icon(Icons.calendar_month),
-                        label: const Text('Planificación y resultados'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => context.push(
-                          '/clients/${widget.clientId}/workouts?view=technique',
-                        ),
-                        icon: const Icon(Icons.video_library_outlined),
-                        label: const Text('Vídeos de técnica'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            context.push('/clients/${widget.clientId}/forms'),
-                        icon: const Icon(Icons.assignment_outlined),
-                        label: const Text('Formularios'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => context.push(
-                          '/clients/${widget.clientId}/assessments',
-                        ),
-                        icon: const Icon(Icons.timer_outlined),
-                        label: const Text('Pruebas y simulacros'),
-                      ),
-                      if (workspace.relations.isNotEmpty)
-                        OutlinedButton.icon(
-                          onPressed: () => context.push(
-                            '/conversations/${workspace.client.activeRelationId ?? workspace.relations.first['id']}',
-                          ),
-                          icon: const Icon(Icons.chat_bubble_outline),
-                          label: const Text('Conversación'),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Notas del preparador',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Privadas. No aparecen en la app del alumno ni en el informe exportado. El objetivo es una anotación tuya; no cambia pruebas o baremos.',
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Revisión $_revision'),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _goal,
-                    enabled:
-                        workspace.canEditNotes && !_saving && _pending == null,
-                    maxLength: 500,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Objetivo interno',
+                  if (widget.area == 'all' || widget.area == 'notes') ...[
+                    Text(
+                      'Notas del preparador',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    onChanged: (_) => setState(() => _dirty = true),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _notes,
-                    enabled:
-                        workspace.canEditNotes && !_saving && _pending == null,
-                    maxLength: 2000,
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      labelText: 'Notas internas',
-                    ),
-                    onChanged: (_) => setState(() => _dirty = true),
-                  ),
-                  const SizedBox(height: 12),
-                  if (_pending != null)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        'El guardado ya se envió. Reintenta para confirmar la misma revisión y contenido.',
-                      ),
-                    ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: FilledButton(
-                      onPressed:
-                          !workspace.canEditNotes ||
-                              _saving ||
-                              (!_dirty && _pending == null)
-                          ? null
-                          : _save,
-                      child: Text(
-                        _saving
-                            ? 'Guardando…'
-                            : _pending == null
-                            ? 'Guardar notas internas'
-                            : 'Reintentar notas',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Etapas del servicio',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  for (final relation in workspace.relations)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        'Desde ${_day(DateTime.parse(relation['accepted_at'] as String).toLocal())}',
-                      ),
-                      subtitle: Text(
-                        relation['ended_at'] == null
-                            ? 'Activa'
-                            : 'Finalizada ${_day(DateTime.parse(relation['ended_at'] as String).toLocal())}',
-                      ),
-                    ),
-                  if (!workspace.relationsComplete)
+                    const SizedBox(height: 8),
                     const Text(
-                      'Se muestran las últimas 50 etapas; esta lista es parcial.',
+                      'Privadas. No aparecen en la app del alumno ni en el informe exportado. El objetivo es una anotación tuya; no cambia pruebas o baremos.',
                     ),
-                  const Divider(height: 40),
-                  Text(
-                    'Evolución del servicio',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  Text(
-                    '${_day(_start)} – ${_day(_endExclusive.subtract(const Duration(days: 1)))}',
-                  ),
-                  const Text(
-                    'Cumplimiento: fecha civil pautada. Resultados: agrupados por fecha de INICIO de la ejecución en UTC; no representan la fecha de cada serie.',
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      TextButton.icon(
-                        onPressed: _reportLoading ? null : _period,
-                        icon: const Icon(Icons.date_range),
-                        label: const Text('Elegir periodo'),
+                    const SizedBox(height: 8),
+                    Text('Revisión $_revision'),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _goal,
+                      enabled:
+                          workspace.canEditNotes &&
+                          !_saving &&
+                          _pending == null,
+                      maxLength: 500,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Objetivo interno',
                       ),
-                      TextButton.icon(
-                        onPressed: _reportLoading ? null : _loadReport,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Actualizar informe'),
+                      onChanged: (_) => setState(() => _dirty = true),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _notes,
+                      enabled:
+                          workspace.canEditNotes &&
+                          !_saving &&
+                          _pending == null,
+                      maxLength: 2000,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        labelText: 'Notas internas',
                       ),
-                      TextButton.icon(
-                        onPressed: _report == null ? null : _export,
-                        icon: const Icon(Icons.download),
-                        label: const Text('Descargar informe CSV'),
+                      onChanged: (_) => setState(() => _dirty = true),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_pending != null)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          'El guardado ya se envió. Reintenta para confirmar la misma revisión y contenido.',
+                        ),
                       ),
-                    ],
-                  ),
-                  if (_reportLoading)
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FilledButton(
+                        onPressed:
+                            !workspace.canEditNotes ||
+                                _saving ||
+                                (!_dirty && _pending == null)
+                            ? null
+                            : _save,
+                        child: Text(
+                          _saving
+                              ? 'Guardando…'
+                              : _pending == null
+                              ? 'Guardar notas internas'
+                              : 'Reintentar notas',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (widget.area == 'all' || widget.area == 'history') ...[
+                    Text(
+                      'Etapas del servicio',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    for (final relation in workspace.relations)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Desde ${_day(DateTime.parse(relation['accepted_at'] as String).toLocal())}',
+                        ),
+                        subtitle: Text(
+                          relation['ended_at'] == null
+                              ? 'Activa'
+                              : 'Finalizada ${_day(DateTime.parse(relation['ended_at'] as String).toLocal())}',
+                        ),
+                      ),
+                    if (!workspace.relationsComplete)
+                      const Text(
+                        'Se muestran las últimas 50 etapas; esta lista es parcial.',
+                      ),
+                  ],
+                  if (widget.area == 'all' || widget.area == 'progress') ...[
+                    const Divider(height: 40),
+                    Text(
+                      'Evolución del servicio',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    Text(
+                      '${_day(_start)} – ${_day(_endExclusive.subtract(const Duration(days: 1)))}',
+                    ),
+                    const Text(
+                      'Cumplimiento: fecha civil pautada. Resultados: agrupados por fecha de INICIO de la ejecución en UTC; no representan la fecha de cada serie.',
+                    ),
+                    Wrap(
+                      spacing: 8,
                       children: [
-                        LinearProgressIndicator(),
-                        Text(
-                          'Cargando todas las páginas del periodo. El resumen aparecerá cuando esté completo.',
+                        TextButton.icon(
+                          onPressed: _reportLoading ? null : _period,
+                          icon: const Icon(Icons.date_range),
+                          label: const Text('Elegir periodo'),
+                        ),
+                        TextButton.icon(
+                          onPressed: _reportLoading ? null : _loadReport,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Actualizar informe'),
+                        ),
+                        TextButton.icon(
+                          onPressed: _report == null ? null : _export,
+                          icon: const Icon(Icons.download),
+                          label: const Text('Descargar informe CSV'),
                         ),
                       ],
                     ),
-                  if (_reportError != null)
-                    Text(
-                      _reportError!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                    if (_reportLoading)
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          LinearProgressIndicator(),
+                          Text(
+                            'Cargando todas las páginas del periodo. El resumen aparecerá cuando esté completo.',
+                          ),
+                        ],
                       ),
-                    ),
-                  if (_report case final report?)
-                    _ReportContent(report: report),
+                    if (_reportError != null)
+                      Text(
+                        _reportError!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    if (_report case final report?)
+                      _ReportContent(report: report),
+                  ],
                 ],
               ],
             ),

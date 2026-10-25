@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**TRN-030 · 25/10/2026 · escritorio y arrastre profesional:** Javier aprueba
+implementar el recorrido completo de la propuesta en Trainer y ADMIN, usando
+componentes y creadores compartidos. Se organiza la interfaz por el espacio real
+de la ventana, con biblioteca, composición, calendario y detalle en contexto.
+Arrastrar dentro del creador modifica el borrador; sobre calendario prepara una
+operación revisada, con los mismos controles y confirmaciones que los botones.
+El contenido del otro preparador continúa en solo lectura y las carteras siguen
+aisladas. No se sustituye Flutter ni se copian editores. Los ejemplos del
+prototipo no autorizan nuevos cobros, permisos ni datos ficticios en el producto.
+Firebase, pruebas push y Apple se dejan para después; los cobros reales siguen
+pospuestos. Desarrollo individual, sin agentes ni coordinación con otros chats.
+[Alcance, ejecución y evidencia](TRAINER_DESKTOP_2026_10_25.md).
+
 **TRN-029 · 24/10/2026 · continuidad, etiquetas y push:** Javier encarga cerrar
 la recuperación de sesiones hijas de programa y adaptaciones, añadir etiquetas
 privadas de biblioteca y preparar notificaciones push. Cobros y la instalación

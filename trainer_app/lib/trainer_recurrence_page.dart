@@ -113,7 +113,10 @@ class _TrainerRecurrencePageState extends State<TrainerRecurrencePage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1000),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1000,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -121,10 +124,13 @@ class _TrainerRecurrencePageState extends State<TrainerRecurrencePage> {
               'Prepara una sesión para varios días durante un periodo cerrado. Todas las fechas se revisan y se crean juntas; no se generan citas indefinidamente.',
             ),
             const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _busy || !_canWrite ? null : _create,
-              icon: const Icon(Icons.event_repeat),
-              label: const Text('Planificar serie finita'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                onPressed: _busy || !_canWrite ? null : _create,
+                icon: const Icon(Icons.event_repeat),
+                label: const Text('Planificar serie finita'),
+              ),
             ),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
@@ -137,36 +143,44 @@ class _TrainerRecurrencePageState extends State<TrainerRecurrencePage> {
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: Text('Aún no tienes series planificadas.'),
               ),
-            for (final row in _rows)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        row.templateName,
-                        style: Theme.of(context).textTheme.titleLarge,
+            ProfessionalCatalogGrid(
+              minCardWidth: 380,
+              children: [
+                for (final row in _rows)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            row.templateName,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            'Desde ${_date(row.weekStart)} · ${row.weeks} semanas · v${row.templateVersion}',
+                          ),
+                          Text(
+                            row.weekdays
+                                .map((d) => _weekdays[d - 1])
+                                .join(', '),
+                          ),
+                          Text(
+                            '${row.assignmentCount} citas creadas · ${row.pendingCount} pendientes',
+                          ),
+                          TextButton(
+                            onPressed:
+                                _busy || !_canWrite || row.pendingCount == 0
+                                ? null
+                                : () => _withdraw(row),
+                            child: const Text('Retirar próximas pautas'),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Desde ${_date(row.weekStart)} · ${row.weeks} semanas · v${row.templateVersion}',
-                      ),
-                      Text(
-                        row.weekdays.map((d) => _weekdays[d - 1]).join(', '),
-                      ),
-                      Text(
-                        '${row.assignmentCount} citas creadas · ${row.pendingCount} pendientes',
-                      ),
-                      TextButton(
-                        onPressed: _busy || !_canWrite || row.pendingCount == 0
-                            ? null
-                            : () => _withdraw(row),
-                        child: const Text('Retirar próximas pautas'),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+              ],
+            ),
             if (_more)
               OutlinedButton(
                 onPressed: _busy ? null : () => _load(more: true),

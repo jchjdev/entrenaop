@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/workout_editor_work.dart';
@@ -30,7 +31,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   Widget build(BuildContext context) => Scaffold(
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1100,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -57,158 +61,168 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               'Retoma tu trabajo, revisa el catálogo y comprueba las copias. Guardar un trabajo incompleto no publica contenido.',
             ),
             const SizedBox(height: 20),
-            AdminSessionWorkList(
-              key: ValueKey('sessions-$_refresh'),
-              repository: widget.sessions,
-              onOpen: _open,
-            ),
-            if (widget.programs != null)
-              _DashboardSection<List<GuidedWork>>(
-                key: ValueKey('programs-$_refresh'),
-                title: 'Programas por continuar',
-                load: widget.programs!.list,
-                builder: (items) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (items.isEmpty)
-                      const Text('No tienes programas incompletos.'),
-                    for (final work in items.take(5))
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(work.name),
-                        subtitle: const Text(
-                          'Trabajo incompleto · todavía fuera del catálogo',
-                        ),
-                        trailing: const Icon(Icons.arrow_forward),
-                        onTap: () => _open('/guided-programs/work/${work.id}'),
-                      ),
-                    if (items.length > 5)
-                      Text(
-                        '${items.length} trabajos disponibles en Programas guiados.',
-                      ),
-                    TextButton(
-                      onPressed: () => _open('/guided-programs'),
-                      child: const Text('Ver programas guiados'),
-                    ),
-                  ],
-                ),
-              ),
-            _DashboardSection<List<Map<String, dynamic>>>(
-              key: ValueKey('quality-$_refresh'),
-              title: 'Revisión del catálogo',
-              load: widget.operations.quality,
-              builder: (items) {
-                final errors = items
-                    .where((i) => i['severity'] == 'error')
-                    .length;
-                final attention = items
-                    .where((i) => i['severity'] == 'attention')
-                    .length;
-                final pending = items
-                    .where((i) => i['severity'] == 'pending')
-                    .length;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      '$errors ${errors == 1 ? "error" : "errores"} · $attention ${attention == 1 ? "aviso por completar" : "avisos por completar"} · $pending ${pending == 1 ? "pendiente editorial" : "pendientes editoriales"}',
-                    ),
-                    const Text(
-                      'Un recurso puede tener varios avisos. Los borradores no son errores.',
-                    ),
-                    for (final issue in items.take(5))
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(issue['name'] as String),
-                        subtitle: Text(issue['message'] as String),
-                        trailing: const Icon(Icons.arrow_forward),
-                        onTap: () => _open(adminQualityPath(issue)),
-                      ),
-                    TextButton(
-                      onPressed: () => _open('/quality'),
-                      child: const Text('Revisar todos los avisos'),
-                    ),
-                  ],
-                );
-              },
-            ),
-            _DashboardSection<Map<String, dynamic>>(
-              key: ValueKey('diagnostics-$_refresh'),
-              title: 'Copias y errores de desarrollo',
-              load: widget.operations.diagnostics,
-              builder: (data) {
-                final backups = (data['backups'] as List).cast<Map>();
-                final latest = backups.firstOrNull;
-                final checked = DateTime.tryParse(
-                  data['checked_at']?.toString() ?? '',
-                );
-                final expires = DateTime.tryParse(
-                  latest?['expires_at']?.toString() ?? '',
-                );
-                final finished = DateTime.tryParse(
-                  latest?['finished_at']?.toString() ?? '',
-                );
-                final verified =
-                    latest?['status'] == 'verified' &&
-                    checked != null &&
-                    expires != null &&
-                    expires.isAfter(checked);
-                final fresh =
-                    verified &&
-                    finished != null &&
-                    checked.difference(finished) < const Duration(hours: 36);
-                final errors = data['errors'] as List;
-                final collection = data['collection'] as Map?;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      latest == null
-                          ? 'Sin copia registrada'
-                          : fresh
-                          ? 'Copia cifrada verificada y disponible'
-                          : verified
-                          ? 'Copia disponible; comprobación desactualizada'
-                          : 'Revisar la última copia: no hay disponibilidad verificada',
-                    ),
-                    if (latest?['restore_verified_at'] != null)
-                      Text(
-                        'Último ensayo de restauración: ${adminPendingDate(latest!['restore_verified_at'])}',
-                      ),
-                    Text(
-                      '${errors.length}${errors.length >= 100 ? " o más" : ""} errores registrados en los últimos 14 días.',
-                    ),
-                    Text(
-                      collection == null
-                          ? 'Sin comprobación de recogida de servicios.'
-                          : 'Última recogida: ${adminPendingDate(collection['checked_at'])} · ${collection['status'] == "success" ? "consulta completada" : "revisar recogida"}',
-                    ),
-                    if (collection?['truncated'] == true)
-                      const Text('La recogida de servicios es parcial.'),
-                    const Text(
-                      'Los eventos de pruebas también pueden aparecer. El registro no garantiza la ausencia de otros errores.',
-                    ),
-                    TextButton(
-                      onPressed: () => _open('/system'),
-                      child: const Text('Revisar copias y registro de errores'),
-                    ),
-                  ],
-                );
-              },
-            ),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
+            ProfessionalCatalogGrid(
+              minCardWidth: 420,
+              maxColumns: 3,
               children: [
-                OutlinedButton.icon(
-                  onPressed: () => _open('/history'),
-                  icon: const Icon(Icons.history),
-                  label: const Text('Historial editorial'),
+                AdminSessionWorkList(
+                  key: ValueKey('sessions-$_refresh'),
+                  repository: widget.sessions,
+                  onOpen: _open,
                 ),
-                OutlinedButton.icon(
-                  onPressed: () => _open('/sessions'),
-                  icon: const Icon(Icons.view_agenda_outlined),
-                  label: const Text('Catálogo de sesiones'),
+                if (widget.programs != null)
+                  _DashboardSection<List<GuidedWork>>(
+                    key: ValueKey('programs-$_refresh'),
+                    title: 'Programas por continuar',
+                    load: widget.programs!.list,
+                    builder: (items) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (items.isEmpty)
+                          const Text('No tienes programas incompletos.'),
+                        for (final work in items.take(5))
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(work.name),
+                            subtitle: const Text(
+                              'Trabajo incompleto · todavía fuera del catálogo',
+                            ),
+                            trailing: const Icon(Icons.arrow_forward),
+                            onTap: () =>
+                                _open('/guided-programs/work/${work.id}'),
+                          ),
+                        if (items.length > 5)
+                          Text(
+                            '${items.length} trabajos disponibles en Programas guiados.',
+                          ),
+                        TextButton(
+                          onPressed: () => _open('/guided-programs'),
+                          child: const Text('Ver programas guiados'),
+                        ),
+                      ],
+                    ),
+                  ),
+                _DashboardSection<List<Map<String, dynamic>>>(
+                  key: ValueKey('quality-$_refresh'),
+                  title: 'Revisión del catálogo',
+                  load: widget.operations.quality,
+                  builder: (items) {
+                    final errors = items
+                        .where((i) => i['severity'] == 'error')
+                        .length;
+                    final attention = items
+                        .where((i) => i['severity'] == 'attention')
+                        .length;
+                    final pending = items
+                        .where((i) => i['severity'] == 'pending')
+                        .length;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '$errors ${errors == 1 ? "error" : "errores"} · $attention ${attention == 1 ? "aviso por completar" : "avisos por completar"} · $pending ${pending == 1 ? "pendiente editorial" : "pendientes editoriales"}',
+                        ),
+                        const Text(
+                          'Un recurso puede tener varios avisos. Los borradores no son errores.',
+                        ),
+                        for (final issue in items.take(5))
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(issue['name'] as String),
+                            subtitle: Text(issue['message'] as String),
+                            trailing: const Icon(Icons.arrow_forward),
+                            onTap: () => _open(adminQualityPath(issue)),
+                          ),
+                        TextButton(
+                          onPressed: () => _open('/quality'),
+                          child: const Text('Revisar todos los avisos'),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                _DashboardSection<Map<String, dynamic>>(
+                  key: ValueKey('diagnostics-$_refresh'),
+                  title: 'Copias y errores de desarrollo',
+                  load: widget.operations.diagnostics,
+                  builder: (data) {
+                    final backups = (data['backups'] as List).cast<Map>();
+                    final latest = backups.firstOrNull;
+                    final checked = DateTime.tryParse(
+                      data['checked_at']?.toString() ?? '',
+                    );
+                    final expires = DateTime.tryParse(
+                      latest?['expires_at']?.toString() ?? '',
+                    );
+                    final finished = DateTime.tryParse(
+                      latest?['finished_at']?.toString() ?? '',
+                    );
+                    final verified =
+                        latest?['status'] == 'verified' &&
+                        checked != null &&
+                        expires != null &&
+                        expires.isAfter(checked);
+                    final fresh =
+                        verified &&
+                        finished != null &&
+                        checked.difference(finished) <
+                            const Duration(hours: 36);
+                    final errors = data['errors'] as List;
+                    final collection = data['collection'] as Map?;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          latest == null
+                              ? 'Sin copia registrada'
+                              : fresh
+                              ? 'Copia cifrada verificada y disponible'
+                              : verified
+                              ? 'Copia disponible; comprobación desactualizada'
+                              : 'Revisar la última copia: no hay disponibilidad verificada',
+                        ),
+                        if (latest?['restore_verified_at'] != null)
+                          Text(
+                            'Último ensayo de restauración: ${adminPendingDate(latest!['restore_verified_at'])}',
+                          ),
+                        Text(
+                          '${errors.length}${errors.length >= 100 ? " o más" : ""} errores registrados en los últimos 14 días.',
+                        ),
+                        Text(
+                          collection == null
+                              ? 'Sin comprobación de recogida de servicios.'
+                              : 'Última recogida: ${adminPendingDate(collection['checked_at'])} · ${collection['status'] == "success" ? "consulta completada" : "revisar recogida"}',
+                        ),
+                        if (collection?['truncated'] == true)
+                          const Text('La recogida de servicios es parcial.'),
+                        const Text(
+                          'Los eventos de pruebas también pueden aparecer. El registro no garantiza la ausencia de otros errores.',
+                        ),
+                        TextButton(
+                          onPressed: () => _open('/system'),
+                          child: const Text(
+                            'Revisar copias y registro de errores',
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _open('/history'),
+                      icon: const Icon(Icons.history),
+                      label: const Text('Historial editorial'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => _open('/sessions'),
+                      icon: const Icon(Icons.view_agenda_outlined),
+                      label: const Text('Catálogo de sesiones'),
+                    ),
+                  ],
                 ),
               ],
             ),

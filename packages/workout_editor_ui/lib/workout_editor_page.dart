@@ -94,6 +94,7 @@ class WorkoutEditorPage extends StatefulWidget {
 
 class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     with WidgetsBindingObserver {
+  final _libraryOwner = Object();
   final _name = TextEditingController();
   final _description = TextEditingController();
   final _duration = TextEditingController();
@@ -1048,7 +1049,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ),
       ?widget.additionalFields,
       const SizedBox(height: 20),
-      if (_running) _runningEditor() else _strengthEditor(),
+      if (_running)
+        _catalogDrop<RunningStepKind>(
+          _runningEditor(),
+          (_) => _runningCount < 40,
+          _insertRunningKind,
+          'Soltar para añadir un tramo',
+        )
+      else
+        _strengthEditor(),
       if (_error != null && _invalidSegment == null) ...[
         const SizedBox(height: 16),
         Text(
@@ -1066,26 +1075,218 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         ),
       ),
     ];
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: widget.embedded
-            ? Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: children,
-                ),
-              )
-            : ListView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.all(24),
-                children: children,
-              ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final embeddedFlow =
+            widget.embedded &&
+            (!ProfessionalWorkspaceScope.isDesktop(context) ||
+                !constraints.hasBoundedHeight ||
+                constraints.maxWidth < 1000);
+        final content = Center(
+          child: ConstrainedBox(
+            constraints: ProfessionalWorkspaceScope.pageConstraints(
+              context,
+              maxWidth: 900,
+            ),
+            child: embeddedFlow
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: children,
+                    ),
+                  )
+                : ListView(
+                    key: const ValueKey('professional-editor-scroll'),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.all(24),
+                    children: children,
+                  ),
+          ),
+        );
+        return embeddedFlow
+            ? content
+            : ProfessionalEditorWorkspace(
+                library: _running ? _runningLibrary() : _exerciseLibrary(),
+                inspector: _recipeInspector(),
+                child: content,
+              );
+      },
     );
   }
+
+  Widget _recipeInspector() => ListView(
+    padding: const EdgeInsets.all(20),
+    children: [
+      Text(
+        'Resumen de la receta',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 16),
+      Text(
+        _running
+            ? 'Carrera · $_runningCount tramos'
+            : 'Fuerza · ${_blocks.length} bloques',
+      ),
+      if (_runningEstimate() case final estimate? when _running) Text(estimate),
+      const SizedBox(height: 16),
+      const Text(
+        'Arrastra desde la biblioteca o utiliza los botones de añadir. Los cambios se guardan con la sesión.',
+      ),
+      const SizedBox(height: 16),
+      if (!_running)
+        for (var i = 0; i < _blocks.length; i++)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text('${i + 1}. ${_blocks[i].name.text}'),
+            subtitle: Text(
+              '${_blocks[i].exercises.length} posiciones · ${_strengthFormatName(_blocks[i].format)}',
+            ),
+            onTap: () => setState(() => _expandedStrengthBlock = _blocks[i]),
+          ),
+    ],
+  );
+
+  Widget _exerciseLibrary() => ProfessionalLibraryPane<WorkoutEditorExercise>(
+    title: 'Biblioteca de ejercicios',
+    items: _catalog,
+    nameOf: (e) => e.name,
+    subtitleOf: (e) => [
+      if (e.catalogScope != null) e.catalogScope!,
+      ...e.muscleGroups,
+      ...e.equipment,
+    ].join(' · '),
+    dragOwner: _libraryOwner,
+    enabled: !_busy && !_creatingExercise,
+    onSelected: _chooseBlockForExercise,
+    footer: const Text('Arrastra al bloque de destino o pulsa para añadir.'),
+  );
+
+  Future<void> _chooseBlockForExercise(WorkoutEditorExercise exercise) async {
+    if (_busy || _creatingExercise) return;
+    final available = _blocks.where(_canReceiveExercise).toList();
+    final block = available.length == 1
+        ? available.single
+        : await showDialog<_StrengthBlock>(
+            context: context,
+            builder: (context) => SimpleDialog(
+              title: const Text('Añadir a un bloque'),
+              children: [
+                if (available.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'No hay huecos disponibles. Añade un bloque o una posición.',
+                    ),
+                  ),
+                for (final b in available)
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(context, b),
+                    child: Text('${_blocks.indexOf(b) + 1}. ${b.name.text}'),
+                  ),
+              ],
+            ),
+          );
+    if (mounted && block != null) _insertCatalogExercise(block, exercise);
+  }
+
+  bool _canReceiveExercise(_StrengthBlock block) =>
+      block.exercises.any((e) => e.exerciseId == null) ||
+      (block.exercises.length < 20 &&
+          ![
+            WorkoutBlockFormat.superset,
+            WorkoutBlockFormat.intervals,
+            WorkoutBlockFormat.tabata,
+          ].contains(block.format));
+
+  void _insertCatalogExercise(
+    _StrengthBlock block,
+    WorkoutEditorExercise exercise,
+  ) {
+    if (_busy ||
+        _creatingExercise ||
+        !_blocks.contains(block) ||
+        !_canReceiveExercise(block) ||
+        !_catalog.any((e) => e.id == exercise.id)) {
+      return;
+    }
+    setState(() {
+      final slot = block.exercises
+          .where((e) => e.exerciseId == null)
+          .firstOrNull;
+      if (slot != null) {
+        // Completar un hueco conserva las series, cargas y variantes ya escritas.
+        slot.exerciseId = exercise.id;
+      } else {
+        block.exercises.add(_Exercise()..exerciseId = exercise.id);
+      }
+      _expandedStrengthBlock = block;
+    });
+    _exercisePreferences?.recordSelection(exercise.id);
+  }
+
+  Widget _runningLibrary() => ProfessionalLibraryPane<RunningStepKind>(
+    title: 'Tramos de carrera',
+    items: RunningStepKind.values,
+    nameOf: (kind) => kind.label,
+    subtitleOf: (_) => 'Completa distancia o duración en la receta',
+    dragOwner: _libraryOwner,
+    enabled: !_busy && _runningCount < 40,
+    onSelected: _insertRunningKind,
+    footer: const Text(
+      'Añade un tramo y ordénalo con su asa. Los ritmos se definen en la receta.',
+    ),
+  );
+
+  void _insertRunningKind(RunningStepKind kind) {
+    if (_busy || _runningCount >= 40) return;
+    setState(() {
+      final next = _Segment()..kind = kind;
+      _segments.add(next);
+      _groupBreaks.add(next);
+      _expandedSegment = next;
+      _invalidSegment = null;
+    });
+  }
+
+  Widget _catalogDrop<T>(
+    Widget child,
+    bool Function(T) accepts,
+    ValueChanged<T> insert,
+    String label,
+  ) => DragTarget<ProfessionalLibraryDrag<T>>(
+    onWillAcceptWithDetails: (details) =>
+        identical(details.data.owner, _libraryOwner) &&
+        !_busy &&
+        !_creatingExercise &&
+        accepts(details.data.value),
+    onAcceptWithDetails: (details) {
+      if (identical(details.data.owner, _libraryOwner) &&
+          accepts(details.data.value)) {
+        insert(details.data.value);
+      }
+    },
+    builder: (context, candidates, rejected) => DecoratedBox(
+      decoration: BoxDecoration(
+        border: candidates.isEmpty
+            ? null
+            : Border.all(
+                color: Theme.of(context).colorScheme.primary,
+                width: 2,
+              ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (candidates.isNotEmpty)
+            Padding(padding: const EdgeInsets.all(12), child: Text(label)),
+          child,
+        ],
+      ),
+    ),
+  );
 
   List<RunningEditorGroup> get _runningGroups => runningEditorGroups(
     WorkoutEditorSnapshot(_rawSnapshot()),
@@ -1917,7 +2118,12 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         enabled: !_busy,
         onReorder: _reorderStrength,
         feedbackBuilder: (_, index) => _strengthCard(index, feedback: true),
-        itemBuilder: (_, index, handle) => _strengthCard(index, handle: handle),
+        itemBuilder: (_, index, handle) => _catalogDrop<WorkoutEditorExercise>(
+          _strengthCard(index, handle: handle),
+          (_) => _canReceiveExercise(_blocks[index]),
+          (exercise) => _insertCatalogExercise(_blocks[index], exercise),
+          'Soltar para añadir al bloque ${index + 1}',
+        ),
       ),
       TextButton.icon(
         key: const ValueKey('add-workout-block'),

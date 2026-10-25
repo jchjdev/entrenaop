@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,6 +6,8 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_workout_repository.dart';
+import 'trainer_workout_pages.dart';
+import 'trainer_agenda_client_picker.dart';
 
 import 'package:workout_core/professional_assessment.dart';
 
@@ -79,8 +82,12 @@ class TrainerAgendaPage extends StatefulWidget {
     this.onCopyWeek,
     this.onAdapt,
     this.assessments,
+    this.workouts,
+    this.access,
   });
   final TrainerAgendaRepository repository;
+  final TrainerWorkoutRepository? workouts;
+  final TrainerRepository? access;
   final ProfessionalAssessmentEventRepository? assessments;
   final DateTime? now;
   final Future<void> Function(TrainerAssignment assignment, DateTime date)?
@@ -104,6 +111,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   String? _clientFilter, _statusFilter, _error;
   bool _busy = true, _more = false, _mutating = false;
   int _request = 0;
+  final _libraryOwner = Object();
+  List<TrainerWorkout> _library = [];
+  bool _libraryBusy = false, _libraryMore = false;
+  String? _libraryError;
 
   bool get _locked => _busy || _mutating || _assessmentsBusy;
   DateTime _civilOffset(DateTime date, int days) =>
@@ -126,6 +137,267 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   void initState() {
     super.initState();
     _load();
+    if (widget.workouts != null) _loadLibrary();
+  }
+
+  Future<void> _loadLibrary({bool more = false}) async {
+    if (_libraryBusy || widget.workouts == null) return;
+    setState(() {
+      _libraryBusy = true;
+      _libraryError = null;
+    });
+    try {
+      final rows = await widget.workouts!.workouts(
+        before: more ? _library.last : null,
+      );
+      if (mounted) {
+        setState(() {
+          _library = more ? [..._library, ...rows] : rows;
+          _libraryMore = rows.length == 50;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _libraryError = trainerError(e));
+    } finally {
+      if (mounted) setState(() => _libraryBusy = false);
+    }
+  }
+
+  Widget _libraryPane() => ProfessionalLibraryPane<TrainerWorkout>(
+    title: 'Sesiones para asignar',
+    items: _library,
+    nameOf: (s) => s.name,
+    subtitleOf: (s) =>
+        '${s.isRunning ? 'Carrera' : 'Fuerza'} · v${s.version} · Privada',
+    dragOwner: _libraryOwner,
+    enabled: !_locked && !_libraryBusy && widget.access != null,
+    onSelected: (workout) => _assignFromLibrary(workout, _selected ?? _anchor),
+    footer: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Arrastra a un día. Revisa alumno, fecha y receta antes de confirmar.',
+        ),
+        if (_libraryBusy) const LinearProgressIndicator(),
+        if (_libraryError != null) Text(_libraryError!),
+        TextButton(
+          onPressed: _libraryBusy ? null : _loadLibrary,
+          child: const Text('Actualizar biblioteca'),
+        ),
+        if (_libraryMore)
+          TextButton(
+            onPressed: _libraryBusy ? null : () => _loadLibrary(more: true),
+            child: const Text('Cargar más sesiones'),
+          ),
+      ],
+    ),
+  );
+
+  Future<void> _assignFromLibrary(TrainerWorkout workout, DateTime date) async {
+    if (_locked ||
+        widget.access == null ||
+        widget.workouts == null ||
+        !_library.any((s) => s.id == workout.id)) {
+      return;
+    }
+    await _mutation(() async {
+      final client = await showDialog<TrainerClient>(
+        context: context,
+        builder: (_) => TrainerAgendaClientPicker(
+          repository: widget.access!,
+          selectedId: _clientFilter,
+        ),
+      );
+      if (!mounted || client?.activeRelationId == null) return;
+      await showDialog<bool>(
+        context: context,
+        builder: (_) => TrainerAssignmentDialog(
+          repository: widget.workouts!,
+          relationId: client!.activeRelationId!,
+          initialWorkout: workout,
+          initialDate: date,
+        ),
+      );
+    });
+  }
+
+  bool _canMoveRow(TrainerAgendaItem row, DateTime date) =>
+      !_locked &&
+      widget.onMove != null &&
+      _editable(row.assignment) &&
+      !DateUtils.isSameDay(row.assignment.date, date) &&
+      _items.any((current) => identical(current, row));
+
+  Widget _dateDrop(DateTime date, Widget child) =>
+      DragTarget<TrainerAgendaItem>(
+        key: ValueKey('agenda-board-drop-${agendaDate(date)}'),
+        onWillAcceptWithDetails: (d) => _canMoveRow(d.data, date),
+        onAcceptWithDetails: (d) {
+          if (_canMoveRow(d.data, date)) _proposeMove(d.data.assignment, date);
+        },
+        builder: (context, rows, rejected) =>
+            DragTarget<ProfessionalLibraryDrag<TrainerWorkout>>(
+              onWillAcceptWithDetails: (d) =>
+                  !_locked &&
+                  identical(d.data.owner, _libraryOwner) &&
+                  widget.access != null &&
+                  widget.workouts != null,
+              onAcceptWithDetails: (d) {
+                if (identical(d.data.owner, _libraryOwner)) {
+                  _assignFromLibrary(d.data.value, date);
+                }
+              },
+              builder: (context, recipes, rejected) => DecoratedBox(
+                decoration: BoxDecoration(
+                  color: rows.isNotEmpty || recipes.isNotEmpty
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: child,
+              ),
+            ),
+      );
+
+  Widget _weekBoard(List<TrainerAgendaItem> rows) => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = (constraints.maxWidth / 7).clamp(180.0, double.infinity);
+      return SizedBox(
+        height: 570,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var day = 0; day < 7; day++)
+                SizedBox(
+                  width: width,
+                  child: _dateDrop(
+                    _civilOffset(_from, day),
+                    Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextButton(
+                            onPressed: _locked
+                                ? null
+                                : () => setState(
+                                    () => _selected = _civilOffset(_from, day),
+                                  ),
+                            child: Text(
+                              '${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][day]} ${_civilOffset(_from, day).day}',
+                            ),
+                          ),
+                          const Divider(),
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                for (final row in rows.where(
+                                  (r) => DateUtils.isSameDay(
+                                    r.assignment.date,
+                                    _civilOffset(_from, day),
+                                  ),
+                                ))
+                                  _boardCard(row),
+                                for (final event
+                                    in _assessments
+                                        .where(_matchesAssessment)
+                                        .where(
+                                          (e) =>
+                                              e.status != 'withdrawn' &&
+                                              DateUtils.isSameDay(
+                                                e.date,
+                                                _civilOffset(_from, day),
+                                              ),
+                                        ))
+                                  Card(
+                                    child: ListTile(
+                                      leading: const Icon(
+                                        Icons.timer_outlined,
+                                        size: 18,
+                                      ),
+                                      title: Text(event.title),
+                                      subtitle: Text(event.personName),
+                                      onTap: _locked
+                                          ? null
+                                          : () => context.push(
+                                              '/clients/${event.clientId}/assessments/${event.id}',
+                                            ),
+                                    ),
+                                  ),
+                                const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'Soltar aquí',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  Widget _boardCard(TrainerAgendaItem row) {
+    final card = Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(row.clientName, style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Text(row.assignment.name),
+            const SizedBox(height: 8),
+            Text(
+              row.assignment.statusLabel,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            TextButton(
+              onPressed: _locked
+                  ? null
+                  : () => context.go('/clients/${row.clientId}/workouts'),
+              child: const Text('Abrir'),
+            ),
+            if (_editable(row.assignment) && widget.onMove != null)
+              TextButton(
+                onPressed: _locked ? null : () => _proposeMove(row.assignment),
+                child: const Text('Mover fecha'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (!_editable(row.assignment) || widget.onMove == null || _locked) {
+      return card;
+    }
+    return Draggable<TrainerAgendaItem>(
+      key: ValueKey('agenda-board-drag-${row.assignment.id}'),
+      data: row,
+      maxSimultaneousDrags: 1,
+      feedback: Material(
+        elevation: 6,
+        child: SizedBox(
+          width: 210,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('${row.clientName} · ${row.assignment.name}'),
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(opacity: .4, child: card),
+      child: card,
+    );
   }
 
   Future<void> _load({bool more = false}) async {
@@ -454,287 +726,302 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1050),
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              const Text(
-                'Planificación y resultados de tus alumnos. Aquí se muestran las pautas de tu servicio; cada alumno conserva también su agenda personal.',
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final entry in {
-                    _AgendaView.month: 'Mes',
-                    _AgendaView.week: 'Semana',
-                    _AgendaView.day: 'Día',
-                    _AgendaView.list: 'Lista',
-                  }.entries)
-                    ChoiceChip(
-                      key: ValueKey('agenda-view-${entry.key.name}'),
-                      label: Text(entry.value),
-                      selected: _view == entry.key,
-                      onSelected: _locked
-                          ? null
-                          : (_) => _changeView(entry.key),
+      body: ProfessionalEditorWorkspace(
+        library: _libraryPane(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: ProfessionalWorkspaceScope.pageConstraints(
+              context,
+              maxWidth: 1050,
+            ),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const Text(
+                  'Planificación y resultados de tus alumnos. Aquí se muestran las pautas de tu servicio; cada alumno conserva también su agenda personal.',
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final entry in {
+                      _AgendaView.month: 'Mes',
+                      _AgendaView.week: 'Semana',
+                      _AgendaView.day: 'Día',
+                      _AgendaView.list: 'Lista',
+                    }.entries)
+                      ChoiceChip(
+                        key: ValueKey('agenda-view-${entry.key.name}'),
+                        label: Text(entry.value),
+                        selected: _view == entry.key,
+                        onSelected: _locked
+                            ? null
+                            : (_) => _changeView(entry.key),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: _locked ? null : () => _navigate(-1),
+                      icon: const Icon(Icons.chevron_left),
+                      tooltip: '$_unitLabel anterior',
                     ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: _locked ? null : () => _navigate(-1),
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: '$_unitLabel anterior',
-                  ),
+                    Text(
+                      _periodLabel,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      onPressed: _locked ? null : () => _navigate(1),
+                      icon: const Icon(Icons.chevron_right),
+                      tooltip: '$_unitLabel siguiente',
+                    ),
+                    TextButton(
+                      onPressed: _locked
+                          ? null
+                          : () {
+                              final today = DateUtils.dateOnly(
+                                widget.now ?? DateTime.now(),
+                              );
+                              setState(() {
+                                _anchor = today;
+                                _selected = _view == _AgendaView.day
+                                    ? null
+                                    : today;
+                                _items = [];
+                              });
+                              _load();
+                            },
+                      child: const Text('Hoy'),
+                    ),
+                    if (_selected != null)
+                      TextButton(
+                        onPressed: () => setState(() => _selected = null),
+                        child: Text(
+                          _view == _AgendaView.week
+                              ? 'Ver toda la semana'
+                              : 'Ver todo el mes',
+                        ),
+                      ),
+                    if (widget.onCopyWeek != null)
+                      OutlinedButton.icon(
+                        onPressed: _locked ? null : _copyWeek,
+                        icon: const Icon(Icons.copy),
+                        label: const Text('Copiar semana'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth >= 650
+                        ? (constraints.maxWidth - 12) / 2
+                        : constraints.maxWidth;
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        SizedBox(
+                          width: width,
+                          child: DropdownButtonFormField<String>(
+                            key: const ValueKey('agenda-client-filter'),
+                            initialValue: _clientFilter ?? '',
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Alumno',
+                            ),
+                            items: [
+                              const DropdownMenuItem(
+                                value: '',
+                                child: Text('Todos los alumnos'),
+                              ),
+                              for (final entry in _clientNames.entries)
+                                DropdownMenuItem(
+                                  value: entry.key,
+                                  child: Text(
+                                    entry.value,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                            onChanged: _locked
+                                ? null
+                                : (value) => setState(
+                                    () => _clientFilter = value == ''
+                                        ? null
+                                        : value,
+                                  ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: width,
+                          child: DropdownButtonFormField<String>(
+                            key: const ValueKey('agenda-status-filter'),
+                            initialValue: _statusFilter ?? '',
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Estado',
+                            ),
+                            items: [
+                              for (final entry in {
+                                '': 'Todos los estados',
+                                'planned': 'Pendiente',
+                                'in_progress': 'En curso',
+                                'completed': 'Completada',
+                                'skipped': 'Omitida',
+                                'abandoned': 'Abandonada',
+                                'cancelled': 'Retirada',
+                              }.entries)
+                                DropdownMenuItem(
+                                  value: entry.key,
+                                  child: Text(
+                                    entry.value,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                            ],
+                            onChanged: _locked
+                                ? null
+                                : (value) => setState(
+                                    () => _statusFilter = value == ''
+                                        ? null
+                                        : value,
+                                  ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                if (_locked) const LinearProgressIndicator(),
+                if (_error != null) ...[
                   Text(
-                    _periodLabel,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  IconButton(
-                    onPressed: _locked ? null : () => _navigate(1),
-                    icon: const Icon(Icons.chevron_right),
-                    tooltip: '$_unitLabel siguiente',
+                    _error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                   TextButton(
-                    onPressed: _locked
-                        ? null
-                        : () {
-                            final today = DateUtils.dateOnly(
-                              widget.now ?? DateTime.now(),
-                            );
-                            setState(() {
-                              _anchor = today;
-                              _selected = _view == _AgendaView.day
-                                  ? null
-                                  : today;
-                              _items = [];
-                            });
-                            _load();
-                          },
-                    child: const Text('Hoy'),
+                    onPressed: _locked ? null : _load,
+                    child: const Text('Reintentar'),
                   ),
-                  if (_selected != null)
-                    TextButton(
-                      onPressed: () => setState(() => _selected = null),
-                      child: Text(
-                        _view == _AgendaView.week
-                            ? 'Ver toda la semana'
-                            : 'Ver todo el mes',
-                      ),
-                    ),
-                  if (widget.onCopyWeek != null)
-                    OutlinedButton.icon(
-                      onPressed: _locked ? null : _copyWeek,
-                      icon: const Icon(Icons.copy),
-                      label: const Text('Copiar semana'),
-                    ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final width = constraints.maxWidth >= 650
-                      ? (constraints.maxWidth - 12) / 2
-                      : constraints.maxWidth;
-                  return Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      SizedBox(
-                        width: width,
-                        child: DropdownButtonFormField<String>(
-                          key: const ValueKey('agenda-client-filter'),
-                          initialValue: _clientFilter ?? '',
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Alumno',
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                              value: '',
-                              child: Text('Todos los alumnos'),
-                            ),
-                            for (final entry in _clientNames.entries)
-                              DropdownMenuItem(
-                                value: entry.key,
-                                child: Text(
-                                  entry.value,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
-                          onChanged: _locked
-                              ? null
-                              : (value) => setState(
-                                  () => _clientFilter = value == ''
-                                      ? null
-                                      : value,
-                                ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: width,
-                        child: DropdownButtonFormField<String>(
-                          key: const ValueKey('agenda-status-filter'),
-                          initialValue: _statusFilter ?? '',
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Estado',
-                          ),
-                          items: [
-                            for (final entry in {
-                              '': 'Todos los estados',
-                              'planned': 'Pendiente',
-                              'in_progress': 'En curso',
-                              'completed': 'Completada',
-                              'skipped': 'Omitida',
-                              'abandoned': 'Abandonada',
-                              'cancelled': 'Retirada',
-                            }.entries)
-                              DropdownMenuItem(
-                                value: entry.key,
-                                child: Text(
-                                  entry.value,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
-                          onChanged: _locked
-                              ? null
-                              : (value) => setState(
-                                  () => _statusFilter = value == ''
-                                      ? null
-                                      : value,
-                                ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              if (_locked) const LinearProgressIndicator(),
-              if (_error != null) ...[
-                Text(
-                  _error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                TextButton(
-                  onPressed: _locked ? null : _load,
-                  child: const Text('Reintentar'),
-                ),
-              ],
-              if (_more)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'Hay más pautas por cargar. Los recuentos del calendario son parciales. Los filtros solo incluyen las pautas cargadas.',
+                if (_more)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text(
+                      'Hay más pautas por cargar. Los recuentos del calendario son parciales. Los filtros solo incluyen las pautas cargadas.',
+                    ),
                   ),
-                ),
-              const SizedBox(height: 12),
-              if (_view == _AgendaView.month || _view == _AgendaView.week)
-                _grid(filtered),
-              const SizedBox(height: 16),
-              Text(
-                _selected != null
-                    ? 'Pautas del ${_selected!.day}/${_selected!.month}'
-                    : switch (_view) {
-                        _AgendaView.month ||
-                        _AgendaView.list => 'Pautas del mes',
-                        _AgendaView.week => 'Pautas de la semana',
-                        _AgendaView.day => 'Pautas del día',
-                      },
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              if (!_busy && visible.isEmpty && _error == null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    _more
-                        ? 'No hay pautas en esta selección entre las cargadas.'
-                        : 'No hay pautas en esta selección.',
-                  ),
-                ),
-              for (final row in visible) _card(row),
-              if (widget.assessments != null) ...[
+                const SizedBox(height: 12),
+                if (_view == _AgendaView.week &&
+                    ProfessionalWorkspaceScope.isDesktop(context))
+                  _weekBoard(filtered)
+                else if (_view == _AgendaView.month ||
+                    _view == _AgendaView.week)
+                  _grid(filtered),
                 const SizedBox(height: 16),
                 Text(
-                  'Pruebas y simulacros',
+                  _selected != null
+                      ? 'Pautas del ${_selected!.day}/${_selected!.month}'
+                      : switch (_view) {
+                          _AgendaView.month ||
+                          _AgendaView.list => 'Pautas del mes',
+                          _AgendaView.week => 'Pautas de la semana',
+                          _AgendaView.day => 'Pautas del día',
+                        },
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                if (_assessmentError != null) ...[
-                  Text(
-                    'No se pudieron cargar las pruebas. Las sesiones se muestran por separado.',
-                  ),
-                  TextButton(
-                    onPressed: _locked ? null : () => _loadAssessments(),
-                    child: const Text('Reintentar pruebas'),
-                  ),
-                ],
-                if (!_assessmentsBusy &&
-                    _assessmentError == null &&
-                    assessmentEvents.isEmpty)
-                  Text(
-                    _moreAssessments
-                        ? 'No hay pruebas en esta selección entre las cargadas.'
-                        : 'No hay pruebas en esta selección.',
-                  ),
-                for (final event in assessmentEvents)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.timer_outlined),
-                      title: Text('${event.personName} · ${event.title}'),
-                      subtitle: Text(
-                        '${_dayLabel(event.date)} · ${switch (event.status) {
-                          'planned' => 'Pendiente',
-                          'in_progress' => 'En curso',
-                          'completed' => 'Completada',
-                          'withdrawn' => 'Retirada',
-                          _ => 'Estado desconocido',
-                        }}',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: _locked
-                          ? null
-                          : () async {
-                              await context.push(
-                                '/clients/${event.clientId}/assessments/${event.id}',
-                              );
-                              if (mounted) await _load();
-                            },
+                if (!_busy && visible.isEmpty && _error == null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      _more
+                          ? 'No hay pautas en esta selección entre las cargadas.'
+                          : 'No hay pautas en esta selección.',
                     ),
                   ),
-                if (_moreAssessments) ...[
-                  const Text(
-                    'Hay más pruebas por cargar; su recuento es parcial y los filtros solo incluyen las cargadas.',
-                  ),
-                  OutlinedButton(
-                    onPressed: _locked
-                        ? null
-                        : () => _loadAssessments(more: true),
-                    child: const Text('Cargar más pruebas del periodo'),
-                  ),
-                ],
-              ],
-
-              if (_more)
-                OutlinedButton(
-                  onPressed: _locked ? null : () => _load(more: true),
-                  child: Text(
-                    _view == _AgendaView.month || _view == _AgendaView.list
-                        ? 'Cargar más pautas del mes'
-                        : 'Cargar más pautas del periodo',
-                  ),
+                ProfessionalCatalogGrid(
+                  minCardWidth: 340,
+                  children: [for (final row in visible) _card(row)],
                 ),
-            ],
+                if (widget.assessments != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Pruebas y simulacros',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (_assessmentError != null) ...[
+                    Text(
+                      'No se pudieron cargar las pruebas. Las sesiones se muestran por separado.',
+                    ),
+                    TextButton(
+                      onPressed: _locked ? null : () => _loadAssessments(),
+                      child: const Text('Reintentar pruebas'),
+                    ),
+                  ],
+                  if (!_assessmentsBusy &&
+                      _assessmentError == null &&
+                      assessmentEvents.isEmpty)
+                    Text(
+                      _moreAssessments
+                          ? 'No hay pruebas en esta selección entre las cargadas.'
+                          : 'No hay pruebas en esta selección.',
+                    ),
+                  for (final event in assessmentEvents)
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.timer_outlined),
+                        title: Text('${event.personName} · ${event.title}'),
+                        subtitle: Text(
+                          '${_dayLabel(event.date)} · ${switch (event.status) {
+                            'planned' => 'Pendiente',
+                            'in_progress' => 'En curso',
+                            'completed' => 'Completada',
+                            'withdrawn' => 'Retirada',
+                            _ => 'Estado desconocido',
+                          }}',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _locked
+                            ? null
+                            : () async {
+                                await context.push(
+                                  '/clients/${event.clientId}/assessments/${event.id}',
+                                );
+                                if (mounted) await _load();
+                              },
+                      ),
+                    ),
+                  if (_moreAssessments) ...[
+                    const Text(
+                      'Hay más pruebas por cargar; su recuento es parcial y los filtros solo incluyen las cargadas.',
+                    ),
+                    OutlinedButton(
+                      onPressed: _locked
+                          ? null
+                          : () => _loadAssessments(more: true),
+                      child: const Text('Cargar más pruebas del periodo'),
+                    ),
+                  ],
+                ],
+
+                if (_more)
+                  OutlinedButton(
+                    onPressed: _locked ? null : () => _load(more: true),
+                    child: Text(
+                      _view == _AgendaView.month || _view == _AgendaView.list
+                          ? 'Cargar más pautas del mes'
+                          : 'Cargar más pautas del periodo',
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -807,6 +1094,26 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       ),
     );
     if (!_editable(assignment) || widget.onMove == null || _locked) return card;
+    if (ProfessionalWorkspaceScope.isDesktop(context)) {
+      return Draggable<TrainerAgendaItem>(
+        key: ValueKey('agenda-drag-${assignment.id}'),
+        data: row,
+        maxSimultaneousDrags: 1,
+        feedback: Material(
+          elevation: 6,
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: 220,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text('${row.clientName}\n${assignment.name}'),
+            ),
+          ),
+        ),
+        childWhenDragging: Opacity(opacity: .5, child: card),
+        child: card,
+      );
+    }
     return LongPressDraggable<TrainerAgendaItem>(
       key: ValueKey('agenda-drag-${assignment.id}'),
       data: row,
@@ -880,44 +1187,63 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
               _selected ?? (_view == _AgendaView.week ? _anchor : null),
               date,
             );
-            return DragTarget<TrainerAgendaItem>(
-              key: ValueKey('agenda-drop-${agendaDate(date)}'),
-              onWillAcceptWithDetails: (details) =>
+            return DragTarget<ProfessionalLibraryDrag<TrainerWorkout>>(
+              onWillAcceptWithDetails: (d) =>
                   !_locked &&
-                  widget.onMove != null &&
-                  _editable(details.data.assignment) &&
-                  !DateUtils.isSameDay(details.data.assignment.date, date),
-              onAcceptWithDetails: (details) =>
-                  _proposeMove(details.data.assignment, date),
-              builder: (context, candidates, rejected) => Semantics(
-                label:
-                    '${date.day} de ${_months[date.month - 1]}, $count pautas, $assessmentCount pruebas${_more || _moreAssessments ? ', recuento parcial' : ''}',
-                selected: selected,
-                child: TextButton(
-                  key: ValueKey('agenda-day-${date.day}'),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    backgroundColor: candidates.isNotEmpty
-                        ? Theme.of(context).colorScheme.secondaryContainer
-                        : selected
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : null,
-                  ),
-                  onPressed: _locked
-                      ? null
-                      : () => setState(() => _selected = date),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('${date.day}', style: const TextStyle(fontSize: 14)),
-                      if (count > 0)
-                        Text('$count', style: const TextStyle(fontSize: 10)),
-                      if (assessmentCount > 0)
-                        Text(
-                          '$assessmentCount P',
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                    ],
+                  identical(d.data.owner, _libraryOwner) &&
+                  widget.access != null,
+              onAcceptWithDetails: (d) {
+                if (identical(d.data.owner, _libraryOwner)) {
+                  _assignFromLibrary(d.data.value, date);
+                }
+              },
+              builder: (context, recipes, rejected) => ColoredBox(
+                color: recipes.isNotEmpty
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Colors.transparent,
+                child: DragTarget<TrainerAgendaItem>(
+                  key: ValueKey('agenda-drop-${agendaDate(date)}'),
+                  onWillAcceptWithDetails: (details) =>
+                      _canMoveRow(details.data, date),
+                  onAcceptWithDetails: (details) =>
+                      _proposeMove(details.data.assignment, date),
+                  builder: (context, candidates, rejected) => Semantics(
+                    label:
+                        '${date.day} de ${_months[date.month - 1]}, $count pautas, $assessmentCount pruebas${_more || _moreAssessments ? ', recuento parcial' : ''}',
+                    selected: selected,
+                    child: TextButton(
+                      key: ValueKey('agenda-day-${date.day}'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: candidates.isNotEmpty
+                            ? Theme.of(context).colorScheme.secondaryContainer
+                            : selected
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : null,
+                      ),
+                      onPressed: _locked
+                          ? null
+                          : () => setState(() => _selected = date),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${date.day}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          if (count > 0)
+                            Text(
+                              '$count',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          if (assessmentCount > 0)
+                            Text(
+                              '$assessmentCount P',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

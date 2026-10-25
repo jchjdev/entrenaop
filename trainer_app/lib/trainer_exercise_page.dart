@@ -146,7 +146,10 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 900,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -203,42 +206,48 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 padding: EdgeInsets.all(24),
                 child: Text('Todavía no has creado ejercicios propios.'),
               ),
-            for (final exercise in _items.where(
-              (e) =>
-                  matchesCatalogSearch(_query, [
-                    e.draft.name,
-                    ...?_preferences?.labels(e.id),
-                  ]) &&
-                  (_label == null ||
-                      (_preferences?.labels(e.id).contains(_label) ?? false)),
-            ))
-              Card(
-                child: ListTile(
-                  title: Text(exercise.draft.name),
-                  subtitle: Text(
-                    [
-                      'Versión ${exercise.version}',
-                      ...exercise.draft.muscleGroups,
-                      ...?_preferences?.labels(exercise.id),
-                    ].join(' · '),
+            ProfessionalCatalogGrid(
+              minCardWidth: 320,
+              children: [
+                for (final exercise in _items.where(
+                  (e) =>
+                      matchesCatalogSearch(_query, [
+                        e.draft.name,
+                        ...?_preferences?.labels(e.id),
+                      ]) &&
+                      (_label == null ||
+                          (_preferences?.labels(e.id).contains(_label) ??
+                              false)),
+                ))
+                  Card(
+                    child: ListTile(
+                      title: Text(exercise.draft.name),
+                      subtitle: Text(
+                        [
+                          'Versión ${exercise.version}',
+                          ...exercise.draft.muscleGroups,
+                          ...?_preferences?.labels(exercise.id),
+                        ].join(' · '),
+                      ),
+                      trailing: _preferences == null
+                          ? const Icon(Icons.edit_outlined)
+                          : IconButton(
+                              tooltip: 'Etiquetas: ${exercise.draft.name}',
+                              icon: const Icon(Icons.label_outline),
+                              onPressed: _busy || !_canOrganize
+                                  ? null
+                                  : () => editExerciseLabels(
+                                      context,
+                                      _preferences,
+                                      exercise.id,
+                                      exercise.draft.name,
+                                    ),
+                            ),
+                      onTap: !_enabled || _busy ? null : () => _edit(exercise),
+                    ),
                   ),
-                  trailing: _preferences == null
-                      ? const Icon(Icons.edit_outlined)
-                      : IconButton(
-                          tooltip: 'Etiquetas: ${exercise.draft.name}',
-                          icon: const Icon(Icons.label_outline),
-                          onPressed: _busy || !_canOrganize
-                              ? null
-                              : () => editExerciseLabels(
-                                  context,
-                                  _preferences,
-                                  exercise.id,
-                                  exercise.draft.name,
-                                ),
-                        ),
-                  onTap: !_enabled || _busy ? null : () => _edit(exercise),
-                ),
-              ),
+              ],
+            ),
           ],
         ),
       ),

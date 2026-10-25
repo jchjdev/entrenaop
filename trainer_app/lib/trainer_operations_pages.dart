@@ -444,24 +444,29 @@ class _TrainerReviewQueuePageState extends State<TrainerReviewQueuePage> {
           Text(
             '${_items.length} resultados cargados${_more ? ' · listado parcial' : ''}',
           ),
-        for (final item in _items)
-          Card(
-            child: ListTile(
-              title: Text(item.clientName),
-              subtitle: Text(
-                '${item.assignment.name} · ${trainerCalendarDate(item.assignment.date)}',
+        ProfessionalCatalogGrid(
+          minCardWidth: 340,
+          children: [
+            for (final item in _items)
+              Card(
+                child: ListTile(
+                  title: Text(item.clientName),
+                  subtitle: Text(
+                    '${item.assignment.name} · ${trainerCalendarDate(item.assignment.date)}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _busy
+                      ? null
+                      : () async {
+                          await context.push(
+                            '/clients/${item.clientId}/workouts/${item.assignment.id}/result',
+                          );
+                          if (mounted) await _load();
+                        },
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: _busy
-                  ? null
-                  : () async {
-                      await context.push(
-                        '/clients/${item.clientId}/workouts/${item.assignment.id}/result',
-                      );
-                      if (mounted) await _load();
-                    },
-            ),
-          ),
+          ],
+        ),
         if (_more)
           TextButton(
             onPressed: _busy ? null : () => _load(more: true),

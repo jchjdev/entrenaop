@@ -225,7 +225,10 @@ class _AdminGuidedReviewPageState extends State<AdminGuidedReviewPage> {
       appBar: AppBar(title: const Text('Revisar programa')),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 1000,
+          ),
           child: FutureBuilder<_Review>(
             future: _review,
             builder: (context, snapshot) {

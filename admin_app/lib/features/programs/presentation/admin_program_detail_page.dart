@@ -388,7 +388,10 @@ class _AdminProgramDetailPageState extends State<AdminProgramDetailPage> {
     appBar: AppBar(title: Text(widget.program.name)),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 850),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 850,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

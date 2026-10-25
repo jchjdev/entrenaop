@@ -101,7 +101,10 @@ class _TrainerGroupsPageState extends State<TrainerGroupsPage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1000),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1000,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -142,63 +145,68 @@ class _TrainerGroupsPageState extends State<TrainerGroupsPage> {
                   'Aún no tienes grupos. También puedes preparar un envío seleccionando alumnos directamente.',
                 ),
               ),
-            for (final group in _groups)
-              Card(
-                key: ValueKey('trainer-group-${group.id}'),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        group.name,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Text(
-                        '${group.members.length} alumnos · ${group.members.where((m) => m.active).length} con vínculo activo',
-                      ),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
+            ProfessionalCatalogGrid(
+              minCardWidth: 400,
+              children: [
+                for (final group in _groups)
+                  Card(
+                    key: ValueKey('trainer-group-${group.id}'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          for (final member in group.members)
-                            Chip(
-                              label: Text(
-                                '${member.name}${member.active ? '' : ' · inactivo'}',
-                              ),
+                          Text(
+                            group.name,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            '${group.members.length} alumnos · ${group.members.where((m) => m.active).length} con vínculo activo',
+                          ),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final member in group.members)
+                                Chip(
+                                  label: Text(
+                                    '${member.name}${member.active ? '' : ' · inactivo'}',
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (group.members.any((m) => !m.active))
+                            const Text(
+                              'Este grupo contiene alumnos inactivos. Edita sus destinatarios antes de enviar al grupo, o usa Nuevo envío para elegir una selección activa.',
                             ),
-                        ],
-                      ),
-                      if (group.members.any((m) => !m.active))
-                        const Text(
-                          'Este grupo contiene alumnos inactivos. Edita sus destinatarios antes de enviar al grupo, o usa Nuevo envío para elegir una selección activa.',
-                        ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          TextButton(
-                            onPressed: _busy || !_canWrite
-                                ? null
-                                : () => _edit(group),
-                            child: const Text('Editar grupo'),
-                          ),
-                          FilledButton.tonal(
-                            onPressed:
-                                _busy ||
-                                    !_canWrite ||
-                                    group.members.isEmpty ||
-                                    group.members.any((m) => !m.active)
-                                ? null
-                                : () => _deliver(group),
-                            child: const Text('Preparar envío al grupo'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              TextButton(
+                                onPressed: _busy || !_canWrite
+                                    ? null
+                                    : () => _edit(group),
+                                child: const Text('Editar grupo'),
+                              ),
+                              FilledButton.tonal(
+                                onPressed:
+                                    _busy ||
+                                        !_canWrite ||
+                                        group.members.isEmpty ||
+                                        group.members.any((m) => !m.active)
+                                    ? null
+                                    : () => _deliver(group),
+                                child: const Text('Preparar envío al grupo'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+              ],
+            ),
             if (_more)
               OutlinedButton(
                 onPressed: _busy ? null : () => _load(more: true),

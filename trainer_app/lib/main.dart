@@ -31,6 +31,7 @@ import 'trainer_assignment_work_repository.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 
 import 'trainer_shell.dart';
+import 'trainer_account_page.dart';
 import 'trainer_exercise_page.dart';
 import 'trainer_exercise_repository.dart';
 import 'trainer_video_repository.dart';
@@ -43,6 +44,8 @@ import 'trainer_groups_repository.dart';
 import 'trainer_groups_page.dart';
 import 'trainer_week_copy_dialog.dart';
 import 'trainer_client_workspace.dart';
+import 'trainer_client_navigation.dart';
+import 'trainer_client_directories.dart';
 import 'trainer_client_workspace_repository.dart';
 import 'trainer_client_forms_route.dart';
 import 'trainer_media_repository.dart';
@@ -189,6 +192,49 @@ class _TrainerAppState extends State<TrainerApp> {
       controller: exits.controller(state.pageKey),
       child: child,
     );
+    Widget conversation(String relationId, {String? assignmentId}) {
+      final messages = SupabaseTrainerMessageRepository(
+        widget.client,
+        identity!,
+      );
+      return ConversationView(
+        key: ValueKey('conversation-$identity-$relationId-$assignmentId'),
+        header: () async {
+          final detail = await messages.context(relationId);
+          return ConversationHeader(
+            title: detail.name,
+            canSend: detail.canSend,
+          );
+        },
+        load: (before) async =>
+            (await messages.list(
+                  relationId,
+                  beforeAt: before?.createdAt,
+                  beforeId: before?.id,
+                ))
+                .map(
+                  (m) => ConversationEntry(
+                    id: m.id,
+                    body: m.body,
+                    createdAt: m.createdAt,
+                    mine: m.mine,
+                    contextLabel: m.assignmentId == null
+                        ? null
+                        : 'Sobre una pauta del servicio',
+                  ),
+                )
+                .toList(),
+        send: (id, body) => messages.send(
+          operationId: id,
+          relationId: relationId,
+          body: body,
+          assignmentId: assignmentId,
+        ),
+        newOperationId: trainerMessageOperationId,
+        errorLabel: trainerError,
+      );
+    }
+
     return GoRouter(
       initialLocation: identity == null ? '/login' : '/home',
       redirect: (_, state) async {
@@ -234,8 +280,10 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
         ),
         ShellRoute(
-          builder: (_, state, child) =>
-              TrainerShell(location: state.uri.path, child: child),
+          builder: (_, state, child) => TrainerShell(
+            location: state.uri.path,
+            child: TrainerClientNavigation.wrap(state.uri, child),
+          ),
           routes: [
             GoRoute(
               path: '/assessments',
@@ -268,6 +316,9 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/clients/:id/assessments',
               builder: (_, state) => TrainerClientContentRoute(
+                key: ValueKey(
+                  'client-content-$identity-${state.pathParameters['id']}',
+                ),
                 workspace: workspace(),
                 assessments: assessments(),
                 clientId: state.pathParameters['id']!,
@@ -323,6 +374,9 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/assignments/:id/technique',
               builder: (_, state) => TrainerTechniquePage(
+                key: ValueKey(
+                  'technique-$identity-${state.pathParameters['id']}',
+                ),
                 repository: media(),
                 assignmentId: state.pathParameters['id']!,
               ),
@@ -333,14 +387,50 @@ class _TrainerAppState extends State<TrainerApp> {
               builder: (_, state) => guarded(
                 state,
                 TrainerClientWorkspacePage(
+                  key: ValueKey(
+                    'client-workspace-$identity-${state.pathParameters['id']}',
+                  ),
                   repository: workspace(),
                   clientId: state.pathParameters['id']!,
+                  area: state.uri.queryParameters['area'] ?? 'progress',
                 ),
+              ),
+            ),
+            GoRoute(
+              path: '/clients/:id/conversation',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                TrainerClientConversationRoute(
+                  key: ValueKey(
+                    'client-conversation-$identity-${state.pathParameters['id']}',
+                  ),
+                  repository: workspace(),
+                  clientId: state.pathParameters['id']!,
+                  conversation: (relationId) => conversation(relationId),
+                ),
+              ),
+            ),
+            GoRoute(
+              path: '/messages',
+              builder: (_, _) => TrainerClientDirectoryPage(
+                repository: access(),
+                reports: false,
+              ),
+            ),
+            GoRoute(
+              path: '/reports',
+              builder: (_, _) => TrainerClientDirectoryPage(
+                repository: access(),
+                reports: true,
               ),
             ),
             GoRoute(
               path: '/clients/:id/forms',
               builder: (_, state) => TrainerClientContentRoute(
+                key: ValueKey(
+                  'client-content-$identity-${state.pathParameters['id']}',
+                ),
                 workspace: workspace(),
                 forms: forms(),
                 clientId: state.pathParameters['id']!,
@@ -363,50 +453,23 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/conversations/:id',
               onExit: (_, state) => exits.requestExit(state.pageKey),
               builder: (_, state) {
-                final messages = SupabaseTrainerMessageRepository(
-                  widget.client,
-                  identity!,
-                );
-                final relationId = state.pathParameters['id']!;
                 return guarded(
                   state,
-                  ConversationView(
-                    header: () async {
-                      final detail = await messages.context(relationId);
-                      return ConversationHeader(
-                        title: detail.name,
-                        canSend: detail.canSend,
-                      );
-                    },
-                    load: (before) async =>
-                        (await messages.list(
-                              relationId,
-                              beforeAt: before?.createdAt,
-                              beforeId: before?.id,
-                            ))
-                            .map(
-                              (m) => ConversationEntry(
-                                id: m.id,
-                                body: m.body,
-                                createdAt: m.createdAt,
-                                mine: m.mine,
-                                contextLabel: m.assignmentId == null
-                                    ? null
-                                    : 'Sobre una pauta del servicio',
-                              ),
-                            )
-                            .toList(),
-                    send: (id, body) => messages.send(
-                      operationId: id,
-                      relationId: relationId,
-                      body: body,
-                      assignmentId: state.uri.queryParameters['assignment'],
-                    ),
-                    newOperationId: trainerMessageOperationId,
-                    errorLabel: trainerError,
+                  conversation(
+                    state.pathParameters['id']!,
+                    assignmentId: state.uri.queryParameters['assignment'],
                   ),
                 );
               },
+            ),
+            GoRoute(
+              path: '/settings',
+              builder: (_, _) => TrainerAccountPage(
+                email: widget.client.auth.currentUser?.email ?? '',
+                access: access(),
+                security: SupabaseTrainerSecurity(widget.client, identity!),
+                onSignOut: () => widget.client.auth.signOut(),
+              ),
             ),
             GoRoute(
               path: '/home',
@@ -507,7 +570,8 @@ class _TrainerAppState extends State<TrainerApp> {
                       repository: access(),
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),
-                      onOpenClient: (id) => context.push('/clients/$id'),
+                      onOpenClient: (id) =>
+                          context.push('/clients/$id/workouts'),
                       techniqueMode:
                           state.uri.queryParameters['view'] == 'technique',
                       onOpenTechnique: (id) =>
@@ -518,6 +582,8 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/agenda',
               builder: (context, _) => TrainerAgendaPage(
                 repository: agenda(),
+                workouts: workouts(),
+                access: access(),
                 assessments: assessments(),
                 onMove: (assignment, date) => showTrainerMoveDialog(
                   context,
@@ -647,16 +713,23 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/clients/:id/workouts',
               builder: (_, state) => TrainerClientWorkoutsPage(
+                key: ValueKey(
+                  'client-workouts-$identity-${state.pathParameters['id']}',
+                ),
                 repository: workouts(),
                 programs: programs(),
                 accessRepository: access(),
                 clientId: state.pathParameters['id']!,
                 techniqueMode: state.uri.queryParameters['view'] == 'technique',
+                resultsMode: state.uri.queryParameters['view'] == 'results',
               ),
               routes: [
                 GoRoute(
                   path: ':assignment/result',
                   builder: (_, state) => TrainerWorkoutResultPage(
+                    key: ValueKey(
+                      'client-result-$identity-${state.pathParameters['assignment']}',
+                    ),
                     repository: workouts(),
                     operations: operations(),
                     assignmentId: state.pathParameters['assignment']!,

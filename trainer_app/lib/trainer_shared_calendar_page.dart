@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_calendar.dart';
@@ -107,7 +108,10 @@ class _TrainerSharedCalendarPageState extends State<TrainerSharedCalendarPage>
         context: context,
         builder: (context) => Dialog(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
+            constraints: ProfessionalWorkspaceScope.pageConstraints(
+              context,
+              maxWidth: 760,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -173,7 +177,10 @@ class _TrainerSharedCalendarPageState extends State<TrainerSharedCalendarPage>
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1000),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1000,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [

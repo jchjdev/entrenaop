@@ -211,7 +211,10 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
           ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 900,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -298,84 +301,90 @@ class _AdminProgramWorkoutsPageState extends State<AdminProgramWorkoutsPage> {
             else if (_visibleWorkouts.isEmpty)
               const Text('No hay sesiones con esta búsqueda y estado.')
             else
-              for (final workout in _visibleWorkouts)
-                Card(
-                  child: ListTile(
-                    onTap: _busy ? null : () => _preview(workout),
-                    leading: Icon(
-                      workout.isRunning
-                          ? Icons.directions_run
-                          : Icons.fitness_center,
-                    ),
-                    title: Text(workout.name),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 6,
-                            crossAxisAlignment: WrapCrossAlignment.center,
+              ProfessionalCatalogGrid(
+                minCardWidth: 360,
+                children: [
+                  for (final workout in _visibleWorkouts)
+                    Card(
+                      child: ListTile(
+                        onTap: _busy ? null : () => _preview(workout),
+                        leading: Icon(
+                          workout.isRunning
+                              ? Icons.directions_run
+                              : Icons.fitness_center,
+                        ),
+                        title: Text(workout.name),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                workout.isRunning
-                                    ? 'Carrera · versión ${workout.version}'
-                                    : 'Fuerza · versión ${workout.version}',
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 6,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    workout.isRunning
+                                        ? 'Carrera · versión ${workout.version}'
+                                        : 'Fuerza · versión ${workout.version}',
+                                  ),
+                                  Chip(
+                                    label: Text(switch (workout.status) {
+                                      'draft' => 'Borrador',
+                                      'published' => 'Publicado',
+                                      'archived' => 'Retirado',
+                                      _ => workout.status,
+                                    }),
+                                  ),
+                                ],
                               ),
-                              Chip(
-                                label: Text(switch (workout.status) {
-                                  'draft' => 'Borrador',
-                                  'published' => 'Publicado',
-                                  'archived' => 'Retirado',
-                                  _ => workout.status,
-                                }),
-                              ),
+                              if (widget.program == null) ...[
+                                const SizedBox(height: 8),
+                                AdminSessionLibraryStatus(session: workout),
+                                if (workout.guidedPrograms.isEmpty)
+                                  const Text('Sin programas guiados asociados')
+                                else ...[
+                                  const Text('Usada en programas guiados:'),
+                                  for (final program in workout.guidedPrograms)
+                                    TextButton.icon(
+                                      onPressed: () =>
+                                          _openGuidedProgram(program),
+                                      icon: const Icon(
+                                        Icons.account_tree_outlined,
+                                        size: 16,
+                                      ),
+                                      label: Text(
+                                        '${program.name} · v${program.version} · ${switch (program.status) {
+                                          'published' => 'Publicado',
+                                          'draft' => 'Borrador',
+                                          'archived' => 'Retirado',
+                                          _ => program.status,
+                                        }}',
+                                      ),
+                                    ),
+                                ],
+                              ],
                             ],
                           ),
-                          if (widget.program == null) ...[
-                            const SizedBox(height: 8),
-                            AdminSessionLibraryStatus(session: workout),
-                            if (workout.guidedPrograms.isEmpty)
-                              const Text('Sin programas guiados asociados')
-                            else ...[
-                              const Text('Usada en programas guiados:'),
-                              for (final program in workout.guidedPrograms)
-                                TextButton.icon(
-                                  onPressed: () => _openGuidedProgram(program),
-                                  icon: const Icon(
-                                    Icons.account_tree_outlined,
-                                    size: 16,
+                        ),
+                        trailing: widget.trashRepository == null
+                            ? const Icon(Icons.chevron_right)
+                            : PopupMenuButton<String>(
+                                enabled: !_busy,
+                                tooltip: 'Más opciones de ${workout.name}',
+                                onSelected: (_) => _trash(workout),
+                                itemBuilder: (_) => [
+                                  const PopupMenuItem(
+                                    value: 'trash',
+                                    child: Text('Mover a papelera'),
                                   ),
-                                  label: Text(
-                                    '${program.name} · v${program.version} · ${switch (program.status) {
-                                      'published' => 'Publicado',
-                                      'draft' => 'Borrador',
-                                      'archived' => 'Retirado',
-                                      _ => program.status,
-                                    }}',
-                                  ),
-                                ),
-                            ],
-                          ],
-                        ],
+                                ],
+                              ),
                       ),
                     ),
-                    trailing: widget.trashRepository == null
-                        ? const Icon(Icons.chevron_right)
-                        : PopupMenuButton<String>(
-                            enabled: !_busy,
-                            tooltip: 'Más opciones de ${workout.name}',
-                            onSelected: (_) => _trash(workout),
-                            itemBuilder: (_) => [
-                              const PopupMenuItem(
-                                value: 'trash',
-                                child: Text('Mover a papelera'),
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
+                ],
+              ),
           ],
         ),
       ),

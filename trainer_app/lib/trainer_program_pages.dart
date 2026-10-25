@@ -91,7 +91,7 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
             ),
           );
         }
-        return _programFrame([
+        return _programFrame(context, [
           Text(p.name, style: Theme.of(context).textTheme.headlineSmall),
           Text('${p.modeLabel} · v${p.version} · Privado'),
           if (p.description.isNotEmpty) Text(p.description),
@@ -161,6 +161,7 @@ class TrainerProgramLibraryPage extends StatefulWidget {
 }
 
 class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
+  String _query = '';
   List<TrainerProgram> _items = [];
   List<GuidedWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
@@ -281,7 +282,7 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
         ),
       ],
     ),
-    body: _programFrame([
+    body: _programFrame(context, [
       const Text(
         'Organiza sesiones por rutinas o fases y reutiliza cada programa con tus alumnos. Cada pauta conserva la versión asignada.',
       ),
@@ -338,15 +339,18 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
           ),
         const SizedBox(height: 24),
       ],
-      FilledButton.icon(
-        onPressed: _busy || !_canCreate
-            ? null
-            : () async {
-                await context.push('/programs/new');
-                if (mounted) await _load();
-              },
-        icon: const Icon(Icons.add),
-        label: const Text('Crear programa privado'),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: FilledButton.icon(
+          onPressed: _busy || !_canCreate
+              ? null
+              : () async {
+                  await context.push('/programs/new');
+                  if (mounted) await _load();
+                },
+          icon: const Icon(Icons.add),
+          label: const Text('Crear programa privado'),
+        ),
       ),
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) ...[
@@ -358,20 +362,42 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
           padding: EdgeInsets.all(24),
           child: Text('Todavía no has creado programas privados.'),
         ),
-      for (final row in _items)
-        Card(
-          child: ListTile(
-            title: Text(row.program.name),
-            subtitle: Text(
-              '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
+      const SizedBox(height: 16),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: TextField(
+            decoration: const InputDecoration(
+              labelText: 'Buscar entre los programas cargados',
+              prefixIcon: Icon(Icons.search),
             ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              await context.push('/programs/${row.program.id}');
-              if (mounted) await _load();
-            },
+            onChanged: (v) => setState(() => _query = v),
           ),
         ),
+      ),
+      const SizedBox(height: 16),
+      ProfessionalCatalogGrid(
+        children: [
+          for (final row in _items.where(
+            (row) =>
+                row.program.name.toLowerCase().contains(_query.toLowerCase()),
+          ))
+            Card(
+              child: ListTile(
+                title: Text(row.program.name),
+                subtitle: Text(
+                  '${row.program.modeLabel} · ${row.program.sessionCount} sesiones · v${row.program.version}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  await context.push('/programs/${row.program.id}');
+                  if (mounted) await _load();
+                },
+              ),
+            ),
+        ],
+      ),
       if (_more)
         OutlinedButton(
           onPressed: _busy ? null : () => _load(more: true),
@@ -703,7 +729,10 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope<void>(
+  Widget build(BuildContext context) =>
+      ProfessionalWorkspaceViewport(builder: _buildWorkspace);
+
+  Widget _buildWorkspace(BuildContext context) => PopScope<void>(
     canPop: _canPop,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop) _close();
@@ -711,7 +740,10 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
     child: Dialog(
       insetPadding: const EdgeInsets.all(12),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1020),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1020,
+        ),
         child: Column(
           children: [
             Padding(
@@ -728,7 +760,7 @@ class _PrivateSessionWorkspaceState extends State<_PrivateSessionWorkspace> {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
+              child: ProfessionalEmbeddedScroll(
                 child: _busy
                     ? const Center(child: CircularProgressIndicator())
                     : _saved != null
@@ -1188,9 +1220,12 @@ class _TrainerProgramAssignmentDialogState
   );
 }
 
-Widget _programFrame(List<Widget> children) => Center(
+Widget _programFrame(BuildContext context, List<Widget> children) => Center(
   child: ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 900),
+    constraints: ProfessionalWorkspaceScope.pageConstraints(
+      context,
+      maxWidth: 900,
+    ),
     child: ListView(padding: const EdgeInsets.all(20), children: children),
   ),
 );

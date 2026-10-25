@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_video_field.dart';
@@ -324,10 +325,13 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
             ],
           ),
           const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: _busy ? null : () => _upload(),
-            icon: const Icon(Icons.upload_outlined),
-            label: const Text('Subir demostración'),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: _busy ? null : () => _upload(),
+              icon: const Icon(Icons.upload_outlined),
+              label: const Text('Subir demostración'),
+            ),
           ),
         ],
         if (_busy) const LinearProgressIndicator(),
@@ -345,65 +349,75 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
                   : 'No hay vídeos listos para elegir en esta página.',
             ),
           ),
-        for (final row in _rows.where(
-          (row) => widget.onSelect == null || _readyUrl(row) != null,
-        ))
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Vídeo del ${trainerDate(DateTime.parse(row['created_at'] as String))}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(
-                    '${trainerVideoStatusLabel(row['status'])} · ${trainerMediaBytes(row['reserved_bytes'] as num)} reservados${row['duration_seconds'] == null ? '' : ' · ${row['duration_seconds']} s'}',
-                  ),
-                  if (_readyUrl(row) case final url?) ...[
-                    ExerciseVideoPreview(
-                      url: url,
-                      source: widget.repository.source(),
-                    ),
-                    if (widget.onSelect != null)
-                      TextButton(
-                        onPressed: _busy ? null : () => widget.onSelect!(url),
-                        child: const Text('Usar este vídeo'),
+        ProfessionalCatalogGrid(
+          minCardWidth: 400,
+          maxColumns: 3,
+          children: [
+            for (final row in _rows.where(
+              (row) => widget.onSelect == null || _readyUrl(row) != null,
+            ))
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Vídeo del ${trainerDate(DateTime.parse(row['created_at'] as String))}',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                    if (widget.onSelect == null &&
-                        widget.onCreateExercise != null)
-                      TextButton.icon(
-                        onPressed: _busy ? null : () => _createExercise(url),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Crear ejercicio con este vídeo'),
+                      Text(
+                        '${trainerVideoStatusLabel(row['status'])} · ${trainerMediaBytes(row['reserved_bytes'] as num)} reservados${row['duration_seconds'] == null ? '' : ' · ${row['duration_seconds']} s'}',
                       ),
-                  ] else if (row['status'] == 'ready')
-                    const Text(
-                      'El vídeo no tiene un enlace de reproducción válido.',
-                    )
-                  else if (row['status'] == 'uploading' ||
-                      row['status'] == 'processing')
-                    Wrap(
-                      children: [
-                        TextButton(
-                          onPressed: _busy ? null : () => _check(row),
-                          child: const Text('Comprobar estado'),
+                      if (_readyUrl(row) case final url?) ...[
+                        ExerciseVideoPreview(
+                          url: url,
+                          source: widget.repository.source(),
                         ),
-                        TextButton(
-                          onPressed: _busy ? null : () => _upload(row),
-                          child: Text(
-                            row['status'] == 'processing'
-                                ? 'Revisar reserva y continuar'
-                                : 'Recuperar y continuar con el archivo original',
+                        if (widget.onSelect != null)
+                          TextButton(
+                            onPressed: _busy
+                                ? null
+                                : () => widget.onSelect!(url),
+                            child: const Text('Usar este vídeo'),
                           ),
+                        if (widget.onSelect == null &&
+                            widget.onCreateExercise != null)
+                          TextButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => _createExercise(url),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Crear ejercicio con este vídeo'),
+                          ),
+                      ] else if (row['status'] == 'ready')
+                        const Text(
+                          'El vídeo no tiene un enlace de reproducción válido.',
+                        )
+                      else if (row['status'] == 'uploading' ||
+                          row['status'] == 'processing')
+                        Wrap(
+                          children: [
+                            TextButton(
+                              onPressed: _busy ? null : () => _check(row),
+                              child: const Text('Comprobar estado'),
+                            ),
+                            TextButton(
+                              onPressed: _busy ? null : () => _upload(row),
+                              child: Text(
+                                row['status'] == 'processing'
+                                    ? 'Revisar reserva y continuar'
+                                    : 'Recuperar y continuar con el archivo original',
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                ],
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
+          ],
+        ),
         if (_more)
           OutlinedButton(
             onPressed: _busy ? null : () => _load(more: true),

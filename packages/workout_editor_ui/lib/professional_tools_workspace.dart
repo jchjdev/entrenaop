@@ -57,7 +57,7 @@ class ProfessionalToolsButton extends StatelessWidget {
                 children: [
                   Icon(Icons.calculate_outlined),
                   SizedBox(width: 8),
-                  Text('Herramientas'),
+                  Flexible(child: Text('Herramientas')),
                 ],
               ),
             ),

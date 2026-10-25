@@ -254,7 +254,7 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   FocusManager.instance.primaryFocus?.unfocus();
   await tester.pumpAndSettle();
   if (target.evaluate().isEmpty) {
-    final scrollable = find.byType(Scrollable).first;
+    final scrollable = editorScrollable();
     tester.state<ScrollableState>(scrollable).position.jumpTo(0);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(target, 250, scrollable: scrollable);
@@ -362,13 +362,26 @@ void main() {
           ),
           findsNothing,
         );
-        expect(
-          find.descendant(
-            of: find.byType(AdminWorkoutEditorPage),
-            matching: find.byType(ListView),
-          ),
-          findsNothing,
-        );
+        if (size.width >= 1100 && scale < 1.5) {
+          expect(
+            find.descendant(
+              of: find.byType(AdminWorkoutEditorPage),
+              matching: find.byKey(
+                const ValueKey('professional-editor-scroll'),
+              ),
+            ),
+            findsOneWidget,
+          );
+          expect(find.text('Tramos de carrera'), findsWidgets);
+        } else {
+          expect(
+            find.descendant(
+              of: find.byType(AdminWorkoutEditorPage),
+              matching: find.byType(ListView),
+            ),
+            findsNothing,
+          );
+        }
         expect(
           find.byTooltip('Volver al programa').hitTestable(),
           findsOneWidget,
@@ -809,7 +822,7 @@ void main() {
     await _tap(tester, find.text('Por fases'));
     await _tap(tester, find.text('Añadir fase'));
     await _create(tester, 'Progresión');
-    final scroll = find.byType(Scrollable).first;
+    final scroll = editorScrollable();
     tester.state<ScrollableState>(scroll).position.jumpTo(0);
     await tester.pumpAndSettle();
     for (var i = 0; i < 2; i++) {
@@ -865,9 +878,19 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Oculta como sesión suelta'),
         160,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: editorScrollable(),
       );
       expect(tester.takeException(), isNull);
     },
   );
+}
+
+// La biblioteca lateral tiene su propio scroll; estas acciones pertenecen al editor activo.
+Finder editorScrollable() {
+  final editors = find.byKey(const ValueKey('professional-editor-scroll'));
+  return editors.evaluate().isEmpty
+      ? find.byType(Scrollable).first
+      : find
+            .descendant(of: editors.last, matching: find.byType(Scrollable))
+            .first;
 }

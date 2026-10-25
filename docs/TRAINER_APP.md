@@ -1,5 +1,13 @@
 # Espacio de entrenadores
 
+## Escritorio profesional · TRN-030 · 25/10/2026
+
+Implementado y validado localmente, pendiente de publicación: marco de escritorio compartido con ADMIN, catálogos
+adaptables, ficha por áreas y bibliotecas junto al creador. Arrastrar modifica
+borradores o abre una asignación/movimiento revisado; no concede permisos ni
+publica contenido. Sin agentes, pagos ni activación push.
+[Alcance y evidencia vigente](TRAINER_DESKTOP_2026_10_25.md).
+
 ## Recuperación contextual · TRN-029 · 24/10/2026
 
 Trainer conecta al creador compartido las sesiones internas de programa y las

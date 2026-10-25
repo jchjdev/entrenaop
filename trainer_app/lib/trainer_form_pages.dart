@@ -76,7 +76,10 @@ class _TrainerFormsPageState extends State<TrainerFormsPage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 900,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -84,10 +87,13 @@ class _TrainerFormsPageState extends State<TrainerFormsPage> {
               'Prepara cuestionarios privados de incorporación o revisión. Cada envío conserva su versión y admite una respuesta completa.',
             ),
             const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: !_enabled || _busy ? null : () => _edit(),
-              icon: const Icon(Icons.add),
-              label: const Text('Crear formulario'),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                onPressed: !_enabled || _busy ? null : () => _edit(),
+                icon: const Icon(Icons.add),
+                label: const Text('Crear formulario'),
+              ),
             ),
             if (_busy) const LinearProgressIndicator(),
             if (_error != null)
@@ -100,19 +106,23 @@ class _TrainerFormsPageState extends State<TrainerFormsPage> {
                 padding: EdgeInsets.all(24),
                 child: Text('Todavía no has creado formularios.'),
               ),
-            for (final form in _forms)
-              Card(
-                child: ListTile(
-                  title: Text(form.title),
-                  subtitle: Text(
-                    'Versión ${form.revision} · ${form.questions.length} preguntas',
+            ProfessionalCatalogGrid(
+              children: [
+                for (final form in _forms)
+                  Card(
+                    child: ListTile(
+                      title: Text(form.title),
+                      subtitle: Text(
+                        'Versión ${form.revision} · ${form.questions.length} preguntas',
+                      ),
+                      trailing: TextButton(
+                        onPressed: !_enabled ? null : () => _edit(form),
+                        child: const Text('Revisar'),
+                      ),
+                    ),
                   ),
-                  trailing: TextButton(
-                    onPressed: !_enabled ? null : () => _edit(form),
-                    child: const Text('Revisar'),
-                  ),
-                ),
-              ),
+              ],
+            ),
           ],
         ),
       ),
@@ -342,7 +352,10 @@ class _TrainerFormEditorPageState extends State<TrainerFormEditorPage> {
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 850),
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 850,
+          ),
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [

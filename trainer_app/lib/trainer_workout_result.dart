@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:workout_core/workout_result_review.dart';
 import 'package:workout_editor_ui/workout_result_review_panel.dart';
 import 'package:workout_core/running_step_codec.dart';
@@ -85,90 +86,124 @@ class _TrainerWorkoutResultPageState extends State<TrainerWorkoutResultPage> {
         final review = row['review'] as Map?;
         final revision = (row['result_revision'] as num?)?.toInt() ?? 0;
         final reviewed = review?['result_revision'] == revision;
-        return Column(
-          children: [
-            if (widget.operations != null &&
-                ['completed', 'abandoned'].contains(row['status']))
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      reviewed ? 'Resultado revisado' : 'Pendiente de revisión',
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        await showTrainerReviewDialog(
-                          context,
-                          widget.operations!,
-                          widget.assignmentId,
-                          revision,
-                          review?['private_note'] as String?,
-                        );
-                        if (mounted) {
-                          _refresh();
-                        }
-                      },
-                      icon: const Icon(Icons.fact_check_outlined),
-                      label: Text(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final controls = <Widget>[
+              if (widget.operations != null &&
+                  ['completed', 'abandoned'].contains(row['status']))
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
                         reviewed
-                            ? 'Actualizar nota interna'
-                            : 'Marcar revisado',
+                            ? 'Resultado revisado'
+                            : 'Pendiente de revisión',
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            if (widget.operations != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Wrap(
-                  spacing: 12,
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.video_camera_front_outlined),
-                      label: const Text('Vídeos de técnica'),
-                      onPressed: () => context.push(
-                        '/assignments/${widget.assignmentId}/technique',
-                      ),
-                    ),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.chat_bubble_outline),
-                      label: const Text('Comentar con el alumno'),
-                      onPressed: () async {
-                        try {
-                          final detail = await widget.operations!.assignment(
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          await showTrainerReviewDialog(
+                            context,
+                            widget.operations!,
                             widget.assignmentId,
+                            revision,
+                            review?['private_note'] as String?,
                           );
-                          if (context.mounted) {
-                            await context.push(
-                              '/conversations/${detail.relationId}?assignment=${widget.assignmentId}',
-                            );
+                          if (mounted) {
+                            _refresh();
                           }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(trainerError(e))),
-                            );
-                          }
-                        }
-                      },
-                    ),
-                  ],
+                        },
+                        icon: const Icon(Icons.fact_check_outlined),
+                        label: Text(
+                          reviewed
+                              ? 'Actualizar nota interna'
+                              : 'Marcar revisado',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            Expanded(
-              child: TrainerWorkoutResultContent(
-                key: ValueKey(row['id']),
-                result: row,
-                loadHistory: (cursor) =>
-                    loadTrainerComparisonPage(widget.repository, row, cursor),
-              ),
-            ),
-          ],
+              if (widget.operations != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Wrap(
+                    spacing: 12,
+                    children: [
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.video_camera_front_outlined),
+                        label: const Text('Vídeos de técnica'),
+                        onPressed: () => context.push(
+                          '/assignments/${widget.assignmentId}/technique',
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.chat_bubble_outline),
+                        label: const Text('Comentar con el alumno'),
+                        onPressed: () async {
+                          try {
+                            final detail = await widget.operations!.assignment(
+                              widget.assignmentId,
+                            );
+                            if (context.mounted) {
+                              await context.push(
+                                '/conversations/${detail.relationId}?assignment=${widget.assignmentId}',
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(trainerError(e))),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+            ];
+            final content = TrainerWorkoutResultContent(
+              key: ValueKey(row['id']),
+              result: row,
+              loadHistory: (cursor) =>
+                  loadTrainerComparisonPage(widget.repository, row, cursor),
+            );
+            if (ProfessionalWorkspaceScope.isDesktop(context) &&
+                constraints.maxWidth >= 1000) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: content),
+                  const VerticalDivider(width: 1),
+                  SizedBox(
+                    width: 310,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            'Revisión del resultado',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        ...controls,
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                ...controls,
+                Expanded(child: content),
+              ],
+            );
+          },
         );
       },
     ),
@@ -223,7 +258,10 @@ class _TrainerWorkoutResultContentState
     };
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1000),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1000,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

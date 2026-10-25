@@ -1,3 +1,5 @@
+import 'package:entrena_ui/entrena_ui.dart';
+
 import '../../operations/data/admin_operations_repository.dart';
 import '../../operations/presentation/admin_operations_pages.dart';
 
@@ -358,7 +360,10 @@ class _AdminProAccessPageState extends State<AdminProAccessPage> {
         : AppBar(title: const Text('Cuentas y Pro')),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 680),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 680,
+        ),
         child: ListView(
           controller: _scroll,
           padding: const EdgeInsets.all(24),

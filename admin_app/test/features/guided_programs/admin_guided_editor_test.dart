@@ -143,12 +143,16 @@ Future<void> _mountVisibilityProgram(
     ),
   );
   await tester.pumpAndSettle();
-  for (final tile in find.byType(ExpansionTile).evaluate().toList()) {
+  for (final tile
+      in find
+          .widgetWithText(ExpansionTile, 'Calentamiento y ajustes')
+          .evaluate()
+          .toList()) {
     final title = find.descendant(
       of: find.byWidget(tile.widget),
       matching: find.text('Calentamiento y ajustes'),
     );
-    await tester.ensureVisible(title);
+    await revealEditorControl(tester, title);
     await tester.pumpAndSettle();
     await tester.tap(title);
     await tester.pumpAndSettle();
@@ -156,7 +160,7 @@ Future<void> _mountVisibilityProgram(
   await tester.scrollUntilVisible(
     find.text('Mostrar en Sesiones de EntrenaOP').first,
     250,
-    scrollable: find.byType(Scrollable).last,
+    scrollable: editorScrollable(),
   );
 }
 
@@ -172,7 +176,7 @@ void main() {
       SwitchListTile,
       'Mostrar en Sesiones de EntrenaOP',
     );
-    await tester.ensureVisible(switches.first);
+    await revealEditorControl(tester, switches.first);
     await tester.tap(switches.first);
     await tester.pumpAndSettle();
     expect(workouts.visibilityWrites.single, (
@@ -284,11 +288,11 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Visible como sesión suelta'),
         250,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: editorScrollable(),
       );
       expect(find.text('Visible como sesión suelta'), findsOneWidget);
       final edit = find.widgetWithText(FilledButton, 'Editar sesión');
-      await tester.ensureVisible(edit);
+      await revealEditorControl(tester, edit);
       await tester.tap(edit);
       await tester.pumpAndSettle();
       expect(find.byType(AdminWorkoutEditorPage), findsOneWidget);
@@ -315,25 +319,25 @@ void main() {
             'Permitir ajustar descansos entre series',
           )
           .first;
-      await tester.ensureVisible(toggle);
+      await revealEditorControl(tester, toggle);
       await tester.pumpAndSettle();
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       final minimum = find.byKey(
         const ValueKey('program-field-Descanso mínimo (segundos)'),
       );
-      await tester.ensureVisible(minimum);
+      await revealEditorControl(tester, minimum);
       await tester.pumpAndSettle();
       await tester.enterText(minimum, '');
       FocusManager.instance.primaryFocus?.unfocus();
       final settings = find.text('Calentamiento y ajustes').first;
-      await tester.ensureVisible(settings);
+      await revealEditorControl(tester, settings);
       await tester.pumpAndSettle();
       await tester.tap(settings);
       await tester.pumpAndSettle();
       expect(minimum, findsNothing);
       final save = find.text('Guardar borrador');
-      await tester.ensureVisible(save);
+      await revealEditorControl(tester, save);
       await tester.pumpAndSettle();
       await tester.tap(save);
       await tester.pumpAndSettle();
@@ -342,7 +346,7 @@ void main() {
         find.text('Escribe los descansos en segundos enteros.'),
         findsOneWidget,
       );
-      await tester.ensureVisible(settings);
+      await revealEditorControl(tester, settings);
       await tester.pumpAndSettle();
       await tester.tap(settings);
       await tester.pumpAndSettle();
@@ -421,12 +425,12 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Categorías'),
       180,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: editorScrollable(),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Categorías'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Crear categoría'));
+    await revealEditorControl(tester, find.text('Crear categoría'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Crear categoría'));
     await tester.pumpAndSettle();
@@ -493,12 +497,16 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Fuerza'),
         220,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: editorScrollable(),
       );
+      await revealEditorControl(tester, find.text('Fuerza'));
       await tester.tap(find.text('Fuerza'));
+      await tester.pumpAndSettle();
+      await revealEditorControl(tester, find.text('Iniciación'));
       await tester.tap(find.text('Iniciación'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await revealEditorControl(
+        tester,
         find.descendant(
           of: find.byKey(const ValueKey('program-label-Categoría principal')),
           matching: find.byType(DropdownButtonFormField<String>),
@@ -513,7 +521,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Iniciación').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Crear categoría'));
+      await revealEditorControl(tester, find.text('Crear categoría'));
       await tester.tap(find.text('Crear categoría'));
       await tester.pumpAndSettle();
       await tester.enterText(
@@ -535,7 +543,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('Guardar borrador'),
         250,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: editorScrollable(),
       );
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
@@ -657,13 +665,13 @@ void main() {
         find.byKey(const ValueKey('program-field-Nombre del programa')),
         'Guía estable',
       );
-      await tester.ensureVisible(find.text('Elegir del catálogo'));
+      await revealEditorControl(tester, find.text('Elegir del catálogo'));
       await tester.tap(find.text('Elegir del catálogo'));
       await tester.pumpAndSettle();
       expect(find.text('Sesión no publicada'), findsNothing);
       await tester.tap(find.text('Empuje publicado'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Guardar borrador'));
+      await revealEditorControl(tester, find.text('Guardar borrador'));
       await tester.tap(find.text('Guardar borrador'));
       await tester.pumpAndSettle();
       expect(repository.saved?.mode, GuidedProgramMode.guide);
@@ -688,7 +696,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Por fases'));
+      await revealEditorControl(tester, find.text('Por fases'));
       await tester.tap(find.text('Por fases'));
       await tester.pumpAndSettle();
       expect(
@@ -703,13 +711,14 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.text('Añadir fase'));
+      await revealEditorControl(tester, find.text('Añadir fase'));
       await tester.tap(find.text('Añadir fase'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Rutina'));
+      await revealEditorControl(tester, find.text('Rutina'));
       await tester.tap(find.text('Rutina'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(
+      await revealEditorControl(
+        tester,
         find.text('Conserva una sola fase antes de convertirlo en rutina.'),
       );
       expect(
@@ -724,4 +733,31 @@ class _Covers extends Fake implements ProgramCoverRepository {
   @override
   Future<ProgramCover> load(String id) async =>
       const ProgramCover(programId: 'family');
+}
+
+Finder editorScrollable() {
+  final editors = find.byKey(const ValueKey('professional-editor-scroll'));
+  return editors.evaluate().isEmpty
+      ? find.byType(Scrollable).first
+      : find
+            .descendant(of: editors.last, matching: find.byType(Scrollable))
+            .first;
+}
+
+Future<void> revealEditorControl(WidgetTester tester, Finder target) async {
+  if (target.evaluate().isEmpty) {
+    final scrollable = editorScrollable();
+    tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    if (target.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        target,
+        250,
+        scrollable: scrollable,
+        maxScrolls: 40,
+      );
+    }
+  }
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
 }

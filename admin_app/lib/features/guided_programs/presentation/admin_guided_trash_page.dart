@@ -148,7 +148,10 @@ class _AdminGuidedTrashPageState extends State<AdminGuidedTrashPage> {
         : AppBar(title: Text(_title)),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1100,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

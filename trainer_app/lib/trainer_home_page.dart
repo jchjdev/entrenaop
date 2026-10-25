@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -76,7 +77,10 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1100,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -116,49 +120,79 @@ class _TrainerHomePageState extends State<TrainerHomePage> {
                 ],
               ),
               const SizedBox(height: 24),
-              Text(
-                'Resultados por revisar',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              Text(
-                '${_reviews.length} cargados${_reviews.length == 100 ? ' · listado parcial, abre la bandeja para continuar' : ''}',
-              ),
-              if (_reviews.isEmpty && !_busy)
-                const Text('No hay resultados pendientes de revisión.'),
-              for (final review in _reviews.take(5))
-                Card(
-                  child: ListTile(
-                    title: Text(review.clientName),
-                    subtitle: Text(review.assignment.name),
-                    onTap: () async {
-                      await context.push(
-                        '/clients/${review.clientId}/workouts/${review.assignment.id}/result',
-                      );
-                      if (mounted) await _load();
-                    },
-                  ),
-                ),
-              const SizedBox(height: 24),
-              Text(
-                'Próximos siete días',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              Text(
-                '${_upcoming.length} pautas cargadas${_upcoming.length == 100 ? ' · agenda parcial' : ''}',
-              ),
-              if (_upcoming.isEmpty && !_busy)
-                const Text('No hay pautas en este periodo.'),
-              for (final item in _upcoming.take(10))
-                Card(
-                  child: ListTile(
-                    title: Text('${item.clientName} · ${item.assignment.name}'),
-                    subtitle: Text(
-                      '${trainerCalendarDate(item.assignment.date)} · ${item.assignment.statusLabel}',
+              ProfessionalCatalogGrid(
+                minCardWidth: 420,
+                maxColumns: 2,
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Resultados por revisar',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            '${_reviews.length} cargados${_reviews.length == 100 ? ' · listado parcial, abre la bandeja para continuar' : ''}',
+                          ),
+                          if (_reviews.isEmpty && !_busy)
+                            const Text(
+                              'No hay resultados pendientes de revisión.',
+                            ),
+                          for (final review in _reviews.take(5))
+                            Card(
+                              child: ListTile(
+                                title: Text(review.clientName),
+                                subtitle: Text(review.assignment.name),
+                                onTap: () async {
+                                  await context.push(
+                                    '/clients/${review.clientId}/workouts/${review.assignment.id}/result',
+                                  );
+                                  if (mounted) await _load();
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    onTap: () =>
-                        context.push('/clients/${item.clientId}/workouts'),
                   ),
-                ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Próximos siete días',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            '${_upcoming.length} pautas cargadas${_upcoming.length == 100 ? ' · agenda parcial' : ''}',
+                          ),
+                          if (_upcoming.isEmpty && !_busy)
+                            const Text('No hay pautas en este periodo.'),
+                          for (final item in _upcoming.take(10))
+                            Card(
+                              child: ListTile(
+                                title: Text(
+                                  '${item.clientName} · ${item.assignment.name}',
+                                ),
+                                subtitle: Text(
+                                  '${trainerCalendarDate(item.assignment.date)} · ${item.assignment.statusLabel}',
+                                ),
+                                onTap: () => context.push(
+                                  '/clients/${item.clientId}/workouts',
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),

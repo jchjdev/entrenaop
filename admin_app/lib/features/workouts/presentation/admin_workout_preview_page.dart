@@ -1,9 +1,4 @@
-import 'package:entrena_ui/entrena_ui.dart'
-    show
-        EntrenaDialog,
-        EntrenaDialogActions,
-        EntrenaButtonStyles,
-        WorkflowDraftGuard;
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/workouts/data/admin_workout_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:go_router/go_router.dart';
@@ -238,7 +233,10 @@ class _AdminWorkoutPreviewPageState extends State<AdminWorkoutPreviewPage> {
 
   Widget _previewContent() => Center(
     child: ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 900),
+      constraints: ProfessionalWorkspaceScope.pageConstraints(
+        context,
+        maxWidth: 900,
+      ),
       child: FutureBuilder<WorkoutTemplate?>(
         future: _template,
         builder: (context, snapshot) {

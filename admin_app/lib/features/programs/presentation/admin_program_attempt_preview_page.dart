@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_program_scoring_editor.dart';
 import 'package:workout_editor_ui/duration_input_formatter.dart';
@@ -273,7 +274,10 @@ class _AdminProgramAttemptPreviewPageState
     appBar: AppBar(title: const Text('Simular calificación')),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 800,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

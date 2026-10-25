@@ -171,7 +171,7 @@ void main() {
       await tester.scrollUntilVisible(
         resume,
         250,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: editorScrollable(),
       );
       await tester.ensureVisible(resume);
       await tester.pumpAndSettle();
@@ -210,7 +210,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('program-field-Nombre del programa')),
         200,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: editorScrollable(),
       );
       await tester.enterText(
         find.byKey(const ValueKey('program-field-Nombre del programa')),
@@ -218,10 +218,7 @@ void main() {
       );
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
-      tester
-          .state<ScrollableState>(find.byType(Scrollable).first)
-          .position
-          .jumpTo(0);
+      tester.state<ScrollableState>(editorScrollable()).position.jumpTo(0);
       await tester.pumpAndSettle();
       expect(
         find.textContaining('No se ha guardado el último cambio'),
@@ -230,7 +227,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('program-field-Nombre del programa')),
         200,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: editorScrollable(),
       );
       expect(find.text('Trabajo sin conexión'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -307,10 +304,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('-'), findsOneWidget);
       expect(find.textContaining('pendiente'), findsWidgets);
-      tester
-          .state<ScrollableState>(find.byType(Scrollable).first)
-          .position
-          .jumpTo(0);
+      tester.state<ScrollableState>(editorScrollable()).position.jumpTo(0);
       await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey('program-field-Nombre del programa')),
@@ -375,7 +369,7 @@ void main() {
         await tester.scrollUntilVisible(
           find.text('Guardar en catálogo'),
           250,
-          scrollable: find.byType(Scrollable).first,
+          scrollable: editorScrollable(),
         );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Guardar en catálogo'));
@@ -393,4 +387,14 @@ void main() {
       },
     );
   }
+}
+
+// La biblioteca lateral tiene su propio scroll; estas acciones pertenecen al editor activo.
+Finder editorScrollable() {
+  final editors = find.byKey(const ValueKey('professional-editor-scroll'));
+  return editors.evaluate().isEmpty
+      ? find.byType(Scrollable).first
+      : find
+            .descendant(of: editors.last, matching: find.byType(Scrollable))
+            .first;
 }

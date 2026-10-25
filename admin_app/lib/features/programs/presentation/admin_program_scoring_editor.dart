@@ -631,7 +631,10 @@ class _AdminTestScoreBandsPageState extends State<AdminTestScoreBandsPage> {
     appBar: AppBar(title: Text('Baremo · ${widget.test.name}')),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 850),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 850,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

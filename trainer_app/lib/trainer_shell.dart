@@ -1,9 +1,10 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_editor_ui/professional_tools_workspace.dart';
 
 /// Los formularios mantienen toda la pantalla y su guard de salida propio.
-class TrainerShell extends StatelessWidget {
+class TrainerShell extends StatefulWidget {
   const TrainerShell({super.key, required this.location, required this.child});
   final String location;
   final Widget child;
@@ -20,27 +21,25 @@ class TrainerShell extends StatelessWidget {
     ('/groups', 'Grupos', Icons.groups_outlined),
     ('/media', 'Vídeos', Icons.video_library_outlined),
     ('/recurrence', 'Programar semanas', Icons.event_repeat_outlined),
+    ('/messages', 'Conversaciones', Icons.chat_bubble_outline),
+    ('/reports', 'Informes', Icons.insights),
+    ('/settings', 'Mi cuenta', Icons.settings_outlined),
   ];
+  @override
+  State<TrainerShell> createState() => _TrainerShellState();
+}
+
+class _TrainerShellState extends State<TrainerShell> {
+  final _scaffold = GlobalKey<ScaffoldState>();
+  String get location => widget.location;
+  Widget get child => widget.child;
+  static const destinations = TrainerShell.destinations;
+
   @override
   Widget build(BuildContext context) =>
       ProfessionalToolsWorkspace(child: Builder(builder: _buildShell));
 
   Widget _buildShell(BuildContext context) {
-    if (location.endsWith('/new') ||
-        location.endsWith('/revise') ||
-        location.endsWith('/adapt')) {
-      return Material(
-        child: Column(
-          children: [
-            const Align(
-              alignment: Alignment.centerRight,
-              child: ProfessionalToolsButton(),
-            ),
-            Expanded(child: child),
-          ],
-        ),
-      );
-    }
     final index = destinations.indexWhere((d) => location.startsWith(d.$1));
     final selected = index >= 0
         ? index
@@ -48,11 +47,13 @@ class TrainerShell extends StatelessWidget {
             (d) =>
                 d.$1 ==
                 (location.startsWith('/conversations/')
-                    ? '/clients'
+                    ? '/messages'
                     : '/agenda'),
           );
     void go(int value) {
-      if (value != selected) context.go(destinations[value].$1);
+      if (location != destinations[value].$1) {
+        context.go(destinations[value].$1);
+      }
     }
 
     Future<void> more() async {
@@ -90,113 +91,114 @@ class TrainerShell extends StatelessWidget {
       }
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 1100 &&
-            MediaQuery.textScalerOf(context).scale(16) < 24) {
-          return Scaffold(
-            body: Stack(
-              children: [
-                const SizedBox.expand(),
-                Padding(
-                  padding: const EdgeInsets.only(left: 256),
-                  child: child,
+    return ProfessionalWorkspaceShell(
+      scaffoldKey: _scaffold,
+      navigation: Material(
+        color: context.visuals.surfaceLow,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(12, 8, 12, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    EntrenaWordmark(width: 156),
+                    SizedBox(height: 8),
+                    Text('PREPARADORES'),
+                  ],
                 ),
-                // El Navigator contiene BlockSemantics. Pintar la navegación
-                // después conserva sus destinos para lectores de pantalla.
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 256,
-                  child: Material(
-                    child: SafeArea(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Text('Preparadores'),
-                          ),
-                          for (var i = 0; i < destinations.length; i++)
-                            ListTile(
-                              selected: selected == i,
-                              selectedTileColor: Theme.of(context)
-                                  .colorScheme
-                                  .secondaryContainer,
-                              leading: Icon(destinations[i].$3),
-                              title: Text(destinations[i].$2),
-                              onTap: () => go(i),
-                            ),
-                          const Divider(),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: ProfessionalToolsButton(),
-                          ),
-                        ],
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  children: [
+                    for (var i = 0; i < destinations.length; i++)
+                      ListTile(
+                        key: ValueKey('trainer-nav-${destinations[i].$1}'),
+                        selected: selected == i,
+                        selectedTileColor: context.visuals.accentSoft,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                        ),
+                        minLeadingWidth: 22,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        leading: Icon(destinations[i].$3, size: 21),
+                        title: Text(destinations[i].$2),
+                        onTap: () => go(i),
                       ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: ProfessionalToolsButton(),
+              ),
+            ],
+          ),
+        ),
+      ),
+      headerBuilder: (context, desktop) => desktop
+          ? AppBar(
+              automaticallyImplyLeading: false,
+              title: Text(
+                'Preparadores / ${destinations[selected].$2}',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              actions: const [
+                ProfessionalToolsButton(iconOnly: true),
+                SizedBox(width: 12),
+              ],
+            )
+          : const SizedBox.shrink(),
+      compactNavigation: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              for (var i = 0; i < 5; i++)
+                Expanded(
+                  child: TextButton(
+                    onPressed: i == 4 ? more : () => go(i),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 8,
+                      ),
+                      backgroundColor:
+                          (i == selected || (i == 4 && selected >= 4))
+                          ? Theme.of(context).colorScheme.secondaryContainer
+                          : null,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(i == 4 ? Icons.more_horiz : destinations[i].$3),
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            i == 4 ? 'Más' : destinations[i].$2,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const Positioned(
-                  left: 255,
-                  top: 0,
-                  bottom: 0,
-                  child: VerticalDivider(width: 1),
-                ),
-              ],
-            ),
-          );
-        }
-        return Scaffold(
-          body: child,
-          bottomNavigationBar: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  for (var i = 0; i < 5; i++)
-                    Expanded(
-                      child: TextButton(
-                        onPressed: i == 4 ? more : () => go(i),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 2,
-                            vertical: 8,
-                          ),
-                          backgroundColor:
-                              (i == selected || (i == 4 && selected >= 4))
-                              ? Theme.of(context).colorScheme.secondaryContainer
-                              : null,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              i == 4 ? Icons.more_horiz : destinations[i].$3,
-                            ),
-                            const SizedBox(height: 4),
-                            SizedBox(
-                              width: double.infinity,
-                              child: Text(
-                                i == 4 ? 'Más' : destinations[i].$2,
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
+      child: child,
     );
   }
 }

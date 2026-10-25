@@ -171,42 +171,30 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
     });
   }
 
-  Widget _clientCards() => LayoutBuilder(
-    builder: (context, constraints) {
-      final openClient = widget.techniqueMode
-          ? widget.onOpenTechnique
-          : widget.onOpenClient;
-      final twoColumns =
-          constraints.maxWidth >= 740 &&
-          MediaQuery.textScalerOf(context).scale(14) < 21;
-      final width = twoColumns
-          ? (constraints.maxWidth - 16) / 2
-          : constraints.maxWidth;
-      return Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        children: [
-          for (final client in _clients)
-            SizedBox(
-              width: width,
-              child: TrainerClientCard(
-                key: ValueKey(client.personId),
-                client: client,
-                busy: _busy,
-                techniqueMode: widget.techniqueMode,
-                onOpen: openClient != null
-                    ? () => openClient(client.personId)
-                    : null,
-                onTechnique: widget.onOpenTechnique == null
-                    ? null
-                    : () => widget.onOpenTechnique!(client.personId),
-                onManage: (action) => _manage(client, action),
-              ),
-            ),
-        ],
-      );
-    },
-  );
+  Widget _clientCards() {
+    final openClient = widget.techniqueMode
+        ? widget.onOpenTechnique
+        : widget.onOpenClient;
+    return ProfessionalCatalogGrid(
+      minCardWidth: 300,
+      children: [
+        for (final client in _clients)
+          TrainerClientCard(
+            key: ValueKey(client.personId),
+            client: client,
+            busy: _busy,
+            techniqueMode: widget.techniqueMode,
+            onOpen: openClient == null
+                ? null
+                : () => openClient(client.personId),
+            onTechnique: widget.onOpenTechnique == null
+                ? null
+                : () => widget.onOpenTechnique!(client.personId),
+            onManage: (action) => _manage(client, action),
+          ),
+      ],
+    );
+  }
 
   Widget _invitation(TrainerInvitation invite) => Card(
     margin: const EdgeInsets.only(bottom: 12),
@@ -332,7 +320,10 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1160),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1160,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -142,7 +143,10 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
           ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 900,
+        ),
         child: _buildContent(),
       ),
     ),
@@ -193,27 +197,31 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                         : 'No hay ejercicios con esa búsqueda.',
                   ),
                 )
-              : ListView.separated(
+              : ListView(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 96),
-                  itemCount: visible.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final exercise = visible[index];
-                    return Card(
-                      child: ListTile(
-                        leading: _ExerciseImage(url: exercise.imageUrl),
-                        title: Text(exercise.name),
-                        subtitle: Text(
-                          [
-                            ...exercise.muscleGroups,
-                            ...exercise.equipment,
-                          ].join(' · '),
-                        ),
-                        trailing: const Icon(Icons.edit_outlined),
-                        onTap: _saving ? null : () => _openEditor(exercise),
-                      ),
-                    );
-                  },
+                  children: [
+                    ProfessionalCatalogGrid(
+                      children: [
+                        for (final exercise in visible)
+                          Card(
+                            child: ListTile(
+                              leading: _ExerciseImage(url: exercise.imageUrl),
+                              title: Text(exercise.name),
+                              subtitle: Text(
+                                [
+                                  ...exercise.muscleGroups,
+                                  ...exercise.equipment,
+                                ].join(' · '),
+                              ),
+                              trailing: const Icon(Icons.edit_outlined),
+                              onTap: _saving
+                                  ? null
+                                  : () => _openEditor(exercise),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
         ),
       ],

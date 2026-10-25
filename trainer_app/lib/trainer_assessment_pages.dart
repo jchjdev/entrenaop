@@ -117,26 +117,34 @@ class _TrainerAssessmentsPageState extends State<TrainerAssessmentsPage> {
           ),
         ),
         const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: _busy || !_enabled ? null : () => _edit(),
-          icon: const Icon(Icons.add),
-          label: const Text('Crear batería'),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: FilledButton.icon(
+            onPressed: _busy || !_enabled ? null : () => _edit(),
+            icon: const Icon(Icons.add),
+            label: const Text('Crear batería'),
+          ),
         ),
         if (_busy) const LinearProgressIndicator(),
         if (_message != null) Text(_message!),
-        for (final item in _items)
-          Card(
-            child: ListTile(
-              title: Text(item.title),
-              subtitle: Text(
-                '${item.tests.length} pruebas · versión ${item.version}',
+        ProfessionalCatalogGrid(
+          minCardWidth: 340,
+          children: [
+            for (final item in _items)
+              Card(
+                child: ListTile(
+                  title: Text(item.title),
+                  subtitle: Text(
+                    '${item.tests.length} pruebas · versión ${item.version}',
+                  ),
+                  trailing: TextButton(
+                    onPressed: !_enabled ? null : () => _edit(item),
+                    child: const Text('Revisar'),
+                  ),
+                ),
               ),
-              trailing: TextButton(
-                onPressed: !_enabled ? null : () => _edit(item),
-                child: const Text('Revisar'),
-              ),
-            ),
-          ),
+          ],
+        ),
         if (!_busy && _items.isEmpty && _message == null)
           const Text('Todavía no has creado baterías privadas.'),
       ],
@@ -339,7 +347,10 @@ class _TrainerAssessmentEditorPageState
       ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 900,
+          ),
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [

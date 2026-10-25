@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**TRN-030 · 25/10/2026 · validado localmente:** Trainer y ADMIN aprovechan el espacio
+de escritorio mediante bibliotecas, composición y detalle en contexto. La ficha
+del alumno separa planificación, resultados, técnica, evolución, formularios,
+conversación, notas e historial; mantiene pruebas y calendario compartido.
+Arrastrar a la agenda exige revisar y confirmar. La autoría oficial y la privada
+conservan permisos independientes. Pagos y activación push siguen pospuestos.
+[Alcance y evidencia](TRAINER_DESKTOP_2026_10_25.md).
+
 **TRN-029 · 24/10/2026:** Trainer permite retomar sesiones internas de programas
 y adaptaciones sin modificar la pauta hasta confirmar. Las etiquetas de ejercicios
 son privadas por autor/contexto y se comparten como capacidad de editor con ADMIN.

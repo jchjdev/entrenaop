@@ -72,70 +72,47 @@ class _AdminShellState extends State<AdminShell> {
       (section) => section.contains(widget.path),
       orElse: () => _sections.first,
     );
-    final wide =
-        MediaQuery.sizeOf(context).width >= 1100 &&
-        MediaQuery.textScalerOf(context).scale(16) <= 24;
     final isSectionRoot =
         section.path == widget.path || widget.path == '/laboratory/push-ups';
     return AdminShellScope(
       isSectionRoot: isSectionRoot,
-      child: Scaffold(
-        key: _scaffold,
-        drawer: wide
-            ? null
-            : Drawer(
-                width: MediaQuery.sizeOf(context).width
-                    .clamp(0, 320)
-                    .toDouble(),
-                child: _sidebar(),
+      child: ProfessionalWorkspaceShell(
+        scaffoldKey: _scaffold,
+        navigation: _sidebar(),
+        headerBuilder: (context, wide) => AppBar(
+          automaticallyImplyLeading: false,
+          leading: wide
+              ? null
+              : IconButton(
+                  tooltip: 'Abrir navegación',
+                  onPressed: () => _scaffold.currentState!.openDrawer(),
+                  icon: const Icon(Icons.menu_rounded),
+                ),
+          title: wide
+              ? Text(
+                  '${section.group} / ${section.label}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                )
+              : const EntrenaWordmark(width: 132),
+          actions: [
+            const ProfessionalToolsButton(iconOnly: true),
+            if (wide)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _EnvironmentLabel(),
               ),
-        body: Row(
-          children: [
-            if (wide) SizedBox(width: 248, child: _sidebar()),
-            Expanded(
-              child: Column(
-                children: [
-                  AppBar(
-                    automaticallyImplyLeading: false,
-                    leading: wide
-                        ? null
-                        : IconButton(
-                            tooltip: 'Abrir navegación',
-                            onPressed: () =>
-                                _scaffold.currentState!.openDrawer(),
-                            icon: const Icon(Icons.menu_rounded),
-                          ),
-                    title: wide
-                        ? Text(
-                            '${section.group} / ${section.label}',
-                            style: Theme.of(context).textTheme.titleSmall,
-                          )
-                        : const EntrenaWordmark(width: 132),
-                    actions: [
-                      const ProfessionalToolsButton(iconOnly: true),
-                      if (wide)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _EnvironmentLabel(),
-                        ),
-                      // Volver al catálogo activa primero el guard del editor;
-                      // cerrar sesión no debe eludirlo desde la cabecera.
-                      if (isSectionRoot)
-                        IconButton(
-                          tooltip: 'Cerrar sesión',
-                          onPressed: widget.onSignOut,
-                          icon: const Icon(Icons.logout_rounded),
-                        ),
-                      const SizedBox(width: 8),
-                    ],
-                  ),
-                  const Divider(height: 1),
-                  Expanded(child: widget.child),
-                ],
+            // Volver al catálogo activa primero el guard del editor;
+            // cerrar sesión no debe eludirlo desde la cabecera.
+            if (isSectionRoot)
+              IconButton(
+                tooltip: 'Cerrar sesión',
+                onPressed: widget.onSignOut,
+                icon: const Icon(Icons.logout_rounded),
               ),
-            ),
+            const SizedBox(width: 8),
           ],
         ),
+        child: widget.child,
       ),
     );
   }

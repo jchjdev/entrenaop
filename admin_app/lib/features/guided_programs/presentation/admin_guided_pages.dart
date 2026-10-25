@@ -175,7 +175,10 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
           ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1100,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -369,32 +372,41 @@ class _AdminGuidedCatalogPageState extends State<AdminGuidedCatalogPage> {
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: Text('No hay programas con esta búsqueda y filtros.'),
               ),
-            for (final p in _visiblePrograms)
-              AdminGuidedProgramCard(
-                program: p,
-                onEdit: _busy ? null : () => _open('${p.id}/edit'),
-                onReview: _busy ? null : () => _open('${p.id}/review'),
-                onRetire: _busy ? null : () => _status(p, 'archived'),
-                onTrash: widget.trashRepository == null || _busy
-                    ? null
-                    : () => _moveToTrash(
-                        p.name,
-                        () => widget.trashRepository!.trashProgram(p.id!),
-                        family: true,
-                      ),
-                onCover: widget.covers == null || _busy
-                    ? null
-                    : () => _cover(p),
-              ),
-            for (final w in _warmups ?? <GuidedWarmup>[])
-              Card(
-                child: ListTile(
-                  title: Text(w.name),
-                  subtitle: Text('Versión ${w.version}'),
-                  trailing: const Icon(Icons.edit_outlined),
-                  onTap: () => _open('${w.id}/edit'),
-                ),
-              ),
+            ProfessionalCatalogGrid(
+              minCardWidth: 360,
+              children: [
+                for (final p in _visiblePrograms)
+                  AdminGuidedProgramCard(
+                    program: p,
+                    onEdit: _busy ? null : () => _open('${p.id}/edit'),
+                    onReview: _busy ? null : () => _open('${p.id}/review'),
+                    onRetire: _busy ? null : () => _status(p, 'archived'),
+                    onTrash: widget.trashRepository == null || _busy
+                        ? null
+                        : () => _moveToTrash(
+                            p.name,
+                            () => widget.trashRepository!.trashProgram(p.id!),
+                            family: true,
+                          ),
+                    onCover: widget.covers == null || _busy
+                        ? null
+                        : () => _cover(p),
+                  ),
+              ],
+            ),
+            ProfessionalCatalogGrid(
+              children: [
+                for (final w in _warmups ?? <GuidedWarmup>[])
+                  Card(
+                    child: ListTile(
+                      title: Text(w.name),
+                      subtitle: Text('Versión ${w.version}'),
+                      trailing: const Icon(Icons.edit_outlined),
+                      onTap: () => _open('${w.id}/edit'),
+                    ),
+                  ),
+              ],
+            ),
             if (_programs?.isEmpty == true || _warmups?.isEmpty == true)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 32),

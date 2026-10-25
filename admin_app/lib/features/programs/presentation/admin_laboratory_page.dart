@@ -25,7 +25,10 @@ class AdminLaboratoryPage extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 1000,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

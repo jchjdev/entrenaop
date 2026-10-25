@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**TRN-030 · 25/10/2026:** `entrena_ui` aporta el marco profesional, rejillas,
+composición biblioteca/contenido/detalle y el contexto de escritorio. Se activa
+solo desde los portales y sus ventanas de edición; el deportista conserva su
+presentación. `workout_editor_ui` conserva un único estado y sus checkpoints,
+incorpora ejercicios/tramos y sesiones desde el catálogo autorizado y reordena
+las referencias existentes. Los portales aportan rutas, repositorios y permisos;
+el calendario prepara la misma operación revisada que los botones. Los arrastres
+se limitan a su instancia y las fichas/conversaciones se identifican por cuenta
+y recurso al navegar. No cambia RPC, RLS ni el esquema.
+[Contrato y estado de entrega](TRAINER_DESKTOP_2026_10_25.md).
+
 **TRN-029 · 24/10/2026:** Los trabajos contextuales reutilizan checkpoints y
 finalización revisada del editor común. Las etiquetas privadas reutilizan el ledger
 y aislamiento de preferencias por propietario/contexto. El transporte push nativo

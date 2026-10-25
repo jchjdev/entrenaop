@@ -1,5 +1,12 @@
 # Roadmap de EntrenaOP
 
+**TRN-030 · 25/10/2026 · escritorio profesional · validado localmente:** implementación
+compartida del marco, catálogos, ficha, creadores y agenda con arrastre revisado.
+La entrega está validada localmente; publicación Dev pendiente de verificar. Sustituye como siguiente bloque inmediato
+la activación push: Javier ha pospuesto Firebase, pruebas de transporte y Apple.
+Al cerrar se registrarán aquí revisión, verificaciones, límites y único siguiente
+recorrido de aceptación. [Detalle](TRAINER_DESKTOP_2026_10_25.md).
+
 **TRN-029 · 24/10/2026 · recuperación, etiquetas y push preparada:** cerrado el recorrido de
 persistir/retomar sesiones de programa y adaptaciones sin aplicar borradores ni
 duplicar resultados. Contrato aplicado solo en Dev y tres pruebas SQL con

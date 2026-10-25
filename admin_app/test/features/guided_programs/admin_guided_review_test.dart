@@ -226,12 +226,12 @@ Future<GoRouter> _mount(
 
 Future<void> tap(WidgetTester tester, Finder target) async {
   if (target.evaluate().isEmpty || target.hitTestable().evaluate().isEmpty) {
-    final scrollable = find.byType(Scrollable).first;
+    final scrollable = editorScrollable();
     tester.state<ScrollableState>(scrollable).position.jumpTo(0);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(target, 250, scrollable: scrollable);
   }
-  await tester.ensureVisible(target);
+  await revealEditorControl(tester, target);
   await tester.pumpAndSettle();
   await tester.tap(target);
   await tester.pumpAndSettle();
@@ -283,6 +283,7 @@ void main() {
       final guided = _Guided()..savedId = 'p';
       final router = await _mount(tester, guided, _Workouts());
       await tap(tester, find.text('Editar borrador'));
+      await tap(tester, find.text('Objetivo, destinatarios y material'));
       await tester.enterText(
         find.byKey(const ValueKey('program-field-Objetivo e indicaciones')),
         'Indicaciones revisadas antes de publicar',
@@ -572,14 +573,38 @@ void main() {
       await tap(tester, find.text('1. Día A'));
       await tap(tester, find.text('Actualizar revisión'));
       expect(find.text('Publicar programa'), findsNothing);
-      tester
-          .state<ScrollableState>(find.byType(Scrollable).first)
-          .position
-          .jumpTo(0);
+      tester.state<ScrollableState>(editorScrollable()).position.jumpTo(0);
       await tester.pumpAndSettle();
       await _capture(tester, 'program-mobile-2x');
       expect(tester.takeException(), isNull);
       expect(guided.writes, 0);
     },
   );
+}
+
+Finder editorScrollable() {
+  final editors = find.byKey(const ValueKey('professional-editor-scroll'));
+  return editors.evaluate().isEmpty
+      ? find.byType(Scrollable).first
+      : find
+            .descendant(of: editors.last, matching: find.byType(Scrollable))
+            .first;
+}
+
+Future<void> revealEditorControl(WidgetTester tester, Finder target) async {
+  if (target.evaluate().isEmpty) {
+    final scrollable = editorScrollable();
+    tester.state<ScrollableState>(scrollable).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    if (target.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        target,
+        250,
+        scrollable: scrollable,
+        maxScrolls: 40,
+      );
+    }
+  }
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
 }

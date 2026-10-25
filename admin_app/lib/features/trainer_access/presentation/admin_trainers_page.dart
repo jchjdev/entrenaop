@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -54,7 +55,10 @@ class _AdminTrainersPageState extends State<AdminTrainersPage> {
     appBar: AppBar(title: const Text('Entrenadores')),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 760,
+        ),
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [

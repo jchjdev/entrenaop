@@ -1,3 +1,4 @@
+import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
 
@@ -201,59 +202,79 @@ class _TrainerTechniquePageState extends State<TrainerTechniquePage> {
             for (final clip in clips)
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Vídeo del ${(clip['created_at'] as String).split('T').first}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      if (clip['execution_set_id'] != null)
-                        const Text(
-                          'Vinculado a una serie concreta de esta ejecución.',
+                  padding: const EdgeInsets.all(20),
+                  child: ProfessionalDetailColumns(
+                    primary: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Vídeo del ${(clip['created_at'] as String).split('T').first}',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                      if (clip['status'] == 'ready') ...[
-                        ExerciseVideoPreview(
-                          url: clip['playback_url'] as String,
-                          source: widget.repository.source(),
-                          onPositionSelected: _canReply(clip)
-                              ? (second) => _feedback(clip, second)
-                              : null,
+                        if (clip['execution_set_id'] != null)
+                          const Text(
+                            'Vinculado a una serie concreta de esta ejecución.',
+                          ),
+                        const SizedBox(height: 12),
+                        if (clip['status'] == 'ready')
+                          ExerciseVideoPreview(
+                            key: ValueKey('technique-player-${clip['id']}'),
+                            url: clip['playback_url'] as String,
+                            source: widget.repository.source(),
+                            onPositionSelected: _canReply(clip)
+                                ? (second) => _feedback(clip, second)
+                                : null,
+                          )
+                        else
+                          Text(
+                            'El vídeo está ${clip['status']}. El alumno puede comprobar su preparación.',
+                          ),
+                      ],
+                    ),
+                    secondary: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Correcciones de técnica',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        if (_canReply(clip))
-                          TextButton.icon(
-                            onPressed: () => _feedback(clip),
-                            icon: const Icon(Icons.add_comment_outlined),
-                            label: const Text(
-                              'Añadir corrección en un instante',
+                        const SizedBox(height: 12),
+                        if (clip['status'] == 'ready') ...[
+                          if (_canReply(clip))
+                            TextButton.icon(
+                              onPressed: () => _feedback(clip),
+                              icon: const Icon(Icons.add_comment_outlined),
+                              label: const Text(
+                                'Añadir corrección en un instante',
+                              ),
+                            ),
+                          if (clip['can_feedback'] != true)
+                            const Text(
+                              'Solo consulta: el acceso profesional o esta etapa del servicio ya no permiten nuevas respuestas.',
+                            ),
+                          if (clip['can_feedback'] == true && !_canReply(clip))
+                            const Text(
+                              'Este vídeo ha alcanzado el límite técnico de comentarios. Conservas las respuestas anteriores.',
+                            ),
+                        ],
+                        if ((clip['feedback'] as List? ?? const []).isEmpty)
+                          const Text(
+                            'Todavía no hay correcciones compartidas.',
+                          ),
+                        for (final feedback
+                            in (clip['feedback'] as List? ?? const []))
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.comment_outlined),
+                            title: Text(
+                              '${feedback['second']} s · ${feedback['body']}',
+                            ),
+                            subtitle: const Text(
+                              'Comentario compartido con el alumno',
                             ),
                           ),
-                        if (clip['can_feedback'] != true)
-                          const Text(
-                            'Solo consulta: el acceso profesional o esta etapa del servicio ya no permiten nuevas respuestas.',
-                          ),
-                        if (clip['can_feedback'] == true && !_canReply(clip))
-                          const Text(
-                            'Este vídeo ha alcanzado el límite técnico de comentarios. Conservas las respuestas anteriores.',
-                          ),
-                      ] else
-                        Text(
-                          'El vídeo está ${clip['status']}. El alumno puede comprobar su preparación.',
-                        ),
-                      for (final feedback
-                          in (clip['feedback'] as List? ?? const []))
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.comment_outlined),
-                          title: Text(
-                            '${feedback['second']} s · ${feedback['body']}',
-                          ),
-                          subtitle: const Text(
-                            'Comentario compartido con el alumno',
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

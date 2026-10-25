@@ -29,6 +29,7 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
 }
 
 class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
+  String _query = '';
   List<TrainerWorkout> _items = [];
   List<WorkoutEditorWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
@@ -158,7 +159,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         ),
       ],
     ),
-    body: _frame([
+    body: _frame(context, [
       const Text(
         'Tu biblioteca profesional. Las sesiones solo se comparten con los alumnos a los que las pautes.',
       ),
@@ -231,10 +232,13 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           ),
         const SizedBox(height: 24),
       ],
-      FilledButton.icon(
-        onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
-        icon: const Icon(Icons.add),
-        label: const Text('Crear sesión privada'),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: FilledButton.icon(
+          onPressed: _busy || _discardBusy || !_canCreate ? null : _create,
+          icon: const Icon(Icons.add),
+          label: const Text('Crear sesión privada'),
+        ),
       ),
       if (_busy) const LinearProgressIndicator(),
       if (_error != null) _retry(_error!, () => _load()),
@@ -243,20 +247,41 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           padding: EdgeInsets.all(24),
           child: Text('Todavía no has creado sesiones privadas.'),
         ),
-      for (final item in _items)
-        Card(
-          child: ListTile(
-            title: Text(item.name),
-            subtitle: Text('Versión ${item.version} · Privada'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _busy
-                ? null
-                : () async {
-                    await context.push('/workouts/${item.id}');
-                    if (mounted) await _load();
-                  },
+      const SizedBox(height: 16),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: TextField(
+            decoration: const InputDecoration(
+              labelText: 'Buscar entre las sesiones cargadas',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (v) => setState(() => _query = v),
           ),
         ),
+      ),
+      const SizedBox(height: 16),
+      ProfessionalCatalogGrid(
+        children: [
+          for (final item in _items.where(
+            (item) => item.name.toLowerCase().contains(_query.toLowerCase()),
+          ))
+            Card(
+              child: ListTile(
+                title: Text(item.name),
+                subtitle: Text('Versión ${item.version} · Privada'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _busy
+                    ? null
+                    : () async {
+                        await context.push('/workouts/${item.id}');
+                        if (mounted) await _load();
+                      },
+              ),
+            ),
+        ],
+      ),
       if (_more)
         OutlinedButton(
           onPressed: _busy ? null : () => _load(more: true),
@@ -321,7 +346,7 @@ class _TrainerWorkoutEditorPageState extends State<TrainerWorkoutEditorPage> {
         appBar: AppBar(title: const Text('Sesión privada')),
         body: _busy
             ? const Center(child: CircularProgressIndicator())
-            : _frame([_retry(_error!, _load)]),
+            : _frame(context, [_retry(_error!, _load)]),
       );
     }
     final revision = widget.templateId != null;
@@ -383,7 +408,7 @@ class _TrainerWorkoutPreviewPageState extends State<TrainerWorkoutPreviewPage> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError || snapshot.data == null) {
-          return _frame([
+          return _frame(context, [
             _retry(
               'No se pudo cargar la sesión.',
               () => setState(() {
@@ -392,7 +417,7 @@ class _TrainerWorkoutPreviewPageState extends State<TrainerWorkoutPreviewPage> {
             ),
           ]);
         }
-        return _frame([
+        return _frame(context, [
           WorkoutTemplateContent(template: snapshot.data!),
           const SizedBox(height: 16),
           FilledButton(
@@ -418,12 +443,14 @@ class TrainerClientWorkoutsPage extends StatefulWidget {
     required this.clientId,
     this.programs,
     this.techniqueMode = false,
+    this.resultsMode = false,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
   final String clientId;
   final TrainerProgramRepository? programs;
   final bool techniqueMode;
+  final bool resultsMode;
   @override
   State<TrainerClientWorkoutsPage> createState() =>
       _TrainerClientWorkoutsPageState();
@@ -549,6 +576,8 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       title: Text(
         widget.techniqueMode
             ? 'Vídeos de técnica por sesión'
+            : widget.resultsMode
+            ? 'Resultados de las sesiones'
             : 'Planificación y resultados',
       ),
       actions: [
@@ -559,7 +588,7 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
         ),
       ],
     ),
-    body: _frame([
+    body: _frame(context, [
       Text(
         _relation?.name ?? 'Alumno',
         style: Theme.of(context).textTheme.headlineSmall,
@@ -573,7 +602,9 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
             : 'Servicio inactivo. Conservas las pautas y los resultados de tus etapas.',
       ),
       const SizedBox(height: 16),
-      if (!widget.techniqueMode && _relation != null) ...[
+      if (!widget.techniqueMode &&
+          !widget.resultsMode &&
+          _relation != null) ...[
         OutlinedButton.icon(
           onPressed: _busy ? null : _conversation,
           icon: const Icon(Icons.chat_bubble_outline),
@@ -581,7 +612,7 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
         ),
         const SizedBox(height: 12),
       ],
-      if (!widget.techniqueMode)
+      if (!widget.techniqueMode && !widget.resultsMode)
         FilledButton.icon(
           onPressed:
               _busy ||
@@ -593,7 +624,9 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
           icon: const Icon(Icons.event_available),
           label: const Text('Asignar sesión privada'),
         ),
-      if (!widget.techniqueMode && widget.programs != null) ...[
+      if (!widget.techniqueMode &&
+          !widget.resultsMode &&
+          widget.programs != null) ...[
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed:
@@ -612,7 +645,7 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
       if (_error != null) _retry(_error!, () => _load()),
       if (!_busy &&
           _error == null &&
-          (widget.techniqueMode
+          ((widget.techniqueMode || widget.resultsMode)
               ? !_items.any((i) => i.executionId != null)
               : _items.isEmpty))
         Padding(
@@ -622,11 +655,17 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                 ? (_more
                       ? 'No hay sesiones con ejecución en esta página. Puedes cargar más sesiones.'
                       : 'Todavía no hay sesiones con ejecución que consultar.')
+                : widget.resultsMode
+                ? (_more
+                      ? 'No hay resultados en esta página. Puedes cargar más pautas.'
+                      : 'Todavía no hay resultados registrados para consultar.')
                 : 'Todavía no has pautado sesiones a este alumno.',
           ),
         ),
       for (final item in _items.where(
-        (i) => !widget.techniqueMode || i.executionId != null,
+        (i) =>
+            (!widget.techniqueMode && !widget.resultsMode) ||
+            i.executionId != null,
       ))
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -658,7 +697,9 @@ class _TrainerClientWorkoutsPageState extends State<TrainerClientWorkoutsPage> {
                         icon: const Icon(Icons.video_library_outlined),
                         label: const Text('Ver vídeos compartidos'),
                       ),
-                    if (!widget.techniqueMode && item.status == 'planned')
+                    if (!widget.techniqueMode &&
+                        !widget.resultsMode &&
+                        item.status == 'planned')
                       TextButton(
                         onPressed: _busy ? null : () => _cancel(item),
                         child: const Text('Retirar pauta'),
@@ -683,9 +724,13 @@ class TrainerAssignmentDialog extends StatefulWidget {
     super.key,
     required this.repository,
     required this.relationId,
+    this.initialWorkout,
+    this.initialDate,
   });
   final TrainerWorkoutRepository repository;
   final String relationId;
+  final TrainerWorkout? initialWorkout;
+  final DateTime? initialDate;
   @override
   State<TrainerAssignmentDialog> createState() =>
       _TrainerAssignmentDialogState();
@@ -698,9 +743,12 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   DateTime _date = DateUtils.dateOnly(DateTime.now());
   String? _operationId, _error;
   bool _busy = true, _more = false;
+  TrainerWorkout? _cursor;
   @override
   void initState() {
     super.initState();
+    _selected = widget.initialWorkout;
+    _date = DateUtils.dateOnly(widget.initialDate ?? DateTime.now());
     _load();
   }
 
@@ -717,12 +765,19 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
     });
     try {
       final rows = await widget.repository.workouts(
-        before: more ? _workouts.last : null,
+        before: more ? _cursor : null,
       );
       if (mounted) {
         setState(() {
-          _workouts = more ? [..._workouts, ...rows] : rows;
+          _workouts = more
+              ? [..._workouts, ...rows]
+              : {
+                  if (widget.initialWorkout != null)
+                    widget.initialWorkout!.id: widget.initialWorkout!,
+                  for (final row in rows) row.id: row,
+                }.values.toList();
           _more = rows.length == 50;
+          _cursor = rows.lastOrNull;
         });
       }
     } catch (e) {
@@ -847,10 +902,8 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
                     final date = await showDatePicker(
                       context: context,
                       initialDate: _date,
-                      firstDate: DateTime.now().subtract(
-                        const Duration(days: 1),
-                      ),
-                      lastDate: DateTime.now().add(const Duration(days: 730)),
+                      firstDate: DateTime(1970),
+                      lastDate: DateTime(2200, 12, 31),
                     );
                     if (date != null && mounted) setState(() => _date = date);
                   },
@@ -887,9 +940,12 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   );
 }
 
-Widget _frame(List<Widget> children) => Center(
+Widget _frame(BuildContext context, List<Widget> children) => Center(
   child: ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 1000),
+    constraints: ProfessionalWorkspaceScope.pageConstraints(
+      context,
+      maxWidth: 1000,
+    ),
     child: ListView(padding: const EdgeInsets.all(24), children: children),
   ),
 );

@@ -10,6 +10,7 @@ import 'guided_program_work.dart';
 import 'program_session_catalog.dart';
 import 'program_session_picker.dart';
 import 'workout_summary_line.dart';
+import 'workout_reorderable_cards.dart';
 import 'workout_template_content.dart';
 
 class GuidedProgramEditorPage extends StatefulWidget {
@@ -34,6 +35,7 @@ class GuidedProgramEditorPage extends StatefulWidget {
 }
 
 class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
+  final _libraryOwner = Object();
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController(),
       _description = TextEditingController(),
@@ -931,146 +933,197 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 AbsorbPointer(
                   absorbing:
                       _busy || _sessionWorkspaceOpen || _finalAttempt != null,
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 900),
-                      child: Form(
-                        key: _form,
-                        child: ListView(
-                          padding: const EdgeInsets.all(24),
-                          children: [
-                            if (_checkpoint != null) _workStatus(),
-                            _field(
-                              _name,
-                              'Nombre del programa',
-                              required: true,
-                            ),
-                            _field(
-                              _description,
-                              'Objetivo e indicaciones',
-                              lines: 3,
-                            ),
-                            _field(
-                              _audience,
-                              'Destinatarios y requisitos',
-                              lines: 2,
-                            ),
-                            _field(_equipment, 'Material necesario'),
-                            SegmentedButton<GuidedProgramMode>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: GuidedProgramMode.guide,
-                                  label: Text('Rutina'),
+                  child: ProfessionalEditorWorkspace(
+                    library: _sessionLibrary(),
+                    inspector: _programOutline(),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: ProfessionalWorkspaceScope.pageConstraints(
+                          context,
+                          maxWidth: 900,
+                        ),
+                        child: Form(
+                          key: _form,
+                          child: ListView(
+                            key: const ValueKey('professional-editor-scroll'),
+                            padding: const EdgeInsets.all(24),
+                            children: [
+                              if (_checkpoint != null) _workStatus(),
+                              _field(
+                                _name,
+                                'Nombre del programa',
+                                required: true,
+                              ),
+                              ExpansionTile(
+                                key: const PageStorageKey('program-metadata'),
+                                tilePadding: EdgeInsets.zero,
+                                maintainState: true,
+                                initiallyExpanded:
+                                    !ProfessionalWorkspaceScope.isDesktop(
+                                      context,
+                                    ),
+                                title: const Text(
+                                  'Objetivo, destinatarios y material',
                                 ),
-                                ButtonSegment(
-                                  value: GuidedProgramMode.phased,
-                                  label: Text('Por fases'),
-                                ),
-                              ],
-                              selected: {_mode},
-                              onSelectionChanged: (v) {
-                                if (v.first == GuidedProgramMode.guide &&
-                                    _phases.length > 1) {
-                                  setState(
-                                    () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
-                                  );
-                                  return;
-                                }
-                                setState(() {
-                                  _mode = v.first;
-                                  _changed();
-                                  _error = null;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _mode == GuidedProgramMode.guide
-                                  ? widget.adapter.professional
-                                        ? 'Elige las fechas al pautar las sesiones a cada alumno.'
-                                        : 'Las sesiones se pueden repetir sin fecha de finalización.'
-                                  : widget.adapter.professional
-                                  ? 'Las fases organizan el trabajo. Tú eliges qué sesiones pautar y en qué fechas.'
-                                  : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
-                            ),
-                            const SizedBox(height: 18),
-                            if (!widget.adapter.professional) _categoryFields(),
-                            const SizedBox(height: 18),
-                            for (var i = 0; i < _phases.length; i++)
-                              _phaseCard(_phases[i], i),
-                            if (_mode == GuidedProgramMode.phased)
-                              OutlinedButton.icon(
-                                onPressed: () => setState(() {
-                                  _phases.add(_PhaseFields());
+                                children: [
+                                  _field(
+                                    _description,
+                                    'Objetivo e indicaciones',
+                                    lines: 3,
+                                  ),
+                                  _field(
+                                    _audience,
+                                    'Destinatarios y requisitos',
+                                    lines: 2,
+                                  ),
+                                  _field(_equipment, 'Material necesario'),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SegmentedButton<GuidedProgramMode>(
+                                segments: const [
+                                  ButtonSegment(
+                                    value: GuidedProgramMode.guide,
+                                    label: Text('Rutina'),
+                                  ),
+                                  ButtonSegment(
+                                    value: GuidedProgramMode.phased,
+                                    label: Text('Por fases'),
+                                  ),
+                                ],
+                                selected: {_mode},
+                                onSelectionChanged: (v) {
+                                  if (v.first == GuidedProgramMode.guide &&
+                                      _phases.length > 1) {
+                                    setState(
+                                      () => _error = 'Conserva una sola fase antes de convertirlo en rutina.',
+                                    );
+                                    return;
+                                  }
+                                  setState(() {
+                                    _mode = v.first;
+                                    _changed();
+                                    _error = null;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _mode == GuidedProgramMode.guide
+                                    ? widget.adapter.professional
+                                          ? 'Elige las fechas al pautar las sesiones a cada alumno.'
+                                          : 'Las sesiones se pueden repetir sin fecha de finalización.'
+                                    : widget.adapter.professional
+                                    ? 'Las fases organizan el trabajo. Tú eliges qué sesiones pautar y en qué fechas.'
+                                    : 'El usuario confirma el paso de fase; el calendario no lo hace avanzar.',
+                              ),
+                              const SizedBox(height: 18),
+                              if (!widget.adapter.professional)
+                                _categoryFields(),
+                              const SizedBox(height: 18),
+                              WorkoutReorderableCards(
+                                identities: _phases,
+                                keyPrefix: 'program-phase-handle',
+                                itemLabel: 'fase',
+                                enabled:
+                                    !_busy &&
+                                    !_sessionWorkspaceOpen &&
+                                    _finalAttempt == null,
+                                onReorder: (from, to) => setState(() {
+                                  _phases.insert(to, _phases.removeAt(from));
                                   _changed();
                                 }),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Añadir fase'),
-                              ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: [
-                                TextButton(
-                                  onPressed: () async {
-                                    await widget.adapter.openLibrary(context);
-                                    if (mounted) {
-                                      _sessionTemplates.clear();
-                                      await _load();
-                                    }
-                                  },
+                                feedbackBuilder: (_, index) => Padding(
+                                  padding: const EdgeInsets.all(16),
                                   child: Text(
-                                    widget.adapter.professional
-                                        ? 'Abrir mis sesiones privadas'
-                                        : 'Ver catálogo de sesiones',
+                                    'Fase ${index + 1} · ${_phases[index].name.text}',
                                   ),
                                 ),
-                              ],
-                            ),
-                            if (_error != null)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                child: Text(
-                                  _error!,
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
+                                itemBuilder: (_, index, handle) => _phaseDrop(
+                                  _phases[index],
+                                  _phaseCard(
+                                    _phases[index],
+                                    index,
+                                    handle: handle,
                                   ),
                                 ),
                               ),
-                            if (!_catalogsReady)
-                              TextButton(
-                                onPressed: _load,
-                                child: const Text('Reintentar carga'),
+                              if (_mode == GuidedProgramMode.phased)
+                                OutlinedButton.icon(
+                                  onPressed: () => setState(() {
+                                    _phases.add(_PhaseFields());
+                                    _changed();
+                                  }),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Añadir fase'),
+                                ),
+                              const SizedBox(height: 16),
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+                                children: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      await widget.adapter.openLibrary(context);
+                                      if (mounted) {
+                                        _sessionTemplates.clear();
+                                        await _load();
+                                      }
+                                    },
+                                    child: Text(
+                                      widget.adapter.professional
+                                          ? 'Abrir mis sesiones privadas'
+                                          : 'Ver catálogo de sesiones',
+                                    ),
+                                  ),
+                                ],
                               ),
-                            const SizedBox(height: 16),
-                            if (!widget.adapter.professional)
-                              OutlinedButton.icon(
+                              if (_error != null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  child: Text(
+                                    _error!,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .error,
+                                    ),
+                                  ),
+                                ),
+                              if (!_catalogsReady)
+                                TextButton(
+                                  onPressed: _load,
+                                  child: const Text('Reintentar carga'),
+                                ),
+                              const SizedBox(height: 16),
+                              if (!widget.adapter.professional)
+                                OutlinedButton.icon(
+                                  onPressed: _busy || !_catalogsReady
+                                      ? null
+                                      : () => _save(reviewAfter: true),
+                                  icon: const Icon(Icons.visibility_outlined),
+                                  label: const Text('Guardar y revisar'),
+                                ),
+                              const SizedBox(height: 12),
+                              FilledButton.icon(
                                 onPressed: _busy || !_catalogsReady
                                     ? null
-                                    : () => _save(reviewAfter: true),
-                                icon: const Icon(Icons.visibility_outlined),
-                                label: const Text('Guardar y revisar'),
+                                    : _save,
+                                icon: const Icon(Icons.save_outlined),
+                                label: Text(
+                                  _busy
+                                      ? 'Guardando…'
+                                      : widget.adapter.professional
+                                      ? 'Guardar programa privado'
+                                      : _checkpoint == null
+                                      ? 'Guardar borrador'
+                                      : 'Guardar en catálogo',
+                                ),
                               ),
-                            const SizedBox(height: 12),
-                            FilledButton.icon(
-                              onPressed: _busy || !_catalogsReady
-                                  ? null
-                                  : _save,
-                              icon: const Icon(Icons.save_outlined),
-                              label: Text(
-                                _busy
-                                    ? 'Guardando…'
-                                    : widget.adapter.professional
-                                    ? 'Guardar programa privado'
-                                    : _checkpoint == null
-                                    ? 'Guardar borrador'
-                                    : 'Guardar en catálogo',
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1106,6 +1159,169 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
             ),
     ),
   );
+  bool get _libraryEnabled =>
+      !_busy &&
+      !_sessionWorkspaceOpen &&
+      _finalAttempt == null &&
+      _catalogsReady;
+
+  Widget _sessionLibrary() => ProfessionalLibraryPane<ProgramSessionSummary>(
+    title: widget.adapter.professional
+        ? 'Mis sesiones privadas'
+        : 'Catálogo de sesiones',
+    items: _sessions
+        .where((s) => ['draft', 'published'].contains(s.status))
+        .toList(),
+    nameOf: (s) => s.name,
+    subtitleOf: (s) =>
+        '${s.isRunning ? 'Carrera' : 'Fuerza'} · v${s.version} · ${s.catalogScope}',
+    dragOwner: _libraryOwner,
+    enabled: _libraryEnabled,
+    onSelected: (session) async {
+      final phase = _phases.length == 1
+          ? _phases.single
+          : await showDialog<_PhaseFields>(
+              context: context,
+              builder: (context) => SimpleDialog(
+                title: const Text('Añadir a una fase'),
+                children: [
+                  for (var i = 0; i < _phases.length; i++)
+                    SimpleDialogOption(
+                      onPressed: () => Navigator.pop(context, _phases[i]),
+                      child: Text('${i + 1}. ${_phases[i].name.text}'),
+                    ),
+                ],
+              ),
+            );
+      if (mounted && phase != null && _libraryEnabled) {
+        _attachSession(phase, session);
+      }
+    },
+    footer: const Text(
+      'Arrastra a una fase o pulsa para elegir su destino. Guardar no publica ni asigna.',
+    ),
+  );
+
+  Widget _programOutline() => ListView(
+    padding: const EdgeInsets.all(20),
+    children: [
+      Text(
+        'Estructura del programa',
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      const SizedBox(height: 12),
+      Text(
+        '${_phases.length} fases · ${_phases.fold<int>(0, (total, phase) => total + phase.sessions.length)} sesiones',
+      ),
+      const SizedBox(height: 12),
+      for (var i = 0; i < _phases.length; i++)
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('${i + 1}. ${_phases[i].name.text}'),
+          subtitle: Text('${_phases[i].sessions.length} sesiones'),
+          onTap: () {
+            final target = _phases[i].anchor.currentContext;
+            if (target != null) {
+              Scrollable.ensureVisible(
+                target,
+                duration: const Duration(milliseconds: 200),
+              );
+            }
+          },
+        ),
+      const SizedBox(height: 12),
+      const Text(
+        'Usa las asas para ordenar. Para cambiar de fase, arrastra el icono de carpeta o abre «Mover a otra fase».',
+      ),
+    ],
+  );
+
+  void _transferSession(
+    _PhaseFields source,
+    _PhaseFields target,
+    _SessionFields session,
+  ) {
+    if (!_canTransfer(source) ||
+        !_canTransfer(target) ||
+        source == target ||
+        !source.sessions.contains(session) ||
+        !_phases.contains(source) ||
+        !_phases.contains(target)) {
+      return;
+    }
+    setState(() {
+      source.sessions.remove(session);
+      target.sessions.add(session);
+      _changed();
+    });
+  }
+
+  bool _canTransfer(_PhaseFields phase) =>
+      _libraryEnabled &&
+      phase.sessionWorks.isEmpty &&
+      phase.pendingSessions.isEmpty &&
+      phase.pendingReplacements.isEmpty;
+
+  ProgramSessionSummary? _catalogSession(ProgramSessionSummary dragged) =>
+      _sessions
+          .where(
+            (s) =>
+                s.id == dragged.id &&
+                s.version == dragged.version &&
+                ['draft', 'published'].contains(s.status),
+          )
+          .firstOrNull;
+
+  Widget _phaseDrop(_PhaseFields phase, Widget child) =>
+      DragTarget<ProfessionalLibraryDrag<ProgramSessionSummary>>(
+        onWillAcceptWithDetails: (details) =>
+            _libraryEnabled &&
+            identical(details.data.owner, _libraryOwner) &&
+            _catalogSession(details.data.value) != null,
+        onAcceptWithDetails: (details) {
+          final source = _catalogSession(details.data.value);
+          if (_libraryEnabled &&
+              identical(details.data.owner, _libraryOwner) &&
+              source != null) {
+            _attachSession(phase, source);
+          }
+        },
+        builder: (context, candidates, rejected) =>
+            DragTarget<ProfessionalLibraryDrag<_SessionTransfer>>(
+              onWillAcceptWithDetails: (details) =>
+                  identical(details.data.owner, _libraryOwner) &&
+                  _canTransfer(phase) &&
+                  _canTransfer(details.data.value.phase) &&
+                  details.data.value.phase != phase &&
+                  details.data.value.phase.sessions.contains(
+                    details.data.value.session,
+                  ),
+              onAcceptWithDetails: (details) {
+                final value = details.data.value;
+                if (!identical(details.data.owner, _libraryOwner) ||
+                    !_canTransfer(phase) ||
+                    !_canTransfer(value.phase) ||
+                    value.phase == phase ||
+                    !value.phase.sessions.contains(value.session)) {
+                  return;
+                }
+                _transferSession(value.phase, phase, value.session);
+              },
+              builder: (context, transfers, rejected) => DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: candidates.isNotEmpty || transfers.isNotEmpty
+                      ? Border.all(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2,
+                        )
+                      : null,
+                ),
+                child: child,
+              ),
+            ),
+      );
+
   Widget _categoryFields() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
@@ -1231,8 +1447,8 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       ),
     ],
   );
-  Widget _phaseCard(_PhaseFields p, int index) => Card(
-    key: ValueKey(p),
+  Widget _phaseCard(_PhaseFields p, int index, {Widget? handle}) => Card(
+    key: p.anchor,
     child: Padding(
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -1245,6 +1461,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               [
+                ?handle,
                 IconButton(
                   tooltip: 'Subir fase',
                   onPressed: index == 0 ? null : () => _movePhase(index, -1),
@@ -1270,12 +1487,33 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                   ),
               ],
             ),
-            _field(p.name, 'Nombre de la fase', required: true),
-            _field(
-              p.weeks,
-              'Duración orientativa (semanas)',
-              numeric: true,
-              required: true,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final name = _field(
+                  p.name,
+                  'Nombre de la fase',
+                  required: true,
+                );
+                final weeks = _field(
+                  p.weeks,
+                  'Duración orientativa (semanas)',
+                  numeric: true,
+                  required: true,
+                );
+                return constraints.maxWidth >= 650
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: name),
+                          const SizedBox(width: 16),
+                          SizedBox(width: 220, child: weeks),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [name, weeks],
+                      );
+              },
             ),
             _field(
               p.instructions,
@@ -1317,7 +1555,22 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                   : 'Crea y guarda las sesiones aquí. Se publicarán juntas tras revisar el programa. Guarda tu montaje con ${_checkpoint == null ? 'Guardar borrador' : 'Guardar en catálogo'}.',
             ),
           ),
-          for (var i = 0; i < p.sessions.length; i++) _sessionCard(p, i),
+          WorkoutReorderableCards(
+            identities: p.sessions,
+            keyPrefix: 'program-session-handle-${p.phaseId}',
+            itemLabel: 'sesión',
+            enabled: !_busy && !_sessionWorkspaceOpen && _finalAttempt == null,
+            onReorder: (from, to) => setState(() {
+              p.sessions.insert(to, p.sessions.removeAt(from));
+              _changed();
+            }),
+            feedbackBuilder: (_, index) => Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(p.sessions[index].name),
+            ),
+            itemBuilder: (_, index, handle) =>
+                _sessionCard(p, index, handle: handle),
+          ),
           for (final entry in p.sessionWorks.entries)
             Card(
               child: Padding(
@@ -1428,7 +1681,7 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     );
   }
 
-  Widget _sessionCard(_PhaseFields p, int i) {
+  Widget _sessionCard(_PhaseFields p, int i, {Widget? handle}) {
     final s = p.sessions[i];
     final pendingWork = p.sessionWorks.values.any(
       (origin) => origin['positionId'] == s.positionId,
@@ -1449,6 +1702,44 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               [
+                ?handle,
+                if (_canTransfer(p) && _phases.length > 1)
+                  PopupMenuButton<_PhaseFields>(
+                    tooltip: 'Mover a otra fase',
+                    onSelected: (target) => _transferSession(p, target, s),
+                    itemBuilder: (_) => [
+                      for (final target in _phases.where(
+                        (phase) => phase != p && _canTransfer(phase),
+                      ))
+                        PopupMenuItem(
+                          value: target,
+                          child: Text(target.name.text),
+                        ),
+                    ],
+                    icon: const Icon(Icons.more_horiz),
+                  ),
+                if (_canTransfer(p))
+                  Draggable<ProfessionalLibraryDrag<_SessionTransfer>>(
+                    data: ProfessionalLibraryDrag(
+                      _libraryOwner,
+                      _SessionTransfer(p, s),
+                    ),
+                    maxSimultaneousDrags: 1,
+                    feedback: Material(
+                      elevation: 8,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(s.name),
+                      ),
+                    ),
+                    child: const Tooltip(
+                      message: 'Arrastrar a otra fase',
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(Icons.drive_file_move_outline),
+                      ),
+                    ),
+                  ),
                 IconButton(
                   tooltip: 'Subir sesión',
                   onPressed: i == 0
@@ -1784,6 +2075,7 @@ class _SessionFields {
 
 class _PhaseFields {
   _PhaseFields({String? phaseId}) : phaseId = phaseId ?? newGuidedWorkId();
+  final anchor = GlobalKey();
   final String phaseId;
   final sessionWorks = <String, Map<String, dynamic>>{};
   factory _PhaseFields.fromPhase(GuidedPhase p) => _PhaseFields()
@@ -1849,4 +2141,10 @@ class _PhaseFields {
       s.dispose();
     }
   }
+}
+
+class _SessionTransfer {
+  const _SessionTransfer(this.phase, this.session);
+  final _PhaseFields phase;
+  final _SessionFields session;
 }

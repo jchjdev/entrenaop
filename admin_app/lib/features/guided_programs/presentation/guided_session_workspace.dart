@@ -102,7 +102,10 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope<String>(
+  Widget build(BuildContext context) =>
+      ProfessionalWorkspaceViewport(builder: _buildWorkspace);
+
+  Widget _buildWorkspace(BuildContext context) => PopScope<String>(
     canPop: _canPop,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop) _close();
@@ -111,7 +114,10 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
       insetPadding: const EdgeInsets.all(12),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1020),
+        constraints: ProfessionalWorkspaceScope.pageConstraints(
+          context,
+          maxWidth: 1020,
+        ),
         child: Column(
           children: [
             Padding(
@@ -134,7 +140,7 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
             ),
             const Divider(height: 1),
             Expanded(
-              child: SingleChildScrollView(
+              child: ProfessionalEmbeddedScroll(
                 child: _registering
                     ? const Center(child: CircularProgressIndicator())
                     : _error != null
@@ -194,6 +200,7 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                           return WorkflowExitScope(
                             controller: _exit,
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 if (!widget.duplicate &&
@@ -204,35 +211,40 @@ class _GuidedSessionWorkspaceState extends State<GuidedSessionWorkspace> {
                                       'Al guardar se creará una nueva versión en borrador para este programa. La versión publicada se conserva.',
                                     ),
                                   ),
-                                AdminWorkoutEditorPage(
-                                  exerciseRepository: widget.exerciseRepository,
-                                  exerciseVideos: widget.exerciseVideos,
-                                  exercisePreferences:
-                                      widget.exercisePreferences,
-                                  program: null,
-                                  repository: widget.workouts,
-                                  originalTemplate: original == null
-                                      ? null
-                                      : widget.duplicate
-                                      ? WorkoutTemplate(
-                                          id: original.$2.id,
-                                          name:
-                                              '${original.$2.name.characters.take(112)} · copia',
-                                          description: original.$2.description,
-                                          estimatedDurationMinutes: original
-                                              .$2
-                                              .estimatedDurationMinutes,
-                                          version: 1,
-                                          blocks: original.$2.blocks,
-                                        )
-                                      : original.$2,
-                                  revisionId: widget.duplicate
-                                      ? null
-                                      : original?.$1.id,
-                                  initialShowInLibrary: false,
-                                  embedded: true,
-                                  programName: widget.programName,
-                                  onSaved: _saved,
+                                Flexible(
+                                  fit: FlexFit.loose,
+                                  child: AdminWorkoutEditorPage(
+                                    exerciseRepository:
+                                        widget.exerciseRepository,
+                                    exerciseVideos: widget.exerciseVideos,
+                                    exercisePreferences:
+                                        widget.exercisePreferences,
+                                    program: null,
+                                    repository: widget.workouts,
+                                    originalTemplate: original == null
+                                        ? null
+                                        : widget.duplicate
+                                        ? WorkoutTemplate(
+                                            id: original.$2.id,
+                                            name:
+                                                '${original.$2.name.characters.take(112)} · copia',
+                                            description:
+                                                original.$2.description,
+                                            estimatedDurationMinutes: original
+                                                .$2
+                                                .estimatedDurationMinutes,
+                                            version: 1,
+                                            blocks: original.$2.blocks,
+                                          )
+                                        : original.$2,
+                                    revisionId: widget.duplicate
+                                        ? null
+                                        : original?.$1.id,
+                                    initialShowInLibrary: false,
+                                    embedded: true,
+                                    programName: widget.programName,
+                                    onSaved: _saved,
+                                  ),
                                 ),
                               ],
                             ),
