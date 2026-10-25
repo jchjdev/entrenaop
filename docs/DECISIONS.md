@@ -1,5 +1,11 @@
 # Registro de decisiones vigentes
 
+**TRN-030 · prioridad profesional aclarada · 25/10/2026:** Javier descarta
+priorizar sueño, VFC y Body Battery para este pulido. El interés está en facilitar
+planificación por alumno, coordinación semanal de fuerza/carrera y objetivos de
+oposición. El diseño detallado de ese recorrido sigue siendo propuesta, no una
+ampliación ya aprobada ni implementada. [Contexto](audits/harbiz-2026-10-21.md#revisión-final-del-25102026).
+
 **TRN-030 · contraste final con Harbiz/Garmin · 25/10/2026:** Javier pide
 aprovechar las sesiones abiertas antes del fin de la prueba y pulir Trainer.
 Las comprobaciones en servicios externos usarán perfiles existentes y nombres
