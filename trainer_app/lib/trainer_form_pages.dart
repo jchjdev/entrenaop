@@ -706,7 +706,7 @@ class _TrainerClientFormsPageState extends State<TrainerClientFormsPage> {
               ),
               onTap: () => showDialog<void>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogContext) => AlertDialog(
                   title: Text(item.form.title),
                   content: SizedBox(
                     width: 600,
@@ -728,7 +728,9 @@ class _TrainerClientFormsPageState extends State<TrainerClientFormsPage> {
                   ),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      // El diálogo vive en el Navigator raíz; la ficha está
+                      // dentro del ShellRoute y debe conservarse al cerrarlo.
+                      onPressed: () => Navigator.pop(dialogContext),
                       child: const Text('Cerrar'),
                     ),
                   ],

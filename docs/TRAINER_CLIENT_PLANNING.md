@@ -18,6 +18,28 @@ ruta correctamente y consulta la protección de salida. Un guardado de objetivo
 incierto solo permite permanecer o confirmar la misma operación antes de salir.
 Adaptadores equivalentes de la misma cuenta no descartan ese contenido.
 
+## Uso: oposición y marcas objetivo
+
+La oposición se introduce como título del objetivo del servicio, no como una
+selección de convocatoria oficial con baremos automáticos. En Alumnos → ficha →
+Objetivos → Definir objetivo se escribe el título, se elige la fecha opcional y
+se puede guardar sin metas ni baterías.
+
+Para incorporar marcas se prepara una batería reutilizable: un conjunto de
+pruebas con condiciones explícitas. En Pruebas y simulacros → Crear batería se
+escribe el título (por ejemplo, «Evaluación Policía Nacional»), se definen las
+pruebas privadas, sus instrucciones, unidad, dirección favorable, resolución e
+intentos, y se pulsa Guardar versión. No hace falta asignarla ni que el alumno
+la complete para fijar una meta.
+
+Después, en Objetivos del alumno, se selecciona una Prueba de tus baterías,
+se pulsa Añadir meta y se escribe su valor (por ejemplo, carrera 1000 m en
+`3:50` o diez dominadas). Guardar objetivo conserva metas distintas para cada
+alumno aunque reutilicen el protocolo. Asignar la batería es un paso posterior
+para evaluar; las entregas completadas alimentan última/anterior/mejor marca.
+Los tiempos admiten `m:ss` o segundos. Una marca objetivo no es un resultado
+real del alumno ni una puntuación oficial.
+
 ## Calendario y permisos
 
 La semana usa fechas civiles, también al cambiar de horario o mes. Las pautas
@@ -136,3 +158,14 @@ ADMIN sin modificar su interfaz. Run `40222767612`: validación, despliegue y
 retención correctos. ADMIN Dev confirma por HTTPS la misma revisión de fuentes,
 release `04a1f87c2f503c6b656b02014e94fe39c670e769-40222767612-1` y JavaScript SHA-256
 `3ace39c409ddcc76f75500e1f18ff58908fa062929a217a2f24ff1021b493bd2`. No se usa una subida manual de ADMIN.
+
+## Cierre de respuestas del formulario · corrección del 25/10/2026
+
+Javier detecta la pantalla vacía al regresar de un formulario respondido. Se
+reproduce en Chrome: el diálogo está en el Navigator raíz y Cerrar usaba el
+contexto de la página del ShellRoute, eliminando la última página del alumno.
+El botón se vincula al contexto del propio diálogo. La regresión con navegación
+anidada falla antes de la corrección y comprueba después dos aperturas/cierres,
+conservación de ficha/ruta y regreso a Planificación. Sin cambios de datos,
+permisos o componentes de ADMIN. Análisis limpio y batería Trainer completa:
+237 pruebas correctas. La publicación se acredita tras verificarla.
