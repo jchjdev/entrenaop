@@ -100,6 +100,20 @@ Future<void> showActions(
 }
 
 void main() {
+  test(
+    'la retirada confirmada desbloquea según servidor sin saltarse resultados',
+    () {
+      final allowed = TrainerAssignment.fromJson(archivedRow());
+      expect(allowed.deletionExplanation, isNull);
+      final pending = TrainerAssignment.fromJson(archivedRow(reason: 'garmin'));
+      expect(pending.deletionExplanation, contains('retirada confirmada'));
+      final withResults = TrainerAssignment.fromJson(
+        archivedRow(execution: 'execution'),
+      );
+      expect(withResults.deletionExplanation, contains('resultados'));
+    },
+  );
+
   testWidgets(
     'la compartición no reintroduce una archivada y el filtro la recupera',
     (t) async {

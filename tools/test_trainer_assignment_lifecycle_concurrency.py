@@ -25,8 +25,10 @@ def install(db):
       create table public.exercise_video_assets(assignment_id uuid references public.trainer_assignments on delete restrict);
       create table public.running_week_sessions(scheduled_workout_id uuid references public.scheduled_workouts on delete restrict);
       create table public.performance_week_work(scheduled_workout_id uuid references public.scheduled_workouts on delete restrict);
-      create table device_private.training_deliveries(scheduled_id uuid);
-      create table device_private.training_sync_jobs(scheduled_id uuid);
+      create table device_private.training_deliveries(id uuid primary key default gen_random_uuid(),scheduled_id uuid,owner_id uuid,
+        status text default 'sent',lease_id uuid,lease_until timestamptz,error_code text,workout_id bigint default 1,schedule_id bigint default 2);
+      create table device_private.training_delivery_versions(delivery_id uuid references device_private.training_deliveries,workout_id bigint,schedule_id bigint);
+      create table device_private.training_sync_jobs(id uuid primary key default gen_random_uuid(),scheduled_id uuid,owner_id uuid,state text default 'pending',lease_id uuid,lease_until timestamptz);
       create table device_private.activity_confirmations(scheduled_id uuid);
       create function trainer_private.has_trainer_mfa() returns boolean language sql stable as $$select auth.jwt()->>'aal'='aal2'$$;
       create function trainer_private.program_work_identity(uuid) returns void language plpgsql as $$begin
@@ -41,6 +43,8 @@ def install(db):
     db.query(re.search(r'create function trainer_private\.lock_assignment\([\s\S]*?end \$\$;',operational).group())
     lifecycle=(root/'supabase/migrations/20261025214951_trainer_assignment_archive_and_guarded_deletion.sql').read_text(encoding='utf-8')
     db.query(lifecycle.split('-- Filtrar ANTES',1)[0]+'commit;')
+    confirmed=(root/'supabase/migrations/20261025222416_trainer_delete_after_confirmed_garmin_withdrawal.sql').read_text(encoding='utf-8')
+    db.query(confirmed.split('-- Los recibos permanecen.',1)[0]+'commit;')
 
 
 def fixture(db):
@@ -124,6 +128,23 @@ def result_race(db,pool,rr,result_first):
     assert bool(db.query(f"select id from public.scheduled_workouts where id='{c['id']}'"))==result_first
 
 
+def confirmed_reopen_race(db,pool,rr,reopen_first,table):
+    c=fixture(db)
+    db.query(f"insert into device_private.training_deliveries(scheduled_id,owner_id,status) values('{c['id']}','{c['pupil']}','cancelled')")
+    db.query(f"insert into device_private.training_sync_jobs(scheduled_id,owner_id,state) values('{c['id']}','{c['pupil']}','done')")
+    assert db.query(f"select trainer_private.assignment_delete_block('{c['id']}')")==[['']]
+    change="status='cancelling'" if table=='training_deliveries' else "state='pending'"
+    reopen=f"update device_private.{table} set {change} where scheduled_id='{c['id']}'"
+    delete=mutate(c)
+    race(db,pool,reopen if reopen_first else delete,delete if reopen_first else reopen,
+      None if reopen_first else c['coach'],c['coach'] if reopen_first else None,rr,
+      '40001' if rr else '22023' if reopen_first else '23503')
+    assert bool(db.query(f"select id from public.scheduled_workouts where id='{c['id']}'"))==reopen_first
+    if not reopen_first:
+        assert db.query(f"select status from device_private.training_deliveries where scheduled_id='{c['id']}'")==[['cancelled']]
+        assert db.query(f"select state from device_private.training_sync_jobs where scheduled_id='{c['id']}'")==[['done']]
+
+
 with tempfile.TemporaryDirectory(prefix='entrenaop-assignment-lifecycle-race-') as directory:
     directory=Path(directory).resolve();data=directory/'data';started=False;observer=None;count=0
     subprocess.run([str(bin_dir/'initdb'),'-D',str(data),'-U','postgres','-A','trust','--no-locale','-E','UTF8'],check=True,capture_output=True)
@@ -138,6 +159,10 @@ with tempfile.TemporaryDirectory(prefix='entrenaop-assignment-lifecycle-race-') 
                         print(f'OK {table} referencia primero={first} RR={rr}',flush=True)
                     for _ in range(3):result_race(observer,pool,rr,first);count+=1
                     print(f'OK resultado primero={first} RR={rr}',flush=True)
+                for first in (False,True):
+                    for table in ('training_deliveries','training_sync_jobs'):
+                        for _ in range(3):confirmed_reopen_race(observer,pool,rr,first,table);count+=1
+                        print(f'OK confirmada/{table} reapertura primero={first} RR={rr}',flush=True)
                 for test in (idempotent,stale_archive):
                     for _ in range(3):test(observer,pool,rr);count+=1
                     print(f'OK {test.__name__} RR={rr}',flush=True)

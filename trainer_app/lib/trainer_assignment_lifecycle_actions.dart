@@ -62,7 +62,7 @@ class _TrainerAssignmentLifecycleActionsState
         builder: (dialog) => AlertDialog(
           title: const Text('Borrar sesión definitivamente'),
           content: Text(
-            'Se borrará «${item.name}» del calendario del alumno. No se puede deshacer. La plantilla de tu biblioteca se conserva. El servidor impedirá el borrado si tiene resultados, vínculos con Garmin u otras referencias.',
+            'Se borrará «${item.name}» del calendario del alumno. No se puede deshacer. La plantilla de tu biblioteca se conserva. El servidor impedirá el borrado si tiene resultados, una retirada de Garmin sin confirmar, operaciones pendientes u otras referencias protegidas. Los recibos históricos se conservan.',
           ),
           actions: [
             TextButton(

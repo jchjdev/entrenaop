@@ -81,7 +81,7 @@ class TrainerAssignment {
           deleteBlockReason == 'results'
       ? 'Tiene una ejecución o resultados. Puedes archivarla.'
       : switch (deleteBlockReason) {
-          'garmin' => 'Conserva vínculos con Garmin. Puedes archivarla.',
+          'garmin' => 'Garmin no tiene la retirada confirmada o conserva operaciones pendientes. Puedes archivarla.',
           'references' => 'Conserva conversaciones, vídeos u otras referencias. Puedes archivarla.',
           null => status == 'cancelled' ? null : 'Retira primero la pauta.',
           _ => 'Actualiza la planificación antes de continuar.',

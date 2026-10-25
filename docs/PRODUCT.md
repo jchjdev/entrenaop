@@ -1,5 +1,10 @@
 # Producto EntrenaOP
 
+**Borrado y Garmin · ajuste del 25/10/2026:** una retirada remota confirmada y
+sin operaciones pendientes permite borrar la cita sin resultados, conservando
+recibos y versiones. El historial Garmin cerrado no la deja indefinidamente en
+el calendario. [Contrato](TRAINER_CLIENT_PLANNING.md#ajuste-retirada-de-garmin-confirmada--25102026).
+
 **Citas profesionales · 25/10/2026:** retirar conserva la marca; archivar la
 oculta solo en el portal del autor y permite recuperarla. Borrar definitivamente
 exige confirmación y ausencia de resultados/referencias protegidas, incluida

@@ -1,9 +1,20 @@
 # Roadmap de EntrenaOP
 
+**TRN-031 · 25/10/2026 · borrado tras retirada Garmin confirmada:** ajuste
+implementado y aplicado en Dev. Permite quitar la cita de prueba sin resultados
+cuando la retirada remota está confirmada y la cola terminada, sin leases; conserva
+recibos y versiones. Scan/take ignoran las identidades borradas. Análisis limpio,
+245 pruebas Trainer, 84 carreras RC/RR y cinco contratos SQL con ROLLBACK correctos;
+asesores sin avisos nuevos. La publicación de textos se acredita al cerrar Actions.
+**Siguiente recorrido único:** probar en Trainer publicado una retirada de Garmin
+confirmada y comprobar permiso de borrado, frente a otra pendiente que sigue
+bloqueada; las notificaciones mantienen su prueba humana prevista.
+[Contrato y evidencia](TRAINER_CLIENT_PLANNING.md#ajuste-retirada-de-garmin-confirmada--25102026).
+
 **TRN-031 · 25/10/2026 · archivo y borrado de citas:** recorrido implementado,
 aplicado, publicado y verificado en Trainer Dev desde `2b9ea1b8` (run 40238901174). Ficha, Agenda y pautas comparten filtros Habitual/Retiradas/
 Archivadas/Todas y acciones recuperables. Borrado propio, retirado y protegido
-por servidor ante resultados, conversaciones, vídeos y cualquier vínculo Garmin.
+por servidor ante resultados, conversaciones, vídeos y operaciones Garmin no cerradas.
 No elimina plantillas ni referencias externas; no reactiva sesiones ni push.
 Análisis Trainer limpio, 244 pruebas, 60 carreras RC/RR y cinco contratos SQL
 con ROLLBACK correctos. Actions y verificación HTTPS correctos; Chrome acredita
