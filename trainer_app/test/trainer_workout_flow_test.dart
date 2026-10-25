@@ -156,6 +156,14 @@ final resultFixture = <String, dynamic>{
 
 Future<void> press(WidgetTester tester, String label) async {
   final finder = find.text(label).last;
+  if (find.text(label).evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      find.text(label),
+      250,
+      maxScrolls: 40,
+      scrollable: find.byType(Scrollable).first,
+    );
+  }
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
@@ -343,7 +351,8 @@ void main() {
       );
       await press(tester, 'Ver resultados');
       expect(find.text('Buenas sensaciones'), findsOneWidget);
-      expect(find.text('Esfuerzo final: 6/10'), findsOneWidget);
+      expect(find.text('Esfuerzo final'), findsOneWidget);
+      expect(find.text('6/10'), findsOneWidget);
       await press(tester, 'Dominadas');
       expect(find.text('Realizado: 8 rep · 5 kg · 1 RIR'), findsOneWidget);
       expect(find.textContaining('Pautado: 10 rep'), findsOneWidget);
@@ -360,6 +369,7 @@ void main() {
             result: {
               ...resultFixture,
               'observed_timer_seconds': 137.3,
+              'observed_elapsed_seconds': 165.75,
               'observed_distance_meters': 410.25,
             },
           ),
@@ -367,8 +377,80 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Tiempo del reloj: 2:17'), findsOneWidget);
-    expect(find.text('Distancia del reloj: 0.41 km'), findsOneWidget);
+    expect(find.text('Tiempo del reloj'), findsOneWidget);
+    expect(find.text('2:17.30'), findsOneWidget);
+    expect(find.text('Tiempo transcurrido'), findsOneWidget);
+    expect(find.text('2:45.75'), findsOneWidget);
+    expect(find.text('Distancia del reloj'), findsOneWidget);
+    expect(find.text('0.41 km'), findsOneWidget);
+    expect(find.text('Ritmo global calculado'), findsNothing);
+  });
+  testWidgets(
+    'el ritmo usa temporizador y distancia, no el transcurrido ni la pauta',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TrainerWorkoutResultContent(
+              result: {
+                ...resultFixture,
+                'observed_timer_seconds': 300.5,
+                'observed_elapsed_seconds': 600,
+                'observed_distance_meters': 1000,
+                'workout_execution_sets': [],
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Ritmo global calculado'), findsNothing);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TrainerWorkoutResultContent(
+              result: {
+                ...resultFixture,
+                'observed_timer_seconds': 300.5,
+                'observed_elapsed_seconds': 600,
+                'observed_distance_meters': 1000,
+                'workout_execution_sets': [
+                  {
+                    ...((resultFixture['workout_execution_sets'] as List).single
+                        as Map),
+                    'block_format': 'running',
+                    'actual_duration_seconds': 300.5,
+                    'actual_distance_meters': 1000,
+                  },
+                ],
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Ritmo global calculado'), findsOneWidget);
+      expect(find.text('5:00.50 min/km'), findsOneWidget);
+      expect(find.text('10:00.00 min/km'), findsNothing);
+    },
+  );
+  testWidgets('el resumen no inventa métricas del reloj sin mediciones', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: TrainerWorkoutResultContent(result: resultFixture),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Tiempo del reloj'), findsNothing);
+    expect(find.text('Tiempo transcurrido'), findsNothing);
+    expect(find.text('Distancia del reloj'), findsNothing);
+    expect(find.text('Pulso medio'), findsNothing);
+    expect(find.text('Ritmo global calculado'), findsNothing);
+    expect(find.text('Declarado por el alumno'), findsOneWidget);
   });
   for (final width in [320.0, 1200.0]) {
     testWidgets('resultados y asignación legibles a $width con texto 2x', (

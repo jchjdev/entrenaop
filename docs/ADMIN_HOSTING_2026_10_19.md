@@ -233,3 +233,18 @@ ADMIN correctas, incluidas seis regresiones de transporte; conexión pública
 IPv4 y certificado TLS correctos, sin credenciales. La recuperación completa
 queda pendiente de una nueva publicación automática desde GitHub Actions y
 su comprobación pública: la conectividad local no demuestra la del runner.
+
+
+### Publicación automática acreditada
+
+La ejecución [40217442803](https://github.com/jchjdev/entrenaop/actions/runs/40217442803)
+termina con `validate`, `deploy` y `retain-packages` correctos. El probe IPv4/TLS
+pasa desde el runner y se publica sin usar Hostinger manual. HTTPS acredita
+fuentes `e790a6af305a7ac52f1d8b47614bf96ff4a23304`, release
+`e790a6af305a7ac52f1d8b47614bf96ff4a23304-40217442803-1`, JavaScript SHA-256
+`c9612d2a6b3249ce17ade3665ae2b4c0d240f945e2ed248a6afeaab80f46a7fd`,
+entrada versionada, cabeceras y MIME WebAssembly. Fuentes limpias al empaquetar.
+Análisis ADMIN limpio, 316 pruebas Flutter correctas con dos omisiones previas,
+42 Python ADMIN y siete Python Trainer correctas. El fallo de conectividad
+anterior queda mitigado y la recuperación automática verificada; una ejecución
+correcta no promete disponibilidad permanente de la red del proveedor.

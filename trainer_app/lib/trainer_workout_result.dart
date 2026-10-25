@@ -277,18 +277,11 @@ class _TrainerWorkoutResultContentState
               Text(
                 '$completed ${completed == 1 ? 'serie completada' : 'series completadas'} · $skipped omitidas',
               ),
-            if (result['final_rpe'] != null)
-              Text('Esfuerzo final: ${result['final_rpe']}/10'),
-            if (result['average_heart_rate_bpm'] != null)
-              Text('Pulso medio: ${result['average_heart_rate_bpm']} lpm'),
-            if (result['max_heart_rate_bpm'] != null)
-              Text('Pulso máximo: ${result['max_heart_rate_bpm']} lpm'),
-            if (result['observed_timer_seconds'] case final num seconds)
-              Text('Tiempo del reloj: ${_time(seconds.round())}'),
-            if (result['observed_distance_meters'] case final num meters)
-              Text(
-                'Distancia del reloj: ${(meters / 1000).toStringAsFixed(2)} km',
-              ),
+            const SizedBox(height: 8),
+            _ResultOverview(
+              result: result,
+              running: sets.any((set) => set['block_format'] == 'running'),
+            ),
             if (abandonment != null) Text('Motivo: $abandonment'),
             if ((result['notes'] as String?)?.isNotEmpty == true)
               Card(
@@ -403,6 +396,133 @@ List<_ResultBlock> _resultBlocks(List<Map> sets) {
   'running' => ('Carrera', const Color(0xffff9c68)),
   _ => ('Por series', const Color(0xff82b1ff)),
 };
+
+/// El resumen usa registros de la ejecución; nunca rellena ausentes con la pauta.
+class _ResultOverview extends StatelessWidget {
+  const _ResultOverview({required this.result, required this.running});
+  final WorkoutJson result;
+  final bool running;
+
+  num? _positive(String key) {
+    final value = result[key];
+    return value is num && value.isFinite && value > 0 ? value : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final timer = _positive('observed_timer_seconds');
+    final elapsed = _positive('observed_elapsed_seconds');
+    final distance = _positive('observed_distance_meters');
+    final averageHeartRate = _positive('average_heart_rate_bpm');
+    final maxHeartRate = _positive('max_heart_rate_bpm');
+    final metrics =
+        <({String title, String value, String source, IconData icon})>[
+          if (timer != null)
+            (
+              title: 'Tiempo del reloj',
+              value: formatPerformanceTime(timer),
+              source: 'Temporizador registrado',
+              icon: Icons.timer_outlined,
+            ),
+          if (elapsed != null)
+            (
+              title: 'Tiempo transcurrido',
+              value: formatPerformanceTime(elapsed),
+              source: 'Incluye las pausas del reloj',
+              icon: Icons.schedule,
+            ),
+          if (distance != null)
+            (
+              title: 'Distancia del reloj',
+              value: '${(distance / 1000).toStringAsFixed(2)} km',
+              source: 'Total registrado en la actividad',
+              icon: Icons.route_outlined,
+            ),
+          if (running && timer != null && distance != null)
+            (
+              title: 'Ritmo global calculado',
+              value: '${formatPerformanceTime(timer * 1000 / distance)} min/km',
+              source: 'Temporizador / distancia total',
+              icon: Icons.speed,
+            ),
+          if (averageHeartRate != null)
+            (
+              title: 'Pulso medio',
+              value: '$averageHeartRate lpm',
+              source: 'Registrado en esta sesión',
+              icon: Icons.favorite_border,
+            ),
+          if (maxHeartRate != null)
+            (
+              title: 'Pulso máximo',
+              value: '$maxHeartRate lpm',
+              source: 'Registrado en esta sesión',
+              icon: Icons.monitor_heart_outlined,
+            ),
+          if (result['final_rpe'] case final num rpe)
+            (
+              title: 'Esfuerzo final',
+              value: '$rpe/10',
+              source: 'Declarado por el alumno',
+              icon: Icons.bolt_outlined,
+            ),
+        ];
+    if (metrics.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final textScale = (MediaQuery.textScalerOf(context).scale(14) / 14)
+              .clamp(1.0, 2.0);
+          final columns = (constraints.maxWidth / (160 * textScale))
+              .floor()
+              .clamp(1, 4);
+          final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final metric in metrics)
+                SizedBox(
+                  width: width,
+                  child: Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            metric.icon,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            metric.title,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            metric.value,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            metric.source,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
 
 class _ResultBlockHeading extends StatelessWidget {
   const _ResultBlockHeading({required this.block});

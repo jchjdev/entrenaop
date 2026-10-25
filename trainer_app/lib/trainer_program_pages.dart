@@ -874,9 +874,11 @@ class TrainerProgramAssignmentDialog extends StatefulWidget {
     super.key,
     required this.repository,
     required this.relationId,
+    this.initialDate,
   });
   final TrainerProgramRepository repository;
   final String relationId;
+  final DateTime? initialDate;
   @override
   State<TrainerProgramAssignmentDialog> createState() =>
       _TrainerProgramAssignmentDialogState();
@@ -926,7 +928,7 @@ class _TrainerProgramAssignmentDialogState
   }
 
   void _choose(GuidedProgram program, {int? phase}) {
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateUtils.dateOnly(widget.initialDate ?? DateTime.now());
     setState(() {
       _program = program;
       _phase = phase ?? (program.sessionCount > 256 ? 0 : -1);
@@ -948,6 +950,128 @@ class _TrainerProgramAssignmentDialogState
         }
       }
     });
+  }
+
+  Future<void> _moveStart() async {
+    if (_busy || _operation != null || _entries.isEmpty) return;
+    final first = _entries
+        .map((entry) => entry.date)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    final chosen = await showDatePicker(
+      context: context,
+      initialDate: first,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100, 12, 31),
+    );
+    if (chosen == null || !mounted) return;
+    // El desplazamiento conserva días civiles, también al cambiar la hora.
+    final offset = DateTime.utc(
+      chosen.year,
+      chosen.month,
+      chosen.day,
+    ).difference(DateTime.utc(first.year, first.month, first.day)).inDays;
+    final shifted = [
+      for (final entry in _entries)
+        TrainerProgramEntry(
+          entry.phase,
+          entry.session,
+          DateTime(entry.date.year, entry.date.month, entry.date.day + offset),
+        ),
+    ];
+    if (shifted.any((entry) => entry.date.isAfter(DateTime(2100, 12, 31)))) {
+      setState(
+        () => _error = 'La última sesión quedaría fuera del calendario admitido. Elige una fecha anterior.',
+      );
+      return;
+    }
+    setState(() {
+      _entries
+        ..clear()
+        ..addAll(shifted);
+      _error = null;
+    });
+  }
+
+  Widget _schedulePreview() {
+    final days = <DateTime, List<TrainerProgramEntry>>{};
+    for (final entry in _entries) {
+      final day = DateUtils.dateOnly(entry.date);
+      (days[day] ??= []).add(entry);
+    }
+    final dates = days.keys.toList()..sort();
+    if (dates.isEmpty) return const SizedBox.shrink();
+    const weekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Resumen de la pauta',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(
+              '${_entries.length} ${_entries.length == 1 ? 'sesión' : 'sesiones'} · ${dates.length} ${dates.length == 1 ? 'fecha' : 'fechas'} · ${_date(dates.first)} – ${_date(dates.last)}',
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const ValueKey('program-shift-start'),
+                onPressed: _busy || _operation != null ? null : _moveStart,
+                icon: const Icon(Icons.event_outlined),
+                label: const Text('Cambiar inicio de toda la pauta'),
+              ),
+            ),
+            const Text(
+              'Conserva la separación entre las fechas que has elegido.',
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final date in dates.take(7))
+                  SizedBox(
+                    width: 190,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${weekdays[date.weekday - 1]} ${_date(date)}',
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            for (final entry in days[date]!)
+                              Text(_sessionName(entry)),
+                            if (days[date]!.length > 1)
+                              Text(
+                                '${days[date]!.length} sesiones el mismo día: revisa la carga.',
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (dates.length > 7)
+              Text(
+                'Vista previa de las primeras 7 de ${dates.length} fechas. Todas las sesiones y sus fechas se revisan debajo.',
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _assign() async {
@@ -1075,6 +1199,8 @@ class _TrainerProgramAssignmentDialogState
                       }),
                 child: const Text('Elegir otro programa'),
               ),
+              _schedulePreview(),
+              const SizedBox(height: 12),
               for (var i = 0; i < _entries.length; i++)
                 Card(
                   key: ValueKey('program-date-$i'),

@@ -321,3 +321,27 @@ sobre lo cargado, permisos existentes y cobros/push pospuestos. El fallo del
 transporte FTPS queda registrado; su reparación no forma parte del acabado.
 El estado del sistema también muestra fallos previos de copias Dev del 23 al 25;
 esta tarea de presentación no los modifica ni acredita una copia nueva.
+
+
+## Pulido tras contraste final Harbiz/Garmin · 25/10/2026
+
+La revisión final autorizada se recoge en el [contraste de referencias](audits/harbiz-2026-10-21.md#revisión-final-del-25102026).
+Se añaden a Trainer el resumen por fechas y el cambio de inicio de una pauta,
+y tarjetas de mediciones disponibles en la ejecución. El desplazamiento usa
+días civiles y no modifica recetas ni duración de fases. Tras un envío incierto
+se conservan y bloquean las fechas; el reintento mantiene la misma operación.
+La actividad distingue temporizador y transcurrido, conserva centésimas y calcula
+ritmo global solo en carrera con datos suficientes. No hay nuevas métricas API,
+consultas, permisos ni cambios en ADMIN o en la app móvil.
+
+Análisis Trainer limpio y batería completa: 210 pruebas correctas. Regresiones
+nuevas sobre fechas alrededor del cambio de hora, reintento de tanda, precisión
+del reloj y ausencia/origen de métricas. Se revisan además capturas de widgets
+reales con datos ficticios a 390 y 1440 píxeles y el resumen de la pauta;
+no se guardan imágenes de salud ni de clientes reales en el repositorio.
+El detalle conserva comparación de versiones y filtro compartidos. La
+publicación Dev de esta revisión se acreditará después de compilarla.
+
+ADMIN sí queda publicado automáticamente mediante el circuito reparado, con
+validación, despliegue, retención y HTTPS correctos; evidencia en
+[hosting ADMIN](ADMIN_HOSTING_2026_10_19.md#publicación-automática-acreditada).

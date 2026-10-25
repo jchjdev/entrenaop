@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**TRN-030 · contraste final con Harbiz/Garmin · 25/10/2026:** Javier pide
+aprovechar las sesiones abiertas antes del fin de la prueba y pulir Trainer.
+Las comprobaciones en servicios externos usarán perfiles existentes y nombres
+normales de entrenamiento cuando haga falta redactar contenido, evitando
+etiquetas de auditoría o de EntrenaOP. Esto no autoriza invitaciones, mensajes,
+compras ni compartir datos. El pulido inmediato reúne las fechas de una pauta y
+permite desplazar su inicio conservando días civiles; presenta resultados del
+reloj sin perder decimales ni confundir temporizador con tiempo transcurrido.
+No se amplían los datos compartidos ni las API aprobadas por mostrar métricas
+visibles en Garmin Connect. [Contraste y prioridades](audits/harbiz-2026-10-21.md#revisión-final-del-25102026).
+
+
 **TRN-030 · cierre visual de creadores y pantallas · 25/10/2026:** Javier pide
 terminar la revisión de todas las pantallas actuales de Trainer y ADMIN, con
 prioridad en los creadores compartidos. En escritorio, fuerza y carrera editan

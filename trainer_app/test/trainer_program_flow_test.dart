@@ -165,6 +165,7 @@ Future<void> openProgramDialog(
   WidgetTester tester,
   ProgramFixture repo, {
   double scale = 1,
+  DateTime? initialDate,
 }) async {
   await tester.pumpWidget(
     programApp(
@@ -176,6 +177,7 @@ Future<void> openProgramDialog(
               builder: (_) => TrainerProgramAssignmentDialog(
                 repository: repo,
                 relationId: 'relation',
+                initialDate: initialDate,
               ),
             ),
             child: const Text('Abrir pauta'),
@@ -364,6 +366,53 @@ void main() {
   );
 
   testWidgets(
+    'mover el inicio conserva días civiles y bloquea cambios al reintentar',
+    (tester) async {
+      final repo = ProgramFixture()..failAssign = true;
+      await openProgramDialog(
+        tester,
+        repo,
+        initialDate: DateTime(2026, 10, 24),
+      );
+      await visibleTap(tester, find.text(privateProgram.name));
+      await visibleTap(
+        tester,
+        find.byKey(const ValueKey('program-shift-start')),
+      );
+      await tester.tap(find.text('26').last);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('2 sesiones · 2 fechas · 26/10/2026 – 28/10/2026'),
+        findsOneWidget,
+      );
+      await visibleTap(tester, find.text('Confirmar 2 sesiones'));
+      expect(
+        repo.assigned.single.entries.map((entry) => entry.toJson()['date']),
+        ['2026-10-26', '2026-10-28'],
+      );
+      final shift = find.byKey(const ValueKey('program-shift-start'));
+      await tester.scrollUntilVisible(
+        shift,
+        -300,
+        maxScrolls: 30,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.widget<OutlinedButton>(shift).onPressed, isNull);
+      repo.failAssign = false;
+      await visibleTap(
+        tester,
+        find.text('Comprobar y reintentar planificación'),
+      );
+      expect(repo.assigned.last.operation, repo.assigned.first.operation);
+      expect(
+        repo.assigned.last.entries.map((entry) => entry.toJson()).toList(),
+        repo.assigned.first.entries.map((entry) => entry.toJson()).toList(),
+      );
+    },
+  );
+
+  testWidgets(
     'el programa profesional usa el mismo creador y fija fases y versiones al reintentar',
     (tester) async {
       tester.view.physicalSize = const Size(1200, 1000);
@@ -433,6 +482,12 @@ void main() {
       await openProgramDialog(tester, repo);
       await visibleTap(tester, find.text(privateProgram.name));
       await visibleTap(tester, find.text('Repetir la planificación después'));
+      await tester.scrollUntilVisible(
+        find.byType(TextField),
+        250,
+        maxScrolls: 20,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.enterText(find.byType(TextField), 'Revisar sensaciones');
       await visibleTap(tester, find.text('Confirmar 4 sesiones'));
       expect(repo.assigned, hasLength(1));
