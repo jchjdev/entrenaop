@@ -1043,7 +1043,31 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
                               ),
                               const SizedBox(height: 18),
                               if (!widget.adapter.professional)
-                                _categoryFields(),
+                                if (ProfessionalWorkspaceScope.isDesktop(
+                                  context,
+                                ))
+                                  ExpansionTile(
+                                    tilePadding: EdgeInsets.zero,
+                                    maintainState: true,
+                                    title: const Text(
+                                      'Clasificación del programa',
+                                    ),
+                                    subtitle: Text(
+                                      _categoryIds.isEmpty
+                                          ? 'Elige las categorías del catálogo'
+                                          : _categories
+                                                .where(
+                                                  (c) => _categoryIds.contains(
+                                                    c.id,
+                                                  ),
+                                                )
+                                                .map((c) => c.name)
+                                                .join(' · '),
+                                    ),
+                                    children: [_categoryFields()],
+                                  )
+                                else
+                                  _categoryFields(),
                               const SizedBox(height: 18),
                               WorkoutReorderableCards(
                                 identities: _phases,
@@ -1226,7 +1250,11 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
         .toList(),
     nameOf: (s) => s.name,
     subtitleOf: (s) =>
-        '${s.isRunning ? 'Carrera' : 'Fuerza'} · v${s.version} · ${s.catalogScope}',
+        '${s.isRunning ? 'Carrera' : 'Fuerza'} · v${s.version} · ${s.catalogScope == 'private'
+            ? 'Privada'
+            : s.catalogScope == 'general'
+            ? 'Oficial'
+            : s.catalogScope}',
     dragOwner: _libraryOwner,
     enabled: _libraryEnabled,
     onSelected: (session) async {
@@ -1254,6 +1282,9 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
     ),
   );
 
+  String _sessionCountLabel(int count) =>
+      '$count ${count == 1 ? 'sesión' : 'sesiones'}';
+
   Widget _programOutline() => ListView(
     padding: const EdgeInsets.all(20),
     children: [
@@ -1263,14 +1294,14 @@ class _GuidedProgramEditorPageState extends State<GuidedProgramEditorPage> {
       ),
       const SizedBox(height: 12),
       Text(
-        '${_phases.length} fases · ${_phases.fold<int>(0, (total, phase) => total + phase.sessions.length)} sesiones',
+        '${_mode == GuidedProgramMode.guide ? 'Rutina' : '${_phases.length} ${_phases.length == 1 ? 'fase' : 'fases'}'} · ${_sessionCountLabel(_phases.fold<int>(0, (total, phase) => total + phase.sessions.length))}',
       ),
       const SizedBox(height: 12),
       for (var i = 0; i < _phases.length; i++)
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text('${i + 1}. ${_phases[i].name.text}'),
-          subtitle: Text('${_phases[i].sessions.length} sesiones'),
+          subtitle: Text(_sessionCountLabel(_phases[i].sessions.length)),
           onTap: () {
             final target = _phases[i].anchor.currentContext;
             if (target != null) {

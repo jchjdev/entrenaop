@@ -310,8 +310,22 @@ class _ProfessionalLibraryPaneState<T>
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: ListTile(
-                            title: Text(widget.nameOf(item)),
-                            subtitle: Text(widget.subtitleOf(item)),
+                            title: Tooltip(
+                              message: widget.nameOf(item),
+                              child: Text(
+                                widget.nameOf(item),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            subtitle: Tooltip(
+                              message: widget.subtitleOf(item),
+                              child: Text(
+                                widget.subtitleOf(item),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             leading: widget.dragOwner == null
                                 ? null
                                 : const Icon(Icons.drag_indicator, size: 18),

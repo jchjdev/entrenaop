@@ -81,6 +81,13 @@ class _Guided extends Fake implements AdminGuidedRepository {
   }
 }
 
+class _CategorizedGuided extends _Guided {
+  @override
+  Future<List<GuidedProgramCategory>> categories() async => [
+    const GuidedProgramCategory(id: 'strength', name: 'Fuerza', active: true),
+  ];
+}
+
 class _Workouts extends Fake implements AdminWorkoutRepository {
   final inputs = <String, CreatePersonalWorkoutInput>{};
   final published = <String>{};
@@ -297,6 +304,32 @@ Future<void> _create(WidgetTester tester, String name) async {
 }
 
 void main() {
+  testWidgets(
+    'clasificación plegada conserva categorías al crear y guardar sesiones',
+    (t) async {
+      final guided = _CategorizedGuided();
+      final workouts = _Workouts();
+      await _mount(t, guided, workouts);
+      expect(
+        find.widgetWithText(FilterChip, 'Fuerza').hitTestable(),
+        findsNothing,
+      );
+      await _tap(t, find.text('Clasificación del programa'));
+      await _tap(t, find.widgetWithText(FilterChip, 'Fuerza'));
+      await _tap(t, find.text('Clasificación del programa'));
+      await _create(t, 'Sesión clasificada');
+      await _tap(t, find.text('Guardar borrador'));
+      expect(guided.saved!.categories.single.id, 'strength');
+      expect(guided.saved!.primaryCategoryId, 'strength');
+      expect(
+        guided.saved!.phases.single.sessions.single.templateId,
+        'session-1',
+      );
+      expect(workouts.publishes, 0);
+      expect(t.takeException(), isNull);
+    },
+  );
+
   setUpAll(() => loadReviewFont(always: true));
   testWidgets('doble pulsación al crear despliega un solo editor', (
     tester,

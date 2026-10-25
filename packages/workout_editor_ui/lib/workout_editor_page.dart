@@ -1011,6 +1011,17 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ),
         );
 
+  Widget _modeSelector() => SegmentedButton<bool>(
+    showSelectedIcon: false,
+    segments: const [
+      ButtonSegment(value: true, label: Text('Carrera')),
+      ButtonSegment(value: false, label: Text('Fuerza')),
+    ],
+    selected: {_running},
+    onSelectionChanged: (selection) =>
+        setState(() => _running = selection.first),
+  );
+
   Widget _saveButton() => FilledButton.icon(
     onPressed: _busy ? null : _save,
     icon: const Icon(Icons.save_outlined),
@@ -1079,19 +1090,10 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           const SizedBox(height: 12),
         ],
         if (!widget.warmup && widget.fixedRunningMode == null)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: SegmentedButton<bool>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(value: true, label: Text('Carrera')),
-                ButtonSegment(value: false, label: Text('Fuerza')),
-              ],
-              selected: {_running},
-              onSelectionChanged: (selection) =>
-                  setState(() => _running = selection.first),
-            ),
-          ),
+          if (desktop)
+            Align(alignment: Alignment.centerLeft, child: _modeSelector())
+          else
+            _modeSelector(),
         ?widget.additionalFields,
         const SizedBox(height: 20),
         if (_running)
@@ -1132,7 +1134,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   key: const ValueKey('professional-editor-scroll'),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(desktop ? 20 : 24),
                   children: children,
                 ),
         ),

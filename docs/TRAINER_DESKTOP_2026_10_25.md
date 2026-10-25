@@ -253,3 +253,24 @@ La selección lateral, validación de fases plegadas y reintento en conversació
 tienen regresiones explícitas. Tras ordenar los campos del formulario de
 ejercicio se repiten sus ocho pruebas, correctas. Diff y archivos nuevos revisados;
 los cambios previos de configuración local quedan fuera del guardado.
+
+
+### Ajuste tras comprobar ADMIN con datos reales
+
+La revisión `6b0fe679ff47463559890debf114dc8b09dcf524` se publica y verifica
+por HTTPS en ambos portales: Trainer `-20261025-1` y ADMIN run `40195158619`,
+con validación, despliegue y retención correctos. Chrome acredita los editores
+de sesión, programa y ejercicio con la cuenta real, sin guardar recetas/pautas.
+
+Esa comprobación detecta que las categorías oficiales dejan las sesiones demasiado
+abajo. En escritorio se pliega la clasificación conservando categorías/principal,
+con una regresión que crea y guarda una sesión sin perderlas. La biblioteca limita
+nombre y descripción a dos líneas y conserva su texto completo al pasar el cursor.
+Se aclara el origen privado/oficial y el singular de sesiones/fases en la estructura.
+El modo compacto conserva el ancho de su selector y los márgenes anteriores.
+
+Se repiten las baterías completas de raíz (1.349, una omisión previa), ADMIN
+(315, dos omisiones previas), Trainer (207), editor (218) e interfaz común (28).
+La nueva regresión se añade después y pasan las 25 pruebas de autoría oficial.
+Análisis limpios en los cinco proyectos. No cambian contratos ni datos deportivos.
+La revisión de publicación que sustituye a `6b0fe679` se acredita a continuación.
