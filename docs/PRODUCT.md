@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Avisos profesionales · 25/10/2026:** la planificación y los mensajes se agrupan
+por preparador. El alumno elige recordatorios apagados/mismo día/día anterior,
+hora, zona y descanso. Historial y lectura explícita se conservan; el servidor
+limita repeticiones y omite sesiones canceladas/completadas. Disponible en Android
+Dev; recepción de la nueva política pendiente, Apple/APNs pendiente.
+[Contrato](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#agrupación-y-recordatorios--25102026).
+
 **Garmin · prioridad del 25/10/2026:** primero se pule el circuito de Garmin;
 las demás marcas se posponen. Alumno y preparador pueden distinguir el envío al
 calendario del fabricante de su recepción física y de la incorporación de

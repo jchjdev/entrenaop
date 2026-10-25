@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:entrenaop/features/notifications/notice_preferences.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:entrenaop/features/notifications/push_notifications.dart';
@@ -7,6 +9,8 @@ import 'package:entrenaop/features/notifications/push_data.dart';
 import 'package:entrenaop/features/notifications/firebase_push_transport.dart';
 
 class Transport implements PushTransport {
+  @override
+  bool lastOpenWasReminder = false;
   @override
   bool available = true;
   @override
@@ -70,6 +74,25 @@ class Store implements PushStore {
 }
 
 class Backend implements PushBackend {
+  Completer<NoticePreferences>? pendingPreferences;
+  DateTime? reminder;
+  Completer<DateTime?>? pendingReminder;
+  @override
+  Future<NoticePreferences> savePreferences(
+    PushAccount account,
+    NoticePreferences value,
+  ) async =>
+      pendingPreferences?.future ??
+      value.copyWith(revision: value.revision + 1);
+  @override
+  Future<List<String>> timezones(PushAccount account) async => [
+    'UTC',
+    'Europe/Madrid',
+  ];
+  @override
+  Future<DateTime?> reminderDate(PushAccount account) async =>
+      pendingReminder?.future ?? reminder;
+
   PushConfiguration config = const PushConfiguration(true, 'push-fixture');
   String? owner, binding;
   bool loseResponse = false;
@@ -127,6 +150,54 @@ class Fixture {
 const a = PushAccount('A', 'bearer-A'), b = PushAccount('B', 'bearer-B');
 
 void main() {
+  test(
+    'guarda preferencias por cuenta y descarta una respuesta tardía de A',
+    () async {
+      final f = Fixture();
+      addTearDown(f.coordinator.dispose);
+      await f.coordinator.setAccount(a);
+      expect(f.coordinator.preferences.reminderMode, 'off');
+      f.backend.pendingPreferences = Completer<NoticePreferences>();
+      final save = f.coordinator.savePreferences(
+        const NoticePreferences(
+          reminderMode: 'previousDay',
+          reminderMinute: 1080,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      final change = f.coordinator.setAccount(b);
+      f.backend.pendingPreferences!.complete(
+        const NoticePreferences(revision: 1, reminderMode: 'previousDay'),
+      );
+      await save;
+      await change;
+      expect(f.coordinator.accountId, b.id);
+      expect(f.coordinator.preferences.reminderMode, 'off');
+      expect(f.coordinator.preferences.revision, 0);
+      f.backend.pendingPreferences = null;
+      await f.coordinator.savePreferences(
+        const NoticePreferences(reminderMode: 'sameDay', reminderMinute: 600),
+      );
+      expect(f.coordinator.preferences.reminderMode, 'sameDay');
+      expect(f.coordinator.preferences.revision, 1);
+    },
+  );
+  test('abre la fecha propia del recordatorio y rechaza el resultado tras cambiar de cuenta', () async {
+    final f = Fixture();
+    addTearDown(f.coordinator.dispose);
+    await f.coordinator.setAccount(a);
+    f.transport.lastOpenWasReminder = true;
+    f.transport.open.add(null);
+    await Future<void>.delayed(Duration.zero);
+    f.backend.reminder = DateTime(2026, 10, 26);
+    expect(await f.coordinator.routeForOpen(), '/plan/week?date=2026-10-26');
+    f.backend.pendingReminder = Completer<DateTime?>();
+    final route = f.coordinator.routeForOpen();
+    await f.coordinator.setAccount(b);
+    f.backend.pendingReminder!.complete(DateTime(2026, 10, 26));
+    expect(await route, isNull);
+  });
+
   test('configuración ausente no inicializa SDK ni pide permisos', () async {
     final f = Fixture()..transport.available = false;
     addTearDown(f.coordinator.dispose);

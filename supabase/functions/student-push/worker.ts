@@ -1,5 +1,5 @@
 export type Outcome = 'sent' | 'retry' | 'invalid';
-type Job = { installation_id: string; claim_id: string; generation: number; binding_id: string; token: string };
+type Job = { job_id: string; installation_id: string; claim_id: string; generation: number; binding_id: string; token: string };
 export type Rpc = (name: string, params?: Record<string, unknown>) => Promise<unknown>;
 
 function authorized(expected: string, actual: string | null): boolean {
@@ -13,7 +13,7 @@ export function createPushWorker(options: {
   enabled: boolean; secret: string; serviceRoleKey: string; projectId: string; rpc: Rpc;
   schedulerJwt?: string;
   consumeTicket?: (ticket: string) => Promise<boolean>;
-  send: (destination: string) => Promise<Outcome>;
+  send: (destination: string, kind: string, previousDay?: boolean) => Promise<Outcome>;
 }) {
   return async (request: Request): Promise<Response> => {
     const bearer=request.headers.get('Authorization') ?? '';
@@ -38,18 +38,19 @@ export function createPushWorker(options: {
       const config = await options.rpc('get_student_push_worker_configuration') as {enabled:boolean;firebase_project_id:string};
       if (!config.enabled) return Response.json({disabled:true});
       if (config.firebase_project_id !== options.projectId) return Response.json({code:'provider_mismatch'}, {status:503});
-      const jobs = await options.rpc('claim_student_push_jobs', {p_limit:5}) as Job[];
+      const jobs = await options.rpc('claim_student_notice_jobs', {p_limit:5}) as Job[];
       if (!Array.isArray(jobs) || jobs.length>5) throw new Error('Invalid batch');
-      const counts = {sent:0,retry:0,invalid:0,skipped:0,errors:0};
+      const counts = {sent:0,retry:0,invalid:0,skipped:0,errors:0,deferred:0};
       for (const job of jobs) {
-        const identity = {p_id:job.installation_id,p_claim:job.claim_id,p_generation:job.generation,p_binding:job.binding_id};
+        const identity = {p_id:job.job_id,p_claim:job.claim_id,p_generation:job.generation,p_binding:job.binding_id};
         try {
-          const current = await options.rpc('prepare_student_push_job',identity);
-          let outcome: Outcome | 'skipped' = 'skipped';
-          if (current === true) {
-            try { outcome = await options.send(job.token); } catch { outcome='retry'; }
+          const current = await options.rpc('prepare_student_notice_job',identity) as {kind:string;previous_day?:boolean}|null;
+          let outcome: Outcome | 'skipped' | 'deferred' = 'skipped';
+          if (current?.kind === 'defer') outcome='deferred';
+          else if (current && ['assignment','message','other','reminder'].includes(current.kind)) {
+            try { outcome = await options.send(job.token,current.kind,current.previous_day===true); } catch { outcome='retry'; }
           }
-          await options.rpc('finish_student_push_job',{...identity,p_outcome:outcome});
+          await options.rpc('finish_student_notice_job',{...identity,p_outcome:outcome});
           if (outcome==='invalid') await options.rpc('retire_invalid_push_device',{p_id:job.installation_id,p_binding:job.binding_id});
           counts[outcome]++;
         } catch { counts.errors++; }
@@ -89,11 +90,15 @@ export function createFcmSender(account: ServiceAccount, fetcher: typeof fetch =
     accessToken=result.access_token; expiresAt=Date.now()+Math.min(result.expires_in??300,3600)*1000;
     return accessToken;
   }
-  return async (destination: string): Promise<Outcome> => {
+  return async (destination: string, kind = 'other', previousDay = false): Promise<Outcome> => {
+    const body = kind === 'assignment' ? 'Tu preparador ha actualizado tu planificación.' :
+      kind === 'message' ? 'Tienes mensajes pendientes de tu preparador.' :
+      kind === 'reminder' ? (previousDay ? 'Tienes entrenamiento pautado para mañana.' : 'Tienes entrenamiento pautado para hoy.') :
+      'Tienes novedades de seguimiento pendientes.';
     const response = await fetcher(`https://fcm.googleapis.com/v1/projects/${encodeURIComponent(account.project_id)}/messages:send`,{
       method:'POST',headers:{Authorization:'Bearer '+await bearer(),'Content-Type':'application/json'},
       body:JSON.stringify({message:{fid:destination,
-        notification:{title:'EntrenaOP',body:'Tienes novedades pendientes.'},data:{type:'student_notices'},
+        notification:{title:'EntrenaOP',body},data:{type:'student_notices',notice_kind:kind},
         android:{collapse_key:'entrenaop_notices',priority:'NORMAL',ttl:'3600s',notification:{tag:'entrenaop_notices'}},
         apns:{headers:{'apns-collapse-id':'entrenaop-notices','apns-expiration':String(Math.floor(Date.now()/1000)+3600)},payload:{aps:{sound:'default'}}},
       }}),signal:AbortSignal.timeout(15000),

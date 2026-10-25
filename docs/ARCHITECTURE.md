@@ -1,5 +1,12 @@
 # Arquitectura de EntrenaOP
 
+**Avisos profesionales · 25/10/2026:** eventos íntegros en `student_notices`,
+proyección agrupada con generación de lectura y preferencias CAS por cuenta.
+La cola privada separa instalación/cuenta/grupo, conserva generaciones durante
+el envío y revalida permisos/horarios antes de FCM. El Cron existente añade
+recordatorios deduplicados por fecha; no se modifica identidad, Pro ni autoría.
+[Contrato y evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#agrupación-y-recordatorios--25102026).
+
 **Garmin · 25/10/2026:** la proyección privada de progreso por cita se añade
 a las fachadas autenticadas existentes del deportista y de agenda profesional.
 No modifica cola ni concesiones y filtra la asignación por autor. El modelo puro

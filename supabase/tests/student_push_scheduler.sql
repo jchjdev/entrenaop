@@ -24,6 +24,8 @@ begin
  insert into push_private.installations(id,owner_id,secret_hash,binding_id,platform,token,token_hash)
  values(device,owner,repeat('a',64),gen_random_uuid(),'android',device::text,encode(sha256(convert_to(device::text,'UTF8')),'hex'));
  insert into push_private.outbox(installation_id,owner_id,next_at) values(device,owner,clock_timestamp()-interval '1 second');
+ insert into push_private.preferences(owner_id,quiet_enabled,timezone) values(owner,false,'UTC');
+ insert into push_private.notice_jobs(installation_id,owner_id,kind,scope_key,next_at) values(device,owner,'other','scheduler-fixture',clock_timestamp()-interval '1 second');
  select id,decrypted_secret into vault_id,public_jwt from vault.decrypted_secrets where name='student_push_dev_public_jwt';
  if vault_id is null then
    perform vault.create_secret('public-fixture-jwt','student_push_dev_public_jwt');public_jwt:='public-fixture-jwt';

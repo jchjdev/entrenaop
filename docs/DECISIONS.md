@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**TRN-029 · 25/10/2026 · avisos agrupados y recordatorios opcionales:**
+Javier aprueba agrupar planificación y conversación y elegir recordatorio el
+mismo día o el anterior. La bandeja agrupa por alumno, preparador y tipo sin
+borrar eventos. Leer un grupo solo acusa la generación mostrada. El servidor
+agrupa las push, limita su repetición, respeta descanso/zona IANA y revalida
+lecturas, vínculo y sesiones antes del envío. Recordatorios apagados por defecto;
+uno por alumno/día de entrenamiento en cada dispositivo, incluso con varios
+preparadores. Hora y descanso editables; no activa permisos del teléfono.
+Implementado y aplicado en Dev; recepción física de estos nuevos recorridos
+pendiente. Apple/APNs y contador nativo siguen fuera de este tramo.
+[Política y evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#agrupación-y-recordatorios--25102026).
+
 **Garmin · ciclo de entrega visible y prioridad · 25/10/2026:** Javier pide
 pulir primero Garmin y pospone otras marcas. Se mantienen receta independiente,
 consentimiento por cuenta y cierre explícito de resultados. Deportista y Trainer

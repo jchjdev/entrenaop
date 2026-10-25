@@ -69,13 +69,21 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
     super.initState();
     _appRouter = AppRouter(widget.authCubit);
     WidgetsBinding.instance.addObserver(this);
-    _pushOpens = widget.push?.opens.listen((_) {
-      if (mounted && widget.authCubit.state is AuthAuthenticated) {
-        _appRouter.config.go('/my-trainer?view=notices');
-      }
-    });
+    _pushOpens = widget.push?.opens.listen((_) => unawaited(_openPush()));
     _pushAuth = widget.authCubit.stream.listen(_syncPush);
     _syncPush(widget.authCubit.state);
+  }
+
+  int _pushOpenRequest = 0;
+  Future<void> _openPush() async {
+    final request = ++_pushOpenRequest;
+    final route = await widget.push?.routeForOpen();
+    if (mounted &&
+        request == _pushOpenRequest &&
+        route != null &&
+        widget.authCubit.state is AuthAuthenticated) {
+      _appRouter.config.go(route);
+    }
   }
 
   void _syncPush(AuthState state) {

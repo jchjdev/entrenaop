@@ -1,0 +1,125 @@
+begin;
+set local statement_timeout='90s';
+-- Se aíslan colas reales solo hasta el ROLLBACK, sin consumir sus avisos.
+update push_private.notice_jobs set next_at='infinity' where generation>delivered_generation;
+do $$
+declare coach uuid:=gen_random_uuid();pupil uuid:=gen_random_uuid();other uuid:=gen_random_uuid();rel uuid:=gen_random_uuid();
+ device uuid:=gen_random_uuid();binding uuid:=gen_random_uuid();exercise uuid;template uuid;scheduled uuid;
+ payload jsonb;snapshot jsonb;entry jsonb;job jsonb;prefs jsonb;group_id uuid;seen_generation bigint;idx integer;
+ stamp timestamptz:=clock_timestamp();minute integer;target_day date;day_job uuid;count_before integer;trainer_name text;
+begin
+ insert into auth.users(id,email) values(coach,coach||'@notice-policy.invalid'),(pupil,pupil||'@notice-policy.invalid'),(other,other||'@notice-policy.invalid');
+ insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values(gen_random_uuid(),coach,'totp','verified',now(),now());
+ insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(coach,true,5,'Política de avisos');
+ insert into public.trainer_client_relations(id,trainer_id,client_id) values(rel,coach,pupil);
+ insert into push_private.installations(id,owner_id,secret_hash,binding_id,platform,token,token_hash)
+ values(device,pupil,repeat('a',64),binding,'android',device::text,encode(sha256(convert_to(device::text,'UTF8')),'hex'));
+ update push_private.settings set enabled=true,firebase_project_id='entrenaop-dev' where singleton;
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ set local role authenticated;
+ prefs:=public.get_my_push_configuration(pupil)->'preferences';
+ if prefs->>'reminder_mode'<>'off' then raise exception 'Activa recordatorios por defecto';end if;
+ if not (public.get_my_notice_timezones(pupil) ? 'Europe/Madrid') then raise exception 'No ofrece zona IANA';end if;
+ begin perform public.save_my_trainer_notice_preferences(other,0,'sameDay',540,'UTC',false,1320,480);raise exception 'Cambia preferencias ajenas';exception when insufficient_privilege then null;end;
+ begin perform public.save_my_trainer_notice_preferences(pupil,0,'sameDay',540,'Not/AZone',false,1320,480);raise exception 'Acepta zona inválida';exception when invalid_parameter_value then null;end;
+ begin perform public.save_my_trainer_notice_preferences(pupil,0,'sameDay',1380,'UTC',true,1320,480);raise exception 'Recordatorio durante descanso';exception when invalid_parameter_value then null;end;
+ prefs:=public.save_my_trainer_notice_preferences(pupil,0,'off',540,'UTC',false,1320,480);
+ begin perform public.save_my_trainer_notice_preferences(pupil,0,'sameDay',540,'UTC',false,1320,480);raise exception 'Sobrescribe una revisión posterior';exception when serialization_failure then null;end;
+ begin perform count(*) from push_private.preferences;raise exception 'Lee ajustes directamente';exception when insufficient_privilege then null;end;
+ reset role;
+ perform set_config('request.jwt.claim.sub',coach::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ exercise:=public.save_trainer_exercise(gen_random_uuid(),'{"name":"Ejercicio de avisos","description":"Fixture","muscle_groups":["espalda"],"equipment":["barra"],"difficulty":"intermedio","exercise_type":"repeticiones"}');
+ payload:=jsonb_build_object('name','Sesión de avisos','blocks',jsonb_build_array(jsonb_build_object('name','Fuerza','format','straight_sets','rounds',1,'rest_after_seconds',0,'exercises',jsonb_build_array(jsonb_build_object('exercise_id',exercise,'sets',jsonb_build_array(jsonb_build_object('target_reps',8,'rest_after_seconds',60)))))));
+ template:=public.save_trainer_workout(gen_random_uuid(),payload);
+ for idx in 0..29 loop
+  scheduled:=gen_random_uuid();perform public.assign_trainer_workout(scheduled,rel,template,current_date+idx,null);
+ end loop;
+ perform public.send_trainer_message(gen_random_uuid(),rel,'Texto reservado uno',null);
+ perform public.send_trainer_message(gen_random_uuid(),rel,'Texto reservado dos',null);
+ reset role;
+ if (select count(*) from trainer_private.student_notices where owner_id=pupil)<>32 then raise exception 'Pierde historial al agrupar';end if;
+ if (select count(*) from push_private.notice_jobs where owner_id=pupil)<>2 then raise exception 'Crea un envío por sesión o mensaje';end if;
+ insert into trainer_private.student_notices(owner_id,relation_id,kind,source_id,source_revision)
+  select owner_id,relation_id,kind,source_id,source_revision from trainer_private.student_notices where owner_id=pupil on conflict do nothing;
+ if (select sum(generation) from trainer_private.notice_groups where owner_id=pupil)<>32 or
+    (select sum(generation) from push_private.notice_jobs where owner_id=pupil)<>32 then raise exception 'El reintento adelanta grupos sin insertar avisos';end if;
+ if (select min(next_at) from push_private.notice_jobs where owner_id=pupil and kind='assignment')<stamp+interval '4 minutes' then raise exception 'Planificación sin espera de agrupación';end if;
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ set local role authenticated;
+ snapshot:=public.get_my_trainer_notice_groups(pupil);
+ begin perform public.get_my_trainer_notice_groups(other);raise exception 'Consulta grupos ajenos';exception when insufficient_privilege then null;end;
+ if jsonb_array_length(snapshot->'items')<>2 or (snapshot->>'unread_count')::integer<>2 or snapshot::text like '%Texto reservado%' then raise exception 'Bandeja no agrupa o filtra contenido privado';end if;
+ select value into entry from jsonb_array_elements(snapshot->'items') where value->>'kind'='assignment';
+ if (entry->>'event_count')::integer<>30 then raise exception 'Resumen de mes incompleto';end if;
+ begin perform public.ack_my_trainer_notice_group(other,(entry->>'id')::uuid,(entry->>'group_generation')::bigint);raise exception 'Lee grupos ajenos';exception when insufficient_privilege then null;end;
+ begin perform public.resolve_my_trainer_notice_group(pupil,gen_random_uuid(),1);raise exception 'Resuelve grupo desconocido';exception when insufficient_privilege then null;end;
+ if public.resolve_my_trainer_notice_group(pupil,(entry->>'id')::uuid,(entry->>'group_generation')::bigint)->>'kind'<>'planning' then raise exception 'No abre la agenda del lote';end if;
+ perform public.ack_my_trainer_notice_group(pupil,(entry->>'id')::uuid,(entry->>'group_generation')::bigint);
+ select value into entry from jsonb_array_elements(snapshot->'items') where value->>'kind'='message';
+ group_id:=(entry->>'id')::uuid;seen_generation:=(entry->>'group_generation')::bigint;
+ begin perform public.get_my_trainer_notice_groups(other);raise exception 'Lee grupos ajenos';exception when insufficient_privilege then null;end;
+ reset role;
+ insert into trainer_private.student_notices(owner_id,relation_id,kind,source_id) values(pupil,rel,'message',gen_random_uuid());
+ set local role authenticated;
+ perform public.ack_my_trainer_notice_group(pupil,group_id,seen_generation);
+ snapshot:=public.get_my_trainer_notice_groups(pupil);
+ select value into entry from jsonb_array_elements(snapshot->'items') where value->>'kind'='message';
+ if (entry->>'new_count')::integer<>1 then raise exception 'Un acuse antiguo lee el mensaje nuevo';end if;
+ reset role;
+ update push_private.notice_jobs set next_at=clock_timestamp()-interval '1 second' where owner_id=pupil and kind='message';
+ set local role service_role;
+ job:=public.claim_student_notice_jobs(1)->0;
+ if public.prepare_student_notice_job((job->>'job_id')::uuid,(job->>'claim_id')::uuid,(job->>'generation')::bigint,gen_random_uuid()) is not null then raise exception 'Acepta asociación obsoleta';end if;
+ if public.prepare_student_notice_job((job->>'job_id')::uuid,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding)->>'kind'<>'message' then raise exception 'No prepara mensaje agrupado';end if;
+ reset role;
+ insert into trainer_private.student_notices(owner_id,relation_id,kind,source_id) values(pupil,rel,'message',gen_random_uuid());
+ set local role service_role;
+ perform public.finish_student_notice_job((job->>'job_id')::uuid,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding,'sent');
+ if public.claim_student_notice_jobs(1)<>'[]'::jsonb then raise exception 'Ignora pausa entre mensajes';end if;
+ reset role;
+ if not exists(select 1 from push_private.notice_jobs where owner_id=pupil and kind='message' and generation>delivered_generation) then raise exception 'Pierde evento durante envío';end if;
+ -- Se comprueba el descanso con dos cambios de horario reales de Madrid.
+ update push_private.preferences set quiet_enabled=true,timezone='Europe/Madrid',quiet_start=1320,quiet_end=480 where owner_id=pupil;
+ if push_private.next_allowed(pupil,'2026-10-24 21:30Z')<>'2026-10-25 07:00Z'::timestamptz or
+    push_private.next_allowed(pupil,'2026-03-28 22:30Z')<>'2026-03-29 06:00Z'::timestamptz then raise exception 'Descanso no respeta DST';end if;
+ -- Las sesiones siguen planificadas; hay un solo recordatorio para todo el día.
+ minute:=extract(hour from stamp at time zone 'UTC')::integer*60+extract(minute from stamp at time zone 'UTC')::integer;
+ target_day:=(stamp at time zone 'UTC')::date;
+ update push_private.preferences set reminder_mode='sameDay',reminder_minute=minute,quiet_enabled=false,timezone='UTC',updated_at=stamp-interval '1 day',revision=revision+1 where owner_id=pupil;
+ perform push_private.enqueue_reminders(stamp);perform push_private.enqueue_reminders(stamp);
+ if (select count(*) from push_private.notice_jobs where owner_id=pupil and kind='reminder')<>1 then raise exception 'Duplica recordatorios al repetir tick';end if;
+ select id into day_job from push_private.notice_jobs where owner_id=pupil and kind='reminder';
+ update push_private.notice_jobs set next_at='infinity' where owner_id=pupil and kind<>'reminder';
+ set local role service_role;
+ job:=public.claim_student_notice_jobs(1)->0;
+ if (job->>'job_id')::uuid<>day_job or public.prepare_student_notice_job(day_job,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding)->>'kind'<>'reminder' then raise exception 'No prepara recordatorio';end if;
+ reset role;
+ update public.scheduled_workouts set status='cancelled' where user_id=pupil and scheduled_date=target_day;
+ set local role service_role;
+ if public.prepare_student_notice_job(day_job,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding) is not null then raise exception 'Recuerda una sesión cancelada';end if;
+ perform public.finish_student_notice_job(day_job,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding,'skipped');
+ reset role;
+ update public.scheduled_workouts set status='planned' where user_id=pupil and scheduled_date=target_day;
+ perform push_private.enqueue_reminders(stamp);
+ set local role service_role;
+ job:=public.claim_student_notice_jobs(1)->0;
+ perform public.finish_student_notice_job(day_job,(job->>'claim_id')::uuid,(job->>'generation')::bigint,binding,'sent');
+ reset role;
+ perform push_private.enqueue_reminders(stamp);
+ if exists(select 1 from push_private.notice_jobs where id=day_job and generation>delivered_generation) then raise exception 'Repite recordatorio ya enviado';end if;
+ update push_private.preferences set reminder_mode='previousDay',revision=revision+1 where owner_id=pupil;
+ perform push_private.enqueue_reminders(stamp);
+ if not exists(select 1 from push_private.notice_jobs where owner_id=pupil and kind='reminder' and reminder_date=target_day+1) then raise exception 'Día anterior no selecciona mañana';end if;
+ update push_private.preferences set reminder_mode='off',revision=revision+1 where owner_id=pupil;
+ select count(*) into count_before from push_private.notice_jobs where owner_id=pupil;
+ perform push_private.enqueue_reminders(stamp+interval '1 day');
+ if (select count(*) from push_private.notice_jobs where owner_id=pupil)<>count_before then raise exception 'Encola con recordatorios desactivados';end if;
+ if has_function_privilege('authenticated','public.claim_student_notice_jobs(integer)','execute') or
+    has_function_privilege('anon','public.save_my_trainer_notice_preferences(uuid,bigint,text,integer,text,boolean,integer,integer)','execute') then raise exception 'Amplía permisos';end if;
+end $$;
+select 'trainer_notification_policy: OK' as result;
+rollback;

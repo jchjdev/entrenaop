@@ -68,12 +68,15 @@ class NoticeFixture extends StudentNoticeRepository {
   }
 
   @override
-  Future<void> ack(String noticeId) async {
+  Future<void> ack(String noticeId, {int? generation}) async {
     acknowledgements.add(noticeId);
   }
 
   @override
-  Future<StudentNoticeTarget?> resolve(String noticeId) async => target;
+  Future<StudentNoticeTarget?> resolve(
+    String noticeId, {
+    int? generation,
+  }) async => target;
   @override
   Future<TechniqueTargetPage> listTechnique({TechniqueTarget? before}) async =>
       const TechniqueTargetPage(items: [], hasMore: false);
@@ -94,6 +97,28 @@ Future<void> reveal(WidgetTester tester, Finder finder) async {
 }
 
 void main() {
+  test('un grupo de planificación abre la agenda y conserva la fecha sin seleccionar una receta', () {
+    expect(
+      studentNoticeTargetRoute(
+        StudentNoticeTarget(
+          kind: StudentNoticeTargetKind.planning,
+          targetId: 'group',
+          scheduledDate: DateTime(2026, 11, 1),
+        ),
+      ),
+      '/plan/week?date=2026-11-01',
+    );
+    expect(
+      studentNoticeTargetRoute(
+        const StudentNoticeTarget(
+          kind: StudentNoticeTargetKind.planning,
+          targetId: 'group',
+        ),
+      ),
+      isNull,
+    );
+  });
+
   testWidgets('volver de Resumen permite abrir Avisos otra vez por su URL', (
     tester,
   ) async {

@@ -21,6 +21,10 @@ String? studentNoticeTargetRoute(StudentNoticeTarget target) {
       target.scheduledDate == null
           ? null
           : '/plan/week?date=${_day(target.scheduledDate!)}&session=$id',
+    StudentNoticeTargetKind.planning =>
+      target.scheduledDate == null
+          ? null
+          : '/plan/week?date=${_day(target.scheduledDate!)}',
   };
 }
 
@@ -114,7 +118,11 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
       StudentNavigationScope.maybeOf(context)?.acceptSnapshot(data);
       setState(() {
         _data = data;
-        _items = more ? [..._items, ...data.items] : data.items;
+        _items = more
+            ? {
+                for (final item in [..._items, ...data.items]) item.id: item,
+              }.values.toList()
+            : data.items;
       });
     } catch (_) {
       if (mounted && request == _request) {
@@ -159,7 +167,7 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
     });
     try {
       if (acknowledge) {
-        await repository.ack(notice.id);
+        await repository.ack(notice.id, generation: notice.groupGeneration);
         if (!mounted ||
             owner != widget.userId ||
             repository != widget.repository) {
@@ -167,7 +175,10 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
         }
         await _load();
       } else {
-        final target = await repository.resolve(notice.id);
+        final target = await repository.resolve(
+          notice.id,
+          generation: notice.groupGeneration,
+        );
         if (!mounted ||
             owner != widget.userId ||
             repository != widget.repository) {
@@ -323,6 +334,13 @@ class _ProfessionalHubPageState extends State<ProfessionalHubPage>
                                 item.title,
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
+                              if (item.trainerName case final name?) Text(name),
+                              if (item.eventCount > 1)
+                                Text(
+                                  item.newCount > 0
+                                      ? '${item.newCount} novedades pendientes · ${item.eventCount} en el historial'
+                                      : '${item.eventCount} novedades en el historial',
+                                ),
                               const SizedBox(height: 4),
                               Text(
                                 '${_kindLabel(item.kind)} · ${_day(item.createdAt.toLocal())} · ${item.readAt == null ? 'Sin leer' : 'Leído'}',

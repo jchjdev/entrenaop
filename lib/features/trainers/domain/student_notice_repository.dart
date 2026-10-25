@@ -12,6 +12,7 @@ enum StudentNoticeTargetKind {
   assessment,
   technique,
   workout,
+  planning,
 }
 
 class StudentNotice {
@@ -21,11 +22,18 @@ class StudentNotice {
     required this.title,
     required this.createdAt,
     this.readAt,
+    this.groupGeneration,
+    this.eventCount = 1,
+    this.newCount = 1,
+    this.trainerName,
   });
   final String id, title;
   final StudentNoticeKind kind;
   final DateTime createdAt;
   final DateTime? readAt;
+  final int? groupGeneration;
+  final int eventCount, newCount;
+  final String? trainerName;
 }
 
 class StudentNoticeTarget {
@@ -104,7 +112,7 @@ abstract class StudentNoticeRepository {
     StudentNotice? before,
     StudentNoticeKind? kind,
   });
-  Future<void> ack(String noticeId);
-  Future<StudentNoticeTarget?> resolve(String noticeId);
+  Future<void> ack(String noticeId, {int? generation});
+  Future<StudentNoticeTarget?> resolve(String noticeId, {int? generation});
   Future<TechniqueTargetPage> listTechnique({TechniqueTarget? before});
 }

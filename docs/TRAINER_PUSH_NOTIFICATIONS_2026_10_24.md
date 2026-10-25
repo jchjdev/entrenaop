@@ -1,5 +1,77 @@
 # Avisos push del alumno · TRN-029 · 24/10/2026
 
+## Agrupación y recordatorios · 25/10/2026
+
+En la app: **Preparador → Avisos del preparador → Recordatorios y descanso**.
+La activación push sigue siendo por cuenta/dispositivo. Las preferencias horarias
+son por cuenta y se guardan explícitamente con revisión: un dispositivo con datos
+antiguos no sobrescribe los cambios de otro. Se conserva el consentimiento y las
+credenciales anteriores de la instalación.
+
+- Planificación y mensajes: un grupo de bandeja por preparador y tipo. Se muestra
+  el nombre, novedades sin leer y total histórico; los eventos originales no se
+  borran. El contador de campana representa grupos pendientes. La campana vacía
+  sigue oculta. Leer toma la generación mostrada, sin absorber mensajes posteriores.
+- Planificación: espera cinco minutos desde el último cambio, con tope de quince
+  desde el primero pendiente. Tras un envío espera al menos treinta minutos para
+  otro del mismo preparador/tipo. Treinta sesiones generan un grupo, no treinta
+  push. Abrir lleva a la agenda propia y mantiene las sesiones individuales.
+- Conversación: agrupa durante un minuto, con tope de dos desde el primer mensaje
+  pendiente; tras enviar espera al menos cinco minutos. Los mensajes conservan su
+  conversación y su lectura explícita. Formularios, pruebas y técnica mantienen
+  entradas propias; su cola push común agrupa treinta segundos, tope dos minutos
+  y separación mínima de cinco. No se revela contenido privado en la push.
+- Recordatorios: **apagados por defecto**, mismo día o día anterior, a las **09:00**
+  inicialmente. Hora editable. Uno por fecha de entrenamiento y dispositivo para
+  todo el alumno, sumando sus preparadores. Solo sesiones profesionales pendientes,
+  sin ejecución, con servicio/acceso vigente; completadas y canceladas se omiten.
+  Haber recibido un aviso de planificación no sustituye el recordatorio elegido.
+- Zona inicial **Europe/Madrid**, editable por nombre IANA, incluida Canarias/UTC.
+  Se conserva la elegida aunque el teléfono viaje; no se adivina desde el UTC offset.
+  Descanso inicial **22:00–08:00**, editable o desactivable. Se rechaza una hora de
+  recordatorio dentro del descanso. Los mensajes/planificación se difieren hasta
+  terminarlo. Si cambia mientras el worker tiene el trabajo, se aplaza sin gastar
+  reintentos. Se comprueban los dos cambios de horario estacional de Madrid.
+
+El programador existente se ejecuta cada minuto. El recordatorio tiene margen de
+hasta dos horas, sin pasar la medianoche local, y no recupera horarios anteriores
+al guardado de preferencias. No garantiza una alarma exacta: conexión y entrega
+normal de FCM pueden retrasarla. Se revalida antes de enviar: revisión horaria,
+sesiones, vínculo, instalación y lease. El recordatorio enviado no se repite por
+cambiar preferencias o volver a ejecutar el programador; uno descartado antes de
+enviarse puede reactivarse si vuelve a haber entrenamiento en su ventana.
+Abrirlo resuelve una fecha autorizada en servidor y navega a la agenda propia;
+no acepta una URL privada o destinatario suministrados en el payload.
+
+`notice_jobs` y `job_notices` sustituyen el despacho por instalación por una cola
+por instalación/cuenta/grupo, con generación y lease. Una novedad que llega durante
+el envío queda pendiente para el siguiente. El protocolo anterior se conserva
+para compatibilidad, sin despachar la cola antigua. La nueva bandeja usa fachadas
+propias; las API planas y sus datos siguen disponibles. La migración presenta el
+historial sin crear notificaciones retroactivas. Las altas nuevas de dispositivo
+no vuelcan las novedades antiguas a la nueva cola. Configurar recordatorios no
+concede Pro ni habilita automáticamente notificaciones del teléfono.
+
+Validación del 25/10: análisis raíz limpio, **1.365 pruebas** correctas y una
+omisión previa; **10 pruebas Node** y TypeScript 5.9.3 estricto. **42 carreras
+RC/RR** en PostgreSQL17 local: inserciones, dos guardados con revisión, lectura
+con mensaje posterior, evento durante envío y reclamaciones SKIP LOCKED. El
+clúster mínimo prueba concurrencia; no sustituye RLS/autoría real de Dev.
+`trainer_notification_policy.sql`, `trainer_student_notices.sql`,
+`student_push_delivery.sql` y `student_push_scheduler.sql` pasan en Dev con
+ROLLBACK. El nuevo contrato usa autoría real de treinta sesiones y dos mensajes,
+reintento idempotente, lectura con generación, preferencias propias y cancelación.
+
+Migración aplicada selectivamente y cotejada en el historial Dev. Worker v8
+publicado con JWT obligatorio, petición pública 401 y manual protegida 200,
+contadores a cero durante el descanso. El horario se pausa para la transición y
+vuelve a activarse cada minuto. Asesores: cuatro INFO nuevos de RLS sin políticas
+en tablas privadas sin concesión directa, ningún WARN nuevo. APK Firebase Dev
+compilada e instalada sobre el Samsung SM-A326B conservando datos. La instalación
+no acredita todavía recepción/apertura física de la nueva agrupación ni de los
+recordatorios; no se envía una prueba nocturna saltándose el descanso. Apple/APNs,
+badges nativos, producción y cobros siguen pendientes. No hay paquetes nuevos.
+
 ## Estado comprobado · 25/10/2026
 
 Firebase `EntrenaOP Dev` (`entrenaop-dev`) creado en Spark, sin facturación,
@@ -9,10 +81,11 @@ Configuración pública versionada en `config/firebase_dev.json`, usada también
 por los recursos nativos de Gradle; no se necesita descargar google-services.json.
 
 Transporte activado solo en Supabase Dev (`sxbxfjqgoddzhtcyhalw`). Función
-`student-push` versión 7, JWT de plataforma obligatorio y hash
-`8f1358b2ad69815c0a0d81a4bae74911819e46404005a6a0ddafd0c14a704c18`.
+`student-push` versión 8, JWT de plataforma obligatorio y hash
+`ce14d4e01ce9ea92c960866bd0886c0bfad150b8de200e0335605ae6ec016f39`.
 Se conservan las migraciones `20261024201618` y `20261024212322`; se añade
 `20261025201351_student_push_dispatch_tickets.sql` para el programador seguro.
+Se aplica después `20261025204610_trainer_notification_groups_and_reminders.sql`.
 No se modifica producción ni los proyectos Firebase anteriores de Javier.
 
 APK debug compilada con Firebase Dev e instalada conservando datos en el Samsung

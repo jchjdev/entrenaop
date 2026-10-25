@@ -1,5 +1,20 @@
 # Roadmap de EntrenaOP
 
+**TRN-029 · 25/10/2026 · agrupación y preferencias implementadas en Dev:**
+planificación/conversación agrupadas por preparador, contador por grupos y lectura
+con generación; historial íntegro. Cola con esperas y pausas, descanso editable
+22:00–08:00 y zona IANA. Recordatorios apagados, mismo día/anterior y hora elegible,
+uno por fecha/dispositivo para todo el alumno. Revalida lectura, cuenta, servicio,
+preferencias y sesiones canceladas/completadas antes de enviar. Migración aplicada,
+worker Dev v8 con JWT, horario activo cada minuto y APK instalada en el Samsung.
+Análisis limpio, 1.365 pruebas raíz y una omisión previa, 10 Node, tipos estrictos,
+42 carreras RC/RR y cuatro contratos SQL con ROLLBACK correctos. Sin paquetes nuevos.
+**Siguiente recorrido único de avisos:** probar físicamente un lote real de Trainer,
+mensajes y recordatorio elegido → apertura del recurso correcto, respetando descanso.
+No se acredita recepción física de la nueva política por instalar la APK.
+Apple/APNs, badge nativo y producción pendientes; cobros fuera de este bloque.
+[Política, evidencia y límites](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#agrupación-y-recordatorios--25102026).
+
 **Garmin · 25/10/2026 · circuito profesional aceptado y publicado en Dev:**
 Javier confirma en fēnix alta automática, cambio de día sin duplicados y retirada
 tras sincronizar. Se conservan las referencias del proveedor. Estado por cita

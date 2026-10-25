@@ -1,10 +1,14 @@
 # Avisos profesionales del alumno · 21/10/2026
 
-Actualización TRN-029 · 24/10/2026: la app nativa y Dev preparan transporte push
-opcional sobre esta misma bandeja, con consentimiento por cuenta, agrupación y
-payload genérico. Está desactivado y la recepción real sigue pendiente de
-Firebase/APNs. La descripción siguiente es la instantánea anterior.
-[Estado, evidencia y activación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+Actualización TRN-029 · 25/10/2026: Android Dev dispone de push opcional;
+la recepción inicial fue confirmada por Javier. La bandeja agrupa planificación
+y mensajes por preparador, mantiene cada evento y acusa solo la generación
+mostrada. Recordatorios opcionales mismo día/anterior, hora, zona y descanso
+configurables. La nueva política está desplegada y la APK instalada; su recepción
+física específica sigue pendiente. Apple/APNs permanece pendiente.
+[Estado y contrato vigente](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#agrupación-y-recordatorios--25102026).
+La descripción siguiente conserva el contrato original de eventos/recursos;
+el listado de la app utiliza ahora grupos y su contador cuenta grupos sin leer.
 
 ## Recorrido y límites
 

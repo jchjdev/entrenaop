@@ -42,7 +42,7 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
     StudentNoticeKind? kind,
   }) async {
     final data = _row(
-      await _rpc('get_my_trainer_notices', {
+      await _rpc('get_my_trainer_notice_groups', {
         'p_before_at': before?.createdAt.toUtc().toIso8601String(),
         'p_before_id': before?.id,
         'p_kind': kind?.name,
@@ -57,7 +57,18 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
             return StudentNotice(
               id: row['id'] as String,
               kind: kind,
-              title: _title(kind, row['source_revision'] as int),
+              title:
+                  (row['event_count'] as int? ?? 1) > 1 &&
+                      kind == StudentNoticeKind.assignment
+                  ? 'Planificación actualizada'
+                  : (row['event_count'] as int? ?? 1) > 1 &&
+                        kind == StudentNoticeKind.message
+                  ? 'Mensajes de tu preparador'
+                  : _title(kind, row['source_revision'] as int),
+              groupGeneration: row['group_generation'] as int?,
+              eventCount: row['event_count'] as int? ?? 1,
+              newCount: row['new_count'] as int? ?? 1,
+              trainerName: row['trainer_name'] as String?,
               createdAt: DateTime.parse(row['created_at'] as String),
               readAt: row['read_at'] == null
                   ? null
@@ -88,15 +99,30 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
   }
 
   @override
-  Future<void> ack(String noticeId) async {
-    await _rpc('ack_my_trainer_notice', {'p_notice_id': noticeId});
+  Future<void> ack(String noticeId, {int? generation}) async {
+    await _rpc(
+      generation == null
+          ? 'ack_my_trainer_notice'
+          : 'ack_my_trainer_notice_group',
+      generation == null
+          ? {'p_notice_id': noticeId}
+          : {'p_group_id': noticeId, 'p_generation': generation},
+    );
   }
 
   @override
-  Future<StudentNoticeTarget?> resolve(String noticeId) async {
-    final value = await _rpc('resolve_my_trainer_notice', {
-      'p_notice_id': noticeId,
-    });
+  Future<StudentNoticeTarget?> resolve(
+    String noticeId, {
+    int? generation,
+  }) async {
+    final value = await _rpc(
+      generation == null
+          ? 'resolve_my_trainer_notice'
+          : 'resolve_my_trainer_notice_group',
+      generation == null
+          ? {'p_notice_id': noticeId}
+          : {'p_group_id': noticeId, 'p_generation': generation},
+    );
     if (value == null) return null;
     final row = _row(value);
     final kind = StudentNoticeTargetKind.values.firstWhere(
@@ -105,7 +131,9 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
           throw const FormatException('Destino de aviso desconocido.'),
     );
     final date = row['scheduled_date'] as String?;
-    if (kind == StudentNoticeTargetKind.workout && date == null) {
+    if ((kind == StudentNoticeTargetKind.workout ||
+            kind == StudentNoticeTargetKind.planning) &&
+        date == null) {
       throw const FormatException('La pauta no tiene fecha de agenda.');
     }
     return StudentNoticeTarget(

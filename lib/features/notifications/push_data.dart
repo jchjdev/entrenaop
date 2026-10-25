@@ -6,6 +6,7 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:uuid/uuid.dart';
 
 import 'push_notifications.dart';
+import 'notice_preferences.dart';
 
 class LocalPushStore implements PushStore {
   Future<PushInstallation>? _key;
@@ -77,7 +78,37 @@ class SupabasePushBackend implements PushBackend {
     return PushConfiguration(
       row['enabled'] == true,
       row['firebase_project_id'] as String?,
+      preferences: row['preferences'] is Map
+          ? NoticePreferences.fromJson(row['preferences'] as Map)
+          : const NoticePreferences(),
     );
+  }
+
+  @override
+  Future<NoticePreferences> savePreferences(
+    PushAccount account,
+    NoticePreferences value,
+  ) async => NoticePreferences.fromJson(
+    await _rpc(account, 'save_my_trainer_notice_preferences', {
+      'p_revision': value.revision,
+      'p_mode': value.reminderMode,
+      'p_minute': value.reminderMinute,
+      'p_timezone': value.timezone,
+      'p_quiet_enabled': value.quietEnabled,
+      'p_quiet_start': value.quietStart,
+      'p_quiet_end': value.quietEnd,
+    }) as Map,
+  );
+
+  @override
+  Future<List<String>> timezones(PushAccount account) async =>
+      (await _rpc(account, 'get_my_notice_timezones', {}) as List)
+          .cast<String>();
+
+  @override
+  Future<DateTime?> reminderDate(PushAccount account) async {
+    final value = await _rpc(account, 'resolve_my_trainer_reminder', {});
+    return value == null ? null : DateTime.parse(value as String);
   }
 
   @override

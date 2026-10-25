@@ -17,7 +17,7 @@ class NoticeServer {
   Completer<void>? hold;
   Completer<void>? started;
   final responses = <String, dynamic>{
-    'get_my_trainer_notices': {
+    'get_my_trainer_notice_groups': {
       'items': [
         {
           'id': 'notice',
@@ -117,6 +117,41 @@ void main() {
     repository = SupabaseStudentNoticeRepository(server.client, pupil);
   });
   tearDown(() async => server.client.dispose());
+
+  test('el grupo conserva generación y la envía al resolver y leer', () async {
+    final data = server.responses['get_my_trainer_notice_groups'] as Map;
+    final row = (data['items'] as List).single as Map;
+    row.addAll(<String, Object?>{
+      'group_generation': 30,
+      'event_count': 30,
+      'new_count': 3,
+      'trainer_name': 'Preparador',
+    });
+    server.responses['ack_my_trainer_notice_group'] = null;
+    server.responses['resolve_my_trainer_notice_group'] = {
+      'kind': 'planning',
+      'target_id': 'notice',
+      'scheduled_date': '2026-10-25',
+    };
+    final notice = (await repository.snapshot()).items.single;
+    expect(notice.groupGeneration, 30);
+    expect(notice.eventCount, 30);
+    expect(notice.newCount, 3);
+    expect(notice.trainerName, 'Preparador');
+    final target = await repository.resolve(
+      notice.id,
+      generation: notice.groupGeneration,
+    );
+    expect(target?.kind, StudentNoticeTargetKind.planning);
+    await repository.ack(notice.id, generation: notice.groupGeneration);
+    for (final request in server.requests.skip(1)) {
+      expect(jsonDecode(request.body), {
+        'p_expected_owner': pupil,
+        'p_group_id': 'notice',
+        'p_generation': 30,
+      });
+    }
+  });
 
   test('resumen conserva total servidor y no presenta texto privado', () async {
     final result = await repository.snapshot(kind: StudentNoticeKind.message);

@@ -25,6 +25,8 @@ Future<void> prepareFirebasePushRegistration(
 
 /// Solo transporte. No utiliza Firebase Auth, base de datos ni Analytics.
 class FirebasePushTransport implements PushTransport {
+  @override
+  bool lastOpenWasReminder = false;
   static const _enabled = bool.fromEnvironment('PUSH_ENABLED');
   static const _project = String.fromEnvironment('PUSH_FIREBASE_PROJECT_ID');
   static const _sender = String.fromEnvironment('PUSH_FIREBASE_SENDER_ID');
@@ -113,7 +115,10 @@ class FirebasePushTransport implements PushTransport {
     );
     _subscriptions.add(
       FirebaseMessaging.onMessageOpenedApp.listen((m) {
-        if (_valid(m)) _opens.add(null);
+        if (_valid(m)) {
+          lastOpenWasReminder = m.data['notice_kind'] == 'reminder';
+          _opens.add(null);
+        }
       }),
     );
     _subscriptions.add(
@@ -133,7 +138,10 @@ class FirebasePushTransport implements PushTransport {
     );
     _messaging = messaging;
     final initial = await messaging.getInitialMessage();
-    if (initial != null && _valid(initial)) _opens.add(null);
+    if (initial != null && _valid(initial)) {
+      lastOpenWasReminder = initial.data['notice_kind'] == 'reminder';
+      _opens.add(null);
+    }
   }
 
   @override

@@ -5,7 +5,7 @@ import {createPushWorker,createFcmSender,type Rpc,type ServiceAccount} from './w
 const secret='a'.repeat(64);
 const serverKey='test-service-role-key'.repeat(3);
 const request=()=>new Request('https://worker.invalid',{method:'POST',headers:{Authorization:'Bearer '+serverKey,'X-EntrenaOP-Push-Worker':secret}});
-const job={installation_id:'installation',claim_id:'lease',generation:2,binding_id:'binding',token:'private-destination'};
+const job={job_id:'job',installation_id:'installation',claim_id:'lease',generation:2,binding_id:'binding',token:'private-destination'};
 
 test('rechaza acceso público y permanece inerte sin configurar',async()=>{
   let calls=0;
@@ -48,7 +48,7 @@ test('la entrada usa la clave estable y consulta con la credencial interna de Su
     assert.equal(calls,0);
     const result=await handler(request());
     assert.equal(result.status,200);
-    assert.deepEqual(await result.json(),{sent:0,retry:0,invalid:0,skipped:0,errors:0});
+    assert.deepEqual(await result.json(),{sent:0,retry:0,invalid:0,skipped:0,errors:0,deferred:0});
     assert.equal(calls,2);
   } finally {
     globalThis.fetch=originalFetch;
@@ -60,22 +60,44 @@ test('revalida lease antes de enviar y solo devuelve contadores',async()=>{
   const rpc:Rpc=async(name,params)=>{
     calls.push({name,params});
     if(name==='get_student_push_worker_configuration') return {enabled:true,firebase_project_id:'push-fixture'};
-    if(name==='claim_student_push_jobs') return [job];
-    if(name==='prepare_student_push_job') return false;
+    if(name==='claim_student_notice_jobs') return [job];
+    if(name==='prepare_student_notice_job') return false;
     return null;
   };
   const worker=createPushWorker({enabled:true,secret,serviceRoleKey:serverKey,projectId:'push-fixture',rpc,send:async()=>{throw Error('No enviar asociación obsoleta');}});
   const result=await worker(request());
-  assert.deepEqual(await result.json(),{sent:0,retry:0,invalid:0,skipped:1,errors:0});
-  assert.deepEqual(calls.at(-1)?.params,{p_id:'installation',p_claim:'lease',p_generation:2,p_binding:'binding',p_outcome:'skipped'});
+  assert.deepEqual(await result.json(),{sent:0,retry:0,invalid:0,skipped:1,errors:0,deferred:0});
+  assert.deepEqual(calls.at(-1)?.params,{p_id:'job',p_claim:'lease',p_generation:2,p_binding:'binding',p_outcome:'skipped'});
 });
 test('fallo de red conserva reintento y no retira el dispositivo',async()=>{
   const calls:string[]=[];
   const rpc:Rpc=async(name)=>{calls.push(name);return name==='get_student_push_worker_configuration' ?
-    {enabled:true,firebase_project_id:'push-fixture'} : name==='claim_student_push_jobs' ? [job] : true;};
+    {enabled:true,firebase_project_id:'push-fixture'} : name==='claim_student_notice_jobs' ? [job] : {kind:'message'};};
   const worker=createPushWorker({enabled:true,secret,serviceRoleKey:serverKey,projectId:'push-fixture',rpc,send:async()=>{throw Error('Offline');}});
   assert.equal((await (await worker(request())).json()).retry,1);
   assert.ok(!calls.includes('retire_invalid_push_device'));
+});
+test('aplaza un cambio de descanso sin enviar ni gastar un reintento',async()=>{
+  let finish:unknown;
+  const rpc:Rpc=async(name,params)=>{
+    if(name==='get_student_push_worker_configuration') return {enabled:true,firebase_project_id:'push-fixture'};
+    if(name==='claim_student_notice_jobs') return [job];
+    if(name==='prepare_student_notice_job') return {kind:'defer'};
+    finish=params;return null;
+  };
+  const worker=createPushWorker({enabled:true,secret,serviceRoleKey:serverKey,projectId:'push-fixture',rpc,
+    send:async()=>{throw Error('No enviar durante el descanso');}});
+  assert.deepEqual(await (await worker(request())).json(),{sent:0,retry:0,invalid:0,skipped:0,errors:0,deferred:1});
+  assert.deepEqual(finish,{p_id:'job',p_claim:'lease',p_generation:2,p_binding:'binding',p_outcome:'deferred'});
+});
+test('el recordatorio conserva su tipo y día tras la revalidación',async()=>{
+  const rpc:Rpc=async(name)=>name==='get_student_push_worker_configuration'
+    ? {enabled:true,firebase_project_id:'push-fixture'} : name==='claim_student_notice_jobs' ? [job] : {kind:'reminder',previous_day:true};
+  const worker=createPushWorker({enabled:true,secret,serviceRoleKey:serverKey,projectId:'push-fixture',rpc,
+    send:async(destination,kind,previousDay)=>{
+      assert.equal(destination,'private-destination');assert.equal(kind,'reminder');assert.equal(previousDay,true);return 'sent';
+    }});
+  assert.equal((await (await worker(request())).json()).sent,1);
 });
 test('el programador exige JWT propio y ticket consumible una sola vez',async()=>{
   let consumed=false;let rpcCalls=0;let checks=0;
@@ -121,8 +143,8 @@ test('proveedor recibe FID, payload genérico y credencial OAuth firmada',async(
     }
     assert.equal(String(input),'https://fcm.googleapis.com/v1/projects/push-fixture/messages:send');
     const data=JSON.parse(init?.body as string);
-    assert.equal(data.message.fid,'test-fid');assert.deepEqual(data.message.data,{type:'student_notices'});
-    assert.deepEqual(data.message.notification,{title:'EntrenaOP',body:'Tienes novedades pendientes.'});
+    assert.equal(data.message.fid,'test-fid');assert.deepEqual(data.message.data,{type:'student_notices',notice_kind:'other'});
+    assert.deepEqual(data.message.notification,{title:'EntrenaOP',body:'Tienes novedades de seguimiento pendientes.'});
     assert.equal((init?.headers as Record<string,string>).Authorization,'Bearer test-access');
     return Response.json({error:{details:[{errorCode:'UNREGISTERED'}]}},{status:404});
   });

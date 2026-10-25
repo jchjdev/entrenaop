@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'notice_preferences.dart';
+
 class PushAccount {
   const PushAccount(this.id, this.accessToken);
   final String id, accessToken;
@@ -13,9 +15,14 @@ class PushInstallation {
 }
 
 class PushConfiguration {
-  const PushConfiguration(this.enabled, this.projectId);
+  const PushConfiguration(
+    this.enabled,
+    this.projectId, {
+    this.preferences = const NoticePreferences(),
+  });
   final bool enabled;
   final String? projectId;
+  final NoticePreferences preferences;
 }
 
 class PushDeviceState {
@@ -25,6 +32,7 @@ class PushDeviceState {
 }
 
 abstract interface class PushTransport {
+  bool get lastOpenWasReminder;
   bool get available;
   String get projectId;
   String get platform;
@@ -45,6 +53,12 @@ abstract interface class PushStore {
 }
 
 abstract interface class PushBackend {
+  Future<NoticePreferences> savePreferences(
+    PushAccount account,
+    NoticePreferences preferences,
+  );
+  Future<List<String>> timezones(PushAccount account);
+  Future<DateTime?> reminderDate(PushAccount account);
   Future<PushConfiguration> configuration(PushAccount account);
   Future<PushDeviceState?> device(
     PushAccount account,
@@ -87,6 +101,9 @@ class PushNotificationCoordinator extends ChangeNotifier {
   int _epoch = 0;
   bool _initialized = false, _disposed = false;
   bool _pendingOpen = false;
+  bool _openWasReminder = false;
+  NoticePreferences preferences = const NoticePreferences();
+  String? get accountId => _account?.id;
   bool serverAvailable = false, enabled = false, busy = false, denied = false;
   String? error;
   bool get available => transport.available;
@@ -129,6 +146,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
       );
       _subscriptions.add(
         transport.openEvents.listen((_) {
+          _openWasReminder = transport.lastOpenWasReminder;
           _pendingOpen = true;
           _emitOpen();
         }),
@@ -179,6 +197,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
     if (!_current(epoch, account)) return false;
     serverAvailable =
         configuration.enabled && configuration.projectId == transport.projectId;
+    preferences = configuration.preferences;
     return serverAvailable;
   }
 
@@ -187,6 +206,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
     _account = account;
     final epoch = ++_epoch;
     if (changed) {
+      preferences = const NoticePreferences();
       serverAvailable = false;
       enabled = false;
       denied = false;
@@ -285,6 +305,43 @@ class PushNotificationCoordinator extends ChangeNotifier {
       await _revoke(account);
       if (_current(epoch, account)) enabled = false;
     });
+  }
+
+  Future<void> savePreferences(NoticePreferences value) {
+    final account = _account;
+    final epoch = _epoch;
+    if (account == null || value.validationError != null) return Future.value();
+    return _run(epoch, () async {
+      if (!_current(epoch, account)) return;
+      final saved = await backend.savePreferences(account, value);
+      if (_current(epoch, account)) preferences = saved;
+    });
+  }
+
+  Future<List<String>> timezones() async {
+    final account = _account;
+    final epoch = _epoch;
+    if (account == null) return [];
+    final result = await backend.timezones(account);
+    return _current(epoch, account) ? result : [];
+  }
+
+  Future<String?> routeForOpen() async {
+    final account = _account;
+    final epoch = _epoch;
+    if (account == null) return null;
+    if (!_openWasReminder) return '/my-trainer?view=notices';
+    DateTime? date;
+    try {
+      date = await backend.reminderDate(account);
+    } catch (_) {
+      /* La agenda propia sigue disponible. */
+    }
+    if (!_current(epoch, account)) return null;
+    if (date == null) return '/plan/week';
+    final day =
+        '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return '/plan/week?date=$day';
   }
 
   @override
