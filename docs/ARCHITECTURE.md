@@ -9,6 +9,9 @@ las referencias existentes. Los portales aportan rutas, repositorios y permisos;
 el calendario prepara la misma operación revisada que los botones. Los arrastres
 se limitan a su instancia y las fichas/conversaciones se identifican por cuenta
 y recurso al navegar. No cambia RPC, RLS ni el esquema.
+`ProfessionalAppearance` acota los tokens de escritorio al marco y sus editores;
+las superficies del deportista no heredan esa densidad. `EntrenaCard` conserva
+portadas y acciones al aplicar su variante plana profesional.
 [Contrato y estado de entrega](TRAINER_DESKTOP_2026_10_25.md).
 
 **TRN-029 · 24/10/2026:** Los trabajos contextuales reutilizan checkpoints y

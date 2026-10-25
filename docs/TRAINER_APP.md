@@ -2,7 +2,8 @@
 
 ## Escritorio profesional · TRN-030 · 25/10/2026
 
-Publicado y verificado en ambos portales Dev desde `527f2c5d`: marco de
+Publicado y verificado en ambos portales Dev: acabado compartido `e57c55ac`,
+con limpieza adicional de Alumnos en Trainer desde `007d7f3b`. Marco de
 escritorio compartido con ADMIN, catálogos
 adaptables, ficha por áreas y bibliotecas junto al creador. Arrastrar modifica
 borradores o abre una asignación/movimiento revisado; no concede permisos ni

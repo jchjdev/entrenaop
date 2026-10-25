@@ -2,8 +2,9 @@
 
 **TRN-030 · 25/10/2026 · escritorio profesional · publicado y verificado en Dev:**
 marco, catálogos, ficha, creadores y agenda con arrastre revisado compartidos
-por Trainer y ADMIN. Fuentes `527f2c5d`; Trainer `527f2c5d-20261025-1`,
-ADMIN run `40186938110`, validación y despliegue correctos. Análisis limpios,
+por Trainer y ADMIN. Acabado visual ajustado a la preview: fuentes compartidas
+`e57c55ac`, ADMIN run `40188943836`; Trainer añade limpieza de Alumnos desde
+`007d7f3b`. Validación, publicación y HTTPS correctos. Análisis limpios,
 1.349 pruebas raíz, 315 ADMIN, 205 Trainer, 217 editor y 27 interfaz común;
 una omisión previa en raíz y dos en ADMIN. Compilaciones Release y HTTPS
 comprobados; navegación real y arrastre cancelado sin asignar en Trainer.

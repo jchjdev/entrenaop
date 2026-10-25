@@ -44,7 +44,8 @@ validación y comprobación de la versión servida.
 ## Implementación y evidencia
 
 Estado: implementado, validado y publicado en ambos portales Dev;
-revisión de fuentes `527f2c5d`. Aceptación humana del recorrido pendiente.
+acabado compartido `e57c55ac` y limpieza adicional de Trainer `007d7f3b`.
+Aceptación humana del recorrido pendiente; evidencia de la primera entrega abajo.
 
 - [x] Marco y distribución comunes; catálogos y gestión en ambos portales.
 - [x] Ficha profesional y accesos visibles a conversación, técnica e informes.
@@ -117,7 +118,7 @@ cabecera, con el mismo orden visual. Se añaden regresiones de recorrido semánt
 para las ocho áreas y las acciones del marco. La revisión `527f2c5d` publicada
 en Trainer acredita también esta corrección; la primera fue `a2162024`.
 
-## Publicación y recorrido comprobado · 25/10/2026
+## Primera publicación y recorrido comprobado · 25/10/2026
 
 Trainer Dev sirve la revisión `527f2c5d067d3f444d2cf0497eb55214e21ad74c`,
 publicación `527f2c5d067d3f444d2cf0497eb55214e21ad74c-20261025-1`.
@@ -171,7 +172,7 @@ El tema solo se aplica desde el marco profesional y sus editores. El cambio a
 ventana estrecha conserva el editor y recupera las medidas táctiles. No cambian
 permisos, rutas, guardados, operaciones de agenda ni estados del servicio.
 
-Estado de esta revisión: validada localmente; publicación por verificar.
+Estado de esta revisión: publicada y verificada en ambos portales Dev.
 Análisis limpios de raíz, Trainer, ADMIN e interfaz común. Baterías: 1.349,
 205, 315 y 27 pruebas respectivamente (omisiones previas sin cambios). Se
 mantienen las regresiones de arrastre, cancelación, semántica y controladores
@@ -184,3 +185,26 @@ sesiones ya disponible en la navegación; se conserva Actualizar en la cabecera
 de página y Cerrar sesión en Mi cuenta. El estado de acceso activo utiliza una
 superficie discreta. La ventana estrecha conserva sus accesos anteriores.
 Análisis Trainer limpio y 205 pruebas correctas tras este ajuste localizado.
+
+### Publicación comprobada del ajuste visual · 25/10/2026
+
+ADMIN: fuentes `e57c55ac3d131f984600d2afb66bed0a45b81463`, publicación
+`e57c55ac3d131f984600d2afb66bed0a45b81463-40188943836-1`. El run
+`40188943836` completa validación, despliegue y retención con éxito. HTTPS
+contrasta manifiesto, entrada, cabeceras, WebAssembly y SHA-256 de JavaScript:
+`7e9b4b01f36449aabb5ef76ab6da95c3ff1af6f4c93003f2207f7aa7623fc49d`.
+El catálogo real de programas carga con navegación y acciones accesibles.
+
+Trainer: fuentes `007d7f3ba9684d57440294a1b5d575b18b62809c`, publicación
+`007d7f3ba9684d57440294a1b5d575b18b62809c-20261025-1`. Mismas comprobaciones
+HTTPS; SHA-256 JavaScript
+`7c83cfe248b54d20b564ae8e6fba89cb832a3092e8fdcbf047c081f72ad0038e`.
+ZIP `0a7781c6b2cebde884e6fe796458a3985a7151b02a6fe4f88c386f0f7007e41c`.
+La limpieza propia de Trainer no cambia los componentes ya publicados en ADMIN;
+se sube a main después de terminar el despliegue administrativo.
+
+Chrome acredita las tarjetas y pestañas reales de alumno, el tablero con los
+siete días visibles a 1.646 px y la página Alumnos sin logo/atajos duplicados,
+con Actualizar e invitaciones disponibles. No se guardan recetas ni pautas ni
+se envían mensajes. La revisión visual aproxima la preview; no supone aceptar
+por Javier cada detalle estético ni cerrar futuras mejoras de fluidez.
