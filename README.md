@@ -55,6 +55,21 @@ Las claves publicables de Supabase identifican al cliente y pueden distribuirse
 con la aplicación. Las contraseñas de base de datos, claves secretas y tokens de
 administración no se guardan en el repositorio.
 
+## Probar avisos push en Android Dev
+
+El proyecto Firebase `entrenaop-dev` usa solo Cloud Messaging, con Spark.
+La configuración pública del cliente está en `config/firebase_dev.json`;
+no contiene la clave privada del servidor. Para instalar la build de prueba:
+
+```sh
+flutter run --dart-define-from-file=config/firebase_dev.json
+```
+
+En VS Code está «EntrenaOP Avisos · Android Dev». En la app, activar
+«Preparador → Avisos del preparador» y conceder el permiso de Android.
+La ejecución habitual sigue con push apagada; iOS/APNs se prepara por separado.
+[Servidor, seguridad y aceptación](docs/TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 ## Ejecutar en VS Code
 
 En **Ejecutar y depurar** desde la raíz se puede elegir

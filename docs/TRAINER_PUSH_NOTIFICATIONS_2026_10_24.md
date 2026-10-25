@@ -1,16 +1,32 @@
 # Avisos push del alumno · TRN-029 · 24/10/2026
 
-## Estado comprobado
+## Estado comprobado · 25/10/2026
 
-Preparación implementada en la app y Supabase Dev (`sxbxfjqgoddzhtcyhalw`),
-con envío desactivado. Migración `20261024201618_student_push_delivery.sql`
-aplicada, ampliada por `20261024212322_student_push_retained_transfer_limit.sql`;
-función `student-push` versión 1, JWT de plataforma activado y hash
-`c002ce33a737df171a1cdef64df8be5bfcae6ae27794591d1d6c14e7846fd21f`.
-Sin proyecto Firebase configurado, dispositivos, trabajos pendientes ni Cron.
-La llamada pública sin credenciales devuelve HTTP 401. No acredita recepción
-real, configuración APNs ni instalación iOS. CI acredita compilación iOS
-Release y simulador sin firmar, con push desactivada; Javier instala desde Xcode.
+Firebase `EntrenaOP Dev` (`entrenaop-dev`) creado en Spark, sin facturación,
+Analytics ni servicios opcionales. App Android `com.entrenaOp.entrenaop`,
+ID `1:861343584982:android:33a528b3742adbcdf2ef77`, emisor `861343584982`.
+Configuración pública versionada en `config/firebase_dev.json`, usada también
+por los recursos nativos de Gradle; no se necesita descargar google-services.json.
+
+Transporte activado solo en Supabase Dev (`sxbxfjqgoddzhtcyhalw`). Función
+`student-push` versión 7, JWT de plataforma obligatorio y hash
+`8f1358b2ad69815c0a0d81a4bae74911819e46404005a6a0ddafd0c14a704c18`.
+Se conservan las migraciones `20261024201618` y `20261024212322`; se añade
+`20261025201351_student_push_dispatch_tickets.sql` para el programador seguro.
+No se modifica producción ni los proyectos Firebase anteriores de Javier.
+
+APK debug compilada con Firebase Dev e instalada conservando datos en el Samsung
+SM-A326B. Javier activa los avisos, el servidor registra un Android y FCM acepta
+HTTP 200 la notificación «Prueba de notificación del preparador». Javier confirma
+que ese texto aparece en el teléfono. Esto acredita la primera recepción física
+de transporte Android, no todos los recorridos de mensajes, lecturas o cuentas.
+Apple/APNs y el indicador nativo del icono continúan pendientes.
+
+El Cron `entrenaop-student-push-dev` está activo cada minuto; llama a
+`push_private.dispatch_due_dev()` y solo hace HTTP con trabajo elegible.
+Primera ejecución automática comprobada: consume el ticket, worker HTTP 200 y
+`skipped=1` al no existir avisos recientes sin leer. No quedan trabajos pendientes.
+La prueba de transporte directa no crea una conversación ni un aviso ficticio.
 
 Firebase no es un requisito universal de push: iPhone admite APNs directo. El
 adaptador preparado usa FCM para ambas plataformas, sin Firebase Auth, Firestore,
@@ -57,8 +73,8 @@ el transporte desde Dart, no se solicita permiso ni se muestra un control vacío
 Firebase auto-init queda apagado también en Android e iOS. Los avisos internos
 siguen funcionando y la campana conserva su condición de contador positivo.
 
-La configuración preparada solo habilita el transporte nativo en Dev, iOS y
-Android. El servidor debe autorizarlo y declarar el mismo proyecto Firebase.
+La configuración del transporte solo habilita las plataformas nativas en Dev;
+el ensayo configurado actualmente es Android. El servidor debe autorizarlo y declarar el mismo proyecto Firebase.
 Solo entonces aparece «Avisos del preparador» en Preparador. Activarlo solicita
 permiso y conserva una elección independiente por cuenta. El permiso del teléfono
 no activa notificaciones para otra cuenta. Desactivar/salir revoca la asociación
@@ -123,36 +139,67 @@ usuario no pueden disparar envíos. La credencial Firebase solo existe en secret
 del servidor; OAuth se firma con WebCrypto. Respuestas y registros no exponen
 direcciones de entrega, credenciales ni cuerpos privados.
 
-## Activación pendiente
+## Configuración y aceptación
 
-1. Crear/configurar un proyecto Firebase de Dev y sus apps Android/iOS con los
-   identificadores reales del producto. Fijar sus identificadores públicos en
-   `PUSH_FIREBASE_PROJECT_ID`, `PUSH_FIREBASE_SENDER_ID`,
-   `PUSH_FIREBASE_ANDROID_APP_ID`, `PUSH_FIREBASE_ANDROID_API_KEY`,
-   `PUSH_FIREBASE_IOS_APP_ID` y `PUSH_FIREBASE_IOS_API_KEY`.
-2. Compilar con esos valores y `PUSH_ENABLED=true`, `APP_ENV=development`.
-   Android genera los recursos nativos de Firebase desde los mismos defines:
-   el SDK puede arrancar y recibir alertas con Flutter cerrado. No requiere
-   guardar otra copia de configuración en Google Services JSON. La build normal
-   carece de esos recursos y sigue sin activar push. iOS configura opciones desde
-   Dart y prepara el delegado de notificaciones antes de inicializar Flutter.
-3. Con Apple Developer de pago, habilitar la capacidad Push Notifications y su
-   perfil/entitlement apropiado en Xcode, y configurar la clave APNs en Firebase.
-   No se añade ahora un entitlement que rompa la firma personal gratuita.
-4. Configurar solo en secretos de la función `FCM_SERVICE_ACCOUNT_JSON`,
-   `STUDENT_PUSH_WORKER_SECRET` y `STUDENT_PUSH_ENABLED=true`. La cuenta de servicio
-   necesita el permiso de envío de Cloud Messaging. Comprobar el proyecto antes
-   de habilitar `push_private.settings` y nunca introducir su clave en la app.
-5. Programar la invocación del worker desde servidor con ambas credenciales
-   guardadas en Vault/secretos. No hay todavía un Cron que envíe trabajo real.
-6. Probar en dispositivos: permiso denegado/aceptado, primer plano, segundo plano,
-   app cerrada, pulsación, cambio A→B, baja, FID renovado, falta de red y reintento.
-   Comprobar recepción antes de presentar la función como activada.
+1. **Android configurado:** `flutter run --dart-define-from-file=config/firebase_dev.json`
+   o «EntrenaOP Avisos · Android Dev» en VS Code. Los valores son identificadores
+   públicos del cliente, no credenciales administrativas. La ejecución habitual
+   conserva `PUSH_ENABLED=false`. iOS no se activa por este archivo Android.
+2. **Servidor configurado:** `FCM_SERVICE_ACCOUNT_JSON`, `STUDENT_PUSH_WORKER_SECRET`,
+   `STUDENT_PUSH_CALLER_KEY`, `STUDENT_PUSH_SCHEDULER_JWT` y
+   `STUDENT_PUSH_ENABLED=true` solo en secretos Dev. La invocación manual exige
+   la clave estable y el secreto adicional; el worker consulta la base de datos
+   con su clave interna inyectada. No se supone que ambas claves sean idénticas.
+3. **Programador configurado:** el JWT público del proyecto está en Vault como
+   `student_push_dev_public_jwt`; la migración genera un ticket aleatorio de
+   256 bits, guarda solo su hash y limita su uso a 55 segundos. El worker exige
+   el JWT configurado y consume el ticket mediante una RPC exclusiva de servicio,
+   antes de reclamar como máximo cinco trabajos. Reutilizar, caducar o alterar
+   el ticket devuelve 401. No admite destinatarios ni contenido en la invocación.
+   La configuración operativa está en
+   `supabase/operations/student_push_dev_schedule.sql`, con destino Dev explícito.
+   El primer horario provisional se pausó antes de tener dispositivos; ningún
+   secreto permanente se depositó en la cola HTTP. Los secretos de Vault del
+   montaje provisional quedan privados y sin referencia en el horario vigente.
+4. **Cuenta técnica:** `entrenaop-push-dev@entrenaop-dev.iam.gserviceaccount.com`,
+   solo rol `roles/firebasecloudmessaging.admin` en este Firebase. Clave RSA
+   generada localmente y certificado público registrado con confirmación de
+   Javier. Caduca el 25/10/2027; renovar antes del vencimiento. La parte privada
+   permanece fuera de Git y de la app. No reutiliza Firebase Admin SDK ni claves
+   de sus proyectos antiguos.
+5. **Aceptación pendiente:** evento real desde Trainer → cola → alerta → apertura
+   en la cuenta correcta; permiso denegado, app cerrada, primer plano, cambio A→B,
+   baja, renovación de registro, falta de red y reintento. Los contratos de
+   aislamiento están probados; no sustituye esas comprobaciones físicas.
+6. **Apple pendiente:** con Apple Developer, habilitar capacidad/perfil Push y
+   configurar APNs. No se añaden ahora entitlements que rompan la firma gratuita.
+   El contador/reset del icono necesita implementación explícita separada.
 
-No se necesitan publicación ni pago de Google Play para el ensayo Android.
+No se necesitan publicación ni pago de Google Play para este ensayo Android.
 Los cobros de EntrenaOP/entrenador/alumno siguen fuera de este tramo.
 
-## Evidencia y fuentes
+### Validación de esta activación
+
+Análisis raíz limpio y batería completa: 1.353 pruebas correctas, una omisión
+previa. APK debug compilada con los valores reales, recursos Firebase nativos
+comprobados e instalación sobre la existente correcta. Ocho pruebas Node del
+worker y comprobación TypeScript 5.9.3 estricta correctas. La regresión de claves
+internas/estables falla con la conexión anterior y pasa con el ajuste.
+
+`student_push_delivery.sql` y `student_push_scheduler.sql` pasan en Dev con
+ROLLBACK, también con el Android real registrado. El primero aísla temporalmente
+los trabajos ya existentes y restaura sus fechas al terminar; no consume avisos
+reales durante la prueba. El segundo comprueba permisos, caducidad, uso único,
+contenido de encabezados y ausencia de despachos duplicados/apagados. Aplicación
+selectiva de la migración de tickets, sin ejecutar la migración Garmin ajena.
+
+El asesor de seguridad mantiene la información esperada de RLS sin políticas
+en tablas privadas; no hay nuevos permisos de ejecución de estos trabajadores
+para anon/authenticated. Las llamadas sin credenciales o sin secreto devuelven
+401; la llamada manual correcta devuelve 200 con contadores. El horario real
+acredita JWT público + ticket + RPC + cola sin exponer credenciales permanentes.
+
+## Evidencia de la preparación del 24/10/2026 y fuentes
 
 Análisis raíz limpio y 1.349 pruebas completas correctas, con una omisión
 previa; incluyen las tres regresiones APNs. APK debug recompilada después

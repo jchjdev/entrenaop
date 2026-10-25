@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+**TRN-029 · 25/10/2026 · Firebase y primera push Android:** creado
+`entrenaop-dev` en Spark, sin Analytics/facturación. Configuración pública y
+lanzamiento Android versionados; APK instalada conservando datos en el Samsung
+SM-A326B. Javier activa los avisos y confirma recepción de la prueba aceptada
+por FCM HTTP 200. Worker Dev v7 y horario cada minuto activos, con JWT obligatorio,
+credenciales manuales separadas de la clave interna y tickets de un uso/55 s para
+no depositar secretos permanentes en pg_net. Primera ejecución automática 200,
+con descarte correcto por no haber avisos recientes pendientes. Análisis limpio,
+1.353 pruebas raíz (una omisión), ocho Node, tipos estrictos y dos contratos SQL
+con ROLLBACK correctos. Migración de tickets aplicada selectivamente en Dev;
+no se integra ni se aplica trabajo Garmin ajeno.
+**Siguiente recorrido único:** comprobar un evento real de Trainer → alerta en
+segundo plano → apertura en la cuenta del alumno, y después permisos/cambio de
+cuenta. Apple/APNs, badges nativos y producción quedan pendientes.
+[Configuración, aceptación y límites](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **TRN-032 · 25/10/2026 · publicación automática Trainer · operativa en Dev:**
 motor FTPS común con ADMIN, adaptadores, cuentas y entornos separados. 59 pruebas
 Python correctas; Trainer valida, compila, conserva artefacto y publica en el run

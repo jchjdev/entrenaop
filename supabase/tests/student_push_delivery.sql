@@ -1,5 +1,22 @@
 begin;
 set local statement_timeout='90s';
+-- El contrato se prueba también con Dev activado, sin depender de su ajuste
+-- operativo ni dejarlo apagado al terminar el ROLLBACK.
+do $$begin
+ if (select pg_get_expr(d.adbin,d.adrelid)
+     from pg_attrdef d join pg_attribute a
+       on a.attrelid=d.adrelid and a.attnum=d.adnum
+     where d.adrelid='push_private.settings'::regclass and a.attname='enabled')
+    is distinct from 'false' then
+   raise exception 'El esquema activa push por defecto';
+ end if;
+end $$;
+update push_private.settings set enabled=false,firebase_project_id=null where singleton;
+-- Las altas reales ya pueden tener trabajos pendientes. Se apartan solo dentro
+-- de esta transacción para que claim_jobs pruebe los fixtures; ROLLBACK devuelve
+-- sus fechas originales y nunca consume avisos de usuarios reales.
+update push_private.outbox set next_at=clock_timestamp()+interval '1 day'
+ where generation>delivered_generation;
 do $$
 declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();coach uuid:=gen_random_uuid();relation uuid:=gen_random_uuid();
  device uuid:=gen_random_uuid();binding_a uuid:=gen_random_uuid();binding_b uuid:=gen_random_uuid();secret text:=repeat('a',64);

@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+**TRN-029 · 25/10/2026 · Firebase separado y ensayo Android:** Javier autoriza
+crear `EntrenaOP Dev` (`entrenaop-dev`), en Spark, independiente de sus proyectos
+anteriores, y conectar una cuenta técnica de Cloud Messaging a Supabase Dev.
+Dev identifica datos/configuración de pruebas; el código construido es el mismo
+producto que se publicará con configuración de producción separada. No se
+rehacen los creadores ni se convierte el entorno de pruebas en producción.
+Android ya se usaba para las pruebas y el iPhone 12 es su teléfono habitual.
+Se conserva la elección por cuenta y el permiso del dispositivo. El programador
+reutiliza el patrón de Garmin de capacidades de un uso y corta duración: mantiene
+JWT de plataforma y no deja claves permanentes en la cola administrada de HTTP.
+El envío manual conserva su credencial estable y secreto adicional; la clave
+interna de Supabase se reserva a las consultas del worker.
+[Configuración y evidencia](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **TRN-029 · 25/10/2026 · activación y pagos de las tiendas:** Javier pospone
 Apple Developer y los demás pagos de publicación mientras se pule la app;
 diciembre de 2026 es una referencia orientativa, no una fecha de lanzamiento.

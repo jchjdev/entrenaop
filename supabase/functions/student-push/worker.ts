@@ -11,17 +11,28 @@ function authorized(expected: string, actual: string | null): boolean {
 
 export function createPushWorker(options: {
   enabled: boolean; secret: string; serviceRoleKey: string; projectId: string; rpc: Rpc;
+  schedulerJwt?: string;
+  consumeTicket?: (ticket: string) => Promise<boolean>;
   send: (destination: string) => Promise<Outcome>;
 }) {
   return async (request: Request): Promise<Response> => {
     const bearer=request.headers.get('Authorization') ?? '';
     const expected='Bearer '+options.serviceRoleKey;
-    let difference=0;
-    if(options.serviceRoleKey.length<20 || bearer.length!==expected.length) return Response.json({code:'unauthorized'},{status:401});
-    for(let i=0;i<expected.length;i++) difference |= bearer.charCodeAt(i)^expected.charCodeAt(i);
-    if(difference!==0) return Response.json({code:'unauthorized'},{status:401});
-    if (!authorized(options.secret, request.headers.get('X-EntrenaOP-Push-Worker'))) return Response.json({code:'unauthorized'}, {status:401});
     if (request.method !== 'POST') return Response.json({code:'method_not_allowed'}, {status:405});
+    let difference=0;
+    let access=false;
+    if(options.serviceRoleKey.length>=20 && bearer.length===expected.length) {
+      for(let i=0;i<expected.length;i++) difference |= bearer.charCodeAt(i)^expected.charCodeAt(i);
+      access=difference===0 && authorized(options.secret,request.headers.get('X-EntrenaOP-Push-Worker'));
+    }
+    // El programador solo activa este trabajo fijo con una capacidad efímera
+    // consumida atómicamente. No deposita la clave de servicio en pg_net.
+    const ticket=request.headers.get('X-EntrenaOP-Push-Ticket');
+    if(!access && options.enabled && options.schedulerJwt && options.consumeTicket &&
+       bearer==='Bearer '+options.schedulerJwt && ticket && /^[A-Za-z0-9_-]{43}$/.test(ticket)) {
+      try { access=await options.consumeTicket(ticket); } catch { access=false; }
+    }
+    if(!access) return Response.json({code:'unauthorized'},{status:401});
     if (!options.enabled) return Response.json({disabled:true});
     try {
       const config = await options.rpc('get_student_push_worker_configuration') as {enabled:boolean;firebase_project_id:string};
