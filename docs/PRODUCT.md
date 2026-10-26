@@ -1,5 +1,12 @@
 # Producto EntrenaOP
 
+**Connect IQ · 26/10/2026 · primer transporte aceptado en Dev:** una app
+complementaria de ensayo descarga una muestra FIT y la abre en Fuerza nativa del
+fēnix 8, conservando nombres propios, notas, dosis y descansos. Javier lo confirma
+sin USB. La entrega puede tardar más de 60 s. Vinculación de cuenta, sesiones
+personales y automatización siguen pendientes; no se exige el puente para toda
+la fuerza. [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#puente-connect-iq--int-016--26102026).
+
 **Planificación propia · 26/10/2026:** Javier confirma «Para mí» en Trainer:
 asignarse sesiones/programas y realizarlos en su propia app de deportista, sin
 ocupar plaza ni cambiar de cuenta. Mantiene preparadores externos independientes.

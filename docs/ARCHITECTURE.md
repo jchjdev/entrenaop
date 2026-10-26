@@ -1,5 +1,13 @@
 # Arquitectura de EntrenaOP
 
+**Connect IQ · 26/10/2026 · puente FIT sintético aislado:** `connect_iq/` descarga
+mediante Communications FIT y valida identidad/nombre en `getAppWorkouts()` antes
+de abrir el intent nativo. `garmin-ciq-probe` solo sirve una muestra fija en Dev,
+sin SQL, cuentas o recetas del cliente, reutilizando `garmin/strength_fit.ts`.
+No cambia Training API, OAuth ni retorno. Transporte y presentación aceptados
+físicamente en fēnix 8; autorización privada y background son trabajo posterior.
+[Contrato y límites](DEVICE_GARMIN_TRAINING.md#puente-connect-iq--int-016--26102026).
+
 **Planificación propia · 26/10/2026:** «Para mí» reutiliza relaciones y citas
 profesionales con identidad propia explícita, sin cupo ni otro usuario. La admisión,
 gestión y calendario excluyen esa relación de sus contadores externos. El nombre

@@ -421,6 +421,11 @@ verify_jwt = true
 verify_jwt = false
 import_map = "./functions/garmin-activities/deno.json"
 
+# Ensayo público exclusivamente sintético, cerrado al proyecto Dev en el handler.
+[functions.garmin-ciq-probe]
+verify_jwt = false
+import_map = "./functions/garmin-ciq-probe/deno.json"
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

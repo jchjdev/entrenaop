@@ -547,3 +547,114 @@ CRC, títulos UTF-8, referencias homónimas, dosis, kilos, notas, descansos,
 estabilidad e invalidaciones. La batería de servidor pasa 163 pruebas. La
 comprobación estricta de tipos y la CI incluyen el generador. No se publican
 funciones ni nuevas versiones móviles por esta preparación aislada.
+
+## Puente Connect IQ · INT-016 · 26/10/2026
+
+Javier autoriza implementar y probar el puente FIT al ejecutor nativo, primero
+con una muestra sintética y después con vinculación segura de cuenta. El primer
+tramo queda aceptado físicamente el 26/10/2026 en su fēnix 8 de 47 mm: con USB
+desconectado, EntrenaOP Dev 0.2 recibe «Entrenamiento instalado» y abre Fuerza
+mediante el intent nativo. Javier elige «Solo una vez» en el selector de apertura.
+Confirma Dominada con pausa, 6 repeticiones a 7,5 kg, descanso 1:30, otra serie de
+5 repeticiones, descanso 1:00 y Front lever isométrico de 0:07; también las notas
+«Prueba de título propio» y «Prueba de tiempo». Esta comprobación acredita la
+presentación inalámbrica de nombres, notas, dosis y descansos de esta muestra.
+No acredita una actividad física realizada ni el retorno de sus resultados.
+
+### Implementación y servidor Dev
+
+`connect_iq/` contiene una app Monkey C de ensayo exclusivamente para el fēnix 8
+AMOLED de 47/51 mm (`fenix847mm`), con permisos Communications y PersistedContent.
+No registra actividades: usa `HTTP_RESPONSE_CONTENT_TYPE_FIT` y abre el contenido
+instalado con `Content.toIntent()`. Confirma nombre e identidad contra
+`getAppWorkouts()`, que restringe la búsqueda a entrenamientos de esta app.
+Un HTTP 200, un iterador vacío o contenido sin esa correspondencia nunca son éxito.
+No elimina ni consulta entrenamientos ajenos.
+
+`garmin-ciq-probe/workout.fit` sirve una única receta pública inventada:
+**EntrenaOP IQ prueba 01**, cinco pasos y dos títulos propios, 713 bytes. Usa el
+generador de `dc48764e`, sin modificarlo. No publica la sesión privada probada por
+USB ni datos de cuenta. Identidad y fecha FIT constantes para los reintentos.
+El endpoint no consulta SQL, Auth o Garmin ni recibe recetas, identificadores o
+rutas de archivos. Solo GET a la ruta fija sin parámetros; POST devuelve 405 y
+selección por parámetros 404. La muestra es anónima, pero el handler exige
+`GARMIN_ENVIRONMENT=DEVELOPMENT` y la URL exacta de `entrenaop-dev`; cualquier otro
+destino queda cerrado con 503. La futura entrega privada necesita otro contrato
+autorizado; no se ampliará este endpoint con identificadores de usuario.
+
+Desplegado y releído en Dev con versión `ciq-probe-1`, tipo
+`application/vnd.ant.fit`, `Cache-Control: no-store` e igualdad de bytes con el
+generador local. SHA-256:
+`c31d5f0cca195936912e160358dc812dcdea25492694a01d3d426de7994c6201`.
+El verificador reproducible es `connect_iq/verify-dev.ts`. No se modifican
+concesiones, sesiones, citas, permisos, RLS, resultados ni el envío JSON habitual.
+
+### Diagnóstico y artefacto aceptado
+
+El primer intento 0.1 muestra «Contenido no reconocido». Una prueba Monkey C
+reproduce un error de comparación del nombre: `==` rechaza cadenas con el mismo
+texto; `equals()` hace pasar la prueba. La revisión 0.2 corrige esa comparación
+y usa el contrato `PersistedContent.Content`, sin exigir una subclase concreta.
+No se atribuye la causa física a esa comprobación de clase sin evidencia adicional.
+El simulador 6.0.3 devuelve HTTP 200, Iterator no nulo y primer elemento nulo;
+ese resultado queda separado de la aceptación física posterior del fēnix.
+
+La descarga física tarda más de sesenta segundos. Javier sale/reabre al aparecer
+el aviso, y después recibe la confirmación de instalación. El límite de espera
+es un aviso de falta de callback, no prueba de cancelación ni fracaso nativo.
+La app permite salir y bloquea nuevas solicitudes en esa instancia mientras
+conserva la posibilidad de aceptar una respuesta tardía. El texto actual invita
+a reabrir y debe pulirse en el siguiente tramo para evitar reintentos innecesarios.
+No se conoce todavía la causa de la latencia ni del giro persistente de sincronía
+en Garmin Connect. No se promete entrega inmediata.
+
+SDK Connect IQ 9.3.0 y perfil oficial `fenix847mm` 6.0.3 descargados mediante el
+gestor oficial tras autenticación de Javier. `build-dev.ps1` usa Java de Android
+Studio si está disponible, tipos estrictos y clave local de firma fuera de Git.
+Binarios, claves, SDK y logs permanecen ignorados. El PRG aceptado de la revisión
+0.2 se copia a `GARMIN/APPS/entrenaop-dev-fenix847mm.prg`, sin copiar el FIT por
+USB. Relectura MTP: 105.852 bytes y SHA-256 idéntico al compilado:
+`40c92969006f91a0a421dffa53ebc21a33565a540d9aa41fb2d903d121c84e48`.
+El PRG pendiente que MTP no reemplazaba se conserva en respaldo local antes de
+copiar el definitivo. Se habilita un TXT exclusivo de esta app para diagnóstico;
+no se leen logs de otras aplicaciones. Procedimiento: `connect_iq/README.md`.
+
+### Verificación del tramo
+
+- Tres pruebas nuevas de servidor: cierre fuera de Dev, contrato HTTP sin
+  selección de datos y roundtrip FIT con CRC, títulos y dosis. Batería completa
+  de servidor: 166 pruebas correctas; tipos estrictos correctos. La CI incluye
+  el endpoint y sus tipos.
+- Compilación Monkey C estricta sin avisos. Dos pruebas de regresión en el
+  simulador: identificación por interfaz/nombre/ID y rechazo de otro nombre o ID.
+  `test-dev.ps1` valida el resumen explícito del runner, que en Windows devuelve
+  código 1 incluso cuando informa PASSED con cero fallos y errores.
+- Versión publicada, cabeceras, bytes y rechazo de POST/parámetros releídos en
+  Dev. Historial de migraciones cotejado contra Dev; sin cambios SQL ni nuevo
+  contrato de base de datos. Flutter y sus paquetes no cambian en este tramo.
+- Aceptación humana física de instalación inalámbrica, apertura nativa,
+  nombres/notas, repeticiones, carga, tiempo y ambos descansos. No se cambia la
+  cita real iniciada ni sus resultados para realizar el ensayo.
+
+### Límites y único siguiente tramo
+
+El recorrido cerrado es **muestra sintética → descarga inalámbrica → contenido
+propio instalado → Fuerza nativa con títulos y descansos correctos**, solo en el
+fēnix probado. No cierra publicación en Connect IQ Store, otros relojes,
+duplicados tras descargas/reinicios repetidos, cambios/retirada, importación en
+background, entrega privada ni retorno de la actividad por esta vía.
+
+El único siguiente tramo es vinculación segura con la cuenta y entrega de
+instantáneas autorizadas por servidor y revisión vigente, con caducidad y
+revocación, recuperación tras interrupciones y control de duplicados. Sin tokens
+Garmin ni credenciales administrativas en el reloj; se conserva el OAuth actual
+de Training API y retorno. Debe mejorar la espera observada antes de ampliar el
+piloto a sesiones personales.
+
+La experiencia objetivo es vincular una vez y mantener sesiones actualizadas,
+con Actualizar como recuperación manual. Background o Mobile SDK no acreditan
+por sí solos importación FIT en segundo plano: quedan por comprobar app cerrada,
+móvil en segundo plano, límites de ejecución, interrupciones, cambios y retirada.
+No convertir el mínimo temporal de cinco minutos en sondeo permanente ni prometer
+recepción inmediata sin conectividad. El puente no es aún requisito general del
+producto ni se anuncia en Flutter como una integración personal disponible.

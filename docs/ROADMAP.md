@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**INT-016 · 26/10/2026 · primer tramo Connect IQ cerrado en Dev:** muestra
+sintética → descarga inalámbrica → instalación propia → apertura en Fuerza nativa
+con nombres/notas, repeticiones, carga, isométrico y descansos correctos, aceptado
+por Javier en fēnix 8 sin USB. Endpoint Dev releído, compilación estricta y dos
+pruebas Monkey C correctas; 166 pruebas servidor y tipos correctos. La respuesta
+llega después de 60 s; latencia/espera pendientes de pulir. Sin entrega privada,
+background, otros relojes ni retorno acreditados; duplicados tras reinicios y
+cambios/retirada siguen pendientes. **Único siguiente bloque de este recorrido:**
+vinculación segura de cuenta y entrega de instantáneas autorizadas por revisión,
+caducidad/revocación y recuperación de reintentos, conservando OAuth actual.
+[Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#puente-connect-iq--int-016--26102026).
+
 **TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** implementado y aplicado
 en Dev, 231 migraciones coincidentes. Reutiliza planificación/ejecución/historial
 sin cupo; nombre propio editable desde Perfil. Análisis limpio y baterías completas

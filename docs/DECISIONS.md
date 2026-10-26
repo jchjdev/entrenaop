@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+**INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
+Javier autoriza la app complementaria y confirma físicamente el primer tramo
+con EntrenaOP Dev 0.2: descarga sin USB, instalación propia, apertura en Fuerza,
+títulos/notas, repeticiones, carga, isométrico de 0:07 y descansos 1:30/1:00.
+Solo muestra sintética pública en Dev; generador `dc48764e` y OAuth existentes
+conservados. Se corrige comparación de nombres, con 166 pruebas de servidor,
+dos Monkey C y compilación estricta correctas. La respuesta llega después del
+aviso de 60 s: la espera debe mejorarse y no acredita cancelación. El único
+siguiente tramo es vinculación segura y entrega privada autorizada, con caducidad,
+revocación y control de revisiones/reintentos. Background, duplicados repetidos,
+otros relojes y retorno por esta vía quedan sin acreditar; no se adopta como
+requisito general para fuerza.
+[Contrato, aceptación y límites](DEVICE_GARMIN_TRAINING.md#puente-connect-iq--int-016--26102026).
+
 **UI-066 · 26/10/2026 · acceso a la serie que se está registrando:** Javier
 muestra en una grabación que debe buscar abajo la serie pendiente al abrir
 «Series y registros». El panel abre situado en la última serie terminada con
@@ -24,11 +38,10 @@ Implementación y contratos verificados en Dev. El envío inalámbrico conserva
 la receta, pero los títulos genéricos aparecen como «Ir» en el reloj. Javier
 confirma después nombres propios y descansos correctos al cargar directamente
 el FIT por USB en su fēnix 8. Se extrae un generador FIT reutilizable y probado;
-no cambia todavía el transporte. Connect IQ ofrece una vía oficial candidata
-que necesitaría una app complementaria en el reloj, aún sin adoptar como
-requisito del producto ni acreditar físicamente. La entrega inalámbrica de
-esos títulos sigue pendiente; no se confunde la prueba USB con una corrección
-de Training API.
+no cambia entonces el transporte habitual. INT-016 acredita después el puente
+Connect IQ con una muestra sintética y títulos propios, sin adoptar todavía
+la app complementaria como requisito general ni confundir el puente FIT con
+una corrección de Training API.
 [Contrato y comprobaciones](DEVICE_GARMIN_TRAINING.md#ejercicios-privados-de-fuerza--int-015--26102026).
 
 **TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** Javier aprueba asignarse
