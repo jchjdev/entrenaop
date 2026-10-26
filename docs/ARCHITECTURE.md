@@ -1,14 +1,5 @@
 # Arquitectura de EntrenaOP
 
-**Primer acceso · 26/10/2026 · UX-ENTRY-003:** `/welcome` reutiliza destinos
-existentes y persiste una preferencia de presentación en metadata de Auth,
-consultada con identidad/token fijados sin reemplazar la sesión del SDK. No
-participa en permisos ni RLS. `/invite` conserva el contexto validado durante
-acceso/registro, con almacenamiento local de hasta 24 horas y aceptación
-explícita mediante el contrato Trainer existente. Las esperas asíncronas quedan
-acotadas al acceso, Inicio y recuperación de invitación; no se cambia el resto
-de recorridos. [Contrato y límites](FIRST_ACCESS.md).
-
 **Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la
 cuenta y capacidad propia del reloj; fachada de servidor sobre tablas privadas
 cerradas, hashes de credenciales/códigos y exportaciones inmutables por revisión.

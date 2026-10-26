@@ -1520,12 +1520,16 @@ tendencias de Evolución permanece pendiente.
 > navegación común no quedan aprobadas por esta valoración inicial. Se mantiene
 > el descarte de las cuatro maquetas anteriores.
 
-La entrada previa a este Inicio se concreta e implementa en UX-ENTRY-003:
-[bienvenida y continuidad de invitaciones](FIRST_ACCESS.md). Es una pantalla
-independiente de orientación, recuperable desde Perfil; no modifica esta
-composición ni añade destinos persistentes distintos según usuario. El acceso
-a Herramientas se refuerza desde las cabeceras principales. Las cuatro maquetas
-exploratorias descartadas siguen fuera del diseño aprobado.
+> **Descarte de la implementación · 26/10/2026 (UX-ENTRY-003).** Tras recibir
+> el bloque de bienvenida de `a99ae39b`, Javier indica que no le gusta y pide
+> volver a lo anterior. Se revierte íntegramente ese commit y se recuperan
+> Inicio, Herramientas, Perfil e invitaciones anteriores. Los criterios de
+> UX-ENTRY-002 quedan como contexto de la propuesta retirada, sin autorización
+> para reintroducirla. Una alternativa nueva queda pendiente de acuerdo.
+> Validación de la reversión: código de aplicación, pruebas y herramientas
+> idénticos a `12c6ad3d`; `flutter analyze --no-pub` sin incidencias y batería
+> completa con 1.379 pruebas superadas y una omisión existente. La instalación
+> en iPhone requiere descargar esta reversión en el Mac y volver a compilar.
 
 Inicio mantiene este orden:
 

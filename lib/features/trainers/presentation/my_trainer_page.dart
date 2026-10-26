@@ -5,7 +5,6 @@ import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_followup_codec.dart';
 import 'package:go_router/go_router.dart';
 import 'package:workout_core/professional_assessment.dart';
-import 'package:entrenaop/features/welcome/domain/entry_navigation.dart';
 
 class MyTrainerPage extends StatefulWidget {
   const MyTrainerPage({
@@ -15,16 +14,12 @@ class MyTrainerPage extends StatefulWidget {
     this.assessments,
     this.onOpenConversation,
     this.calendarSharing,
-    this.initialInvitation,
-    this.onInvitationAccepted,
   });
   final TrainerRepository repository;
   final TrainerStudentFormRepository? forms;
   final ProfessionalAssessmentStudentRepository? assessments;
   final ValueChanged<String>? onOpenConversation;
   final TrainerCalendarSharingRepository? calendarSharing;
-  final String? initialInvitation;
-  final Future<void> Function()? onInvitationAccepted;
   @override
   State<MyTrainerPage> createState() => _MyTrainerPageState();
 }
@@ -44,33 +39,8 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
   @override
   void initState() {
     super.initState();
-    _secret.text = widget.initialInvitation ?? '';
-    _loadInitialInvitation();
+    _refresh();
   }
-
-  Future<void> _loadInitialInvitation() async {
-    await _refresh();
-    if (mounted && widget.initialInvitation != null && _loaded) {
-      await _previewInvitation();
-    }
-  }
-
-  Future<void> _previewInvitation() => _run(() async {
-    final code = trainerInvitationCode(_secret.text);
-    if (code == null) {
-      setState(
-        () => _error =
-            'Pega el código completo o un enlace de invitación válido.',
-      );
-      return;
-    }
-    final preview = await widget.repository.preview(code);
-    if (!mounted) return;
-    setState(() {
-      _secret.text = code;
-      _preview = preview;
-    });
-  });
 
   @override
   void dispose() {
@@ -339,16 +309,28 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                   enabled: !_busy,
                   autocorrect: false,
                   enableSuggestions: false,
-                  maxLength: 512,
+                  maxLength: 64,
                   decoration: const InputDecoration(
                     labelText: 'Código de invitación',
-                    counterText: '',
-                    hintText: 'Pega el código o enlace que te ha enviado',
+                    hintText: 'Pega el código que te ha enviado',
                   ),
                   onChanged: (_) => setState(() => _preview = null),
                 ),
                 FilledButton.icon(
-                  onPressed: _busy ? null : _previewInvitation,
+                  onPressed: _busy
+                      ? null
+                      : () => _run(() async {
+                          final code = _secret.text.trim();
+                          if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(code)) {
+                            setState(
+                              () => _error =
+                                  'Pega el código completo de 64 caracteres.',
+                            );
+                            return;
+                          }
+                          final preview = await widget.repository.preview(code);
+                          if (mounted) setState(() => _preview = preview);
+                        }),
                   icon: const Icon(Icons.person_search_outlined),
                   label: const Text('Ver invitación'),
                 ),
@@ -393,9 +375,6 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                                       _notice = 'Vínculo aceptado.';
                                     });
                                     await _load();
-                                    if (mounted) {
-                                      await widget.onInvitationAccepted?.call();
-                                    }
                                   }),
                             child: const Text('Aceptar y vincularme'),
                           ),

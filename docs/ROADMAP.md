@@ -1,14 +1,5 @@
 # Roadmap de EntrenaOP
 
-**UX-ENTRY-003 · 26/10/2026 · primer acceso implementado, aceptación física
-pendiente:** bienvenida de una sola vez, omisión y reapertura, acceso visible a
-Herramientas y continuidad de invitación con aceptación explícita, reutilizando
-Inicio, preparaciones y Trainer. No modifica algoritmos, FAS, cuotas o permisos.
-La validación y las capturas corresponden al código local; no acreditan una
-instalación móvil o publicación remota nueva. **Único siguiente paso de este
-recorrido:** instalar esta revisión en iPhone y comprobar entrada, omisión,
-reapertura y aceptación de un código real. [Contrato y evidencia](FIRST_ACCESS.md).
-
 **INT-017 · 26/10/2026 · vinculación privada en validación Dev:** diseño aprobado,
 contrato SQL aplicado y endpoint privado desplegado/verificado. Perfil → Garmin
 permite revisar/confirmar código y revocar; perder Pro y servicio bloquea uso,

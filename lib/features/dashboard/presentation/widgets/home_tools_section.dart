@@ -60,12 +60,7 @@ class HomeToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Herramientas'),
-      leading: BackButton(
-        onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
-      ),
-    ),
+    appBar: AppBar(title: const Text('Herramientas para tus pruebas')),
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Center(
