@@ -14,6 +14,8 @@ on:
       - 'analysis_options.yaml'
       - 'tools/static_web_release.py'
       - 'tools/static_web_deploy.py'
+      # La validación del publicador también comprueba el alcance de las copias.
+      - 'admin_app/tool/dev_restore_drill.py'
       - '.github/workflows/trainer-dev.yml'
   workflow_dispatch:
 

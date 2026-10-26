@@ -13,7 +13,7 @@ y el admin sigue mostrando que no existe evidencia verificada.
 
 La copia contiene roles sin contraseñas, su inventario gestionado, esquema y datos de `public`, `auth`,
 `storage`, `admin_ops_private`, `trainer_private`, `editor_private`,
-`device_private`, `admin_work_private` y `supabase_migrations`, las
+`device_private`, `admin_work_private`, `push_private`, `profile_private` y `supabase_migrations`, las
 extensiones necesarias, migraciones del repositorio y los archivos reales de
 Storage, incluidos los privados. Los nombres originales de objetos se guardan
 en un índice dentro del cifrado; en disco se usan nombres derivados por hash.

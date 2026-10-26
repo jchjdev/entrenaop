@@ -42,6 +42,25 @@ La petición fija propietario y token. Las respuestas tras cambiar de cuenta no
 se aplican a otra identidad. El diálogo conserva el borrador tras un error y la
 confirmación actualiza AuthCubit sin cerrar sesión ni sustituir permisos.
 
+## Recorrido de prueba
+
+1. Recargar Trainer y abrir «Para mí» en la barra lateral o en Alumnos. En una
+   pantalla estrecha también está en Más. La primera apertura confirma la ficha
+   propia; las siguientes recuperan la misma identidad y planificación.
+2. Pautar una sesión desde la biblioteca o un programa con sus fechas. La ficha
+   y la agenda general de Trainer muestran las mismas citas. El contador comercial
+   mantiene las plazas ocupadas por alumnos externos.
+3. Abrir la app del deportista con ese mismo usuario y consultar Inicio/agenda.
+   Realizar la cita y cerrar su resultado; consultar Resultados en «Para mí».
+   Es una planificación real: si la cuenta tiene activada sincronización automática
+   de Garmin, las recetas compatibles siguen ese mismo circuito autorizado.
+4. En la app actualizada, Perfil → Cambiar nombre → Guardar nombre. La cabecera
+   refleja la confirmación y el nombre se conserva al volver a iniciar sesión.
+
+La autoasignación permite probar contenido y ejecución sin otra cuenta. Para
+ensayar invitaciones, conversación y aislamiento entre personas hacen falta
+identidades distintas; esos límites se verifican también con los contratos SQL.
+
 ## Verificación y distribución
 
 Migraciones `20261026060150` y `20261026060153` aplicadas en Supabase Dev;
@@ -61,6 +80,11 @@ anónimos ni escritura directa de vínculos. Cero usuarios de ensayo persistente
 - UI: reintento sin navegar antes de confirmar, borrador de nombre conservado,
   respuesta tardía tras cerrar sesión descartada y menú compacto sin desplazar
   los accesos habituales. «Para mí» no es una simulación de aislamiento externo.
+
+La primera validación de publicación detectó que faltaba `profile_private` en
+`BACKUP_SCHEMAS`; se incorpora a la copia/restauración existente y se conserva
+la prueba que exige cubrir todos los esquemas declarados. Trainer sigue también
+esa dependencia en su disparo de CI. No cambia cifrado, permisos ni destino.
 
 Publicación automática y comprobación HTTPS/Chrome pendientes de registrar. No
 se han dejado sesiones ni mensajes de ensayo en cuentas reales. El nombre editable
