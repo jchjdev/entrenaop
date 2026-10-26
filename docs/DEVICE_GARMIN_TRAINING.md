@@ -453,3 +453,31 @@ desde la app y la conexión quedó `connected`, con ambos permisos confirmados.
 No se activó por escritura directa ni se trasladaron concesiones entre cuentas.
 No hay evidencia suficiente para atribuir el 403 transitorio a una causa del
 proveedor. No fue necesario modificar el protocolo de conexión.
+
+### Títulos propios: comprobación directa del 26/10/2026
+
+Javier solicita corregir los títulos «Ir» y señala después que no puede conectar
+el fēnix por USB en ese momento. No se presenta la recepción anterior como
+solución completa de los nombres. Dos comprobaciones aisladas contra Training
+API V2 envían un nombre libre en `exerciseName`, con categoría UNKNOWN y sin
+categoría. Garmin acepta ambos entrenamientos, pero el GET devuelve ese nombre
+como NULL en los dos casos. El paso de control con CURL/DUMBBELL_HAMMER_CURL
+conserva la equivalencia nativa. Son pruebas sin fecha ni modificación de la cita
+del alumno; no justifican inventar equivalencias para sus variantes.
+
+Se prepara localmente un archivo FIT de la receta original usando el SDK oficial
+ya fijado en el proyecto: treinta y nueve pasos, dieciséis títulos propios,
+WORKOUT_STEP y EXERCISE_TITLE (mensaje 264) con categoría UNKNOWN, claves únicas
+y coincidentes, y títulos después de los pasos. Lectura posterior con el SDK
+comprueba CRC, nombres, notas y dosis. TIME se codifica en milisegundos en
+durationValue y se verifica como duración en segundos; REPS conserva el entero.
+El archivo y la rutina son privados y no se versionan en Git. No se incorpora
+otro editor, una equivalencia ficticia ni un endpoint de exportación sin uso.
+
+El SDK confirma el contenido del FIT, no su presentación física. Su carga
+directa y aceptación en el fēnix quedan pendientes de disponer del dispositivo.
+No hay una solución inalámbrica acreditada de títulos arbitrarios por la API
+JSON consultada; no se ofrece la carga manual de un archivo como si corrigiera
+el envío automático de la plataforma. Para producto quedan dos tareas distintas:
+asociaciones explícitas de catálogo cuando exista equivalencia exacta y una vía
+verificada para títulos propios que no obligue al alumno a cambiar sus ejercicios.
