@@ -15,6 +15,7 @@ class GarminConnectionPage extends StatefulWidget {
     this.onOpenTraining,
     this.onOpenActivities,
     this.syncRepository,
+    this.onOpenCiq,
   });
   final GarminConnectionRepository repository;
   final Future<bool> Function(Uri) openAuthorization;
@@ -22,6 +23,7 @@ class GarminConnectionPage extends StatefulWidget {
   final VoidCallback? onOpenTraining;
   final VoidCallback? onOpenActivities;
   final TrainingSyncRepository? syncRepository;
+  final VoidCallback? onOpenCiq;
   @override
   State<GarminConnectionPage> createState() => _GarminConnectionPageState();
 }
@@ -228,6 +230,12 @@ class _GarminConnectionPageState extends State<GarminConnectionPage>
               icon: const Icon(Icons.refresh),
               label: const Text('Actualizar estado'),
             ),
+            if (widget.onOpenCiq != null)
+              OutlinedButton.icon(
+                onPressed: state.busy ? null : widget.onOpenCiq,
+                icon: const Icon(Icons.watch_outlined),
+                label: const Text('Vincular la app EntrenaOP del reloj'),
+              ),
           ],
         );
       },

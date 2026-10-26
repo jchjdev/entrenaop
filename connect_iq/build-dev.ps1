@@ -28,9 +28,21 @@ New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 $suffix = if ($Test) { '-tests' } else { '' }
 $outputFile = Join-Path $outputDir "entrenaop-dev-$Device$suffix.prg"
 $jungle = if ($Test) { 'tests.jungle' } else { 'monkey.jungle' }
+$debugOriginal = Join-Path $SdkPath 'bin/api.debug.xml'
+$debugImport = Join-Path $repo '.dart_tool/ciq-dev/api.local.debug.xml'
+if (Test-Path -LiteralPath $debugOriginal) {
+    # El SDK contiene rutas internas T:\ del equipo de Garmin. Si esa letra es
+    # una unidad remota local, Java intenta resolver miles de fuentes ajenas.
+    # Reubicar solo esas referencias de depuración en una copia, sin tocar el SDK.
+    $debugSources = Join-Path $repo '.dart_tool/ciq-dev/sdk-source'
+    New-Item -ItemType Directory -Force -Path $debugSources | Out-Null
+    $debugText = [System.IO.File]::ReadAllText($debugOriginal).Replace('filename="T:\', 'filename="' + ($debugSources.Replace('\', '/') + '/'))
+    [System.IO.File]::WriteAllText($debugImport, $debugText, [System.Text.UTF8Encoding]::new($false))
+}
 $compilerArgs = @('-Xms1g', '-Dfile.encoding=UTF-8', '-cp', $compiler, 'com.garmin.monkeybrains.Monkeybrains',
     '-f', (Join-Path $PSScriptRoot $jungle), '-d', $Device, '-y', $DeveloperKeyPath, '-o', $outputFile, '-l', '3', '-w')
 if ($Test) { $compilerArgs += '-t' }
+if (Test-Path -LiteralPath $debugImport) { $compilerArgs += @('-i', $debugImport) }
 & $JavaPath @compilerArgs
 if ($LASTEXITCODE -ne 0) { throw "La compilación Connect IQ ha fallado ($LASTEXITCODE)." }
 Get-FileHash -LiteralPath $outputFile -Algorithm SHA256

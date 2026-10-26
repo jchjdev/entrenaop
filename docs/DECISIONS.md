@@ -1,5 +1,21 @@
 # Registro de decisiones vigentes
 
+**INT-017 · 26/10/2026 · cuenta y entrega privada Connect IQ aprobadas:** Javier
+aprueba explícitamente implementar el diseño en Dev: código de ocho caracteres
+válido diez minutos, revisión y confirmación desde la sesión de EntrenaOP,
+credencial propia del reloj revocable de 90 días y máximo cinco relojes activos.
+Solo sesiones propias compatibles de fuerza desde ayer hasta los próximos 14
+días; comprobar permiso comercial, acceso a la fuente y revisión en servidor.
+Reafirma que sin Pro ni servicio de entrenador activo no se puede vincular,
+descargar ni sincronizar con Garmin. Conservar la gestión y revocación de
+permisos no concede uso. Los FIT ya importados en la biblioteca nativa pueden
+seguir disponibles fuera de EntrenaOP: no existe bloqueo remoto de esas copias.
+Actualizar al abrir y mediante Actualizar; la consulta opcional cada 15 minutos
+solo detecta cambios, está desactivada por defecto y no importa ni borra FIT.
+Sin secretos administrativos o tokens Garmin en el reloj. Implementación Dev y
+pruebas automáticas en curso; aceptación física privada y publicación pendientes.
+[Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
+
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
 Javier autoriza la app complementaria y confirma físicamente el primer tramo
 con EntrenaOP Dev 0.2: descarga sin USB, instalación propia, apertura en Fuerza,

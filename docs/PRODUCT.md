@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**Connect IQ privado · 26/10/2026 · INT-017 en validación Dev:** vinculación
+con código y confirmación de cuenta en Perfil → Garmin, credencial revocable de
+90 días y sesiones compatibles de fuerza entre ayer y los próximos 14 días.
+Sin Pro ni servicio de entrenador vigente se bloquean vinculación, descargas y
+sincronización; sigue disponible retirar permisos. Las copias ya importadas
+pueden seguir en la biblioteca nativa del reloj. Servidor y pruebas automáticas
+verificados, PRG 1.0 instalado; aceptación física privada y Store pendientes.
+[Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
+
 **Connect IQ · 26/10/2026 · primer transporte aceptado en Dev:** una app
 complementaria de ensayo descarga una muestra FIT y la abre en Fuerza nativa del
 fēnix 8, conservando nombres propios, notas, dosis y descansos. Javier lo confirma

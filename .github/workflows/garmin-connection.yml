@@ -9,6 +9,7 @@ on:
       - 'supabase/functions/_shared/device_activity/**'
       - 'supabase/functions/garmin-activities/**'
       - 'supabase/functions/garmin-ciq-probe/**'
+      - 'supabase/functions/garmin-ciq/**'
       - 'supabase/functions/garmin-activity-ingest/**'
       - 'supabase/functions/package.json'
       - 'supabase/functions/pnpm-lock.yaml'
@@ -16,6 +17,8 @@ on:
       - 'supabase/tests/garmin_activity_return.sql'
       - 'supabase/tests/garmin_strength_roundtrip.sql'
       - 'supabase/migrations/*garmin_strength*'
+      - 'supabase/migrations/*garmin_ciq*'
+      - 'supabase/tests/garmin_ciq_account_and_downloads.sql'
       - 'supabase/functions/garmin-training/**'
       - 'supabase/functions/garmin-training-sync/**'
       - 'supabase/functions/garmin-connection/**'
@@ -71,6 +74,7 @@ jobs:
           supabase/functions/_shared/garmin/training.ts
           supabase/functions/_shared/garmin/strength_fit.ts
           supabase/functions/_shared/garmin/ciq_probe.ts
+          supabase/functions/_shared/garmin/ciq_http.ts
           supabase/functions/_shared/garmin/training_http.ts
           supabase/functions/_shared/device_training/prescription.ts
           supabase/functions/_shared/device_training/strength.ts

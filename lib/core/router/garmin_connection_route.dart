@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/device_connections/data/supabase_garmin_connection_repository.dart';
 import '../../features/device_connections/presentation/garmin_connection_page.dart';
+import '../../features/device_connections/data/supabase_ciq_connection_repository.dart';
+import '../../features/device_connections/presentation/ciq_connection_page.dart';
 import '../../features/device_training/data/supabase_training_delivery_repository.dart';
 import '../../features/device_training/presentation/training_delivery_page.dart';
 import '../../features/device_activity_results/data/supabase_activity_result_repository.dart';
@@ -28,6 +30,23 @@ class GarminConnectionRoute extends StatelessWidget {
     onOpenPro: () => context.push('/pro/subscription'),
     onOpenTraining: () => context.push('/profile/garmin-training'),
     onOpenActivities: () => context.push('/profile/garmin-activities'),
+    onOpenCiq: () => context.push('/profile/garmin-ciq'),
+  );
+}
+
+class GarminCiqRoute extends StatelessWidget {
+  const GarminCiqRoute({
+    super.key,
+    required this.client,
+    required this.ownerId,
+  });
+  final SupabaseClient client;
+  final String ownerId;
+  @override
+  Widget build(BuildContext context) => CiqConnectionPage(
+    key: ValueKey(ownerId),
+    repository: SupabaseCiqConnectionRepository(client, ownerId),
+    accountLabel: client.auth.currentUser?.email ?? 'Tu cuenta de EntrenaOP',
   );
 }
 

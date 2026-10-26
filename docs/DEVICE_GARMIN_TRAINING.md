@@ -658,3 +658,81 @@ móvil en segundo plano, límites de ejecución, interrupciones, cambios y retir
 No convertir el mínimo temporal de cinco minutos en sondeo permanente ni prometer
 recepción inmediata sin conectividad. El puente no es aún requisito general del
 producto ni se anuncia en Flutter como una integración personal disponible.
+
+## Cuenta y entrega privada · INT-017 · 26/10/2026
+
+Javier aprueba expresamente este diseño en Dev. La app del reloj obtiene un
+código aleatorio de ocho caracteres válido diez minutos. En **Perfil → Garmin →
+Vincular app EntrenaOP del reloj**, el usuario introduce el código, revisa el
+dispositivo y la cuenta y confirma. Introducir el código no autoriza por sí solo.
+La concesión dura 90 días, se puede revocar y admite cinco relojes activos.
+El reloj conserva su credencial aleatoria de 256 bits; PostgreSQL solo su hash.
+No recibe contraseña de EntrenaOP, JWT de usuario, tokens Garmin o claves de servidor.
+
+### Autorización y datos
+
+`garmin-ciq` es un endpoint distinto del ensayo anónimo. Solo funciona con URL
+exacta Dev y `GARMIN_ENVIRONMENT=DEVELOPMENT`. `/account` verifica el JWT, su
+sesión y la cuenta esperada; `/watch` y `/fit/<uuid>` verifican la credencial del
+reloj. No se admiten credenciales en URL ni recetas del cliente. Las tablas
+`device_private.ciq_links`, `ciq_limits` y `ciq_exports` no conceden acceso directo
+a clientes o `service_role`. La fachada invoker solo es ejecutable por el servidor.
+RLS sin políticas en estas tablas es intencional; la autoridad reside en comandos
+privados con `search_path` vacío, comprobación de propietario y límites de intentos.
+
+El permiso sigue siendo **Pro o servicio de entrenador activo**. Javier reafirma
+que, sin ambos, se impiden vinculación, nuevas descargas y sincronización; solo se
+conserva la consulta y retirada de los permisos propios. La credencial de 90 días
+no sustituye esta comprobación. El servidor verifica el permiso y la revisión en
+cada descarga; el reloj vuelve a pedir un manifiesto autorizado antes de abrir
+una copia desde EntrenaOP. No abre versiones retiradas o revisiones anteriores.
+Los FIT ya importados pueden seguir disponibles en la biblioteca nativa fuera de
+EntrenaOP; no se promete bloqueo remoto ni se borran automáticamente.
+
+Se consultan citas propias pendientes de ayer a los próximos 14 días, con límite
+de 30 candidatas y manifiesto completo. Se reutiliza `training_source` y la
+instantánea de fuerza autorizada, incluida la biblioteca privada del entrenador.
+Solo se exporta lo compatible con el generador FIT. Las revisiones tienen
+identidad inmutable y un número de serie estable: repetir la misma revisión
+reutiliza exportación y nombre nativo. Otra cuenta, cancelación, cambio de fuente,
+revisión obsoleta o pérdida de acceso invalidan su descarga. La fuerza propia del
+entrenador sigue los permisos de la fuente existente, sin crear otra excepción.
+
+### Reloj y alcance de actualización
+
+EntrenaOP Dev 1.0 actualiza al abrir y desde **Actualizar**, consulta únicamente
+sus propios `getAppWorkouts()` y recupera importaciones terminadas antes de una
+interrupción por el nombre único de exportación. Un manifiesto parcial, HTTP 200
+sin copia confirmada o error de red no habilitan la apertura. El aviso tras 60 s
+permite esperar o salir y conserva la respuesta tardía, sin invitar a repetir.
+
+La comprobación cada 15 minutos está desactivada por defecto; solo se registra
+si el usuario la activa en el menú del reloj. Consulta una huella y cantidades,
+sin nombres ni recetas, y marca cambios pendientes. No descarga FIT en segundo
+plano, no borra contenido y no acredita recepción inmediata. Ante 401/403 deja de
+consultar por red. El sistema puede terminar el servicio y limita cada ejecución
+a 30 s; `Timer` no está disponible en ese ámbito. Referencia oficial:
+[servicios en segundo plano de Garmin](https://developer.garmin.com/connect-iq/articles/core-topics/Backgrounding.html).
+
+### Evidencia y pendientes de aceptación
+
+- Migración `20261026123737` aplicada en Dev y cotejada con el historial.
+  Contrato SQL transaccional correcto con ROLLBACK: consentimiento, cuenta/sesión,
+  propietario, revisiones, retirada, cinco relojes, pérdida de servicio sin Pro,
+  caducidad y revocación. Regresión de `garmin_strength_roundtrip` correcta.
+- 173 pruebas de servidor correctas y tipos estrictos. HTTPS Dev confirma versión
+  `ciq-private-1`, FIT sin credencial 401, reloj pendiente sin entrega 403 y retirada
+  de la concesión de ensayo. Ningún aviso de seguridad nuevo; los tres INFO nuevos
+  corresponden a las tablas privadas cerradas sin políticas públicas.
+- `flutter analyze` limpio; batería completa raíz: 1.379 correctas y una omisión
+  existente. Tras la aclaración comercial, 14 pruebas de conexiones correctas.
+  Compilador Monkey C estricto sin avisos y ocho regresiones en simulador.
+- PRG 1.0 de 122.508 bytes copiado al fēnix de Javier y releído por MTP con SHA-256
+  `982073011a5d9e6db2caebf1b8031c9826b3c3e619d968b81cbab9438dfadbb2`.
+  Esta copia no acredita todavía la vinculación ni la presentación física privada.
+
+La aceptación pendiente es **código del reloj → confirmación con cuenta real →
+sesión privada vigente → Fuerza nativa**, repetición sin duplicar y bloqueo después
+de cambio/retirada/revocación. La ejecución en background, otros modelos y Connect
+IQ Store siguen pendientes; la distribución actual es sideload Dev por USB una
+vez, y después FIT inalámbrico. El retorno continúa por el contrato Garmin existente.

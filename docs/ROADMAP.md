@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**INT-017 · 26/10/2026 · vinculación privada en validación Dev:** diseño aprobado,
+contrato SQL aplicado y endpoint privado desplegado/verificado. Perfil → Garmin
+permite revisar/confirmar código y revocar; perder Pro y servicio bloquea uso,
+conservando solo gestión de permisos. App 1.0 copiada/releída en fēnix, con espera
+corregida y apertura condicionada a manifiesto actual. Análisis limpio, 1.379
+pruebas raíz y una omisión existente, 173 servidor, ocho Monkey C; contratos SQL
+con ROLLBACK correctos y sin avisos nuevos. **El bloque sigue abierto:** aceptar
+cuenta real → sesión privada → Fuerza y reintentos/cambio/revocación físicos antes
+de declarar completo el recorrido. Store, otros relojes y background físico
+siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
+[Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
+
 **INT-016 · 26/10/2026 · primer tramo Connect IQ cerrado en Dev:** muestra
 sintética → descarga inalámbrica → instalación propia → apertura en Fuerza nativa
 con nombres/notas, repeticiones, carga, isométrico y descansos correctos, aceptado

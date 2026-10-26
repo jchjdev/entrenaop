@@ -3,7 +3,7 @@ import type {FileIdMesg, WorkoutMesg, WorkoutStepMesg, ExerciseTitleMesg} from '
 import {TrainingError} from '../device_training/prescription.ts';
 import {strengthPrescription} from '../device_training/strength.ts';
 
-export type WorkoutFileIdentity = {serialNumber: number; createdAt: Date};
+export type WorkoutFileIdentity = {serialNumber: number; createdAt: Date; workoutName?: string};
 const fitEpoch = Date.UTC(1989, 11, 31);
 const utf8 = new TextEncoder();
 
@@ -35,6 +35,11 @@ export function garminStrengthFit(snapshot: unknown, identity: WorkoutFileIdenti
     }
   }
   fitText(prescription.name);
+  const workoutName = identity.workoutName ?? prescription.name;
+  if (typeof workoutName !== 'string' || !workoutName.trim() || /[\u0000-\u001f]/u.test(workoutName)) {
+    throw new TrainingError('unsupported_prescription');
+  }
+  fitText(workoutName);
   fitText(prescription.description);
   for (const step of prescription.steps) {
     fitText(step.description);
@@ -54,7 +59,7 @@ export function garminStrengthFit(snapshot: unknown, identity: WorkoutFileIdenti
   encoder.onMesg(Profile.MesgNum.FILE_ID, fileId);
   const workout: WorkoutMesg = {
     sport: 'training', subSport: 'strengthTraining',
-    numValidSteps: prescription.steps.length, wktName: prescription.name,
+    numValidSteps: prescription.steps.length, wktName: workoutName,
     ...(prescription.description ? {wktDescription: prescription.description} : {}),
   };
   encoder.onMesg(Profile.MesgNum.WORKOUT, workout);

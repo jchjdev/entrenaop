@@ -426,6 +426,11 @@ import_map = "./functions/garmin-activities/deno.json"
 verify_jwt = false
 import_map = "./functions/garmin-ciq-probe/deno.json"
 
+# JWT de cuenta verificado contra Auth; reloj mediante capacidad privada revocable.
+[functions.garmin-ciq]
+verify_jwt = false
+import_map = "./functions/garmin-ciq/deno.json"
+
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 

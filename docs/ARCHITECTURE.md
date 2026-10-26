@@ -1,5 +1,15 @@
 # Arquitectura de EntrenaOP
 
+**Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la
+cuenta y capacidad propia del reloj; fachada de servidor sobre tablas privadas
+cerradas, hashes de credenciales/códigos y exportaciones inmutables por revisión.
+Reutiliza `garmin_access`, `training_source`, instantánea y generador FIT; valida
+permiso y revisión en cada descarga. Flutter confirma el código, lista y revoca
+con cuenta esperada. El reloj exige manifiesto vigente antes de abrir en Fuerza,
+sin borrado automático. Background opcional solo consulta huella de cambios.
+Aplicado en Dev, pruebas correctas; aceptación física privada pendiente.
+[Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
+
 **Connect IQ · 26/10/2026 · puente FIT sintético aislado:** `connect_iq/` descarga
 mediante Communications FIT y valida identidad/nombre en `getAppWorkouts()` antes
 de abrir el intent nativo. `garmin-ciq-probe` solo sirve una muestra fija en Dev,
