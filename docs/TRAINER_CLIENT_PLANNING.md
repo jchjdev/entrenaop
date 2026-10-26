@@ -352,3 +352,11 @@ regresiones del arrastre a agenda, conservación de alumno/fecha/indicaciones,
 cambio explícito de sesión y ausencia de consulta redundante. También se conservan
 las comprobaciones existentes de reintento y texto ampliado a 320 y 1200 px.
 La publicación automática de Trainer Dev se comprueba por separado de las pruebas.
+
+
+Publicación comprobada el 26/10/2026: commit funcional
+`a8f757596a0ab716c76034907ff430a219f78889`; run Trainer Dev `40380353345`,
+validación y despliegue correctos. El manifiesto HTTPS confirma esa revisión,
+release `a8f757596a0ab716c76034907ff430a219f78889-40380353345-1` y Supabase Dev
+`sxbxfjqgoddzhtcyhalw`; el verificador comprueba además recursos y hashes remotos.
+Pasan las 249 pruebas Trainer y `flutter analyze`, sin cambios de ADMIN o servidor.
