@@ -481,3 +481,20 @@ JSON consultada; no se ofrece la carga manual de un archivo como si corrigiera
 el envío automático de la plataforma. Para producto quedan dos tareas distintas:
 asociaciones explícitas de catálogo cuando exista equivalencia exacta y una vía
 verificada para títulos propios que no obligue al alumno a cambiar sus ejercicios.
+
+### Copia directa al fēnix · 26/10/2026
+
+Javier conecta después el fēnix 8 al Windows y autoriza continuar la prueba.
+El equipo lo detecta como dispositivo portátil MTP. Se genera otra copia FIT
+desde la revisión privada con descansos: treinta y nueve series de trabajo,
+treinta y ocho pasos de recuperación y dieciséis títulos propios. El nombre
+de la copia permite distinguirla del entrenamiento recibido por Connect.
+La decodificación con el SDK verifica CRC, referencias de título, notas, dosis
+y setenta y siete pasos totales, dentro del límite de cien pasos.
+
+La copia se deposita en Internal Storage/GARMIN/NewFiles, con nombre de archivo
+nuevo. La relectura desde el dispositivo contiene 7.050 bytes y coincide por
+SHA-256 con el archivo preparado. La recepción por MTP queda comprobada;
+el procesamiento tras desconectar y los títulos en pantalla requieren todavía
+la observación del usuario. Este ensayo no acredita que Training API JSON pueda
+transportar esos títulos por la sincronización inalámbrica.
