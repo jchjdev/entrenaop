@@ -1,5 +1,12 @@
 # Espacio de entrenadores
 
+## Planificación propia · TRN-033 · 26/10/2026
+
+«Para mí» reutiliza la ficha y la planificación para asignarse sesiones/programas
+con la misma cuenta del deportista, sin plaza comercial ni preparador externo.
+La app permite editar el nombre desde Perfil en su nueva build.
+[Contrato y evidencia](TRAINER_SELF_TRAINING.md).
+
 ## Escritorio profesional · TRN-030 · 25/10/2026
 
 Publicado y verificado en ambos portales Dev desde `6fe1d35c`: pasada visual

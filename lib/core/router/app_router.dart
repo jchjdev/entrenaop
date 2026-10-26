@@ -1018,8 +1018,11 @@ class AppRouter {
         ),
         materialAppRoute(
           path: '/profile',
-          builder: (context, state) =>
-              ProfilePage(preparations: sl(), birthDateRepository: sl()),
+          builder: (context, state) => ProfilePage(
+            preparations: sl(),
+            birthDateRepository: sl(),
+            nameRepository: sl(),
+          ),
           routes: [
             materialAppRoute(
               path: 'trainer',

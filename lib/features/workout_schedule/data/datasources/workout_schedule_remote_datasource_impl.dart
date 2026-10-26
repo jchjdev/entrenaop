@@ -47,6 +47,7 @@ class WorkoutScheduleRemoteDataSourceImpl
         .map((r) => r['id'] as String)
         .toList();
     final names = <String, String>{};
+    final selfAssigned = <String>{};
     for (var start = 0; start < ids.length; start += 200) {
       final end = (start + 200).clamp(0, ids.length);
       final value = await authenticatedTrainerRpc(
@@ -57,9 +58,18 @@ class WorkoutScheduleRemoteDataSourceImpl
       ) as List;
       for (final item in value.cast<Map>()) {
         names[item['id'] as String] = item['trainer_name'] as String;
+        if (item['is_self'] == true) selfAssigned.add(item['id'] as String);
       }
     }
-    return rows.map((r) => {...r, 'trainer_name': ?names[r['id']]}).toList();
+    return rows
+        .map(
+          (r) => {
+            ...r,
+            'trainer_name': ?names[r['id']],
+            'is_self': selfAssigned.contains(r['id']),
+          },
+        )
+        .toList();
   }
 
   @override

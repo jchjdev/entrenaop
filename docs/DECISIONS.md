@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** Javier aprueba asignarse
+sesiones/programas privados con su misma cuenta, sin plaza, y editar el nombre
+desde Perfil. La vinculación interna propia se excluye del cupo comercial y del
+máximo de preparadores externos; sin invitación ni conversación consigo mismo.
+Reutiliza agenda, ejecución, resultados, versiones y protecciones. El nombre es
+presentación validada, sin cambiar correo ni derechos. Implementado, aplicado y
+validado en Dev; publicación web y distribución móvil se acreditan aparte.
+[Contrato y evidencia](TRAINER_SELF_TRAINING.md).
+
+
 **TRN-031 · ajuste del 25/10/2026 · borrar tras retirada confirmada de Garmin:**
 Javier aclara que el recibo histórico no debe impedir quitar sesiones de prueba.
 Se permite borrar la cita propia retirada sin ejecución/resultados cuando Garmin

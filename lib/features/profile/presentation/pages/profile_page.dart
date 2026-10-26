@@ -5,6 +5,8 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
+import 'package:entrenaop/features/profile/presentation/edit_profile_name.dart';
 import 'package:entrenaop/features/profile/domain/age_on_date.dart';
 import 'package:entrenaop/features/profile/presentation/choose_birth_date.dart';
 import 'package:entrenaop/features/profile/presentation/widgets/app_build_info_tile.dart';
@@ -18,10 +20,12 @@ class ProfilePage extends StatefulWidget {
     super.key,
     required this.preparations,
     required this.birthDateRepository,
+    this.nameRepository,
   });
 
   final PreparationGoalRepository preparations;
   final ProfileBirthDateRepository birthDateRepository;
+  final ProfileNameRepository? nameRepository;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -32,6 +36,21 @@ class _ProfilePageState extends State<ProfilePage> {
       .getActiveGoals();
   late Future<DateTime?> _birthDate = widget.birthDateRepository.get();
   bool _savingBirthDate = false;
+
+  Future<void> _editName() async {
+    final auth = context.read<AuthCubit>();
+    final state = auth.state;
+    final repository = widget.nameRepository;
+    if (state is! AuthAuthenticated || repository == null) return;
+    final owner = state.user.id;
+    final saved = await editProfileName(
+      context,
+      current: state.user.fullName ?? '',
+      save: (name) => repository.save(owner, name),
+    );
+    if (!mounted || saved == null) return;
+    auth.profileNameSaved(owner, saved);
+  }
 
   Future<void> _editBirthDate(DateTime? current) async {
     final chosen = await chooseBirthDate(context, current: current);
@@ -136,6 +155,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
+                                    if (user != null &&
+                                        widget.nameRepository != null)
+                                      TextButton.icon(
+                                        onPressed: _editName,
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 16,
+                                        ),
+                                        label: const Text('Cambiar nombre'),
+                                      ),
                                     if (user != null) ...[
                                       const SizedBox(height: 4),
                                       Text(

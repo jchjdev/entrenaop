@@ -32,11 +32,13 @@ class TrainerAccess {
 class TrainerRelation {
   TrainerRelation.fromJson(Json json)
     : id = json['id'] as String,
+      isSelf = json['is_self'] == true,
       personId = json['person_id'] as String,
       name = json['person_name'] as String,
       acceptedAt = DateTime.parse(json['accepted_at'] as String),
       endedAt = _date(json['ended_at']);
   final String id, personId, name;
+  final bool isSelf;
   final DateTime acceptedAt;
   final DateTime? endedAt;
 }
@@ -46,6 +48,7 @@ enum TrainerClientState { active, inactive, archived }
 class TrainerClient {
   TrainerClient.fromJson(Json json)
     : personId = json['person_id'] as String,
+      isSelf = json['is_self'] == true,
       name = json['person_name'] as String,
       createdAt = DateTime.parse(json['created_at'] as String),
       updatedAt = DateTime.parse(json['updated_at'] as String),
@@ -55,6 +58,7 @@ class TrainerClient {
       activeRelationId = json['active_relation_id'] as String?,
       episodeCount = (json['episode_count'] as num).toInt();
   final String personId, name;
+  final bool isSelf;
   final String? activeRelationId;
   final DateTime createdAt, updatedAt, acceptedAt;
   final DateTime? endedAt, archivedAt;

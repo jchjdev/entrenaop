@@ -11,6 +11,7 @@ class TrainerShell extends StatefulWidget {
   static const destinations = [
     ('/home', 'Inicio', Icons.home_outlined),
     ('/clients', 'Alumnos', Icons.people_outline),
+    ('/self', 'Para mí', Icons.person_outline),
     ('/agenda', 'Agenda', Icons.calendar_month_outlined),
     ('/workouts', 'Sesiones', Icons.fitness_center),
     ('/programs', 'Programas', Icons.view_week_outlined),
@@ -34,6 +35,9 @@ class _TrainerShellState extends State<TrainerShell> {
   String get location => widget.location;
   Widget get child => widget.child;
   static const destinations = TrainerShell.destinations;
+  // Conserva los cuatro accesos habituales en pantallas estrechas. «Para mí»
+  // está en Más y no desplaza Sesiones al añadir una opción al escritorio.
+  static const compactDestinations = [0, 1, 3, 4];
 
   @override
   Widget build(BuildContext context) =>
@@ -61,6 +65,10 @@ class _TrainerShellState extends State<TrainerShell> {
         context: context,
         useRootNavigator: true,
         showDragHandle: true,
+        isScrollControlled: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * .85,
+        ),
         builder: (sheetContext) => SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -71,7 +79,10 @@ class _TrainerShellState extends State<TrainerShell> {
                 subtitle: const Text('Herramientas'),
                 onTap: () => Navigator.pop(sheetContext, -1),
               ),
-              for (var i = 4; i < destinations.length; i++)
+              for (final i in [
+                2,
+                for (var value = 5; value < destinations.length; value++) value,
+              ])
                 ListTile(
                   leading: Icon(destinations[i].$3),
                   title: Text(destinations[i].$2),
@@ -120,20 +131,20 @@ class _TrainerShellState extends State<TrainerShell> {
                     for (var i = 0; i < destinations.length; i++) ...[
                       if (const {
                         0: 'TU ESPACIO',
-                        3: 'BIBLIOTECA',
-                        6: 'SEGUIMIENTO',
-                        9: 'ORGANIZACIÓN',
-                        12: 'SERVICIO',
+                        4: 'BIBLIOTECA',
+                        7: 'SEGUIMIENTO',
+                        10: 'ORGANIZACIÓN',
+                        13: 'SERVICIO',
                       }.containsKey(i))
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10, 14, 10, 7),
                           child: Text(
                             const {
                               0: 'TU ESPACIO',
-                              3: 'BIBLIOTECA',
-                              6: 'SEGUIMIENTO',
-                              9: 'ORGANIZACIÓN',
-                              12: 'SERVICIO',
+                              4: 'BIBLIOTECA',
+                              7: 'SEGUIMIENTO',
+                              10: 'ORGANIZACIÓN',
+                              13: 'SERVICIO',
                             }[i]!,
                             style: const TextStyle(
                               fontSize: 10,
@@ -196,26 +207,34 @@ class _TrainerShellState extends State<TrainerShell> {
               for (var i = 0; i < 5; i++)
                 Expanded(
                   child: TextButton(
-                    onPressed: i == 4 ? more : () => go(i),
+                    onPressed: i == 4 ? more : () => go(compactDestinations[i]),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 2,
                         vertical: 8,
                       ),
                       backgroundColor:
-                          (i == selected || (i == 4 && selected >= 4))
+                          (i == 4
+                              ? !compactDestinations.contains(selected)
+                              : compactDestinations[i] == selected)
                           ? Theme.of(context).colorScheme.secondaryContainer
                           : null,
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(i == 4 ? Icons.more_horiz : destinations[i].$3),
+                        Icon(
+                          i == 4
+                              ? Icons.more_horiz
+                              : destinations[compactDestinations[i]].$3,
+                        ),
                         const SizedBox(height: 4),
                         SizedBox(
                           width: double.infinity,
                           child: Text(
-                            i == 4 ? 'Más' : destinations[i].$2,
+                            i == 4
+                                ? 'Más'
+                                : destinations[compactDestinations[i]].$2,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: const TextStyle(fontSize: 12),

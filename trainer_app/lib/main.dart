@@ -50,6 +50,10 @@ import 'trainer_groups_page.dart';
 import 'trainer_week_copy_dialog.dart';
 import 'trainer_client_workspace.dart';
 import 'trainer_client_navigation.dart';
+import 'trainer_self_page.dart';
+
+import 'package:trainer_access/authenticated_rpc.dart';
+
 import 'trainer_client_directories.dart';
 import 'trainer_client_workspace_repository.dart';
 import 'trainer_client_forms_route.dart';
@@ -286,10 +290,31 @@ class _TrainerAppState extends State<TrainerApp> {
         ),
         ShellRoute(
           builder: (_, state, child) => TrainerShell(
-            location: state.uri.path,
-            child: TrainerClientNavigation.wrap(state.uri, child),
+            location: state.uri.path.startsWith('/clients/$identity')
+                ? '/self'
+                : state.uri.path,
+            child: TrainerClientNavigation.wrap(
+              state.uri,
+              child,
+              selfClientId: identity,
+            ),
           ),
           routes: [
+            GoRoute(
+              path: '/self',
+              builder: (_, _) => TrainerSelfPage(
+                key: ValueKey('self-$identity'),
+                ownerId: identity!,
+                ensure: () async {
+                  await authenticatedTrainerRpc(
+                    widget.client,
+                    identity,
+                    'ensure_trainer_self_client',
+                    params: {'p_expected_owner': identity},
+                  );
+                },
+              ),
+            ),
             GoRoute(
               path: '/assessments',
               builder: (_, _) => TrainerAssessmentsPage(
@@ -619,6 +644,7 @@ class _TrainerAppState extends State<TrainerApp> {
                       repository: access(),
                       onSignOut: () => widget.client.auth.signOut(),
                       onOpenWorkouts: () => context.go('/workouts'),
+                      onOpenSelf: () => context.go('/self'),
                       onOpenClient: (id) =>
                           context.push('/clients/$id/workouts'),
                       techniqueMode:

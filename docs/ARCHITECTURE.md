@@ -1,5 +1,12 @@
 # Arquitectura de EntrenaOP
 
+**Planificación propia · 26/10/2026:** «Para mí» reutiliza relaciones y citas
+profesionales con identidad propia explícita, sin cupo ni otro usuario. La admisión,
+gestión y calendario excluyen esa relación de sus contadores externos. El nombre
+editable se limita a `profile_private`, fachada invoker y propietario/token fijados;
+no mezcla autorización con metadata editable.
+[Contrato](TRAINER_SELF_TRAINING.md).
+
 **Citas profesionales · 25/10/2026:** estado privado de archivo/revisión y recibos
 idempotentes, sin añadir estados al calendario del alumno. Los enlaces Garmin
 marcan la misma fila privada que serializa el borrado. Las consultas filtradas

@@ -15,6 +15,7 @@ class TrainerClientsPage extends StatefulWidget {
     this.onOpenClient,
     this.onOpenTechnique,
     this.techniqueMode = false,
+    this.onOpenSelf,
   });
   final TrainerRepository repository;
   final Future<void> Function()? onSignOut;
@@ -22,6 +23,7 @@ class TrainerClientsPage extends StatefulWidget {
   final ValueChanged<String>? onOpenClient;
   final ValueChanged<String>? onOpenTechnique;
   final bool techniqueMode;
+  final VoidCallback? onOpenSelf;
   @override
   State<TrainerClientsPage> createState() => _TrainerClientsPageState();
 }
@@ -384,6 +386,20 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
             if (_notice != null)
               Padding(padding: const EdgeInsets.all(12), child: Text(_notice!)),
             if (_access case final access?) ...[
+              if (!widget.techniqueMode && widget.onOpenSelf != null) ...[
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.person_outline),
+                    title: const Text('Para mí'),
+                    subtitle: const Text(
+                      'Tus sesiones, programas y resultados. No ocupa plaza de alumno.',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _busy ? null : widget.onOpenSelf,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (!widget.techniqueMode)
                 EntrenaCard(
                   tone:

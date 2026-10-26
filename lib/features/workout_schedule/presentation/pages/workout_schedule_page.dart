@@ -532,10 +532,15 @@ class _ScheduledWorkoutCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (item.coachName case final name?) Text('Preparador: $name'),
+              if (item.isSelfAssigned)
+                const Text('Para mí · pautada desde Trainer')
+              else if (item.coachName case final name?)
+                Text('Preparador: $name'),
               if (item.coachNote?.trim().isNotEmpty == true) ...[
                 const SizedBox(height: 8),
-                Text('Indicaciones del preparador: ${item.coachNote}'),
+                Text(
+                  '${item.isSelfAssigned ? 'Mis indicaciones' : 'Indicaciones del preparador'}: ${item.coachNote}',
+                ),
               ],
               const SizedBox(height: 6),
               Wrap(

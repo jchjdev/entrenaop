@@ -10,6 +10,7 @@ import 'package:entrenaop/features/auth/domain/usecases/watch_current_user_useca
 import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:entrenaop/features/auth/domain/entities/auth_session_change.dart';
+import 'package:entrenaop/features/auth/domain/entities/user_entity.dart';
 import 'package:entrenaop/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -193,6 +194,29 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthError(message: _accountError(e)));
       }
     }
+  }
+
+  /// Solo refleja una escritura confirmada para la identidad aún presente.
+  void profileNameSaved(String ownerId, String fullName) {
+    final current = state;
+    if (isClosed ||
+        current is! AuthAuthenticated ||
+        current.user.id != ownerId) {
+      return;
+    }
+    final user = current.user;
+    emit(
+      AuthAuthenticated(
+        user: UserEntity(
+          id: user.id,
+          fullName: fullName,
+          email: user.email,
+          role: user.role,
+          avatarUrl: user.avatarUrl,
+          createdAt: user.createdAt,
+        ),
+      ),
+    );
   }
 
   void dismissAccountNotice() {

@@ -8,6 +8,7 @@ import 'package:entrenaop/features/auth/presentation/bloc/auth_state.dart';
 import 'package:entrenaop/features/preparation_goal/domain/entities/preparation_goal.dart';
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_goal_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/training_plan/domain/entities/training_context.dart';
 import 'package:entrenaop/features/training_plan/domain/repositories/training_context_repository.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,9 @@ void main() {
       final preferences = _Preferences();
       sl.registerSingleton<PreparationGoalRepository>(_Goals());
       sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
+      sl.registerSingleton<ProfileNameRepository>(
+        ProfileNameRepository(_ClientWithoutSession()),
+      );
       sl.registerSingleton<TrainingContextRepository>(preferences);
       addTearDown(sl.reset);
       final auth = _Auth();
@@ -117,6 +121,9 @@ void main() {
       sl.registerSingleton<SupabaseClient>(client);
       sl.registerSingleton<PreparationGoalRepository>(_Goals());
       sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
+      sl.registerSingleton<ProfileNameRepository>(
+        ProfileNameRepository(_ClientWithoutSession()),
+      );
       addTearDown(sl.reset);
       final auth = _Auth();
       final router = AppRouter(auth);

@@ -38,6 +38,7 @@ import 'package:entrenaop/features/physical_assessment/data/datasources/physical
 import 'package:entrenaop/features/physical_assessment/data/repositories/physical_assessment_repository_impl.dart';
 import 'package:entrenaop/features/physical_assessment/data/repositories/fas_periodic_assessment_repository.dart';
 import 'package:entrenaop/features/profile/data/profile_birth_date_repository.dart';
+import 'package:entrenaop/features/profile/data/profile_name_repository.dart';
 import 'package:entrenaop/features/program_assessment/data/program_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/repositories/physical_assessment_repository.dart';
 import 'package:entrenaop/features/physical_assessment/domain/usecases/evaluate_initial_assessment_usecase.dart';
@@ -240,6 +241,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => FasPeriodicAssessmentRepository(sl()));
   sl.registerLazySingleton(() => ProfileBirthDateRepository(sl()));
+  sl.registerLazySingleton(() => ProfileNameRepository(sl()));
   sl.registerLazySingleton<ProgramAssessmentRepository>(
     () => SupabaseProgramAssessmentRepository(sl()),
   );

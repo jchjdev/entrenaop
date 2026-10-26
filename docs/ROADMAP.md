@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** implementado y aplicado
+en Dev, 231 migraciones coincidentes. Reutiliza planificación/ejecución/historial
+sin cupo; nombre propio editable desde Perfil. Análisis limpio y baterías completas
+1.369 raíz, 247 Trainer, 316 ADMIN; 13 contratos SQL con ROLLBACK, 18 contenciones
+RC/RR y seguridad sin avisos nuevos. Publicación automática/HTTPS pendiente de
+registrar; instalación móvil pendiente. **Siguiente recorrido único:** asignarse
+desde «Para mí», realizarlo con la misma cuenta y consultar el resultado; después
+comprobar el nombre desde la nueva build del deportista.
+[Contrato](TRAINER_SELF_TRAINING.md).
+
 **TRN-031 · 25/10/2026 · borrado tras retirada Garmin confirmada:** ajuste
 implementado y aplicado en Dev. Permite quitar la cita de prueba sin resultados
 cuando la retirada remota está confirmada y la cola terminada, sin leases vigentes; conserva

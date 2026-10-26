@@ -20,6 +20,22 @@ void main() {
   );
 
   group('AuthCubit.checkCurrentUser', () {
+    test('refleja nombre confirmado sin cambiar permisos y descarta respuestas de otra cuenta', () async {
+      final cubit = _createCubit(_FakeAuthRepository(currentUser: user));
+      await cubit.checkCurrentUser();
+      cubit.profileNameSaved('another-user', 'No aplicar');
+      expect((cubit.state as AuthAuthenticated).user, user);
+      cubit.profileNameSaved(user.id, 'Javier Charlez');
+      final updated = (cubit.state as AuthAuthenticated).user;
+      expect(updated.fullName, 'Javier Charlez');
+      expect(updated.id, user.id);
+      expect(updated.role, user.role);
+      expect(updated.email, user.email);
+      await cubit.signOut();
+      cubit.profileNameSaved(user.id, 'Respuesta tardía');
+      expect(cubit.state, isA<AuthUnauthenticated>());
+      await cubit.close();
+    });
     test('restaura un usuario existente', () async {
       final repository = _FakeAuthRepository(currentUser: user);
       final cubit = _createCubit(repository);

@@ -6,11 +6,14 @@ modifican los grupos. Sustituye la exclusividad anterior de un preparador.
 
 ## Contrato
 
-- Inicialmente dos preparadores activos por alumno, con máximo configurable
+- Inicialmente dos preparadores externos activos por alumno, con máximo configurable
   en servidor. No se admite dos veces la misma pareja activa. Las invitaciones
   siguen requiriendo aceptación del alumno, son caducables e idempotentes.
-- Cada vínculo consume una plaza del preparador correspondiente. Pro, cuotas
+- Cada vínculo externo consume una plaza del preparador correspondiente. Pro, cuotas
   personales, acceso profesional y seguimiento siguen separados.
+  Desde TRN-033, «Para mí» tiene una vinculación interna propia que no consume
+  esa plaza ni uno de los dos preparadores externos. No concede compartición
+  a otros profesionales. [Contrato](TRAINER_SELF_TRAINING.md).
 - El alumno habilita explícitamente compartir su calendario desde la gestión
   de vínculos en Preparador. Está desactivado por defecto, también para las
   cuentas existentes. Aceptar otra invitación no activa la compartición.

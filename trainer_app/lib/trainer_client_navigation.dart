@@ -8,14 +8,20 @@ class TrainerClientNavigation extends StatelessWidget {
     super.key,
     required this.location,
     required this.child,
+    this.isSelf = false,
   });
   final Uri location;
   final Widget child;
+  final bool isSelf;
 
-  static Widget wrap(Uri location, Widget child) {
+  static Widget wrap(Uri location, Widget child, {String? selfClientId}) {
     final parts = location.pathSegments;
     if (parts.length < 2 || parts.first != 'clients') return child;
-    return TrainerClientNavigation(location: location, child: child);
+    return TrainerClientNavigation(
+      location: location,
+      isSelf: parts[1] == selfClientId,
+      child: child,
+    );
   }
 
   @override
@@ -49,7 +55,7 @@ class TrainerClientNavigation extends StatelessWidget {
       ('technique', 'Técnica', '$base/technique'),
       ('progress', 'Evolución', '$base?area=progress'),
       ('forms', 'Formularios', '$base/forms'),
-      ('conversation', 'Conversación', '$base/conversation'),
+      if (!isSelf) ('conversation', 'Conversación', '$base/conversation'),
       ('notes', 'Notas', '$base?area=notes'),
       ('history', 'Historial', '$base?area=history'),
     ];

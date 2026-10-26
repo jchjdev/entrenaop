@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**Planificación propia · 26/10/2026:** Javier confirma «Para mí» en Trainer:
+asignarse sesiones/programas y realizarlos en su propia app de deportista, sin
+ocupar plaza ni cambiar de cuenta. Mantiene preparadores externos independientes.
+Perfil permitirá editar el nombre visible, sin cambiar identidad o permisos.
+[Contrato y estado](TRAINER_SELF_TRAINING.md).
+
 **Borrado y Garmin · ajuste del 25/10/2026:** una retirada remota confirmada y
 sin operaciones pendientes permite borrar la cita sin resultados, conservando
 recibos y versiones. El historial Garmin cerrado no la deja indefinidamente en

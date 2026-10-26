@@ -598,11 +598,14 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
                 label: const Text('Vídeos de técnica'),
               ),
             ],
-            TextButton.icon(
-              onPressed: _busy || _mutation ? null : () => _conversation(entry),
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Comentar esta pauta'),
-            ),
+            if (_client?.client.isSelf != true)
+              TextButton.icon(
+                onPressed: _busy || _mutation
+                    ? null
+                    : () => _conversation(entry),
+                icon: const Icon(Icons.chat_bubble_outline),
+                label: const Text('Comentar esta pauta'),
+              ),
             if (entry.editable) ...[
               FilledButton.icon(
                 onPressed: _canAssign
@@ -924,6 +927,14 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
         _client?.client.name ?? 'Planificación del alumno',
         style: Theme.of(context).textTheme.headlineSmall,
       ),
+      if (_client?.client.isSelf == true)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            'Lo que te pautes aquí aparecerá en la agenda de tu app de deportista. '
+            'Puedes realizarlo con esta misma cuenta y consultar aquí sus resultados. No ocupa plaza.',
+          ),
+        ),
       if (widget.goals != null) widget.goals!,
       const SizedBox(height: 12),
       Wrap(

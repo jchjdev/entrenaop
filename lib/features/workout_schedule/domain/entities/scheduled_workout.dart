@@ -25,6 +25,7 @@ class ScheduledWorkout extends Equatable {
     this.executionId,
     this.coachNote,
     this.coachName,
+    this.isSelfAssigned = false,
   });
 
   final String id;
@@ -40,6 +41,7 @@ class ScheduledWorkout extends Equatable {
   final String? executionId;
   final String? coachNote;
   final String? coachName;
+  final bool isSelfAssigned;
 
   @override
   List<Object?> get props => [
@@ -56,5 +58,6 @@ class ScheduledWorkout extends Equatable {
     executionId,
     coachNote,
     coachName,
+    isSelfAssigned,
   ];
 }
