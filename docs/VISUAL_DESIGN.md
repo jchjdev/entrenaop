@@ -1496,6 +1496,17 @@ maqueta son ficticios; la aplicación usa ahora las sesiones reales de la agenda
 Inicio y navegación auxiliar están aplicados en desarrollo; el detalle de las
 tendencias de Evolución permanece pendiente.
 
+> **Revisión exploratoria del primer acceso · 26/10/2026 (UX-ENTRY-001).**
+> Javier descarta las cuatro maquetas propuestas en el chat sobre Inicio,
+> calculadora FAS, alta de preparación y acceso a ritmos/entrenador, y pide
+> replantear el enfoque. No son una dirección visual aprobada ni sustituyen
+> los recorridos implementados. Continúan en estudio la orientación inicial,
+> el descubrimiento de las herramientas y la consulta de baremos para otras
+> personas. Ni una bienvenida guiada nueva, ni una reorganización de Inicio,
+> ni controles de edad o modos de consulta nuevos están acordados por este
+> descarte. Cualquier alternativa debe distinguir datos temporales de consulta,
+> perfil e historial personal, y contrastarse antes de implementarse.
+
 Inicio mantiene este orden:
 
 1. Calendario compacto, conservando su posición superior.
