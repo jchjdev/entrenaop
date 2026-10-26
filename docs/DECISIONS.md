@@ -155,6 +155,15 @@ contraseña. Activación y primera transferencia verificadas por HTTPS el
 destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
+**TRN-031 · ajuste del 26/10/2026 · asignación sin catálogo redundante:**
+Javier muestra que una sesión arrastrada al calendario vuelve a desplegar toda
+la biblioteca después de elegir alumno. La confirmación conserva la sesión y
+fecha recibidas; muestra nombre, versión e indicaciones y carga el catálogo solo
+al pulsar «Cambiar sesión». El botón de asignar queda en el pie fijo. Los flujos
+sin sesión elegida conservan el selector; elegir no confirma la pauta. Se
+mantienen el vínculo, permisos y reintento con el mismo UUID de operación.
+[Recorrido y validación](TRAINER_CLIENT_PLANNING.md#confirmación-de-una-sesión-ya-elegida--26102026).
+
 **TRN-031 · 25/10/2026 · planificación desde la ficha del alumno:** Javier
 aprueba implementar biblioteca, calendario conjunto, detalle y objetivos de
 oposición desde la ficha. Se reutilizan los creadores, pautas, resultados y

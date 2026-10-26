@@ -325,3 +325,30 @@ La aceptación humana de borrar su cita concreta sigue pendiente.
 
 Publicación del ajuste: `/releases/605a30207cf34581020db9f24e977e6832c91492-40240963267-1/`.
 JavaScript SHA-256: `6d4a2be23e4a8d18a0151d397ec79b43747b1aea056e1451d0370dbd24568222`.
+
+
+## Confirmación de una sesión ya elegida · 26/10/2026
+
+Javier muestra una grabación del arrastre de una sesión sobre la agenda general:
+tras elegir alumno, el diálogo volvía a cargar todo el catálogo y desplazaba
+la fecha, las indicaciones y la confirmación al final. El mismo diálogo también
+se usa desde la ficha del alumno y al crear una sesión en ese contexto.
+
+Cuando llega una sesión elegida, la confirmación muestra únicamente su nombre,
+versión, fecha e indicaciones opcionales. No vuelve a consultar la biblioteca.
+«Cambiar sesión» abre el catálogo bajo demanda; seleccionar otra lo pliega y
+conserva fecha e indicaciones. Si el flujo comienza sin sesión, permite elegirla
+y después muestra la misma confirmación compacta. «Conservar sesión seleccionada»
+permite cerrar el catálogo sin sustituirla. El botón de confirmar permanece en
+el pie fijo del diálogo, también cuando el catálogo necesita desplazamiento.
+
+Elegir alumno, arrastrar o cambiar selección no asigna automáticamente. La
+confirmación explícita usa el mismo vínculo, plantilla, fecha y UUID de operación
+existentes. Tras un envío incierto se conserva el bloqueo de campos y se reintenta
+la misma operación; permisos, cuotas, convivencia de planes y servidor no cambian.
+
+Verificación: análisis Trainer sin incidencias; batería completa Trainer y
+regresiones del arrastre a agenda, conservación de alumno/fecha/indicaciones,
+cambio explícito de sesión y ausencia de consulta redundante. También se conservan
+las comprobaciones existentes de reintento y texto ampliado a 320 y 1200 px.
+La publicación automática de Trainer Dev se comprueba por separado de las pruebas.

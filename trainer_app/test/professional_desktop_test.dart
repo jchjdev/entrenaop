@@ -371,6 +371,25 @@ void main() {
     await t.pumpAndSettle();
     expect(workouts.assigned, isEmpty);
     expect(moves, isEmpty);
+    final libraryReads = workouts.libraryReads;
+    await dragTo(t, source, t.getCenter(target), settle: false);
+    await t.tap(find.text('Ana'));
+    // La agenda mantiene el indicador de operación mientras el diálogo está abierto.
+    await t.pump(const Duration(milliseconds: 350));
+    await t.tap(find.text('Revisar pauta'));
+    await t.pump(const Duration(milliseconds: 350));
+    await t.pump(const Duration(milliseconds: 350));
+    expect(workouts.libraryReads, libraryReads);
+    expect(find.byType(RadioListTile<String>), findsNothing);
+    expect(find.text('Sesión seleccionada'), findsOneWidget);
+    expect(find.text('Fecha: 22/10/2026'), findsOneWidget);
+    expect(workouts.assigned, isEmpty);
+    final confirm = find.widgetWithText(FilledButton, 'Asignar sesión');
+    expect(confirm.hitTestable(), findsOneWidget);
+    await t.tap(confirm);
+    await t.pumpAndSettle();
+    expect(workouts.assigned.single.template, workouts.entry.id);
+    expect(workouts.assigned.single.date, DateTime(2026, 10, 22));
     await t.tap(find.byKey(const ValueKey('agenda-view-week')));
     await t.pumpAndSettle();
     final card = find.byKey(const ValueKey('agenda-board-drag-one'));

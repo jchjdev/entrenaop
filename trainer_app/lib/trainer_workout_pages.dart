@@ -794,14 +794,18 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
   TrainerWorkout? _selected;
   DateTime _date = DateUtils.dateOnly(DateTime.now());
   String? _operationId, _error;
-  bool _busy = true, _more = false;
+  bool _busy = false, _more = false;
+  bool _choosingWorkout = true, _libraryLoaded = false;
   TrainerWorkout? _cursor;
   @override
   void initState() {
     super.initState();
     _selected = widget.initialWorkout;
     _date = DateUtils.dateOnly(widget.initialDate ?? DateTime.now());
-    _load();
+    _choosingWorkout = _selected == null;
+    // Arrastrar desde la biblioteca ya aporta la sesión y su versión. No
+    // consultar ni volver a desplegar el catálogo para confirmar esa pauta.
+    if (_choosingWorkout) _load();
   }
 
   @override
@@ -830,6 +834,7 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
                 }.values.toList();
           _more = rows.length == 50;
           _cursor = rows.lastOrNull;
+          _libraryLoaded = true;
         });
       }
     } catch (e) {
@@ -837,6 +842,12 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _chooseWorkout() async {
+    if (_busy || _operationId != null) return;
+    setState(() => _choosingWorkout = true);
+    if (!_libraryLoaded) await _load();
   }
 
   Future<void> _assign() async {
@@ -912,35 +923,68 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
             'El alumno recibirá esta versión en su agenda. Su plan automático se conserva.',
           ),
           const SizedBox(height: 16),
-          if (_workouts.isEmpty && !_busy && _error == null)
-            const Text('Crea primero una sesión en Mis sesiones privadas.'),
-          RadioGroup<String>(
-            groupValue: _selected?.id,
-            onChanged: (value) {
-              if (!_busy && _operationId == null) {
-                setState(
-                  () => _selected = _workouts.firstWhere(
-                    (item) => item.id == value,
-                  ),
-                );
-              }
-            },
-            child: Column(
-              children: [
-                for (final item in _workouts)
-                  RadioListTile<String>(
-                    title: Text(item.name),
-                    subtitle: Text('Versión ${item.version}'),
-                    value: item.id,
-                    enabled: !_busy && _operationId == null,
-                  ),
-              ],
+          if (_selected != null) ...[
+            Text(
+              'Sesión seleccionada',
+              style: Theme.of(context).textTheme.labelMedium,
             ),
-          ),
-          if (_more)
+            Text(
+              _selected!.name,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text('Versión ${_selected!.version}'),
+            if (!_choosingWorkout)
+              TextButton.icon(
+                onPressed: _busy || _operationId != null
+                    ? null
+                    : _chooseWorkout,
+                icon: const Icon(Icons.swap_horiz),
+                label: const Text('Cambiar sesión'),
+              ),
+          ],
+          if (_choosingWorkout && _workouts.isEmpty && !_busy && _error == null)
+            const Text('Crea primero una sesión en Mis sesiones privadas.'),
+          if (_choosingWorkout)
+            RadioGroup<String>(
+              groupValue: _selected?.id,
+              onChanged: (value) {
+                if (!_busy && _operationId == null) {
+                  setState(() {
+                    _selected = _workouts.firstWhere(
+                      (item) => item.id == value,
+                    );
+                    _choosingWorkout = false;
+                  });
+                }
+              },
+              child: Column(
+                children: [
+                  for (final item in _workouts)
+                    RadioListTile<String>(
+                      title: Text(item.name),
+                      subtitle: Text('Versión ${item.version}'),
+                      value: item.id,
+                      enabled: !_busy && _operationId == null,
+                    ),
+                ],
+              ),
+            ),
+          if (_choosingWorkout && _more)
             TextButton(
               onPressed: _busy ? null : () => _load(more: true),
               child: const Text('Cargar más sesiones'),
+            ),
+          if (_choosingWorkout && _error != null && !_libraryLoaded)
+            TextButton(
+              onPressed: _busy ? null : _load,
+              child: const Text('Reintentar carga de sesiones'),
+            ),
+          if (_choosingWorkout && _selected != null)
+            TextButton(
+              onPressed: _busy
+                  ? null
+                  : () => setState(() => _choosingWorkout = false),
+              child: const Text('Conservar sesión seleccionada'),
             ),
           if (_selected != null)
             TextButton(
@@ -972,22 +1016,24 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
             ),
           ),
           if (_error != null) Text(_error!),
-          const SizedBox(height: 16),
-          EntrenaDialogActions(
-            primaryLabel: _operationId == null
-                ? 'Asignar sesión'
-                : 'Reintentar asignación',
-            onPrimary: _busy || _selected == null ? null : _assign,
-            secondary: [
-              TextButton(
-                onPressed: _busy ? null : () => Navigator.pop(context, false),
-                child: const Text('Volver'),
-              ),
-            ],
-          ),
         ],
       ),
-      actions: const [],
+      actions: [
+        EntrenaDialogActions(
+          primaryLabel: _operationId == null
+              ? 'Asignar sesión'
+              : 'Reintentar asignación',
+          onPrimary: _busy || _selected == null || _choosingWorkout
+              ? null
+              : _assign,
+          secondary: [
+            TextButton(
+              onPressed: _busy ? null : () => Navigator.pop(context, false),
+              child: const Text('Volver'),
+            ),
+          ],
+        ),
+      ],
     ),
   );
 }

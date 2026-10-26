@@ -49,6 +49,9 @@ const privateRecipe = WorkoutTemplate(
 
 class WorkoutFixture extends TrainerWorkoutRepository {
   bool failAssign = false;
+  bool failWorkouts = false;
+  int libraryReads = 0;
+  List<TrainerWorkout>? availableWorkouts;
   final assigned =
       <
         ({
@@ -69,8 +72,12 @@ class WorkoutFixture extends TrainerWorkoutRepository {
     'created_at': '2026-10-21T10:00:00Z',
   });
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async =>
-      before == null ? [entry] : [];
+  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async {
+    libraryReads++;
+    if (failWorkouts) throw StateError('Biblioteca no disponible');
+    return before == null ? availableWorkouts ?? [entry] : [];
+  }
+
   @override
   Future<WorkoutTemplate?> template(String id) async => privateRecipe;
   @override
@@ -253,6 +260,111 @@ void main() {
       expect(repo.assigned[1], repo.assigned[0]);
       expect(repo.assigned.singleOrNull, isNull);
       expect(find.byType(TrainerAssignmentDialog), findsNothing);
+    },
+  );
+  testWidgets(
+    'sesión elegida confirma sin cargar catálogo y conserva el día y destinatario',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 720);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repo = WorkoutFixture()..failWorkouts = true;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showDialog<bool>(
+                  context: context,
+                  builder: (_) => TrainerAssignmentDialog(
+                    repository: repo,
+                    relationId: 'selected-pupil',
+                    initialWorkout: repo.entry,
+                    initialDate: DateTime(2026, 11, 3),
+                  ),
+                ),
+                child: const Text('Abrir pauta'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await press(tester, 'Abrir pauta');
+      expect(repo.libraryReads, 0);
+      expect(repo.assigned, isEmpty);
+      expect(find.byType(RadioListTile<String>), findsNothing);
+      expect(find.text(privateRecipe.name), findsOneWidget);
+      expect(find.text('Versión 3'), findsOneWidget);
+      expect(find.text('Fecha: 3/11/2026'), findsOneWidget);
+      final confirm = find.widgetWithText(FilledButton, 'Asignar sesión');
+      expect(tester.getRect(confirm).bottom, lessThan(720));
+      expect(confirm.hitTestable(), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'Controla el ritmo');
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(repo.assigned.single.relation, 'selected-pupil');
+      expect(repo.assigned.single.template, repo.entry.id);
+      expect(repo.assigned.single.date, DateTime(2026, 11, 3));
+      expect(repo.assigned.single.note, 'Controla el ritmo');
+      expect(repo.libraryReads, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets(
+    'cambiar sesión abre la biblioteca bajo demanda sin perder fecha ni indicaciones',
+    (tester) async {
+      final repo = WorkoutFixture();
+      final alternative = TrainerWorkout.fromJson({
+        'id': 'alternative',
+        'name': 'Carrera alternativa',
+        'version': 2,
+        'created_at': '2026-10-26T10:00:00Z',
+      });
+      repo.availableWorkouts = [alternative];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showDialog<bool>(
+                  context: context,
+                  builder: (_) => TrainerAssignmentDialog(
+                    repository: repo,
+                    relationId: 'relation',
+                    initialWorkout: repo.entry,
+                    initialDate: DateTime(2026, 11, 4),
+                  ),
+                ),
+                child: const Text('Abrir pauta'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await press(tester, 'Abrir pauta');
+      await tester.enterText(
+        find.byType(TextField),
+        'Mantén estas indicaciones',
+      );
+      await press(tester, 'Cambiar sesión');
+      expect(repo.libraryReads, 1);
+      expect(repo.assigned, isEmpty);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Asignar sesión'),
+            )
+            .onPressed,
+        isNull,
+      );
+      await press(tester, alternative.name);
+      expect(find.byType(RadioListTile<String>), findsNothing);
+      expect(find.text('Fecha: 4/11/2026'), findsOneWidget);
+      await press(tester, 'Asignar sesión');
+      expect(repo.assigned.single.template, alternative.id);
+      expect(repo.assigned.single.date, DateTime(2026, 11, 4));
+      expect(repo.assigned.single.note, 'Mantén estas indicaciones');
     },
   );
   testWidgets(
