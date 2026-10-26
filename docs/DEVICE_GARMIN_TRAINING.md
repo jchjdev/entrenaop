@@ -379,3 +379,47 @@ del usuario no se atribuye a un fallo o a una elección suya el perfil observado
 Su puntuación Garmin pondera sobre todo los pasos activos y no puntúa el
 enfriamiento; los promedios de las series no permiten reconstruir esa nota.
 [Puntuación del fēnix 8](https://www8.garmin.com/manuals/webhelp/GUID-EECCAC99-90D6-4AB1-9A3A-EC433D3365E2/EN-US/GUID-FD71D73A-C744-4779-A6C3-2FA9AB89B228.html).
+
+## Ejercicios privados de fuerza · INT-015 · 26/10/2026
+
+La restricción a tres ejercicios era el alcance de nuestro primer adaptador,
+no una prueba de que Garmin impida cualquier otro ejercicio. Javier solicita
+ampliarlo y probar una sesión profesional propia, reutilizando «Para mí».
+
+`strength_snapshot` conserva la autoridad resuelta por `training_source` y
+acepta ejercicios públicos o privados del autor de la plantilla profesional.
+Un ejercicio privado ajeno sigue rechazado. No cambia cuentas, MFA, relaciones,
+RLS ni acceso directo: las proyecciones permanecen internas y sin EXECUTE para
+clientes o service_role. Las recetas anteriores de carrera no cambian.
+
+Las equivalencias explícitas de banca, flexiones y dominadas se conservan.
+Los demás ejercicios llevan `exercise_code: null`, con nombre y notas propios.
+El adaptador omite `exerciseCategory` y `exerciseName` en esos pasos y conserva
+nombre/notas en `description`, con repeticiones o tiempo, peso si estaba pautado
+y descansos explícitos. Training API V2 2.0, páginas 7–9, documenta las
+instrucciones del paso y sus campos de catálogo; el ensayo real debe comprobar
+la aceptación de su omisión y cómo los presenta cada reloj. No se envían nombres
+inventados del catálogo ni se sustituye calistenia por otros movimientos.
+
+Continúa el límite de cien pasos, sin truncar instrucciones ni admitir medidas
+no traducidas. Superseries, circuitos y otros formatos pendientes siguen
+bloqueados, aunque sus ejercicios individuales sean compatibles. Esta entrega
+no convierte una sesión de carrera técnica mixta en carrera estructurada.
+
+Al volver una actividad, dos códigos NULL no prueban identidad de ejercicio.
+Incluso con índice de paso, la correspondencia de ejercicios genéricos requiere
+selección explícita. No se completan resultados ni se copian dosis como marcas.
+Se conserva el cierre existente de la misma cita y su revisión por el alumno.
+
+Validación en Dev: migración `20261026080243` aplicada; contrato nuevo de
+privacidad/dosis/permisos y regresiones SQL de fuerza, carrera, sincronización
+y progreso terminan con ROLLBACK. Pasan 156 pruebas de servidor, tipos estrictos,
+30 pruebas Flutter de envío/recepción y `flutter analyze`. Se publican solo
+`garmin-training`, `garmin-training-sync`, `garmin-activities` y
+`garmin-activity-ingest`, sin nueva compilación de los portales o de iPhone.
+
+Prueba externa pendiente: completar autorización de la cuenta elegida, enviar
+su cita ya asignada y verificar en Garmin Connect nombre, secuencia y dosis;
+después sincronizar el reloj. La compatibilidad del backend y un recibo `sent`
+no acreditan por sí solos recepción o ejecución en el dispositivo. No se crean
+copias de la cita ni se activa otra conexión para suplir esa autorización.

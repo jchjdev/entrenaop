@@ -29,7 +29,9 @@ export function strengthPrescription(value:unknown):StrengthPrescription{
     if(b.format!=='straight_sets'||b.rounds!==1||b.time_cap_seconds!=null)throw new TrainingError('unsupported_prescription');
     const items=sequence(b.items);
     for(const i of items){
-      const code=text(i.exercise_code,100),label=text(i.exercise_name,200);
+      // NULL conserva un ejercicio propio sin afirmar una equivalencia de catálogo.
+      if(!Object.hasOwn(i,'exercise_code'))throw new TrainingError('invalid_prescription');
+      const code=i.exercise_code===null?null:text(i.exercise_code,100),label=text(i.exercise_name,200);
       const sets=sequence(i.sets);
       for(const s of sets){
         const allowed=new Set(['order_index','target_reps','target_duration_seconds','target_load_kg','target_rpe','target_rir','rest_after_seconds']);

@@ -50,6 +50,29 @@ test('datos ausentes quedan ausentes, nunca se copian las diez repeticiones o ve
   assert.equal(a.sets[0].repetitions,null);assert.equal(a.sets[0].loadKg,null);assert.equal(a.sets[0].exerciseCode,null);
   assert.throws(()=>validateStrengthObservation({...a,sets:a.sets.map(s=>({...s,loadKg:-1}))}),/invalid_activity/);
 });
+test('ejercicio propio conserva nombre, notas, tiempo, repeticiones y carga sin inventar equivalencia',()=>{
+  const raw=recipe();
+  const item=raw.blocks[0].items[0] as any;
+  item.exercise_code=null;item.exercise_name='Front lever hold';item.notes='PDF: 4–7 s; base editable. Descanso libre.';
+  item.sets=[{order_index:0,target_duration_seconds:4,rest_after_seconds:0},
+    {order_index:1,target_reps:5,target_load_kg:7.5,rest_after_seconds:30}];
+  const original=JSON.stringify(raw),out=garminStrengthWorkout(strengthPrescription(raw));
+  assert.equal(JSON.stringify(raw),original);
+  const steps=out.segments[0].steps;
+  assert.equal(steps.length,3);
+  assert.equal(steps[0].durationType,'TIME');assert.equal(steps[0].durationValue,4);
+  assert.equal(steps[1].durationType,'REPS');assert.equal(steps[1].durationValue,5);assert.equal(steps[1].weightValue,7.5);
+  assert.equal(steps[0].description,'Front lever hold · PDF: 4–7 s; base editable. Descanso libre.');
+  for(const step of steps){assert.equal(Object.hasOwn(step,'exerciseCategory'),false);assert.equal(Object.hasOwn(step,'exerciseName'),false);}
+  // Ausencia accidental del campo no es una declaración explícita de ejercicio genérico.
+  delete item.exercise_code;assert.throws(()=>strengthPrescription(raw),/invalid_prescription/);
+});
+test('dos códigos desconocidos nunca proponen una correspondencia automática de resultados',()=>{
+  const raw=recipe();(raw.blocks[0].items[0] as any).exercise_code=null;
+  const activity=garminFitObservation(file(true),meta) as ObservedStrengthActivity;
+  const reviewed=activityReview({snapshot:raw,activity});
+  assert.deepEqual((reviewed.rows as any[]).map(r=>r.lap_indices),[[],[],[]]);
+});
 test('actualizar y retirar fuerza usa las referencias existentes y mantiene su deporte',async()=>{
   const calls:{method:string;url:string;body:any}[]=[];
   const client=new GarminTrainingClient(async(url,options)=>{

@@ -68,7 +68,9 @@ export function activityReview(source: Json): Json {
     const p=strengthPrescription(source.snapshot);
     const rows=p.steps.filter(s=>s.kind==='strength').map(s=>{
       const position=p.steps.indexOf(s);
-      const matches=observed.sets.filter(a=>a.kind==='active'&&a.workoutStepIndex===position&&a.exerciseCode===s.exerciseCode);
+      // Dos códigos desconocidos no acreditan que sean el mismo ejercicio.
+      // Los ejercicios privados necesitan la correspondencia explícita del alumno.
+      const matches=observed.sets.filter(a=>s.exerciseCode!==null&&a.kind==='active'&&a.workoutStepIndex===position&&a.exerciseCode===s.exerciseCode);
       return {block_order:s.block,item_order:s.item,set_order:s.set,label:s.description,kind:s.kind,measure:s.measure,value:s.value,
         lap_indices:matches.length===1?[matches[0].index]:[],requires_recovery:false,recovery_lap_indices:[]};
     });

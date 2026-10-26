@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**INT-015 · 26/10/2026 · ejercicios privados de fuerza enviados a Garmin:**
+Javier pide probar una sesión de su biblioteca profesional en su propio reloj.
+Se amplía el envío de series convencionales a ejercicios públicos y privados
+del autor de la plantilla pautada, conservando sus nombres, notas y dosis.
+Las tres equivalencias de catálogo contrastadas se mantienen; sin equivalencia
+se envía la instrucción sin afirmar categoría ni ejercicio de Garmin. No se
+deducen equivalencias por nombre ni se modifica el catálogo oficial. Superseries
+y demás formatos no traducidos siguen bloqueados. Dos códigos desconocidos no
+justifican correspondencia automática al recibir resultados: revisión explícita.
+Implementación y contratos verificados en Dev; la recepción de estos ejercicios
+en Garmin y en el reloj requiere la prueba externa descrita en el documento.
+[Contrato y comprobaciones](DEVICE_GARMIN_TRAINING.md#ejercicios-privados-de-fuerza--int-015--26102026).
+
 **TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** Javier aprueba asignarse
 sesiones/programas privados con su misma cuenta, sin plaza, y editar el nombre
 desde Perfil. La vinculación interna propia se excluye del cupo comercial y del
