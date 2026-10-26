@@ -1507,6 +1507,19 @@ tendencias de Evolución permanece pendiente.
 > descarte. Cualquier alternativa debe distinguir datos temporales de consulta,
 > perfil e historial personal, y contrastarse antes de implementarse.
 
+> **Acuerdo parcial posterior · 26/10/2026 (UX-ENTRY-002).** Javier valora
+> favorablemente una bienvenida breve y pide poder indicar que no se muestre
+> más. Aprueba que una invitación de entrenador lleve a revisar y completar el
+> vínculo sin exigir una preparación propia previa. Son criterios de diseño,
+> todavía sin implementación.
+>
+> La propuesta de pantalla de entrada continúa en aclaración: reutilizaría el
+> Inicio y la página de Herramientas existentes y conservaría los recorridos
+> actuales de entrenamiento. No implica varios diseños de Inicio ni tipos de
+> usuario nuevos. La preferencia persistente de destino, su configuración y la
+> navegación común no quedan aprobadas por esta valoración inicial. Se mantiene
+> el descarte de las cuatro maquetas anteriores.
+
 Inicio mantiene este orden:
 
 1. Calendario compacto, conservando su posición superior.
