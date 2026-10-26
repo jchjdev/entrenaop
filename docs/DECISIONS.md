@@ -23,8 +23,12 @@ justifican correspondencia automática al recibir resultados: revisión explíci
 Implementación y contratos verificados en Dev. El envío inalámbrico conserva
 la receta, pero los títulos genéricos aparecen como «Ir» en el reloj. Javier
 confirma después nombres propios y descansos correctos al cargar directamente
-el FIT por USB en su fēnix 8. La entrega inalámbrica de esos títulos sigue
-pendiente; no se confunde la prueba USB con una corrección de Training API.
+el FIT por USB en su fēnix 8. Se extrae un generador FIT reutilizable y probado;
+no cambia todavía el transporte. Connect IQ ofrece una vía oficial candidata
+que necesitaría una app complementaria en el reloj, aún sin adoptar como
+requisito del producto ni acreditar físicamente. La entrega inalámbrica de
+esos títulos sigue pendiente; no se confunde la prueba USB con una corrección
+de Training API.
 [Contrato y comprobaciones](DEVICE_GARMIN_TRAINING.md#ejercicios-privados-de-fuerza--int-015--26102026).
 
 **TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** Javier aprueba asignarse

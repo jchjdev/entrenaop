@@ -501,3 +501,49 @@ presentación en el fēnix 8, además de la recepción por MTP. No acredita toda
 la realización de la sesión ni el retorno de sus resultados. Este ensayo no
 acredita que Training API JSON pueda transportar los títulos propios mediante
 sincronización inalámbrica: esa integración sigue pendiente.
+
+
+### Preparación de FIT reutilizable y vía Connect IQ · 26/10/2026
+
+El generador probado por USB se extrae a
+`supabase/functions/_shared/garmin/strength_fit.ts`. Consume una instantánea
+validada con el mismo contrato de series convencionales; no consulta usuarios,
+no decide permisos y no abre un endpoint. Conserva nombres originales por
+posición de ejercicio, notas, descripción de sesión, repeticiones, tiempo,
+cargas y todos los descansos explícitos. Dos ejercicios homónimos tienen
+referencias distintas. La identidad y fecha de creación del archivo las aporta
+el llamador para producir los mismos bytes en un reintento.
+
+FIT limita cada campo de texto a 254 bytes UTF-8 más terminador. El generador
+rechaza una pauta que no quepa; no la recorta. El peso se escribe con la escala
+100 del SDK oficial y rechaza más de 655,34 kg o precisión no representable;
+conserva cero y distingue carga ausente. La categoría UNKNOWN y la tabla
+EXERCISE_TITLE no declaran equivalencias con el catálogo Garmin. Se mantiene
+el límite de cien pasos y el rechazo de formatos no traducidos. No se modifica
+el envío JSON, la cita iniciada, su historial ni el retorno de resultados.
+
+La documentación oficial de Connect IQ describe `makeWebRequest` con
+`HTTP_RESPONSE_CONTENT_TYPE_FIT`: el sistema descarga, procesa y guarda el
+contenido compatible en el reloj. `PersistedContent` permite obtener el
+entrenamiento instalado y abrirlo en una aplicación nativa. Es una vía candidata
+para transmitir el FIT sin USB, no una comprobación física de que conserve
+EXERCISE_TITLE. Requeriría una aplicación complementaria en el reloj y un
+circuito de autorización de descargas, caducidad y revocación; no se implementa
+un enlace público a rutinas privadas ni se reemplaza Garmin OAuth.
+
+Antes de adoptar esa aplicación como requisito del producto quedan pendientes:
+ensayo inalámbrico en el fēnix, decisión explícita de experiencia/distribución,
+vinculación segura con EntrenaOP y prueba de retorno de la actividad. La app
+complementaria recibiría entrenamientos para el ejecutor nativo, no duplicaría
+el registro de entrenamientos de Garmin. El SDK Connect IQ se ha descargado
+solo a tooling local ignorado; no hay aplicación instalada o publicada.
+
+Fuentes oficiales:
+[descargas FIT](https://developer.garmin.com/connect-iq/api-docs/Toybox/Communications.html#makeWebRequest-instance_function),
+[contenido persistido](https://developer.garmin.com/connect-iq/api-docs/Toybox/PersistedContent.html).
+
+Validación del generador: siete pruebas nuevas de roundtrip con el SDK oficial,
+CRC, títulos UTF-8, referencias homónimas, dosis, kilos, notas, descansos,
+estabilidad e invalidaciones. La batería de servidor pasa 163 pruebas. La
+comprobación estricta de tipos y la CI incluyen el generador. No se publican
+funciones ni nuevas versiones móviles por esta preparación aislada.

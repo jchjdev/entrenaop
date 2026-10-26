@@ -68,6 +68,7 @@ jobs:
           supabase/functions/_shared/garmin/connection.ts
           supabase/functions/_shared/garmin/http.ts
           supabase/functions/_shared/garmin/training.ts
+          supabase/functions/_shared/garmin/strength_fit.ts
           supabase/functions/_shared/garmin/training_http.ts
           supabase/functions/_shared/device_training/prescription.ts
           supabase/functions/_shared/device_training/strength.ts
