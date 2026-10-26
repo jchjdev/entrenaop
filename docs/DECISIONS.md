@@ -20,8 +20,11 @@ se envía la instrucción sin afirmar categoría ni ejercicio de Garmin. No se
 deducen equivalencias por nombre ni se modifica el catálogo oficial. Superseries
 y demás formatos no traducidos siguen bloqueados. Dos códigos desconocidos no
 justifican correspondencia automática al recibir resultados: revisión explícita.
-Implementación y contratos verificados en Dev; la recepción de estos ejercicios
-en Garmin y en el reloj requiere la prueba externa descrita en el documento.
+Implementación y contratos verificados en Dev. El envío inalámbrico conserva
+la receta, pero los títulos genéricos aparecen como «Ir» en el reloj. Javier
+confirma después nombres propios y descansos correctos al cargar directamente
+el FIT por USB en su fēnix 8. La entrega inalámbrica de esos títulos sigue
+pendiente; no se confunde la prueba USB con una corrección de Training API.
 [Contrato y comprobaciones](DEVICE_GARMIN_TRAINING.md#ejercicios-privados-de-fuerza--int-015--26102026).
 
 **TRN-033 · 26/10/2026 · «Para mí» y nombre editable:** Javier aprueba asignarse

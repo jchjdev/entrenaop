@@ -474,8 +474,8 @@ durationValue y se verifica como duración en segundos; REPS conserva el entero.
 El archivo y la rutina son privados y no se versionan en Git. No se incorpora
 otro editor, una equivalencia ficticia ni un endpoint de exportación sin uso.
 
-El SDK confirma el contenido del FIT, no su presentación física. Su carga
-directa y aceptación en el fēnix quedan pendientes de disponer del dispositivo.
+El SDK confirma el contenido del FIT, no su presentación física. La aceptación
+posterior en el fēnix se registra en la comprobación de copia directa, debajo.
 No hay una solución inalámbrica acreditada de títulos arbitrarios por la API
 JSON consultada; no se ofrece la carga manual de un archivo como si corrigiera
 el envío automático de la plataforma. Para producto quedan dos tareas distintas:
@@ -494,7 +494,10 @@ y setenta y siete pasos totales, dentro del límite de cien pasos.
 
 La copia se deposita en Internal Storage/GARMIN/NewFiles, con nombre de archivo
 nuevo. La relectura desde el dispositivo contiene 7.050 bytes y coincide por
-SHA-256 con el archivo preparado. La recepción por MTP queda comprobada;
-el procesamiento tras desconectar y los títulos en pantalla requieren todavía
-la observación del usuario. Este ensayo no acredita que Training API JSON pueda
-transportar esos títulos por la sincronización inalámbrica.
+SHA-256 con el archivo preparado. Javier desconecta el USB, abre la copia de
+fuerza y confirma expresamente que los nombres de los ejercicios y los descansos
+aparecen correctamente. Quedan comprobados el procesamiento del archivo y su
+presentación en el fēnix 8, además de la recepción por MTP. No acredita todavía
+la realización de la sesión ni el retorno de sus resultados. Este ensayo no
+acredita que Training API JSON pueda transportar los títulos propios mediante
+sincronización inalámbrica: esa integración sigue pendiente.
