@@ -86,8 +86,22 @@ La primera validación de publicación detectó que faltaba `profile_private` en
 la prueba que exige cubrir todos los esquemas declarados. Trainer sigue también
 esa dependencia en su disparo de CI. No cambia cifrado, permisos ni destino.
 
-Publicación automática y comprobación HTTPS/Chrome pendientes de registrar. No
-se han dejado sesiones ni mensajes de ensayo en cuentas reales. El nombre editable
-y las etiquetas del deportista necesitan una nueva build móvil; publicar Trainer
-no actualiza el iPhone ni acredita APNs. Las citas nuevas reutilizan el recorrido
-profesional ya disponible en las instalaciones anteriores.
+Trainer Dev publicado automáticamente desde `b0392f8eef7333587ce29dfbb0b886df110769b9`,
+run `40282825639` con validación y deploy correctos. Verificados por HTTPS revisión,
+SHA-256 del JavaScript, entrada, cabeceras y WASM. Chrome acredita la entrada con
+la cuenta solicitada, creación/recuperación de su ficha, biblioteca y calendario,
+sin conversación propia, y **2/5 plazas antes y después**. No se han creado pautas
+reales de ensayo ni se han tocado los creadores abiertos en otras pestañas.
+
+ADMIN también publicado/verificado por HTTPS desde esa revisión. Su run
+`40282825568` pasó pruebas y deploy, pero falló una lectura HTTP del job posterior
+de retención; repetir solo los jobs fallidos terminó correctamente. Se añaden
+reintentos limitados solo de lectura y diagnóstico cerrado, conservando los
+controles de borrado y todos los avisos persistentes: 46 pruebas de herramientas
+ADMIN y 17 Trainer correctas. La validación remota del refuerzo se acredita aparte.
+
+El nombre editable y las etiquetas del deportista necesitan una nueva build
+móvil; publicar Trainer no actualiza el iPhone ni acredita APNs. Las citas nuevas
+reutilizan el recorrido profesional disponible en las instalaciones anteriores.
+Queda pendiente la aceptación humana de autoasignación → ejecución física en la
+app → consulta del resultado y del nombre en la nueva build móvil.

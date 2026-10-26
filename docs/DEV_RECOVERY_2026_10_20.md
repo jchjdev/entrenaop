@@ -180,6 +180,14 @@ el presupuesto; tampoco se borra ningún archivo durante el diagnóstico.
 
 ### Retención de compilados: autorizada el 21/10/2026
 
+Ajuste del 26/10: un fallo HTTP en la lectura previa marcó el run como fallido
+después de un despliegue correcto; repetir solo el job fallido pasó. Las lecturas
+de manifiesto/inventario admiten ahora tres intentos acotados ante transporte,
+408/429/5xx temporales. 401/403/404 no se reintentan y un DELETE incierto no se
+reenvía. Los fallos persistentes conservan el aviso, con proveedor/fase/código
+cerrados y sin URL, cuerpo remoto ni credenciales. La política de retención y
+las comprobaciones de identidad no cambian.
+
 `admin_artifact_retention.py` ejecuta un plan de solo lectura por defecto.
 Conserva cinco compilados recientes y protege siempre frente a esta limpieza la revisión
 publicada. Solo selecciona `admin-dev-<SHA40>` de main cuya revisión coincida

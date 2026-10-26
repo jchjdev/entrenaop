@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -17,6 +18,45 @@ def artifact(number, **changes):
 
 
 class RetentionTests(unittest.TestCase):
+    def test_transient_reads_retry_with_a_bound_and_preserve_the_result(self):
+        for error in [urllib.error.HTTPError('https://private.invalid/secret',503,'secret',{},None),
+                      urllib.error.HTTPError('https://private.invalid/secret',429,'secret',{},None),
+                      urllib.error.URLError('credential=secret'), TimeoutError('secret')]:
+            with self.subTest(error=type(error).__name__), patch.object(retention.time,'sleep') as pause:
+                from unittest.mock import Mock
+                action=Mock(side_effect=[error,{'artifacts':[]}])
+                self.assertEqual(retention.read_with_retry('github',action),{'artifacts':[]})
+                self.assertEqual(action.call_count,2)
+                pause.assert_called_once_with(1)
+
+    def test_permanent_read_failure_is_immediate_and_diagnostic_contains_no_remote_text(self):
+        from unittest.mock import Mock
+        for status in (401,403,404):
+            with self.subTest(status=status), patch.object(retention.time,'sleep') as pause:
+                action=Mock(side_effect=urllib.error.HTTPError('https://private.invalid/secret',status,'token=secret',{},None))
+                with self.assertRaisesRegex(ValueError,'^retention_read_failed:github:http_'+str(status)+'$'):
+                    retention.read_with_retry('github',action)
+                self.assertEqual(action.call_count,1)
+                pause.assert_not_called()
+
+    def test_repeated_transport_failure_stops_after_three_reads(self):
+        from unittest.mock import Mock, call
+        with patch.object(retention.time,'sleep') as pause:
+            action=Mock(side_effect=urllib.error.URLError('secret'))
+            with self.assertRaisesRegex(ValueError,'^retention_read_failed:admin_manifest:transport$'):
+                retention.read_with_retry('admin_manifest',action)
+            self.assertEqual(action.call_count,3)
+            self.assertEqual(pause.call_args_list,[call(1),call(2)])
+
+    def test_uncertain_delete_is_never_retried(self):
+        with patch.object(retention.urllib.request,'urlopen',side_effect=urllib.error.HTTPError(
+                'https://private.invalid/secret',503,'secret',{},None)) as request, \
+                patch.object(retention.time,'sleep') as pause:
+            with self.assertRaisesRegex(ValueError,'^retention_write_failed:github:http_503$'):
+                retention.api('/actions/artifacts/1',method='DELETE')
+            self.assertEqual(request.call_count,1)
+            pause.assert_not_called()
+
     def test_retains_latest_five_and_the_online_revision_even_when_older(self):
         rows = [artifact(i) for i in range(1, 11)]
         kept, removed = retention.plan(rows, format(1, '040x'))

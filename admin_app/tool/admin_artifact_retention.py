@@ -5,12 +5,33 @@ import json
 import os
 import re
 import sys
+import time
+import urllib.error
 import urllib.request
 
 from admin_release import https_get, identity
 
 REPO = "jchjdev/entrenaop"
 KEEP = 5
+
+
+def read_with_retry(provider, action):
+    # Solo lecturas: un fallo temporal no obliga a repetir una publicación.
+    # Un DELETE incierto nunca se reenvía automáticamente desde este helper.
+    for attempt in range(3):
+        try:
+            return action()
+        except urllib.error.HTTPError as error:
+            code = error.code
+            error.close()
+            reason = 'http_' + str(code)
+            transient = code in (408, 429, 500, 502, 503, 504)
+        except (urllib.error.URLError, TimeoutError):
+            reason, transient = 'transport', True
+        if not transient or attempt == 2:
+            # No incluir URL, cabeceras, cuerpo remoto ni texto de la excepción.
+            raise ValueError('retention_read_failed:' + provider + ':' + reason) from None
+        time.sleep(1 << attempt)
 
 
 def plan(rows, revision):
@@ -42,8 +63,19 @@ def api(path, method="GET"):
     if os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
     request = urllib.request.Request("https://api.github.com/repos/" + REPO + path, headers=headers, method=method)
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return None if response.status == 204 else json.load(response)
+    def perform():
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return None if response.status == 204 else json.load(response)
+    if method == 'GET':
+        return read_with_retry('github', perform)
+    try:
+        return perform()
+    except urllib.error.HTTPError as error:
+        code = error.code
+        error.close()
+        raise ValueError('retention_write_failed:github:http_' + str(code)) from None
+    except (urllib.error.URLError, TimeoutError):
+        raise ValueError('retention_write_failed:github:transport') from None
 
 
 def inventory():
@@ -65,7 +97,8 @@ def main():
         os.environ.get("GITHUB_REF") != "refs/heads/main" or not os.environ.get("GITHUB_TOKEN") or
         args.revision != os.environ.get("GITHUB_SHA")):
         raise ValueError("wrong_retention_context")
-    published = json.loads(https_get("/build-info.json?retention=" + str(args.revision))[0])
+    published = json.loads(read_with_retry('admin_manifest',
+        lambda: https_get("/build-info.json?retention=" + str(args.revision)))[0])
     identity(published)
     if published.get("revision") != args.revision:
         raise ValueError("published_revision_changed")

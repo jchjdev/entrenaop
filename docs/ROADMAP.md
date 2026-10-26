@@ -4,8 +4,11 @@
 en Dev, 231 migraciones coincidentes. Reutiliza planificación/ejecución/historial
 sin cupo; nombre propio editable desde Perfil. Análisis limpio y baterías completas
 1.369 raíz, 247 Trainer, 316 ADMIN; 13 contratos SQL con ROLLBACK, 18 contenciones
-RC/RR y seguridad sin avisos nuevos. Publicación automática/HTTPS pendiente de
-registrar; instalación móvil pendiente. **Siguiente recorrido único:** asignarse
+RC/RR y seguridad sin avisos nuevos. Trainer publicado automáticamente desde
+`b0392f8e`, run `40282825639`, y verificado por HTTPS/Chrome: ficha propia operativa
+con 2/5 plazas antes y después. ADMIN publicado/verificado; retención correcta al
+reintentar una lectura HTTP y refuerzo acotado de lecturas con 46+17 pruebas de
+herramientas. Instalación móvil pendiente. **Siguiente recorrido único:** asignarse
 desde «Para mí», realizarlo con la misma cuenta y consultar el resultado; después
 comprobar el nombre desde la nueva build del deportista.
 [Contrato](TRAINER_SELF_TRAINING.md).
