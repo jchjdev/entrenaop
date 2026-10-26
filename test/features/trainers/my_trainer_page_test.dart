@@ -24,6 +24,57 @@ Future<void> press(WidgetTester tester, String text) async {
 
 void main() {
   testWidgets(
+    'un enlace recibido muestra al preparador sin aceptar automáticamente',
+    (tester) async {
+      final repository = FakeTrainerRepository();
+      var accepted = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MyTrainerPage(
+            repository: repository,
+            initialInvitation: 'a' * 64,
+            onInvitationAccepted: () async => accepted++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(repository.previews, 1);
+      expect(repository.accepts, 0);
+      await tester.scrollUntilVisible(
+        find.text('Aceptar y vincularme'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await press(tester, 'Aceptar y vincularme');
+      expect(repository.accepts, 1);
+      expect(accepted, 1);
+    },
+  );
+
+  testWidgets('pegar un enlace de invitación conserva la revisión explícita', (
+    tester,
+  ) async {
+    final repository = FakeTrainerRepository();
+    await tester.pumpWidget(
+      MaterialApp(home: MyTrainerPage(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(TextField));
+    await tester.enterText(
+      find.byType(TextField),
+      'https://entrenaop.es/#/invite?code=${'a' * 64}',
+    );
+    await press(tester, 'Ver invitación');
+    expect(repository.previews, 1);
+    expect(repository.accepts, 0);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      'a' * 64,
+    );
+  });
+
+  testWidgets(
     'otro preparador se invita sin sustituir al actual; compartir es explícito',
     (tester) async {
       final repository = FakeTrainerRepository()
@@ -174,7 +225,7 @@ void main() {
     await press(tester, 'Ver invitación');
     expect(repo.previews, 0);
     expect(
-      find.text('Pega el código completo de 64 caracteres.'),
+      find.text('Pega el código completo o un enlace de invitación válido.'),
       findsOneWidget,
     );
   });

@@ -107,11 +107,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:entrenaop/core/config/app_config.dart';
 import 'package:entrenaop/features/dashboard/domain/repositories/home_favorites_repository.dart';
 import 'package:entrenaop/features/dashboard/data/repositories/shared_preferences_home_favorites_repository.dart';
+import 'package:entrenaop/features/welcome/domain/welcome_repository.dart';
+import 'package:entrenaop/features/welcome/data/supabase_welcome_repository.dart';
+import 'package:entrenaop/features/welcome/data/pending_trainer_invitation_store.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton<WelcomeRepository>(
+    () => SupabaseWelcomeRepository(
+      sl<SupabaseClient>(),
+      authEndpoint: Uri.parse('${AppConfig.supabaseUrl}/auth/v1/user'),
+    ),
+    dispose: (repository) =>
+        (repository as SupabaseWelcomeRepository).dispose(),
+  );
   sl.registerLazySingleton(() => ExerciseVideoPlayback(sl()));
   sl.registerLazySingleton<ProPurchaseRepository>(
     () => RevenueCatProPurchaseRepository(
@@ -134,6 +145,9 @@ Future<void> initDependencies() async {
     () => SupabaseProAccessRepository(sl()),
   );
   final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(
+    () => PendingTrainerInvitationStore(sharedPreferences),
+  );
   sl.registerLazySingleton<HomeFavoritesRepository>(
     () => SharedPreferencesHomeFavoritesRepository(sharedPreferences),
   );

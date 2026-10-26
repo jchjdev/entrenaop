@@ -1520,6 +1520,13 @@ tendencias de Evolución permanece pendiente.
 > navegación común no quedan aprobadas por esta valoración inicial. Se mantiene
 > el descarte de las cuatro maquetas anteriores.
 
+La entrada previa a este Inicio se concreta e implementa en UX-ENTRY-003:
+[bienvenida y continuidad de invitaciones](FIRST_ACCESS.md). Es una pantalla
+independiente de orientación, recuperable desde Perfil; no modifica esta
+composición ni añade destinos persistentes distintos según usuario. El acceso
+a Herramientas se refuerza desde las cabeceras principales. Las cuatro maquetas
+exploratorias descartadas siguen fuera del diseño aprobado.
+
 Inicio mantiene este orden:
 
 1. Calendario compacto, conservando su posición superior.

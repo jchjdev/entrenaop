@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**Primer acceso · 26/10/2026 · UX-ENTRY-003:** bienvenida breve con acceso a
+Herramientas, entrenamiento actual o invitación de entrenador. Elegir u omitir
+la completa por cuenta; Perfil permite recuperarla. Las siguientes entradas
+mantienen Inicio. Herramientas gana un acceso de cabecera; aceptar una invitación
+conserva la revisión explícita y no exige una preparación propia. Implementación
+y límites en [Primer acceso](FIRST_ACCESS.md); instalación y aceptación física
+de esta revisión en iPhone pendientes.
+
 **Connect IQ privado · 26/10/2026 · INT-017 en validación Dev:** vinculación
 con código y confirmación de cuenta en Perfil → Garmin, credencial revocable de
 90 días y sesiones compatibles de fuerza entre ayer y los próximos 14 días.

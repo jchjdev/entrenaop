@@ -13,6 +13,11 @@ class AppAccountActions extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        IconButton(
+          tooltip: 'Herramientas',
+          onPressed: () => context.push('/tools'),
+          icon: const Icon(Icons.calculate_outlined),
+        ),
         if (navigation.unreadCount > 0)
           IconButton(
             tooltip: '${navigation.unreadCount} avisos sin leer',

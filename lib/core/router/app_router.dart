@@ -109,6 +109,10 @@ import 'package:entrenaop/features/preparation_goal/presentation/pages/preparati
 import 'package:entrenaop/features/preparation_goal/domain/repositories/preparation_training_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:entrenaop/features/welcome/domain/entry_navigation.dart';
+import 'package:entrenaop/features/welcome/domain/welcome_repository.dart';
+import 'package:entrenaop/features/welcome/presentation/welcome_page.dart';
+import 'package:entrenaop/features/welcome/data/pending_trainer_invitation_store.dart';
 
 class RouterNotifier extends ChangeNotifier {
   late final StreamSubscription<AuthState> _subscription;
@@ -135,8 +139,25 @@ class AppRouter {
   late final GoRouter config;
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
   final _workflowExits = WorkflowExitRegistry();
+  final _entryNavigation = EntryNavigation();
+  final WelcomeRepository? _welcome;
+  final PendingTrainerInvitationStore? _pendingInvitations;
 
-  AppRouter(AuthCubit authCubit) : _notifier = RouterNotifier(authCubit) {
+  AppRouter(
+    AuthCubit authCubit, {
+    WelcomeRepository? welcome,
+    PendingTrainerInvitationStore? pendingInvitations,
+  }) : _notifier = RouterNotifier(authCubit),
+       _welcome =
+           welcome ??
+           (sl.isRegistered<WelcomeRepository>()
+               ? sl<WelcomeRepository>()
+               : null),
+       _pendingInvitations =
+           pendingInvitations ??
+           (sl.isRegistered<PendingTrainerInvitationStore>()
+               ? sl<PendingTrainerInvitationStore>()
+               : null) {
     // Hace que `push` actualice también la URL web. Sin esta opción la pantalla
     // cambiaba, pero el navegador seguía mostrando /home.
     GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -172,11 +193,65 @@ class AppRouter {
         ].contains(state.matchedLocation);
 
         if (isLoading) return null;
-        if (!isAuthenticated && !isPublicRoute) return '/';
-        if (isAuthenticated && isPublicRoute) return '/home';
-        return null;
+        final checkWelcome =
+            isAuthenticated &&
+            _welcome != null &&
+            (isPublicRoute || state.uri.path == '/home');
+        final checkInvitation =
+            _pendingInvitations != null &&
+            ((!isAuthenticated && state.uri.path == '/invite') ||
+                (isAuthenticated && isPublicRoute));
+        if (checkWelcome || checkInvitation) {
+          return _resolveEntryRedirect(
+            authCubit,
+            authState,
+            state.uri,
+            isPublicRoute,
+          );
+        }
+        return _entryNavigation.redirect(
+          uri: state.uri,
+          authenticated: isAuthenticated,
+          publicRoute: isPublicRoute,
+          needsWelcome: false,
+        );
       },
       routes: [
+        materialAppRoute(
+          path: '/welcome',
+          builder: (context, state) {
+            final auth = authCubit.state;
+            if (auth is! AuthAuthenticated) return const SizedBox.shrink();
+            final owner = auth.user.id;
+            bool sameAccount() =>
+                authCubit.state is AuthAuthenticated &&
+                (authCubit.state as AuthAuthenticated).user.id == owner;
+            return WelcomePage(
+              key: ValueKey('welcome-$owner'),
+              onChoose: (destination) async {
+                await _welcome?.complete(owner);
+                if (context.mounted && sameAccount()) {
+                  context.go(destination.route);
+                }
+              },
+              onContinueForNow: (destination) {
+                if (!sameAccount()) return;
+                _welcome?.skipForSession(owner);
+                context.go(destination.route);
+              },
+              onBack: state.uri.queryParameters['review'] == '1'
+                  ? () => context.canPop() ? context.pop() : context.go('/home')
+                  : null,
+            );
+          },
+        ),
+        materialAppRoute(
+          path: '/invite',
+          builder: (_, state) => _trainerEntry(
+            authCubit,
+            invitation: trainerInvitationCode(state.uri.toString()),
+          ),
+        ),
         materialAppRoute(
           path: '/pro',
           builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
@@ -1027,34 +1102,7 @@ class AppRouter {
             materialAppRoute(
               path: 'trainer',
               parentNavigatorKey: _rootNavigatorKey,
-              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
-                bloc: authCubit,
-                builder: (context, auth) => auth is! AuthAuthenticated
-                    ? const SizedBox.shrink()
-                    : MyTrainerPage(
-                        calendarSharing:
-                            SupabaseTrainerCalendarSharingRepository(
-                              sl<SupabaseClient>(),
-                              auth.user.id,
-                            ),
-                        key: ValueKey(auth.user.id),
-                        repository: SupabaseTrainerRepository(
-                          sl<SupabaseClient>(),
-                          userId: auth.user.id,
-                        ),
-                        forms: SupabaseTrainerStudentFormRepository(
-                          sl<SupabaseClient>(),
-                          auth.user.id,
-                        ),
-                        assessments:
-                            SupabaseProfessionalAssessmentStudentRepository(
-                              sl<SupabaseClient>(),
-                              auth.user.id,
-                            ),
-                        onOpenConversation: (id) =>
-                            context.push('/my-trainer/conversations/$id'),
-                      ),
-              ),
+              builder: (_, _) => _trainerEntry(authCubit),
             ),
             materialAppRoute(
               path: 'garmin',
@@ -1309,6 +1357,98 @@ class AppRouter {
       child: builder(context, state),
     ),
   );
+
+  Future<String?> _resolveEntryRedirect(
+    AuthCubit authCubit,
+    AuthState authState,
+    Uri uri,
+    bool publicRoute,
+  ) async {
+    final authenticated = authState is AuthAuthenticated;
+    if (_pendingInvitations != null) {
+      try {
+        if (!authenticated && uri.path == '/invite') {
+          final code = trainerInvitationCode(uri.toString());
+          if (code != null) await _pendingInvitations.save(code);
+        } else if (authenticated && publicRoute) {
+          final code = await _pendingInvitations.read();
+          if (code != null) _entryNavigation.restoreInvitation(code);
+          await _pendingInvitations.clear();
+        }
+      } catch (_) {
+        // El contexto en memoria sigue disponible si falla el dispositivo.
+      }
+      if (authCubit.state != authState) return null;
+    }
+    var needsWelcome = false;
+    if (authState is AuthAuthenticated &&
+        _welcome != null &&
+        !_entryNavigation.hasPendingInvitation &&
+        (publicRoute || uri.path == '/home')) {
+      try {
+        needsWelcome = !await _welcome.isCompleted(authState.user.id);
+      } catch (_) {
+        // La bienvenida es opcional: un fallo de lectura no bloquea Inicio.
+      }
+      if (authCubit.state is! AuthAuthenticated ||
+          (authCubit.state as AuthAuthenticated).user.id != authState.user.id) {
+        return null;
+      }
+    }
+    return _entryNavigation.redirect(
+      uri: uri,
+      authenticated: authenticated,
+      publicRoute: publicRoute,
+      needsWelcome: needsWelcome,
+    );
+  }
+
+  Widget _trainerEntry(AuthCubit authCubit, {String? invitation}) =>
+      BlocBuilder<AuthCubit, AuthState>(
+        bloc: authCubit,
+        builder: (context, auth) => auth is! AuthAuthenticated
+            ? const SizedBox.shrink()
+            : MyTrainerPage(
+                key: ValueKey('trainer-${auth.user.id}'),
+                initialInvitation: invitation,
+                calendarSharing: SupabaseTrainerCalendarSharingRepository(
+                  sl<SupabaseClient>(),
+                  auth.user.id,
+                ),
+                repository: SupabaseTrainerRepository(
+                  sl<SupabaseClient>(),
+                  userId: auth.user.id,
+                ),
+                forms: SupabaseTrainerStudentFormRepository(
+                  sl<SupabaseClient>(),
+                  auth.user.id,
+                ),
+                assessments: SupabaseProfessionalAssessmentStudentRepository(
+                  sl<SupabaseClient>(),
+                  auth.user.id,
+                ),
+                onOpenConversation: (id) =>
+                    context.push('/my-trainer/conversations/$id'),
+                onInvitationAccepted: () async {
+                  try {
+                    await _welcome?.complete(auth.user.id);
+                  } catch (_) {
+                    // El vínculo ya está confirmado; un fallo de presentación
+                    // no debe mostrarse como un fallo de aceptación.
+                    if (authCubit.state case AuthAuthenticated(:final user)
+                        when user.id == auth.user.id) {
+                      _welcome?.skipForSession(user.id);
+                    }
+                  }
+                  if (context.mounted &&
+                      authCubit.state is AuthAuthenticated &&
+                      (authCubit.state as AuthAuthenticated).user.id ==
+                          auth.user.id) {
+                    context.go('/my-trainer');
+                  }
+                },
+              ),
+      );
 
   void dispose() {
     config.dispose();

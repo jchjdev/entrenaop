@@ -409,6 +409,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 22),
                         const AppBuildInfoTile(),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: ListTile(
+                            leading: const Icon(Icons.explore_outlined),
+                            title: const Text('Volver a la bienvenida'),
+                            subtitle: const Text('Elige por dónde empezar.'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open('/welcome?review=1'),
+                          ),
+                        ),
                         const SizedBox(height: 22),
                         OutlinedButton.icon(
                           onPressed: () => context.read<AuthCubit>().signOut(),
