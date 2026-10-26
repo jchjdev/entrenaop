@@ -6,8 +6,9 @@ permite revisar/confirmar código y revocar; perder Pro y servicio bloquea uso,
 conservando solo gestión de permisos. App 1.0 copiada/releída en fēnix, con espera
 corregida y apertura condicionada a manifiesto actual. Análisis limpio, 1.379
 pruebas raíz y una omisión existente, 173 servidor, ocho Monkey C; contratos SQL
-con ROLLBACK correctos y sin avisos nuevos. **El bloque sigue abierto:** aceptar
-cuenta real → sesión privada → Fuerza y reintentos/cambio/revocación físicos antes
+con ROLLBACK correctos y sin avisos nuevos. Vinculación real comprobada; una cita
+privada compatible de prueba queda pendiente para el 27/10. **El bloque sigue abierto:** aceptar
+sesión privada → Fuerza y reintentos/cambio/revocación físicos antes
 de declarar completo el recorrido. Store, otros relojes y background físico
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).

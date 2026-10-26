@@ -6,7 +6,8 @@ con código y confirmación de cuenta en Perfil → Garmin, credencial revocable
 Sin Pro ni servicio de entrenador vigente se bloquean vinculación, descargas y
 sincronización; sigue disponible retirar permisos. Las copias ya importadas
 pueden seguir en la biblioteca nativa del reloj. Servidor y pruebas automáticas
-verificados, PRG 1.0 instalado; aceptación física privada y Store pendientes.
+verificados, PRG 1.0 instalado y vinculación real comprobada. FIT privado en el
+reloj y Store pendientes; cita compatible de prueba preparada para el 27/10.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **Connect IQ · 26/10/2026 · primer transporte aceptado en Dev:** una app

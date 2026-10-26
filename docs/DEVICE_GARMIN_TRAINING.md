@@ -731,8 +731,19 @@ a 30 s; `Timer` no está disponible en ese ámbito. Referencia oficial:
   `982073011a5d9e6db2caebf1b8031c9826b3c3e619d968b81cbab9438dfadbb2`.
   Esta copia no acredita todavía la vinculación ni la presentación física privada.
 
-La aceptación pendiente es **código del reloj → confirmación con cuenta real →
-sesión privada vigente → Fuerza nativa**, repetición sin duplicar y bloqueo después
-de cambio/retirada/revocación. La ejecución en background, otros modelos y Connect
+La vinculación física con cuenta real queda comprobada: Javier confirma en el
+reloj «Sin fuerza compatible» y Dev registra la concesión aprobada con consultas
+posteriores. El calendario solo tenía una fuerza iniciada, excluida correctamente
+de la entrega de pendientes. Desde la sesión autenticada de Trainer → Para mí se
+programa para el 27/10 **Prueba Garmin · Fuerza 3x5**, con indicación expresa de
+prueba técnica sin necesidad de ejercicio. Su estado pendiente y la generación
+FIT compatible se verifican; queda preparada para que Javier pruebe fuera del PC.
+Javier permite usar datos prescindibles en esta prueba Dev; no se reinicia la
+ejecución existente porque no es necesario para producir la nueva cita de prueba.
+
+La aceptación pendiente es **sesión privada vigente → Fuerza nativa**, repetición
+sin duplicar y bloqueo después de cambio/retirada/revocación. Los entrenamientos
+se descargan desde Dev sin PC; cambiar el binario del reloj sigue requiriendo USB
+hasta disponer de distribución Store. La ejecución en background, otros modelos y Connect
 IQ Store siguen pendientes; la distribución actual es sideload Dev por USB una
 vez, y después FIT inalámbrico. El retorno continúa por el contrato Garmin existente.

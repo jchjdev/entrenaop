@@ -13,7 +13,8 @@ seguir disponibles fuera de EntrenaOP: no existe bloqueo remoto de esas copias.
 Actualizar al abrir y mediante Actualizar; la consulta opcional cada 15 minutos
 solo detecta cambios, está desactivada por defecto y no importa ni borra FIT.
 Sin secretos administrativos o tokens Garmin en el reloj. Implementación Dev y
-pruebas automáticas en curso; aceptación física privada y publicación pendientes.
+pruebas automáticas verificadas; vinculación real comprobada. Sesión privada de
+prueba programada; apertura física de su FIT y publicación pendientes.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
