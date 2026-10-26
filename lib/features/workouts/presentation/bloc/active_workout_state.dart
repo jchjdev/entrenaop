@@ -44,6 +44,25 @@ class ActiveWorkoutState extends Equatable {
   int get unconfirmedDraftCount =>
       drafts.values.where((d) => d.endedAt != null && !d.confirmed).length;
 
+  WorkoutExecutionSet? get latestUnconfirmedSet {
+    WorkoutExecutionSet? latest;
+    DateTime? endedAt;
+    for (final set in execution?.sets ?? <WorkoutExecutionSet>[]) {
+      final draft = drafts[set.id];
+      if (set.status != WorkoutSetStatus.completed ||
+          draft == null ||
+          draft.confirmed ||
+          draft.endedAt == null) {
+        continue;
+      }
+      if (endedAt == null || !draft.endedAt!.isBefore(endedAt)) {
+        latest = set;
+        endedAt = draft.endedAt;
+      }
+    }
+    return latest;
+  }
+
   @override
   List<Object?> get props => [
     status,

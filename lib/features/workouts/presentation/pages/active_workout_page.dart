@@ -270,6 +270,7 @@ class _ActiveContentState extends State<_ActiveContent> {
     final state = widget.state;
     final execution = state.execution!;
     final current = execution.currentSet;
+    final pendingRecord = state.latestUnconfirmedSet;
     final saving =
         state.status == ActiveWorkoutStatus.saving || state.draftBusy;
     final cubit = context.read<ActiveWorkoutCubit>();
@@ -289,9 +290,11 @@ class _ActiveContentState extends State<_ActiveContent> {
         actions: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (state.unconfirmedDraftCount > 0)
+            if (pendingRecord != null)
               FilledButton.icon(
-                onPressed: saving ? null : () => _openRecords(context),
+                onPressed: saving
+                    ? null
+                    : () => _openResultEditor(context, pendingRecord),
                 icon: const Icon(Icons.edit_note_rounded),
                 label: const Text('Completar datos de la serie'),
               ),
@@ -542,6 +545,9 @@ class _ActiveContentState extends State<_ActiveContent> {
                       child: WorkoutSessionRecords(
                         execution: execution,
                         drafts: state.drafts,
+                        initialSetId:
+                            state.latestUnconfirmedSet?.id ??
+                            execution.currentSet?.id,
                         enabled: !state.draftBusy,
                         onEdit: (set) => _openResultEditor(context, set),
                         onTechnique: (set) =>

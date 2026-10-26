@@ -46,6 +46,67 @@ import 'package:go_router/go_router.dart';
 import 'package:entrenaop/core/navigation/workflow_exit_guard.dart';
 
 void main() {
+  testWidgets(
+    'completar datos en descanso abre directamente la última serie terminada',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = _Repository()
+        ..execution = _execution().copyWith(
+          sets: [
+            for (var i = 0; i < 16; i++)
+              WorkoutExecutionSet(
+                id: 'long-$i',
+                blockOrder: i,
+                blockName: 'Bloque $i',
+                itemOrder: 0,
+                exerciseId: 'exercise-$i',
+                exerciseName: 'Ejercicio $i',
+                setOrder: 0,
+                targetReps: 8,
+                restAfterSeconds: 60,
+                status: i < 14
+                    ? WorkoutSetStatus.completed
+                    : WorkoutSetStatus.pending,
+                actualReps: i < 14 ? 8 : null,
+              ),
+          ],
+        );
+      final (cubit, _) = await _mountSession(tester, repository);
+      await tester.tap(find.text('Terminar serie'));
+      await tester.pumpAndSettle();
+      final rest = cubit.state.restSecondsRemaining;
+      await tester.tap(find.textContaining('Series y registros').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Datos por confirmar').hitTestable(),
+        findsOneWidget,
+      );
+      await capturePerformanceWidget(tester, 'series-pendiente-390');
+      await tester.tap(find.byTooltip('Cerrar registros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Completar datos de la serie'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ejercicio 14'), findsOneWidget);
+      expect(find.text('Confirmar datos').hitTestable(), findsOneWidget);
+      expect(find.byTooltip('Cerrar registros'), findsNothing);
+      await capturePerformanceWidget(tester, 'serie-completar-directo-390');
+      await tester.enterText(find.byType(TextFormField), '9');
+      await tester.tap(find.text('Confirmar datos'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.unconfirmedDraftCount, 0);
+      expect(repository.lastSetResult?.resultId, 'long-14');
+      expect(repository.lastSetResult?.actualReps, 9);
+      expect(cubit.state.status, ActiveWorkoutStatus.resting);
+      expect(cubit.state.restSecondsRemaining, lessThanOrEqualTo(rest));
+      expect(find.text('Confirmar datos'), findsNothing);
+      expect(tester.takeException(), isNull);
+      cubit.skipRest();
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
   test('Tabata avanza con borradores de tiempo sin confirmar ni inventar carga o esfuerzo', () async {
     final repository = _Repository()..execution = _tabataExecution();
     final store = MemoryWorkoutSessionDraftStore();

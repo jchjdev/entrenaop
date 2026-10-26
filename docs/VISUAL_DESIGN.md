@@ -593,6 +593,31 @@ compartidos, dependencias, SQL, motores ni producción. El único siguiente
 recorrido recomendado de este bloque es comprobar estas vistas con fotos
 propias/oficiales y una sesión autenticada en móvil actualizado.
 
+## Acceso a la serie pendiente · UI-066 · 26/10/2026
+
+La grabación de Javier muestra una sesión de 39 series: tras terminar una serie,
+«Series y registros» abre desde el principio y obliga a buscar el ejercicio más
+abajo. El panel se sitúa al abrir en la última serie terminada que aún necesita
+confirmación; sin pendientes, muestra la serie actual. El grupo correspondiente
+abre desplegado, conservando el orden original y el acceso al resto de ejercicios.
+El posicionamiento ocurre una sola vez por apertura: los ticks del descanso y la
+confirmación no desplazan al usuario mientras consulta otros registros.
+
+Durante el descanso, «Completar datos de la serie» abre directamente el editor
+existente de la última serie pendiente, con el tiempo restante en cabecera.
+Cerrar sin confirmar conserva el borrador; confirmar usa la misma operación y
+no reinicia el descanso. No cambia el registro, los temporizadores, el dominio,
+los permisos ni el tratamiento específico del resultado AMRAP.
+
+La regresión reproduce una serie pendiente tras catorce ejercicios y prueba su
+acceso visible desde el panel, la edición directa en descanso y la confirmación
+del resultado correcto. El listado se comprueba además con 48 series, texto
+normal y doble, consulta manual sin saltos, reapertura y bloque AMRAP actual.
+Validación del 26/10/2026: análisis Flutter sin incidencias, 61 pruebas relacionadas
+y 1.375 pruebas de raíz correctas, con una omisión web preexistente. Dos capturas
+de widgets reales revisadas a 390 px, con fuentes e iconos reales. La nueva
+versión requiere actualización y aceptación en el dispositivo de Javier.
+
 ## Descansar y completar los datos · UI-039 · 15/10/2026
 
 Javier responde «sí, eso puede ser una opción» a terminar la serie, empezar el

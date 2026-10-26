@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**UI-066 · 26/10/2026 · acceso a la serie que se está registrando:** Javier
+muestra en una grabación que debe buscar abajo la serie pendiente al abrir
+«Series y registros». El panel abre situado en la última serie terminada con
+datos por confirmar o, si no hay pendientes, en la serie actual. Conserva el
+orden del entrenamiento y permite consultar otras series sin reposicionarse
+con los ticks del descanso o al confirmar. Durante el descanso, «Completar datos
+de la serie» abre directamente el editor de la última pendiente. El descanso y
+la confirmación conservan sus contratos. Comprobación física de la nueva versión
+pendiente.
+[Comportamiento y validación](VISUAL_DESIGN.md#acceso-a-la-serie-pendiente--ui-066--26102026).
+
 **INT-015 · 26/10/2026 · ejercicios privados de fuerza enviados a Garmin:**
 Javier pide probar una sesión de su biblioteca profesional en su propio reloj.
 Se amplía el envío de series convencionales a ejercicios públicos y privados
