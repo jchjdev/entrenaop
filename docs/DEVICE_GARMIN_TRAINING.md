@@ -428,9 +428,20 @@ Una lectura autenticada de la receta mediante el GET oficial de Training API
 verifica treinta y nueve pasos en STRENGTH_TRAINING. Nombre de sesión y, en cada
 paso, descripción con nombre/notas originales, intensidad, medida, dosis y
 objetivo coinciden con lo enviado. Confirma que Garmin acepta estos pasos sin
-campos de catálogo. No acredita todavía cómo presenta esos nombres el fēnix
-ni que se hayan realizado los ejercicios: recepción física y retorno de una
-sesión privada realizada siguen pendientes. Los identificadores, credenciales,
+campos de catálogo. Después Javier confirma la recepción física: ve los pasos
+en el fēnix y puede leer las notas, pero el título de los ejercicios genéricos
+aparece repetidamente como «Ir». Es aceptación del transporte y detección de
+una limitación de presentación; no se da por resuelta la experiencia del reloj.
+El anexo oficial A/B enumera nombres nativos (por ejemplo, curl martillo o
+subida de cuerda), pero no una equivalencia exacta para todos los movimientos
+de calistenia de esta rutina. Una futura equivalencia debe ser explícita y
+contrastada por ejercicio, sin inferirla de etiquetas ni sustituir un front lever
+completo por el MODIFIED_FRONT_LEVER del catálogo. El JSON de Training API
+consultado no ofrece un título de paso libre separado de description; los
+campos de título de FIT pertenecen a otro formato, cuya existencia no acredita
+su transmisión mediante esta API. No se modifica la pauta enviada durante
+la prueba. Ejecución y retorno de una sesión privada realizada siguen pendientes.
+Los identificadores, credenciales,
 datos de usuario y la rutina personal permanecen fuera de Git.
 
 Durante la conexión de esa cuenta, un intento chocó con la identidad ya ligada
