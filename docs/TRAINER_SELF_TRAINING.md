@@ -98,7 +98,10 @@ ADMIN también publicado/verificado por HTTPS desde esa revisión. Su run
 de retención; repetir solo los jobs fallidos terminó correctamente. Se añaden
 reintentos limitados solo de lectura y diagnóstico cerrado, conservando los
 controles de borrado y todos los avisos persistentes: 46 pruebas de herramientas
-ADMIN y 17 Trainer correctas. La validación remota del refuerzo se acredita aparte.
+ADMIN y 17 Trainer correctas. El refuerzo queda comprobado en el run `40284404188`
+desde `b438d42da089f578c4f33dc48e918bf7405d7ac7`: validación, deploy y retención
+correctos, con revisión servida contrastada de nuevo por HTTPS. Trainer conserva
+la versión funcional `b0392f8e`; los últimos cambios afectan a mantenimiento/docs.
 
 El nombre editable y las etiquetas del deportista necesitan una nueva build
 móvil; publicar Trainer no actualiza el iPhone ni acredita APNs. Las citas nuevas

@@ -188,6 +188,12 @@ reenvía. Los fallos persistentes conservan el aviso, con proveedor/fase/código
 cerrados y sin URL, cuerpo remoto ni credenciales. La política de retención y
 las comprobaciones de identidad no cambian.
 
+Validado con 46 pruebas de herramientas ADMIN y 17 Trainer. El run
+[`40284404188`](https://github.com/jchjdev/entrenaop/actions/runs/40284404188)
+termina con validación, despliegue y retención correctos desde `b438d42d`;
+revisión servida comprobada de nuevo por HTTPS. No se cambian las preferencias
+de correo ni se ocultan fallos persistentes.
+
 `admin_artifact_retention.py` ejecuta un plan de solo lectura por defecto.
 Conserva cinco compilados recientes y protege siempre frente a esta limpieza la revisión
 publicada. Solo selecciona `admin-dev-<SHA40>` de main cuya revisión coincida

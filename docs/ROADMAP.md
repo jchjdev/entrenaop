@@ -8,7 +8,8 @@ RC/RR y seguridad sin avisos nuevos. Trainer publicado automáticamente desde
 `b0392f8e`, run `40282825639`, y verificado por HTTPS/Chrome: ficha propia operativa
 con 2/5 plazas antes y después. ADMIN publicado/verificado; retención correcta al
 reintentar una lectura HTTP y refuerzo acotado de lecturas con 46+17 pruebas de
-herramientas. Instalación móvil pendiente. **Siguiente recorrido único:** asignarse
+herramientas. El refuerzo queda verificado en CI `40284404188`, con validación,
+deploy y retención correctos. Instalación móvil pendiente. **Siguiente recorrido único:** asignarse
 desde «Para mí», realizarlo con la misma cuenta y consultar el resultado; después
 comprobar el nombre desde la nueva build del deportista.
 [Contrato](TRAINER_SELF_TRAINING.md).
