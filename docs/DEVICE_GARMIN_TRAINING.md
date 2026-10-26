@@ -418,8 +418,27 @@ y progreso terminan con ROLLBACK. Pasan 156 pruebas de servidor, tipos estrictos
 `garmin-training`, `garmin-training-sync`, `garmin-activities` y
 `garmin-activity-ingest`, sin nueva compilación de los portales o de iPhone.
 
-Prueba externa pendiente: completar autorización de la cuenta elegida, enviar
-su cita ya asignada y verificar en Garmin Connect nombre, secuencia y dosis;
-después sincronizar el reloj. La compatibilidad del backend y un recibo `sent`
-no acreditan por sí solos recepción o ejecución en el dispositivo. No se crean
-copias de la cita ni se activa otra conexión para suplir esa autorización.
+Primer envío real comprobado el mismo día: una sesión privada de dieciséis
+ejercicios y treinta y nueve series queda `sent`, con referencias de workout y
+calendario confirmadas, sin error ni duplicar su cita. Garmin Connect muestra
+el nombre, la fecha y las notas. Su diálogo remite al proveedor para editar;
+esa presentación no expone el listado de pasos de la sesión externa.
+
+Una lectura autenticada de la receta mediante el GET oficial de Training API
+verifica treinta y nueve pasos en STRENGTH_TRAINING. Nombre de sesión y, en cada
+paso, descripción con nombre/notas originales, intensidad, medida, dosis y
+objetivo coinciden con lo enviado. Confirma que Garmin acepta estos pasos sin
+campos de catálogo. No acredita todavía cómo presenta esos nombres el fēnix
+ni que se hayan realizado los ejercicios: recepción física y retorno de una
+sesión privada realizada siguen pendientes. Los identificadores, credenciales,
+datos de usuario y la rutina personal permanecen fuera de Git.
+
+Durante la conexión de esa cuenta, un intento chocó con la identidad ya ligada
+a otra cuenta de la app; tras desconectarla, otro canje obtuvo un 403 al leer
+permisos de Garmin y quedó en `revocation_pending`. Se reintentó exclusivamente
+la retirada con el servicio existente: identidad comprobada (200), retirada
+aceptada (204) y limpieza persistida de la concesión. Javier volvió a autorizar
+desde la app y la conexión quedó `connected`, con ambos permisos confirmados.
+No se activó por escritura directa ni se trasladaron concesiones entre cuentas.
+No hay evidencia suficiente para atribuir el 403 transitorio a una causa del
+proveedor. No fue necesario modificar el protocolo de conexión.
