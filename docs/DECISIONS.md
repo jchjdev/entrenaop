@@ -64,7 +64,11 @@ PRG 1.3 copiado/releído por USB con hash idéntico al compilado. Javier confirm
 inicio, sincronización y consulta/avisos activados antes de salir a la esfera.
 Se prepara una revisión nueva (9) de «CIQ prueba 2 - aviso final», nombre y dosis
 conservados; manifiesto completo de una entrada con identidad distinta de la
-instalada y `sent` con los mismos IDs Garmin. Aceptación del diálogo corregido pendiente.
+instalada y `sent` con los mismos IDs Garmin. Javier confirma aparición del aviso
+con la app cerrada, aceptación, actualización sin errores y una sola sesión en la
+lista de EntrenaOP. Queda aceptado físicamente ese ciclo en 1.3 el 27/10. Importación
+en primer plano tras aceptar; sin garantía de inmediatez ni limpieza de la biblioteca
+nativa. Revocación física y distribución Store siguen pendientes.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

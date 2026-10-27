@@ -6,11 +6,18 @@ cerradas, hashes de credenciales/códigos y exportaciones inmutables por revisi�
 Reutiliza `garmin_access`, `training_source`, instantánea y generador FIT; valida
 permiso y revisión en cada descarga. Flutter confirma el código, lista y revoca
 con cuenta esperada. El reloj exige manifiesto vigente antes de abrir en Fuerza,
-sin borrado automático. Background opcional solo consulta huella de cambios.
+sin borrado automático. Background opcional consulta huella de cambios y puede
+pedir abrir la app una sola vez por huella, con consentimiento propio del reloj.
 Aplicado en Dev y transporte privado aceptado físicamente el 27/10. `ciq-private-2`
 usa alias nativo ASCII corto y producto FIT 2; el manifiesto conserva el título
-completo y detecta el cambio de representación. El PRG 1.0 no cambia; el generador
-compartido mantiene producto 1 por defecto. 175 pruebas de servidor correctas.
+completo y detecta el cambio de representación. Ese ajuste llegó sin cambiar el
+PRG 1.0; el generador compartido mantiene producto 1 por defecto. 175 pruebas de
+servidor correctas. El PRG 1.3 suspende eventos al abrir y programa cada 900 s al
+salir de la instancia de primer plano, según BackgroundTimer del SDK; evita usar
+`AppBase.isActive()` como detector de primer plano en el servicio. Dieciséis
+pruebas Monkey C correctas. Aceptados físicamente el 27/10 aviso con app cerrada,
+aceptación, descarga en primer plano sin errores y una sola entrada vigente.
+No acredita importación con app cerrada, limpieza nativa, Store u otros modelos.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **Connect IQ · 26/10/2026 · puente FIT sintético aislado:** `connect_iq/` descarga

@@ -1,24 +1,16 @@
 # EntrenaOP Connect IQ · Dev
 
-La versión preparada es **EntrenaOP Dev 1.3**, con el filtro incorrecto de primer
-plano retirado y consultas programadas al salir de la app. Compilación estricta
-sin avisos y dieciséis regresiones Monkey C correctas. Paquete 1.3 copiado y releído
-por USB con hash idéntico; Javier confirma inicio, sincronización y consulta/avisos
-activados antes de salir a la esfera. Aviso corregido físico pendiente. Conserva
-**MENU → Estado de avisos**. El paquete 1.2 se copió y releyó por
-USB el 27/10 con hash idéntico al compilado. Javier confirma inicio en 1.2,
-sincronización terminada y salida a la esfera. Diagnóstico/aviso físicos pendientes;
-se prepara la misma cita como «CIQ prueba 2 - aviso final», con dosis conservada.
-El primer resultado del nuevo ensayo, con la app cerrada, es «App en primer plano»,
-hace 2 min y HTTP 200: el filtro basado en `isActive()` estaba suprimiendo el aviso.
-El paquete 1.1 se ha copiado y releído por USB el 27/10;
-Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
-con descanso 1:15 dentro de Fuerza nativa. Tras actualizar dos veces y reabrir,
-confirma una sola entrada en la lista de EntrenaOP, sin errores; no acredita
-limpieza de copias antiguas en la biblioteca nativa. Los avisos físicos siguen
-pendientes. La vinculación y descarga privada de **1.0** están
-aceptadas el 27/10.
-El transporte sintético 0.2 descrito más abajo también está aceptado.
+La versión instalada es **EntrenaOP Dev 1.3**, con OP oficial y **MENU → Estado de
+avisos**. Compilación estricta sin avisos y dieciséis pruebas Monkey C correctas;
+paquete copiado y releído por USB con hash idéntico. El 27/10 Javier confirma en
+fēnix 8 **app cerrada → aviso → aceptar → actualización sin errores → una sola
+sesión en la lista de EntrenaOP**. Queda aceptado ese recorrido en Dev.
+
+También están aceptados vínculo privado, apertura en Fuerza nativa, cambio a
+3×6 a 22,5 kg con descanso 1:15 y repetición de Actualizar/reapertura sin duplicar
+la lista vigente. Esto no acredita limpieza de copias antiguas en la biblioteca
+nativa. Retirada/revocación físicas, otros relojes y Connect IQ Store siguen
+pendientes. El transporte sintético 0.2 está conservado como evidencia histórica.
 
 ## Vincular y recibir sesiones privadas
 
@@ -36,6 +28,10 @@ El transporte sintético 0.2 descrito más abajo también está aceptado.
    o retirar una cita debe impedir abrir su copia desde EntrenaOP tras comprobar
    el manifiesto vigente. Revocar el reloj desde Perfil debe bloquear nuevas
    descargas. Las copias nativas ya importadas pueden permanecer en el reloj.
+6. Para los avisos, **MENU → Activar avisos de cambios** y salir a la esfera con
+   el móvil/Connect e Internet disponibles. La consulta queda programada cada 15
+   minutos desde la salida. Si detecta una revisión nueva, pide abrir EntrenaOP;
+   aceptar descarga en primer plano. Actualizar sigue como recuperación manual.
 
 Sin Pro ni servicio activo no se puede vincular, descargar ni sincronizar. Se
 puede retirar el permiso propio aunque ya no se tenga ese acceso comercial.
@@ -44,7 +40,7 @@ claves administrativas en el reloj. La comprobación opcional cada 15 minutos
 está desactivada inicialmente y solo detecta cambios, sin importar/borrar FIT.
 La publicación e instalación desde Connect IQ Store todavía están pendientes.
 
-En 1.1, **MENU → Activar avisos de cambios** activa también la consulta cada 15
+Desde 1.1, **MENU → Activar avisos de cambios** activa también la consulta cada 15
 minutos y permite un diálogo por huella nueva. Aceptarlo abre EntrenaOP, que
 actualiza e importa en primer plano. Rechazarlo no produce otro aviso por la
 misma huella; Actualizar sigue disponible. No hay avisos sin activación expresa,
@@ -54,9 +50,9 @@ no se garantiza puntualidad ni descarga con la app cerrada. Las copias FIT
 retiradas permanecen en la biblioteca nativa; la lista de EntrenaOP solo muestra
 las vigentes. Una lista de una sesión no demuestra limpieza de esa biblioteca.
 
-La prueba de avisos 1.1 sigue sin aceptación física: Javier confirma No molestar
-apagado y recepción de una notificación del iPhone, que no acredita el diálogo
-propio. Dev registra consultas y respuestas 200. En 1.2, Estado de avisos muestra
+La prueba inicial de avisos no conseguía el diálogo pese a No molestar apagado y
+recepción de notificaciones del iPhone. Dev registraba consultas y respuestas 200.
+En 1.2, Estado de avisos muestra
 consulta/avisos activados, último paso, antigüedad y HTTP; registra desde inicio de
 la consulta hasta respuesta, cambio ya instalado/avisado, app activa o solicitud
 del diálogo. No expone credenciales, recetas ni hashes. «Aviso solicitado» solo
@@ -69,8 +65,9 @@ del SDK: al abrir se cancela el evento temporal, y al salir se programa cada 900
 solo si sigue activada la consulta y existe vínculo sin código pendiente. Activar
 desde el menú conserva el consentimiento, pero el temporizador arranca al salir.
 La instancia de fondo no reprograma al terminar. No cambia la validación de permisos
-ni revisiones ni se amplía el alcance a importar FIT con la app cerrada. Prueba del
-diálogo corregido pendiente en el dispositivo físico.
+ni revisiones ni se amplía el alcance a importar FIT con la app cerrada. El diálogo
+corregido y la actualización tras aceptarlo están aceptados físicamente el 27/10;
+no se acredita todavía rechazo del diálogo o repetición de avisos en el dispositivo.
 
 El servidor Dev usa ahora `ciq-private-2`: la lista conserva el título de sesión,
 pero Garmin puede mostrar `EOP<serial>` como nombre nativo. Este alias ASCII
@@ -81,7 +78,7 @@ Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones lis
 con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
 descanso de 1:00. Confirma después la receta cambiada a 3×6 a 22,5 kg con 1:15
 desde 1.1 y una sola entrada tras dos actualizaciones y reapertura. Aceptación
-física privada del 27/10; retirada/revocación, Store y avisos físicos siguen pendientes.
+física privada del 27/10; retirada/revocación y Store siguen pendientes.
 
 Pruebas servidor: `node --test supabase/functions/tests/garmin_ciq_test.ts`.
 SQL: `supabase/tests/garmin_ciq_account_and_downloads.sql` (ROLLBACK, solo Dev).
@@ -155,22 +152,21 @@ físico, donde Javier confirmó también los dos descansos.
 
 ## Límites actuales
 
-En la prueba física la respuesta llegó después del aviso de sesenta segundos.
+En las primeras pruebas la respuesta llegó después del aviso de sesenta segundos.
 El aviso no cancela la importación: una respuesta tardía puede instalar y
 confirmar el entrenamiento. La instancia bloquea nuevas solicitudes hasta recibir
-respuesta o salir. La invitación actual a reabrir debe pulirse para evitar
-reintentos innecesarios; no se conoce todavía la causa de la latencia.
+respuesta o salir. El aviso actual conserva el callback y permite esperar o salir;
+no se conoce todavía la causa de la latencia inicial.
 
 Quedan pendientes limpieza de copias nativas antiguas, pérdida de conexión,
-retirada/revocación, otros relojes, avisos y retorno de resultados por esta vía. No
+retirada/revocación, otros relojes, rechazo/repetición de avisos y retorno por esta vía. No
 presentar Descargar/Abrir como sincronización automática terminada ni exigir
 este puente para toda la fuerza.
 
 La vinculación segura y entrega privada ya están implementadas y aceptadas;
-el siguiente ensayo es el aviso opcional con la app cerrada; después,
-retirada/revocación. La experiencia objetivo
-es vincular una vez y mantener sesiones al día con Actualizar como recuperación
-manual. Los avisos de 1.1 requieren instalación y prueba física; no prometer
-recepción inmediata, importación con la app cerrada ni sondeo permanente.
+el aviso opcional y la actualización al aceptar también están aceptados en 1.3.
+El único siguiente ensayo recomendado es revocar el vínculo propio y comprobar
+el bloqueo en el reloj. El bloque general sigue abierto: no prometer recepción
+inmediata, importación con la app cerrada ni sondeo permanente.
 
-Contrato y evidencia: `docs/DEVICE_GARMIN_TRAINING.md`, INT-016.
+Contrato y evidencia: `docs/DEVICE_GARMIN_TRAINING.md`, INT-016 e INT-017.

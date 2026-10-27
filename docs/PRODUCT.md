@@ -1,15 +1,20 @@
 # Producto EntrenaOP
 
-**Connect IQ privado · 27/10/2026 · transporte privado aceptado en Dev:** vinculación
+**Connect IQ privado · 27/10/2026 · entrega y aviso aceptados en Dev:** vinculación
 con código y confirmación de cuenta en Perfil → Garmin, credencial revocable de
 90 días y sesiones compatibles de fuerza entre ayer y los próximos 14 días.
 Sin Pro ni servicio de entrenador vigente se bloquean vinculación, descargas y
 sincronización; sigue disponible retirar permisos. Las copias ya importadas
 pueden seguir en la biblioteca nativa del reloj. Servidor y pruebas automáticas
-verificados, PRG 1.0 instalado y vinculación real comprobada. Javier confirma
+verificados, vinculación real y PRG 1.3 instalado/verificado. Javier confirma
 descarga privada y Fuerza nativa con series, kilos y descanso correctos. El ajuste
-de identidad llega desde el servidor sin reinstalar. Reintentos y retirada físicos,
-Store y automatización general siguen pendientes. Tras retirar la primera prueba
+de identidad llegó al PRG 1.0 desde el servidor sin reinstalar. Confirma también
+cambio de dosis, repetición de actualización/reapertura con una sola entrada y,
+en 1.3, **app cerrada → aviso → aceptar → actualización sin errores → una sesión**.
+Consulta opcional cada 15 minutos desde salir; aceptar abre la app y descarga,
+con móvil/Connect y conectividad disponibles, sin garantizar recepción inmediata.
+Retirada/revocación físicas, limpieza de copias nativas, Store y automatización
+general siguen pendientes. Tras retirar la primera prueba
 y sincronizar, Javier confirma una única sesión de hoy en Garmin Connect y en
 Entrenamientos del reloj; no se acredita el aviso automático al entrar en Fuerza.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).

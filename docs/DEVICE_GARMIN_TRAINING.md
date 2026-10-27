@@ -1026,3 +1026,34 @@ conectado hasta la consulta programada al salir; se pide aceptar el diálogo si 
 y, si no aparece hacia las 17:06 Europe/Madrid, leer Último estado, HTTP y Hace.
 El nuevo diálogo sigue pendiente de aceptación física; no se afirma corrección
 completa del recorrido por la compilación o por el manifiesto de servidor.
+
+### Aceptación de aviso y actualización asistida · 27/10/2026
+
+Javier comunica **«AHORA HA SALIDO»** con el reloj en la esfera y EntrenaOP cerrada.
+Después confirma expresamente que acepta el aviso, la app se actualiza **sin
+errores** y sigue mostrando **una sola sesión**. Queda aceptado físicamente en
+fēnix 8 con **1.3.0** el recorrido **consulta en segundo plano → cambio detectado
+→ diálogo del reloj → aceptar → actualización FIT en primer plano → lista vigente
+de una entrada**. La descarga exige la confirmación de contenido instalado del
+cliente; el éxito no se deduce solo del HTTP 200.
+
+La traza Dev del ensayo registra POST 200 a las 15:55:25 UTC, otro POST 200 a las
+15:55:35 y GET FIT 200 a las 15:55:36. El FIT corresponde a la exportación propia
+98 de esta cita y título. Es coherente con consulta, apertura y descarga comunicadas
+por Javier; los logs no sustituyen su aceptación visual. La prueba anterior ya
+acreditaba cambio de dosis a 3×6 a 22,5 kg con 1:15 y dos actualizaciones/reapertura
+con una sola entrada. No se exige otra actividad ni se crean más citas de ensayo.
+
+El automático acreditado detecta cambios y pide abrir la app; **aceptar inicia la
+descarga en primer plano**. Garmin decide cuándo ejecutar el servicio, sin SLA de
+15 minutos exactos ni promesa de importación con la app cerrada. Se necesita el
+móvil/Connect y conectividad disponibles. No se han comprobado físicamente rechazo
+del diálogo, otra revisión notificada después de este éxito, pérdida de red,
+retirada/revocación ni otros modelos. La lista única no acredita limpieza de FIT
+antiguos de la biblioteca nativa. Training API/calendario y sus IDs conservados
+siguen siendo una vía distinta, sin asociación demostrada con el FIT privado.
+
+El tramo de aviso y actualización asistida queda aceptado en Dev; el bloque de
+sincronización general sigue abierto. **Único siguiente ensayo recomendado:**
+revocar el vínculo propio desde Perfil → Garmin y comprobar bloqueo en el reloj.
+Store, distribución sin USB, retirada de citas y limpieza nativa siguen pendientes.

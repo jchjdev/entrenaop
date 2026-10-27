@@ -12,10 +12,10 @@ confirma **cuenta vinculada → FIT privado inalámbrico → Fuerza nativa**, pr
 banca 3×5 a 20 kg y descanso 1:00, sin reinstalar por USB. Se descarta y retira la
 primera prueba: Garmin confirma cancelación y Mi semana muestra una sola cita hoy.
 Tras sincronizar, Javier confirma solo «CIQ prueba 2» en el calendario Garmin del
-iPhone y en Entrenamientos del reloj. **Único siguiente ensayo:** aviso opcional
-de cambios con la app cerrada; después retirada/revocación físicos. El aviso automático al entrar
+iPhone y en Entrenamientos del reloj. **Único siguiente ensayo:** revocar el vínculo
+propio y comprobar bloqueo físico en el reloj. El aviso automático al entrar
 en Fuerza y la asociación del FIT propio con Training API no quedan acreditados. El bloque
-de sincronización general sigue abierto. Store, otros relojes y background físico
+de sincronización general sigue abierto. Store, otros relojes y revocación física
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 Ensayo de cambio preparado sobre la misma cita: 3×6 a 22,5 kg, descanso 1:15 y
 título «CIQ prueba 2 - actualizada», con recibo `sent` y los mismos IDs Garmin.
@@ -25,17 +25,17 @@ tras dos actualizaciones y reapertura, sin errores.
 PRG 1.1 preparado con
 OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monkey C;
 PRG copiado/releído por USB con hash idéntico; Javier confirma inicio en 1.1 y OP
-naranja y dosis 3×6 a 22,5 kg con 1:15. Avisos físicos siguen pendientes; la lista
+naranja y dosis 3×6 a 22,5 kg con 1:15. Los avisos se aceptan con 1.3 más abajo; la lista
 única no acredita limpieza de la biblioteca nativa.
 Javier activa avisos; misma cita renombrada «CIQ prueba 2 - aviso automático»,
 revisión 5, dosis conservada, `sent` con los mismos IDs y manifiesto de una entrada.
-Pendiente aviso con la app cerrada y actualización tras aceptarlo.
+Esa prueba inicial no consigue todavía el aviso con la app cerrada.
 Sin aviso acreditado: No molestar apagado y notificaciones del iPhone recibidas;
 logs Dev con respuestas 200. Versión 1.2 preparada con diagnóstico local de pasos,
 HTTP y antigüedad, compilación limpia y quince pruebas Monkey C. Paquete 1.2
 copiado/releído por USB con hash idéntico; arranque y sincronización confirmados
 por Javier. Misma cita «CIQ prueba 2 - aviso 1.2», revisión 6 y mismos IDs Garmin,
-dosis conservada. Pendientes aviso con app cerrada y, si falla, lectura del diagnóstico.
+dosis conservada. La prueba 1.2 no consigue el aviso y se lee el diagnóstico.
 Javier comunica «Ya está actualizado» y 200, sin aviso. Se repite con revisión 7,
 «CIQ prueba 2 - aviso final»: Dev registra la consulta y se pide el primer estado,
 HTTP y antigüedad antes de otra comprobación. Sigue la 1.2 sin reinstalar.
@@ -47,7 +47,12 @@ limpia y 16 pruebas Monkey C correctas; paquete 1.3 copiado/releído por USB con
 idéntico. Javier confirma inicio 1.3, sincronización y consulta/avisos activados
 antes de salir. Ensayo con revisión 9 de la misma «CIQ prueba 2 - aviso final»,
 nombre y dosis conservados, manifiesto completo con identidad nueva y mismos IDs
-Garmin. Aviso físico corregido pendiente.
+Garmin. **Aceptación física del 27/10:** Javier confirma aviso con la app cerrada,
+aceptación, actualización sin errores y una sola sesión en EntrenaOP. Traza Dev
+coherente: consulta 200 y descarga FIT 200 de la exportación propia nueva. Tramo
+de aviso/actualización asistida aceptado en 1.3; descarga en primer plano al aceptar.
+Rechazo/repetición de avisos, pérdida de red, retirada/revocación, limpieza nativa
+y distribución general siguen pendientes. No se cierra el bloque general.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
