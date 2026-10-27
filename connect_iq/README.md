@@ -1,5 +1,14 @@
 # EntrenaOP Connect IQ · Dev
 
+**Ensayo 1.5 · INT-020:** menú **Prueba: descarga en fondo**, solo con una sesión
+lista. Armar una vez y salir a la esfera antes de cambiar la receta en Dev.
+Solicita una revisión nueva en segundo plano, sin avisos ni intents; espera
+un cambio durante un máximo de 30 min y pide un solo FIT. Durante el ensayo,
+abrir la app/START solo comprueba la biblioteca local, sin descargar. MENU →
+Terminar prueba devuelve el modo habitual. HTTP 200 no demuestra instalación.
+Treinta y ocho pruebas por variante correctas; resultado físico pendiente.
+[Protocolo](../docs/DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
+
 **Corrección 1.4.1 · 27/10/2026:** timeout -300 identificado como transporte;
 Javier recupera la sesión con Connect abierto y confirma que abre Fuerza con
 contenido. Publicada 1.4.1 en la misma beta privada (Internal: 3), con reintento

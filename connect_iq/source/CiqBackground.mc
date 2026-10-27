@@ -6,7 +6,7 @@ import Toybox.System;
 import Toybox.Time;
 
 // Se ejecuta solo si el usuario activa la comprobación desde el menú del reloj.
-// No importa, elimina ni abre FIT: únicamente consulta una huella de cambios.
+// El modo habitual solo consulta cambios. El ensayo explícito deriva una descarga.
 (:background)
 class CiqBackground extends System.ServiceDelegate {
     function initialize() { ServiceDelegate.initialize(); }
@@ -15,6 +15,7 @@ class CiqBackground extends System.ServiceDelegate {
         Storage.setValue("ciqBackgroundStateAt",Time.now().value());
     }
     function onTemporalEvent() as Void {
+        if (ciqProbeHeld()) { var probe=new CiqSilentProbe(); probe.run(); return; }
         var credential=Storage.getValue("ciqCredential");
         var enabled=Storage.getValue("ciqBackgroundEnabled");
         if (!(enabled instanceof Boolean) || !enabled || !(credential instanceof String) ||
@@ -29,6 +30,7 @@ class CiqBackground extends System.ServiceDelegate {
         } catch(error) { recordState("Error al solicitar"); finish(); }
     }
     function onChanges(code as Number,data as Communications.ContentType?) as Void {
+        if (ciqProbeHeld()) { finish(); return; }
         Storage.setValue("ciqBackgroundHttp",code); recordState("Respuesta recibida");
         // Un permiso retirado o perdido no debe seguir generando consultas de red.
         if (code==401 || code==403) { Storage.setValue("ciqBackgroundEnabled",false); }

@@ -1295,3 +1295,76 @@ presentación y apertura físicas de 1.4.1. No se ha inducido un timeout nuevo p
 probar el reintento manual ni repetido cancelación/reapertura en esta versión;
 sus regresiones automáticas son correctas. No se acredita inmunidad a errores de
 red o firmware ni eliminación de copias nativas antiguas.
+
+## Ensayo silencioso en segundo plano · INT-020
+
+Javier solicita el 27/10/2026 probar que una sesión se descargue sin abrir la app
+ni aceptar avisos. Beta 1.5 añade **Prueba: descarga en fondo**, desactivada hasta
+armarla desde el menú con una sola sesión compatible y vínculo válido. El ensayo
+no habilita sincronización silenciosa general.
+
+Al armarse guarda la cita elegida, un contador de generación, el instante y los
+nombres de toda la biblioteca propia (máximo 200) más el nombre de la revisión
+actual. No se modifica la receta hasta confirmar que el usuario salió a la
+esfera. El servicio consulta un manifiesto completo y solo elige una revisión
+de esa cita cuyo nombre no esté en la línea base. La descarga usa el endpoint
+privado existente, con la credencial del reloj y nueva comprobación de permiso
+y vigencia. No se envía nombre de fichero ni URL aportada por el servidor a
+otro destino: se construye la ruta propia por UUID de exportación.
+
+El evento se programa cada 300 s mientras espera una revisión nueva, caduca a
+los 30 min y deja de programarse al seleccionar un FIT o fallar. Hay un solo
+intento de descarga. No pide `requestApplicationWake`, no elimina contenido ni
+lanza Fuerza. También descarta callbacks de avisos anteriores y generaciones
+ya terminadas. El modo habitual y sus preferencias permanecen almacenados.
+
+Los servicios de Garmin pueden terminar a los 30 s; no se usa Timer en fondo.
+Si el manifiesto consume 25 s no se inicia el FIT. `PersistedContent` no está
+disponible en ese ámbito: se registra la solicitud/respuesta y se verifica más
+tarde la biblioteca propia en primer plano. Un 200 por sí solo no se etiqueta
+como instalación. [Servicios](https://developer.garmin.com/connect-iq/articles/core-topics/Backgrounding.html),
+[biblioteca](https://developer.garmin.com/connect-iq/api-docs/Toybox/PersistedContent.html).
+
+Mientras el ensayo permanece activo, abrir la app o pulsar START solo lee el
+resultado local. Sincronizar y las peticiones de apertura también quedan
+bloqueadas, para evitar que la comprobación descargue el mismo FIT y falsee el
+éxito. Solo una identidad nueva de la biblioteca propia muestra **Instalada en
+segundo plano**. MENU → Terminar prueba reactiva el funcionamiento habitual y
+su sincronización; no revoca el vínculo ni borra la evidencia. Terminar no
+promete deshacer una importación que Garmin ya hubiera iniciado.
+
+Validación: 38 pruebas Monkey C por variante, incluidos una sola solicitud,
+copias de línea base, otra cita, listas parciales/denegadas, callbacks duplicados,
+generaciones antiguas, caducidad, inspección sin descarga en primer plano,
+supresión de avisos y programación exclusiva de la fase de espera. La prueba
+local no acredita que Garmin importe un FIT con la app cerrada: falta el ensayo
+físico. Aviso de privacidad ampliado al experimento, desplegado en Dev y texto
+de 4.155 bytes contrastado; ruta sin credencial sigue rechazando 401. Nueve
+pruebas HTTP y contrato SQL con ROLLBACK correctos, sin cambios de esquema.
+
+Protocolo físico: instalar la beta privada, actualizar la revisión de partida,
+armar el menú y salir a la esfera. Después cambiar únicamente la muestra propia
+desde Trainer, esperar un ciclo con el móvil conectado y leer el resultado sin
+terminar la prueba. Contrastar alias nuevo y contenido antes de restaurar el
+modo habitual. Cita controlada: `2764d39a-3c1f-493a-ae48-9060d6db0b5e`, todavía
+pendiente y sin ejecución al preparar el ensayo; no se alteran otras sesiones.
+Paquete Beta 1.5.0: 49.753 bytes, SHA-256
+`2f72dff5fc9118eb48ce1e0338b59ed1c632991ef3a2427f488a22404fabb3f8`,
+firma de manifiesto/ejecutables verificada con la clave original por SDK 9.3.0.
+Garmin confirma archivo/firma y publica **1.5.0 (Internal: 4)** en la misma ficha
+privada, con los permisos anteriores. Envía la actualización al fēnix de 47 mm
+para la próxima sincronización. Se pide confirmar 1.5, armar el menú y salir a
+la esfera antes de aplicar la revisión. Resultado físico todavía pendiente.
+
+Para reforzar la prueba, comprobar primero el alias nuevo desde Entrenamientos
+de Fuerza nativa, antes de volver a EntrenaOP. Después la inspección local del
+modo experimental permite contrastar propiedad y estado sin iniciar otra descarga.
+Si se termina el ensayo antes de inspeccionar, la sincronización normal puede
+descargar el FIT y deja de servir como prueba del origen en segundo plano.
+
+Muestra preparada únicamente en el borrador Trainer
+`99983402-127f-4c50-b04d-d006c7064c10`, de la cita controlada anterior; título
+**Prueba Garmin · Fondo silencioso**. Todavía no se pulsa Guardar adaptación
+individual. La cita sigue con nombre original, pendiente, sin ejecución y última
+exportación `EOP1000000104`. Se espera «prueba armada y app cerrada» para aplicar
+la revisión y comenzar la espera; no se presenta el ensayo físico como completado.

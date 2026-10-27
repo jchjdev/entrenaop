@@ -1,6 +1,6 @@
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
     <!-- Identidad de beta independiente de la aplicación Dev y de una futura publicación pública. -->
-    <iq:application entry="EntrenaOPApp" id="d38458cfe4d844fcae60b18c9e9d7cf3" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="5.1.0" name="@Strings.AppName" type="watch-app" version="1.4.1">
+    <iq:application entry="EntrenaOPApp" id="d38458cfe4d844fcae60b18c9e9d7cf3" launcherIcon="@Drawables.LauncherIcon" minSdkVersion="5.1.0" name="@Strings.AppName" type="watch-app" version="1.5.0">
         <iq:products><iq:product id="fenix847mm"/></iq:products>
         <iq:permissions>
             <iq:uses-permission id="Communications"/>

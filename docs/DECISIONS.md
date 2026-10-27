@@ -10,6 +10,26 @@ y se distingue del soporte/distribución Connect IQ todavía limitado al fēnix 
 No se concede Pro, no se modifica producción ni se publica en las tiendas.
 [Compilación, instalación y límites](ANDROID_BETA.md).
 
+**INT-020 · 27/10/2026 · ensayo FIT silencioso en segundo plano:** Javier pide
+probar una descarga sin abrir la app ni aceptar avisos. Se añade a Beta 1.5 un
+modo experimental explícito y acotado a la única cita compatible del reloj.
+Al armarlo captura todos los nombres de la biblioteca propia y la revisión
+actual. Con la app cerrada consulta el manifiesto vigente y solicita un solo
+FIT nuevo de esa cita, conservando permiso/revisión comprobados en cada petición.
+Consulta cada cinco minutos mientras espera cambio, con ventana de treinta
+minutos y sin avisos, borrado ni intents. Al elegir la revisión deja de programar
+consultas. Durante el ensayo la app solo permite leer resultado o terminar:
+abrirla no descarga ni consulta la red, para no falsear la prueba. HTTP 200 no
+acredita importación; solo una copia propia nueva verificada localmente después
+puede acreditarla. Se conservan preferencias y credencial; terminar restaura el
+modo habitual. Compilación estricta y 38 pruebas por variante correctas. El aviso
+de privacidad se actualiza y despliega solo en Dev; nueve pruebas HTTP, contrato
+SQL con ROLLBACK y bytes publicados correctos. Resultado físico pendiente.
+Publicada en la misma ficha privada como 1.5.0 (Internal: 4), con firma verificada
+y actualización encolada para el fēnix de 47 mm. Se espera confirmación de armado
+y salida a la esfera antes de aplicar la revisión de la muestra.
+[Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
+
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier
 confirma que su compañero ya tiene una cuenta de entrenador activa y acceso al
 portal, tras completar los pasos manualmente durante una videollamada. Pide

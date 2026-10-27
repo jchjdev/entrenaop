@@ -39,8 +39,13 @@ y en la importación de los FIT que solicitas. Los datos se usan para este
 servicio; no se venden ni se usan para publicidad. Garmin tiene su propia
 política: https://www.garmin.com/privacy/connectiq/policy/
 Communications permite comunicar con EntrenaOP, PersistedContent importar y
-abrir entrenamientos, y Background consultar cambios si lo activas. El aviso
-opcional pide abrir la app; la descarga se realiza en primer plano al aceptar.
+abrir entrenamientos, y Background consultar cambios si lo activas. En el modo
+habitual, el aviso opcional pide abrir la app y descarga al aceptar. La beta
+incluye además un ensayo explícito desde el menú para solicitar una revisión
+nueva de una sola sesión en segundo plano, sin aviso ni apertura de la app.
+El ensayo conserva únicamente estado técnico, identidad del FIT y resultado
+local para comprobar si Garmin llegó a importarlo. No acredita entrega autónoma
+general ni cambia los permisos de cuenta o la vigencia de cada descarga.
 
 CONSERVACIÓN Y RETIRADA
 La caducidad o retirada impide seguir usando la credencial, pero no supone

@@ -33,11 +33,13 @@ class CiqView extends WatchUi.View {
     }
     function onShow() as Void {
         if (_started) { return; } _started=true;
+        if (ciqProbeHeld()) { probeSummary(); return; }
         if (_credential==null) { beginPair(); } else if (_pairCode!=null) { checkPair(); } else { synchronize(); }
     }
     function onUpdate(dc as Graphics.Dc) as Void {
         var title=(WatchUi.loadResource(Rez.Strings.AppName) as String)+" "+(WatchUi.loadResource(Rez.Strings.AppVersion) as String);
-        var action=_busy?"Espera o BACK para salir":(_pairCode!=null?"START: comprobar":(_verified?"START: sesiones":"START: actualizar"));
+        var action=ciqProbeHeld()?"START: comprobar\nMENU: prueba":
+            (_busy?"Espera o BACK para salir":(_pairCode!=null?"START: comprobar":(_verified?"START: sesiones":"START: actualizar")));
         ciqDrawScreen(dc,[title,_status,_detail,_hint,action]);
     }
     private function startWait(status as String) as Void {
@@ -51,6 +53,7 @@ class CiqView extends WatchUi.View {
         _hint="No repitas la descarga"; WatchUi.requestUpdate();
     }
     private function request(action as String,callback as Method(code as Number,data as Communications.ContentType?) as Void) as Void {
+        if (ciqProbeHeld()) { throw new Lang.InvalidValueException("Ensayo: sin red en primer plano"); }
         var headers={"Content-Type"=>Communications.REQUEST_CONTENT_TYPE_JSON} as Dictionary;
         if (_credential!=null) { headers["Authorization"]="Bearer "+_credential; }
         Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/watch",
@@ -88,6 +91,7 @@ class CiqView extends WatchUi.View {
         _pairCode=null; Storage.deleteValue("ciqPairCode"); _poll.stop(); synchronize();
     }
     function synchronize() as Void {
+        if (ciqProbeHeld()) { probeSummary(); return; }
         if (_busy) { return; }
         if (_credential==null) { beginPair(); return; }
         if (_pairCode!=null) { checkPair(); return; }
@@ -95,6 +99,7 @@ class CiqView extends WatchUi.View {
         try { request("manifest",method(:onManifest)); } catch(error) { fail("Sin conexión. Actualiza luego"); }
     }
     function onManifest(code as Number,data as Communications.ContentType?) as Void {
+        if (ciqProbeHeld()) { stopWait(); probeSummary(); return; }
         stopWait();
         if (code!=200 || !(data instanceof Dictionary)) { protocolFailure(code,data); return; }
         var response=data as Dictionary; var entries=ciqManifestEntries(response);
@@ -110,6 +115,7 @@ class CiqView extends WatchUi.View {
         return null;
     }
     private function nextDownload() as Void {
+        if (ciqProbeHeld()) { stopWait(); probeSummary(); return; }
         while (_index<_entries.size()) {
             var entry=_entries[_index]; var name=entry["fit_name"] as String;
             if (owned(name)!=null) { _index++; continue; }
@@ -151,10 +157,18 @@ class CiqView extends WatchUi.View {
         stopWait(); _verified=false; _status="No se ha actualizado"; _detail=message;
         _hint="No se muestran copias antiguas"; WatchUi.requestUpdate();
     }
-    function select() as Void { if (_busy) { return; } if (_verified) { sessions(); } else { synchronize(); } }
+    function select() as Void { if (ciqProbeHeld()) { probeSummary(); return; } if (_busy) { return; } if (_verified) { sessions(); } else { synchronize(); } }
     function menu() as Void {
         if (_busy) { return; } var menu=new WatchUi.Menu2({:title=>"EntrenaOP"});
+        if (ciqProbeHeld()) {
+            menu.addItem(new WatchUi.MenuItem("Leer resultado", "Sin descargar",:probeRead,{}));
+            menu.addItem(new WatchUi.MenuItem("Terminar prueba", "Vuelve al modo habitual",:probeEnd,{}));
+            WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP); return;
+        }
         menu.addItem(new WatchUi.MenuItem("Actualizar",null,:refresh,{}));
+        if (_verified && _entries.size()==1) {
+            menu.addItem(new WatchUi.MenuItem("Prueba: descarga en fondo","Una revisión; sin avisos",:probeArm,{}));
+        }
         menu.addItem(new WatchUi.MenuItem("Estado de apertura",null,:openingDiagnostics,{}));
         if (_verified) { menu.addItem(new WatchUi.MenuItem("Abrir sesiones",null,:sessions,{})); }
         if (_pairCode==null && _credential!=null) {
@@ -219,6 +233,7 @@ class CiqView extends WatchUi.View {
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
     function open(index as Number) as Void {
+        if (ciqProbeHeld()) { probeSummary(); return; }
         if (_busy || !_verified || index<0 || index>=_entries.size()) { return; }
         var view=new CiqOpenView(self,_entries[index]);
         WatchUi.switchToView(view,new CiqOpenDelegate(view),WatchUi.SLIDE_IMMEDIATE);
@@ -238,6 +253,47 @@ class CiqView extends WatchUi.View {
         menu.addItem(new WatchUi.MenuItem("Detalle",error instanceof String?error:"Sin dato",:info,{}));
         menu.addItem(new WatchUi.MenuItem("Hace",stamp instanceof Number?((Time.now().value()-stamp)/60).toString()+" min":"Sin dato",:info,{}));
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_IMMEDIATE);
+    }
+    function armProbe() as Void {
+        if (_busy || !_verified || _entries.size()!=1 || _credential==null || _pairCode!=null) { return; }
+        var target=_entries[0]["scheduled_id"];
+        if (!(target instanceof String) || target.length()!=36) { fail("Cita de prueba no válida"); return; }
+        // Capturar toda la biblioteca propia impide acreditar como nueva una copia antigua.
+        var baseline=[] as Array<String>; var iterator=PersistedContent.getAppWorkouts(); var content=iterator.next();
+        while (content!=null) {
+            if (baseline.size()>=200) { fail("Demasiadas copias para probar"); return; }
+            baseline.add(content.getName()); content=iterator.next();
+        }
+        var currentName=_entries[0]["fit_name"] as String;
+        if (baseline.indexOf(currentName)<0) { baseline.add(currentName); }
+        var generation=Storage.getValue("ciqProbeRun");
+        Storage.setValue("ciqProbeRun",generation instanceof Number?generation+1:1);
+        Storage.setValue("ciqProbeTarget",target); Storage.setValue("ciqProbeBaseline",baseline as Array<Storage.ValueType>);
+        Storage.setValue("ciqProbeStarted",Time.now().value()); Storage.setValue("ciqProbePhase","armed");
+        Storage.setValue("ciqProbeState","Prueba preparada"); Storage.setValue("ciqProbeManifestHttp",0);
+        Storage.setValue("ciqProbeFitHttp",0); Storage.deleteValue("ciqProbeName"); Storage.deleteValue("ciqProbeExport");
+        Storage.deleteValue("ciqProbeVerifiedAt"); Storage.setValue("ciqProbeMode",true); probeSummary();
+    }
+    function probeSummary() as Void {
+        _verified=false;
+        var state=Storage.getValue("ciqProbeState"); var name=Storage.getValue("ciqProbeName");
+        _status="Prueba en segundo plano"; _detail=state instanceof String?state:"Sin resultado";
+        _hint="Sal hasta la esfera";
+        if (name instanceof String) {
+            _hint=name;
+            if (owned(name)!=null) {
+                _detail="Instalada en segundo plano"; _hint=name+" / Sin descarga al abrir";
+                Storage.setValue("ciqProbeVerifiedAt",Time.now().value());
+            }
+        }
+        var http=Storage.getValue("ciqProbeFitHttp");
+        if (http instanceof Number && http!=0 && Storage.getValue("ciqProbeVerifiedAt")==null) {
+            _hint="Garmin: "+http+" / Sin descarga al abrir";
+        }
+        WatchUi.requestUpdate();
+    }
+    function endProbe() as Void {
+        Storage.setValue("ciqProbeMode",false); synchronize();
     }
 }
 class CiqDelegate extends WatchUi.BehaviorDelegate {
@@ -259,5 +315,8 @@ class CiqMenuDelegate extends WatchUi.Menu2InputDelegate {
         else if (id==:alerts) { _view.toggleAlerts(); }
         else if (id==:diagnostics) { _view.diagnostics(); }
         else if (id==:openingDiagnostics) { _view.openingDiagnostics(); }
+        else if (id==:probeArm) { _view.armProbe(); }
+        else if (id==:probeRead) { _view.probeSummary(); }
+        else if (id==:probeEnd) { _view.endProbe(); }
     }
 }

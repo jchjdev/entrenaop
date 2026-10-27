@@ -16,10 +16,11 @@ function foregroundEntrySuspendsRegisteredChecks(logger as Test.Logger) as Boole
 
 (:test)
 function foregroundExitSchedulesOnlyOptedInLinkedWatch(logger as Test.Logger) as Boolean {
-    var keys=["ciqBackgroundEnabled","ciqCredential","ciqPairCode"] as Array<String>;
+    var keys=["ciqBackgroundEnabled","ciqCredential","ciqPairCode","ciqProbeMode"] as Array<String>;
     var saved={} as Dictionary;
     for (var index=0;index<keys.size();index++) { saved[keys[index]]=Storage.getValue(keys[index]); }
     var original=Background.getTemporalEventRegisteredTime();
+    Storage.setValue("ciqProbeMode",false);
     // Credencial local sintética: no se hace ninguna petición ni se ejecuta el evento.
     Storage.setValue("ciqCredential","synthetic-local-test"); Storage.deleteValue("ciqPairCode");
     Storage.setValue("ciqBackgroundEnabled",false); ciqResumeChecks();

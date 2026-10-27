@@ -1,5 +1,6 @@
 import Toybox.Lang;
 
+(:background)
 function ciqManifestEntries(data as Dictionary) as Array<Dictionary>? {
     if (data["complete"] != true || !(data["entries"] instanceof Array)) { return null; }
     var raw=data["entries"] as Array;

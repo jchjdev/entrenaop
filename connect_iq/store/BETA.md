@@ -1,5 +1,20 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
+**Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga
+silenciosa explícita de una revisión nueva
+de la única cita compatible. Se arma desde el menú y se sale a la esfera antes
+del cambio. Sin avisos ni intents; una solicitud FIT como máximo. Al volver,
+la app lee solo la biblioteca local, sin descargar para falsear el resultado.
+Terminar prueba restaura el modo habitual. Credencial, UUID y permisos se
+mantienen. 38 pruebas por variante y firma correctas; aceptación física pendiente.
+El aviso de privacidad Dev ya describe el ensayo y está desplegado/verificado.
+Paquete 1.5.0: 49.753 bytes, SHA-256
+`2f72dff5fc9118eb48ce1e0338b59ed1c632991ef3a2427f488a22404fabb3f8`.
+Garmin verifica archivo/firma y confirma envío al fēnix de 47 mm para la próxima
+sincronización. Descripción y novedades explican el ensayo en castellano e inglés.
+Se solicita instalar 1.5, armar el menú y salir a la esfera antes de cambiar la
+muestra. Todavía no se acredita descarga en segundo plano.
+
 **Corrección 1.4.1 publicada en la misma beta privada (Internal: 3):** timeout
 -300 distinguido de denegación de acceso;
 reintento manual con autorización nueva y texto medido dentro de la pantalla
@@ -34,7 +49,7 @@ Para instalarla desde Connect IQ en el reloj, usar esa misma cuenta Garmin.
 
 ## Identidad y compilación
 
-- Nombre: **EntrenaOP Beta**; versión **1.4.1**; idioma castellano.
+- Nombre: **EntrenaOP Beta**; versión **1.5.0**; idioma castellano.
 - UUID estable: `d38458cfe4d844fcae60b18c9e9d7cf3`.
 - Variante independiente de Dev; comparte código y endpoint exclusivamente Dev.
 - Perfil oficial `fenix847mm`; aceptación física hasta ahora en fēnix 8 de 47 mm.

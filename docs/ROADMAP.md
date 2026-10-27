@@ -12,6 +12,15 @@ recordatorios conservan su prueba propia. Connect IQ para ese reloj/distribució
 entre cuentas sigue fuera de la entrega Android; no se cierra la integración
 general ni se habilitan cobros/producción. [Circuito y límites](ANDROID_BETA.md).
 
+**INT-020 · 27/10/2026 · ensayo de descarga silenciosa:** Javier prioriza probar
+un FIT con app cerrada y sin aceptar avisos. Beta 1.5 incorpora un modo acotado
+con biblioteca de partida, cita elegida, autorización actual y un solo GET FIT.
+La inspección posterior no descarga en primer plano; HTTP 200 no demuestra
+importación. 38 pruebas por variante, contrato SQL con ROLLBACK y privacidad Dev
+verificados. **Único siguiente paso CIQ:** ejecutar el ensayo físico y contrastar
+la copia nueva antes de plantear sincronización silenciosa general.
+[Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
+
 
 **TRN-030/031 · 27/10/2026 · calendario con eventos publicado en Dev:**
 mes con tiras de alumno/sesión, colores estables por alumno, estados accesibles,
