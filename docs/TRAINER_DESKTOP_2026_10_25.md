@@ -461,3 +461,10 @@ El ensayo adicional en Chrome aislado no pasó de la carga del fichero de prueba
 y se interrumpió sin resultado; no se contabiliza como validación de navegador.
 La matriz local requerida de Trainer queda acreditada por análisis y 261 pruebas.
 La comprobación del gesto en la sesión publicada del usuario sigue siendo física.
+
+Publicación de la corrección comprobada el 27/10/2026: revisión
+`4331250befea7b6124a43d1f27e577ee286651a8`, run `40550014074`, validación y
+despliegue automáticos correctos. El verificador HTTPS confirma esa revisión,
+release `4331250befea7b6124a43d1f27e577ee286651a8-40550014074-1`, entorno development
+y proyecto `sxbxfjqgoddzhtcyhalw`, identidad, recursos y cabeceras. Sigue pendiente
+la aceptación física del gesto en el navegador del usuario.
