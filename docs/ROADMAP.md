@@ -11,8 +11,10 @@ nativa desde servidor (`ciq-private-2`), con 175 pruebas y tipos correctos. Javi
 confirma **cuenta vinculada → FIT privado inalámbrico → Fuerza nativa**, press
 banca 3×5 a 20 kg y descanso 1:00, sin reinstalar por USB. Se descarta y retira la
 primera prueba: Garmin confirma cancelación y Mi semana muestra una sola cita hoy.
-**Único siguiente ensayo:** comprobar calendario/entrenamiento de hoy tras sincronizar
-el móvil; después reintentos y cambio/retirada/revocación físicos. El bloque
+Tras sincronizar, Javier confirma solo «CIQ prueba 2» en el calendario Garmin del
+iPhone y en Entrenamientos del reloj. **Único siguiente ensayo:** reabrir/actualizar
+sin duplicados y después cambios/revocación físicos. El aviso automático al entrar
+en Fuerza y la asociación del FIT propio con Training API no quedan acreditados. El bloque
 de sincronización general sigue abierto. Store, otros relojes y background físico
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).

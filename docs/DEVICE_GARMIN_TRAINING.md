@@ -826,7 +826,15 @@ sesión hoy: CIQ prueba 2 - 27 octubre**, pendiente. No se alteran otras citas.
 El destino de Trainer se contrasta con su recurso JavaScript público versionado:
 solo incorpora la URL de `entrenaop-dev`. El calendario Garmin del PC pide nuevo
 inicio de sesión, por lo que no se acredita su apariencia visual desde esa pestaña.
-El único siguiente ensayo es sincronizar Garmin Connect del móvil y comprobar
-calendario/entrenamiento de hoy en el reloj con esta única cita. La posible causa
-de que no se ofrezca al entrar en Fuerza sigue sin demostrar; dos citas por sí
-solas no la establecen. Reintentos, cambios/revocación y demás límites siguen abiertos.
+Javier sincroniza desde el iPhone y confirma que Garmin Connect muestra solo
+**CIQ prueba 2 - 27 octubre**. Después de comprobar el reloj desde la esfera,
+START → Entrenamientos, confirma «ahora sale correcto, solo el ciq prueba 2».
+Queda acreditada una única sesión de hoy en EntrenaOP, Garmin Connect y el reloj,
+con retirada de la prueba antigua. No se atribuye el resultado exclusivamente a
+tener dos citas: también se ha sincronizado el dispositivo.
+
+Esta confirmación corresponde al calendario y la lista nativa de entrenamientos;
+no demuestra un aviso automático al entrar en Fuerza ni que la entrada de Training
+API use el mismo FIT de Connect IQ. El único siguiente ensayo es reabrir/actualizar
+sin duplicados y después cambios/revocación físicos. Sincronización general,
+background, Store y los demás límites siguen abiertos.

@@ -9,7 +9,9 @@ pueden seguir en la biblioteca nativa del reloj. Servidor y pruebas automáticas
 verificados, PRG 1.0 instalado y vinculación real comprobada. Javier confirma
 descarga privada y Fuerza nativa con series, kilos y descanso correctos. El ajuste
 de identidad llega desde el servidor sin reinstalar. Reintentos y retirada físicos,
-Store y automatización general siguen pendientes.
+Store y automatización general siguen pendientes. Tras retirar la primera prueba
+y sincronizar, Javier confirma una única sesión de hoy en Garmin Connect y en
+Entrenamientos del reloj; no se acredita el aviso automático al entrar en Fuerza.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **Connect IQ · 26/10/2026 · primer transporte aceptado en Dev:** una app
