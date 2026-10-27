@@ -89,16 +89,18 @@ contrata infraestructura ni se introducen cobros en el bloque de acceso/clientes
 Javier pide entender el coste conjunto de los proveedores antes de incorporar
 la contratación del entrenador. Stripe es una propuesta, no una elección
 confirmada ni una cuenta configurada. Crear cuentas web con Supabase no requiere
-contratar una pasarela. La primera carencia comprobada es que Trainer ofrece
-solo inicio de sesión y remite al móvil para registro y recuperación.
+contratar una pasarela. La carencia inicial era que Trainer ofrecía solo inicio
+de sesión y remitía al móvil para registro y recuperación. TRN-035 incorpora
+ambos recorridos web con los servicios existentes.
 
 El recorrido objetivo es registro web → confirmación de correo → contratación
 o concesión manual vigente → MFA → panel. La cuenta EntrenaOP es única para web
 y deportista. Crear cuenta no concede acceso profesional, Pro ni permisos ADMIN.
-El control del cupo y de los pagos continuará en servidor. La implementación del
-registro, los retornos web y la recuperación todavía está pendiente: la revisión
-no los presenta como disponibles. Los precios profesionales y el proveedor de
-cobros siguen abiertos; el criterio de no activar cobros reales se conserva.
+El control del cupo y de los pagos continuará en servidor. El registro, los
+retornos web y la recuperación están implementados y validados según
+[TRAINER_WEB_ACCOUNT_2026_10_27.md](TRAINER_WEB_ACCOUNT_2026_10_27.md), que recoge
+la evidencia y los límites de la comprobación. Los precios profesionales y el
+proveedor de cobros siguen abiertos; no se activan cobros reales.
 
 ### Inventario y tarifas públicas de referencia
 
