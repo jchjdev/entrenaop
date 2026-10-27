@@ -954,3 +954,13 @@ todavía el arranque ni un servicio en segundo plano de esta versión. Se pide
 desconectar, abrir 1.2, terminar la sincronización y salir a la esfera antes de
 cambiar de nuevo el título: así se ensaya una revisión nueva con el diagnóstico
 activo, sin confundir una actualización al abrir con el aviso automático.
+
+Javier responde **listo** al recorrido de inicio 1.2, sincronización terminada y
+salida a la esfera. Se cambia desde Trainer únicamente el título de la misma cita
+a **CIQ prueba 2 - aviso 1.2**. Dev confirma a las 13:07 UTC revisión 6 y `sent`,
+conservando IDs de entrenamiento/calendario y las tres series de seis repeticiones
+a 22,5 kg con 75 s de descanso. La interfaz muestra título y dosis nuevos.
+La prueba queda preparada con la app cerrada: esperar el diálogo, aceptar si llega
+y comprobar una sola entrada nueva. Si no aparece en unos 20 min desde el cambio,
+abrir entonces **Estado de avisos** y comunicar Último estado y HTTP. La detección
+y el diálogo siguen sin aceptación física; no se atribuye una causa al fallo previo.

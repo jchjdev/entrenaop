@@ -47,8 +47,10 @@ iPhone. Eso no acredita el diálogo propio. Dev registra respuestas 200; se prep
 1.2 con diagnóstico local acotado y quince pruebas Monkey C correctas para separar
 consulta, respuesta e intento de aviso. No se identifica aún la causa ni se declara
 corregido el aviso. Después se copia/relee 1.2 por USB con bytes y SHA-256 idénticos
-al compilado; arranque y diagnóstico físicos pendientes. Se pide abrir y terminar
-la sincronización antes de salir a la esfera y preparar otro cambio del mismo título.
+al compilado. Javier confirma arranque, sincronización terminada y salida a la
+esfera en 1.2. Se renombra la misma cita «CIQ prueba 2 - aviso 1.2», revisión 6,
+dosis conservada y `sent` con los mismos IDs Garmin. Pendientes diálogo y
+actualización al aceptar; si no llega, leer Último estado y HTTP tras la espera.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

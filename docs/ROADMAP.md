@@ -33,7 +33,9 @@ Pendiente aviso con la app cerrada y actualización tras aceptarlo.
 Sin aviso acreditado: No molestar apagado y notificaciones del iPhone recibidas;
 logs Dev con respuestas 200. Versión 1.2 preparada con diagnóstico local de pasos,
 HTTP y antigüedad, compilación limpia y quince pruebas Monkey C. Paquete 1.2
-copiado/releído por USB con hash idéntico; arranque y diagnóstico físicos pendientes.
+copiado/releído por USB con hash idéntico; arranque y sincronización confirmados
+por Javier. Misma cita «CIQ prueba 2 - aviso 1.2», revisión 6 y mismos IDs Garmin,
+dosis conservada. Pendientes aviso con app cerrada y, si falla, lectura del diagnóstico.
 No se ha determinado ni corregido la causa.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
