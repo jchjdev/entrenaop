@@ -872,3 +872,12 @@ Garmin limita el servicio a 30 s y puede terminarlo antes; no se promete recepci
 inmediata ni importación fiable con la app cerrada. Referencias oficiales:
 [servicios](https://developer.garmin.com/connect-iq/articles/core-topics/Backgrounding.html)
 y [diálogo de apertura](https://developer.garmin.com/connect-iq/api-docs/Toybox/Background.html#requestApplicationWake-instance_function).
+
+Javier conecta después el fēnix por USB. Tras una primera lectura sin dispositivo,
+Windows lo detecta y se copia únicamente `entrenaop-dev-fenix847mm.prg` en
+`Internal Storage/GARMIN/APPS`, con el mismo identificador y clave de desarrollo.
+La relectura MTP confirma **124.556 bytes**, SHA-256
+`92af65d8ed3c04695771734f453f61434e5eefc03eddf09f9a8c9967ff1c4bf0`,
+idéntico al paquete 1.1.0 compilado. No se alteran otros archivos del reloj ni se
+extraen credenciales. Queda copiada y verificada la actualización; Javier debe
+desconectar USB y confirmar inicio en 1.1, OP, receta actualizada y avisos.

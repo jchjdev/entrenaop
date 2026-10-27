@@ -30,6 +30,9 @@ cambio; la receta nueva y la repetición físicas quedan pendientes. La 1.1 prep
 añade la OP oficial y avisos opcionales de cambios (apagados inicialmente): consulta
 cada 15 minutos, un diálogo por huella nueva y descarga en primer plano al aceptar.
 No se declara importación automática con la app cerrada ni limpieza de FIT antiguos.
+Después Javier conecta el reloj y se copia/relee el PRG 1.1 con bytes y SHA-256
+idénticos al compilado; inicio, icono, avisos y receta nueva aún requieren su
+confirmación física.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
