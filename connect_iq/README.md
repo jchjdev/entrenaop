@@ -4,7 +4,9 @@
 exporta EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev. Dieciséis
 pruebas correctas en cada variante y verificador de firma del SDK integrado en
 el build. Ficha creada en Garmin como BETA, inicialmente Pending Scan; visible
-únicamente para la cuenta Garmin que la subió. Instalación desde Store pendiente.
+únicamente para la cuenta Garmin que la subió. Descarga habilitada después y
+solicitud de instalación confirmada por Garmin para el fēnix 8 de 47 mm en la
+próxima sincronización; llegada física e inicio de Beta todavía pendientes.
 [Ficha y pasos pendientes](store/BETA.md).
 El vínculo Dev se ha revocado desde Perfil; servidor bloquea estado, manifiesto
 y descarga. Confirmación física del bloqueo todavía pendiente.

@@ -7,8 +7,10 @@ exclusivamente de desarrollo. La función Beta oficial de Garmin es visible solo
 para la cuenta que sube la app; no permite compartir el enlace entre cuentas.
 Compilación release y 16 pruebas por variante correctas. Javier autoriza crear el
 nombre EntrenaOP, aceptar el acuerdo Garmin y enviar la beta privada. Ficha creada
-con distintivo BETA, versión 1.3.0, estado inicial **Pending Scan**; instalación y
-nueva vinculación todavía pendientes. Firma válida según el SDK: el texto de
+con distintivo BETA, versión 1.3.0. Tras **Pending Scan**, avanza a **Pending** y
+habilita Download. Javier autoriza las condiciones de descarga y Garmin confirma
+la instalación en su fēnix 8 de 47 mm en la próxima sincronización. Llegada física,
+inicio y nueva vinculación todavía pendientes. Firma válida según el SDK: el texto de
 error detectado antes estaba oculto en el formulario, con estado visible Verified.
 Se publica aviso estático de privacidad exclusivamente en Dev; no concede acceso
 a datos. 176 pruebas servidor, tipos estrictos y contrato SQL con ROLLBACK correctos.

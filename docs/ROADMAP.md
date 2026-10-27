@@ -19,7 +19,9 @@ prueba física propia y los cobros siguen pospuestos. Este cambio no cierra los
 **INT-018 · 27/10/2026 · beta privada Connect IQ enviada:** variante
 EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev, paquete release
 generado, 16 pruebas Beta y 16 Dev correctas. Solo la cuenta Garmin que suba la
-beta podrá verla; ficha creada con distintivo BETA y estado inicial **Pending Scan**.
+beta podrá verla; ficha creada con distintivo BETA. Tras Pending Scan, descarga
+habilitada y solicitud de instalación confirmada por Garmin para el fēnix 8
+de 47 mm en la próxima sincronización; llegada física aún pendiente.
 Javier autoriza nombre EntrenaOP y acuerdo Garmin. Firma verificada por SDK;
 texto de error anterior oculto, estado visible Verified. Aviso estático de
 privacidad desplegado en Dev, con 176 pruebas servidor, tipos estrictos y contrato
@@ -27,7 +29,7 @@ SQL con ROLLBACK correctos. No se publica al público ni se habilita producción
 Revocación del vínculo Dev aplicada desde
 Perfil y bloqueo de estado/manifiesto/descarga acreditado en servidor con ROLLBACK;
 falta la confirmación visual del reloj. **Siguiente paso de este recorrido:**
-completar la instalación privada cuando Garmin habilite Download, vincular y
+sincronizar el reloj para completar la instalación privada, vincular y
 descargar una sesión. La confirmación física de revocación sigue pendiente.
 [Preparación y requisitos pendientes](../connect_iq/store/BETA.md).
 

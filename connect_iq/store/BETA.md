@@ -1,7 +1,8 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-Estado del 27/10/2026: **beta creada en Garmin**, versión 1.3.0, estado inicial
-**Pending Scan**. Todavía no se acredita descarga/instalación desde Store.
+Estado del 27/10/2026: **beta creada en Garmin**, versión 1.3.0, descarga
+habilitada e **instalación enviada al fēnix 8 de 47 mm para la próxima sincronización**.
+Todavía no se acredita la instalación física desde Store.
 [Ficha privada](https://apps.garmin.com/apps/4199b1e5-24da-4106-a832-bc212ca91865).
 Destino acordado con Javier: beta privada de Garmin, visible solo desde la
 cuenta Garmin que la suba. No es una beta compartida por enlace entre cuentas.
@@ -84,7 +85,16 @@ License Agreement and Terms of Use y enviar exclusivamente esta beta privada.
 Se crea ese nombre y se mantiene marcada **This app is for testing purposes only**.
 Garmin confirma la ficha con distintivo **BETA**, versión 1.3.0 (Internal: 1),
 propietario EntrenaOP y mensaje de acceso solo para el propietario. El panel
-muestra **Status: Pending Scan** y la ficha deshabilita Download inicialmente.
+muestra inicialmente **Status: Pending Scan** y Download deshabilitado. Después
+avanza a **Pending** y habilita Download para el propietario; el aviso general
+«App pending» no impide ya esta instalación Beta.
+
+Javier autoriza aceptar también las condiciones de descarga de Garmin. Se
+selecciona el fēnix 8 de 47 mm de su cuenta y se completan los permisos previstos
+de la app. Garmin confirma **EntrenaOP Beta will be installed the next time your
+device syncs**. Se solicita sincronizar desde Garmin Connect en el iPhone y
+confirmar inicio de **EntrenaOP Beta 1.3** en el reloj. Es una solicitud de
+instalación aceptada por Garmin, todavía sin aceptación física de llegada.
 
 Ficha en castellano e inglés, categoría Strength Training, contacto profesional
 `javier.charlez@entrenaop.es`, OP oficial en `cover-500.png` (500×500, 287.424 bytes)
@@ -107,9 +117,9 @@ y contrato SQL transaccional CIQ con ROLLBACK correctos; sin cambios de esquema.
 La instalación Beta tendrá almacenamiento propio: requiere un nuevo código de
 vinculación aunque Dev siga instalada. Verificar instalación desde Store,
 vinculación, descarga y actualización de esta variante antes de declarar cerrado
-el recorrido de distribución sin USB. Abrir la ficha con la misma cuenta Garmin
-desde el iPhone cuando termine el escaneo y comprobar su instalación mediante
-Connect IQ; no se ha acreditado aún ese paso. No publicar una versión pública ni cambiar
+el recorrido de distribución sin USB. La instalación ya está enviada desde la
+ficha privada: sincronizar Garmin Connect en el iPhone y comprobar la nueva app
+en el reloj. No se ha acreditado aún ese paso. No publicar una versión pública ni cambiar
 el servidor a producción dentro de este bloque.
 
 Fuente: documentación oficial del SDK 9.3.0, `Core_Topics/Beta_Apps.html` y

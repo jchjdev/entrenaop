@@ -1108,7 +1108,13 @@ con ROLLBACK correctos; esquema conservado. La política de la web pública no
 se reutiliza como información de esta beta.
 
 Ficha y secuencia en [connect_iq/store/BETA.md](../connect_iq/store/BETA.md).
-Siguiente paso: esperar habilitación de Download, instalar desde Connect IQ con
-la misma cuenta Garmin, vincular la nueva variante y repetir descarga/actualización.
+Después del escaneo, el panel avanza a **Pending** y Download se habilita para el
+propietario. Javier autoriza las condiciones de descarga. Se selecciona su
+fēnix 8 de 47 mm y se completan los permisos previstos; Garmin confirma la
+instalación de EntrenaOP Beta en la próxima sincronización del dispositivo.
+Se solicita sincronizar Garmin Connect en el iPhone y comprobar **Beta 1.3**
+en el reloj. Esa confirmación acredita la orden, todavía no la llegada física.
+
+Siguiente paso: sincronizar el reloj, vincular la nueva variante y repetir descarga/actualización.
 No se acreditan aún instalación Store, actualización de la beta ni publicación
 pública. La carrera sigue por el automático normal; este puente cubre fuerza.
