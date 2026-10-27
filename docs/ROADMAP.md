@@ -17,8 +17,12 @@ un FIT con app cerrada y sin aceptar avisos. Beta 1.5 incorpora un modo acotado
 con biblioteca de partida, cita elegida, autorización actual y un solo GET FIT.
 La inspección posterior no descarga en primer plano; HTTP 200 no demuestra
 importación. 38 pruebas por variante, contrato SQL con ROLLBACK y privacidad Dev
-verificados. **Único siguiente paso CIQ:** ejecutar el ensayo físico y contrastar
-la copia nueva antes de plantear sincronización silenciosa general.
+verificados. Javier confirma **EOP1000000144** en Fuerza nativa antes de abrir
+EntrenaOP, con 3×5 a 20 kg y descansos de 1:15: descarga e importación en fondo
+aceptadas en su fēnix 8 de 47 mm. Pendiente salir del modo experimental y confirmar
+la lista habitual. **Único siguiente bloque CIQ recomendado:** sincronización
+silenciosa continua con trabajo acotado, reintentos y sustitución de revisiones;
+todavía no implementada ni validada por este ensayo de una sola revisión.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 

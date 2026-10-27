@@ -1337,8 +1337,9 @@ Validación: 38 pruebas Monkey C por variante, incluidos una sola solicitud,
 copias de línea base, otra cita, listas parciales/denegadas, callbacks duplicados,
 generaciones antiguas, caducidad, inspección sin descarga en primer plano,
 supresión de avisos y programación exclusiva de la fase de espera. La prueba
-local no acredita que Garmin importe un FIT con la app cerrada: falta el ensayo
-físico. Aviso de privacidad ampliado al experimento, desplegado en Dev y texto
+local por sí sola no acredita que Garmin importe un FIT con la app cerrada;
+el resultado físico se registra abajo. Aviso de privacidad ampliado al
+experimento, desplegado en Dev y texto
 de 4.155 bytes contrastado; ruta sin credencial sigue rechazando 401. Nueve
 pruebas HTTP y contrato SQL con ROLLBACK correctos, sin cambios de esquema.
 
@@ -1354,7 +1355,7 @@ firma de manifiesto/ejecutables verificada con la clave original por SDK 9.3.0.
 Garmin confirma archivo/firma y publica **1.5.0 (Internal: 4)** en la misma ficha
 privada, con los permisos anteriores. Envía la actualización al fēnix de 47 mm
 para la próxima sincronización. Se pide confirmar 1.5, armar el menú y salir a
-la esfera antes de aplicar la revisión. Resultado físico todavía pendiente.
+la esfera antes de aplicar la revisión; el resultado se registra abajo.
 
 Para reforzar la prueba, comprobar primero el alias nuevo desde Entrenamientos
 de Fuerza nativa, antes de volver a EntrenaOP. Después la inspección local del
@@ -1396,5 +1397,17 @@ todavía no aceptación/importación del FIT en el reloj.
 
 Se pide buscar primero EOP1000000144 en Fuerza → Entreno → Biblioteca de sesiones
 de entrenamiento, sin abrir EntrenaOP, y revisar 3×5 a 20 kg y descansos de 1:15,
-sin iniciar actividad. Se espera respuesta; no se presenta un 200 como prueba
-completa de descarga autónoma.
+sin iniciar actividad. Javier responde **Aparece y los datos son correctos**.
+Esta comprobación en Fuerza nativa antes de abrir EntrenaOP acredita que Garmin
+guardó la revisión nueva durante el ensayo con la app cerrada y sin aceptar
+avisos. Queda aceptado ese recorrido en el fēnix 8 de 47 mm; el 200 del servidor
+se complementa con la comprobación física, no la sustituye.
+
+Se pide después abrir EntrenaOP para leer el resultado local **Instalada en
+segundo plano**, elegir MENU → Terminar prueba y confirmar una sola sesión en
+la lista habitual. Esta salida del modo de ensayo sigue pendiente de respuesta.
+La prueba de una revisión no acredita aún sincronización silenciosa continua,
+limpieza de revisiones antiguas en Fuerza, varias citas, recuperación sin móvil
+ni otros modelos. El siguiente bloque recomendado es convertir el ensayo en
+sincronización continua con descarga acotada por evento, reintentos y sustitución
+de revisiones, manteniendo autorización y vigencia comprobadas en servidor.

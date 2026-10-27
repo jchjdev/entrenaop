@@ -6,7 +6,10 @@ Solicita una revisión nueva en segundo plano, sin avisos ni intents; espera
 un cambio durante un máximo de 30 min y pide un solo FIT. Durante el ensayo,
 abrir la app/START solo comprueba la biblioteca local, sin descargar. MENU →
 Terminar prueba devuelve el modo habitual. HTTP 200 no demuestra instalación.
-Treinta y ocho pruebas por variante correctas; resultado físico pendiente.
+Treinta y ocho pruebas por variante correctas. Javier confirma EOP1000000144 en
+Fuerza nativa antes de abrir EntrenaOP, con receta nueva correcta: descarga e
+importación en fondo aceptadas en su fēnix 8 de 47 mm. Pendiente terminar el modo
+de prueba; la sincronización silenciosa continua aún no está implementada.
 [Protocolo](../docs/DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Corrección 1.4.1 · 27/10/2026:** timeout -300 identificado como transporte;

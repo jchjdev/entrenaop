@@ -27,7 +27,7 @@ acredita importación; solo una copia propia nueva verificada localmente despué
 puede acreditarla. Se conservan preferencias y credencial; terminar restaura el
 modo habitual. Compilación estricta y 38 pruebas por variante correctas. El aviso
 de privacidad se actualiza y despliega solo en Dev; nueve pruebas HTTP, contrato
-SQL con ROLLBACK y bytes publicados correctos. Resultado físico pendiente.
+SQL con ROLLBACK y bytes publicados correctos.
 Publicada en la misma ficha privada como 1.5.0 (Internal: 4), con firma verificada
 y actualización encolada para el fēnix de 47 mm. Javier confirma después armado
 y app cerrada. Se aplica la revisión de la misma muestra a las 23:10 peninsulares;
@@ -36,7 +36,11 @@ reloj todavía anterior al cambio. Se espera el ciclo de fondo; importación fí
 aún no acreditada.
 El ciclo crea después la exportación 144 y la traza propia confirma GET FIT 200
 a las 23:13:28, con EntrenaOP cerrada según Javier. Se pide verificar primero la
-copia nueva en Fuerza nativa; la importación física sigue pendiente de respuesta.
+copia nueva en Fuerza nativa. Javier confirma después que **EOP1000000144 aparece
+y los datos son correctos**, sin haber abierto EntrenaOP: press banca 3×5 a 20 kg,
+descansos de 1:15. Queda aceptada la descarga e importación silenciosa de esta
+revisión en su fēnix 8 de 47 mm. Falta terminar el modo de ensayo y confirmar la
+lista habitual; no se habilita todavía sincronización silenciosa general.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier

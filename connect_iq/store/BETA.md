@@ -6,14 +6,17 @@ de la única cita compatible. Se arma desde el menú y se sale a la esfera antes
 del cambio. Sin avisos ni intents; una solicitud FIT como máximo. Al volver,
 la app lee solo la biblioteca local, sin descargar para falsear el resultado.
 Terminar prueba restaura el modo habitual. Credencial, UUID y permisos se
-mantienen. 38 pruebas por variante y firma correctas; aceptación física pendiente.
+mantienen. 38 pruebas por variante y firma correctas.
 El aviso de privacidad Dev ya describe el ensayo y está desplegado/verificado.
 Paquete 1.5.0: 49.753 bytes, SHA-256
 `2f72dff5fc9118eb48ce1e0338b59ed1c632991ef3a2427f488a22404fabb3f8`.
 Garmin verifica archivo/firma y confirma envío al fēnix de 47 mm para la próxima
 sincronización. Descripción y novedades explican el ensayo en castellano e inglés.
 Se solicita instalar 1.5, armar el menú y salir a la esfera antes de cambiar la
-muestra. Todavía no se acredita descarga en segundo plano.
+muestra. Después Javier confirma EOP1000000144 en Fuerza nativa sin abrir
+EntrenaOP, con 3×5 a 20 kg y descansos nuevos de 1:15: descarga e importación en
+segundo plano aceptadas en su fēnix 8 de 47 mm. Pendiente terminar el modo de
+prueba. No acredita todavía sincronización silenciosa continua ni otros modelos.
 
 **Corrección 1.4.1 publicada en la misma beta privada (Internal: 3):** timeout
 -300 distinguido de denegación de acceso;
