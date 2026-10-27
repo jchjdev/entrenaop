@@ -117,3 +117,13 @@ El contrato SQL ampliado termina correctamente con ROLLBACK en Dev y el historia
 de migraciones coincide. El ensayo `tools/test_prepare_iphone_dev.sh` pasa con
 herramientas simuladas; el XML del esquema confirma Run Release y PosixSpawn.
 No se presenta ese ensayo como una compilación nativa de iOS.
+
+
+Publicación de la ampliación comprobada por HTTPS el 27/10/2026: revisión
+`4de7eb70f8502475be0e6b2251da9e9e9b81c4fa`, Trainer run `40562080685` y ADMIN run
+`40562079954`, validación y despliegues correctos. Releases
+`4de7eb70f8502475be0e6b2251da9e9e9b81c4fa-40562080685-1` y
+`4de7eb70f8502475be0e6b2251da9e9e9b81c4fa-40562079954-1`; ambos verificadores
+confirman revisión, identidad Dev, entrada, hash de recursos y cabeceras contra
+`sxbxfjqgoddzhtcyhalw`. La prueba física del chat y la instalación en iPhone siguen
+siendo el recorrido de aceptación de Javier indicado en IOS_DEVELOPMENT.md.
