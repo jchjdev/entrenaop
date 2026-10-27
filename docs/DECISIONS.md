@@ -42,6 +42,11 @@ Javier confirma activación. Desde Trainer se cambia solo el título de la misma
 cita a «CIQ prueba 2 - aviso automático»; Dev confirma revisión 5 y `sent` con
 los mismos IDs Garmin, conservando dosis. La detección y aceptación del aviso
 siguen pendientes; la prueba exige permanecer en la esfera con la app cerrada.
+Javier confirma No molestar apagado y recepción de una notificación de Codex del
+iPhone. Eso no acredita el diálogo propio. Dev registra respuestas 200; se prepara
+1.2 con diagnóstico local acotado y quince pruebas Monkey C correctas para separar
+consulta, respuesta e intento de aviso. No se identifica aún la causa ni se declara
+corregido el aviso; instalación y comprobación físicas pendientes.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

@@ -1,8 +1,10 @@
 # EntrenaOP Connect IQ · Dev
 
-La versión preparada es **EntrenaOP Dev 1.1**, con la OP oficial como icono y
-avisos opcionales de cambios. Compilación estricta sin avisos y diez regresiones
-Monkey C correctas. El paquete 1.1 se ha copiado y releído por USB el 27/10;
+La versión preparada es **EntrenaOP Dev 1.2**, con **MENU → Estado de avisos**
+para diagnosticar la prueba de segundo plano. Compilación estricta sin avisos y
+quince regresiones Monkey C correctas; instalación física pendiente. La versión
+instalada continúa en 1.1, con la OP oficial y avisos opcionales de cambios.
+El paquete 1.1 se ha copiado y releído por USB el 27/10;
 Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
 con descanso 1:15 dentro de Fuerza nativa. Tras actualizar dos veces y reabrir,
 confirma una sola entrada en la lista de EntrenaOP, sin errores; no acredita
@@ -14,7 +16,7 @@ El transporte sintético 0.2 descrito más abajo también está aceptado.
 ## Vincular y recibir sesiones privadas
 
 1. Compilar con `./connect_iq/build-dev.ps1`; con el simulador oficial abierto,
-   ejecutar `./connect_iq/test-dev.ps1` (diez regresiones). Instalar solo
+   ejecutar `./connect_iq/test-dev.ps1` (quince regresiones). Instalar solo
    `bin/entrenaop-dev-fenix847mm.prg` por USB en `GARMIN/APPS` y verificar relectura.
 2. Desconectar USB, abrir EntrenaOP en el reloj con Garmin Connect/móvil e Internet
    disponibles. El reloj solicita un código de ocho caracteres, válido diez minutos.
@@ -44,6 +46,15 @@ consulta desactiva también los avisos. Garmin decide cuándo ejecutar el servic
 no se garantiza puntualidad ni descarga con la app cerrada. Las copias FIT
 retiradas permanecen en la biblioteca nativa; la lista de EntrenaOP solo muestra
 las vigentes. Una lista de una sesión no demuestra limpieza de esa biblioteca.
+
+La prueba de avisos 1.1 sigue sin aceptación física: Javier confirma No molestar
+apagado y recepción de una notificación del iPhone, que no acredita el diálogo
+propio. Dev registra consultas y respuestas 200. En 1.2, Estado de avisos muestra
+consulta/avisos activados, último paso, antigüedad y HTTP; registra desde inicio de
+la consulta hasta respuesta, cambio ya instalado/avisado, app activa o solicitud
+del diálogo. No expone credenciales, recetas ni hashes. «Aviso solicitado» solo
+acredita que la API aceptó la petición, no que el usuario lo vio. Un error al pedir
+aviso conserva el reintento y el callback sale también ante fallos de procesamiento.
 
 El servidor Dev usa ahora `ciq-private-2`: la lista conserva el título de sesión,
 pero Garmin puede mostrar `EOP<serial>` como nombre nativo. Este alias ASCII

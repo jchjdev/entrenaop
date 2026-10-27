@@ -39,7 +39,7 @@ class CiqView extends WatchUi.View {
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
         var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.1",Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.2",Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y+40,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);
@@ -166,6 +166,7 @@ class CiqView extends WatchUi.View {
             var alerts=Storage.getValue("ciqChangeAlertsEnabled");
             menu.addItem(new WatchUi.MenuItem((alerts instanceof Boolean && alerts) ?
                 "Desactivar avisos de cambios" : "Activar avisos de cambios", "Cada 15 min; aceptar abre y actualiza", :alerts, {}));
+            menu.addItem(new WatchUi.MenuItem("Estado de avisos",null,:diagnostics,{}));
         }
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
@@ -207,6 +208,20 @@ class CiqView extends WatchUi.View {
         if (_entries.size()==0) { menu.addItem(new WatchUi.MenuItem("Sin fuerza compatible",null,:empty,{})); }
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
+    function diagnostics() as Void {
+        var menu=new WatchUi.Menu2({:title=>"Diagnóstico 1.2"});
+        var state=Storage.getValue("ciqBackgroundState");
+        var stamp=Storage.getValue("ciqBackgroundStateAt");
+        var http=Storage.getValue("ciqBackgroundHttp");
+        var enabled=Storage.getValue("ciqBackgroundEnabled");
+        var alerts=Storage.getValue("ciqChangeAlertsEnabled");
+        menu.addItem(new WatchUi.MenuItem("Consulta en fondo",enabled instanceof Boolean && enabled?"Activada":"Desactivada",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Avisos",alerts instanceof Boolean && alerts?"Activados":"Desactivados",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Último estado",state instanceof String?state:"Sin ejecutar",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Hace",stamp instanceof Number?((Time.now().value()-stamp)/60).toString()+" min":"Sin dato",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("HTTP",http instanceof Number && http!=0?http.toString():"Sin respuesta",:info,{}));
+        WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
+    }
     function open(index as Number) as Void {
         if (_busy || !_verified || index<0 || index>=_entries.size()) { return; }
         _opening=_entries[index]; startWait("Comprobando permiso"); _detail="Antes de abrir en Fuerza";
@@ -240,5 +255,6 @@ class CiqMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (id instanceof Number) { _view.open(id); } else if (id==:refresh) { _view.synchronize(); }
         else if (id==:sessions) { _view.sessions(); } else if (id==:background) { _view.toggleBackground(); }
         else if (id==:alerts) { _view.toggleAlerts(); }
+        else if (id==:diagnostics) { _view.diagnostics(); }
     }
 }

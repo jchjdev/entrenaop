@@ -30,6 +30,10 @@ naranja y dosis 3×6 a 22,5 kg con 1:15. Avisos físicos siguen pendientes; la l
 Javier activa avisos; misma cita renombrada «CIQ prueba 2 - aviso automático»,
 revisión 5, dosis conservada, `sent` con los mismos IDs y manifiesto de una entrada.
 Pendiente aviso con la app cerrada y actualización tras aceptarlo.
+Sin aviso acreditado: No molestar apagado y notificaciones del iPhone recibidas;
+logs Dev con respuestas 200. Versión 1.2 preparada con diagnóstico local de pasos,
+HTTP y antigüedad, compilación limpia y quince pruebas Monkey C. Instalación y
+diagnóstico físicos pendientes; no se ha determinado ni corregido la causa.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 

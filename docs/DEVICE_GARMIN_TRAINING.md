@@ -918,3 +918,29 @@ app cerrada y el iPhone conectado; esperar el diálogo y aceptar solo cuando
 aparezca. Abrir EntrenaOP o actualizar manualmente durante la espera no prueba
 ese aviso. La consulta está programada cada 15 min, su ejecución puede demorarse;
 se pide comunicar si pasan unos 20 min sin aviso. Resultado físico pendiente.
+
+### Diagnóstico del aviso pendiente · 27/10/2026
+
+Javier confirma que No molestar ya estaba apagado y después recibe una notificación
+de Codex procedente del iPhone. Ese canal no prueba el diálogo de nuestra app.
+La concesión Dev registra contacto reciente y los logs de `garmin-ciq/watch` del
+intervalo revisado muestran cinco respuestas 200. No distinguen por sí solos
+consulta manual y segundo plano ni acreditan callback o diálogo en el dispositivo.
+
+Se prepara **1.2.0**, sin nuevas dependencias, permisos, SQL, backend ni cambios
+en Flutter. **MENU → Estado de avisos** muestra activación de consulta y avisos,
+último paso, antigüedad y código HTTP. El servicio conserva solo estado acotado y
+tiempos locales: inicio/espera, respuesta inválida, avisos apagados, revisión ya
+instalada/avisada, app en primer plano, solicitud del diálogo o error. No almacena
+credenciales adicionales, contenido de recetas ni mensajes de excepción. La API
+puede aceptar una solicitud sin acreditar que el usuario vea el diálogo.
+
+Se captura también un fallo de procesamiento para registrar el paso y salir del
+servicio; un error al pedir el diálogo no marca la revisión como avisada. Cinco
+regresiones nuevas ejecutan el callback real con sustitutos de contexto, diálogo
+y salida: aviso único y salida, rechazo recuperable, primer plano/consentimiento,
+respuesta inválida, permiso perdido y excepción al consultar contexto. Pasan las
+quince pruebas Monkey C y compila
+sin avisos. No se atribuye todavía la ausencia del aviso a una causa concreta.
+Se pide USB para instalar esta versión; el reloj conserva 1.1 hasta verificar copia
+y aceptación física. No se amplía el ensayo a una segunda cita ni se cambia su dosis.
