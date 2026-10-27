@@ -1,11 +1,15 @@
 # EntrenaOP Connect IQ · Dev
 
-La versión preparada es **EntrenaOP Dev 1.2**, con **MENU → Estado de avisos**
-para diagnosticar la prueba de segundo plano. Compilación estricta sin avisos y
-quince regresiones Monkey C correctas. El paquete 1.2 se ha copiado y releído por
+La versión preparada es **EntrenaOP Dev 1.3**, con el filtro incorrecto de primer
+plano retirado y consultas programadas al salir de la app. Compilación estricta
+sin avisos y dieciséis regresiones Monkey C correctas. Paquete 1.3 copiado y releído
+por USB con hash idéntico; inicio y aviso corregido físicos pendientes. Conserva
+**MENU → Estado de avisos**. El paquete 1.2 se copió y releyó por
 USB el 27/10 con hash idéntico al compilado. Javier confirma inicio en 1.2,
 sincronización terminada y salida a la esfera. Diagnóstico/aviso físicos pendientes;
-se prepara la misma cita como «CIQ prueba 2 - aviso 1.2», con dosis conservada.
+se prepara la misma cita como «CIQ prueba 2 - aviso final», con dosis conservada.
+El primer resultado del nuevo ensayo, con la app cerrada, es «App en primer plano»,
+hace 2 min y HTTP 200: el filtro basado en `isActive()` estaba suprimiendo el aviso.
 El paquete 1.1 se ha copiado y releído por USB el 27/10;
 Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
 con descanso 1:15 dentro de Fuerza nativa. Tras actualizar dos veces y reabrir,
@@ -18,7 +22,7 @@ El transporte sintético 0.2 descrito más abajo también está aceptado.
 ## Vincular y recibir sesiones privadas
 
 1. Compilar con `./connect_iq/build-dev.ps1`; con el simulador oficial abierto,
-   ejecutar `./connect_iq/test-dev.ps1` (quince regresiones). Instalar solo
+   ejecutar `./connect_iq/test-dev.ps1` (dieciséis regresiones). Instalar solo
    `bin/entrenaop-dev-fenix847mm.prg` por USB en `GARMIN/APPS` y verificar relectura.
 2. Desconectar USB, abrir EntrenaOP en el reloj con Garmin Connect/móvil e Internet
    disponibles. El reloj solicita un código de ocho caracteres, válido diez minutos.
@@ -57,6 +61,15 @@ la consulta hasta respuesta, cambio ya instalado/avisado, app activa o solicitud
 del diálogo. No expone credenciales, recetas ni hashes. «Aviso solicitado» solo
 acredita que la API aceptó la petición, no que el usuario lo vio. Un error al pedir
 aviso conserva el reintento y el callback sale también ante fallos de procesamiento.
+
+En 1.3 se retira `AppBase.isActive()` como indicador de primer plano: en el ensayo
+cerrado devolvió verdadero y bloqueó el diálogo. Se sigue el patrón BackgroundTimer
+del SDK: al abrir se cancela el evento temporal, y al salir se programa cada 900 s
+solo si sigue activada la consulta y existe vínculo sin código pendiente. Activar
+desde el menú conserva el consentimiento, pero el temporizador arranca al salir.
+La instancia de fondo no reprograma al terminar. No cambia la validación de permisos
+ni revisiones ni se amplía el alcance a importar FIT con la app cerrada. Prueba del
+diálogo corregido pendiente en el dispositivo físico.
 
 El servidor Dev usa ahora `ciq-private-2`: la lista conserva el título de sesión,
 pero Garmin puede mostrar `EOP<serial>` como nombre nativo. Este alias ASCII

@@ -1,4 +1,3 @@
-import Toybox.Application;
 import Toybox.Application.Storage;
 import Toybox.Background;
 import Toybox.Communications;
@@ -46,7 +45,6 @@ class CiqBackground extends System.ServiceDelegate {
             if (!(enabled instanceof Boolean) || !enabled) { recordState("Avisos desactivados"); }
             else if (local instanceof String && revision.equals(local)) { recordState("Ya está actualizado"); }
             else if (notified instanceof String && revision.equals(notified)) { recordState("Cambio ya avisado"); }
-            else if (foregroundActive()) { recordState("App en primer plano"); }
             else if (ciqShouldAlert(true,revision,local instanceof String?local:null,notified instanceof String?notified:null)) {
                 try {
                     // Un aviso por huella; el usuario elige abrir y el FIT se importa en primer plano.
@@ -58,7 +56,6 @@ class CiqBackground extends System.ServiceDelegate {
         } catch(error) { recordState("Error al procesar respuesta"); }
         finish();
     }
-    function foregroundActive() as Boolean { return Application.getApp().isActive(); }
     function showChangeAlert() as Void { Background.requestApplicationWake("Tus sesiones han cambiado. ¿Actualizar EntrenaOP?"); }
     function finish() as Void { Background.exit(null); }
 }

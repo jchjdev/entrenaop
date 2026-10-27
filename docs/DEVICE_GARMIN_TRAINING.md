@@ -964,3 +964,50 @@ La prueba queda preparada con la app cerrada: esperar el diálogo, aceptar si ll
 y comprobar una sola entrada nueva. Si no aparece en unos 20 min desde el cambio,
 abrir entonces **Estado de avisos** y comunicar Último estado y HTTP. La detección
 y el diálogo siguen sin aceptación física; no se atribuye una causa al fallo previo.
+
+Javier comunica ausencia de aviso y después **«Ya está actualizado» / HTTP 200**
+en el diagnóstico. Esto acredita callback válido y revisión local coincidente en
+la última comprobación, no el resultado del primer cambio. Los logs entre 13:00
+y 15:17 UTC muestran primera consulta de la revisión a las 13:19, descarga FIT a
+las 13:21 (recorrido de primer plano) y consultas periódicas posteriores con 200.
+El estado único puede quedar sustituido después de la actualización; no permite
+atribuir la ausencia del aviso a una causa concreta.
+
+Javier vuelve a confirmar salida a la esfera. Se renombra solo la misma cita a
+**CIQ prueba 2 - aviso final**, revisión 7, `sent` y mismos IDs Garmin; Trainer
+conserva 3×6 a 22,5 kg y 1:15. «Final» es solo el título de ensayo, no cierre del
+bloque. Dev registra exportación de ese título a las **15:19:14 UTC**. Se pide
+leer Último estado, HTTP y Hace tras unos tres minutos desde el cambio si no hay
+diálogo, antes de que otra consulta periódica sustituya la información. Continúa
+1.2 sin reinstalar; recepción y aceptación del aviso siguen pendientes.
+
+Javier comunica inmediatamente **«App en primer plano», hace 2 min, HTTP 200**
+tras haber salido a la esfera. En ese punto del callback ya hay respuesta válida,
+avisos activados y revisión nueva sin avisar; es `AppBase.isActive()` el que devuelve
+verdadero y suprime `requestApplicationWake()`. Ese filtro no acredita que la app
+esté visible para el usuario en este contexto; se localiza un defecto de nuestro
+código, sin atribuirlo a No molestar o a notificaciones del iPhone.
+
+Se prepara **1.3.0** siguiendo el patrón del ejemplo oficial **BackgroundTimer** del
+SDK 9.3.0: cancelar el evento temporal en `getInitialView()` y reprogramarlo en
+`onStop()` de la instancia de primer plano. La instancia del servicio no reprograma
+al terminar. El menú conserva los indicadores de consentimiento, pero no registra
+el temporizador mientras se está dentro: la primera consulta queda a 15 min desde
+la salida. Solo programar si consulta activada, credencial presente y vinculación
+sin código pendiente; apagar la consulta sigue cancelando el evento y los avisos.
+Se elimina el filtro `isActive()`, conservando revisión instalada, aviso único,
+validación de respuesta y permisos del servidor. No cambian SQL, backend ni Flutter.
+
+Compilación estricta sin avisos y **16 pruebas Monkey C correctas**. La prueba del
+método eliminado se sustituye por regresiones con el registro real del simulador:
+cancelación al abrir y programación al salir condicionada a consentimiento/vínculo;
+se mantienen aviso único, rechazo recuperable, respuesta inválida y permiso perdido.
+Esto valida la corrección de código y la política de registro, sin acreditar todavía
+que el diálogo corregido aparezca en el fēnix. PRG 1.3 preparado; se solicita USB.
+
+Javier conecta USB y se copia/relee **1.3.0**, **127.932 bytes**, SHA-256
+`ad2109c4c7fd2f0a5ca36a303fc9964d9c481489cce947661da4e1dc6697a4a5`,
+idéntico al paquete compilado y validado. Mismo identificador y clave; no se
+alteran otras apps ni se extraen credenciales. Pendientes inicio físico, revisión
+de consulta/avisos activados y salida a la esfera antes de cambiar otra vez el
+título de la misma cita para comprobar el diálogo con el filtro corregido.

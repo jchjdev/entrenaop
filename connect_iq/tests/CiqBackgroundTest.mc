@@ -3,16 +3,10 @@ import Toybox.Lang;
 import Toybox.Test;
 
 class CiqBackgroundSpy extends CiqBackground {
-    var active as Boolean=false;
     var reject as Boolean=false;
-    var rejectContext as Boolean=false;
     var alerts as Number=0;
     var exits as Number=0;
     function initialize() { CiqBackground.initialize(); }
-    function foregroundActive() as Boolean {
-        if (rejectContext) { throw new Lang.InvalidValueException("Contexto no disponible"); }
-        return active;
-    }
     function showChangeAlert() as Void {
         if (reject) { throw new Lang.InvalidValueException("Rechazo simulado del diálogo"); }
         alerts++;
@@ -65,13 +59,11 @@ function backgroundFailureDoesNotConsumeAlert(logger as Test.Logger) as Boolean 
     ciqBackgroundTestRestore(saved); return result;
 }
 (:test)
-function foregroundAndDisabledAlertsNeverPrompt(logger as Test.Logger) as Boolean {
-    var saved=ciqBackgroundTestSave(); var worker=new CiqBackgroundSpy(); worker.active=true;
+function disabledAlertsNeverPrompt(logger as Test.Logger) as Boolean {
+    var saved=ciqBackgroundTestSave(); var worker=new CiqBackgroundSpy();
+    Storage.setValue("ciqChangeAlertsEnabled",false);
     worker.onChanges(200,ciqBackgroundTestData());
-    var foreground=(Storage.getValue("ciqBackgroundState") as String).equals("App en primer plano");
-    worker.active=false; Storage.setValue("ciqChangeAlertsEnabled",false);
-    worker.onChanges(200,ciqBackgroundTestData());
-    var result=foreground && worker.alerts==0 && worker.exits==2 &&
+    var result=worker.alerts==0 && worker.exits==1 &&
         (Storage.getValue("ciqBackgroundState") as String).equals("Avisos desactivados");
     ciqBackgroundTestRestore(saved); return result;
 }
@@ -83,16 +75,5 @@ function backgroundRejectsMalformedAndDeniedResponses(logger as Test.Logger) as 
     worker.onChanges(403,ciqBackgroundTestData());
     var result=invalid && worker.alerts==0 && worker.exits==2 &&
         !(Storage.getValue("ciqBackgroundEnabled") as Boolean) && (Storage.getValue("ciqBackgroundHttp") as Number)==403;
-    ciqBackgroundTestRestore(saved); return result;
-}
-(:test)
-function backgroundContextErrorStillExitsAndCanRetry(logger as Test.Logger) as Boolean {
-    var saved=ciqBackgroundTestSave(); var worker=new CiqBackgroundSpy(); worker.rejectContext=true;
-    worker.onChanges(200,ciqBackgroundTestData());
-    var failed=worker.exits==1 && worker.alerts==0 &&
-        (Storage.getValue("ciqBackgroundState") as String).equals("Error al procesar respuesta") &&
-        (Storage.getValue("ciqNotifiedRevision") as String).equals("anterior");
-    worker.rejectContext=false; worker.onChanges(200,ciqBackgroundTestData());
-    var result=failed && worker.alerts==1 && worker.exits==2;
     ciqBackgroundTestRestore(saved); return result;
 }

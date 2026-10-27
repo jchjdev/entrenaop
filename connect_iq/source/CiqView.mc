@@ -39,7 +39,7 @@ class CiqView extends WatchUi.View {
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
         var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.2",Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.3",Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y+40,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);
@@ -179,8 +179,7 @@ class CiqView extends WatchUi.View {
             _hint="Consulta en fondo desactivada";
         } else {
             try {
-                Background.registerForTemporalEvent(new Time.Duration(900));
-                Storage.setValue("ciqBackgroundEnabled",true); _hint="Cambios cada 15 min; abre para FIT";
+                Storage.setValue("ciqBackgroundEnabled",true); _hint="Consulta cada 15 min al salir";
             } catch(error) { _hint="No se pudo activar la consulta"; }
         }
         WatchUi.requestUpdate();
@@ -192,10 +191,9 @@ class CiqView extends WatchUi.View {
             _hint="Avisos desactivados";
         } else {
             try {
-                Background.registerForTemporalEvent(new Time.Duration(900));
                 Storage.setValue("ciqBackgroundEnabled",true);
                 Storage.setValue("ciqChangeAlertsEnabled",true);
-                _hint="Aviso de cambios; aceptar actualiza";
+                _hint="Avisos cada 15 min al salir";
             } catch(error) { _hint="No se pudieron activar los avisos"; }
         }
         WatchUi.requestUpdate();
@@ -209,7 +207,7 @@ class CiqView extends WatchUi.View {
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
     function diagnostics() as Void {
-        var menu=new WatchUi.Menu2({:title=>"Diagnóstico 1.2"});
+        var menu=new WatchUi.Menu2({:title=>"Diagnóstico 1.3"});
         var state=Storage.getValue("ciqBackgroundState");
         var stamp=Storage.getValue("ciqBackgroundStateAt");
         var http=Storage.getValue("ciqBackgroundHttp");

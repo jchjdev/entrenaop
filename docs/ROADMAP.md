@@ -36,7 +36,15 @@ HTTP y antigüedad, compilación limpia y quince pruebas Monkey C. Paquete 1.2
 copiado/releído por USB con hash idéntico; arranque y sincronización confirmados
 por Javier. Misma cita «CIQ prueba 2 - aviso 1.2», revisión 6 y mismos IDs Garmin,
 dosis conservada. Pendientes aviso con app cerrada y, si falla, lectura del diagnóstico.
-No se ha determinado ni corregido la causa.
+Javier comunica «Ya está actualizado» y 200, sin aviso. Se repite con revisión 7,
+«CIQ prueba 2 - aviso final»: Dev registra la consulta y se pide el primer estado,
+HTTP y antigüedad antes de otra comprobación. Sigue la 1.2 sin reinstalar.
+Javier comunica el primer resultado «App en primer plano», hace 2 min, HTTP 200
+estando en la esfera: localizado el filtro incorrecto `isActive()`. Versión 1.3
+preparada: suspende evento al abrir y programa cada 15 min al salir, con consulta
+activada y vínculo sin código pendiente, según BackgroundTimer del SDK. Compilación
+limpia y 16 pruebas Monkey C correctas; paquete 1.3 copiado/releído por USB con hash
+idéntico. Inicio y aviso físico corregido pendientes.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 

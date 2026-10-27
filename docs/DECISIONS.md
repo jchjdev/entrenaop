@@ -51,6 +51,17 @@ al compilado. Javier confirma arranque, sincronización terminada y salida a la
 esfera en 1.2. Se renombra la misma cita «CIQ prueba 2 - aviso 1.2», revisión 6,
 dosis conservada y `sent` con los mismos IDs Garmin. Pendientes diálogo y
 actualización al aceptar; si no llega, leer Último estado y HTTP tras la espera.
+Javier comunica «Ya está actualizado» y 200 tras no ver aviso; ese estado describe
+la última comprobación y no conserva el primer intento. Se prepara revisión 7 de
+la misma cita, «CIQ prueba 2 - aviso final», y se acredita su consulta en Dev.
+Javier comunica en ese primer resultado «App en primer plano», hace 2 min, HTTP
+200, aunque había salido a la esfera. El filtro `AppBase.isActive()` suprime el
+aviso en ese contexto y se retira como detector de primer plano. En 1.3 se sigue
+BackgroundTimer del SDK: suspender el evento al abrir y programar cada 15 min al
+salir, solo con consulta activada y vínculo válido sin código pendiente; la instancia
+de fondo no reprograma al terminar. Compilación y dieciséis pruebas correctas;
+PRG 1.3 copiado/releído por USB con hash idéntico al compilado. Inicio y aceptación
+del diálogo corregido pendientes; comprobar consulta/avisos activados antes de salir.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
