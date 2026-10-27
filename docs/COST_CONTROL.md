@@ -234,8 +234,10 @@ columna y los mismos precios unitarios. No son una previsión comercial de venta
   10, 20, 25 y 30. Se presupone que no comparten alumnos ni cuentas; el escenario
   cuenta también a los preparadores como activos. En la realidad una identidad
   compartida no consume dos MAU, aunque sí pueda generar más asignaciones/uso.
-- Se añaden 100, 1.000, 5.000 y 20.000 deportistas activos sin preparador. Sus
-  ingresos Pro se dejan fuera: el consumo de usuarios gratuitos también cuesta.
+- Se añaden 100, 1.000, 5.000 y 20.000 deportistas activos sin preparador. La
+  primera revisión incluía su consumo pero dejaba fuera todos sus ingresos Pro.
+  COST-004 incorpora esos ingresos por separado, sin volver a sumar usuarios
+  al gasto: los suscriptores son un subconjunto de esta misma población.
 - Se estima el stock al mes 12 manteniendo esa población todo el período, con
   2 clips técnicos originales de 20 MB por alumno/mes y multiplicador de
   almacenamiento 3 por resoluciones/derivados, sin borrado automático. Se añaden
@@ -343,28 +345,118 @@ ni precio vitalicio antes de medir uso y soporte. Invitaciones pendientes y
 el propio entrenador no ocupan plaza; historial archivado puede seguir teniendo
 coste de almacenamiento.
 
-Ejemplo calculado: 20 entrenadores a 49 EUR sin IVA generan 980 EUR/mes.
-Con IVA ilustrativo del 21 %, la comisión conjunta del ejemplo web sería
-31,09 EUR/mes; el presupuesto técnico con reserva, 106,56 EUR. Quedan 842,36 EUR
-para trabajo y otros gastos. Valorar 10 horas/mes de mantenimiento y 15 minutos
-de soporte por entrenador a 25 EUR/h consume 375 EUR: restan 467,36 EUR antes
-de IA de programación, gestoría, marketing e impuestos. No es beneficio neto.
-Con solo cinco entrenadores el mismo trabajo valorado supera el margen: es
-validación del producto, no un sueldo. El [21 %](https://www3.agenciatributaria.gob.es/Sede/iva/calculo-iva-repercutido-clientes/tipos-impositivos-iva.html)
+Ejemplo calculado, todavía sin ingresos Pro: 20 entrenadores a 49 EUR sin IVA
+generan 980 EUR/mes. Con IVA ilustrativo del 21 %, la comisión conjunta del
+ejemplo web sería 31,09 EUR/mes y el gasto técnico medio modelado, 81,97 EUR.
+Quedan **866,95 EUR antes de IA de programación, otros gastos e impuestos**.
+Apartar 24,59 EUR de reserva deja 842,36 EUR disponibles; la reserva sigue
+siendo dinero de Javier, no una factura ni un gasto consumido.
+
+Los **375 EUR de trabajo valorado no se pagan a ningún proveedor**: eran
+10 horas/mes de mantenimiento más 15 minutos de soporte por entrenador,
+valoradas a 25 EUR/h. Mientras Javier haga ese trabajo, no se descuentan del
+saldo operativo como un pago externo. Tampoco representan una tarifa adicional
+del asistente. La suscripción real de IA de programación se imputa por separado,
+una sola vez, con su importe efectivo. Si se contrata personal en el futuro,
+su coste contratado sustituirá la hipótesis correspondiente y habrá gasto real.
+
+Con cinco entrenadores del escenario inicial, 145 EUR de ingresos menos
+46,10 EUR de gasto técnico medio y 5,11 EUR de comisiones dejan 93,79 EUR antes
+de herramientas, otros gastos e impuestos, todavía sin Pro. La cifra negativa
+de la primera hoja después de valorar el trabajo propio no acreditaba una
+pérdida de caja. Tampoco se garantiza rentabilidad: sin ingresos hay gastos,
+y herramientas/obligaciones aún sin cuantificar pueden consumir ese saldo.
+
+El [21 %](https://www3.agenciatributaria.gob.es/Sede/iva/calculo-iva-repercutido-clientes/tipos-impositivos-iva.html)
 es la referencia general usada para el ejemplo, no una resolución del tratamiento
-fiscal de cada venta o del dinero que corresponda ingresar.
+fiscal de cada venta o del dinero que corresponda ingresar. Los costes medios
+incluyen anualidades prorrateadas; no describen los movimientos exactos del banco
+en cada mes.
+
+### Caja, ingresos Pro y comparación comercial · COST-004 · 27/10/2026
+
+Javier pide distinguir lo que sale realmente de su bolsillo del valor de su
+trabajo y recuerda la otra fuente de ingresos: Pro a **3,99 EUR/mes y 29,99
+EUR/año**, precios vigentes del [catálogo](PRO_LAUNCH.md). No se cambia la tarifa.
+Se corrige la presentación anterior: gastos externos estimados, reserva sin
+gastar, trabajo propio valorado e ingresos de cada canal quedan separados.
+
+La hoja añade `Ingresos Pro` con estos cálculos:
+
+- Ventas brutas del período = suscriptores mensuales que pagan × 3,99 + altas
+  o renovaciones anuales que se cobran en ese período × 29,99. Los anuales
+  activos que ya pagaron no vuelven a pagar cada mes.
+- Equivalente mensual bruto = mensuales activos × 3,99 + anuales activos ×
+  29,99 / 12. Sirve para comparar el ingreso económico entre meses, pero no se
+  suma otra vez a las ventas ni se presenta como depósito bancario mensual.
+- Se descuenta IVA ilustrativo del 21 % y una comisión de tienda configurable,
+  inicialmente 15 % de la base sin IVA como hipótesis. La elegibilidad, región
+  y contrato deben contrastarse; se comprueba también la sensibilidad al 30 %.
+- [RevenueCat](https://www.revenuecat.com/docs/welcome/set-up-revenuecat/account-management)
+  factura por MTR bruto del período, antes de impuestos/comisiones, distinto del
+  MRR. Una anualidad entra completa cuando se compra/renueva; no se divide por
+  doce para decidir si supera el umbral. Se aplica la tarifa publicada del 1 %
+  del total registrado al alcanzar 2.500 USD, suponiendo que la cuenta solo
+  registra las ventas del ejemplo. Otras apps/ventas podrían activarla antes.
+- Las ventas Pro netas se agregan a los ingresos sin IVA de los entrenadores.
+  Las comisiones de tienda y RevenueCat ya descontadas no se vuelven a sumar
+  como Stripe. Las tiendas pueden liquidar después: el saldo operativo del
+  modelo no acredita una transferencia bancaria recibida.
+- Los usuarios Pro del ejemplo ya están incluidos entre los deportistas sin
+  entrenador del escenario. Se comprueba que los recuentos no excedan esa
+  población y que no se cobren más anualidades que suscriptores anuales activos.
+  Los alumnos con preparador no están obligados a contratar Pro para consumir
+  lo asignado. Un vínculo tampoco se presenta como una suscripción Pro pagada.
+
+Ejemplo de escala de ingresos, antes de IVA y comisiones: 100 mensuales aportan
+399 EUR/mes. Cien anualidades aportan 2.999 EUR cuando se cobran y equivalen a
+249,92 EUR/mes durante doce meses. Juntas equivalen a 648,92 EUR brutos/mes;
+con IVA ilustrativo del 21 % y comisión del 15 %, unos 455,85 EUR mensuales
+equivalentes antes de RevenueCat. Eso no significa cobrar 648,92 EUR cada mes
+en el banco ni acredita cien ventas reales de cada modalidad.
+
+Para que la hoja muestre ambas fuentes, se incluyen estas muestras editables,
+**no previsiones de conversión ni usuarios de pago confirmados**:
+
+| Entrenadores del escenario | Pro mensuales | Pro anuales activos | Anualidades cobradas en el mes | Ventas Pro netas del mes | Saldo operativo conjunto antes de otros gastos |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 10 | 10 | 1 | 49,10 EUR | 142,89 EUR |
+| 20 | 50 | 50 | 4 | 224,41 EUR | 1.091,36 EUR |
+| 100 | 250 | 250 | 20 | 1.122,07 EUR | 5.624,04 EUR |
+| 300 | 1.000 | 1.000 | 80 | 4.424,39 EUR | 17.990,17 EUR |
+
+El saldo no resta trabajo propio ni reserva. Sí descuenta gastos técnicos
+medios y las comisiones modeladas de cada canal. Sigue pendiente el importe
+real de IA de programación, otros gastos e impuestos. Con cero suscripciones
+Pro el modelo vuelve a mostrar solo el ingreso de entrenadores; no transforma
+usuarios gratuitos en pagos por defecto.
+
+La comparación con [Harbiz](https://www.harbiz.io/tarifas), comprobada el
+27/10/2026, muestra 19 EUR/mes por hasta cinco clientes y 119 EUR/mes por hasta
+50 en sus planes mensuales, sin IVA. Los 14 EUR/mes por cinco son el equivalente
+con pago anual. La propuesta EntrenaOP de 19 EUR por cinco coincide en entrada;
+la de 79 EUR por 60 no supera ese Pro mensual por 50. Esto no compara todas las
+funciones ni acredita el precio de cada opción de sus desplegables. Los precios
+EntrenaOP continúan sin aprobar; no se cambian tarifas por esta comparación.
+
+La corrección conserva 263,74 EUR como presupuesto de primer mes con reserva
+del piloto. Su componente de coste estimado sin reserva es 249,91 EUR; incluye
+IA de vídeo y las altas futuras ya indicadas, no un nuevo pago de 375 EUR.
+Las anualidades y fechas de contratación reales siguen determinando la caja.
 
 ### Hoja editable y verificación
 
 Se entrega a Javier una hoja XLSX con tarifas/fuentes y un único cálculo por
-población. La hoja permite cambiar usuarios, reproducción, stock, precio medio
-y gastos. Los importes ausentes de IA de programación/otros gastos mantienen
+población. La hoja permite cambiar usuarios, reproducción, stock, precio medio,
+suscripciones Pro, renovaciones anuales y gastos. Los importes ausentes de IA de programación/otros gastos mantienen
 el total completo como pendiente; escribir cero es confirmar coste imputado nulo.
 La hoja y los futuros datos privados no se incorporan al repositorio público.
 
 Verificados los cuatro resultados mediante cálculo independiente, la variación
 de vídeo a 5 GB, la diferencia entre gasto cero y pendiente y ausencia de errores
-de fórmula. Se revisan visualmente ambas hojas y se exporta con fórmulas.
+de fórmula. La corrección añade comparación independiente de Pro, comisión al
+30 %, anualidad activa sin cobro este mes y población inválida. Se revisan las
+vistas modificadas y la nueva hoja, y se exporta con fórmulas.
 La comprobación usa el motor de la herramienta de hojas; no acredita apertura
 ni recálculo físico en Excel de escritorio. No se modifica código, base de datos,
 suscripciones ni producción; no procede ejecutar Flutter en este cambio documental.

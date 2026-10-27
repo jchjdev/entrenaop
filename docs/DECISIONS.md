@@ -1472,6 +1472,20 @@ un estado propio pendiente antes del MFA del panel; el correo se confirma por
 Supabase y la recuperación conserva MFA e identidad. No se elige una pasarela.
 [Contrato, configuración y evidencia](TRAINER_WEB_ACCOUNT_2026_10_27.md).
 
+## COST-004 · Dinero desembolsado e ingresos Pro en el presupuesto · 27/10/2026
+
+Javier aclara que mantenimiento/soporte los hace él y pide ver qué sale de su
+bolsillo, sin confundirlo con trabajo valorado ni concluir pérdidas de caja.
+Recuerda los ingresos Pro de 3,99 EUR/mes y 29,99 EUR/año. La hoja separa gastos
+externos estimados, reserva sin gastar y valoración opcional del trabajo propio;
+no se presenta ningún pago de 375 EUR a un proveedor ni al asistente. Añade Pro
+con impuestos/comisiones hipotéticos, ventas anuales en su período y equivalente
+mensual separado, sin duplicar usuarios ni convertir vínculos en ventas Pro.
+Los ejemplos de pago no son clientes reales ni conversiones garantizadas.
+Se contrasta Harbiz distinguiendo mensual/anual e IVA; no se aprueban precios,
+contrataciones ni cambios de producto. El total real sigue necesitando facturas.
+[Corrección y cálculos](COST_CONTROL.md#caja-ingresos-pro-y-comparación-comercial--cost-004--27102026).
+
 ## COST-003 · Escenarios de mantenimiento y un mes de IA de vídeo · 27/10/2026
 
 Javier pide presupuestar el mantenimiento completo de EntrenaOP, su crecimiento
