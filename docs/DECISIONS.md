@@ -39,14 +39,17 @@ a las 23:13:28, con EntrenaOP cerrada según Javier. Se pide verificar primero l
 copia nueva en Fuerza nativa. Javier confirma después que **EOP1000000144 aparece
 y los datos son correctos**, sin haber abierto EntrenaOP: press banca 3×5 a 20 kg,
 descansos de 1:15. Queda aceptada la descarga e importación silenciosa de esta
-revisión en su fēnix 8 de 47 mm. Falta terminar el modo de ensayo y confirmar la
-lista habitual; no se habilita todavía sincronización silenciosa general.
+revisión en su fēnix 8 de 47 mm. Después confirma **una sola sesión** al terminar
+el ensayo y volver a la lista habitual; no se habilita sincronización silenciosa
+general.
 Al volver a EntrenaOP, la foto y una nueva pulsación START conservan **FIT
 solicitado en fondo**, sin pasar a instalada. La búsqueda por nombre en
 `getAppWorkouts()` no confirma la copia propia y no hay respuesta FIT final
 reflejada en pantalla. La importación visible en Fuerza no acredita todavía
 propiedad/gestión desde nuestra app; causa pendiente de diagnóstico. Se pide
-terminar el ensayo. Antes de generalizar se debe resolver esta confirmación.
+terminar el ensayo y Javier confirma el retorno con una sola sesión. Esto no
+resuelve la confirmación de propiedad de la copia de fondo: el modo habitual
+puede descargar de nuevo. Antes de generalizar se debe resolver esa confirmación.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier

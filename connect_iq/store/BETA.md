@@ -15,8 +15,9 @@ sincronización. Descripción y novedades explican el ensayo en castellano e ing
 Se solicita instalar 1.5, armar el menú y salir a la esfera antes de cambiar la
 muestra. Después Javier confirma EOP1000000144 en Fuerza nativa sin abrir
 EntrenaOP, con 3×5 a 20 kg y descansos nuevos de 1:15: descarga e importación en
-segundo plano aceptadas en su fēnix 8 de 47 mm. Pendiente terminar el modo de
-prueba. No acredita todavía sincronización silenciosa continua ni otros modelos.
+segundo plano aceptadas en su fēnix 8 de 47 mm. Confirma después salida del modo
+de prueba y una sola sesión en la lista habitual. No acredita todavía
+sincronización silenciosa continua ni otros modelos.
 La inspección local conserva **FIT solicitado en fondo** aun al repetir START:
 la biblioteca propia de EntrenaOP no confirma el alias y no consta respuesta
 FIT final en pantalla. Causa pendiente; la presencia en Fuerza nativa no acredita
