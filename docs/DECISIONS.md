@@ -8,6 +8,9 @@ anteriores no admiten actualización directa con esta firma. Confirma que su
 compañero usa fēnix 7 Solar: se prioriza el circuito existente por Garmin Connect
 y se distingue del soporte/distribución Connect IQ todavía limitado al fēnix 8.
 No se concede Pro, no se modifica producción ni se publica en las tiendas.
+Javier concreta después que el compañero usará principalmente carrera y pide
+mantener esta entrega y un recorrido sencillo, por su poca soltura informática.
+No se amplía ahora Connect IQ ni el trabajo de fuerza para este piloto.
 [Compilación, instalación y límites](ANDROID_BETA.md).
 
 **INT-020 · 27/10/2026 · ensayo FIT silencioso en segundo plano:** Javier pide

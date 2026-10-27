@@ -79,6 +79,13 @@ revisión equivocada. Los cambios de otras áreas permanecen separados.
 
 ## Entrenamiento propio y fēnix 7 Solar
 
+Javier concreta que el compañero usará principalmente **carrera** y confirma
+mantener esta entrega. La primera prueba se centra en crear/asignarse una carrera,
+conectar Garmin una vez y sincronizar con el reloj. Por su poca soltura
+informática, las instrucciones de entrega deben ser breves y evitar añadir
+configuración de Connect IQ o pruebas de fuerza a este recorrido. La APK se
+conserva; no se da por acreditada la recepción física en su reloj.
+
 Javier confirma este reloj para el compañero. El recorrido propuesto es
 Trainer → Para mí → crear y asignarse una sesión con fecha → app del deportista
 → Perfil → Conexión con Garmin → autorizar su propia cuenta Garmin → activar
