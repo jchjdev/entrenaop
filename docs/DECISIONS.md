@@ -26,8 +26,14 @@ modo habitual. Compilación estricta y 38 pruebas por variante correctas. El avi
 de privacidad se actualiza y despliega solo en Dev; nueve pruebas HTTP, contrato
 SQL con ROLLBACK y bytes publicados correctos. Resultado físico pendiente.
 Publicada en la misma ficha privada como 1.5.0 (Internal: 4), con firma verificada
-y actualización encolada para el fēnix de 47 mm. Se espera confirmación de armado
-y salida a la esfera antes de aplicar la revisión de la muestra.
+y actualización encolada para el fēnix de 47 mm. Javier confirma después armado
+y app cerrada. Se aplica la revisión de la misma muestra a las 23:10 peninsulares;
+Dev acredita título nuevo, pendiente y sin ejecución, con última consulta del
+reloj todavía anterior al cambio. Se espera el ciclo de fondo; importación física
+aún no acreditada.
+El ciclo crea después la exportación 144 y la traza propia confirma GET FIT 200
+a las 23:13:28, con EntrenaOP cerrada según Javier. Se pide verificar primero la
+copia nueva en Fuerza nativa; la importación física sigue pendiente de respuesta.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier

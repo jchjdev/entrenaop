@@ -1362,9 +1362,39 @@ modo experimental permite contrastar propiedad y estado sin iniciar otra descarg
 Si se termina el ensayo antes de inspeccionar, la sincronización normal puede
 descargar el FIT y deja de servir como prueba del origen en segundo plano.
 
-Muestra preparada únicamente en el borrador Trainer
+Al preparar el ensayo, la muestra se dejó únicamente en el borrador Trainer
 `99983402-127f-4c50-b04d-d006c7064c10`, de la cita controlada anterior; título
-**Prueba Garmin · Fondo silencioso**. Todavía no se pulsa Guardar adaptación
-individual. La cita sigue con nombre original, pendiente, sin ejecución y última
-exportación `EOP1000000104`. Se espera «prueba armada y app cerrada» para aplicar
-la revisión y comenzar la espera; no se presenta el ensayo físico como completado.
+**Prueba Garmin · Fondo silencioso**. Aún no se había pulsado Guardar adaptación
+individual. La cita conservaba nombre original, pendiente, sin ejecución y última
+exportación `EOP1000000104`, esperando confirmación de armado y cierre.
+
+### Ejecución física del ensayo · 27/10/2026
+
+Javier confirma **prueba armada y app cerrada**. Después se aplica la adaptación
+individual desde Trainer sobre la misma cita. Dev confirma título **Prueba Garmin
+· Fondo silencioso**, estado pendiente, ejecución nula y actualización a las
+**21:10:03 UTC (23:10 peninsular)**. La lectura inmediatamente posterior conserva
+solo la exportación anterior 104 y última consulta del vínculo Beta propio a las
+21:08:27 UTC, anterior al cambio. No se solicita manifiesto ni FIT desde el PC
+para crear la evidencia del reloj. Se espera el ciclo temporal antes de contrastar
+la importación; el resultado físico todavía está pendiente.
+Trainer muestra después la receta aplicada: press banca con barra, tres series
+de cinco a 20 kg y descanso de 1:15 en cada serie, frente al 1:00 de partida.
+La revisión cambia nombre y descansos, conservando fecha/cita y ausencia de
+ejecución. Se conserva evidencia local de la pantalla de la pauta actualizada.
+
+A las 21:15:43 UTC se consulta solo metadata propia: aparece una exportación
+nueva creada a las **21:13:27.879 UTC**, id
+`d24e636f-1550-453c-b787-bd7d5d396a8f`, serial **1000000144** y alias
+**EOP1000000144**. El vínculo Beta registra otra consulta a las 21:13:28.518 UTC.
+Una lectura acotada de logs de esa ruta y ventana confirma un único **GET FIT
+200 a las 21:13:28 UTC**, con 170 ms de ejecución del servidor. No se imprimen
+cabeceras de autorización, direcciones de red ni información ajena al ensayo.
+El PC no ha llamado a esa descarga; las consultas de diagnóstico no generan
+exportaciones. Esto acredita consulta y entrega del servidor durante la espera,
+todavía no aceptación/importación del FIT en el reloj.
+
+Se pide buscar primero EOP1000000144 en Fuerza → Entreno → Biblioteca de sesiones
+de entrenamiento, sin abrir EntrenaOP, y revisar 3×5 a 20 kg y descansos de 1:15,
+sin iniciar actividad. Se espera respuesta; no se presenta un 200 como prueba
+completa de descarga autónoma.
