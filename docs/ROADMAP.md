@@ -9,6 +9,8 @@ verificados. **Único siguiente recorrido CIQ:** instalar la beta privada 1.6 y
 aceptar físicamente reconocimiento de una descarga en fondo y dos cambios
 sucesivos sin duplicados en su lista. Todavía pendiente, incluida recuperación
 con móvil desconectado; las copias nativas antiguas no se eliminan.
+Archivo 1.6.0 verificado y orden de instalación aceptada; la ficha de descarga
+todavía indica 1.5.0. Confirmar la versión instalada antes del ensayo.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android privada · 27/10/2026 · APK preparada y verificada:** firma

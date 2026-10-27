@@ -1493,6 +1493,14 @@ Paquete 1.6.0 de 58.747 bytes, SHA-256
 SDK 9.3.0 verifica firma de manifiesto y ejecutables con la clave original;
 los dos part numbers compilados pertenecen al mismo perfil `fenix847mm`, no
 acreditan otro modelo físico. No contiene pruebas ni claves administrativas.
+Se envía a la misma ficha privada y Garmin verifica archivo/firma de **1.6.0**.
+Tras guardar la ficha en inglés y castellano, reabrir el editor conserva ese
+archivo 1.6.0 verificado. La ficha de descarga aún muestra **1.5.0 (Internal: 4)**;
+no se atribuye esa diferencia a una causa concreta ni se asegura qué binario
+entregará hasta comprobarlo en el reloj. Desde el portal oficial de desarrollador
+se selecciona el mismo fēnix de 47 mm, se conservan los tres permisos y Garmin
+confirma instalación en la próxima sincronización. Se pide comprobar **Beta 1.6**
+antes de cambiar la muestra; si sigue 1.5, no se inicia el ensayo automático.
 
 **Pendiente de aceptación física:** instalar 1.6 desde la misma beta privada,
 abrir una vez y confirmar lista/automática; salir a la esfera antes de cambiar

@@ -9,6 +9,11 @@ Reconocimiento y cambios continuados en el reloj aún pendientes de aceptación.
 Paquete de 58.747 bytes, SHA-256
 `79dab3be436637db327dd07416a74b28f93597cbf95ea7bdaa6fa2933cc1102a`,
 firma verificada con la clave original por SDK 9.3.0.
+Archivo **1.6.0** verificado por Garmin y conservado al reabrir el editor tras
+guardar; descripción/novedades actualizadas en inglés y castellano. La ficha
+de descarga aún muestra 1.5.0 (Internal: 4). Se envía orden al mismo fēnix con los
+mismos permisos y Garmin confirma instalación al sincronizar. **Pendiente:**
+comprobar en el reloj Beta 1.6; la orden no acredita todavía qué binario llegó.
 [Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga

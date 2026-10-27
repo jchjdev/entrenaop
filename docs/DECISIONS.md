@@ -14,6 +14,10 @@ HTTP 200 significa recibido, no comprobado; callbacks perdidos no bloquean todos
 los eventos ni generan reintentos ilimitados. Revocación/denegación detiene el
 modo automático. Implementación y pruebas preparadas; reconocimiento real y
 actualización automática continuada pendientes de aceptación física en 1.6.
+Garmin conserva el archivo 1.6.0 y firma verificados después de guardar la ficha,
+pero la página de descarga todavía indica 1.5.0. Orden de instalación aceptada
+para el mismo fēnix, sin ampliar permisos. Confirmar versión real en el reloj
+antes de modificar la muestra o atribuirle resultados a 1.6.
 [Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga
