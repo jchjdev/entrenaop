@@ -18,6 +18,14 @@ Garmin conserva el archivo 1.6.0 y firma verificados después de guardar la fich
 pero la página de descarga todavía indica 1.5.0. Orden de instalación aceptada
 para el mismo fēnix, sin ampliar permisos. Confirmar versión real en el reloj
 antes de modificar la muestra o atribuirle resultados a 1.6.
+Javier confirma **Beta 1.6, una sesión y ya estoy en la esfera**. Instalación y
+lista inicial aceptadas; falta otra revisión automática. Trainer exige iniciar
+sesión de nuevo antes de cambiar la muestra; no se aplica todavía ese cambio.
+Tras entrar de nuevo en Trainer se aplica a la misma cita **Prueba Garmin ·
+Automática 1**, con press banca 3×5 a 20 kg y descansos de 0:30, a las 22:41:38
+UTC. App cerrada desde la confirmación de 1.6; el PC no solicita manifiesto ni
+FIT. La primera lectura posterior conserva exportación 144 y última consulta
+anterior al cambio. Se espera el ciclo automático antes de verificar el reloj.
 [Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga

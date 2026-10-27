@@ -1,6 +1,6 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-**1.6.0 preparada · INT-021:** búsqueda exacta de alias previamente solicitado
+**1.6.0 instalada; prueba automática en curso · INT-021:** búsqueda exacta de alias previamente solicitado
 en biblioteca general si no figura en la propia; no implica propiedad ni borra
 contenido. Descarga automática cada 15 min tras lista válida, desactivable, un
 FIT por evento y tres intentos con margen de 30 min, sin aceptar avisos.
@@ -14,6 +14,12 @@ guardar; descripción/novedades actualizadas en inglés y castellano. La ficha
 de descarga aún muestra 1.5.0 (Internal: 4). Se envía orden al mismo fēnix con los
 mismos permisos y Garmin confirma instalación al sincronizar. **Pendiente:**
 comprobar en el reloj Beta 1.6; la orden no acredita todavía qué binario llegó.
+Javier confirma después **Beta 1.6, una sesión y ya estoy en la esfera**:
+instalación y lista inicial aceptadas. Ensayo del nuevo cambio pendiente; la
+sesión Trainer caducó antes de aplicar la muestra y se solicita volver a entrar.
+Después de volver a entrar se aplica **Automática 1** sobre la misma cita,
+3×5 a 20 kg y descansos de 0:30, a las 22:41:38 UTC. App cerrada y sin modo de
+ensayo; pendiente comprobar el nuevo ciclo de descarga y su reconocimiento.
 [Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga

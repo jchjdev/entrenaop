@@ -1,16 +1,18 @@
 # Roadmap de EntrenaOP
 
-**INT-021 · 27/10/2026 · Beta CIQ 1.6 preparada:** recuperación por alias exacto
+**INT-021 · 27/10/2026 · Beta CIQ 1.6 instalada; ensayo automático en curso:** recuperación por alias exacto
 en biblioteca general para descargas previamente solicitadas, sin borrar ni
 atribuir propiedad. Modo automático cada 15 min tras primera lista autorizada,
 un FIT por evento, diario acotado, reintentos limitados y sin aceptar avisos.
 54 pruebas por variante, nueve HTTP, contrato SQL con ROLLBACK y privacidad Dev
-verificados. **Único siguiente recorrido CIQ:** instalar la beta privada 1.6 y
-aceptar físicamente reconocimiento de una descarga en fondo y dos cambios
-sucesivos sin duplicados en su lista. Todavía pendiente, incluida recuperación
-con móvil desconectado; las copias nativas antiguas no se eliminan.
-Archivo 1.6.0 verificado y orden de instalación aceptada; la ficha de descarga
-todavía indica 1.5.0. Confirmar la versión instalada antes del ensayo.
+verificados. Javier confirma instalación de 1.6 desde la misma beta privada,
+una sesión y app cerrada. Tras recuperar su acceso a Trainer se aplica
+**Automática 1** (3×5 a 20 kg, descanso 0:30) a las 22:41:38 UTC sobre la misma cita.
+**Único siguiente recorrido CIQ:** contrastar la descarga nativa con app cerrada,
+su reconocimiento posterior sin volver a descargar y otro cambio sin duplicados
+en la lista. Se espera el primer ciclo; el PC no abre FIT. Recuperación con móvil
+desconectado y denegación también pendientes. Las copias nativas antiguas no se
+eliminan. Instalación y lista inicial no acreditan estos pasos.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android privada · 27/10/2026 · APK preparada y verificada:** firma
@@ -36,9 +38,9 @@ aceptadas en su fēnix 8 de 47 mm. Javier confirma después salida del ensayo y 
 sola sesión en la lista habitual. Durante la inspección previa sigue **FIT
 solicitado en fondo**,
 incluso tras START: la app no confirma la copia en su biblioteca propia ni la
-respuesta FIT final. **Único siguiente paso CIQ:** resolver esa discrepancia
-antes de sincronización silenciosa continua con reintentos y sustitución de
-revisiones, todavía no implementada ni validada por este ensayo.
+respuesta FIT final. Esa discrepancia originó INT-021, que prepara reconocimiento
+en biblioteca general y descarga continua. El ensayo 1.5 no acreditaba esos
+comportamientos; la aceptación vigente se registra en INT-021 arriba.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 

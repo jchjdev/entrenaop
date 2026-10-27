@@ -5,7 +5,8 @@ biblioteca general de Garmin, sin borrarlo ni atribuir propiedad. Tras primera
 lista autorizada activa descarga automática cada 15 min: un FIT por evento,
 tres intentos por revisión con 30 min entre reintentos, sin avisos. Desactivable
 en MENU; **Estado de descargas** separa HTTP de consulta/FIT y comprobación local.
-54 pruebas por variante correctas; aceptación física de 1.6 pendiente. Las
+54 pruebas por variante correctas; instalación y lista inicial de 1.6 aceptadas.
+Reconocimiento y cambio automático de otra revisión pendientes. Las
 revisiones antiguas de la biblioteca nativa pueden permanecer.
 [Contrato](../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
@@ -18,11 +19,12 @@ Terminar prueba devuelve el modo habitual. HTTP 200 no demuestra instalación.
 Treinta y ocho pruebas por variante correctas. Javier confirma EOP1000000144 en
 Fuerza nativa antes de abrir EntrenaOP, con receta nueva correcta: descarga e
 importación en fondo aceptadas en su fēnix 8 de 47 mm. Confirma después salida
-del modo de prueba y una sola sesión en la lista habitual; la sincronización
-silenciosa continua aún no está implementada.
+del modo de prueba y una sola sesión en la lista habitual. El ensayo 1.5 no
+incluía sincronización silenciosa continua; su evolución es INT-021 arriba.
 Durante el ensayo, la app sigue en **FIT solicitado en fondo** incluso tras START:
 no confirma la copia en su biblioteca propia ni registra la respuesta FIT final.
-Resolver esa discrepancia antes de generalizar; no se atribuye aún una causa.
+La recuperación local se implementa después en 1.6; no se atribuye una causa
+demostrada al callback ausente de 1.5.
 [Protocolo](../docs/DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Corrección 1.4.1 · 27/10/2026:** timeout -300 identificado como transporte;

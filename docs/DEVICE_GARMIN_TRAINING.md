@@ -1501,10 +1501,23 @@ entregará hasta comprobarlo en el reloj. Desde el portal oficial de desarrollad
 se selecciona el mismo fēnix de 47 mm, se conservan los tres permisos y Garmin
 confirma instalación en la próxima sincronización. Se pide comprobar **Beta 1.6**
 antes de cambiar la muestra; si sigue 1.5, no se inicia el ensayo automático.
+Javier confirma después **Beta 1.6, una sesión y ya estoy en la esfera**:
+instalación desde la misma ficha y carga inicial de lista aceptadas físicamente.
+La comprobación del binario real resuelve la incertidumbre de la versión
+mostrada por la ficha. No demuestra todavía el reconocimiento de otra revisión
+descargada por el nuevo servicio.
 
-**Pendiente de aceptación física:** instalar 1.6 desde la misma beta privada,
-abrir una vez y confirmar lista/automática; salir a la esfera antes de cambiar
-la muestra. Contrastar el alias nuevo en Fuerza antes de abrir EntrenaOP, luego
+Antes de modificar la muestra, la lectura propia confirma título **Prueba Garmin
+· Fondo silencioso**, última revisión a las 21:10:03 UTC y exportación 144; última
+consulta del reloj a las 22:35:08 UTC. El PC no solicita manifiesto ni FIT.
+La pestaña dedicada de Trainer muestra login por sesión caducada, así que **no
+se aplica aún otro cambio** ni se inicia la ventana del ensayo. Se solicita a
+Javier iniciar su sesión habitual de preparador. No se debilitan comprobaciones
+de acceso ni se modifica directamente la receta para sortear ese inicio.
+
+**Protocolo de aceptación física:** instalación de 1.6 y lista inicial ya
+aceptadas. Con app cerrada, cambiar la muestra y contrastar el alias nuevo en
+Fuerza antes de abrir EntrenaOP, luego
 confirmar una sola entrada y en Estado de descargas el origen **segundo plano**
 y biblioteca **general** o **propia**. Repetir otro cambio, comprobar ausencia de
 duplicados en la lista y ensayar recuperación tras desconexión/denegación.
@@ -1516,3 +1529,27 @@ revisiones antiguas pueden permanecer en la biblioteca nativa; no se promete
 limpieza automática ni una sola copia nativa. El menú de EntrenaOP se construye
 con la lista vigente del servidor. No se habilita producción, publicación pública,
 otros perfiles de reloj ni devolución de resultados.
+
+### Primer cambio con 1.6 instalada
+
+Javier confirma que vuelve a estar dentro de Trainer. Desde su pestaña dedicada
+se abre la misma cita y se crea el trabajo de adaptación individual
+`12b316f4-3209-47fa-b658-cac13672a0eb`. Se aplica **Prueba Garmin · Automática 1**.
+La receta guardada en el detalle canónico de Trainer confirma press banca con
+barra **3×5 a 20 kg y descansos de 0:30**, antes 1:15. No se crea otra cita ni se
+modifica la sesión de carrera; la pauta de fuerza sigue pendiente.
+
+Dev confirma cambio a las **22:41:38.602 UTC**. La lectura a las 22:41:51 UTC
+conserva únicamente exportaciones 104 y 144 y última consulta propia del reloj
+a las 22:35:08 UTC, anterior al cambio. No se llama a manifiesto ni a descarga
+desde el PC: solo se leen metadatos propios. Empieza la espera del evento
+automático de 15 min, sin avisos ni armado del experimento 1.5. Resultado aún
+pendiente; primero contrastar alias nuevo y descanso 0:30 en Fuerza sin abrir
+EntrenaOP y después verificar reconocimiento/origen y lista única.
+
+Durante la espera se revisa visualmente la pantalla principal circular del
+perfil oficial en el simulador: versión 1.6, sesión lista y texto **Automática
+al salir · cada 15 min** completos. Se usa una vista sintética aislada en
+`.dart_tool/ciq-dev/preview16`, con UUID ajeno a Beta/Dev, sin consultas de red
+ni descargas FIT. Esa revisión visual no acredita transporte ni aceptación
+física. El paquete Store conserva el SHA-256 registrado arriba.
