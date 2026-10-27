@@ -420,3 +420,12 @@ navegación, arrastre mensual, ejecución iniciada, presentación del tablero y
 confirmación/cambio de programas sin consulta redundante. Se adaptan las
 comprobaciones de paginación y filtros a las entradas ahora visibles en el mes,
 conservando cursores y pruebas de texto ampliado existentes.
+
+
+Publicación Dev comprobada el 27/10/2026: fuentes
+`553b373e5a22dad25c96e3bce504974dc2a230f8`, run `40541898947`, validación y
+despliegue correctos. `trainer.entrenaop.es/build-info.json` confirma esa revisión,
+release `553b373e5a22dad25c96e3bce504974dc2a230f8-40541898947-1`, entorno development
+y proyecto `sxbxfjqgoddzhtcyhalw`. El verificador HTTPS comprueba identidad, entrada,
+hashes de recursos y cabeceras. La aceptación del uso real del calendario queda
+para Javier; no se han movido citas personales durante la comprobación.

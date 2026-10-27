@@ -1,5 +1,21 @@
 # Roadmap de EntrenaOP
 
+
+**TRN-030/031 · 27/10/2026 · calendario con eventos publicado en Dev:**
+mes con tiras de alumno/sesión, colores estables por alumno, estados accesibles,
+excedente por día, detalle y arrastre revisado; semana comparte las tiras.
+Programas conservan la selección recibida y muestran confirmación fija. Análisis
+Trainer limpio y 256 pruebas correctas, incluida conservación de citas iniciadas,
+filtros, paginación y fechas. Fuentes `553b373e`, run `40541898947` con validación
+y despliegue correctos; revisión y recursos contrastados por HTTPS en Trainer Dev.
+Aceptación humana del recorrido visual pendiente. **Único siguiente tramo de
+Trainer:** revisar ficha del alumno → resultados → técnica/conversación y continuar
+el pulido del espacio Preparador del deportista. Avisos agrupados requieren su
+prueba física propia y los cobros siguen pospuestos. Este cambio no cierra los
+16 puntos ni el bloque independiente de Connect IQ.
+[Presentación y evidencia](TRAINER_DESKTOP_2026_10_25.md#agenda-mensual-con-eventos--27102026).
+
+
 **INT-018 · 27/10/2026 · preparación de beta privada Connect IQ:** variante
 EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev, paquete release
 generado, 16 pruebas Beta y 16 Dev correctas. Solo la cuenta Garmin que suba la
