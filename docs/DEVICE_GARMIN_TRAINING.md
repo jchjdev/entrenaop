@@ -1084,9 +1084,31 @@ Se inspeccionan manifiesto, dos referencias del perfil `fenix847mm` y contenido
 del paquete; no incluye la clave privada. El build rechaza exportar Dev para
 Store y no genera otra clave de firma para Beta si falta la existente.
 
-Todavía **sin subir**: formulario detenido antes de crear el nombre de
-desarrollador y aceptar el acuerdo de Garmin. Ficha propuesta, limitaciones y
-secuencia en [connect_iq/store/BETA.md](../connect_iq/store/BETA.md). Capturas y
-requisitos de privacidad de la ficha deberán contrastarse en el siguiente paso
-del formulario; la política pública actual no describe esta integración. No se
-acreditan instalación Store, actualización de la beta ni publicación pública.
+Javier autoriza nombre de desarrollador **EntrenaOP**, acuerdo Garmin y envío
+exclusivamente privado. Se crea la ficha **BETA 1.3.0 (Internal: 1)**:
+<https://apps.garmin.com/apps/4199b1e5-24da-4106-a832-bc212ca91865>.
+El panel confirma **Status: Pending Scan**, la ficha **App pending** y Download
+deshabilitado inicialmente. No equivale a instalación aceptada desde Store.
+
+El aviso «Signature check failed» detectado en la lectura inicial estaba oculto
+en el DOM. El estado visible es **Verified**. Se verifica independientemente la
+firma SHA-256 del manifiesto y después el IQ completo con `VerifyingUtils` del
+SDK: manifiesto y ejecutables válidos, clave RSA 4096/PKCS#8 original. Esa
+verificación queda integrada en el build de paquetes; no se regenera la clave.
+
+La ficha incluye OP oficial 500×500, captura oficial del simulador menor de
+150 KB (intento de vinculación de la captura retirado antes de subir), requisitos
+comerciales explícitos y textos castellano/inglés. Se deshabilita ampliar
+compatibilidad automáticamente. La ruta pública `GET garmin-ciq/privacy` sirve
+solo texto estático en Dev, sin consultas de datos ni nuevos permisos; informa
+de conservación y retirada sin prometer borrado al revocar. Desplegada y leída
+por HTTPS con igualdad exacta de texto, escritura rechazada 405 y manifiesto
+anónimo rechazado 401. 176 pruebas servidor, tipos estrictos y contrato SQL CIQ
+con ROLLBACK correctos; esquema conservado. La política de la web pública no
+se reutiliza como información de esta beta.
+
+Ficha y secuencia en [connect_iq/store/BETA.md](../connect_iq/store/BETA.md).
+Siguiente paso: esperar habilitación de Download, instalar desde Connect IQ con
+la misma cuenta Garmin, vincular la nueva variante y repetir descarga/actualización.
+No se acreditan aún instalación Store, actualización de la beta ni publicación
+pública. La carrera sigue por el automático normal; este puente cubre fuerza.

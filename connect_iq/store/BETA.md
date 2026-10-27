@@ -1,6 +1,8 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-Estado del 27/10/2026: paquete generado y probado, **todavía sin subir**.
+Estado del 27/10/2026: **beta creada en Garmin**, versión 1.3.0, estado inicial
+**Pending Scan**. Todavía no se acredita descarga/instalación desde Store.
+[Ficha privada](https://apps.garmin.com/apps/4199b1e5-24da-4106-a832-bc212ca91865).
 Destino acordado con Javier: beta privada de Garmin, visible solo desde la
 cuenta Garmin que la suba. No es una beta compartida por enlace entre cuentas.
 Para instalarla desde Connect IQ en el reloj, usar esa misma cuenta Garmin.
@@ -30,6 +32,19 @@ no representa aceptación física en dos modelos distintos.
 Paquete comprobado: 34.966 bytes, SHA-256
 `ec2ab6403eeebee86e035deeae6550d91822c27611165a4c03cf3359e27e5f7f`.
 Compilación estricta sin avisos; 16 pruebas Monkey C en Beta y 16 en Dev.
+
+Ese es el paquete adjuntado y aceptado en la primera ficha. Se recompila después
+la misma versión con verificación de firma integrada: el IQ local conserva
+34.966 bytes y tiene SHA-256
+`2d4a8ee7e17033ce4267d3732f2508542c906e92f4ec62872043bb13a6b6bd2c`.
+No se afirma igualdad binaria entre exportaciones del SDK.
+
+`VerifyPackage.java` usa `VerifyingUtils.verifyIqFile` del SDK 9.3.0 para verificar
+manifiesto y ejecutables contra la clave local original, sin imprimirla. El build
+falla si esa comprobación falla. También se verifica independientemente RSA
+4096/PKCS#8 y la firma SHA-256 del manifiesto. No se cambia ni regenera la clave.
+El texto «Signature check failed» estaba oculto en el DOM; el estado visible de
+la ficha era **Verified**. No era un rechazo activo de la firma.
 
 ## Borrador de ficha en castellano
 
@@ -62,23 +77,39 @@ actividad a EntrenaOP y no sustituye la sincronización de calendario de Garmin.
 **Novedades 1.3.0:** Primera beta privada. Vinculación por código, descarga de
 sesiones vigentes, apertura en Fuerza, icono OP y avisos opcionales de cambios.
 
-## Antes de enviar
+## Envío privado y siguiente comprobación
 
-El formulario Garmin exige crear un nombre visible de desarrollador y aceptar
-su Developer License Agreement and Terms of Use al enviar. Nombre propuesto:
-**EntrenaOP**. Hace falta confirmación de Javier en ese punto; preparar la beta
-no equivale a aceptar ese acuerdo.
+Javier autoriza expresamente crear el nombre **EntrenaOP**, aceptar el Developer
+License Agreement and Terms of Use y enviar exclusivamente esta beta privada.
+Se crea ese nombre y se mantiene marcada **This app is for testing purposes only**.
+Garmin confirma la ficha con distintivo **BETA**, versión 1.3.0 (Internal: 1),
+propietario EntrenaOP y mensaje de acceso solo para el propietario. El panel
+muestra **Status: Pending Scan** y la ficha deshabilita Download inicialmente.
 
-Seleccionar **This app is for testing purposes only**. Nunca enviar este UUID
-sin la casilla Beta. Después del primer paso, revisar los requisitos reales de
-la ficha (capturas, icono y privacidad); no se dan por completados antes de verlos.
-La política pública actual de la web no describe todavía esta integración y no
-debe presentarse como si lo hiciera.
+Ficha en castellano e inglés, categoría Strength Training, contacto profesional
+`javier.charlez@entrenaop.es`, OP oficial en `cover-500.png` (500×500, 287.424 bytes)
+y captura real del simulador `screen-pairing.png` (454×454, 10.718 bytes). El intento
+anónimo del simulador que muestra la captura se revoca mediante `ciq_command`
+antes de publicarla; no se sube un código de vinculación activo.
+Se desactiva la ampliación automática a dispositivos nuevos. Sin ANT+, límites
+regionales, enlaces inventados a tiendas móviles ni compras desde el reloj. El
+formulario Beta fija monetización No; el texto declara el requisito Pro o servicio.
+
+Se declara uso de datos y se enlaza el aviso específico de la beta:
+<https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/privacy>.
+Es texto estático, sin cuentas ni consultas SQL, servido por GET únicamente en
+Dev. Declara datos, finalidad, infraestructura, conservación real y retirada;
+caducar o revocar no se presenta como borrado automático. No sustituye la política
+de la web pública. Endpoint desplegado y bytes contrastados, POST rechazado 405
+y manifiesto sin credencial rechazado 401. 176 pruebas servidor, tipos estrictos
+y contrato SQL transaccional CIQ con ROLLBACK correctos; sin cambios de esquema.
 
 La instalación Beta tendrá almacenamiento propio: requiere un nuevo código de
 vinculación aunque Dev siga instalada. Verificar instalación desde Store,
 vinculación, descarga y actualización de esta variante antes de declarar cerrado
-el recorrido de distribución sin USB. No publicar una versión pública ni cambiar
+el recorrido de distribución sin USB. Abrir la ficha con la misma cuenta Garmin
+desde el iPhone cuando termine el escaneo y comprobar su instalación mediante
+Connect IQ; no se ha acreditado aún ese paso. No publicar una versión pública ni cambiar
 el servidor a producción dentro de este bloque.
 
 Fuente: documentación oficial del SDK 9.3.0, `Core_Topics/Beta_Apps.html` y

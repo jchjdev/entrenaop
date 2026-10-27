@@ -56,4 +56,8 @@ if ($Test) { $compilerArgs += '-t' }
 if (Test-Path -LiteralPath $debugImport) { $compilerArgs += @('-i', $debugImport) }
 & $JavaPath @compilerArgs
 if ($LASTEXITCODE -ne 0) { throw "La compilación Connect IQ ha fallado ($LASTEXITCODE)." }
+if ($Package) {
+    & $JavaPath -cp $compiler (Join-Path $PSScriptRoot 'VerifyPackage.java') $outputFile $DeveloperKeyPath
+    if ($LASTEXITCODE -ne 0) { throw 'La verificación de firma del paquete IQ ha fallado.' }
+}
 Get-FileHash -LiteralPath $outputFile -Algorithm SHA256

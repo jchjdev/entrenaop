@@ -2,6 +2,7 @@ import {identity, requestBody, HttpError} from './http.ts';
 import type {GarminServerConfig} from './http.ts';
 import {garminStrengthFit} from './strength_fit.ts';
 import {TrainingError} from '../device_training/prescription.ts';
+import {ciqPrivacy} from './ciq_privacy.ts';
 
 const devUrl = 'https://sxbxfjqgoddzhtcyhalw.supabase.co';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,6 +54,12 @@ export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typ
     if(c.environment!=='DEVELOPMENT'||c.supabaseUrl!==devUrl||!c.serviceKey||!c.anonKey) throw new HttpError(503,'ciq_not_configured');
     const path=new URL(request.url).pathname;
     if(new URL(request.url).search) throw new HttpError(400,'invalid_request');
+    // Aviso estático público para la ficha Beta. No consulta datos ni autoriza uso.
+    if(path.endsWith('/garmin-ciq/privacy')) {
+      if(request.method!=='GET') throw new HttpError(405,'method_not_allowed');
+      return new Response(ciqPrivacy,{headers:{...headers,'Content-Type':'text/plain; charset=utf-8',
+        'X-Content-Type-Options':'nosniff'}});
+    }
     const command=async(action:string,input:Record<string,unknown>,owner:string|null=null,session:string|null=null)=>{
       const response=await f(`${c.supabaseUrl}/rest/v1/rpc/garmin_ciq_command`,{method:'POST',
         headers:{apikey:c.serviceKey,Authorization:`Bearer ${c.serviceKey}`,'Content-Type':'application/json'},

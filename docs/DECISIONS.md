@@ -5,10 +5,16 @@ la primera distribución sea visible solo para nosotros. Se prepara **EntrenaOP
 Beta 1.3.0**, con UUID propio y código compartido con Dev, manteniendo servidor
 exclusivamente de desarrollo. La función Beta oficial de Garmin es visible solo
 para la cuenta que sube la app; no permite compartir el enlace entre cuentas.
-Compilación release y 16 pruebas por variante correctas; paquete generado, todavía
-sin subir. La primera instalación Beta exigirá vinculación nueva. El formulario
-requiere nombre de desarrollador y aceptar el acuerdo Garmin; confirmación
-pendiente antes de enviar. No autoriza una publicación pública ni producción.
+Compilación release y 16 pruebas por variante correctas. Javier autoriza crear el
+nombre EntrenaOP, aceptar el acuerdo Garmin y enviar la beta privada. Ficha creada
+con distintivo BETA, versión 1.3.0, estado inicial **Pending Scan**; instalación y
+nueva vinculación todavía pendientes. Firma válida según el SDK: el texto de
+error detectado antes estaba oculto en el formulario, con estado visible Verified.
+Se publica aviso estático de privacidad exclusivamente en Dev; no concede acceso
+a datos. 176 pruebas servidor, tipos estrictos y contrato SQL con ROLLBACK correctos.
+Javier reafirma que la carrera sigue por el automático normal de Garmin; esta
+app complementaria descarga FIT de fuerza y no sustituye aquella vía.
+No se autoriza publicación pública ni producción.
 [Ficha preparada y límites](../connect_iq/store/BETA.md).
 
 **INT-017 · 26/10/2026 · cuenta y entrega privada Connect IQ aprobadas:** Javier

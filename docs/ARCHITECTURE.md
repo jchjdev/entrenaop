@@ -1,5 +1,15 @@
 # Arquitectura de EntrenaOP
 
+**Connect IQ Beta · 27/10/2026 · INT-018:** variante de distribución privada con
+UUID independiente de Dev y servidor exclusivamente Dev. Comparte lógica y
+generador de fuerza; carrera mantiene Training API y su sincronización automática.
+La ficha Beta utiliza `GET garmin-ciq/privacy`, texto público estático sin SQL,
+con los mismos límites de entorno; no cambia la autorización de cuenta/reloj.
+176 pruebas servidor, tipos estrictos y contrato SQL con ROLLBACK correctos.
+Exportación IQ verificada con el SDK contra la clave original. Ficha creada,
+inicialmente Pending Scan; instalación Store/vinculación Beta aún no aceptadas.
+[Distribución y límites](../connect_iq/store/BETA.md).
+
 **Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la
 cuenta y capacidad propia del reloj; fachada de servidor sobre tablas privadas
 cerradas, hashes de credenciales/códigos y exportaciones inmutables por revisión.

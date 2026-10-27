@@ -32,6 +32,20 @@ test('CIQ queda cerrado fuera de Dev y sin credencial no consulta recetas',async
   assert.equal((await handleGarminCiq(request('account',{action:'account'}),config,f)).status,401);
   assert.equal(calls,0);
 });
+test('aviso de privacidad público solo en Dev: sin consultas ni acceso a recetas',async()=>{
+  const f=(async()=>{throw Error('El aviso no debe consultar datos');})as typeof fetch;
+  const response=await handleGarminCiq(request('privacy'),config,f);
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get('Content-Type'),'text/plain; charset=utf-8');
+  const text=await response.text();
+  assert.match(text,/javier.charlez@entrenaop.es/);
+  assert.match(text,/no supone\nborrado automático/);
+  assert.ok(!text.includes(owner));assert.ok(!text.includes(credential));
+  assert.equal((await handleGarminCiq(request('privacy',{}),config,f)).status,405);
+  assert.equal((await handleGarminCiq(request('privacy?token=secreto'),config,f)).status,400);
+  assert.equal((await handleGarminCiq(request('privacy'),{...config,environment:'PRODUCTION'},f)).status,503);
+  assert.equal((await handleGarminCiq(request('watch',{action:'manifest'}),config,f)).status,401);
+});
 test('inicio anónimo genera secretos independientes y solo persiste hashes',async()=>{
   const {f,calls}=mock(()=>({id,status:'pending',pair_until:'2026-10-26T12:10:00Z'}));
   const response=await handleGarminCiq(request('watch',{action:'begin',owner_id:owner}),config,f);

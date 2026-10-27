@@ -1,9 +1,11 @@
 # EntrenaOP Connect IQ · Dev
 
-**Beta privada preparada (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
+**Beta privada enviada (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
 exporta EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev. Dieciséis
-pruebas correctas en cada variante. Paquete todavía sin subir; visible únicamente
-para la cuenta Garmin que lo suba. [Ficha y pasos pendientes](store/BETA.md).
+pruebas correctas en cada variante y verificador de firma del SDK integrado en
+el build. Ficha creada en Garmin como BETA, inicialmente Pending Scan; visible
+únicamente para la cuenta Garmin que la subió. Instalación desde Store pendiente.
+[Ficha y pasos pendientes](store/BETA.md).
 El vínculo Dev se ha revocado desde Perfil; servidor bloquea estado, manifiesto
 y descarga. Confirmación física del bloqueo todavía pendiente.
 
