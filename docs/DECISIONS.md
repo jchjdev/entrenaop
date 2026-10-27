@@ -1,5 +1,13 @@
 # Registro de decisiones vigentes
 
+**Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier
+confirma que su compañero ya tiene una cuenta de entrenador activa y acceso al
+portal, tras completar los pasos manualmente durante una videollamada. Pide
+revisar la eficiencia de ese alta y valorar una APK funcional y avanzada para
+probar la app del deportista. Se registra la necesidad; no se acuerda todavía un
+nuevo flujo de alta ni se acredita una APK entregada o aceptada por el compañero.
+[Observación y alcance](TRAINER_UX_NOTES_2026_10_22.md#alta-asistida-de-un-entrenador--27102026).
+
 **INT-019 · 27/10/2026 · apertura de Fuerza en Beta 1.4:** Javier solicita
 corregir el salto por la pantalla principal y los fallos de apertura, y actualizar
 la misma beta privada. La lista se sustituye por una vista de apertura antes de

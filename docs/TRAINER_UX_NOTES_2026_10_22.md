@@ -5,6 +5,25 @@ complejo. Quiere dejar estas observaciones registradas antes de olvidarlas y
 pide expresamente no cambiar código todavía. Ninguna propuesta de esta nota se
 presenta como implementada ni autoriza comenzar ahora una migración.
 
+## Alta asistida de un entrenador · 27/10/2026
+
+Javier confirma que su compañero tiene la cuenta de entrenador activa y acceso
+al portal. Completaron los pasos manualmente durante una videollamada; considera
+que hay que revisar el recorrido para hacerlo más eficiente. No se dispone aún
+de un desglose de las dificultades ni se decide sustituir MFA, permisos, cupos
+o activación profesional por otro mecanismo.
+
+También quiere facilitarle una versión funcional y avanzada de la app del
+deportista mediante APK. Quedan por preparar y validar la compilación concreta,
+su firma/actualizaciones y la instalación en el teléfono del compañero. Las
+push Android tienen una primera recepción física confirmada en el Samsung de
+Javier, pero la política agrupada y los recordatorios conservan su aceptación
+propia pendiente. No se acredita entrega al compañero por esta observación.
+«Para mí» permite probar autoasignación con la misma cuenta, sin consumir plaza;
+no simula la relación ni las notificaciones entre dos personas.
+[Contrato propio](TRAINER_SELF_TRAINING.md) y
+[estado de los avisos](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 ## Asignación más fluida
 
 Javier describirá por escrito el recorrido concreto y cómo quiere perfeccionarlo.
