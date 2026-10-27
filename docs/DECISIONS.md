@@ -38,7 +38,10 @@ repeticiones a 22,5 kg y descansos de 1:15. Queda aceptada la receta actualizada
 en Fuerza nativa. Tras actualizar dos veces y reabrir, confirma una sola entrada
 en la lista de EntrenaOP, sin errores. No acredita limpieza de la biblioteca
 nativa. El siguiente ensayo es el aviso opcional de cambios con la app cerrada;
-su activación y aceptación físicas siguen pendientes.
+Javier confirma activación. Desde Trainer se cambia solo el título de la misma
+cita a «CIQ prueba 2 - aviso automático»; Dev confirma revisión 5 y `sent` con
+los mismos IDs Garmin, conservando dosis. La detección y aceptación del aviso
+siguen pendientes; la prueba exige permanecer en la esfera con la app cerrada.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

@@ -27,6 +27,9 @@ OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monke
 PRG copiado/releído por USB con hash idéntico; Javier confirma inicio en 1.1 y OP
 naranja y dosis 3×6 a 22,5 kg con 1:15. Avisos físicos siguen pendientes; la lista
 única no acredita limpieza de la biblioteca nativa.
+Javier activa avisos; misma cita renombrada «CIQ prueba 2 - aviso automático»,
+revisión 5, dosis conservada, `sent` con los mismos IDs y manifiesto de una entrada.
+Pendiente aviso con la app cerrada y actualización tras aceptarlo.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 

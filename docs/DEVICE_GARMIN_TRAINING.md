@@ -903,3 +903,18 @@ de receta. El alcance es esa lista; no se ha inspeccionado ni limpiado la biblio
 nativa. Se pide activar **Avisos de cambios**, salir a la esfera y confirmar la
 activación antes de modificar de nuevo el título de la misma cita. La detección,
 el diálogo y la actualización al aceptarlo siguen pendientes.
+
+Javier comunica **Activado**. Desde Trainer autenticado se cambia únicamente el
+título de la misma cita a **CIQ prueba 2 - aviso automático**. Dev confirma revisión
+5, `planned`, tres series de seis repeticiones a 22,5 kg y descansos de 75 s; recibo
+`sent` y los mismos `workout_id=1743167688` y `schedule_id=1822173388`.
+La interfaz muestra título y dosis correctos. El comando real de manifiesto,
+ejecutado con ROLLBACK y sin extraer la credencial, devuelve lista completa con
+una entrada nueva y cero bloqueadas. Esto prepara un cambio detectable; no
+acredita todavía ejecución del servicio ni aparición del diálogo en el reloj.
+
+Se aclara el recorrido ante la duda de Javier: permanecer en la esfera, con la
+app cerrada y el iPhone conectado; esperar el diálogo y aceptar solo cuando
+aparezca. Abrir EntrenaOP o actualizar manualmente durante la espera no prueba
+ese aviso. La consulta está programada cada 15 min, su ejecución puede demorarse;
+se pide comunicar si pasan unos 20 min sin aviso. Resultado físico pendiente.
