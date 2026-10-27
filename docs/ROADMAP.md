@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-018 · 27/10/2026 · preparación de beta privada Connect IQ:** variante
+EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev, paquete release
+generado, 16 pruebas Beta y 16 Dev correctas. Solo la cuenta Garmin que suba la
+beta podrá verla; instalación Store y vinculación nueva aún pendientes. Formulario
+abierto, sin enviar, a la espera de aceptación del acuerdo Garmin. No se publica
+al público ni se habilita producción. Revocación del vínculo Dev aplicada desde
+Perfil y bloqueo de estado/manifiesto/descarga acreditado en servidor con ROLLBACK;
+falta la confirmación visual del reloj. **Siguiente paso de este recorrido:**
+confirmar ese bloqueo y completar la instalación privada desde Store.
+[Preparación y requisitos pendientes](../connect_iq/store/BETA.md).
+
 **INT-017 · 27/10/2026 · transporte privado aceptado en Dev:** diseño aprobado,
 contrato SQL aplicado y endpoint privado desplegado/verificado. Perfil → Garmin
 permite revisar/confirmar código y revocar; perder Pro y servicio bloquea uso,

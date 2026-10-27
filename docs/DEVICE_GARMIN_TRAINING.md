@@ -1057,3 +1057,36 @@ El tramo de aviso y actualización asistida queda aceptado en Dev; el bloque de
 sincronización general sigue abierto. **Único siguiente ensayo recomendado:**
 revocar el vínculo propio desde Perfil → Garmin y comprobar bloqueo en el reloj.
 Store, distribución sin USB, retirada de citas y limpieza nativa siguen pendientes.
+
+### Revocación real y preparación de beta privada · 27/10/2026
+
+Javier autoriza probar la revocación y continuar con Store. Desde su sesión
+autenticada, Perfil → Garmin → Retirar acceso confirma **Acceso retirado** sobre
+el único vínculo activo. Dev registra la revocación a las 16:11:41 UTC. Un ensayo
+transaccional con ROLLBACK usa internamente el hash del vínculo real y comprueba
+rechazo `link_revoked` en estado, manifiesto y descarga de la última exportación.
+No se imprime ni extrae la credencial del reloj. La pantalla física esperada al
+abrir EntrenaOP es **Vinculación caducada o retirada**; Javier todavía debe
+confirmarla. Los FIT ya importados siguen bajo control de la biblioteca Garmin.
+
+Javier prefiere que Store sea solo para nosotros. Se prepara la variante
+**EntrenaOP Beta 1.3.0**, con UUID independiente, recursos propios para el nombre
+y la misma OP oficial, código compartido y endpoint fijo exclusivamente Dev.
+La documentación oficial del SDK precisa que la beta solo se ve desde la cuenta
+Garmin que la sube; no es distribución privada por enlace para varias cuentas.
+Usar esa misma cuenta en Connect IQ para instalarla. Tendrá almacenamiento
+separado y pedirá un código de vinculación nuevo.
+
+Exportación release sin avisos y 16 pruebas Monkey C correctas en cada variante.
+Paquete IQ de 34.966 bytes, SHA-256
+`ec2ab6403eeebee86e035deeae6550d91822c27611165a4c03cf3359e27e5f7f`.
+Se inspeccionan manifiesto, dos referencias del perfil `fenix847mm` y contenido
+del paquete; no incluye la clave privada. El build rechaza exportar Dev para
+Store y no genera otra clave de firma para Beta si falta la existente.
+
+Todavía **sin subir**: formulario detenido antes de crear el nombre de
+desarrollador y aceptar el acuerdo de Garmin. Ficha propuesta, limitaciones y
+secuencia en [connect_iq/store/BETA.md](../connect_iq/store/BETA.md). Capturas y
+requisitos de privacidad de la ficha deberán contrastarse en el siguiente paso
+del formulario; la política pública actual no describe esta integración. No se
+acreditan instalación Store, actualización de la beta ni publicación pública.

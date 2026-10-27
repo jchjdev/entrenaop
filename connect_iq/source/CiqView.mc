@@ -39,7 +39,8 @@ class CiqView extends WatchUi.View {
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
         var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.3",Graphics.TEXT_JUSTIFY_CENTER);
+        var title=(WatchUi.loadResource(Rez.Strings.AppName) as String)+" 1.3";
+        dc.drawText(x,y-100,Graphics.FONT_SMALL,title,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y+40,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);

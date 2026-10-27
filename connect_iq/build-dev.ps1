@@ -4,9 +4,14 @@ param(
     [string]$SdkPath = '',
     [string]$JavaPath = '',
     [string]$DeveloperKeyPath = '',
-    [switch]$Test
+    [switch]$Test,
+    [ValidateSet('Dev', 'Beta')]
+    [string]$Variant = 'Dev',
+    [switch]$Package
 )
 $ErrorActionPreference = 'Stop'
+if ($Test -and $Package) { throw 'Un paquete Store no puede contener pruebas.' }
+if ($Package -and $Variant -ne 'Beta') { throw 'La distribución Store de este bloque está limitada a la beta privada.' }
 $repo = Split-Path $PSScriptRoot -Parent
 if (!$SdkPath) { $SdkPath = Join-Path $repo '.dart_tool/ciq-sdk' }
 if (!$JavaPath) {
@@ -17,6 +22,7 @@ $compiler = Join-Path $SdkPath 'bin/monkeybrains.jar'
 if (!(Test-Path -LiteralPath $compiler)) { throw "No se encuentra el SDK Connect IQ en $SdkPath" }
 if (!$DeveloperKeyPath) { $DeveloperKeyPath = Join-Path $repo '.dart_tool/ciq-dev/developer_key.der' }
 if (!(Test-Path -LiteralPath $DeveloperKeyPath)) {
+    if ($Variant -eq 'Beta') { throw 'La beta debe usar la clave de desarrollo existente; no generar otra silenciosamente.' }
     New-Item -ItemType Directory -Force -Path (Split-Path $DeveloperKeyPath -Parent) | Out-Null
     # Clave local de firma para sideload Dev, nunca credencial de cuenta o de servidor.
     $rsa = [System.Security.Cryptography.RSA]::Create(4096)
@@ -26,8 +32,12 @@ if (!(Test-Path -LiteralPath $DeveloperKeyPath)) {
 $outputDir = Join-Path $PSScriptRoot 'bin'
 New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 $suffix = if ($Test) { '-tests' } else { '' }
-$outputFile = Join-Path $outputDir "entrenaop-dev-$Device$suffix.prg"
-$jungle = if ($Test) { 'tests.jungle' } else { 'monkey.jungle' }
+$ciqVariantName = $Variant.ToLowerInvariant()
+$outputFile = if ($Package) { Join-Path $outputDir "entrenaop-$ciqVariantName.iq" }
+    else { Join-Path $outputDir "entrenaop-$ciqVariantName-$Device$suffix.prg" }
+$jungle = if ($Variant -eq 'Beta') {
+    if ($Test) { 'tests-beta.jungle' } else { 'beta.jungle' }
+} else { if ($Test) { 'tests.jungle' } else { 'monkey.jungle' } }
 $debugOriginal = Join-Path $SdkPath 'bin/api.debug.xml'
 $debugImport = Join-Path $repo '.dart_tool/ciq-dev/api.local.debug.xml'
 if (Test-Path -LiteralPath $debugOriginal) {
@@ -40,7 +50,8 @@ if (Test-Path -LiteralPath $debugOriginal) {
     [System.IO.File]::WriteAllText($debugImport, $debugText, [System.Text.UTF8Encoding]::new($false))
 }
 $compilerArgs = @('-Xms1g', '-Dfile.encoding=UTF-8', '-cp', $compiler, 'com.garmin.monkeybrains.Monkeybrains',
-    '-f', (Join-Path $PSScriptRoot $jungle), '-d', $Device, '-y', $DeveloperKeyPath, '-o', $outputFile, '-l', '3', '-w')
+    '-f', (Join-Path $PSScriptRoot $jungle), '-y', $DeveloperKeyPath, '-o', $outputFile, '-l', '3', '-w')
+if ($Package) { $compilerArgs += @('-e', '-r') } else { $compilerArgs += @('-d', $Device) }
 if ($Test) { $compilerArgs += '-t' }
 if (Test-Path -LiteralPath $debugImport) { $compilerArgs += @('-i', $debugImport) }
 & $JavaPath @compilerArgs

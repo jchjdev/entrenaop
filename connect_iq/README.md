@@ -1,5 +1,12 @@
 # EntrenaOP Connect IQ · Dev
 
+**Beta privada preparada (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
+exporta EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev. Dieciséis
+pruebas correctas en cada variante. Paquete todavía sin subir; visible únicamente
+para la cuenta Garmin que lo suba. [Ficha y pasos pendientes](store/BETA.md).
+El vínculo Dev se ha revocado desde Perfil; servidor bloquea estado, manifiesto
+y descarga. Confirmación física del bloqueo todavía pendiente.
+
 La versión instalada es **EntrenaOP Dev 1.3**, con OP oficial y **MENU → Estado de
 avisos**. Compilación estricta sin avisos y dieciséis pruebas Monkey C correctas;
 paquete copiado y releído por USB con hash idéntico. El 27/10 Javier confirma en

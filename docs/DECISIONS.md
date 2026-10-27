@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**INT-018 · 27/10/2026 · distribución privada de Connect IQ:** Javier pide que
+la primera distribución sea visible solo para nosotros. Se prepara **EntrenaOP
+Beta 1.3.0**, con UUID propio y código compartido con Dev, manteniendo servidor
+exclusivamente de desarrollo. La función Beta oficial de Garmin es visible solo
+para la cuenta que sube la app; no permite compartir el enlace entre cuentas.
+Compilación release y 16 pruebas por variante correctas; paquete generado, todavía
+sin subir. La primera instalación Beta exigirá vinculación nueva. El formulario
+requiere nombre de desarrollador y aceptar el acuerdo Garmin; confirmación
+pendiente antes de enviar. No autoriza una publicación pública ni producción.
+[Ficha preparada y límites](../connect_iq/store/BETA.md).
+
 **INT-017 · 26/10/2026 · cuenta y entrega privada Connect IQ aprobadas:** Javier
 aprueba explícitamente implementar el diseño en Dev: código de ocho caracteres
 válido diez minutos, revisión y confirmación desde la sesión de EntrenaOP,
@@ -69,6 +80,11 @@ con la app cerrada, aceptación, actualización sin errores y una sola sesión e
 lista de EntrenaOP. Queda aceptado físicamente ese ciclo en 1.3 el 27/10. Importación
 en primer plano tras aceptar; sin garantía de inmediatez ni limpieza de la biblioteca
 nativa. Revocación física y distribución Store siguen pendientes.
+El 27/10 se retira el vínculo propio desde Perfil → Garmin. La interfaz confirma
+«Acceso retirado»; SQL transaccional real con ROLLBACK comprueba `link_revoked`
+para estado, manifiesto y descarga de la última exportación. No se extrae la
+credencial. Pendiente la lectura del bloqueo en el reloj; no dar por aceptada
+físicamente la revocación solo por estas comprobaciones de servidor.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**
