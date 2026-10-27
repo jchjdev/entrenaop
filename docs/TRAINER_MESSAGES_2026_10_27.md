@@ -70,3 +70,13 @@ solo señala para la nueva tabla su RLS privado sin políticas (sin grants
 directos) y el índice de limpieza todavía sin uso: no se abren políticas para
 silenciar esos INFO. Las comprobaciones no envían mensajes de ensayo a usuarios
 reales ni acreditan recepción física desde dos dispositivos.
+
+
+Publicación Dev verificada el 27/10/2026: fuentes
+`743e06b2e202532d4885e5c48ee18d74e952e406`. Trainer: run `40558232070`, release
+`743e06b2e202532d4885e5c48ee18d74e952e406-40558232070-1`; ADMIN: run `40558232095`,
+release `743e06b2e202532d4885e5c48ee18d74e952e406-40558232095-1`. Ambos manifiestos
+HTTPS corresponden a development y `sxbxfjqgoddzhtcyhalw`; los verificadores de
+cada portal comprueban identidad, revisión, entrada, SHA-256 y cabeceras. La app
+del deportista está preparada en fuentes; esta publicación web no acredita una
+nueva instalación móvil ni la prueba humana de conversación entre dispositivos.
