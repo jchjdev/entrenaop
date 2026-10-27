@@ -233,6 +233,15 @@ contraseña. Activación y primera transferencia verificadas por HTTPS el
 destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
+**TRN-031/034 · 27/10/2026 · retirada en agenda y avisos del preparador:**
+Javier pide retirar sesiones desde el calendario, un indicador de mensajes de
+alumnos y refresco periódico de conversaciones. Se reutiliza la cancelación
+protegida; el resumen profesional tiene recibos privados por mensaje y MFA,
+contador global y acceso a la etapa exacta. Solo abrir/cargar una conversación
+visible acredita sus mensajes recibidos; no los envíos concurrentes. Consulta
+de avisos cada 30 segundos y conversación cada 15, pausadas en segundo plano;
+no incorpora push web ni modifica los avisos del alumno. [Contrato y evidencia](TRAINER_MESSAGES_2026_10_27.md).
+
 **TRN-030/031 · corrección del 27/10/2026 · clic y arrastre por entrada:**
 Javier pide que el calendario responda al ratón sin mantener pulsado. Se reproduce
 que una ventana compacta imponía pulsación larga por usar el ancho para decidir

@@ -11,6 +11,37 @@ import 'trainer_agenda_edit_test.dart' show AgendaEditFixture, item;
 import 'trainer_workout_flow_test.dart' show WorkoutFixture;
 
 void main() {
+  testWidgets(
+    'permite retirar desde la tira y recarga; ejecución iniciada queda protegida',
+    (t) async {
+      await resize(t, const Size(1500, 1200));
+      final agenda = AgendaEditFixture();
+      final workouts = _WithdrawalFixture(agenda);
+      await t.pumpWidget(
+        MaterialApp(
+          home: TrainerAgendaPage(
+            repository: agenda,
+            workouts: workouts,
+            now: DateTime(2026, 10, 21),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final strip = find.byKey(
+        const ValueKey('agenda-month-event-session-one'),
+      );
+      await t.ensureVisible(strip);
+      await t.tap(strip);
+      await t.pumpAndSettle();
+      await t.tap(find.text('Retirar sesión').last);
+      await t.pumpAndSettle();
+      await t.tap(find.text('Retirar sesión').last);
+      await t.pumpAndSettle();
+      expect(workouts.cancelled, ['one']);
+      expect(agenda.calls.length, 2);
+    },
+  );
+
   setUpAll(loadReviewFont);
 
   testWidgets(
@@ -210,6 +241,7 @@ void main() {
             desktop: true,
             child: TrainerAgendaPage(
               repository: repo,
+              workouts: WorkoutFixture(),
               now: DateTime(2026, 10, 21),
               onMove: (_, _) async {
                 writes++;
@@ -248,6 +280,10 @@ void main() {
       expect(
         find.descendant(of: dialog, matching: find.text('Ver resultados')),
         findsOneWidget,
+      );
+      expect(
+        find.descendant(of: dialog, matching: find.text('Retirar sesión')),
+        findsNothing,
       );
       expect(writes, 0);
     },
@@ -292,4 +328,15 @@ void main() {
       await capturePerformanceWidget(t, 'trainer-month-calendar');
     },
   );
+}
+
+class _WithdrawalFixture extends WorkoutFixture {
+  _WithdrawalFixture(this.agenda);
+  final AgendaEditFixture agenda;
+  final cancelled = <String>[];
+  @override
+  Future<void> cancel(String id) async {
+    cancelled.add(id);
+    agenda.rows = [];
+  }
 }

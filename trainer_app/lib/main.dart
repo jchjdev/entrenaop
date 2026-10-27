@@ -113,6 +113,7 @@ class _TrainerAppState extends State<TrainerApp> {
   late GoRouter _router;
   late final StreamSubscription<AuthState> _subscription;
   String? _identity;
+  final _messageChanges = ValueNotifier<int>(0);
   String? get _currentIdentity {
     final user = widget.client.auth.currentUser;
     return user == null || user.isAnonymous ? null : user.id;
@@ -201,11 +202,12 @@ class _TrainerAppState extends State<TrainerApp> {
       controller: exits.controller(state.pageKey),
       child: child,
     );
+    late final messages = SupabaseTrainerMessageRepository(
+      widget.client,
+      identity!,
+    );
     Widget conversation(String relationId, {String? assignmentId}) {
-      final messages = SupabaseTrainerMessageRepository(
-        widget.client,
-        identity!,
-      );
+      final acknowledged = <String>{};
       return ConversationView(
         key: ValueKey('conversation-$identity-$relationId-$assignmentId'),
         header: () async {
@@ -239,6 +241,17 @@ class _TrainerAppState extends State<TrainerApp> {
           body: body,
           assignmentId: assignmentId,
         ),
+        refreshInterval: const Duration(seconds: 15),
+        onDisplayed: (rows) async {
+          final incoming = rows
+              .where((row) => !row.mine && !acknowledged.contains(row.id))
+              .map((row) => row.id)
+              .toList();
+          if (incoming.isEmpty) return;
+          await messages.markRead(incoming);
+          acknowledged.addAll(incoming);
+          if (mounted && _identity == identity) _messageChanges.value++;
+        },
         newOperationId: trainerMessageOperationId,
         errorLabel: trainerError,
       );
@@ -290,6 +303,9 @@ class _TrainerAppState extends State<TrainerApp> {
         ),
         ShellRoute(
           builder: (_, state, child) => TrainerShell(
+            key: ValueKey('trainer-shell-$identity'),
+            loadInbox: identity == null ? null : messages.inbox,
+            messageChanges: _messageChanges,
             location: state.uri.path.startsWith('/clients/$identity')
                 ? '/self'
                 : state.uri.path,
@@ -866,6 +882,7 @@ class _TrainerAppState extends State<TrainerApp> {
   void dispose() {
     unawaited(_subscription.cancel());
     _router.dispose();
+    _messageChanges.dispose();
     super.dispose();
   }
 

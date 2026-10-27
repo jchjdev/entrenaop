@@ -82,7 +82,7 @@ class SupabaseTrainerAgendaRepository implements TrainerAgendaRepository {
 
 enum _AgendaView { month, week, day, list }
 
-enum _AgendaEntryAction { planning, result, move, adapt }
+enum _AgendaEntryAction { planning, result, move, adapt, withdraw }
 
 class TrainerAgendaPage extends StatefulWidget {
   const TrainerAgendaPage({
@@ -468,6 +468,13 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                 icon: const Icon(Icons.event_outlined),
                 label: const Text('Mover fecha'),
               ),
+            if (_editable(assignment) && widget.workouts != null)
+              TextButton.icon(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, _AgendaEntryAction.withdraw),
+                icon: const Icon(Icons.event_busy_outlined),
+                label: const Text('Retirar sesión'),
+              ),
             if (_editable(assignment) && widget.onAdapt != null)
               TextButton.icon(
                 onPressed: () =>
@@ -495,12 +502,42 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         );
       case _AgendaEntryAction.move:
         await _proposeMove(assignment);
+      case _AgendaEntryAction.withdraw:
+        await _withdraw(row);
       case _AgendaEntryAction.adapt:
         if (_editable(assignment) && widget.onAdapt != null) {
           await _mutation(() => widget.onAdapt!(assignment));
         }
       case null:
         break;
+    }
+  }
+
+  Future<void> _withdraw(TrainerAgendaItem row) async {
+    if (_locked || !_editable(row.assignment) || widget.workouts == null) {
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => AlertDialog(
+        title: const Text('¿Retirar esta sesión?'),
+        content: Text(
+          'Se retirará ${row.assignment.name} de ${row.clientName}. Se conservará en Retiradas; después podrás archivarla o borrarla si no tiene datos protegidos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialog, true),
+            child: const Text('Retirar sesión'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted && !_locked) {
+      await _mutation(() => widget.workouts!.cancel(row.assignment.id));
     }
   }
 
@@ -1192,6 +1229,13 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     onPressed: _locked ? null : () => _proposeMove(assignment),
                     icon: const Icon(Icons.event),
                     label: const Text('Mover fecha'),
+                  ),
+                if (_editable(assignment) && widget.workouts != null)
+                  TextButton.icon(
+                    key: ValueKey('agenda-withdraw-${assignment.id}'),
+                    onPressed: _locked ? null : () => _withdraw(row),
+                    icon: const Icon(Icons.event_busy_outlined),
+                    label: const Text('Retirar sesión'),
                   ),
                 if (_editable(assignment) && widget.onAdapt != null)
                   TextButton.icon(

@@ -76,6 +76,21 @@ class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
     }
   }
 
+  Future<TrainerMessageInbox> inbox() async => TrainerMessageInbox.fromJson(
+    Map<String, dynamic>.from(
+      await _rpc('get_trainer_message_inbox', {'p_expected_owner': userId})
+          as Map,
+    ),
+  );
+
+  Future<void> markRead(List<String> messageIds) async {
+    if (messageIds.isEmpty) return;
+    await _rpc('read_trainer_messages', {
+      'p_expected_owner': userId,
+      'p_message_ids': messageIds,
+    });
+  }
+
   @override
   Future<TrainerConversationContext> context(String relationId) async =>
       TrainerConversationContext.fromJson(
@@ -121,4 +136,34 @@ class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
       'p_assignment_id': assignmentId,
     });
   }
+}
+
+/// Resumen sin cuerpos privados; la conversación conserva su autorización propia.
+class TrainerMessageInbox {
+  const TrainerMessageInbox({
+    required this.totalUnread,
+    required this.conversations,
+  });
+  factory TrainerMessageInbox.fromJson(Map<String, dynamic> json) =>
+      TrainerMessageInbox(
+        totalUnread: (json['total_unread'] as num).toInt(),
+        conversations: (json['conversations'] as List)
+            .map(
+              (row) => TrainerUnreadConversation.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ),
+            )
+            .toList(),
+      );
+  final int totalUnread;
+  final List<TrainerUnreadConversation> conversations;
+}
+
+class TrainerUnreadConversation {
+  TrainerUnreadConversation.fromJson(Map<String, dynamic> json)
+    : relationId = json['relation_id'] as String,
+      clientName = json['client_name'] as String,
+      unreadCount = (json['unread_count'] as num).toInt();
+  final String relationId, clientName;
+  final int unreadCount;
 }

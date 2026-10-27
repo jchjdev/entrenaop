@@ -13,6 +13,8 @@ class TrainerStudentConversationPage extends StatelessWidget {
   final String relationId;
   @override
   Widget build(BuildContext context) => ConversationView(
+    key: ValueKey('student-conversation-$relationId'),
+    refreshInterval: const Duration(seconds: 15),
     header: () async {
       final detail = await repository.context(relationId);
       return ConversationHeader(title: detail.name, canSend: detail.canSend);

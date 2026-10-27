@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'src/professional_workspace.dart';
 
 import 'package:flutter/material.dart';
@@ -33,6 +35,8 @@ class ConversationView extends StatefulWidget {
     required this.send,
     required this.newOperationId,
     required this.errorLabel,
+    this.refreshInterval,
+    this.onDisplayed,
   });
   final Future<ConversationHeader> Function() header;
   final Future<List<ConversationEntry>> Function(ConversationEntry? before)
@@ -40,20 +44,39 @@ class ConversationView extends StatefulWidget {
   final Future<void> Function(String operationId, String body) send;
   final String Function() newOperationId;
   final String Function(Object error) errorLabel;
+  final Duration? refreshInterval;
+  final Future<void> Function(List<ConversationEntry> entries)? onDisplayed;
   @override
   State<ConversationView> createState() => _ConversationViewState();
 }
 
-class _ConversationViewState extends State<ConversationView> {
+class _ConversationViewState extends State<ConversationView>
+    with WidgetsBindingObserver {
   final _body = TextEditingController();
   List<ConversationEntry> _items = [];
   ConversationHeader? _header;
   bool _busy = true, _sending = false, _more = false;
   String? _error, _sendError, _operation, _pending;
   WorkflowExitController? _exit;
+  Timer? _timer;
+  Completer<void>? _loading;
+  bool get _visible =>
+      (WidgetsBinding.instance.lifecycleState == null ||
+          WidgetsBinding.instance.lifecycleState ==
+              AppLifecycleState.resumed) &&
+      (ModalRoute.of(context)?.isCurrent ?? true);
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final interval = widget.refreshInterval;
+    if (interval != null && interval > Duration.zero) {
+      _timer = Timer.periodic(interval, (_) {
+        if (mounted && _visible && !_sending && _loading == null) {
+          _load(quiet: true);
+        }
+      });
+    }
     _load();
   }
 
@@ -70,6 +93,8 @@ class _ConversationViewState extends State<ConversationView> {
 
   @override
   void dispose() {
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _exit?.onExit = null;
     _body.dispose();
     super.dispose();
@@ -100,28 +125,64 @@ class _ConversationViewState extends State<ConversationView> {
         true;
   }
 
-  Future<void> _load({bool more = false}) async {
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        widget.refreshInterval != null &&
+        mounted &&
+        _visible &&
+        !_sending) {
+      _load(quiet: true);
+    }
+  }
+
+  Future<void> _load({bool more = false, bool quiet = false}) async {
+    while (_loading != null) {
+      if (quiet) return;
+      await _loading!.future;
+      if (!mounted) return;
+    }
+    final completion = Completer<void>();
+    _loading = completion;
+    if (!quiet) {
+      setState(() {
+        _busy = true;
+        _error = null;
+      });
+    }
     try {
       final header = await widget.header();
-      final rows = await widget.load(more ? _items.last : null);
-      if (mounted) {
-        setState(() {
-          _header = header;
-          _items = {
-            for (final entry in more ? [..._items, ...rows] : rows)
-              entry.id: entry,
-          }.values.toList();
-          _more = rows.length == 50;
-        });
+      final rows = await widget.load(
+        more && _items.isNotEmpty ? _items.last : null,
+      );
+      if (!mounted) return;
+      setState(() {
+        _header = header;
+        _error = null;
+        // Si llegaron más de una página, reinicia el cursor para no ocultar el hueco.
+        final overlaps = rows.any((r) => _items.any((old) => old.id == r.id));
+        final retain = more || (quiet && (rows.length < 50 || overlaps));
+        _items =
+            {
+              for (final entry in retain ? [..._items, ...rows] : rows)
+                entry.id: entry,
+            }.values.toList()..sort((a, b) {
+              final date = b.createdAt.compareTo(a.createdAt);
+              return date != 0 ? date : b.id.compareTo(a.id);
+            });
+        if (more || !retain) _more = rows.length == 50;
+      });
+      // Se acredita solo la página recibida y presentada; nunca los envíos concurrentes.
+      if (widget.onDisplayed != null) {
+        await WidgetsBinding.instance.endOfFrame;
+        if (mounted && _visible) await widget.onDisplayed!(rows);
       }
     } catch (e) {
       if (mounted) setState(() => _error = widget.errorLabel(e));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted && !quiet) setState(() => _busy = false);
+      _loading = null;
+      completion.complete();
     }
   }
 
@@ -226,8 +287,10 @@ class _ConversationViewState extends State<ConversationView> {
                       (_header?.canSend == true || _pending != null))
                     _composer(),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Mensajes más recientes primero. Actualiza para consultar respuestas.',
+                  Text(
+                    widget.refreshInterval == null
+                        ? 'Mensajes más recientes primero. Actualiza para consultar respuestas.'
+                        : 'Mensajes más recientes primero. Las respuestas se actualizan automáticamente.',
                   ),
                   if (!_busy && _items.isEmpty && _error == null)
                     const Padding(

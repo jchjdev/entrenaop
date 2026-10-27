@@ -1,9 +1,172 @@
+import 'dart:async';
+
 import 'package:entrena_ui/conversation_view.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'consulta lenta no se solapa y no acredita lectura bajo otra pantalla',
+    (t) async {
+      var calls = 0;
+      final pending = Completer<List<ConversationEntry>>();
+      final displayed = <String>[];
+      ConversationEntry entry(String id) => ConversationEntry(
+        id: id,
+        body: id,
+        createdAt: DateTime(2026, 10, 27),
+        mine: false,
+      );
+      await t.pumpWidget(
+        MaterialApp(
+          home: ConversationView(
+            refreshInterval: const Duration(seconds: 15),
+            header: () async =>
+                const ConversationHeader(title: 'Alumno', canSend: true),
+            load: (_) async {
+              calls++;
+              return calls == 2 ? pending.future : [entry('$calls')];
+            },
+            onDisplayed: (rows) async =>
+                displayed.addAll(rows.map((r) => r.id)),
+            send: (_, _) async {},
+            newOperationId: () => 'id',
+            errorLabel: (_) => 'Error',
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.pump(const Duration(seconds: 15));
+      await t.pump(const Duration(seconds: 45));
+      expect(calls, 2);
+      final navigator = t.state<NavigatorState>(find.byType(Navigator));
+      unawaited(
+        navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('Otra pantalla')),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      pending.complete([entry('oculto')]);
+      await t.pumpAndSettle();
+      expect(displayed, ['1']);
+      await t.pump(const Duration(seconds: 30));
+      expect(calls, 2);
+      navigator.pop();
+      await t.pumpAndSettle();
+      await t.pump(const Duration(seconds: 15));
+      await t.pumpAndSettle();
+      expect(calls, 3);
+      expect(displayed, ['1', '3']);
+      await t.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'refresco automático conserva borrador, pausa oculta y recupera al volver',
+    (t) async {
+      var calls = 0;
+      final shown = <List<String>>[];
+      await t.pumpWidget(
+        MaterialApp(
+          home: ConversationView(
+            refreshInterval: const Duration(seconds: 15),
+            header: () async =>
+                const ConversationHeader(title: 'Alumno', canSend: true),
+            load: (_) async {
+              calls++;
+              return [
+                ConversationEntry(
+                  id: '$calls',
+                  body: 'Respuesta $calls',
+                  createdAt: DateTime(2026, 10, 27, 10, calls),
+                  mine: false,
+                ),
+              ];
+            },
+            onDisplayed: (rows) async =>
+                shown.add(rows.map((r) => r.id).toList()),
+            send: (_, _) async {},
+            newOperationId: () => 'id',
+            errorLabel: (_) => 'Error',
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'No perder mi borrador');
+      await t.pump(const Duration(seconds: 15));
+      await t.pumpAndSettle();
+      expect(calls, 2);
+      expect(find.text('Respuesta 2'), findsOneWidget);
+      expect(find.text('Respuesta 1'), findsOneWidget);
+      expect(
+        t.widget<TextField>(find.byType(TextField)).controller!.text,
+        'No perder mi borrador',
+      );
+      expect(shown.last, ['2']);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      await t.pump(const Duration(seconds: 45));
+      expect(calls, 2);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await t.pumpAndSettle();
+      expect(calls, 3);
+      await t.pumpWidget(const SizedBox());
+      await t.pump(const Duration(seconds: 30));
+      expect(calls, 3);
+    },
+  );
+
+  testWidgets('refresco conserva las páginas anteriores cargadas', (t) async {
+    var pages = 0;
+    var newestCalls = 0;
+    ConversationEntry entry(int n) => ConversationEntry(
+      id: '$n',
+      body: 'Mensaje $n',
+      createdAt: DateTime(2026, 10, 27, 0, n),
+      mine: true,
+    );
+    await t.pumpWidget(
+      MaterialApp(
+        home: ConversationView(
+          refreshInterval: const Duration(seconds: 15),
+          header: () async =>
+              const ConversationHeader(title: 'Alumno', canSend: false),
+          load: (before) async {
+            if (before != null) {
+              pages++;
+              return [entry(0)];
+            }
+            newestCalls++;
+            return [for (var i = 50; i > 0; i--) entry(i)];
+          },
+          send: (_, _) async {},
+          newOperationId: () => 'id',
+          errorLabel: (_) => 'Error',
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    await t.scrollUntilVisible(
+      find.text('Cargar mensajes anteriores'),
+      500,
+      maxScrolls: 40,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await t.tap(find.text('Cargar mensajes anteriores'));
+    await t.pumpAndSettle();
+    expect(pages, 1);
+    await t.pump(const Duration(seconds: 15));
+    await t.pumpAndSettle();
+    expect(newestCalls, 2);
+    expect(find.text('Cargar mensajes anteriores'), findsNothing);
+    expect(find.text('Mensaje 0'), findsOneWidget);
+    await t.pumpWidget(const SizedBox());
+  });
+
   testWidgets(
     'envío incierto conserva texto e identidad y permite recuperar recibo tras baja',
     (tester) async {

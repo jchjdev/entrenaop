@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:trainer_access/trainer_messages.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +8,15 @@ import 'package:workout_editor_ui/professional_tools_workspace.dart';
 
 /// Los formularios mantienen toda la pantalla y su guard de salida propio.
 class TrainerShell extends StatefulWidget {
-  const TrainerShell({super.key, required this.location, required this.child});
+  const TrainerShell({
+    super.key,
+    required this.location,
+    required this.child,
+    this.loadInbox,
+    this.messageChanges,
+  });
+  final Future<TrainerMessageInbox> Function()? loadInbox;
+  final Listenable? messageChanges;
   final String location;
   final Widget child;
   static const destinations = [
@@ -30,7 +41,137 @@ class TrainerShell extends StatefulWidget {
   State<TrainerShell> createState() => _TrainerShellState();
 }
 
-class _TrainerShellState extends State<TrainerShell> {
+class _TrainerShellState extends State<TrainerShell>
+    with WidgetsBindingObserver {
+  TrainerMessageInbox? _inbox;
+  bool _checking = false, _checkFailed = false;
+  Timer? _timer;
+  int get _unread => _inbox?.totalUnread ?? 0;
+  bool get _foreground =>
+      WidgetsBinding.instance.lifecycleState == null ||
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.messageChanges?.addListener(_refreshInbox);
+    if (widget.loadInbox != null) {
+      _refreshInbox();
+      _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (_foreground) _refreshInbox();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(TrainerShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.messageChanges != widget.messageChanges) {
+      oldWidget.messageChanges?.removeListener(_refreshInbox);
+      widget.messageChanges?.addListener(_refreshInbox);
+    }
+    if (oldWidget.location != widget.location && _foreground) _refreshInbox();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshInbox();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    widget.messageChanges?.removeListener(_refreshInbox);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _refreshInbox() async {
+    if (_checking || widget.loadInbox == null || !_foreground) return;
+    _checking = true;
+    try {
+      final inbox = await widget.loadInbox!();
+      if (mounted) {
+        setState(() {
+          _inbox = inbox;
+          _checkFailed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _checkFailed = true);
+    } finally {
+      _checking = false;
+    }
+  }
+
+  Widget _messageIcon(IconData icon) => Badge.count(
+    count: _unread,
+    isLabelVisible: _unread > 0,
+    child: Icon(icon),
+  );
+  Future<void> _openInbox() async {
+    final relationId = await showModalBottomSheet<String>(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * .75,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(title: Text('Mensajes sin leer')),
+              if (_checkFailed)
+                const ListTile(
+                  title: Text(
+                    'No se pudo actualizar el contador. Vuelve a comprobarlo.',
+                  ),
+                ),
+              for (final item
+                  in _inbox?.conversations ?? <TrainerUnreadConversation>[])
+                ListTile(
+                  leading: Badge.count(
+                    count: item.unreadCount,
+                    child: const Icon(Icons.chat_bubble_outline),
+                  ),
+                  title: Text(item.clientName),
+                  subtitle: Text('${item.unreadCount} mensajes sin leer'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pop(sheetContext, item.relationId),
+                ),
+              if ((_inbox?.conversations.length ?? 0) == 50)
+                const ListTile(
+                  title: Text(
+                    'Se muestran las 50 conversaciones más recientes. El contador incluye todas.',
+                  ),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(sheetContext, ''),
+                child: const Text('Ver todas las conversaciones'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || relationId == null) return;
+    context.go(relationId.isEmpty ? '/messages' : '/conversations/$relationId');
+  }
+
+  Widget _noticeButton() => IconButton(
+    key: const ValueKey('trainer-message-notices'),
+    tooltip: _checkFailed
+        ? 'No se pudieron comprobar los mensajes. Reintentar'
+        : '$_unread mensajes sin leer',
+    onPressed: _checkFailed ? _refreshInbox : _openInbox,
+    icon: _messageIcon(
+      _checkFailed ? Icons.sync_problem_outlined : Icons.notifications_outlined,
+    ),
+  );
+
   final _scaffold = GlobalKey<ScaffoldState>();
   String get location => widget.location;
   Widget get child => widget.child;
@@ -84,7 +225,9 @@ class _TrainerShellState extends State<TrainerShell> {
                 for (var value = 5; value < destinations.length; value++) value,
               ])
                 ListTile(
-                  leading: Icon(destinations[i].$3),
+                  leading: i == 13
+                      ? _messageIcon(destinations[i].$3)
+                      : Icon(destinations[i].$3),
                   title: Text(destinations[i].$2),
                   selected: selected == i,
                   onTap: () => Navigator.pop(sheetContext, i),
@@ -167,7 +310,9 @@ class _TrainerShellState extends State<TrainerShell> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        leading: Icon(destinations[i].$3, size: 18),
+                        leading: i == 13
+                            ? _messageIcon(destinations[i].$3)
+                            : Icon(destinations[i].$3, size: 18),
                         title: Text(destinations[i].$2),
                         onTap: () => go(i),
                       ),
@@ -191,9 +336,10 @@ class _TrainerShellState extends State<TrainerShell> {
                 'Preparadores / ${destinations[selected].$2}',
                 style: Theme.of(context).textTheme.titleSmall,
               ),
-              actions: const [
-                ProfessionalToolsButton(iconOnly: true),
-                SizedBox(width: 12),
+              actions: [
+                if (_unread > 0 || _checkFailed) _noticeButton(),
+                const ProfessionalToolsButton(iconOnly: true),
+                const SizedBox(width: 12),
               ],
             )
           : const SizedBox.shrink(),
@@ -204,6 +350,7 @@ class _TrainerShellState extends State<TrainerShell> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
+              if (_unread > 0 || _checkFailed) _noticeButton(),
               for (var i = 0; i < 5; i++)
                 Expanded(
                   child: TextButton(
