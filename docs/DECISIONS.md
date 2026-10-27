@@ -1,5 +1,22 @@
 # Registro de decisiones vigentes
 
+**INT-019 · 27/10/2026 · apertura de Fuerza en Beta 1.4:** Javier solicita
+corregir el salto por la pantalla principal y los fallos de apertura, y actualizar
+la misma beta privada. La lista se sustituye por una vista de apertura antes de
+consultar el permiso. Un flujo por pantalla admite una única consulta y un único
+intento nativo; salir cancela el temporizador y descarta respuestas tardías.
+Se conserva la revalidación obligatoria de permiso, sesión y revisión en servidor.
+Los errores nativos se distinguen de la actualización y conservan etapa/mensaje
+locales en MENU → Estado de apertura; no se reintenta automáticamente ni se
+invalida una descarga correcta por un fallo de intent. Beta 1.4.0 conserva UUID,
+clave, permisos, credencial y ajustes de avisos. Compilación estricta, 25 pruebas
+Monkey C en cada variante y firma IQ verificadas. Garmin confirma la actualización
+privada 1.4.0 (Internal: 2), con firma Verified, y su instalación encolada para la
+próxima sincronización del fēnix. Reapertura física en el fēnix aún
+pendiente: la excepción original de 1.3 no quedó identificada y no se atribuye a
+firmware. Desarrollo y distribución pública mantienen sus límites de INT-018.
+[Contrato y validación](DEVICE_GARMIN_TRAINING.md#apertura-controlada--int-019--27102026).
+
 **INT-018 · 27/10/2026 · distribución privada de Connect IQ:** Javier pide que
 la primera distribución sea visible solo para nosotros. Se prepara **EntrenaOP
 Beta 1.3.0**, con UUID propio y código compartido con Dev, manteniendo servidor

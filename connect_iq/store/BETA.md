@@ -1,6 +1,11 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-Estado del 27/10/2026: **beta instalada desde Connect IQ en el fēnix 8 de 47 mm**.
+Estado del 27/10/2026: **Beta 1.4.0 registrada en la misma ficha privada**
+(Internal: 2), con firma Verified. Veinticinco pruebas por variante y firma IQ
+correctas. La llegada al reloj y apertura repetida de 1.4 están pendientes de
+aceptación física. Conserva UUID, clave, permisos, vinculación y ajustes de avisos.
+
+Antecedente aceptado: **Beta 1.3 instalada desde Connect IQ en el fēnix 8 de 47 mm**.
 Javier confirma inicio de **EntrenaOP Beta 1.3** y un código de vinculación nuevo.
 Aceptado el recorrido Store → sincronización → instalación → inicio físico.
 Javier confirma vinculación, una sola sesión y apertura en Fuerza con tres
@@ -16,7 +21,7 @@ Para instalarla desde Connect IQ en el reloj, usar esa misma cuenta Garmin.
 
 ## Identidad y compilación
 
-- Nombre: **EntrenaOP Beta**; versión **1.3.0**; idioma castellano.
+- Nombre: **EntrenaOP Beta**; versión **1.4.0**; idioma castellano.
 - UUID estable: `d38458cfe4d844fcae60b18c9e9d7cf3`.
 - Variante independiente de Dev; comparte código y endpoint exclusivamente Dev.
 - Perfil oficial `fenix847mm`; aceptación física hasta ahora en fēnix 8 de 47 mm.
@@ -36,7 +41,11 @@ genera en `connect_iq/bin/entrenaop-beta.iq` (ignorado por Git). La exportación
 release del SDK contiene las dos referencias de hardware del mismo perfil;
 no representa aceptación física en dos modelos distintos.
 
-Paquete comprobado: 34.966 bytes, SHA-256
+Paquete 1.4.0 enviado: 40.966 bytes, SHA-256
+`27220303c80e100575e1eccb0edcbbd26ce521105c28f01d8653ad37ff03e150`.
+Compilación estricta sin avisos; 25 pruebas Monkey C en Beta y 25 en Dev.
+
+Primera versión 1.3.0: 34.966 bytes, SHA-256
 `ec2ab6403eeebee86e035deeae6550d91822c27611165a4c03cf3359e27e5f7f`.
 Compilación estricta sin avisos; 16 pruebas Monkey C en Beta y 16 en Dev.
 
@@ -81,8 +90,9 @@ consultas y descargas; los entrenamientos ya importados en la biblioteca de
 Garmin pueden permanecer allí. Esta beta no registra ni devuelve resultados de
 actividad a EntrenaOP y no sustituye la sincronización de calendario de Garmin.
 
-**Novedades 1.3.0:** Primera beta privada. Vinculación por código, descarga de
-sesiones vigentes, apertura en Fuerza, icono OP y avisos opcionales de cambios.
+**Novedades 1.4.0:** Pantalla clara al abrir Fuerza, una sola solicitud nativa por
+autorización y descarte de respuestas tardías al salir. Los fallos de apertura
+tienen diagnóstico propio. Se mantienen la vinculación y la configuración de avisos.
 
 ## Envío privado y siguiente comprobación
 
@@ -128,8 +138,8 @@ estado, manifiesto y descarga con `link_revoked`, sin extraer la credencial.
 Javier confirma **Vinculación caducada o retirada** tras salir a la esfera y
 reabrir Beta. Revocación física aceptada; no se confunde con borrar los FIT de
 Garmin. Se solicita obtener otro código con START y confirmar un vínculo nuevo
-para dejarla operativa, comprobando que vuelve una sola sesión. Restauración
-todavía pendiente; no se rehabilita la credencial revocada.
+para dejarla operativa, comprobando que vuelve una sola sesión. La restauración
+se acepta después, como se detalla abajo; no se rehabilita la credencial revocada.
 
 Ficha en castellano e inglés, categoría Strength Training, contacto profesional
 `javier.charlez@entrenaop.es`, OP oficial en `cover-500.png` (500×500, 287.424 bytes)
@@ -154,8 +164,9 @@ vinculación aunque Dev siga instalada. Verificar instalación desde Store,
 vinculación, descarga y actualización de esta variante antes de declarar cerrado
 el recorrido de distribución sin USB. La instalación ya está enviada desde la
 ficha privada y su llegada, inicio físico y vinculación están confirmados. El
-siguiente mejora es clarificar la espera y el diagnóstico de apertura en Fuerza;
-el piloto privado no acredita robustez general ni lanzamiento público.
+siguiente mejora entonces era clarificar la espera y el diagnóstico de apertura
+en Fuerza; se aplica en 1.4, con repetición física pendiente. El piloto privado
+no acredita robustez general ni lanzamiento público.
 No publicar una versión pública ni cambiar
 el servidor a producción dentro de este bloque.
 
@@ -192,3 +203,26 @@ de un aviso nuevo. El aviso y su aceptación se comprobaron antes en Dev 1.3.
 Fuente: documentación oficial del SDK 9.3.0, `Core_Topics/Beta_Apps.html` y
 `Core_Topics/Publishing_to_the_Store.html`; formulario
 <https://apps.garmin.com/en-US/developer/upload>.
+
+## Actualización 1.4.0 · apertura controlada
+
+La lista pasa directamente a **Abriendo Fuerza**, donde se comprueba el permiso
+vigente. BACK descarta el flujo; callbacks tardíos y pulsaciones repetidas no
+pueden enviar otro intent. Un error nativo no se muestra como fallo de descarga
+ni retira la lista ya verificada. MENU → **Estado de apertura** guarda etapa,
+detalle local y antigüedad. No hay relanzamiento automático tras error/cancelación.
+La excepción original de 1.3 no se identificó: no se promete corregir un fallo de
+firmware ni se omite la comprobación en servidor para acelerar la apertura.
+
+Garmin verifica archivo y firma; la ficha conserva **BETA**, versión **1.4.0
+(Internal: 2)** y el mismo identificador. Novedades actualizadas en castellano
+e inglés. Sin nuevos permisos, nuevo vínculo ni ampliación a otros dispositivos.
+Se solicita Download para el fēnix 8 de 47 mm y se confirman los mismos permisos.
+Garmin muestra **EntrenaOP Beta will be installed the next time your device syncs**.
+La actualización queda encolada; esa confirmación no acredita su llegada física.
+
+Validación siguiente: sincronizar desde Garmin Connect en el iPhone, confirmar
+Beta 1.4, abrir la misma sesión, salir de Fuerza y volver a abrir sin reiniciar.
+Comprobar una sola sesión, cancelar durante la espera y abrir después, además
+de la conservación de los avisos. Si falla, leer Estado de apertura antes de
+otro intento. Instalación física 1.4 aún pendiente.

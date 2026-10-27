@@ -14,8 +14,11 @@ cuenta. Javier confirma una sesión y apertura con dosis/descanso correctos: ent
 privada desde Beta Store aceptada. Revocación Beta contrastada en servidor y
 aceptada físicamente por Javier. Vínculo nuevo y lista recuperados; una apertura
 fallida se recupera al reiniciar y la repetición vuelve a abrir sin reinicio.
-La causa no queda identificada. Beta operativa y avisos activados; queda mejorar
-espera/diagnóstico de apertura sin reducir la revalidación en servidor.
+La causa no queda identificada. Beta 1.4 (INT-019) sustituye la lista por una
+vista de apertura con flujo de una autorización/un intento, descarta callbacks
+tras salir y separa errores nativos de actualización. Conserva revalidación en
+servidor, UUID y ajustes; 25 pruebas por variante y firma correctas, actualización
+privada 1.4.0 registrada en Store. Repetición física de apertura aún pendiente.
 [Distribución y límites](../connect_iq/store/BETA.md).
 
 **Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la

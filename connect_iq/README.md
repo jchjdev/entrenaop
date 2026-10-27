@@ -1,5 +1,14 @@
 # EntrenaOP Connect IQ · Dev
 
+**Beta 1.4.0 · 27/10/2026 · INT-019:** actualización registrada en la misma ficha
+privada de Store (Internal: 2, firma Verified). La lista se sustituye por
+**Abriendo Fuerza**, con una autorización/un intento nativo, descarte de respuestas
+al salir y MENU → **Estado de apertura**. Los errores nativos no invalidan una
+descarga correcta. Conserva UUID, credencial, permisos y avisos. Veinticinco
+pruebas por variante y firma del paquete correctas. Pendiente instalar por
+sincronización y repetir apertura/cancelación físicamente; la excepción original
+de 1.3 no quedó identificada. [Detalle](store/BETA.md#actualización-140--apertura-controlada).
+
 **Beta privada instalada desde Store (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
 exporta EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev. Dieciséis
 pruebas correctas en cada variante y verificador de firma del SDK integrado en
@@ -16,7 +25,8 @@ el bloqueo físico al revocar Beta. Vínculo nuevo activo y lista recuperada;
 tras un fallo de apertura local, reiniciar el reloj recupera Fuerza y Javier
 confirma otra apertura sin reiniciar. Beta operativa con avisos activados.
 La excepción original sigue sin identificar; espera y diagnóstico de apertura
-son el siguiente ajuste recomendado antes de ampliar el piloto.
+eran el siguiente ajuste recomendado; implementados después en 1.4, con
+aceptación física de esa actualización todavía pendiente.
 [Ficha y pasos pendientes](store/BETA.md).
 El vínculo Dev se ha revocado desde Perfil; servidor bloquea estado, manifiesto
 y descarga. La prueba física de revocación se acepta después en Beta.
@@ -30,13 +40,13 @@ sesión en la lista de EntrenaOP**. Queda aceptado ese recorrido en Dev.
 También están aceptados vínculo privado, apertura en Fuerza nativa, cambio a
 3×6 a 22,5 kg con descanso 1:15 y repetición de Actualizar/reapertura sin duplicar
 la lista vigente. Esto no acredita limpieza de copias antiguas en la biblioteca
-nativa. Retirada/revocación físicas, otros relojes y Connect IQ Store siguen
+nativa. Revocación y Store se aceptan después en Beta 1.3; otros relojes siguen
 pendientes. El transporte sintético 0.2 está conservado como evidencia histórica.
 
 ## Vincular y recibir sesiones privadas
 
 1. Compilar con `./connect_iq/build-dev.ps1`; con el simulador oficial abierto,
-   ejecutar `./connect_iq/test-dev.ps1` (dieciséis regresiones). Instalar solo
+   ejecutar `./connect_iq/test-dev.ps1` (25 regresiones). Instalar solo
    `bin/entrenaop-dev-fenix847mm.prg` por USB en `GARMIN/APPS` y verificar relectura.
 2. Desconectar USB, abrir EntrenaOP en el reloj con Garmin Connect/móvil e Internet
    disponibles. El reloj solicita un código de ocho caracteres, válido diez minutos.
@@ -59,7 +69,7 @@ puede retirar el permiso propio aunque ya no se tenga ese acceso comercial.
 Credencial revocable de 90 días, máximo cinco relojes; no hay tokens Garmin ni
 claves administrativas en el reloj. La comprobación opcional cada 15 minutos
 está desactivada inicialmente y solo detecta cambios, sin importar/borrar FIT.
-La publicación e instalación desde Connect IQ Store todavía están pendientes.
+La variante Beta ya se instala desde la ficha privada de Connect IQ Store.
 
 Desde 1.1, **MENU → Activar avisos de cambios** activa también la consulta cada 15
 minutos y permite un diálogo por huella nueva. Aceptarlo abre EntrenaOP, que
@@ -99,7 +109,7 @@ Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones lis
 con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
 descanso de 1:00. Confirma después la receta cambiada a 3×6 a 22,5 kg con 1:15
 desde 1.1 y una sola entrada tras dos actualizaciones y reapertura. Aceptación
-física privada del 27/10; retirada/revocación y Store siguen pendientes.
+física privada del 27/10; retirada/revocación y Store se aceptan después en Beta.
 
 Pruebas servidor: `node --test supabase/functions/tests/garmin_ciq_test.ts`.
 SQL: `supabase/tests/garmin_ciq_account_and_downloads.sql` (ROLLBACK, solo Dev).

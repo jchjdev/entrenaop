@@ -24,7 +24,6 @@ class CiqView extends WatchUi.View {
     private var _wait as Timer.Timer;
     private var _poll as Timer.Timer;
     private var _revision as String?;
-    private var _opening as Dictionary?;
 
     function initialize() {
         View.initialize(); _wait=new Timer.Timer(); _poll=new Timer.Timer();
@@ -39,7 +38,7 @@ class CiqView extends WatchUi.View {
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
         var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        var title=(WatchUi.loadResource(Rez.Strings.AppName) as String)+" 1.3";
+        var title=(WatchUi.loadResource(Rez.Strings.AppName) as String)+" "+(WatchUi.loadResource(Rez.Strings.AppVersion) as String);
         dc.drawText(x,y-100,Graphics.FONT_SMALL,title,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
@@ -111,7 +110,7 @@ class CiqView extends WatchUi.View {
         var revision=response["revision"]; _revision=revision instanceof String?revision:null;
         try { nextDownload(); } catch(error) { fail("No se pudo comprobar el reloj"); }
     }
-    private function owned(name as String) as PersistedContent.Content? {
+    function owned(name as String) as PersistedContent.Content? {
         var iterator=PersistedContent.getAppWorkouts(); var content=iterator.next();
         while (content!=null) { if (content.getName().equals(name)) { return content; } content=iterator.next(); }
         return null;
@@ -159,6 +158,7 @@ class CiqView extends WatchUi.View {
     function menu() as Void {
         if (_busy) { return; } var menu=new WatchUi.Menu2({:title=>"EntrenaOP"});
         menu.addItem(new WatchUi.MenuItem("Actualizar",null,:refresh,{}));
+        menu.addItem(new WatchUi.MenuItem("Estado de apertura",null,:openingDiagnostics,{}));
         if (_verified) { menu.addItem(new WatchUi.MenuItem("Abrir sesiones",null,:sessions,{})); }
         if (_pairCode==null && _credential!=null) {
             var enabled=Storage.getValue("ciqBackgroundEnabled");
@@ -208,7 +208,7 @@ class CiqView extends WatchUi.View {
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
     function diagnostics() as Void {
-        var menu=new WatchUi.Menu2({:title=>"Diagnóstico 1.3"});
+        var menu=new WatchUi.Menu2({:title=>"Estado de avisos"});
         var state=Storage.getValue("ciqBackgroundState");
         var stamp=Storage.getValue("ciqBackgroundStateAt");
         var http=Storage.getValue("ciqBackgroundHttp");
@@ -223,20 +223,24 @@ class CiqView extends WatchUi.View {
     }
     function open(index as Number) as Void {
         if (_busy || !_verified || index<0 || index>=_entries.size()) { return; }
-        _opening=_entries[index]; startWait("Comprobando permiso"); _detail="Antes de abrir en Fuerza";
-        try { request("manifest",method(:onOpenPermission)); } catch(error) { _opening=null; fail("Sin conexión. No se abre"); }
+        var view=new CiqOpenView(self,_entries[index]);
+        WatchUi.switchToView(view,new CiqOpenDelegate(view),WatchUi.SLIDE_IMMEDIATE);
     }
-    function onOpenPermission(code as Number,data as Communications.ContentType?) as Void {
-        stopWait(); var entry=_opening; _opening=null;
-        if (code!=200 || !(data instanceof Dictionary)) { protocolFailure(code,data); return; }
-        if (entry==null || !ciqManifestAllowsOpen(data,entry["id"] as String,entry["fit_name"] as String)) {
-            fail("La sesión cambió. Actualiza"); return;
-        }
-        try {
-            var content=owned(entry["fit_name"] as String);
-            if (content==null) { fail("La copia ya no está. Actualiza"); return; }
-            System.exitTo(content.toIntent());
-        } catch(error) { fail("No se pudo abrir en Fuerza"); }
+    function requestOpenPermission(callback as Method(code as Number,data as Communications.ContentType?) as Void) as Void {
+        request("manifest",callback);
+    }
+    function openPermissionFailure(code as Number,data as Communications.ContentType?) as String {
+        protocolFailure(code,data); return _detail;
+    }
+    function invalidateOpen(message as String) as Void { fail(message); }
+    function openingDiagnostics() as Void {
+        var menu=new WatchUi.Menu2({:title=>"Estado de apertura"});
+        var stage=Storage.getValue("ciqOpenStage"); var error=Storage.getValue("ciqOpenError");
+        var stamp=Storage.getValue("ciqOpenAt");
+        menu.addItem(new WatchUi.MenuItem("Etapa",stage instanceof String?stage:"Sin intento",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Detalle",error instanceof String?error:"Sin dato",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Hace",stamp instanceof Number?((Time.now().value()-stamp)/60).toString()+" min":"Sin dato",:info,{}));
+        WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_IMMEDIATE);
     }
 }
 class CiqDelegate extends WatchUi.BehaviorDelegate {
@@ -250,10 +254,13 @@ class CiqMenuDelegate extends WatchUi.Menu2InputDelegate {
     private var _view as CiqView;
     function initialize(view as CiqView) { Menu2InputDelegate.initialize(); _view=view; }
     function onSelect(item as WatchUi.MenuItem) as Void {
-        var id=item.getId(); WatchUi.popView(WatchUi.SLIDE_DOWN);
-        if (id instanceof Number) { _view.open(id); } else if (id==:refresh) { _view.synchronize(); }
+        var id=item.getId();
+        if (id instanceof Number) { _view.open(id); return; }
+        WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+        if (id==:refresh) { _view.synchronize(); }
         else if (id==:sessions) { _view.sessions(); } else if (id==:background) { _view.toggleBackground(); }
         else if (id==:alerts) { _view.toggleAlerts(); }
         else if (id==:diagnostics) { _view.diagnostics(); }
+        else if (id==:openingDiagnostics) { _view.openingDiagnostics(); }
     }
 }

@@ -19,8 +19,10 @@ vinculada a su cuenta secundaria y con una sesión privada abierta en Fuerza
 la subió y usa servidor Dev. Confirma también el bloqueo del reloj al retirar
 su acceso. El vínculo nuevo queda operativo: tras un fallo de apertura local,
 reiniciar el reloj recupera Fuerza y la repetición abre sin reiniciar. Javier
-activa avisos en Beta. La causa del fallo sigue sin identificar; queda aclarar
-la espera y el diagnóstico de apertura. Limpieza de
+activa avisos en Beta. La causa del fallo original sigue sin identificar. Beta
+1.4 muestra Abriendo Fuerza, evita solicitudes simultáneas y respuestas tras salir,
+y distingue errores de apertura; 25 pruebas por variante correctas y actualización
+privada 1.4.0 registrada en Store, con comprobación física todavía pendiente. Limpieza de
 copias nativas, distribución pública y automatización general siguen pendientes.
 Tras retirar la primera prueba
 y sincronizar, Javier confirma una única sesión de hoy en Garmin Connect y en

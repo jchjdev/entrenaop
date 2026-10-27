@@ -42,9 +42,12 @@ privacidad desplegado en Dev, con 176 pruebas servidor, tipos estrictos y contra
 SQL con ROLLBACK correctos. No se publica al público ni se habilita producción.
 Revocación del vínculo Dev aplicada desde
 Perfil y bloqueo de estado/manifiesto/descarga acreditado en servidor con ROLLBACK;
-la prueba física se completa después sobre Beta. **Siguiente paso de este recorrido:**
-pulir espera y diagnóstico de apertura en Fuerza sin reducir la comprobación de
-permisos. Piloto privado aceptado con esa incidencia; integración general abierta.
+la prueba física se completa después sobre Beta. INT-019 implementa en Beta 1.4
+la vista de apertura, bloqueo de intent repetido, descarte tras salir y diagnóstico
+local, conservando permisos. Veinticinco pruebas por variante y firma correctas;
+Store registra 1.4.0 (Internal: 2) en la misma beta privada. **Siguiente paso de este
+recorrido:** aceptar físicamente actualización, apertura repetida y cancelación
+de 1.4 en el fēnix. Piloto 1.3 aceptado con esa incidencia; integración general abierta.
 [Preparación y requisitos pendientes](../connect_iq/store/BETA.md).
 
 **INT-017 · 27/10/2026 · transporte privado aceptado en Dev:** diseño aprobado,

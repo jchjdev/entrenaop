@@ -1196,6 +1196,56 @@ de notificación/aceptación se había aceptado en Dev 1.3 con el mismo código.
 Piloto privado aceptado: Store, vinculación, FIT privado, apertura, revocación y
 recuperación. La incidencia de apertura queda registrada, junto a los límites de
 limpieza nativa, red, otros modelos y avisos nuevos de Store. **Único siguiente
-ajuste recomendado:** espera y diagnóstico de apertura en Fuerza. La integración
+ajuste recomendado entonces:** espera y diagnóstico de apertura en Fuerza, aplicado
+después en INT-019. La integración
 general sigue abierta; publicación pública fuera de este tramo y carrera conserva
 su sincronización automática.
+
+## Apertura controlada · INT-019 · 27/10/2026
+
+Javier pide corregir el salto y el fallo de apertura y actualizar la beta privada.
+La 1.4 sustituye el menú de sesiones por `CiqOpenView`, sin descubrir la vista
+principal mientras llega el manifiesto autorizado. Muestra **Abriendo Fuerza**,
+permite BACK para cancelar y avisa si la conexión tarda más de 60 segundos.
+No omite ninguna comprobación: exige manifiesto completo, misma exportación y
+nombre nativo, y contenido de la biblioteca propia de la app.
+
+`CiqOpenFlow` limita cada pantalla a una petición de permiso y una solicitud de
+apertura. START repetido y callbacks duplicados no relanzan. Salir invalida el
+flujo y detiene el temporizador: una respuesta HTTP tardía no abre Fuerza. Una
+apertura nueva vuelve a solicitar permiso. Tras autorizar se cede un turno de
+interfaz con el mínimo ordinario del SDK, 50 ms, antes de `toIntent/exitTo`.
+No se presenta esa cesión como una prohibición del SDK de abrir desde callbacks.
+
+Se separan permiso, biblioteca, preparación del intent y apertura nativa. Un
+fallo de transporte, retirada o revisión invalida el acceso igual que antes;
+un fallo nativo conserva la lista verificada y deja volver a elegir sesión.
+Las excepciones oficiales de operación pendiente, actividad ausente y tipo no
+admitido tienen mensajes propios. MENU → **Estado de apertura** conserva etapa,
+detalle local acotado y antigüedad, sin credenciales ni errores de transporte.
+Un fallo de este diagnóstico no convierte una apertura aceptada en error.
+No hay relanzamiento automático ni reinicio del reloj desde la app.
+
+Veinticinco pruebas Monkey C correctas en Beta y Dev, compilación estricta sin
+avisos: incluyen cancelación antes/después del permiso, respuestas repetidas,
+revisión retirada, permiso de otra sesión, clasificación de excepciones reales
+del SDK y dos regresiones sobre la vista con dueño de prueba. Estas últimas
+comprueban callbacks tardíos y copia local ausente sin solicitar intents nativos.
+No acreditan por sí solas la transición a Fuerza del dispositivo físico.
+
+Paquete Beta **1.4.0**, 40.966 bytes, SHA-256
+`27220303c80e100575e1eccb0edcbbd26ce521105c28f01d8653ad37ff03e150`.
+Firma de manifiesto y ejecutables verificada por SDK 9.3.0 con la clave original.
+Garmin verifica firma y registra **1.4.0 (Internal: 2)** en la misma ficha BETA.
+UUID, permisos, servidor Dev y almacenamiento se mantienen; no requiere un
+nuevo vínculo ni altera la configuración de avisos. No se cambia servidor,
+esquema, FIT ni sincronización automática de carrera.
+Garmin confirma además el envío al fēnix de 47 mm para la próxima sincronización,
+tras seleccionar el dispositivo y los mismos permisos. No acredita aún instalación.
+
+**Siguiente comprobación:** sincronizar la actualización Store al fēnix, confirmar
+Beta 1.4, abrir la muestra y repetir tras salir de Fuerza sin reiniciar. Comprobar
+también BACK durante la espera y reapertura posterior, una sola sesión y ajustes
+de avisos conservados. Si falla, leer Estado de apertura antes de otro intento.
+La aceptación física de 1.4 sigue pendiente; la causa exacta de la excepción 1.3
+no se recuperó y no se afirma un arreglo de firmware ni robustez general.
