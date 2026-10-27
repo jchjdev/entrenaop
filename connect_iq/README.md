@@ -2,8 +2,9 @@
 
 La versión preparada es **EntrenaOP Dev 1.2**, con **MENU → Estado de avisos**
 para diagnosticar la prueba de segundo plano. Compilación estricta sin avisos y
-quince regresiones Monkey C correctas; instalación física pendiente. La versión
-instalada continúa en 1.1, con la OP oficial y avisos opcionales de cambios.
+quince regresiones Monkey C correctas. El paquete 1.2 se ha copiado y releído por
+USB el 27/10 con hash idéntico al compilado; inicio y diagnóstico físicos pendientes.
+La última versión confirmada en pantalla es 1.1, con la OP oficial y avisos opcionales.
 El paquete 1.1 se ha copiado y releído por USB el 27/10;
 Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
 con descanso 1:15 dentro de Fuerza nativa. Tras actualizar dos veces y reabrir,

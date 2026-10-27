@@ -944,3 +944,13 @@ quince pruebas Monkey C y compila
 sin avisos. No se atribuye todavía la ausencia del aviso a una causa concreta.
 Se pide USB para instalar esta versión; el reloj conserva 1.1 hasta verificar copia
 y aceptación física. No se amplía el ensayo a una segunda cita ni se cambia su dosis.
+
+Javier conecta después el reloj. Tras esperar a que Windows exponga MTP, se copia
+solo el paquete **1.2.0** y se relee: **127.260 bytes**, SHA-256
+`db075169135d2e66536067eaa8c45388c4155dee896e112cba15b97a05916cb4`,
+idéntico al compilado validado. Mismo identificador y clave de desarrollo; no se
+leen credenciales ni se modifica otra app. La copia está verificada, sin acreditar
+todavía el arranque ni un servicio en segundo plano de esta versión. Se pide
+desconectar, abrir 1.2, terminar la sincronización y salir a la esfera antes de
+cambiar de nuevo el título: así se ensaya una revisión nueva con el diagnóstico
+activo, sin confundir una actualización al abrir con el aviso automático.
