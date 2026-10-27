@@ -1406,8 +1406,20 @@ se complementa con la comprobación física, no la sustituye.
 Se pide después abrir EntrenaOP para leer el resultado local **Instalada en
 segundo plano**, elegir MENU → Terminar prueba y confirmar una sola sesión en
 la lista habitual. Esta salida del modo de ensayo sigue pendiente de respuesta.
+La foto posterior de Javier muestra **FIT solicitado en fondo** y el alias 144;
+repetir START mantiene ese estado. Según la lógica de `probeSummary()`, la
+búsqueda exacta en `PersistedContent.getAppWorkouts()` no encuentra el candidato
+y no se refleja un HTTP FIT final distinto de cero. No se ha verificado si el
+callback no llegó, el servicio terminó antes o Garmin asoció el contenido de
+otra manera; son hipótesis, no causas demostradas. La biblioteca de Fuerza sí
+contiene la revisión nueva según la comprobación humana anterior. La aceptación
+queda limitada a entrega/importación nativa: propiedad, apertura desde nuestra
+app y sustitución sin otra descarga siguen pendientes para esta copia de fondo.
+Se pide terminar el modo experimental y contrastar el retorno al modo habitual.
+
 La prueba de una revisión no acredita aún sincronización silenciosa continua,
 limpieza de revisiones antiguas en Fuerza, varias citas, recuperación sin móvil
-ni otros modelos. El siguiente bloque recomendado es convertir el ensayo en
-sincronización continua con descarga acotada por evento, reintentos y sustitución
-de revisiones, manteniendo autorización y vigencia comprobadas en servidor.
+ni otros modelos. El siguiente paso es resolver la discrepancia entre la
+biblioteca nativa y la propia antes de convertir el ensayo en sincronización
+continua con descarga acotada por evento, reintentos y sustitución de revisiones,
+manteniendo autorización y vigencia comprobadas en servidor.

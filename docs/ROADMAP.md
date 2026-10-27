@@ -20,9 +20,11 @@ importación. 38 pruebas por variante, contrato SQL con ROLLBACK y privacidad De
 verificados. Javier confirma **EOP1000000144** en Fuerza nativa antes de abrir
 EntrenaOP, con 3×5 a 20 kg y descansos de 1:15: descarga e importación en fondo
 aceptadas en su fēnix 8 de 47 mm. Pendiente salir del modo experimental y confirmar
-la lista habitual. **Único siguiente bloque CIQ recomendado:** sincronización
-silenciosa continua con trabajo acotado, reintentos y sustitución de revisiones;
-todavía no implementada ni validada por este ensayo de una sola revisión.
+la lista habitual. Al volver a EntrenaOP sigue **FIT solicitado en fondo**,
+incluso tras START: la app no confirma la copia en su biblioteca propia ni la
+respuesta FIT final. **Único siguiente paso CIQ:** resolver esa discrepancia
+antes de sincronización silenciosa continua con reintentos y sustitución de
+revisiones, todavía no implementada ni validada por este ensayo.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 

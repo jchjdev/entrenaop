@@ -17,6 +17,10 @@ muestra. Después Javier confirma EOP1000000144 en Fuerza nativa sin abrir
 EntrenaOP, con 3×5 a 20 kg y descansos nuevos de 1:15: descarga e importación en
 segundo plano aceptadas en su fēnix 8 de 47 mm. Pendiente terminar el modo de
 prueba. No acredita todavía sincronización silenciosa continua ni otros modelos.
+La inspección local conserva **FIT solicitado en fondo** aun al repetir START:
+la biblioteca propia de EntrenaOP no confirma el alias y no consta respuesta
+FIT final en pantalla. Causa pendiente; la presencia en Fuerza nativa no acredita
+todavía gestión de esa copia desde la app. Resolver antes de generalizar.
 
 **Corrección 1.4.1 publicada en la misma beta privada (Internal: 3):** timeout
 -300 distinguido de denegación de acceso;

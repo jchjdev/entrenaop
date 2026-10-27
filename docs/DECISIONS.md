@@ -41,6 +41,12 @@ y los datos son correctos**, sin haber abierto EntrenaOP: press banca 3×5 a 20 
 descansos de 1:15. Queda aceptada la descarga e importación silenciosa de esta
 revisión en su fēnix 8 de 47 mm. Falta terminar el modo de ensayo y confirmar la
 lista habitual; no se habilita todavía sincronización silenciosa general.
+Al volver a EntrenaOP, la foto y una nueva pulsación START conservan **FIT
+solicitado en fondo**, sin pasar a instalada. La búsqueda por nombre en
+`getAppWorkouts()` no confirma la copia propia y no hay respuesta FIT final
+reflejada en pantalla. La importación visible en Fuerza no acredita todavía
+propiedad/gestión desde nuestra app; causa pendiente de diagnóstico. Se pide
+terminar el ensayo. Antes de generalizar se debe resolver esta confirmación.
 [Protocolo](DEVICE_GARMIN_TRAINING.md#ensayo-silencioso-en-segundo-plano--int-020).
 
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier
