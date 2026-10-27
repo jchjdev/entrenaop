@@ -444,19 +444,87 @@ del piloto. Su componente de coste estimado sin reserva es 249,91 EUR; incluye
 IA de vídeo y las altas futuras ya indicadas, no un nuevo pago de 375 EUR.
 Las anualidades y fechas de contratación reales siguen determinando la caja.
 
+### Punto de equilibrio y revisión del anual · COST-005 · 27/10/2026
+
+Javier pide que la hoja muestre de forma inmediata cuándo gana dinero e incluya
+el coste de darse de alta como autónomo. Aporta en el chat su gasto actual de
+IA y un posible escenario posterior: esos importes personales se incorporan
+solo a la hoja privada entregada, no a este repositorio. Preparar contenido
+para redes y pagar anuncios son actividades y partidas distintas; no se activa
+ninguna campaña ni se contrata otro plan por este presupuesto.
+
+Se añade como primera pestaña `Rentabilidad`, con resultado mensual antes de
+IRPF, gastos que se pagarían, número de Pro para cubrirlos y número necesario
+para obtener un objetivo de ingreso. Incluye ingresos Pro y de preparadores,
+descuenta comisiones por el canal correcto y mantiene fuera del gasto la
+valoración del trabajo propio y la reserva sin consumir. Campos editables
+permiten sustituir las provisiones por facturas y modificar la mezcla de ventas.
+El primer resultado es una simulación, no ingreso ni gasto bancario acreditado.
+
+El modelo de esa pestaña representa una fase inicial con presupuesto técnico
+fijo editable. No se suma a los cuatro escenarios anteriores: es otra vista de
+decisión con sus propios supuestos. Se debe ajustar ese presupuesto al tráfico,
+usuarios gratuitos y cómputo reales antes de extrapolar a otras escalas. La
+IA para generar vídeos se muestra como gasto del mes en que se contrate, sin
+repetirla como coste mensual permanente por defecto.
+
+La [guía oficial de Importass](https://portal.seg-social.gob.es/wps/portal/importass/importass/Colectivos/trabajo%2Bautonomo/guia)
+publica una cuota reducida de 80 EUR más MEI, con total indicado de 88,64 EUR,
+condicionada a sus requisitos. No se da por concedida a Javier. La cotización
+ordinaria depende de rendimientos/base y puede regularizarse; una provisión no
+es una cuota universal. Se permite simular la reducida y una provisión ordinaria.
+El supuesto matemático de cuota cero no autoriza a ejercer sin las altas u
+obligaciones que correspondan. IRPF depende de su situación personal y queda
+fuera del resultado presentado; el número de ventas no constituye un permiso
+para comenzar a cobrar sin revisar las obligaciones de inicio de actividad.
+
+**Recomendación para decidir**, sin modificar el precio vigente de COM-004:
+mantener 3,99 EUR/mes y estudiar 39,99 EUR/año, con 34,99 como alternativa.
+La recomendación reduce el descuento anual; no garantiza mantener conversión
+ni aumentar ingresos totales. El precio 29,99 sigue vigente hasta que Javier
+acuerde cambiarlo y se actualicen catálogo/proveedores y comunicación.
+
+| Anual a comparar | Descuento frente a 47,88 EUR en doce mensualidades | Ingreso mensual equivalente por anual tras IVA 21 % y tienda 15 %, antes de RevenueCat |
+| ---: | ---: | ---: |
+| 29,99 EUR | 37,36 % | 1,76 EUR |
+| 34,99 EUR | 26,92 % | 2,05 EUR |
+| 39,99 EUR | 16,48 % | 2,34 EUR |
+
+Ejemplo pedagógico **independiente de los gastos privados de Javier**: con
+500 EUR de gastos mensuales totales, sin preparadores, IVA ilustrativo del
+21 % y tienda al 15 %, se cubren gastos con 179 Pro mensuales a 3,99; o 285
+anuales a 29,99; o 245 anuales a 34,99; o 214 anuales a 39,99, en equivalente
+mensual estable. Las anualidades se cobran por adelantado y las liquidaciones
+pueden llegar más tarde: el equivalente mensual no es una transferencia nueva
+cada mes. Con estas hipótesis y estos umbrales no se alcanza el MTR de pago de
+RevenueCat; el modelo sí contempla el cambio cuando corresponda.
+
+La hoja considera mezcla mensual/anual, ingreso de preparadores y objetivo de
+resultado. Comprueba si el umbral antes de RevenueCat ya activa su tarifa; en
+ese caso vuelve a calcularlo con la tarifa del total, sin aplicarla solo al
+exceso. La hipótesis estable distribuye anualidades uniformemente: los picos
+reales de compras/renovaciones pueden alterar esa factura. El equilibrio se
+comprueba también con un usuario menos; no se identifica cubrir gastos con
+haber obtenido un sueldo ni se prometen ventas futuras.
+
 ### Hoja editable y verificación
 
 Se entrega a Javier una hoja XLSX con tarifas/fuentes y un único cálculo por
 población. La hoja permite cambiar usuarios, reproducción, stock, precio medio,
-suscripciones Pro, renovaciones anuales y gastos. Los importes ausentes de IA de programación/otros gastos mantienen
-el total completo como pendiente; escribir cero es confirmar coste imputado nulo.
+suscripciones Pro, renovaciones anuales, cuota de autónomo y gastos. En la
+versión inicial faltaban importes personales; ahora los proporcionados por
+Javier se completan en privado y los demás siguen identificados como provisiones.
+Si se vacían campos de gasto necesarios, se muestra que faltan datos; un cero
+explícito significa coste imputado nulo.
 La hoja y los futuros datos privados no se incorporan al repositorio público.
 
 Verificados los cuatro resultados mediante cálculo independiente, la variación
 de vídeo a 5 GB, la diferencia entre gasto cero y pendiente y ausencia de errores
 de fórmula. La corrección añade comparación independiente de Pro, comisión al
-30 %, anualidad activa sin cobro este mes y población inválida. Se revisan las
-vistas modificadas y la nueva hoja, y se exporta con fórmulas.
+30 %, anualidad activa sin cobro este mes y población inválida. COST-005 añade
+resultado con gastos, cambios de cuota/IA, aportación de preparadores, objetivo
+de ingreso y ambos lados del umbral de equilibrio mensual y anual. Se revisan
+las vistas modificadas y la nueva hoja, y se exporta con fórmulas.
 La comprobación usa el motor de la herramienta de hojas; no acredita apertura
 ni recálculo físico en Excel de escritorio. No se modifica código, base de datos,
 suscripciones ni producción; no procede ejecutar Flutter en este cambio documental.

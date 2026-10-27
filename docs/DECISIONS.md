@@ -1492,6 +1492,20 @@ un estado propio pendiente antes del MFA del panel; el correo se confirma por
 Supabase y la recuperación conserva MFA e identidad. No se elige una pasarela.
 [Contrato, configuración y evidencia](TRAINER_WEB_ACCOUNT_2026_10_27.md).
 
+## COST-005 · Umbral de rentabilidad, autónomo y alternativas al anual · 27/10/2026
+
+Javier pide entender cuándo queda dinero tras gastos y añadir la futura cuota
+de autónomo. Confirma importes privados de IA actual y posible escenario
+posterior, que se usan solo en la hoja local entregada y no se publican aquí.
+La nueva primera vista muestra resultado antes de IRPF, equilibrio y objetivo
+de ingreso, separando provisiones, trabajo propio, reserva y desembolsos.
+La cuota reducida depende de requisitos y no se atribuye automáticamente.
+Se recomienda estudiar 39,99 EUR/año manteniendo 3,99 EUR/mes y se compara 34,99;
+es una propuesta sin aprobar: COM-004 y el catálogo siguen en 29,99 anual.
+No se contratan servicios, no se cambian precios ni se interpreta un umbral de
+ventas como autorización para cobrar sin las altas que correspondan.
+[Método, alternativas y límites](COST_CONTROL.md#punto-de-equilibrio-y-revisión-del-anual--cost-005--27102026).
+
 ## COST-004 · Dinero desembolsado e ingresos Pro en el presupuesto · 27/10/2026
 
 Javier aclara que mantenimiento/soporte los hace él y pide ver qué sale de su
