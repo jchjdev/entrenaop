@@ -95,3 +95,27 @@ asesores no señalan las nuevas funciones como públicas definidoras expuestas.
 El endpoint público de configuración Auth confirma registro habilitado y correo
 con confirmación obligatoria. Ninguna de estas pruebas envía correos de alta
 a terceros ni cambia contraseñas de cuentas reales.
+
+## Publicación Dev comprobada · 27/10/2026
+
+Código funcional guardado en `ea6150bc5c36324d0f33349f68d952db00083290`.
+La revisión publicada es `e87e6a5fd862c56188ce5b2793553c37f242415c`, que
+conserva ese código e incorpora la documentación actualizada y el guardado
+documental de Garmin de `d2f3e5a2`. El workflow
+[40586312805](https://github.com/jchjdev/entrenaop/actions/runs/40586312805)
+terminó con validación y despliegue correctos. Las ejecuciones anteriores
+conservaron la web existente al detectar que main había avanzado; no se anuló
+esa protección ni se utilizó el gestor de archivos de Hostinger.
+
+Comprobación independiente por HTTPS con `trainer_release.verify`: manifiesto
+con la revisión esperada, `environment=development`, proyecto
+`sxbxfjqgoddzhtcyhalw`, hash del JavaScript, entrada y recursos de la versión,
+cabeceras y MIME de WASM correctos. Identificador de publicación:
+`e87e6a5fd862c56188ce5b2793553c37f242415c-40586312805-1`.
+No se despliega producción ni se cambian cuentas personales.
+
+Para la aceptación real: abrir Trainer, crear cuenta y confirmar el correo en
+el mismo navegador; conceder acceso/cupo desde ADMIN; actualizar el estado y
+configurar el autenticador propio. Probar también la recuperación desde ese
+navegador. La entrega de esos correos y una contraseña de una persona real no
+se dan por comprobadas por las pruebas simuladas ni por el despliegue.
