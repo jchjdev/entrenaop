@@ -9,8 +9,23 @@ Compilación release y 16 pruebas por variante correctas. Javier autoriza crear 
 nombre EntrenaOP, aceptar el acuerdo Garmin y enviar la beta privada. Ficha creada
 con distintivo BETA, versión 1.3.0. Tras **Pending Scan**, avanza a **Pending** y
 habilita Download. Javier autoriza las condiciones de descarga y Garmin confirma
-la instalación en su fēnix 8 de 47 mm en la próxima sincronización. Llegada física,
-inicio y nueva vinculación todavía pendientes. Firma válida según el SDK: el texto de
+la instalación en su fēnix 8 de 47 mm en la próxima sincronización. Javier confirma
+después **Beta 1.3** abierta en el reloj con un código de vinculación nuevo: quedan
+aceptados instalación e inicio desde Store. Después se confirma vinculación a la
+cuenta secundaria de pruebas: su lista vacía inicial corresponde a que solo tenía
+una carrera compatible con la vía normal. Se pauta desde Trainer una muestra de
+fuerza 3×5 a 20 kg y descansos de 60 s, sin alterar esa carrera; manifiesto real
+con ROLLBACK de una entrada y generador FIT correctos. Javier confirma después
+una sesión y dosis/descansos correctos en Fuerza: descarga/apertura física desde
+Beta Store aceptadas. Se retira su vínculo Beta para comprobar el bloqueo físico,
+con rechazo de estado/manifiesto/descarga acreditado por servidor con ROLLBACK.
+Javier confirma **Vinculación caducada o retirada** al reabrir Beta: revocación
+física aceptada. El vínculo nuevo recupera la lista; una apertura local fallida
+se recupera tras reiniciar el reloj y Javier confirma otra apertura sin reiniciar.
+La excepción concreta queda sin identificar. Beta operativa y avisos activados
+por Javier; no se rehabilita la credencial retirada. Próximo ajuste recomendado:
+espera y diagnóstico claros al abrir Fuerza, conservando la comprobación de
+permisos. Firma válida según el SDK: el texto de
 error detectado antes estaba oculto en el formulario, con estado visible Verified.
 Se publica aviso estático de privacidad exclusivamente en Dev; no concede acceso
 a datos. 176 pruebas servidor, tipos estrictos y contrato SQL con ROLLBACK correctos.

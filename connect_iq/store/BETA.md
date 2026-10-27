@@ -1,8 +1,14 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-Estado del 27/10/2026: **beta creada en Garmin**, versión 1.3.0, descarga
-habilitada e **instalación enviada al fēnix 8 de 47 mm para la próxima sincronización**.
-Todavía no se acredita la instalación física desde Store.
+Estado del 27/10/2026: **beta instalada desde Connect IQ en el fēnix 8 de 47 mm**.
+Javier confirma inicio de **EntrenaOP Beta 1.3** y un código de vinculación nuevo.
+Aceptado el recorrido Store → sincronización → instalación → inicio físico.
+Javier confirma vinculación, una sola sesión y apertura en Fuerza con tres
+series de cinco a 20 kg y descansos de 1:00. Aceptado el transporte privado
+desde la app distribuida por Store. Javier confirma también el bloqueo físico
+tras revocar Beta. El vínculo nuevo queda activo; tras un fallo de apertura
+local, un reinicio normal recupera Fuerza y Javier confirma otra reapertura sin
+reiniciar. Beta operativa y avisos activados; incidencia de apertura documentada abajo.
 [Ficha privada](https://apps.garmin.com/apps/4199b1e5-24da-4106-a832-bc212ca91865).
 Destino acordado con Javier: beta privada de Garmin, visible solo desde la
 cuenta Garmin que la suba. No es una beta compartida por enlace entre cuentas.
@@ -94,7 +100,36 @@ selecciona el fēnix 8 de 47 mm de su cuenta y se completan los permisos previst
 de la app. Garmin confirma **EntrenaOP Beta will be installed the next time your
 device syncs**. Se solicita sincronizar desde Garmin Connect en el iPhone y
 confirmar inicio de **EntrenaOP Beta 1.3** en el reloj. Es una solicitud de
-instalación aceptada por Garmin, todavía sin aceptación física de llegada.
+instalación aceptada por Garmin. Javier confirma después **Beta 1.3** abierta
+en el reloj y código de vinculación: queda aceptada físicamente la instalación
+desde Store, sin copiar este paquete por USB.
+
+Javier comunica después **Sesiones vigentes / Sin fuerza compatible**. La beta
+está vinculada a la cuenta secundaria de pruebas, con un vínculo activo y permiso
+Garmin vigente. Su única cita candidata es **series 300**, carrera del 28/10;
+la muestra CIQ anterior pertenece a la cuenta principal. La lista vacía es
+coherente con esta cuenta y el filtro de fuerza; no acredita fallo de descarga.
+
+Se conserva esa vinculación y se pauta desde Trainer para el 27/10 una sola
+**Prueba Garmin · Fuerza 3x5**, reutilizando la versión publicada: press banca,
+tres series de cinco a 20 kg, descansos 60 s. Cita
+`2764d39a-3c1f-493a-ae48-9060d6db0b5e`, pendiente y sin ejecución. Se añaden
+indicaciones de ensayo sin iniciar actividad. La carrera del 28/10 se conserva.
+El manifiesto real contrastado con ROLLBACK devuelve una entrada y cero bloqueadas;
+el generador privado acepta esa instantánea y produce un FIT de 501 bytes.
+Javier confirma después una sola sesión y datos correctos en Fuerza nativa.
+La foto aportada muestra `EOP1000000104`, que Dev relaciona con la exportación
+propia `bee566ba-ba44-4a53-a2e4-01f7a9734132` de esta cita. Quedan aceptados
+actualización, importación privada y apertura desde Beta Store.
+
+Se retira el vínculo Beta desde Perfil para cerrar la prueba de revocación.
+La interfaz confirma Acceso retirado y un ensayo SQL real con ROLLBACK rechaza
+estado, manifiesto y descarga con `link_revoked`, sin extraer la credencial.
+Javier confirma **Vinculación caducada o retirada** tras salir a la esfera y
+reabrir Beta. Revocación física aceptada; no se confunde con borrar los FIT de
+Garmin. Se solicita obtener otro código con START y confirmar un vínculo nuevo
+para dejarla operativa, comprobando que vuelve una sola sesión. Restauración
+todavía pendiente; no se rehabilita la credencial revocada.
 
 Ficha en castellano e inglés, categoría Strength Training, contacto profesional
 `javier.charlez@entrenaop.es`, OP oficial en `cover-500.png` (500×500, 287.424 bytes)
@@ -118,9 +153,41 @@ La instalación Beta tendrá almacenamiento propio: requiere un nuevo código de
 vinculación aunque Dev siga instalada. Verificar instalación desde Store,
 vinculación, descarga y actualización de esta variante antes de declarar cerrado
 el recorrido de distribución sin USB. La instalación ya está enviada desde la
-ficha privada: sincronizar Garmin Connect en el iPhone y comprobar la nueva app
-en el reloj. No se ha acreditado aún ese paso. No publicar una versión pública ni cambiar
+ficha privada y su llegada, inicio físico y vinculación están confirmados. El
+siguiente mejora es clarificar la espera y el diagnóstico de apertura en Fuerza;
+el piloto privado no acredita robustez general ni lanzamiento público.
+No publicar una versión pública ni cambiar
 el servidor a producción dentro de este bloque.
+
+## Incidencia al recuperar el vínculo
+
+El vínculo nuevo se confirma el 27/10 y Dev registra consultas válidas. Javier
+recupera la lista de la sesión, pero al abrirla comunica **No se pudo abrir en
+Fuerza / No se muestran copias antiguas**, repetible después de Actualizar.
+El error procede del bloque de apertura local tras validar el manifiesto;
+no se presenta como fallo de aprobación del código ni se solicita revincular otra vez.
+La 1.3 agrupa bajo ese mensaje la búsqueda de contenido, `toIntent()` y
+`System.exitTo()`, por lo que no conserva la excepción concreta.
+
+Se solicita un reinicio normal del reloj y un único reintento para comprobar
+si hay una apertura nativa pendiente. El SDK documenta que `exitTo()` es
+asíncrono y puede rechazar una segunda operación no terminada; eso es una
+hipótesis de diagnóstico, no una causa demostrada. No se cambia la clave,
+el servidor, la receta ni los permisos. Javier confirma que tras el reinicio
+**abre Fuerza** y que al salir a la esfera y repetir **vuelve a abrir sin otro
+reinicio**. Recuperación física aceptada; la excepción original no queda
+identificada ni se presenta como un defecto corregido en código.
+
+Comunica un breve paso por la pantalla Beta al abrir, también observado antes.
+Corresponde al flujo actual: cerrar la lista, solicitar un manifiesto autorizado
+y lanzar el intent. Queda como mejora mostrar esa espera con claridad y separar
+un fallo de apertura nativa de un fallo de actualización, manteniendo la
+comprobación de permiso y revisión antes de abrir una copia.
+
+Javier confirma después **avisos de cambios activados en Beta** y salida a la
+esfera. La credencial nueva permite reprogramar las consultas al salir. Esto
+acredita configuración; no se ha repetido en Store el recorrido físico completo
+de un aviso nuevo. El aviso y su aceptación se comprobaron antes en Dev 1.3.
 
 Fuente: documentación oficial del SDK 9.3.0, `Core_Topics/Beta_Apps.html` y
 `Core_Topics/Publishing_to_the_Store.html`; formulario

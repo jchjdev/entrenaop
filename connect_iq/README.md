@@ -1,17 +1,27 @@
 # EntrenaOP Connect IQ · Dev
 
-**Beta privada enviada (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
+**Beta privada instalada desde Store (27/10/2026):** `build-dev.ps1 -Variant Beta -Package`
 exporta EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev. Dieciséis
 pruebas correctas en cada variante y verificador de firma del SDK integrado en
 el build. Ficha creada en Garmin como BETA, inicialmente Pending Scan; visible
 únicamente para la cuenta Garmin que la subió. Descarga habilitada después y
 solicitud de instalación confirmada por Garmin para el fēnix 8 de 47 mm en la
-próxima sincronización; llegada física e inicio de Beta todavía pendientes.
+próxima sincronización. Javier confirma después **Beta 1.3** abierta en el reloj
+y código de vinculación nuevo. Instalación e inicio desde Store aceptados;
+vinculación posterior confirmada en la cuenta secundaria de pruebas. La lista
+vacía inicial correspondía a una cuenta con solo carrera. Se pauta allí fuerza
+3×5 a 20 kg y 60 s; Javier confirma una sesión y dosis/descanso correctos en Fuerza.
+Transporte privado y apertura desde Beta Store aceptados. Javier confirma después
+el bloqueo físico al revocar Beta. Vínculo nuevo activo y lista recuperada;
+tras un fallo de apertura local, reiniciar el reloj recupera Fuerza y Javier
+confirma otra apertura sin reiniciar. Beta operativa con avisos activados.
+La excepción original sigue sin identificar; espera y diagnóstico de apertura
+son el siguiente ajuste recomendado antes de ampliar el piloto.
 [Ficha y pasos pendientes](store/BETA.md).
 El vínculo Dev se ha revocado desde Perfil; servidor bloquea estado, manifiesto
-y descarga. Confirmación física del bloqueo todavía pendiente.
+y descarga. La prueba física de revocación se acepta después en Beta.
 
-La versión instalada es **EntrenaOP Dev 1.3**, con OP oficial y **MENU → Estado de
+La variante de las pruebas anteriores es **EntrenaOP Dev 1.3**, con OP oficial y **MENU → Estado de
 avisos**. Compilación estricta sin avisos y dieciséis pruebas Monkey C correctas;
 paquete copiado y releído por USB con hash idéntico. El 27/10 Javier confirma en
 fēnix 8 **app cerrada → aviso → aceptar → actualización sin errores → una sola

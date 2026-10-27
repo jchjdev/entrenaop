@@ -16,21 +16,35 @@ prueba física propia y los cobros siguen pospuestos. Este cambio no cierra los
 [Presentación y evidencia](TRAINER_DESKTOP_2026_10_25.md#agenda-mensual-con-eventos--27102026).
 
 
-**INT-018 · 27/10/2026 · beta privada Connect IQ enviada:** variante
+**INT-018 · 27/10/2026 · beta privada Connect IQ instalada:** variante
 EntrenaOP Beta 1.3.0 con identidad independiente y servidor Dev, paquete release
 generado, 16 pruebas Beta y 16 Dev correctas. Solo la cuenta Garmin que suba la
 beta podrá verla; ficha creada con distintivo BETA. Tras Pending Scan, descarga
 habilitada y solicitud de instalación confirmada por Garmin para el fēnix 8
-de 47 mm en la próxima sincronización; llegada física aún pendiente.
+de 47 mm en la próxima sincronización. Javier confirma después **Beta 1.3**
+abierta en el reloj con código nuevo: instalación e inicio desde Store aceptados.
+Vinculación posterior confirmada en la cuenta secundaria, cuya única cita era
+una carrera y daba lista vacía de fuerza. Se pauta allí una muestra técnica de
+press banca 3×5 a 20 kg y 60 s; manifiesto de una entrada y FIT generado correctos.
+Javier confirma después una sesión y receta correcta en Fuerza; queda aceptado
+Store → vínculo → FIT privado → Fuerza nativa. Alias fotografiado y contrastado
+con la exportación propia 104. Se retira el vínculo Beta para comprobar bloqueo;
+estado, manifiesto y descarga rechazados por servidor con ROLLBACK.
+Javier confirma **Vinculación caducada o retirada** al reabrir Beta: prueba de
+revocación aceptada físicamente. El vínculo nuevo se confirma y recupera la lista,
+pero falla inicialmente la reapertura local con **No se pudo abrir en Fuerza**.
+Un reinicio normal la recupera y Javier confirma otra apertura sin reiniciar;
+causa concreta sin identificar. Beta operativa, vínculo nuevo y avisos de cambios
+activados por Javier. No se ha repetido aún un aviso físico nuevo en Store.
 Javier autoriza nombre EntrenaOP y acuerdo Garmin. Firma verificada por SDK;
 texto de error anterior oculto, estado visible Verified. Aviso estático de
 privacidad desplegado en Dev, con 176 pruebas servidor, tipos estrictos y contrato
 SQL con ROLLBACK correctos. No se publica al público ni se habilita producción.
 Revocación del vínculo Dev aplicada desde
 Perfil y bloqueo de estado/manifiesto/descarga acreditado en servidor con ROLLBACK;
-falta la confirmación visual del reloj. **Siguiente paso de este recorrido:**
-sincronizar el reloj para completar la instalación privada, vincular y
-descargar una sesión. La confirmación física de revocación sigue pendiente.
+la prueba física se completa después sobre Beta. **Siguiente paso de este recorrido:**
+pulir espera y diagnóstico de apertura en Fuerza sin reducir la comprobación de
+permisos. Piloto privado aceptado con esa incidencia; integración general abierta.
 [Preparación y requisitos pendientes](../connect_iq/store/BETA.md).
 
 **INT-017 · 27/10/2026 · transporte privado aceptado en Dev:** diseño aprobado,

@@ -7,7 +7,15 @@ La ficha Beta utiliza `GET garmin-ciq/privacy`, texto público estático sin SQL
 con los mismos límites de entorno; no cambia la autorización de cuenta/reloj.
 176 pruebas servidor, tipos estrictos y contrato SQL con ROLLBACK correctos.
 Exportación IQ verificada con el SDK contra la clave original. Ficha creada,
-inicialmente Pending Scan; instalación Store/vinculación Beta aún no aceptadas.
+inicialmente Pending Scan; instalación e inicio Store aceptados físicamente
+después por Javier en fēnix 8 con Beta 1.3 y código nuevo. Vinculación posterior
+confirmada en su cuenta secundaria; se prepara una muestra de fuerza para esa
+cuenta. Javier confirma una sesión y apertura con dosis/descanso correctos: entrega
+privada desde Beta Store aceptada. Revocación Beta contrastada en servidor y
+aceptada físicamente por Javier. Vínculo nuevo y lista recuperados; una apertura
+fallida se recupera al reiniciar y la repetición vuelve a abrir sin reinicio.
+La causa no queda identificada. Beta operativa y avisos activados; queda mejorar
+espera/diagnóstico de apertura sin reducir la revalidación en servidor.
 [Distribución y límites](../connect_iq/store/BETA.md).
 
 **Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la

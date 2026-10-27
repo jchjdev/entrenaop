@@ -13,8 +13,16 @@ cambio de dosis, repetición de actualización/reapertura con una sola entrada y
 en 1.3, **app cerrada → aviso → aceptar → actualización sin errores → una sesión**.
 Consulta opcional cada 15 minutos desde salir; aceptar abre la app y descarga,
 con móvil/Connect y conectividad disponibles, sin garantizar recepción inmediata.
-Retirada/revocación físicas, limpieza de copias nativas, Store y automatización
-general siguen pendientes. Tras retirar la primera prueba
+El 27/10 Javier confirma además Beta 1.3 instalada desde Connect IQ Store,
+vinculada a su cuenta secundaria y con una sesión privada abierta en Fuerza
+(3×5 a 20 kg, descanso 1:00). La beta solo es visible para la cuenta Garmin que
+la subió y usa servidor Dev. Confirma también el bloqueo del reloj al retirar
+su acceso. El vínculo nuevo queda operativo: tras un fallo de apertura local,
+reiniciar el reloj recupera Fuerza y la repetición abre sin reiniciar. Javier
+activa avisos en Beta. La causa del fallo sigue sin identificar; queda aclarar
+la espera y el diagnóstico de apertura. Limpieza de
+copias nativas, distribución pública y automatización general siguen pendientes.
+Tras retirar la primera prueba
 y sincronizar, Javier confirma una única sesión de hoy en Garmin Connect y en
 Entrenamientos del reloj; no se acredita el aviso automático al entrar en Fuerza.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).

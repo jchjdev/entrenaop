@@ -1115,6 +1115,87 @@ instalación de EntrenaOP Beta en la próxima sincronización del dispositivo.
 Se solicita sincronizar Garmin Connect en el iPhone y comprobar **Beta 1.3**
 en el reloj. Esa confirmación acredita la orden, todavía no la llegada física.
 
-Siguiente paso: sincronizar el reloj, vincular la nueva variante y repetir descarga/actualización.
-No se acreditan aún instalación Store, actualización de la beta ni publicación
-pública. La carrera sigue por el automático normal; este puente cubre fuerza.
+Javier confirma después **«Sí, aparece Beta 1.3 con un código»**. Quedan aceptados
+físicamente **instalación desde Connect IQ Store → sincronización → inicio de
+EntrenaOP Beta 1.3** en su fēnix 8, sin copiar el paquete Beta por USB. El código
+propio y almacenamiento separados son coherentes con el UUID independiente.
+No se deducen de este inicio la vinculación ni la importación FIT con los permisos
+de la app distribuida por Store.
+
+Javier comunica después **Sesiones vigentes / Sin fuerza compatible**. Perfil y
+Dev confirman el vínculo de la beta en su cuenta secundaria de pruebas, distinta
+de la principal de los ensayos anteriores; un vínculo activo, permiso Garmin
+vigente y consultas recientes del reloj. Esa cuenta solo tenía como candidata la
+carrera **series 300** del 28/10. La lista vacía de fuerza es correcta para esa
+cuenta y no acredita fallo del puente. La muestra CIQ anterior sigue en la cuenta
+principal; no se mueve ni se cambia la cuenta del reloj silenciosamente.
+
+Se pauta desde Trainer en la cuenta ya vinculada, para el 27/10, una sola muestra
+**Prueba Garmin · Fuerza 3x5**, versión publicada 1, cita
+`2764d39a-3c1f-493a-ae48-9060d6db0b5e`: press banca, tres series de cinco a 20 kg,
+descansos 60 s. Se revisa la receta antes de asignar y se conservan indicaciones
+de prueba sin iniciar actividad. Dev confirma fecha, estado pendiente y ausencia
+de ejecución; la carrera del 28/10 sigue presente. Un manifiesto real con ROLLBACK
+devuelve una entrada y cero bloqueadas; `ciqExport` genera el FIT de 501 bytes.
+Esto valida cuenta/fuente/compatibilidad, todavía no importación física en Beta.
+
+Javier responde **«Sí, una sesión y los datos correctos»** a la comprobación de
+reapertura, actualización y apertura en Fuerza nativa: press banca 3×5 a 20 kg,
+descansos 1:00. Su foto muestra **EOP1000000104**, identidad de la exportación
+propia `bee566ba-ba44-4a53-a2e4-01f7a9734132` de esta cita según Dev. Queda aceptado
+físicamente **Store → instalación → vinculación → descarga FIT privada → apertura
+en Fuerza**, con una entrada vigente en Beta 1.3. El alias nativo corto se conserva;
+no se acredita limpieza de copias nativas de otros ensayos.
+
+Para cerrar la revocación se retira desde Perfil el vínculo Beta
+`0e97a9e7-26f3-47bb-8f3f-0c8f059647ba`. Perfil confirma **Acceso retirado** y un
+ensayo real con ROLLBACK comprueba `link_revoked` en estado, manifiesto y descarga
+de la exportación 104. El hash se usa únicamente dentro de PostgreSQL, sin extraer
+la credencial. Se solicita salir de Fuerza hasta la esfera y reabrir Beta para
+leer el bloqueo antes de pedir otro código. Pendientes esa aceptación física y
+nueva vinculación para dejar la beta operativa. No se revierte una revocación
+ni se eliminan los FIT nativos.
+
+Javier confirma **Vinculación caducada o retirada** y ausencia de sesiones al
+reabrir Beta desde la esfera. Queda aceptado físicamente el bloqueo de la app
+distribuida por Store tras revocar su permiso. Esto no promete borrar las copias
+de Fuerza nativa. Se solicita obtener un código nuevo con START, revisar y
+confirmar el permiso desde Perfil y comprobar una sola sesión al volver al reloj.
+La restauración se hace con una credencial nueva, sin rehabilitar la retirada.
+
+Dev confirma después un vínculo nuevo activo desde las 18:14:22 UTC y nuevas
+consultas, conservando revocado el anterior. Javier recupera la lista de la sesión
+pero, al abrirla, comunica **No se pudo abrir en Fuerza / No se muestran copias
+antiguas** y vuelve a ese estado después de Actualizar y seleccionar la sesión.
+No se solicita otro código: la aprobación ya está confirmada y el fallo está en
+el bloque local posterior a validar el manifiesto. La 1.3 captura con ese mensaje
+cualquier excepción al buscar la copia, crear el intent o llamar `System.exitTo`;
+no permite identificar cuál de esas operaciones falla.
+
+Se solicita un reinicio normal del reloj y un reintento único. La documentación
+oficial de intents contempla `PreviousOperationNotCompleteException` si una
+apertura asíncrona sigue pendiente, pero no se atribuye el fallo a esa clase sin
+evidencia. [Referencia oficial](https://developer.garmin.com/connect-iq/core-topics/intents/).
+No cambian código, FIT ni permisos durante esa comprobación. Javier responde
+**Ahora abre Fuerza** tras reiniciar. Se solicita salir otra vez hasta la esfera,
+reabrir Beta y seleccionar la misma sesión: confirma que **vuelve a abrir sin otro
+reinicio**, con un breve paso por la pantalla Beta también observado antes.
+Queda aceptada la recuperación física. No se identifica la excepción original
+ni se afirma que haya un arreglo de código de ese fallo.
+
+Ese paso breve corresponde al flujo actual: `CiqMenuDelegate` cierra el menú,
+la vista comprueba permiso/revisión con el servidor y después solicita el intent.
+Se registra como mejora hacer visible esa espera y distinguir apertura fallida
+de actualización fallida, sin omitir la autorización antes de abrir un FIT.
+
+Javier confirma después **avisos de cambios activados en Beta** y salida a la
+esfera. La app queda operativa con la credencial nueva y consentimiento de avisos.
+No se ha repetido físicamente un aviso de una revisión nueva en Store; el ciclo
+de notificación/aceptación se había aceptado en Dev 1.3 con el mismo código.
+
+Piloto privado aceptado: Store, vinculación, FIT privado, apertura, revocación y
+recuperación. La incidencia de apertura queda registrada, junto a los límites de
+limpieza nativa, red, otros modelos y avisos nuevos de Store. **Único siguiente
+ajuste recomendado:** espera y diagnóstico de apertura en Fuerza. La integración
+general sigue abierta; publicación pública fuera de este tramo y carrera conserva
+su sincronización automática.
