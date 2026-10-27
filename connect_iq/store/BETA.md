@@ -23,6 +23,9 @@ ensayo; pendiente comprobar el nuevo ciclo de descarga y su reconocimiento.
 El primer ciclo crea el alias EOP1000000155 y registra GET FIT 200 a las
 22:50:07 UTC, sin petición de FIT/manifiesto desde el PC. Se espera comprobación
 en Fuerza antes de abrir EntrenaOP; importación y reconocimiento aún pendientes.
+Javier confirma revisión 155 y contenido correctos en Fuerza nativa sin abrir
+EntrenaOP: primera importación automática de 1.6 aceptada. Lectura de biblioteca
+y origen al abrir y ausencia de otra descarga aún pendientes.
 [Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga

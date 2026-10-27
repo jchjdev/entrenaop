@@ -11,8 +11,9 @@ una sesión y app cerrada. Tras recuperar su acceso a Trainer se aplica
 **Único siguiente recorrido CIQ:** contrastar la descarga nativa con app cerrada,
 su reconocimiento posterior sin volver a descargar y otro cambio sin duplicados
 en la lista. Primer ciclo: exportación 155 y GET FIT 200 a las 22:50:07 UTC,
-sin petición de FIT/manifiesto desde el PC. Importación y reconocimiento aún
-pendientes de respuesta física. Recuperación con móvil
+sin petición de FIT/manifiesto desde el PC. Javier confirma revisión 155 con
+receta correcta en Fuerza antes de abrir EntrenaOP: importación aceptada.
+Reconocimiento sin otra descarga y segundo cambio aún pendientes. Recuperación con móvil
 desconectado y denegación también pendientes. Las copias nativas antiguas no se
 eliminan. Instalación y lista inicial no acreditan estos pasos.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).

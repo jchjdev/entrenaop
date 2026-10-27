@@ -1567,3 +1567,8 @@ Se solicita buscar primero el alias 155 desde Fuerza nativa, con 3×5 a 20 kg y
 descanso de 0:30, sin abrir EntrenaOP ni iniciar actividad. Importación física
 y reconocimiento posterior todavía pendientes de respuesta. La respuesta HTTP
 no se presenta como comprobación de instalación.
+Javier confirma **Aparece y los datos son correctos**, antes de abrir EntrenaOP:
+importación automática de la revisión 155 en Fuerza nativa aceptada en 1.6.
+Se solicita después abrir EntrenaOP y leer **Biblioteca** y **Solicitud desde**
+en MENU → Estado de descargas, para acreditar el reconocimiento sin volver a
+descargar. Esa lectura y la ausencia de otro GET todavía están pendientes.

@@ -6,7 +6,8 @@ lista autorizada activa descarga automática cada 15 min: un FIT por evento,
 tres intentos por revisión con 30 min entre reintentos, sin avisos. Desactivable
 en MENU; **Estado de descargas** separa HTTP de consulta/FIT y comprobación local.
 54 pruebas por variante correctas; instalación y lista inicial de 1.6 aceptadas.
-Reconocimiento y cambio automático de otra revisión pendientes. Las
+Primera importación automática aceptada en Fuerza; reconocimiento sin otra
+descarga y segundo cambio pendientes. Las
 revisiones antiguas de la biblioteca nativa pueden permanecer.
 [Contrato](../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 

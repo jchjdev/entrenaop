@@ -7,8 +7,8 @@ con móvil/Connect y red. La copia puede reconocerse en Fuerza sin aparecer como
 propia de la app; se limita la búsqueda al alias solicitado y se revalida permiso
 antes de abrir. Los reintentos son limitados y se conserva una sola lista vigente;
 no se eliminan revisiones antiguas de la biblioteca nativa. Pruebas automáticas
-correctas; instalación de 1.6 y lista inicial aceptadas por Javier, pero
-reconocimiento y cambios automáticos de nuevas revisiones pendientes. Solo beta
+correctas; instalación, lista inicial y primera importación automática de 1.6
+aceptadas por Javier. Reconocimiento sin otra descarga y cambios sucesivos pendientes. Solo beta
 privada Dev;
 carrera continúa por su integración automática separada.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).

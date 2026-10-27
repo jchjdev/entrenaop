@@ -30,6 +30,9 @@ El ciclo crea la exportación 155 a las 22:50:06 UTC y la traza propia confirma
 un GET FIT 200 a las 22:50:07, sin petición de FIT/manifiesto desde el PC.
 Se pide revisar primero EOP1000000155 en Fuerza: importación y reconocimiento
 de esta descarga automática siguen pendientes; HTTP 200 no los acredita.
+Javier confirma la revisión 155 y su receta correctas en Fuerza antes de abrir
+EntrenaOP: importación automática aceptada. Falta comprobar reconocimiento sin
+otra descarga desde la app y otra revisión sucesiva.
 [Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga
