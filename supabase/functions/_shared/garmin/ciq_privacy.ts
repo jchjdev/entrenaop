@@ -39,13 +39,20 @@ y en la importación de los FIT que solicitas. Los datos se usan para este
 servicio; no se venden ni se usan para publicidad. Garmin tiene su propia
 política: https://www.garmin.com/privacy/connectiq/policy/
 Communications permite comunicar con EntrenaOP, PersistedContent importar y
-abrir entrenamientos, y Background consultar cambios si lo activas. En el modo
-habitual, el aviso opcional pide abrir la app y descarga al aceptar. La beta
-incluye además un ensayo explícito desde el menú para solicitar una revisión
-nueva de una sola sesión en segundo plano, sin aviso ni apertura de la app.
-El ensayo conserva únicamente estado técnico, identidad del FIT y resultado
-local para comprobar si Garmin llegó a importarlo. No acredita entrega autónoma
-general ni cambia los permisos de cuenta o la vigencia de cada descarga.
+abrir entrenamientos, y Background consultar y descargar sesiones. Tras la primera
+lista autorizada, la beta activa la descarga automática cada quince minutos;
+puedes desactivarla desde el menú del reloj. Solicita como máximo un FIT por
+ciclo sin aviso ni apertura de la app, con hasta tres intentos por revisión y
+al menos treinta minutos entre reintentos. La comunicación necesita el móvil,
+Garmin Connect e Internet; Garmin puede retrasar o interrumpir el proceso.
+El reloj conserva un diario técnico acotado a las revisiones actuales: identidad,
+intentos, fecha y estado de solicitud, respuesta o comprobación local. Una
+respuesta HTTP no se considera instalación comprobada. Para reconocer una copia
+ya descargada puede buscar su alias exacto en la biblioteca general de Garmin;
+no envía otros entrenamientos al servidor ni borra contenido de esa biblioteca.
+Se mantiene el ensayo opcional de una sola revisión y el modo anterior de avisos
+si desactivas la descarga automática. No cambian los permisos de cuenta ni la
+vigencia comprobada en cada descarga. La beta sigue en validación física.
 
 CONSERVACIÓN Y RETIRADA
 La caducidad o retirada impide seguir usando la credencial, pero no supone

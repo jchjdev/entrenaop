@@ -104,23 +104,28 @@ class CiqView extends WatchUi.View {
         if (code!=200 || !(data instanceof Dictionary)) { protocolFailure(code,data); return; }
         var response=data as Dictionary; var entries=ciqManifestEntries(response);
         if (entries==null) { fail("Lista incompleta. No se modifica"); return; }
+        ciqSyncKeep(entries);
+        // Una sola migración tras permiso válido; respetar la desactivación posterior.
+        if (Storage.getValue("ciqAutoEnabled")==null) { Storage.setValue("ciqAutoEnabled",true); }
         _entries=entries; _index=0;
         var blocked=response["blocked"]; _blocked=blocked instanceof Number?blocked:0;
         var revision=response["revision"]; _revision=revision instanceof String?revision:null;
         try { nextDownload(); } catch(error) { fail("No se pudo comprobar el reloj"); }
     }
-    function owned(name as String) as PersistedContent.Content? {
-        var iterator=PersistedContent.getAppWorkouts(); var content=iterator.next();
-        while (content!=null) { if (content.getName().equals(name)) { return content; } content=iterator.next(); }
-        return null;
-    }
+    function localWorkout(name as String) as PersistedContent.Content? { return new CiqLibrary().find(name); }
     private function nextDownload() as Void {
         if (ciqProbeHeld()) { stopWait(); probeSummary(); return; }
         while (_index<_entries.size()) {
             var entry=_entries[_index]; var name=entry["fit_name"] as String;
-            if (owned(name)!=null) { _index++; continue; }
+            if (localWorkout(name)!=null) { _index++; continue; }
+            if (ciqSyncImportPending(name,Time.now().value())) {
+                startWait("Garmin está importando"); _detail="Esperando la copia del fondo";
+                _hint="No hace falta volver a descargar";
+                _poll.start(method(:recheckLocalImport),2000,false); return;
+            }
             startWait("Descargando "+(_index+1)+"/"+_entries.size()); _detail="Garmin puede tardar un poco";
             try {
+                ciqSyncAttempt(name,entry["id"] as String,Time.now().value(),"primer plano");
                 Communications.makeWebRequest("https://sxbxfjqgoddzhtcyhalw.supabase.co/functions/v1/garmin-ciq/fit/"+
                     Communications.encodeURL(entry["id"] as String),null,
                     {:method=>Communications.HTTP_REQUEST_METHOD_GET,:headers=>{"Authorization"=>"Bearer "+_credential},
@@ -129,14 +134,19 @@ class CiqView extends WatchUi.View {
         }
         stopWait(); _verified=true;
         _status=_entries.size()==1?"1 sesión lista":_entries.size()+" sesiones listas"; _detail="Actualizado ahora";
-        _hint=_blocked>0?_blocked+" no compatibles o no vigentes":"MENU: actualizar / START: abrir";
+        _hint=_blocked>0?_blocked+" no compatibles o no vigentes":
+            (ciqAutoEnabled()?"Automática al salir · cada 15 min":"MENU: actualizar / START: abrir");
         if (_revision!=null) { Storage.setValue("ciqLocalRevision",_revision); }
         Storage.setValue("ciqPending",false); Storage.setValue("ciqLastSync",Time.now().value()); WatchUi.requestUpdate();
+    }
+    function recheckLocalImport() as Void {
+        stopWait(); try { nextDownload(); } catch(error) { fail("No se pudo comprobar la copia"); }
     }
     function onFit(code as Number,data as Communications.ContentType?) as Void {
         stopWait(); if (_index>=_entries.size()) { fail("Respuesta fuera de secuencia"); return; }
         try {
-            if (code!=200 || owned(_entries[_index]["fit_name"] as String)==null) { fail("FIT no confirmado: "+code); return; }
+            ciqSyncResponse(_entries[_index]["fit_name"] as String,code);
+            if (code!=200 || localWorkout(_entries[_index]["fit_name"] as String)==null) { fail("FIT no confirmado: "+code); return; }
             _index++; nextDownload();
         } catch(error) { fail("No se pudo comprobar el FIT"); }
     }
@@ -166,12 +176,17 @@ class CiqView extends WatchUi.View {
             WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP); return;
         }
         menu.addItem(new WatchUi.MenuItem("Actualizar",null,:refresh,{}));
+        if (_pairCode==null && _credential!=null) {
+            menu.addItem(new WatchUi.MenuItem(ciqAutoEnabled()?"Desactivar descarga automática":"Activar descarga automática",
+                "Sin avisos; cada 15 min",:automatic,{}));
+            menu.addItem(new WatchUi.MenuItem("Estado de descargas",null,:syncDiagnostics,{}));
+        }
         if (_verified && _entries.size()==1) {
             menu.addItem(new WatchUi.MenuItem("Prueba: descarga en fondo","Una revisión; sin avisos",:probeArm,{}));
         }
         menu.addItem(new WatchUi.MenuItem("Estado de apertura",null,:openingDiagnostics,{}));
         if (_verified) { menu.addItem(new WatchUi.MenuItem("Abrir sesiones",null,:sessions,{})); }
-        if (_pairCode==null && _credential!=null) {
+        if (_pairCode==null && _credential!=null && !ciqAutoEnabled()) {
             var enabled=Storage.getValue("ciqBackgroundEnabled");
             menu.addItem(new WatchUi.MenuItem((enabled instanceof Boolean && enabled) ?
                 "Desactivar consulta en fondo" : "Activar consulta cada 15 min", "Solo detecta cambios", :background, {}));
@@ -195,6 +210,35 @@ class CiqView extends WatchUi.View {
             } catch(error) { _hint="No se pudo activar la consulta"; }
         }
         WatchUi.requestUpdate();
+    }
+    function toggleAutomatic() as Void {
+        ciqCancelSyncCallbacks(); Storage.setValue("ciqAutoEnabled",!ciqAutoEnabled());
+        // Al desactivar, no reactivar por sorpresa los diálogos de la beta anterior.
+        Storage.setValue("ciqBackgroundEnabled",ciqAutoEnabled());
+        Storage.setValue("ciqChangeAlertsEnabled",false);
+        _hint=ciqAutoEnabled()?"Descarga automática al salir":"Descarga automática desactivada";
+        WatchUi.requestUpdate();
+    }
+    function syncDiagnostics() as Void {
+        var menu=new WatchUi.Menu2({:title=>"Estado de descargas"});
+        var state=Storage.getValue("ciqAutoState"); var stamp=Storage.getValue("ciqAutoAt");
+        var code=Storage.getValue("ciqAutoHttp"); var queryCode=Storage.getValue("ciqAutoManifestHttp");
+        var name=Storage.getValue("ciqAutoName");
+        menu.addItem(new WatchUi.MenuItem("Automática",ciqAutoEnabled()?"Activada · cada 15 min":"Desactivada",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Último estado",state instanceof String?state:"Al salir se programará",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Hace",stamp instanceof Number?((Time.now().value()-stamp)/60).toString()+" min":"Sin dato",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("Consulta HTTP",queryCode instanceof Number && queryCode!=0?queryCode.toString():"Sin respuesta",:info,{}));
+        menu.addItem(new WatchUi.MenuItem("FIT HTTP",code instanceof Number && code!=0?code.toString():"Sin respuesta final",:info,{}));
+        if (name instanceof String) {
+            menu.addItem(new WatchUi.MenuItem("Revisión",name,:info,{}));
+            var record=ciqSyncRecords()[name];
+            if (record instanceof Dictionary) {
+                var library=record["library"]; var origin=record["origin"];
+                menu.addItem(new WatchUi.MenuItem("Biblioteca",library instanceof String?library:"Sin comprobar",:info,{}));
+                menu.addItem(new WatchUi.MenuItem("Solicitud desde",origin instanceof String?origin:"Sin dato",:info,{}));
+            }
+        }
+        WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
     function toggleAlerts() as Void {
         var enabled=Storage.getValue("ciqChangeAlertsEnabled");
@@ -258,6 +302,7 @@ class CiqView extends WatchUi.View {
         if (_busy || !_verified || _entries.size()!=1 || _credential==null || _pairCode!=null) { return; }
         var target=_entries[0]["scheduled_id"];
         if (!(target instanceof String) || target.length()!=36) { fail("Cita de prueba no válida"); return; }
+        ciqCancelSyncCallbacks();
         // Capturar toda la biblioteca propia impide acreditar como nueva una copia antigua.
         var baseline=[] as Array<String>; var iterator=PersistedContent.getAppWorkouts(); var content=iterator.next();
         while (content!=null) {
@@ -281,9 +326,11 @@ class CiqView extends WatchUi.View {
         _hint="Sal hasta la esfera";
         if (name instanceof String) {
             _hint=name;
-            if (owned(name)!=null) {
+            if (localWorkout(name)!=null) {
                 _detail="Instalada en segundo plano"; _hint=name+" / Sin descarga al abrir";
                 Storage.setValue("ciqProbeVerifiedAt",Time.now().value());
+            } else {
+                _detail="Sin confirmación local"; _hint=name+" / Comprueba Fuerza";
             }
         }
         var http=Storage.getValue("ciqProbeFitHttp");
@@ -318,5 +365,7 @@ class CiqMenuDelegate extends WatchUi.Menu2InputDelegate {
         else if (id==:probeArm) { _view.armProbe(); }
         else if (id==:probeRead) { _view.probeSummary(); }
         else if (id==:probeEnd) { _view.endProbe(); }
+        else if (id==:automatic) { _view.toggleAutomatic(); }
+        else if (id==:syncDiagnostics) { _view.syncDiagnostics(); }
     }
 }

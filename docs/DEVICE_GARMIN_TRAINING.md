@@ -1428,3 +1428,83 @@ ni otros modelos. El siguiente paso es resolver la discrepancia entre la
 biblioteca nativa y la propia antes de convertir el ensayo en sincronización
 continua con descarga acotada por evento, reintentos y sustitución de revisiones,
 manteniendo autorización y vigencia comprobadas en servidor.
+
+## Reconocimiento y descarga automatica · INT-021
+
+Javier pide corregir la discrepancia de 1.5 y dejar la descarga automática. La
+Beta 1.6 implementa una recuperación local limitada: `CiqLibrary` busca primero
+en `getAppWorkouts()` y después en `getWorkouts()` únicamente si el alias exacto
+EOP de diez cifras figura en el diario de solicitudes o en la evidencia del
+ensayo 1.5. La búsqueda rechaza nombres duplicados. No enumera ni envía recetas
+ajenas al servidor y no borra contenido. Encontrar una copia en la biblioteca
+general no implica propiedad de EntrenaOP. La causa del callback ausente de 1.5
+sigue sin demostrarse; esta corrección evita depender de él para reconocerla.
+
+`localWorkout()` se usa tanto al sincronizar como al abrir Fuerza y al leer el
+ensayo. Una copia encontrada evita otra descarga en primer plano y registra
+identidad nativa, biblioteca, instante y origen de solicitud. La apertura exige
+además el manifiesto completo vigente, igual que antes. Si no aparece, el ensayo
+muestra **Sin confirmación local**, en vez de dejar un mensaje de solicitud como
+si todavía estuviera en curso.
+
+Tras recibir por primera vez un manifiesto válido en 1.6 se activa el modo
+automático. Una preferencia explícita posterior de desactivación se conserva.
+El menú ofrece **Desactivar descarga automática** y **Estado de descargas**.
+Mientras está activo sustituye los avisos antiguos: no pide aceptar diálogos.
+Desactivarlo tampoco reactiva por sorpresa los avisos anteriores; pueden
+habilitarse expresamente desde su menú. El ensayo aislado continúa disponible
+y tiene prioridad mientras esté armado.
+
+Al salir a la esfera, se programa cada 900 s. Cada evento consulta un manifiesto
+actual completo y puede solicitar **un solo FIT**. Las revisiones recibidas o
+comprobadas se omiten; otra solicitud sin callback o fallida espera al menos
+1.800 s y tiene un máximo de tres intentos automáticos para esa revisión. Cada
+reintento revalida la lista y usa la misma exportación/bytes, nunca otra identidad
+solo por reintentar. Una sesión en espera no impide descargar otra pendiente.
+Al cambiar la revisión, el diario sustituye su entrada; una lista válida vacía
+lo vacía. No se modifican listas a partir de respuestas incompletas. El diario
+queda acotado a las 30 revisiones actuales, no a todo el historial de Garmin.
+
+El servicio no usa Timer ni PersistedContent en fondo, no abre Fuerza y no
+elimina FIT. Si consultar tarda 25 s, deja la descarga para otro ciclo dentro
+del límite de 30 s de Garmin. Cada evento toma una generación nueva; entrar en
+primer plano o cambiar el ajuste invalida callbacks anteriores. También se
+comprueba la misma credencial y ausencia de vinculación pendiente. 401/403
+detiene las consultas automáticas; abrir la app permite mostrar el motivo de
+acceso. El endpoint FIT vuelve a comprobar dueño, permiso y revisión.
+
+Diagnóstico: HTTP de consulta y HTTP de FIT separados, alias, estado y fecha;
+cuando existe comprobación local muestra biblioteca y origen de solicitud. Un
+200 no se promueve a instalada. Un callback ausente puede dejar solicitud sin
+confirmar aunque Garmin haya importado; al abrir la app se busca localmente
+antes de descargar. Si se agotan reintentos, se conserva para revisión manual.
+Si se abre durante una importación reciente de fondo, espera hasta 90 s desde
+la solicitud y vuelve a mirar localmente cada 2 s antes de otra descarga.
+
+Validación de preparación: 54 pruebas Monkey C por variante, compilación estricta,
+nueve pruebas HTTP y contrato SQL transaccional con ROLLBACK. Historial Dev
+cotejado: 237 migraciones locales/remotas coincidentes, sin migraciones nuevas.
+Solo cambia el aviso estático del servidor: publicado en Dev, 4.719 bytes iguales
+a fuente y manifiesto sin credencial rechazado con 401. Sin cambios en Flutter,
+carrera, autenticación, RLS o generador FIT.
+
+Paquete 1.6.0 de 58.747 bytes, SHA-256
+`79dab3be436637db327dd07416a74b28f93597cbf95ea7bdaa6fa2933cc1102a`.
+SDK 9.3.0 verifica firma de manifiesto y ejecutables con la clave original;
+los dos part numbers compilados pertenecen al mismo perfil `fenix847mm`, no
+acreditan otro modelo físico. No contiene pruebas ni claves administrativas.
+
+**Pendiente de aceptación física:** instalar 1.6 desde la misma beta privada,
+abrir una vez y confirmar lista/automática; salir a la esfera antes de cambiar
+la muestra. Contrastar el alias nuevo en Fuerza antes de abrir EntrenaOP, luego
+confirmar una sola entrada y en Estado de descargas el origen **segundo plano**
+y biblioteca **general** o **propia**. Repetir otro cambio, comprobar ausencia de
+duplicados en la lista y ensayar recuperación tras desconexión/denegación.
+La importación de una revisión en 1.5 no acredita estos pasos de 1.6.
+
+**Límites:** Garmin controla cuándo ejecuta el evento, necesita móvil/Connect y
+red, y puede cortar el servicio. Varias sesiones requieren varios ciclos. Las
+revisiones antiguas pueden permanecer en la biblioteca nativa; no se promete
+limpieza automática ni una sola copia nativa. El menú de EntrenaOP se construye
+con la lista vigente del servidor. No se habilita producción, publicación pública,
+otros perfiles de reloj ni devolución de resultados.

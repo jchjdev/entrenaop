@@ -16,7 +16,7 @@ class CiqBackgroundSpy extends CiqBackground {
 
 function ciqBackgroundTestKeys() as Array<String> {
     return ["ciqBackgroundState","ciqBackgroundStateAt","ciqBackgroundHttp","ciqPending",
-        "ciqLastCheck","ciqBackgroundEnabled","ciqChangeAlertsEnabled","ciqNotifiedRevision","ciqLocalRevision","ciqProbeMode"];
+        "ciqLastCheck","ciqBackgroundEnabled","ciqChangeAlertsEnabled","ciqNotifiedRevision","ciqLocalRevision","ciqProbeMode","ciqAutoEnabled"];
 }
 function ciqBackgroundTestSave() as Dictionary {
     var saved={} as Dictionary;
@@ -25,6 +25,7 @@ function ciqBackgroundTestSave() as Dictionary {
     Storage.setValue("ciqBackgroundEnabled",true); Storage.setValue("ciqChangeAlertsEnabled",true);
     Storage.setValue("ciqNotifiedRevision","anterior"); Storage.setValue("ciqLocalRevision","anterior");
     Storage.setValue("ciqProbeMode",false);
+    Storage.setValue("ciqAutoEnabled",false);
     return saved;
 }
 function ciqBackgroundTestRestore(saved as Dictionary) as Void {

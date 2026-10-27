@@ -1,5 +1,16 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
+**1.6.0 preparada · INT-021:** búsqueda exacta de alias previamente solicitado
+en biblioteca general si no figura en la propia; no implica propiedad ni borra
+contenido. Descarga automática cada 15 min tras lista válida, desactivable, un
+FIT por evento y tres intentos con margen de 30 min, sin aceptar avisos.
+54 pruebas por variante, nueve HTTP, contrato SQL y privacidad Dev verificados.
+Reconocimiento y cambios continuados en el reloj aún pendientes de aceptación.
+Paquete de 58.747 bytes, SHA-256
+`79dab3be436637db327dd07416a74b28f93597cbf95ea7bdaa6fa2933cc1102a`,
+firma verificada con la clave original por SDK 9.3.0.
+[Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga
 silenciosa explícita de una revisión nueva
 de la única cita compatible. Se arma desde el menú y se sale a la esfera antes
@@ -57,7 +68,7 @@ Para instalarla desde Connect IQ en el reloj, usar esa misma cuenta Garmin.
 
 ## Identidad y compilación
 
-- Nombre: **EntrenaOP Beta**; versión **1.5.0**; idioma castellano.
+- Nombre: **EntrenaOP Beta**; versión **1.6.0**; idioma castellano.
 - UUID estable: `d38458cfe4d844fcae60b18c9e9d7cf3`.
 - Variante independiente de Dev; comparte código y endpoint exclusivamente Dev.
 - Perfil oficial `fenix847mm`; aceptación física hasta ahora en fēnix 8 de 47 mm.

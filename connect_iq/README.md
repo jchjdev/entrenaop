@@ -1,5 +1,14 @@
 # EntrenaOP Connect IQ · Dev
 
+**Beta 1.6 · INT-021:** reconoce un alias previamente solicitado también en la
+biblioteca general de Garmin, sin borrarlo ni atribuir propiedad. Tras primera
+lista autorizada activa descarga automática cada 15 min: un FIT por evento,
+tres intentos por revisión con 30 min entre reintentos, sin avisos. Desactivable
+en MENU; **Estado de descargas** separa HTTP de consulta/FIT y comprobación local.
+54 pruebas por variante correctas; aceptación física de 1.6 pendiente. Las
+revisiones antiguas de la biblioteca nativa pueden permanecer.
+[Contrato](../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Ensayo 1.5 · INT-020:** menú **Prueba: descarga en fondo**, solo con una sesión
 lista. Armar una vez y salir a la esfera antes de cambiar la receta en Dev.
 Solicita una revisión nueva en segundo plano, sin avisos ni intents; espera

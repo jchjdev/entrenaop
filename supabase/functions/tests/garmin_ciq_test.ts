@@ -40,6 +40,8 @@ test('aviso de privacidad público solo en Dev: sin consultas ni acceso a receta
   const text=await response.text();
   assert.match(text,/javier.charlez@entrenaop.es/);
   assert.match(text,/no supone\nborrado automático/);
+  assert.match(text,/máximo un FIT por\nciclo sin aviso/);
+  assert.match(text,/no envía otros entrenamientos al servidor ni borra contenido/);
   assert.ok(!text.includes(owner));assert.ok(!text.includes(credential));
   assert.equal((await handleGarminCiq(request('privacy',{}),config,f)).status,405);
   assert.equal((await handleGarminCiq(request('privacy?token=secreto'),config,f)).status,400);

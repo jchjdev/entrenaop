@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**Connect IQ · 27/10/2026 · INT-021:** Beta 1.6 incorpora `CiqLibrary` para
+recuperar un alias exacto previamente solicitado en la biblioteca general si
+no aparece en la propia. No transfiere propiedad ni elimina contenido. Mantiene
+autorización vigente antes de abrir. `CiqAutoSync` consulta manifiesto y solicita
+un FIT por evento de 15 min; el diario acotado distingue solicitado, recibido y
+verificado, con tres intentos y margen de 30 min. Generaciones y credencial
+descartan callbacks antiguos; no se llama a PersistedContent en background.
+Activación inicial tras lista válida, preferencia posterior respetada y sin
+avisos en ese modo. Preparado/probado; aceptación física de 1.6 pendiente.
+[Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Beta Android privada · 27/10/2026:** las tareas release requieren firma
 privada explícita, sin fallback debug. El helper Windows compila con Firebase Dev,
 estampa identidad de fuentes y verifica certificado fijado, paquete, permisos y

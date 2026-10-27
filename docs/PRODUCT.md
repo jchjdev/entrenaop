@@ -1,5 +1,16 @@
 # Producto EntrenaOP
 
+**Connect IQ Beta · 27/10/2026 · automatización en validación:** Javier pide
+resolver el reconocimiento de la copia de fondo y descargar sin abrir ni aceptar
+avisos. La beta 1.6 prepara consulta/descarga automática cada 15 min, desactivable,
+con móvil/Connect y red. La copia puede reconocerse en Fuerza sin aparecer como
+propia de la app; se limita la búsqueda al alias solicitado y se revalida permiso
+antes de abrir. Los reintentos son limitados y se conserva una sola lista vigente;
+no se eliminan revisiones antiguas de la biblioteca nativa. Pruebas automáticas
+correctas; aceptación de esos recorridos en 1.6 pendiente. Solo beta privada Dev;
+carrera continúa por su integración automática separada.
+[Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Piloto Android privado · 27/10/2026:** Javier solicita una APK del deportista
 con firma estable y push Dev para un entrenador que también probará «Para mí»
 y Garmin con su fēnix 7 Solar. La entrega no activa cobros ni producción y exige

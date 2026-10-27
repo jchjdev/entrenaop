@@ -12,7 +12,7 @@ class CiqOpenTestOwner extends CiqView {
     function requestOpenPermission(callback as Method(code as Number,data as Communications.ContentType?) as Void) as Void {
         checks++;
     }
-    function owned(name as String) as PersistedContent.Content? { lookups++; return null; }
+    function localWorkout(name as String) as PersistedContent.Content? { lookups++; return null; }
     function invalidateOpen(message as String) as Void { invalidations++; }
     function openPermissionFailure(code as Number,data as Communications.ContentType?) as String {
         failures++; return "No autorizado";

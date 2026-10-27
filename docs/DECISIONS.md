@@ -1,5 +1,21 @@
 # Registro de decisiones vigentes
 
+**INT-021 · 27/10/2026 · reconocimiento y descarga automática CIQ:** Javier pide
+resolver la copia importada en fondo y continuar hasta automatizar la beta.
+Se prepara 1.6: buscar primero biblioteca propia y, solo para un alias EOP exacto
+previamente solicitado o registrado por el ensayo 1.5, biblioteca general. Una
+coincidencia ambigua no autoriza apertura; encontrarla no atribuye propiedad ni
+permite borrarla. Cada apertura conserva el manifiesto vigente del servidor.
+Tras la primera lista completa autorizada se activa descarga automática cada
+15 minutos, desactivable desde el menú; una desactivación guardada se respeta.
+Un FIT por evento, diario de revisiones actuales, tres intentos como máximo y
+treinta minutos de margen entre reintentos. Sin avisos ni intents automáticos.
+HTTP 200 significa recibido, no comprobado; callbacks perdidos no bloquean todos
+los eventos ni generan reintentos ilimitados. Revocación/denegación detiene el
+modo automático. Implementación y pruebas preparadas; reconocimiento real y
+actualización automática continuada pendientes de aceptación física en 1.6.
+[Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga
 preparar y entregar una APK del deportista con firma estable, notificaciones y
 entorno Dev. Se conserva el identificador Android, se separa el material privado

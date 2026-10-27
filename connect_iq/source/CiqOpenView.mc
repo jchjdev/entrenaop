@@ -77,10 +77,10 @@ class CiqOpenView extends WatchUi.View {
         if (!_active || !_flow.takeLaunch()) { return; }
         try {
             _stage="Biblioteca";
-            var content=_owner.owned(_fitName);
+            var content=_owner.localWorkout(_fitName);
             if (content==null) {
                 _owner.invalidateOpen("La copia ya no está. Actualiza");
-                showFailure("Copia no disponible","Vuelve y actualiza",_stage,"No figura en biblioteca propia"); return;
+                showFailure("Copia no disponible","Vuelve y actualiza",_stage,"No figura en biblioteca local"); return;
             }
             _stage="Preparar intent"; var intent=content.toIntent();
             _stage="Abrir Fuerza";

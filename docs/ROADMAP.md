@@ -1,5 +1,16 @@
 # Roadmap de EntrenaOP
 
+**INT-021 · 27/10/2026 · Beta CIQ 1.6 preparada:** recuperación por alias exacto
+en biblioteca general para descargas previamente solicitadas, sin borrar ni
+atribuir propiedad. Modo automático cada 15 min tras primera lista autorizada,
+un FIT por evento, diario acotado, reintentos limitados y sin aceptar avisos.
+54 pruebas por variante, nueve HTTP, contrato SQL con ROLLBACK y privacidad Dev
+verificados. **Único siguiente recorrido CIQ:** instalar la beta privada 1.6 y
+aceptar físicamente reconocimiento de una descarga en fondo y dos cambios
+sucesivos sin duplicados en su lista. Todavía pendiente, incluida recuperación
+con móvil desconectado; las copias nativas antiguas no se eliminan.
+[Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
+
 **Beta Android privada · 27/10/2026 · APK preparada y verificada:** firma
 estable externa a Git, compilación release Dev con push y verificación de
 identidad/recursos, versión 1.0.0-beta.1+3. Análisis raíz limpio, 1.381 pruebas

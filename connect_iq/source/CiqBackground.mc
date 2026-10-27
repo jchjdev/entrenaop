@@ -5,17 +5,20 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 
-// Se ejecuta solo si el usuario activa la comprobación desde el menú del reloj.
-// El modo habitual solo consulta cambios. El ensayo explícito deriva una descarga.
+// La descarga automática tiene prioridad sobre el modo antiguo de avisos.
+// El ensayo explícito mantiene su aislamiento para comprobar una sola revisión.
 (:background)
 class CiqBackground extends System.ServiceDelegate {
+    private var _sync as CiqAutoSync?;
+    private var _probe as CiqSilentProbe?;
     function initialize() { ServiceDelegate.initialize(); }
     function recordState(state as String) as Void {
         Storage.setValue("ciqBackgroundState",state);
         Storage.setValue("ciqBackgroundStateAt",Time.now().value());
     }
     function onTemporalEvent() as Void {
-        if (ciqProbeHeld()) { var probe=new CiqSilentProbe(); probe.run(); return; }
+        if (ciqProbeHeld()) { _probe=new CiqSilentProbe(); _probe.run(); return; }
+        if (ciqAutoEnabled()) { _sync=new CiqAutoSync(); _sync.run(); return; }
         var credential=Storage.getValue("ciqCredential");
         var enabled=Storage.getValue("ciqBackgroundEnabled");
         if (!(enabled instanceof Boolean) || !enabled || !(credential instanceof String) ||
@@ -30,7 +33,7 @@ class CiqBackground extends System.ServiceDelegate {
         } catch(error) { recordState("Error al solicitar"); finish(); }
     }
     function onChanges(code as Number,data as Communications.ContentType?) as Void {
-        if (ciqProbeHeld()) { finish(); return; }
+        if (ciqProbeHeld() || ciqAutoEnabled()) { finish(); return; }
         Storage.setValue("ciqBackgroundHttp",code); recordState("Respuesta recibida");
         // Un permiso retirado o perdido no debe seguir generando consultas de red.
         if (code==401 || code==403) { Storage.setValue("ciqBackgroundEnabled",false); }

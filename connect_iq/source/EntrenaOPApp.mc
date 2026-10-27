@@ -13,6 +13,7 @@ class EntrenaOPApp extends Application.AppBase {
     (:typecheck(disableBackgroundCheck))
     function getInitialView() as [Views] or [Views, InputDelegates] {
         _foregroundInstance=true;
+        ciqCancelSyncCallbacks();
         try { ciqSuspendChecks(); } catch(error) { }
         var view = new CiqView();
         return [view, new CiqDelegate(view)];
