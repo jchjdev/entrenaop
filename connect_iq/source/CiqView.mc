@@ -39,7 +39,7 @@ class CiqView extends WatchUi.View {
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
         var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.0",Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(x,y-100,Graphics.FONT_SMALL,"EntrenaOP Dev 1.1",Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
         dc.drawText(x,y+40,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);
@@ -127,7 +127,8 @@ class CiqView extends WatchUi.View {
                      :responseType=>Communications.HTTP_RESPONSE_CONTENT_TYPE_FIT},method(:onFit));
             } catch(error) { fail("Descarga no confirmada"); } return;
         }
-        stopWait(); _verified=true; _status=_entries.size()+" sesiones listas"; _detail="Actualizado ahora";
+        stopWait(); _verified=true;
+        _status=_entries.size()==1?"1 sesión lista":_entries.size()+" sesiones listas"; _detail="Actualizado ahora";
         _hint=_blocked>0?_blocked+" no compatibles o no vigentes":"MENU: actualizar / START: abrir";
         if (_revision!=null) { Storage.setValue("ciqLocalRevision",_revision); }
         Storage.setValue("ciqPending",false); Storage.setValue("ciqLastSync",Time.now().value()); WatchUi.requestUpdate();
@@ -162,6 +163,9 @@ class CiqView extends WatchUi.View {
             var enabled=Storage.getValue("ciqBackgroundEnabled");
             menu.addItem(new WatchUi.MenuItem((enabled instanceof Boolean && enabled) ?
                 "Desactivar consulta en fondo" : "Activar consulta cada 15 min", "Solo detecta cambios", :background, {}));
+            var alerts=Storage.getValue("ciqChangeAlertsEnabled");
+            menu.addItem(new WatchUi.MenuItem((alerts instanceof Boolean && alerts) ?
+                "Desactivar avisos de cambios" : "Activar avisos de cambios", "Cada 15 min; aceptar abre y actualiza", :alerts, {}));
         }
         WatchUi.pushView(menu,new CiqMenuDelegate(self),WatchUi.SLIDE_UP);
     }
@@ -169,6 +173,7 @@ class CiqView extends WatchUi.View {
         var enabled=Storage.getValue("ciqBackgroundEnabled");
         if (enabled instanceof Boolean && enabled) {
             Storage.setValue("ciqBackgroundEnabled",false);
+            Storage.setValue("ciqChangeAlertsEnabled",false);
             try { Background.deleteTemporalEvent(); } catch(error) { }
             _hint="Consulta en fondo desactivada";
         } else {
@@ -176,6 +181,21 @@ class CiqView extends WatchUi.View {
                 Background.registerForTemporalEvent(new Time.Duration(900));
                 Storage.setValue("ciqBackgroundEnabled",true); _hint="Cambios cada 15 min; abre para FIT";
             } catch(error) { _hint="No se pudo activar la consulta"; }
+        }
+        WatchUi.requestUpdate();
+    }
+    function toggleAlerts() as Void {
+        var enabled=Storage.getValue("ciqChangeAlertsEnabled");
+        if (enabled instanceof Boolean && enabled) {
+            Storage.setValue("ciqChangeAlertsEnabled",false);
+            _hint="Avisos desactivados";
+        } else {
+            try {
+                Background.registerForTemporalEvent(new Time.Duration(900));
+                Storage.setValue("ciqBackgroundEnabled",true);
+                Storage.setValue("ciqChangeAlertsEnabled",true);
+                _hint="Aviso de cambios; aceptar actualiza";
+            } catch(error) { _hint="No se pudieron activar los avisos"; }
         }
         WatchUi.requestUpdate();
     }
@@ -219,5 +239,6 @@ class CiqMenuDelegate extends WatchUi.Menu2InputDelegate {
         var id=item.getId(); WatchUi.popView(WatchUi.SLIDE_DOWN);
         if (id instanceof Number) { _view.open(id); } else if (id==:refresh) { _view.synchronize(); }
         else if (id==:sessions) { _view.sessions(); } else if (id==:background) { _view.toggleBackground(); }
+        else if (id==:alerts) { _view.toggleAlerts(); }
     }
 }

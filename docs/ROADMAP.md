@@ -17,6 +17,12 @@ sin duplicados y después cambios/revocación físicos. El aviso automático al 
 en Fuerza y la asociación del FIT propio con Training API no quedan acreditados. El bloque
 de sincronización general sigue abierto. Store, otros relojes y background físico
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
+Ensayo de cambio preparado sobre la misma cita: 3×6 a 22,5 kg, descanso 1:15 y
+título «CIQ prueba 2 - actualizada», con recibo `sent` y los mismos IDs Garmin.
+Servidor rechaza la exportación vieja y conserva una entrada al repetir manifiesto;
+Javier aún debe confirmar receta nueva y repetición física. PRG 1.1 preparado con
+OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monkey C;
+instalación/avisos físicos pendientes. No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · primer tramo Connect IQ cerrado en Dev:** muestra

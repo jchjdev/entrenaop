@@ -838,3 +838,37 @@ no demuestra un aviso automático al entrar en Fuerza ni que la entrada de Train
 API use el mismo FIT de Connect IQ. El único siguiente ensayo es reabrir/actualizar
 sin duplicados y después cambios/revocación físicos. Sincronización general,
 background, Store y los demás límites siguen abiertos.
+
+### Actualización de receta y avisos preparados · 27/10/2026
+
+Javier pide repetir la actualización, modificar la sesión, evitar duplicados y
+automatizar el recorrido; comunica «1 sesiones listas / actualizado ahora» antes
+del cambio. Se modifica desde Trainer autenticado la misma cita de ensayo a
+**CIQ prueba 2 - actualizada**, tres series de seis repeticiones a **22,5 kg** con
+descanso **1:15**. Dev confirma revisión de planificación 4, estado pendiente y
+recibo `sent`, conservando `workout_id=1743167688` y `schedule_id=1822173388`.
+Trainer muestra la receta nueva. Un ensayo transaccional con ROLLBACK comprueba
+rechazo `40001` de la exportación antigua y dos manifiestos idénticos con una sola
+exportación vigente. No se extrae la credencial original ni se modifica otra cita.
+La apertura física de esta revisión y la repetición tras reabrir siguen pendientes.
+
+Se prepara **1.1.0**, aún sin instalar: sustituye el icono provisional por el PNG
+oficial OP existente, escalado por el compilador a 65 px, y corrige «1 sesión lista».
+**Activar avisos de cambios** es opcional e inicialmente está apagado, sin heredar
+el consentimiento de la consulta silenciosa anterior. Activa consulta cada 15 min
+y usa `Background.requestApplicationWake`: solo una huella válida, distinta de la
+instalada y de la última avisada, puede pedir abrir EntrenaOP. Aceptar abre la app
+y ejecuta la descarga habitual en primer plano; rechazar no repite el mismo aviso.
+Apagar la consulta apaga los avisos. HTTP fallido, permiso perdido o respuesta
+incompleta no producen aviso. El servicio continúa sin importar ni borrar FIT.
+
+Compilación estricta sin avisos y diez pruebas Monkey C correctas, incluidas
+respuesta malformada, consentimiento, revisión instalada y supresión de avisos
+repetidos. No cambian SQL, servidor ni Flutter. Instalación, apariencia de la OP
+y diálogo de cambios físicos pendientes; el reloj conserva 1.0. La biblioteca
+nativa puede conservar alias de revisiones antiguas: la lista vigente y la
+actualización sin duplicar el calendario no acreditan limpieza de esas copias.
+Garmin limita el servicio a 30 s y puede terminarlo antes; no se promete recepción
+inmediata ni importación fiable con la app cerrada. Referencias oficiales:
+[servicios](https://developer.garmin.com/connect-iq/articles/core-topics/Backgrounding.html)
+y [diálogo de apertura](https://developer.garmin.com/connect-iq/api-docs/Toybox/Background.html#requestApplicationWake-instance_function).

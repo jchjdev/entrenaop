@@ -1,1 +1,4 @@
-<drawables><bitmap id="LauncherIcon" filename="launcher.svg"/></drawables>
+<drawables>
+    <!-- Misma OP oficial, con los 65 px exigidos por el perfil fenix847mm. -->
+    <bitmap id="LauncherIcon" filename="../../../assets/branding/entrenaop_app_icon_full_bleed.png" scaleX="65" scaleY="65"/>
+</drawables>

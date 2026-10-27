@@ -23,6 +23,13 @@ verifica una única cita activa el 27/10. Tras sincronizar, Javier confirma solo
 «CIQ prueba 2» en Garmin Connect y en Entrenamientos del reloj. Esto acredita
 calendario único y retirada de la anterior, sin acreditar aviso automático en Fuerza
 ni asociar por ello el FIT propio a la entrada de Training API.
+Javier pide comprobar actualización sin duplicados y automatizar el recorrido.
+El ensayo conserva la misma cita y los mismos identificadores de calendario al
+cambiar título y dosis a 3×6, 22,5 kg y 1:15. Confirma una sesión lista antes del
+cambio; la receta nueva y la repetición físicas quedan pendientes. La 1.1 preparada
+añade la OP oficial y avisos opcionales de cambios (apagados inicialmente): consulta
+cada 15 minutos, un diálogo por huella nueva y descarga en primer plano al aceptar.
+No se declara importación automática con la app cerrada ni limpieza de FIT antiguos.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

@@ -7,6 +7,14 @@ No se modifican los RPC, pantallas o contratos de publicación de Trainer.
 
 ## Revisión operativa · 25/10/2026
 
+**Actualización contrastada el 27/10:** la cuenta de ensayo ya tiene la preferencia
+automática activada en generación 3. Al cambiar la misma cita de fuerza a
+«CIQ prueba 2 - actualizada», 3×6 a 22,5 kg y descanso 1:15, Dev confirma `sent`
+con los mismos identificadores de entrenamiento y calendario. La lectura del 25/10
+que sigue describe el estado anterior. La receta nueva en el reloj aún requiere
+confirmación física. Este automático de Training API es distinto de la descarga
+FIT Connect IQ y de los avisos opcionales preparados en su versión 1.1.
+
 La cuenta de ensayo consultada en Dev conserva conexión y permiso Training,
 pero no tiene una preferencia de sincronización automática registrada. El
 trabajador global está habilitado y cron activo; esto no activa el consentimiento

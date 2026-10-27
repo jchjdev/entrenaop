@@ -1,14 +1,15 @@
 # EntrenaOP Connect IQ · Dev
 
-La versión actual es **EntrenaOP Dev 1.0**, con vinculación de cuenta aprobada en
-INT-017. Servidor privado desplegado en Dev, análisis y pruebas correctos; PRG
-copiado y releído en el fēnix. La aceptación física de sesiones privadas sigue
-pendiente. El transporte sintético 0.2 descrito más abajo sí está aceptado.
+La versión preparada es **EntrenaOP Dev 1.1**, con la OP oficial como icono y
+avisos opcionales de cambios. Compilación estricta sin avisos y diez regresiones
+Monkey C correctas. Su instalación y avisos físicos siguen pendientes; el fēnix
+conserva **1.0**, cuya vinculación y descarga privada están aceptadas el 27/10.
+El transporte sintético 0.2 descrito más abajo también está aceptado.
 
-## Vincular y recibir sesiones privadas (1.0)
+## Vincular y recibir sesiones privadas
 
 1. Compilar con `./connect_iq/build-dev.ps1`; con el simulador oficial abierto,
-   ejecutar `./connect_iq/test-dev.ps1` (ocho regresiones). Instalar solo
+   ejecutar `./connect_iq/test-dev.ps1` (diez regresiones). Instalar solo
    `bin/entrenaop-dev-fenix847mm.prg` por USB en `GARMIN/APPS` y verificar relectura.
 2. Desconectar USB, abrir EntrenaOP en el reloj con Garmin Connect/móvil e Internet
    disponibles. El reloj solicita un código de ocho caracteres, válido diez minutos.
@@ -29,11 +30,21 @@ claves administrativas en el reloj. La comprobación opcional cada 15 minutos
 está desactivada inicialmente y solo detecta cambios, sin importar/borrar FIT.
 La publicación e instalación desde Connect IQ Store todavía están pendientes.
 
+En 1.1, **MENU → Activar avisos de cambios** activa también la consulta cada 15
+minutos y permite un diálogo por huella nueva. Aceptarlo abre EntrenaOP, que
+actualiza e importa en primer plano. Rechazarlo no produce otro aviso por la
+misma huella; Actualizar sigue disponible. No hay avisos sin activación expresa,
+ante respuesta inválida, HTTP fallido o revisión ya instalada. Desactivar la
+consulta desactiva también los avisos. Garmin decide cuándo ejecutar el servicio;
+no se garantiza puntualidad ni descarga con la app cerrada. Las copias FIT
+retiradas permanecen en la biblioteca nativa; la lista de EntrenaOP solo muestra
+las vigentes. Una lista de una sesión no demuestra limpieza de esa biblioteca.
+
 El servidor Dev usa ahora `ciq-private-2`: la lista conserva el título de sesión,
 pero Garmin puede mostrar `EOP<serial>` como nombre nativo. Este alias ASCII
 corto evita depender de títulos largos en la comprobación exacta de instalación.
-El formato lleva producto FIT 2 y es estable entre reintentos. El PRG continúa
-en 1.0; el ajuste llega al actualizar las sesiones, sin volver a instalar por USB.
+El formato lleva producto FIT 2 y es estable entre reintentos. El ajuste llegó al
+PRG 1.0 al actualizar las sesiones, sin volver a instalar por USB.
 Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones listas»
 con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
 descanso de 1:00. Aceptación física privada del 27/10; reintentos, cambios/retirada,
@@ -109,7 +120,7 @@ no muestra avisos y las dos regresiones pasan. El simulador devuelve un iterador
 vacío; la aceptación de importación y presentación corresponde al dispositivo
 físico, donde Javier confirmó también los dos descansos.
 
-## Límites y siguiente tramo
+## Límites actuales
 
 En la prueba física la respuesta llegó después del aviso de sesenta segundos.
 El aviso no cancela la importación: una respuesta tardía puede instalar y
@@ -122,11 +133,11 @@ retirada, otros relojes, background y retorno de resultados por esta vía. No
 presentar Descargar/Abrir como sincronización automática terminada ni exigir
 este puente para toda la fuerza.
 
-El único siguiente tramo es vinculación segura y descargas de instantáneas
-autorizadas por usuario/revisión, con caducidad, revocación y recuperación. No
-llevar tokens Garmin o credenciales administrativas al reloj ni sustituir el
-OAuth existente. La experiencia objetivo es vincular una vez y mantener sesiones
-al día con Actualizar como recuperación manual. Background/Mobile SDK requieren
-prueba específica; no prometer recepción inmediata ni sondeo permanente.
+La vinculación segura y entrega privada ya están implementadas y aceptadas;
+el siguiente ensayo es actualizar una revisión sin duplicar la lista vigente,
+comprobar la receta nueva y después retirada/revocación. La experiencia objetivo
+es vincular una vez y mantener sesiones al día con Actualizar como recuperación
+manual. Los avisos de 1.1 requieren instalación y prueba física; no prometer
+recepción inmediata, importación con la app cerrada ni sondeo permanente.
 
 Contrato y evidencia: `docs/DEVICE_GARMIN_TRAINING.md`, INT-016.
