@@ -1,6 +1,19 @@
 # EntrenaOP Beta · preparación de Connect IQ Store
 
-Estado del 27/10/2026: **Beta 1.4.0 registrada en la misma ficha privada**
+**Corrección 1.4.1 publicada en la misma beta privada (Internal: 3):** timeout
+-300 distinguido de denegación de acceso;
+reintento manual con autorización nueva y texto medido dentro de la pantalla
+circular. Treinta pruebas por variante, firma y revisión visual en simulador
+correctas. 43.644 bytes, SHA-256
+`33528244223d99307c28fa45ac5f39dad8facb841a159f438a2f4d99bb430f87`.
+La prueba de 1.4 recupera la consulta y Javier confirma Fuerza con contenido.
+Garmin verifica archivo/firma y confirma la instalación en el fēnix de 47 mm para
+la próxima sincronización, con los mismos permisos. Después Javier responde
+**TODO EN ORDEN** al comprobar Beta 1.4.1, textos completos y apertura de la
+sesión: instalación, presentación y apertura físicas aceptadas. Reintento ante
+otro timeout, cancelación y reapertura repetida no ensayados de nuevo en 1.4.1.
+
+Hito anterior del 27/10/2026: **Beta 1.4.0 registrada en la misma ficha privada**
 (Internal: 2), con firma Verified. Veinticinco pruebas por variante y firma IQ
 correctas. La llegada al reloj y apertura repetida de 1.4 están pendientes de
 aceptación física. Conserva UUID, clave, permisos, vinculación y ajustes de avisos.
@@ -21,7 +34,7 @@ Para instalarla desde Connect IQ en el reloj, usar esa misma cuenta Garmin.
 
 ## Identidad y compilación
 
-- Nombre: **EntrenaOP Beta**; versión **1.4.0**; idioma castellano.
+- Nombre: **EntrenaOP Beta**; versión **1.4.1**; idioma castellano.
 - UUID estable: `d38458cfe4d844fcae60b18c9e9d7cf3`.
 - Variante independiente de Dev; comparte código y endpoint exclusivamente Dev.
 - Perfil oficial `fenix847mm`; aceptación física hasta ahora en fēnix 8 de 47 mm.
@@ -90,9 +103,9 @@ consultas y descargas; los entrenamientos ya importados en la biblioteca de
 Garmin pueden permanecer allí. Esta beta no registra ni devuelve resultados de
 actividad a EntrenaOP y no sustituye la sincronización de calendario de Garmin.
 
-**Novedades 1.4.0:** Pantalla clara al abrir Fuerza, una sola solicitud nativa por
-autorización y descarte de respuestas tardías al salir. Los fallos de apertura
-tienen diagnóstico propio. Se mantienen la vinculación y la configuración de avisos.
+**Novedades 1.4.1:** Texto y botones ajustados a la pantalla circular. El timeout
+de conexión -300 se distingue del acceso denegado y permite reintentar manualmente,
+comprobando otra vez el permiso. Se mantienen la vinculación y los avisos de cambios.
 
 ## Envío privado y siguiente comprobación
 

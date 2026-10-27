@@ -1,5 +1,16 @@
 # EntrenaOP Connect IQ · Dev
 
+**Corrección 1.4.1 · 27/10/2026:** timeout -300 identificado como transporte;
+Javier recupera la sesión con Connect abierto y confirma que abre Fuerza con
+contenido. Publicada 1.4.1 en la misma beta privada (Internal: 3), con reintento
+manual y autorización nueva, mensajes
+medidos y partidos dentro del círculo. Treinta pruebas por variante y firma
+correctas; timeout revisado visualmente en el simulador oficial. Garmin confirma
+envío al fēnix y Javier responde **TODO EN ORDEN** al comprobar 1.4.1, textos
+completos y apertura: instalación, presentación y apertura físicas aceptadas.
+Reintento ante otro timeout, cancelación y reapertura repetida no ensayados de
+nuevo en esta versión.
+
 **Beta 1.4.0 · 27/10/2026 · INT-019:** actualización registrada en la misma ficha
 privada de Store (Internal: 2, firma Verified). La lista se sustituye por
 **Abriendo Fuerza**, con una autorización/un intento nativo, descarte de respuestas

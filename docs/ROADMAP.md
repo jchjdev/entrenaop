@@ -47,7 +47,14 @@ la vista de apertura, bloqueo de intent repetido, descarte tras salir y diagnós
 local, conservando permisos. Veinticinco pruebas por variante y firma correctas;
 Store registra 1.4.0 (Internal: 2) en la misma beta privada. **Siguiente paso de este
 recorrido:** aceptar físicamente actualización, apertura repetida y cancelación
-de 1.4 en el fēnix. Piloto 1.3 aceptado con esa incidencia; integración general abierta.
+de 1.4 en el fēnix. Javier confirma después recuperación de timeout -300 y
+apertura con contenido. Publicada 1.4.1 en la misma beta privada (Internal: 3),
+con reintento manual/autorización nueva
+y ajuste circular, 30 pruebas por variante y vista de timeout revisada en
+simulador. Javier confirma **TODO EN ORDEN** al comprobar instalación, textos y
+apertura de 1.4.1; aceptados físicamente. **Única comprobación siguiente del piloto:**
+cancelación y reapertura repetida de esta versión, incluyendo recuperación ante
+otro timeout si aparece. Piloto actualizado y operativo; integración general abierta.
 [Preparación y requisitos pendientes](../connect_iq/store/BETA.md).
 
 **INT-017 · 27/10/2026 · transporte privado aceptado en Dev:** diseño aprobado,

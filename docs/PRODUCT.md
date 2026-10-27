@@ -22,7 +22,12 @@ reiniciar el reloj recupera Fuerza y la repetición abre sin reiniciar. Javier
 activa avisos en Beta. La causa del fallo original sigue sin identificar. Beta
 1.4 muestra Abriendo Fuerza, evita solicitudes simultáneas y respuestas tras salir,
 y distingue errores de apertura; 25 pruebas por variante correctas y actualización
-privada 1.4.0 registrada en Store, con comprobación física todavía pendiente. Limpieza de
+privada 1.4.0 registrada en Store. Javier recupera un timeout de consulta y confirma
+apertura con contenido; 1.4.1 incorpora texto circular y reintento manual seguro,
+publicada en la misma beta privada,
+30 pruebas por variante y vista revisada en simulador. Javier confirma instalación
+1.4.1, textos y apertura correctos; reintento ante otro timeout, cancelación y
+reapertura repetida no ensayados de nuevo. Limpieza de
 copias nativas, distribución pública y automatización general siguen pendientes.
 Tras retirar la primera prueba
 y sincronizar, Javier confirma una única sesión de hoy en Garmin Connect y en

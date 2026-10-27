@@ -1249,3 +1249,49 @@ también BACK durante la espera y reapertura posterior, una sola sesión y ajust
 de avisos conservados. Si falla, leer Estado de apertura antes de otro intento.
 La aceptación física de 1.4 sigue pendiente; la causa exacta de la excepción 1.3
 no se recuperó y no se afirma un arreglo de firmware ni robustez general.
+
+### Timeout y texto circular · 1.4.1
+
+Durante la comprobación de 1.4 Javier comunica **Acceso no confirmado / Sin
+respuesta válida -300**, con líneas que no caben. `NETWORK_REQUEST_TIMED_OUT`
+es -300 en el SDK: petición agotada antes de recibir respuesta, no una
+denegación HTTP ni una excepción de `exitTo`. Con Garmin Connect abierto y una
+actualización vuelve a aparecer la sesión; Javier confirma después **sale todo**
+al abrir Fuerza. Quedan aceptados recuperación de la consulta y apertura con
+contenido en esa prueba, sin afirmar aún cancelación o repetición sin salto.
+[Constantes oficiales](https://developer.garmin.com/connect-iq/api-docs/Toybox/Communications.html).
+
+1.4.1 muestra **Sin respuesta / Tiempo de espera agotado / Abre Garmin Connect**.
+START reintenta manualmente con una pantalla y flujo nuevos: cualquier respuesta
+del intento anterior sigue descartada. Un error transitorio al abrir no retira
+la credencial ni altera el FIT; no se consulta contenido ni se envía intent sin
+otra autorización válida. Denegaciones, revocación y revisión inválida conservan
+su bloqueo y no pasan por esta recuperación. La pantalla principal también
+distingue el timeout de una respuesta de acceso. No se garantiza que abrir
+Connect elimine cualquier fallo de conectividad ni se fuerza una apertura offline.
+
+La vista principal y la de apertura miden cada línea con la fuente del SDK,
+parten por palabras y centran mensajes y acciones en un rectángulo interior del
+círculo (78 % × 60 % del diámetro; fuente de sistema como alternativa). START,
+BACK y MENU ocupan líneas separadas. Se comprueba visualmente la vista real de
+timeout en el simulador oficial fenix847mm con dueño sin red y datos ficticios;
+captura de pantalla 454×454 de 11.690 bytes conservada como
+[evidencia](audits/connect-iq-1.4.1-timeout.png). Ese arnés queda
+fuera del paquete de distribución y no usa credenciales ni cuentas.
+
+30 pruebas Monkey C correctas por variante; regresiones de timeout/respuesta
+tardía, autorización nueva, denegación, medición variable de texto, saltos entre
+botones y palabras largas. Compilación estricta y firma del SDK correctas.
+IQ 1.4.1: 43.644 bytes, SHA-256
+`33528244223d99307c28fa45ac5f39dad8facb841a159f438a2f4d99bb430f87`.
+No se cambia UUID, permisos, servidor ni FIT.
+Garmin verifica archivo/firma y publica **1.4.1 (Internal: 3)** en la misma ficha
+BETA, conservando visibilidad de la cuenta que la subió y los permisos anteriores.
+Confirma además instalación encolada para la próxima sincronización del fēnix de
+47 mm. Se solicita salir a la esfera, sincronizar desde Connect, confirmar
+**Beta 1.4.1**, comprobar que el texto cabe y abrir la sesión sin iniciar actividad.
+Javier responde **TODO EN ORDEN**: quedan aceptados instalación por Store,
+presentación y apertura físicas de 1.4.1. No se ha inducido un timeout nuevo para
+probar el reintento manual ni repetido cancelación/reapertura en esta versión;
+sus regresiones automáticas son correctas. No se acredita inmunidad a errores de
+red o firmware ni eliminación de copias nativas antiguas.

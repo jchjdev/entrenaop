@@ -17,6 +17,22 @@ pendiente: la excepción original de 1.3 no quedó identificada y no se atribuye
 firmware. Desarrollo y distribución pública mantienen sus límites de INT-018.
 [Contrato y validación](DEVICE_GARMIN_TRAINING.md#apertura-controlada--int-019--27102026).
 
+**Continuación INT-019 · 1.4.1:** en la comprobación de 1.4 Javier comunica
+«Acceso no confirmado / Sin respuesta válida -300» y texto recortado. El SDK
+define -300 como timeout, anterior al intent nativo. Con Connect abierto y un
+nuevo intento vuelve la sesión; Javier confirma después apertura y contenido
+completos («sale todo»). No acredita todavía cancelación ni reapertura repetida.
+Se publica 1.4.1 en la misma beta privada (Internal: 3): distingue transporte
+de denegación, ofrece reintento manual con
+pantalla/autorización nuevas y mide/parte líneas dentro del círculo. Se conserva
+la comprobación de permisos; un timeout nunca autoriza la copia local. Treinta
+pruebas por variante, firma IQ y pantalla de timeout en simulador correctas.
+Garmin confirma instalación encolada al fēnix para la próxima sincronización.
+Javier confirma **TODO EN ORDEN** a la comprobación de Beta 1.4.1, textos completos
+y apertura de la sesión: instalación, presentación y apertura físicas aceptadas.
+No se ha provocado otro timeout para ensayar el reintento manual ni repetido
+cancelación/reapertura en esta versión.
+
 **INT-018 · 27/10/2026 · distribución privada de Connect IQ:** Javier pide que
 la primera distribución sea visible solo para nosotros. Se prepara **EntrenaOP
 Beta 1.3.0**, con UUID propio y código compartido con Dev, manteniendo servidor

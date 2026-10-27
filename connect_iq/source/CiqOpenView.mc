@@ -11,6 +11,8 @@ class CiqOpenView extends WatchUi.View {
     private var _owner as CiqView;
     private var _flow as CiqOpenFlow;
     private var _fitName as String;
+    private var _entry as Dictionary;
+    private var _retry as Boolean=false;
     private var _active as Boolean=false;
     private var _launchTimer as Timer.Timer;
     private var _status as String="Abriendo Fuerza";
@@ -19,7 +21,7 @@ class CiqOpenView extends WatchUi.View {
     private var _stage as String="Permiso";
 
     function initialize(owner as CiqView,entry as Dictionary) {
-        View.initialize(); _owner=owner;
+        View.initialize(); _owner=owner; _entry=entry;
         _fitName=entry["fit_name"] as String;
         _flow=new CiqOpenFlow(entry["id"] as String,_fitName);
         _launchTimer=new Timer.Timer();
@@ -31,10 +33,10 @@ class CiqOpenView extends WatchUi.View {
             _launchTimer.start(method(:onSlow),60000,false);
             try { _owner.requestOpenPermission(method(:onPermission)); }
             catch(error) {
-                _owner.invalidateOpen("Sin conexión. No se abre");
-                showFailure("Sin conexión","Vuelve y actualiza", "Permiso", "Sin conexión");
+                showConnectionFailure(Communications.BLE_ERROR);
             }
         } else if (_flow.phase()==:handedOff || _flow.phase()==:cancelled) {
+            _retry=false;
             _status="Apertura interrumpida"; _detail="Vuelve a elegir la sesión";
             _hint="Se comprobará otra vez el permiso";
         }
@@ -44,17 +46,15 @@ class CiqOpenView extends WatchUi.View {
         _active=false; _launchTimer.stop(); _flow.cancel();
     }
     function onUpdate(dc as Graphics.Dc) as Void {
-        dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
-        var x=dc.getWidth()/2; var y=dc.getHeight()/2;
-        dc.drawText(x,y-85,Graphics.FONT_SMALL,_status,Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x,y-20,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x,y+25,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);
         var done=_flow.phase()==:failed || _flow.phase()==:cancelled;
-        dc.drawText(x,y+85,Graphics.FONT_XTINY,done?"START: volver / MENU: detalle":"BACK: cancelar",Graphics.TEXT_JUSTIFY_CENTER);
+        var action=_retry?"START: reintentar\nBACK: volver\nMENU: detalle":
+            (done?"START: volver\nMENU: detalle":"BACK: cancelar");
+        ciqDrawScreen(dc,[_status,_detail,_hint,action]);
     }
     function onPermission(code as Number,data as Communications.ContentType?) as Void {
         if (!_active || _flow.phase()!=:checking) { return; }
         _launchTimer.stop();
+        if (ciqConnectionCanRetry(code)) { showConnectionFailure(code); return; }
         if (code!=200 || !(data instanceof Dictionary)) {
             var detail=_owner.openPermissionFailure(code,data);
             showFailure("Acceso no confirmado",detail,"Permiso","HTTP "+code); return;
@@ -112,7 +112,12 @@ class CiqOpenView extends WatchUi.View {
     }
     private function showFailure(status as String,detail as String,stage as String,message as String) as Void {
         _flow.fail(); _launchTimer.stop(); record(stage,message);
-        _status=status; _detail=detail; _hint="La sesión guardada no se modifica";
+        _retry=false; _status=status; _detail=detail; _hint="Vuelve a elegir la sesión";
+        WatchUi.requestUpdate();
+    }
+    private function showConnectionFailure(code as Number) as Void {
+        showFailure("Sin respuesta",ciqConnectionMessage(code),"Conexión","Garmin "+code);
+        _retry=true; _hint="Abre Garmin Connect";
         WatchUi.requestUpdate();
     }
     function close() as Void {
@@ -120,6 +125,11 @@ class CiqOpenView extends WatchUi.View {
         WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
     }
     function select() as Void {
+        if (_retry && _active && _flow.phase()==:failed) {
+            // Pantalla nueva: una respuesta del intento anterior no autoriza el siguiente.
+            var next=new CiqOpenView(_owner,_entry);
+            WatchUi.switchToView(next,new CiqOpenDelegate(next),WatchUi.SLIDE_IMMEDIATE); return;
+        }
         if (_flow.phase()==:failed || _flow.phase()==:cancelled) { close(); }
     }
     function diagnostics() as Void {

@@ -36,15 +36,9 @@ class CiqView extends WatchUi.View {
         if (_credential==null) { beginPair(); } else if (_pairCode!=null) { checkPair(); } else { synchronize(); }
     }
     function onUpdate(dc as Graphics.Dc) as Void {
-        dc.setColor(Graphics.COLOR_WHITE,Graphics.COLOR_BLACK); dc.clear();
-        var x=dc.getWidth()/2; var y=dc.getHeight()/2;
         var title=(WatchUi.loadResource(Rez.Strings.AppName) as String)+" "+(WatchUi.loadResource(Rez.Strings.AppVersion) as String);
-        dc.drawText(x,y-100,Graphics.FONT_SMALL,title,Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x,y-45,Graphics.FONT_XTINY,_status,Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x,y-5,Graphics.FONT_XTINY,_detail,Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(x,y+40,Graphics.FONT_XTINY,_hint,Graphics.TEXT_JUSTIFY_CENTER);
         var action=_busy?"Espera o BACK para salir":(_pairCode!=null?"START: comprobar":(_verified?"START: sesiones":"START: actualizar"));
-        dc.drawText(x,y+90,Graphics.FONT_XTINY,action,Graphics.TEXT_JUSTIFY_CENTER);
+        ciqDrawScreen(dc,[title,_status,_detail,_hint,action]);
     }
     private function startWait(status as String) as Void {
         _busy=true; _status=status; _hint=""; _wait.start(method(:onSlow),60000,false); WatchUi.requestUpdate();
@@ -141,6 +135,9 @@ class CiqView extends WatchUi.View {
         } catch(error) { fail("No se pudo comprobar el FIT"); }
     }
     private function protocolFailure(code as Number,data as Communications.ContentType?) as Void {
+        if (ciqConnectionCanRetry(code)) {
+            fail(ciqConnectionMessage(code)); _status="Sin conexión"; _hint="Abre Garmin Connect"; return;
+        }
         var reason=null as String?;
         if (data instanceof Dictionary) { var value=data["code"]; if (value instanceof String) { reason=value; } }
         if (reason!=null && (reason.equals("link_revoked") || reason.equals("link_required") || reason.equals("pair_expired"))) {

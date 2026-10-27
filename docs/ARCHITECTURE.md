@@ -18,7 +18,12 @@ La causa no queda identificada. Beta 1.4 (INT-019) sustituye la lista por una
 vista de apertura con flujo de una autorización/un intento, descarta callbacks
 tras salir y separa errores nativos de actualización. Conserva revalidación en
 servidor, UUID y ajustes; 25 pruebas por variante y firma correctas, actualización
-privada 1.4.0 registrada en Store. Repetición física de apertura aún pendiente.
+privada 1.4.0 registrada en Store. Después de un timeout -300, Javier recupera
+consulta y apertura con contenido. 1.4.1 distingue transporte de denegación y
+reintenta con flujo/autorización nuevos; ajusta texto al círculo. Treinta pruebas
+por variante, firma y revisión visual correctas. Javier confirma **TODO EN ORDEN**
+al comprobar instalación 1.4.1, textos y apertura: aceptación física de esos pasos.
+Actualización registrada en Store como **1.4.1 (Internal: 3)** en la misma ficha BETA.
 [Distribución y límites](../connect_iq/store/BETA.md).
 
 **Connect IQ privado · 26/10/2026 · INT-017:** `garmin-ciq` separa JWT de la
