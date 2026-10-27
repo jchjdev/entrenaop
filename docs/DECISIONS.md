@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga
+preparar y entregar una APK del deportista con firma estable, notificaciones y
+entorno Dev. Se conserva el identificador Android, se separa el material privado
+de Git y se fija la huella pública para las actualizaciones. Las copias debug
+anteriores no admiten actualización directa con esta firma. Confirma que su
+compañero usa fēnix 7 Solar: se prioriza el circuito existente por Garmin Connect
+y se distingue del soporte/distribución Connect IQ todavía limitado al fēnix 8.
+No se concede Pro, no se modifica producción ni se publica en las tiendas.
+[Compilación, instalación y límites](ANDROID_BETA.md).
+
 **Piloto Trainer · 27/10/2026 · alta asistida y app del deportista:** Javier
 confirma que su compañero ya tiene una cuenta de entrenador activa y acceso al
 portal, tras completar los pasos manualmente durante una videollamada. Pide

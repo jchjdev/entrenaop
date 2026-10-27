@@ -57,6 +57,9 @@ administración no se guardan en el repositorio.
 
 ## Probar avisos push en Android Dev
 
+Para distribuir una APK con firma estable y notificaciones, seguir el
+[circuito de beta Android privada](docs/ANDROID_BETA.md).
+
 El proyecto Firebase `entrenaop-dev` usa solo Cloud Messaging, con Spark.
 La configuración pública del cliente está en `config/firebase_dev.json`;
 no contiene la clave privada del servidor. Para instalar la build de prueba:

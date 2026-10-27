@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**Beta Android privada · 27/10/2026 · APK preparada y verificada:** firma
+estable externa a Git, compilación release Dev con push y verificación de
+identidad/recursos, versión 1.0.0-beta.1+3. Análisis raíz limpio, 1.381 pruebas
+correctas con una omisión existente y nueve comprobaciones de firma. Acceso
+profesional, ficha propia y permiso Garmin del compañero
+comprobados en Dev sin modificar su cuenta. **Siguiente recorrido de este piloto:**
+instalar la APK → pautarse desde Para mí → ejecutar/consultar resultado → conectar
+Garmin y comprobar llegada al fēnix 7 Solar; avisos reales entre dos cuentas y
+recordatorios conservan su prueba propia. Connect IQ para ese reloj/distribución
+entre cuentas sigue fuera de la entrega Android; no se cierra la integración
+general ni se habilitan cobros/producción. [Circuito y límites](ANDROID_BETA.md).
+
 
 **TRN-030/031 · 27/10/2026 · calendario con eventos publicado en Dev:**
 mes con tiras de alumno/sesión, colores estables por alumno, estados accesibles,

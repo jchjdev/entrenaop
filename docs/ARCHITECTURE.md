@@ -1,5 +1,12 @@
 # Arquitectura de EntrenaOP
 
+**Beta Android privada · 27/10/2026:** las tareas release requieren firma
+privada explícita, sin fallback debug. El helper Windows compila con Firebase Dev,
+estampa identidad de fuentes y verifica certificado fijado, paquete, permisos y
+recursos nativos antes de preparar APK/manifiesto. Conserva el application ID y
+los contratos de cuenta/servidor; una instalación debug previa no admite esa
+actualización directa. [Circuito y custodia](ANDROID_BETA.md).
+
 **Connect IQ Beta · 27/10/2026 · INT-018:** variante de distribución privada con
 UUID independiente de Dev y servidor exclusivamente Dev. Comparte lógica y
 generador de fuerza; carrera mantiene Training API y su sincronización automática.

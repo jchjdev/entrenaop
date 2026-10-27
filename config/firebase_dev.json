@@ -1,5 +1,7 @@
 {
   "APP_ENV": "development",
+  "SUPABASE_URL": "https://sxbxfjqgoddzhtcyhalw.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_n6qWrY5f6dG_3fJpXwctZQ_Nlvu_x7Z",
   "PUSH_ENABLED": true,
   "PUSH_FIREBASE_PROJECT_ID": "entrenaop-dev",
   "PUSH_FIREBASE_SENDER_ID": "861343584982",

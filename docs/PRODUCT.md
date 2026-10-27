@@ -1,5 +1,11 @@
 # Producto EntrenaOP
 
+**Piloto Android privado · 27/10/2026:** Javier solicita una APK del deportista
+con firma estable y push Dev para un entrenador que también probará «Para mí»
+y Garmin con su fēnix 7 Solar. La entrega no activa cobros ni producción y exige
+aceptar físicamente instalación, avisos y recepción en ese reloj.
+[Alcance y preparación](ANDROID_BETA.md).
+
 **Connect IQ privado · 27/10/2026 · entrega y aviso aceptados en Dev:** vinculación
 con código y confirmación de cuenta en Perfil → Garmin, credencial revocable de
 90 días y sesiones compatibles de fuerza entre ayer y los próximos 14 días.
