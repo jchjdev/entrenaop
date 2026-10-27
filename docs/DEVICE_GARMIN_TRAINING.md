@@ -1553,3 +1553,17 @@ al salir · cada 15 min** completos. Se usa una vista sintética aislada en
 `.dart_tool/ciq-dev/preview16`, con UUID ajeno a Beta/Dev, sin consultas de red
 ni descargas FIT. Esa revisión visual no acredita transporte ni aceptación
 física. El paquete Store conserva el SHA-256 registrado arriba.
+
+La lectura propia a las **22:50:42 UTC** acredita una exportación nueva creada
+a las **22:50:06.452 UTC**, id `2f0d4fa6-b13b-43e3-abba-5cb96333b77f`, serial
+**1000000155**, alias **EOP1000000155**, título **Prueba Garmin · Automática 1**.
+La última consulta del vínculo es 22:50:07.383 UTC. Una lectura acotada de logs
+de esa ruta y ventana confirma **un GET FIT 200 a las 22:50:07 UTC**, 120 ms de
+servidor. El PC no ha pedido manifiesto ni FIT y la vista del simulador no usa
+red: se acredita la consulta/entrega del primer ciclo automático de la beta
+instalada, sin aviso ni apertura según la preparación confirmada por Javier.
+
+Se solicita buscar primero el alias 155 desde Fuerza nativa, con 3×5 a 20 kg y
+descanso de 0:30, sin abrir EntrenaOP ni iniciar actividad. Importación física
+y reconocimiento posterior todavía pendientes de respuesta. La respuesta HTTP
+no se presenta como comprobación de instalación.

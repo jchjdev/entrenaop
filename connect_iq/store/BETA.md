@@ -20,6 +20,9 @@ sesión Trainer caducó antes de aplicar la muestra y se solicita volver a entra
 Después de volver a entrar se aplica **Automática 1** sobre la misma cita,
 3×5 a 20 kg y descansos de 0:30, a las 22:41:38 UTC. App cerrada y sin modo de
 ensayo; pendiente comprobar el nuevo ciclo de descarga y su reconocimiento.
+El primer ciclo crea el alias EOP1000000155 y registra GET FIT 200 a las
+22:50:07 UTC, sin petición de FIT/manifiesto desde el PC. Se espera comprobación
+en Fuerza antes de abrir EntrenaOP; importación y reconocimiento aún pendientes.
 [Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga

@@ -26,6 +26,10 @@ Automática 1**, con press banca 3×5 a 20 kg y descansos de 0:30, a las 22:41:3
 UTC. App cerrada desde la confirmación de 1.6; el PC no solicita manifiesto ni
 FIT. La primera lectura posterior conserva exportación 144 y última consulta
 anterior al cambio. Se espera el ciclo automático antes de verificar el reloj.
+El ciclo crea la exportación 155 a las 22:50:06 UTC y la traza propia confirma
+un GET FIT 200 a las 22:50:07, sin petición de FIT/manifiesto desde el PC.
+Se pide revisar primero EOP1000000155 en Fuerza: importación y reconocimiento
+de esta descarga automática siguen pendientes; HTTP 200 no los acredita.
 [Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga

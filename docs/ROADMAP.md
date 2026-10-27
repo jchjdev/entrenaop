@@ -10,7 +10,9 @@ una sesión y app cerrada. Tras recuperar su acceso a Trainer se aplica
 **Automática 1** (3×5 a 20 kg, descanso 0:30) a las 22:41:38 UTC sobre la misma cita.
 **Único siguiente recorrido CIQ:** contrastar la descarga nativa con app cerrada,
 su reconocimiento posterior sin volver a descargar y otro cambio sin duplicados
-en la lista. Se espera el primer ciclo; el PC no abre FIT. Recuperación con móvil
+en la lista. Primer ciclo: exportación 155 y GET FIT 200 a las 22:50:07 UTC,
+sin petición de FIT/manifiesto desde el PC. Importación y reconocimiento aún
+pendientes de respuesta física. Recuperación con móvil
 desconectado y denegación también pendientes. Las copias nativas antiguas no se
 eliminan. Instalación y lista inicial no acreditan estos pasos.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
