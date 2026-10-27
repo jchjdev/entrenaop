@@ -3,7 +3,8 @@
 La versión preparada es **EntrenaOP Dev 1.3**, con el filtro incorrecto de primer
 plano retirado y consultas programadas al salir de la app. Compilación estricta
 sin avisos y dieciséis regresiones Monkey C correctas. Paquete 1.3 copiado y releído
-por USB con hash idéntico; inicio y aviso corregido físicos pendientes. Conserva
+por USB con hash idéntico; Javier confirma inicio, sincronización y consulta/avisos
+activados antes de salir a la esfera. Aviso corregido físico pendiente. Conserva
 **MENU → Estado de avisos**. El paquete 1.2 se copió y releyó por
 USB el 27/10 con hash idéntico al compilado. Javier confirma inicio en 1.2,
 sincronización terminada y salida a la esfera. Diagnóstico/aviso físicos pendientes;

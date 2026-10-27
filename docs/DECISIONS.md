@@ -60,8 +60,11 @@ aviso en ese contexto y se retira como detector de primer plano. En 1.3 se sigue
 BackgroundTimer del SDK: suspender el evento al abrir y programar cada 15 min al
 salir, solo con consulta activada y vínculo válido sin código pendiente; la instancia
 de fondo no reprograma al terminar. Compilación y dieciséis pruebas correctas;
-PRG 1.3 copiado/releído por USB con hash idéntico al compilado. Inicio y aceptación
-del diálogo corregido pendientes; comprobar consulta/avisos activados antes de salir.
+PRG 1.3 copiado/releído por USB con hash idéntico al compilado. Javier confirma
+inicio, sincronización y consulta/avisos activados antes de salir a la esfera.
+Se prepara una revisión nueva (9) de «CIQ prueba 2 - aviso final», nombre y dosis
+conservados; manifiesto completo de una entrada con identidad distinta de la
+instalada y `sent` con los mismos IDs Garmin. Aceptación del diálogo corregido pendiente.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

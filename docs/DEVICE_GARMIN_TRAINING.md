@@ -1011,3 +1011,18 @@ idéntico al paquete compilado y validado. Mismo identificador y clave; no se
 alteran otras apps ni se extraen credenciales. Pendientes inicio físico, revisión
 de consulta/avisos activados y salida a la esfera antes de cambiar otra vez el
 título de la misma cita para comprobar el diálogo con el filtro corregido.
+
+Javier responde **listo** al recorrido de inicio 1.3, sincronización terminada,
+consulta/avisos activados y salida a la esfera. Las dos adaptaciones desde Trainer
+registran revisiones 8 y 9, pero conservan el título **CIQ prueba 2 - aviso final**;
+no se da por aplicado el nombre introducido en el control del editor. Se evita
+seguir retocando la cita: el manifiesto real con ROLLBACK ya acredita una identidad
+nueva respecto de la exportación instalada 94, con una sola entrada y cero bloqueadas.
+Esa revisión distinta permite probar el aviso aunque el nombre se conserve.
+
+Dev confirma revisión 9, `sent`, mismos IDs de calendario/entrenamiento y tres
+series de seis repeticiones a 22,5 kg con 75 s. Se mantienen app cerrada e iPhone
+conectado hasta la consulta programada al salir; se pide aceptar el diálogo si llega
+y, si no aparece hacia las 17:06 Europe/Madrid, leer Último estado, HTTP y Hace.
+El nuevo diálogo sigue pendiente de aceptación física; no se afirma corrección
+completa del recorrido por la compilación o por el manifiesto de servidor.

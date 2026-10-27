@@ -44,7 +44,10 @@ estando en la esfera: localizado el filtro incorrecto `isActive()`. Versión 1.3
 preparada: suspende evento al abrir y programa cada 15 min al salir, con consulta
 activada y vínculo sin código pendiente, según BackgroundTimer del SDK. Compilación
 limpia y 16 pruebas Monkey C correctas; paquete 1.3 copiado/releído por USB con hash
-idéntico. Inicio y aviso físico corregido pendientes.
+idéntico. Javier confirma inicio 1.3, sincronización y consulta/avisos activados
+antes de salir. Ensayo con revisión 9 de la misma «CIQ prueba 2 - aviso final»,
+nombre y dosis conservados, manifiesto completo con identidad nueva y mismos IDs
+Garmin. Aviso físico corregido pendiente.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
