@@ -1472,6 +1472,19 @@ un estado propio pendiente antes del MFA del panel; el correo se confirma por
 Supabase y la recuperación conserva MFA e identidad. No se elige una pasarela.
 [Contrato, configuración y evidencia](TRAINER_WEB_ACCOUNT_2026_10_27.md).
 
+## COST-003 · Escenarios de mantenimiento y un mes de IA de vídeo · 27/10/2026
+
+Javier pide presupuestar el mantenimiento completo de EntrenaOP, su crecimiento
+con preparadores/alumnos y al menos un mes de IA generativa para producir vídeos,
+para estudiar cuánto cobrar. Se entregan escenarios calculados y hoja editable,
+separando tarifas públicas, provisiones, consumo, comisiones por canal, trabajo
+de soporte/mantenimiento y gastos todavía sin importe. Se reserva como hipótesis
+100 EUR para un mes de vídeo, sin contratar ni renovar automáticamente. Los
+precios profesionales propuestos son materia de estudio, no tarifas aprobadas.
+No se cambian planes, pagos, cuotas comerciales ni producción. Facturas y datos
+privados permanecen fuera del repositorio público.
+[Supuestos, resultados y límites](COST_CONTROL.md#escenarios-de-mantenimiento-y-producción-de-vídeos--cost-003--27102026).
+
 ## COST-002 · Presupuesto conjunto antes de elegir cobros web · 27/10/2026
 
 Javier plantea el registro y la contratación autónoma del entrenador en web,
