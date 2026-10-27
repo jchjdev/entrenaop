@@ -881,3 +881,10 @@ La relectura MTP confirma **124.556 bytes**, SHA-256
 idéntico al paquete 1.1.0 compilado. No se alteran otros archivos del reloj ni se
 extraen credenciales. Queda copiada y verificada la actualización; Javier debe
 desconectar USB y confirmar inicio en 1.1, OP, receta actualizada y avisos.
+
+Tras desconectar, Javier confirma que aparece 1.1 y el icono OP naranja. Señala
+que el entrenamiento nativo sigue mostrando un nombre `EOP…`: corresponde al alias
+corto definido en `ciq-private-2`, mientras la lista de EntrenaOP conserva el
+título de la cita. No se toma el identificador comunicado de memoria como prueba
+de su serial exacto ni de la dosis. Quedan pendientes la confirmación de 3×6 a
+22,5 kg con 1:15, repetir sin duplicar y los avisos físicos.

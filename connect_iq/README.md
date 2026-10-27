@@ -3,7 +3,8 @@
 La versión preparada es **EntrenaOP Dev 1.1**, con la OP oficial como icono y
 avisos opcionales de cambios. Compilación estricta sin avisos y diez regresiones
 Monkey C correctas. El paquete 1.1 se ha copiado y releído por USB el 27/10;
-inicio, icono y avisos físicos siguen pendientes. La vinculación y descarga
+Javier confirma inicio en 1.1 y la OP naranja. Los avisos físicos siguen pendientes.
+La vinculación y descarga
 privada de **1.0** están aceptadas el 27/10.
 El transporte sintético 0.2 descrito más abajo también está aceptado.
 

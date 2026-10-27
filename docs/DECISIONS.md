@@ -31,8 +31,9 @@ añade la OP oficial y avisos opcionales de cambios (apagados inicialmente): con
 cada 15 minutos, un diálogo por huella nueva y descarga en primer plano al aceptar.
 No se declara importación automática con la app cerrada ni limpieza de FIT antiguos.
 Después Javier conecta el reloj y se copia/relee el PRG 1.1 con bytes y SHA-256
-idénticos al compilado; inicio, icono, avisos y receta nueva aún requieren su
-confirmación física.
+idénticos al compilado. Javier confirma después inicio en 1.1 y la OP naranja;
+comunica el alias EOP dentro de Fuerza. Dosis nueva, repetición y avisos físicos
+siguen pendientes: el alias corto no acredita por sí solo esos recorridos.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

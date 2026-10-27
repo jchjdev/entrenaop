@@ -22,7 +22,8 @@ título «CIQ prueba 2 - actualizada», con recibo `sent` y los mismos IDs Garmi
 Servidor rechaza la exportación vieja y conserva una entrada al repetir manifiesto;
 Javier aún debe confirmar receta nueva y repetición física. PRG 1.1 preparado con
 OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monkey C;
-PRG copiado/releído por USB con hash idéntico; inicio, OP y avisos físicos pendientes.
+PRG copiado/releído por USB con hash idéntico; Javier confirma inicio en 1.1 y OP
+naranja. Dosis nueva, repetición y avisos físicos siguen pendientes.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
