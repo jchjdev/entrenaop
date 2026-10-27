@@ -82,3 +82,77 @@ medir y acordar alumnos activos, ejercicios/planes privados, tamaño por archivo
 almacenamiento total y transferencia. Las invitaciones no ocupan plaza.
 Precios, tramos, excesos y política de reducción siguen pendientes. No se
 contrata infraestructura ni se introducen cobros en el bloque de acceso/clientes.
+
+
+## Presupuesto transversal y contratación web · revisión del 27/10/2026
+
+Javier pide entender el coste conjunto de los proveedores antes de incorporar
+la contratación del entrenador. Stripe es una propuesta, no una elección
+confirmada ni una cuenta configurada. Crear cuentas web con Supabase no requiere
+contratar una pasarela. La primera carencia comprobada es que Trainer ofrece
+solo inicio de sesión y remite al móvil para registro y recuperación.
+
+El recorrido objetivo es registro web → confirmación de correo → contratación
+o concesión manual vigente → MFA → panel. La cuenta EntrenaOP es única para web
+y deportista. Crear cuenta no concede acceso profesional, Pro ni permisos ADMIN.
+El control del cupo y de los pagos continuará en servidor. La implementación del
+registro, los retornos web y la recuperación todavía está pendiente: la revisión
+no los presenta como disponibles. Los precios profesionales y el proveedor de
+cobros siguen abiertos; el criterio de no activar cobros reales se conserva.
+
+### Inventario y tarifas públicas de referencia
+
+Tarifas comprobadas el 27/10/2026; no equivalen al plan contratado, su consumo ni
+una factura. No se guardan importes personales ni credenciales en este repositorio.
+
+| Concepto | Uso comprobado o previsto | Referencia de coste |
+| --- | --- | --- |
+| Hostinger y dominio | Web, ADMIN y Trainer publicados; SMTP propio de acceso | Pendiente incorporar renovaciones y servicios incluidos de las facturas, fuera del repositorio público. Publicar código no equivale a contratar otra suscripción. |
+| Supabase | Auth, datos, permisos y funciones; las tres aplicaciones consultan el mismo Dev | Free existe; Pro desde 25 USD/mes, primer proyecto básico cubierto. Proyectos adicionales en una organización de pago desde unos 10 USD/mes por proyecto. Consumo y complementos pueden aumentar la cifra. |
+| Bunny Stream | Demostraciones y técnica privadas, además del catálogo | Mínimo de cuenta publicado de 1 USD/mes; almacenamiento y transferencia según consumo, configuración y regiones. La referencia de entrada es desde 0,01 USD/GB de almacenamiento y 0,005 USD/GB de transferencia; no atribuirla a todas las regiones/configuraciones. |
+| Firebase FCM | Transporte de avisos; no usamos Firebase como segunda base de datos de EntrenaOP | Cloud Messaging sin coste en la tarifa publicada. Esto no afirma que todos los demás productos de Firebase/Google Cloud sean gratuitos. |
+| RevenueCat | Integración existente de compras Pro de la app | Gratis por debajo de 2.500 USD/mes de ingresos registrados; al alcanzar ese umbral, 1 % del total registrado antes de comisiones e impuestos. No sustituye comisiones de tiendas. |
+| Apple Developer | Distribución y capacidades Apple; renovación aplazada por Javier | Referencia de 99 USD/año, con importe local según región. No es una cuota por alumno. |
+| Google Play | Publicación Android, pendiente de cuenta de distribución | Referencia de 25 USD de registro único. Las comisiones comerciales son un concepto separado. |
+| Stripe Payments/Billing | Propuesta para entrenador → EntrenaOP por web | Tarjeta estándar EEE: Payments 1,5 % + 0,25 EUR; Billing de pago por consumo, si se elige, 0,7 % adicional del volumen. No es la tarifa de todos los métodos de pago ni incluye otros productos. |
+
+### Modelo de presupuesto
+
+Mantener por separado:
+
+1. Coste fijo mensual: renovaciones prorrateadas + base de Supabase/proyectos +
+   otros servicios contratados que realmente lo requieran.
+2. Consumo variable: vídeos almacenados/reproducidos, transferencia, servidor y
+   excesos de cuota. Medir el consumo de Dev y estimar producción por separado.
+3. Coste de cobro: comisiones del proveedor por tipo de pago y producto usado;
+   no sumar indiscriminadamente Stripe, RevenueCat y tiendas a cada operación.
+4. Distribución anual/única y herramientas de desarrollo, separadas del coste de
+   operar el servicio para alumnos.
+
+Ejemplo exclusivamente ilustrativo: para una mensualidad profesional de 30 EUR
+cobrada con tarjeta estándar EEE, Payments serían 0,70 EUR y Billing 0,21 EUR,
+si se usan ambos productos: 0,91 EUR por cobro bajo esas tarifas. Veinte cobros
+iguales darían 600 EUR brutos y 18,20 EUR por esos dos conceptos. No son precios
+aprobados de EntrenaOP, beneficio neto ni una estimación de impuestos: faltan
+infraestructura, uso y demás costes aplicables.
+
+No existe todavía un total mensual real consolidado. Faltan las renovaciones
+vigentes, plan y cargos efectivos por organización, saldo/consumo/configuración
+de Bunny y la futura combinación de Dev/producción. Preparar escenarios de
+5, 20 y 100 preparadores requiere fijar alumnos activos medios, almacenamiento,
+reproducciones y precios. No tratar los límites técnicos reservados de vídeo
+como GB reales facturados ni la cuota de alumnos como coste directo por alumno.
+
+El circuito alumno → preparador se presupuestará aparte: procesar y repartir
+fondos a terceros puede requerir otro producto y otras comisiones. No atribuirle
+las tarifas de cobrar directamente una suscripción propia.
+
+Fuentes oficiales contrastadas:
+
+- [Supabase](https://supabase.com/pricing) y [proyectos adicionales](https://supabase.com/docs/guides/platform/billing-faq).
+- [Bunny Stream](https://bunny.net/pricing/stream/).
+- [Firebase](https://firebase.google.com/pricing).
+- [RevenueCat](https://www.revenuecat.com/pricing).
+- [Apple Developer](https://developer.apple.com/programs/enroll/).
+- [Google Play](https://support.google.com/googleplay/android-developer/answer/6112435).
+- [Stripe Payments](https://stripe.com/es/pricing) y [Stripe Billing](https://stripe.com/es/billing/pricing).

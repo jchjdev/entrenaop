@@ -1411,6 +1411,18 @@ UI-010 y las comparativas nuevas como pendiente. El siguiente bloque UX es
 Biblioteca: vídeo y gestión de ejercicios propios. Detalle e imágenes del código
 actual en `docs/REFRESH_EVOLUTION_2026_10_07.md`.
 
+## COST-002 · Presupuesto conjunto antes de elegir cobros web · 27/10/2026
+
+Javier plantea el registro y la contratación autónoma del entrenador en web,
+después de tener que crear una cuenta desde su móvil. Al proponer Stripe en
+pruebas, pide explicar el proveedor y calcular el conjunto de gastos. Stripe no
+queda elegido. Se registra inventario, tarifas públicas y modelo de costes;
+registro/recuperación web siguen pendientes y pueden aprovechar Supabase sin
+una pasarela. Crear cuenta no concede derechos profesionales. Precios, total
+real de explotación y procesador de cobros necesitan concretarse con las
+facturas y el consumo, sin contratar ni activar servicios en esta revisión.
+[Presupuesto y límites](COST_CONTROL.md#presupuesto-transversal-y-contratación-web--revisión-del-27102026).
+
 ## Regla para nuevas decisiones
 
 Una entrada debe ser concreta y comprobable. Si todavía faltan datos, se
