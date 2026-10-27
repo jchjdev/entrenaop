@@ -1,5 +1,42 @@
 # Desarrollo iOS en macOS
 
+## Probar Trainer y el chat actualizado · 27/10/2026
+
+Las fuentes de `main` incluyen el refresco del chat del deportista cada 15
+segundos, conservando borrador e historial cargado, con pausa en segundo plano.
+Se verifica el adaptador móvil y el flujo de preparación; la compilación,
+firma e instalación física quedan a cargo de Javier.
+
+Después de Fetch/Pull en GitHub Desktop, desde la raíz del proyecto del Mac:
+
+```sh
+bash tools/prepare_iphone_dev.sh
+```
+
+En el workspace abierto, usar **Runner iPhone**, el iPhone físico y **Cmd+R**.
+El script resuelve las dependencias bloqueadas y prepara Release con Dev y la
+revisión Git. No basta con abrir un proyecto cuyo Generated.xcconfig todavía
+identifique una preparación anterior. Perfil → Versión de la app permite
+comprobar revisión y entorno del ejecutable instalado.
+
+Prueba corta con tu cuenta vinculada o un alumno de ensayo:
+
+1. Abrir Preparador → conversación del preparador elegido. Dejar texto sin
+   enviar y contestar desde Trainer: la respuesta debe aparecer en unos 15
+   segundos, conservando ese borrador.
+2. Mandar una respuesta desde el iPhone: en Trainer deben actualizarse campana y
+   globo del alumno en unos 30 segundos. Abrir el globo y comprobar la etapa y la
+   desaparición del aviso tras cargar el mensaje.
+3. Pasar la app a segundo plano y volver: se consulta la conversación al volver.
+   Cambiar de preparador no debe mezclar sus mensajes.
+4. Desde Trainer, asignar/mover/retirar una sesión pendiente y comprobar su estado
+   en la agenda del deportista, sin alterar resultados anteriores.
+
+Esto prueba el chat con la app abierta y su reanudación. Los push reales de iOS
+siguen pendientes de Apple Developer/APNs; no se solicitan esos pagos ni se
+acreditan notificaciones con la app cerrada en esta entrega.
+
+
 ## Instalar la versión actual con Garmin · 22/10/2026
 
 En GitHub Desktop del Mac, seleccionar `main`, hacer **Fetch origin → Pull

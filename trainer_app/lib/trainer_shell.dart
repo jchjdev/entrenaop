@@ -1,3 +1,5 @@
+import 'trainer_message_inbox_scope.dart';
+
 import 'dart:async';
 
 import 'package:trainer_access/trainer_messages.dart';
@@ -181,8 +183,10 @@ class _TrainerShellState extends State<TrainerShell>
   static const compactDestinations = [0, 1, 3, 4];
 
   @override
-  Widget build(BuildContext context) =>
-      ProfessionalToolsWorkspace(child: Builder(builder: _buildShell));
+  Widget build(BuildContext context) => TrainerMessageInboxScope(
+    inbox: _inbox,
+    child: ProfessionalToolsWorkspace(child: Builder(builder: _buildShell)),
+  );
 
   Widget _buildShell(BuildContext context) {
     final index = destinations.indexWhere((d) => location.startsWith(d.$1));

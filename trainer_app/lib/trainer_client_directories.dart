@@ -1,3 +1,5 @@
+import 'trainer_message_inbox_scope.dart';
+
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:go_router/go_router.dart';
@@ -188,12 +190,33 @@ class _TrainerClientDirectoryPageState
                       ? 'Conversación activa'
                       : 'Historial de conversación',
                 ),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: widget.reports
+                    ? const Icon(Icons.chevron_right)
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TrainerClientMessageBadge(
+                            clientId: client.personId,
+                            enabled: !_busy,
+                          ),
+                          const Icon(Icons.chevron_right),
+                        ],
+                      ),
                 onTap: _busy
                     ? null
-                    : () => context.go(
-                        '/clients/${client.personId}${widget.reports ? '?area=progress' : '/conversation'}',
-                      ),
+                    : () {
+                        final pending = widget.reports
+                            ? null
+                            : TrainerMessageInboxScope.client(
+                                context,
+                                client.personId,
+                              );
+                        context.go(
+                          pending != null && pending.unreadCount > 0
+                              ? '/conversations/${pending.relationId}'
+                              : '/clients/${client.personId}${widget.reports ? '?area=progress' : '/conversation'}',
+                        );
+                      },
               ),
           ],
         ),

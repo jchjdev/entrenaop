@@ -143,10 +143,17 @@ class TrainerMessageInbox {
   const TrainerMessageInbox({
     required this.totalUnread,
     required this.conversations,
+    this.clients = const {},
   });
   factory TrainerMessageInbox.fromJson(Map<String, dynamic> json) =>
       TrainerMessageInbox(
         totalUnread: (json['total_unread'] as num).toInt(),
+        clients: {
+          for (final entry in (json['clients'] as Map? ?? const {}).entries)
+            entry.key as String: TrainerClientMessageSummary.fromJson(
+              Map<String, dynamic>.from(entry.value as Map),
+            ),
+        },
         conversations: (json['conversations'] as List)
             .map(
               (row) => TrainerUnreadConversation.fromJson(
@@ -157,6 +164,21 @@ class TrainerMessageInbox {
       );
   final int totalUnread;
   final List<TrainerUnreadConversation> conversations;
+  final Map<String, TrainerClientMessageSummary> clients;
+}
+
+class TrainerClientMessageSummary {
+  const TrainerClientMessageSummary({
+    required this.unreadCount,
+    required this.relationId,
+  });
+  factory TrainerClientMessageSummary.fromJson(Map<String, dynamic> json) =>
+      TrainerClientMessageSummary(
+        unreadCount: (json['unread_count'] as num).toInt(),
+        relationId: json['relation_id'] as String,
+      );
+  final int unreadCount;
+  final String relationId;
 }
 
 class TrainerUnreadConversation {

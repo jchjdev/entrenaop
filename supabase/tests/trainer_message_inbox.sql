@@ -3,7 +3,7 @@ set local statement_timeout='30s';
 do $$
 declare
  t uuid:=gen_random_uuid(); p uuid:=gen_random_uuid(); other uuid:=gen_random_uuid();
- r uuid:=gen_random_uuid(); r2 uuid:=gen_random_uuid(); foreign_message uuid:=gen_random_uuid(); m1 uuid:=gen_random_uuid(); m2 uuid:=gen_random_uuid(); mine uuid:=gen_random_uuid(); result jsonb;
+ r uuid:=gen_random_uuid(); r2 uuid:=gen_random_uuid(); foreign_message uuid:=gen_random_uuid(); m1 uuid:=gen_random_uuid(); m2 uuid:=gen_random_uuid(); mine uuid:=gen_random_uuid(); result jsonb; extra_relation uuid; i integer;
 begin
  insert into auth.users(id,email) values(t,t||'@inbox.invalid'),(p,p||'@inbox.invalid'),(other,other||'@inbox.invalid');
  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values
@@ -50,6 +50,24 @@ begin
  if (public.get_trainer_message_inbox(t)->>'total_unread')::int<>1 then raise exception 'Baja pierde avisos'; end if;
  perform public.read_trainer_messages(t,array[m2]);
  if (public.get_trainer_message_inbox(t)->>'total_unread')::int<>0 then raise exception 'No lee histórico'; end if;
+ reset role;
+
+ -- Más de 50 etapas: el contador de la tarjeta sigue siendo completo.
+ for i in 1..55 loop
+  extra_relation:=gen_random_uuid();
+  insert into public.trainer_client_relations(id,trainer_id,client_id,accepted_at,ended_at,ended_by)
+   values(extra_relation,t,p,now()-interval '2 days',now()-interval '1 day',t);
+  insert into trainer_private.messages(id,relation_id,sender_id,body,created_at)
+   values(gen_random_uuid(),extra_relation,p,'Etapa anterior',now()-i*interval '1 minute');
+ end loop;
+ set local role authenticated;
+ result:=public.get_trainer_message_inbox(t);
+ if (result->>'total_unread')::int<>55 or jsonb_array_length(result->'conversations')<>50
+  or (result->'clients'->p::text->>'unread_count')::int<>55
+  or (select count(*) from jsonb_object_keys(result->'clients'))<>1 then raise exception 'Contador por alumno truncado o ajeno'; end if;
+ if not exists(select 1 from jsonb_array_elements(result->'conversations') entry
+  where entry->>'relation_id'=result->'clients'->p::text->>'relation_id') then
+  raise exception 'La tarjeta no abre la etapa pendiente más reciente'; end if;
  reset role;
 end $$;
 rollback;

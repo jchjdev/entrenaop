@@ -248,6 +248,16 @@ contraseña. Activación y primera transferencia verificadas por HTTPS el
 destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
+**TRN-034 · ampliación del 27/10/2026 · mensajes en cada alumno e iPhone:**
+Javier confirma los avisos globales y pide globos en las tarjetas de alumnos y
+conversaciones, con acceso al chat pendiente del alumno. Se reutiliza una sola
+consulta del portal; el recuento por alumno incluye sus etapas anteriores y no
+queda limitado por las 50 etapas de la bandeja. Pide además dejar preparadas las
+fuentes móviles para probar el refresco y los cambios existentes en el iPhone;
+la actualización del Mac y ejecución de Xcode las realiza Javier. No adelanta
+los push de iOS ni los pagos aplazados de Apple.
+[Contrato](TRAINER_MESSAGES_2026_10_27.md), [prueba en iPhone](IOS_DEVELOPMENT.md#probar-trainer-y-el-chat-actualizado--27102026).
+
 **TRN-031/034 · 27/10/2026 · retirada en agenda y avisos del preparador:**
 Javier pide retirar sesiones desde el calendario, un indicador de mensajes de
 alumnos y refresco periódico de conversaciones. Se reutiliza la cancelación

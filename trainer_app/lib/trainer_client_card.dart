@@ -1,3 +1,5 @@
+import 'trainer_message_inbox_scope.dart';
+
 import 'package:flutter/material.dart';
 import 'package:trainer_access/trainer_access.dart';
 
@@ -50,6 +52,11 @@ class TrainerClientCard extends StatelessWidget {
                       style: theme.textTheme.titleMedium,
                     ),
                   ),
+                  if (!techniqueMode)
+                    TrainerClientMessageBadge(
+                      clientId: client.personId,
+                      enabled: !busy,
+                    ),
                   if (!techniqueMode)
                     PopupMenuButton<TrainerClientAction>(
                       tooltip: 'Opciones de ${client.name}',

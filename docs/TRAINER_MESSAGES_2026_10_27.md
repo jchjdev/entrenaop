@@ -80,3 +80,40 @@ HTTPS corresponden a development y `sxbxfjqgoddzhtcyhalw`; los verificadores de
 cada portal comprueban identidad, revisión, entrada, SHA-256 y cabeceras. La app
 del deportista está preparada en fuentes; esta publicación web no acredita una
 nueva instalación móvil ni la prueba humana de conversación entre dispositivos.
+
+
+## Globos por alumno y preparación de iPhone · ampliación del 27/10/2026
+
+Javier confirma el contador global y pide también un globo en cada alumno.
+Las tarjetas de Conversaciones y Alumnos comparten el mismo resumen consultado
+por TrainerShell, mediante `TrainerMessageInboxScope`. No arrancan temporizadores
+ni consultas por tarjeta. El globo desaparece con cero pendientes, se actualiza
+con la lectura y abre la etapa pendiente más reciente, aunque sea histórica.
+La tarjeta de Conversaciones abre también esa etapa cuando tiene mensajes.
+La ficha de Alumnos conserva su acceso habitual; su globo abre el chat aparte.
+
+La migración `20261027183209` añade al JSON autorizado un resumen completo por
+alumno: contador acumulado de todas sus etapas y UUID de la más reciente con
+pendientes. Conserva firma, identidad esperada, MFA y grants. No cambia tablas,
+recibos ni mensajes. Las cincuenta etapas máximas de la bandeja global no
+recortan el contador por alumno. El contrato transaccional añade 55 etapas del
+mismo alumno y comprueba ambas proyecciones y el acceso correcto.
+
+La app del deportista ya contiene el refresco optativo a 15 segundos y clave
+por relación. Dos regresiones sobre su pantalla real verifican borrador,
+respuestas automáticas, pausa/reanudación y separación de preparadores. El flujo
+`tools/prepare_iphone_dev.sh` y su ensayo sin firma conservan Release Dev,
+metadatos de revisión, lockfile y esquema Runner iPhone. Javier actualiza el
+Mac, compila e instala con Xcode; esta tarea no modifica firma ni configura
+APNs/Apple Developer. Los push reales de iPhone siguen aplazados.
+
+
+Validación de la ampliación: análisis global, Trainer y ADMIN sin incidencias;
+raíz 1.381 pruebas correctas y una omisión previa, Trainer 269, ADMIN 316 y dos
+omisiones previas, y `trainer_access` 22. Cinco nuevas regresiones verifican los
+globos en Alumnos/Conversaciones a 360 y 1.500 px, su actualización sin reconsultar
+cada tarjeta, desaparición a cero y navegación a la etapa histórica pendiente.
+El contrato SQL ampliado termina correctamente con ROLLBACK en Dev y el historial
+de migraciones coincide. El ensayo `tools/test_prepare_iphone_dev.sh` pasa con
+herramientas simuladas; el XML del esquema confirma Run Release y PosixSpawn.
+No se presenta ese ensayo como una compilación nativa de iOS.
