@@ -747,3 +747,24 @@ se descargan desde Dev sin PC; cambiar el binario del reloj sigue requiriendo US
 hasta disponer de distribución Store. La ejecución en background, otros modelos y Connect
 IQ Store siguen pendientes; la distribución actual es sideload Dev por USB una
 vez, y después FIT inalámbrico. El retorno continúa por el contrato Garmin existente.
+
+### Repetición privada preparada · 27/10/2026
+
+Javier muestra EntrenaOP Dev 1.0 con «0 sesiones listas». Dev confirma que la
+primera **Prueba Garmin · Fuerza 3x5** ya está `in_progress`, por lo que queda
+fuera del manifiesto de pendientes. La versión instalada sigue siendo 1.0.0;
+esta pantalla no acredita por sí sola un fallo ni una importación anterior.
+
+Javier pide nuevas sesiones de prueba. Desde su sesión autenticada de Trainer →
+Para mí se crea otra cita para el 27/10 y se adapta su título a **CIQ prueba 2 -
+27 octubre**, para distinguirla en el reloj. Sigue `planned`, sin ejecución:
+press banca con barra, tres series de cinco repeticiones a 20 kg y descanso de
+1:00. Indicaciones de ensayo técnico sin necesidad de ejercicio y apertura desde
+el reloj, evitando iniciar antes la cita desde la app del deportista.
+
+Se comprueban la cita y su fuente vigente en Dev, generación/decodificación FIT
+sin errores y seis pasos. Una consulta del comando real de manifiesto dentro de
+una transacción con ROLLBACK devuelve lista completa, una entrada con el título
+nuevo y cero bloqueadas; no se extrae la credencial original del reloj. Esta
+verificación de servidor no acredita descarga o apertura física. Javier debe
+actualizar EntrenaOP del reloj y confirmar la nueva sesión en Fuerza nativa.
