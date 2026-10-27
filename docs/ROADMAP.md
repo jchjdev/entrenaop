@@ -12,19 +12,21 @@ confirma **cuenta vinculada → FIT privado inalámbrico → Fuerza nativa**, pr
 banca 3×5 a 20 kg y descanso 1:00, sin reinstalar por USB. Se descarta y retira la
 primera prueba: Garmin confirma cancelación y Mi semana muestra una sola cita hoy.
 Tras sincronizar, Javier confirma solo «CIQ prueba 2» en el calendario Garmin del
-iPhone y en Entrenamientos del reloj. **Único siguiente ensayo:** reabrir/actualizar
-sin duplicados y después cambios/revocación físicos. El aviso automático al entrar
+iPhone y en Entrenamientos del reloj. **Único siguiente ensayo:** aviso opcional
+de cambios con la app cerrada; después retirada/revocación físicos. El aviso automático al entrar
 en Fuerza y la asociación del FIT propio con Training API no quedan acreditados. El bloque
 de sincronización general sigue abierto. Store, otros relojes y background físico
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 Ensayo de cambio preparado sobre la misma cita: 3×6 a 22,5 kg, descanso 1:15 y
 título «CIQ prueba 2 - actualizada», con recibo `sent` y los mismos IDs Garmin.
 Servidor rechaza la exportación vieja y conserva una entrada al repetir manifiesto;
-Javier confirma la receta nueva en Fuerza nativa; la repetición sigue pendiente.
+Javier confirma la receta nueva en Fuerza nativa y una sola entrada en EntrenaOP
+tras dos actualizaciones y reapertura, sin errores.
 PRG 1.1 preparado con
 OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monkey C;
 PRG copiado/releído por USB con hash idéntico; Javier confirma inicio en 1.1 y OP
-naranja y dosis 3×6 a 22,5 kg con 1:15. Repetición y avisos físicos siguen pendientes.
+naranja y dosis 3×6 a 22,5 kg con 1:15. Avisos físicos siguen pendientes; la lista
+única no acredita limpieza de la biblioteca nativa.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 

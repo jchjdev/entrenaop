@@ -895,3 +895,11 @@ cambio de receta de la misma cita hasta Fuerza nativa con 1.1. Se solicita ahora
 repetir Actualizar dos veces y reabrir para comprobar una sola entrada vigente
 en EntrenaOP; ese ensayo y los avisos siguen pendientes. No se deduce ausencia
 de copias antiguas en la biblioteca nativa a partir de esta confirmación de dosis.
+
+Javier realiza el ensayo de dos actualizaciones consecutivas, esperando entre
+ambas, y reapertura: confirma «solo una» en la lista de EntrenaOP, sin comunicar
+errores. Queda aceptada la repetición con una entrada vigente después del cambio
+de receta. El alcance es esa lista; no se ha inspeccionado ni limpiado la biblioteca
+nativa. Se pide activar **Avisos de cambios**, salir a la esfera y confirmar la
+activación antes de modificar de nuevo el título de la misma cita. La detección,
+el diálogo y la actualización al aceptarlo siguen pendientes.

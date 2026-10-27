@@ -4,8 +4,10 @@ La versión preparada es **EntrenaOP Dev 1.1**, con la OP oficial como icono y
 avisos opcionales de cambios. Compilación estricta sin avisos y diez regresiones
 Monkey C correctas. El paquete 1.1 se ha copiado y releído por USB el 27/10;
 Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
-con descanso 1:15 dentro de Fuerza nativa. Repetición sin duplicados y avisos
-físicos siguen pendientes. La vinculación y descarga privada de **1.0** están
+con descanso 1:15 dentro de Fuerza nativa. Tras actualizar dos veces y reabrir,
+confirma una sola entrada en la lista de EntrenaOP, sin errores; no acredita
+limpieza de copias antiguas en la biblioteca nativa. Los avisos físicos siguen
+pendientes. La vinculación y descarga privada de **1.0** están
 aceptadas el 27/10.
 El transporte sintético 0.2 descrito más abajo también está aceptado.
 
@@ -51,8 +53,8 @@ PRG 1.0 al actualizar las sesiones, sin volver a instalar por USB.
 Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones listas»
 con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
 descanso de 1:00. Confirma después la receta cambiada a 3×6 a 22,5 kg con 1:15
-desde 1.1. Aceptación física privada del 27/10; reintentos y retirada,
-revocación físicos, Store y background siguen pendientes.
+desde 1.1 y una sola entrada tras dos actualizaciones y reapertura. Aceptación
+física privada del 27/10; retirada/revocación, Store y avisos físicos siguen pendientes.
 
 Pruebas servidor: `node --test supabase/functions/tests/garmin_ciq_test.ts`.
 SQL: `supabase/tests/garmin_ciq_account_and_downloads.sql` (ROLLBACK, solo Dev).
@@ -132,14 +134,14 @@ confirmar el entrenamiento. La instancia bloquea nuevas solicitudes hasta recibi
 respuesta o salir. La invitación actual a reabrir debe pulirse para evitar
 reintentos innecesarios; no se conoce todavía la causa de la latencia.
 
-Quedan pendientes duplicados/reinicios repetidos, pérdida de conexión, cambios y
-retirada, otros relojes, background y retorno de resultados por esta vía. No
+Quedan pendientes limpieza de copias nativas antiguas, pérdida de conexión,
+retirada/revocación, otros relojes, avisos y retorno de resultados por esta vía. No
 presentar Descargar/Abrir como sincronización automática terminada ni exigir
 este puente para toda la fuerza.
 
 La vinculación segura y entrega privada ya están implementadas y aceptadas;
-el siguiente ensayo es actualizar una revisión sin duplicar la lista vigente,
-comprobar la receta nueva y después retirada/revocación. La experiencia objetivo
+el siguiente ensayo es el aviso opcional con la app cerrada; después,
+retirada/revocación. La experiencia objetivo
 es vincular una vez y mantener sesiones al día con Actualizar como recuperación
 manual. Los avisos de 1.1 requieren instalación y prueba física; no prometer
 recepción inmediata, importación con la app cerrada ni sondeo permanente.
