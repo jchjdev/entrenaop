@@ -3,9 +3,10 @@
 La versión preparada es **EntrenaOP Dev 1.1**, con la OP oficial como icono y
 avisos opcionales de cambios. Compilación estricta sin avisos y diez regresiones
 Monkey C correctas. El paquete 1.1 se ha copiado y releído por USB el 27/10;
-Javier confirma inicio en 1.1 y la OP naranja. Los avisos físicos siguen pendientes.
-La vinculación y descarga
-privada de **1.0** están aceptadas el 27/10.
+Javier confirma inicio en 1.1, la OP naranja y cambio de receta a 3×6 a 22,5 kg
+con descanso 1:15 dentro de Fuerza nativa. Repetición sin duplicados y avisos
+físicos siguen pendientes. La vinculación y descarga privada de **1.0** están
+aceptadas el 27/10.
 El transporte sintético 0.2 descrito más abajo también está aceptado.
 
 ## Vincular y recibir sesiones privadas
@@ -49,7 +50,8 @@ El formato lleva producto FIT 2 y es estable entre reintentos. El ajuste llegó 
 PRG 1.0 al actualizar las sesiones, sin volver a instalar por USB.
 Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones listas»
 con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
-descanso de 1:00. Aceptación física privada del 27/10; reintentos, cambios/retirada,
+descanso de 1:00. Confirma después la receta cambiada a 3×6 a 22,5 kg con 1:15
+desde 1.1. Aceptación física privada del 27/10; reintentos y retirada,
 revocación físicos, Store y background siguen pendientes.
 
 Pruebas servidor: `node --test supabase/functions/tests/garmin_ciq_test.ts`.

@@ -20,10 +20,11 @@ siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 Ensayo de cambio preparado sobre la misma cita: 3×6 a 22,5 kg, descanso 1:15 y
 título «CIQ prueba 2 - actualizada», con recibo `sent` y los mismos IDs Garmin.
 Servidor rechaza la exportación vieja y conserva una entrada al repetir manifiesto;
-Javier aún debe confirmar receta nueva y repetición física. PRG 1.1 preparado con
+Javier confirma la receta nueva en Fuerza nativa; la repetición sigue pendiente.
+PRG 1.1 preparado con
 OP oficial y aviso opcional por cambio, compilación limpia y diez pruebas Monkey C;
 PRG copiado/releído por USB con hash idéntico; Javier confirma inicio en 1.1 y OP
-naranja. Dosis nueva, repetición y avisos físicos siguen pendientes.
+naranja y dosis 3×6 a 22,5 kg con 1:15. Repetición y avisos físicos siguen pendientes.
 No equivale a importar FIT con la app cerrada.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 

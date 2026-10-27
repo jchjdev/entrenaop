@@ -16,7 +16,8 @@ Sin secretos administrativos o tokens Garmin en el reloj. Implementación Dev y
 pruebas automáticas verificadas; vinculación real comprobada. El 27/10 Javier
 confirma descarga privada y Fuerza nativa con dosis/descanso correctos tras ajustar
 la identidad del FIT en servidor (`ciq-private-2`), sin reinstalar el PRG 1.0.
-Reintentos/cambio/revocación físicos y publicación siguen pendientes.
+Reintentos, retirada/revocación físicos y publicación siguen pendientes; el cambio
+de receta queda aceptado más abajo.
 Javier precisa después que hay que comprobar su aparición como entrenamiento de
 hoy; abrir el FIT no acredita ese recorrido. Se retira la primera prueba y se
 verifica una única cita activa el 27/10. Tras sincronizar, Javier confirma solo
@@ -26,14 +27,15 @@ ni asociar por ello el FIT propio a la entrada de Training API.
 Javier pide comprobar actualización sin duplicados y automatizar el recorrido.
 El ensayo conserva la misma cita y los mismos identificadores de calendario al
 cambiar título y dosis a 3×6, 22,5 kg y 1:15. Confirma una sesión lista antes del
-cambio; la receta nueva y la repetición físicas quedan pendientes. La 1.1 preparada
+cambio. La 1.1 preparada
 añade la OP oficial y avisos opcionales de cambios (apagados inicialmente): consulta
 cada 15 minutos, un diálogo por huella nueva y descarga en primer plano al aceptar.
 No se declara importación automática con la app cerrada ni limpieza de FIT antiguos.
 Después Javier conecta el reloj y se copia/relee el PRG 1.1 con bytes y SHA-256
 idénticos al compilado. Javier confirma después inicio en 1.1 y la OP naranja;
-comunica el alias EOP dentro de Fuerza. Dosis nueva, repetición y avisos físicos
-siguen pendientes: el alias corto no acredita por sí solo esos recorridos.
+comunica el alias EOP dentro de Fuerza y confirma después las tres series de seis
+repeticiones a 22,5 kg y descansos de 1:15. Queda aceptada la receta actualizada
+en Fuerza nativa; repetición sin duplicados y avisos físicos siguen pendientes.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

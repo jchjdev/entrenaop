@@ -888,3 +888,10 @@ corto definido en `ciq-private-2`, mientras la lista de EntrenaOP conserva el
 título de la cita. No se toma el identificador comunicado de memoria como prueba
 de su serial exacto ni de la dosis. Quedan pendientes la confirmación de 3×6 a
 22,5 kg con 1:15, repetir sin duplicar y los avisos físicos.
+
+Javier confirma después expresamente que ve las tres series de seis repeticiones
+a 22,5 kg y descansos de 1:15 dentro de ese entrenamiento. Queda aceptado el
+cambio de receta de la misma cita hasta Fuerza nativa con 1.1. Se solicita ahora
+repetir Actualizar dos veces y reabrir para comprobar una sola entrada vigente
+en EntrenaOP; ese ensayo y los avisos siguen pendientes. No se deduce ausencia
+de copias antiguas en la biblioteca nativa a partir de esta confirmación de dosis.
