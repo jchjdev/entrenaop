@@ -17,6 +17,9 @@ pruebas automáticas verificadas; vinculación real comprobada. El 27/10 Javier
 confirma descarga privada y Fuerza nativa con dosis/descanso correctos tras ajustar
 la identidad del FIT en servidor (`ciq-private-2`), sin reinstalar el PRG 1.0.
 Reintentos/cambio/retirada/revocación físicos y publicación siguen pendientes.
+Javier precisa después que hay que comprobar su aparición como entrenamiento de
+hoy; abrir el FIT no acredita ese recorrido. Se retira la primera prueba y se
+verifica una única cita activa el 27/10 para aislar la comprobación de calendario.
 [Contrato y límites](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **INT-016 · 26/10/2026 · puente Connect IQ, primero transporte y después cuenta:**

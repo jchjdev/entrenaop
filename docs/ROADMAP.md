@@ -9,8 +9,10 @@ análisis limpio, 1.379 pruebas raíz y una omisión existente, ocho Monkey C y
 contratos SQL con ROLLBACK correctos, sin avisos nuevos. El 27/10 se ajusta identidad
 nativa desde servidor (`ciq-private-2`), con 175 pruebas y tipos correctos. Javier
 confirma **cuenta vinculada → FIT privado inalámbrico → Fuerza nativa**, press
-banca 3×5 a 20 kg y descanso 1:00, sin reinstalar por USB. **Único siguiente ensayo:**
-reabrir/actualizar sin duplicados y cambio/retirada/revocación físicos; el bloque
+banca 3×5 a 20 kg y descanso 1:00, sin reinstalar por USB. Se descarta y retira la
+primera prueba: Garmin confirma cancelación y Mi semana muestra una sola cita hoy.
+**Único siguiente ensayo:** comprobar calendario/entrenamiento de hoy tras sincronizar
+el móvil; después reintentos y cambio/retirada/revocación físicos. El bloque
 de sincronización general sigue abierto. Store, otros relojes y background físico
 siguen pendientes; no se borran ni bloquean remotamente copias nativas antiguas.
 [Contrato y evidencia](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).

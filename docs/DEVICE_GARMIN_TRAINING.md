@@ -806,3 +806,27 @@ con receta correcta**, manteniendo el PRG 1.0 y sin otra instalación USB. El ú
 siguiente ensayo de este recorrido es reabrir/actualizar sin duplicados y comprobar
 cambio/retirada/revocación físicos; no se declara completada la sincronización
 general, background, Store ni otros modelos por esta aceptación.
+
+### Calendario y retirada de la prueba anterior · 27/10/2026
+
+Javier señala que abrir el FIT no equivale a verlo como entrenamiento de hoy y
+muestra dos citas en Mi semana. Se confirma que la nueva está `planned` para el
+27/10 y tiene recibo `sent` de Training API con fecha/título correctos. Ese envío
+al calendario es una vía distinta del FIT Connect IQ abierto como `EOP1000000026`;
+la aceptación del transporte privado no acredita el aviso nativo del día ni que
+la entrada de calendario reproduzca esa misma copia FIT con títulos propios.
+
+Para aislar la prueba, Javier pide quitar la primera **Prueba Garmin · Fuerza
+3x5**. Desde su sesión autenticada de deportista se descarta su ejecución de ensayo
+(cero series confirmadas) y desde Trainer se retira la cita ya pendiente. Dev
+confirma ejecución eliminada, cita `cancelled`, recibo Garmin `cancelled`, cola
+`done` y ausencia de error. Mi semana se vuelve a cargar y muestra **una sola
+sesión hoy: CIQ prueba 2 - 27 octubre**, pendiente. No se alteran otras citas.
+
+El destino de Trainer se contrasta con su recurso JavaScript público versionado:
+solo incorpora la URL de `entrenaop-dev`. El calendario Garmin del PC pide nuevo
+inicio de sesión, por lo que no se acredita su apariencia visual desde esa pestaña.
+El único siguiente ensayo es sincronizar Garmin Connect del móvil y comprobar
+calendario/entrenamiento de hoy en el reloj con esta única cita. La posible causa
+de que no se ofrezca al entrar en Fuerza sigue sin demostrar; dos citas por sí
+solas no la establecen. Reintentos, cambios/revocación y demás límites siguen abiertos.
