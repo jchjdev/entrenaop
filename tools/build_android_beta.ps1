@@ -1,6 +1,8 @@
 param(
     [string]$SigningPropertiesPath = '',
-    [string]$OutputDirectory = ''
+    [string]$OutputDirectory = '',
+    [ValidateRange(1, 2147483647)]
+    [int]$BetaNumber = 1
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -12,6 +14,11 @@ if (!(Test-Path -LiteralPath $SigningPropertiesPath -PathType Leaf)) {
     throw 'Falta la configuración privada de firma. Consulta docs/ANDROID_BETA.md; no generes otra clave para actualizar la beta.'
 }
 if (!$OutputDirectory) { $OutputDirectory = Join-Path $repo 'build/android-beta' }
+# La etiqueta beta solo pertenece a Android; iOS conserva una versión numérica.
+$baseVersion = [regex]::Match((Get-Content -LiteralPath (Join-Path $repo 'pubspec.yaml') -Raw),
+    '(?m)^version:\s*(\d+\.\d+\.\d+)\+(\d+)\s*$')
+if (!$baseVersion.Success) { throw 'pubspec.yaml debe conservar una versión numérica y su compilación.' }
+$betaVersionName = "$($baseVersion.Groups[1].Value)-beta.$BetaNumber"
 $config = Get-Content -LiteralPath (Join-Path $repo 'config/firebase_dev.json') -Raw | ConvertFrom-Json
 if ($config.APP_ENV -ne 'development' -or $config.PUSH_ENABLED -ne $true -or
     $config.PUSH_FIREBASE_PROJECT_ID -ne 'entrenaop-dev' -or
@@ -43,7 +50,7 @@ try {
     $sourcePaths = @('lib', 'assets', 'packages', 'android', 'ios', 'web', 'linux', 'macos', 'windows', 'pubspec.yaml', 'pubspec.lock', 'tools/run_app.dart')
     $sourceStatus = @(& git status --porcelain -- @sourcePaths)
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo comprobar el estado de las fuentes.' }
-    & dart run tools/run_app.dart build apk --release --dart-define-from-file=config/firebase_dev.json
+    & dart run tools/run_app.dart build apk --release "--build-name=$betaVersionName" --dart-define-from-file=config/firebase_dev.json
     if ($LASTEXITCODE -ne 0) { throw 'La compilación Android ha fallado.' }
     if ((& git rev-parse HEAD).Trim() -ne $revision) { throw 'Git cambió durante la compilación; repítela sobre la revisión actual.' }
     $apk = Join-Path $repo 'build/app/outputs/flutter-apk/app-release.apk'
@@ -54,6 +61,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo inspeccionar la APK.' }
     $package = [regex]::Match(($badging -join "`n"), "package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'")
     if (!$package.Success -or $package.Groups[1].Value -ne 'com.entrenaOp.entrenaop' -or
+        $package.Groups[2].Value -ne $baseVersion.Groups[2].Value -or
+        $package.Groups[3].Value -ne $betaVersionName -or
         ($badging -join "`n") -match 'application-debuggable') {
         throw 'Identidad o modo de compilación Android inesperados.'
     }

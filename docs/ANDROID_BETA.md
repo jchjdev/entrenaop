@@ -19,7 +19,9 @@ contraseñas junto con la APK. Hacer una copia privada cifrada en otra ubicació
 la carpeta local por sí sola no es una copia de seguridad independiente.
 
 Para actualizar, reutilizar el mismo certificado e incrementar la compilación
-en `pubspec.yaml`. No regenerar la clave al cambiar de ordenador. La identidad
+en `pubspec.yaml`, que mantiene versión numérica para iOS. El helper añade
+`-beta.1` solo al nombre Android; `-BetaNumber 2` selecciona la siguiente etiqueta.
+No regenerar la clave al cambiar de ordenador. La identidad
 de esta beta no decide todavía la firma ni la distribución de producción.
 
 Las instalaciones antiguas firmadas con debug no admiten esta actualización
