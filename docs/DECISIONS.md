@@ -209,6 +209,16 @@ contraseña. Activación y primera transferencia verificadas por HTTPS el
 destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
+**TRN-030/031 · 27/10/2026 · agenda mensual con eventos legibles:** Javier
+pide una agenda tipo Google/iOS Calendar: tiras con alumno y sesión, color estable
+por alumno, detalle al pulsar y arrastre entre fechas mediante la revisión
+existente. Dos entradas por celda y lista «+N más»; estados también por icono y
+texto. Se conservan filtros, paginación y protecciones de ejecución/servidor. No
+se añaden horas ficticias ni calendarios externos. La confirmación de programas
+conserva el programa elegido sin consultar de nuevo el catálogo y fija sus
+acciones al pie. La app del deportista y los avisos mantienen su recorrido aparte.
+[Presentación y verificación](TRAINER_DESKTOP_2026_10_25.md#agenda-mensual-con-eventos--27102026).
+
 **TRN-031 · ajuste del 26/10/2026 · asignación sin catálogo redundante:**
 Javier muestra que una sesión arrastrada al calendario vuelve a desplegar toda
 la biblioteca después de elegir alumno. La confirmación conserva la sesión y

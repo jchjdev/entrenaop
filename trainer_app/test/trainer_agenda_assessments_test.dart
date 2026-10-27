@@ -50,7 +50,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(tests.calls.single.start, DateTime(2026, 10, 1));
       expect(tests.calls.single.end, DateTime(2026, 11, 1));
-      expect(find.text('Simulacro 0'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('agenda-month-event-assessment-0')),
+        findsOneWidget,
+      );
       await tester.scrollUntilVisible(
         find.text('Cargar más pruebas del periodo'),
         800,

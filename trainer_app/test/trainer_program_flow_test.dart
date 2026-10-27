@@ -40,6 +40,8 @@ const privateProgram = GuidedProgram(
 
 class ProgramFixture extends TrainerProgramRepository {
   bool failSave = false, failAssign = false;
+  bool failPrograms = false;
+  int libraryReads = 0;
   final saved =
       <({String operation, GuidedProgram program, String? previous})>[];
   final assigned =
@@ -55,19 +57,23 @@ class ProgramFixture extends TrainerProgramRepository {
   @override
   Future<GuidedProgram> program(String id) async => privateProgram;
   @override
-  Future<List<TrainerProgram>> programs({TrainerProgram? before}) async =>
-      before == null
-      ? [
-          TrainerProgram.fromJson({
-            'id': 'program',
-            'family_id': 'family',
-            'version': 2,
-            'status': 'published',
-            'created_at': '2026-10-21T10:00:00Z',
-            'content': guidedProgramToJson(privateProgram),
-          }),
-        ]
-      : [];
+  Future<List<TrainerProgram>> programs({TrainerProgram? before}) async {
+    libraryReads++;
+    if (failPrograms) throw StateError('Biblioteca no disponible');
+    return before == null
+        ? [
+            TrainerProgram.fromJson({
+              'id': 'program',
+              'family_id': 'family',
+              'version': 2,
+              'status': 'published',
+              'created_at': '2026-10-21T10:00:00Z',
+              'content': guidedProgramToJson(privateProgram),
+            }),
+          ]
+        : [];
+  }
+
   @override
   Future<String> save(
     String operationId,
@@ -194,6 +200,117 @@ Future<void> openProgramDialog(
 }
 
 void main() {
+  testWidgets(
+    'cambiar un programa ya elegido carga su biblioteca bajo demanda',
+    (tester) async {
+      final repo = ProgramFixture();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showDialog<bool>(
+                  context: context,
+                  builder: (_) => TrainerProgramAssignmentDialog(
+                    repository: repo,
+                    relationId: 'relation',
+                    initialProgram: privateProgram,
+                    initialDate: DateTime(2026, 11, 3),
+                  ),
+                ),
+                child: const Text('Abrir programa'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Abrir programa'));
+      await tester.pumpAndSettle();
+      expect(repo.libraryReads, 0);
+      await visibleTap(tester, find.text('Elegir otro programa'));
+      expect(repo.libraryReads, 1);
+      expect(find.text(privateProgram.name), findsOneWidget);
+      await visibleTap(tester, find.text(privateProgram.name));
+      expect(find.text('Confirmar 2 sesiones').hitTestable(), findsOneWidget);
+      expect(repo.assigned, isEmpty);
+      await visibleTap(tester, find.text('Volver al alumno'));
+      expect(repo.assigned, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'programa elegido conserva fecha y confirmación visible sin cargar el catálogo',
+    (tester) async {
+      tester.view.physicalSize = const Size(1100, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repo = ProgramFixture()..failPrograms = true;
+      final program = GuidedProgram(
+        id: 'long-program',
+        familyId: 'family',
+        version: 3,
+        status: 'published',
+        name: 'Preparación mensual',
+        description: 'Fuerza y carrera',
+        mode: GuidedProgramMode.phased,
+        phases: [
+          GuidedPhase(
+            name: 'Base',
+            durationWeeks: 8,
+            instructions: '',
+            sessions: [
+              for (var i = 0; i < 20; i++)
+                GuidedSession(
+                  templateId: 'template-$i',
+                  name: 'Sesión ${i + 1}',
+                ),
+            ],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => showDialog<bool>(
+                  context: context,
+                  builder: (_) => TrainerProgramAssignmentDialog(
+                    repository: repo,
+                    relationId: 'selected-pupil',
+                    initialProgram: program,
+                    initialDate: DateTime(2026, 11, 3),
+                  ),
+                ),
+                child: const Text('Abrir programa'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Abrir programa'));
+      await tester.pumpAndSettle();
+      expect(repo.libraryReads, 0);
+      expect(repo.assigned, isEmpty);
+      final confirm = find.widgetWithText(
+        FilledButton,
+        'Confirmar 20 sesiones',
+      );
+      expect(confirm.hitTestable(), findsOneWidget);
+      expect(tester.getRect(confirm).bottom, lessThan(700));
+      await tester.tap(confirm);
+      await tester.pumpAndSettle();
+      expect(repo.assigned.single.program, 'long-program');
+      expect(repo.assigned.single.relation, 'selected-pupil');
+      expect(repo.assigned.single.entries, hasLength(20));
+      expect(repo.assigned.single.entries.first.date, DateTime(2026, 11, 3));
+      expect(repo.libraryReads, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'la navegación lateral sigue disponible para lectores de pantalla',
     (tester) async {
@@ -542,7 +659,13 @@ void main() {
       find.textContaining('recuentos del calendario son parciales'),
       findsNothing,
     );
-    expect(find.text('Alumno de ensayo'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('agenda-assignment-assignment-100')),
+        matching: find.text('Alumno de ensayo'),
+      ),
+      findsOneWidget,
+    );
   });
 
   for (final width in [320.0, 1200.0]) {

@@ -8,6 +8,7 @@ import 'package:trainer_access/trainer_access.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_agenda_client_picker.dart';
+import 'trainer_month_calendar.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 
 import 'package:workout_core/professional_assessment.dart';
@@ -79,6 +80,8 @@ class SupabaseTrainerAgendaRepository implements TrainerAgendaRepository {
 }
 
 enum _AgendaView { month, week, day, list }
+
+enum _AgendaEntryAction { planning, result, move, adapt }
 
 class TrainerAgendaPage extends StatefulWidget {
   const TrainerAgendaPage({
@@ -236,36 +239,39 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       !DateUtils.isSameDay(row.assignment.date, date) &&
       _items.any((current) => identical(current, row));
 
-  Widget _dateDrop(DateTime date, Widget child) =>
-      DragTarget<TrainerAgendaItem>(
-        key: ValueKey('agenda-board-drop-${agendaDate(date)}'),
-        onWillAcceptWithDetails: (d) => _canMoveRow(d.data, date),
-        onAcceptWithDetails: (d) {
-          if (_canMoveRow(d.data, date)) _proposeMove(d.data.assignment, date);
-        },
-        builder: (context, rows, rejected) =>
-            DragTarget<ProfessionalLibraryDrag<TrainerWorkout>>(
-              onWillAcceptWithDetails: (d) =>
-                  !_locked &&
-                  identical(d.data.owner, _libraryOwner) &&
-                  widget.access != null &&
-                  widget.workouts != null,
-              onAcceptWithDetails: (d) {
-                if (identical(d.data.owner, _libraryOwner)) {
-                  _assignFromLibrary(d.data.value, date);
-                }
-              },
-              builder: (context, recipes, rejected) => DecoratedBox(
-                decoration: BoxDecoration(
-                  color: rows.isNotEmpty || recipes.isNotEmpty
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : null,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: child,
-              ),
+  Widget _dateDrop(
+    DateTime date,
+    Widget child, {
+    String keyPrefix = 'agenda-board-drop',
+  }) => DragTarget<TrainerAgendaItem>(
+    key: ValueKey('$keyPrefix-${agendaDate(date)}'),
+    onWillAcceptWithDetails: (d) => _canMoveRow(d.data, date),
+    onAcceptWithDetails: (d) {
+      if (_canMoveRow(d.data, date)) _proposeMove(d.data.assignment, date);
+    },
+    builder: (context, rows, rejected) =>
+        DragTarget<ProfessionalLibraryDrag<TrainerWorkout>>(
+          onWillAcceptWithDetails: (d) =>
+              !_locked &&
+              identical(d.data.owner, _libraryOwner) &&
+              widget.access != null &&
+              widget.workouts != null,
+          onAcceptWithDetails: (d) {
+            if (identical(d.data.owner, _libraryOwner)) {
+              _assignFromLibrary(d.data.value, date);
+            }
+          },
+          builder: (context, recipes, rejected) => DecoratedBox(
+            decoration: BoxDecoration(
+              color: rows.isNotEmpty || recipes.isNotEmpty
+                  ? Theme.of(context).colorScheme.primaryContainer
+                  : null,
+              borderRadius: BorderRadius.circular(12),
             ),
-      );
+            child: child,
+          ),
+        ),
+  );
 
   Widget _weekBoard(List<TrainerAgendaItem> rows) => LayoutBuilder(
     builder: (context, constraints) {
@@ -331,19 +337,13 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                                                   _civilOffset(_from, day),
                                                 ),
                                           ))
-                                    Card(
-                                      child: ListTile(
-                                        leading: const Icon(
-                                          Icons.timer_outlined,
-                                          size: 18,
-                                        ),
-                                        title: Text(event.title),
-                                        subtitle: Text(event.personName),
-                                        onTap: _locked
-                                            ? null
-                                            : () => context.push(
-                                                '/clients/${event.clientId}/assessments/${event.id}',
-                                              ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 4,
+                                      ),
+                                      child: TrainerCalendarEntryTile(
+                                        entry: _calendarAssessment(event),
                                       ),
                                     ),
                                   const Padding(
@@ -369,71 +369,151 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     },
   );
 
+  TrainerCalendarEntry _calendarEntry(TrainerAgendaItem row) {
+    final assignment = row.assignment;
+    return TrainerCalendarEntry(
+      id: 'session-${assignment.id}',
+      date: assignment.date,
+      personId: row.clientId,
+      personName: row.clientName,
+      title: assignment.name,
+      stateLabel:
+          '${assignment.archived ? 'Archivada · ' : ''}${assignment.statusLabel} · Versión ${assignment.version}',
+      muted: assignment.archived || assignment.status == 'cancelled',
+      completed: assignment.status == 'completed',
+      onTap: _locked ? null : () => _showCalendarEntry(row),
+      dragBuilder: _editable(assignment) && widget.onMove != null && !_locked
+          ? (child) => _dragCalendarEntry(row, child, 'agenda-month-drag')
+          : null,
+    );
+  }
+
+  Widget _dragCalendarEntry(
+    TrainerAgendaItem row,
+    Widget child,
+    String keyPrefix,
+  ) {
+    final feedback = Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        width: 240,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Text('${row.clientName}\n${row.assignment.name}'),
+        ),
+      ),
+    );
+    final faded = Opacity(opacity: .35, child: child);
+    if (ProfessionalWorkspaceScope.isDesktop(context)) {
+      return Draggable<TrainerAgendaItem>(
+        key: ValueKey('$keyPrefix-${row.assignment.id}'),
+        data: row,
+        maxSimultaneousDrags: 1,
+        feedback: feedback,
+        childWhenDragging: faded,
+        child: child,
+      );
+    }
+    return LongPressDraggable<TrainerAgendaItem>(
+      key: ValueKey('$keyPrefix-${row.assignment.id}'),
+      data: row,
+      maxSimultaneousDrags: 1,
+      feedback: feedback,
+      childWhenDragging: faded,
+      child: child,
+    );
+  }
+
   Widget _boardCard(TrainerAgendaItem row) {
-    final card = Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final child = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+      child: TrainerCalendarEntryTile(entry: _calendarEntry(row)),
+    );
+    return _editable(row.assignment) && widget.onMove != null && !_locked
+        ? _dragCalendarEntry(row, child, 'agenda-board-drag')
+        : child;
+  }
+
+  Future<void> _showCalendarEntry(TrainerAgendaItem row) async {
+    if (_locked) return;
+    final assignment = row.assignment;
+    final action = await showDialog<_AgendaEntryAction>(
+      context: context,
+      builder: (dialogContext) => EntrenaDialog(
+        title: Text(assignment.name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(row.clientName, style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 8),
-            Text(row.assignment.name),
-            const SizedBox(height: 8),
             Text(
-              row.assignment.archived
-                  ? 'Archivada · ${row.assignment.statusLabel}'
-                  : row.assignment.statusLabel,
-              style: Theme.of(context).textTheme.bodySmall,
+              row.clientName,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            TextButton(
-              onPressed: _locked
-                  ? null
-                  : () => context.go('/clients/${row.clientId}/workouts'),
-              child: const Text('Abrir'),
+            const SizedBox(height: 12),
+            Text(
+              '${_dayLabel(assignment.date)} · ${assignment.statusLabel} · Versión ${assignment.version}',
             ),
-            if (widget.workouts != null && row.assignment.status == 'cancelled')
-              TrainerAssignmentLifecycleActions(
-                key: ValueKey(
-                  'lifecycle-${row.assignment.id}-${row.assignment.archiveRevision}',
-                ),
-                assignment: row.assignment,
-                repository: widget.workouts!,
-                enabled: !_locked,
-                onChanged: _load,
-                onBusyChanged: (busy) {
-                  if (mounted) setState(() => _mutating = busy);
-                },
+            if (assignment.archived) const Text('Asignación archivada'),
+            if (assignment.note?.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              Text(assignment.note!),
+            ],
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, _AgendaEntryAction.planning),
+              icon: const Icon(Icons.person_outline),
+              label: const Text('Planificación del alumno'),
+            ),
+            if (assignment.executionId != null)
+              TextButton.icon(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, _AgendaEntryAction.result),
+                icon: const Icon(Icons.analytics_outlined),
+                label: const Text('Ver resultados'),
               ),
-            if (_editable(row.assignment) && widget.onMove != null)
-              TextButton(
-                onPressed: _locked ? null : () => _proposeMove(row.assignment),
-                child: const Text('Mover fecha'),
+            if (_editable(assignment) && widget.onMove != null)
+              TextButton.icon(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, _AgendaEntryAction.move),
+                icon: const Icon(Icons.event_outlined),
+                label: const Text('Mover fecha'),
+              ),
+            if (_editable(assignment) && widget.onAdapt != null)
+              TextButton.icon(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, _AgendaEntryAction.adapt),
+                icon: const Icon(Icons.tune),
+                label: const Text('Adaptar pauta'),
               ),
           ],
         ),
-      ),
-    );
-    if (!_editable(row.assignment) || widget.onMove == null || _locked) {
-      return card;
-    }
-    return Draggable<TrainerAgendaItem>(
-      key: ValueKey('agenda-board-drag-${row.assignment.id}'),
-      data: row,
-      maxSimultaneousDrags: 1,
-      feedback: Material(
-        elevation: 6,
-        child: SizedBox(
-          width: 210,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text('${row.clientName} · ${row.assignment.name}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cerrar'),
           ),
-        ),
+        ],
       ),
-      childWhenDragging: Opacity(opacity: .4, child: card),
-      child: card,
     );
+    if (!mounted || _locked) return;
+    switch (action) {
+      case _AgendaEntryAction.planning:
+        context.push('/clients/${row.clientId}/workouts');
+      case _AgendaEntryAction.result:
+        context.push(
+          '/clients/${row.clientId}/workouts/${assignment.id}/result',
+        );
+      case _AgendaEntryAction.move:
+        await _proposeMove(assignment);
+      case _AgendaEntryAction.adapt:
+        if (_editable(assignment) && widget.onAdapt != null) {
+          await _mutation(() => widget.onAdapt!(assignment));
+        }
+      case null:
+        break;
+    }
   }
 
   Future<void> _load({bool more = false}) async {
@@ -1199,124 +1279,50 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     );
   }
 
-  Widget _grid(List<TrainerAgendaItem> filtered) {
-    final month = DateTime(_anchor.year, _anchor.month);
-    final leading = _view == _AgendaView.week ? 0 : month.weekday - 1;
-    final days = DateTime(_anchor.year, _anchor.month + 1, 0).day;
-    final cells = _view == _AgendaView.week
-        ? 7
-        : ((leading + days + 6) ~/ 7) * 7;
-    return Column(
-      children: [
-        Row(
-          children: [
-            for (final label in ['L', 'M', 'X', 'J', 'V', 'S', 'D'])
-              Expanded(child: Center(child: Text(label))),
-          ],
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: cells,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisExtent: MediaQuery.textScalerOf(context).scale(14) > 21
-                ? 90
-                : 64,
-            crossAxisSpacing: 2,
-            mainAxisSpacing: 2,
-          ),
-          itemBuilder: (context, index) {
-            final day = index - leading + 1;
-            if (_view != _AgendaView.week && (day < 1 || day > days)) {
-              return const SizedBox.shrink();
-            }
-            final date = _view == _AgendaView.week
-                ? _civilOffset(_from, index)
-                : DateTime(month.year, month.month, day);
-            final count = filtered
-                .where(
-                  (i) =>
-                      DateUtils.isSameDay(i.assignment.date, date) &&
-                      i.assignment.status != 'cancelled',
-                )
-                .length;
-            final assessmentCount = _assessments
-                .where(_matchesAssessment)
-                .where(
-                  (e) =>
-                      DateUtils.isSameDay(e.date, date) &&
-                      e.status != 'withdrawn',
-                )
-                .length;
-            final selected = DateUtils.isSameDay(
-              _selected ?? (_view == _AgendaView.week ? _anchor : null),
-              date,
-            );
-            return DragTarget<ProfessionalLibraryDrag<TrainerWorkout>>(
-              onWillAcceptWithDetails: (d) =>
-                  !_locked &&
-                  identical(d.data.owner, _libraryOwner) &&
-                  widget.access != null,
-              onAcceptWithDetails: (d) {
-                if (identical(d.data.owner, _libraryOwner)) {
-                  _assignFromLibrary(d.data.value, date);
-                }
-              },
-              builder: (context, recipes, rejected) => ColoredBox(
-                color: recipes.isNotEmpty
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : Colors.transparent,
-                child: DragTarget<TrainerAgendaItem>(
-                  key: ValueKey('agenda-drop-${agendaDate(date)}'),
-                  onWillAcceptWithDetails: (details) =>
-                      _canMoveRow(details.data, date),
-                  onAcceptWithDetails: (details) =>
-                      _proposeMove(details.data.assignment, date),
-                  builder: (context, candidates, rejected) => Semantics(
-                    label:
-                        '${date.day} de ${_months[date.month - 1]}, $count pautas, $assessmentCount pruebas${_more || _moreAssessments ? ', recuento parcial' : ''}',
-                    selected: selected,
-                    child: TextButton(
-                      key: ValueKey('agenda-day-${date.day}'),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: candidates.isNotEmpty
-                            ? Theme.of(context).colorScheme.secondaryContainer
-                            : selected
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : null,
-                      ),
-                      onPressed: _locked
-                          ? null
-                          : () => setState(() => _selected = date),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${date.day}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          if (count > 0)
-                            Text(
-                              '$count',
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          if (assessmentCount > 0)
-                            Text(
-                              '$assessmentCount P',
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+  TrainerCalendarEntry _calendarAssessment(ProfessionalAssessmentEvent event) =>
+      TrainerCalendarEntry(
+        id: 'assessment-${event.id}',
+        date: event.date,
+        personId: event.clientId,
+        personName: event.personName,
+        title: event.title,
+        stateLabel: switch (event.status) {
+          'planned' => 'Pendiente',
+          'completed' => 'Completada',
+          _ => event.status,
+        },
+        assessment: true,
+        completed: event.status == 'completed',
+        onTap: _locked
+            ? null
+            : () => context.push(
+                '/clients/${event.clientId}/assessments/${event.id}',
               ),
-            );
-          },
-        ),
-      ],
-    );
-  }
+      );
+
+  Widget _grid(List<TrainerAgendaItem> filtered) => TrainerMonthCalendar(
+    anchor: _anchor,
+    today: DateUtils.dateOnly(widget.now ?? DateTime.now()),
+    selected: _selected ?? (_view == _AgendaView.week ? _anchor : null),
+    week: _view == _AgendaView.week,
+    enabled: !_locked,
+    partial: _more || _moreAssessments,
+    onSelectDate: (date) => setState(() => _selected = date),
+    onSelectAdjacentDate: (date) {
+      setState(() {
+        _anchor = date;
+        _selected = date;
+        _items = [];
+        _assessments = [];
+      });
+      _load();
+    },
+    dropTargetBuilder: (date, child) =>
+        _dateDrop(date, child, keyPrefix: 'agenda-drop'),
+    entries: [
+      for (final row in filtered) _calendarEntry(row),
+      for (final event in _assessments.where(_matchesAssessment))
+        if (event.status != 'withdrawn') _calendarAssessment(event),
+    ],
+  );
 }

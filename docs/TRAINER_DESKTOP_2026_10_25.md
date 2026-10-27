@@ -365,3 +365,58 @@ resumen de fecha, cambio de inicio y confirmación. Se cierra sin confirmar ni
 cambiar pautas; no se modifican resultados. Cero errores o avisos de consola
 capturados en ese recorrido. La versión de ADMIN continúa siendo la publicación
 automática `e790a6af` antes acreditada; este pulido solo cambia Trainer.
+
+
+## Agenda mensual con eventos · 27/10/2026
+
+Javier pide sustituir los números de sesiones por un calendario de trabajo con
+entradas legibles y arrastre, tomando como referencia Google/iOS Calendar.
+`TrainerMonthCalendar` muestra una rejilla semanal de lunes a domingo. Cada tira
+incluye alumno y sesión; el color se deriva de la identidad del alumno de forma
+estable y el estado dispone de icono, texto accesible y tooltip completo. Las
+pautas retiradas/archivadas se atenúan y tachan cuando el filtro permite verlas;
+las completadas llevan su señal de finalización. El color no identifica permisos,
+intensidad, diagnóstico ni una categoría deportiva inferida del nombre.
+
+Se muestran dos entradas por celda y «+N más» abre el listado de ese día, con
+nombre completo y estado. Las pruebas y simulacros llevan su icono propio y usan
+el mismo color del alumno. La vista semanal reutiliza las tiras compactas. No se
+inventa una hora: las pautas actuales están asignadas a fechas civiles.
+
+Pulsar una sesión abre su detalle con alumno, fecha, versión e indicaciones y
+los accesos existentes a planificación, resultado, movimiento y adaptación.
+Las opciones dependen del estado: una ejecución iniciada no ofrece mover o
+adaptar. El arrastre desde una tira mensual reutiliza el callback revisado de
+movimiento y conserva el ID de la cita; el servidor sigue comprobando autoridad,
+revisión y coincidencias. En móvil se mantiene la pulsación larga. Arrastrar una
+sesión de biblioteca conserva el selector de alumno y la confirmación compacta.
+
+La rejilla respeta los filtros, la carga por páginas y sus advertencias de
+completitud. Los días del mes adyacente se muestran atenuados; pulsarlos consulta
+su periodo antes de habilitar destinos de arrastre, sin afirmar que están vacíos.
+Con poco ancho o texto ampliado, el tablero permite desplazamiento horizontal
+sin comprimir nombres en columnas ilegibles. No hay dependencias, migraciones,
+permisos ni cambios en ADMIN por esta presentación local.
+
+La pauta de programas conserva el programa recibido del creador/ficha sin volver
+a consultar el catálogo. Su botón de confirmación y la vuelta al alumno quedan
+en un pie fijo, con independencia de la longitud de la lista de sesiones. Se
+mantienen fases, fechas editables, cambio conjunto del inicio, repetición finita,
+límite de envío, UUID de reintento y coexistencia con el plan del alumno. La
+separación inicial de dos días continúa siendo una propuesta editable.
+
+Validación: regresiones de calendario, filtros, paginación, texto ampliado,
+arrastre a fecha, ejecución iniciada y selección de alumno; nuevas pruebas de
+excedente, navegación a mes adyacente, detalle protegido y confirmación visible
+de un programa de veinte sesiones sin consultar otra biblioteca. Se inspecciona
+una captura del widget real con datos sintéticos locales; no se generan citas
+ni registros de alumnos para las comprobaciones. La publicación Dev y la prueba
+física de los avisos son comprobaciones independientes.
+
+
+Comprobación local del 27/10: `flutter analyze` sin incidencias y batería completa
+de Trainer con 256 pruebas correctas. Las siete nuevas comprueban excedente,
+navegación, arrastre mensual, ejecución iniciada, presentación del tablero y
+confirmación/cambio de programas sin consulta redundante. Se adaptan las
+comprobaciones de paginación y filtros a las entradas ahora visibles en el mes,
+conservando cursores y pruebas de texto ampliado existentes.

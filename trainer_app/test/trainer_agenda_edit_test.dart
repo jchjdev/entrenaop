@@ -244,6 +244,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('agenda-assignment-one')), findsNothing);
     expect(
+      find.byKey(const ValueKey('agenda-month-event-session-ana-done')),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('agenda-assignment-ana-done')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
       find.byKey(const ValueKey('agenda-assignment-ana-done')),
       findsOneWidget,
     );
@@ -263,10 +272,16 @@ void main() {
     await tapVisible(tester, find.byTooltip('Semana siguiente'));
     expect(repo.calls.last.from, DateTime(2026, 10, 5));
     expect(repo.calls.last.to, DateTime(2026, 10, 11));
-    await tapVisible(tester, find.byKey(const ValueKey('agenda-view-day')));
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('agenda-view-day'), skipOffstage: false),
+    );
     expect(repo.calls.last.from, DateTime(2026, 10, 8));
     expect(repo.calls.last.to, DateTime(2026, 10, 8));
-    await tapVisible(tester, find.byKey(const ValueKey('agenda-view-list')));
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('agenda-view-list'), skipOffstage: false),
+    );
     expect(repo.calls.last.from, DateTime(2026, 10, 1));
     expect(repo.calls.last.to, DateTime(2026, 10, 31));
   });
