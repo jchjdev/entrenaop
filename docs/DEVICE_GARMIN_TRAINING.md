@@ -768,3 +768,41 @@ una transacción con ROLLBACK devuelve lista completa, una entrada con el títul
 nuevo y cero bloqueadas; no se extrae la credencial original del reloj. Esta
 verificación de servidor no acredita descarga o apertura física. Javier debe
 actualizar EntrenaOP del reloj y confirmar la nueva sesión en Fuerza nativa.
+
+### Ajuste de identidad nativa · 27/10/2026
+
+La nueva prueba devuelve físicamente **FIT no confirmado: 200** en 1.0. La cita
+sigue pendiente y su revisión exportada es vigente. El cliente comprueba nombre
+exacto en `getAppWorkouts()` y la versión inicial usa 38 caracteres para esta
+copia (título + serie). El HTTP 200 no acredita importación; tampoco permite
+afirmar, sin leer el nombre devuelto por el dispositivo, que el reloj lo truncó.
+
+Se despliega `ciq-private-2` solo en Dev: el nombre nativo pasa a `EOP<serial>`,
+ASCII y máximo 13 bytes, único por exportación. La lista de EntrenaOP conserva el
+título completo, al igual que ejercicios, notas, dosis y descansos. Producto FIT
+2 distingue este formato del anterior para no confundir una copia ya importada;
+serial y fecha siguen siendo estables entre reintentos. La huella de manifiesto
+incluye el alias nativo para detectar este cambio de representación. El generador
+compartido conserva producto 1 por defecto y no cambia el ensayo USB/sintético.
+
+175 pruebas de servidor y tipos estrictos correctos. Se decodifican archivos con
+alias ASCII corto, títulos largos/acentuados, seriales límite e identidad de
+formato distinta, preservando ejercicios/dosis. Se relee `ciq-private-2` en HTTPS
+Dev, con FIT anónimo 401, y el ensayo sintético sigue con hash y bytes idénticos.
+No cambian SQL, permisos, RLS, Flutter ni el PRG 1.0 del reloj.
+
+Tras pulsar START para actualizar sin USB, Javier comunica **sesiones listas /
+actualizado ahora**. Esto acredita que el cliente encuentra la copia instalada
+con la nueva identidad. No prueba por sí solo el mecanismo interno del fallo
+anterior. Javier pulsa START, elige «Solo una vez» y confirma la apertura en
+Fuerza con `EOP1000000026`, press banca con barra, tres series, cinco repeticiones
+a 20 kg y descanso de 1:00. Indica que ha iniciado la actividad accidentalmente;
+se le explica cómo detenerla y descartarla, sin dar por hecho que la haya guardado
+o descartado. No se acredita retorno ni resultado deportivo.
+
+Queda aceptado físicamente el 27/10 el recorrido **cuenta vinculada → manifiesto
+autorizado → FIT privado inalámbrico → copia propia confirmada → Fuerza nativa
+con receta correcta**, manteniendo el PRG 1.0 y sin otra instalación USB. El único
+siguiente ensayo de este recorrido es reabrir/actualizar sin duplicados y comprobar
+cambio/retirada/revocación físicos; no se declara completada la sincronización
+general, background, Store ni otros modelos por esta aceptación.

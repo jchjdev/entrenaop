@@ -7,7 +7,10 @@ Reutiliza `garmin_access`, `training_source`, instantánea y generador FIT; vali
 permiso y revisión en cada descarga. Flutter confirma el código, lista y revoca
 con cuenta esperada. El reloj exige manifiesto vigente antes de abrir en Fuerza,
 sin borrado automático. Background opcional solo consulta huella de cambios.
-Aplicado en Dev, pruebas correctas; aceptación física privada pendiente.
+Aplicado en Dev y transporte privado aceptado físicamente el 27/10. `ciq-private-2`
+usa alias nativo ASCII corto y producto FIT 2; el manifiesto conserva el título
+completo y detecta el cambio de representación. El PRG 1.0 no cambia; el generador
+compartido mantiene producto 1 por defecto. 175 pruebas de servidor correctas.
 [Contrato](DEVICE_GARMIN_TRAINING.md#cuenta-y-entrega-privada--int-017--26102026).
 
 **Connect IQ · 26/10/2026 · puente FIT sintético aislado:** `connect_iq/` descarga

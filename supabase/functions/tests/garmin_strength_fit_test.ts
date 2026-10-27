@@ -54,6 +54,17 @@ test('una identidad estable genera los mismos bytes, sin añadir la hora de cada
   assert.deepEqual(garminStrengthFit(recipe(), identity), garminStrengthFit(recipe(), identity));
 });
 
+test('versionar el producto cambia la identidad de archivo sin alterar la receta ni el formato anterior', () => {
+  const original=decode(garminStrengthFit(recipe(),identity));
+  const next=decode(garminStrengthFit(recipe(),{...identity,productNumber:2}));
+  assert.equal(original.fileIdMesgs[0].product,1);assert.equal(next.fileIdMesgs[0].product,2);
+  assert.deepEqual(original.workoutMesgs,next.workoutMesgs);
+  assert.deepEqual(original.workoutStepMesgs,next.workoutStepMesgs);
+  for(const productNumber of [0,-1,1.5,0xffff]) {
+    assert.throws(()=>garminStrengthFit(recipe(),{...identity,productNumber}),/invalid_file_identity/);
+  }
+});
+
 test('ejercicios homónimos siguen teniendo referencias propias y no se inventa catálogo', () => {
   const raw = recipe(); raw.blocks[0].items[1].exercise_name = raw.blocks[0].items[0].exercise_name;
   raw.blocks[0].items[0].exercise_code = 'bench_press_barbell';

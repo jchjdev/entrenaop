@@ -3,7 +3,7 @@ import type {FileIdMesg, WorkoutMesg, WorkoutStepMesg, ExerciseTitleMesg} from '
 import {TrainingError} from '../device_training/prescription.ts';
 import {strengthPrescription} from '../device_training/strength.ts';
 
-export type WorkoutFileIdentity = {serialNumber: number; createdAt: Date; workoutName?: string};
+export type WorkoutFileIdentity = {serialNumber: number; createdAt: Date; workoutName?: string; productNumber?: number};
 const fitEpoch = Date.UTC(1989, 11, 31);
 const utf8 = new TextEncoder();
 
@@ -19,7 +19,9 @@ export function garminStrengthFit(snapshot: unknown, identity: WorkoutFileIdenti
     throw new TrainingError('unsupported_prescription');
   }
   const prescription = strengthPrescription(snapshot);
+  const productNumber = identity.productNumber ?? 1;
   if (!Number.isInteger(identity.serialNumber) || identity.serialNumber < 1 || identity.serialNumber > 0xfffffffe ||
+      !Number.isInteger(productNumber) || productNumber < 1 || productNumber > 0xfffe ||
       !(identity.createdAt instanceof Date) || !Number.isFinite(identity.createdAt.getTime()) ||
       identity.createdAt.getTime() < fitEpoch || identity.createdAt.getTime() >= fitEpoch + 0xffffffff * 1000) {
     throw new TrainingError('invalid_file_identity');
@@ -53,7 +55,7 @@ export function garminStrengthFit(snapshot: unknown, identity: WorkoutFileIdenti
 
   const encoder = new Encoder();
   const fileId: FileIdMesg = {
-    type: 'workout', manufacturer: 'development', product: 1,
+    type: 'workout', manufacturer: 'development', product: productNumber,
     serialNumber: identity.serialNumber, timeCreated: identity.createdAt,
   };
   encoder.onMesg(Profile.MesgNum.FILE_ID, fileId);

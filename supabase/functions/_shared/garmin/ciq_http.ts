@@ -10,7 +10,7 @@ const codes = new Set(['invalid_code','rate_limited','device_limit','account_cha
   'link_required','link_revoked','pair_expired','source_not_available','stale_prescription','too_many_sessions',
   'source_not_allowed','unsupported_prescription']);
 const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,x-client-info,content-type',
-  'Access-Control-Allow-Methods':'POST,GET,OPTIONS','Cache-Control':'no-store','X-EntrenaOP-Version':'ciq-private-1'};
+  'Access-Control-Allow-Methods':'POST,GET,OPTIONS','Cache-Control':'no-store','X-EntrenaOP-Version':'ciq-private-2'};
 const object = (v: unknown): Record<string, any> => {
   if (!v || typeof v !== 'object' || Array.isArray(v)) throw new HttpError(503,'ciq_unavailable');
   return v as Record<string, any>;
@@ -37,9 +37,13 @@ export function ciqExport(raw: unknown): {entry:Export; name:string; bytes:Uint8
   if (!uuid.test(entry.id) || !Number.isSafeInteger(entry.serial) || entry.serial<1 || entry.serial>0xfffffffe ||
       typeof entry.created_at!=='string') throw new HttpError(503,'ciq_unavailable');
   const snapshot=object(entry.snapshot);
-  // El sufijo identifica la copia nativa tras reinicios, sin alterar ejercicios o instrucciones.
-  const name=`${snapshot.name} · ${entry.serial}`;
-  const bytes=garminStrengthFit(snapshot,{serialNumber:entry.serial,createdAt:new Date(entry.created_at),workoutName:name});
+  // La comparación nativa es exacta: evitar títulos largos o normalizaciones.
+  // El nombre visible completo permanece en el manifiesto; este alias es único
+  // por exportación, ASCII y de hasta 13 bytes para todo el rango uint32 válido.
+  const name=`EOP${entry.serial}`;
+  // Otro producto distingue este formato del anterior aunque ya se haya importado
+  // el mismo serial/fecha. La identidad sigue siendo estable entre reintentos.
+  const bytes=garminStrengthFit(snapshot,{serialNumber:entry.serial,createdAt:new Date(entry.created_at),workoutName:name,productNumber:2});
   return {entry,name,bytes};
 }
 export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typeof fetch=fetch):Promise<Response> {
@@ -103,7 +107,7 @@ export async function handleGarminCiq(request:Request,c:GarminServerConfig,f:typ
             blocked++;
           }
         }
-        const revision=await ciqHash('manifest',JSON.stringify(entries.map(e=>[e.id,e.revision])));
+        const revision=await ciqHash('manifest',JSON.stringify(entries.map(e=>[e.id,e.revision,e.fit_name])));
         if(body.action==='changes') return json({revision,count:entries.length,blocked});
         return json({complete:true,entries,blocked,revision,valid_until:result.valid_until});
       }

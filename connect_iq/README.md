@@ -29,6 +29,16 @@ claves administrativas en el reloj. La comprobación opcional cada 15 minutos
 está desactivada inicialmente y solo detecta cambios, sin importar/borrar FIT.
 La publicación e instalación desde Connect IQ Store todavía están pendientes.
 
+El servidor Dev usa ahora `ciq-private-2`: la lista conserva el título de sesión,
+pero Garmin puede mostrar `EOP<serial>` como nombre nativo. Este alias ASCII
+corto evita depender de títulos largos en la comprobación exacta de instalación.
+El formato lleva producto FIT 2 y es estable entre reintentos. El PRG continúa
+en 1.0; el ajuste llega al actualizar las sesiones, sin volver a instalar por USB.
+Tras el error físico «FIT no confirmado: 200», Javier confirma «sesiones listas»
+con este ajuste y confirma después Fuerza nativa con el press banca 3×5 a 20 kg y
+descanso de 1:00. Aceptación física privada del 27/10; reintentos, cambios/retirada,
+revocación físicos, Store y background siguen pendientes.
+
 Pruebas servidor: `node --test supabase/functions/tests/garmin_ciq_test.ts`.
 SQL: `supabase/tests/garmin_ciq_account_and_downloads.sql` (ROLLBACK, solo Dev).
 Contrato y evidencia: `docs/DEVICE_GARMIN_TRAINING.md`, INT-017.

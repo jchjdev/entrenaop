@@ -56,7 +56,7 @@ test('el manifiesto no entrega snapshots, secretos o archivos incompatibles ni a
   const {f,calls}=mock(()=>({complete:true,entries:[exported(),incompatible],blocked:0,valid_until:'2027-01-01Z'}));
   const response=await handleGarminCiq(request('watch',{action:'manifest',snapshot:{name:'Malicioso'},owner_id:id},credential),config,f);
   const body=await response.json();assert.equal(body.entries.length,1);assert.equal(body.blocked,1);
-  assert.equal(body.entries[0].name,'Sesión propia');assert.match(body.entries[0].fit_name,/1000000000$/);
+  assert.equal(body.entries[0].name,'Sesión propia');assert.equal(body.entries[0].fit_name,'EOP1000000000');
   assert.ok(!JSON.stringify(body).includes('snapshot'));assert.ok(!JSON.stringify(body).includes(credential));
   assert.deepEqual(Object.keys(calls[0].p_input),['token_hash']);
 });
@@ -67,8 +67,24 @@ test('cada descarga consulta autorización actual y conserva bytes e identidad e
   const bytes=new Uint8Array(await a.arrayBuffer());assert.deepEqual(bytes,new Uint8Array(await b.arrayBuffer()));
   assert.equal(calls.length,2);assert.equal(calls[0].p_action,'download');assert.equal(calls[0].p_input.id,id);
   const decoder=new Decoder(Stream.fromByteArray(bytes));assert.equal(decoder.checkIntegrity(),true);
-  const messages=decoder.read().messages;assert.equal(messages.workoutMesgs[0].wktName,'Sesión propia · 1000000000');
+  const messages=decoder.read().messages;assert.equal(messages.workoutMesgs[0].wktName,'EOP1000000000');
+  assert.equal(messages.fileIdMesgs[0].product,2);
   assert.equal(messages.exerciseTitleMesgs[0].wktStepName,'Mi dominada');assert.equal(messages.workoutStepMesgs[1].durationTime,90);
+});
+
+test('la identidad nativa es corta y única aunque el título completo sea largo o tenga acentos',async()=>{
+  const first=exported();first.snapshot.name='Sesión de fuerza personalizada con dominadas e isométricos';
+  const second={...first,serial:0xfffffffe};
+  const a=ciqExport(first), b=ciqExport(second);
+  assert.match(a.name,/^[\x20-\x7e]{1,13}$/);assert.match(b.name,/^[\x20-\x7e]{1,13}$/);
+  assert.notEqual(a.name,b.name);
+  const {f}=mock(()=>({complete:true,entries:[first],blocked:0}));
+  const result=await (await handleGarminCiq(request('watch',{action:'manifest'},credential),config,f)).json();
+  assert.equal(result.entries[0].name,first.snapshot.name);
+  assert.equal(result.entries[0].fit_name,a.name);
+  const decoded=new Decoder(Stream.fromByteArray(a.bytes)).read();assert.deepEqual(decoded.errors,[]);
+  assert.equal(decoded.messages.workoutMesgs[0].wktName,result.entries[0].fit_name);
+  assert.equal(decoded.messages.exerciseTitleMesgs[0].wktStepName,'Mi dominada');
 });
 test('revocación, revisión obsoleta y respuestas parciales nunca sirven FIT o manifiesto válido',async()=>{
   for(const error of ['link_revoked','stale_prescription','source_not_available']){
