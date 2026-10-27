@@ -7,6 +7,7 @@ additional_redirect_urls = [
   "http://localhost:*/**",
   "http://127.0.0.1:*/**",
   "es.entrenaop://auth-callback/",
+  "https://trainer.entrenaop.es/",
 ]
 
 [auth.email.template.recovery]

@@ -6,8 +6,9 @@ por `supabase init`, que contiene valores distintos a los del proyecto remoto.
 
 ## Retornos
 
-La configuración parcial declara retornos de localhost/127.0.0.1 y el callback
-móvil. Antes de aplicar, inspeccionar el diff:
+La configuración parcial declara retornos de localhost/127.0.0.1, el callback
+móvil y, desde el 27/10/2026, el origen de Trainer Dev
+`https://trainer.entrenaop.es/`. Antes de aplicar, inspeccionar el diff:
 
 ```powershell
 supabase config diff --workdir tools/account_access_dev --project-ref sxbxfjqgoddzhtcyhalw --output-format json

@@ -1,3 +1,8 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'trainer_account_access.dart';
+import 'trainer_account_pages.dart';
+import 'trainer_auth_browser.dart';
 import 'trainer_client_goals_repository.dart';
 import 'trainer_client_goals.dart';
 import 'trainer_client_planning_repository.dart';
@@ -98,13 +103,28 @@ Future<void> main() async {
   await Supabase.initialize(
     url: TrainerConfig.url,
     publishableKey: TrainerConfig.key,
+    authOptions: const FlutterAuthClientOptions(detectSessionInUri: false),
   );
-  runApp(TrainerApp(client: Supabase.instance.client));
+  final accounts = SupabaseTrainerAccountAccess(
+    Supabase.instance.client,
+    url: TrainerConfig.url,
+    publishableKey: TrainerConfig.key,
+    returnUrl: Uri.parse(Uri.base.origin).replace(path: '/').toString(),
+    store: PreferencesTrainerRecoveryStore(
+      await SharedPreferences.getInstance(),
+    ),
+  );
+  await accounts.initializeCallback(
+    Uri.base,
+    cleanUrl: clearTrainerAuthCallbackUrl,
+  );
+  runApp(TrainerApp(client: Supabase.instance.client, accounts: accounts));
 }
 
 class TrainerApp extends StatefulWidget {
-  const TrainerApp({super.key, required this.client});
+  const TrainerApp({super.key, required this.client, this.accounts});
   final SupabaseClient client;
+  final TrainerAccountAccess? accounts;
   @override
   State<TrainerApp> createState() => _TrainerAppState();
 }
@@ -113,6 +133,8 @@ class _TrainerAppState extends State<TrainerApp> {
   late GoRouter _router;
   late final StreamSubscription<AuthState> _subscription;
   String? _identity;
+  late final TrainerAccountAccess _accounts;
+  late bool _linkFailure;
   final _messageChanges = ValueNotifier<int>(0);
   String? get _currentIdentity {
     final user = widget.client.auth.currentUser;
@@ -122,10 +144,28 @@ class _TrainerAppState extends State<TrainerApp> {
   @override
   void initState() {
     super.initState();
+    _accounts =
+        widget.accounts ??
+        SupabaseTrainerAccountAccess(
+          widget.client,
+          url: TrainerConfig.url,
+          publishableKey: TrainerConfig.key,
+          returnUrl: 'https://trainer.entrenaop.es/',
+          store: MemoryTrainerRecoveryStore(),
+        );
+    _linkFailure = _accounts.linkFailed;
     _identity = _currentIdentity;
     _router = _createRouter();
     _subscription = widget.client.auth.onAuthStateChange.listen((event) {
       if (!mounted) return;
+      if (event.event == AuthChangeEvent.passwordRecovery &&
+          _currentIdentity != null) {
+        unawaited(_accounts.rememberRecovery(_currentIdentity!));
+      } else if (event.event == AuthChangeEvent.signedOut ||
+          (_accounts.recoveryOwner != null &&
+              _accounts.recoveryOwner != _currentIdentity)) {
+        unawaited(_accounts.clearRecovery());
+      }
       if (_identity == _currentIdentity) {
         _router.refresh();
         return;
@@ -258,30 +298,64 @@ class _TrainerAppState extends State<TrainerApp> {
     }
 
     return GoRouter(
-      initialLocation: identity == null ? '/login' : '/home',
+      initialLocation: _linkFailure
+          ? '/link-error'
+          : _accounts.recovering
+          ? '/update-password'
+          : identity == null
+          ? '/login'
+          : '/home',
       redirect: (_, state) async {
-        if (_identity == null && state.matchedLocation != '/login') {
-          return '/login';
+        final location = state.matchedLocation;
+        const public = {
+          '/login',
+          '/register',
+          '/forgot-password',
+          '/confirm-email',
+          '/link-error',
+        };
+        if (_identity == null) {
+          return public.contains(location) ? null : '/login';
         }
-        if (_identity != null) {
-          bool assured;
+        if (location == '/link-error') return null;
+        if (_accounts.recovering) {
           try {
-            assured = await SupabaseTrainerSecurity(
-              widget.client,
-              _identity!,
-            ).assured();
+            final needsMfa = await _accounts.recoveryNeedsMfa();
+            final assured =
+                !needsMfa ||
+                await SupabaseTrainerSecurity(
+                  widget.client,
+                  identity!,
+                ).assured();
+            if (_identity != identity) return '/login';
+            if (!assured) return location == '/security' ? null : '/security';
+            return location == '/update-password' ? null : '/update-password';
           } catch (_) {
-            assured = false;
+            return location == '/link-error' ? null : '/link-error';
           }
-          if (_identity == null) return '/login';
-          if (!assured && state.matchedLocation != '/security') {
-            return '/security';
-          }
-          if (assured &&
-              (state.matchedLocation == '/login' ||
-                  state.matchedLocation == '/security')) {
-            return '/home';
-          }
+        }
+        if (location == '/update-password') return '/account';
+        if (location == '/account') return null;
+        try {
+          final status = await _accounts.status();
+          if (_identity != identity) return '/login';
+          if (!status.professionalAccount) return '/account';
+        } catch (_) {
+          return '/account';
+        }
+        bool assured;
+        try {
+          assured = await SupabaseTrainerSecurity(
+            widget.client,
+            identity!,
+          ).assured();
+        } catch (_) {
+          assured = false;
+        }
+        if (_identity != identity) return '/login';
+        if (!assured && location != '/security') return '/security';
+        if (assured && (public.contains(location) || location == '/security')) {
+          return '/home';
         }
         return null;
       },
@@ -289,6 +363,62 @@ class _TrainerAppState extends State<TrainerApp> {
         GoRoute(
           path: '/login',
           builder: (_, _) => _TrainerLogin(client: widget.client),
+        ),
+        for (final entry in const {
+          '/register': TrainerAccountForm.register,
+          '/forgot-password': TrainerAccountForm.recover,
+          '/confirm-email': TrainerAccountForm.confirm,
+        }.entries)
+          GoRoute(
+            path: entry.key,
+            builder: (_, _) => TrainerAccountFormPage(
+              key: ValueKey('account-form-${entry.key}'),
+              accounts: _accounts,
+              mode: entry.value,
+            ),
+          ),
+        GoRoute(
+          path: '/account',
+          builder: (_, _) => TrainerAccountPendingPage(
+            key: ValueKey('account-pending-$identity'),
+            accounts: _accounts,
+            onSignOut: () =>
+                widget.client.auth.signOut(scope: SignOutScope.local),
+          ),
+        ),
+        GoRoute(
+          path: '/update-password',
+          builder: (_, _) => TrainerPasswordUpdatePage(
+            key: ValueKey('password-update-$identity'),
+            accounts: _accounts,
+          ),
+        ),
+        GoRoute(
+          path: '/link-error',
+          builder: (context, _) => TrainerAccountFrame(
+            title: 'No se ha podido completar el enlace',
+            back: false,
+            children: [
+              const Text(
+                'El enlace puede haber caducado o haberse abierto en otro navegador. Si estabas confirmando el correo, prueba a iniciar sesión: el correo puede haber quedado confirmado.',
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () {
+                  _linkFailure = false;
+                  context.go('/login');
+                },
+                child: const Text('Iniciar sesión'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _linkFailure = false;
+                  context.go('/forgot-password');
+                },
+                child: const Text('Solicitar otro enlace de recuperación'),
+              ),
+            ],
+          ),
         ),
         GoRoute(
           path: '/security',
@@ -883,6 +1013,9 @@ class _TrainerAppState extends State<TrainerApp> {
     unawaited(_subscription.cancel());
     _router.dispose();
     _messageChanges.dispose();
+    if (_accounts case final SupabaseTrainerAccountAccess accounts) {
+      accounts.dispose();
+    }
     super.dispose();
   }
 
@@ -929,11 +1062,13 @@ class _TrainerLoginState extends State<_TrainerLogin> {
         email: _email.text.trim(),
         password: _password.text,
       );
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(
           () => _error =
-              'No se ha podido iniciar sesión. Revisa tus datos y la conexión.',
+              error is AuthException && error.code == 'email_not_confirmed'
+              ? trainerAccountError(error)
+              : 'No se ha podido iniciar sesión. Revisa tus datos y la conexión.',
         );
       }
     } finally {
@@ -995,8 +1130,17 @@ class _TrainerLoginState extends State<_TrainerLogin> {
               child: Text(_busy ? 'Entrando…' : 'Entrar'),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Si necesitas crear una cuenta o recuperar tu contraseña, hazlo desde la app habitual de EntrenaOP.',
+            TextButton(
+              onPressed: _busy ? null : () => context.go('/register'),
+              child: const Text('Crear cuenta'),
+            ),
+            TextButton(
+              onPressed: _busy ? null : () => context.go('/forgot-password'),
+              child: const Text('He olvidado mi contraseña'),
+            ),
+            TextButton(
+              onPressed: _busy ? null : () => context.go('/confirm-email'),
+              child: const Text('Reenviar confirmación de correo'),
             ),
           ],
         ),

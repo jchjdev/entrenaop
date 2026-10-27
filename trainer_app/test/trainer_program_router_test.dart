@@ -32,6 +32,8 @@ class _PortalFixture {
       switch (name) {
         case 'token':
           result = sessionData('refreshed');
+        case 'get_my_trainer_account_status':
+          result = {'professional_account': true, 'enabled': true};
         case 'get_trainer_security_status':
           result = true;
         case 'get_trainer_access':

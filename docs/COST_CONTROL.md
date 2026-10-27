@@ -156,3 +156,26 @@ Fuentes oficiales contrastadas:
 - [Apple Developer](https://developer.apple.com/programs/enroll/).
 - [Google Play](https://support.google.com/googleplay/android-developer/answer/6112435).
 - [Stripe Payments](https://stripe.com/es/pricing) y [Stripe Billing](https://stripe.com/es/billing/pricing).
+
+
+### Primera base presupuestaria · 27/10/2026
+
+Para dimensionar el lanzamiento, una hipótesis mínima sería **25 USD/mes de
+Supabase Pro con un solo proyecto básico + al menos 1 USD/mes de Bunny**, más
+hosting/dominio/correo contratados y cualquier consumo que exceda esos mínimos.
+Por tanto, **desde 26 USD/mes + hosting y renovaciones** es una base parcial de
+planificación, no el gasto actual verificado ni un presupuesto cerrado. No se
+ha contratado Pro ni se han cambiado planes por esta estimación.
+
+Si más adelante se renueva Apple Developer, los 99 USD/año de referencia
+representan 8,25 USD/mes prorrateados: la base parcial pasaría a 34,25 USD/mes,
+con las mismas exclusiones y el precio local de Apple pendiente de contratación.
+Google Play conserva su alta única y las comisiones comerciales de las tiendas
+son otro concepto. Desarrollo adicional dentro de una organización Supabase de
+pago puede sumar cómputo; no presupuestar dos proyectos pagados como uno.
+
+Javier confirma ahora **aplazar los cobros** y priorizar registro/recuperación
+web con concesión manual desde ADMIN (TRN-035). Ese recorrido reutiliza Auth y
+SMTP existentes; no necesita Stripe, Billing ni una suscripción externa nueva.
+La estimación final necesita reconciliar renovaciones privadas y medir vídeos,
+transferencia y carga. Las facturas reales se mantienen fuera del repositorio.
