@@ -225,6 +225,14 @@ contraseña. Activación y primera transferencia verificadas por HTTPS el
 destructiva del servidor.
 [Contrato, activación y pruebas](TRAINER_DEPLOYMENT_2026_10_25.md).
 
+**TRN-030/031 · corrección del 27/10/2026 · clic y arrastre por entrada:**
+Javier pide que el calendario responda al ratón sin mantener pulsado. Se reproduce
+que una ventana compacta imponía pulsación larga por usar el ancho para decidir
+el gesto. Ratón/trackpad pasan a arrastre al mover y dedo/lápiz conservan pulsación
+larga, independientemente del diseño. Las tiras movibles muestran agarre y asa;
+se conservan clic de detalle, cancelación, revisión y protecciones existentes.
+[Regresión y verificación](TRAINER_DESKTOP_2026_10_25.md#arrastre-por-dispositivo-de-entrada--corrección-del-27102026).
+
 **TRN-030/031 · 27/10/2026 · agenda mensual con eventos legibles:** Javier
 pide una agenda tipo Google/iOS Calendar: tiras con alumno y sesión, color estable
 por alumno, detalle al pulsar y arrastre entre fechas mediante la revisión

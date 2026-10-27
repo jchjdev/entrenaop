@@ -429,3 +429,35 @@ release `553b373e5a22dad25c96e3bce504974dc2a230f8-40541898947-1`, entorno develo
 y proyecto `sxbxfjqgoddzhtcyhalw`. El verificador HTTPS comprueba identidad, entrada,
 hashes de recursos y cabeceras. La aceptación del uso real del calendario queda
 para Javier; no se han movido citas personales durante la comprobación.
+
+
+### Arrastre por dispositivo de entrada · corrección del 27/10/2026
+
+Javier señala que el clic y arrastre no responde como esperaba. Se reproduce
+con ratón en ventana compacta: una prueba que mueve antes de 500 ms no invoca
+el movimiento. El código anterior elegía `Draggable` o `LongPressDraggable`
+según `ProfessionalWorkspaceScope.desktop`; ancho/zoom podían imponer una
+pulsación larga a un ratón. Las pruebas iniciales de ratón forzaban escritorio
+y no cubrían ese caso.
+
+`TrainerPointerDrag` separa reconocedores por dispositivo. Ratón/trackpad con
+botón principal arrastran al mover; dedo/lápiz requieren mantener pulsado para
+conservar el desplazamiento. Solo permite un arrastre activo por tarjeta,
+conserva la atenuación y recupera el estado al cancelar. Las tiras de mes/semana
+y las fichas inferiores usan la misma implementación. El cursor de agarre,
+indicador de arrastre y tooltip aparecen únicamente si esa sesión permite mover.
+Una pulsación sin movimiento sigue abriendo el detalle. Se mantienen los destinos,
+la revisión de movimiento, autoridad y bloqueo de ejecuciones iniciadas.
+
+La regresión compacta se ejecuta primero contra el código anterior y falla;
+tras la corrección pasa. Pasan la batería completa de Trainer (261 pruebas) y
+el análisis sin incidencias. Las cuatro pruebas nuevas del gesto verifican
+ratón inmediato, dedo con/sin espera, clic sin arrastre y cancelación/reintento;
+la quinta integra el ratón en el calendario compacto, con scroll horizontal.
+El navegador conectado del usuario no pudo inspeccionarse por un fallo del
+runtime de control; la prueba de navegador aislado se acredita por separado.
+
+El ensayo adicional en Chrome aislado no pasó de la carga del fichero de prueba
+y se interrumpió sin resultado; no se contabiliza como validación de navegador.
+La matriz local requerida de Trainer queda acreditada por análisis y 261 pruebas.
+La comprobación del gesto en la sesión publicada del usuario sigue siendo física.

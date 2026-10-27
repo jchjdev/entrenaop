@@ -51,7 +51,9 @@ class TrainerCalendarEntryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = trainerCalendarColor(entry.personId);
-    final label = '${entry.personName} · ${entry.title} · ${entry.stateLabel}';
+    final label =
+        '${entry.personName} · ${entry.title} · ${entry.stateLabel}'
+        '${entry.dragBuilder == null ? '' : ' · Arrastra para cambiar de día'}';
     return Tooltip(
       message: label,
       child: Semantics(
@@ -63,6 +65,9 @@ class TrainerCalendarEntryTile extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: entry.onTap,
+            mouseCursor: entry.dragBuilder == null
+                ? SystemMouseCursors.click
+                : SystemMouseCursors.grab,
             child: Container(
               constraints: const BoxConstraints(minHeight: 44),
               padding: const EdgeInsets.fromLTRB(7, 5, 5, 5),
@@ -112,6 +117,8 @@ class TrainerCalendarEntryTile extends StatelessWidget {
                           ? Icons.remove_circle_outline
                           : entry.assessment
                           ? Icons.timer_outlined
+                          : entry.dragBuilder != null
+                          ? Icons.drag_indicator
                           : Icons.event_note_outlined,
                       color: color,
                       size: 14,
@@ -218,7 +225,7 @@ class TrainerMonthCalendar extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(bottom: 10),
           child: Text(
-            'Color por alumno · Pulsa una sesión para ver sus opciones.',
+            'Color por alumno · Arrastra las sesiones pendientes para moverlas; pulsa para ver sus opciones.',
           ),
         ),
         LayoutBuilder(

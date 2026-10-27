@@ -2,6 +2,7 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_trainer/trainer_agenda_page.dart';
 import 'package:entrenaop_trainer/trainer_month_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../test/helpers/performance_visual_review.dart';
@@ -11,6 +12,44 @@ import 'trainer_workout_flow_test.dart' show WorkoutFixture;
 
 void main() {
   setUpAll(loadReviewFont);
+
+  testWidgets(
+    'ratón mueve la tira sin pulsación larga en una ventana compacta',
+    (t) async {
+      await resize(t, const Size(900, 1200));
+      final moved = <DateTime>[];
+      await t.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: ProfessionalWorkspaceScope(
+            desktop: false,
+            child: TrainerAgendaPage(
+              repository: AgendaEditFixture(),
+              now: DateTime(2026, 10, 21),
+              onMove: (_, date) async => moved.add(date),
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final source = find.byKey(const ValueKey('agenda-month-drag-one'));
+      final target = find.byKey(const ValueKey('agenda-drop-2026-10-22'));
+      await t.ensureVisible(source);
+      await t.pumpAndSettle();
+      final gesture = await t.startGesture(
+        t.getCenter(source),
+        kind: PointerDeviceKind.mouse,
+      );
+      await gesture.moveBy(const Offset(24, 0));
+      await t.pump(const Duration(milliseconds: 16));
+      await gesture.moveTo(t.getCenter(target));
+      await t.pump(const Duration(milliseconds: 16));
+      await gesture.up();
+      await t.pumpAndSettle();
+      expect(moved, [DateTime(2026, 10, 22)]);
+      expect(t.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'el mes muestra alumno y sesión; el excedente abre las entradas del día',

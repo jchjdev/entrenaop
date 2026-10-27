@@ -9,6 +9,7 @@ import 'trainer_workout_repository.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_agenda_client_picker.dart';
 import 'trainer_month_calendar.dart';
+import 'trainer_pointer_drag.dart';
 import 'trainer_assignment_lifecycle_actions.dart';
 
 import 'package:workout_core/professional_assessment.dart';
@@ -404,23 +405,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
         ),
       ),
     );
-    final faded = Opacity(opacity: .35, child: child);
-    if (ProfessionalWorkspaceScope.isDesktop(context)) {
-      return Draggable<TrainerAgendaItem>(
-        key: ValueKey('$keyPrefix-${row.assignment.id}'),
-        data: row,
-        maxSimultaneousDrags: 1,
-        feedback: feedback,
-        childWhenDragging: faded,
-        child: child,
-      );
-    }
-    return LongPressDraggable<TrainerAgendaItem>(
+    return TrainerPointerDrag<TrainerAgendaItem>(
       key: ValueKey('$keyPrefix-${row.assignment.id}'),
       data: row,
-      maxSimultaneousDrags: 1,
       feedback: feedback,
-      childWhenDragging: faded,
       child: child,
     );
   }
@@ -1240,43 +1228,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       ),
     );
     if (!_editable(assignment) || widget.onMove == null || _locked) return card;
-    if (ProfessionalWorkspaceScope.isDesktop(context)) {
-      return Draggable<TrainerAgendaItem>(
-        key: ValueKey('agenda-drag-${assignment.id}'),
-        data: row,
-        maxSimultaneousDrags: 1,
-        feedback: Material(
-          elevation: 6,
-          borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            width: 220,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text('${row.clientName}\n${assignment.name}'),
-            ),
-          ),
-        ),
-        childWhenDragging: Opacity(opacity: .5, child: card),
-        child: card,
-      );
-    }
-    return LongPressDraggable<TrainerAgendaItem>(
-      key: ValueKey('agenda-drag-${assignment.id}'),
-      data: row,
-      feedback: Material(
-        elevation: 6,
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          width: 220,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text('${row.clientName}\n${assignment.name}'),
-          ),
-        ),
-      ),
-      childWhenDragging: Opacity(opacity: .5, child: card),
-      child: card,
-    );
+    return _dragCalendarEntry(row, card, 'agenda-drag');
   }
 
   TrainerCalendarEntry _calendarAssessment(ProfessionalAssessmentEvent event) =>
