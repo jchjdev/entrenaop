@@ -706,6 +706,10 @@ El archivo temporal ignorado se elimina tras cargar secretos. Antes de producci�
 se debe sustituir el permiso amplio de prueba por una clave restringida al
 contrato realmente necesario.
 
+`commerce_private` se incluye en `BACKUP_SCHEMAS`, compartido por exportación y
+ensayo de restauración. La comprobación del publicador detectó inicialmente la
+omisión y detuvo la subida; se corrige la lista sin debilitar esa prueba.
+
 Validación local y de esquema aplicado: análisis Trainer sin incidencias,
 296 pruebas Flutter, 35 pruebas Node, tipos TypeScript estrictos y Deno correctos.
 El contrato SQL nuevo y seis regresiones de acceso, MFA, autoentrenamiento,
