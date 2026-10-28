@@ -4,10 +4,17 @@
 
 Javier confirma implementar citas en la agenda, arrastre y avisos al alumno;
 Google Calendar queda para después. Migración aplicada exclusivamente en Dev
-el 28/10/2026. Análisis limpio y baterías correctas: 1.442 pruebas de la app
-(una omitida por plataforma), 299 de Trainer y 316 de ADMIN (dos omitidas por
-plataforma). Once contratos SQL con ROLLBACK pasan con el esquema nuevo.
-La publicación HTTPS del portal se acredita al terminar el flujo automático.
+el 28/10/2026. Las 248 migraciones locales/remotas coinciden. Análisis limpio
+y baterías correctas: 1.442 pruebas de la app (una omitida), 299 de Trainer y
+316 de ADMIN (dos omitidas). Once contratos SQL con ROLLBACK pasan con el esquema nuevo.
+Trainer publicado automáticamente y verificado por HTTPS en la revisión
+`806838ec45d006eb82a4f3cd096b8fd0a99b5aee`, con fuentes guardadas y backend Dev.
+Se comprueban el creador y la rejilla semanal en la sesión web existente, sin
+crear citas ficticias ni mandar avisos a alumnos durante la comprobación visual.
+[Publicación de Trainer](https://github.com/jchjdev/entrenaop/actions/runs/40780393345)
+y [publicación de ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/40781476838)
+terminadas correctamente; los dos manifiestos HTTPS acreditan revisión
+`806838ec`, destino `development` y proyecto `sxbxfjqgoddzhtcyhalw`.
 
 ## Recorrido implementado
 
@@ -75,6 +82,8 @@ otro preparador requeriría una decisión futura explícita.
   consentimiento, apps antiguas, cancelación, relación inactiva y hueco DST.
 - Pruebas Flutter de arrastre real con ratón entre días/horas, conservación de
   sesiones, recordatorio optativo, refresco y lectura móvil con texto ampliado.
+  Soltar sobre una ficha existente también alcanza el destino horario y permite
+  comprobar el solapamiento en servidor.
 - El contrato antiguo `trainer_calendar_snapshot_guards.sql` ya fallaba antes
   de esta migración: la vinculación múltiple incrementa la revisión del alumno.
   Su fixture ahora parte de esa revisión y sigue verificando ausencia de
@@ -84,3 +93,16 @@ otro preparador requeriría una decisión futura explícita.
 - No hay recurrencias, confirmación/rechazo del alumno ni cobro por cita.
 - Aceptación física de la push en móvil con la nueva versión pendiente del
   recorrido manual; no se genera otra APK automáticamente ni se compila Xcode.
+
+## Prueba manual pendiente en móvil
+
+1. Crear una cita para una cuenta propia vinculada y comprobarla en la nueva
+   app, en Preparador → Citas. Debe empezar sin recordatorio activado.
+2. Elegir 30 min antes o 24 h antes. Para probar pronto, usar una cita dentro de
+   31 min, de día y con el canal de avisos personales del dispositivo activado.
+   El programador comprueba cada minuto y la push se agrupa/respetará descanso.
+3. Mover la misma cita entre días y horas en Trainer; comprobar su actualización
+   al reanudar la app y que el aviso abre el detalle correcto desde la bandeja.
+4. Cancelarla antes de su hora; comprobar historial conservado y ausencia de
+   recordatorio obsoleto. La push de iPhone sigue dependiendo de la activación
+   Apple/APNs pendiente; la consulta y bandeja de la app no dependen de ella.

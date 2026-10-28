@@ -8,10 +8,14 @@ se invalidan recordatorios obsoletos y se mantienen permisos/descanso. Sesiones,
 ejecución y relojes conservan sus contratos. Privacidad por autor/alumno; sin
 Google Calendar, recurrencias ni cobros por cita. Análisis raíz, Trainer y ADMIN
 limpios; 1.442, 299 y 316 pruebas correctas respectivamente, con las omisiones
-de plataforma existentes; once contratos SQL con ROLLBACK correctos.
+explícitas de las baterías; once contratos SQL con ROLLBACK correctos y 248
+migraciones locales/remotas coincidentes en Dev.
 **Siguiente recorrido de citas:** probar en móvil la nueva versión: recibir una
 cita propia, activar recordatorio, moverla y cancelarla sin recibir avisos
-obsoletos. La publicación automática HTTPS se acredita al finalizar.
+obsoletos. Trainer publicado automáticamente y verificado por HTTPS en
+`806838ec`; creador y rejilla semanal comprobados en la sesión web existente.
+La publicación actual de ADMIN también termina correctamente en esa revisión;
+no se modifica su interfaz ni se publican citas en el catálogo deportivo.
 [Contrato, límites y validación](TRAINER_APPOINTMENTS.md).
 
 **INT-023 · 28/10/2026 · Apple Watch en validación:** primer recorrido de carrera
