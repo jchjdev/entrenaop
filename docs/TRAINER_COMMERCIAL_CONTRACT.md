@@ -8,6 +8,28 @@ ni cambios en Dev/producción.
 
 ## 1. Base vigente y propuesta principal
 
+### Posibles niveles comerciales · propuesta del 28/10/2026
+
+Javier plantea conservar el cupo de alumnos y diferenciar tres niveles: gestión
+profesional; algoritmo para el preparador y sus alumnos, con Pro personal del
+preparador; y un nivel que incluya además Pro para los alumnos. Son ideas para
+evaluar, no planes aprobados ni derechos implementados. No se fijan precios,
+suplementos, cantidades ni cuotas de generación por esta conversación.
+
+La evaluación debe distinguir usar el algoritmo como herramienta del preparador
+para revisar y asignar una propuesta, de conceder al alumno generación autónoma
+y todo Pro. El servicio básico sigue incluyendo recibir y ejecutar lo pautado
+sin compra adicional. El algoritmo profesional requiere concretar revisión,
+versionado y convivencia con otras planificaciones antes de habilitarlo.
+
+Una futura concesión Pro incluida debe conservar su origen y vigencia por
+servicio/plan, sin sobrescribir compras personales u otras concesiones. Antes
+de implementarla hay que acordar qué ocurre al terminar el vínculo o cambiar
+de plan, cómo evitar pagos personales duplicados y qué alumnos cubre el cupo.
+Ninguna de estas propuestas concede permisos administrativos ni elimina
+cuotas de recursos. La cancelación conserva el historial conforme al contrato
+vigente; no se acuerda aquí una nueva política de acceso posterior.
+
 Se conserva lo acordado en [TRAINER_PAYMENTS.md](TRAINER_PAYMENTS.md) y
 [TRAINER_PLATFORM.md](TRAINER_PLATFORM.md): el preparador paga a EntrenaOP por
 herramientas/cupo y el alumno paga al preparador por su servicio. Pro personal,

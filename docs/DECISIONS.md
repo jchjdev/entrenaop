@@ -1,5 +1,22 @@
 # Registro de decisiones vigentes
 
+**TRN-036 · 28/10/2026 · consulta profesional móvil:** Javier aprueba un apartado
+visible solo para entrenadores habilitados en la app del deportista: mensajes y
+pendientes, agenda, resultados, vídeos por revisar y acceso a sus alumnos. Los
+creadores completos permanecen en web. Separar este contexto del entrenamiento
+personal y conservar permisos/doble factor profesional. Alcance acordado,
+pendiente de implementación; no presentar la bandeja profesional móvil como
+disponible. [Alcance](TRAINER_APP.md).
+
+**Propuesta comercial · 28/10/2026 · cupo, algoritmo y Pro incluido:** Javier
+plantea niveles de gestión profesional, algoritmo para preparador/alumnos con
+Pro propio, y Pro incluido para alumnos. Se registra para evaluación, sin
+aprobar precios, planes, derechos ni activación del algoritmo profesional.
+Se conserva el acceso a las pautas sin compra obligatoria de Pro y la separación
+de derechos personales/profesionales. Revisión del algoritmo, concesiones por
+origen, vigencia y coexistencia con compras personales requieren concreción.
+[Propuesta y límites](TRAINER_COMMERCIAL_CONTRACT.md#posibles-niveles-comerciales--propuesta-del-28102026).
+
 **INT-022 · 28/10/2026 · acceso común a dispositivos y conexiones:** Javier
 aprueba agrupar Salud y Garmin en Perfil → Dispositivos y conexiones. Se añade
 `/profile/connections` y se conservan las rutas existentes de historial,
