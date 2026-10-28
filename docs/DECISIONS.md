@@ -1,5 +1,17 @@
 # Registro de decisiones vigentes
 
+**INT-022 · 28/10/2026 · acceso común a dispositivos y conexiones:** Javier
+aprueba agrupar Salud y Garmin en Perfil → Dispositivos y conexiones. Se añade
+`/profile/connections` y se conservan las rutas existentes de historial,
+autorización Garmin y app del reloj. La pantalla consulta disponibilidad y
+estado, sin pedir permisos de Salud ni iniciar conexiones. Los estados se
+actualizan al volver de gestionar cada integración; un error no se presenta
+como desconexión ni oculta las otras opciones. La gestión y retirada de acceso
+siguen disponibles aunque no exista derecho comercial de sincronización.
+Las futuras marcas se incorporarán cuando tengan un recorrido implementado;
+no se anuncian como disponibles por aparecer en el objetivo de producto.
+[Recorrido y límites](DEVICE_INTEGRATIONS.md#dispositivos-y-conexiones--int-022).
+
 **INT-021 · 27/10/2026 · reconocimiento y descarga automática CIQ:** Javier pide
 resolver la copia importada en fondo y continuar hasta automatizar la beta.
 Se prepara 1.6: buscar primero biblioteca propia y, solo para un alias EOP exacto

@@ -19,8 +19,61 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/trainer_forms_page.dart';
 import 'package:entrenaop/features/trainers/presentation/pages/trainer_assessments_page.dart';
+import 'package:entrenaop/features/device_connections/presentation/device_connections_page.dart';
+import 'package:entrenaop/features/device_connections/presentation/garmin_connection_page.dart';
 
 void main() {
+  testWidgets(
+    'Perfil agrupa conexiones y volver de Garmin conserva la pantalla común',
+    (tester) async {
+      sl.registerSingleton<SupabaseClient>(_ClientWithoutSession());
+      sl.registerSingleton<PreparationGoalRepository>(_Goals());
+      sl.registerSingleton<ProfileBirthDateRepository>(_BirthDate());
+      sl.registerSingleton<ProfileNameRepository>(
+        ProfileNameRepository(_ClientWithoutSession()),
+      );
+      addTearDown(sl.reset);
+      final auth = _Auth();
+      final router = AppRouter(auth);
+      addTearDown(router.dispose);
+      router.config.go('/profile');
+      await tester.pumpWidget(
+        BlocProvider<AuthCubit>.value(
+          value: auth,
+          child: MaterialApp.router(
+            theme: EntrenaTheme.dark,
+            routerConfig: router.config,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Carreras de Salud'), findsNothing);
+      expect(find.text('Conexión con Garmin'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Dispositivos y conexiones'),
+        300,
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Dispositivos y conexiones'));
+      await tester.tap(find.text('Dispositivos y conexiones'));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/connections');
+      expect(find.byType(DeviceConnectionsPage), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+      await tester.ensureVisible(find.text('Gestionar Garmin'));
+      await tester.tap(find.text('Gestionar Garmin'));
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/garmin');
+      expect(find.byType(GarminConnectionPage), findsOneWidget);
+      router.config.pop();
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile/connections');
+      router.config.pop();
+      await tester.pumpAndSettle();
+      expect(router.config.state.uri.path, '/profile');
+      expect(tester.takeException(), isNull);
+    },
+  );
   for (final route in [
     '/my-trainer/forms',
     '/my-trainer/forms/assignment',

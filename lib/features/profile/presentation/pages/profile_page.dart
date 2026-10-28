@@ -374,25 +374,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 12),
                         Card(
                           child: ListTile(
-                            leading: const Icon(Icons.watch_outlined),
-                            title: const Text('Carreras de Salud'),
+                            leading: const Icon(Icons.devices_other_outlined),
+                            title: const Text('Dispositivos y conexiones'),
                             subtitle: const Text(
-                              'Consulta e importa tus carreras a tu historial.',
+                              'Salud del móvil, Garmin y tus conexiones de entrenamiento.',
                             ),
                             trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _open('/profile/activities'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.link),
-                            title: const Text('Conexión con Garmin'),
-                            subtitle: const Text(
-                              'Autoriza o desconecta tu cuenta Garmin.',
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => _open('/profile/garmin'),
+                            onTap: () => _open('/profile/connections'),
                           ),
                         ),
                         const SizedBox(height: 22),

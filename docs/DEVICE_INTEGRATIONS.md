@@ -1,5 +1,40 @@
 # Dispositivos y actividades · bloque común · INT-001
 
+## Dispositivos y conexiones · INT-022
+
+Desde el 28/10/2026, Perfil ofrece un único acceso **Dispositivos y conexiones**
+(`/profile/connections`). Agrupa **Salud del móvil** y **Garmin**, conservando
+los recorridos existentes de historial, permisos y gestión de Garmin. Los enlaces
+anteriores y el retorno de autorización siguen siendo válidos. Volver desde una
+conexión actualiza sus estados; cambiar de cuenta descarta el estado anterior.
+
+La vista general no solicita permisos nativos, no lee actividades y no inicia
+autorizaciones ni desconexiones. Salud muestra disponibilidad de lectura, que
+no equivale a permiso concedido por HealthKit. En iPhone se accede al historial
+y a la lectura explícita de Salud de Apple; en web se consulta el historial.
+Health Connect sigue sin integrarse en la app principal de Android. Garmin
+muestra el estado del contrato existente; si falla su consulta se indica estado
+sin confirmar. La ausencia de Pro o servicio vigente impide sincronizar, pero
+permite gestionar y retirar accesos. No se cambian contratos ni controles del
+servidor. Los proveedores futuros tendrán entrada cuando estén implementados.
+
+El contrato actual no devuelve una fecha de última sincronización: no se
+sustituye por la caducidad del permiso ni por la hora de consulta. Las capturas
+de widgets con datos ficticios están en
+[`visual-audit/device-connections-2026-10-28/`](visual-audit/device-connections-2026-10-28/),
+incluido texto al 150 %. Las pruebas cubren navegación de ida y vuelta,
+aislamiento de cuenta, errores y ausencia de llamadas que cambien permisos.
+Esta reorganización requiere una nueva compilación de la app instalada; los
+cambios de Flutter no llegan al iPhone mediante la sincronización de Garmin.
+El bloque de integraciones conserva sus límites y pruebas físicas pendientes.
+
+Validación del 28/10/2026: `flutter analyze --no-pub` sin incidencias;
+36 pruebas focalizadas y 1.388 pruebas de la raíz correctas, con una omitida;
+tres capturas revisadas y compilación web release con `APP_ENV=development`
+correcta. Es una compilación local, no una publicación ni actualización iOS.
+
+## Evolución y alcance de las integraciones
+
 **Actualización INT-012 · 23/10/2026:** Garmin ya recibe actividades FIT en Dev
 y permite asociarlas con revisión explícita a una cita pendiente. La primera
 carrera física queda completada desde la app web con resultados reales y sin
