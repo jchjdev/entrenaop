@@ -1,5 +1,14 @@
 # Producto EntrenaOP
 
+**Consulta profesional móvil · TRN-036 · 28/10/2026:** el deportista que
+también es entrenador puede alternar su entrenamiento personal y el seguimiento
+de sus alumnos en la misma app. El usuario normal mantiene su navegación. El
+espacio profesional permite consulta, conversación, revisión de resultados y
+corrección de técnica con MFA; los creadores completos permanecen en Trainer
+web. Código y consulta de servidor preparados solo en Dev, pendientes de nueva
+instalación/aceptación móvil. No concede Pro ni modifica los planes comerciales.
+[Recorrido](TRAINER_MOBILE_WORKSPACE.md).
+
 **Connect IQ Beta · 27/10/2026 · automatización en validación:** Javier pide
 resolver el reconocimiento de la copia de fondo y descargar sin abrir ni aceptar
 avisos. La beta 1.6 prepara consulta/descarga automática cada 15 min, desactivable,

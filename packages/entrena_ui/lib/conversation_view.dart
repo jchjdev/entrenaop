@@ -64,6 +64,7 @@ class _ConversationViewState extends State<ConversationView>
       (WidgetsBinding.instance.lifecycleState == null ||
           WidgetsBinding.instance.lifecycleState ==
               AppLifecycleState.resumed) &&
+      TickerMode.valuesOf(context).enabled &&
       (ModalRoute.of(context)?.isCurrent ?? true);
   @override
   void initState() {

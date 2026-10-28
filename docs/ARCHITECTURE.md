@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**TRN-036 · 28/10/2026 · dos espacios en la app:** el módulo
+`lib/features/coach_workspace/` separa dominio, adaptación RPC y presentación
+móvil. No importa aplicaciones web: comparte `trainer_access`, conversación y
+lector de resultados. Una sexta rama del shell personal contiene las cuatro
+ramas profesionales; conserva pilas, identidad y doble factor. La consulta
+paginada de vídeos reutiliza permisos y no devuelve URLs; los recursos se
+autorizan de nuevo al abrirlos. Solo Dev, sin tablas/derechos nuevos.
+[Contrato y límites](TRAINER_MOBILE_WORKSPACE.md).
+
 **Connect IQ · 27/10/2026 · INT-021:** Beta 1.6 incorpora `CiqLibrary` para
 recuperar un alias exacto previamente solicitado en la biblioteca general si
 no aparece en la propia. No transfiere propiedad ni elimina contenido. Mantiene

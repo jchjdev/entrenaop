@@ -2,17 +2,18 @@
 
 ## Consulta profesional desde la app · TRN-036 · 28/10/2026
 
-Javier aprueba un apartado profesional en la app del deportista, visible solo
-para entrenadores habilitados, orientado a consulta rápida: conversaciones y
-pendientes, agenda, resultados, vídeos por revisar y acceso a las fichas de sus
-alumnos. Los creadores completos permanecen en Trainer web. Este apartado se
-mantiene separado del entrenamiento personal y de «Para mí», con los permisos
-y el doble factor profesionales. Es alcance acordado pendiente de implementar;
-la app actual no incorpora aún una bandeja profesional móvil.
+Implementada en el código del deportista y servidor Dev, pendiente de nueva
+compilación/instalación y aceptación física. El selector «Mi entrenamiento /
+Entrenador» aparece para cuentas profesionales habilitadas; el modo profesional
+exige MFA y ofrece Resumen, Agenda, Alumnos y Mensajes. Conserva el contexto
+personal, «Preparador» para el servicio recibido y «Para mí» para entrenarse.
+Consulta objetivos/calendario compartido, resultados y técnica; permite
+responder, revisar y corregir con los contratos existentes. Los creadores
+completos permanecen en Trainer web. No incluye push nativa al preparador.
+[Arquitectura, verificación y recorrido pendiente](TRAINER_MOBILE_WORKSPACE.md).
 
-La posible oferta por cupo, algoritmo profesional y Pro incluido para alumnos
-se recoge como propuesta sin aprobar en
-[el contrato comercial](TRAINER_COMMERCIAL_CONTRACT.md#posibles-niveles-comerciales--propuesta-del-28102026).
+La oferta por cupo, algoritmo profesional y Pro incluido para alumnos sigue como
+[propuesta sin aprobar](TRAINER_COMMERCIAL_CONTRACT.md#posibles-niveles-comerciales--propuesta-del-28102026).
 
 ## Planificación propia · TRN-033 · 26/10/2026
 

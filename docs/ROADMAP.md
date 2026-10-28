@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-036 · 28/10/2026 · consulta profesional móvil preparada:** selector
+por acceso confirmado y dos espacios independientes en la app; Resumen, Agenda,
+Alumnos y Mensajes reutilizan permisos/MFA y componentes comunes. Consulta
+objetivos, calendario compartido y resultados; responde conversaciones y vídeos
+con reintento protegido. La consulta de vídeos sin primera corrección está
+aplicada solo en Dev y ocho contratos terminan con ROLLBACK. Análisis limpios,
+1.411 pruebas raíz, 286 Trainer, 316 ADMIN y 271 de los paquetes compartidos
+correctas; capturas revisadas a 320/390 píxeles con texto ampliado.
+**Siguiente recorrido de este bloque:** nueva instalación móvil → entrar con
+MFA → atender a un alumno → comprobar resultado/corrección → volver al espacio
+personal y al preparador propio. Pendientes aceptación física y push nativa al
+preparador; no se amplían creadores móviles, cobros, algoritmo ni producción.
+[Alcance y verificaciones](TRAINER_MOBILE_WORKSPACE.md).
+
 **INT-021 · 27/10/2026 · Beta CIQ 1.6 instalada; ensayo automático en curso:** recuperación por alias exacto
 en biblioteca general para descargas previamente solicitadas, sin borrar ni
 atribuir propiedad. Modo automático cada 15 min tras primera lista autorizada,

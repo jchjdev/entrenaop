@@ -1,12 +1,16 @@
 # Registro de decisiones vigentes
 
-**TRN-036 · 28/10/2026 · consulta profesional móvil:** Javier aprueba un apartado
-visible solo para entrenadores habilitados en la app del deportista: mensajes y
-pendientes, agenda, resultados, vídeos por revisar y acceso a sus alumnos. Los
-creadores completos permanecen en web. Separar este contexto del entrenamiento
-personal y conservar permisos/doble factor profesional. Alcance acordado,
-pendiente de implementación; no presentar la bandeja profesional móvil como
-disponible. [Alcance](TRAINER_APP.md).
+**TRN-036 · 28/10/2026 · consulta profesional móvil:** implementada en código
+y servidor Dev; instalación y aceptación física pendientes. Javier aprueba que
+la app del deportista tenga dos espacios para cuentas profesionales: navegación
+personal conservada y Resumen/Agenda/Alumnos/Mensajes para consulta. El selector
+depende del acceso propio confirmado; las lecturas profesionales exigen MFA y
+conservan la autorización de cada recurso. Reutiliza contratos, conversación y
+lector de resultados compartidos; los creadores completos permanecen en web.
+Bandeja técnica paginada sin URL, calendario compartido en lectura y reintentos
+de revisión/corrección con operación fija. Sin nuevos cobros, algoritmo
+profesional, push nativa al preparador ni cambios en producción.
+[Arquitectura, pruebas y recorrido pendiente](TRAINER_MOBILE_WORKSPACE.md).
 
 **Propuesta comercial · 28/10/2026 · cupo, algoritmo y Pro incluido:** Javier
 plantea niveles de gestión profesional, algoritmo para preparador/alumnos con

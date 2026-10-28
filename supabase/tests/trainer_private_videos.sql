@@ -42,6 +42,7 @@ begin
  perform set_config('request.jwt.claim.sub',other::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
  if public.can_read_exercise_video(url) or public.authorize_exercise_video_asset(demo,'status') or public.authorize_exercise_video_asset(demo,'thumbnail') then raise exception 'ADMIN ajeno hereda acceso'; end if;
+ if public.list_trainer_technique_inbox(other)<>'[]'::jsonb then raise exception 'Bandeja técnica ajena'; end if;
  if public.list_trainer_exercise_videos()<>'[]'::jsonb then raise exception 'Lista reservas ajenas'; end if;
  begin perform public.get_exercise_video_asset(demo); raise exception 'ADMIN obtiene activo ajeno'; exception when insufficient_privilege then null; end;
  begin perform public.save_trainer_exercise(gen_random_uuid(),draft); raise exception 'Enlaza vídeo privado ajeno'; exception when insufficient_privilege then null; end;
@@ -63,7 +64,31 @@ begin
  perform set_config('request.jwt.claim.sub',trainer::text,true);
  perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
  if not public.can_read_exercise_video(clip_url) then raise exception 'Preparador no ve técnica'; end if;
+ if jsonb_array_length(public.list_trainer_technique_inbox(trainer))<>1
+  or public.list_trainer_technique_inbox(trainer)->0->>'id'<>clip::text
+  or public.list_trainer_technique_inbox(trainer)->0->>'assignment_id'<>scheduled::text
+  or public.list_trainer_technique_inbox(trainer)->0 ? 'playback_url'
+ then raise exception 'Bandeja técnica incompleta o expone URL'; end if;
+ begin perform public.list_trainer_technique_inbox(other); raise exception 'Consulta bandeja de otra cuenta'; exception when insufficient_privilege then null; end;
+ begin perform public.list_trainer_technique_inbox(trainer,now(),null); raise exception 'Cursor parcial'; exception when invalid_parameter_value then null; end;
+ if public.list_trainer_technique_inbox(trainer,(public.list_trainer_technique_inbox(trainer)->0->>'created_at')::timestamptz,clip)<>'[]'::jsonb then raise exception 'Repite límite del cursor'; end if;
+ perform set_config('request.jwt.claim.sub',other::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal2')::text,true);
+ if public.list_trainer_technique_inbox(other)<>'[]'::jsonb then raise exception 'Bandeja técnica filtra mal al dueño'; end if;
+ perform set_config('request.jwt.claim.sub',trainer::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.list_trainer_technique_inbox(trainer); raise exception 'Bandeja técnica sin MFA'; exception when insufficient_privilege then null; end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',trainer,'role','authenticated','aal','aal2')::text,true);
+ reset role;
+ update public.exercise_video_assets set shared=false where id=clip;
+ set local role authenticated;
+ if public.list_trainer_technique_inbox(trainer)<>'[]'::jsonb then raise exception 'Bandeja conserva clip sin consentimiento'; end if;
+ reset role;
+ update public.exercise_video_assets set shared=true where id=clip;
+ set local role authenticated;
+
  if public.add_trainer_video_feedback(feedback,clip,12.5,'Mantén el control')<>feedback or public.add_trainer_video_feedback(feedback,clip,12.5,'Mantén el control')<>feedback then raise exception 'Duplica respuesta'; end if;
+ if public.list_trainer_technique_inbox(trainer)<>'[]'::jsonb then raise exception 'Conserva vídeo ya corregido como pendiente'; end if;
  begin perform public.add_trainer_video_feedback(gen_random_uuid(),clip,91,'Fuera de tiempo'); raise exception 'Comentario fuera del clip'; exception when invalid_parameter_value then null; end;
  begin perform public.add_trainer_video_feedback(feedback,null,12.5,'Mantén el control'); raise exception 'Reintento cambia clip por NULL'; exception when invalid_parameter_value then null; end;
  reset role;

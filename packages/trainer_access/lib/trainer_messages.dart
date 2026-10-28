@@ -49,7 +49,14 @@ abstract class TrainerMessageRepository {
   });
 }
 
-class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
+abstract class TrainerInboxMessageRepository
+    implements TrainerMessageRepository {
+  Future<TrainerMessageInbox> inbox();
+  Future<void> markRead(List<String> messageIds);
+}
+
+class SupabaseTrainerMessageRepository
+    implements TrainerInboxMessageRepository {
   const SupabaseTrainerMessageRepository(this.client, this.userId);
   final SupabaseClient client;
   final String userId;
@@ -76,6 +83,7 @@ class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
     }
   }
 
+  @override
   Future<TrainerMessageInbox> inbox() async => TrainerMessageInbox.fromJson(
     Map<String, dynamic>.from(
       await _rpc('get_trainer_message_inbox', {'p_expected_owner': userId})
@@ -83,6 +91,7 @@ class SupabaseTrainerMessageRepository implements TrainerMessageRepository {
     ),
   );
 
+  @override
   Future<void> markRead(List<String> messageIds) async {
     if (messageIds.isEmpty) return;
     await _rpc('read_trainer_messages', {

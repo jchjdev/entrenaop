@@ -1,3 +1,5 @@
+import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
+
 import 'package:entrenaop/core/presentation/widgets/entrena_wordmark.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +22,68 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final professional = navigationShell.currentIndex == 5;
+    final workspace = CoachWorkspaceScope.maybeOf(context)?.controller;
+    if (!professional && workspace != null) {
+      workspace.athleteIndex = navigationShell.currentIndex;
+    }
+    Widget frame(Widget child) {
+      if (workspace == null || (!workspace.enabled && !professional)) {
+        return child;
+      }
+      return SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SegmentedButton<bool>(
+                      segments: [
+                        const ButtonSegment(
+                          value: false,
+                          label: Text('Mi entrenamiento'),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Badge.count(
+                            count: workspace.unread,
+                            isLabelVisible: workspace.unread > 0,
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('Entrenador'),
+                            ),
+                          ),
+                        ),
+                      ],
+                      selected: {professional},
+                      showSelectedIcon: false,
+                      onSelectionChanged: (selection) {
+                        if (selection.single == professional) return;
+                        navigationShell.goBranch(
+                          selection.single ? 5 : workspace.athleteIndex,
+                        );
+                      },
+                    ),
+                  ),
+                  if (professional)
+                    IconButton(
+                      tooltip: 'Mi perfil',
+                      onPressed: () => context.push('/profile'),
+                      icon: const Icon(Icons.account_circle_outlined),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(child: child),
+          ],
+        ),
+      );
+    }
+
+    if (professional) return frame(navigationShell);
     final showTrainer =
         StudentNavigationScope.maybeOf(context)?.hasTrainer == true ||
         navigationShell.currentIndex == 4;
@@ -32,33 +96,35 @@ class AppShell extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= 840) {
-          return Scaffold(
-            body: Row(
-              children: [
-                SafeArea(
-                  child: NavigationRail(
-                    selectedIndex: selectedIndex,
-                    onDestinationSelected: (index) =>
-                        _selectDestination(indices[index]),
-                    extended: constraints.maxWidth >= 1180,
-                    labelType: constraints.maxWidth >= 1180
-                        ? NavigationRailLabelType.none
-                        : NavigationRailLabelType.selected,
-                    leading: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      child: EntrenaWordmark(
-                        width: constraints.maxWidth >= 1180 ? 132 : 58,
+          return frame(
+            Scaffold(
+              body: Row(
+                children: [
+                  SafeArea(
+                    child: NavigationRail(
+                      selectedIndex: selectedIndex,
+                      onDestinationSelected: (index) =>
+                          _selectDestination(indices[index]),
+                      extended: constraints.maxWidth >= 1180,
+                      labelType: constraints.maxWidth >= 1180
+                          ? NavigationRailLabelType.none
+                          : NavigationRailLabelType.selected,
+                      leading: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        child: EntrenaWordmark(
+                          width: constraints.maxWidth >= 1180 ? 132 : 58,
+                        ),
                       ),
+                      destinations: [
+                        ..._railDestinations.take(4),
+                        if (showTrainer) _railDestinations.last,
+                      ],
                     ),
-                    destinations: [
-                      ..._railDestinations.take(4),
-                      if (showTrainer) _railDestinations.last,
-                    ],
                   ),
-                ),
-                const VerticalDivider(width: 1, thickness: 1),
-                Expanded(child: navigationShell),
-              ],
+                  const VerticalDivider(width: 1, thickness: 1),
+                  Expanded(child: navigationShell),
+                ],
+              ),
             ),
           );
         }
@@ -68,15 +134,17 @@ class AppShell extends StatelessWidget {
           constraints.maxWidth,
           destinations,
         );
-        return Scaffold(
-          body: navigationShell,
-          bottomNavigationBar: NavigationBar(
-            labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-            labelTextStyle: labelStyle,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (index) =>
-                _selectDestination(indices[index]),
-            destinations: destinations,
+        return frame(
+          Scaffold(
+            body: navigationShell,
+            bottomNavigationBar: NavigationBar(
+              labelPadding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+              labelTextStyle: labelStyle,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (index) =>
+                  _selectDestination(indices[index]),
+              destinations: destinations,
+            ),
           ),
         );
       },

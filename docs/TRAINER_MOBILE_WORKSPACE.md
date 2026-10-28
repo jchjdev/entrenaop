@@ -1,0 +1,117 @@
+# Consulta profesional en la app · TRN-036 · 28/10/2026
+
+## Producto y recorrido
+
+La app del deportista incorpora un espacio de consulta profesional. La misma
+cuenta puede entrenar con Ervi, preparar a sus alumnos y usar «Para mí» sin
+confundir esas relaciones. El selector superior «Mi entrenamiento / Entrenador»
+solo aparece cuando el servidor confirma acceso profesional vigente. Un usuario
+normal conserva sus cuatro destinos y el quinto «Preparador» cuando corresponde;
+no necesita Pro para que se compruebe su condición profesional.
+
+El modo personal conserva las pilas existentes y «Preparador» sigue siendo el
+servicio que recibe el usuario. El profesional incorpora cuatro pilas:
+Resumen, Agenda, Alumnos y Mensajes. Cambiar de espacio conserva la pantalla y
+el borrador del chat. Perfil mantiene su ruta del navegador raíz. Los creadores,
+asignaciones y gestión completa permanecen en Trainer web.
+
+- Resumen consulta hoy, resultados pendientes y vídeos sin primera corrección.
+  Muestra una selección breve y permite abrir sus listados paginados.
+- Agenda ofrece día/semana y cambio de fecha, sobre las pautas propias del
+  preparador, incluida su planificación propia cuando existe.
+- Alumnos distingue activos, inactivos y archivados, con búsqueda entre los
+  cargados y paginación. La ficha consulta objetivos de oposición y marcas con
+  unidades, sesiones/resultados y conversaciones de las etapas del servicio.
+- El calendario compartido del alumno reutiliza su consentimiento existente.
+  Muestra otras pautas en lectura; no abre resultados ni conversaciones de
+  otros preparadores ni expone su cartera.
+- Mensajes añade globos por alumno, recibos al presentar la conversación y
+  actualización cada quince segundos mientras está visible y en primer plano.
+  La bandeja se comprueba cada minuto para cuentas profesionales habilitadas;
+  las demás solo al entrar/reanudar. Ocultar el chat no consume su refresco.
+- El resultado reutiliza la presentación común de fuerza/carrera y permite
+  marcar revisado con nota privada. El vídeo se reproduce bajo demanda y admite
+  correcciones vinculadas a un instante. Ambos envíos conservan operación y
+  contenido al reintentar un error incierto.
+
+El contador descrito es interno a la app. No se añade en este bloque un envío
+push nativo al preparador por mensajes de sus alumnos. La recepción push del
+deportista y su agrupación mantienen el circuito anterior; APNs sigue pendiente
+de la configuración/aceptación de Apple.
+
+## Arquitectura y seguridad
+
+- `lib/features/coach_workspace/domain/`: puerto de consulta/seguimiento y
+  proyecciones móviles. Reutiliza modelos profesionales existentes.
+- `data/`: adaptador de las RPC de Trainer, con propietario y JWT fijados por
+  `authenticatedTrainerRpc`. La reproducción fija además el token de la función
+  de vídeo y descarta respuestas al cambiar la identidad.
+- `presentation/`: controlador efímero por cuenta, guardia de acceso/MFA,
+  pantallas de consulta y navegación propia. No importa `trainer_app/` ni
+  `admin_app/`.
+- `core/router/coach_workspace_routes.dart`: sexta rama del shell existente,
+  con cuatro ramas profesionales internas. `go_router` conserva los contextos
+  independientes. La conversación usa el guardia de salida compartido.
+- `trainer_access` conserva acceso, seguridad, relaciones, calendario y mensajes;
+  expone un puerto de bandeja/lectura para inyectarlo sin atar la UI al cliente.
+- `workout_editor_ui/professional_workout_result.dart` contiene la presentación
+  antes alojada en Trainer. El archivo anterior la reexporta y conserva su
+  página/adaptador web; no se copian dos lectores de resultados.
+- `entrena_ui/ConversationView` respeta también `TickerMode`, necesario para
+  detener lecturas y recibos al conservar una rama fuera de pantalla.
+
+La guardia exige estado propio confirmado y MFA antes de montar datos
+profesionales. Usa el mismo autenticador de Trainer; si no existe, permite
+configurarlo mediante clave manual y verificar su primer código. No concede
+acceso, Pro ni plazas. Un error no confirma autorización. Revocación, respuesta
+tardía y cambio de cuenta descartan permisos/contadores anteriores. Cada RPC
+mantiene además sus comprobaciones de servidor por cuenta, servicio y recurso.
+
+Las composiciones aisladas sin transporte registrado mantienen el deportista y
+no montan el espacio profesional; un enlace directo no evita esa guardia.
+
+## Consulta nueva de vídeos
+
+Migración `20261028093038_trainer_mobile_technique_inbox.sql`, aplicada solo en
+Supabase Dev `sxbxfjqgoddzhtcyhalw`. Añade una fachada invoker autenticada y su
+proyección privada, sin tablas, cambios de RLS ni privilegios administrativos.
+
+`list_trainer_technique_inbox` verifica propietario esperado/MFA, filtra autor,
+vídeo compartido/listo y permiso existente de corrección. «Sin corrección»
+significa que todavía no hay una respuesta de técnica; no se presenta como
+una acreditación de visionado. Devuelve como máximo cincuenta referencias
+ordenadas por fecha e ID, con cursor compuesto, sin URLs ni contenidos de vídeo.
+Reproducir o responder vuelve a autorizar el recurso por los contratos anteriores.
+
+## Verificación y entrega
+
+El contrato SQL ampliado de vídeos termina con ROLLBACK. Comprueba bandeja
+propia/ajena, propietario cambiado, MFA, cursor compuesto, compartición retirada
+y exclusión después de corregir. Se revalidan también acceso/vínculos,
+operaciones/resultados, varios preparadores/calendario, planificación propia,
+bandeja de mensajes, ficha y objetivos: ocho contratos con ROLLBACK sobre Dev.
+
+Las pruebas móviles cubren navegación dual, entrada directa sin MFA, usuario
+normal, revocación/error, respuesta tardía, cambio de cuenta, pausa, conservación
+del borrador, lectura de mensajes, calendarios compartidos y reintento de revisión.
+Las de transporte comprueban fechas locales, cursores, propiedad/JWT, ausencia
+de identidad y payloads de revisión/corrección. Se revisan pantallas a 320/390
+píxeles con texto 1×/2× y capturas de consulta con fuentes legibles.
+
+Análisis limpio en raíz, Trainer y ADMIN. Baterías completas: 1.411 pruebas
+del deportista (una omisión anterior), 286 de Trainer y 316 de ADMIN (dos omisiones
+anteriores). Veintitrés pruebas específicas nuevas de módulo/transporte; paquetes
+compartidos: 218 de workout_editor_ui, 31 de entrena_ui y 22 de trainer_access.
+Se coteja el historial de migraciones local/Dev sin diferencias y los grants de
+la fachada: sin ejecución anónima, autenticada e invoker. Los asesores conservan
+las mismas cinco categorías y 243 hallazgos previos, sin incremento por este
+cambio; no se presenta ese estado anterior como una auditoría global resuelta.
+
+La funcionalidad requiere una nueva compilación e instalación móvil. No se
+acredita aquí su instalación física en iPhone, APNs ni publicación en tiendas.
+No se cambian tarifas, cobros, algoritmo profesional ni producción.
+
+Siguiente recorrido de aceptación: instalar la app → entrar con la cuenta
+profesional → verificar autenticador → alternar ambos espacios → leer/responder
+un mensaje de un alumno → revisar resultado/vídeo → volver al entrenamiento
+personal y comprobar que «Preparador» sigue mostrando a Ervi.

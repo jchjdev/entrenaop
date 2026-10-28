@@ -1,3 +1,10 @@
+import 'coach_workspace_routes.dart';
+import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
+import '../../features/coach_workspace/data/supabase_coach_workspace_repository.dart';
+import '../../features/coach_workspace/data/coach_video_source.dart';
+
+import 'package:trainer_access/trainer_security.dart';
+
 import 'dart:async';
 
 import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
@@ -268,30 +275,33 @@ class AppRouter {
                       next is AuthAuthenticated || next is AuthUnauthenticated,
                   builder: (context, auth) => auth is! AuthAuthenticated
                       ? const SizedBox.shrink()
-                      : StudentNavigationEntry(
-                          noticeEvents: PushNotificationsScope.readOf(context)
-                              ?.notices,
-                          key: ValueKey('navigation-${auth.user.id}'),
-                          loadSnapshot: () => SupabaseStudentNoticeRepository(
-                            sl<SupabaseClient>(),
-                            auth.user.id,
-                          ).snapshot(),
-                          loadHasRelationship: () async {
-                            final repository = SupabaseTrainerRepository(
+                      : _coachWorkspace(
+                          auth.user.id,
+                          StudentNavigationEntry(
+                            noticeEvents: PushNotificationsScope.readOf(context)
+                                ?.notices,
+                            key: ValueKey('student-navigation-${auth.user.id}'),
+                            loadSnapshot: () => SupabaseStudentNoticeRepository(
                               sl<SupabaseClient>(),
-                              userId: auth.user.id,
-                            );
-                            final active = await repository.relations(
-                              asTrainer: false,
-                            );
-                            if (active.isNotEmpty) return true;
-                            final history = await repository.relations(
-                              asTrainer: false,
-                              ended: true,
-                            );
-                            return history.isNotEmpty;
-                          },
-                          child: AppShell(navigationShell: navigationShell),
+                              auth.user.id,
+                            ).snapshot(),
+                            loadHasRelationship: () async {
+                              final repository = SupabaseTrainerRepository(
+                                sl<SupabaseClient>(),
+                                userId: auth.user.id,
+                              );
+                              final active = await repository.relations(
+                                asTrainer: false,
+                              );
+                              if (active.isNotEmpty) return true;
+                              final history = await repository.relations(
+                                asTrainer: false,
+                                ended: true,
+                              );
+                              return history.isNotEmpty;
+                            },
+                            child: AppShell(navigationShell: navigationShell),
+                          ),
                         ),
                 ),
               ),
@@ -1015,6 +1025,7 @@ class AppRouter {
                 ),
               ],
             ),
+            coachWorkspaceBranch(_workflowExits),
           ],
         ),
         materialAppRoute(
@@ -1305,6 +1316,21 @@ class AppRouter {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _coachWorkspace(String owner, Widget child) {
+    // Las composiciones sin transporte (por ejemplo pruebas de rutas aisladas)
+    // conservan el deportista y no montan ninguna pantalla profesional.
+    if (!sl.isRegistered<SupabaseClient>()) return child;
+    final client = sl<SupabaseClient>();
+    return CoachWorkspaceEntry(
+      key: ValueKey('workspace-$owner'),
+      repository: SupabaseCoachWorkspaceRepository(client, owner),
+      security: SupabaseTrainerSecurity(client, owner),
+      messages: SupabaseTrainerMessageRepository(client, owner),
+      video: coachVideoSource(client, owner),
+      child: child,
     );
   }
 
