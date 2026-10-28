@@ -1167,10 +1167,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   'Planificación y resultados de tus alumnos. Aquí se muestran las pautas de tu servicio; cada alumno conserva también su agenda personal.',
                 ),
                 const SizedBox(height: 12),
-                if (widget.appointments != null)
+                if (widget.appointments != null) ...[
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       FilledButton.icon(
                         key: const ValueKey('agenda-create-appointment'),
@@ -1194,6 +1195,8 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                         ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                ],
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -1351,6 +1354,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                     );
                   },
                 ),
+                const SizedBox(height: 16),
                 TrainerAssignmentVisibilityFilter(
                   value: _visibility,
                   onChanged: _locked

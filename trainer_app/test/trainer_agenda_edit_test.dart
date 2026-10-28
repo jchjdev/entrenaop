@@ -337,6 +337,14 @@ void main() {
     await tapVisible(tester, find.byKey(const ValueKey('agenda-view-week')));
     final source = find.byKey(const ValueKey('agenda-drag-one'));
     final target = find.byKey(const ValueKey('agenda-drop-2026-10-22'));
+    // El scroll debe materializar la tarjeta; su presencia inicial no depende
+    // del tamaño de los márgenes de la cabecera.
+    await tester.scrollUntilVisible(
+      source,
+      120,
+      maxScrolls: 20,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(source);
     await tester.pumpAndSettle();
     final gesture = await tester.startGesture(
