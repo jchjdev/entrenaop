@@ -31,54 +31,60 @@ class AppShell extends StatelessWidget {
       if (workspace == null || (!workspace.enabled && !professional)) {
         return child;
       }
-      return SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SegmentedButton<bool>(
-                      segments: [
-                        const ButtonSegment(
-                          value: false,
-                          label: Text('Mi entrenamiento'),
-                        ),
-                        ButtonSegment(
-                          value: true,
-                          label: Badge.count(
-                            count: workspace.unread,
-                            isLabelVisible: workspace.unread > 0,
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                              child: Text('Entrenador'),
+      return ColoredBox(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SegmentedButton<bool>(
+                        segments: [
+                          const ButtonSegment(
+                            value: false,
+                            label: Text('Mi entrenamiento'),
+                          ),
+                          ButtonSegment(
+                            value: true,
+                            label: Badge.count(
+                              count: workspace.unread,
+                              isLabelVisible: workspace.unread > 0,
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Text('Entrenador'),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                      selected: {professional},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (selection) {
-                        if (selection.single == professional) return;
-                        navigationShell.goBranch(
-                          selection.single ? 5 : workspace.athleteIndex,
-                        );
-                      },
+                        ],
+                        selected: {professional},
+                        showSelectedIcon: false,
+                        onSelectionChanged: (selection) {
+                          if (selection.single == professional) return;
+                          navigationShell.goBranch(
+                            selection.single ? 5 : workspace.athleteIndex,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  if (professional)
-                    IconButton(
-                      tooltip: 'Mi perfil',
-                      onPressed: () => context.push('/profile'),
-                      icon: const Icon(Icons.account_circle_outlined),
-                    ),
-                ],
+                    if (professional)
+                      IconButton(
+                        tooltip: 'Mi perfil',
+                        onPressed: () => context.push('/profile'),
+                        icon: const Icon(Icons.account_circle_outlined),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(child: child),
-          ],
+              Expanded(child: child),
+            ],
+          ),
         ),
       );
     }
