@@ -14,6 +14,7 @@ String? studentNoticeTargetRoute(StudentNoticeTarget target) {
   final id = Uri.encodeComponent(target.targetId);
   return switch (target.kind) {
     StudentNoticeTargetKind.conversation => '/my-trainer/conversations/$id',
+    StudentNoticeTargetKind.appointment => '/my-trainer/appointments/$id',
     StudentNoticeTargetKind.form => '/my-trainer/forms/$id',
     StudentNoticeTargetKind.assessment => '/my-trainer/assessments/$id',
     StudentNoticeTargetKind.technique => '/my-trainer/technique/$id',
@@ -397,4 +398,5 @@ String _kindLabel(StudentNoticeKind? kind) => switch (kind) {
   StudentNoticeKind.assessment => 'Pruebas',
   StudentNoticeKind.techniqueFeedback => 'Técnica',
   StudentNoticeKind.assignment => 'Pautas',
+  StudentNoticeKind.appointment => 'Citas',
 };

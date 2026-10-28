@@ -20,6 +20,8 @@ dependencies:
   web: 1.1.1
   # Compartir invitaciones por el canal elegido; versión ya resuelta en el editor.
   url_launcher: 6.3.2
+  # Identificador estable por intento de cita; misma versión ya resuelta en la app.
+  uuid: 4.6.0
   trainer_access:
     path: ../packages/trainer_access
   entrena_ui:

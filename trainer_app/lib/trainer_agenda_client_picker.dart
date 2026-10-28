@@ -7,9 +7,11 @@ class TrainerAgendaClientPicker extends StatefulWidget {
     super.key,
     required this.repository,
     this.selectedId,
+    this.forAppointment = false,
   });
   final TrainerRepository repository;
   final String? selectedId;
+  final bool forAppointment;
   @override
   State<TrainerAgendaClientPicker> createState() =>
       _TrainerAgendaClientPickerState();
@@ -60,13 +62,19 @@ class _TrainerAgendaClientPickerState extends State<TrainerAgendaClientPicker> {
 
   @override
   Widget build(BuildContext context) => EntrenaDialog(
-    title: const Text('Elegir alumno para la pauta'),
+    title: Text(
+      widget.forAppointment
+          ? 'Elegir alumno para la cita'
+          : 'Elegir alumno para la pauta',
+    ),
     content: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Selecciona un alumno con servicio activo. Después revisarás la sesión y la fecha.',
+        Text(
+          widget.forAppointment
+              ? 'Selecciona un alumno con servicio activo. La cita será privada entre vosotros.'
+              : 'Selecciona un alumno con servicio activo. Después revisarás la sesión y la fecha.',
         ),
         const SizedBox(height: 12),
         TextField(

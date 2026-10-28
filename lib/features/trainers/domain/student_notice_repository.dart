@@ -4,6 +4,7 @@ enum StudentNoticeKind {
   assessment,
   techniqueFeedback,
   assignment,
+  appointment,
 }
 
 enum StudentNoticeTargetKind {
@@ -13,6 +14,7 @@ enum StudentNoticeTargetKind {
   technique,
   workout,
   planning,
+  appointment,
 }
 
 class StudentNotice {
@@ -59,11 +61,13 @@ class StudentNoticeResources {
     this.hasConversations = false,
     this.hasTechnique = false,
     this.hasAssignedWorkouts = false,
+    this.hasAppointments = false,
     this.conversationRelationId,
     this.conversations = const [],
   });
   final bool hasForms, hasAssessments, hasConversations, hasTechnique;
   final bool hasAssignedWorkouts;
+  final bool hasAppointments;
   final String? conversationRelationId;
   final List<StudentConversationLink> conversations;
 
@@ -72,7 +76,8 @@ class StudentNoticeResources {
       hasAssessments ||
       hasConversations ||
       hasTechnique ||
-      hasAssignedWorkouts;
+      hasAssignedWorkouts ||
+      hasAppointments;
 }
 
 class StudentNoticeSnapshot {

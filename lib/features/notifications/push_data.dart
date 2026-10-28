@@ -189,6 +189,16 @@ class SupabasePushBackend
         'p_platform': platform,
       },
     );
+    // La capacidad pertenece a este binding. Una app anterior conserva sus
+    // canales y no recibe avisos de citas que todavía no sabe abrir.
+    try {
+      await _rpc(account, 'enable_my_appointment_notices', {
+        ..._key(installation),
+        'p_binding': bindingId,
+      });
+    } on PostgrestException catch (error) {
+      if (error.code != 'PGRST202') rethrow;
+    }
   }
 
   Future<dynamic> _previous(

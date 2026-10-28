@@ -31,6 +31,7 @@ class TrainerCalendarEntry {
     required this.title,
     required this.stateLabel,
     this.assessment = false,
+    this.appointment = false,
     this.muted = false,
     this.completed = false,
     this.onTap,
@@ -38,7 +39,7 @@ class TrainerCalendarEntry {
   });
   final String id, personId, personName, title, stateLabel;
   final DateTime date;
-  final bool assessment, muted, completed;
+  final bool assessment, appointment, muted, completed;
   final VoidCallback? onTap;
   final Widget Function(Widget child)? dragBuilder;
 }
@@ -117,6 +118,8 @@ class TrainerCalendarEntryTile extends StatelessWidget {
                           ? Icons.remove_circle_outline
                           : entry.assessment
                           ? Icons.timer_outlined
+                          : entry.appointment
+                          ? Icons.schedule
                           : entry.dragBuilder != null
                           ? Icons.drag_indicator
                           : Icons.event_note_outlined,
@@ -169,7 +172,9 @@ class TrainerMonthCalendar extends StatelessWidget {
     final chosen = await showDialog<TrainerCalendarEntry>(
       context: context,
       builder: (dialogContext) => EntrenaDialog(
-        title: Text('Pautas del ${date.day}/${date.month}'),
+        title: Text(
+          '${rows.any((entry) => entry.appointment) ? 'Agenda' : 'Pautas'} del ${date.day}/${date.month}',
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,7 +183,11 @@ class TrainerMonthCalendar extends StatelessWidget {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(
-                  entry.assessment ? Icons.timer_outlined : Icons.event_note,
+                  entry.assessment
+                      ? Icons.timer_outlined
+                      : entry.appointment
+                      ? Icons.schedule
+                      : Icons.event_note,
                   color: trainerCalendarColor(entry.personId),
                 ),
                 title: Text(entry.personName),
@@ -323,8 +332,9 @@ class TrainerMonthCalendar extends StatelessWidget {
     final cell = Semantics(
       label:
           '${date.day}/${date.month}/${date.year}, '
-          '${rows.where((r) => !r.assessment).length} pautas, '
+          '${rows.where((r) => !r.assessment && !r.appointment).length} pautas, '
           '${rows.where((r) => r.assessment).length} pruebas'
+          '${rows.any((r) => r.appointment) ? ', ${rows.where((r) => r.appointment).length} citas' : ''}'
           '${partial ? ', recuento parcial' : ''}',
       selected: active,
       child: Container(

@@ -30,6 +30,12 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
     StudentNoticeKind.form => 'Formulario de tu preparador',
     StudentNoticeKind.assessment => 'Pruebas de tu preparador',
     StudentNoticeKind.techniqueFeedback => 'Revisión de tu técnica',
+    StudentNoticeKind.appointment =>
+      revision.isOdd
+          ? 'Recordatorio de cita'
+          : revision == 2
+          ? 'Nueva cita de tu preparador'
+          : 'Cita actualizada',
     StudentNoticeKind.assignment =>
       revision == 0
           ? 'Nueva pauta de tu preparador'
@@ -41,41 +47,56 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
     StudentNotice? before,
     StudentNoticeKind? kind,
   }) async {
-    final data = _row(
-      await _rpc('get_my_trainer_notice_groups', {
-        'p_before_at': before?.createdAt.toUtc().toIso8601String(),
-        'p_before_id': before?.id,
-        'p_kind': kind?.name,
-      }),
-    );
+    final parameters = {
+      'p_before_at': before?.createdAt.toUtc().toIso8601String(),
+      'p_before_id': before?.id,
+      'p_kind': kind?.name,
+    };
+    dynamic response;
+    var legacy = false;
+    try {
+      response = await _rpc('get_my_trainer_notice_groups_v2', parameters);
+    } on PostgrestException catch (error) {
+      if (error.code != 'PGRST202') rethrow;
+      // Un despliegue del cliente anterior al servidor conserva los avisos conocidos.
+      legacy = true;
+      response = await _rpc('get_my_trainer_notice_groups', {
+        ...parameters,
+        'p_kind': kind == StudentNoticeKind.appointment ? null : kind?.name,
+      });
+    }
+    final data = _row(response);
     final resources = _row(data['resources']);
     return StudentNoticeSnapshot(
-      items: (data['items'] as List)
-          .map((value) {
-            final row = _row(value);
-            final kind = _kind(row['kind'] as String);
-            return StudentNotice(
-              id: row['id'] as String,
-              kind: kind,
-              title:
-                  (row['event_count'] as int? ?? 1) > 1 &&
-                      kind == StudentNoticeKind.assignment
-                  ? 'Planificación actualizada'
-                  : (row['event_count'] as int? ?? 1) > 1 &&
-                        kind == StudentNoticeKind.message
-                  ? 'Mensajes de tu preparador'
-                  : _title(kind, row['source_revision'] as int),
-              groupGeneration: row['group_generation'] as int?,
-              eventCount: row['event_count'] as int? ?? 1,
-              newCount: row['new_count'] as int? ?? 1,
-              trainerName: row['trainer_name'] as String?,
-              createdAt: DateTime.parse(row['created_at'] as String),
-              readAt: row['read_at'] == null
-                  ? null
-                  : DateTime.parse(row['read_at'] as String),
-            );
-          })
-          .toList(growable: false),
+      items:
+          (legacy && kind == StudentNoticeKind.appointment
+                  ? const []
+                  : data['items'] as List)
+              .map((value) {
+                final row = _row(value);
+                final kind = _kind(row['kind'] as String);
+                return StudentNotice(
+                  id: row['id'] as String,
+                  kind: kind,
+                  title:
+                      (row['event_count'] as int? ?? 1) > 1 &&
+                          kind == StudentNoticeKind.assignment
+                      ? 'Planificación actualizada'
+                      : (row['event_count'] as int? ?? 1) > 1 &&
+                            kind == StudentNoticeKind.message
+                      ? 'Mensajes de tu preparador'
+                      : _title(kind, row['source_revision'] as int),
+                  groupGeneration: row['group_generation'] as int?,
+                  eventCount: row['event_count'] as int? ?? 1,
+                  newCount: row['new_count'] as int? ?? 1,
+                  trainerName: row['trainer_name'] as String?,
+                  createdAt: DateTime.parse(row['created_at'] as String),
+                  readAt: row['read_at'] == null
+                      ? null
+                      : DateTime.parse(row['read_at'] as String),
+                );
+              })
+              .toList(growable: false),
       hasMore: data['has_more'] as bool,
       unreadCount: data['unread_count'] as int,
       resources: StudentNoticeResources(
@@ -84,6 +105,7 @@ class SupabaseStudentNoticeRepository implements StudentNoticeRepository {
         hasConversations: resources['has_conversations'] as bool,
         hasTechnique: resources['has_technique'] as bool,
         hasAssignedWorkouts: resources['has_assigned_workouts'] as bool,
+        hasAppointments: resources['has_appointments'] == true,
         conversationRelationId:
             resources['conversation_relation_id'] as String?,
         conversations: ((resources['conversations'] as List?) ?? const [])

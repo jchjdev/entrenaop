@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
+import 'package:trainer_access/trainer_appointments.dart';
+
+import 'trainer_appointment_dialog.dart';
+import 'trainer_appointment_week.dart';
 
 import 'trainer_workout_repository.dart';
 import 'trainer_workout_pages.dart';
@@ -95,10 +99,12 @@ class TrainerAgendaPage extends StatefulWidget {
     this.assessments,
     this.workouts,
     this.access,
+    this.appointments,
   });
   final TrainerAgendaRepository repository;
   final TrainerWorkoutRepository? workouts;
   final TrainerRepository? access;
+  final TrainerAppointmentRepository? appointments;
   final ProfessionalAssessmentEventRepository? assessments;
   final DateTime? now;
   final Future<void> Function(TrainerAssignment assignment, DateTime date)?
@@ -119,6 +125,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   bool _assessmentsBusy = false, _moreAssessments = false;
   String? _assessmentError;
   final _clientNames = <String, String>{};
+  List<TrainerAppointment> _appointments = [];
+  bool _appointmentsBusy = false, _moreAppointments = false;
+  String? _appointmentError;
+  String _eventKind = 'all';
   String? _clientFilter, _statusFilter, _error;
   TrainerAssignmentVisibility _visibility = TrainerAssignmentVisibility.current;
   bool _busy = true, _more = false, _mutating = false;
@@ -128,7 +138,8 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   bool _libraryBusy = false, _libraryMore = false;
   String? _libraryError;
 
-  bool get _locked => _busy || _mutating || _assessmentsBusy;
+  bool get _locked =>
+      _busy || _mutating || _assessmentsBusy || _appointmentsBusy;
   DateTime _civilOffset(DateTime date, int days) =>
       DateTime(date.year, date.month, date.day + days);
   DateTime _weekStart(DateTime date) => _civilOffset(date, 1 - date.weekday);
@@ -244,6 +255,26 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     DateTime date,
     Widget child, {
     String keyPrefix = 'agenda-board-drop',
+  }) => DragTarget<TrainerAppointment>(
+    key: ValueKey('appointment-day-drop-${appointmentDay(date)}'),
+    onWillAcceptWithDetails: (details) => _acceptAppointment(details.data),
+    onAcceptWithDetails: (details) => _moveAppointment(
+      details.data,
+      date,
+      details.data.calendarStart.hour * 60 + details.data.calendarStart.minute,
+    ),
+    builder: (context, candidates, rejected) => ColoredBox(
+      color: candidates.isEmpty
+          ? Colors.transparent
+          : Theme.of(context).colorScheme.primary.withValues(alpha: .15),
+      child: _workoutDateDrop(date, child, keyPrefix: keyPrefix),
+    ),
+  );
+
+  Widget _workoutDateDrop(
+    DateTime date,
+    Widget child, {
+    required String keyPrefix,
   }) => DragTarget<TrainerAgendaItem>(
     key: ValueKey('$keyPrefix-${agendaDate(date)}'),
     onWillAcceptWithDetails: (d) => _canMoveRow(d.data, date),
@@ -547,6 +578,9 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     final assessmentFetch = !more
         ? _loadAssessments(request: request)
         : Future<void>.value();
+    final appointmentFetch = more
+        ? Future<void>.value()
+        : _loadAppointments(request: request);
     setState(() {
       _busy = true;
       _error = null;
@@ -572,6 +606,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       }
     } finally {
       await assessmentFetch;
+      await appointmentFetch;
       if (mounted && request == _request) setState(() => _busy = false);
     }
   }
@@ -612,6 +647,236 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
       }
     }
   }
+
+  Future<void> _loadAppointments({bool more = false, int? request}) async {
+    final repository = widget.appointments;
+    if (repository == null) return;
+    final token = request ?? _request;
+    setState(() {
+      _appointmentsBusy = true;
+      _appointmentError = null;
+      if (!more) _appointments = [];
+    });
+    try {
+      final page = await repository.list(
+        from: _from,
+        to: _to,
+        after: more ? _appointments.lastOrNull : null,
+      );
+      if (!mounted || token != _request) return;
+      setState(() {
+        _appointments = more ? [..._appointments, ...page.items] : page.items;
+        _moreAppointments = page.hasMore;
+        for (final row in page.items) {
+          _clientNames[row.clientId] = row.clientName;
+        }
+      });
+    } catch (_) {
+      if (mounted && token == _request) {
+        setState(
+          () => _appointmentError = 'No se pudieron cargar las citas. Tus entrenamientos se conservan.',
+        );
+      }
+    } finally {
+      if (mounted && token == _request) {
+        setState(() => _appointmentsBusy = false);
+      }
+    }
+  }
+
+  bool _acceptAppointment(TrainerAppointment row) =>
+      !_locked &&
+      row.editable &&
+      widget.appointments != null &&
+      _appointments.any((item) => identical(item, row));
+  bool _matchesAppointment(TrainerAppointment row) =>
+      (_clientFilter == null || row.clientId == _clientFilter) &&
+      (_statusFilter == null ||
+          _statusFilter == (row.cancelled ? 'cancelled' : 'planned')) &&
+      switch (_visibility) {
+        TrainerAssignmentVisibility.current => !row.cancelled,
+        TrainerAssignmentVisibility.withdrawn => row.cancelled,
+        TrainerAssignmentVisibility.archived => false,
+        TrainerAssignmentVisibility.all => true,
+      };
+  List<TrainerAppointment> get _shownAppointments => _eventKind == 'training'
+      ? []
+      : _appointments.where(_matchesAppointment).toList();
+
+  Future<void> _editAppointment([TrainerAppointment? row]) async {
+    if (_locked || widget.appointments == null || widget.access == null) return;
+    if (row != null && !row.editable) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => EntrenaDialog(
+          title: Text(row.title),
+          content: Text(
+            '${row.clientName}\n${row.dateLabel} · ${row.timeLabel} · ${row.durationMinutes} min\n${row.timezone}\n${row.location}\n${row.cancelled ? 'Cancelada' : 'Cita conservada en consulta.'}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    final saved = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => TrainerAppointmentDialog(
+        repository: widget.appointments!,
+        clients: widget.access!,
+        initialDay: _selected ?? _anchor,
+        initial: row,
+        clientId: _clientFilter,
+      ),
+    );
+    if (mounted && saved == true) await _load();
+  }
+
+  Future<void> _moveAppointment(
+    TrainerAppointment row,
+    DateTime day,
+    int minute,
+  ) async {
+    if (!_acceptAppointment(row)) return;
+    if (DateUtils.isSameDay(row.calendarStart, day) &&
+        row.calendarStart.hour * 60 + row.calendarStart.minute == minute) {
+      return;
+    }
+    await _mutation(() async {
+      var result = await widget.appointments!.move(row, day, minute);
+      if (!mounted) return;
+      if (result.requiresConfirmation) {
+        if (!await confirmAppointmentOverlap(context)) return;
+        if (!mounted) return;
+        result = await widget.appointments!.move(
+          row,
+          day,
+          minute,
+          allowOverlap: true,
+        );
+      }
+      if (result.appointment == null) {
+        throw StateError('No se ha confirmado el cambio de la cita.');
+      }
+    });
+  }
+
+  Future<void> _cancelAppointment(TrainerAppointment row) async {
+    if (_locked || row.cancelled) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => EntrenaDialog(
+        title: const Text('Cancelar cita'),
+        content: Text(
+          '¿Cancelar «${row.title}» con ${row.clientName}? Se conservará el historial y se avisará al alumno.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cancelar cita'),
+          ),
+        ],
+      ),
+    );
+    if (mounted && confirmed == true) {
+      await _mutation(() async {
+        await widget.appointments!.cancel(row);
+      });
+    }
+  }
+
+  Widget _appointmentDrag(TrainerAppointment row, Widget child) =>
+      !_acceptAppointment(row)
+      ? child
+      : TrainerPointerDrag<TrainerAppointment>(
+          key: ValueKey('appointment-drag-${row.id}'),
+          data: row,
+          feedback: Material(
+            elevation: 6,
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: 240,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  '${row.clientName}\n${row.title}\n${row.durationMinutes} min',
+                ),
+              ),
+            ),
+          ),
+          child: child,
+        );
+
+  TrainerCalendarEntry _calendarAppointment(
+    TrainerAppointment row,
+  ) => TrainerCalendarEntry(
+    id: 'appointment-${row.id}',
+    date: row.calendarStart,
+    personId: row.clientId,
+    personName: row.clientName,
+    title:
+        '${row.calendarStart.hour.toString().padLeft(2, '0')}:${row.calendarStart.minute.toString().padLeft(2, '0')} · ${row.title}',
+    stateLabel: row.cancelled
+        ? 'Cita cancelada'
+        : 'Cita · ${row.durationMinutes} min',
+    appointment: true,
+    muted: row.cancelled,
+    onTap: () => _editAppointment(row),
+    dragBuilder: _acceptAppointment(row)
+        ? (child) => _appointmentDrag(row, child)
+        : null,
+  );
+
+  Widget _appointmentCard(TrainerAppointment row) => _appointmentDrag(
+    row,
+    Card(
+      key: ValueKey('agenda-appointment-${row.id}'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              row.clientName,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            Text(row.title),
+            Text(
+              '${row.dateLabel} · ${row.timeLabel} · ${row.durationMinutes} min · ${row.timezone}',
+            ),
+            if (row.location.isNotEmpty) Text(row.location),
+            if (row.cancelled) const Text('Cita cancelada'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                TextButton.icon(
+                  onPressed: _locked ? null : () => _editAppointment(row),
+                  icon: const Icon(Icons.schedule),
+                  label: Text(row.editable ? 'Editar cita' : 'Ver cita'),
+                ),
+                if (!row.cancelled)
+                  TextButton.icon(
+                    onPressed: _locked ? null : () => _cancelAppointment(row),
+                    icon: const Icon(Icons.event_busy_outlined),
+                    label: const Text('Cancelar cita'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 
   bool _matchesAssessment(ProfessionalAssessmentEvent event) =>
       _visibility != TrainerAssignmentVisibility.archived &&
@@ -847,7 +1112,24 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _items.where(_matches).toList();
+    final filtered = _eventKind == 'appointments'
+        ? <TrainerAgendaItem>[]
+        : _items.where(_matches).toList();
+    final appointments = _shownAppointments;
+    final visibleAppointments = appointments
+        .where(
+          (row) =>
+              _selected == null ||
+              (!row.calendarStart.isAfter(
+                    DateTime(
+                      _selected!.year,
+                      _selected!.month,
+                      _selected!.day + 1,
+                    ),
+                  ) &&
+                  row.calendarEnd.isAfter(_selected!)),
+        )
+        .toList();
     final assessmentEvents = _assessments
         .where(_matchesAssessment)
         .where(
@@ -885,6 +1167,33 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   'Planificación y resultados de tus alumnos. Aquí se muestran las pautas de tu servicio; cada alumno conserva también su agenda personal.',
                 ),
                 const SizedBox(height: 12),
+                if (widget.appointments != null)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        key: const ValueKey('agenda-create-appointment'),
+                        onPressed: _locked || widget.access == null
+                            ? null
+                            : () => _editAppointment(),
+                        icon: const Icon(Icons.add_alarm_outlined),
+                        label: const Text('Crear cita'),
+                      ),
+                      for (final kind in {
+                        'all': 'Todo',
+                        'training': 'Entrenamientos',
+                        'appointments': 'Citas',
+                      }.entries)
+                        ChoiceChip(
+                          label: Text(kind.value),
+                          selected: _eventKind == kind.key,
+                          onSelected: _locked
+                              ? null
+                              : (_) => setState(() => _eventKind = kind.key),
+                        ),
+                    ],
+                  ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -1078,37 +1387,104 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
                   ),
                 const SizedBox(height: 12),
                 if (_view == _AgendaView.week &&
+                    widget.appointments != null &&
+                    ProfessionalWorkspaceScope.isDesktop(context))
+                  TrainerAppointmentWeek(
+                    firstDay: _from,
+                    entries: [
+                      for (final row in filtered) _calendarEntry(row),
+                      if (_eventKind != 'appointments')
+                        for (final event in _assessments.where(
+                          _matchesAssessment,
+                        ))
+                          if (event.status != 'withdrawn')
+                            _calendarAssessment(event),
+                    ],
+                    appointments: appointments,
+                    enabled: !_locked,
+                    onOpen: _editAppointment,
+                    onMove: _moveAppointment,
+                    dragBuilder: _appointmentDrag,
+                    dayDropBuilder: (day, child) => _dateDrop(day, child),
+                  )
+                else if (_view == _AgendaView.week &&
                     ProfessionalWorkspaceScope.isDesktop(context))
                   _weekBoard(filtered)
                 else if (_view == _AgendaView.month ||
                     _view == _AgendaView.week)
                   _grid(filtered),
                 const SizedBox(height: 16),
-                Text(
-                  _selected != null
-                      ? 'Pautas del ${_selected!.day}/${_selected!.month}'
-                      : switch (_view) {
-                          _AgendaView.month ||
-                          _AgendaView.list => 'Pautas del mes',
-                          _AgendaView.week => 'Pautas de la semana',
-                          _AgendaView.day => 'Pautas del día',
-                        },
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                if (!_busy && visible.isEmpty && _error == null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      _more
-                          ? 'No hay pautas en esta selección entre las cargadas.'
-                          : 'No hay pautas en esta selección.',
+                if (widget.appointments != null &&
+                    _eventKind != 'training') ...[
+                  Text('Citas', style: Theme.of(context).textTheme.titleLarge),
+                  if (_appointmentError != null)
+                    Text(
+                      _appointmentError!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
+                  if (!_appointmentsBusy &&
+                      _appointmentError == null &&
+                      visibleAppointments.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text('No hay citas en esta selección.'),
+                    ),
+                  ProfessionalCatalogGrid(
+                    minCardWidth: 340,
+                    children: [
+                      for (final row in visibleAppointments)
+                        _appointmentCard(row),
+                    ],
                   ),
-                ProfessionalCatalogGrid(
-                  minCardWidth: 340,
-                  children: [for (final row in visible) _card(row)],
-                ),
-                if (widget.assessments != null) ...[
+                  if (_appointmentError != null || _moreAppointments)
+                    OutlinedButton(
+                      onPressed: _locked
+                          ? null
+                          : () => _loadAppointments(
+                              more: _appointmentError == null,
+                            ),
+                      child: Text(
+                        _appointmentError == null
+                            ? 'Cargar más citas del periodo'
+                            : 'Reintentar citas',
+                      ),
+                    ),
+                  if (_moreAppointments)
+                    const Text(
+                      'El calendario muestra las citas cargadas; hay más en este periodo.',
+                    ),
+                  const SizedBox(height: 16),
+                ],
+                if (_eventKind != 'appointments') ...[
+                  Text(
+                    _selected != null
+                        ? 'Pautas del ${_selected!.day}/${_selected!.month}'
+                        : switch (_view) {
+                            _AgendaView.month ||
+                            _AgendaView.list => 'Pautas del mes',
+                            _AgendaView.week => 'Pautas de la semana',
+                            _AgendaView.day => 'Pautas del día',
+                          },
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  if (!_busy && visible.isEmpty && _error == null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        _more
+                            ? 'No hay pautas en esta selección entre las cargadas.'
+                            : 'No hay pautas en esta selección.',
+                      ),
+                    ),
+                  ProfessionalCatalogGrid(
+                    minCardWidth: 340,
+                    children: [for (final row in visible) _card(row)],
+                  ),
+                ],
+                if (widget.assessments != null &&
+                    _eventKind != 'appointments') ...[
                   const SizedBox(height: 16),
                   Text(
                     'Pruebas y simulacros',
@@ -1302,7 +1678,7 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     selected: _selected ?? (_view == _AgendaView.week ? _anchor : null),
     week: _view == _AgendaView.week,
     enabled: !_locked,
-    partial: _more || _moreAssessments,
+    partial: _more || _moreAssessments || _moreAppointments,
     onSelectDate: (date) => setState(() => _selected = date),
     onSelectAdjacentDate: (date) {
       setState(() {
@@ -1316,9 +1692,11 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     dropTargetBuilder: (date, child) =>
         _dateDrop(date, child, keyPrefix: 'agenda-drop'),
     entries: [
+      for (final row in _shownAppointments) _calendarAppointment(row),
       for (final row in filtered) _calendarEntry(row),
-      for (final event in _assessments.where(_matchesAssessment))
-        if (event.status != 'withdrawn') _calendarAssessment(event),
+      if (_eventKind != 'appointments')
+        for (final event in _assessments.where(_matchesAssessment))
+          if (event.status != 'withdrawn') _calendarAssessment(event),
     ],
   );
 }

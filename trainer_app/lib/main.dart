@@ -2,6 +2,7 @@ import 'trainer_invitation_landing.dart';
 
 import 'package:trainer_access/trainer_invitation_link.dart';
 import 'package:trainer_access/trainer_notifications.dart';
+import 'package:trainer_access/trainer_appointments.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'trainer_account_access.dart';
@@ -842,6 +843,11 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/agenda',
               builder: (context, _) => TrainerAgendaPage(
                 repository: agenda(),
+                appointments: SupabaseTrainerAppointmentRepository(
+                  widget.client,
+                  identity!,
+                  forTrainer: true,
+                ),
                 workouts: workouts(),
                 access: access(),
                 assessments: assessments(),

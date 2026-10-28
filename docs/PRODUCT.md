@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**Citas privadas · TRN-041 · 28/10/2026:** Trainer incorpora citas con alumno,
+motivo, fecha/hora, duración y lugar/enlace. Comparten calendario y filtros con
+los entrenamientos, conservando su funcionamiento y sin crear ejecuciones ni
+envíos a relojes. El alumno las consulta en Preparador → Citas, con historial,
+avisos agrupados y recordatorio opcional elegido por él. Otro entrenador del
+mismo alumno no accede a los datos privados de la cita.
+[Contrato y estado de validación](TRAINER_APPOINTMENTS.md).
+
 **Apple Watch · INT-023 · 28/10/2026:** comienza en Dev la programación explícita
 de carreras pautadas en Entreno de Apple, desde el iPhone emparejado, para Pro o
 alumnos con servicio vigente. Requiere iOS 18/watchOS 11 en este primer adaptador;

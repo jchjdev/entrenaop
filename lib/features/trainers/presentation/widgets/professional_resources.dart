@@ -15,6 +15,13 @@ class ProfessionalResources extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
+      if (resources.hasAppointments)
+        _link(
+          Icons.event_available_outlined,
+          'Citas',
+          'Fechas, lugares y tus recordatorios',
+          '/my-trainer/appointments',
+        ),
       if (resources.hasAssignedWorkouts)
         _link(
           Icons.calendar_month_outlined,

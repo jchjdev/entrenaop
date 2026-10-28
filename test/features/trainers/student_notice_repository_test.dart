@@ -13,11 +13,12 @@ const other = '10000000-0000-4000-8000-000000000002';
 
 class NoticeServer {
   String account = pupil;
+  bool legacy = false;
   final requests = <http.Request>[];
   Completer<void>? hold;
   Completer<void>? started;
   final responses = <String, dynamic>{
-    'get_my_trainer_notice_groups': {
+    'get_my_trainer_notice_groups_v2': {
       'items': [
         {
           'id': 'notice',
@@ -86,6 +87,14 @@ class NoticeServer {
       };
     } else {
       final name = request.url.pathSegments.last;
+      if (legacy && name == 'get_my_trainer_notice_groups_v2') {
+        return http.Response(
+          jsonEncode({'code': 'PGRST202', 'message': 'Function not found'}),
+          404,
+          headers: {'content-type': 'application/json'},
+          request: request,
+        );
+      }
       if (!responses.containsKey(name)) {
         throw StateError('RPC inesperada: $name');
       }
@@ -118,8 +127,24 @@ void main() {
   });
   tearDown(() async => server.client.dispose());
 
+  test(
+    'un servidor anterior conserva los avisos y no simula soporte de citas',
+    () async {
+      server.legacy = true;
+      server.responses['get_my_trainer_notice_groups'] =
+          server.responses['get_my_trainer_notice_groups_v2'];
+      final snapshot = await repository.snapshot();
+      expect(snapshot.items.single.kind, StudentNoticeKind.message);
+      expect(snapshot.resources.hasAppointments, false);
+      expect(
+        (await repository.snapshot(kind: StudentNoticeKind.appointment)).items,
+        isEmpty,
+      );
+    },
+  );
+
   test('el grupo conserva generación y la envía al resolver y leer', () async {
-    final data = server.responses['get_my_trainer_notice_groups'] as Map;
+    final data = server.responses['get_my_trainer_notice_groups_v2'] as Map;
     final row = (data['items'] as List).single as Map;
     row.addAll(<String, Object?>{
       'group_generation': 30,

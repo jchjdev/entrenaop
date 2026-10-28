@@ -7,6 +7,8 @@ import '../../features/coach_workspace/data/supabase_coach_workspace_repository.
 import '../../features/coach_workspace/data/coach_video_source.dart';
 
 import 'package:trainer_access/trainer_security.dart';
+import 'package:trainer_access/trainer_appointments.dart';
+import 'package:entrenaop/features/trainers/presentation/pages/student_appointments_page.dart';
 
 import 'dart:async';
 
@@ -1205,6 +1207,30 @@ class AppRouter {
             repository: sl(),
           ),
         ),
+        for (final appointmentDetail in [false, true])
+          materialAppRoute(
+            path: appointmentDetail
+                ? '/my-trainer/appointments/:id'
+                : '/my-trainer/appointments',
+            builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(
+              bloc: authCubit,
+              builder: (context, auth) => auth is! AuthAuthenticated
+                  ? const SizedBox.shrink()
+                  : StudentAppointmentsPage(
+                      key: ValueKey(
+                        'appointments-${auth.user.id}-${state.pathParameters['id']}',
+                      ),
+                      userId: auth.user.id,
+                      appointmentId: state.pathParameters['id'],
+                      notices: PushNotificationsScope.readOf(context)?.notices,
+                      repository: SupabaseTrainerAppointmentRepository(
+                        sl<SupabaseClient>(),
+                        auth.user.id,
+                        forTrainer: false,
+                      ),
+                    ),
+            ),
+          ),
         materialAppRoute(
           path: '/my-trainer/technique',
           builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(

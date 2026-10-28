@@ -3,7 +3,7 @@ set local statement_timeout='60s';
 do $$
 declare trainer uuid:=gen_random_uuid(); pupil uuid:=gen_random_uuid(); stranger uuid:=gen_random_uuid(); deleted_user uuid:=gen_random_uuid();
  relation uuid:=gen_random_uuid(); template uuid; personal uuid; scheduled uuid; exercise uuid; recipe jsonb; recipients jsonb; plan jsonb; receipt jsonb;
- monday date:=current_date-(extract(isodow from current_date)::integer-1)+14; before_revision bigint;
+ monday date:=current_date-(extract(isodow from current_date)::integer-1)+14; before_revision bigint; initial_revision bigint;
 begin
  insert into auth.users(id,email) values(trainer,trainer||'@calendar-guards.invalid'),(pupil,pupil||'@calendar-guards.invalid'),
   (stranger,stranger||'@calendar-guards.invalid'),(deleted_user,deleted_user||'@calendar-guards.invalid');
@@ -11,7 +11,10 @@ begin
   values(gen_random_uuid(),trainer,'totp','verified',now(),now());
  insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(trainer,true,1,'Fixture revisión de agenda');
  insert into public.trainer_client_relations(id,trainer_id,client_id,accepted_at) values(relation,trainer,pupil,now());
- if exists(select 1 from trainer_private.calendar_revisions where user_id in (trainer,pupil,stranger,deleted_user)) then raise exception 'Contador creado sin agenda'; end if;
+ -- Vincular ya incrementa la revisión del alumno: invalida vistas compartidas
+ -- también cuando aún no hay sesiones. El resto de perfiles sigue sin contador.
+ select revision into initial_revision from trainer_private.calendar_revisions where user_id=pupil;
+ if initial_revision is distinct from 1::bigint or exists(select 1 from trainer_private.calendar_revisions where user_id in(trainer,stranger,deleted_user)) then raise exception 'Revisión inicial del vínculo incorrecta';end if;
  if has_table_privilege('authenticated','trainer_private.calendar_revisions','SELECT')
   or has_table_privilege('authenticated','trainer_private.calendar_revisions','INSERT')
   or has_function_privilege('authenticated','trainer_private.lock_calendar_revisions(uuid[])','EXECUTE')
@@ -35,11 +38,12 @@ begin
  begin perform public.create_trainer_recurrence(gen_random_uuid(),jsonb_build_array(jsonb_build_object('client_id',stranger,'relation_id',relation)),template,monday,1,array[1,3],null,plan->>'fingerprint');raise exception 'Admite perfil ajeno';exception when insufficient_privilege then null;end;
  begin perform public.create_trainer_recurrence(gen_random_uuid(),jsonb_build_array(jsonb_build_object('client_id',gen_random_uuid(),'relation_id',relation)),template,monday,1,array[1,3],null,plan->>'fingerprint');raise exception 'Sonda de FK ajena';exception when insufficient_privilege then null;end;
  reset role;
- if exists(select 1 from trainer_private.calendar_revisions where user_id in (pupil,stranger)) then raise exception 'Preview o rechazo escribe contador'; end if;
+ if (select revision from trainer_private.calendar_revisions where user_id=pupil) is distinct from initial_revision
+  or exists(select 1 from trainer_private.calendar_revisions where user_id=stranger) then raise exception 'Preview o rechazo escribe contador'; end if;
  set local role authenticated;
  receipt:=public.create_trainer_recurrence(gen_random_uuid(),recipients,template,monday,1,array[1,3],null,plan->>'fingerprint');
  reset role;
- if (select revision from trainer_private.calendar_revisions where user_id=pupil)<>2 then raise exception 'Agenda nueva no registra las dos altas'; end if;
+ if (select revision from trainer_private.calendar_revisions where user_id=pupil)<>initial_revision+2 then raise exception 'Agenda nueva no registra las dos altas'; end if;
  -- Un cambio sin contador anterior también invalida copia/serie en RR: lo
  -- acredita el runner de dos conexiones; aquí contrastamos el trigger real.
  perform set_config('request.jwt.claim.sub',pupil::text,true);

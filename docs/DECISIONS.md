@@ -8,12 +8,14 @@ comerciales. Se conservan registro web, MFA, derechos manuales independientes,
 historial y relaciones existentes. El retorno del navegador no acredita pago.
 [Implementación y límites](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
 
-**TRN-041 · citas con alumnos · propuesta del 28/10/2026:** Javier solicita
-citas con hora y avisos dentro de la agenda existente. Se propone otro tipo de
-evento, movible y filtrable, sin convertirlo en sesión deportiva. Google Calendar
-se considera una conexión opcional futura, no requisito ni sustituto de la
-agenda. Se presenta diseño para valorar antes de introducir datos, permisos o
-sincronización nuevos. [Propuesta y decisiones pendientes](TRAINER_APPOINTMENTS.md).
+**TRN-041 · citas con alumnos · aprobado el 28/10/2026:** Javier confirma
+implementar citas con hora y duración en la agenda, arrastre y avisos al alumno,
+conservando las sesiones sin hora. Son privadas entre autor y alumno; otro
+preparador del alumno no hereda motivo, ubicación ni enlace. El alumno elige
+recordatorio (apagado por defecto, 30 min o 24 h antes), separado del aviso de
+cambio y sujeto a consentimiento y descanso. Se conservan cancelaciones e
+historial. Google Calendar y exportación externa quedan fuera de esta entrega.
+[Contrato, implementación y límites](TRAINER_APPOINTMENTS.md).
 
 **INT-023 · 28/10/2026 · comienzo Apple Watch autorizado:** después del recorrido
 Garmin, Javier pide comenzar Apple manteniendo Clean Architecture y el editor común.

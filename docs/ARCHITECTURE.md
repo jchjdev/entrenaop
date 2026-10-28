@@ -1,5 +1,18 @@
 # Arquitectura de EntrenaOP
 
+**TRN-041 · 28/10/2026 · citas independientes:** `trainer_private.appointments`
+separa citas de `scheduled_workouts`. La relación fija sus participantes. Los RPC
+profesionales exigen autor, acceso vigente, relación activa y MFA; el alumno
+consulta solo sus citas y decide su recordatorio. Revisión CAS, UUID estable y
+bloqueo por autor protegen reintentos, cambios y solapamientos concurrentes.
+`packages/trainer_access/trainer_appointments.dart` comparte contrato y adaptador
+entre Trainer y la app, sin dependencias de sus editores. Los extremos de la
+rejilla horaria se convierten en servidor a la zona de preferencias del autor;
+el movimiento conserva zona original y duración. El feed v2 incorpora citas;
+las API anteriores las excluyen y el cliente conserva compatibilidad con ellas.
+La capacidad push queda ligada al binding de la instalación, sin sustituir su
+consentimiento. [Detalle](TRAINER_APPOINTMENTS.md).
+
 **COM-022 · 28/10/2026 · contratación propia en Dev:** Trainer permite registro,
 MFA y compra propia antes de tener habilitado el panel, sin exponer recursos
 profesionales. La Edge Function `trainer-commerce` adapta Stripe sandbox al
