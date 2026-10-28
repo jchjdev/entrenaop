@@ -7,9 +7,10 @@ con app y Trainer instalados; sin APK ni publicación web nueva. Se conservan
 origen de mensajes, acuses, push, MFA y páginas de 50. Cuatro contratos SQL con
 ROLLBACK correctos; 242 migraciones coincidentes solo en Dev y sin nuevas alertas
 del asesor de seguridad.
-**Siguiente comprobación del recorrido:** abrir el chat activo tras volver a
-vincular al mismo alumno → ver sus mensajes anteriores → responder → comprobar
-que la etapa cerrada sigue en consulta.
+**Aceptación física del 28/10:** Javier confirma que el chat reactivado recupera
+los mensajes anteriores y funciona bien. Queda aceptada esta corrección de
+continuidad. Los avisos profesionales conservan su aceptación física pendiente
+en el recorrido separado TRN-037.
 [Contrato y pruebas](TRAINER_MESSAGES_2026_10_27.md#continuidad-al-reactivar--trn-039--28102026).
 
 **TRN-038 · 28/10/2026 · invitaciones por enlace:** implementadas creación

@@ -170,3 +170,8 @@ y cartera pasan contra Dev con ROLLBACK. Asesor de seguridad sin nuevas alertas
 respecto a la base anterior. No hay cambios Dart, dependencias, esquemas de
 mensajes ni API de envío: no se recompilan Flutter, portales o APK para este
 arreglo de lectura. La comprobación física del chat reactivado queda para Javier.
+
+Aceptación de Javier · 28/10/2026: confirma desde su app que, tras reactivar,
+recupera los mensajes anteriores y el chat funciona bien. Queda aceptada la
+corrección visible de continuidad; no se atribuye a esa confirmación una nueva
+prueba física de aislamiento, paginación completa o entrega push.
