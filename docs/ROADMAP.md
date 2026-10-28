@@ -2,13 +2,16 @@
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
 los dos circuitos de pago profesional y propone Pro personal en las tiendas.
-Stripe en alta, todavía sin conexión al servidor. Adaptador sandbox HTTP con
+Stripe sandbox configurado y complemento conectado, todavía sin conexión al
+servidor de Trainer. Connect guarda cobro directo del entrenador a sus alumnos;
+la cuenta/pago de demostración del asistente no acredita nuestro recorrido.
+Adaptador sandbox HTTP con
 precio/cuenta/comprador fijados, reintentos y HMAC preparado; 43 pruebas locales
 incluyendo núcleo y push, tipos Deno correctos. Sin pasarela pública, nuevos
 cobros, derechos automáticos ni modificación de la web pública.
 **Reglas iniciales aprobadas:** pago confirmado, cancelación a fin del periodo,
 regalos/ADMIN independientes y reducción de cupo sin expulsión automática.
-**Siguiente bloque:** conectar Stripe sandbox, concretar catálogo y persistencia
+**Siguiente bloque:** conectar el servidor a Stripe sandbox, concretar catálogo y persistencia
 para integrar pedido → Checkout → conciliación → acceso profesional.
 [Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
 

@@ -604,3 +604,47 @@ fallo tanto en navegador como escritorio; no es una aprobación de usuario
 pendiente. Javier decide actualizar la aplicación de ChatGPT/Codex. No se afirma
 que esa actualización vaya a corregirlo hasta comprobarlo. No se cambian
 permisos/configuración ni se manipula Stripe por una vía alternativa no verificada.
+
+### Conexión del entorno de pruebas · 28/10/2026
+
+Tras reiniciar la aplicación, el control del navegador vuelve a funcionar. Se
+termina el asistente inicial con productos individuales, sin Managed Payments,
+Invoicing independiente ni automatización fiscal adicional. Esto no acredita
+configuración fiscal para venta real.
+
+Javier confirma la autorización concreta solicitada después del bloqueo inicial
+de la revisión automática. El complemento Stripe figura instalado tanto en su
+ficha como en la consulta del gestor de complementos. La conexión se limita al
+**Entorno de prueba de EntrenaOP**, cuenta `acct_1UV6mYPhGz4xntMQ`:
+
+- Escritura: Checkout Sessions, Enable Connect in Sandboxes, Customers, Customer
+  Portal, Prices, Products, Subscriptions y Webhook Endpoints/Event Destinations.
+- Lectura: Accounts, Balance, Events, Invoices, Payment Intents y Payment Methods.
+- Las demás categorías quedan sin acceso. No se autoriza la cuenta activa ni el
+  modo de pruebas compartido de esa cuenta.
+
+El primer retorno OAuth, iniciado antes del reinicio, no dejó el complemento
+instalado. Se completó de nuevo el flujo desde su ficha y se comprobó la
+instalación efectiva; no se considera suficiente pulsar Autorizar.
+El conector ya ofrece herramientas y su listado de cuentas devuelve únicamente
+`acct_1UV6mYPhGz4xntMQ`, con `livemode=false`; se comprueba así el alcance real de
+la sesión, además de la ficha instalada. Su guía de integración se consulta con
+un caso genérico de SaaS y cobro directo, sin enviar arquitectura, seguridad ni
+reglas comerciales internas. Las recomendaciones no aprueban precios o políticas
+que siguen pendientes.
+
+Connect muestra completo el modelo **los comerciantes cobran directamente a sus
+clientes**, coherente con el circuito alumno → preparador. El asistente crea
+automáticamente la cuenta conectada de demostración `acct_1UVcymPhGzn3VDy9` y un
+pago simulado de 100 EUR con comisión de ejemplo. No son una venta, tarifa ni
+comisión aprobadas de EntrenaOP; no son prueba del adaptador propio. Esa cuenta
+figura restringida, con requisitos pendientes y cobros/abonos suspendidos. No se
+rellenan identidades, bancos ni datos privados para simular un alta real.
+
+El panel verificado es
+`https://dashboard.stripe.com/acct_1UV6mYPhGz4xntMQ/test/dashboard`.
+Evidencia visual local ignorada: `build/stripe-sandbox-connected.jpg`.
+No se leen/copían claves secretas ni se guardan credenciales en el repositorio.
+Conectar el complemento no conecta el servidor: permanecen pendientes secretos
+Dev, catálogo y precios aprobados, persistencia/conciliación, pantallas y pruebas
+completas. No se despliega ni activa una pasarela por este avance de configuración.

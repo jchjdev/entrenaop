@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**COM-022 · conexión Stripe de pruebas autorizada · 28/10/2026:** Javier confirma
+conectar ChatGPT exclusivamente al «Entorno de prueba de EntrenaOP», con escritura
+en Checkout, Connect sandbox, clientes, portal, productos, precios, suscripciones
+y webhooks; lectura de cuenta, saldo, eventos, facturas, intentos y métodos de
+pago. El complemento figura instalado y el panel acredita el sandbox. Connect
+guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
+comisiones, no conecta credenciales al servidor ni habilita pagos reales.
+[Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
+
 **COM-022 · reglas iniciales confirmadas · 28/10/2026:** Javier aprueba acceso
 profesional tras pago confirmado, cancelación al final del periodo pagado,
 conservación independiente de regalos/accesos de ADMIN y reducción de cupo sin
