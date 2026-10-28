@@ -195,112 +195,132 @@ class TrainerAppointmentWeek extends StatelessWidget {
         cluster: cluster,
       ));
     }
-    return Stack(
-      children: [
-        for (var minute = 0; minute < 1440; minute += 30)
-          Positioned(
-            top: minute * scale,
-            left: 0,
-            right: 0,
-            height: 30 * scale,
-            child: DragTarget<TrainerAppointment>(
-              key: ValueKey(
-                'appointment-time-drop-${appointmentDay(day)}-$minute',
-              ),
-              onWillAcceptWithDetails: (details) =>
-                  enabled &&
-                  details.data.editable &&
-                  appointments.any((a) => identical(a, details.data)),
-              onAcceptWithDetails: (details) =>
-                  onMove(details.data, day, minute),
-              builder: (context, candidates, rejected) => DecoratedBox(
-                decoration: BoxDecoration(
-                  color: candidates.isEmpty
-                      ? null
-                      : Theme.of(context).colorScheme.primary
-                            .withValues(alpha: .18),
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).dividerColor
-                          .withValues(alpha: minute % 60 == 0 ? .3 : .1),
-                    ),
-                    left: BorderSide(
-                      color: Theme.of(context).dividerColor
-                          .withValues(alpha: .25),
-                    ),
+    return Builder(
+      builder: (dayContext) => DragTarget<TrainerAppointment>(
+        key: ValueKey('appointment-column-drop-${appointmentDay(day)}'),
+        onWillAcceptWithDetails: (details) =>
+            enabled &&
+            details.data.editable &&
+            appointments.any((row) => identical(row, details.data)),
+        onAcceptWithDetails: (details) {
+          // El destino también envuelve las fichas: una cita ya colocada no tapa
+          // la zona donde soltar otra y comprobar su solapamiento en el servidor.
+          final box = dayContext.findRenderObject() as RenderBox;
+          final minute =
+              ((box.globalToLocal(details.offset).dy / scale / 30).floor() * 30)
+                  .clamp(0, 1410);
+          onMove(details.data, day, minute);
+        },
+        builder: (context, candidates, rejected) => Stack(
+          children: [
+            for (var minute = 0; minute < 1440; minute += 30)
+              Positioned(
+                top: minute * scale,
+                left: 0,
+                right: 0,
+                height: 30 * scale,
+                child: DragTarget<TrainerAppointment>(
+                  key: ValueKey(
+                    'appointment-time-drop-${appointmentDay(day)}-$minute',
                   ),
-                ),
-              ),
-            ),
-          ),
-        for (final item in segments)
-          Positioned(
-            top: item.start * scale,
-            left: item.lane * width / clusterLanes[item.cluster]! + 2,
-            width: width / clusterLanes[item.cluster]! - 4,
-            height: (item.end - item.start) * scale,
-            child: dragBuilder(
-              item.appointment,
-              Tooltip(
-                message:
-                    '${item.appointment.clientName} · ${item.appointment.title} · ${item.appointment.timeLabel} · ${item.appointment.durationMinutes} min · ${item.appointment.timezone}',
-                child: Material(
-                  color: trainerCalendarColor(item.appointment.clientId)
-                      .withValues(alpha: item.appointment.cancelled ? .08 : .2),
-                  borderRadius: BorderRadius.circular(4),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    key: ValueKey(
-                      'appointment-hour-${item.appointment.id}-${appointmentDay(day)}',
-                    ),
-                    onTap: () => onOpen(item.appointment),
-                    child: Semantics(
-                      label:
-                          'Cita con ${item.appointment.clientName}: ${item.appointment.title}',
-                      button: true,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            left: BorderSide(
-                              color: trainerCalendarColor(
-                                item.appointment.clientId,
-                              ),
-                              width: 3,
-                            ),
-                          ),
+                  onWillAcceptWithDetails: (details) =>
+                      enabled &&
+                      details.data.editable &&
+                      appointments.any((a) => identical(a, details.data)),
+                  onAcceptWithDetails: (details) =>
+                      onMove(details.data, day, minute),
+                  builder: (context, candidates, rejected) => DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: candidates.isEmpty
+                          ? null
+                          : Theme.of(context).colorScheme.primary
+                                .withValues(alpha: .18),
+                      border: Border(
+                        top: BorderSide(
+                          color: Theme.of(context).dividerColor
+                              .withValues(alpha: minute % 60 == 0 ? .3 : .1),
                         ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) =>
-                              constraints.maxHeight < 14 * scale
-                              ? const SizedBox.shrink()
-                              : Align(
-                                  alignment: Alignment.topLeft,
-                                  child: Text(
-                                    '${item.appointment.calendarStart.hour.toString().padLeft(2, '0')}:${item.appointment.calendarStart.minute.toString().padLeft(2, '0')} · ${item.appointment.clientName}${constraints.maxHeight >= 30 * scale ? '\n${item.appointment.title}' : ' · ${item.appointment.title}'}',
-                                    maxLines:
-                                        constraints.maxHeight >= 30 * scale
-                                        ? 2
-                                        : 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      height: 1.2,
-                                      decoration: item.appointment.cancelled
-                                          ? TextDecoration.lineThrough
-                                          : null,
-                                    ),
-                                  ),
-                                ),
+                        left: BorderSide(
+                          color: Theme.of(context).dividerColor
+                              .withValues(alpha: .25),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-      ],
+            for (final item in segments)
+              Positioned(
+                top: item.start * scale,
+                left: item.lane * width / clusterLanes[item.cluster]! + 2,
+                width: width / clusterLanes[item.cluster]! - 4,
+                height: (item.end - item.start) * scale,
+                child: dragBuilder(
+                  item.appointment,
+                  Tooltip(
+                    message:
+                        '${item.appointment.clientName} · ${item.appointment.title} · ${item.appointment.timeLabel} · ${item.appointment.durationMinutes} min · ${item.appointment.timezone}',
+                    child: Material(
+                      color: trainerCalendarColor(item.appointment.clientId)
+                          .withValues(
+                            alpha: item.appointment.cancelled ? .08 : .2,
+                          ),
+                      borderRadius: BorderRadius.circular(4),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        key: ValueKey(
+                          'appointment-hour-${item.appointment.id}-${appointmentDay(day)}',
+                        ),
+                        onTap: () => onOpen(item.appointment),
+                        child: Semantics(
+                          label:
+                              'Cita con ${item.appointment.clientName}: ${item.appointment.title}',
+                          button: true,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  color: trainerCalendarColor(
+                                    item.appointment.clientId,
+                                  ),
+                                  width: 3,
+                                ),
+                              ),
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) =>
+                                  constraints.maxHeight < 14 * scale
+                                  ? const SizedBox.shrink()
+                                  : Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Text(
+                                        '${item.appointment.calendarStart.hour.toString().padLeft(2, '0')}:${item.appointment.calendarStart.minute.toString().padLeft(2, '0')} · ${item.appointment.clientName}${constraints.maxHeight >= 30 * scale ? '\n${item.appointment.title}' : ' · ${item.appointment.title}'}',
+                                        maxLines:
+                                            constraints.maxHeight >= 30 * scale
+                                            ? 2
+                                            : 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          height: 1.2,
+                                          decoration: item.appointment.cancelled
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

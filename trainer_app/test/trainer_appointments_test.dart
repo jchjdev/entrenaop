@@ -5,6 +5,7 @@ import 'package:entrenaop_trainer/trainer_pointer_drag.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trainer_access/trainer_appointments.dart';
 
 import '../../packages/trainer_access/test/appointment_fixtures.dart';
 import 'trainer_agenda_edit_test.dart' as agenda;
@@ -54,13 +55,18 @@ void main() {
     },
   );
   testWidgets(
-    'el tablero horario admite soltar en una hora y conserva las sesiones sin hora',
+    'el tablero horario acepta soltar sobre otra cita y conserva las sesiones sin hora',
     (tester) async {
       tester.view.physicalSize = const Size(1500, 1000);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final repo = AppointmentFixture();
+      repo.rows.add(
+        TrainerAppointment.fromJson(
+          appointmentJson(id: 'second', day: 29, minute: 720),
+        ),
+      );
       int? minute;
       DateTime? day;
       await tester.pumpWidget(
@@ -91,7 +97,7 @@ void main() {
         const ValueKey('appointment-hour-appointment-2026-10-28'),
       );
       final target = find.byKey(
-        const ValueKey('appointment-time-drop-2026-10-29-600'),
+        const ValueKey('appointment-hour-second-2026-10-29'),
       );
       final gesture = await tester.startGesture(
         tester.getCenter(source),
@@ -104,7 +110,7 @@ void main() {
       await gesture.up();
       await tester.pumpAndSettle();
       expect(day, DateTime(2026, 10, 29));
-      expect(minute, 600);
+      expect(minute, 720);
       expect(find.text('Sin hora · soltar sesión'), findsNWidgets(7));
       expect(tester.takeException(), isNull);
     },
