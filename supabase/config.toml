@@ -467,3 +467,7 @@ enabled = true
 # La pasarela verifica el JWT y PostgreSQL comprueba la identidad y sesión.
 [functions.apple-training]
 verify_jwt = true
+
+# Checkout autentica la cuenta propia y MFA; /webhook verifica la firma Stripe.
+[functions.trainer-commerce]
+verify_jwt = false

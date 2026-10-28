@@ -648,3 +648,74 @@ No se leen/copían claves secretas ni se guardan credenciales en el repositorio.
 Conectar el complemento no conecta el servidor: permanecen pendientes secretos
 Dev, catálogo y precios aprobados, persistencia/conciliación, pantallas y pruebas
 completas. No se despliega ni activa una pasarela por este avance de configuración.
+
+### Contratación propia en Dev · 28/10/2026
+
+Avance posterior a la conexión anterior: se aplica
+`20261028201107_trainer_commercial_checkout.sql` exclusivamente en el proyecto
+`sxbxfjqgoddzhtcyhalw`. Añade catálogo privado versionado, comprador por cuenta,
+pedidos, recibos únicos y eventos. La guarda de lease nula se completa en
+`20261028205025_trainer_checkout_lease_guard.sql`.
+Preparar un pedido no concede derechos. Las
+tablas quedan fuera del acceso de clientes; las RPC propias verifican cuenta y
+correo confirmado, y preparar/ejecutar compra exige MFA. El endpoint de servidor
+solo admite `service_role`, no las claves de un usuario de la app.
+
+La pantalla `/subscription` permite contratar antes de tener habilitado el panel;
+la guardia mantiene cerradas las herramientas profesionales hasta el acceso
+efectivo y MFA. El retorno de Checkout pide conciliación del pedido propio; no
+usa su query string para conceder acceso ni acepta precios/cupos del cliente.
+La función `trainer-commerce` verifica Auth/MFA en acciones propias y firma HMAC
+en webhooks. Se releen Checkout, suscripción, factura e InvoicePayment/PaymentIntent
+canónicos en la versión `2026-09-30.endive`; se exigen comprador, precio,
+importe, moneda, cantidad y periodo enlazados. No basta con una suscripción
+`active` ni con marcar una factura pagada fuera de Stripe. Se rechazan saldos,
+descuentos y prorrateos en este primer contrato de ensayo.
+[Cambio de esquema de Invoice](https://docs.stripe.com/changelog/basil/2025-03-31/add-support-for-multiple-partial-payments-on-invoices).
+
+Los recibos no se duplican. La exclusión temporal por pedido evita procesados
+simultáneos; los avisos duplicados releen el estado canónico y solo se marcan
+completados tras conciliar. Una creación incierta antigua se busca en Stripe;
+si no puede acreditarse una búsqueda completa no se repite a ciegas un POST con
+una clave de idempotencia que podría haber caducado.
+
+Fuentes comerciales y manuales se conservan separadas, proyectadas sobre el
+`trainer_access` existente. El cupo efectivo es el mayor vigente, no una suma;
+cancelar conserva el periodo pagado y los regalos independientes. Cron revisa
+vencimientos cada minuto sin terminar relaciones ni borrar alumnos/historial.
+El vencimiento por servidor no depende de que Cron se ejecute puntualmente.
+El setter ADMIN existente modifica la fuente manual: retirar un regalo no
+revoca un periodo comprado. Suspensión global por ADMIN y representación visual
+de cada fuente quedan pendientes de concretar antes de vender.
+
+Objetos creados solo en sandbox `acct_1UV6mYPhGz4xntMQ`:
+
+- Producto `prod_entrenaop_trainer_sandbox_v1` y precio
+  `price_1UVdDqPhGz4xntMQW9YlmGFC`: **1 EUR mensual simulado y cinco plazas**.
+  No constituye propuesta de tarifa comercial.
+- Portal `bpc_1UVdMyPhGz4xntMQ0qLdmor8`: método de pago, facturas y cancelación
+  al final del periodo, sin cambios de plan ni prorrateos.
+- Webhook `we_1UVdU9PhGz4xntMQMLBB6QbD` a la Edge Function Dev, con ocho eventos
+  Checkout/factura/suscripción, firma y versión API fijadas.
+
+Se conectan la clave existente del sandbox y su firma de webhook como secretos
+de Supabase Dev, junto con ID de portal y bandera de entorno. En este paso sí
+se usan las credenciales existentes mediante el panel autorizado; no se crean
+ni rotan claves, no se usan claves activas y no se guardan en Git o en la app.
+El archivo temporal ignorado se elimina tras cargar secretos. Antes de producción
+se debe sustituir el permiso amplio de prueba por una clave restringida al
+contrato realmente necesario.
+
+Validación local y de esquema aplicado: análisis Trainer sin incidencias,
+296 pruebas Flutter, 35 pruebas Node, tipos TypeScript estrictos y Deno correctos.
+El contrato SQL nuevo y seis regresiones de acceso, MFA, autoentrenamiento,
+cartera, operativa y ciclo de asignaciones pasan cada uno con ROLLBACK. Historial
+local y Dev contrastados tras aplicar la migración. La función está desplegada
+en Dev; la publicación y aceptación del pago real de sandbox se registran aparte
+cuando exista evidencia, no se deducen de esas pruebas.
+
+El bloque comercial completo sigue abierto: precios finales, términos/fiscalidad,
+política de reembolsos/disputas, suspensión global, conciliación programada y
+monitorización operativa deben cerrarse antes de modo activo. No están incluidos
+cobros alumno → preparador, cambios de plan ni compras Pro de las tiendas. No se
+modifica la web pública ni se despliega producción.

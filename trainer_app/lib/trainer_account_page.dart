@@ -1,5 +1,6 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_security.dart';
 
@@ -84,6 +85,10 @@ class _TrainerAccountPageState extends State<TrainerAccountPage> {
                       const SizedBox(height: 12),
                       const Text(
                         'El acceso profesional y la suscripción personal Pro se gestionan por separado.',
+                      ),
+                      TextButton(
+                        onPressed: () => context.push('/subscription'),
+                        child: const Text('Gestionar suscripción profesional'),
                       ),
                     ],
                   ),

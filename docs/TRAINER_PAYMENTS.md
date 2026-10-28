@@ -1,11 +1,13 @@
 # Cobro del servicio del preparador · TRN-012 · 21/10/2026
 
-**28/10/2026 · COM-022:** Javier retoma pagos profesionales web y comienza el
-alta de Stripe. Pro personal conserva las tiendas/RevenueCat; se distinguen
-suscripción del entrenador y servicio de su alumno. El adaptador HTTP sandbox y
-sus contratos están preparados; cuenta/credenciales, catálogo, persistencia,
-políticas y portal completo siguen pendientes. No hay cobros reales activos.
-[Estado vigente](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
+**28/10/2026 · COM-022:** servidor y persistencia de contratación propia aplicados
+en Dev, con Checkout, webhooks, conciliación y proyección del cupo pagado sin
+perder regalos manuales. Trainer añade compra propia tras MFA y portal de
+cancelación al final del periodo. Oferta de ensayo: 1 EUR simulado/mes y cinco
+plazas; no fija tarifas. Pro personal conserva tiendas/RevenueCat. Cobro alumno
+→ preparador y modo activo siguen pendientes. La aceptación completa del pago
+sandbox se registra separadamente de la validación automatizada.
+[Estado vigente](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
 
 ## Criterio confirmado por Javier
 

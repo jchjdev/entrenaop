@@ -419,6 +419,10 @@ class _TrainerAccountPendingPageState extends State<TrainerAccountPendingPage> {
         onPressed: _busy ? null : _load,
         child: const Text('Comprobar acceso'),
       ),
+      OutlinedButton(
+        onPressed: _busy ? null : () => context.go('/subscription'),
+        child: const Text('Suscripción profesional · pruebas'),
+      ),
       TextButton(
         onPressed: _busy ? null : widget.onSignOut,
         child: const Text('Cerrar sesión'),

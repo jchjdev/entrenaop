@@ -81,7 +81,7 @@ export class StripeSandboxCheckout {
     );
   }
 
-  private async request(
+  async request(
     context: Context,
     path: string,
     fields?: URLSearchParams,
@@ -238,7 +238,12 @@ export class StripeSandboxCheckout {
       "line_items[0][quantity]": "1",
       client_reference_id: id,
       locale: "es",
-      "payment_method_types[0]": "card",
+      integration_identifier: `entrenaop_trainer_${
+        id.replaceAll("-", "").slice(0, 8).split("").map((hex) =>
+          String.fromCharCode(97 + parseInt(hex, 16))
+        ).join("")
+      }`,
+      "subscription_data[billing_mode][type]": "flexible",
       success_url: `${this.config.returnUrl}?order=${id}&checkout=returned`,
       cancel_url: `${this.config.returnUrl}?order=${id}&checkout=canceled`,
     });

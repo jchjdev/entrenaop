@@ -12,18 +12,20 @@ retirada y devolución por Salud en el Ultra y su iPhone emparejado.
 
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
 los dos circuitos de pago profesional y propone Pro personal en las tiendas.
-Stripe sandbox configurado y complemento conectado, todavía sin conexión al
-servidor de Trainer. Connect guarda cobro directo del entrenador a sus alumnos;
-la cuenta/pago de demostración del asistente no acredita nuestro recorrido.
-Adaptador sandbox HTTP con
-precio/cuenta/comprador fijados, reintentos y HMAC preparado; 43 pruebas locales
-incluyendo núcleo y push, tipos Deno correctos. Sin pasarela pública, nuevos
-cobros, derechos automáticos ni modificación de la web pública.
+Servidor y persistencia aplicados en Dev: pedido → Checkout → conciliación de
+factura/pago → cupo profesional. Oferta simulada de 1 EUR/mes y cinco plazas;
+precios finales pendientes. Trainer añade compra propia con MFA, retorno
+conciliado y portal de cancelación; los accesos ADMIN se conservan por separado.
+35 pruebas del servidor, 296 de Trainer, análisis y tipos correctos; siete
+contratos SQL con ROLLBACK contra el esquema aplicado. Publicación web y pago
+completo de sandbox requieren evidencia aparte. No se modifica la web pública
+ni se activa dinero real. El circuito alumno → entrenador sigue pendiente.
 **Reglas iniciales aprobadas:** pago confirmado, cancelación a fin del periodo,
 regalos/ADMIN independientes y reducción de cupo sin expulsión automática.
-**Siguiente bloque:** conectar el servidor a Stripe sandbox, concretar catálogo y persistencia
-para integrar pedido → Checkout → conciliación → acceso profesional.
-[Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
+**Siguiente recorrido único:** comprobar contratación y cancelación en el sandbox
+publicado; después concretar tarifas y políticas antes de ampliar al cobro de
+servicios de los alumnos. Citas con hora: propuesta TRN-041, sin esquema nuevo.
+[Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
 
 **TRN-039 · 28/10/2026 · chat al reactivar:** la etapa activa recupera los
 mensajes anteriores de la misma pareja; las etapas cerradas conservan su vista

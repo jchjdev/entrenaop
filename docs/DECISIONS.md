@@ -1,5 +1,20 @@
 # Registro de decisiones vigentes
 
+**COM-022 · contratación del panel en sandbox · 28/10/2026:** Javier autoriza
+continuar servidor y contratación de Trainer, activando el acceso tras pago
+confirmado exclusivamente en pruebas. Se aplica un catálogo privado de ensayo
+de 1 EUR mensual y cinco plazas, identificado como simulado; no fija precios
+comerciales. Se conservan registro web, MFA, derechos manuales independientes,
+historial y relaciones existentes. El retorno del navegador no acredita pago.
+[Implementación y límites](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
+
+**TRN-041 · citas con alumnos · propuesta del 28/10/2026:** Javier solicita
+citas con hora y avisos dentro de la agenda existente. Se propone otro tipo de
+evento, movible y filtrable, sin convertirlo en sesión deportiva. Google Calendar
+se considera una conexión opcional futura, no requisito ni sustituto de la
+agenda. Se presenta diseño para valorar antes de introducir datos, permisos o
+sincronización nuevos. [Propuesta y decisiones pendientes](TRAINER_APPOINTMENTS.md).
+
 **INT-023 · 28/10/2026 · comienzo Apple Watch autorizado:** después del recorrido
 Garmin, Javier pide comenzar Apple manteniendo Clean Architecture y el editor común.
 Se utiliza WorkoutKit desde el iPhone emparejado, con primera entrega de carrera

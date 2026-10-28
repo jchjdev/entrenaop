@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**COM-022 · 28/10/2026 · contratación propia en Dev:** Trainer permite registro,
+MFA y compra propia antes de tener habilitado el panel, sin exponer recursos
+profesionales. La Edge Function `trainer-commerce` adapta Stripe sandbox al
+dominio existente. `commerce_private` conserva ofertas, pedidos, recibos y
+eventos; solo el servidor escribe evidencia. `trainer_access` mantiene el
+contrato efectivo consumido por las apps, proyectando el máximo cupo vigente
+entre regalo manual y periodo pagado, sin sumar fuentes. Un trabajo de Cron
+restaura la fuente alternativa cuando vence la mayor; el vencimiento se deniega
+en servidor aunque Cron se retrase. No se duplica Auth ni se concede Pro.
+[Contrato y límites](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
+
 **INT-023 · 28/10/2026 · primer adaptador Apple Watch:** dominio y puertos en
 `features/apple_watch`, composición en router y WorkoutKit aislado en el plugin
 iOS existente. El servidor reutiliza la receta autorizada y el compilador deportivo;

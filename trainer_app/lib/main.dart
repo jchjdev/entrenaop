@@ -46,6 +46,7 @@ import 'package:trainer_access/trainer_calendar.dart';
 
 import 'trainer_shell.dart';
 import 'trainer_account_page.dart';
+import 'trainer_subscription_page.dart';
 import 'trainer_exercise_page.dart';
 import 'trainer_exercise_repository.dart';
 import 'trainer_video_repository.dart';
@@ -341,6 +342,13 @@ class _TrainerAppState extends State<TrainerApp> {
         }
         if (location == '/update-password') return '/account';
         if (location == '/account') return null;
+        // La contratación propia y su MFA no exponen datos profesionales.
+        // Permiten comprar antes de tener habilitado el panel.
+        if (location == '/subscription' ||
+            (location == '/security' &&
+                state.uri.queryParameters['next'] == 'subscription')) {
+          return null;
+        }
         try {
           final status = await _accounts.status();
           if (_identity != identity) return '/login';
@@ -365,6 +373,18 @@ class _TrainerAppState extends State<TrainerApp> {
         return null;
       },
       routes: [
+        GoRoute(
+          path: '/subscription',
+          builder: (_, state) => TrainerSubscriptionPage(
+            key: ValueKey('subscription-$identity'),
+            repository: SupabaseTrainerSubscriptionRepository(
+              widget.client,
+              identity!,
+            ),
+            returnedFromCheckout:
+                state.uri.queryParameters['checkout'] == 'returned',
+          ),
+        ),
         GoRoute(
           path: '/invite',
           builder: (_, state) => TrainerInvitationLanding(
@@ -433,12 +453,16 @@ class _TrainerAppState extends State<TrainerApp> {
         ),
         GoRoute(
           path: '/security',
-          builder: (context, _) => identity == null
+          builder: (context, state) => identity == null
               ? const SizedBox.shrink()
               : TrainerSecurityPage(
                   key: ValueKey('security-$identity'),
                   repository: SupabaseTrainerSecurity(widget.client, identity),
-                  onComplete: () => context.go('/home'),
+                  onComplete: () => context.go(
+                    state.uri.queryParameters['next'] == 'subscription'
+                        ? '/subscription'
+                        : '/home',
+                  ),
                   onSignOut: () => widget.client.auth.signOut(),
                 ),
         ),
