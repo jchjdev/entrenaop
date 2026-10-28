@@ -563,7 +563,7 @@ se modifica el worker en este tramo.
    ambos recorridos completos con Stripe sandbox. No se considera resuelto por
    devolver `payment_status=paid` desde una sesión.
 
-Javier selecciona suscripciones y plataforma en el asistente. Se recomienda
+El recorrido requiere suscripciones y plataforma en el asistente. Se recomienda
 configuración por productos individuales: Managed Payments no soporta Connect;
 no se confunde con automatización fiscal ni con facturación ya configurada.
 
@@ -574,3 +574,11 @@ Fuentes contrastadas el 28/10/2026:
 [firmas](https://docs.stripe.com/webhooks),
 [pruebas sin fondos](https://docs.stripe.com/testing),
 [incompatibilidad de Managed Payments con Connect](https://docs.stripe.com/payments/managed-payments#unsupported-integrations).
+
+Punto de guardado: `76fc04a4`, remoto confirmado; CI comercial
+[40724825943](https://github.com/jchjdev/entrenaop/actions/runs/40724825943)
+correcta (32 contratos comerciales y TypeScript estricto). La sesión visual del
+navegador/escritorio falla al iniciar con ruta de recursos inexistente; no se ha
+controlado el panel de Stripe ni conectado una credencial. Javier completa el
+asistente con instrucciones desde sus capturas. Continúa pendiente la integración
+real sandbox; no se declara terminado el punto 14.

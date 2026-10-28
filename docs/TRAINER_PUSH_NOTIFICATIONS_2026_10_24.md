@@ -499,3 +499,16 @@ Fuentes primarias consultadas:
 - [Requisitos del SDK Apple Firebase](https://firebase.google.com/support/release-notes/ios).
 - [Xcode disponible en macos-15](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md).
 - [Cambios FlutterFire 17](https://pub.dev/packages/firebase_messaging/changelog).
+
+### Actualización de distribución · 28/10/2026
+
+Se conecta el Samsung SM-A326B y se comprueba beta.1 instalada, con permiso de
+notificaciones concedido. Se verifica el SHA-256 de la beta.2 preparada arriba y
+se instala por reemplazo (`install -r` correcto), sin recompilar ni borrar datos.
+La app abre la pantalla de acceso; no se acredita todavía sesión profesional,
+consentimiento de avisos ni recepción física. Dev confirma envío profesional
+habilitado, cero preparadores suscritos y cero instalaciones Android activas en
+esa comprobación previa al acceso. Dos contratos SQL de agrupación/canales pasan
+con ROLLBACK y las doce pruebas del worker pasan sin envíos reales. El dispositivo
+se desconecta antes de terminar el recorrido. No se da por aceptada la entrega
+profesional ni se activa consentimiento automáticamente.
