@@ -24,6 +24,21 @@ function id(value: unknown, prefix: string): string {
 }
 export type PaidPeriod = { invoiceId: string; end: string } | null;
 
+// El portal de billing flexible usa cancel_at, no cancel_at_period_end. Solo
+// se presenta como fin de periodo cuando coincide con el periodo acreditado.
+export function cancelsAtPaidPeriodEnd(
+  subscription: Json,
+  paidUntil: unknown,
+  now: number,
+): boolean {
+  return subscription.cancel_at_period_end === true || (
+    Number.isSafeInteger(subscription.cancel_at) &&
+    Number(subscription.cancel_at) > now &&
+    typeof paidUntil === "string" &&
+    Date.parse(paidUntil) === Number(subscription.cancel_at) * 1000
+  );
+}
+
 // Solo evidencia canónica del proveedor. El retorno del navegador y los campos
 // del webhook no se utilizan para calcular un periodo pagado.
 export function paidPeriod(
@@ -348,7 +363,11 @@ export class PlatformCheckout {
         ...token,
         subscription_id: subscription.id,
         state,
-        cancel_at_period_end: subscription.cancel_at_period_end === true,
+        cancel_at_period_end: cancelsAtPaidPeriodEnd(
+          subscription,
+          paidUntil,
+          this.now(),
+        ),
         invoice_id: paid?.invoiceId ?? null,
         paid_until: paid?.end ?? null,
       });

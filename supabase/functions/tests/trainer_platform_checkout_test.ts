@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
+import { createCommerceHandler } from "../trainer-commerce/handler.ts";
 import {
+  cancelsAtPaidPeriodEnd,
   paidPeriod,
   PlatformCheckout,
 } from "../_shared/trainer_commerce/platform_checkout.ts";
@@ -11,6 +14,15 @@ import {
 const now = 1793218402;
 const order = "9d50b521-de26-48b0-8da7-d1fd3e85a661";
 const owner = "9d50b521-de26-48b0-8da7-d1fd3e85a662";
+const httpConfig = {
+  url: "https://sxbxfjqgoddzhtcyhalw.supabase.co",
+  anonKey: "Fixture",
+  serviceKey: "Fixture",
+  stripeKey: "rk_test_Fixture",
+  webhookSecret: "whsec_Fixture",
+  portalId: "bpc_Fixture",
+  enabled: true,
+};
 const context = {
   provider: "stripe",
   environment: { mode: "sandbox" as const, namespace: "entrenaop-dev" },
@@ -42,6 +54,36 @@ const binding: StripeCheckoutBinding = {
   preparedAtSeconds: now,
   applicationFeePercent: null,
 };
+
+test("la baja del portal flexible se reconoce solo al final del periodo pagado", () => {
+  const end = now + 30 * 86400;
+  const paidUntil = new Date(end * 1000).toISOString();
+  assert.equal(
+    cancelsAtPaidPeriodEnd({ cancel_at_period_end: true }, paidUntil, now),
+    true,
+  );
+  assert.equal(
+    cancelsAtPaidPeriodEnd(
+      { cancel_at_period_end: false, cancel_at: end },
+      paidUntil,
+      now,
+    ),
+    true,
+  );
+  assert.equal(
+    cancelsAtPaidPeriodEnd({ cancel_at: end - 86400 }, paidUntil, now),
+    false,
+  );
+  assert.equal(
+    cancelsAtPaidPeriodEnd({ cancel_at: null }, paidUntil, now),
+    false,
+  );
+  assert.equal(cancelsAtPaidPeriodEnd({ cancel_at: end }, null, now), false);
+  assert.equal(
+    cancelsAtPaidPeriodEnd({ cancel_at: end }, paidUntil, end + 1),
+    false,
+  );
+});
 function fixture() {
   const subscription = {
     id: "sub_Fixture",
@@ -250,4 +292,112 @@ test("sin Customer guardado después de la ventana incierta cierra el pedido sin
   }, "checkout");
   assert.equal(result.state, "expired");
   assert.equal(requests, 0);
+});
+
+test("HTTP no consulta al proveedor sin sesión, desde otro origen o fuera del proyecto Dev", async () => {
+  let calls = 0;
+  const fetcher = async () => {
+    calls++;
+    throw Error("No debe consultar");
+  };
+  const make = (origin?: string) =>
+    new Request(httpConfig.url + "/functions/v1/trainer-commerce", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(origin ? { Origin: origin } : {}),
+      },
+      body: JSON.stringify({ action: "checkout" }),
+    });
+  assert.equal(
+    (await createCommerceHandler(httpConfig, fetcher)(make())).status,
+    403,
+  );
+  assert.equal(
+    (await createCommerceHandler(httpConfig, fetcher)(
+      make("https://unrelated.invalid"),
+    )).status,
+    403,
+  );
+  assert.equal(
+    (await createCommerceHandler({
+      ...httpConfig,
+      url: "https://other.supabase.co",
+    }, fetcher)(make())).status,
+    503,
+  );
+  assert.equal(calls, 0);
+});
+
+test("HTTP comprueba MFA real del usuario antes de preparar cualquier pedido", async () => {
+  const calls: string[] = [];
+  const fetcher: typeof fetch = async (input) => {
+    const url = String(input);
+    calls.push(url);
+    return Response.json(
+      url.endsWith("/auth/v1/user")
+        ? {
+          id: owner,
+          email_confirmed_at: "2026-10-28T12:00:00Z",
+          is_anonymous: false,
+        }
+        : false,
+    );
+  };
+  const response = await createCommerceHandler(httpConfig, fetcher)(
+    new Request(httpConfig.url + "/functions/v1/trainer-commerce", {
+      method: "POST",
+      headers: { Authorization: "Bearer Fixture" },
+      body: JSON.stringify({ action: "checkout", offer_id: order }),
+    }),
+  );
+  assert.equal(response.status, 403);
+  assert.equal((await response.json()).error, "mfa_required");
+  assert.equal(calls.length, 2);
+  assert.ok(calls[1].endsWith("/rpc/get_trainer_security_status"));
+});
+
+test("HTTP rechaza un webhook sin firma antes de escribir el ledger", async () => {
+  let calls = 0;
+  const handler = createCommerceHandler(httpConfig, async () => {
+    calls++;
+    throw Error();
+  });
+  const response = await handler(
+    new Request(httpConfig.url + "/functions/v1/trainer-commerce/webhook", {
+      method: "POST",
+      body: "{}",
+    }),
+  );
+  assert.equal(response.status, 503);
+  assert.equal(calls, 0);
+});
+
+test("un webhook firmado ya completado no relee Stripe ni vuelve a conceder acceso", async () => {
+  const calls: string[] = [];
+  const fetcher: typeof fetch = async (input) => {
+    calls.push(String(input));
+    return Response.json({ done: true });
+  };
+  const timestamp = Math.floor(Date.now() / 1000);
+  const body = JSON.stringify({
+    id: "evt_Fixture",
+    type: "invoice.paid",
+    api_version: "2026-09-30.endive",
+    livemode: false,
+    data: { object: { id: "in_Fixture" } },
+  });
+  const signature = createHmac("sha256", httpConfig.webhookSecret).update(
+    `${timestamp}.${body}`,
+  ).digest("hex");
+  const response = await createCommerceHandler(httpConfig, fetcher)(
+    new Request(httpConfig.url + "/functions/v1/trainer-commerce/webhook", {
+      method: "POST",
+      headers: { "Stripe-Signature": `t=${timestamp},v1=${signature}` },
+      body,
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].endsWith("/rpc/trainer_commerce_server"));
 });

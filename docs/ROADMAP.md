@@ -19,15 +19,17 @@ Servidor y persistencia aplicados en Dev: pedido → Checkout → conciliación 
 factura/pago → cupo profesional. Oferta simulada de 1 EUR/mes y cinco plazas;
 precios finales pendientes. Trainer añade compra propia con MFA, retorno
 conciliado y portal de cancelación; los accesos ADMIN se conservan por separado.
-35 pruebas del servidor, 296 de Trainer, análisis y tipos correctos; siete
-contratos SQL con ROLLBACK contra el esquema aplicado. Publicación web y pago
-completo de sandbox requieren evidencia aparte. No se modifica la web pública
-ni se activa dinero real. El circuito alumno → entrenador sigue pendiente.
+40 pruebas del servidor, 296 de Trainer, análisis y tipos correctos; siete
+contratos SQL con ROLLBACK y 247 migraciones coincidentes. Publicado y verificado
+por HTTPS en Dev: revisión `43b5ff8e`. Compra simulada, recibo único y cancelación
+al final del periodo comprobados desde Trainer y Stripe; regalo ADMIN conservado.
+No se modifica la web pública ni se activa dinero real. El circuito alumno →
+entrenador sigue pendiente.
 **Reglas iniciales aprobadas:** pago confirmado, cancelación a fin del periodo,
 regalos/ADMIN independientes y reducción de cupo sin expulsión automática.
-**Siguiente recorrido único:** comprobar contratación y cancelación en el sandbox
-publicado; después concretar tarifas y políticas antes de ampliar al cobro de
-servicios de los alumnos. Citas con hora: propuesta TRN-041, sin esquema nuevo.
+**Siguiente recorrido único:** concretar tarifas y políticas de contratación
+antes de ampliar al cobro de servicios de los alumnos. Citas con hora: propuesta
+TRN-041, sin esquema nuevo.
 [Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#contratacion-propia-en-dev--28102026).
 
 **TRN-039 · 28/10/2026 · chat al reactivar:** la etapa activa recupera los

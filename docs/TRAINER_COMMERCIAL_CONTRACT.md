@@ -711,15 +711,55 @@ ensayo de restauración. La comprobación del publicador detectó inicialmente l
 omisión y detuvo la subida; se corrige la lista sin debilitar esa prueba.
 
 Validación local y de esquema aplicado: análisis Trainer sin incidencias,
-296 pruebas Flutter, 35 pruebas Node, tipos TypeScript estrictos y Deno correctos.
+296 pruebas Flutter, 40 pruebas Node, tipos TypeScript estrictos y Deno correctos.
 El contrato SQL nuevo y seis regresiones de acceso, MFA, autoentrenamiento,
 cartera, operativa y ciclo de asignaciones pasan cada uno con ROLLBACK. Historial
 local y Dev contrastados tras aplicar la migración. La función está desplegada
-en Dev; la publicación y aceptación del pago real de sandbox se registran aparte
-cuando exista evidencia, no se deducen de esas pruebas.
+en Dev; la publicación y aceptación del pago simulado se acreditan en el apartado
+siguiente y no se deducen de esas pruebas.
 
 El bloque comercial completo sigue abierto: precios finales, términos/fiscalidad,
 política de reembolsos/disputas, suspensión global, conciliación programada y
 monitorización operativa deben cerrarse antes de modo activo. No están incluidos
 cobros alumno → preparador, cambios de plan ni compras Pro de las tiendas. No se
 modifica la web pública ni se despliega producción.
+
+#### Publicación y aceptación del sandbox · 28/10/2026
+
+Trainer Dev publica la revisión `43b5ff8eb4e6063b917124f8ffcf1d7c860807fb`
+mediante la ejecución `40767911505`, con validación y despliegue correctos.
+Se verifica por HTTPS el manifiesto, entorno, proyecto, arranque y hash del
+JavaScript. ADMIN también publica correctamente `40767911538`; la copia de Dev
+`40767911451` finaliza sin error. No se usa el administrador de archivos Hostinger.
+
+Se prueba desde la sesión web propia ya verificada con MFA: contratar → Checkout
+del sandbox → tarjeta oficial ficticia → retorno → conciliación automática.
+La pantalla confirma el pago y el servidor registra una factura única, estado
+activo y periodo hasta el 28/11/2026. Las cinco plazas y la fuente manual previa
+se conservan; no se concede Pro. Este recorrido prueba compra y conservación
+del regalo; el alta desde cero está cubierta por el contrato SQL transaccional.
+El portal abre la factura pagada y permite gestionar el método de pago.
+Se cancela la renovación desde ese portal. Stripe conserva el periodo hasta el
+28/11 y el servidor refleja la cancelación programada sin duplicar el recibo ni
+cerrar el acceso. El modo flexible usa `cancel_at` en vez del indicador clásico;
+se normaliza únicamente cuando coincide con el final del periodo acreditado,
+con prueba de regresión y ajuste desplegado en la función Dev.
+[Diferencia documentada del modo flexible](https://docs.stripe.com/billing/subscriptions/billing-mode/compare#scheduled-subscription-cancellation).
+Los eventos Checkout, factura, alta y actualización de la suscripción están
+recibidos y completados en el ledger privado.
+
+Los endpoints Dev se comprueban también por HTTP: sesión ausente y origen ajeno
+devuelven 403; firma de webhook inválida devuelve 503 sin aceptar ni registrar
+evidencia. El contrato SQL y el historial quedan contrastados con **247
+migraciones coincidentes**, incluida la guarda de lease. El asesor informa seis
+tablas privadas con RLS sin políticas, deliberadamente sin permisos de lectura
+directa; no se presentan las advertencias preexistentes como corregidas aquí.
+Los 46 tests de herramientas ADMIN y 17 de Trainer pasan tras incorporar el
+esquema a las copias. Las cuatro regresiones HTTP adicionales verifican sesión,
+MFA, origen/entorno, firma y retorno idempotente de un webhook ya completado.
+
+Evidencia local ignorada: `build/trainer-commerce-paid.png` y
+`build/trainer-commerce-confirmed.png`. El único siguiente
+recorrido comercial recomendado es acordar tarifas y políticas de contratación
+para ampliar el ensayo. Citas con hora permanecen como propuesta TRN-041. No se
+declara cerrada la comercialización real ni el circuito alumno → preparador.
