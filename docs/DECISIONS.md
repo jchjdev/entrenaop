@@ -13,13 +13,20 @@ comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 registrar para más adelante un directorio voluntario de entrenadores en la web,
 con ampliación posterior a centros. Prevé descubrir profesionales desde
 «Mi preparador», con ficha, foto, descripción y especialidades. El contacto
-inicial será externo, sin usar por ahora el chat de la app; correo u otros
-canales elegidos por el profesional siguen pendientes de concretar. Se mantiene
+inicial será externo, sin usar por ahora el chat de la app; el profesional elige
+publicar correo profesional, web o WhatsApp, sin exponer por defecto su correo
+privado de acceso. Javier aprueba también presentación libre con campos comunes
+y servicios concretos, disponibilidad/pausa, enlace compartible, prioridad de
+vínculos actuales con entrada «Buscar preparador» y arranque con un grupo pequeño
+de profesionales activos. El uso de EntrenaOP se distingue de titulaciones
+verificadas; criterios de revisión/retirada pendientes. Se mantiene
 el máximo vigente de dos preparadores externos activos por alumno: buscar o
 contactar no crea un vínculo ni concede acceso a sus datos. No se implementa
 ahora ni desplaza el bloque comercial en curso. Tarifas, publicación, revisión,
-orden de resultados y gestión de centros quedan por definir.
-[Alcance y propuestas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
+orden de resultados y gestión de centros quedan por definir. Tener dos
+preparadores no sustituye ninguno automáticamente; se informará del límite
+antes de aceptar un tercero.
+[Alcance y acuerdos futuros](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 
 **COM-022 · reglas iniciales confirmadas · 28/10/2026:** Javier aprueba acceso
 profesional tras pago confirmado, cancelación al final del periodo pagado,

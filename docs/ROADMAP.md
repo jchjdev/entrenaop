@@ -2686,8 +2686,13 @@ Una vez validada la primera semana adaptativa, el orden natural será:
   Después ampliar a centros, sin anticipar gestión de organizaciones/equipos.
   Se mantiene el máximo de dos preparadores externos activos por alumno;
   descubrir/contactar no crea un vínculo ni utiliza el chat de la app.
+  **Propuestas confirmadas:** presentación libre con campos comunes y servicios,
+  disponibilidad/pausa, enlace propio, contacto voluntario por correo profesional,
+  web o WhatsApp, vínculos actuales prioritarios con «Buscar preparador» y piloto
+  con pocos profesionales activos. Informar del límite antes de aceptar un
+  tercero, sin sustituciones automáticas. Diseño y criterios de revisión pendientes.
   No es el siguiente bloque ni modifica las prioridades comerciales actuales.
-  [Acuerdos, recomendaciones y cuestiones abiertas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
+  [Acuerdos futuros y cuestiones abiertas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 - Resolver todas las oposiciones a la vez.
 - Chat, nutrición, desafíos o red social.
 - Las integraciones no condicionan el cierre del ciclo adaptativo. INT-001

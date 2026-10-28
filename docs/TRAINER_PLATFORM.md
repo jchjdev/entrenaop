@@ -75,9 +75,10 @@ trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
   desde la app. La primera entrega sigue siendo web; queda por diseñar si esa
   entrada abre el directorio web o incorpora búsqueda nativa posteriormente.
   Buscar no debe sustituir el acceso a los preparadores ya vinculados.
-- El primer contacto se plantea fuera del chat de EntrenaOP. Javier propone
-  correo u otros canales elegidos por el profesional; los canales concretos y
-  cómo se publican todavía deben acordarse.
+- El primer contacto será externo al chat de EntrenaOP. Cada profesional elige
+  qué canales publicar entre correo profesional, web o WhatsApp. El botón
+  «Contactar» ofrece únicamente los canales publicados voluntariamente; no se
+  utiliza por defecto el correo privado de acceso a la cuenta.
 - Se reafirma el máximo actual de **dos preparadores externos activos por
   alumno** de TRN-028. Consultar una ficha o contactar no consume plaza, acepta
   una invitación ni concede acceso al calendario, resultados u otros datos
@@ -87,25 +88,31 @@ trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
   sola organizaciones, equipos, acceso a alumnos compartido ni un cambio del
   límite de preparadores.
 
-### Recomendaciones para evaluar al retomar
+### Criterios adicionales acordados
 
-Estas propuestas no son decisiones aprobadas ni requisitos ya implementados:
+Javier confirma estas propuestas el 28/10/2026 para cuando se retome el
+directorio. Son acuerdos de producto futuros, sin implementación ahora:
 
-- Combinar presentación libre con campos comunes de especialidad/preparación,
-  modalidad online/presencial y ubicación para ofrecer filtros útiles.
-- Permitir indicar si admite alumnos y pausar la publicación. El canal de
-  contacto sería profesional y elegido expresamente para su difusión pública;
-  no publicar por defecto el correo privado de acceso a la cuenta.
-- Dar a cada ficha un enlace compartible, útil también para que el preparador
-  la difunda por sus propios canales.
-- Empezar con un grupo pequeño de profesionales activos y acordar criterios de
-  revisión y retirada. Distinguir uso de EntrenaOP de titulaciones verificadas.
+- Combinar presentación libre con campos comunes de especialidad, preparaciones,
+  modalidad online/presencial y ubicación para ofrecer filtros útiles. Explicar
+  los servicios concretos, por ejemplo fuerza, carrera, preparación completa o
+  revisión técnica, para facilitar también la elección de un segundo preparador.
+- Mostrar si admite alumnos o está sin plazas y permitir pausar la publicación.
+- Dar a cada ficha un enlace propio compartible para difundirla por sus canales.
+- En «Mi preparador», priorizar los vínculos actuales y ofrecer una entrada
+  «Buscar preparador». Tener dos preparadores no sustituye ninguno automáticamente:
+  informar del límite antes de intentar aceptar un tercero; buscar/contactar
+  sigue siendo independiente de las plazas activas.
+- Empezar con un grupo pequeño de profesionales activos, con criterios de
+  revisión y retirada por concretar. Distinguir el uso de EntrenaOP de las
+  titulaciones que se hayan verificado.
 
 ### Cuestiones pendientes
 
-Concretar canales de contacto, campos/filtros iniciales, gestión/publicación de
-fichas, revisión, disponibilidad y orden de resultados. También decidir qué
-ocurre con la ficha al perder el acceso profesional y cómo se representa un
+Concretar el diseño de los canales de contacto, valores y filtros iniciales,
+gestión/publicación de fichas, criterios de revisión/retirada y orden de
+resultados. También decidir qué ocurre con la ficha al perder el acceso
+profesional y cómo se representa un
 centro y su relación con los entrenadores. Aparecer en el directorio no fija
 tarifas, comisiones, suplementos ni acreditaciones. Reseñas, reservas, chat de
 captación y contratación automática no forman parte del primer alcance acordado.
