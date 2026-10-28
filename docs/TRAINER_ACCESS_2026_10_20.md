@@ -132,3 +132,60 @@ originales; Auth/RLS y cuotas se acreditan aparte con ROLLBACK contra Dev.
 178 migraciones coinciden y no quedan usuarios ni concesiones de prueba.
 Esto no acredita un recorrido TOTP humano remoto ni habilita el piloto.
 [Contrato ampliado, interfaces y evidencia](TRAINER_PORTAL_2026_10_21.md).
+
+## Invitación por enlace · TRN-038 · propuesta del 28/10/2026
+
+Javier señala la fricción real al entregar el código a un compañero y pide un
+enlace que pueda enviar por su canal habitual. Se ha contrastado el código:
+`TrainerClientsPage` muestra/copía el secreto; `MyTrainerPage` exige pegarlo y
+pedir vista previa; el servidor guarda hash y acepta expresamente desde la cuenta
+identificada. No existe todavía recepción móvil de invitaciones ni enlace público
+de aterrizaje. El esquema móvil `es.entrenaop` se utiliza ahora para autenticación;
+Android solo registra el host auth-callback y se conserva el manejador app_links.
+
+### Recorrido principal propuesto
+
+1. El preparador genera la invitación y copia o comparte un enlace HTTPS. El
+   código manual queda como respaldo, plegado. Compartir abre el canal elegido
+   por el preparador; no se envía correo ni WhatsApp automáticamente.
+2. En beta, una página pública sencilla ofrece **Abrir EntrenaOP** y explica cómo
+   obtener la beta si falta. No incluye enlaces ficticios a tiendas ni asegura
+   detectar si la app está instalada. Solo muestra datos genéricos: la vista
+   previa actual del preparador exige autenticación.
+3. La app recibe una invitación diferenciada del retorno de Auth. Si falta sesión,
+   el recorrido debe retomarla después de identificarse; no acepta al pulsar el
+   enlace ni cambia de cuenta silenciosamente. El alumno ve al preparador y acepta.
+4. Se reutilizan caducidad, cancelación, uso único, cupos y límites de vínculos
+   existentes. La compartición del calendario conserva su consentimiento propio.
+5. La apertura directa por enlaces HTTPS verificados se configura cuando puedan
+   acreditarse dominio y aplicaciones. App Store/Google Play se enlazan solo al
+   disponer de fichas reales. Tras instalar, el alumno puede volver al enlace:
+   no se promete recuperación automática de contexto después de la instalación.
+
+### Seguridad y destinatario
+
+El secreto largo sigue siendo necesario, pero puede viajar dentro del enlace;
+el alumno no necesita escribirlo. Debe mantenerse fuera de logs, errores y la
+petición HTTP de la página de aterrizaje (fragmento), sin analítica de terceros
+que lo capture. El servidor sigue recibiéndolo en el cuerpo de la RPC y solo
+guarda su hash. Visitar la página o generar una previsualización de correo no
+consume la invitación; únicamente la aceptación autenticada lo hace.
+
+Actualmente la posesión del código permite solicitar la vinculación desde
+cualquier cuenta que cumpla el contrato. Para que solo acepte una persona
+concreta se propone registrar el correo previsto y comprobar en servidor la
+identidad y confirmación de esa cuenta. Esa ampliación requiere nuevo contrato,
+migración y pruebas; no se considera implementada por construir una URL. La
+aceptación con código manual debe respetar la misma restricción de destinatario.
+
+La recepción en app implica cambios de navegación y configuración nativa que
+necesitan una app actualizada; una página web nueva no los instala en una beta
+anterior. La distribución respeta el acuerdo de frecuencia en ANDROID_BETA.md.
+
+Fuentes contrastadas el 28/10/2026:
+[Flutter](https://docs.flutter.dev/ui/navigation/deep-linking),
+[Android App Links](https://developer.android.com/training/app-links),
+[Universal Links de Apple](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app).
+
+Este apartado documenta una propuesta de recorrido, no una entrega programada,
+un nuevo permiso ni una configuración de tiendas ya activa.

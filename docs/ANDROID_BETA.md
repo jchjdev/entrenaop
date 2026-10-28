@@ -5,6 +5,16 @@ como APK release firmada, sin publicar en Google Play ni activar cobros reales.
 La primera versión de este circuito es **1.0.0-beta.1, compilación 3**.
 La APK declara Android 7.0/API 24 como mínimo y target API 36.
 
+## Frecuencia de preparación · acuerdo del 28/10/2026
+
+Javier acepta la APK beta.2 ya preparada para probar los avisos profesionales.
+A partir de aquí, se preparan nuevas APK para actualizaciones importantes o
+cuando lo solicite expresamente. Las pruebas manuales habituales en su iPhone
+y Android las realiza él con su circuito de desarrollo. Los ajustes pequeños
+no disparan por sí solos compilación, firma, instalación ni distribución de APK.
+Se mantienen análisis, pruebas automáticas y validaciones necesarias del alcance;
+el acuerdo cambia la frecuencia de empaquetado, no los controles del repositorio.
+
 ## Firma y actualizaciones
 
 Identificador Android conservado: `com.entrenaOp.entrenaop`. El certificado

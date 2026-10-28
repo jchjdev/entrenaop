@@ -1,5 +1,28 @@
 # Registro de decisiones vigentes
 
+**Distribución móvil · 28/10/2026 · frecuencia de APK:** Javier acepta la
+beta.2 ya preparada y pide no generar APK por cada ajuste. Las siguientes se
+prepararán para actualizaciones importantes o petición expresa; las pruebas
+manuales habituales las realiza él en iPhone y Android. Se conservan las
+verificaciones automáticas correspondientes al cambio. Este acuerdo no declara
+aceptadas físicamente las push profesionales ni activa Apple/APNs.
+[Distribución](ANDROID_BETA.md).
+
+**TRN-038 · 28/10/2026 · invitación compartible por enlace:** Javier pide evitar
+que el alumno copie un secreto largo: compartir por correo, WhatsApp o el canal
+que elija; abrir la app y proponer la vinculación. Mientras no haya tiendas,
+quiere al menos un enlace que ofrezca abrir la beta instalada. Se registra el
+requisito; la implementación actual sigue siendo por código. Propuesta pendiente:
+enlace HTTPS con secreto fuera de la petición HTTP de la página, pantalla
+intermedia con Abrir EntrenaOP, recepción móvil que conserva la invitación hasta
+identificarse y aceptación explícita en el contrato existente. Apertura directa
+verificada y enlaces a tiendas requieren configuración/publicación posterior;
+instalar no garantiza recuperar automáticamente el enlace original. Para limitar
+la aceptación a persona concreta se propone fijar su correo confirmado en
+servidor: el código actual no vincula destinatario y enviar el enlace por un canal
+no añade esa protección. No se modifica todavía el esquema ni se envían mensajes.
+[Diseño propuesto y límites](TRAINER_ACCESS_2026_10_20.md#invitacion-por-enlace--trn-038--propuesta-del-28102026).
+
 **TRN-037 · 28/10/2026 · push agrupadas para el preparador:** implementación
 validada en código y contratos SQL; servidor Dev publicado con worker v9. Javier pide
 avisos por mensajes de alumnos y vídeos de técnica compartidos. Se reutilizan
