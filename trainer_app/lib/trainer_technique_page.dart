@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/video_read_button.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_editor_ui/exercise_video_preview.dart';
@@ -10,9 +11,11 @@ class TrainerTechniquePage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.assignmentId,
+    this.onVideoRead,
   });
   final TrainerMediaRepository repository;
   final String assignmentId;
+  final Future<void> Function(String)? onVideoRead;
   @override
   State<TrainerTechniquePage> createState() => _TrainerTechniquePageState();
 }
@@ -257,6 +260,13 @@ class _TrainerTechniquePageState extends State<TrainerTechniquePage> {
                               'Este vídeo ha alcanzado el límite técnico de comentarios. Conservas las respuestas anteriores.',
                             ),
                         ],
+                        if (clip['can_feedback'] == true &&
+                            widget.onVideoRead != null)
+                          VideoReadButton(
+                            key: ValueKey('read-${clip['id']}'),
+                            markRead: () =>
+                                widget.onVideoRead!(clip['id'] as String),
+                          ),
                         if ((clip['feedback'] as List? ?? const []).isEmpty)
                           const Text(
                             'Todavía no hay correcciones compartidas.',

@@ -47,7 +47,7 @@ export function createPushWorker(options: {
           const current = await options.rpc('prepare_student_notice_job',identity) as {kind:string;previous_day?:boolean}|null;
           let outcome: Outcome | 'skipped' | 'deferred' = 'skipped';
           if (current?.kind === 'defer') outcome='deferred';
-          else if (current && ['assignment','message','other','reminder'].includes(current.kind)) {
+          else if (current && ['assignment','message','other','reminder','coachMessage','coachVideo'].includes(current.kind)) {
             try { outcome = await options.send(job.token,current.kind,current.previous_day===true); } catch { outcome='retry'; }
           }
           await options.rpc('finish_student_notice_job',{...identity,p_outcome:outcome});
@@ -91,16 +91,20 @@ export function createFcmSender(account: ServiceAccount, fetcher: typeof fetch =
     return accessToken;
   }
   return async (destination: string, kind = 'other', previousDay = false): Promise<Outcome> => {
-    const body = kind === 'assignment' ? 'Tu preparador ha actualizado tu planificación.' :
+    const professional = kind === 'coachMessage' || kind === 'coachVideo';
+    const collapse = professional ? 'entrenaop_'+kind : 'entrenaop_notices';
+    const body = kind === 'coachMessage' ? 'Tienes mensajes de tus alumnos pendientes.' :
+      kind === 'coachVideo' ? 'Tus alumnos han compartido vídeos de técnica pendientes de revisar.' :
+      kind === 'assignment' ? 'Tu preparador ha actualizado tu planificación.' :
       kind === 'message' ? 'Tienes mensajes pendientes de tu preparador.' :
       kind === 'reminder' ? (previousDay ? 'Tienes entrenamiento pautado para mañana.' : 'Tienes entrenamiento pautado para hoy.') :
       'Tienes novedades de seguimiento pendientes.';
     const response = await fetcher(`https://fcm.googleapis.com/v1/projects/${encodeURIComponent(account.project_id)}/messages:send`,{
       method:'POST',headers:{Authorization:'Bearer '+await bearer(),'Content-Type':'application/json'},
       body:JSON.stringify({message:{fid:destination,
-        notification:{title:'EntrenaOP',body},data:{type:'student_notices',notice_kind:kind},
-        android:{collapse_key:'entrenaop_notices',priority:'NORMAL',ttl:'3600s',notification:{tag:'entrenaop_notices'}},
-        apns:{headers:{'apns-collapse-id':'entrenaop-notices','apns-expiration':String(Math.floor(Date.now()/1000)+3600)},payload:{aps:{sound:'default'}}},
+        notification:{title:'EntrenaOP',body},data:{type:professional ? 'coach_notices' : 'student_notices',notice_kind:kind},
+        android:{collapse_key:collapse,priority:'NORMAL',ttl:'3600s',notification:{tag:collapse}},
+        apns:{headers:{'apns-collapse-id':collapse,'apns-expiration':String(Math.floor(Date.now()/1000)+3600)},payload:{aps:{sound:'default'}}},
       }}),signal:AbortSignal.timeout(15000),
     });
     if (response.ok) return 'sent';

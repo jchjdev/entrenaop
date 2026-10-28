@@ -151,3 +151,42 @@ test('proveedor recibe FID, payload genérico y credencial OAuth firmada',async(
   assert.equal(await sender('test-fid'),'invalid');
   assert.equal(await sender('test-fid'),'invalid');assert.equal(requests,3);
 });
+
+
+test('avisos profesionales revalidados y omitidos si ya no están pendientes',async()=>{
+  const sent:string[]=[];const outcomes:string[]=[];
+  for(const kind of ['coachMessage','coachVideo',null,'unknown']) {
+    const worker=createPushWorker({enabled:true,secret,serviceRoleKey:serverKey,projectId:'push-fixture',
+      rpc:async(name,params)=>{
+        if(name==='get_student_push_worker_configuration')return {enabled:true,firebase_project_id:'push-fixture'};
+        if(name==='claim_student_notice_jobs')return [job];
+        if(name==='prepare_student_notice_job')return kind ? {kind} : null;
+        if(name==='finish_student_notice_job')outcomes.push(params!.p_outcome as string);
+        return null;
+      },send:async(_,category)=>{sent.push(category);return 'sent';}});
+    assert.equal((await worker(request())).status,200);
+  }
+  assert.deepEqual(sent,['coachMessage','coachVideo']);
+  assert.deepEqual(outcomes,['sent','sent','skipped','skipped']);
+});
+test('mensajes y vídeos profesionales usan colapsos distintos sin datos personales',async()=>{
+  const key=await crypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
+  const der=await crypto.subtle.exportKey('pkcs8',key.privateKey);
+  const account:ServiceAccount={type:'service_account',project_id:'push-fixture',client_email:'sender@push-fixture.iam.gserviceaccount.com',
+    private_key:'-----BEGIN PRIVATE KEY-----\n'+Buffer.from(der).toString('base64')+'\n-----END PRIVATE KEY-----'};
+  const payloads:any[]=[];
+  const sender=createFcmSender(account,async(input,init)=>{
+    if(String(input).includes('oauth2.googleapis.com'))return Response.json({access_token:'temporary',expires_in:3600});
+    payloads.push(JSON.parse(init!.body as string).message);return Response.json({name:'accepted'});
+  });
+  await sender('fid','coachMessage');await sender('fid','coachVideo');await sender('fid','message');
+  assert.equal(new Set(payloads.map(p=>p.android.collapse_key)).size,3);
+  for(const p of payloads.slice(0,2)) {
+    assert.equal(p.data.type,'coach_notices');
+    assert.deepEqual(Object.keys(p.data).sort(),['notice_kind','type']);
+    assert.equal(p.android.notification.tag,p.android.collapse_key);
+    assert.equal(p.apns.headers['apns-collapse-id'],p.android.collapse_key);
+    assert.equal(p.android.priority,'NORMAL');
+  }
+  assert.equal(payloads[2].data.type,'student_notices');
+});

@@ -1,5 +1,8 @@
 # Consulta profesional en la app · TRN-036 · 28/10/2026
 
+TRN-037 incorpora los avisos nativos de mensajes y vídeos desde Resumen, con
+consentimiento independiente y categorías. [Reglas y prueba física pendiente](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 ## Producto y recorrido
 
 La app del deportista incorpora un espacio de consulta profesional. La misma
@@ -34,10 +37,10 @@ asignaciones y gestión completa permanecen en Trainer web.
   correcciones vinculadas a un instante. Ambos envíos conservan operación y
   contenido al reintentar un error incierto.
 
-El contador descrito es interno a la app. No se añade en este bloque un envío
-push nativo al preparador por mensajes de sus alumnos. La recepción push del
-deportista y su agrupación mantienen el circuito anterior; APNs sigue pendiente
-de la configuración/aceptación de Apple.
+El contador de mensajes es interno a la app; TRN-037 añade después el envío
+push nativo al preparador por mensajes y vídeos compartidos, con activación
+expresa. La recepción del deportista conserva su agrupación y consentimiento
+por teléfono; APNs sigue pendiente de la configuración/aceptación de Apple.
 
 ## Arquitectura y seguridad
 

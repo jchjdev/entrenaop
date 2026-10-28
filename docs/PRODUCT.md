@@ -1002,15 +1002,20 @@ algoritmo.
 
 ### Criterio de precio inicial · COM-004 · 10/10/2026
 
+**Actualización COM-021 · 28/10/2026:** anual general confirmado en 39,99 €,
+mensual 3,99 €. Sustituye la referencia anual inicial de 29,99 €.
+34,95 € para militares es una propuesta pendiente de acreditación y condiciones.
+El catálogo de pruebas debe actualizarse; no se habilitan cobros reales.
+
 Javier confirma que Pro debe salir con un precio accesible y considera elevado
 un importe inicial de 8,99 €/mes para el alcance actual. Tras plantear un rango
-de 2,99–4,99 €/mes, confirma **3,99 €/mes** y toma **29,99 €/año** como precio para
+de 2,99–4,99 €/mes, confirma **3,99 €/mes** y confirma después **39,99 €/año** como precio para
 diseñar la oferta inicial. Las dos modalidades conceden el mismo acceso Pro.
 
-Doce mensualidades suman 47,88 €. El anual ahorra 17,89 €, un 37,36 % respecto
-a ese importe, y equivale aproximadamente a 2,50 €/mes. El total anual debe
+Doce mensualidades suman 47,88 €. El anual ahorra 7,89 €, un 16,48 % respecto
+a ese importe, y equivale aproximadamente a 3,33 €/mes. El total anual debe
 mostrarse con más relevancia que su equivalente mensual; el ahorro puede
-redondearse a «37 %», indicando que se compara con doce mensualidades.
+redondearse a «16 %», indicando que se compara con doce mensualidades.
 
 Son precios de lanzamiento acordados, no una garantía de viabilidad económica
 ni de mantenimiento indefinido. COM-006 acepta el diseño con renovación automática;

@@ -19,8 +19,12 @@ class PushConfiguration {
     this.enabled,
     this.projectId, {
     this.preferences = const NoticePreferences(),
+    this.personalEnabled = true,
+    this.installationOwned = true,
+    this.professionalEnabled = false,
   });
   final bool enabled;
+  final bool personalEnabled, professionalEnabled, installationOwned;
   final String? projectId;
   final NoticePreferences preferences;
 }
@@ -46,6 +50,27 @@ abstract interface class PushTransport {
   Future<void> dispose();
 }
 
+/// Datos de apertura cerrados: el proveedor nunca decide una ruta ni un alumno.
+abstract interface class ProfessionalPushTransport {
+  String? get lastProfessionalKind;
+}
+
+abstract interface class PushChannelBackend {
+  Future<PushConfiguration> personalDelivery(
+    PushAccount account,
+    PushInstallation installation,
+    bool enabled,
+  );
+  Future<PushConfiguration> deviceConfiguration(
+    PushAccount account,
+    PushInstallation installation,
+  );
+}
+
+abstract interface class ProfessionalPushBackend {
+  Future<String?> professionalRoute(PushAccount account, String kind);
+}
+
 abstract interface class PushStore {
   Future<PushInstallation> installation();
   Future<bool> optedIn(String owner);
@@ -64,6 +89,8 @@ abstract interface class PushBackend {
     PushAccount account,
     PushInstallation installation,
   );
+  /// null renueva sin reactivar canales; false activa el personal y true
+  /// registra el profesional conservando el consentimiento personal previo.
   Future<void> register(
     PushAccount account,
     PushInstallation installation, {
@@ -71,6 +98,7 @@ abstract interface class PushBackend {
     required String? previousBinding,
     required String token,
     required String platform,
+    bool? professionalOnly,
   });
 
   /// Solo revoca la asociación propia. Puede fijar el token anterior al salir;
@@ -102,9 +130,12 @@ class PushNotificationCoordinator extends ChangeNotifier {
   bool _initialized = false, _disposed = false;
   bool _pendingOpen = false;
   bool _openWasReminder = false;
+  String? _professionalKind;
   NoticePreferences preferences = const NoticePreferences();
   String? get accountId => _account?.id;
   bool serverAvailable = false, enabled = false, busy = false, denied = false;
+  bool personalEnabled = true;
+  bool _professionalEnabled = false, _installationOwned = false;
   String? error;
   bool get available => transport.available;
   bool _current(int epoch, PushAccount account) =>
@@ -147,6 +178,9 @@ class PushNotificationCoordinator extends ChangeNotifier {
       _subscriptions.add(
         transport.openEvents.listen((_) {
           _openWasReminder = transport.lastOpenWasReminder;
+          _professionalKind = transport is ProfessionalPushTransport
+              ? (transport as ProfessionalPushTransport).lastProfessionalKind
+              : null;
           _pendingOpen = true;
           _emitOpen();
         }),
@@ -193,11 +227,19 @@ class PushNotificationCoordinator extends ChangeNotifier {
     if (!available || !_current(epoch, account)) return false;
     await _initialize();
     if (!_current(epoch, account)) return false;
-    final configuration = await backend.configuration(account);
+    final configuration = backend is PushChannelBackend
+        ? await (backend as PushChannelBackend).deviceConfiguration(
+            account,
+            await store.installation(),
+          )
+        : await backend.configuration(account);
     if (!_current(epoch, account)) return false;
     serverAvailable =
         configuration.enabled && configuration.projectId == transport.projectId;
     preferences = configuration.preferences;
+    _installationOwned = configuration.installationOwned;
+    personalEnabled = configuration.personalEnabled;
+    _professionalEnabled = configuration.professionalEnabled;
     return serverAvailable;
   }
 
@@ -207,6 +249,9 @@ class PushNotificationCoordinator extends ChangeNotifier {
     final epoch = ++_epoch;
     if (changed) {
       preferences = const NoticePreferences();
+      personalEnabled = true;
+      _professionalEnabled = false;
+      _installationOwned = false;
       serverAvailable = false;
       enabled = false;
       denied = false;
@@ -253,7 +298,11 @@ class PushNotificationCoordinator extends ChangeNotifier {
     return setAccount(account);
   }
 
-  Future<void> _bind(int epoch, PushAccount account) async {
+  Future<void> _bind(
+    int epoch,
+    PushAccount account, {
+    bool? professionalOnly,
+  }) async {
     final installation = await store.installation();
     if (!_current(epoch, account)) return;
     _transportOwner = account;
@@ -271,11 +320,14 @@ class PushNotificationCoordinator extends ChangeNotifier {
       previousBinding: previous?.bindingId,
       token: token,
       platform: transport.platform,
+      professionalOnly:
+          professionalOnly ??
+          (_installationOwned ? null : _professionalEnabled),
     );
     if (_current(epoch, account)) enabled = true;
   }
 
-  Future<void> enable() {
+  Future<void> enable({bool professionalOnly = false}) {
     final account = _account;
     final epoch = _epoch;
     if (account == null || !available) return Future.value();
@@ -290,7 +342,20 @@ class PushNotificationCoordinator extends ChangeNotifier {
         return;
       }
       await store.setOptedIn(account.id, true);
-      if (_current(epoch, account)) await _bind(epoch, account);
+      if (!_current(epoch, account)) return;
+      await _bind(epoch, account, professionalOnly: professionalOnly);
+      if (!_current(epoch, account)) return;
+      if (backend is PushChannelBackend) {
+        final channels = backend as PushChannelBackend;
+        final installation = await store.installation();
+        if (!_current(epoch, account)) return;
+        final cfg = professionalOnly
+            ? await channels.deviceConfiguration(account, installation)
+            : await channels.personalDelivery(account, installation, true);
+        if (!_current(epoch, account)) return;
+        personalEnabled = cfg.personalEnabled;
+        _professionalEnabled = cfg.professionalEnabled;
+      }
     });
   }
 
@@ -300,6 +365,17 @@ class PushNotificationCoordinator extends ChangeNotifier {
     if (account == null) return Future.value();
     return _run(epoch, () async {
       if (!_current(epoch, account)) return;
+      if (backend is PushChannelBackend) {
+        final cfg = await (backend as PushChannelBackend).personalDelivery(
+          account,
+          await store.installation(),
+          false,
+        );
+        if (!_current(epoch, account)) return;
+        personalEnabled = cfg.personalEnabled;
+        _professionalEnabled = cfg.professionalEnabled;
+        if (_professionalEnabled) return;
+      }
       await store.setOptedIn(account.id, false);
       if (!_current(epoch, account)) return;
       await _revoke(account);
@@ -330,6 +406,23 @@ class PushNotificationCoordinator extends ChangeNotifier {
     final account = _account;
     final epoch = _epoch;
     if (account == null) return null;
+    final kind = _professionalKind;
+    if (kind == 'coachMessage' || kind == 'coachVideo') {
+      String? route;
+      try {
+        if (backend is ProfessionalPushBackend) {
+          route = await (backend as ProfessionalPushBackend).professionalRoute(
+            account,
+            kind!,
+          );
+        }
+      } catch (_) {
+        // La ruta de bandeja exige igualmente el acceso profesional y MFA.
+      }
+      if (!_current(epoch, account)) return null;
+      return route ??
+          (kind == 'coachMessage' ? '/coach/messages' : '/coach/videos');
+    }
     if (!_openWasReminder) return '/my-trainer?view=notices';
     DateTime? date;
     try {

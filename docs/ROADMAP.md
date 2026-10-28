@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**TRN-037 · 28/10/2026 · push profesionales implementadas y servidor Dev publicado:**
+mensajes/vídeos agrupados entre alumnos, preferencias separadas, descanso,
+lecturas y comprobación de permisos antes de enviar. 1.421 pruebas raíz,
+286 Trainer, 316 ADMIN, 12 Node y siete contratos SQL con ROLLBACK; 240
+migraciones coincidentes. Worker v9 con JWT y rechazo público 401. Nadie recibe
+el alta de avisos automáticamente. La entrega física profesional sigue abierta:
+**único siguiente recorrido recomendado:** actualizar Android → activar Avisos
+de mis alumnos → enviar mensajes y técnica desde alumno → comprobar agrupación,
+apertura con MFA y lectura previa desde web. No hay Android conectado hoy;
+Apple/APNs, cobros reales y la oferta militar siguen pendientes. COM-021 fija
+la referencia anual general en 39,99 €, con catálogo Test Store por actualizar.
+[Recorrido, límites y comprobaciones](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **TRN-036 · 28/10/2026 · consulta profesional móvil preparada:** selector
 por acceso confirmado y dos espacios independientes en la app; Resumen, Agenda,
 Alumnos y Mensajes reutilizan permisos/MFA y componentes comunes. Consulta
@@ -10,8 +23,8 @@ aplicada solo en Dev y ocho contratos terminan con ROLLBACK. Análisis limpios,
 correctas; capturas revisadas a 320/390 píxeles con texto ampliado.
 **Siguiente recorrido de este bloque:** nueva instalación móvil → entrar con
 MFA → atender a un alumno → comprobar resultado/corrección → volver al espacio
-personal y al preparador propio. Pendientes aceptación física y push nativa al
-preparador; no se amplían creadores móviles, cobros, algoritmo ni producción.
+personal y al preparador propio. Pendiente aceptación física; la push nativa al
+preparador se implementa después en TRN-037; no se amplían creadores móviles, cobros, algoritmo ni producción.
 [Alcance y verificaciones](TRAINER_MOBILE_WORKSPACE.md).
 
 **INT-021 · 27/10/2026 · Beta CIQ 1.6 instalada; ensayo automático en curso:** recuperación por alias exacto

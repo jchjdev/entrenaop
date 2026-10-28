@@ -1,3 +1,4 @@
+import 'package:workout_editor_ui/video_read_button.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrena_ui/conversation_view.dart';
 import 'package:flutter/material.dart';
@@ -280,6 +281,15 @@ class CoachTechniquePage extends StatelessWidget {
                         )
                       else
                         Text('Vídeo en preparación: ${clip['status']}'),
+                      if (visible &&
+                          clip['can_feedback'] == true &&
+                          scope.notifications != null)
+                        VideoReadButton(
+                          key: ValueKey('read-${clip['id']}'),
+                          markRead: () => scope.notifications!.videoRead(
+                            clip['id'] as String,
+                          ),
+                        ),
                       for (final feedback in clip['feedback'] as List? ?? [])
                         ListTile(
                           contentPadding: EdgeInsets.zero,

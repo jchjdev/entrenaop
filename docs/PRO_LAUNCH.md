@@ -1,5 +1,14 @@
 # Pro: interfaz inicial y conexión de pagos
 
+**COM-021 · 28/10/2026:** referencia general actual 3,99 €/mes y 39,99 €/año;
+la presentación se actualiza y el precio del proveedor sigue gobernando la compra.
+El Test Store EUR registrado más abajo es evidencia del 13/10 y sigue pendiente
+de actualización: el CLI existente ya no está autenticado. No se simula otro
+precio encima del devuelto por tienda ni se modifican compras anteriores.
+34,95 € para militares es propuesta pendiente; no existe verificación ni oferta
+militar activa. Apple/Google reales y ventas continúan pendientes.
+
+
 ## Estado contrastado con código y Dev · 20/10/2026
 
 Revisión solicitada por Javier tras advertir que se estaban arrastrando listas

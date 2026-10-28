@@ -55,7 +55,8 @@ class LocalPushStore implements PushStore {
   }
 }
 
-class SupabasePushBackend implements PushBackend {
+class SupabasePushBackend
+    implements PushBackend, ProfessionalPushBackend, PushChannelBackend {
   const SupabasePushBackend(this.client);
   final SupabaseClient client;
   Future<dynamic> _rpc(
@@ -73,16 +74,56 @@ class SupabasePushBackend implements PushBackend {
     'p_secret': installation.secret,
   };
   @override
+  Future<String?> professionalRoute(PushAccount account, String kind) async {
+    final row = await _rpc(account, 'resolve_my_coach_notice', {
+      'p_kind': kind,
+    }) as Map?;
+    final target = row?['target_id'];
+    if (target is! String || !RegExp(r'^[a-fA-F0-9-]{36}$').hasMatch(target)) {
+      return null;
+    }
+    return switch (row?['kind']) {
+      'conversation' => '/coach/messages/${Uri.encodeComponent(target)}',
+      'technique' => '/coach/technique/${Uri.encodeComponent(target)}',
+      _ => null,
+    };
+  }
+
+  @override
+  Future<PushConfiguration> personalDelivery(
+    PushAccount account,
+    PushInstallation installation,
+    bool enabled,
+  ) async => _configuration(
+    await _rpc(account, 'set_my_device_personal_push_delivery', {
+      ..._key(installation),
+      'p_enabled': enabled,
+    }) as Map,
+  );
+  @override
+  Future<PushConfiguration> deviceConfiguration(
+    PushAccount account,
+    PushInstallation installation,
+  ) async => _configuration(
+    await _rpc(account, 'get_my_push_channel_configuration', _key(installation))
+        as Map,
+  );
+  @override
   Future<PushConfiguration> configuration(PushAccount account) async {
     final row = await _rpc(account, 'get_my_push_configuration', {}) as Map;
-    return PushConfiguration(
-      row['enabled'] == true,
-      row['firebase_project_id'] as String?,
-      preferences: row['preferences'] is Map
-          ? NoticePreferences.fromJson(row['preferences'] as Map)
-          : const NoticePreferences(),
-    );
+    return _configuration(row);
   }
+
+  PushConfiguration _configuration(Map row) => PushConfiguration(
+    row['enabled'] == true,
+    row['firebase_project_id'] as String?,
+    personalEnabled: row['personal_enabled'] == true,
+    installationOwned: row['installation_owned'] == true,
+    professionalEnabled: row['professional_enabled'] == true,
+    preferences: row['preferences'] is Map
+        ? NoticePreferences.fromJson(row['preferences'] as Map)
+        : const NoticePreferences(),
+  );
 
   @override
   Future<NoticePreferences> savePreferences(
@@ -131,14 +172,23 @@ class SupabasePushBackend implements PushBackend {
     required String? previousBinding,
     required String token,
     required String platform,
+    bool? professionalOnly,
   }) async {
-    await _rpc(account, 'register_my_push_device', {
-      ..._key(installation),
-      'p_binding_id': bindingId,
-      'p_previous_binding': previousBinding,
-      'p_token': token,
-      'p_platform': platform,
-    });
+    await _rpc(
+      account,
+      professionalOnly == null
+          ? 'refresh_my_push_device'
+          : professionalOnly
+          ? 'register_my_coach_push_device'
+          : 'register_my_push_device',
+      {
+        ..._key(installation),
+        'p_binding_id': bindingId,
+        'p_previous_binding': previousBinding,
+        'p_token': token,
+        'p_platform': platform,
+      },
+    );
   }
 
   Future<dynamic> _previous(

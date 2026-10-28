@@ -1,3 +1,5 @@
+import 'coach_notification_settings.dart';
+
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:workout_core/performance_time.dart';
 import 'package:workout_core/professional_assessment.dart';
@@ -283,6 +285,8 @@ class CoachSummaryPage extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('Actualizar resumen'),
             ),
+            if (scope.notifications case final notifications?)
+              CoachNotificationSettings(repository: notifications),
           ],
         ),
       ),

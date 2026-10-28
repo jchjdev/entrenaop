@@ -1,0 +1,51 @@
+begin;
+set local statement_timeout='45s';
+do $$
+declare owner uuid:=gen_random_uuid();other uuid:=gen_random_uuid();a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();c uuid:=gen_random_uuid();d uuid:=gen_random_uuid();
+ ba uuid:=gen_random_uuid();bb uuid:=gen_random_uuid();bc uuid:=gen_random_uuid();next_binding uuid:=gen_random_uuid();switched uuid:=gen_random_uuid();secret text:=repeat('c',64);cfg jsonb;
+begin
+ update push_private.settings set enabled=true,coach_enabled=true,firebase_project_id='entrenaop-dev';
+ insert into auth.users(id,email) values(owner,owner||'@channels.invalid'),(other,other||'@channels.invalid');
+ insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values(gen_random_uuid(),owner,'totp','verified',now(),now());
+ insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(owner,true,5,'Consentimientos por teléfono');
+ perform set_config('request.jwt.claim.sub',owner::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ perform public.register_my_push_device(owner,a,secret,ba,null,repeat('A',22),'android');
+ perform public.register_my_push_device(owner,b,secret,bb,null,repeat('B',22),'android');
+ perform public.save_my_coach_push_preferences(owner,0,true,true,true);
+ cfg:=public.set_my_device_personal_push_delivery(owner,a,secret,false);
+ if (cfg->>'personal_enabled')::boolean or not (cfg->>'professional_enabled')::boolean then raise exception 'No separa los canales';end if;
+ if not (public.get_my_push_channel_configuration(owner,b,secret)->>'personal_enabled')::boolean then raise exception 'Apaga otro teléfono';end if;
+ begin perform public.get_my_push_channel_configuration(owner,b,repeat('a',64));raise exception 'Acepta secreto ajeno';exception when insufficient_privilege then null;end;
+ perform public.register_my_coach_push_device(owner,c,secret,bc,null,repeat('C',22),'android');
+ if (public.get_my_push_channel_configuration(owner,c,secret)->>'personal_enabled')::boolean then raise exception 'Primer registro profesional activa personal';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal1')::text,true);
+ -- Una instalación ya consentida puede renovar su dirección sin abrir datos
+ -- privados ni solicitar MFA cada vez que reanuda el sistema operativo.
+ perform public.register_my_coach_push_device(owner,c,secret,next_binding,bc,repeat('E',22),'android');
+ if (public.get_my_push_channel_configuration(owner,c,secret)->>'personal_enabled')::boolean then raise exception 'Renovar activa personal';end if;
+ begin perform public.register_my_coach_push_device(owner,d,secret,gen_random_uuid(),null,repeat('D',22),'android');raise exception 'Alta profesional nueva sin MFA';exception when insufficient_privilege then null;end;
+ perform public.unregister_my_push_device(owner,c,secret,next_binding);
+ perform set_config('request.jwt.claim.sub',other::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.set_my_device_personal_push_delivery(other,c,secret,true);raise exception 'Modifica canal de otro titular';exception when insufficient_privilege then null;end;
+ perform public.register_my_push_device(other,c,secret,switched,next_binding,repeat('C',22),'android');
+ if not (public.get_my_push_channel_configuration(other,c,secret)->>'personal_enabled')::boolean then raise exception 'Arrastra preferencias de otro titular';end if;
+ perform public.unregister_my_push_device(other,c,secret,switched);
+ perform set_config('request.jwt.claim.sub',owner::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',owner,'role','authenticated','aal','aal2')::text,true);
+ perform public.register_my_coach_push_device(owner,c,secret,gen_random_uuid(),switched,repeat('C',22),'android');
+ if (public.get_my_push_channel_configuration(owner,c,secret)->>'personal_enabled')::boolean then raise exception 'Reasignación profesional hereda personal';end if;
+ perform public.register_my_push_device(owner,a,secret,gen_random_uuid(),ba,repeat('A',22),'android');
+ if not (public.get_my_push_channel_configuration(owner,a,secret)->>'personal_enabled')::boolean then raise exception 'Un alta personal idempotente no activa su canal';end if;
+ perform public.set_my_device_personal_push_delivery(owner,a,secret,false);
+ perform public.save_my_coach_push_preferences(owner,1,false,true,true);
+ perform public.refresh_my_push_device(owner,a,secret,gen_random_uuid(),ba,repeat('A',22),'android');
+ if (public.get_my_push_channel_configuration(owner,a,secret)->>'personal_enabled')::boolean then raise exception 'Reanudar con ambos canales apagados activa personal';end if;
+ begin perform public.set_my_personal_push_delivery(owner,false);raise exception 'Setter global obsoleto accesible';exception when insufficient_privilege then null;end;
+ reset role;
+ if has_function_privilege('anon','public.get_my_push_channel_configuration(uuid,uuid,text)','execute') then raise exception 'Consulta anónima';end if;
+end $$;
+select 'coach_push_device_channels: OK' result;
+rollback;

@@ -985,7 +985,7 @@ en el móvil. Sin cambios SQL, no se ejecutan baterías SQL nuevas.
 
 ## Pro: recorrido y contratación · COM-004/006 · 10/10/2026
 
-Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 29,99 €/año
+Los precios de lanzamiento de COM-004 están acordados: 3,99 €/mes y 39,99 €/año (COM-021, 28/10/2026)
 por el mismo acceso Pro. Javier aprueba la composición y el recorrido y pide
 implementar primero la interfaz, después conectar pagos. La fase inicial se
 describe en [Pro y pagos](PRO_LAUNCH.md): añade descubrimiento y oferta con compra
@@ -998,10 +998,10 @@ incluidas capacidades cuyo reparto comercial esté pendiente, seguimiento humano
 ni pruebas gratuitas que no se hayan acordado.
 
 Se propone una pantalla dedicada con cierre visible, tres beneficios breves y
-dos opciones legibles: mensual a 3,99 €/mes y anual a 29,99 €/año. Destacar el anual
+dos opciones legibles: mensual a 3,99 €/mes y anual a 39,99 €/año. Destacar el anual
 por ahorro no debe ocultar la alternativa mensual. El anual mostrará «Ahorra
-37 % respecto a 12 mensualidades», con 2,50 €/mes como dato secundario; doce
-mensualidades suman 47,88 €, por lo que el ahorro exacto es 17,89 €. El total
+16 % respecto a 12 mensualidades», con 3,33 €/mes como dato secundario; doce
+mensualidades suman 47,88 €, por lo que el ahorro exacto es 7,89 €. El total
 anual será más relevante que su equivalente mensual. Referencia:
 [instrucciones de Apple](https://developer.apple.com/app-store/subscriptions/).
 

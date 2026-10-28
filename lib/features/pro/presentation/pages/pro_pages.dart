@@ -214,7 +214,7 @@ class _BillingChoice extends StatelessWidget {
                   Text(period.label),
                   if (period == ProBillingPeriod.annual)
                     Text(
-                      'Ahorra 37 %',
+                      'Ahorra 7,89 €',
                       style: TextStyle(color: colors.primary),
                     ),
                 ],
@@ -231,7 +231,7 @@ class _BillingChoice extends StatelessWidget {
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               period == ProBillingPeriod.annual
-                  ? 'Un cobro anual · equivale a 2,50 €/mes.\nAhorro respecto a 12 mensualidades.'
+                  ? 'Un cobro anual · equivale a 3,33 €/mes.\nAhorro respecto a 12 mensualidades.'
                   : 'Un cobro cada mes.',
             ),
           ),

@@ -12,6 +12,7 @@ import 'package:entrenaop/features/notifications/push_notifications_scope.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:trainer_access/trainer_messages.dart';
+import 'package:trainer_access/trainer_notifications.dart';
 import 'package:entrenaop/features/trainers/presentation/trainer_conversation_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show SupabaseClient;
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
@@ -1329,6 +1330,7 @@ class AppRouter {
       repository: SupabaseCoachWorkspaceRepository(client, owner),
       security: SupabaseTrainerSecurity(client, owner),
       messages: SupabaseTrainerMessageRepository(client, owner),
+      notifications: SupabaseCoachNotificationRepository(client, owner),
       video: coachVideoSource(client, owner),
       child: child,
     );

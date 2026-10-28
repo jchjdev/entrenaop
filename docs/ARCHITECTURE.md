@@ -1,5 +1,17 @@
 # Arquitectura de EntrenaOP
 
+**TRN-037 · 28/10/2026 · avisos profesionales:** `trainer_access` comparte el
+puerto de preferencias y acuses de vídeos entre web y móvil. El coordinador
+nativo conserva transporte/instalación y distingue apertura personal y
+profesional; el servidor resuelve el recurso y la guardia conserva MFA. La cola
+privada existente incorpora dos categorías profesionales por teléfono con
+referencias a fuentes y generación. El consentimiento personal se mantiene por
+instalación, independiente del profesional por cuenta; renovar no reactiva canales.
+Los mensajes usan sus recibos compartidos; los vídeos solo alertan listos y
+compartidos, y admiten acuse de visto independiente de la corrección. Mismo
+programador, worker y Firebase Dev; sin nuevos proveedores ni producción.
+[Contrato y validación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
 **TRN-036 · 28/10/2026 · dos espacios en la app:** el módulo
 `lib/features/coach_workspace/` separa dominio, adaptación RPC y presentación
 móvil. No importa aplicaciones web: comparte `trainer_access`, conversación y

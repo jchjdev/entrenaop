@@ -1,5 +1,87 @@
 # Avisos push del alumno · TRN-029 · 24/10/2026
 
+## Avisos al preparador · TRN-037 · 28/10/2026
+
+En la app: **Entrenador → Resumen → Avisos de mis alumnos**. Solo se presenta en
+cuentas profesionales y dispositivos con transporte nativo configurado. No es
+push del navegador: Trainer web conserva su bandeja y sus globos de mensajes.
+Activación expresa, con permiso del sistema, y dos categorías: mensajes y vídeos.
+Guardar exige cuenta fijada, MFA y acceso profesional vigente; las revisiones
+evitan sobrescribir ajustes guardados en otro dispositivo.
+
+Los mensajes de todos sus alumnos se agrupan en un único trabajo por teléfono;
+los vídeos, en otro. Espera un minuto desde la última llegada, con tope de dos
+desde la primera pendiente y al menos diez minutos entre envíos del mismo tipo.
+El programador existente revisa cada minuto: no es una alarma de tiempo exacto.
+Comparten zona horaria y descanso (inicialmente Madrid, 22:00–08:00) con los avisos
+personales; el consentimiento de ambas bandejas es independiente. Activar el
+profesional por primera vez conserva los avisos personales previos o los deja
+apagados si no existían. Desactivar el canal personal conserva el profesional.
+Los clientes antiguos mantienen su consentimiento previo en instalaciones activas.
+
+Antes de enviar se comprueba nuevamente acceso del preparador, vínculo activo,
+cuenta/instalación, consentimiento y fuente pendiente de las últimas 24 horas.
+Leer los mensajes desde web o móvil los excluye; un vídeo solo avisa cuando
+está listo y compartido. Retirarlo, corregirlo o pulsar **Marcar vídeo como visto**
+lo excluye. Abrir una lista no declara vistos todos sus vídeos ni los considera
+corregidos. Volver a compartir el mismo archivo no crea otra push. Para mí no
+produce avisos profesionales propios. Activar ajustes o registrar otro teléfono
+no genera un volcado de avisos antiguos.
+
+La notificación contiene solo EntrenaOP y un texto genérico de categoría; no
+incluye nombres, textos, URL ni identificadores de alumnos. Al pulsar, el servidor
+resuelve la conversación/sesión propia más reciente que sigue pendiente. Si la
+sesión requiere MFA o ya no queda esa novedad, abre la bandeja profesional tras
+su protección habitual. Una respuesta tardía de otra cuenta se descarta.
+FCM usa tres claves de colapso: alumno, mensajes profesionales y vídeos
+profesionales. El sistema puede sustituir un aviso anterior del mismo tipo.
+Una lectura/revocación posterior a la petición ya enviada a FCM no puede retirar
+con certeza una notificación entregada; los permisos se vuelven a comprobar al abrir.
+[Colapso oficial de FCM](https://firebase.google.com/docs/cloud-messaging/customize-messages/collapsible-message-types).
+
+Los canales personales se guardan por instalación y cuenta propietaria: apagar
+el personal en un teléfono no lo apaga en otro. El consentimiento profesional
+por cuenta solo entrega en instalaciones activas que ya dieron permiso al sistema.
+Renovar una dirección conserva los canales; una activación personal explícita
+sí puede encender el personal. La renovación idempotente usa la asociación que
+realmente devuelve el servidor, que puede ser distinta de la UUID solicitada.
+El contrato inicial de preferencias por cuenta se conserva como compatibilidad;
+su setter global se revoca y no gobierna el despacho de dispositivos.
+
+La migración deja el envío profesional deshabilitado hasta desplegar el worker
+compatible. Dev ya tiene worker v9, JWT obligatorio, respuesta pública 401 y
+`coach_enabled=true`; no hay preparadores suscritos automáticamente. No se añade otro programador, proyecto Firebase ni credencial.
+El worker anterior se amplía manteniendo ticket efímero, JWT y secretos existentes.
+Las nuevas tablas son privadas, con RLS y sin permisos de lectura directa.
+
+
+### Validación del 28/10/2026
+
+Análisis limpios de raíz, Trainer y ADMIN; 1.421 pruebas raíz, 286 Trainer,
+316 ADMIN y sus omisiones previas. Transporte: 12 pruebas Node y TypeScript
+5.9.3 estricto. Siete contratos SQL pasan en Dev con ROLLBACK, incluidas las dos
+nuevas baterías de avisos profesionales y canales por teléfono. Incluyen fuentes
+reales de mensaje/vídeo, aislamiento/MFA, dos alumnos agrupados, lectura anterior
+al envío, llegada durante reclamación, pausa, revocación, compartición y dos
+instalaciones de una cuenta con consentimientos distintos. Se comprueba además
+renovación sin reactivar canales, respuesta idempotente y cambio de titular.
+Historial Dev: 240 migraciones coincidentes. No hay Android conectado en la
+comprobación; falta aceptar físicamente la entrega profesional y su apertura.
+No se configura APNs ni se modifica producción.
+
+### Comprobación manual pendiente
+
+1. Actualizar la app Android y activar Avisos de mis alumnos en Entrenador.
+2. Enviar varios mensajes desde un alumno, dejar el móvil en segundo plano y
+   comprobar un aviso agrupado; pulsarlo y verificar conversación/MFA.
+3. Repetir leyendo primero desde Trainer web: no debe llegar la push pendiente.
+4. Compartir un vídeo listo; verificar aviso y acceso a su sesión. Marcarlo visto
+   o corregirlo antes del envío debe excluirlo. Subida fallida o no compartida no avisa.
+5. Desactivar solo mensajes: vídeos siguen activados. Desactivar avisos personales
+   no apaga los profesionales. Cambiar de cuenta nunca abre el alumno de la anterior.
+6. Probar descanso y regreso a primer plano sin multiplicar avisos. iPhone requiere
+   todavía la configuración APNs/Apple pendiente; no se da por probado por compilar.
+
 ## Agrupación y recordatorios · 25/10/2026
 
 En la app: **Preparador → Avisos del preparador → Recordatorios y descanso**.

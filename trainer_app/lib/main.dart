@@ -1,3 +1,4 @@
+import 'package:trainer_access/trainer_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'trainer_account_access.dart';
@@ -555,6 +556,10 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 repository: media(),
                 assignmentId: state.pathParameters['id']!,
+                onVideoRead: SupabaseCoachNotificationRepository(
+                  widget.client,
+                  identity!,
+                ).videoRead,
               ),
             ),
             GoRoute(

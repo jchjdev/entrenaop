@@ -24,9 +24,24 @@ Future<void> prepareFirebasePushRegistration(
 }
 
 /// Solo transporte. No utiliza Firebase Auth, base de datos ni Analytics.
-class FirebasePushTransport implements PushTransport {
+class FirebasePushTransport
+    implements PushTransport, ProfessionalPushTransport {
   @override
   bool lastOpenWasReminder = false;
+  @override
+  String? lastProfessionalKind;
+  void _opened(RemoteMessage m) {
+    lastOpenWasReminder =
+        m.data['type'] == 'student_notices' &&
+        m.data['notice_kind'] == 'reminder';
+    final kind = m.data['notice_kind'];
+    lastProfessionalKind =
+        m.data['type'] == 'coach_notices' &&
+            (kind == 'coachMessage' || kind == 'coachVideo')
+        ? kind as String
+        : null;
+  }
+
   static const _enabled = bool.fromEnvironment('PUSH_ENABLED');
   static const _project = String.fromEnvironment('PUSH_FIREBASE_PROJECT_ID');
   static const _sender = String.fromEnvironment('PUSH_FIREBASE_SENDER_ID');
@@ -70,7 +85,9 @@ class FirebasePushTransport implements PushTransport {
   @override
   Stream<void> get tokenEvents => _tokens.stream;
   bool _valid(RemoteMessage message) =>
-      message.data['type'] == 'student_notices';
+      message.data['type'] == 'student_notices' ||
+      (message.data['type'] == 'coach_notices' &&
+          ['coachMessage', 'coachVideo'].contains(message.data['notice_kind']));
   @override
   Future<void> initialize() async {
     if (_disposed) throw StateError('Transporte cerrado.');
@@ -116,7 +133,7 @@ class FirebasePushTransport implements PushTransport {
     _subscriptions.add(
       FirebaseMessaging.onMessageOpenedApp.listen((m) {
         if (_valid(m)) {
-          lastOpenWasReminder = m.data['notice_kind'] == 'reminder';
+          _opened(m);
           _opens.add(null);
         }
       }),
@@ -139,7 +156,7 @@ class FirebasePushTransport implements PushTransport {
     _messaging = messaging;
     final initial = await messaging.getInitialMessage();
     if (initial != null && _valid(initial)) {
-      lastOpenWasReminder = initial.data['notice_kind'] == 'reminder';
+      _opened(initial);
       _opens.add(null);
     }
   }

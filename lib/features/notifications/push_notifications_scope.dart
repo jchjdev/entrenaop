@@ -18,7 +18,8 @@ class PushNotificationsScope
 }
 
 class StudentPushSettings extends StatefulWidget {
-  const StudentPushSettings({super.key});
+  const StudentPushSettings({super.key, this.professional = false});
+  final bool professional;
   @override
   State<StudentPushSettings> createState() => _StudentPushSettingsState();
 }
@@ -129,35 +130,43 @@ class _StudentPushSettingsState extends State<StudentPushSettings> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Avisos del preparador'),
-            subtitle: Text(
-              push.denied
-                  ? 'Permite las notificaciones en los ajustes del teléfono y vuelve a comprobarlo.'
-                  : 'La planificación y los mensajes consecutivos llegan agrupados.',
+          if (!widget.professional)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Avisos del preparador'),
+              subtitle: Text(
+                push.denied
+                    ? 'Permite las notificaciones en los ajustes del teléfono y vuelve a comprobarlo.'
+                    : 'La planificación y los mensajes consecutivos llegan agrupados.',
+              ),
+              value: push.enabled && push.personalEnabled,
+              onChanged: editable
+                  ? (on) {
+                      on ? push.enable() : push.disable();
+                    }
+                  : null,
             ),
-            value: push.enabled,
-            onChanged: editable
-                ? (on) {
-                    on ? push.enable() : push.disable();
-                  }
-                : null,
-          ),
           if (push.busy) const LinearProgressIndicator(),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            title: const Text('Recordatorios y descanso'),
+            title: Text(
+              widget.professional
+                  ? 'Horario de descanso'
+                  : 'Recordatorios y descanso',
+            ),
             subtitle: Text(
-              value.reminderMode == 'off'
+              widget.professional
+                  ? 'Compartido con tus avisos personales'
+                  : value.reminderMode == 'off'
                   ? 'Sin recordatorios de entrenamiento'
                   : '${value.reminderMode == 'sameDay' ? 'El mismo día' : 'El día anterior'} · ${_clock(value.reminderMinute)}',
             ),
             childrenPadding: const EdgeInsets.symmetric(vertical: 12),
             children: [
-              const Text(
-                'Un recordatorio por día de entrenamiento, aunque tengas varias sesiones o preparadores. Los entrenamientos completados o cancelados se omiten.',
-              ),
+              if (!widget.professional)
+                const Text(
+                  'Un recordatorio por día de entrenamiento, aunque tengas varias sesiones o preparadores. Los entrenamientos completados o cancelados se omiten.',
+                ),
               if (!push.enabled)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
@@ -166,35 +175,39 @@ class _StudentPushSettingsState extends State<StudentPushSettings> {
                   ),
                 ),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                key: ValueKey(
-                  'mode-$_owner-${value.revision}-${value.reminderMode}',
-                ),
-                isExpanded: true,
-                initialValue: value.reminderMode,
-                decoration: const InputDecoration(
-                  labelText: 'Cuándo recordarme el entrenamiento',
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'off', child: Text('No recordarme')),
-                  DropdownMenuItem(
-                    value: 'sameDay',
-                    child: Text('El mismo día'),
+              if (!widget.professional)
+                DropdownButtonFormField<String>(
+                  key: ValueKey(
+                    'mode-$_owner-${value.revision}-${value.reminderMode}',
                   ),
-                  DropdownMenuItem(
-                    value: 'previousDay',
-                    child: Text('El día anterior'),
+                  isExpanded: true,
+                  initialValue: value.reminderMode,
+                  decoration: const InputDecoration(
+                    labelText: 'Cuándo recordarme el entrenamiento',
                   ),
-                ],
-                onChanged: editable
-                    ? (mode) {
-                        if (mode != null) {
-                          _change(value.copyWith(reminderMode: mode));
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'off',
+                      child: Text('No recordarme'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'sameDay',
+                      child: Text('El mismo día'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'previousDay',
+                      child: Text('El día anterior'),
+                    ),
+                  ],
+                  onChanged: editable
+                      ? (mode) {
+                          if (mode != null) {
+                            _change(value.copyWith(reminderMode: mode));
+                          }
                         }
-                      }
-                    : null,
-              ),
-              if (value.reminderMode != 'off')
+                      : null,
+                ),
+              if (!widget.professional && value.reminderMode != 'off')
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Hora del recordatorio'),

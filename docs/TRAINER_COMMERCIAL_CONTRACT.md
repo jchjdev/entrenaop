@@ -466,3 +466,33 @@ dependencias nuevas. No se ejecuta Flutter ni SQL porque no hay cambios en apps,
 paquetes Dart, esquema o permisos; la integración persistente deberá ejecutar su
 matriz correspondiente. Este tramo se entrega al coordinador sin commit propio
 para respetar la ventana del índice Git compartido.
+
+## Pasarelas y descuento militar · propuesta revisada el 28/10/2026
+
+El flujo principal recomendado conserva tres contratos: EntrenaOP factura al
+preparador en web mediante Billing; el preparador cobra a sus alumnos mediante
+Connect y su propia cuenta de cobro; Pro digital del deportista en móvil conserva
+Apple/Google con RevenueCat. No son tres suscripciones obligatorias para el alumno:
+recibir y ejecutar lo pautado sigue incluido en su servicio con el preparador.
+No se contrata ni configura cobro real en esta tarea.
+
+Apple Pay es un medio de pago; no sustituye las compras integradas de una
+suscripción digital en iPhone. La excepción de servicios individuales en tiempo
+real de las normas de Apple no permite asumir que programas asíncronos o acceso
+a contenido digital queden exentos. Antes de añadir un enlace de pago en la app
+hay que contrastar el servicio concreto, región y requisitos de la tienda.
+[Normas de Apple, 3.1.1 y 3.1.3(d)](https://developer.apple.com/app-store/review/guidelines/#in-app-purchase).
+El Apple Developer/APNs para notificaciones es otra configuración; se mantiene
+aplazada conforme pide Javier, sin renovaciones ni pagos iniciados.
+
+El anual general de Pro queda confirmado en **39,99 €**, mensual **3,99 €**.
+**34,95 €/año para militares** es una propuesta por diseñar: definir beneficiarios
+(en activo/reserva y otros casos), verificación mínima, periodo acreditado,
+renovación y convivencia con la suscripción ya comprada. Recomiendo empezar con
+validación manual, conservar solo estado/fecha de revisión y evitar almacenar
+copias de TMI/DNI por defecto. Es una recomendación, no una autorización de recogida.
+El reconocimiento debe hacerse en servidor; una casilla o metadato editable no
+concede el derecho. Antes de venderlo se debe decidir cómo aplica cada tienda
+la tarifa y qué ocurre cuando caduca la acreditación, avisando al usuario y sin
+cambiar silenciosamente una renovación contratada. No se crean productos,
+cupones ni descuentos militares automáticos en esta tarea.

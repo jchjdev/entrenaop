@@ -8,7 +8,9 @@ import 'package:entrenaop/features/notifications/push_notifications.dart';
 import 'package:entrenaop/features/notifications/push_data.dart';
 import 'package:entrenaop/features/notifications/firebase_push_transport.dart';
 
-class Transport implements PushTransport {
+class Transport implements PushTransport, ProfessionalPushTransport {
+  @override
+  String? lastProfessionalKind;
   @override
   bool lastOpenWasReminder = false;
   @override
@@ -73,7 +75,12 @@ class Store implements PushStore {
   }
 }
 
-class Backend implements PushBackend {
+class Backend implements PushBackend, ProfessionalPushBackend {
+  String? professionalTarget;
+  Completer<String?>? pendingProfessional;
+  @override
+  Future<String?> professionalRoute(PushAccount account, String kind) async =>
+      pendingProfessional?.future ?? professionalTarget;
   Completer<NoticePreferences>? pendingPreferences;
   DateTime? reminder;
   Completer<DateTime?>? pendingReminder;
@@ -97,6 +104,7 @@ class Backend implements PushBackend {
   String? owner, binding;
   bool loseResponse = false;
   final registrations = <String>[], revoked = <String>[];
+  final registrationKinds = <bool?>[];
   @override
   Future<PushConfiguration> configuration(PushAccount account) async => config;
   @override
@@ -113,8 +121,10 @@ class Backend implements PushBackend {
     required String? previousBinding,
     required String token,
     required String platform,
+    bool? professionalOnly,
   }) async {
     registrations.add(account.id);
+    registrationKinds.add(professionalOnly);
     owner = account.id;
     binding = bindingId;
     if (loseResponse) {
@@ -150,6 +160,29 @@ class Fixture {
 const a = PushAccount('A', 'bearer-A'), b = PushAccount('B', 'bearer-B');
 
 void main() {
+  test('abre la bandeja profesional tras MFA y descarta resolución tardía de otra cuenta', () async {
+    final f = Fixture();
+    addTearDown(f.coordinator.dispose);
+    await f.coordinator.setAccount(a);
+    f.transport.lastProfessionalKind = 'coachMessage';
+    f.transport.open.add(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(await f.coordinator.routeForOpen(), '/coach/messages');
+    f.backend.professionalTarget = '/coach/messages/own-relation';
+    expect(await f.coordinator.routeForOpen(), '/coach/messages/own-relation');
+    f.backend.pendingProfessional = Completer<String?>();
+    final late = f.coordinator.routeForOpen();
+    await f.coordinator.setAccount(b);
+    f.backend.pendingProfessional!.complete('/coach/messages/old-relation');
+    expect(await late, isNull);
+    f.backend.pendingProfessional = null;
+    f.backend.professionalTarget = null;
+    f.transport.lastProfessionalKind = 'coachVideo';
+    f.transport.open.add(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(await f.coordinator.routeForOpen(), '/coach/videos');
+  });
+
   test(
     'guarda preferencias por cuenta y descarta una respuesta tardía de A',
     () async {

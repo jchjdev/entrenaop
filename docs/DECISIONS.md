@@ -1,5 +1,31 @@
 # Registro de decisiones vigentes
 
+**TRN-037 · 28/10/2026 · push agrupadas para el preparador:** implementación
+validada en código y contratos SQL; servidor Dev publicado con worker v9. Javier pide
+avisos por mensajes de alumnos y vídeos de técnica compartidos. Se reutilizan
+instalación, FCM, programador y cola con generación; consentimiento profesional
+independiente del personal, apagado por defecto, con categorías editables.
+Agrupa todos los alumnos por tipo/dispositivo: un minuto desde el último evento,
+tope de dos desde el primero y al menos diez entre envíos del mismo tipo.
+Respeta descanso y revalida lectura, compartición, acceso y vínculo antes del
+envío. Abrir resuelve un recurso propio en servidor y mantiene MFA profesional.
+No hay backfill ni push por Para mí. Apple y entrega física siguen pendientes.
+[Contrato, límites y pruebas](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
+
+**COM-021 · 28/10/2026 · anual general y propuesta militar:** Javier confirma
+**39,99 €/año**, conservando **3,99 €/mes**, para el mismo Pro. Sustituye la
+referencia anual de COM-004 y la propuesta sin aprobar de COST-005: ahorro
+7,89 € frente a doce mensualidades (47,88 €), equivalente aproximado 3,33 €/mes.
+Se actualiza la presentación; el precio localizado del proveedor sigue siendo
+la autoridad al comprar. El catálogo Test Store requiere actualizar su EUR;
+el CLI existente no tiene sesión autenticada en la comprobación de hoy.
+No se cambian compras existentes ni se habilitan ventas. **34,95 € para militares
+sigue como propuesta**, pendiente de beneficiarios, acreditación, vigencia,
+renovación y canal comercial; no se recoge documentación ni se concede por una
+casilla editable. Javier confirma que hay que plantearlo bien antes de activar.
+[Producto](PRODUCT.md#criterio-de-precio-inicial--com-004--10102026),
+[comercialización](TRAINER_COMMERCIAL_CONTRACT.md).
+
 **TRN-036 · 28/10/2026 · consulta profesional móvil:** implementada en código
 y servidor Dev; instalación y aceptación física pendientes. Javier aprueba que
 la app del deportista tenga dos espacios para cuentas profesionales: navegación
