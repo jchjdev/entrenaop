@@ -12,5 +12,6 @@ Pod::Spec.new do |s|
   s.platform = :ios, '15.0'
   s.swift_version = '5.0'
   s.frameworks = 'HealthKit'
+  s.weak_frameworks = 'WorkoutKit'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 end

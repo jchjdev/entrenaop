@@ -1,5 +1,13 @@
 # Arquitectura de EntrenaOP
 
+**INT-023 · 28/10/2026 · primer adaptador Apple Watch:** dominio y puertos en
+`features/apple_watch`, composición en router y WorkoutKit aislado en el plugin
+iOS existente. El servidor reutiliza la receta autorizada y el compilador deportivo;
+Garmin y Apple comparten derechos comerciales, conservando transportes distintos.
+Referencia estable por cuenta/cita, revisión, sesión, intento y exclusión protegen
+las operaciones. El ACK local no acredita recepción ni ejecución. Solo Dev y
+aceptación física pendiente. [Contrato](DEVICE_APPLE_WATCH.md).
+
 **TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
 `trainer_access`; Trainer adapta canal de envío y página pública. La app nativa
 conserva intención en memoria y una ruta sin secreto, separada del retorno Auth.

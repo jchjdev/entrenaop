@@ -1,4 +1,7 @@
 import 'package:device_health/device_health.dart';
+
+import '../config/app_config.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,6 +55,11 @@ class _DeviceConnectionsRouteState extends State<DeviceConnectionsRoute> {
     onOpenHealth: () async {
       await context.push('/profile/activities');
     },
+    onOpenAppleWatch: AppConfig.environment == AppEnvironment.development
+        ? () async {
+            await context.push('/profile/apple-watch');
+          }
+        : null,
     onOpenGarmin: () async {
       await context.push('/profile/garmin');
     },

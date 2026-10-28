@@ -1,3 +1,4 @@
+import 'apple_watch_route.dart';
 import '../../features/trainers/presentation/trainer_invitation_entry.dart';
 import '../../features/trainers/presentation/trainer_invitation_page.dart';
 import 'coach_workspace_routes.dart';
@@ -1100,6 +1101,20 @@ class AppRouter {
                     ? const SizedBox.shrink()
                     : DeviceConnectionsRoute(
                         key: ValueKey('connections-${auth.user.id}'),
+                        ownerId: auth.user.id,
+                        client: sl<SupabaseClient>(),
+                      ),
+              ),
+            ),
+            materialAppRoute(
+              path: 'apple-watch',
+              parentNavigatorKey: _rootNavigatorKey,
+              builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+                bloc: authCubit,
+                builder: (_, auth) => auth is! AuthAuthenticated
+                    ? const SizedBox.shrink()
+                    : AppleWatchRoute(
+                        key: ValueKey('apple-${auth.user.id}'),
                         ownerId: auth.user.id,
                         client: sl<SupabaseClient>(),
                       ),

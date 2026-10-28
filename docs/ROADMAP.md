@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**INT-023 · 28/10/2026 · Apple Watch en validación:** primer recorrido de carrera
+exterior desde el iPhone con WorkoutKit; receta y editor comunes, autorización
+explícita, referencia estable para cambios/retirada, acceso comercial en servidor
+y protección de borrado profesional. Solo Dev. La preparación y el ACK local no
+cierran el bloque ni acreditan recepción física. Aún no hay envío automático ni
+asociación automática de los resultados Apple con la semana.
+**Siguiente recorrido único de Apple:** autorizar y comprobar alta, cambio,
+retirada y devolución por Salud en el Ultra y su iPhone emparejado.
+[Contrato, validación y límites](DEVICE_APPLE_WATCH.md).
+
 **COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
 los dos circuitos de pago profesional y propone Pro personal en las tiendas.
 Stripe sandbox configurado y complemento conectado, todavía sin conexión al

@@ -24,6 +24,13 @@ on:
       - 'supabase/functions/garmin-connection/**'
       - 'supabase/functions/garmin-oauth-callback/**'
       - 'supabase/functions/tests/garmin*'
+      - 'lib/core/router/apple_watch_route.dart'
+      - 'lib/features/apple_watch/**'
+      - 'packages/device_health/**'
+      - 'test/features/apple_watch/**'
+      - 'supabase/functions/_shared/apple_training/**'
+      - 'supabase/functions/apple-training/**'
+      - 'supabase/functions/tests/apple*'
       - 'lib/features/device_connections/**'
       - 'lib/features/device_training/**'
       - 'lib/features/device_activity_results/**'
@@ -76,6 +83,7 @@ jobs:
           supabase/functions/_shared/garmin/ciq_probe.ts
           supabase/functions/_shared/garmin/ciq_http.ts
           supabase/functions/_shared/garmin/training_http.ts
+          supabase/functions/_shared/apple_training/http.ts
           supabase/functions/_shared/device_training/prescription.ts
           supabase/functions/_shared/device_training/strength.ts
           supabase/functions/_shared/device_training/capabilities.ts
@@ -111,9 +119,9 @@ jobs:
             (cd "$project" && flutter pub get --enforce-lockfile)
           done
           (cd packages/device_activity_core && dart pub get --enforce-lockfile)
-          dart format --output=none --set-exit-if-changed lib/features/device_connections lib/features/device_training lib/features/device_activity_results lib/core/router/garmin_connection_route.dart test/features/device_connections test/features/device_training test/features/device_activity_results
+          dart format --output=none --set-exit-if-changed lib/core/router/apple_watch_route.dart lib/features/apple_watch lib/features/device_connections lib/features/device_training lib/features/device_activity_results lib/core/router/garmin_connection_route.dart test/features/apple_watch test/features/device_connections test/features/device_training test/features/device_activity_results
           flutter analyze
-          flutter test test/features/device_connections test/features/device_training test/features/device_activities test/features/device_activity_results
+          flutter test test/features/apple_watch test/features/device_connections test/features/device_training test/features/device_activities test/features/device_activity_results
           flutter test test/features/workouts/presentation/workout_editor_cubit_test.dart test/features/workouts/data/shared_preferences_workout_editor_draft_store_test.dart test/features/workouts/domain/running_steps_v2_test.dart
           # Reutilizar el package_config resuelto con el lockfile de la raíz;
           # este paquete no versiona otro lockfile independiente.
@@ -151,3 +159,22 @@ jobs:
           dart run tools/run_app.dart build ios --release --no-codesign --no-pub
           --dart-define=APP_ENV=development
           --dart-define=SUPABASE_URL=https://sxbxfjqgoddzhtcyhalw.supabase.co
+      - name: Comprobar compatibilidad del enlace con iOS anteriores
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          app = Path('build/ios/iphoneos/Runner.app')
+          binaries = [app / 'Runner', *app.glob('Frameworks/device_health.framework/device_health')]
+          found = False
+          for binary in binaries:
+              report = subprocess.check_output(['otool', '-l', str(binary)], text=True)
+              for block in report.split('Load command '):
+                  if 'WorkoutKit.framework/WorkoutKit' in block:
+                      found = True
+                      if 'LC_LOAD_WEAK_DYLIB' not in block:
+                          raise SystemExit('WorkoutKit debe enlazarse débilmente para conservar iOS 15/16')
+          if not found:
+              raise SystemExit('No se encontró WorkoutKit en el binario nativo')
+          print('WorkoutKit enlazado débilmente; mínimo general iOS conservado')
+          PY

@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**INT-023 · 28/10/2026 · comienzo Apple Watch autorizado:** después del recorrido
+Garmin, Javier pide comenzar Apple manteniendo Clean Architecture y el editor común.
+Se utiliza WorkoutKit desde el iPhone emparejado, con primera entrega de carrera
+exterior en Dev, autorización explícita y la política comercial compartida.
+No exige claves Garmin ni cambia el mínimo general de iOS. Envío automático,
+fuerza y asociación automática de resultados Apple no quedan acreditados por este
+primer adaptador. El bloque sigue abierto para aceptación física en el Ultra.
+[Contrato y límites](DEVICE_APPLE_WATCH.md).
+
 **COM-022 · conexión Stripe de pruebas autorizada · 28/10/2026:** Javier confirma
 conectar ChatGPT exclusivamente al «Entorno de prueba de EntrenaOP», con escritura
 en Checkout, Connect sandbox, clientes, portal, productos, precios, suscripciones

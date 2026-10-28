@@ -11,12 +11,14 @@ class DeviceConnectionsPage extends StatefulWidget {
     required this.garmin,
     required this.onOpenHealth,
     required this.onOpenGarmin,
+    this.onOpenAppleWatch,
   });
 
   final String ownerId;
   final LocalRunningHealth health;
   final GarminConnectionRepository garmin;
   final Future<void> Function() onOpenHealth, onOpenGarmin;
+  final Future<void> Function()? onOpenAppleWatch;
 
   @override
   State<DeviceConnectionsPage> createState() => _DeviceConnectionsPageState();
@@ -122,6 +124,17 @@ class _DeviceConnectionsPageState extends State<DeviceConnectionsPage> {
                         onTap: () => _open(widget.onOpenGarmin),
                       ),
                     ),
+                    if (widget.onOpenAppleWatch != null) ...[
+                      _ConnectionCard(
+                        title: 'Apple Watch',
+                        icon: Icons.watch_outlined,
+                        status: 'Carreras en Entreno',
+                        description: 'Programa las carreras pautadas desde el iPhone emparejado. Requiere Pro o un servicio de entrenador vigente.',
+                        action: 'Gestionar Apple Watch',
+                        onTap: () => _open(widget.onOpenAppleWatch!),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ),
               ),

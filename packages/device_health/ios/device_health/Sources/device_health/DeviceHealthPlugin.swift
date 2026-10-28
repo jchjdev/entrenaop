@@ -3,6 +3,7 @@ import HealthKit
 import UIKit
 
 public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
+  private var applePlanner: AnyObject?
   private let store = HKHealthStore()
   private let channel: FlutterMethodChannel
   private var activeQuery: HKSampleQuery?
@@ -27,6 +28,13 @@ public final class DeviceHealthPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    if call.method.hasPrefix("apple.") {
+      if #available(iOS 18.0, *) {
+        if applePlanner == nil { applePlanner = AppleWorkoutBridge() }
+        (applePlanner as! AppleWorkoutBridge).handle(call, result)
+      } else { result(["state": "unsupported"]) }
+      return
+    }
     if call.method == "status" {
       result(HKHealthStore.isHealthDataAvailable() ? "available" : "unavailable")
       return

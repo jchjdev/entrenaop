@@ -3,7 +3,8 @@
 ## Dispositivos y conexiones · INT-022
 
 Desde el 28/10/2026, Perfil ofrece un único acceso **Dispositivos y conexiones**
-(`/profile/connections`). Agrupa **Salud del móvil** y **Garmin**, conservando
+(`/profile/connections`). Agrupa **Salud del móvil** y **Garmin**, y añade en Dev el primer recorrido de
+[Apple Watch](DEVICE_APPLE_WATCH.md), conservando
 los recorridos existentes de historial, permisos y gestión de Garmin. Los enlaces
 anteriores y el retorno de autorización siguen siendo válidos. Volver desde una
 conexión actualiza sus estados; cambiar de cuenta descarta el estado anterior.
