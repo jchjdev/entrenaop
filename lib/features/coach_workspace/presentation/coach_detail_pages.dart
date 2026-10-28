@@ -237,6 +237,8 @@ class CoachTechniquePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final scope = CoachWorkspaceScope.of(context);
     final repo = scope.controller.repository;
+    // Desmontar el reproductor oculto detiene también su audio nativo.
+    final visible = TickerMode.valuesOf(context).enabled;
     return Scaffold(
       appBar: AppBar(title: const Text('Técnica del alumno')),
       body: CoachLoad(
@@ -263,7 +265,7 @@ class CoachTechniquePage extends StatelessWidget {
                         'Vídeo · ${(clip['created_at'] as String).split('T').first}',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      if (clip['status'] == 'ready')
+                      if (clip['status'] == 'ready' && visible)
                         ExerciseVideoPreview(
                           key: ValueKey(clip['id']),
                           url: clip['playback_url'] as String,

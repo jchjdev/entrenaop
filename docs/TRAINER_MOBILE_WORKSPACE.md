@@ -63,8 +63,11 @@ de la configuración/aceptación de Apple.
 La guardia exige estado propio confirmado y MFA antes de montar datos
 profesionales. Usa el mismo autenticador de Trainer; si no existe, permite
 configurarlo mediante clave manual y verificar su primer código. No concede
-acceso, Pro ni plazas. Un error no confirma autorización. Revocación, respuesta
-tardía y cambio de cuenta descartan permisos/contadores anteriores. Cada RPC
+acceso, Pro ni plazas. Un error no confirma autorización. Un fallo temporal
+oculta el contexto ya autorizado y detiene foco/refrescos,
+conservando su borrador hasta revalidar; antes de MFA no se monta. Revocación
+confirmada y cambio de cuenta desmontan el contexto. Las respuestas tardías
+no restablecen permisos/contadores anteriores. Cada RPC
 mantiene además sus comprobaciones de servidor por cuenta, servicio y recurso.
 
 Las composiciones aisladas sin transporte registrado mantienen el deportista y
@@ -94,18 +97,28 @@ bandeja de mensajes, ficha y objetivos: ocho contratos con ROLLBACK sobre Dev.
 Las pruebas móviles cubren navegación dual, entrada directa sin MFA, usuario
 normal, revocación/error, respuesta tardía, cambio de cuenta, pausa, conservación
 del borrador, lectura de mensajes, calendarios compartidos y reintento de revisión.
+El reproductor se desmonta al ocultar el espacio para detener vídeo y audio.
 Las de transporte comprueban fechas locales, cursores, propiedad/JWT, ausencia
 de identidad y payloads de revisión/corrección. Se revisan pantallas a 320/390
 píxeles con texto 1×/2× y capturas de consulta con fuentes legibles.
 
-Análisis limpio en raíz, Trainer y ADMIN. Baterías completas: 1.411 pruebas
+Análisis limpio en raíz, Trainer y ADMIN. Baterías completas: 1.413 pruebas
 del deportista (una omisión anterior), 286 de Trainer y 316 de ADMIN (dos omisiones
-anteriores). Veintitrés pruebas específicas nuevas de módulo/transporte; paquetes
+anteriores). Veinticinco pruebas específicas nuevas de módulo/transporte; paquetes
 compartidos: 218 de workout_editor_ui, 31 de entrena_ui y 22 de trainer_access.
 Se coteja el historial de migraciones local/Dev sin diferencias y los grants de
 la fachada: sin ejecución anónima, autenticada e invoker. Los asesores conservan
 las mismas cinco categorías y 243 hallazgos previos, sin incremento por este
 cambio; no se presenta ese estado anterior como una auditoría global resuelta.
+
+La entrega principal `0f52eeed28a8cbf0ab566a0febafbd5b698fab9c` pasó las
+comprobaciones remotas: Trainer run `40668009962`, ADMIN `40668009669` y
+Garmin/consumidor/iOS `40668009785`. Los portales Dev sirvieron esa revisión,
+verificada independientemente por HTTPS, identidad de proyecto, SHA-256,
+entrada, cabeceras y MIME WASM. El job iOS compiló Release sin firma; no instaló
+una app ni validó APNs. Los ajustes posteriores de bloqueo temporal y parada del
+reproductor se verifican con las 1.413 pruebas raíz y 25 específicas indicadas;
+no modifican el paquete web ni el servidor.
 
 La funcionalidad requiere una nueva compilación e instalación móvil. No se
 acredita aquí su instalación física en iPhone, APNs ni publicación en tiendas.

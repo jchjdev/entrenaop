@@ -6,7 +6,7 @@ Alumnos y Mensajes reutilizan permisos/MFA y componentes comunes. Consulta
 objetivos, calendario compartido y resultados; responde conversaciones y vídeos
 con reintento protegido. La consulta de vídeos sin primera corrección está
 aplicada solo en Dev y ocho contratos terminan con ROLLBACK. Análisis limpios,
-1.411 pruebas raíz, 286 Trainer, 316 ADMIN y 271 de los paquetes compartidos
+1.413 pruebas raíz, 286 Trainer, 316 ADMIN y 271 de los paquetes compartidos
 correctas; capturas revisadas a 320/390 píxeles con texto ampliado.
 **Siguiente recorrido de este bloque:** nueva instalación móvil → entrar con
 MFA → atender a un alumno → comprobar resultado/corrección → volver al espacio

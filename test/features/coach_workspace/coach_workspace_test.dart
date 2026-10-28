@@ -1,3 +1,5 @@
+import 'package:workout_editor_ui/exercise_video_preview.dart';
+import 'package:entrenaop/features/coach_workspace/presentation/coach_detail_pages.dart';
 import 'package:trainer_access/trainer_calendar.dart';
 import 'package:flutter/services.dart';
 
@@ -51,6 +53,7 @@ class FakeCoach extends CoachWorkspaceRepository {
   bool enabled = true, failed = false, shareEnabled = true;
   int assignmentCalls = 0, failedReviews = 0;
   Map<String, dynamic>? resultData;
+  List<Map<String, dynamic>> clips = [];
   final reviewCalls = <(String, String, int, String)>[];
 
   int clientCalls = 0, inboxCalls = 0;
@@ -185,6 +188,9 @@ class FakeCoach extends CoachWorkspaceRepository {
     if (failedReviews-- > 0) throw StateError('Sin confirmar');
   }
 
+  @override
+  Future<List<Map<String, dynamic>>> technique(String assignmentId) async =>
+      clips;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -664,6 +670,83 @@ void main() {
       expect(repo.reviewCalls.first.$2, 'session');
       expect(repo.reviewCalls.first.$3, 3);
       expect(repo.reviewCalls.first.$4, 'Progreso correcto');
+      await t.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'un fallo de comprobación oculta el chat sin perder el borrador; revocar lo desmonta',
+    (t) async {
+      final repo = FakeCoach();
+      final router = createRouter(
+        repo,
+        FakeSecurity(),
+        initial: '/coach/messages/relation',
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(MaterialApp.router(routerConfig: router));
+      await t.pumpAndSettle();
+      await t.enterText(find.byType(TextField), 'Borrador protegido');
+      final controller = CoachWorkspaceScope.of(
+        t.element(find.byType(CoachConversationPage)),
+      ).controller;
+      repo.failed = true;
+      await controller.refresh();
+      await t.pumpAndSettle();
+      expect(find.text('Borrador protegido'), findsNothing);
+      expect(find.text('Hola, entrenador'), findsNothing);
+      expect(
+        find.textContaining('No se pudo verificar el acceso'),
+        findsOneWidget,
+      );
+      repo.failed = false;
+      await controller.refresh();
+      await t.pumpAndSettle();
+      expect(find.text('Borrador protegido'), findsOneWidget);
+      repo.enabled = false;
+      await controller.refresh();
+      await t.pumpAndSettle();
+      expect(
+        find.text('Borrador protegido', skipOffstage: false),
+        findsNothing,
+      );
+      expect(find.text('Hola, entrenador', skipOffstage: false), findsNothing);
+      await t.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'al ocultar el espacio se desmonta el reproductor para detener vídeo y audio',
+    (t) async {
+      final repo = FakeCoach()
+        ..clips = [
+          {
+            'id': 'clip',
+            'created_at': '2026-10-28T10:00:00Z',
+            'status': 'ready',
+            'playback_url': 'https://video.example.invalid/clip.mp4',
+            'duration_seconds': 30,
+            'can_feedback': true,
+            'feedback_count': 0,
+            'feedback': [],
+          },
+        ];
+      final router = createRouter(
+        repo,
+        FakeSecurity(),
+        initial: '/coach/technique/session',
+      );
+      addTearDown(router.dispose);
+      await t.pumpWidget(MaterialApp.router(routerConfig: router));
+      await t.pumpAndSettle();
+      expect(find.byType(ExerciseVideoPreview), findsOneWidget);
+      await t.tap(find.text('Mi entrenamiento'));
+      await t.pumpAndSettle();
+      expect(
+        find.byType(ExerciseVideoPreview, skipOffstage: false),
+        findsNothing,
+      );
+      await t.tap(find.text('Entrenador'));
+      await t.pumpAndSettle();
+      expect(find.byType(ExerciseVideoPreview), findsOneWidget);
       await t.pumpWidget(const SizedBox());
     },
   );

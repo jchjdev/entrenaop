@@ -5,9 +5,15 @@ import 'package:trainer_access/trainer_security.dart';
 
 import 'coach_workspace_scope.dart';
 
-class CoachSecurityGate extends StatelessWidget {
+class CoachSecurityGate extends StatefulWidget {
   const CoachSecurityGate({super.key, required this.child});
   final Widget child;
+  @override
+  State<CoachSecurityGate> createState() => _CoachSecurityGateState();
+}
+
+class _CoachSecurityGateState extends State<CoachSecurityGate> {
+  bool _opened = false;
   @override
   Widget build(BuildContext context) {
     final scope = CoachWorkspaceScope.maybeOf(context);
@@ -22,10 +28,38 @@ class CoachSecurityGate extends StatelessWidget {
       );
     }
     final controller = scope.controller;
-    if (controller.canRead) return child;
-    if (controller.loading) {
-      return const Center(child: CircularProgressIndicator());
+    if (controller.canRead) _opened = true;
+    if (!controller.enabled &&
+        !controller.loading &&
+        controller.error == null) {
+      _opened = false;
     }
+    // Una comprobación fallida oculta y detiene el contexto ya autorizado sin
+    // destruir borradores. La revocación confirmada y el cambio de cuenta sí
+    // desmontan las pantallas. Antes de MFA nunca se monta un contexto privado.
+    return Stack(
+      children: [
+        if (_opened)
+          ExcludeFocus(
+            excluding: !controller.canRead,
+            child: Offstage(
+              offstage: !controller.canRead,
+              child: TickerMode(
+                enabled: controller.canRead,
+                child: widget.child,
+              ),
+            ),
+          ),
+        if (!controller.canRead)
+          controller.loading
+              ? const Center(child: CircularProgressIndicator())
+              : _challenge(context, scope),
+      ],
+    );
+  }
+
+  Widget _challenge(BuildContext context, CoachWorkspaceScope scope) {
+    final controller = scope.controller;
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
