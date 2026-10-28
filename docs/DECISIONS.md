@@ -9,6 +9,18 @@ guarda el modelo de cobro directo del entrenador a sus alumnos. Esto no fija
 comisiones, no conecta credenciales al servidor ni habilita pagos reales.
 [Evidencia y límites](TRAINER_COMMERCIAL_CONTRACT.md#conexion-del-entorno-de-pruebas--28102026).
 
+**TRN-040 · 28/10/2026 · directorio profesional futuro:** Javier confirma
+registrar para más adelante un directorio voluntario de entrenadores en la web,
+con ampliación posterior a centros. Prevé descubrir profesionales desde
+«Mi preparador», con ficha, foto, descripción y especialidades. El contacto
+inicial será externo, sin usar por ahora el chat de la app; correo u otros
+canales elegidos por el profesional siguen pendientes de concretar. Se mantiene
+el máximo vigente de dos preparadores externos activos por alumno: buscar o
+contactar no crea un vínculo ni concede acceso a sus datos. No se implementa
+ahora ni desplaza el bloque comercial en curso. Tarifas, publicación, revisión,
+orden de resultados y gestión de centros quedan por definir.
+[Alcance y propuestas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
+
 **COM-022 · reglas iniciales confirmadas · 28/10/2026:** Javier aprueba acceso
 profesional tras pago confirmado, cancelación al final del periodo pagado,
 conservación independiente de regalos/accesos de ADMIN y reducción de cupo sin

@@ -2679,6 +2679,15 @@ Una vez validada la primera semana adaptativa, el orden natural será:
 
 ## Fuera del camino crítico del MVP
 
+- **Directorio profesional · TRN-040 · acordado el 28/10/2026, pendiente:**
+  primero directorio voluntario de entrenadores en la web, con ficha, foto,
+  descripción, especialidades y contacto externo; prever acceso a la búsqueda
+  desde «Mi preparador», con integración móvil concreta aún por diseñar.
+  Después ampliar a centros, sin anticipar gestión de organizaciones/equipos.
+  Se mantiene el máximo de dos preparadores externos activos por alumno;
+  descubrir/contactar no crea un vínculo ni utiliza el chat de la app.
+  No es el siguiente bloque ni modifica las prioridades comerciales actuales.
+  [Acuerdos, recomendaciones y cuestiones abiertas](TRAINER_PLATFORM.md#directorio-profesional-futuro--trn-040--28102026).
 - Resolver todas las oposiciones a la vez.
 - Chat, nutrición, desafíos o red social.
 - Las integraciones no condicionan el cierre del ciclo adaptativo. INT-001

@@ -59,6 +59,57 @@ versionados, imágenes privadas y acceso del alumno, reutilizando el formulario
 de ADMIN. Su publicación y validación se acreditan en
 [el contrato específico](TRAINER_PRIVATE_EXERCISES.md).
 
+## Directorio profesional futuro · TRN-040 · 28/10/2026
+
+**Acordado para más adelante; sin implementación ni fecha de entrega.** Javier
+confirma incorporar un directorio voluntario de profesionales. Primero se hará
+el directorio de entrenadores en la web y después se ampliará a centros. Este
+trabajo no sustituye el siguiente bloque comercial vigente del roadmap.
+
+### Recorrido y límites acordados
+
+- Cada entrenador decide publicitarse. La ficha prevista incluye foto,
+  presentación breve y especialidades; dispone de espacio para explicar su
+  propuesta y sus servicios con su propia voz.
+- «Mi preparador» será el punto de entrada previsto para descubrir profesionales
+  desde la app. La primera entrega sigue siendo web; queda por diseñar si esa
+  entrada abre el directorio web o incorpora búsqueda nativa posteriormente.
+  Buscar no debe sustituir el acceso a los preparadores ya vinculados.
+- El primer contacto se plantea fuera del chat de EntrenaOP. Javier propone
+  correo u otros canales elegidos por el profesional; los canales concretos y
+  cómo se publican todavía deben acordarse.
+- Se reafirma el máximo actual de **dos preparadores externos activos por
+  alumno** de TRN-028. Consultar una ficha o contactar no consume plaza, acepta
+  una invitación ni concede acceso al calendario, resultados u otros datos
+  privados. La vinculación conserva su aceptación explícita y controles
+  existentes. El vínculo interno «Para mí» conserva su tratamiento independiente.
+- La segunda fase añade centros. Una ficha pública de centro no aprueba por sí
+  sola organizaciones, equipos, acceso a alumnos compartido ni un cambio del
+  límite de preparadores.
+
+### Recomendaciones para evaluar al retomar
+
+Estas propuestas no son decisiones aprobadas ni requisitos ya implementados:
+
+- Combinar presentación libre con campos comunes de especialidad/preparación,
+  modalidad online/presencial y ubicación para ofrecer filtros útiles.
+- Permitir indicar si admite alumnos y pausar la publicación. El canal de
+  contacto sería profesional y elegido expresamente para su difusión pública;
+  no publicar por defecto el correo privado de acceso a la cuenta.
+- Dar a cada ficha un enlace compartible, útil también para que el preparador
+  la difunda por sus propios canales.
+- Empezar con un grupo pequeño de profesionales activos y acordar criterios de
+  revisión y retirada. Distinguir uso de EntrenaOP de titulaciones verificadas.
+
+### Cuestiones pendientes
+
+Concretar canales de contacto, campos/filtros iniciales, gestión/publicación de
+fichas, revisión, disponibilidad y orden de resultados. También decidir qué
+ocurre con la ficha al perder el acceso profesional y cómo se representa un
+centro y su relación con los entrenadores. Aparecer en el directorio no fija
+tarifas, comisiones, suplementos ni acreditaciones. Reseñas, reservas, chat de
+captación y contratación automática no forman parte del primer alcance acordado.
+
 ## Dos circuitos comerciales
 
 1. El preparador contrata EntrenaOP con un cupo de alumnos activos. Los tramos
