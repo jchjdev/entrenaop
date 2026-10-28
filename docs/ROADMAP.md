@@ -6,7 +6,8 @@ nativa con sesión/vista previa/aceptación explícita. Código manual y legado
 conservados; MFA, cuotas y calendario sin cambios. Análisis sin incidencias en
 raíz, Trainer y ADMIN; 1.428/291/316 pruebas, 25 del paquete y cuatro contratos
 SQL con ROLLBACK correctos; 241 migraciones coincidentes solo en Dev.
-Primera publicación automática Trainer/ADMIN `74474506` comprobada por HTTPS.
+Publicación automática y HTTPS comprobados: Trainer `b8ee9987` (ayuda final),
+ADMIN `74474506`. Compilación iOS de la app sin firma correcta en CI.
 Sin APK nueva ni producción.
 **Único siguiente recorrido recomendado:** actualizar la app por el flujo habitual
 → enviar enlace a un alumno → abrir desde WhatsApp/correo → entrar con el correo

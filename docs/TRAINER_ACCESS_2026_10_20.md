@@ -219,3 +219,12 @@ WebAssembly. No se utiliza el administrador de archivos de Hostinger.
 La ayuda de respaldo indica Perfil → Mi preparador → Código de invitación,
 disponible también para quien aún no tiene preparador. Las tablas de configuración
 comercial vigentes reflejan 39,99 €/año; se conservan las pruebas fechadas antiguas.
+
+Publicación final de la ayuda de respaldo: Trainer `b8ee9987`,
+[ejecución correcta](https://github.com/jchjdev/entrenaop/actions/runs/40709987194),
+revisión y recursos HTTPS verificados de nuevo. ADMIN conserva `74474506` con
+el mismo contrato compartido. La
+[verificación móvil](https://github.com/jchjdev/entrenaop/actions/runs/40707578779)
+termina correctamente: ensayo Android y compilación de la app del deportista en
+iOS para simulador, sin firma ni publicación. No acredita apertura física del
+enlace ni genera una nueva APK de distribución para el deportista.
