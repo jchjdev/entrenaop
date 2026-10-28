@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**TRN-039 · 28/10/2026 · continuidad del chat al volver:** Javier confirma
+mantener la conversación cerrada tal como aparece en consulta y corregir que la
+reactivación oculte los mensajes anteriores. La consulta de la etapa activa reúne
+sus mensajes y los de las etapas terminadas de la misma pareja preparador/alumno.
+La etapa cerrada conserva su historial propio y no admite nuevos envíos. No se
+trasladan mensajes ni se reabren vínculos antiguos: las respuestas se guardan en
+la etapa activa y se mantienen acuses, permisos, MFA y paginación. Ningún otro
+preparador/alumno comparte ese agregado. Cambio compatible en servidor, sin
+nueva APK ni modificación de la vista inactiva.
+[Contrato y verificación](TRAINER_MESSAGES_2026_10_27.md#continuidad-al-reactivar--trn-039--28102026).
+
 **Distribución móvil · 28/10/2026 · frecuencia de APK:** Javier acepta la
 beta.2 ya preparada y pide no generar APK por cada ajuste. Las siguientes se
 prepararán para actualizaciones importantes o petición expresa; las pruebas

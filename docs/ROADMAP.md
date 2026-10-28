@@ -1,5 +1,17 @@
 # Roadmap de EntrenaOP
 
+**TRN-039 · 28/10/2026 · chat al reactivar:** la etapa activa recupera los
+mensajes anteriores de la misma pareja; las etapas cerradas conservan su vista
+de consulta y no admiten envíos. Solo cambia la lectura del servidor, compatible
+con app y Trainer instalados; sin APK ni publicación web nueva. Se conservan
+origen de mensajes, acuses, push, MFA y páginas de 50. Cuatro contratos SQL con
+ROLLBACK correctos; 242 migraciones coincidentes solo en Dev y sin nuevas alertas
+del asesor de seguridad.
+**Siguiente comprobación del recorrido:** abrir el chat activo tras volver a
+vincular al mismo alumno → ver sus mensajes anteriores → responder → comprobar
+que la etapa cerrada sigue en consulta.
+[Contrato y pruebas](TRAINER_MESSAGES_2026_10_27.md#continuidad-al-reactivar--trn-039--28102026).
+
 **TRN-038 · 28/10/2026 · invitaciones por enlace:** implementadas creación
 vinculada al correo confirmado, copia/WhatsApp/correo, página pública y recepción
 nativa con sesión/vista previa/aceptación explícita. Código manual y legado

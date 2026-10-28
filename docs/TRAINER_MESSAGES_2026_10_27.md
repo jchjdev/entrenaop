@@ -127,3 +127,46 @@ Publicación de la ampliación comprobada por HTTPS el 27/10/2026: revisión
 confirman revisión, identidad Dev, entrada, hash de recursos y cabeceras contra
 `sxbxfjqgoddzhtcyhalw`. La prueba física del chat y la instalación en iPhone siguen
 siendo el recorrido de aceptación de Javier indicado en IOS_DEVELOPMENT.md.
+
+## Continuidad al reactivar · TRN-039 · 28/10/2026
+
+Javier muestra que el chat antiguo está conservado en consulta, pero la nueva
+etapa parece una conversación vacía. Confirma conservar la vista al deshabilitar
+y corregir la vuelta. La causa era el filtro exclusivo por `relation_id`.
+
+`trainer_private.list_messages` mantiene su firma/JSON y autorización por
+participante, exclusión de Para mí y MFA del preparador. Cuando la relación
+solicitada está activa, agrega sus mensajes y los de relaciones terminadas de la
+misma pareja exacta (`trainer_id`, `client_id`). Cuando está terminada, devuelve
+solo su etapa como antes. No devuelve mensajes de otro preparador ni de otro
+alumno, ni convierte la consulta histórica en permiso de envío.
+
+`conversation_context` y `send_message` permanecen intactos: una etapa cerrada
+sigue en consulta y las nuevas respuestas pertenecen a la activa. No se mueven,
+duplican ni reescriben mensajes, asignaciones o recibos. Los globos y las push
+mantienen sus fuentes/IDs; mostrar mensajes no crea mensajes ni nuevas push.
+Los acuses existentes admiten IDs propios de etapas anteriores.
+
+La consulta conserva páginas de 50 y cursor global `(created_at,id)`. Un lateral
+por etapa obtiene como máximo sus 50 candidatos antes de la selección global,
+utilizando el índice existente `trainer_messages_relation_page`; no carga todo
+el historial en Flutter ni añade consultas por etapa al cliente. La app y Trainer
+consumen la misma RPC, por lo que basta aplicar la migración en Dev; no exige
+APK ni republicar portales. El refresco existente recupera la primera página;
+si el chat estaba abierto, puede cerrarse y abrirse para iniciar su paginación.
+
+Migración `20261028152905_trainer_chat_reactivation_history.sql`. Contrato
+`supabase/tests/trainer_chat_reactivation_history.sql`, transaccional con
+ROLLBACK: vuelta con mensajes previos, consulta cerrada sin nuevos envíos,
+respuestas en etapa actual, mensajes sin mover, 123 filas repartidas entre
+etapas con fechas empatadas y cursor sin pérdidas/duplicados, dos preparadores,
+otro alumno, denegación sin MFA/anónima y compatibilidad de acuses por ID.
+No se prueba una nueva carrera de escrituras: esta modificación es de lectura,
+sin cambiar las escrituras ni el orden de sus bloqueos.
+
+Validación del 28/10/2026: aplicada exclusivamente a Dev; 242 migraciones
+coincidentes. Los contratos de continuidad, flujo operativo, bandeja de mensajes
+y cartera pasan contra Dev con ROLLBACK. Asesor de seguridad sin nuevas alertas
+respecto a la base anterior. No hay cambios Dart, dependencias, esquemas de
+mensajes ni API de envío: no se recompilan Flutter, portales o APK para este
+arreglo de lectura. La comprobación física del chat reactivado queda para Javier.
