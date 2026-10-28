@@ -6,8 +6,10 @@ Stripe en alta, todavía sin conexión al servidor. Adaptador sandbox HTTP con
 precio/cuenta/comprador fijados, reintentos y HMAC preparado; 43 pruebas locales
 incluyendo núcleo y push, tipos Deno correctos. Sin pasarela pública, nuevos
 cobros, derechos automáticos ni modificación de la web pública.
-**Siguiente bloque:** conectar Stripe sandbox y concretar catálogo/política para
-integrar pedido persistido → Checkout → conciliación → acceso profesional.
+**Reglas iniciales aprobadas:** pago confirmado, cancelación a fin del periodo,
+regalos/ADMIN independientes y reducción de cupo sin expulsión automática.
+**Siguiente bloque:** conectar Stripe sandbox, concretar catálogo y persistencia
+para integrar pedido → Checkout → conciliación → acceso profesional.
 [Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
 
 **TRN-039 · 28/10/2026 · chat al reactivar:** la etapa activa recupera los

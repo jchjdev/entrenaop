@@ -1,5 +1,14 @@
 # Registro de decisiones vigentes
 
+**COM-022 · reglas iniciales confirmadas · 28/10/2026:** Javier aprueba acceso
+profesional tras pago confirmado, cancelación al final del periodo pagado,
+conservación independiente de regalos/accesos de ADMIN y reducción de cupo sin
+expulsar alumnos automáticamente. Son reglas aprobadas para la integración;
+no se presentan como implementadas por el adaptador sandbox existente. Precios,
+comisiones, prorrateos y gestión del exceso de cupo siguen por concretar. No se
+habilita producción ni se aceptan claves live.
+[Contrato comercial](TRAINER_COMMERCIAL_CONTRACT.md#reglas-iniciales-aprobadas--28102026).
+
 **COM-022 · 28/10/2026 · contratación profesional web y Pro en tiendas:** Javier
 pide retomar los pagos y distinguir dos entradas en la web pública: herramientas
 para entrenadores y entrenamiento propio con la app/algoritmo. Se toma como flujo

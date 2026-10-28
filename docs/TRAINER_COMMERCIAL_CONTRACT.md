@@ -582,3 +582,25 @@ navegador/escritorio falla al iniciar con ruta de recursos inexistente; no se ha
 controlado el panel de Stripe ni conectado una credencial. Javier completa el
 asistente con instrucciones desde sus capturas. Continúa pendiente la integración
 real sandbox; no se declara terminado el punto 14.
+
+### Reglas iniciales aprobadas · 28/10/2026
+
+Javier confirma explícitamente como base para la suscripción del entrenador:
+
+- Acceso tras pago confirmado por servidor, sin concederlo por volver de Checkout.
+- Cancelación al terminar el periodo ya pagado, conservando el historial.
+- Regalos y accesos de ADMIN conservados como fuentes independientes del pago.
+- Reducción de cupo sin expulsión automática de alumnos.
+
+Se registra la aprobación, no una activación ya implementada. No determina por sí
+sola precios/planes, comisiones, prorrateos, gracia por impago o gestión del exceso
+de cupo; tampoco cómo se distingue una retirada de regalo de un bloqueo global
+administrativo. La integración debe conservar estos límites hasta concretarlos.
+El adaptador HTTP anterior no escribe `trainer_access` ni aplica estas políticas.
+
+El control visual del PC vuelve a fallar al arrancar con «failed to write kernel
+assets» y error de ruta del sistema. Se ha reiniciado el motor y contrastado el
+fallo tanto en navegador como escritorio; no es una aprobación de usuario
+pendiente. Javier decide actualizar la aplicación de ChatGPT/Codex. No se afirma
+que esa actualización vaya a corregirlo hasta comprobarlo. No se cambian
+permisos/configuración ni se manipula Stripe por una vía alternativa no verificada.
