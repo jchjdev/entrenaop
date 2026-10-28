@@ -26,6 +26,10 @@ en Fuerza antes de abrir EntrenaOP; importación y reconocimiento aún pendiente
 Javier confirma revisión 155 y contenido correctos en Fuerza nativa sin abrir
 EntrenaOP: primera importación automática de 1.6 aceptada. Lectura de biblioteca
 y origen al abrir y ausencia de otra descarga aún pendientes.
+Javier confirma después una sesión lista y apertura correcta en Fuerza; logs
+hasta 23:03:32 UTC solo contienen el GET de fondo de 22:50:07. Primer ciclo
+completo sin redescarga aceptado. El diagnóstico sigue solicitado y sin campos:
+pendiente corregirlo. Segundo cambio todavía sin aplicar; se retoma tras descansar.
 [Contrato](../../docs/DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Ensayo 1.5.0 publicado en la misma beta privada (Internal: 4):** descarga

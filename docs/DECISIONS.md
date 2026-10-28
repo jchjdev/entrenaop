@@ -33,6 +33,14 @@ de esta descarga automática siguen pendientes; HTTP 200 no los acredita.
 Javier confirma la revisión 155 y su receta correctas en Fuerza antes de abrir
 EntrenaOP: importación automática aceptada. Falta comprobar reconocimiento sin
 otra descarga desde la app y otra revisión sucesiva.
+Al abrir no encuentra el campo Biblioteca del diagnóstico. Los logs propios
+hasta 22:55:27 UTC no muestran otro GET del FIT 155 tras la consulta del reloj
+de 22:52:59. Se pide confirmar lista/estado; campo y apertura aún pendientes.
+Javier confirma una sesión lista y apertura de Automática 1 en Fuerza con datos
+correctos; logs hasta 23:03:32 UTC conservan solo el GET de fondo de 22:50:07.
+Primer ciclo completo aceptado sin redescarga al abrir. Diagnóstico aún pendiente
+de corrección y segundo cambio sin aplicar; Javier necesita descansar. No se
+publica otra versión ni se modifica la muestra durante este cierre.
 [Contrato y prueba](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
 
 **Beta Android · 27/10/2026 · distribución privada acordada:** Javier encarga

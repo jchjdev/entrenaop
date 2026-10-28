@@ -1572,3 +1572,34 @@ importación automática de la revisión 155 en Fuerza nativa aceptada en 1.6.
 Se solicita después abrir EntrenaOP y leer **Biblioteca** y **Solicitud desde**
 en MENU → Estado de descargas, para acreditar el reconocimiento sin volver a
 descargar. Esa lectura y la ausencia de otro GET todavía están pendientes.
+Javier indica que en Estado de descargas no aparece **Biblioteca**. Se pide
+bajar hasta **Revisión**, leer ese alias y el último estado, y confirmar la
+sesión lista; no se atribuye aún una causa a la ausencia del campo condicional.
+La lectura propia a las 22:55:27 UTC conserva tres exportaciones y consulta
+del reloj a las 22:52:59.875 UTC. Los logs acotados al alias 155 entre 22:50:00
+y 22:55:27 UTC devuelven únicamente el GET de fondo de 22:50:07: **no aparece
+otro GET FIT al abrir la app en esa ventana**. Falta la confirmación de lista/
+apertura y aclarar el diagnóstico; ese registro no acredita por sí solo que se
+haya mostrado o abierto la copia desde EntrenaOP.
+Javier confirma después revisión 155, estado **FIT solicitado en fondo** y
+pantalla principal con **1 sesión lista / Actualizado ahora / Automática al
+salir cada 15 min**. Confirma además que abrir **Automática 1** entra en Fuerza
+con datos correctos. La lectura final de logs del alias 155 hasta **23:03:32 UTC**
+solo contiene el GET original de fondo de 22:50:07: no se repite la descarga
+al abrir EntrenaOP ni al abrir Fuerza. Queda aceptado el primer recorrido
+automático completo: descarga, importación, lista y apertura sin otro GET.
+
+El diagnóstico sigue incoherente: no muestra Biblioteca/Solicitud desde y no
+actualiza el estado tras la comprobación local. El código solo registra la
+verificación si ya considera confiable el diario/alias, aunque encontrar una
+copia en la biblioteca propia permite abrirla sin ese diario. Falta corregir
+esa representación y probar su regresión; no se afirma una causa demostrada
+de la ausencia del registro ni del callback.
+
+Javier confirma salida a la esfera para el segundo cambio, pero pide descansar
+antes de aplicarlo. **Automática 2 no se ha creado ni aplicado**; la muestra
+conserva Automática 1 y descanso 0:30, y el reloj sigue en Beta 1.6. Pendiente
+corregir el diagnóstico y repetir un cambio sobre esa cita cuando vuelva.
+Recuperación tras desconexión/denegación y limpieza nativa siguen fuera de la
+aceptación conseguida. Se deja el punto de guardado; no se programa una tarea
+futura ni se solicitan más acciones físicas durante el descanso.

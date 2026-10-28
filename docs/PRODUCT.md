@@ -8,7 +8,8 @@ propia de la app; se limita la búsqueda al alias solicitado y se revalida permi
 antes de abrir. Los reintentos son limitados y se conserva una sola lista vigente;
 no se eliminan revisiones antiguas de la biblioteca nativa. Pruebas automáticas
 correctas; instalación, lista inicial y primera importación automática de 1.6
-aceptadas por Javier. Reconocimiento sin otra descarga y cambios sucesivos pendientes. Solo beta
+aceptadas por Javier, incluido reconocimiento y apertura sin volver a descargar
+el FIT. Quedan diagnóstico incoherente y cambios sucesivos por comprobar. Solo beta
 privada Dev;
 carrera continúa por su integración automática separada.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).

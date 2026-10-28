@@ -13,7 +13,11 @@ su reconocimiento posterior sin volver a descargar y otro cambio sin duplicados
 en la lista. Primer ciclo: exportación 155 y GET FIT 200 a las 22:50:07 UTC,
 sin petición de FIT/manifiesto desde el PC. Javier confirma revisión 155 con
 receta correcta en Fuerza antes de abrir EntrenaOP: importación aceptada.
-Reconocimiento sin otra descarga y segundo cambio aún pendientes. Recuperación con móvil
+Javier confirma además una sola sesión lista y apertura correcta; logs hasta
+23:03:32 UTC conservan solo el GET de fondo. Primer ciclo completo aceptado sin
+redescarga. **Pendiente inmediato:** corregir el diagnóstico que sigue solicitado
+y oculta campos, luego aplicar otro cambio; Automática 2 todavía no se ha aplicado
+y Javier necesita descansar. Recuperación con móvil
 desconectado y denegación también pendientes. Las copias nativas antiguas no se
 eliminan. Instalación y lista inicial no acreditan estos pasos.
 [Contrato](DEVICE_GARMIN_TRAINING.md#reconocimiento-y-descarga-automatica--int-021).
