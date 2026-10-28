@@ -1,5 +1,10 @@
 # Contrato comercial profesional · propuesta para el punto 14
 
+**Actualización COM-022 · 28/10/2026:** Javier retoma la implementación de pagos,
+inicia el alta de Stripe y diferencia contratación profesional web de Pro personal
+en las tiendas. Se prepara el adaptador de pruebas descrito al final. No existe
+aún Checkout integrado en el portal ni concesión automática tras pago.
+
 **21/10/2026 · propuesta técnica y núcleo simulado comprobado; proveedor y
 políticas pendientes de decisión humana.** Se añaden el núcleo puro y sus pruebas
 en las rutas reservadas, sin integración de cobros, cuentas externas, secretos,
@@ -496,3 +501,76 @@ concede el derecho. Antes de venderlo se debe decidir cómo aplica cada tienda
 la tarifa y qué ocurre cuando caduca la acreditación, avisando al usuario y sin
 cambiar silenciosamente una renovación contratada. No se crean productos,
 cupones ni descuentos militares automáticos en esta tarea.
+
+## Preparación Stripe · COM-022 · 28/10/2026
+
+La web pública debe separar «Soy entrenador» (planes, registro e ingreso en
+Trainer) de «Quiero entrenar» (app y Pro en las tiendas). Se reutiliza el registro
+web de Trainer; no se crea otra identidad ni se concede acceso profesional por
+registrarse. Este chat lleva contratos, integración y acceso; la web pública
+presentará esas entradas cuando exista el recorrido de contratación verificado.
+No se modifica ni publica `website/` en esta preparación.
+
+### Código preparado y límite real
+
+`_shared/trainer_commerce/stripe_sandbox.ts` reutiliza Context/Command/Offer y las
+validaciones puras existentes. Es un adaptador HTTP de infraestructura, separado
+del motor simulado. Solo acepta clave test, namespace `entrenaop-dev` y API fija
+`2026-09-30.endive`, contrastada con la documentación vigente. No añade SDKs ni
+paquetes. No está conectado a una función pública ni a Flutter: no es una
+pasarela de producción ni un portal comercial completo.
+
+- Valida cuenta canónica, precio activo, moneda, importe, periodicidad y comprador
+  antes de crear una sesión de suscripción alojada en Stripe Checkout. Usa Price
+  y Customer enlazados por infraestructura, nunca un importe enviado por Flutter.
+- Acceso profesional cobra en la cuenta de EntrenaOP; servicio del preparador
+  utiliza su cuenta Connect en cada petición. Debe estar lista para cobrar y
+  recibir abonos. No reutiliza IDs entre cuentas ni permite mezclarlos.
+- Una comisión debe ser explícita para el servicio del preparador; una decisión
+  pendiente no se interpreta como cero. El cero de los fixtures es solo un ensayo.
+- Idempotencia por namespace/cuenta/circuito/pedido; no hay reintentos ocultos ni
+  cambio de clave tras timeout. Un pedido de más de 20 horas necesita conciliación
+  antes de intentar crearlo de nuevo; no se confía indefinidamente en la retención
+  del proveedor. Recuperar una sesión exige contrastar dueño, contrato y metadata.
+- Respuestas acotadas, timeout, sin redirecciones HTTP y sin devolver errores
+  privados. Solo se admite URL HTTPS del Checkout del proveedor.
+- Verificación de webhook sobre cuerpo original con HMAC, ventana de cinco
+  minutos, cuenta, entorno de pruebas y versión API. Devuelve una señal para
+  conciliación, nunca concesión de acceso basada en el JSON del evento.
+
+El adaptador requiere bindings persistidos/autorizados por servidor; no permite
+exponer sus argumentos directamente al navegador. La firma no sustituye el
+registro idempotente de eventos ni la conciliación canónica: ambos siguen por
+integrar. No se ejecuta el motor simulado como política de acceso real.
+
+Diez pruebas nuevas del adaptador, 21 del núcleo y 12 de transporte push pasan
+localmente (43 en total). Deno comprueba tipos; el workflow `trainer-commerce.yml`
+añade los contratos comerciales y TypeScript estricto a CI sin secretos ni
+llamadas reales a Stripe. Se conservan los contratos de avisos agrupados y canales
+por dispositivo, correctos contra Dev con ROLLBACK. No se aplica una migración ni
+se modifica el worker en este tramo.
+
+### Pendiente para un recorrido completo
+
+1. Terminar/conectar la cuenta Stripe de pruebas y configurar credenciales de
+   servidor/webhook fuera del repositorio. No se aceptan claves live en este módulo.
+2. Catálogo versionado y precios profesionales aprobados; pedido, comprador,
+   cuenta conectada y eventos duraderos con aislamiento. Cuenta y retorno Checkout
+   jamás autorizan derechos por sí solos.
+3. Acordar política de altas/bajas, pagos fallidos, cambios de cupo, comisiones y
+   convivencia con regalos/accesos manuales antes de proyectar `trainer_access`.
+4. Integrar pantallas web, Checkout/portal de gestión, conciliación, activación y
+   ambos recorridos completos con Stripe sandbox. No se considera resuelto por
+   devolver `payment_status=paid` desde una sesión.
+
+Javier selecciona suscripciones y plataforma en el asistente. Se recomienda
+configuración por productos individuales: Managed Payments no soporta Connect;
+no se confunde con automatización fiscal ni con facturación ya configurada.
+
+Fuentes contrastadas el 28/10/2026:
+[versión API](https://docs.stripe.com/api/versioning),
+[Checkout](https://docs.stripe.com/api/checkout/sessions/create),
+[cobros directos](https://docs.stripe.com/connect/direct-charges?platform=web&ui=stripe-hosted),
+[firmas](https://docs.stripe.com/webhooks),
+[pruebas sin fondos](https://docs.stripe.com/testing),
+[incompatibilidad de Managed Payments con Connect](https://docs.stripe.com/payments/managed-payments#unsupported-integrations).

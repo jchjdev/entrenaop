@@ -1,5 +1,18 @@
 # Registro de decisiones vigentes
 
+**COM-022 · 28/10/2026 · contratación profesional web y Pro en tiendas:** Javier
+pide retomar los pagos y distinguir dos entradas en la web pública: herramientas
+para entrenadores y entrenamiento propio con la app/algoritmo. Se toma como flujo
+inicial la contratación profesional en web y Pro personal mediante las tiendas
+existentes/RevenueCat. El alumno que paga a su preparador conserva un circuito
+separado y no necesita otro Pro para recibir lo pautado. Javier inicia el alta de
+Stripe; la integración de pruebas se prepara sin activar cobros reales. No quedan
+aprobados precios profesionales, comisiones, prorrateos, impago ni precedencia de
+concesiones manuales. El módulo móvil profesional sigue siendo de consulta.
+La cuenta Stripe, los productos reales de prueba y sus credenciales aún no están
+conectados al servidor. No se declara un portal de compra terminado.
+[Estado técnico y siguientes dependencias](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
+
 **TRN-039 · 28/10/2026 · continuidad del chat al volver:** Javier confirma
 mantener la conversación cerrada tal como aparece en consulta y corregir que la
 reactivación oculte los mensajes anteriores. La consulta de la etapa activa reúne

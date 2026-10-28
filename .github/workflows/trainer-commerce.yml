@@ -1,0 +1,37 @@
+name: Verificar integración comercial sin cobrar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/_shared/trainer_commerce/**'
+      - 'supabase/functions/tests/trainer_commerce_test.ts'
+      - 'supabase/functions/tests/trainer_stripe_sandbox_test.ts'
+      - '.github/workflows/trainer-commerce.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      # Solo proveedor simulado, respuestas HTTP de prueba y firmas HMAC locales.
+      # No recibe credenciales, no conecta a Stripe ni modifica accesos o dinero.
+      - name: Separación de circuitos, reintentos y firmas de avisos
+        run: node --test supabase/functions/tests/trainer_commerce_test.ts supabase/functions/tests/trainer_stripe_sandbox_test.ts
+      - name: Comprobar tipos del adaptador y del núcleo existente
+        run: >-
+          npm exec --yes --package=typescript@5.9.3 -- tsc
+          --noEmit --strict --target es2022 --lib es2023,dom,dom.iterable
+          --module esnext --moduleResolution bundler --allowImportingTsExtensions
+          supabase/functions/_shared/trainer_commerce/stripe_sandbox.ts
+          supabase/functions/_shared/trainer_commerce/mod.ts

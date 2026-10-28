@@ -1,5 +1,12 @@
 # Cobro del servicio del preparador · TRN-012 · 21/10/2026
 
+**28/10/2026 · COM-022:** Javier retoma pagos profesionales web y comienza el
+alta de Stripe. Pro personal conserva las tiendas/RevenueCat; se distinguen
+suscripción del entrenador y servicio de su alumno. El adaptador HTTP sandbox y
+sus contratos están preparados; cuenta/credenciales, catálogo, persistencia,
+políticas y portal completo siguen pendientes. No hay cobros reales activos.
+[Estado vigente](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
+
 ## Criterio confirmado por Javier
 
 El alumno paga a su preparador por el servicio de entrenamiento. El preparador

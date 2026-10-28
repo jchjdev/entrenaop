@@ -1,5 +1,15 @@
 # Roadmap de EntrenaOP
 
+**COM-022 · 28/10/2026 · contratación profesional web en curso:** Javier retoma
+los dos circuitos de pago profesional y propone Pro personal en las tiendas.
+Stripe en alta, todavía sin conexión al servidor. Adaptador sandbox HTTP con
+precio/cuenta/comprador fijados, reintentos y HMAC preparado; 43 pruebas locales
+incluyendo núcleo y push, tipos Deno correctos. Sin pasarela pública, nuevos
+cobros, derechos automáticos ni modificación de la web pública.
+**Siguiente bloque:** conectar Stripe sandbox y concretar catálogo/política para
+integrar pedido persistido → Checkout → conciliación → acceso profesional.
+[Dependencias y límites](TRAINER_COMMERCIAL_CONTRACT.md#preparacion-stripe--com-022--28102026).
+
 **TRN-039 · 28/10/2026 · chat al reactivar:** la etapa activa recupera los
 mensajes anteriores de la misma pareja; las etapas cerradas conservan su vista
 de consulta y no admiten envíos. Solo cambia la lectura del servidor, compatible
