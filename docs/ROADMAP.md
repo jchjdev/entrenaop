@@ -4,7 +4,9 @@
 mensajes/vídeos agrupados entre alumnos, preferencias separadas, descanso,
 lecturas y comprobación de permisos antes de enviar. 1.421 pruebas raíz,
 286 Trainer, 316 ADMIN, 12 Node y siete contratos SQL con ROLLBACK; 240
-migraciones coincidentes. Worker v9 con JWT y rechazo público 401. Nadie recibe
+migraciones coincidentes. Worker v9 con JWT y rechazo público 401. Trainer y
+ADMIN publicados automáticamente en `dd1c4ffe`, con HTTPS/recursos comprobados.
+APK Dev firmada 1.0.0-beta.2+3 preparada; iOS sin firma compila en CI. Nadie recibe
 el alta de avisos automáticamente. La entrega física profesional sigue abierta:
 **único siguiente recorrido recomendado:** actualizar Android → activar Avisos
 de mis alumnos → enviar mensajes y técnica desde alumno → comprobar agrupación,

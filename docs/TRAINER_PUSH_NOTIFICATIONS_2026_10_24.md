@@ -69,6 +69,21 @@ Historial Dev: 240 migraciones coincidentes. No hay Android conectado en la
 comprobación; falta aceptar físicamente la entrega profesional y su apertura.
 No se configura APNs ni se modifica producción.
 
+### Publicación comprobada
+
+Código `dd1c4ffe8f3fea9653a5db019546836403fc9628`, guardado en main y remoto.
+Trainer y ADMIN publicados automáticamente, runs `40691325832` y `40691325878`,
+ambos correctos; manifiestos públicos de esa revisión, hashes de JavaScript,
+cabeceras y MIME WebAssembly verificados. Las comprobaciones de transporte y
+Garmin también terminan correctamente, incluida compilación iOS sin firma.
+Los paquetes compartidos conservan 218 pruebas del editor y 22 de acceso.
+
+APK Dev privada **1.0.0-beta.2+3**, compilada desde fuentes sin modificar y firma
+beta fijada verificada: `build/android-beta/trainer-push-dd1c4ffe/`.
+SHA-256 APK: `643d78a7a2a04c49bbe3d441972c2744f09d2a2e7ed9ac983aa6d032b7302dd0`.
+El manifiesto local acredita Dev, Firebase Dev y push habilitada; no se instala
+porque no hay teléfono conectado. Compilar iOS no acredita APNs ni recepción.
+
 ### Comprobación manual pendiente
 
 1. Actualizar la app Android y activar Avisos de mis alumnos en Entrenador.
