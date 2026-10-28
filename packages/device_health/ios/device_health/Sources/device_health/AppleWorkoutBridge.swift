@@ -39,6 +39,7 @@ final class AppleWorkoutBridge {
         }
         guard call.method == "apple.schedule", let recipe = args["prescription"] as? [String: Any],
           let rawDate = recipe["date"] as? String else { throw BridgeError.invalid }
+        guard !existing.contains(where: { $0.complete }) else { throw BridgeError.completed }
         let date = try self.date(rawDate)
         let plan = try self.plan(recipe, id: id)
         let all = await scheduler.scheduledWorkouts
@@ -47,7 +48,11 @@ final class AppleWorkoutBridge {
         var owners = self.owners; owners[key] = owner; self.owners = owners
         for item in existing { await scheduler.remove(item.plan, at: item.date) }
         await scheduler.schedule(plan, at: date)
-        guard await scheduler.scheduledWorkouts.contains(where: { $0.plan.id == id && $0.date.year == date.year && $0.date.month == date.month && $0.date.day == date.day }) else { throw BridgeError.unconfirmed }
+        let confirmed = await scheduler.scheduledWorkouts.filter { $0.plan.id == id }
+        // Un UUID y una fecha no acreditan que Apple haya aplicado los cambios.
+        guard confirmed.count == 1, let saved = confirmed.first,
+          saved.plan.workout == plan.workout, saved.date.year == date.year,
+          saved.date.month == date.month, saved.date.day == date.day else { throw BridgeError.unconfirmed }
         result(["submitted": true])
       } catch let error as BridgeError { result(FlutterError(code: error.rawValue, message: nil, details: nil)) }
       catch { result(FlutterError(code: "apple_unavailable", message: nil, details: nil)) }
@@ -56,6 +61,7 @@ final class AppleWorkoutBridge {
   private enum BridgeError: String, Error {
     case invalid = "unsupported_prescription", account = "account_changed"
     case capacity = "capacity_reached", unconfirmed = "delivery_uncertain"
+    case completed = "already_completed"
   }
   private func state(_ state: WorkoutScheduler.AuthorizationState) -> String {
     switch state {
@@ -81,7 +87,7 @@ final class AppleWorkoutBridge {
     var intervals: [IntervalStep] = []
     for (index, row) in rows.enumerated() {
       guard let kind = row["kind"] as? String, let measure = row["measure"] as? String,
-        let description = row["description"] as? String, description.count <= 500 else { throw BridgeError.invalid }
+        let description = row["description"] as? String, description.count <= 512 else { throw BridgeError.invalid }
       let goal: WorkoutGoal
       if measure == "manual" { goal = .open }
       else {

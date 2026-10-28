@@ -21,7 +21,8 @@ reabre el editor ni se convierte la receta común en un contrato de fabricante.
 - Mismo UUID por cuenta y cita para reprogramar fechas y revisiones. Solo se
   retiran los planes de esta app identificados por el servidor autenticado.
   No se usa `removeAllWorkouts`. Se valida la receta completa antes de retirar
-  la revisión anterior y se comprueba el calendario local después de la operación.
+  la revisión anterior y se comprueban identidad, fecha, contenido y ausencia de copias en el calendario
+  local después de la operación. No se reprograman planes que Apple ya marca hechos.
 
 ## Fronteras y permisos
 
@@ -68,6 +69,12 @@ importación de intervalos de Apple, asociación automática por identidad de pl
 ni cierre automático de la cita semanal. No se empareja por nombre/fecha a ciegas
 ni se inventan RPE o resultados.
 
+Para la futura asociación exacta existe la propiedad pública asíncrona
+`HKWorkout.workoutPlan`, disponible desde iOS 17/watchOS 10 al importar WorkoutKit.
+Se investigará como enriquecimiento opcional, con ausencia/error/límite de espera
+separados de la lectura de métricas; no se usará metadata privada ni se bloqueará
+el historial para obtener el plan. Esta primera entrega todavía no la consulta.
+
 ## Validación y siguiente paso
 
 Contrato SQL transaccional con `ROLLBACK`: ámbito de cuenta, sesión revocada,
@@ -97,6 +104,7 @@ El bloque permanece abierto hasta esa aceptación física.
 ## Referencias oficiales
 
 - [WorkoutKit](https://developer.apple.com/documentation/workoutkit).
+- [Plan asociado a una actividad de Salud](https://developer.apple.com/documentation/healthkit/hkworkout/workoutplan).
 - [WorkoutScheduler](https://developer.apple.com/documentation/workoutkit/workoutscheduler).
 - [Paso con nombre: iOS 18/watchOS 11](https://developer.apple.com/documentation/workoutkit/WorkoutStep/init(goal:alert:displayName:)).
 - [Diseño y programación de entrenamientos, WWDC23](https://developer.apple.com/videos/play/wwdc2023/10016/).

@@ -297,6 +297,7 @@ class _AppleWatchPageState extends State<AppleWatchPage> {
     'stale_prescription' => 'La pauta cambió. Actualiza y revisa su versión actual antes de enviarla.',
     'connection_busy' =>
       'Hay una programación en curso. Espera unos instantes y actualiza.',
+    'already_completed' => 'Apple ya marca esta sesión como realizada. Lee sus resultados desde Salud.',
     'capacity_reached' => 'Apple tiene su calendario lleno. Retira una sesión antes de añadir otra.',
     'permission_required' =>
       'Autoriza la programación de entrenamientos en este iPhone.',
