@@ -86,14 +86,29 @@ bearer, receta del servidor, rechazo de incompatibilidad y ausencia de filtracio
 La CI existente incorpora el nuevo adaptador, compila iOS sin firmar y comprueba
 que WorkoutKit se enlaza débilmente para conservar el arranque en iOS anteriores.
 
-Validación local del 28/10: análisis focalizado sin incidencias; batería completa con
-1.435 pruebas correctas y una omitida, más dos pruebas de presentación añadidas
-después (nueve focalizadas de Apple en total); 191 pruebas HTTP/servidor correctas
-y tipos TypeScript estrictos. Tres contratos SQL con ROLLBACK correctos. Función
-Dev ACTIVE v1: sin JWT y con bearer inválido responde 401. Las tres migraciones
-Apple coinciden con Dev; una migración comercial ajena seguía pendiente localmente
-al comprobar el conjunto. Compilación nativa aún pendiente de CI al guardar
-este punto de desarrollo; no se da el bloque por cerrado.
+Validación del 28/10 sobre el `main` compartido: análisis raíz sin incidencias;
+1.437 pruebas correctas y una omitida, incluidas las nueve de Apple; 191 pruebas
+HTTP/servidor del punto inicial y tipos TypeScript estrictos correctos. Tres
+contratos SQL con ROLLBACK correctos. Las 247 migraciones locales/remotas coinciden
+con Dev tras integrar también el punto comercial del otro chat.
+
+La función `apple-training` está ACTIVE, versión 5, con JWT de plataforma
+activado; su fuente desplegada coincide con la versionada. Sin JWT o con bearer
+inválido responde 401. Una sesión real conservada en el navegador integrado
+carga correctamente su planificación desde la nueva función; en web se informa
+de que la programación requiere el iPhone. No se han copiado credenciales ni
+programado sesiones Apple desde el navegador.
+
+[CI del código `c83fc433`](https://github.com/jchjdev/entrenaop/actions/runs/40766803421):
+servidor, consumidor Flutter e iOS release sin firma correctos, incluida la prueba
+del enlace débil de WorkoutKit. Los primeros cambios están guardados en
+`57271990`; el ajuste de comprobación del contenido y de sesiones ya realizadas,
+en `c83fc433`. No se modifica el mínimo iOS general.
+
+El asesor de seguridad solo señala para la nueva tabla el aviso
+[INFO de RLS sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy):
+es intencional en el esquema privado, sin acceso directo de clientes y con acceso
+mediante el comando autenticado. No se añaden políticas de lectura a la tabla.
 
 No se acredita instalación ni recepción Apple con una compilación o un ACK.
 **Siguiente recorrido único:** en el Ultra y su iPhone emparejado, autorizar,

@@ -3,7 +3,10 @@
 **INT-023 · 28/10/2026 · Apple Watch en validación:** primer recorrido de carrera
 exterior desde el iPhone con WorkoutKit; receta y editor comunes, autorización
 explícita, referencia estable para cambios/retirada, acceso comercial en servidor
-y protección de borrado profesional. Solo Dev. La preparación y el ACK local no
+y protección de borrado profesional. Solo Dev. Análisis raíz y 1.437 pruebas
+correctas, 247 migraciones coincidentes y compilación iOS de `c83fc433` verificada
+en CI. Consulta autenticada real de planificación comprobada en el navegador.
+La preparación y el ACK local no
 cierran el bloque ni acreditan recepción física. Aún no hay envío automático ni
 asociación automática de los resultados Apple con la semana.
 **Siguiente recorrido único de Apple:** autorizar y comprobar alta, cambio,
