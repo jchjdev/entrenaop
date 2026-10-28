@@ -210,3 +210,12 @@ más 25 pruebas de `trainer_access`. XML Android y esquema URL iOS contrastados.
 Los avisos de seguridad del asesor coinciden con la base anterior: no se añade
 ninguna función definer pública ni acceso anónimo. No hay nuevas alertas de este
 contrato. No se amplía este cambio para corregir avisos históricos de otros módulos.
+
+Primera publicación automática del recorrido: Trainer y ADMIN en `74474506`,
+[Trainer](https://github.com/jchjdev/entrenaop/actions/runs/40707578994) y
+[ADMIN](https://github.com/jchjdev/entrenaop/actions/runs/40707578828) correctos.
+Comprobados por HTTPS revisión, huella JavaScript, bootstrap, cabeceras y MIME
+WebAssembly. No se utiliza el administrador de archivos de Hostinger.
+La ayuda de respaldo indica Perfil → Mi preparador → Código de invitación,
+disponible también para quien aún no tiene preparador. Las tablas de configuración
+comercial vigentes reflejan 39,99 €/año; se conservan las pruebas fechadas antiguas.

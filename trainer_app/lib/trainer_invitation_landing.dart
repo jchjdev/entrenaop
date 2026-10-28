@@ -95,7 +95,7 @@ class _TrainerInvitationLandingState extends State<TrainerInvitationLanding> {
                 title: const Text('Si tu versión no abre el enlace'),
                 children: [
                   const Text(
-                    'En la app: Preparador → Código de invitación. Puedes usar el código de respaldo de esta invitación.',
+                    'En la app: Perfil → Mi preparador → Código de invitación. Puedes usar el código de respaldo de esta invitación.',
                   ),
                   TextButton.icon(
                     onPressed: () async {

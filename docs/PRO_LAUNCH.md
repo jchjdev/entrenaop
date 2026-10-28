@@ -516,7 +516,7 @@ la información bancaria para sus ingresos cuando se preparen ventas.
 | Producto propuesto de prueba | Duración | Paquete | Precio de lanzamiento de referencia |
 | --- | --- | --- | --- |
 | `entrenaop_pro_monthly` | Un mes | Monthly | 3,99 €/mes |
-| `entrenaop_pro_annual` | Un año | Annual | 29,99 €/año |
+| `entrenaop_pro_annual` | Un año | Annual | 39,99 €/año |
 
 Ambos productos deben conceder `pro`. La moneda y el precio que ofrezca el
 catálogo de prueba se comprobarán en el panel; los euros anteriores no acreditan

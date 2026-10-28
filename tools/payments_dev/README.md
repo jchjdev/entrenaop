@@ -119,7 +119,7 @@ Product catalog ya contiene el entitlement `pro`, asociado a estos dos productos
 | Identificador | Duración | Paquete en offering `default` | Precio de referencia |
 | --- | --- | --- | --- |
 | `entrenaop_pro_monthly` | Un mes | Monthly | 3,99 €/mes |
-| `entrenaop_pro_annual` | Un año | Annual | 29,99 €/año |
+| `entrenaop_pro_annual` | Un año | Annual | 39,99 €/año |
 
 La moneda disponible en Test Store puede diferir. La app toma precio, moneda y
 texto localizado del catálogo; calcula el ahorro anual solo si ambas monedas
