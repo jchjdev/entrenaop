@@ -1,5 +1,19 @@
 # Roadmap de EntrenaOP
 
+**TRN-038 · 28/10/2026 · invitaciones por enlace:** implementadas creación
+vinculada al correo confirmado, copia/WhatsApp/correo, página pública y recepción
+nativa con sesión/vista previa/aceptación explícita. Código manual y legado
+conservados; MFA, cuotas y calendario sin cambios. Análisis sin incidencias en
+raíz, Trainer y ADMIN; 1.428/291/316 pruebas, 25 del paquete y cuatro contratos
+SQL con ROLLBACK correctos; 241 migraciones coincidentes solo en Dev.
+Sin APK nueva ni producción.
+**Único siguiente recorrido recomendado:** actualizar la app por el flujo habitual
+→ enviar enlace a un alumno → abrir desde WhatsApp/correo → entrar con el correo
+invitado → aceptar → comprobar el vínculo. Contrastar cuenta equivocada y
+cancelación. Tiendas, enlaces HTTPS verificados y recuperación automática tras
+instalar siguen pendientes; no se presenta el recorrido físico como aceptado.
+[Contrato y comprobaciones](TRAINER_ACCESS_2026_10_20.md#invitacion-por-enlace--trn-038--28102026).
+
 **TRN-037 · 28/10/2026 · push profesionales implementadas y servidor Dev publicado:**
 mensajes/vídeos agrupados entre alumnos, preferencias separadas, descanso,
 lecturas y comprobación de permisos antes de enviar. 1.421 pruebas raíz,
@@ -12,7 +26,8 @@ el alta de avisos automáticamente. La entrega física profesional sigue abierta
 de mis alumnos → enviar mensajes y técnica desde alumno → comprobar agrupación,
 apertura con MFA y lectura previa desde web. No hay Android conectado hoy;
 Apple/APNs, cobros reales y la oferta militar siguen pendientes. COM-021 fija
-la referencia anual general en 39,99 €, con catálogo Test Store por actualizar.
+la referencia anual general en 39,99 €; catálogo Test Store EUR actualizado
+y releído el 28/10 (mensual 3,99 €).
 [Recorrido, límites y comprobaciones](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **TRN-036 · 28/10/2026 · consulta profesional móvil preparada:** selector

@@ -1,3 +1,6 @@
+import 'trainer_invitation_landing.dart';
+
+import 'package:trainer_access/trainer_invitation_link.dart';
 import 'package:trainer_access/trainer_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -308,6 +311,7 @@ class _TrainerAppState extends State<TrainerApp> {
           : '/home',
       redirect: (_, state) async {
         final location = state.matchedLocation;
+        if (location == '/invite') return null;
         const public = {
           '/login',
           '/register',
@@ -361,6 +365,12 @@ class _TrainerAppState extends State<TrainerApp> {
         return null;
       },
       routes: [
+        GoRoute(
+          path: '/invite',
+          builder: (_, state) => TrainerInvitationLanding(
+            secret: TrainerInvitationLink.fromRoute(state.uri),
+          ),
+        ),
         GoRoute(
           path: '/login',
           builder: (_, _) => _TrainerLogin(client: widget.client),

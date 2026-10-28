@@ -1,5 +1,14 @@
 # Espacio de entrenadores
 
+## Invitaciones por enlace · TRN-038 · 28/10/2026
+
+Alumnos → Invitar alumno solicita el correo y prepara enlace para copiar,
+WhatsApp o correo. El alumno abre la página pública, pulsa Abrir EntrenaOP,
+se identifica con el correo invitado confirmado y acepta expresamente.
+Código manual de respaldo conservado; las invitaciones antiguas siguen válidas.
+La recepción del enlace exige app actualizada; no se genera otra APK.
+[Contrato, límites y pruebas](TRAINER_ACCESS_2026_10_20.md#invitacion-por-enlace--trn-038--28102026).
+
 ## Consulta profesional desde la app · TRN-036 · 28/10/2026
 
 Implementada en el código del deportista y servidor Dev, pendiente de nueva
@@ -9,7 +18,9 @@ exige MFA y ofrece Resumen, Agenda, Alumnos y Mensajes. Conserva el contexto
 personal, «Preparador» para el servicio recibido y «Para mí» para entrenarse.
 Consulta objetivos/calendario compartido, resultados y técnica; permite
 responder, revisar y corregir con los contratos existentes. Los creadores
-completos permanecen en Trainer web. No incluye push nativa al preparador.
+completos permanecen en Trainer web. TRN-037 añade las push profesionales
+agrupadas, con consentimiento separado; servidor Dev preparado y aceptación
+física pendiente.
 [Arquitectura, verificación y recorrido pendiente](TRAINER_MOBILE_WORKSPACE.md).
 
 La oferta por cupo, algoritmo profesional y Pro incluido para alumnos sigue como

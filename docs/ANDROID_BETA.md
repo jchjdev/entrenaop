@@ -1,5 +1,11 @@
 # Beta Android privada
 
+**TRN-038 · 28/10/2026:** el código incorpora recepción nativa de enlaces de
+invitación y aceptación ligada al correo confirmado. No se genera otra APK por
+este ajuste: la beta.2 anterior no incorpora el nuevo receptor. Javier compila
+las actualizaciones habituales; las APK se prepararán para cambios importantes
+o petición expresa, conservando las comprobaciones automáticas.
+
 La beta del deportista utiliza Supabase y Firebase de desarrollo. Se distribuye
 como APK release firmada, sin publicar en Google Play ni activar cobros reales.
 La primera versión de este circuito es **1.0.0-beta.1, compilación 3**.

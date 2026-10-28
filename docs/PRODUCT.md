@@ -1005,7 +1005,8 @@ algoritmo.
 **Actualización COM-021 · 28/10/2026:** anual general confirmado en 39,99 €,
 mensual 3,99 €. Sustituye la referencia anual inicial de 29,99 €.
 34,95 € para militares es una propuesta pendiente de acreditación y condiciones.
-El catálogo de pruebas debe actualizarse; no se habilitan cobros reales.
+Catálogo Test Store EUR actualizado y releído: anual 39,99 € y mensual 3,99 €.
+No se habilitan cobros reales ni la oferta militar.
 
 Javier confirma que Pro debe salir con un precio accesible y considera elevado
 un importe inicial de 8,99 €/mes para el alcance actual. Tras plantear un rango

@@ -1,3 +1,5 @@
+import '../../features/trainers/presentation/trainer_invitation_entry.dart';
+import '../../features/trainers/presentation/trainer_invitation_page.dart';
 import 'coach_workspace_routes.dart';
 import '../../features/coach_workspace/presentation/coach_workspace_scope.dart';
 import '../../features/coach_workspace/data/supabase_coach_workspace_repository.dart';
@@ -145,7 +147,8 @@ class AppRouter {
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
   final _workflowExits = WorkflowExitRegistry();
 
-  AppRouter(AuthCubit authCubit) : _notifier = RouterNotifier(authCubit) {
+  AppRouter(AuthCubit authCubit, {TrainerInvitationEntry? invitationEntry})
+    : _notifier = RouterNotifier(authCubit) {
     // Hace que `push` actualice también la URL web. Sin esta opción la pantalla
     // cambiaba, pero el navegador seguía mostrando /home.
     GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -186,6 +189,25 @@ class AppRouter {
         return null;
       },
       routes: [
+        if (invitationEntry != null)
+          materialAppRoute(
+            path: '/trainer-invitation',
+            builder: (_, _) => BlocBuilder<AuthCubit, AuthState>(
+              bloc: authCubit,
+              builder: (_, auth) => auth is! AuthAuthenticated
+                  ? const SizedBox.shrink()
+                  : TrainerInvitationPage(
+                      key: ValueKey(auth.user.id),
+                      entry: invitationEntry,
+                      repository: SupabaseTrainerRepository(
+                        sl<SupabaseClient>(),
+                        userId: auth.user.id,
+                      ),
+                      email: auth.user.email,
+                      signOut: authCubit.signOut,
+                    ),
+            ),
+          ),
         materialAppRoute(
           path: '/pro',
           builder: (_, state) => BlocBuilder<AuthCubit, AuthState>(

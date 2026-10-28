@@ -1,3 +1,4 @@
+import 'package:trainer_access/trainer_invitation_link.dart';
 import 'package:flutter/material.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:trainer_access/trainer_access.dart';
@@ -309,10 +310,11 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                   enabled: !_busy,
                   autocorrect: false,
                   enableSuggestions: false,
-                  maxLength: 64,
+                  maxLength: 512,
                   decoration: const InputDecoration(
                     labelText: 'Código de invitación',
-                    hintText: 'Pega el código que te ha enviado',
+                    hintText: 'Pega el código o el enlace que te ha enviado',
+                    counterText: '',
                   ),
                   onChanged: (_) => setState(() => _preview = null),
                 ),
@@ -320,11 +322,12 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                   onPressed: _busy
                       ? null
                       : () => _run(() async {
-                          final code = _secret.text.trim();
-                          if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(code)) {
+                          final code = TrainerInvitationLink.fromInput(
+                            _secret.text,
+                          );
+                          if (code == null) {
                             setState(
-                              () => _error =
-                                  'Pega el código completo de 64 caracteres.',
+                              () => _error = 'Pega el código completo o un enlace de invitación de EntrenaOP.',
                             );
                             return;
                           }
@@ -365,9 +368,12 @@ class _MyTrainerPageState extends State<MyTrainerPage> {
                                     )
                                 ? null
                                 : () => _run(() async {
-                                    await widget.repository.accept(
-                                      _secret.text.trim(),
-                                    );
+                                    final code =
+                                        TrainerInvitationLink.fromInput(
+                                          _secret.text,
+                                        );
+                                    if (code == null) return;
+                                    await widget.repository.accept(code);
                                     if (!mounted) return;
                                     setState(() {
                                       _preview = null;

@@ -100,13 +100,23 @@ void main() {
     await tester.ensureVisible(find.text('Invitar alumno'));
     await tester.tap(find.text('Invitar alumno'));
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextFormField),
+      'alumno@example.invalid',
+    );
+    await tester.tap(find.text('Crear enlace'));
+    await tester.pumpAndSettle();
     expect(repo.drafts, hasLength(1));
+    expect(repo.drafts.single.recipientEmail, 'alumno@example.invalid');
     repo.createError = null;
     await tester.ensureVisible(find.text('Reintentar invitación'));
     await tester.tap(find.text('Reintentar invitación'));
     await tester.pumpAndSettle();
     expect(repo.drafts, hasLength(2));
     expect(identical(repo.drafts[0], repo.drafts[1]), isTrue);
+    await tester.ensureVisible(find.text('Código de respaldo'));
+    await tester.tap(find.text('Código de respaldo'));
+    await tester.pumpAndSettle();
     expect(find.text(repo.drafts[0].secret), findsOneWidget);
   });
   testWidgets('cuota completa no permite crear pero conserva consulta', (

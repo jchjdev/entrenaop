@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:trainer_access/trainer_invitation_link.dart';
+
 import 'package:entrenaop/features/trainers/presentation/my_trainer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,7 +24,45 @@ Future<void> press(WidgetTester tester, String text) async {
   await tester.pumpAndSettle();
 }
 
+class _LinkRepository extends FakeTrainerRepository {
+  final received = <String>[];
+  @override
+  Future<TrainerInvitationPreview> preview(String secret) {
+    received.add(secret);
+    return super.preview(secret);
+  }
+
+  @override
+  Future<void> accept(String secret) {
+    received.add(secret);
+    return super.accept(secret);
+  }
+}
+
 void main() {
+  testWidgets(
+    'pegar un enlace usa el mismo secreto en vista previa y aceptación',
+    (tester) async {
+      final repo = _LinkRepository();
+      final secret = List.filled(64, 'a').join();
+      await tester.pumpWidget(
+        MaterialApp(home: MyTrainerPage(repository: repo)),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField),
+        TrainerInvitationLink.share(secret).toString(),
+      );
+      await press(tester, 'Ver invitación');
+      expect(repo.received, [secret]);
+      expect(repo.accepts, 0);
+      await press(tester, 'Aceptar y vincularme');
+      expect(repo.received, [secret, secret]);
+      expect(repo.accepts, 1);
+      expect(find.text('Vínculo aceptado.'), findsOneWidget);
+    },
+  );
+
   testWidgets(
     'otro preparador se invita sin sustituir al actual; compartir es explícito',
     (tester) async {
@@ -174,7 +214,9 @@ void main() {
     await press(tester, 'Ver invitación');
     expect(repo.previews, 0);
     expect(
-      find.text('Pega el código completo de 64 caracteres.'),
+      find.text(
+        'Pega el código completo o un enlace de invitación de EntrenaOP.',
+      ),
       findsOneWidget,
     );
   });

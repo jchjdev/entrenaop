@@ -1,3 +1,8 @@
+import 'trainer_invitation_recipient_dialog.dart';
+
+import 'package:url_launcher/url_launcher.dart';
+import 'package:trainer_access/trainer_invitation_link.dart';
+
 import 'client_relation_history.dart';
 import 'trainer_client_card.dart';
 
@@ -212,6 +217,8 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 6),
+          if (invite.recipientEmail != null)
+            Text('Para ${invite.recipientEmail}'),
           Text('Creada el ${trainerDate(invite.createdAt)}'),
           Text(
             invite.acceptedAt != null
@@ -449,13 +456,7 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                                 access.full ||
                                 _draft != null
                             ? null
-                            : () {
-                                setState(() {
-                                  _draft = TrainerInvitationDraft.secure();
-                                  _created = false;
-                                });
-                                _create();
-                              },
+                            : _invite,
                         icon: const Icon(Icons.person_add_alt_1),
                         label: const Text('Invitar alumno'),
                       ),
@@ -467,38 +468,63 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
                 _section(
                   _created ? 'Invitación preparada' : 'Confirmar invitación',
                   _created
-                      ? 'Copia el código y envíaselo al alumno por tu canal habitual. En su app: Perfil → Mi preparador → Ver invitación.'
+                      ? 'Comparte el enlace con ${_draft!.recipientEmail}. En su teléfono podrá abrir EntrenaOP y aceptar desde esa cuenta.'
                       : 'Si la conexión falla, reintenta esta misma invitación para evitar duplicados.',
                   [
                     if (_created) ...[
-                      SelectableText(
-                        _draft!.secret,
-                        style: const TextStyle(fontFamily: 'monospace'),
-                      ),
-                      const SizedBox(height: 12),
                       const Text(
-                        'El código solo se muestra en esta pantalla. Caduca a los siete días y sirve para una única aceptación.',
+                        'El enlace caduca a los siete días, sirve una sola vez y solo puede aceptarlo la cuenta indicada. Abrirlo no vincula a nadie.',
                       ),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _busy
-                            ? null
-                            : () => _run(() async {
-                                await Clipboard.setData(
-                                  ClipboardData(text: _draft!.secret),
-                                );
-                                if (mounted) {
-                                  setState(() => _notice = 'Código copiado.');
-                                }
-                              }),
-                        icon: const Icon(Icons.copy),
-                        label: const Text('Copiar código'),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => _copyInvitation(false),
+                            icon: const Icon(Icons.link),
+                            label: const Text('Copiar enlace'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => _shareInvitation(false),
+                            icon: const Icon(Icons.chat_outlined),
+                            label: const Text('WhatsApp'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => _shareInvitation(true),
+                            icon: const Icon(Icons.mail_outline),
+                            label: const Text('Correo'),
+                          ),
+                        ],
+                      ),
+                      ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: const Text('Código de respaldo'),
+                        children: [
+                          SelectableText(
+                            _draft!.secret,
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                          TextButton.icon(
+                            onPressed: _busy
+                                ? null
+                                : () => _copyInvitation(true),
+                            icon: const Icon(Icons.copy),
+                            label: const Text('Copiar código'),
+                          ),
+                        ],
                       ),
                       TextButton(
                         onPressed: _busy
                             ? null
                             : () => setState(() => _draft = null),
-                        child: const Text('Ya he guardado el código'),
+                        child: const Text('Ya he guardado el enlace'),
                       ),
                     ] else
                       FilledButton(
@@ -599,6 +625,66 @@ class _TrainerClientsPageState extends State<TrainerClientsPage> {
       ),
     ),
   );
+
+  Future<void> _invite() async {
+    if (_busy || _draft != null) return;
+    final recipient = await showDialog<String>(
+      context: context,
+      builder: (_) => const TrainerInvitationRecipientDialog(),
+    );
+    if (!mounted || recipient == null || _draft != null) return;
+    setState(() {
+      _draft = TrainerInvitationDraft.secure(recipientEmail: recipient);
+      _created = false;
+    });
+    await _create();
+  }
+
+  Future<void> _copyInvitation(bool codeOnly) => _run(() async {
+    final draft = _draft!;
+    await Clipboard.setData(
+      ClipboardData(
+        text: codeOnly
+            ? draft.secret
+            : TrainerInvitationLink.share(draft.secret).toString(),
+      ),
+    );
+    if (mounted) {
+      setState(
+        () => _notice = codeOnly
+            ? 'Código copiado.'
+            : 'Enlace copiado. Puedes enviarlo por tu canal habitual.',
+      );
+    }
+  });
+  Future<void> _shareInvitation(bool email) async {
+    if (_busy || _draft == null) return;
+    final draft = _draft!;
+    final body =
+        'Te invito a entrenar conmigo en EntrenaOP. Abre este enlace desde tu teléfono e inicia sesión con el correo al que te he invitado: ${TrainerInvitationLink.share(draft.secret)}';
+    final uri = email
+        ? Uri(
+            scheme: 'mailto',
+            path: draft.recipientEmail,
+            query:
+                'subject=${Uri.encodeComponent('Tu invitación a EntrenaOP')}&body=${Uri.encodeComponent(body)}',
+          )
+        : Uri.https('wa.me', '/', {'text': body});
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        setState(
+          () => _notice = 'No se pudo abrir el canal. Copia el enlace y envíalo desde tu aplicación habitual.',
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _notice = 'No se pudo abrir el canal. Puedes copiar el enlace.',
+        );
+      }
+    }
+  }
 
   Future<void> _create() => _run(() async {
     final draft = _draft!;

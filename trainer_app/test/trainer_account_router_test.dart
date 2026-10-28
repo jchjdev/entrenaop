@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:entrenaop_trainer/trainer_invitation_landing.dart';
+
 import 'package:entrenaop_trainer/main.dart';
 import 'package:entrenaop_trainer/trainer_account_pages.dart';
 import 'package:entrenaop_trainer/trainer_security_page.dart';
@@ -44,6 +46,51 @@ class PortalAccountFixture {
 }
 
 void main() {
+  for (final signedIn in [false, true]) {
+    testWidgets(
+      'el enlace público arranca sin consultar alumnos ni MFA, cuenta $signedIn',
+      (t) async {
+        final secret = List.filled(64, 'a').join();
+        t.platformDispatcher.defaultRouteNameTestValue =
+            '/invite?invitation=$secret';
+        addTearDown(t.platformDispatcher.clearDefaultRouteNameTestValue);
+        final fixture = PortalAccountFixture();
+        await t.runAsync(() async {
+          await fixture.client.rpc('fixture_ready');
+          if (signedIn) await fixture.signIn();
+          fixture.rpc.clear();
+        });
+        addTearDown(() => t.runAsync(fixture.client.dispose));
+        await t.pumpWidget(
+          TrainerApp(
+            client: fixture.client,
+            accounts: AccountFixture()
+              ..professional = true
+              ..enabled = true,
+          ),
+        );
+        await t.pumpAndSettle();
+        expect(find.byType(TrainerInvitationLanding), findsOneWidget);
+        expect(find.text('Abrir EntrenaOP'), findsOneWidget);
+        expect(find.byType(TrainerSecurityPage), findsNothing);
+        expect(fixture.rpc, isEmpty);
+        final router = GoRouter.of(
+          t.element(find.byType(TrainerInvitationLanding)),
+        );
+        router.go('/clients');
+        await t.pumpAndSettle();
+        expect(find.byType(TrainerInvitationLanding), findsNothing);
+        if (signedIn) {
+          expect(find.byType(TrainerSecurityPage), findsOneWidget);
+        } else {
+          expect(find.text('Crear cuenta'), findsOneWidget);
+          expect(fixture.rpc, isEmpty);
+        }
+        await t.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
   testWidgets('login abre registro y recuperación sin APK ni MFA', (t) async {
     final fixture = PortalAccountFixture();
     await t.runAsync(() async {

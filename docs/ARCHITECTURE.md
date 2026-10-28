@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**TRN-038 · 28/10/2026 · enlaces de invitación:** el codec se comparte en
+`trainer_access`; Trainer adapta canal de envío y página pública. La app nativa
+conserva intención en memoria y una ruta sin secreto, separada del retorno Auth.
+Supabase se inicializa antes de escuchar invitaciones; `invitation` evita PKCE.
+El recurso se consulta solo con sesión, aceptación explícita y repositorio fijado
+por dueño. El servidor contrasta destinatario con email confirmado de Auth y
+mantiene las RPC/locks de admisión existentes. No hay nuevo proveedor ni copia
+del editor, ni SDK nuevo: `app_links` 7.2.1 y `url_launcher` 6.3.2 ya estaban
+resueltos transitivamente y pasan a dependencias directas donde se consumen.
+[Contrato, límites y validación](TRAINER_ACCESS_2026_10_20.md#invitacion-por-enlace--trn-038--28102026).
+
 **TRN-037 · 28/10/2026 · avisos profesionales:** `trainer_access` comparte el
 puerto de preferencias y acuses de vídeos entre web y móvil. El coordinador
 nativo conserva transporte/instalación y distingue apertura personal y

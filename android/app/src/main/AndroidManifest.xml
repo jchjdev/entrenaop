@@ -35,6 +35,13 @@
             </intent-filter>
             <!-- Supabase/app_links valida el enlace; go_router observa el estado. -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
+            <!-- Invitaciones separadas del callback de autenticación. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="es.entrenaop" android:host="trainer-invitation" android:path="/" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

@@ -1,5 +1,15 @@
 # Compras de prueba · COM-013/014
 
+**COM-021 · comprobación del 28/10/2026:** catálogo Test Store EUR actualizado:
+anual `prodb40fc8e7e5` → 39.990.000 microunidades (39,99 €), mensual
+`prod8c8016bec6` → 3.990.000 (3,99 €). Proyecto `projbb91cf72`, app
+`app78a6582249`. Sesión existente del CLI en `--profile entrenaop-dev`: indicar
+ese perfil; el perfil por defecto no está autenticado. Cambio mediante
+`products prices set` y relectura con `products prices <product-id>` del CLI 0.1.4.
+Las cifras del 13/10 que siguen son evidencia histórica. USD se conserva como
+ejemplo previo; no es tarifa comercial aprobada. Sin compras, recibos, tiendas
+reales ni oferta militar modificados.
+
 COM-018: después de comprar, la app confirma hasta tres veces en servidor,
 separadas seis segundos y con doce segundos de timeout por respuesta; no repite
 la compra ni concede acceso por resultado SDK. Si no confirma, mantiene pendiente

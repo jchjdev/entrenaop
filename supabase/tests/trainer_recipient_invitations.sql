@@ -1,0 +1,70 @@
+begin;
+set local statement_timeout='45s';
+do $$
+<<fixture>>
+declare coach uuid:=gen_random_uuid();pupil uuid:=gen_random_uuid();other uuid:=gen_random_uuid();unconfirmed uuid:=gen_random_uuid();
+ id uuid:=gen_random_uuid();old_id uuid:=gen_random_uuid();bad_id uuid:=gen_random_uuid();secret text:=repeat('a',64);legacy text:=repeat('b',64);waiting text:=repeat('c',64);
+ email text;result jsonb;relation uuid;
+begin
+ email:=pupil||'@recipient.invalid';
+ insert into auth.users(id,email,email_confirmed_at) values(coach,coach||'@recipient.invalid',now()),(pupil,email,now()),(other,other||'@recipient.invalid',now()),(unconfirmed,unconfirmed||'@recipient.invalid',null);
+ insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at) values(gen_random_uuid(),coach,'totp','verified',now(),now());
+ insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(coach,true,5,'Invitaciones por enlace');
+ perform set_config('request.jwt.claim.sub',coach::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ result:=public.create_trainer_invitation_for_email(coach,id,secret,upper(email));
+ if result->>'recipient_email'<>email or result ? 'secret_hash' then raise exception 'Respuesta incorrecta';end if;
+ if public.create_trainer_invitation_for_email(coach,id,secret,email)<>result then raise exception 'Reintento no idempotente';end if;
+ begin perform public.create_trainer_invitation_for_email(coach,id,secret,'otro@recipient.invalid');raise exception 'Cambia destinatario';exception when invalid_parameter_value then null;end;
+ begin perform public.create_trainer_invitation_for_email(other,gen_random_uuid(),secret,email);raise exception 'Cambia propietario';exception when insufficient_privilege then null;end;
+ begin perform public.create_trainer_invitation_for_email(coach,gen_random_uuid(),secret,E'inject\r\n@invalid.test');raise exception 'Acepta controles';exception when invalid_parameter_value then null;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.create_trainer_invitation_for_email(coach,gen_random_uuid(),secret,email);raise exception 'Crea sin MFA';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ perform public.create_trainer_invitation(old_id,legacy);
+ perform public.create_trainer_invitation_for_email(coach,bad_id,waiting,unconfirmed||'@recipient.invalid');
+ reset role;
+ if (select secret_hash from public.trainer_invitations where public.trainer_invitations.id=fixture.id)<>extensions.digest(secret,'sha256') then raise exception 'No conserva hash';end if;
+ perform set_config('request.jwt.claim.sub',other::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal1','user_metadata',jsonb_build_object('email',email))::text,true);
+ set local role authenticated;
+ begin perform public.preview_trainer_invitation(secret);raise exception 'Ajeno ve preparador';exception when invalid_parameter_value then null;end;
+ begin perform public.accept_trainer_invitation(secret);raise exception 'Ajeno acepta enlace reenviado';exception when invalid_parameter_value then null;end;
+ if (select count(*) from public.trainer_invitations where recipient_email=email)<>0 then raise exception 'Ajeno enumera destinatarios';end if;
+ -- El código manual es la misma capacidad: no elude el destinatario.
+ perform set_config('request.jwt.claim.sub',unconfirmed::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',unconfirmed,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.preview_trainer_invitation(waiting);raise exception 'Preview sin confirmar';exception when invalid_parameter_value then null;end;
+ begin perform public.accept_trainer_invitation(waiting);raise exception 'Acepta sin confirmar';exception when invalid_parameter_value then null;end;
+ perform set_config('request.jwt.claim.sub',pupil::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',pupil,'role','authenticated','aal','aal1')::text,true);
+ result:=public.preview_trainer_invitation(secret);
+ if result->>'trainer_id'<>coach::text or result ? 'recipient_email' then raise exception 'Preview incorrecta';end if;
+ relation:=public.accept_trainer_invitation(secret);
+ if public.accept_trainer_invitation(secret)<>relation then raise exception 'Reintento de aceptación duplica';end if;
+ reset role;
+ if (select count(*) from public.trainer_client_relations where client_id=pupil and trainer_id=coach and ended_at is null)<>1 then raise exception 'Vínculo incorrecto';end if;
+ -- El recibo pertenece al UID aceptante aunque después cambie su correo.
+ update auth.users set email='nuevo-'||fixture.email where auth.users.id=pupil;
+ set local role authenticated;
+ if public.accept_trainer_invitation(secret)<>relation then raise exception 'Cambio de correo pierde recibo';end if;
+ perform set_config('request.jwt.claim.sub',other::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',other,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.accept_trainer_invitation(secret);raise exception 'Reutiliza código consumido';exception when invalid_parameter_value then null;end;
+ -- Compatibilidad: las invitaciones anteriores no inventan un destinatario.
+ perform public.preview_trainer_invitation(legacy);
+ perform public.accept_trainer_invitation(legacy);
+ reset role;
+ perform set_config('request.jwt.claim.sub',coach::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ set local role authenticated;
+ perform public.cancel_trainer_invitation(bad_id);
+ perform set_config('request.jwt.claim.sub',unconfirmed::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',unconfirmed,'role','authenticated','aal','aal1')::text,true);
+ begin perform public.accept_trainer_invitation(waiting);raise exception 'Acepta cancelada';exception when invalid_parameter_value then null;end;
+ reset role;
+ if has_function_privilege('anon','public.create_trainer_invitation_for_email(uuid,uuid,text,text)','execute') or has_function_privilege('authenticated','trainer_private.require_invitation_recipient(uuid)','execute') then raise exception 'Permisos excesivos';end if;
+end $$;
+select 'trainer_recipient_invitations: OK' result;
+rollback;

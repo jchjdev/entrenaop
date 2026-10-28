@@ -133,59 +133,80 @@ originales; Auth/RLS y cuotas se acreditan aparte con ROLLBACK contra Dev.
 Esto no acredita un recorrido TOTP humano remoto ni habilita el piloto.
 [Contrato ampliado, interfaces y evidencia](TRAINER_PORTAL_2026_10_21.md).
 
-## Invitación por enlace · TRN-038 · propuesta del 28/10/2026
+## Invitación por enlace · TRN-038 · 28/10/2026
 
-Javier señala la fricción real al entregar el código a un compañero y pide un
-enlace que pueda enviar por su canal habitual. Se ha contrastado el código:
-`TrainerClientsPage` muestra/copía el secreto; `MyTrainerPage` exige pegarlo y
-pedir vista previa; el servidor guarda hash y acepta expresamente desde la cuenta
-identificada. No existe todavía recepción móvil de invitaciones ni enlace público
-de aterrizaje. El esquema móvil `es.entrenaop` se utiliza ahora para autenticación;
-Android solo registra el host auth-callback y se conserva el manejador app_links.
+Javier confirma sustituir la copia del secreto como recorrido principal. La
+implementación reutiliza las RPC de vista previa/aceptación, cupos y cartera.
 
-### Recorrido principal propuesto
+1. Trainer → Alumnos → Invitar alumno solicita el correo utilizado en EntrenaOP.
+   La creación exige identidad profesional fijada y MFA en servidor. Un reintento
+   conserva operación, secreto y destinatario; no permite cambiar el destinatario
+   de la misma invitación.
+2. Copiar enlace, WhatsApp o Correo preparan el mensaje en el canal elegido. No se
+   envía nada automáticamente. El correo se predispone al destinatario previsto.
+   El código de respaldo queda plegado y también admite pegar el enlace completo.
+3. El enlace `https://trainer.entrenaop.es/#/invite?invitation=…` abre una página
+   pública sin consultar datos del preparador/alumno ni pedir MFA. El secreto está
+   en el fragmento, fuera de la petición HTTP. La página ofrece Abrir EntrenaOP y
+   explica la distribución beta; no anuncia fichas de tiendas inexistentes.
+4. El botón abre `es.entrenaop://trainer-invitation/#invitation=…`. Se diferencia
+   del retorno Auth y evita el parámetro PKCE `code`. Supabase mantiene su manejador
+   de autenticación; la app escucha invitaciones después de inicializarlo.
+5. Si falta sesión, se conserva la intención en memoria y se retoma tras entrar.
+   La pantalla muestra la cuenta actual, el preparador y Aceptar preparador.
+   Cambiar de cuenta conserva el enlace, sin aceptar ni cambiar de identidad en
+   segundo plano. Una respuesta tardía no borra otro enlace recibido entretanto.
+6. Solo aceptar consume la invitación. Se mantienen siete días, cancelación, uso
+   único e idempotencia, acceso profesional, cupo y máximo de dos preparadores.
+   Compartir el calendario continúa siendo un consentimiento separado.
 
-1. El preparador genera la invitación y copia o comparte un enlace HTTPS. El
-   código manual queda como respaldo, plegado. Compartir abre el canal elegido
-   por el preparador; no se envía correo ni WhatsApp automáticamente.
-2. En beta, una página pública sencilla ofrece **Abrir EntrenaOP** y explica cómo
-   obtener la beta si falta. No incluye enlaces ficticios a tiendas ni asegura
-   detectar si la app está instalada. Solo muestra datos genéricos: la vista
-   previa actual del preparador exige autenticación.
-3. La app recibe una invitación diferenciada del retorno de Auth. Si falta sesión,
-   el recorrido debe retomarla después de identificarse; no acepta al pulsar el
-   enlace ni cambia de cuenta silenciosamente. El alumno ve al preparador y acepta.
-4. Se reutilizan caducidad, cancelación, uso único, cupos y límites de vínculos
-   existentes. La compartición del calendario conserva su consentimiento propio.
-5. La apertura directa por enlaces HTTPS verificados se configura cuando puedan
-   acreditarse dominio y aplicaciones. App Store/Google Play se enlazan solo al
-   disponer de fichas reales. Tras instalar, el alumno puede volver al enlace:
-   no se promete recuperación automática de contexto después de la instalación.
+### Destinatario y permisos
 
-### Seguridad y destinatario
+La migración `20261028135732` añade `recipient_email` opcional para preservar
+invitaciones antiguas. La nueva creación utiliza
+`create_trainer_invitation_for_email`, con dueño esperado y MFA. Vista previa y
+aceptación comparan la cuenta con `auth.users.email` confirmado, nunca metadata
+editable ni el email enviado por Flutter. Se rechazan cuentas anónimas,
+destinatarios distintos y correos sin confirmar, también al pegar el código.
+El recibo ya aceptado sigue perteneciendo al UUID aunque posteriormente cambie
+su correo. La cartera del preparador puede consultar el destinatario bajo su RLS;
+la página pública y la vista previa no lo exponen. El servidor conserva solo hash
+del secreto, y las RPC lo reciben en el cuerpo; no se añade analítica ni logs.
+Visitar el enlace o previsualizarlo en un correo no consume la invitación.
 
-El secreto largo sigue siendo necesario, pero puede viajar dentro del enlace;
-el alumno no necesita escribirlo. Debe mantenerse fuera de logs, errores y la
-petición HTTP de la página de aterrizaje (fragmento), sin analítica de terceros
-que lo capture. El servidor sigue recibiéndolo en el cuerpo de la RPC y solo
-guarda su hash. Visitar la página o generar una previsualización de correo no
-consume la invitación; únicamente la aceptación autenticada lo hace.
+### Límites de distribución y validación
 
-Actualmente la posesión del código permite solicitar la vinculación desde
-cualquier cuenta que cumpla el contrato. Para que solo acepte una persona
-concreta se propone registrar el correo previsto y comprobar en servidor la
-identidad y confirmación de esa cuenta. Esa ampliación requiere nuevo contrato,
-migración y pruebas; no se considera implementada por construir una URL. La
-aceptación con código manual debe respetar la misma restricción de destinatario.
+Android registra el host propio; iOS reutiliza el esquema ya registrado. Requiere
+actualizar la app: desplegar la web no modifica una beta anterior. Se respeta el
+acuerdo de no generar APK por cada ajuste. La recepción solo se conserva en
+memoria: después de cerrar el proceso o instalar se vuelve al enlace original.
+No se promete recuperación automática tras instalar. Android App Links y Apple
+Universal Links verificados y enlaces a tiendas quedan para su configuración y
+publicación real. El botón ofrece apertura; no detecta de forma fiable si la app
+está instalada. No se interceptan las rutas profesionales de todo el dominio.
 
-La recepción en app implica cambios de navegación y configuración nativa que
-necesitan una app actualizada; una página web nueva no los instala en una beta
-anterior. La distribución respeta el acuerdo de frecuencia en ANDROID_BETA.md.
+Pruebas: codificación/validación estricta de enlaces, separación de retorno Auth,
+intención y respuestas tardías, vista previa/aceptación explícita, destinatario y
+RPC fijadas por cuenta, recuperación de creación incierta, pantallas a 320 px y
+texto al doble. El router público se prueba con/sin sesión y sin consultas de
+alumnos/MFA; las rutas privadas conservan su guardia. El contrato SQL transaccional
+comprueba RLS, MFA, idempotencia, correo confirmado, metadata falsificada,
+destinatario incorrecto, legado y cancelación, terminando en ROLLBACK.
+El orden de bloqueos de aceptación se conserva; no se acredita una nueva carrera
+multiconexión con este contrato secuencial. Apertura y aceptación física desde
+WhatsApp/correo con app actualizada quedan pendientes.
 
 Fuentes contrastadas el 28/10/2026:
 [Flutter](https://docs.flutter.dev/ui/navigation/deep-linking),
+[Supabase](https://supabase.com/docs/guides/auth/native-mobile-deep-linking),
 [Android App Links](https://developer.android.com/training/app-links),
 [Universal Links de Apple](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app).
 
-Este apartado documenta una propuesta de recorrido, no una entrega programada,
-un nuevo permiso ni una configuración de tiendas ya activa.
+Comprobación del 28/10/2026: migración aplicada solo a Dev, 241 migraciones
+coincidentes; contratos `trainer_recipient_invitations`, `trainer_access_and_relations`,
+`trainer_multi_coach_calendar` y `trainer_client_portfolio` correctos con ROLLBACK.
+Análisis raíz/Trainer/ADMIN sin incidencias; baterías 1.428, 291 y 316 correctas,
+más 25 pruebas de `trainer_access`. XML Android y esquema URL iOS contrastados.
+Los avisos de seguridad del asesor coinciden con la base anterior: no se añade
+ninguna función definer pública ni acceso anónimo. No hay nuevas alertas de este
+contrato. No se amplía este cambio para corregir avisos históricos de otros módulos.

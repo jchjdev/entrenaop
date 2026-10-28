@@ -1,3 +1,8 @@
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import 'features/trainers/presentation/trainer_invitation_entry.dart';
+
 import 'dart:async';
 
 import 'package:entrena_ui/entrena_ui.dart' show EntrenaInputPolicy;
@@ -29,6 +34,20 @@ Future<void> main() async {
     publishableKey: AppConfig.supabasePublishableKey,
   );
 
+  // Supabase se suscribe primero: su retorno de Auth no se consume aquí.
+  final invitationEntry = TrainerInvitationEntry();
+  if (!kIsWeb) {
+    final links = AppLinks();
+    invitationEntry.attach(links.uriLinkStream);
+    try {
+      final initial = await links.getInitialLink().timeout(
+        const Duration(seconds: 3),
+      );
+      if (initial != null) invitationEntry.receive(initial);
+    } catch (_) {
+      /* La escucha sigue disponible; no bloquea el acceso normal. */
+    }
+  }
   await initDependencies();
 
   final authCubit = sl<AuthCubit>();
@@ -38,6 +57,7 @@ Future<void> main() async {
   runApp(
     EntrenaOpApp(
       authCubit: authCubit,
+      invitations: invitationEntry,
       push: PushNotificationCoordinator(
         transport: FirebasePushTransport(),
         backend: SupabasePushBackend(Supabase.instance.client),
@@ -51,8 +71,14 @@ Future<void> main() async {
 class EntrenaOpApp extends StatefulWidget {
   final AuthCubit authCubit;
   final PushNotificationCoordinator? push;
+  final TrainerInvitationEntry? invitations;
 
-  const EntrenaOpApp({super.key, required this.authCubit, this.push});
+  const EntrenaOpApp({
+    super.key,
+    required this.authCubit,
+    this.push,
+    this.invitations,
+  });
 
   @override
   State<EntrenaOpApp> createState() => _EntrenaOpAppState();
@@ -67,11 +93,24 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   @override
   void initState() {
     super.initState();
-    _appRouter = AppRouter(widget.authCubit);
+    _appRouter = AppRouter(
+      widget.authCubit,
+      invitationEntry: widget.invitations,
+    );
+    widget.invitations?.addListener(_openInvitation);
     WidgetsBinding.instance.addObserver(this);
     _pushOpens = widget.push?.opens.listen((_) => unawaited(_openPush()));
     _pushAuth = widget.authCubit.stream.listen(_syncPush);
     _syncPush(widget.authCubit.state);
+  }
+
+  void _openInvitation() {
+    if (!mounted ||
+        widget.invitations?.pending != true ||
+        widget.authCubit.state is! AuthAuthenticated) {
+      return;
+    }
+    _appRouter.config.go('/trainer-invitation');
   }
 
   int _pushOpenRequest = 0;
@@ -87,6 +126,9 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
   }
 
   void _syncPush(AuthState state) {
+    if (state is AuthAuthenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openInvitation());
+    }
     final push = widget.push;
     if (push == null) return;
     if (state is AuthAuthenticated) {
@@ -110,6 +152,8 @@ class _EntrenaOpAppState extends State<EntrenaOpApp>
 
   @override
   void dispose() {
+    widget.invitations?.removeListener(_openInvitation);
+    widget.invitations?.dispose();
     _appRouter.dispose();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_pushAuth?.cancel());

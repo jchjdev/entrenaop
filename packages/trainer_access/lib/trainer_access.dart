@@ -72,7 +72,9 @@ class TrainerInvitation {
       createdAt = DateTime.parse(json['created_at'] as String),
       expiresAt = DateTime.parse(json['expires_at'] as String),
       revokedAt = _date(json['revoked_at']),
-      acceptedAt = _date(json['accepted_at']);
+      acceptedAt = _date(json['accepted_at']),
+      recipientEmail = json['recipient_email'] as String?;
+  final String? recipientEmail;
   final String id;
   final DateTime createdAt, expiresAt;
   final DateTime? revokedAt, acceptedAt;
@@ -104,10 +106,11 @@ class TrainerManagement {
 }
 
 // Identidad y secreto se conservan juntos en memoria al reintentar una creación
-// incierta. Ni el código ni su huella deben aparecer en URLs o registros.
+// incierta. El secreto solo viaja en el fragmento del enlace compartido;
+// no debe aparecer en peticiones HTTP de página, registros o mensajes de error.
 class TrainerInvitationDraft {
-  const TrainerInvitationDraft(this.id, this.secret);
-  factory TrainerInvitationDraft.secure() {
+  const TrainerInvitationDraft(this.id, this.secret, {this.recipientEmail});
+  factory TrainerInvitationDraft.secure({String? recipientEmail}) {
     final random = Random.secure();
     final bytes = List.generate(16, (_) => random.nextInt(256));
     bytes[6] = (bytes[6] & 15) | 64;
@@ -118,9 +121,11 @@ class TrainerInvitationDraft {
     return TrainerInvitationDraft(
       '${uuid.substring(0, 8)}-${uuid.substring(8, 12)}-${uuid.substring(12, 16)}-${uuid.substring(16, 20)}-${uuid.substring(20)}',
       hex(List.generate(32, (_) => random.nextInt(256))),
+      recipientEmail: recipientEmail?.trim().toLowerCase(),
     );
   }
   final String id, secret;
+  final String? recipientEmail;
 }
 
 class TrainerAccessChange {
@@ -261,7 +266,9 @@ class SupabaseTrainerRepository implements TrainerRepository {
     _checkIdentity();
     var query = client
         .from('trainer_invitations')
-        .select('id,created_at,expires_at,revoked_at,accepted_at')
+        .select(
+          'id,created_at,expires_at,revoked_at,accepted_at,recipient_email',
+        )
         .eq('trainer_id', userId);
     // Cursor compuesto para no omitir invitaciones con la misma fecha.
     if (before != null) {
@@ -279,10 +286,19 @@ class SupabaseTrainerRepository implements TrainerRepository {
 
   @override
   Future<void> createInvitation(TrainerInvitationDraft draft) async {
-    await _rpc('create_trainer_invitation', {
-      'p_id': draft.id,
-      'p_secret': draft.secret,
-    });
+    await _rpc(
+      draft.recipientEmail == null
+          ? 'create_trainer_invitation'
+          : 'create_trainer_invitation_for_email',
+      {
+        'p_id': draft.id,
+        'p_secret': draft.secret,
+        if (draft.recipientEmail != null) ...{
+          'p_expected_owner': userId,
+          'p_recipient_email': draft.recipientEmail,
+        },
+      },
+    );
   }
 
   @override

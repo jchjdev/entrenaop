@@ -18,6 +18,8 @@ dependencies:
   cupertino_icons: 1.0.9
   # Descarga CSV del informe profesional; versión ya resuelta en los consumidores.
   web: 1.1.1
+  # Compartir invitaciones por el canal elegido; versión ya resuelta en el editor.
+  url_launcher: 6.3.2
   trainer_access:
     path: ../packages/trainer_access
   entrena_ui:

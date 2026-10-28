@@ -43,8 +43,9 @@ dependencies:
   video_player: ^2.14.0
   # Pitidos locales del ejecutor en web, Android e iOS (incluye soporte SPM).
   audioplayers: 6.8.1
+  # Receptor propio de invitaciones; versión ya resuelta por Supabase.
+  app_links: 7.2.1
   # Abrir enlaces de referencia que el reproductor integrado no admite.
-  # Ya se resuelve esta versión a través de Supabase; no añade un plugin nuevo.
   url_launcher: ^6.3.2
 
   # Utilidades
