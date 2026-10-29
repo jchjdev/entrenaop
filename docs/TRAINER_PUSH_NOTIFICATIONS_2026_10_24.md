@@ -1,5 +1,24 @@
 # Avisos push del alumno · TRN-029 · 24/10/2026
 
+## Estado contrastado · 29/10/2026
+
+Javier pregunta por la prueba Android pendiente. Se conserva la primera recepción
+física confirmada del aviso personal; no acredita los avisos profesionales ni
+toda la política agrupada. El 28/10 se instaló beta.2 por reemplazo sin borrar
+datos, pero el Samsung se desconectó antes de completar sesión profesional,
+consentimiento y entrega. Hoy ADB no detecta ningún dispositivo conectado.
+Dev confirma `enabled=true`, `coach_enabled=true`, cero preparadores con avisos
+profesionales habilitados y cero instalaciones Android activas en esta lectura.
+No se activan consentimientos ni se generan APK o avisos de prueba en esta tarea.
+
+Para retomar: conectar/desbloquear el Samsung, entrar con la cuenta profesional,
+activar **Entrenador → Resumen → Avisos de mis alumnos**, conceder el permiso
+Android si se solicita y dejar la app en segundo plano. Comprobar mensaje de
+otro alumno → aviso agrupado → apertura/MFA; repetir con vídeo listo compartido,
+y con lectura desde la web antes del envío para comprobar que no notifica lo ya
+atendido. «Para mí» no sustituye ese ensayo entre dos personas. Apple/APNs sigue
+pendiente por su contrato propio. No se modifica configuración ni producción.
+
 ## Avisos al preparador · TRN-037 · 28/10/2026
 
 En la app: **Entrenador → Resumen → Avisos de mis alumnos**. Solo se presenta en

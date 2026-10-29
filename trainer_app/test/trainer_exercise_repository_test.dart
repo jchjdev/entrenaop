@@ -40,6 +40,7 @@ class ServerFixture {
   bool failSave = true;
   bool failUploadOnce = false;
   int uploads = 0;
+  List<Map<String, dynamic>> workoutRows = [], workoutDetails = [];
   List<Map<String, dynamic>> officialRows = [
     {
       'id': 'official',
@@ -105,6 +106,12 @@ class ServerFixture {
     if (path.endsWith('/rpc/list_trainer_exercises')) {
       return json(request, [row('current'), row('old', current: false)]);
     }
+    if (path.endsWith('/rpc/list_trainer_workouts')) {
+      return json(request, workoutRows);
+    }
+    if (path == '/rest/v1/workout_templates') {
+      return json(request, workoutDetails);
+    }
     if (path == '/rest/v1/exercises') {
       final offset =
           int.tryParse(request.url.queryParameters['offset'] ?? '') ?? 0;
@@ -157,6 +164,55 @@ class ServerFixture {
 }
 
 void main() {
+  test(
+    'biblioteca lee formatos y ejercicios en lote limitado a los IDs propios',
+    () async {
+      final server = ServerFixture()
+        ..workoutRows = [
+          {
+            'id': 'session',
+            'name': 'Mesociclo A',
+            'version': 1,
+            'created_at': '2026-10-29T10:00:00Z',
+            'is_running': false,
+          },
+        ]
+        ..workoutDetails = [
+          {
+            'id': 'session',
+            'description': 'Plan privado',
+            'workout_blocks': [
+              {
+                'name': 'Bloque principal',
+                'format': 'amrap',
+                'workout_items': [
+                  {
+                    'exercises': {'name': 'Dominadas'},
+                  },
+                ],
+              },
+              {'name': 'Final', 'format': 'tabata', 'workout_items': []},
+            ],
+          },
+        ];
+      addTearDown(server.client.dispose);
+      await server.login();
+      final items = await SupabaseTrainerWorkoutRepository(
+        server.client,
+        owner,
+      ).workouts();
+      expect(items.single.formats, ['amrap', 'tabata']);
+      expect(items.single.searchContent, contains('Dominadas'));
+      final requests = server.requests
+          .where((r) => r.url.path == '/rest/v1/workout_templates')
+          .toList();
+      expect(requests, hasLength(1));
+      expect(requests.single.url.queryParameters['owner_user_id'], 'eq.$owner');
+      expect(requests.single.url.queryParameters['origin'], 'eq.coach');
+      expect(requests.single.url.queryParameters['id'], contains('session'));
+    },
+  );
+
   test(
     'catálogo público paginado mantiene fotos y origen sin firmar ni copiar',
     () async {

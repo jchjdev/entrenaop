@@ -1,5 +1,28 @@
 # Sesiones privadas, pautas y resultados · TRN-016 · 21/10/2026
 
+## Búsqueda en el contenido · 29/10/2026
+
+TRN-044 añade modalidad fuerza/carrera y «Contiene formato» (series,
+superserie, circuito, intervalos, AMRAP, EMOM, Tabata, carrera, calentamiento y
+vuelta a la calma). Una sesión puede coincidir con varios formatos según sus
+bloques reales; nombrarla «Tabata» no basta para pasar ese filtro. La búsqueda
+textual normalizada incluye título, descripción, nombres de bloques y ejercicios,
+modalidad y etiquetas de formato. Las tarjetas muestran los formatos internos.
+
+Se reutiliza el filtro en biblioteca principal, bibliotecas laterales de agenda
+y planificación del alumno, y selector de sesión al asignar. Conserva arrastre,
+receta fijada, confirmación y selección inicial sin desplegar otra vez el catálogo.
+La lista canónica sigue viniendo de `list_trainer_workouts` y cada página añade
+una consulta de metadatos, limitada a sus IDs, dueño y origen profesional, bajo
+RLS. No hay lecturas por sesión, series descargadas ni permisos adicionales.
+Una lectura incompleta falla y permite reintentar, sin presentar los formatos
+ausentes como conocidos. Búsqueda y filtros se aplican a lo cargado; las páginas
+restantes se incorporan con «Cargar más». No es búsqueda global de servidor.
+Análisis de Trainer limpio y 306 pruebas correctas. Incluyen formato real frente
+a título engañoso, búsqueda normalizada de ejercicios, una lectura por lote,
+restricción por dueño/IDs, asignación y bibliotecas con texto ampliado. Los filtros
+laterales usan un menú compacto para no desplazar fuera de pantalla las sesiones.
+
 ## Resultados compactos · UI-065 · 23/10/2026
 
 La vista de resultado profesional presenta una cabecera por bloque con nombre

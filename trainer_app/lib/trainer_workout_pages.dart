@@ -12,6 +12,7 @@ import 'package:workout_editor_ui/workout_template_content.dart';
 import 'package:workout_editor_ui/workout_editor_work.dart';
 
 import 'trainer_workout_repository.dart';
+import 'trainer_workout_filters.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_program_pages.dart';
 
@@ -32,6 +33,8 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
 
 class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
   String _query = '';
+  bool? _runningFilter;
+  String? _formatFilter;
   List<TrainerWorkout> _items = [];
   List<WorkoutEditorWork> _works = [];
   bool _busy = true, _more = false, _canCreate = false;
@@ -261,7 +264,7 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
           constraints: const BoxConstraints(maxWidth: 640),
           child: TextField(
             decoration: const InputDecoration(
-              labelText: 'Buscar entre las sesiones cargadas',
+              labelText: 'Buscar en sesiones, bloques y ejercicios cargados',
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: (v) => setState(() => _query = v),
@@ -269,10 +272,32 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
         ),
       ),
       const SizedBox(height: 16),
+      TrainerWorkoutFilters(
+        running: _runningFilter,
+        format: _formatFilter,
+        onRunningChanged: (value) => setState(() => _runningFilter = value),
+        onFormatChanged: (value) => setState(() => _formatFilter = value),
+      ),
+      if (!_busy &&
+          _items.isNotEmpty &&
+          !_items.any(
+            (item) => matchesTrainerWorkout(
+              item,
+              query: _query,
+              running: _runningFilter,
+              format: _formatFilter,
+            ),
+          ))
+        const Text('No hay sesiones que coincidan entre las cargadas.'),
       ProfessionalCatalogGrid(
         children: [
           for (final item in _items.where(
-            (item) => item.name.toLowerCase().contains(_query.toLowerCase()),
+            (item) => matchesTrainerWorkout(
+              item,
+              query: _query,
+              running: _runningFilter,
+              format: _formatFilter,
+            ),
           ))
             ProfessionalResourceCard(
               leading: ProfessionalResourceIcon(
@@ -280,7 +305,11 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
               ),
               title: Text(item.name),
               subtitle: Text(
-                '${item.isRunning ? 'Carrera' : 'Fuerza'} · Versión ${item.version} · Privada',
+                [
+                  '${item.isRunning ? 'Carrera' : 'Fuerza'} · Versión ${item.version} · Privada',
+                  if (trainerWorkoutFormatSummary(item).isNotEmpty)
+                    trainerWorkoutFormatSummary(item),
+                ].join(' · '),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: _busy
@@ -793,6 +822,9 @@ class TrainerAssignmentDialog extends StatefulWidget {
 }
 
 class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
+  bool? _runningFilter;
+  String? _formatFilter;
+  String _sessionQuery = '';
   final _note = TextEditingController();
   List<TrainerWorkout> _workouts = [];
   TrainerWorkout? _selected;
@@ -949,6 +981,22 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
           if (_choosingWorkout && _workouts.isEmpty && !_busy && _error == null)
             const Text('Crea primero una sesión en Mis sesiones privadas.'),
           if (_choosingWorkout)
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Buscar en el contenido de las sesiones',
+              ),
+              onChanged: (value) => setState(() => _sessionQuery = value),
+            ),
+          if (_choosingWorkout)
+            TrainerWorkoutFilters(
+              stacked: true,
+              running: _runningFilter,
+              format: _formatFilter,
+              onRunningChanged: (value) =>
+                  setState(() => _runningFilter = value),
+              onFormatChanged: (value) => setState(() => _formatFilter = value),
+            ),
+          if (_choosingWorkout)
             RadioGroup<String>(
               groupValue: _selected?.id,
               onChanged: (value) {
@@ -963,7 +1011,14 @@ class _TrainerAssignmentDialogState extends State<TrainerAssignmentDialog> {
               },
               child: Column(
                 children: [
-                  for (final item in _workouts)
+                  for (final item in _workouts.where(
+                    (item) => matchesTrainerWorkout(
+                      item,
+                      query: _sessionQuery,
+                      running: _runningFilter,
+                      format: _formatFilter,
+                    ),
+                  ))
                     RadioListTile<String>(
                       title: Text(item.name),
                       subtitle: Text('Versión ${item.version}'),

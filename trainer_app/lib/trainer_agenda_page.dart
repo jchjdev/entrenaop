@@ -10,6 +10,7 @@ import 'trainer_appointment_dialog.dart';
 import 'trainer_appointment_week.dart';
 
 import 'trainer_workout_repository.dart';
+import 'trainer_workout_filters.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_agenda_client_picker.dart';
 import 'trainer_month_calendar.dart';
@@ -135,6 +136,8 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
   int _request = 0;
   final _libraryOwner = Object();
   List<TrainerWorkout> _library = [];
+  bool? _libraryRunning;
+  String? _libraryFormat;
   bool _libraryBusy = false, _libraryMore = false;
   String? _libraryError;
 
@@ -188,7 +191,25 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
 
   Widget _libraryPane() => ProfessionalLibraryPane<TrainerWorkout>(
     title: 'Sesiones para asignar',
-    items: _library,
+    items: _library
+        .where(
+          (item) => matchesTrainerWorkout(
+            item,
+            running: _libraryRunning,
+            format: _libraryFormat,
+          ),
+        )
+        .toList(),
+    searchTextOf: (item) =>
+        [...item.searchContent, trainerWorkoutFormatSummary(item)].join(' '),
+    filters: TrainerWorkoutFilters(
+      popup: true,
+      stacked: true,
+      running: _libraryRunning,
+      format: _libraryFormat,
+      onRunningChanged: (value) => setState(() => _libraryRunning = value),
+      onFormatChanged: (value) => setState(() => _libraryFormat = value),
+    ),
     nameOf: (s) => s.name,
     leadingOf: (s) => Icon(
       s.isRunning ? Icons.directions_run : Icons.fitness_center,

@@ -19,6 +19,7 @@ import 'trainer_program_pages.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_workout_pages.dart';
 import 'trainer_workout_repository.dart';
+import 'trainer_workout_filters.dart';
 
 DateTime _civil(DateTime d, int offset) =>
     DateTime(d.year, d.month, d.day + offset);
@@ -137,6 +138,8 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
   int _generation = 0, _libraryGeneration = 0;
   final _own = <TrainerClientAgendaItem>[], _shared = <SharedCalendarEntry>[];
   List<TrainerWorkout> _library = [];
+  bool? _libraryRunning;
+  String? _libraryFormat;
   List<TrainerProgram> _programs = [];
   final _sessionDrag = Object(), _programDrag = Object();
   final _selection = ValueNotifier<_Selection?>(null);
@@ -698,11 +701,33 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               )
             : ProfessionalLibraryPane<TrainerWorkout>(
                 title: 'Tus sesiones',
+                searchTextOf: (item) => [
+                  ...item.searchContent,
+                  trainerWorkoutFormatSummary(item),
+                ].join(' '),
+                filters: TrainerWorkoutFilters(
+                  popup: true,
+                  stacked: true,
+                  running: _libraryRunning,
+                  format: _libraryFormat,
+                  onRunningChanged: (value) =>
+                      setState(() => _libraryRunning = value),
+                  onFormatChanged: (value) =>
+                      setState(() => _libraryFormat = value),
+                ),
                 leadingOf: (s) => Icon(
                   s.isRunning ? Icons.directions_run : Icons.fitness_center,
                   size: 20,
                 ),
-                items: _library,
+                items: _library
+                    .where(
+                      (item) => matchesTrainerWorkout(
+                        item,
+                        running: _libraryRunning,
+                        format: _libraryFormat,
+                      ),
+                    )
+                    .toList(),
                 nameOf: (row) => row.name,
                 subtitleOf: (row) =>
                     '${row.isRunning ? 'Carrera' : 'Fuerza'} · v${row.version}',

@@ -30,10 +30,17 @@ class TrainerWorkout {
       name = row['name'] as String,
       version = row['version'] as int,
       isRunning = row['is_running'] == true,
+      formats = List<String>.unmodifiable(
+        (row['formats'] as List? ?? const []).cast<String>(),
+      ),
+      searchContent = List<String>.unmodifiable(
+        (row['search_content'] as List? ?? const []).cast<String>(),
+      ),
       createdAt = DateTime.parse(row['created_at'] as String);
   final String id, name;
   final int version;
   final bool isRunning;
+  final List<String> formats, searchContent;
   final DateTime createdAt;
 }
 
@@ -152,13 +159,53 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
   }
 
   @override
-  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async =>
-      (await _rpc('list_trainer_workouts', {
-            'p_before_at': before?.createdAt.toUtc().toIso8601String(),
-            'p_before_id': before?.id,
-          }) as List)
-          .map((v) => TrainerWorkout.fromJson(WorkoutJson.from(v as Map)))
-          .toList();
+  Future<List<TrainerWorkout>> workouts({TrainerWorkout? before}) async {
+    final rows = await _rpc('list_trainer_workouts', {
+      'p_before_at': before?.createdAt.toUtc().toIso8601String(),
+      'p_before_id': before?.id,
+    }) as List;
+    if (rows.isEmpty) return [];
+    _identity();
+    // Una sola lectura para la página autorizada, sin descargar las series ni
+    // hacer una petición adicional por cada sesión para poder filtrarla.
+    final details = await client
+        .from('workout_templates')
+        .select(
+          'id,description,workout_blocks(name,format,workout_items(exercises(name)))',
+        )
+        .eq('owner_user_id', userId)
+        .eq('origin', 'coach')
+        .inFilter(
+          'id',
+          rows.map((row) => (row as Map)['id'] as String).toList(),
+        );
+    _identity();
+    final byId = {for (final detail in details) detail['id']: detail};
+    return rows.map((value) {
+      final row = WorkoutJson.from(value as Map);
+      final detail = byId[row['id']];
+      if (detail == null) {
+        throw StateError(
+          'No se pudo leer el contenido de la sesión. Actualiza la biblioteca.',
+        );
+      }
+      final blocks = (detail['workout_blocks'] as List).cast<Map>();
+      return TrainerWorkout.fromJson({
+        ...row,
+        'formats': blocks.map((b) => b['format'] as String).toSet().toList(),
+        'search_content': [
+          if (detail['description'] case final String description) description,
+          for (final block in blocks) ...[
+            if (block['name'] case final String name) name,
+            for (final item in (block['workout_items'] as List? ?? const []))
+              if ((item as Map)['exercises'] case final Map exercise)
+                if (exercise['name'] case final String name) name,
+          ],
+        ],
+      });
+    }).toList();
+  }
+
   @override
   Future<WorkoutTemplate?> template(String id) async {
     _identity();

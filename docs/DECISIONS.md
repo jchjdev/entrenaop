@@ -1,5 +1,15 @@
 # Registro de decisiones vigentes
 
+**TRN-044 · filtros por contenido de las sesiones · 29/10/2026:** Javier pide
+agrupar por fuerza/carrera y encontrar sesiones por sus formatos internos
+(AMRAP, Tabata, EMOM, etc.), sin depender del título. Trainer añade filtros
+combinables y búsqueda en descripción, bloques y nombres de ejercicios en la
+biblioteca, agenda, planificación individual y selector de asignación. La
+lectura amplía cada página autorizada con una consulta por lote; no descarga
+series ni cambia sesiones, cuotas, permisos, SQL o clasificación deportiva.
+Los filtros se aplican a las sesiones cargadas y conservan «Cargar más».
+[Contrato](TRAINER_PRIVATE_WORKOUTS.md#busqueda-en-el-contenido--29102026).
+
 **TRN-043 · selección y organización de ejercicios · 29/10/2026:** Javier pide
 fotos y distinción entre EntrenaOP y ejercicios propios dentro del creador,
 iconos deportivos en sesiones y una forma compartida con ADMIN de agrupar la
