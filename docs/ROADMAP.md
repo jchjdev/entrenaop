@@ -1,5 +1,22 @@
 # Roadmap de EntrenaOP
 
+**TRN-045 · 29/10/2026 · papelera de biblioteca en cierre:** Trainer incorpora
+retirada, recuperación y purga protegida de familias de ejercicios, sesiones y
+programas; ADMIN añade ejercicios y comparte la vista conservando sus contratos
+previos. El contenido asignado sigue ejecutable, las referencias bloquean purga
+y los reintentos no resucitan recetas borradas. Recuperar oficiales no publica.
+Migración aplicada solo en Dev; contrato nuevo y diez regresiones SQL correctos
+con ROLLBACK. Concurrencia comprobada entre dos conexiones: mismo recurso
+excluido y familia ajena disponible. Raíz 1.446 pruebas (una omisión previa),
+Trainer 317, ADMIN 358 (dos omisiones previas), editor compartido 223 y UI común
+40, análisis limpios. Rutas de papelera y traslado administrativo protegidos ante
+salida incierta y doble confirmación. Fuentes listas para publicación automática
+en Dev; pendiente acreditar versión servida. No se vacían bibliotecas ni se
+purgan medios remotos.
+**Único siguiente recorrido recomendado tras cerrar:** aceptación del enlace de
+invitación en la beta móvil con alumno real; no requiere otra APK por este bloque.
+[Contrato y evidencia](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
+
 **TRN-041 · 28/10/2026 · citas en agenda:** recorrido implementado y migración
 aplicada solo en Dev: crear → ver en mes/semana/día/lista → arrastrar día/hora →
 editar/cancelar → consultar en Preparador/Citas con historial y avisos agrupados.
@@ -94,10 +111,9 @@ la beta corregida abre conversación en caliente y técnica sin proceso previo.
 Análisis raíz limpio y 1.446 pruebas correctas (una omisión previa); cero trabajos
 profesionales pendientes al cerrar. Apple/APNs y ensayos físicos extendidos de
 descanso/cuentas/recordatorios no se dan por aceptados por este recorrido.
-**Actualización tras la revisión de los dieciséis puntos, 29/10:** el siguiente
-bloque recomendado es el ciclo de papelera/restauración/borrado de la biblioteca
-profesional y el hueco de ejercicios en ADMIN (petición TRN-045). La aceptación
-física del enlace TRN-038 conserva su comprobación pendiente.
+**Actualización tras la revisión de los dieciséis puntos, 29/10:** la biblioteca
+se desarrolla en TRN-045, con su estado vigente al comienzo de este documento.
+La aceptación física del enlace TRN-038 conserva su comprobación pendiente.
 Apple/APNs, cobros reales y la oferta militar siguen pendientes. COM-021 fija
 la referencia anual general en 39,99 €; catálogo Test Store EUR actualizado
 y releído el 28/10 (mensual 3,99 €).

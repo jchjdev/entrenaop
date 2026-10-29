@@ -7,10 +7,12 @@ import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_collections.dart';
+import 'package:workout_editor_ui/guided_program_work.dart';
 
 import '../../../core/admin_shell.dart';
 
 import '../data/admin_exercise_video_repository.dart';
+import '../data/admin_exercise_trash_repository.dart';
 import 'admin_exercise_dialog.dart';
 
 class AdminExercisesPage extends StatefulWidget {
@@ -20,12 +22,14 @@ class AdminExercisesPage extends StatefulWidget {
     this.videos,
     this.initialExerciseId,
     this.preferences,
+    this.ownerKey,
   });
 
   final AdminExerciseRepository repository;
   final String? initialExerciseId;
   final AdminExerciseVideoRepository? videos;
   final ExerciseCatalogPreferences? preferences;
+  final Object? ownerKey;
 
   @override
   State<AdminExercisesPage> createState() => _AdminExercisesPageState();
@@ -35,10 +39,18 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   bool _loading = true;
   bool _initialOpened = false;
   bool _saving = false;
+  bool _confirming = false;
   String? _error;
   List<AdminCatalogExercise> _exercises = const [];
   final _search = TextEditingController();
   String? _collection;
+  _ExerciseTrashAttempt? _trashAttempt;
+  bool get _busy => _saving || _confirming;
+  bool get _blocked => _busy || _trashAttempt != null;
+  AdminExerciseTrashRepository? get _trashRepository =>
+      widget.repository is AdminExerciseTrashRepository
+      ? widget.repository as AdminExerciseTrashRepository
+      : null;
   late final _preferences = widget.preferences == null
       ? null
       : ExercisePreferencesController(widget.preferences!);
@@ -115,6 +127,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   }
 
   Future<void> _openEditor([AdminCatalogExercise? exercise]) async {
+    if (_blocked) return;
     final result = await showAdminExerciseDialog(
       context,
       repository: widget.repository,
@@ -150,33 +163,138 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AdminShellScope.hidesAppBar(context)
-        ? null
-        : AppBar(
-            title: const Text('Administración · ejercicios'),
-            leading: GoRouter.maybeOf(context)?.canPop() == false
-                ? IconButton(
-                    tooltip: 'Ir a programas',
-                    icon: const Icon(Icons.home_outlined),
-                    onPressed: () => context.go('/programs'),
-                  )
-                : null,
-          ),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: ProfessionalWorkspaceScope.pageConstraints(
+  Future<void> _trashExercise(
+    AdminCatalogExercise exercise, {
+    bool retry = false,
+  }) async {
+    final repository = _trashRepository;
+    if (_busy ||
+        repository == null ||
+        (!retry && _trashAttempt != null) ||
+        (retry && _trashAttempt == null)) {
+      return;
+    }
+    final owner = widget.ownerKey ?? widget.repository;
+    bool current() =>
+        mounted &&
+        owner == (widget.ownerKey ?? widget.repository) &&
+        identical(repository, _trashRepository);
+    try {
+      if (!retry) {
+        setState(() => _confirming = true);
+        final confirmed = await showCatalogTrashConfirmation(
           context,
-          maxWidth: 900,
+          name: exercise.name,
+          kindLabel: 'ejercicio',
+          description:
+              'Dejará de ofrecerse para nuevas creaciones. Las sesiones, programas '
+              'y resultados existentes conservarán el ejercicio. Puedes recuperarlo '
+              'desde la papelera.',
+        );
+        if (!confirmed || !current()) return;
+        _trashAttempt = _ExerciseTrashAttempt(exercise, newGuidedWorkId());
+      }
+      setState(() {
+        _confirming = false;
+        _saving = true;
+        _error = null;
+      });
+      final attempt = _trashAttempt!;
+      await repository.trashExercise(
+        attempt.exercise.id,
+        operationId: attempt.operationId,
+      );
+      if (!current()) return;
+      setState(() => _trashAttempt = null);
+      await _load();
+      if (!mounted || !current()) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ejercicio movido a la papelera.')),
+      );
+    } catch (error) {
+      if (!current()) return;
+      setState(() {
+        if (error is FormatException) _trashAttempt = null;
+        _error = error is FormatException
+            ? error.message
+            : 'No se pudo confirmar el traslado. Reintenta para comprobarlo.';
+      });
+    } finally {
+      if (current()) {
+        setState(() {
+          _saving = false;
+          _confirming = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => WorkflowDraftGuard(
+    isBusy: () => _busy,
+    hasUnsavedChanges: () => _trashAttempt != null,
+    title: '¿Salir con un traslado sin confirmar?',
+    message: 'Todavía no conocemos el resultado del traslado. Puedes reintentarlo aquí. Si sales, comprueba el catálogo y la papelera al volver.',
+    child: Scaffold(
+      appBar: AdminShellScope.hidesAppBar(context)
+          ? null
+          : AppBar(
+              title: const Text('Administración · ejercicios'),
+              leading: GoRouter.maybeOf(context)?.canPop() == false
+                  ? IconButton(
+                      tooltip: 'Ir a programas',
+                      icon: const Icon(Icons.home_outlined),
+                      onPressed: () => context.go('/programs'),
+                    )
+                  : null,
+            ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: ProfessionalWorkspaceScope.pageConstraints(
+            context,
+            maxWidth: 900,
+          ),
+          child: Column(
+            children: [
+              if (_trashAttempt case final attempt?)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  child: EntrenaCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Traslado de «${attempt.exercise.name}» sin confirmar.',
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Actualizar el catálogo no confirma ni descarta esta operación.',
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: _busy
+                              ? null
+                              : () => _trashExercise(
+                                  attempt.exercise,
+                                  retry: true,
+                                ),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reintentar traslado'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              Expanded(child: _buildContent()),
+            ],
+          ),
         ),
-        child: _buildContent(),
       ),
-    ),
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: _saving ? null : _openEditor,
-      icon: const Icon(Icons.add),
-      label: const Text('Nuevo ejercicio'),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _blocked ? null : _openEditor,
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo ejercicio'),
+      ),
     ),
   );
 
@@ -197,6 +315,31 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
     final visible = _visibleExercises;
     return Column(
       children: [
+        if (_trashRepository != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _load,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Actualizar catálogo'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _blocked
+                        ? null
+                        : () => context.go('/exercises/trash'),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Papelera'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
           child: TextField(
@@ -243,16 +386,20 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                             title: Text(exercise.name),
                             subtitle: Text(
                               [
+                                if (!exercise.isPublic)
+                                  'Retirado · revisar para publicar',
                                 ...exercise.muscleGroups,
                                 ...exercise.equipment,
                               ].join(' · '),
                             ),
-                            trailing: _preferences?.supportsLabels != true
-                                ? const Icon(Icons.edit_outlined)
-                                : IconButton(
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_preferences?.supportsLabels == true)
+                                  IconButton(
                                     tooltip: 'Etiquetas: ${exercise.name}',
                                     icon: const Icon(Icons.label_outline),
-                                    onPressed: _saving
+                                    onPressed: _blocked
                                         ? null
                                         : () => editExerciseLabels(
                                             context,
@@ -261,7 +408,25 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                                             exercise.name,
                                           ),
                                   ),
-                            onTap: _saving ? null : () => _openEditor(exercise),
+                                if (_trashRepository != null)
+                                  PopupMenuButton<String>(
+                                    enabled: !_blocked,
+                                    tooltip: 'Más opciones de ${exercise.name}',
+                                    onSelected: (_) => _trashExercise(exercise),
+                                    itemBuilder: (_) => const [
+                                      PopupMenuItem(
+                                        value: 'trash',
+                                        child: Text('Mover a papelera'),
+                                      ),
+                                    ],
+                                  )
+                                else if (_preferences?.supportsLabels != true)
+                                  const Icon(Icons.edit_outlined),
+                              ],
+                            ),
+                            onTap: _blocked
+                                ? null
+                                : () => _openEditor(exercise),
                           ),
                       ],
                     ),
@@ -271,6 +436,12 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
       ],
     );
   }
+}
+
+class _ExerciseTrashAttempt {
+  const _ExerciseTrashAttempt(this.exercise, this.operationId);
+  final AdminCatalogExercise exercise;
+  final String operationId;
 }
 
 class _ExerciseImage extends StatelessWidget {

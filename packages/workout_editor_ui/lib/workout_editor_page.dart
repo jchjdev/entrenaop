@@ -527,6 +527,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           if (mounted) {
             setState(
               () => _catalog = {
+                // Los consumidores que solo aportan catálogo activo conservan
+                // los nombres ya autorizados por la receta original.
+                for (final block
+                    in widget.originalTemplate?.blocks ?? <WorkoutBlock>[])
+                  for (final item in block.items)
+                    item.exerciseId: WorkoutEditorExercise(
+                      id: item.exerciseId,
+                      name: item.exerciseName,
+                      selectable: false,
+                    ),
                 for (final item in items) item.id: item,
                 for (final item in _catalog) item.id: item,
               }.values.toList(),
@@ -647,6 +657,24 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       }
       final input = _input();
       validateWorkoutDraft(input);
+      if (!_running) {
+        final retained = _catalog
+            .where(
+              (exercise) =>
+                  !exercise.selectable &&
+                  _blocks.any(
+                    (block) => block.exercises.any(
+                      (item) => item.exerciseId == exercise.id,
+                    ),
+                  ),
+            )
+            .toList();
+        if (retained.isNotEmpty) {
+          throw FormatException(
+            'Hay ejercicios retirados en esta receta: ${retained.take(3).map((e) => e.name).join(', ')}. Sustitúyelos o recupéralos desde su biblioteca antes de guardar.',
+          );
+        }
+      }
       setState(() {
         _busy = true;
         _error = null;
@@ -1298,6 +1326,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     items: _catalog
         .where(
           (e) =>
+              e.selectable &&
               (_libraryScope == null || e.catalogScope == _libraryScope) &&
               (_libraryLabel == null ||
                   (_exercisePreferences?.labels(e.id).contains(_libraryLabel) ??
@@ -1315,7 +1344,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     filters: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_catalog.any((e) => e.catalogScope != null))
+        if (_catalog.any((e) => e.selectable && e.catalogScope != null))
           DropdownButtonFormField<String>(
             key: ValueKey('library-scope:$_libraryScope'),
             initialValue: _libraryScope ?? '',
@@ -1325,6 +1354,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
               const DropdownMenuItem(value: '', child: Text('Todos')),
               for (final scope
                   in _catalog
+                      .where((e) => e.selectable)
                       .map((e) => e.catalogScope)
                       .whereType<String>()
                       .toSet())
@@ -1338,7 +1368,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ),
         if (_exercisePreferences?.labelsLoaded == true)
           ExerciseLabelFilter(
-            labels: _catalog.expand((e) => _exercisePreferences!.labels(e.id)),
+            labels: _catalog
+                .where((e) => e.selectable)
+                .expand((e) => _exercisePreferences!.labels(e.id)),
             selected: _libraryLabel,
             onChanged: (value) => setState(() => _libraryLabel = value),
           ),
@@ -1355,7 +1387,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   );
 
   Future<void> _chooseBlockForExercise(WorkoutEditorExercise exercise) async {
-    if (_busy || _creatingExercise) return;
+    if (_busy || _creatingExercise || !exercise.selectable) return;
     final available = _blocks.where(_canReceiveExercise).toList();
     final block = available.length == 1
         ? available.single
@@ -1399,7 +1431,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         _creatingExercise ||
         !_blocks.contains(block) ||
         !_canReceiveExercise(block) ||
-        !_catalog.any((e) => e.id == exercise.id)) {
+        !_catalog.any((e) => e.id == exercise.id && e.selectable)) {
       return;
     }
     setState(() {
@@ -2313,7 +2345,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         'Organiza el trabajo en bloques. El formato define series, rondas y descansos.',
       ),
       const SizedBox(height: 12),
-      if (_catalog.isEmpty) Text(widget.emptyCatalogMessage),
+      if (!_catalog.any((e) => e.selectable)) Text(widget.emptyCatalogMessage),
       WorkoutReorderableCards(
         identities: _blocks,
         keyPrefix: 'strength-drag-handle',
@@ -2323,7 +2355,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
         feedbackBuilder: (_, index) => _strengthCard(index, feedback: true),
         itemBuilder: (_, index, handle) => _catalogDrop<WorkoutEditorExercise>(
           _strengthCard(index, handle: handle, properties: properties),
-          (_) => _canReceiveExercise(_blocks[index]),
+          (exercise) =>
+              exercise.selectable && _canReceiveExercise(_blocks[index]),
           (exercise) => _insertCatalogExercise(_blocks[index], exercise),
           'Soltar para añadir al bloque ${index + 1}',
         ),
@@ -2592,7 +2625,9 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: _catalog.isEmpty && widget.onCreateExercise == null
+            onPressed:
+                !_catalog.any((e) => e.selectable) &&
+                    widget.onCreateExercise == null
                 ? null
                 : () async {
                     final selected = await _chooseExercise();
@@ -2616,6 +2651,16 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                   : 'Cambiar ejercicio · ${_catalog.where((exercise) => exercise.id == item.exerciseId).map((exercise) => exercise.name).firstOrNull ?? 'Buscar ejercicio del catálogo'}',
             ),
           ),
+          if (_catalog.any(
+            (exercise) =>
+                exercise.id == item.exerciseId && !exercise.selectable,
+          ))
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(
+                'Retirado de la biblioteca · se conserva en esta receta.',
+              ),
+            ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 14,
@@ -2830,7 +2875,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
     final preferences = _exercisePreferences;
     var create = false;
     String? scope;
-    final scopes = _catalog
+    final available = _catalog.where((e) => e.selectable).toList();
+    final scopes = available
         .map((e) => e.catalogScope)
         .whereType<String>()
         .toSet();
@@ -2872,8 +2918,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                         ? 'Buscar por nombre, músculo o material'
                         : 'Buscar',
                     exercises: scope == null
-                        ? _catalog
-                        : _catalog
+                        ? available
+                        : available
                               .where((e) => e.catalogScope == scope)
                               .toList(),
                     idOf: (exercise) => exercise.id,

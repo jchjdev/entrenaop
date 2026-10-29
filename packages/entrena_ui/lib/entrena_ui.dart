@@ -1,5 +1,6 @@
 library;
 
+export 'catalog_trash_view.dart';
 export 'src/auth/totp_qr.dart';
 export 'src/auth/totp_qr_source.dart';
 

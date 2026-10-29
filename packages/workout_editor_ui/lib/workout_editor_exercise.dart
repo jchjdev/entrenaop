@@ -8,6 +8,7 @@ class WorkoutEditorExercise {
     this.equipment = const [],
     this.thumbnailUrl,
     this.catalogScope,
+    this.selectable = true,
   });
 
   final String id, name;
@@ -16,4 +17,8 @@ class WorkoutEditorExercise {
 
   /// Etiqueta del catálogo autorizado; no concede acceso ni cambia permisos.
   final String? catalogScope;
+
+  /// Una referencia histórica puede renderizarse sin ofrecerla en una receta
+  /// nueva. Los permisos y las escrituras se vuelven a comprobar en servidor.
+  final bool selectable;
 }

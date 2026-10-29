@@ -4,6 +4,7 @@ import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_editor_ui/exercise_image_draft.dart';
+import 'package:workout_editor_ui/workout_editor_exercise.dart';
 
 String trainerExerciseError(Object error) {
   if (error is PostgrestException && error.code == '22023') {
@@ -96,8 +97,22 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
         .whereType<String>()
         .toSet()
         .toList();
+    final signed = await _signImages(paths);
+    final result = <TrainerExercise>[];
+    for (final value in rows) {
+      final row = Map<String, dynamic>.from(value as Map);
+      if (row['image_path'] != null) {
+        row['thumbnail_url'] = signed[row['image_path']];
+      }
+      result.add(TrainerExercise.fromJson(row));
+    }
+    return result;
+  }
+
+  Future<Map<String, String>> _signImages(List<String> paths) async {
     final signed = <String, String>{};
     for (var start = 0; start < paths.length; start += 100) {
+      _identity();
       final results = await client.storage
           .from(bucket)
           .createSignedUrlsResult(
@@ -112,13 +127,72 @@ class SupabaseTrainerExerciseRepository implements TrainerExerciseRepository {
         signed[result.path] = result.signedUrl;
       }
     }
-    final result = <TrainerExercise>[];
-    for (final value in rows) {
-      final row = Map<String, dynamic>.from(value as Map);
-      if (row['image_path'] != null) {
-        row['thumbnail_url'] = signed[row['image_path']];
+    return signed;
+  }
+
+  /// Solo recupera metadatos de referencias ya presentes en la receta abierta.
+  /// RLS autoriza la lectura; no vuelve a ofrecerlos como ejercicios nuevos.
+  Future<List<WorkoutEditorExercise>> retainedForEditor(Set<String> ids) async {
+    final result = <WorkoutEditorExercise>[];
+    final requested = ids.toList()..sort();
+    for (var start = 0; start < requested.length; start += 100) {
+      _identity();
+      final batch = requested.sublist(
+        start,
+        start + 100 > requested.length ? requested.length : start + 100,
+      );
+      final bearer = 'Bearer ${client.auth.currentSession!.accessToken}';
+      var query = client
+          .from('exercises')
+          .select(
+            'id,name,muscle_groups,equipment,origin,created_by,image_path,thumbnail_url',
+          )
+          .inFilter('id', batch);
+      for (final key in {
+        ...client.rest.headers.keys.where(
+          (key) => key.toLowerCase() == 'authorization',
+        ),
+        'Authorization',
+      }) {
+        query = query.setHeader(key, bearer);
       }
-      result.add(TrainerExercise.fromJson(row));
+      final rows = await query;
+      _identity();
+      final signed = await _signImages(
+        rows
+            .where((row) => row['origin'] == 'coach')
+            .map((row) => row['image_path'])
+            .whereType<String>()
+            .toSet()
+            .toList(),
+      );
+      for (final row in rows) {
+        final official = row['origin'] == 'system';
+        final path = row['image_path'] as String?;
+        result.add(
+          WorkoutEditorExercise(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            muscleGroups: (row['muscle_groups'] as List).cast<String>(),
+            equipment: (row['equipment'] as List).cast<String>(),
+            thumbnailUrl: path == null
+                ? row['thumbnail_url'] as String?
+                : official
+                ? client.storage
+                      .from('exercise-images-public')
+                      .getPublicUrl(path)
+                : row['origin'] == 'coach'
+                ? signed[path]
+                : null,
+            catalogScope: official
+                ? 'EntrenaOP'
+                : row['created_by'] == userId
+                ? 'Míos'
+                : 'Conservado',
+            selectable: false,
+          ),
+        );
+      }
     }
     return result;
   }

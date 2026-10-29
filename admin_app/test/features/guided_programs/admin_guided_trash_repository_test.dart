@@ -37,6 +37,35 @@ void main() {
     server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
     server.listen((request) async {
       request.response.headers.contentType = ContentType.json;
+      if (request.uri.path == '/auth/v1/token') {
+        final payload = base64Url
+            .encode(
+              utf8.encode(
+                jsonEncode({
+                  'sub': '10000000-0000-4000-8000-000000000001',
+                  'exp': 4102444800,
+                }),
+              ),
+            )
+            .replaceAll('=', '');
+        request.response.write(
+          jsonEncode({
+            'access_token': 'eyJhbGciOiJIUzI1NiJ9.$payload.fixture',
+            'refresh_token': 'fixture',
+            'token_type': 'bearer',
+            'expires_in': 3600,
+            'user': {
+              'id': '10000000-0000-4000-8000-000000000001',
+              'aud': 'authenticated',
+              'app_metadata': {},
+              'user_metadata': {},
+              'created_at': '2026-10-21T00:00:00Z',
+            },
+          }),
+        );
+        await request.response.close();
+        return;
+      }
       final body = request.method == 'POST'
           ? jsonDecode(await utf8.decoder.bind(request).join())
                 as Map<String, dynamic>?
@@ -86,6 +115,10 @@ void main() {
       'http://127.0.0.1:${server.port}',
       'fixture',
       authOptions: const AuthClientOptions(autoRefreshToken: false),
+    );
+    await client.auth.signInWithPassword(
+      email: 'fixture@example.invalid',
+      password: 'fixture',
     );
   });
   tearDown(() async {

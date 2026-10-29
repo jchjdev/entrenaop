@@ -1,4 +1,6 @@
 import 'trainer_assignment_lifecycle_actions.dart';
+import 'trainer_catalog_trash_page.dart';
+import 'trainer_catalog_trash_repository.dart';
 
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:entrena_ui/entrena_ui.dart';
@@ -22,10 +24,12 @@ class TrainerWorkoutLibraryPage extends StatefulWidget {
     required this.repository,
     required this.accessRepository,
     this.workRepository,
+    this.trashRepository,
   });
   final TrainerWorkoutRepository repository;
   final TrainerRepository accessRepository;
   final WorkoutEditorWorkRepository? workRepository;
+  final TrainerCatalogTrashRepository? trashRepository;
   @override
   State<TrainerWorkoutLibraryPage> createState() =>
       _TrainerWorkoutLibraryPageState();
@@ -157,6 +161,17 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
     appBar: AppBar(
       title: const Text('Mis sesiones privadas'),
       actions: [
+        if (widget.trashRepository != null)
+          IconButton(
+            onPressed: _busy || _discardBusy || _discardAttempt != null
+                ? null
+                : () async {
+                    await context.push('/workouts/trash');
+                    if (mounted) await _load();
+                  },
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Papelera de sesiones',
+          ),
         IconButton(
           onPressed: _busy || _discardBusy ? null : _load,
           icon: const Icon(Icons.refresh),
@@ -421,9 +436,11 @@ class TrainerWorkoutPreviewPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.templateId,
+    this.trashRepository,
   });
   final TrainerWorkoutRepository repository;
   final String templateId;
+  final TrainerCatalogTrashRepository? trashRepository;
   @override
   State<TrainerWorkoutPreviewPage> createState() =>
       _TrainerWorkoutPreviewPageState();
@@ -468,6 +485,16 @@ class _TrainerWorkoutPreviewPageState extends State<TrainerWorkoutPreviewPage> {
             },
             child: const Text('Crear nueva versión'),
           ),
+          if (widget.trashRepository case final repository?)
+            TrainerCatalogTrashAction(
+              repository: repository,
+              kind: TrainerCatalogKind.session,
+              id: widget.templateId,
+              name: snapshot.data!.name,
+              onTrashed: () async {
+                context.canPop() ? context.pop(true) : context.go('/workouts');
+              },
+            ),
         ]);
       },
     ),

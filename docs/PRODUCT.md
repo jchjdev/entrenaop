@@ -1,5 +1,13 @@
 # Producto EntrenaOP
 
+**TRN-045 · 29/10/2026 · papelera de biblioteca:** el preparador puede retirar,
+recuperar y borrar de forma protegida ejercicios, sesiones y programas privados.
+Lo asignado y el historial se conservan; las referencias bloquean la purga.
+ADMIN añade ejercicios al mismo recorrido visual y mantiene sesiones/programas.
+Un oficial recuperado requiere revisión y publicación explícita. Solo Dev;
+sin vaciado automático ni limpieza remota de vídeos/imágenes.
+[Contrato y verificación](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
+
 **Citas privadas · TRN-041 · 28/10/2026:** Trainer incorpora citas con alumno,
 motivo, fecha/hora, duración y lugar/enlace. Comparten calendario y filtros con
 los entrenamientos, conservando su funcionamiento y sin crear ejecuciones ni

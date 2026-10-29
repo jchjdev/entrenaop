@@ -162,7 +162,10 @@ void main() {
       expect(find.text('Torso en borrador'), findsOneWidget);
       await _tap(tester, find.text('Ver papelera'));
       expect(find.byType(AdminGuidedTrashPage), findsOneWidget);
-      expect(find.text('2 versiones · 1 trabajo vinculado'), findsOneWidget);
+      expect(
+        find.textContaining('2 versiones · 1 trabajo vinculado'),
+        findsOneWidget,
+      );
       await capturePerformanceWidget(tester, 'admin-trash-desktop');
     },
   );
@@ -219,12 +222,13 @@ void main() {
       await _tap(tester, find.text('Cancelar'));
       expect(trash.restored, isEmpty);
       await _tap(tester, find.text('Recuperar programa'));
-      await _tap(tester, find.text('Recuperar', skipOffstage: false).last);
+      await tester.tap(find.text('Recuperar', skipOffstage: false).last);
+      await tester.pump();
       expect(trash.restored, [_deleted]);
       expect(
         tester
-            .widget<FilledButton>(
-              find.widgetWithText(FilledButton, 'Recuperar programa'),
+            .widget<OutlinedButton>(
+              find.widgetWithText(OutlinedButton, 'Recuperar programa'),
             )
             .onPressed,
         isNull,
@@ -312,7 +316,8 @@ void main() {
       await _tap(tester, find.text('Cancelar'));
       expect(trash.purged, isEmpty);
       await _tap(tester, find.text('Borrar definitivamente'));
-      await _tap(tester, find.text('Borrar para siempre'));
+      await tester.tap(find.text('Borrar para siempre'));
+      await tester.pump();
       expect(trash.purged, [_deleted]);
       expect(
         tester
@@ -349,7 +354,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Sesión · versión 2'), findsOneWidget);
+      expect(find.textContaining('Sesión · versión 2'), findsOneWidget);
       expect(find.text('Recuperar sesión'), findsOneWidget);
       await _tap(tester, find.text('Borrar definitivamente'));
       await _tap(tester, find.text('Borrar para siempre'));

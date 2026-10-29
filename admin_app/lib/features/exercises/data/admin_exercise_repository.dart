@@ -1,9 +1,14 @@
+import 'dart:math';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
 import 'package:workout_core/strength_exercise_catalog.dart';
 import 'package:workout_core/strength_exercise_catalog_codec.dart';
 import 'package:workout_core/workout_template.dart';
+
+import 'admin_exercise_trash_repository.dart';
 
 class AdminCatalogExercise {
   const AdminCatalogExercise({
@@ -18,6 +23,7 @@ class AdminCatalogExercise {
     this.imagePath,
     this.imageUrl,
     this.trainingProfile,
+    this.isPublic = true,
   });
 
   final String id;
@@ -31,6 +37,7 @@ class AdminCatalogExercise {
   final String difficulty;
   final String exerciseType;
   final StrengthExerciseDefinition? trainingProfile;
+  final bool isPublic;
 
   ExerciseDraft toDraft() => ExerciseDraft(
     name: name,
@@ -46,6 +53,7 @@ class AdminCatalogExercise {
       AdminCatalogExercise(
         id: json['id'] as String,
         name: json['name'] as String,
+        isPublic: json['is_public'] != false,
         description: json['description'] as String?,
         videoUrl: json['video_url'] as String?,
         imagePath: json['image_path'] as String?,
@@ -80,20 +88,23 @@ abstract class AdminExerciseRepository {
   });
 }
 
-class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
-  const SupabaseAdminExerciseRepository(this._client);
+class SupabaseAdminExerciseRepository
+    implements AdminExerciseRepository, AdminExerciseTrashRepository {
+  const SupabaseAdminExerciseRepository(this._client, {this.ownerId});
 
   final SupabaseClient _client;
+  final String? ownerId;
 
   @override
   Future<List<AdminCatalogExercise>> listOfficial() async {
     final rows = await _client
         .from('exercises')
         .select(
-          'id,name,description,video_url,image_path,muscle_groups,equipment,difficulty,exercise_type,'
+          'id,name,description,video_url,image_path,muscle_groups,equipment,difficulty,exercise_type,is_public,'
           'training_profile:exercise_training_profiles!exercise_training_profile_fk(definition_version,definition)',
         )
         .eq('origin', 'system')
+        .isFilter('trashed_at', null)
         .order('name');
     return rows.where((row) => row['id'] != runningExerciseId).map((row) {
       final exercise = AdminCatalogExercise.fromJson(row);
@@ -112,8 +123,120 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
         difficulty: exercise.difficulty,
         exerciseType: exercise.exerciseType,
         trainingProfile: exercise.trainingProfile,
+        isPublic: exercise.isPublic,
       );
     }).toList();
+  }
+
+  Future<dynamic> _trashRpc(String name, [Map<String, dynamic>? params]) async {
+    final expectedOwner = ownerId ?? _client.auth.currentUser?.id;
+    if (expectedOwner == null) {
+      throw StateError('Se necesita una sesión válida.');
+    }
+    try {
+      return await authenticatedTrainerRpc(
+        _client,
+        expectedOwner,
+        name,
+        params: params,
+      );
+    } on PostgrestException catch (error) {
+      if (error.code == 'P0001' || error.code == '22023') {
+        throw FormatException(error.message);
+      }
+      if (error.code == '40001') {
+        throw const FormatException(
+          'La papelera ha cambiado. Actualiza antes de reintentar.',
+        );
+      }
+      if (error.code == '42501' || error.code == '28000') {
+        throw const FormatException(
+          'La cuenta no tiene permiso para completar esta operación. Comprueba el acceso y el doble factor.',
+        );
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<AdminExerciseTrashEntry>> listExerciseTrash({
+    AdminExerciseTrashEntry? before,
+    int limit = 50,
+  }) async =>
+      ((await _trashRpc('list_admin_exercise_trash', {
+            'p_limit': limit,
+            'p_before_at': before?.trashedAt.toUtc().toIso8601String(),
+            'p_before_id': before?.id,
+          })) as List)
+          .map(
+            (row) => AdminExerciseTrashEntry.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            ),
+          )
+          .toList();
+
+  @override
+  Future<void> trashExercise(String id, {required String operationId}) async {
+    final receipt = await _trashRpc('trash_admin_exercise', {
+      'p_id': id,
+      'p_operation_id': operationId,
+    });
+    _confirmedReceipt(receipt, id, 'trashed');
+  }
+
+  @override
+  Future<void> restoreExercise(
+    AdminExerciseTrashEntry entry, {
+    required String operationId,
+  }) async {
+    await _mutateExerciseTrash(
+      'restore_admin_exercise',
+      entry,
+      operationId,
+      'restored',
+    );
+  }
+
+  @override
+  Future<void> purgeExercise(
+    AdminExerciseTrashEntry entry, {
+    required String operationId,
+  }) async {
+    await _mutateExerciseTrash(
+      'purge_admin_exercise',
+      entry,
+      operationId,
+      'purged',
+    );
+  }
+
+  Future<void> _mutateExerciseTrash(
+    String name,
+    AdminExerciseTrashEntry entry,
+    String operationId,
+    String status,
+  ) async {
+    final receipt = await _trashRpc(name, {
+      'p_id': entry.id,
+      'p_operation_id': operationId,
+      'p_trashed_at': entry.trashedAt.toUtc().toIso8601String(),
+    });
+    _confirmedReceipt(receipt, entry.id, status);
+  }
+
+  Map _confirmedReceipt(Object? receipt, String id, String status) {
+    if (receipt is! Map ||
+        receipt['id'] != id ||
+        receipt['kind'] != 'exercise' ||
+        receipt['status'] != status ||
+        (status == 'trashed' &&
+            (receipt['trashed_at'] is! String ||
+                DateTime.tryParse(receipt['trashed_at'] as String) == null))) {
+      // HTTP 200 sin recibo coherente no confirma la escritura. Mantiene UUID
+      // para consultar/reintentar sin declarar un borrado que no conocemos.
+      throw StateError('No se pudo confirmar la operación del ejercicio.');
+    }
+    return receipt;
   }
 
   @override
@@ -135,11 +258,48 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
         params: {'p_exercise_id': id, 'p_image_path': uploadedPath},
       );
     } catch (_) {
-      await _removeBestEffort(uploadedPath);
-      await _client.from('exercises').delete().eq('id', id);
+      try {
+        await _discardFailedCreation(id as String, uploadedPath);
+      } catch (_) {
+        // Una respuesta incierta no autoriza un DELETE ni a retirar medios.
+        // Lo que haya llegado a papelera conserva sus referencias y permisos.
+      }
       rethrow;
     }
     return id;
+  }
+
+  Future<void> _discardFailedCreation(String id, String? uploadedPath) async {
+    final moved = _confirmedReceipt(
+      await _cleanupRpc('trash_admin_exercise', {
+        'p_id': id,
+        'p_operation_id': _newOperationId(),
+      }),
+      id,
+      'trashed',
+    );
+    final purged = await _cleanupRpc('purge_admin_exercise', {
+      'p_id': id,
+      'p_operation_id': _newOperationId(),
+      'p_trashed_at': moved['trashed_at'],
+    });
+    _confirmedReceipt(purged, id, 'purged');
+    // Solo el borrado confirmado permite limpiar la subida. Si el enlace se
+    // guardó sin respuesta y alguien lo utilizó, el servidor conserva todo.
+    await _removeBestEffort(uploadedPath);
+  }
+
+  Future<dynamic> _cleanupRpc(String name, Map<String, dynamic> params) async {
+    try {
+      return await _trashRpc(name, params);
+    } on FormatException {
+      rethrow;
+    } on StateError {
+      rethrow;
+    } catch (_) {
+      // Un único reintento con el mismo recibo confirma respuestas perdidas.
+      return _trashRpc(name, params);
+    }
   }
 
   @override
@@ -203,6 +363,17 @@ class SupabaseAdminExerciseRepository implements AdminExerciseRepository {
 }
 
 const _publicBucket = 'exercise-images-public';
+
+String _newOperationId() {
+  final random = Random.secure();
+  final bytes = List.generate(16, (_) => random.nextInt(256));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  final hex = bytes
+      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+      .join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
+}
 
 Map<String, Object?> _params(ExerciseDraft draft) => {
   'p_name': draft.name,

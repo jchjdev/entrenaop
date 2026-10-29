@@ -51,7 +51,13 @@ abstract class AdminWorkoutRepository implements ProgramSessionCatalog {
   Future<String> revise(String templateId, CreatePersonalWorkoutInput input);
 }
 
-class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
+/// Consulta los metadatos ya usados por un trabajo sin ofrecerlos como nuevos.
+abstract interface class AdminRetainedExerciseRepository {
+  Future<List<AdminExercise>> listRetainedExercises(Set<String> ids);
+}
+
+class SupabaseAdminWorkoutRepository
+    implements AdminWorkoutRepository, AdminRetainedExerciseRepository {
   const SupabaseAdminWorkoutRepository(this._client);
 
   final SupabaseClient _client;
@@ -153,25 +159,43 @@ class SupabaseAdminWorkoutRepository implements AdminWorkoutRepository {
         .from('exercises')
         .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
         .eq('is_public', true)
+        .isFilter('trashed_at', null)
         .order('name');
-    return rows
-        .where((row) => row['id'] != runningExerciseId)
-        .map(
-          (row) => AdminExercise(
-            id: row['id'] as String,
-            name: row['name'] as String,
-            muscleGroups: (row['muscle_groups'] as List? ?? const [])
-                .cast<String>(),
-            equipment: (row['equipment'] as List? ?? const []).cast<String>(),
-            thumbnailUrl: row['image_path'] == null
-                ? row['thumbnail_url'] as String?
-                : _client.storage
-                      .from('exercise-images-public')
-                      .getPublicUrl(row['image_path'] as String),
-          ),
-        )
-        .toList();
+    return _exercises(rows);
   }
+
+  @override
+  Future<List<AdminExercise>> listRetainedExercises(Set<String> ids) async {
+    final result = <AdminExercise>[];
+    final requested = ids.toList();
+    for (var offset = 0; offset < requested.length; offset += 100) {
+      final rows = await _client
+          .from('exercises')
+          .select('id,name,muscle_groups,equipment,thumbnail_url,image_path')
+          .eq('origin', 'system')
+          .inFilter('id', requested.skip(offset).take(100).toList());
+      result.addAll(_exercises(rows));
+    }
+    return result;
+  }
+
+  List<AdminExercise> _exercises(List<Map<String, dynamic>> rows) => rows
+      .where((row) => row['id'] != runningExerciseId)
+      .map(
+        (row) => AdminExercise(
+          id: row['id'] as String,
+          name: row['name'] as String,
+          muscleGroups: (row['muscle_groups'] as List? ?? const [])
+              .cast<String>(),
+          equipment: (row['equipment'] as List? ?? const []).cast<String>(),
+          thumbnailUrl: row['image_path'] == null
+              ? row['thumbnail_url'] as String?
+              : _client.storage
+                    .from('exercise-images-public')
+                    .getPublicUrl(row['image_path'] as String),
+        ),
+      )
+      .toList();
 
   @override
   Future<WorkoutTemplate?> getTemplateById(String templateId) async {

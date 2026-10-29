@@ -76,6 +76,8 @@ import 'trainer_recurrence_page.dart';
 import 'trainer_assessment_pages.dart';
 import 'trainer_assessment_repository.dart';
 import 'trainer_exercise_preferences_repository.dart';
+import 'trainer_catalog_trash_page.dart';
+import 'trainer_catalog_trash_repository.dart';
 
 import 'package:trainer_access/trainer_security.dart';
 
@@ -206,6 +208,10 @@ class _TrainerAppState extends State<TrainerApp> {
       identity!,
     );
     late final sessionWorkRepository = SupabaseTrainerWorkoutWorkRepository(
+      widget.client,
+      identity!,
+    );
+    late final catalogTrashRepository = SupabaseTrainerCatalogTrashRepository(
       widget.client,
       identity!,
     );
@@ -807,17 +813,35 @@ class _TrainerAppState extends State<TrainerApp> {
             ),
             GoRoute(
               path: '/exercises',
-              builder: (_, _) => TrainerExercisePage(
-                key: ValueKey('trainer-exercises-$identity'),
-                preferences: exercisePreferences,
-                repository: SupabaseTrainerExerciseRepository(
-                  widget.client,
-                  identity!,
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (_, state) => guarded(
+                state,
+                TrainerExercisePage(
+                  key: ValueKey('trainer-exercises-$identity'),
+                  trashRepository: catalogTrashRepository,
+                  preferences: exercisePreferences,
+                  repository: SupabaseTrainerExerciseRepository(
+                    widget.client,
+                    identity!,
+                  ),
+                  access: access(),
+                  videoSource: videos,
+                  mediaRepository: media(),
                 ),
-                access: access(),
-                videoSource: videos,
-                mediaRepository: media(),
               ),
+              routes: [
+                GoRoute(
+                  path: 'trash',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerCatalogTrashPage(
+                      repository: catalogTrashRepository,
+                      kind: TrainerCatalogKind.exercise,
+                    ),
+                  ),
+                ),
+              ],
             ),
             GoRoute(
               path: '/clients',
@@ -874,10 +898,22 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/programs',
               builder: (_, _) => TrainerProgramLibraryPage(
                 repository: programs(),
+                trashRepository: catalogTrashRepository,
                 access: access(),
                 workRepository: programWorks(),
               ),
               routes: [
+                GoRoute(
+                  path: 'trash',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerCatalogTrashPage(
+                      repository: catalogTrashRepository,
+                      kind: TrainerCatalogKind.program,
+                    ),
+                  ),
+                ),
                 GoRoute(
                   path: 'new',
                   redirect: (_, _) => '/programs/work/${newGuidedWorkId()}',
@@ -913,10 +949,15 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 GoRoute(
                   path: ':id',
-                  builder: (_, state) => TrainerProgramDetailPage(
-                    repository: programs(),
-                    workouts: workouts(),
-                    programId: state.pathParameters['id']!,
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerProgramDetailPage(
+                      repository: programs(),
+                      trashRepository: catalogTrashRepository,
+                      workouts: workouts(),
+                      programId: state.pathParameters['id']!,
+                    ),
                   ),
                   routes: [
                     GoRoute(
@@ -934,10 +975,22 @@ class _TrainerAppState extends State<TrainerApp> {
               path: '/workouts',
               builder: (_, _) => TrainerWorkoutLibraryPage(
                 repository: workouts(),
+                trashRepository: catalogTrashRepository,
                 accessRepository: access(),
                 workRepository: sessionWorks(),
               ),
               routes: [
+                GoRoute(
+                  path: 'trash',
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerCatalogTrashPage(
+                      repository: catalogTrashRepository,
+                      kind: TrainerCatalogKind.session,
+                    ),
+                  ),
+                ),
                 GoRoute(
                   path: 'new',
                   redirect: (_, _) => '/workouts/work/${newGuidedWorkId()}',
@@ -969,9 +1022,14 @@ class _TrainerAppState extends State<TrainerApp> {
                 ),
                 GoRoute(
                   path: ':id',
-                  builder: (_, state) => TrainerWorkoutPreviewPage(
-                    repository: workouts(),
-                    templateId: state.pathParameters['id']!,
+                  onExit: (_, state) => exits.requestExit(state.pageKey),
+                  builder: (_, state) => guarded(
+                    state,
+                    TrainerWorkoutPreviewPage(
+                      repository: workouts(),
+                      trashRepository: catalogTrashRepository,
+                      templateId: state.pathParameters['id']!,
+                    ),
                   ),
                   routes: [
                     GoRoute(

@@ -1,10 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trainer_access/authenticated_rpc.dart';
 
 import '../domain/admin_guided_trash.dart';
 
 class SupabaseAdminGuidedTrashRepository implements AdminGuidedTrashRepository {
-  const SupabaseAdminGuidedTrashRepository(this.client);
+  const SupabaseAdminGuidedTrashRepository(this.client, {this.ownerId});
   final SupabaseClient client;
+  final String? ownerId;
+
+  Future<dynamic> _rpc(String name, {Map<String, dynamic>? params}) {
+    final expectedOwner = ownerId ?? client.auth.currentUser?.id;
+    if (expectedOwner == null) throw StateError('Se necesita una sesión válida.');
+    return authenticatedTrainerRpc(client, expectedOwner, name, params: params);
+  }
 
   @override
   Future<List<GuidedTrashEntry>> list() =>
@@ -15,7 +23,7 @@ class SupabaseAdminGuidedTrashRepository implements AdminGuidedTrashRepository {
       _list('list_admin_session_trash');
 
   Future<List<GuidedTrashEntry>> _list(String rpc) async =>
-      (await client.rpc(rpc) as List)
+      (await _rpc(rpc) as List)
           .map(
             (row) => GuidedTrashEntry.fromJson(
               Map<String, dynamic>.from(row as Map),
@@ -26,7 +34,7 @@ class SupabaseAdminGuidedTrashRepository implements AdminGuidedTrashRepository {
 
   @override
   Future<void> trashProgram(String programId) async {
-    await client.rpc(
+    await _rpc(
       'trash_admin_guided_program',
       params: {'p_program_id': programId},
     );
@@ -34,7 +42,7 @@ class SupabaseAdminGuidedTrashRepository implements AdminGuidedTrashRepository {
 
   Future<void> _mutate(String rpc, Map<String, dynamic> params) async {
     try {
-      await client.rpc(rpc, params: params);
+      await _rpc(rpc, params: params);
     } on PostgrestException catch (error) {
       // Solo los rechazos de negocio definidos por nuestras RPC son mostrables.
       if (error.code == 'P0001' || error.code == '22023') {
@@ -43,6 +51,11 @@ class SupabaseAdminGuidedTrashRepository implements AdminGuidedTrashRepository {
       if (error.code == '40001') {
         throw const FormatException(
           'La papelera ha cambiado. Actualiza antes de reintentar.',
+        );
+      }
+      if (error.code == '42501' || error.code == '28000') {
+        throw const FormatException(
+          'La cuenta no tiene permiso para completar esta operación. Comprueba el acceso y el doble factor.',
         );
       }
       rethrow;

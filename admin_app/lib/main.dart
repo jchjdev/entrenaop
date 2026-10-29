@@ -104,7 +104,11 @@ class _AdminAppState extends State<AdminApp> {
     return createAdminRouter(
       programs: SupabaseAdminProgramRepository(client),
       workouts: SupabaseAdminWorkoutRepository(client),
-      exercises: SupabaseAdminExerciseRepository(client),
+      exercises: SupabaseAdminExerciseRepository(
+        client,
+        ownerId: client.auth.currentUser?.id,
+      ),
+      ownerKey: client.auth.currentUser?.id,
       exerciseVideos: SupabaseAdminExerciseVideoRepository(client),
       exercisePreferences: client.auth.currentUser == null
           ? null
@@ -133,7 +137,10 @@ class _AdminAppState extends State<AdminApp> {
             ),
       guided: SupabaseAdminGuidedRepository(client),
       guidedWork: SupabaseAdminGuidedWorkRepository(client),
-      guidedTrash: SupabaseAdminGuidedTrashRepository(client),
+      guidedTrash: SupabaseAdminGuidedTrashRepository(
+        client,
+        ownerId: client.auth.currentUser?.id,
+      ),
       onSignOut: () => unawaited(client.auth.signOut()),
       authChanges: _authChanges,
       isAuthenticated: () => client.auth.currentSession != null,

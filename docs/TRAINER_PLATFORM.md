@@ -16,7 +16,7 @@ otra carencia funcional básica en este inventario.
 | 3. Calendario editable | Mes/semana/día/lista, fichas arrastrables, sesiones y citas con avisos | Sincronización Google Calendar aplazada; no es parte del recorrido interno ya implementado |
 | 4. Adaptación individual | Receta individual manual y recuperación persistente | La adaptación automática profesional pertenece al motor pendiente |
 | 5. Creador ágil | Editores compartidos, arrastre y recuperación de biblioteca, hijos y adaptaciones | — |
-| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna y formatos | Papelera/restauración/borrado de los tres catálogos privados; filtros actuales sobre filas cargadas |
+| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos y ciclo papelera/recuperación/borrado protegido | Filtros actuales sobre filas cargadas; limpieza de medios independiente |
 | 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación completa con varios alumnos y revisión por destinatario |
 | 8. Evolución | Métricas por periodo y evolución del servicio | — |
 | 9. Bandeja de revisión | Resultados, revisión persistente y correcciones | — |
@@ -28,28 +28,75 @@ otra carencia funcional básica en este inventario.
 | 15. Informes | Resumen por periodo y CSV | Otros formatos serían ampliaciones, no un requisito básico acreditado como ausente |
 | 16. Oposición y dispositivos | Metas, marcas y pruebas privadas; integraciones con su contrato propio | Cierre de los recorridos deportivos/oficiales y de dispositivos según sus bloques; este inventario no reaudita Garmin |
 
-### Próximo bloque recomendado: gestión de la biblioteca
+### Gestión de la biblioteca · TRN-045 · 29/10/2026
 
-La eliminación de una pauta del calendario no elimina su plantilla reutilizable.
-El botón de descartar trabajo tampoco elimina una sesión o programa ya guardado.
-Trainer carece del ciclo de catálogo para ejercicios, sesiones y programas.
-ADMIN sí dispone de papelera y borrado protegido de sesiones/programas; la
-llamada `delete()` hallada en creación de ejercicios limpia una alta fallida,
-no proporciona una acción de borrado al administrador.
+Recorrido implementado: **Mover a papelera → recuperar → borrar definitivamente**.
+Cada biblioteca tiene entrada Papelera; las acciones de retirada están en la
+ficha del contenido propio. Retirar una plantilla no retira su pauta del
+calendario ni descarta trabajos de edición.
 
-La propuesta para desarrollar es usar el mismo vocabulario y componentes:
-**Mover a papelera → restaurar → borrar definitivamente**, con permisos propios
-de cada contexto. El contenido oficial de EntrenaOP sigue siendo de consulta
-para Trainer. La purga debe comprobar en servidor referencias de programas,
-trabajos guardados, asignaciones, resultados, medios y operaciones externas;
-una referencia protegida conserva el contenido y explica el bloqueo. Los datos
-de una ejecución no se borran para permitir limpiar una biblioteca.
+En Trainer la unidad es la familia completa de versiones de un ejercicio,
+sesión o programa. Una entrada conserva identificador, miembros y sello de
+retirada. Recuperar devuelve las mismas versiones sin crear otra ni promover
+una antigua. Lo ya asignado conserva su receta y sigue siendo ejecutable;
+el contenido retirado no se ofrece para nuevas selecciones o asignaciones.
+El material oficial sigue siendo de consulta para el preparador.
 
-Antes de implementarlo se concretará el contrato de versiones y referencias
-sobre el esquema real, reutilizando el de ADMIN donde corresponda. No se
-ejecuta ningún borrado por esta petición ni se declara creado ese circuito.
-La prueba física de invitaciones por enlace sigue pendiente; los cobros reales
-no se activan por completar la limpieza de contenido.
+El borrado definitivo se confirma y se bloquea si alguna versión tiene
+referencias protegidas: recetas/programas, trabajos abiertos, pautas,
+ejecuciones/resultados, recurrencias u operaciones/snapshots de dispositivos.
+Se comprueban FK y referencias JSON; no se borran esos datos para liberar una
+plantilla. Las versiones internas solo se purgan juntas cuando es seguro.
+Los recibos antiguos no recrean contenido purgado. El ejercicio técnico Carrera
+está protegido aunque no aparezca en el catálogo.
+
+ADMIN añade ejercicios oficiales y mantiene el contrato previo: sesiones por
+versión y programas por familia con sus trabajos vinculados. Un ejercicio
+recuperado se ve retirado; editarlo muestra **Guardar y publicar**. Recuperarlo
+no lo vuelve público. Una creación cuya imagen falla se limpia por el mismo
+contrato protegido; una purga no confirmada o bloqueada conserva el medio.
+
+`CatalogTrashView`, en `entrena_ui`, comparte carga, paginación, confirmaciones,
+errores y reintentos; los adaptadores mantienen sus contratos. Los recibos nuevos
+se validan antes de declarar éxito y una respuesta incierta conserva el UUID.
+Cambiar de cuenta invalida vista y respuestas anteriores.
+`WorkoutEditorExercise.selectable` separa mostrar una referencia conservada de
+ofrecerla para una receta nueva: los portales recuperan nombres y fotos por IDs
+autorizados. El editor común conserva también el nombre de la receta original
+si el consumidor solo aporta catálogo activo. Para guardar otra receta hay que
+recuperar o sustituir los ejercicios retirados.
+
+La migración `20261029195445_trainer_admin_catalog_trash.sql` está aplicada solo
+en Dev. Exige identidad, MFA y acceso de autoría; mantiene aislamiento de cuentas
+y ADMIN. Recibos y sellos protegen reintentos y retiradas posteriores. Bloqueos
+por recurso/familia evitan una exclusión global de todas las cuentas. Las listas
+nuevas se paginan por sello e ID, 50 por página.
+
+Purgar ejercicios libera únicamente las unidades de versiones eliminadas.
+Las reservas/ficheros de imágenes y vídeos se conservan y siguen contando según
+su contrato: este bloque no añade limpieza remota de medios ni vaciado automático.
+
+**Verificación al cierre:** análisis limpios y baterías completas: raíz 1.446
+pruebas (una omisión previa), Trainer 317, editor compartido 223 y `entrena_ui` 40.
+ADMIN 358 (dos omisiones previas). Las tres papeleras y el listado de ejercicios
+administrativos están conectados a la guarda real del router: confirmación y
+envío bloquean salida; una respuesta incierta conserva el recurso/UUID y ofrece
+reintento incluso después de refrescar. Total: 2.384 pruebas correctas.
+Contrato SQL nuevo y diez regresiones correctos, todos con ROLLBACK: catálogos
+privados, vídeos, recuperación de sesiones/programas/contextos y operaciones/
+papelera editorial ADMIN. Dos conexiones reales comprueban que una asignación
+retiene el recurso compartido: el exclusivo de otra familia sigue disponible y
+el del mismo recurso espera hasta el límite de 700 ms. Ambas hacen ROLLBACK;
+sin fixtures persistentes. Historial de migraciones Dev local/remoto coincidente.
+Advisors del alcance: cuatro INFO intencionales por RLS sin políticas/grants en
+tablas privadas; ningún WARN/ERROR nuevo del ciclo. La inspección de JSON de
+dispositivos sigue siendo global porque pertenece al alumno y puede sobrevivir
+al vínculo; no es una prueba de carga a gran escala. Fuentes validadas y listas
+para publicación automática en Dev, pendiente de acreditar la versión servida.
+
+**Siguiente recorrido recomendado:** aceptación de invitaciones por enlace con
+la beta instalada y un alumno real, incluyendo apertura con/sin sesión sin
+copiar el código. Los cobros reales y Apple conservan sus bloques.
 
 **TRN-028 · 24/10/2026:** dos preparadores activos por alumno en el piloto,
 con calendario y pauta compartidos solo si lo habilita el alumno. Cada

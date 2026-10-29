@@ -77,16 +77,49 @@ class _AdminWorkoutEditorPageState extends State<AdminWorkoutEditorPage> {
           widget.onRecoveredSaved!,
         );
 
-  Future<List<WorkoutEditorExercise>> _loadExercises() async => [
-    for (final exercise in await widget.repository.listPublicExercises())
-      WorkoutEditorExercise(
-        id: exercise.id,
-        name: exercise.name,
-        muscleGroups: exercise.muscleGroups,
-        equipment: exercise.equipment,
-        thumbnailUrl: exercise.thumbnailUrl,
-      ),
-  ];
+  Future<List<WorkoutEditorExercise>> _loadExercises() async {
+    final active = await widget.repository.listPublicExercises();
+    final usedIds = {
+      for (final block in widget.originalTemplate?.blocks ?? <WorkoutBlock>[])
+        for (final item in block.items) item.exerciseId,
+    };
+    final raw = widget.work?.state['editor'];
+    if (raw is Map) {
+      final snapshot = WorkoutEditorSnapshot(Map<String, dynamic>.from(raw));
+      for (final block in snapshot.value['blocks'] as List) {
+        for (final item in block['exercises'] as List) {
+          final id = item['exerciseId'];
+          if (id is String) usedIds.add(id);
+        }
+      }
+    }
+    final missing = usedIds.difference(
+      active.map((exercise) => exercise.id).toSet(),
+    )..remove(runningExerciseId);
+    final repository = widget.repository;
+    final retained =
+        repository is AdminRetainedExerciseRepository && missing.isNotEmpty
+        ? await (repository as AdminRetainedExerciseRepository)
+              .listRetainedExercises(missing)
+        : <AdminExercise>[];
+    return [
+      for (final exercise in active) _editorExercise(exercise),
+      for (final exercise in retained)
+        _editorExercise(exercise, selectable: false),
+    ];
+  }
+
+  WorkoutEditorExercise _editorExercise(
+    AdminExercise exercise, {
+    bool selectable = true,
+  }) => WorkoutEditorExercise(
+    id: exercise.id,
+    name: exercise.name,
+    muscleGroups: exercise.muscleGroups,
+    equipment: exercise.equipment,
+    thumbnailUrl: exercise.thumbnailUrl,
+    selectable: selectable,
+  );
 
   Future<String> _save(CreatePersonalWorkoutInput input) {
     if (widget.saveInput case final save?) return save(input);

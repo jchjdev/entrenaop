@@ -1,15 +1,18 @@
 # Registro de decisiones vigentes
 
-**TRN-045 · gestión y borrado de contenido · petición del 29/10/2026:** Javier
-pide poder eliminar sesiones, ejercicios y programas de Trainer, y disponer de
-esa capacidad en ADMIN. El inventario distingue biblioteca de asignaciones:
-Trainer ya retira/archiva/borra pautas bajo protección, pero no ofrece un ciclo
-equivalente para su catálogo privado. ADMIN tiene papelera/restauración/borrado
-protegido de sesiones y programas; en ejercicios no se identifica un control de
-borrado para el usuario. La propuesta siguiente es un ciclo coherente de
-papelera y restauración, con purga solo cuando no existan referencias protegidas.
-Es alcance pendiente de implementar, no una orden para borrar datos actuales.
-[Inventario de los dieciséis puntos y propuesta](TRAINER_PLATFORM.md#inventario-y-siguiente-bloque--29102026).
+**TRN-045 · gestión y borrado de contenido · 29/10/2026:** Javier confirma
+papelera, recuperación y borrado definitivo de sesiones, ejercicios y programas
+en Trainer y lo que faltaba en ADMIN, reutilizando componentes y protegiendo lo
+asignado y el historial. Trainer retira/restaura familias completas de versiones;
+no promociona versiones antiguas ni borra pautas del calendario por retirar una
+plantilla. La purga comprueba referencias en servidor y conserva recibos para
+que un reintento no resucite contenido eliminado. ADMIN incorpora ejercicios al
+ciclo y conserva el contrato previo de sesiones/programas. Un ejercicio oficial
+recuperado queda retirado hasta revisión y «Guardar y publicar». Los medios se
+conservan con su contabilidad independiente. Implementación y migración solo
+en Dev; comprobaciones y publicación se detallan en el documento responsable.
+No es una orden para eliminar contenido existente por iniciativa del agente.
+[Contrato y evidencia](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
 
 **TRN-044 · filtros por contenido de las sesiones · 29/10/2026:** Javier pide
 agrupar por fuerza/carrera y encontrar sesiones por sus formatos internos

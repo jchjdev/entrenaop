@@ -1,5 +1,14 @@
 # Arquitectura de EntrenaOP
 
+**TRN-045 · 29/10/2026 · ciclo de biblioteca:** Trainer y ADMIN comparten
+`CatalogTrashView` en `entrena_ui`, con adaptadores por contexto. La familia
+privada se retira sin alterar recetas asignadas; el servidor coordina versiones,
+referencias y purga con recibos/sellos y bloqueos por recurso/familia.
+`selectable` permite renderizar referencias históricas sin ofrecerlas para
+nuevas recetas. ADMIN conserva su contrato de sesiones/programas e incorpora
+ejercicios oficiales; recuperar no publica. Medios y cuotas de archivos mantienen
+su gestión independiente. Solo Dev. [Contrato y evidencia](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
+
 **TRN-041 · 28/10/2026 · citas independientes:** `trainer_private.appointments`
 separa citas de `scheduled_workouts`. La relación fija sus participantes. Los RPC
 profesionales exigen autor, acceso vigente, relación activa y MFA; el alumno

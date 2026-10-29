@@ -256,6 +256,9 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
             ),
           ),
     );
+    final missing = retainedIds.difference(result.map((e) => e.id).toSet())
+      ..remove(runningExerciseId);
+    result.addAll(await repository.retainedForEditor(missing));
     return result;
   }
 

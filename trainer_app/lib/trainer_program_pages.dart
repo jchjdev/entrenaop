@@ -18,6 +18,8 @@ import 'package:workout_core/workout_template.dart';
 import 'trainer_program_repository.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_session_work_editor.dart';
+import 'trainer_catalog_trash_page.dart';
+import 'trainer_catalog_trash_repository.dart';
 
 class TrainerProgramDetailPage extends StatefulWidget {
   const TrainerProgramDetailPage({
@@ -25,10 +27,12 @@ class TrainerProgramDetailPage extends StatefulWidget {
     required this.repository,
     required this.workouts,
     required this.programId,
+    this.trashRepository,
   });
   final TrainerProgramRepository repository;
   final TrainerWorkoutRepository workouts;
   final String programId;
+  final TrainerCatalogTrashRepository? trashRepository;
   @override
   State<TrainerProgramDetailPage> createState() =>
       _TrainerProgramDetailPageState();
@@ -113,6 +117,18 @@ class _TrainerProgramDetailPageState extends State<TrainerProgramDetailPage> {
                 onPressed: () => context.go('/clients'),
                 child: const Text('Elegir alumno para asignar'),
               ),
+              if (widget.trashRepository case final repository?)
+                TrainerCatalogTrashAction(
+                  repository: repository,
+                  kind: TrainerCatalogKind.program,
+                  id: p.id!,
+                  name: p.name,
+                  onTrashed: () async {
+                    context.canPop()
+                        ? context.pop(true)
+                        : context.go('/programs');
+                  },
+                ),
             ],
           ),
           for (final phase in p.phases)
@@ -151,10 +167,12 @@ class TrainerProgramLibraryPage extends StatefulWidget {
     required this.repository,
     required this.access,
     this.workRepository,
+    this.trashRepository,
   });
   final TrainerProgramRepository repository;
   final TrainerRepository access;
   final GuidedWorkRepository? workRepository;
+  final TrainerCatalogTrashRepository? trashRepository;
   @override
   State<TrainerProgramLibraryPage> createState() =>
       _TrainerProgramLibraryPageState();
@@ -275,6 +293,17 @@ class _TrainerProgramLibraryPageState extends State<TrainerProgramLibraryPage> {
     appBar: AppBar(
       title: const Text('Mis programas privados'),
       actions: [
+        if (widget.trashRepository != null)
+          IconButton(
+            onPressed: _busy || _discardBusy || _discardAttempt != null
+                ? null
+                : () async {
+                    await context.push('/programs/trash');
+                    if (mounted) await _load();
+                  },
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Papelera de programas',
+          ),
         IconButton(
           onPressed: _busy || _discardBusy ? null : _load,
           icon: const Icon(Icons.refresh),

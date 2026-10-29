@@ -68,10 +68,13 @@ Future<AdminCatalogExercise?> showAdminExerciseDialog(
                         title: exercise == null
                             ? 'Nuevo ejercicio oficial'
                             : 'Editar ejercicio oficial',
-                        supportingText:
-                            'Se publicará en el catálogo general de EntrenaOP.',
+                        supportingText: exercise?.isPublic == false
+                            ? 'Ejercicio retirado. Revisa su contenido: al guardar se publicará en el catálogo general de EntrenaOP.'
+                            : 'Se publicará en el catálogo general de EntrenaOP.',
                         submitLabel: exercise == null
                             ? 'Crear ejercicio'
+                            : !exercise.isPublic
+                            ? 'Guardar y publicar'
                             : 'Guardar cambios',
                         fieldKeyPrefix: 'admin-exercise',
                         initialDraft: exercise?.toDraft(),

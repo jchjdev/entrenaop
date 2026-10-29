@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:entrenaop_trainer/main.dart';
+import 'package:entrenaop_trainer/trainer_catalog_trash_page.dart';
+import 'package:entrenaop_trainer/trainer_catalog_trash_repository.dart';
 import 'package:entrenaop_trainer/trainer_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,6 +108,33 @@ class _PortalFixture {
 }
 
 void main() {
+  testWidgets(
+    'las tres papeleras reales no se confunden con el detalle por id',
+    (tester) async {
+      final fixture = _PortalFixture();
+      await tester.runAsync(() => fixture.session('initial'));
+      addTearDown(() => tester.runAsync(fixture.client.dispose));
+      await tester.binding.setSurfaceSize(const Size(1440, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(TrainerApp(client: fixture.client));
+      await tester.pumpAndSettle();
+      final router = GoRouter.of(tester.element(find.byType(TrainerShell)));
+      for (final kind in TrainerCatalogKind.values) {
+        router.go('${kind.libraryPath}/trash');
+        await tester.pumpAndSettle();
+        expect(find.byType(TrainerCatalogTrashPage), findsOneWidget);
+        expect(find.text('Papelera · ${kind.label}'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      }
+      expect(
+        fixture.requests.where((name) => name == 'list_trainer_catalog_trash'),
+        hasLength(3),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+    },
+  );
+
   testWidgets(
     'la ruta real conserva UUID y campos al renovar sesión y retoma el checkpoint',
     (tester) async {

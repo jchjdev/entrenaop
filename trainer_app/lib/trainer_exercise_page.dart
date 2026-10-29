@@ -1,5 +1,6 @@
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trainer_access/trainer_access.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:workout_core/exercise_draft.dart';
@@ -17,6 +18,8 @@ import 'package:workout_editor_ui/exercise_video_field.dart';
 import 'package:workout_editor_ui/exercise_video_source.dart';
 
 import 'trainer_exercise_repository.dart';
+import 'trainer_catalog_trash_page.dart';
+import 'trainer_catalog_trash_repository.dart';
 import 'trainer_workout_repository.dart';
 import 'trainer_media_page.dart';
 import 'trainer_media_repository.dart';
@@ -64,12 +67,14 @@ class TrainerExercisePage extends StatefulWidget {
     this.videoSource,
     this.mediaRepository,
     this.preferences,
+    this.trashRepository,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
   final ExerciseVideoSource? videoSource;
   final TrainerMediaRepository? mediaRepository;
   final ExerciseCatalogPreferences? preferences;
+  final TrainerCatalogTrashRepository? trashRepository;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -165,13 +170,18 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   Future<void> _inspect(TrainerExercise exercise) async {
     final edit = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => _ExerciseDetails(
         exercise: exercise,
         videoSource: widget.videoSource,
         canEdit: !exercise.official && _enabled,
+        trashRepository: !exercise.official && _canOrganize
+            ? widget.trashRepository
+            : null,
       ),
     );
     if (edit == true && mounted) await _edit(exercise);
+    if (edit == false && mounted) await _load();
   }
 
   @override
@@ -179,6 +189,17 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
     appBar: AppBar(
       title: const Text('Ejercicios'),
       actions: [
+        if (widget.trashRepository != null)
+          IconButton(
+            onPressed: _busy
+                ? null
+                : () async {
+                    await context.push('/exercises/trash');
+                    if (mounted) await _load();
+                  },
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Papelera de ejercicios propios',
+          ),
         IconButton(
           onPressed: _showOfficial
               ? (_officialBusy ? null : _loadOfficial)
@@ -363,115 +384,143 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
   );
 }
 
-class _ExerciseDetails extends StatelessWidget {
+class _ExerciseDetails extends StatefulWidget {
   const _ExerciseDetails({
     required this.exercise,
     required this.canEdit,
     this.videoSource,
+    this.trashRepository,
   });
   final TrainerExercise exercise;
   final bool canEdit;
   final ExerciseVideoSource? videoSource;
+  final TrainerCatalogTrashRepository? trashRepository;
+
+  @override
+  State<_ExerciseDetails> createState() => _ExerciseDetailsState();
+}
+
+class _ExerciseDetailsState extends State<_ExerciseDetails> {
+  bool _pending = false;
+  TrainerExercise get exercise => widget.exercise;
+  ExerciseVideoSource? get videoSource => widget.videoSource;
+  TrainerCatalogTrashRepository? get trashRepository => widget.trashRepository;
+  bool get canEdit => widget.canEdit && !_pending;
 
   @override
   Widget build(BuildContext context) {
     final draft = exercise.draft;
     final image = exercise.imageUrl;
     final video = Uri.tryParse(draft.videoUrl ?? '');
-    return AlertDialog(
-      title: Text(draft.name),
-      content: SizedBox(
-        width: 620,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (image != null && Uri.tryParse(image)?.scheme == 'https') ...[
-                SizedBox(
-                  height: 300,
-                  child: InteractiveViewer(
-                    child: Image.network(
-                      image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Center(
-                        child: Text(
-                          'No se pudo cargar la foto. Actualiza la biblioteca para reintentar.',
+    return PopScope(
+      canPop: !_pending,
+      child: AlertDialog(
+        title: Text(draft.name),
+        content: SizedBox(
+          width: 620,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (image != null &&
+                    Uri.tryParse(image)?.scheme == 'https') ...[
+                  SizedBox(
+                    height: 300,
+                    child: InteractiveViewer(
+                      child: Image.network(
+                        image,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => const Center(
+                          child: Text(
+                            'No se pudo cargar la foto. Actualiza la biblioteca para reintentar.',
+                          ),
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                ],
+                Text(
+                  exercise.official
+                      ? 'Catálogo de EntrenaOP · Solo consulta'
+                      : 'Tu ejercicio privado · Versión ${exercise.version}',
                 ),
-                const SizedBox(height: 16),
-              ],
-              Text(
-                exercise.official
-                    ? 'Catálogo de EntrenaOP · Solo consulta'
-                    : 'Tu ejercicio privado · Versión ${exercise.version}',
-              ),
-              const SizedBox(height: 12),
-              Text('Músculos: ${draft.muscleGroups.join(' · ')}'),
-              Text(
-                'Material: ${draft.equipment.isEmpty ? 'Sin material' : draft.equipment.join(' · ')}',
-              ),
-              Text('Dificultad: ${draft.difficulty} · ${draft.exerciseType}'),
-              if (draft.description?.isNotEmpty == true) ...[
-                const SizedBox(height: 16),
-                Text(draft.description!),
-              ],
-              if (video?.scheme == 'https') ...[
-                const SizedBox(height: 16),
-                if (video!.host.endsWith('.b-cdn.net') && videoSource != null)
-                  ExerciseVideoPreview(
-                    url: draft.videoUrl!,
-                    source: videoSource!,
-                  )
-                else
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      var opened = false;
-                      try {
-                        opened = await launchUrl(
-                          video,
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } catch (_) {
-                        /* El proveedor externo puede no estar disponible. */
-                      }
-                      if (!opened && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('No se pudo abrir el vídeo.'),
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.open_in_new),
-                    label: const Text('Ver vídeo'),
+                const SizedBox(height: 12),
+                Text('Músculos: ${draft.muscleGroups.join(' · ')}'),
+                Text(
+                  'Material: ${draft.equipment.isEmpty ? 'Sin material' : draft.equipment.join(' · ')}',
+                ),
+                Text('Dificultad: ${draft.difficulty} · ${draft.exerciseType}'),
+                if (draft.description?.isNotEmpty == true) ...[
+                  const SizedBox(height: 16),
+                  Text(draft.description!),
+                ],
+                if (video?.scheme == 'https') ...[
+                  const SizedBox(height: 16),
+                  if (video!.host.endsWith('.b-cdn.net') && videoSource != null)
+                    ExerciseVideoPreview(
+                      url: draft.videoUrl!,
+                      source: videoSource!,
+                    )
+                  else
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        var opened = false;
+                        try {
+                          opened = await launchUrl(
+                            video,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        } catch (_) {
+                          /* El proveedor externo puede no estar disponible. */
+                        }
+                        if (!opened && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No se pudo abrir el vídeo.'),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Ver vídeo'),
+                    ),
+                ],
+                if (exercise.official) ...[
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Disponible en el selector de ejercicios del creador de sesiones. Al incluir esa sesión en un programa, se conserva la misma referencia.',
                   ),
+                ],
               ],
-              if (exercise.official) ...[
-                const SizedBox(height: 16),
-                const Text(
-                  'Disponible en el selector de ejercicios del creador de sesiones. Al incluir esa sesión en un programa, se conserva la misma referencia.',
-                ),
-              ],
-            ],
+            ),
           ),
         ),
+        actions: [
+          if (!exercise.official)
+            if (trashRepository case final repository?)
+              TrainerCatalogTrashAction(
+                repository: repository,
+                kind: TrainerCatalogKind.exercise,
+                id: exercise.id,
+                name: draft.name,
+                onPendingChanged: (pending) =>
+                    setState(() => _pending = pending),
+                onTrashed: () async => Navigator.of(context).pop(false),
+              ),
+          TextButton(
+            onPressed: _pending ? null : () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+          if (canEdit)
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).pop(true),
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Editar ejercicio'),
+            ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cerrar'),
-        ),
-        if (canEdit)
-          FilledButton.icon(
-            onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('Editar ejercicio'),
-          ),
-      ],
     );
   }
 }

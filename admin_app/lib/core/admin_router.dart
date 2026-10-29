@@ -8,7 +8,9 @@ import '../features/operations/presentation/admin_operations_pages.dart';
 import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_repository.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_exercise_trash_repository.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
+import 'package:entrenaop_admin/features/exercises/presentation/admin_exercise_trash_page.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_laboratory_page.dart';
@@ -58,6 +60,7 @@ GoRouter createAdminRouter({
   AdminGuidedTrashRepository? guidedTrash,
   AdminExerciseVideoRepository? exerciseVideos,
   ExerciseCatalogPreferences? exercisePreferences,
+  Object? ownerKey,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -387,11 +390,14 @@ GoRouter createAdminRouter({
               ),
               routes: [
                 if (guidedTrash != null)
-                  GoRoute(
-                    path: 'trash',
-                    builder: (_, _) => load(
+                  workflow(
+                    'trash',
+                    (_, _) => load(
                       () async => true,
-                      (_) => AdminGuidedTrashPage(repository: guidedTrash),
+                      (_) => AdminGuidedTrashPage(
+                        repository: guidedTrash,
+                        ownerKey: ownerKey,
+                      ),
                     ),
                   ),
                 if (guidedWork != null)
@@ -707,22 +713,23 @@ GoRouter createAdminRouter({
             ),
             routes: [
               if (guidedTrash != null)
-                GoRoute(
-                  path: 'trash',
-                  builder: (context, state) => load(
+                workflow(
+                  'trash',
+                  (context, state) => load(
                     () async => true,
                     (_) => AdminGuidedTrashPage(
                       repository: guidedTrash,
                       sessions: true,
+                      ownerKey: ownerKey,
                     ),
                   ),
                 ),
               ...sessionRoutes(),
             ],
           ),
-          GoRoute(
-            path: '/exercises',
-            builder: (context, state) => load(
+          workflow(
+            '/exercises',
+            (context, state) => load(
               () async => true,
               (_) => AdminExercisesPage(
                 preferences: exercisePreferences,
@@ -730,8 +737,28 @@ GoRouter createAdminRouter({
                 initialExerciseId: state.uri.queryParameters['edit'],
                 repository: exercises,
                 videos: exerciseVideos,
+                ownerKey: ownerKey,
               ),
             ),
+            routes: [
+              workflow(
+                'trash',
+                (_, _) => load(
+                  () async {
+                    if (exercises is! AdminExerciseTrashRepository) {
+                      throw const _RouteUnavailable(
+                        'La papelera de ejercicios no está disponible.',
+                      );
+                    }
+                    return exercises as AdminExerciseTrashRepository;
+                  },
+                  (repository) => AdminExerciseTrashPage(
+                    repository: repository,
+                    ownerKey: ownerKey,
+                  ),
+                ),
+              ),
+            ],
           ),
           GoRoute(
             path: '/laboratory',

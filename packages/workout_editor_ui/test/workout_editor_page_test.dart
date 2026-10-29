@@ -155,6 +155,153 @@ Future<void> _setField(WidgetTester tester, Finder field, String text) async {
 void main() {
   setUpAll(() => loadReviewFont(always: true));
   testWidgets(
+    'catálogo activo sin el ejercicio conserva el nombre original como referencia',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(
+          save: (_) async => 's',
+          saved: (_) {},
+          load: () async => const [
+            WorkoutEditorExercise(id: 'available', name: 'Disponible'),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      final choose = find.text('Cambiar ejercicio · Ejercicio de partida');
+      await tester.ensureVisible(choose);
+      await tester.pumpAndSettle();
+      expect(choose, findsOneWidget);
+      expect(
+        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        findsOneWidget,
+      );
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      expect(find.text('Ejercicio de partida'), findsNothing);
+      expect(find.text('Disponible'), findsOneWidget);
+    },
+  );
+  testWidgets(
+    'ejercicio retirado conserva la receta pero no aparece para volver a elegirlo',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(
+          save: (_) async => 's',
+          saved: (_) {},
+          load: () async => const [
+            WorkoutEditorExercise(
+              id: 'base',
+              name: 'Ejercicio conservado',
+              selectable: false,
+            ),
+            WorkoutEditorExercise(
+              id: 'available',
+              name: 'Ejercicio disponible',
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      final choose = find.text('Cambiar ejercicio · Ejercicio conservado');
+      await tester.ensureVisible(choose);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        findsOneWidget,
+      );
+      await tester.tap(choose);
+      await tester.pumpAndSettle();
+      expect(find.text('Ejercicio conservado'), findsNothing);
+      expect(find.text('Ejercicio disponible'), findsOneWidget);
+      await tester.tap(find.text('Ejercicio disponible'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Cambiar ejercicio · Ejercicio disponible'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Retirado de la biblioteca · se conserva en esta receta.'),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets('guardar exige recuperar o sustituir el ejercicio retirado', (
+    tester,
+  ) async {
+    var writes = 0;
+    await tester.pumpWidget(
+      _app(
+        save: (_) async {
+          writes++;
+          return 's';
+        },
+        saved: (_) {},
+        load: () async => const [
+          WorkoutEditorExercise(
+            id: 'base',
+            name: 'Ejercicio conservado',
+            selectable: false,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _save(tester);
+    expect(writes, 0);
+    final error = find.textContaining(
+      'Hay ejercicios retirados en esta receta:',
+    );
+    await tester.scrollUntilVisible(
+      error,
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(error, findsOneWidget);
+    expect(find.textContaining('Ejercicio conservado'), findsWidgets);
+  });
+
+  testWidgets('biblioteca arrastrable no ofrece referencias retiradas', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1600, 1100));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProfessionalWorkspaceScope(
+        desktop: true,
+        child: _app(
+          save: (_) async => 's',
+          saved: (_) {},
+          load: () async => const [
+            WorkoutEditorExercise(
+              id: 'base',
+              name: 'Ejercicio conservado',
+              selectable: false,
+            ),
+            WorkoutEditorExercise(
+              id: 'available',
+              name: 'Ejercicio disponible',
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final library = find.byType(ProfessionalLibraryPane<WorkoutEditorExercise>);
+    expect(library, findsOneWidget);
+    expect(
+      find.descendant(of: library, matching: find.text('Ejercicio conservado')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: library, matching: find.text('Ejercicio disponible')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Ejercicio conservado'), findsWidgets);
+  });
+
+  testWidgets(
     'solo aceptar ejercicio registra reciente una vez; cancelar no registra',
     (tester) async {
       final source = PreferenceSource();
