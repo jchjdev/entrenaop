@@ -86,10 +86,16 @@ lecturas y comprobación de permisos antes de enviar. 1.421 pruebas raíz,
 migraciones coincidentes. Worker v9 con JWT y rechazo público 401. Trainer y
 ADMIN publicados automáticamente en `dd1c4ffe`, con HTTPS/recursos comprobados.
 APK Dev firmada 1.0.0-beta.2+3 preparada; iOS sin firma compila en CI. Nadie recibe
-el alta de avisos automáticamente. La entrega física profesional sigue abierta:
-**único siguiente recorrido recomendado:** actualizar Android → activar Avisos
-de mis alumnos → enviar mensajes y técnica desde alumno → comprobar agrupación,
-apertura con MFA y lectura previa desde web. No hay Android conectado hoy;
+el alta de avisos automáticamente. **Aceptación Android del 29/10:** Samsung con
+beta.3+3 instalada por reemplazo, fuentes `560d9021` y firma comprobadas. Tres
+mensajes generan una alerta; el vídeo, otra. La lectura web suprime un envío
+pendiente. Se corrige y reproduce la carrera entre apertura y refresco al reanudar;
+la beta corregida abre conversación en caliente y técnica sin proceso previo.
+Análisis raíz limpio y 1.446 pruebas correctas (una omisión previa); cero trabajos
+profesionales pendientes al cerrar. Apple/APNs y ensayos físicos extendidos de
+descanso/cuentas/recordatorios no se dan por aceptados por este recorrido.
+**Único siguiente bloque recomendado:** aceptación física de la invitación por
+enlace TRN-038 con cuenta destinataria confirmada y cuenta equivocada.
 Apple/APNs, cobros reales y la oferta militar siguen pendientes. COM-021 fija
 la referencia anual general en 39,99 €; catálogo Test Store EUR actualizado
 y releído el 28/10 (mensual 3,99 €).

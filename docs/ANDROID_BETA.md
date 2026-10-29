@@ -1,5 +1,13 @@
 # Beta Android privada
 
+**Actualización del 29/10/2026 · beta.3+3 instalada:** Javier pide preparar e
+instalar esta APK para cerrar la prueba de avisos profesionales. La release Dev
+`560d9021` conserva firma, sesión y datos de beta.2 mediante reemplazo, con
+identidad y permisos releídos. Mensajes agrupados, supresión tras lectura web y
+apertura de conversación en caliente y técnica sin proceso previo comprobados en
+Samsung. El receptor de invitaciones ya está incluido, pero su aceptación física
+por enlace sigue pendiente. [Evidencia y huella](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md#cierre-del-recorrido-android--29102026).
+
 **TRN-038 · 28/10/2026:** el código incorpora recepción nativa de enlaces de
 invitación y aceptación ligada al correo confirmado. No se genera otra APK por
 este ajuste: la beta.2 anterior no incorpora el nuevo receptor. Javier compila

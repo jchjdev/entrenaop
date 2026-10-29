@@ -53,6 +53,10 @@ instalación, independiente del profesional por cuenta; renovar no reactiva cana
 Los mensajes usan sus recibos compartidos; los vídeos solo alertan listos y
 compartidos, y admiten acuse de visto independiente de la corrección. Mismo
 programador, worker y Firebase Dev; sin nuevos proveedores ni producción.
+La apertura nativa usa una generación de identidad independiente de la renovación
+de instalación: reanudar o renovar el token de la misma cuenta no cancela la ruta
+pendiente; salir y reentrar, incluso con el mismo ID, sí la invalida. El 29/10 se
+acepta en beta.3 la conversación en caliente y la técnica sin proceso previo.
 [Contrato y validación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **TRN-036 · 28/10/2026 · dos espacios en la app:** el módulo
@@ -208,7 +212,8 @@ en escritorio profesional.
 **TRN-029 · 24/10/2026:** Los trabajos contextuales reutilizan checkpoints y
 finalización revisada del editor común. Las etiquetas privadas reutilizan el ledger
 y aislamiento de preferencias por propietario/contexto. El transporte push nativo
-es opcional y está desactivado; Supabase conserva identidad, avisos y permisos.
+es opcional y requiere activación expresa en Android Dev; Apple/APNs sigue
+pendiente. Supabase conserva identidad, avisos y permisos.
 Una cola privada por instalación usa generaciones, lease y CAS; el worker FCM
 requiere JWT de servicio, secreto propio y activación doble. No incorpora Firebase
 como proveedor de cuentas ni base de datos.

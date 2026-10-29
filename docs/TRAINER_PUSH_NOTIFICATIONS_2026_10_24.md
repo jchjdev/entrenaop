@@ -24,15 +24,43 @@ y volver a entrar, incluso con el mismo usuario, sigue anulando la apertura viej
 MFA y resolución autorizada en servidor se conservan. Tres regresiones fallan
 antes del arreglo y pasan después; se añade además el caso de salir/reentrar.
 Análisis raíz limpio, **1.446 pruebas correctas y una omisión previa**; las
-29 pruebas de notificaciones pasan. La apertura física corregida queda pendiente
-de actualizar la beta, actualización que Javier autoriza expresamente.
+29 pruebas de notificaciones pasan. Javier autoriza expresamente preparar e
+instalar la actualización para completar la comprobación física.
 
-Se prueba además lectura desde Trainer web antes del siguiente envío agrupado.
-Su resultado final y la actualización del teléfono se registrarán tras verificarlos.
+La lectura previa desde Trainer web también queda acreditada: generación 4
+descartada por el programador sin cambiar `last_sent_at` ni crear otra alerta.
 El tiempo de apagado se amplió temporalmente durante la observación y se restauró
 a **30 segundos**, comprobado por ADB. No se modifican cuotas, credenciales,
 preferencias de descanso, producción ni Apple/APNs. «Para mí» no sustituye el
 ensayo entre cuentas distintas.
+
+### Cierre del recorrido Android · 29/10/2026
+
+**Beta 1.0.0-beta.3+3** compilada desde `560d90213bf4f654a7730dfb781b546c8ff45046`,
+sin fuentes modificadas, Firebase/Supabase Dev y firma beta fijada verificados.
+APK local: `build/android-beta/push-open-20261029/EntrenaOP-1.0.0-beta.3-3.apk`.
+SHA-256: `b57c67d3e1191c0c78b0c8928b21fd932c73b02098730bdb7222752cf02407a1`.
+Instalada con `install -r`, resultado `Success`; versión, compilación y permiso
+Android releídos. Conserva sesión, consentimiento y datos; no se desinstala.
+
+La actualización retira los avisos antiguos del sistema. Se prepara otro lote
+de dos mensajes y se recomparte un segundo vídeo real del mismo alumno de ensayo,
+sin fabricar un archivo ni modificar resultados. Ambos trabajos se entregan por
+el programador a las **19:29:01 UTC**, con una alerta por categoría. Pulsar el
+mensaje abre la conversación correcta y muestra los dos textos de beta.3.
+Se lleva la app a segundo plano y se termina su proceso con `am kill`, sin
+forzar detención: PID ausente antes de pulsar el vídeo. El aviso arranca la app
+y abre **Técnica del alumno** con el vídeo compartido de la sesión esperada.
+Se conservan capturas locales de recepción, conversación y técnica.
+
+Comprobación final: seis mensajes de ensayo leídos, cero trabajos profesionales
+pendientes y una instalación Android activa; ambos avisos pulsados desaparecen
+de la bandeja del sistema. Se restaura otra vez el apagado a 30 segundos.
+No se marca un vídeo como visto ni se añade una corrección por abrir su lista.
+Queda aceptado este recorrido de agrupación, lectura web y apertura en Android,
+incluido arranque sin proceso. Los ensayos de descanso, cambios de cuenta y
+recordatorios conservan su cobertura automática y su plan físico propio;
+Apple/APNs, otros fabricantes y producción quedan fuera de esta aceptación.
 
 ## Avisos al preparador · TRN-037 · 28/10/2026
 

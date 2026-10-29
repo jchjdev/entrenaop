@@ -133,15 +133,19 @@ fases y sesiones resumidas, guardado fijo y ejercicios en dos columnas, usando
 los mismos creadores en ambos portales. La pasada visual de las pantallas actuales
 está completada y publicada; la aceptación humana sigue pendiente.
 Arrastrar a la agenda exige revisar y confirmar. La autoría oficial y la privada
-conservan permisos independientes. Pagos y activación push siguen pospuestos.
+conservan permisos independientes. Los cobros reales siguen pendientes; la
+activación y aceptación push profesional se documentan en TRN-037.
 [Alcance y evidencia](TRAINER_DESKTOP_2026_10_25.md).
 
 **TRN-029 · 24/10/2026:** Trainer permite retomar sesiones internas de programas
 y adaptaciones sin modificar la pauta hasta confirmar. Las etiquetas de ejercicios
 son privadas por autor/contexto y se comparten como capacidad de editor con ADMIN.
-La app del alumno prepara avisos push opcionales; permanecen desactivados en Dev
-hasta configurar proveedor/Apple y aceptar recepción física. Los avisos internos
-y la campana condicionada a novedades siguen siendo el acceso disponible.
+La app ofrece avisos push opcionales en Android Dev con consentimiento expreso;
+los personales y profesionales se activan por separado. El 29/10 se acepta en
+Samsung la agrupación profesional, su apertura en conversación/técnica y la
+supresión tras leer desde la web, con beta.3 instalada sin perder datos locales.
+Apple/APNs sigue pendiente. Los avisos internos y la campana condicionada a
+novedades conservan su acceso independiente.
 [Alcance y activación](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **Preparación compartida · TRN-028 · 24/10/2026:** El alumno puede recibir pautas de dos

@@ -153,8 +153,9 @@ No hay backfill ni push por Para mí. El 29/10 se acredita recepción física en
 Samsung: tres mensajes producen un aviso y un vídeo otro. Se corrige la carrera
 entre abrir el aviso y refrescar la instalación al reanudar: solo el cambio de
 identidad invalida la ruta pendiente, incluido salir y reentrar con la misma cuenta.
-Análisis y 1.446 pruebas raíz correctas; apertura en la beta corregida y Apple
-siguen pendientes de aceptación física.
+Análisis y 1.446 pruebas raíz correctas. La beta.3 se instala sin desinstalar y
+se aceptan físicamente conversación, vídeo con arranque sin proceso y supresión
+tras lectura web. Apple/APNs mantiene su aceptación independiente pendiente.
 [Contrato, límites y pruebas](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **COM-021 · 28/10/2026 · anual general y propuesta militar:** Javier confirma
