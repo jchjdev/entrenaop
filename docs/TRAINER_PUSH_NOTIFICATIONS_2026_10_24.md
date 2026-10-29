@@ -2,22 +2,37 @@
 
 ## Estado contrastado · 29/10/2026
 
-Javier pregunta por la prueba Android pendiente. Se conserva la primera recepción
-física confirmada del aviso personal; no acredita los avisos profesionales ni
-toda la política agrupada. El 28/10 se instaló beta.2 por reemplazo sin borrar
-datos, pero el Samsung se desconectó antes de completar sesión profesional,
-consentimiento y entrega. Hoy ADB no detecta ningún dispositivo conectado.
-Dev confirma `enabled=true`, `coach_enabled=true`, cero preparadores con avisos
-profesionales habilitados y cero instalaciones Android activas en esta lectura.
-No se activan consentimientos ni se generan APK o avisos de prueba en esta tarea.
+Tras la primera comprobación sin dispositivo, Javier conecta el Samsung
+SM-A326B, cambia de su cuenta de alumno a la profesional y valida el acceso.
+La beta.2 instalada conserva el permiso Android. Se activa expresamente
+**Entrenador → Resumen → Avisos de mis alumnos**: Dev confirma consentimiento
+de mensajes/vídeos y una instalación Android activa para su cuenta.
 
-Para retomar: conectar/desbloquear el Samsung, entrar con la cuenta profesional,
-activar **Entrenador → Resumen → Avisos de mis alumnos**, conceder el permiso
-Android si se solicita y dejar la app en segundo plano. Comprobar mensaje de
-otro alumno → aviso agrupado → apertura/MFA; repetir con vídeo listo compartido,
-y con lectura desde la web antes del envío para comprobar que no notifica lo ya
-atendido. «Para mí» no sustituye ese ensayo entre dos personas. Apple/APNs sigue
-pendiente por su contrato propio. No se modifica configuración ni producción.
+Con la app en segundo plano, tres mensajes del vínculo de ensayo se agrupan
+en un solo trabajo de generación 3 y un vídeo real recompartido genera otro.
+El programador ordinario los entrega el 29/10 a las **19:12:01–02 UTC**:
+Android muestra exactamente los dos avisos de categoría, sin nombres ni textos
+privados. Las fuentes se preparan mediante las fachadas SQL con la identidad
+del alumno de pruebas, no desde otro teléfono; el vídeo ya existía y termina
+compartido como estaba, sin otra subida ni resultados fabricados.
+
+La recepción está acreditada, pero pulsar el mensaje en beta.2 vuelve al resumen.
+Se reproduce una carrera: `resumed` refresca la instalación mientras se resuelve
+la ruta, y su generación de operación invalida la respuesta de la misma cuenta.
+La corrección distingue renovación de instalación y cambio de identidad. Salir
+y volver a entrar, incluso con el mismo usuario, sigue anulando la apertura vieja;
+MFA y resolución autorizada en servidor se conservan. Tres regresiones fallan
+antes del arreglo y pasan después; se añade además el caso de salir/reentrar.
+Análisis raíz limpio, **1.446 pruebas correctas y una omisión previa**; las
+29 pruebas de notificaciones pasan. La apertura física corregida queda pendiente
+de actualizar la beta, actualización que Javier autoriza expresamente.
+
+Se prueba además lectura desde Trainer web antes del siguiente envío agrupado.
+Su resultado final y la actualización del teléfono se registrarán tras verificarlos.
+El tiempo de apagado se amplió temporalmente durante la observación y se restauró
+a **30 segundos**, comprobado por ADB. No se modifican cuotas, credenciales,
+preferencias de descanso, producción ni Apple/APNs. «Para mí» no sustituye el
+ensayo entre cuentas distintas.
 
 ## Avisos al preparador · TRN-037 · 28/10/2026
 

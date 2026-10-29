@@ -89,6 +89,7 @@ abstract interface class PushBackend {
     PushAccount account,
     PushInstallation installation,
   );
+
   /// null renueva sin reactivar canales; false activa el personal y true
   /// registra el profesional conservando el consentimiento personal previo.
   Future<void> register(
@@ -127,6 +128,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
   Future<void> _tail = Future.value();
   PushAccount? _account, _transportOwner;
   int _epoch = 0;
+  int _identityVersion = 0;
   bool _initialized = false, _disposed = false;
   bool _pendingOpen = false;
   bool _openWasReminder = false;
@@ -140,6 +142,8 @@ class PushNotificationCoordinator extends ChangeNotifier {
   bool get available => transport.available;
   bool _current(int epoch, PushAccount account) =>
       !_disposed && epoch == _epoch && _account?.id == account.id;
+  bool _currentIdentity(int version, PushAccount account) =>
+      !_disposed && version == _identityVersion && _account?.id == account.id;
   void _notify() {
     if (!_disposed) notifyListeners();
   }
@@ -248,6 +252,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
     _account = account;
     final epoch = ++_epoch;
     if (changed) {
+      _identityVersion++;
       preferences = const NoticePreferences();
       personalEnabled = true;
       _professionalEnabled = false;
@@ -404,7 +409,10 @@ class PushNotificationCoordinator extends ChangeNotifier {
 
   Future<String?> routeForOpen() async {
     final account = _account;
-    final epoch = _epoch;
+    // Volver del aviso también refresca la instalación. Esa renovación no
+    // cambia de persona ni debe cancelar la navegación que está resolviendo.
+    // Salir y entrar de nuevo sí invalida la respuesta, aunque sea el mismo ID.
+    final identityVersion = _identityVersion;
     if (account == null) return null;
     final kind = _professionalKind;
     if (kind == 'coachMessage' || kind == 'coachVideo') {
@@ -419,7 +427,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
       } catch (_) {
         // La ruta de bandeja exige igualmente el acceso profesional y MFA.
       }
-      if (!_current(epoch, account)) return null;
+      if (!_currentIdentity(identityVersion, account)) return null;
       return route ??
           (kind == 'coachMessage' ? '/coach/messages' : '/coach/videos');
     }
@@ -430,7 +438,7 @@ class PushNotificationCoordinator extends ChangeNotifier {
     } catch (_) {
       /* La agenda propia sigue disponible. */
     }
-    if (!_current(epoch, account)) return null;
+    if (!_currentIdentity(identityVersion, account)) return null;
     if (date == null) return '/plan/week';
     final day =
         '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';

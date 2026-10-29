@@ -160,6 +160,62 @@ class Fixture {
 const a = PushAccount('A', 'bearer-A'), b = PushAccount('B', 'bearer-B');
 
 void main() {
+  for (final kind in ['coachMessage', 'coachVideo']) {
+    test('mantiene la apertura de $kind al volver al primer plano', () async {
+      final f = Fixture();
+      addTearDown(f.coordinator.dispose);
+      await f.coordinator.setAccount(a);
+      f.transport.lastProfessionalKind = kind;
+      f.transport.open.add(null);
+      await Future<void>.delayed(Duration.zero);
+      f.backend.pendingProfessional = Completer<String?>();
+      final opening = f.coordinator.routeForOpen();
+      await f.coordinator.refresh();
+      final target = kind == 'coachMessage'
+          ? '/coach/messages/own-relation'
+          : '/coach/technique/own-assignment';
+      f.backend.pendingProfessional!.complete(target);
+      expect(await opening, target);
+    });
+  }
+
+  test(
+    'mantiene el recordatorio al renovar la sesión al volver al primer plano',
+    () async {
+      final f = Fixture();
+      addTearDown(f.coordinator.dispose);
+      await f.coordinator.setAccount(a);
+      f.transport.lastOpenWasReminder = true;
+      f.transport.open.add(null);
+      await Future<void>.delayed(Duration.zero);
+      f.backend.pendingReminder = Completer<DateTime?>();
+      final opening = f.coordinator.routeForOpen();
+      await f.coordinator.setAccount(
+        const PushAccount('A', 'renewed-bearer-A'),
+      );
+      f.backend.pendingReminder!.complete(DateTime(2026, 10, 30));
+      expect(await opening, '/plan/week?date=2026-10-30');
+    },
+  );
+
+  test(
+    'salir y volver a entrar en la misma cuenta invalida la apertura anterior',
+    () async {
+      final f = Fixture();
+      addTearDown(f.coordinator.dispose);
+      await f.coordinator.setAccount(a);
+      f.transport.lastProfessionalKind = 'coachMessage';
+      f.transport.open.add(null);
+      await Future<void>.delayed(Duration.zero);
+      f.backend.pendingProfessional = Completer<String?>();
+      final opening = f.coordinator.routeForOpen();
+      await f.coordinator.setAccount(null);
+      await f.coordinator.setAccount(a);
+      f.backend.pendingProfessional!.complete('/coach/messages/old-login');
+      expect(await opening, isNull);
+    },
+  );
+
   test('abre la bandeja profesional tras MFA y descarta resolución tardía de otra cuenta', () async {
     final f = Fixture();
     addTearDown(f.coordinator.dispose);

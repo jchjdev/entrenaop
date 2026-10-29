@@ -149,7 +149,12 @@ Agrupa todos los alumnos por tipo/dispositivo: un minuto desde el último evento
 tope de dos desde el primero y al menos diez entre envíos del mismo tipo.
 Respeta descanso y revalida lectura, compartición, acceso y vínculo antes del
 envío. Abrir resuelve un recurso propio en servidor y mantiene MFA profesional.
-No hay backfill ni push por Para mí. Apple y entrega física siguen pendientes.
+No hay backfill ni push por Para mí. El 29/10 se acredita recepción física en
+Samsung: tres mensajes producen un aviso y un vídeo otro. Se corrige la carrera
+entre abrir el aviso y refrescar la instalación al reanudar: solo el cambio de
+identidad invalida la ruta pendiente, incluido salir y reentrar con la misma cuenta.
+Análisis y 1.446 pruebas raíz correctas; apertura en la beta corregida y Apple
+siguen pendientes de aceptación física.
 [Contrato, límites y pruebas](TRAINER_PUSH_NOTIFICATIONS_2026_10_24.md).
 
 **COM-021 · 28/10/2026 · anual general y propuesta militar:** Javier confirma
