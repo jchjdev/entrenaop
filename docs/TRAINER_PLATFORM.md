@@ -66,7 +66,20 @@ Migraciones `20261029215210_exercise_media_cleanup_outbox.sql` y
 `trainer-media-cleanup`; activación reproducible en
 `tools/enable_exercise_media_cleanup_dev.sql`. Los permisos y el aislamiento se
 comprueban en servidor; limpiar medios propios no exige suscripción activa.
-Solo Dev. Publicación web y comprobación visual pendientes de acreditar.
+Solo Dev; 252 migraciones locales/remotas coinciden, sin fixtures persistentes.
+Los avisos de seguridad no añaden WARN/ERROR para este alcance; las tres tablas
+privadas nuevas conservan RLS sin acceso directo del cliente.
+
+Publicación comprobada el 29/10: ambos portales sirven
+`5961fd6ce66324317d684d04eedc9bae5170a548`, identidad Dev correcta y árbol de
+compilación limpio, con hashes/recursos HTTPS verificados. Trainer
+`40966741896`, ADMIN `40966741837` y contratos del servidor `40966741856`
+terminaron correctamente en GitHub. El acceso desde Ejercicios abre el informe
+privado con una reserva recuperada; la biblioteca muestra 1/1000 y la imagen
+conservada sigue visible. ADMIN muestra únicamente su informe oficial vacío,
+sin mezclar la limpieza privada de la misma cuenta. Se revisaron ambas pantallas.
+Los contadores del informe describen solicitudes registradas, no el inventario
+completo de archivos que podrían quedar protegidos en futuras revisiones.
 El circuito anterior de papelera y recuperación sigue vigente; cuentas, cobros
 y producción mantienen su contrato.
 

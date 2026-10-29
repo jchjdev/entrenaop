@@ -1,6 +1,6 @@
 # Roadmap de EntrenaOP
 
-**TRN-046 · 29/10/2026 · limpieza protegida implementada en Dev:** cola durable,
+**TRN-046 · 29/10/2026 · limpieza protegida cerrada en Dev:** cola durable,
 confirmación externa y reintentos para imágenes y demostraciones gestionadas.
 La papelera, versiones, trabajos abiertos e historial protegen sus referencias;
 no se borran bibliotecas de vídeo por estar sin enlazar. El mantenimiento comparte
@@ -9,8 +9,12 @@ primeros archivos protegidos. Raíz 1.446 pruebas (una omisión previa), Trainer
 ADMIN 364 (dos omisiones previas), UI común 47 y 60 pruebas Node correctas;
 análisis limpios. La limpieza real de una imagen huérfana recuperó una reserva
 (2→1), conservando la otra imagen en uso. Backend y cron activos solo en Dev;
-publicación web y comprobación visual pendientes de acreditar. La aceptación
-móvil de invitaciones continúa como único siguiente recorrido recomendado.
+252 migraciones locales/remotas coinciden. Tres contratos SQL nuevos y ocho
+regresiones relacionadas correctos con ROLLBACK. Trainer y ADMIN publican
+`5961fd6ce66324317d684d04eedc9bae5170a548`; revisión, hashes, recursos HTTPS,
+destino Dev y pantallas comprobados. Las tres verificaciones/publicaciones de
+GitHub terminaron correctamente. La aceptación móvil de invitaciones continúa
+como único siguiente recorrido recomendado.
 [Contrato](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
 
 **TRN-045 · 29/10/2026 · papelera de biblioteca cerrada en Dev:** Trainer incorpora
