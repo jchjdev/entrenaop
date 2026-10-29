@@ -103,10 +103,23 @@ aislamiento, versiones y cursores. Historial Dev local/remoto coincidente.
 Advisors del alcance: cuatro INFO intencionales por RLS sin políticas/grants en
 tablas privadas; ningún WARN/ERROR nuevo del ciclo. La inspección de JSON de
 dispositivos sigue siendo global porque pertenece al alumno y puede sobrevivir
-al vínculo; no es una prueba de carga a gran escala. La publicación automática
-de ambos portales y sus recursos HTTPS está acreditada en `249e472f`, solo Dev
-(`sxbxfjqgoddzhtcyhalw`, árbol de fuente limpio). ADMIN ya está comprobado en
-navegador. Queda acreditar la última entrega de Trainer con el regreso corregido.
+al vínculo; no es una prueba de carga a gran escala.
+
+**Publicación Dev verificada · 29/10/2026:** Trainer `7d9c8c12`
+([ejecución 40956621457](https://github.com/jchjdev/entrenaop/actions/runs/40956621457))
+y ADMIN `249e472f`
+([ejecución 40953026080](https://github.com/jchjdev/entrenaop/actions/runs/40953026080)).
+Se contrastan HTTPS, manifiestos, identidad del proyecto, hashes de JavaScript,
+bootstrap y recursos publicados. Ambos paquetes declaran `development`, proyecto
+`sxbxfjqgoddzhtcyhalw` y fuente de compilación limpia; producción no se modifica.
+Comprobación en navegador de las seis entradas y del recorrido real de una
+sesión privada existente: desaparece del catálogo activo, se bloquea su purga
+por referencias y no aparece en la papelera de ADMIN. Recuperar devuelve la
+misma versión; tras recargar directamente la papelera, volver actualiza la
+biblioteca sin Actualizar. La búsqueda conserva texto visible y filtro después
+de refrescar. Una consulta transitoria se recupera con Reintentar. La sesión de
+pruebas queda recuperada y las bibliotecas oficiales no se alteran. Se comprueba
+y cancela la confirmación de purga administrativa; no se purgan datos reales.
 
 **Siguiente recorrido recomendado:** aceptación de invitaciones por enlace con
 la beta instalada y un alumno real, incluyendo apertura con/sin sesión sin

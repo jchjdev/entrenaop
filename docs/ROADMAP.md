@@ -1,6 +1,6 @@
 # Roadmap de EntrenaOP
 
-**TRN-045 · 29/10/2026 · papelera de biblioteca en cierre:** Trainer incorpora
+**TRN-045 · 29/10/2026 · papelera de biblioteca cerrada en Dev:** Trainer incorpora
 retirada, recuperación y purga protegida de familias de ejercicios, sesiones y
 programas; ADMIN añade ejercicios y comparte la vista conservando sus contratos
 previos. El contenido asignado sigue ejecutable, las referencias bloquean purga
@@ -14,10 +14,13 @@ familias privadas retiradas; se verifica la mezcla en una misma transacción.
 Rutas de papelera y traslado administrativo protegidos ante
 salida incierta y doble confirmación. Seis regresiones reales cubren el regreso
 de papelera tras entrada directa, con carga pendiente y texto de búsqueda
-conservado. Ambos portales publicados automáticamente en `249e472f` y verificados
-por HTTPS en Dev; ADMIN contrastado en navegador. Pendiente acreditar la última
-entrega de Trainer con el regreso corregido. No se vacían bibliotecas ni se
-purgan medios remotos.
+conservado. Publicación automática final verificada por HTTPS: Trainer `7d9c8c12`
+(ejecución `40956621457`) y ADMIN `249e472f` (`40953026080`), ambos solo en Dev.
+En navegador se contrastan las seis entradas, el bloqueo de una sesión asignada,
+su recuperación con la misma versión y su regreso automático tras recargar la
+papelera, además del texto conservado al refrescar. ADMIN no mezcla la retirada
+privada; su confirmación de purga se cancela sin cambios. No se purga contenido
+real en esta comprobación. No se vacían bibliotecas ni se purgan medios remotos.
 **Único siguiente recorrido recomendado tras cerrar:** aceptación del enlace de
 invitación en la beta móvil con alumno real; no requiere otra APK por este bloque.
 [Contrato y evidencia](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
