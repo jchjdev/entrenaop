@@ -1,5 +1,16 @@
 # Registro de decisiones vigentes
 
+**TRN-043 · selección y organización de ejercicios · 29/10/2026:** Javier pide
+fotos y distinción entre EntrenaOP y ejercicios propios dentro del creador,
+iconos deportivos en sesiones y una forma compartida con ADMIN de agrupar la
+biblioteca. Se conectan origen y fotografías al selector y al panel de arrastre.
+Las etiquetas privadas existentes se presentan como colecciones con contador
+y vista sin agrupar; se crean al etiquetar el primer ejercicio, pueden
+solaparse y se usan también en los filtros del creador. No se añaden carpetas
+vacías, jerarquías, duplicados ni permisos nuevos. Se mantienen los filtros
+de músculo/material del selector y la edición de clasificación deportiva.
+[Detalle y límites](TRAINER_PRIVATE_EXERCISES.md#colecciones-y-seleccion-dentro-del-creador--29102026).
+
 **TRN-042 · catálogo y fotografías en Trainer · 29/10/2026:** Javier pide ver
 las fotos en la biblioteca profesional y consultar también los ejercicios de
 EntrenaOP para evitar creaciones duplicadas. Dos vistas separan ejercicios

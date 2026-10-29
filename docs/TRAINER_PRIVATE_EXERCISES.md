@@ -1,5 +1,37 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Colecciones y selección dentro del creador · 29/10/2026
+
+TRN-043 conecta `catalogScope` («EntrenaOP»/«Míos») en el adaptador de Trainer,
+incluidos los ejercicios creados desde la receta. El buscador común muestra
+origen y foto, conserva filtros de músculos/material y permite seleccionar sin
+cambiar de pantalla. La biblioteca lateral profesional usa esas mismas fotos,
+un filtro de origen y las etiquetas guardadas; conserva el arrastre al bloque.
+El componente de biblioteca permite aportar icono o miniatura por elemento,
+reutilizado para distinguir fuerza/carrera en Trainer y en sus bibliotecas de
+agenda y planificación individual.
+
+Las colecciones son vistas de `editor_private.exercise_labels`, privadas por
+cuenta y contexto. No duplican ejercicios ni cambian su clasificación oficial.
+Trainer y ADMIN usan el mismo componente con recuentos, «Todos» y «Sin colección».
+El botón de etiquetas de cada ejercicio permite crear una colección al asignar
+su nombre; un ejercicio admite hasta ocho, según el contrato existente. No se
+persisten colecciones vacías ni subcarpetas; quitar la última pertenencia hace
+desaparecer la colección. Las colecciones de un entrenador no se comparten con
+sus alumnos, otros entrenadores ni con el contexto administrativo de su cuenta.
+También se pueden organizar referencias oficiales en Trainer: solo se guardan
+metadatos personales, sin editar el catálogo. La organización sigue referida al
+ID del ejercicio; las revisiones privadas conservan sus IDs inmutables.
+
+No se añaden dependencias, migraciones, políticas ni rutas de servidor. Los
+clientes conservan idempotencia y comprobación de revisión en el guardado de
+etiquetas, y el servidor conserva MFA y autorización por referencia.
+Verificación local: análisis limpio en raíz, Trainer y ADMIN; 1.442 pruebas de
+raíz correctas (una omitida), 303 de Trainer, 317 de ADMIN (dos omitidas) y 219
+del editor compartido. Incluye miniaturas y filtro de origen en la biblioteca
+lateral, agrupación y vista sin colección, conservación de la receta y los
+recorridos existentes de arrastre y guardado.
+
 ## Biblioteca visual y catálogo oficial · 29/10/2026
 
 TRN-042 añade las vistas «Mis ejercicios» y «EntrenaOP» en el portal.

@@ -28,6 +28,7 @@ import 'package:workout_editor_ui/compact_field_layout.dart';
 
 import 'workout_editor_exercise.dart';
 import 'exercise_preferences_controller.dart';
+import 'exercise_labels_dialog.dart';
 
 /// Creador común: edita la receta; el consumidor aporta catálogo, guardado y salida.
 /// La visibilidad y los permisos pertenecen a la aplicación y al servidor.
@@ -107,6 +108,8 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
   _StrengthBlock? _expandedStrengthBlock;
   _Exercise? _selectedStrengthExercise;
   List<WorkoutEditorExercise> _catalog = const [];
+  String? _libraryScope;
+  String? _libraryLabel;
   bool _running = true;
   bool _busy = false;
   bool _creatingExercise = false;
@@ -1270,7 +1273,15 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
 
   Widget _exerciseLibrary() => ProfessionalLibraryPane<WorkoutEditorExercise>(
     title: 'Biblioteca de ejercicios',
-    items: _catalog,
+    items: _catalog
+        .where(
+          (e) =>
+              (_libraryScope == null || e.catalogScope == _libraryScope) &&
+              (_libraryLabel == null ||
+                  (_exercisePreferences?.labels(e.id).contains(_libraryLabel) ??
+                      false)),
+        )
+        .toList(),
     nameOf: (e) => e.name,
     subtitleOf: (e) => [
       if (e.catalogScope != null) e.catalogScope!,
@@ -1278,6 +1289,39 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
       ...e.equipment,
     ].join(' · '),
     dragOwner: _libraryOwner,
+    leadingOf: (e) => ExerciseThumbnail(url: e.thumbnailUrl, size: 32),
+    filters: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_catalog.any((e) => e.catalogScope != null))
+          DropdownButtonFormField<String>(
+            key: ValueKey('library-scope:$_libraryScope'),
+            initialValue: _libraryScope ?? '',
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Origen'),
+            items: [
+              const DropdownMenuItem(value: '', child: Text('Todos')),
+              for (final scope
+                  in _catalog
+                      .map((e) => e.catalogScope)
+                      .whereType<String>()
+                      .toSet())
+                DropdownMenuItem(value: scope, child: Text(scope)),
+            ],
+            onChanged: _busy
+                ? null
+                : (value) => setState(
+                    () => _libraryScope = value == '' ? null : value,
+                  ),
+          ),
+        if (_exercisePreferences?.labelsLoaded == true)
+          ExerciseLabelFilter(
+            labels: _catalog.expand((e) => _exercisePreferences!.labels(e.id)),
+            selected: _libraryLabel,
+            onChanged: (value) => setState(() => _libraryLabel = value),
+          ),
+      ],
+    ),
     enabled: !_busy && !_creatingExercise,
     onSelected: _chooseBlockForExercise,
     footer: const Text('Arrastra al bloque de destino o pulsa para añadir.'),
@@ -2817,6 +2861,7 @@ class _WorkoutEditorPageState extends State<WorkoutEditorPage>
                     muscleGroupsOf: (exercise) => exercise.muscleGroups,
                     equipmentOf: (exercise) => exercise.equipment,
                     subtitleOf: (exercise) => [
+                      if (exercise.catalogScope != null) exercise.catalogScope!,
                       ...exercise.muscleGroups,
                       ...exercise.equipment,
                     ].join(' · '),

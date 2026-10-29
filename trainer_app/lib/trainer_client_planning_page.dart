@@ -698,6 +698,10 @@ class _TrainerClientPlanningPageState extends State<TrainerClientPlanningPage>
               )
             : ProfessionalLibraryPane<TrainerWorkout>(
                 title: 'Tus sesiones',
+                leadingOf: (s) => Icon(
+                  s.isRunning ? Icons.directions_run : Icons.fitness_center,
+                  size: 20,
+                ),
                 items: _library,
                 nameOf: (row) => row.name,
                 subtitleOf: (row) =>

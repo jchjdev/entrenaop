@@ -275,9 +275,13 @@ class _TrainerWorkoutLibraryPageState extends State<TrainerWorkoutLibraryPage> {
             (item) => item.name.toLowerCase().contains(_query.toLowerCase()),
           ))
             ProfessionalResourceCard(
-              leading: const ProfessionalResourceIcon(Icons.fitness_center),
+              leading: ProfessionalResourceIcon(
+                item.isRunning ? Icons.directions_run : Icons.fitness_center,
+              ),
               title: Text(item.name),
-              subtitle: Text('Versión ${item.version} · Privada'),
+              subtitle: Text(
+                '${item.isRunning ? 'Carrera' : 'Fuerza'} · Versión ${item.version} · Privada',
+              ),
               trailing: const Icon(Icons.chevron_right),
               onTap: _busy
                   ? null

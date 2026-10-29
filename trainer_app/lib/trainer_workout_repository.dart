@@ -188,6 +188,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
               muscleGroups: e.draft.muscleGroups,
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
+              catalogScope: 'EntrenaOP',
             ),
           ),
     );
@@ -204,6 +205,7 @@ class SupabaseTrainerWorkoutRepository implements TrainerWorkoutRepository {
               muscleGroups: e.draft.muscleGroups,
               equipment: e.draft.equipment,
               thumbnailUrl: e.imageUrl,
+              catalogScope: 'Míos',
             ),
           ),
     );

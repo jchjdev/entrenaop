@@ -228,6 +228,8 @@ class ProfessionalLibraryPane<T> extends StatefulWidget {
     this.dragOwner,
     this.enabled = true,
     this.footer,
+    this.leadingOf,
+    this.filters,
   });
   final String title;
   final List<T> items;
@@ -237,6 +239,8 @@ class ProfessionalLibraryPane<T> extends StatefulWidget {
   final Object? dragOwner;
   final bool enabled;
   final Widget? footer;
+  final Widget Function(T)? leadingOf;
+  final Widget? filters;
   @override
   State<ProfessionalLibraryPane<T>> createState() =>
       _ProfessionalLibraryPaneState<T>();
@@ -279,6 +283,10 @@ class _ProfessionalLibraryPaneState<T>
                   onChanged: (value) => setState(() => _query = value),
                 ),
                 const SizedBox(height: 8),
+                if (widget.filters != null) ...[
+                  widget.filters!,
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   '${items.length} de ${widget.items.length} cargados',
                   style: Theme.of(context).textTheme.bodySmall,
@@ -326,7 +334,21 @@ class _ProfessionalLibraryPaneState<T>
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            leading: widget.dragOwner == null
+                            leading: widget.leadingOf != null
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (widget.dragOwner != null) ...[
+                                        const Icon(
+                                          Icons.drag_indicator,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 4),
+                                      ],
+                                      widget.leadingOf!(item),
+                                    ],
+                                  )
+                                : widget.dragOwner == null
                                 ? null
                                 : const Icon(Icons.drag_indicator, size: 18),
                             onTap: widget.enabled

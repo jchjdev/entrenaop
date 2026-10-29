@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_catalog_preferences.dart';
 import 'package:workout_editor_ui/catalog_search.dart';
+import 'package:workout_editor_ui/exercise_collections.dart';
 import 'package:workout_editor_ui/exercise_preferences_controller.dart';
 import 'package:workout_editor_ui/exercise_labels_dialog.dart';
 import 'package:workout_editor_ui/exercise_form.dart';
@@ -46,6 +47,7 @@ Future<WorkoutEditorExercise?> showTrainerExerciseEditor(
             name: draft.name,
             muscleGroups: draft.muscleGroups,
             equipment: draft.equipment,
+            catalogScope: 'Míos',
           );
         },
       ),
@@ -275,9 +277,11 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                 ),
               ),
             ),
-            if (!_showOfficial && _preferences?.labelsLoaded == true)
-              ExerciseLabelFilter(
-                labels: _items.expand((e) => _preferences!.labels(e.id)),
+            if (_preferences?.labelsLoaded == true)
+              ExerciseCollections(
+                memberships: (_showOfficial ? _official : _items)
+                    .map((e) => _preferences!.labels(e.id))
+                    .toList(),
                 selected: _label,
                 onChanged: (v) => setState(() => _label = v),
               ),
@@ -311,11 +315,12 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                             e.draft.name,
                             ...e.draft.muscleGroups,
                             ...e.draft.equipment,
-                            if (!e.official) ...?_preferences?.labels(e.id),
+                            ...?_preferences?.labels(e.id),
                           ]) &&
-                          (_label == null ||
-                              (_preferences?.labels(e.id).contains(_label) ??
-                                  false)),
+                          matchesExerciseCollection(
+                            _preferences?.labels(e.id) ?? const [],
+                            _label,
+                          ),
                     ))
                   ProfessionalResourceCard(
                     leading: ExerciseThumbnail(
@@ -330,11 +335,10 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                         else
                           'Versión ${exercise.version}',
                         ...exercise.draft.muscleGroups,
-                        if (!exercise.official)
-                          ...?_preferences?.labels(exercise.id),
+                        ...?_preferences?.labels(exercise.id),
                       ].join(' · '),
                     ),
-                    trailing: exercise.official || _preferences == null
+                    trailing: _preferences == null
                         ? const Icon(Icons.chevron_right)
                         : IconButton(
                             tooltip: 'Etiquetas: ${exercise.draft.name}',

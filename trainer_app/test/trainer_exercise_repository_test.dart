@@ -296,6 +296,8 @@ void main() {
       'current',
     ]);
     final retained = await repository.exercises(retainedIds: {'old'});
+    expect(retained.first.catalogScope, 'EntrenaOP');
+    expect(retained.skip(1).every((e) => e.catalogScope == 'Míos'), isTrue);
     expect(retained.map((e) => e.id), ['official', 'current', 'old']);
     expect(
       retained.last.thumbnailUrl,

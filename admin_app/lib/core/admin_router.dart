@@ -725,6 +725,7 @@ GoRouter createAdminRouter({
             builder: (context, state) => load(
               () async => true,
               (_) => AdminExercisesPage(
+                preferences: exercisePreferences,
                 key: ValueKey(state.uri.toString()),
                 initialExerciseId: state.uri.queryParameters['edit'],
                 repository: exercises,

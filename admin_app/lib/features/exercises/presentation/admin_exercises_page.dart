@@ -3,6 +3,10 @@ import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repositor
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:entrenaop_admin/core/catalog_search.dart';
+import 'package:workout_core/exercise_catalog_preferences.dart';
+import 'package:workout_editor_ui/exercise_preferences_controller.dart';
+import 'package:workout_editor_ui/exercise_labels_dialog.dart';
+import 'package:workout_editor_ui/exercise_collections.dart';
 
 import '../../../core/admin_shell.dart';
 
@@ -15,11 +19,13 @@ class AdminExercisesPage extends StatefulWidget {
     required this.repository,
     this.videos,
     this.initialExerciseId,
+    this.preferences,
   });
 
   final AdminExerciseRepository repository;
   final String? initialExerciseId;
   final AdminExerciseVideoRepository? videos;
+  final ExerciseCatalogPreferences? preferences;
 
   @override
   State<AdminExercisesPage> createState() => _AdminExercisesPageState();
@@ -32,19 +38,34 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   String? _error;
   List<AdminCatalogExercise> _exercises = const [];
   final _search = TextEditingController();
+  String? _collection;
+  late final _preferences = widget.preferences == null
+      ? null
+      : ExercisePreferencesController(widget.preferences!);
+  void _preferencesChanged() {
+    if (mounted) setState(() {});
+  }
+
   List<AdminCatalogExercise> get _visibleExercises => _exercises
       .where(
-        (exercise) => matchesCatalogSearch(_search.text, [
-          exercise.name,
-          ...exercise.muscleGroups,
-          ...exercise.equipment,
-          exercise.exerciseType,
-        ]),
+        (exercise) =>
+            matchesExerciseCollection(
+              _preferences?.labels(exercise.id) ?? const [],
+              _collection,
+            ) &&
+            matchesCatalogSearch(_search.text, [
+              exercise.name,
+              ...exercise.muscleGroups,
+              ...exercise.equipment,
+              exercise.exerciseType,
+              ...?_preferences?.labels(exercise.id),
+            ]),
       )
       .toList();
 
   @override
   void dispose() {
+    _preferences?.dispose();
     _search.dispose();
     super.dispose();
   }
@@ -52,6 +73,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
   @override
   void initState() {
     super.initState();
+    _preferences?.addListener(_preferencesChanged);
     _load();
   }
 
@@ -62,6 +84,7 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
     });
     try {
       final exercises = await widget.repository.listOfficial();
+      await _preferences?.load();
       if (!mounted) return;
       setState(() {
         _exercises = exercises;
@@ -188,6 +211,18 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
         ),
         if (_error != null)
           TextButton(onPressed: _load, child: Text('$_error Reintentar')),
+        if (_preferences?.labelsLoaded == true)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ExerciseCollections(
+              memberships: _exercises
+                  .map((e) => _preferences!.labels(e.id))
+                  .toList(),
+              selected: _collection,
+              onChanged: (value) => setState(() => _collection = value),
+            ),
+          ),
+        if (_preferences?.labelsError case final error?) Text(error),
         Expanded(
           child: visible.isEmpty
               ? Center(
@@ -212,7 +247,20 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                                 ...exercise.equipment,
                               ].join(' · '),
                             ),
-                            trailing: const Icon(Icons.edit_outlined),
+                            trailing: _preferences?.supportsLabels != true
+                                ? const Icon(Icons.edit_outlined)
+                                : IconButton(
+                                    tooltip: 'Etiquetas: ${exercise.name}',
+                                    icon: const Icon(Icons.label_outline),
+                                    onPressed: _saving
+                                        ? null
+                                        : () => editExerciseLabels(
+                                            context,
+                                            _preferences!,
+                                            exercise.id,
+                                            exercise.name,
+                                          ),
+                                  ),
                             onTap: _saving ? null : () => _openEditor(exercise),
                           ),
                       ],

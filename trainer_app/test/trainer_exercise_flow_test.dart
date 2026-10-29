@@ -86,6 +86,37 @@ Future<void> open(WidgetTester tester, ExerciseFixture repository) async {
 
 void main() {
   testWidgets(
+    'colecciones filtran sin copiar ejercicios y distinguen los no agrupados',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repo = ExerciseFixture()
+        ..rows = [entry('Dominadas'), entry('Sentadillas')];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: EntrenaTheme.dark,
+          home: TrainerExercisePage(
+            repository: repo,
+            access: FakeTrainerRepository(),
+            preferences: LabelsSource(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Técnica (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Dominadas'), findsOneWidget);
+      expect(find.text('Sentadillas'), findsNothing);
+      await tester.tap(find.text('Sin colección (1)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Dominadas'), findsNothing);
+      expect(find.text('Sentadillas'), findsOneWidget);
+      expect(repo.saves, isEmpty);
+    },
+  );
+
+  testWidgets(
     'fotos privadas y oficiales consultables sin editar ni consumir cuota',
     (tester) async {
       tester.view.physicalSize = const Size(1400, 1000);

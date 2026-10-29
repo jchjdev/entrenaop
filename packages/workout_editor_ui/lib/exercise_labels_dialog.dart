@@ -17,13 +17,13 @@ class ExerciseLabelFilter extends StatelessWidget {
     tooltip: 'Filtrar por mis etiquetas',
     onSelected: (label) => onChanged(label.isEmpty ? null : label),
     itemBuilder: (_) => [
-      const PopupMenuItem(value: '', child: Text('Todas las etiquetas')),
+      const PopupMenuItem(value: '', child: Text('Todas las colecciones')),
       for (final label in (labels.toSet().toList()..sort()))
         PopupMenuItem(value: label, child: Text(label)),
     ],
     child: Padding(
       padding: const EdgeInsets.all(10),
-      child: Text(selected ?? 'Mis etiquetas'),
+      child: Text(selected ?? 'Mis colecciones'),
     ),
   );
 }
@@ -147,7 +147,7 @@ class _ExerciseLabelsDialogState extends State<_ExerciseLabelsDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Solo tú las ves. No cambian el catálogo ni las pautas del alumno.',
+                  'Las etiquetas forman tus colecciones. Solo tú las ves; un ejercicio puede estar en varias. No cambian el catálogo ni las pautas del alumno.',
                 ),
                 const SizedBox(height: 12),
                 TextField(

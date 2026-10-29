@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
 
+import '../../../../../packages/workout_editor_ui/test/exercise_labels_test.dart'
+    show LabelsSource;
+
 class _FakeRepository implements AdminExerciseRepository {
   final exercises = <AdminCatalogExercise>[];
   ExerciseDraft? created;
@@ -48,6 +51,38 @@ class _FakeRepository implements AdminExerciseRepository {
 }
 
 void main() {
+  testWidgets('ADMIN consulta las mismas colecciones privadas del editor', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = _FakeRepository()
+      ..exercises.addAll([
+        for (final name in ['Dominadas', 'Sentadillas'])
+          AdminCatalogExercise(
+            id: name,
+            name: name,
+            muscleGroups: const ['piernas'],
+            equipment: const [],
+            difficulty: 'inicial',
+            exerciseType: 'repeticiones',
+          ),
+      ]);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AdminExercisesPage(repository: repo, preferences: LabelsSource()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Técnica (1)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Dominadas'), findsOneWidget);
+    expect(find.text('Sentadillas'), findsNothing);
+    expect(repo.updated, isNull);
+    expect(repo.created, isNull);
+  });
+
   testWidgets('el enlace de calidad abre el editor existente sin guardar', (
     tester,
   ) async {

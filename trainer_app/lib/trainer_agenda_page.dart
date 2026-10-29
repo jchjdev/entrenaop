@@ -190,6 +190,10 @@ class _TrainerAgendaPageState extends State<TrainerAgendaPage> {
     title: 'Sesiones para asignar',
     items: _library,
     nameOf: (s) => s.name,
+    leadingOf: (s) => Icon(
+      s.isRunning ? Icons.directions_run : Icons.fitness_center,
+      size: 20,
+    ),
     subtitleOf: (s) =>
         '${s.isRunning ? 'Carrera' : 'Fuerza'} · v${s.version} · Privada',
     dragOwner: _libraryOwner,
