@@ -1,5 +1,19 @@
 # Registro de decisiones vigentes
 
+**TRN-046 · limpieza protegida de medios · 29/10/2026:** Javier autoriza
+eliminar imágenes y vídeos que ya no tengan usos para recuperar cuota, incluida
+la imagen de un ejercicio propio que ya ha purgado. La papelera conserva los
+archivos necesarios para restaurar. La purga definitiva encola sus medios;
+el servidor protege versiones, trabajos abiertos, recetas, asignaciones y
+ejecuciones históricas. La cuota solo se libera cuando el proveedor confirma
+el borrado; fallos o resultados inciertos quedan pendientes y se reintentan.
+Las demostraciones sueltas de la biblioteca no se consideran basura por no
+estar enlazadas. La técnica vinculada a una ejecución se conserva. Un barrido
+explícito permite recuperar reservas abandonadas antiguas; no se vacían buckets
+ni se habilita borrado libre desde Flutter. Implementado y validado en Dev;
+la publicación web se acredita en el contrato responsable.
+[Contrato responsable](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 **TRN-045 · gestión y borrado de contenido · 29/10/2026:** Javier confirma
 papelera, recuperación y borrado definitivo de sesiones, ejercicios y programas
 en Trainer y lo que faltaba en ADMIN, reutilizando componentes y protegiendo lo

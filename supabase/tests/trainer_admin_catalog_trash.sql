@@ -10,16 +10,17 @@ declare coach uuid:=gen_random_uuid();other uuid:=gen_random_uuid();pupil uuid:=
  trash_op uuid:=gen_random_uuid();restore_op uuid:=gen_random_uuid();draft_id uuid:=gen_random_uuid();
  draft jsonb;recipe jsonb;program_body jsonb;raw jsonb;answer jsonb;again jsonb;stamp timestamptz;stamp2 timestamptz;page jsonb;
  count_before integer;refs record;pending jsonb;session_work uuid:=gen_random_uuid();program_work uuid:=gen_random_uuid();origin jsonb;content jsonb;
- image_path text;image_count integer;
+ image_path text;image_count integer;coach_session uuid:=gen_random_uuid();
 begin
  insert into auth.users(id,email) values(coach,coach||'@catalog-trash.invalid'),(other,other||'@catalog-trash.invalid'),(pupil,pupil||'@catalog-trash.invalid');
  insert into auth.mfa_factors(id,user_id,factor_type,status,created_at,updated_at)
   values(gen_random_uuid(),coach,'totp','verified',now(),now()),(gen_random_uuid(),other,'totp','verified',now(),now());
+ insert into auth.sessions(id,user_id,created_at,updated_at) values(coach_session,coach,now(),now());
  insert into public.admin_permissions(user_id) values(coach);
  insert into public.trainer_access(trainer_id,enabled,client_limit,last_reason) values(coach,true,1,'Ensayo papelera'),(other,true,1,'Aislamiento papelera');
  insert into public.trainer_client_relations(id,trainer_id,client_id,accepted_at) values(rel,coach,pupil,now());
  perform set_config('request.jwt.claim.sub',coach::text,true);
- perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'role','authenticated','aal','aal2')::text,true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',coach,'session_id',coach_session,'role','authenticated','aal','aal2')::text,true);
  set local role authenticated;
  image_path:=public.reserve_trainer_exercise_image(gen_random_uuid());
  insert into storage.objects(bucket_id,name) values('trainer-exercise-images',image_path);

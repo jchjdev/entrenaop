@@ -22,6 +22,7 @@ import 'package:entrenaop_admin/features/auth/presentation/admin_login_page.dart
 import 'package:entrenaop_admin/core/app_config.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_repository.dart';
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_repository.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_media_cleanup_repository.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/editorial_covers/data/program_cover_repository.dart';
 import 'package:entrenaop_admin/core/admin_router.dart';
@@ -101,13 +102,21 @@ class _AdminAppState extends State<AdminApp> {
   GoRouter _createRouter({String? initialLocation}) {
     final client = widget.client;
     final security = SupabaseAdminSecurityRepository(client);
+    final cleanup = client.auth.currentUser == null
+        ? null
+        : SupabaseAdminMediaCleanupRepository(
+            client,
+            client.auth.currentUser!.id,
+          );
     return createAdminRouter(
       programs: SupabaseAdminProgramRepository(client),
       workouts: SupabaseAdminWorkoutRepository(client),
       exercises: SupabaseAdminExerciseRepository(
         client,
         ownerId: client.auth.currentUser?.id,
+        processMediaCleanup: cleanup?.run,
       ),
+      mediaCleanup: cleanup,
       ownerKey: client.auth.currentUser?.id,
       exerciseVideos: SupabaseAdminExerciseVideoRepository(client),
       exercisePreferences: client.auth.currentUser == null

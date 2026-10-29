@@ -87,8 +87,12 @@ La reproducción busca la referencia exacta y comprueba acceso al ejercicio o a
 una instantánea propia mediante RLS. No firma rutas arbitrarias del cliente.
 Las firmas caducan a los quince minutos y no se guardan en la base de datos.
 
-No hay borrado automático de subidas descartadas, rechazadas o abandonadas:
-se revisan manualmente durante el piloto. El reintento TUS recupera el offset
+TRN-046 incorpora una cola de limpieza protegida para medios oficiales y privados
+en Dev; sustituye la revisión exclusivamente manual de reservas sin uso.
+La papelera y el historial siguen conservando sus archivos. El trabajador usa las
+API del proveedor y solo libera reservas después del borrado confirmado.
+[Contrato y estado](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+El reintento TUS recupera el offset
 durante la subida abierta; cerrar o recargar el editor aún no restaura la subida.
 
 ## ADMIN, reproducción y caché

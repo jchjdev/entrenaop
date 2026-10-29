@@ -16,17 +16,59 @@ otra carencia funcional básica en este inventario.
 | 3. Calendario editable | Mes/semana/día/lista, fichas arrastrables, sesiones y citas con avisos | Sincronización Google Calendar aplazada; no es parte del recorrido interno ya implementado |
 | 4. Adaptación individual | Receta individual manual y recuperación persistente | La adaptación automática profesional pertenece al motor pendiente |
 | 5. Creador ágil | Editores compartidos, arrastre y recuperación de biblioteca, hijos y adaptaciones | — |
-| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos y ciclo papelera/recuperación/borrado protegido | Filtros actuales sobre filas cargadas; limpieza de medios independiente |
+| 6. Biblioteca eficiente | Fotos, origen oficial/propio, colecciones, búsqueda interna, formatos, papelera y limpieza protegida de archivos | Filtros actuales sobre filas cargadas |
 | 7. Grupos y envío conjunto | Grupos, asignación conjunta y copia semanal | Aceptación completa con varios alumnos y revisión por destinatario |
 | 8. Evolución | Métricas por periodo y evolución del servicio | — |
 | 9. Bandeja de revisión | Resultados, revisión persistente y correcciones | — |
-| 10. Vídeos en ambas direcciones | Archivos propios, enlaces externos, demostraciones y técnica; aviso Android aceptado | Completar la gestión de medios/reservas dentro del futuro ciclo de limpieza, protegiendo usos históricos |
+| 10. Vídeos en ambas direcciones | Archivos propios, enlaces externos, demostraciones y técnica; eliminación protegida de demostraciones, recuperación de reservas y aviso Android aceptado | La técnica histórica se conserva; no se habilita borrado libre de vídeos de alumnos |
 | 11. Formularios | Plantillas, asignación y respuestas en el espacio Preparador | — |
 | 12. Comunicación | Chat con refresco, globos y push profesional Android aceptada en beta.3 | Apple/APNs y pruebas físicas extendidas de descanso/cuentas/recordatorios |
 | 13. Automatizaciones controladas | Recurrencias finitas | Automatización adaptativa profesional y sus reglas; no se presenta como motor ya entregado |
 | 14. Cobros y servicio | Registro/recuperación web, acceso manual y contratación EntrenaOP→preparador ensayada con Stripe sandbox | Tarifas y políticas finales, operación de cobros reales y circuito alumno→preparador |
 | 15. Informes | Resumen por periodo y CSV | Otros formatos serían ampliaciones, no un requisito básico acreditado como ausente |
 | 16. Oposición y dispositivos | Metas, marcas y pruebas privadas; integraciones con su contrato propio | Cierre de los recorridos deportivos/oficiales y de dispositivos según sus bloques; este inventario no reaudita Garmin |
+
+### Limpieza protegida de medios · TRN-046
+
+El 29/10 Javier autoriza continuar la gestión de archivos y confirma que el
+ejercicio de prueba ya fue borrado definitivamente. Se amplía TRN-045 con una
+cola durable de limpieza: la cuota se libera únicamente tras confirmar el
+borrado en Storage o el proveedor de vídeo. Las comprobaciones y bloqueos se
+hacen en servidor y los reintentos no crean medios nuevos.
+
+La papelera conserva lo necesario para recuperar contenido. Al purgar una
+receta se revisan sus medios, manteniendo cualquier archivo usado en otras
+versiones, trabajos guardados, asignaciones o historial. Los vídeos propios
+sueltos son biblioteca válida; se eliminan de forma explícita. La técnica de
+alumnos vinculada a una ejecución sigue protegida. Las reservas abandonadas se
+revisan con antigüedad mínima y espera por credenciales de subida vigentes.
+Los fallos dejan la limpieza pendiente y siguen consumiendo cuota hasta su
+confirmación; no se declara liberado un archivo porque desaparezca su fila.
+
+Accesos: Trainer → Vídeos, Ejercicios o Papelera → «Limpiar archivos sin uso»;
+ADMIN → Ejercicios o su papelera → el mismo mantenimiento. Los motivos de
+protección se explican en castellano. Cada solicitud revisa hasta 50 candidatos,
+priorizando los nunca revisados y después la revisión más antigua; repetir el
+mismo UUID recupera su lote original. El trabajador procesa hasta 3 eliminaciones
+por llamada y Cron reintenta únicamente solicitudes ya encoladas cada minuto.
+No realiza un barrido global por su cuenta.
+
+Verificación: 2.189 pruebas Flutter y 60 Node correctas; análisis limpios. Tres
+contratos SQL nuevos y ocho regresiones relacionadas comprobados con ROLLBACK.
+La imagen huérfana de prueba dejó de existir en Storage tras el borrado por API;
+`image_used` bajó de 2 a 1 y la otra imagen utilizada permaneció intacta. No se
+eliminaron vídeos reales para ensayar. Los GUID inciertos, subidas con credencial
+vigente y fallos de proveedor conservan sus reservas hasta poder confirmar la
+operación. `freed_bytes` expresa reserva de vídeo recuperada, no bytes físicos.
+
+Migraciones `20261029215210_exercise_media_cleanup_outbox.sql` y
+`20261029222944_media_cleanup_sweep_progress.sql`, funciones `exercise-video` y
+`trainer-media-cleanup`; activación reproducible en
+`tools/enable_exercise_media_cleanup_dev.sql`. Los permisos y el aislamiento se
+comprueban en servidor; limpiar medios propios no exige suscripción activa.
+Solo Dev. Publicación web y comprobación visual pendientes de acreditar.
+El circuito anterior de papelera y recuperación sigue vigente; cuentas, cobros
+y producción mantienen su contrato.
 
 ### Gestión de la biblioteca · TRN-045 · 29/10/2026
 

@@ -1,5 +1,16 @@
 # Vídeos privados profesionales y técnica del alumno · 21/10/2026
 
+**TRN-046 · 29/10/2026 · Dev:** las demostraciones propias admiten una
+solicitud de eliminación desde Vídeos. El servidor protege referencias de
+versiones, papelera, borradores, asignaciones e historial; las técnicas ligadas a
+una ejecución quedan protegidas. El barrido no elimina demostraciones listas o
+en proceso solo porque no estén enlazadas. Sí admite reservas nunca iniciadas,
+fallidas o rechazadas con al menos 24 horas, respetando las credenciales de
+subida vigentes. Bunny debe confirmar eliminación y ausencia antes de liberar
+presupuesto y plaza; el activo permanece como tumba para impedir su reactivación.
+Una creación de resultado incierto sin GUID confirmado conserva cuota.
+[Contrato y estado](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 **Integración Dev · 21/10/2026:** migración aplicada dentro del conjunto profesional
 de diez; 195 migraciones locales/remotas coinciden. Los 24 contratos relacionados
 vuelven a pasar con ROLLBACK sobre el esquema aplicado, sin datos de ensayo

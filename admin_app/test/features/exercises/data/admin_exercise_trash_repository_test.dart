@@ -200,7 +200,7 @@ void main() {
             (call) =>
                 call.method == 'DELETE' && call.url.path.contains('/storage/'),
           ),
-          disposition == 'confirmed' ? hasLength(1) : isEmpty,
+          isEmpty,
         );
       },
     );

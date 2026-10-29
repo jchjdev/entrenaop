@@ -14,6 +14,8 @@ import 'package:entrena_ui/entrena_ui.dart';
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_trash.dart';
 import 'package:entrenaop_admin/features/guided_programs/domain/admin_guided_repository.dart';
 import 'package:workout_core/guided_program.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_media_cleanup_repository.dart';
+import 'package:entrena_ui/media_cleanup_controls.dart';
 import 'package:workout_core/exercise_draft.dart';
 import 'package:workout_core/exercise_image.dart';
 
@@ -99,6 +101,26 @@ class _Workouts extends Fake implements AdminWorkoutRepository {
   Future<List<AdminWorkoutSummary>> listGeneral() async => [];
 }
 
+class _Cleanup extends Fake implements AdminMediaCleanupRepository {
+  int reads = 0;
+  @override
+  Object get ownerKey => 'admin';
+  @override
+  Future<Map<String, dynamic>> inspect() async {
+    reads++;
+    return {
+      'items': [],
+      'summary': {
+        'pending': 0,
+        'deleted': 0,
+        'protected': 0,
+        'freed_images': 0,
+        'freed_bytes': 0,
+      },
+    };
+  }
+}
+
 class _Guided extends Fake implements AdminGuidedRepository {
   @override
   Future<List<GuidedProgram>> programs() async => [];
@@ -173,6 +195,37 @@ String _path(GoRouter router) =>
     router.routerDelegate.currentConfiguration.uri.path;
 
 void main() {
+  for (final (allowed, mfa) in [(true, false), (false, false), (true, true)]) {
+    testWidgets(
+      'mantenimiento oficial en router real: permiso $allowed MFA $mfa',
+      (tester) async {
+        final cleanup = _Cleanup();
+        final router = createAdminRouter(
+          programs: _Programs(allowed),
+          workouts: _Workouts(),
+          exercises: _Exercises(),
+          mediaCleanup: cleanup,
+          ownerKey: 'admin',
+          onSignOut: () {},
+          isAuthenticated: () => true,
+          needsSecurity: () async => mfa,
+          securityBuilder: (_) =>
+              const Scaffold(body: Text('Validar doble factor')),
+          initialLocation: '/exercises/media-cleanup',
+        );
+        addTearDown(router.dispose);
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pumpAndSettle();
+        expect(cleanup.reads, allowed && !mfa ? 1 : 0);
+        expect(
+          find.byType(MediaCleanupView),
+          allowed && !mfa ? findsOneWidget : findsNothing,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'router bloquea sidebar al confirmar y escribir; evita doble confirmación',
     (tester) async {

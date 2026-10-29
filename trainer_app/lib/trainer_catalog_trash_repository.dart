@@ -48,9 +48,14 @@ abstract class TrainerCatalogTrashRepository {
 
 class SupabaseTrainerCatalogTrashRepository
     implements TrainerCatalogTrashRepository {
-  SupabaseTrainerCatalogTrashRepository(this.client, this.userId);
+  SupabaseTrainerCatalogTrashRepository(
+    this.client,
+    this.userId, {
+    this.cleanupAfterPurge,
+  });
   final SupabaseClient client;
   final String userId;
+  final Future<void> Function()? cleanupAfterPurge;
 
   @override
   Object get ownerKey => userId;
@@ -175,6 +180,12 @@ class SupabaseTrainerCatalogTrashRepository
       _change('restore_trainer_catalog_item', operationId, entry);
 
   @override
-  Future<void> purge(String operationId, TrainerCatalogTrashEntry entry) =>
-      _change('purge_trainer_catalog_item', operationId, entry);
+  Future<void> purge(String operationId, TrainerCatalogTrashEntry entry) async {
+    await _change('purge_trainer_catalog_item', operationId, entry);
+    try {
+      await cleanupAfterPurge?.call().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // La purga ya terminó. La cola reintentará el trabajo externo por Cron.
+    }
+  }
 }

@@ -69,6 +69,7 @@ class TrainerExercisePage extends StatefulWidget {
     this.preferences,
     this.trashRepository,
     this.trashOpen = false,
+    this.onCleanup,
   });
   final TrainerExerciseRepository repository;
   final TrainerRepository access;
@@ -77,6 +78,7 @@ class TrainerExercisePage extends StatefulWidget {
   final ExerciseCatalogPreferences? preferences;
   final TrainerCatalogTrashRepository? trashRepository;
   final bool trashOpen;
+  final Future<void> Function()? onCleanup;
   @override
   State<TrainerExercisePage> createState() => _TrainerExercisePageState();
 }
@@ -290,7 +292,7 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
                   Padding(
                     padding: EdgeInsets.only(bottom: 16),
                     child: Text(
-                      'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. Puedes enlazar un vídeo HTTPS del proveedor que ya utilices o subir un archivo privado cuando la subida esté disponible. Los enlaces externos dependen de la disponibilidad y privacidad de ese proveedor.',
+                      'Las versiones anteriores conservan el historial y cuentan en el límite. Cada imagen ocupa como máximo 500 KB; las reservas de subidas también cuentan. La limpieza retira solo archivos sin otros usos y libera su reserva tras confirmar el borrado. Puedes enlazar un vídeo HTTPS o subir una demostración. Los enlaces externos dependen de la disponibilidad y privacidad de ese proveedor.',
                     ),
                   ),
                 ],
@@ -306,6 +308,20 @@ class _TrainerExercisePageState extends State<TrainerExercisePage> {
               ),
             ],
             const SizedBox(height: 16),
+            if (widget.onCleanup != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: _busy
+                      ? null
+                      : () async {
+                          await widget.onCleanup!();
+                          if (mounted) await _load();
+                        },
+                  icon: const Icon(Icons.cleaning_services_outlined),
+                  label: const Text('Limpiar archivos sin uso'),
+                ),
+              ),
             Align(
               alignment: Alignment.centerLeft,
               child: ConstrainedBox(

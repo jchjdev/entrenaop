@@ -1,5 +1,18 @@
 # Ejercicios privados profesionales · TRN-019 · 21/10/2026
 
+## Limpieza protegida de imágenes · TRN-046 · Dev
+
+La eliminación definitiva encola la imagen gestionada anterior. La vista
+«Archivos y almacenamiento» permite revisar imágenes sin referencias de al menos
+24 horas, incluidas las abandonadas antes de existir esta cola. Todas las
+versiones, papelera, borradores abiertos, recetas e instantáneas conservadas
+protegen sus referencias. El trabajador elimina mediante Storage API y confirma
+ausencia antes de decrementar `image_used` una sola vez. La reserva permanece como
+tumba: el mismo identificador no permite volver a subir ni consumir otra cuota.
+Los fallos conservan reserva y se reintentan. No se habilita DELETE de archivos
+al cliente ni se exige suscripción activa para limpiar recursos propios.
+[Contrato, permisos y evidencia](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 ## Colecciones y selección dentro del creador · 29/10/2026
 
 TRN-043 conecta `catalogScope` («EntrenaOP»/«Míos») en el adaptador de Trainer,
@@ -113,9 +126,9 @@ Los contadores condicionados de `exercise_limits` y el bloqueo de autoría hacen
 cumplir cuotas bajo concurrencia. Cada ejercicio/version guardado consume una
 unidad y su payload de reintento queda limitado a 8 KiB.
 Cada reserva nueva consume una imagen; reintentar no consume otra.
-Las reservas fallidas o abandonadas no se recuperan automáticamente en este
-tramo. Los límites pueden ajustarse en servidor; no hay interfaz de ampliación,
-compra ni purga de recursos profesionales. No son tarifas comerciales.
+TRN-046 amplía la recuperación de reservas fallidas o abandonadas mediante la
+limpieza protegida descrita arriba. Los límites pueden ajustarse en servidor;
+no hay interfaz de ampliación ni compra. No son tarifas comerciales.
 
 Las firmas del portal se solicitan por lotes, sin una petición por cada foto.
 Al reintentar una subida se comprueban sus bytes, sin sobrescribir ni eliminar

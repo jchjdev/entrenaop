@@ -19,9 +19,10 @@ function request(body: Record<string, unknown>, token = "Bearer fixture-user") {
 function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
   provider?: Record<string, unknown>; auth?: boolean; asset?: boolean;
   scope?: string; manage?: boolean; creationState?: string; searchItems?: unknown[];
-  searchTotal?: number; providerTimeout?: boolean; voidResponse?: boolean } = {}) {
+  searchTotal?: number; providerTimeout?: boolean; voidResponse?: boolean; uploadLeaseDenied?: boolean } = {}) {
   const writes: Record<string, unknown>[] = [];
   const calls: string[] = [];
+  const uploadLeases: Record<string, unknown>[] = [];
   const asset: Record<string, unknown> = {
     id, created_by: user, library_id: 42, provider_video_id: video, cdn_host: config.cdnHost,
     playback_url: url, playback_bytes: 1000, status: options.ready === false ? "processing" : "ready",
@@ -53,6 +54,10 @@ function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
       writes.push({ playback_url: url }); return options.voidResponse ? new Response(null, { status: 204 }) : Response.json(null);
     }
     if (path.endsWith("/rpc/mark_exercise_video_creation_uncertain")) { asset.creation_state = "uncertain"; return Response.json(null); }
+    if (path.endsWith("/rpc/prepare_exercise_video_upload")) {
+      uploadLeases.push(JSON.parse(String(init?.body)));
+      return options.uploadLeaseDenied ? Response.json({ code: "42501" }, { status: 403 }) : new Response(null, { status: 204 });
+    }
     if (path.includes("/exercise_video_assets?") && init?.method === "GET") return Response.json(options.asset === false ? [] : [asset]);
     if (path.includes("/exercise_video_assets?") && init?.method === "PATCH") {
       const change = JSON.parse(String(init.body)); Object.assign(asset, change);
@@ -68,7 +73,7 @@ function fixture(options: { admin?: boolean; canRead?: boolean; ready?: boolean;
       headers: { "Content-Length": "1000", "Content-Type": "video/mp4" } });
     throw new Error(`Solicitud inesperada: ${path}`);
   };
-  return { fetcher, calls, writes, asset };
+  return { fetcher, calls, writes, asset, uploadLeases };
 }
 test("sin JWT no consulta Auth, base de datos ni Bunny", async () => {
   const f = fixture();
@@ -358,6 +363,7 @@ test("recuperar processing no permite sobrescribir un archivo ya entregado", asy
     const data = await response.json();
     assert.equal(response.status, 409); assert.equal(data.error, "video_upload_closed");
     assert.equal(data.signature, undefined); assert.equal(f.writes.length, 0);
+    assert.equal(f.uploadLeases.length, 0);
   }
 });
 
@@ -368,4 +374,30 @@ test("recuperar no firma ni consulta el proveedor con un activo de otro entorno"
   const data = await response.json();
   assert.equal(response.status, 409); assert.equal(data.error, "video_environment_mismatch");
   assert.equal(data.signature, undefined); assert.equal(f.calls.some((path) => path.startsWith("https://video.bunnycdn.com")), false);
+});
+
+test("cada firma registra primero su caducidad para que limpieza respete la subida vigente", async () => {
+  for (const action of ["create", "recover"]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise", ready: false, provider: { status: 0 } });
+    const result = await handleExerciseVideo(request({ action, id, operation_id: id, scope: "trainer_exercise", bytes: 1000 }), config, f.fetcher);
+    const body = await result.json();
+    assert.equal(result.status, 200);
+    assert.equal(f.uploadLeases.length, 1);
+    assert.equal(f.uploadLeases[0].p_id, id);
+    assert.equal(Date.parse(String(f.uploadLeases[0].p_expires_at)), body.expiration * 1000);
+    assert.ok(Date.parse(String(f.uploadLeases[0].p_expires_at)) > Date.now());
+    if (action === "recover") assert.equal(f.asset.status, "processing");
+  }
+});
+
+test("un destino sellado por limpieza rechaza credenciales nuevas y recuperadas", async () => {
+  for (const action of ["create", "recover"]) {
+    const f = fixture({ manage: true, scope: "trainer_exercise", ready: false, provider: { status: 0 }, uploadLeaseDenied: true });
+    const result = await handleExerciseVideo(request({ action, id, operation_id: id, scope: "trainer_exercise", bytes: 1000 }), config, f.fetcher);
+    const body = await result.json();
+    assert.notEqual(result.status, 200);
+    assert.equal(body.signature, undefined);
+    assert.equal(body.expiration, undefined);
+    assert.equal(f.uploadLeases.length, 1);
+  }
 });

@@ -1,11 +1,21 @@
 # Producto EntrenaOP
 
+**TRN-046 · 29/10/2026 · archivos y almacenamiento:** Trainer y
+ADMIN incorporan mantenimiento de imágenes sin uso y solicitudes de limpieza
+pendientes. El preparador puede solicitar eliminar una demostración propia;
+las técnicas de alumnos y cualquier archivo utilizado por versiones, papelera,
+borradores abiertos, asignaciones o historial quedan protegidos. Borrar
+definitivamente un ejercicio encola sus antiguos medios; moverlo a papelera no
+los elimina. La cuota se recupera después del borrado confirmado, con reintentos
+si falla el proveedor. No se eliminan demostraciones listas por estar sin enlazar.
+[Contrato y estado](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 **TRN-045 · 29/10/2026 · papelera de biblioteca:** el preparador puede retirar,
 recuperar y borrar de forma protegida ejercicios, sesiones y programas privados.
 Lo asignado y el historial se conservan; las referencias bloquean la purga.
 ADMIN añade ejercicios al mismo recorrido visual y mantiene sesiones/programas.
 Un oficial recuperado requiere revisión y publicación explícita. Solo Dev;
-sin vaciado automático ni limpieza remota de vídeos/imágenes.
+sin vaciado automático. La limpieza de archivos se amplía en TRN-046.
 [Contrato y verificación](TRAINER_PLATFORM.md#gestion-de-la-biblioteca--trn-045--29102026).
 
 **Citas privadas · TRN-041 · 28/10/2026:** Trainer incorpora citas con alumno,

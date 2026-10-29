@@ -1,5 +1,16 @@
 # Arquitectura de EntrenaOP
 
+**TRN-046 · 29/10/2026 · limpieza protegida de archivos:**
+`entrena_ui` aporta la vista de mantenimiento; cada portal conserva su adaptador
+y contexto. Una cola transaccional por archivo comprueba referencias y bloquea
+nuevos enlaces antes de delegar en `trainer-media-cleanup`. Storage y Bunny se
+eliminan por sus API; la cuota se descuenta una sola vez tras confirmar ausencia.
+Los fallos conservan reserva y recibo para reintentar; la papelera, los borradores
+abiertos y las instantáneas históricas siguen protegiendo sus medios. La limpieza
+no exige cupo disponible ni suscripción activa, pero sí identidad, sesión vigente
+y doble factor. ADMIN oficial y biblioteca privada siguen separados.
+[Contrato y estado](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 **TRN-045 · 29/10/2026 · ciclo de biblioteca:** Trainer y ADMIN comparten
 `CatalogTrashView` en `entrena_ui`, con adaptadores por contexto. La familia
 privada se retira sin alterar recetas asignadas; el servidor coordina versiones,

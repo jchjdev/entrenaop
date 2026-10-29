@@ -11,10 +11,12 @@ class AdminExerciseTrashPage extends StatelessWidget {
     super.key,
     required this.repository,
     this.ownerKey,
+    this.onCleanup,
   });
 
   final AdminExerciseTrashRepository repository;
   final Object? ownerKey;
+  final VoidCallback? onCleanup;
 
   static const title = 'Papelera de ejercicios';
 
@@ -43,7 +45,7 @@ class AdminExerciseTrashPage extends StatelessWidget {
             'Se eliminará «${entry.name}» definitivamente. '
             'El borrado se bloqueará si está utilizado en sesiones, '
             'programas, asignaciones, ejecuciones u otros recursos protegidos. '
-            'Las imágenes y los vídeos se conservan.',
+            'Los archivos sin otros usos se pondrán en limpieza. Los protegidos se conservan; la cuota se libera solo tras confirmar el borrado real.',
       ),
   ];
 
@@ -57,6 +59,14 @@ class AdminExerciseTrashPage extends StatelessWidget {
       showTitle: AdminShellScope.hidesAppBar(context),
       ownerKey: ownerKey ?? repository,
       newOperationId: newGuidedWorkId,
+      additionalActions: [
+        if (onCleanup != null)
+          OutlinedButton.icon(
+            onPressed: onCleanup,
+            icon: const Icon(Icons.cleaning_services_outlined),
+            label: const Text('Limpiar archivos sin uso'),
+          ),
+      ],
       description:
           'Los ejercicios se conservan en las sesiones y el historial que ya los utilizan. '
           'Recuperar no publica de nuevo: revisa y guarda el ejercicio para publicarlo. '

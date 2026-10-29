@@ -90,10 +90,15 @@ abstract class AdminExerciseRepository {
 
 class SupabaseAdminExerciseRepository
     implements AdminExerciseRepository, AdminExerciseTrashRepository {
-  const SupabaseAdminExerciseRepository(this._client, {this.ownerId});
+  const SupabaseAdminExerciseRepository(
+    this._client, {
+    this.ownerId,
+    this.processMediaCleanup,
+  });
 
   final SupabaseClient _client;
   final String? ownerId;
+  final Future<void> Function()? processMediaCleanup;
 
   @override
   Future<List<AdminCatalogExercise>> listOfficial() async {
@@ -208,6 +213,7 @@ class SupabaseAdminExerciseRepository
       operationId,
       'purged',
     );
+    await _runMediaCleanup();
   }
 
   Future<void> _mutateExerciseTrash(
@@ -259,7 +265,7 @@ class SupabaseAdminExerciseRepository
       );
     } catch (_) {
       try {
-        await _discardFailedCreation(id as String, uploadedPath);
+        await _discardFailedCreation(id as String);
       } catch (_) {
         // Una respuesta incierta no autoriza un DELETE ni a retirar medios.
         // Lo que haya llegado a papelera conserva sus referencias y permisos.
@@ -269,7 +275,7 @@ class SupabaseAdminExerciseRepository
     return id;
   }
 
-  Future<void> _discardFailedCreation(String id, String? uploadedPath) async {
+  Future<void> _discardFailedCreation(String id) async {
     final moved = _confirmedReceipt(
       await _cleanupRpc('trash_admin_exercise', {
         'p_id': id,
@@ -284,9 +290,9 @@ class SupabaseAdminExerciseRepository
       'p_trashed_at': moved['trashed_at'],
     });
     _confirmedReceipt(purged, id, 'purged');
-    // Solo el borrado confirmado permite limpiar la subida. Si el enlace se
-    // guardó sin respuesta y alguien lo utilizó, el servidor conserva todo.
-    await _removeBestEffort(uploadedPath);
+    // El proveedor y la reserva los confirma el trabajador de la cola. Nunca
+    // se adelanta aquí el borrado externo a su acuse de recibo.
+    await _runMediaCleanup();
   }
 
   Future<dynamic> _cleanupRpc(String name, Map<String, dynamic> params) async {
@@ -316,23 +322,17 @@ class SupabaseAdminExerciseRepository
     );
     if (image != null) {
       final path = await _upload(id, image);
-      try {
-        final previous = await _client.rpc(
-          'set_admin_exercise_image',
-          params: {'p_exercise_id': id, 'p_image_path': path},
-        );
-        await _removeBestEffort(previous as String?);
-      } catch (_) {
-        await _removeBestEffort(path);
-        rethrow;
-      }
+      await _client.rpc(
+        'set_admin_exercise_image',
+        params: {'p_exercise_id': id, 'p_image_path': path},
+      );
     } else if (removeImage) {
-      final previous = await _client.rpc(
+      await _client.rpc(
         'set_admin_exercise_image',
         params: {'p_exercise_id': id, 'p_image_path': null},
       );
-      await _removeBestEffort(previous as String?);
     }
+    await _runMediaCleanup();
   }
 
   Future<String> _upload(String exerciseId, ExerciseImageUpload image) async {
@@ -352,12 +352,11 @@ class SupabaseAdminExerciseRepository
     return path;
   }
 
-  Future<void> _removeBestEffort(String? path) async {
-    if (path == null) return;
+  Future<void> _runMediaCleanup() async {
     try {
-      await _client.storage.from(_publicBucket).remove([path]);
+      await processMediaCleanup?.call().timeout(const Duration(seconds: 5));
     } catch (_) {
-      // La referencia ya apunta a la nueva imagen; el huérfano puede limpiarse.
+      // La escritura ya está confirmada; Cron conserva y reintenta la cola.
     }
   }
 }

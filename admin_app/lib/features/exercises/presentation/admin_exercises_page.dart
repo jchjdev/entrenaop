@@ -23,6 +23,7 @@ class AdminExercisesPage extends StatefulWidget {
     this.initialExerciseId,
     this.preferences,
     this.ownerKey,
+    this.onCleanup,
   });
 
   final AdminExerciseRepository repository;
@@ -30,6 +31,7 @@ class AdminExercisesPage extends StatefulWidget {
   final AdminExerciseVideoRepository? videos;
   final ExerciseCatalogPreferences? preferences;
   final Object? ownerKey;
+  final Future<void> Function()? onCleanup;
 
   @override
   State<AdminExercisesPage> createState() => _AdminExercisesPageState();
@@ -336,6 +338,17 @@ class _AdminExercisesPageState extends State<AdminExercisesPage> {
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('Papelera'),
                   ),
+                  if (widget.onCleanup != null)
+                    OutlinedButton.icon(
+                      onPressed: _blocked
+                          ? null
+                          : () async {
+                              await widget.onCleanup!();
+                              if (mounted) await _load();
+                            },
+                      icon: const Icon(Icons.cleaning_services_outlined),
+                      label: const Text('Limpiar archivos sin uso'),
+                    ),
                 ],
               ),
             ),

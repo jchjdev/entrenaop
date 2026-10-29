@@ -70,6 +70,10 @@ import 'trainer_client_workspace_repository.dart';
 import 'trainer_client_forms_route.dart';
 import 'trainer_media_repository.dart';
 import 'trainer_media_page.dart';
+import 'trainer_media_cleanup_repository.dart';
+
+import 'package:entrena_ui/media_cleanup_controls.dart';
+
 import 'trainer_technique_page.dart';
 import 'trainer_recurrence_repository.dart';
 import 'trainer_recurrence_page.dart';
@@ -214,6 +218,12 @@ class _TrainerAppState extends State<TrainerApp> {
     late final catalogTrashRepository = SupabaseTrainerCatalogTrashRepository(
       widget.client,
       identity!,
+      cleanupAfterPurge: () async {
+        await SupabaseTrainerMediaCleanupRepository(
+          widget.client,
+          identity,
+        ).run();
+      },
     );
     SupabaseTrainerWorkoutRepository workouts() => workoutRepository;
     SupabaseTrainerProgramRepository programs() => programRepository;
@@ -574,9 +584,37 @@ class _TrainerAppState extends State<TrainerApp> {
               ),
             ),
             GoRoute(
+              path: '/media/cleanup',
+              onExit: (_, state) => exits.requestExit(state.pageKey),
+              builder: (context, state) {
+                final cleanup = SupabaseTrainerMediaCleanupRepository(
+                  widget.client,
+                  identity!,
+                );
+                return guarded(
+                  state,
+                  MediaCleanupView(
+                    key: ValueKey('trainer-media-cleanup-$identity'),
+                    ownerKey: cleanup.ownerKey,
+                    inspect: cleanup.inspect,
+                    sweep: cleanup.sweep,
+                    run: cleanup.run,
+                    deleteVideo: cleanup.deleteVideo,
+                    initialVideo: state.extra is MediaCleanupVideoTarget
+                        ? state.extra as MediaCleanupVideoTarget
+                        : null,
+                    newOperationId: trainerOperationId,
+                    onBack: () =>
+                        context.canPop() ? context.pop() : context.go('/media'),
+                  ),
+                );
+              },
+            ),
+            GoRoute(
               path: '/media',
               builder: (context, _) => TrainerMediaPage(
                 repository: media(),
+                cleanupOwnerKey: identity,
                 onOpenTechnique: () => context.push('/clients?view=technique'),
                 onCreateExercise: (url) async {
                   await showTrainerExerciseEditor(
@@ -814,11 +852,14 @@ class _TrainerAppState extends State<TrainerApp> {
             GoRoute(
               path: '/exercises',
               onExit: (_, state) => exits.requestExit(state.pageKey),
-              builder: (_, state) => guarded(
+              builder: (context, state) => guarded(
                 state,
                 TrainerExercisePage(
                   key: ValueKey('trainer-exercises-$identity'),
                   trashOpen: state.uri.path == '/exercises/trash',
+                  onCleanup: () async {
+                    await context.push('/media/cleanup');
+                  },
                   trashRepository: catalogTrashRepository,
                   preferences: exercisePreferences,
                   repository: SupabaseTrainerExerciseRepository(
@@ -834,11 +875,12 @@ class _TrainerAppState extends State<TrainerApp> {
                 GoRoute(
                   path: 'trash',
                   onExit: (_, state) => exits.requestExit(state.pageKey),
-                  builder: (_, state) => guarded(
+                  builder: (context, state) => guarded(
                     state,
                     TrainerCatalogTrashPage(
                       repository: catalogTrashRepository,
                       kind: TrainerCatalogKind.exercise,
+                      onCleanup: () => context.push('/media/cleanup'),
                     ),
                   ),
                 ),

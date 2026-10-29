@@ -80,7 +80,7 @@ async function provider(c: VideoConfig, f: Fetcher, suffix: string, body?: unkno
   }
   return object(await response.json());
 }
-async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
+async function uploadCredentials(c: VideoConfig, f: Fetcher, id: string, asset: Json) {
   if (String(asset.library_id) !== c.libraryId || asset.cdn_host !== c.cdnHost) {
     throw new VideoError(409, "video_environment_mismatch");
   }
@@ -88,6 +88,11 @@ async function uploadCredentials(c: VideoConfig, id: string, asset: Json) {
   if (typeof videoId !== "string" || !uuid.test(videoId)) throw new VideoError(409, "video_creation_uncertain");
   if (asset.status !== "uploading") throw new VideoError(409, "video_upload_closed", { asset_id: id, status: asset.status });
   const expiration = Math.floor(Date.now() / 1000) + 3600;
+  // La firma solo se emite tras registrar su plazo bajo el mismo cierre que
+  // usa la limpieza. Así no se elimina un destino con una subida aún válida.
+  await db(c, f, "rpc/prepare_exercise_video_upload", {
+    p_id: id, p_expires_at: new Date(expiration * 1000).toISOString(),
+  });
   const hash = new Uint8Array(await crypto.subtle.digest("SHA-256",
     new TextEncoder().encode(`${c.libraryId}${c.apiKey}${expiration}${videoId}`)));
   return json({ id, video_id: videoId, library_id: c.libraryId, expiration,
@@ -106,10 +111,10 @@ async function recoverUploadCredentials(c: VideoConfig, f: Fetcher, id: string, 
     if (video.guid !== asset.provider_video_id || String(video.videoLibraryId) !== c.libraryId) {
       throw new VideoError(502, "invalid_response");
     }
-    if (video.status === 0) return await uploadCredentials(c, id, { ...asset, status: "uploading" });
+    if (video.status === 0) return await uploadCredentials(c, f, id, { ...asset, status: "uploading" });
     throw new VideoError(409, "video_upload_closed", { asset_id: id, status: "processing" });
   }
-  return await uploadCredentials(c, id, asset);
+  return await uploadCredentials(c, f, id, asset);
 }
 async function reconcileCreation(c: VideoConfig, f: Fetcher, id: string): Promise<string> {
   // Bunny documenta búsqueda por título y totalItems. Solo una coincidencia
@@ -209,7 +214,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         try {
           const recovered = await reconcileCreation(c, f, id);
           await db(c, f, "rpc/complete_exercise_video_creation", { p_id: id, p_claim: null, p_video_id: recovered, p_recovery: true });
-          return await uploadCredentials(c, id, { ...asset, provider_video_id: recovered });
+          return await uploadCredentials(c, f, id, { ...asset, provider_video_id: recovered });
         } catch {
           throw new VideoError(409, "video_creation_uncertain", { asset_id: id, operation_id: operation });
         }
@@ -221,7 +226,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
         }
         const videoId = created.guid;
         await db(c, f, "rpc/complete_exercise_video_creation", { p_id: id, p_claim: claimId, p_video_id: videoId, p_recovery: false });
-        return await uploadCredentials(c, id, { ...asset, provider_video_id: videoId });
+        return await uploadCredentials(c, f, id, { ...asset, provider_video_id: videoId });
       } catch (error) {
         await db(c, f, "rpc/mark_exercise_video_creation_uncertain", { p_id: id, p_claim: claimId }).catch(() => {});
         if (error instanceof VideoError && error.code === "video_upload_closed") throw error;
@@ -237,7 +242,7 @@ export async function handleExerciseVideo(request: Request, c: VideoConfig, f: F
       if (!["creating", "uncertain"].includes(String(asset.creation_state))) throw new VideoError(409, "video_creation_not_uncertain");
       const videoId = await reconcileCreation(c, f, body.id);
       await db(c, f, "rpc/complete_exercise_video_creation", { p_id: body.id, p_claim: null, p_video_id: videoId, p_recovery: true });
-      return await uploadCredentials(c, body.id, { ...asset, provider_video_id: videoId });
+      return await uploadCredentials(c, f, body.id, { ...asset, provider_video_id: videoId });
     }
     if (String(asset.library_id) !== c.libraryId || asset.cdn_host !== c.cdnHost ||
       typeof asset.provider_video_id !== "string" || !uuid.test(asset.provider_video_id)) {

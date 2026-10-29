@@ -80,6 +80,7 @@ class CatalogTrashView extends StatefulWidget {
     this.loadMore,
     this.pageSize = 50,
     this.showTitle = true,
+    this.additionalActions = const [],
     super.key,
   }) : assert(pageSize > 0);
 
@@ -98,6 +99,7 @@ class CatalogTrashView extends StatefulWidget {
   final VoidCallback? onBack;
   final int pageSize;
   final bool showTitle;
+  final List<Widget> additionalActions;
 
   @override
   State<CatalogTrashView> createState() => _CatalogTrashViewState();
@@ -320,6 +322,7 @@ class _CatalogTrashViewState extends State<CatalogTrashView> {
                     icon: const Icon(Icons.refresh),
                     label: const Text('Actualizar papelera'),
                   ),
+                  ...widget.additionalActions,
                 ],
               ),
               if (_error != null) ...[

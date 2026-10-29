@@ -11,6 +11,8 @@ import 'package:entrenaop_admin/features/exercises/data/admin_exercise_video_rep
 import 'package:entrenaop_admin/features/exercises/data/admin_exercise_trash_repository.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercises_page.dart';
 import 'package:entrenaop_admin/features/exercises/presentation/admin_exercise_trash_page.dart';
+import 'package:entrenaop_admin/features/exercises/data/admin_media_cleanup_repository.dart';
+import 'package:entrena_ui/media_cleanup_controls.dart';
 import 'package:entrenaop_admin/features/programs/data/admin_program_repository.dart';
 import 'package:entrenaop_admin/features/editorial_covers/domain/program_cover.dart';
 import 'package:entrenaop_admin/features/programs/presentation/admin_laboratory_page.dart';
@@ -61,6 +63,7 @@ GoRouter createAdminRouter({
   AdminExerciseVideoRepository? exerciseVideos,
   ExerciseCatalogPreferences? exercisePreferences,
   Object? ownerKey,
+  AdminMediaCleanupRepository? mediaCleanup,
   String? initialLocation,
   Listenable? authChanges,
   bool Function()? isAuthenticated,
@@ -738,12 +741,36 @@ GoRouter createAdminRouter({
                 repository: exercises,
                 videos: exerciseVideos,
                 ownerKey: ownerKey,
+                onCleanup: mediaCleanup == null
+                    ? null
+                    : () async {
+                        await context.push('/exercises/media-cleanup');
+                      },
               ),
             ),
             routes: [
+              if (mediaCleanup != null)
+                workflow(
+                  'media-cleanup',
+                  (context, _) => load(
+                    () async => true,
+                    (_) => MediaCleanupView(
+                      key: ValueKey(mediaCleanup.ownerKey),
+                      ownerKey: mediaCleanup.ownerKey,
+                      showAppBar: !AdminShellScope.hidesAppBar(context),
+                      inspect: mediaCleanup.inspect,
+                      sweep: mediaCleanup.sweep,
+                      run: mediaCleanup.run,
+                      newOperationId: newGuidedWorkId,
+                      onBack: () => context.canPop()
+                          ? context.pop()
+                          : context.go('/exercises'),
+                    ),
+                  ),
+                ),
               workflow(
                 'trash',
-                (_, _) => load(
+                (context, _) => load(
                   () async {
                     if (exercises is! AdminExerciseTrashRepository) {
                       throw const _RouteUnavailable(
@@ -755,6 +782,9 @@ GoRouter createAdminRouter({
                   (repository) => AdminExerciseTrashPage(
                     repository: repository,
                     ownerKey: ownerKey,
+                    onCleanup: mediaCleanup == null
+                        ? null
+                        : () => context.push('/exercises/media-cleanup'),
                   ),
                 ),
               ),

@@ -1,5 +1,18 @@
 # Roadmap de EntrenaOP
 
+**TRN-046 · 29/10/2026 · limpieza protegida implementada en Dev:** cola durable,
+confirmación externa y reintentos para imágenes y demostraciones gestionadas.
+La papelera, versiones, trabajos abiertos e historial protegen sus referencias;
+no se borran bibliotecas de vídeo por estar sin enlazar. El mantenimiento comparte
+vista y separa permisos de Trainer/ADMIN; los lotes avanzan sin atascarse en los
+primeros archivos protegidos. Raíz 1.446 pruebas (una omisión previa), Trainer 332,
+ADMIN 364 (dos omisiones previas), UI común 47 y 60 pruebas Node correctas;
+análisis limpios. La limpieza real de una imagen huérfana recuperó una reserva
+(2→1), conservando la otra imagen en uso. Backend y cron activos solo en Dev;
+publicación web y comprobación visual pendientes de acreditar. La aceptación
+móvil de invitaciones continúa como único siguiente recorrido recomendado.
+[Contrato](TRAINER_PLATFORM.md#limpieza-protegida-de-medios--trn-046).
+
 **TRN-045 · 29/10/2026 · papelera de biblioteca cerrada en Dev:** Trainer incorpora
 retirada, recuperación y purga protegida de familias de ejercicios, sesiones y
 programas; ADMIN añade ejercicios y comparte la vista conservando sus contratos

@@ -7,6 +7,9 @@ import 'package:trainer_access/trainer_access.dart';
 
 import 'trainer_media_repository.dart';
 
+import 'package:go_router/go_router.dart';
+import 'package:entrena_ui/media_cleanup_controls.dart';
+
 Future<String?> showTrainerMediaPicker(
   BuildContext context,
   TrainerMediaRepository repository,
@@ -40,11 +43,13 @@ class TrainerMediaPage extends StatefulWidget {
     this.onSelect,
     this.onCreateExercise,
     this.onOpenTechnique,
+    this.cleanupOwnerKey,
   });
   final TrainerMediaRepository repository;
   final ValueChanged<String>? onSelect;
   final Future<void> Function(String videoUrl)? onCreateExercise;
   final VoidCallback? onOpenTechnique;
+  final Object? cleanupOwnerKey;
   @override
   State<TrainerMediaPage> createState() => _TrainerMediaPageState();
 }
@@ -212,6 +217,21 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
     }
   }
 
+  Future<void> _openCleanup([TrainerMediaRow? row]) async {
+    await context.push(
+      '/media/cleanup',
+      extra: row == null
+          ? null
+          : MediaCleanupVideoTarget(
+              ownerKey: widget.cleanupOwnerKey!,
+              id: row['id'] as String,
+              name:
+                  'Vídeo del ${trainerDate(DateTime.parse(row['created_at'] as String))}',
+            ),
+    );
+    if (mounted) await _load();
+  }
+
   String? _readyUrl(TrainerMediaRow row) {
     final url = row['playback_url'];
     return row['status'] == 'ready' &&
@@ -325,6 +345,15 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
             ],
           ),
           const SizedBox(height: 12),
+          if (widget.cleanupOwnerKey != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: _busy ? null : () => _openCleanup(),
+                icon: const Icon(Icons.cleaning_services_outlined),
+                label: const Text('Limpiar archivos sin uso'),
+              ),
+            ),
           Align(
             alignment: Alignment.centerLeft,
             child: FilledButton.icon(
@@ -411,6 +440,18 @@ class _TrainerMediaPageState extends State<TrainerMediaPage> {
                               ),
                             ),
                           ],
+                        ),
+                      if (widget.onSelect == null &&
+                          widget.cleanupOwnerKey != null &&
+                          row['scope'] == 'trainer_exercise')
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: _busy ? null : () => _openCleanup(row),
+                            style: EntrenaButtonStyles.destructive(context),
+                            icon: const Icon(Icons.delete_outline),
+                            label: const Text('Eliminar demostración'),
+                          ),
                         ),
                     ],
                   ),

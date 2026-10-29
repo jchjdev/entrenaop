@@ -11,9 +11,11 @@ class TrainerCatalogTrashPage extends StatelessWidget {
     super.key,
     required this.repository,
     required this.kind,
+    this.onCleanup,
   });
   final TrainerCatalogTrashRepository repository;
   final TrainerCatalogKind kind;
+  final VoidCallback? onCleanup;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,14 @@ class TrainerCatalogTrashPage extends StatelessWidget {
         showTitle: false,
         description: 'Aquí está el contenido que has retirado de tu biblioteca, junto con sus versiones. Las pautas ya asignadas y el historial se conservan. Los vínculos protegidos impiden el borrado definitivo.',
         newOperationId: trainerOperationId,
+        additionalActions: [
+          if (onCleanup != null)
+            OutlinedButton.icon(
+              onPressed: onCleanup,
+              icon: const Icon(Icons.cleaning_services_outlined),
+              label: const Text('Limpiar archivos sin uso'),
+            ),
+        ],
         onBack: () =>
             context.canPop() ? context.pop() : context.go(kind.libraryPath),
         load: () async {
@@ -55,7 +65,7 @@ class TrainerCatalogTrashPage extends StatelessWidget {
         'Se eliminará «${row.name}» con todas sus versiones. No se podrá recuperar. '
         'El borrado se bloqueará si tiene usos que debamos conservar. '
         '${switch (row.kind) {
-          TrainerCatalogKind.exercise => 'Las imágenes y vídeos asociados se conservan y siguen contando en sus límites.',
+          TrainerCatalogKind.exercise => 'Los archivos sin otros usos se pondrán en limpieza. La cuota solo se libera tras confirmar su borrado; los medios protegidos se conservan.',
           TrainerCatalogKind.session => 'Sus ejercicios, imágenes y vídeos se conservan.',
           TrainerCatalogKind.program => 'Sus sesiones y ejercicios se conservan en sus bibliotecas.',
         }}',
