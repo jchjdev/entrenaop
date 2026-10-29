@@ -5,13 +5,15 @@ retirada, recuperación y purga protegida de familias de ejercicios, sesiones y
 programas; ADMIN añade ejercicios y comparte la vista conservando sus contratos
 previos. El contenido asignado sigue ejecutable, las referencias bloquean purga
 y los reintentos no resucitan recetas borradas. Recuperar oficiales no publica.
-Migración aplicada solo en Dev; contrato nuevo y diez regresiones SQL correctos
+Dos migraciones aplicadas solo en Dev; dos contratos y diez regresiones SQL correctos
 con ROLLBACK. Concurrencia comprobada entre dos conexiones: mismo recurso
 excluido y familia ajena disponible. Raíz 1.446 pruebas (una omisión previa),
 Trainer 317, ADMIN 358 (dos omisiones previas), editor compartido 223 y UI común
-40, análisis limpios. Rutas de papelera y traslado administrativo protegidos ante
+41, análisis limpios. ADMIN restringe su papelera a oficiales incluso cuando hay
+familias privadas retiradas; se verifica la mezcla en una misma transacción.
+Rutas de papelera y traslado administrativo protegidos ante
 salida incierta y doble confirmación. Fuentes listas para publicación automática
-en Dev; pendiente acreditar versión servida. No se vacían bibliotecas ni se
+en Dev; pendiente acreditar versión servida tras el ajuste de cabeceras. No se vacían bibliotecas ni se
 purgan medios remotos.
 **Único siguiente recorrido recomendado tras cerrar:** aceptación del enlace de
 invitación en la beta móvil con alumno real; no requiere otra APK por este bloque.

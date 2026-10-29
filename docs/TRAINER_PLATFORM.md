@@ -66,28 +66,35 @@ autorizados. El editor común conserva también el nombre de la receta original
 si el consumidor solo aporta catálogo activo. Para guardar otra receta hay que
 recuperar o sustituir los ejercicios retirados.
 
-La migración `20261029195445_trainer_admin_catalog_trash.sql` está aplicada solo
-en Dev. Exige identidad, MFA y acceso de autoría; mantiene aislamiento de cuentas
+Las migraciones `20261029195445_trainer_admin_catalog_trash.sql` y
+`20261029204524_admin_session_trash_scope_guard.sql` están aplicadas solo
+en Dev. Exigen identidad, MFA y acceso de autoría; mantienen aislamiento de cuentas
 y ADMIN. Recibos y sellos protegen reintentos y retiradas posteriores. Bloqueos
 por recurso/familia evitan una exclusión global de todas las cuentas. Las listas
-nuevas se paginan por sello e ID, 50 por página.
+nuevas se paginan por sello e ID, 50 por página. El listado administrativo de
+sesiones restringe explícitamente `origin=system` y dueño nulo: no depende del
+antiguo CHECK de papelera, que ahora también permite contenido profesional.
 
 Purgar ejercicios libera únicamente las unidades de versiones eliminadas.
 Las reservas/ficheros de imágenes y vídeos se conservan y siguen contando según
 su contrato: este bloque no añade limpieza remota de medios ni vaciado automático.
 
 **Verificación al cierre:** análisis limpios y baterías completas: raíz 1.446
-pruebas (una omisión previa), Trainer 317, editor compartido 223 y `entrena_ui` 40.
+pruebas (una omisión previa), Trainer 317, editor compartido 223 y `entrena_ui` 41.
 ADMIN 358 (dos omisiones previas). Las tres papeleras y el listado de ejercicios
 administrativos están conectados a la guarda real del router: confirmación y
 envío bloquean salida; una respuesta incierta conserva el recurso/UUID y ofrece
-reintento incluso después de refrescar. Total: 2.384 pruebas correctas.
-Contrato SQL nuevo y diez regresiones correctos, todos con ROLLBACK: catálogos
+reintento incluso después de refrescar. Total: 2.385 pruebas correctas. La revisión
+visual elimina la cabecera duplicada; los recorridos de papelera afectados vuelven
+a pasar tras el ajuste, sin modificar sus acciones.
+Dos contratos SQL nuevos y diez regresiones correctos, todos con ROLLBACK: catálogos
 privados, vídeos, recuperación de sesiones/programas/contextos y operaciones/
 papelera editorial ADMIN. Dos conexiones reales comprueban que una asignación
 retiene el recurso compartido: el exclusivo de otra familia sigue disponible y
 el del mismo recurso espera hasta el límite de 700 ms. Ambas hacen ROLLBACK;
-sin fixtures persistentes. Historial de migraciones Dev local/remoto coincidente.
+sin fixtures persistentes. La prueba de contextos mezcla sesiones oficiales y
+familias de dos preparadores: ADMIN no lista las privadas y Trainer conserva
+aislamiento, versiones y cursores. Historial Dev local/remoto coincidente.
 Advisors del alcance: cuatro INFO intencionales por RLS sin políticas/grants en
 tablas privadas; ningún WARN/ERROR nuevo del ciclo. La inspección de JSON de
 dispositivos sigue siendo global porque pertenece al alumno y puede sobrevivir

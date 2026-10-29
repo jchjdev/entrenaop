@@ -54,6 +54,7 @@ class AdminExerciseTrashPage extends StatelessWidget {
         : AppBar(title: const Text(title)),
     body: CatalogTrashView(
       title: title,
+      showTitle: AdminShellScope.hidesAppBar(context),
       ownerKey: ownerKey ?? repository,
       newOperationId: newGuidedWorkId,
       description:

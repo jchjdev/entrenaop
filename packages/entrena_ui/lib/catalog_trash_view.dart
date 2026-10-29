@@ -79,6 +79,7 @@ class CatalogTrashView extends StatefulWidget {
     this.onBack,
     this.loadMore,
     this.pageSize = 50,
+    this.showTitle = true,
     super.key,
   }) : assert(pageSize > 0);
 
@@ -96,6 +97,7 @@ class CatalogTrashView extends StatefulWidget {
   final String? description;
   final VoidCallback? onBack;
   final int pageSize;
+  final bool showTitle;
 
   @override
   State<CatalogTrashView> createState() => _CatalogTrashViewState();
@@ -292,11 +294,13 @@ class _CatalogTrashViewState extends State<CatalogTrashView> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text(
-                widget.title,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 12),
+              if (widget.showTitle) ...[
+                Text(
+                  widget.title,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 12),
+              ],
               Text(
                 widget.description ?? 'Recupera contenido o borra definitivamente lo que ya no uses. Las referencias y el historial están protegidos. La papelera no se vacía automáticamente.',
               ),

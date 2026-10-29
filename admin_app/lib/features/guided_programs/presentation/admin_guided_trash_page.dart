@@ -88,6 +88,7 @@ class _AdminGuidedTrashPageState extends State<AdminGuidedTrashPage> {
         : AppBar(title: Text(_title)),
     body: CatalogTrashView(
       title: _title,
+      showTitle: AdminShellScope.hidesAppBar(context),
       ownerKey: (widget.ownerKey ?? widget.repository, widget.sessions),
       description: widget.sessions
           ? 'Recupera sesiones o elimina definitivamente las que no tengan referencias '

@@ -43,6 +43,31 @@ Widget app({
 );
 
 void main() {
+  testWidgets(
+    'el contenedor puede aportar el título sin duplicarlo en el cuerpo',
+    (t) async {
+      await t.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(title: const Text('Papelera de sesiones')),
+            body: CatalogTrashView(
+              title: 'Papelera de sesiones',
+              showTitle: false,
+              ownerKey: 'A',
+              load: () async => [],
+              onRestore: noop,
+              onDelete: noop,
+              newOperationId: () => 'unused',
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Papelera de sesiones'), findsOneWidget);
+      expect(find.text('La papelera está vacía.'), findsOneWidget);
+    },
+  );
+
   testWidgets('un uso protegido bloquea purga pero permite recuperar', (
     t,
   ) async {

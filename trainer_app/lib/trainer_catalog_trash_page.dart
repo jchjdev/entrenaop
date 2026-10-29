@@ -18,11 +18,12 @@ class TrainerCatalogTrashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Papelera de la biblioteca')),
+      appBar: AppBar(title: Text('Papelera · ${kind.label}')),
       body: CatalogTrashView(
         key: ValueKey((repository.ownerKey, kind)),
         ownerKey: repository.ownerKey,
         title: 'Papelera · ${kind.label}',
+        showTitle: false,
         description: 'Aquí está el contenido que has retirado de tu biblioteca, junto con sus versiones. Las pautas ya asignadas y el historial se conservan. Los vínculos protegidos impiden el borrado definitivo.',
         newOperationId: trainerOperationId,
         onBack: () =>
